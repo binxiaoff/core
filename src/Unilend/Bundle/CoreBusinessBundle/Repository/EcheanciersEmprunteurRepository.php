@@ -4,9 +4,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    CompanyStatus, Echeanciers, EcheanciersEmprunteur, Projects, ProjectsStatus, Receptions
-};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{CompanyStatus, Echeanciers, EcheanciersEmprunteur, Projects, ProjectsStatus, Receptions};
 
 class EcheanciersEmprunteurRepository extends EntityRepository
 {
@@ -74,9 +72,10 @@ class EcheanciersEmprunteurRepository extends EntityRepository
     }
 
     /**
-     * @param Projects|int $project
+     * @param $project
      *
      * @return int
+     * @throws \Doctrine\ORM\NonUniqueResultException
      */
     public function getOverdueScheduleCount($project)
     {

@@ -68,9 +68,26 @@ class CloseOutNettingPayment
     /**
      * @var boolean
      *
-     * @ORM\Column(name="notified", type="boolean", nullable=false)
+     * @ORM\Column(name="lenders_notified", type="boolean", nullable=false)
      */
-    private $notified;
+    private $lendersNotified;
+
+    /**
+     * @var boolean
+     *
+     * @ORM\Column(name="borrower_notified", type="boolean", nullable=false)
+     */
+    private $borrowerNotified;
+
+    /**
+     * @var CloseOutNettingEmailExtraContent
+     *
+     * @ORM\OneToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\CloseOutNettingEmailExtraContent")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_email_content", referencedColumnName="id")
+     * })
+     */
+    private $idEmailContent;
 
     /**
      * @var \DateTime
@@ -102,7 +119,7 @@ class CloseOutNettingPayment
      *
      * @return CloseOutNettingPayment
      */
-    public function setIdProject(Projects $idProject)
+    public function setIdProject(Projects $idProject): CloseOutNettingPayment
     {
         $this->idProject = $idProject;
 
@@ -114,7 +131,7 @@ class CloseOutNettingPayment
      *
      * @return Projects
      */
-    public function getIdProject()
+    public function getIdProject(): Projects
     {
         return $this->idProject;
     }
@@ -126,7 +143,7 @@ class CloseOutNettingPayment
      *
      * @return CloseOutNettingPayment
      */
-    public function setCapital($capital)
+    public function setCapital(string $capital): CloseOutNettingPayment
     {
         $this->capital = $capital;
 
@@ -138,7 +155,7 @@ class CloseOutNettingPayment
      *
      * @return string
      */
-    public function getCapital()
+    public function getCapital(): string
     {
         return $this->capital;
     }
@@ -150,7 +167,7 @@ class CloseOutNettingPayment
      *
      * @return CloseOutNettingPayment
      */
-    public function setPaidCapital($paidCapital)
+    public function setPaidCapital(string $paidCapital): CloseOutNettingPayment
     {
         $this->paidCapital = $paidCapital;
 
@@ -162,7 +179,7 @@ class CloseOutNettingPayment
      *
      * @return string
      */
-    public function getPaidCapital()
+    public function getPaidCapital(): string
     {
         return $this->paidCapital;
     }
@@ -174,7 +191,7 @@ class CloseOutNettingPayment
      *
      * @return CloseOutNettingPayment
      */
-    public function setInterest($interest)
+    public function setInterest(string $interest): CloseOutNettingPayment
     {
         $this->interest = $interest;
 
@@ -186,7 +203,7 @@ class CloseOutNettingPayment
      *
      * @return string
      */
-    public function getInterest()
+    public function getInterest(): string
     {
         return $this->interest;
     }
@@ -198,7 +215,7 @@ class CloseOutNettingPayment
      *
      * @return CloseOutNettingPayment
      */
-    public function setPaidInterest($paidInterest)
+    public function setPaidInterest(string $paidInterest): CloseOutNettingPayment
     {
         $this->paidInterest = $paidInterest;
 
@@ -210,7 +227,7 @@ class CloseOutNettingPayment
      *
      * @return string
      */
-    public function getPaidInterest()
+    public function getPaidInterest(): string
     {
         return $this->paidInterest;
     }
@@ -222,7 +239,7 @@ class CloseOutNettingPayment
      *
      * @return CloseOutNettingPayment
      */
-    public function setCommissionTaxIncl($commissionTaxIncl)
+    public function setCommissionTaxIncl($commissionTaxIncl): CloseOutNettingPayment
     {
         $this->commissionTaxIncl = $commissionTaxIncl;
 
@@ -234,7 +251,7 @@ class CloseOutNettingPayment
      *
      * @return string
      */
-    public function getCommissionTaxIncl()
+    public function getCommissionTaxIncl(): string
     {
         return $this->commissionTaxIncl;
     }
@@ -246,7 +263,7 @@ class CloseOutNettingPayment
      *
      * @return CloseOutNettingPayment
      */
-    public function setPaidCommissionTaxIncl($paidCommissionTaxIncl)
+    public function setPaidCommissionTaxIncl($paidCommissionTaxIncl): CloseOutNettingPayment
     {
         $this->paidCommissionTaxIncl = $paidCommissionTaxIncl;
 
@@ -258,7 +275,7 @@ class CloseOutNettingPayment
      *
      * @return string
      */
-    public function getPaidCommissionTaxIncl()
+    public function getPaidCommissionTaxIncl(): string
     {
         return $this->paidCommissionTaxIncl;
     }
@@ -270,7 +287,7 @@ class CloseOutNettingPayment
      *
      * @return CloseOutNettingPayment
      */
-    public function setAdded($added)
+    public function setAdded($added): CloseOutNettingPayment
     {
         $this->added = $added;
 
@@ -282,7 +299,7 @@ class CloseOutNettingPayment
      *
      * @return \DateTime
      */
-    public function getAdded()
+    public function getAdded(): \DateTime
     {
         return $this->added;
     }
@@ -294,7 +311,7 @@ class CloseOutNettingPayment
      *
      * @return CloseOutNettingPayment
      */
-    public function setUpdated($updated)
+    public function setUpdated(\DateTime $updated)
     {
         $this->updated = $updated;
 
@@ -304,9 +321,9 @@ class CloseOutNettingPayment
     /**
      * Get updated
      *
-     * @return \DateTime
+     * @return \DateTime|null
      */
-    public function getUpdated()
+    public function getUpdated(): ?\DateTime
     {
         return $this->updated;
     }
@@ -314,9 +331,9 @@ class CloseOutNettingPayment
     /**
      * Get id
      *
-     * @return integer
+     * @return int
      */
-    public function getId()
+    public function getId(): int
     {
         return $this->id;
     }
@@ -340,25 +357,62 @@ class CloseOutNettingPayment
     }
 
     /**
-     * Get notified
-     *
-     * @return mixed
+     * @return bool
      */
-    public function getNotified()
+    public function getLendersNotified(): bool
     {
-        return $this->notified;
+        return $this->lendersNotified;
     }
 
     /**
-     * Set notified
-     *
-     * @param mixed $notified
+     * @param bool $lendersNotified
      *
      * @return CloseOutNettingPayment
      */
-    public function setNotified($notified)
+    public function setLendersNotified(bool $lendersNotified): CloseOutNettingPayment
     {
-        $this->notified = $notified;
+        $this->lendersNotified = $lendersNotified;
+
+        return $this;
+    }
+
+    /**
+     * @return bool
+     */
+    public function getBorrowerNotified(): bool
+    {
+        return $this->borrowerNotified;
+    }
+
+    /**
+     * @param bool $borrowerNotified
+     *
+     * @return CloseOutNettingPayment
+     */
+    public function setBorrowerNotified(bool $borrowerNotified): CloseOutNettingPayment
+    {
+        $this->borrowerNotified = $borrowerNotified;
+
+        return $this;
+    }
+
+    /**
+     * @return CloseOutNettingEmailExtraContent|null
+     */
+    public function getIdEmailContent(): ?CloseOutNettingEmailExtraContent
+    {
+        return $this->idEmailContent;
+    }
+
+    /**
+     * @param CloseOutNettingEmailExtraContent|null $idEmailContent
+     *
+     * @return CloseOutNettingPayment
+     */
+    public function setIdEmailContent(?CloseOutNettingEmailExtraContent $idEmailContent): CloseOutNettingPayment
+    {
+        $this->idEmailContent = $idEmailContent;
+
         return $this;
     }
 }
