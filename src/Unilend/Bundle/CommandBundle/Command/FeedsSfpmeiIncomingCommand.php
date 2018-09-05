@@ -421,7 +421,7 @@ EOF
                             $entityManager->flush($client);
                         }
 
-                        if (in_array($client->getIdClientStatusHistory()->getIdStatus()->getId(), ClientsStatus::GRANTED_LOGIN)) {
+                        if ($client->isGrantedLogin()) {
                             $notifications->type      = Notifications::TYPE_BANK_TRANSFER_CREDIT;
                             $notifications->id_lender = $wallet->getId();
                             $notifications->amount    = $reception->getMontant();

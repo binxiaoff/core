@@ -1,25 +1,30 @@
 <?php
+
 namespace Unilend\Bundle\FrontBundle\Form;
 
+use Doctrine\ORM\EntityManager;
 use Symfony\Component\Form\AbstractType;
-use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
-use Symfony\Component\Form\Extension\Core\Type\EmailType;
-use Symfony\Component\Form\Extension\Core\Type\TextareaType;
-use Symfony\Component\Form\Extension\Core\Type\TextType;
+use Symfony\Component\Form\Extension\Core\Type\{ChoiceType, EmailType, TextareaType, TextType};
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorage;
-use Unilend\Bundle\FrontBundle\Security\User\UserBorrower;
-use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 
 class BorrowerContactType extends AbstractType
 {
-    /** @var UserBorrower */
+    /** @var Clients */
     private $borrower;
     /** @var EntityManager */
     private $entityManager;
+    /** @var string */
     private $language;
 
-    public function __construct(EntityManager $entityManager, TokenStorage $tokenStorage, $language)
+    /**
+     *
+     * @param EntityManager $entityManager
+     * @param TokenStorage  $tokenStorage
+     * @param string        $language
+     */
+    public function __construct(EntityManager $entityManager, TokenStorage $tokenStorage, string $language)
     {
         $this->entityManager = $entityManager;
         $this->language      = $language;
@@ -36,28 +41,22 @@ class BorrowerContactType extends AbstractType
         $mobile    = '';
         $email     = '';
 
-        if ($this->borrower instanceof UserBorrower) {
-            /** @var \clients $client */
-            $client = $this->entityManager->getRepository('clients');
-            if ($client->get($this->borrower->getClientId())) {
-                $lastName  = $client->nom;
-                $firstName = $client->prenom;
-            }
+        if ($this->borrower instanceof Clients && $this->borrower->isBorrower()) {
+            $lastName  = $this->borrower->getNom();
+            $firstName = $this->borrower->getPrenom();
 
-            /** @var \companies $company */
-            $company = $this->entityManager->getRepository('companies');
-            if ($company->get($this->borrower->getClientId(), 'id_client_owner')) {
-                $mobile = empty($client->mobile) ? $client->telephone : $client->mobile;
-                $email  = empty($client->email) ? $company->email_dirigeant : $client->email;
+            $company = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $this->borrower]);
+            if ($company) {
+                $mobile = empty($this->borrower->getMobile()) ? $this->borrower->getTelephone() : $this->borrower->getMobile();
+                $email  = empty($this->borrower->getEmail()) ? $company->getEmailDirigeant() : $this->borrower->getEmail();
             }
         }
-        /** @var \contact_request_subjects $requestSubjects */
-        $requestSubjects = $this->entityManager->getRepository('contact_request_subjects');
-        $subjects        = $requestSubjects->select();
+
+        $subjects = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ContactRequestSubjects')->findAll();
 
         $subjectsChoices = [];
         foreach ($subjects as $subject) {
-            $subjectsChoices['borrower-contact_subject-option-' . $subject['id_contact_request_subject']] = $subject['id_contact_request_subject'];
+            $subjectsChoices['borrower-contact_subject-option-' . $subject->getIdContactRequestSubject()] = $subject->getIdContactRequestSubject();
         }
 
         $builder

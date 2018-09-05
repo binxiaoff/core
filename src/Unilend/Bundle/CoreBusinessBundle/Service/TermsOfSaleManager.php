@@ -5,10 +5,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 use Doctrine\ORM\EntityManager;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AcceptationsLegalDocs, Clients, Companies, Elements, ProjectCgv, Projects, UniversignEntityInterface
-};
-use Unilend\Bundle\FrontBundle\Security\User\UserLender;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{AcceptationsLegalDocs, Clients, Companies, Elements, ProjectCgv, Projects, UniversignEntityInterface};
 use Unilend\core\Loader;
 
 class TermsOfSaleManager
@@ -72,15 +69,10 @@ class TermsOfSaleManager
         $token = $this->tokenStorage->getToken();
 
         if ($token) {
-            $user = $token->getUser();
+            $client = $token->getUser();
 
-            if ($user instanceof UserLender) {
-                $client = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')
-                    ->find($user->getClientId());
-
-                if (null !== $client && false === $user->hasAcceptedCurrentTerms()) {
-                    $session->set(self::SESSION_KEY_TOS_ACCEPTED, false);
-                }
+            if ($client instanceof Clients && $client->isLender() && false === $this->hasAcceptedCurrentVersion($client)) {
+                $session->set(self::SESSION_KEY_TOS_ACCEPTED, false);
             }
         }
     }

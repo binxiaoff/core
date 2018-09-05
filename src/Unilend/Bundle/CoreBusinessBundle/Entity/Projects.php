@@ -1282,11 +1282,11 @@ class Projects
     /**
      * Set idCompanySubmitter
      *
-     * @param Companies $idCompanySubmitter
+     * @param Companies|null $idCompanySubmitter
      *
      * @return Projects
      */
-    public function setIdCompanySubmitter(Companies $idCompanySubmitter)
+    public function setIdCompanySubmitter(?Companies $idCompanySubmitter): Projects
     {
         $this->idCompanySubmitter = $idCompanySubmitter;
 
@@ -1296,9 +1296,9 @@ class Projects
     /**
      * Get idCompanySubmitter
      *
-     * @return Companies
+     * @return Companies|null
      */
-    public function getIdCompanySubmitter()
+    public function getIdCompanySubmitter(): ?Companies
     {
         return $this->idCompanySubmitter;
     }
@@ -1306,11 +1306,11 @@ class Projects
     /**
      * Set idClientSubmitter
      *
-     * @param Clients $idClientSubmitter
+     * @param Clients|null $idClientSubmitter
      *
      * @return Projects
      */
-    public function setIdClientSubmitter(Clients $idClientSubmitter)
+    public function setIdClientSubmitter(?Clients $idClientSubmitter): Projects
     {
         $this->idClientSubmitter = $idClientSubmitter;
 
@@ -1320,9 +1320,9 @@ class Projects
     /**
      * Get idClientSubmitter
      *
-     * @return Clients
+     * @return Clients|null
      */
-    public function getIdClientSubmitter()
+    public function getIdClientSubmitter(): ?Clients
     {
         return $this->idClientSubmitter;
     }
@@ -1522,7 +1522,10 @@ class Projects
      */
     public function getMandates()
     {
-        return $this->mandates;
+        $criteria = Criteria::create();
+        $criteria->orderBy(['updated' => 'DESC']);
+
+        return $this->mandates->matching($criteria);
     }
 
     /**

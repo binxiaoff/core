@@ -427,7 +427,7 @@
                     </thead>
                     <tbody>
                     {% for user in users %}
-                        <tr data-id="{{ user.id }}" data-state="{% if user.idClient.idClientStatusHistory.idStatus.id == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ClientsStatus::STATUS_VALIDATED') %}active{% else %}inactive{% endif %}">
+                        <tr data-id="{{ user.id }}" data-state="{% if user.idClient.isValidated() %}active{% else %}inactive{% endif %}">
                             <td>{{ user.idClient.nom }}</td>
                             <td>{{ user.idClient.prenom }}</td>
                             <td>{{ user.idClient.email }}</td>

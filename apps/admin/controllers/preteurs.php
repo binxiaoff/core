@@ -1,7 +1,8 @@
 <?php
 
 use Box\Spout\{Common\Type, Writer\WriterFactory};
-use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, Attachment, AttachmentType, Autobid, Bids, Clients, ClientsGestionNotifications, ClientsGestionTypeNotif, ClientsStatus, Companies, LenderStatistic, LenderTaxExemption, Loans, MailTemplates, OffresBienvenues, OperationType, ProjectNotification, ProjectsStatus, UsersHistory, VigilanceRule, Wallet, WalletType, Zones};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, Attachment, AttachmentType, Autobid, Bids, Clients, ClientsGestionNotifications, ClientsGestionTypeNotif, ClientsStatus, Companies,
+    LenderStatistic, LenderTaxExemption, Loans, MailTemplates, OffresBienvenues, OperationType, ProjectNotification, ProjectsStatus, UsersHistory, VigilanceRule, Wallet, WalletType, Zones};
 use Unilend\Bundle\CoreBusinessBundle\Repository\LenderStatisticRepository;
 use Unilend\Bundle\CoreBusinessBundle\Service\{AttachmentManager, ClientAuditer, ClientDataHistoryManager, ClientStatusManager, LenderOperationsManager};
 
@@ -232,6 +233,12 @@ class preteursController extends bootstrap
             $this->transfers        = $entityManager->getRepository('UnilendCoreBusinessBundle:Transfer')->findTransferByClient($wallet->getIdClient());
 
             $this->clientStatusMessage = $this->getMessageAboutClientStatus();
+            $this->firstValidation     = $entityManager
+                ->getRepository('UnilendCoreBusinessBundle:ClientsStatusHistory')
+                ->findOneBy(
+                    ['idClient' => $this->client, 'idStatus' => ClientsStatus::STATUS_VALIDATED],
+                    ['added' => 'ASC', 'id' => 'ASC']
+                );
         }
     }
 
@@ -321,8 +328,6 @@ class preteursController extends bootstrap
 
     public function _edit_preteur()
     {
-        $this->loadJs('default/component/add-file-input');
-
         $this->nationalites            = $this->loadData('nationalites_v2');
         $this->acceptations_legal_docs = $this->loadData('acceptations_legal_docs');
         $this->settings                = $this->loadData('settings');
@@ -1406,42 +1411,49 @@ class preteursController extends bootstrap
 
         if (empty($this->vigilanceStatusHistory)) {
             $this->vigilanceStatus = [
-                'status'  => VigilanceRule::VIGILANCE_STATUS_LOW,
-                'message' => 'Vigilance standard'
+                'status'            => VigilanceRule::VIGILANCE_STATUS_LOW,
+                'message'           => 'Vigilance standard',
+                'checkOnValidation' => false
             ];
             $this->userRepository  = $entityManager->getRepository('UnilendCoreBusinessBundle:Users');
             return;
         }
+
         $this->clientAtypicalOperations = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientAtypicalOperation')->findBy(['client' => $this->client], ['added' => 'DESC']);
 
         switch ($this->vigilanceStatusHistory[0]->getVigilanceStatus()) {
             case VigilanceRule::VIGILANCE_STATUS_LOW:
                 $this->vigilanceStatus = [
-                    'status'  => VigilanceRule::VIGILANCE_STATUS_LOW,
-                    'message' => 'Vigilance standard. Dernière MAJ le ' . $this->vigilanceStatusHistory[0]->getAdded()->format('d/m/Y H\hi')
+                    'status'            => VigilanceRule::VIGILANCE_STATUS_LOW,
+                    'message'           => 'Vigilance standard. Dernière MAJ le ' . $this->vigilanceStatusHistory[0]->getAdded()->format('d/m/Y H\hi'),
+                    'checkOnValidation' => false
                 ];
                 break;
             case VigilanceRule::VIGILANCE_STATUS_MEDIUM:
                 $this->vigilanceStatus = [
-                    'status'  => VigilanceRule::VIGILANCE_STATUS_MEDIUM,
-                    'message' => 'Vigilance intermédiaire. Dernière MAJ le ' . $this->vigilanceStatusHistory[0]->getAdded()->format('d/m/Y H\hi')
+                    'status'            => VigilanceRule::VIGILANCE_STATUS_MEDIUM,
+                    'message'           => 'Vigilance intermédiaire. Dernière MAJ le ' . $this->vigilanceStatusHistory[0]->getAdded()->format('d/m/Y H\hi'),
+                    'checkOnValidation' => true
                 ];
                 break;
             case VigilanceRule::VIGILANCE_STATUS_HIGH:
                 $this->vigilanceStatus = [
-                    'status'  => VigilanceRule::VIGILANCE_STATUS_HIGH,
-                    'message' => 'Vigilance Renforcée. Dernière MAJ le ' . $this->vigilanceStatusHistory[0]->getAdded()->format('d/m/Y H\hi')
+                    'status'            => VigilanceRule::VIGILANCE_STATUS_HIGH,
+                    'message'           => 'Vigilance Renforcée. Dernière MAJ le ' . $this->vigilanceStatusHistory[0]->getAdded()->format('d/m/Y H\hi'),
+                    'checkOnValidation' => true
                 ];
                 break;
             case VigilanceRule::VIGILANCE_STATUS_REFUSE:
                 $this->vigilanceStatus = [
-                    'status'  => VigilanceRule::VIGILANCE_STATUS_REFUSE,
-                    'message' => 'Vigilance Refus. Dernière MAJ le ' . $this->vigilanceStatusHistory[0]->getAdded()->format('d/m/Y H\hi')
+                    'status'            => VigilanceRule::VIGILANCE_STATUS_REFUSE,
+                    'message'           => 'Vigilance Refus. Dernière MAJ le ' . $this->vigilanceStatusHistory[0]->getAdded()->format('d/m/Y H\hi'),
+                    'checkOnValidation' => false
                 ];
                 break;
             default:
                 trigger_error('Unknown vigilance status :' . $this->vigilanceStatusHistory[0]->getVigilanceStatus(), E_USER_NOTICE);
         }
+
         /** @var \Symfony\Component\Translation\Translator translator */
         $this->translator                   = $this->get('translator');
         $this->userRepository               = $entityManager->getRepository('UnilendCoreBusinessBundle:Users');
@@ -1559,7 +1571,7 @@ class preteursController extends bootstrap
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager    = $this->get('doctrine.orm.entity_manager');
         $clientRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
-        $duplicates       = $clientRepository->findByEmailAndStatus($client->getEmail(), ClientsStatus::GRANTED_LOGIN);
+        $duplicates       = $clientRepository->findGrantedLoginAccountsByEmail($client->getEmail());
 
         if (false === empty($duplicates)) {
             $_SESSION['freeow']['title']   = 'Statut prêteur';
@@ -1694,7 +1706,7 @@ class preteursController extends bootstrap
 
         $duplicates = $entityManager
             ->getRepository('UnilendCoreBusinessBundle:Clients')
-            ->findByEmailAndStatus($email, ClientsStatus::GRANTED_LOGIN);
+            ->findGrantedLoginAccountsByEmail($email);
 
         if (count($duplicates) > 0) {
             $_SESSION['error_email_exist'] = 'Impossible de modifier l‘adresse email. Cette adresse est déjà utilisée par un autre compte.';

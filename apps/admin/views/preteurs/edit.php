@@ -1,3 +1,6 @@
+<?php
+
+?>
 <script type="text/javascript">
     $(function() {
         jQuery.tablesorter.addParser({ id: "fancyNumber", is: function(s) { return /[\-\+]?\s*[0-9]{1,3}(\.[0-9]{3})*,[0-9]+/.test(s); }, format: function(s) { return jQuery.tablesorter.formatFloat( s.replace(/,/g,'').replace(' €','').replace(' ','') ); }, type: "numeric" });
@@ -67,7 +70,19 @@
         });
     });
 </script>
+<link href="<?= $this->lurl ?>/oneui/css/font-awesome.css" type="text/css" rel="stylesheet">
 <style>
+    @font-face {
+        font-family: 'FontAwesome';
+        src: url('<?= $this->lurl ?>/oneui/fonts/fontawesome-webfont.eot');
+        src: url('<?= $this->lurl ?>/oneui/fonts/fontawesome-webfont.eot?#iefix&v=4.7.0') format('embedded-opentype'),
+        url('<?= $this->lurl ?>/oneui/fonts/fontawesome-webfont.woff2') format('woff2'),
+        url('<?= $this->lurl ?>/oneui/fonts/fontawesome-webfont.woff') format('woff'),
+        url('<?= $this->lurl ?>/oneui/fonts/fontawesome-webfont.ttf') format('truetype'),
+        url('<?= $this->lurl ?>/oneui/fonts/fontawesome-webfont.svg#fontawesomeregular') format('svg');
+        font-weight: normal;
+        font-style: normal;
+    }
     .td-greenPoint-status-valid {
         border-radius: 5px; background-color: #00A000; color: white; width: auto; padding: 5px;
     }
@@ -101,7 +116,12 @@
         <div class="attention">Attention : ce compte n’est pas un compte prêteur</div>
     <?php else : ?>
         <div><?= $this->clientStatusMessage ?></div>
-        <h1>Detail prêteur : <?= $this->clients->prenom . ' ' . $this->clients->nom ?></h1>
+        <?php if ($this->client->isNaturalPerson()) : ?>
+            <h1><span class="fa fa-user-o"></span> <?= $this->client->getPrenom() ?> <?= $this->client->getNom() ?></h1>
+        <?php else : ?>
+            <h1><span class="fa fa-briefcase"></span> <?= $this->companies->name ?></h1>
+            <h2>Représentant légal : <?= $this->client->getPrenom() ?> <?= $this->client->getNom() ?></h2>
+        <?php endif; ?>
         <div class="btnDroite">
             <a href="<?= $this->lurl ?>/preteurs/bids/<?= $this->clients->id_client ?>" class="btn-primary">Enchères</a>
             <a href="<?= $this->lurl ?>/preteurs/edit_preteur/<?= $this->clients->id_client ?>" class="btn-primary">Modifier Prêteur</a>
@@ -110,28 +130,28 @@
         <br>
         <table class="form" style="margin: auto;">
             <tr>
-                <th>ID Client :</th>
+                <th>ID Client</th>
                 <td><?= $this->client->getIdClient() ?></td>
-                <th>Date de création :</th>
+                <th>Date de création</th>
                 <td><?= $this->client->getAdded()->format('d/m/Y') ?></td>
             </tr>
             <tr>
-                <th>Prénom :</th>
+                <th>Prénom</th>
                 <td><?= $this->client->getPrenom() ?></td>
-                <th>Source :</th>
+                <th><?php if (false === empty($this->firstValidation)) : ?>Date de 1ère validation<?php endif; ?></th>
+                <td><?php if (false === empty($this->firstValidation)) : ?><?= $this->firstValidation->getAdded()->format('d/m/Y') ?><?php endif; ?></td>
+            </tr>
+            <tr>
+                <th>Nom</th>
+                <td><?= $this->client->getNom() ?></td>
+                <th>Source</th>
                 <td><?= $this->client->getSource() ?></td>
             </tr>
             <tr>
-                <th>Nom :</th>
-                <td><?= $this->client->getNom() ?></td>
-                <th>Source secondaire :</th>
-                <td><?= $this->client->getSource2() ?></td>
-            </tr>
-            <tr>
-                <th>Email :</th>
+                <th>Email</th>
                 <td><?= $this->client->getEmail() ?></td>
-                <th></th>
-                <td width="365"></td>
+                <th><?php if (false === empty($this->client->getSource2())) : ?>Source secondaire<?php endif; ?></th>
+                <td><?php if (false === empty($this->client->getSource2())) : ?><?= $this->client->getSource2() ?><?php endif; ?></td>
             </tr>
             <tr>
                 <th>Adresse fiscale validée</th>
@@ -142,7 +162,7 @@
                 <?php endif; ?>
             </tr>
             <tr>
-                <th>Téléphone / Mobile :</th>
+                <th>Téléphone / Mobile</th>
                 <td><?= $this->client->getTelephone() ?> / <?= $this->client->getMobile() ?></td>
             </tr>
         </table>
@@ -150,35 +170,35 @@
         <div class="gauche" style="padding:0px;width: 530px;border-right:0px;">
             <table class="form" style="width:340px;">
                 <tr>
-                    <th>Sommes disponibles :</th>
+                    <th>Sommes disponibles</th>
                     <td><?= $this->ficelle->formatNumber($this->solde) ?> €</td>
                 </tr>
                 <tr>
-                    <th>Montant prêté :</th>
+                    <th>Montant prêté</th>
                     <td><?= $this->ficelle->formatNumber($this->sumPrets) ?> €</td>
                 </tr>
                 <tr>
-                    <th>Fonds retirés :</th>
+                    <th>Fonds retirés</th>
                     <td><?= $this->ficelle->formatNumber($this->soldeRetrait) ?> €</td>
                 </tr>
                 <tr>
-                    <th>Remboursement prochain mois :</th>
+                    <th>Remboursement prochain mois</th>
                     <td><?= $this->ficelle->formatNumber($this->nextRemb) ?> €</td>
                 </tr>
                 <tr>
-                    <th>Enchères moyennes :</th>
+                    <th>Enchères moyennes</th>
                     <td><?= $this->ficelle->formatNumber($this->avgPreteur) ?> €</td>
                 </tr>
                 <tr>
-                    <th>Montant des intérêts (brut) :</th>
+                    <th>Montant des intérêts (brut)</th>
                     <td><?= $this->ficelle->formatNumber($this->sumRembInte) ?> €</td>
                 </tr>
                 <tr>
-                    <th>Défaut :</th>
+                    <th>Défaut</th>
                     <td>Non</td>
                 </tr>
                 <tr>
-                    <th>Exonéré :</th>
+                    <th>Exonéré</th>
                     <td>
                         <?php if (empty($this->exemptionYears)) : ?>
                             Non
@@ -192,31 +212,31 @@
         <div class="droite" style="padding:0px;width: 530px;">
             <table class="form" style="width:265px;">
                 <tr>
-                    <th>Total des sommes déposées :</th>
+                    <th>Total des sommes déposées</th>
                     <td><?= $this->ficelle->formatNumber($this->SumDepot) ?> €</td>
                 </tr>
                 <tr>
-                    <th>Montant encheres en cours :</th>
+                    <th>Montant encheres en cours</th>
                     <td><?= $this->ficelle->formatNumber($this->sumBidsEncours) ?> €</td>
                 </tr>
                 <tr>
-                    <th>Nombre d'encheres en cours :</th>
+                    <th>Nombre d'encheres en cours</th>
                     <td><?= $this->NbBids ?></td>
                 </tr>
                 <tr>
-                    <th>Nombre de prêts :</th>
+                    <th>Nombre de prêts</th>
                     <td><?= $this->nb_pret ?></td>
                 </tr>
                 <tr>
-                    <th>Montant du 1er versement :</th>
+                    <th>Montant du 1er versement</th>
                     <td><?= $this->ficelle->formatNumber($this->SumInscription) ?> €</td>
                 </tr>
                 <tr>
-                    <th>Taux moyen pondéré :</th>
+                    <th>Taux moyen pondéré</th>
                     <td><?= $this->ficelle->formatNumber($this->txMoyen) ?> %</td>
                 </tr>
                 <tr>
-                    <th>Remboursement total :</th>
+                    <th>Remboursement total</th>
                     <td><?= $this->ficelle->formatNumber($this->sumRembMontant) ?> €</td>
                 </tr>
             </table>
