@@ -12,9 +12,6 @@ class EmailLenderCompletenessReminderCommand extends ContainerAwareCommand
     const REMINDER_DELAY_DAYS_FIRST  = 8;
     const REMINDER_DELAY_DAYS_SECOND = 30;
 
-    /** @var \dates */
-    private $dates;
-
     /**
      * @see Command
      */

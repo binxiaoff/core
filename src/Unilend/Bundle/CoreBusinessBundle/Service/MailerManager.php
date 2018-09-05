@@ -18,8 +18,6 @@ class MailerManager
     private $oLogger;
     /** @var \ficelle */
     private $oFicelle;
-    /** @var \dates */
-    private $oDate;
     /** @var string */
     private $sAUrl;
     /** @var string */

@@ -362,8 +362,6 @@ class bootstrap extends Controller
     /**
      * Helpers
      */
-    /** @var \dates */
-    protected $dates;
     /** @var \ficelle */
     protected $ficelle;
     /** @var \upload */

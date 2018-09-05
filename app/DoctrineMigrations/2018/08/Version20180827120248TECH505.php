@@ -15,7 +15,7 @@ final class Version20180827120248TECH505 extends AbstractMigration
      */
     public function up(Schema $schema) : void
     {
-        $this->abortIf($this->connection->getDatabasePlatform()->getName() != 'mysql', 'Migration can only be executed safely on \'mysql\'.');
+        $this->abortIf($this->connection->getDatabasePlatform()->getName() !== 'mysql', 'Migration can only be executed safely on \'mysql\'.');
 
         $this->addSql("
             INSERT INTO translations (locale, section, name, translation, added, updated) VALUES
@@ -24,7 +24,6 @@ final class Version20180827120248TECH505 extends AbstractMigration
               ('fr_FR', 'common', 'minute', '{0,1} %count% minute|]1,Inf[ %count% minutes', NOW(), NOW()),
               ('fr_FR', 'common', 'second', '{0,1} %count% seconde|]1,Inf[ %count% secondes', NOW(), NOW())
         ");
-
     }
 
     /**
@@ -35,7 +34,7 @@ final class Version20180827120248TECH505 extends AbstractMigration
      */
     public function down(Schema $schema) : void
     {
-        $this->abortIf($this->connection->getDatabasePlatform()->getName() != 'mysql', 'Migration can only be executed safely on \'mysql\'.');
+        $this->abortIf($this->connection->getDatabasePlatform()->getName() !== 'mysql', 'Migration can only be executed safely on \'mysql\'.');
 
         $this->addSql("DELETE FROM translations WHERE section = 'common' AND name IN ('day', 'hour', 'minute', 'second')");
     }
