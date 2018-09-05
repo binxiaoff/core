@@ -133,9 +133,9 @@ class Identity
     }
 
     /**
-     * @return int
+     * @return int|null
      */
-    public function getCode(): int
+    public function getCode(): ?int
     {
         return $this->code;
     }
