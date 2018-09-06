@@ -17,20 +17,7 @@ class ProjectAbandonReason
 
     const UNSUBSCRIBE_FROM_EMAIL_REMINDER        = 'unsubscribe_from_email_reminder';
     const OTHER_PROJECT_OF_SAME_COMPANY_REJECTED = 'other_project_of_same_company_rejected';
-    const NOT_ELIGIBLE                           = 'not_eligible';
-    const BORROWER_NOT_INTERESTED                = 'borrower_not_interested';
-    const BORROWER_CONTACT_UNSUCCESSFUL          = 'borrower_contact_unsuccessful';
     const BORROWER_FOLLOW_UP_UNSUCCESSFUL        = 'borrower_follow_up_unsuccessful';
-    const FUNDED_OTHERWISE                       = 'funded_otherwise';
-    const PROJECT_DUPLICATED                     = 'project_duplicated';
-    const TOTAL_FUNDING_COST_TOO_HIGH            = 'total_funding_cost_too_high';
-    const INTEREST_RATE_RANGE_TOO_HIGH           = 'interest_rate_range_too_high';
-    const FUNDED_OTHERWISE_BANK                  = 'funded_otherwise_bank';
-    const FUNDED_OTHERWISE_DIRECT                = 'funded_otherwise_direct';
-    const FUNDED_OTHERWISE_OTHER                 = 'funded_otherwise_other';
-    const SLOW_UNILEND_RESPONSE                  = 'slow_unilend_response';
-    const PROJECT_ABORTED                        = 'project_aborted';
-    const TEST_CASE                              = 'test_case';
 
     /**
      * @var string
