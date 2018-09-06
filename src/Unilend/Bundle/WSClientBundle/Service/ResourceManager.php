@@ -13,7 +13,7 @@ class ResourceManager
     /**
      * @param EntityManager $entityManager
      */
-    public function setEntityManager(EntityManager $entityManager)
+    public function __construct(EntityManager $entityManager)
     {
         $this->entityManager = $entityManager;
     }
