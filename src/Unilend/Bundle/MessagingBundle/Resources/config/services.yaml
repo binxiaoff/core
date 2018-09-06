@@ -1,0 +1,37 @@
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+        public: false
+        bind:
+            $defaultLocale: '%locale%'
+            $sharedTemporaryPath: '%path.shared_tmp%'
+            $templateMessageFQCN: 'Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage'
+            $frontUrl: '%router.request_context.scheme%://%url.host_default%'
+            $adminUrl: '%router.request_context.scheme%://%url.host_admin%'
+
+    Unilend\Bundle\MessagingBundle\:
+        resource: '%kernel.project_dir%/src/Unilend/Bundle/MessagingBundle/*'
+
+    Unilend\Bundle\MessagingBundle\Event\MailjetEventListener:
+        tags:
+            - { name: kernel.event_listener, event: knp_mailjet.sent, method: onSentEvent }
+            - { name: kernel.event_listener, event: knp_mailjet.open, method: onOpenEvent }
+            - { name: kernel.event_listener, event: knp_mailjet.blocked, method: onBlockedEvent }
+            - { name: kernel.event_listener, event: knp_mailjet.bounce, method: onBounceEvent }
+            - { name: kernel.event_listener, event: knp_mailjet.click, method: onClickEvent }
+            - { name: kernel.event_listener, event: knp_mailjet.spam, method: onSpamEvent }
+            - { name: kernel.event_listener, event: knp_mailjet.unsub, method: onUnsubEvent }
+
+    Mailjet\Client:
+        $key: '%mailjet.api_key%'
+        $secret: '%mailjet.api_secret%'
+        $call: true
+        $settings:
+            version: '%mailjet.api_version%'
+
+    # Swift Mailer and its bridges
+    swiftmailer.spool.db: '@Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\DatabaseSpool'
+    swiftmailer.mailer.default.spool.db: '@Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\DatabaseSpool'
+    swiftmailer.mailer.transport.mailjet: '@Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\MailjetTransport'
+    mailjet: '@Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\MailjetTransport'
