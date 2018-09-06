@@ -137,7 +137,7 @@ doctrine_mongodb:
                 ssl:            "%mongodb_ssl_connect%"
                 password:       "%mongodb_password%"
                 username:       "%mongodb_username%"
-                readPreference: secondaryPreferred
+                readPreference: primaryPreferred
                 replicaSet:     "%mongodb_replica_set_name%"
     default_database: "%mongodb_default_database%"
     document_managers:
