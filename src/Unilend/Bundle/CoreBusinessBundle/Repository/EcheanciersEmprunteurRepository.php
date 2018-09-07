@@ -136,9 +136,9 @@ class EcheanciersEmprunteurRepository extends EntityRepository
         }
         $queryBuilder = $this->createQueryBuilder('ee');
         $queryBuilder->select(
-            'ROUND(SUM(ee.capital - ee.paidCapital)/100, 2) as capital,
-            ROUND(SUM(ee.interets - ee.paidInterest)/100, 2) as interest,
-            ROUND(SUM(ee.commission + ee.tva - ee.paidCommissionVatIncl)/100, 2) as commission
+            'IFNULL(ROUND(SUM(ee.capital - ee.paidCapital)/100, 2), 0) as capital,
+            IFNULL(ROUND(SUM(ee.interets - ee.paidInterest)/100, 2), 0) as interest,
+            IFNULL(ROUND(SUM(ee.commission + ee.tva - ee.paidCommissionVatIncl)/100, 2), 0) as commission
             '
         )
             ->where('ee.idProject = :project')
