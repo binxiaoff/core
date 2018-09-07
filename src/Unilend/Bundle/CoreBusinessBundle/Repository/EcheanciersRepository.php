@@ -504,7 +504,7 @@ class EcheanciersRepository extends EntityRepository
         }
 
         $queryBuilder = $this->createQueryBuilder('e');
-        $queryBuilder->select('ROUND(SUM(e.capital  - e.capitalRembourse) / 100, 2) AS capital, ROUND(SUM(e.interets  - e.interetsRembourses) / 100, 2) AS interest')
+        $queryBuilder->select('IFNULL(ROUND(SUM(e.capital  - e.capitalRembourse) / 100, 2), 0) AS capital, IFNULL(ROUND(SUM(e.interets  - e.interetsRembourses) / 100, 2), 0) AS interest')
             ->innerJoin('UnilendCoreBusinessBundle:Loans', 'l', Join::WITH, 'e.idLoan = l.idLoan')
             ->innerJoin('UnilendCoreBusinessBundle:EcheanciersEmprunteur', 'ee', Join::WITH, 'ee.idProject = l.idProject AND ee.ordre = e.ordre')
             ->where('e.idLoan = :loan')

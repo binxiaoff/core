@@ -14,13 +14,13 @@ class Kyc
 
     /**
      * @JMS\SerializedName("modification")
-     * @JMS\Type("DateTime<'Y-m-d H:i:s'>")
+     * @JMS\Type("DateTime")
      */
     private $lastModified;
 
     /**
      * @JMS\SerializedName("creation")
-     * @JMS\Type("DateTime<'Y-m-d H:i:s'>")
+     * @JMS\Type("DateTime")
      */
     private $created;
 
