@@ -17,8 +17,10 @@ class LenderLoansDisplayManager
     const LOAN_STATUS_DISPLAY_COMPLETED     = 'completed';
     const LOAN_STATUS_DISPLAY_PROCEEDING    = 'proceeding';
     const LOAN_STATUS_DISPLAY_LOSS          = 'loss';
+    const LOAN_STATUS_DISPLAY_PENDING       = 'pending';
 
     const LOAN_STATUS_AGGREGATE = [
+        'pending'        => [self::LOAN_STATUS_DISPLAY_PENDING],
         'repayment'      => [self::LOAN_STATUS_DISPLAY_IN_PROGRESS],
         'repaid'         => [self::LOAN_STATUS_DISPLAY_COMPLETED],
         'late-repayment' => [self::LOAN_STATUS_DISPLAY_LATE],
@@ -31,6 +33,7 @@ class LenderLoansDisplayManager
     ];
 
     const LOAN_STATUS_FILTER = [
+        'pending'        => [ProjectsStatus::BID_TERMINATED, ProjectsStatus::FUNDE],
         'repayment'      => [ProjectsStatus::REMBOURSEMENT],
         'repaid'         => [ProjectsStatus::REMBOURSE, ProjectsStatus::REMBOURSEMENT_ANTICIPE],
         'late-repayment' => [ProjectsStatus::PROBLEME],
@@ -173,11 +176,44 @@ class LenderLoansDisplayManager
                 $loanData['loans']    = $loans;
                 $lenderProjectLoans[] = $loanData;
                 unset($loans, $loanData);
+            } elseif (in_array($projectLoans['project_status'], [ProjectsStatus::BID_TERMINATED, ProjectsStatus::FUNDE])) {
+                $project        = $projectRepository->find($projectLoans['id_project']);
+                $loanStatusInfo = $this->getLenderLoanStatusToDisplay($project);
+
+                if (false === empty($statusFilter) && false === in_array($loanStatusInfo['status'], self::LOAN_STATUS_AGGREGATE[$statusFilter])) {
+                    continue;
+                }
+
+                $loanData = [
+                    'id'                       => $projectLoans['id_project'],
+                    'url'                      => $this->router->generate('project_detail', ['projectSlug' => $projectLoans['slug']], UrlGeneratorInterface::ABSOLUTE_PATH),
+                    'name'                     => $projectLoans['title'],
+                    'rate'                     => round($projectLoans['rate'], 1),
+                    'risk'                     => $projectLoans['risk'],
+                    'amount'                   => round($projectLoans['amount']),
+                    'start_date'               => null,
+                    'end_date'                 => null,
+                    'next_payment_date'        => null,
+                    'monthly_repayment_amount' => null,
+                    'duration'                 => 0,
+                    'final_repayment_date'     => null,
+                    'remaining_capital_amount' => null,
+                    'project_status'           => $projectLoans['project_status'],
+                    'loanStatus'               => $loanStatusInfo['status'],
+                    'loanStatusLabel'          => $loanStatusInfo['statusLabel'],
+                    'isCloseOutNetting'        => false,
+                ];
+
+                ++$loanStatus['pending'];
+
+                $lenderProjectLoans[] = $loanData;
+                unset($loanData);
             }
         }
 
         $seriesData  = [];
         $chartColors = [
+            'pending'        => '#787679',
             'late-repayment' => '#FFCA2C',
             'incidents'      => '#F2980C',
             'repaid'         => '#4FA8B0',
@@ -237,6 +273,26 @@ class LenderLoansDisplayManager
                     'monthlyRepaymentAmount' => $projectLoans['monthly_repayment_amount'],
                     'numberOfLoansInDebt'    => in_array($project->getIdProject(), $projectsInDept) ? $projectLoans['nb_loan'] : 0
                 ];
+            } elseif (in_array($projectLoans['project_status'], [ProjectsStatus::BID_TERMINATED, ProjectsStatus::FUNDE])) {
+                $project        = $projectRepository->find($projectLoans['id_project']);
+                $loanStatusInfo = $this->getLenderLoanStatusToDisplay($project);
+
+                $lenderProjectLoans[] = [
+                    'id'                     => $projectLoans['id_project'],
+                    'name'                   => $projectLoans['title'],
+                    'loanStatusLabel'        => $loanStatusInfo['statusLabel'],
+                    'amount'                 => round($projectLoans['amount']),
+                    'risk'                   => $projectLoans['risk'],
+                    'rate'                   => round($projectLoans['rate'], 1),
+                    'startDate'              => '',
+                    'loanStatus'             => $loanStatusInfo['status'],
+                    'isCloseOutNetting'      => false,
+                    'finalRepaymentDate'     => '',
+                    'nextRepaymentDate'      => '',
+                    'endDate'                => '',
+                    'monthlyRepaymentAmount' => '',
+                    'numberOfLoansInDebt'    => 0
+                ];
             }
         }
 
@@ -287,6 +343,11 @@ class LenderLoansDisplayManager
             case ProjectsStatus::REMBOURSEMENT_ANTICIPE:
                 $statusToDisplay = self::LOAN_STATUS_DISPLAY_COMPLETED;
                 $loanStatusLabel = $this->translator->trans('lender-operations_detailed-loan-status-label-early-r');
+                break;
+            case ProjectsStatus::BID_TERMINATED:
+            case ProjectsStatus::FUNDE:
+                $statusToDisplay = self::LOAN_STATUS_DISPLAY_PENDING;
+                $loanStatusLabel = $this->translator->trans('lender-operations_detailed-loan-status-label-pending');
                 break;
             case ProjectsStatus::REMBOURSEMENT:
             default:

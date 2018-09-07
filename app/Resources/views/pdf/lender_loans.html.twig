@@ -134,7 +134,11 @@
                     <td class="item-date">
                         {{ loan.startDate }}
                     </td>
-                    {% if constant('\\Unilend\\Bundle\\FrontBundle\\Service\\LenderLoansDisplayManager::LOAN_STATUS_DISPLAY_COMPLETED') == loan.loanStatus %}
+                    {% if constant('\\Unilend\\Bundle\\FrontBundle\\Service\\LenderLoansDisplayManager::LOAN_STATUS_DISPLAY_PENDING') == loan.loanStatus %}
+                        <td colspan="3" class="item-date">
+                            {% trans %} lender-loans_pdf-project-status-label-pending {% endtrans %}
+                        </td>
+                    {% elseif constant('\\Unilend\\Bundle\\FrontBundle\\Service\\LenderLoansDisplayManager::LOAN_STATUS_DISPLAY_COMPLETED') == loan.loanStatus %}
                         <td colspan="3" class="item-date">
                             {% if loan.isCloseOutNetting %}
                                 {% trans with {'%date%': loan.finalRepaymentDate} %} lender-loans_pdf-project-status-label-collected-on-date {% endtrans %}
