@@ -125,16 +125,6 @@
   }
 }
 
-// Security
-.message-security {
-  @include message($bg-color: $c-bg5, $text-color: $c-t1, $icon-color: $c-t1, $show-icon: true);
-
-  &:before {
-    //content: '\e945'; // Lock
-    content: $fa-lock-u64;
-  }
-}
-
 // Error
 .message-error {
   @include message($bg-color: $c-error, $text-color: $c-white, $icon-color: $c-white, $show-icon: true);

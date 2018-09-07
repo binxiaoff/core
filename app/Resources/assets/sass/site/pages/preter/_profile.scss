@@ -1,0 +1,45 @@
+
+@mixin security-icon-blocks {
+  position: relative;
+  padding: 20px;
+  text-align: left;
+
+  @include devices('md', 'lg') {
+    padding: 30px;
+  }
+
+  &:before {
+    display: block;
+    padding: 0 0 10px;
+
+    font-family: $ff-icon;
+    font-size: 50px;
+    line-height: 50px;
+    text-align: center;
+    vertical-align: middle;
+  }
+
+  @include devices('md', 'lg') {
+    padding-left: 120px;
+
+    &:before {
+      width: 50px;
+      padding: 25px 0 25px 40px;
+
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+
+      text-align: left;
+    }
+  }
+}
+
+.profile-security-password-explanation {
+  @include security-icon-blocks;
+
+  &:before {
+    content: $fa-lock-u64;
+  }
+}
