@@ -161,6 +161,9 @@ class AttachmentManager
      */
     private function outputExcel(Attachment $attachment): void
     {
+        // Higher value for big files
+        ini_set('pcre.backtrack_limit', '10000000');
+
         try {
             $path          = $this->getFullPath($attachment);
             $temporaryPath = $this->tmpDirectory . '/' . uniqid() . '.pdf';
