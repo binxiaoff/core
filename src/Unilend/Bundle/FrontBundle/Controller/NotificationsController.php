@@ -6,19 +6,21 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\{JsonResponse, Request};
 use Symfony\Component\Routing\Annotation\Route;
-use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
-use Unilend\Bundle\FrontBundle\Security\User\UserLender;
+use Symfony\Component\Security\Core\User\UserInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{Clients, WalletType};
 
 class NotificationsController extends Controller
 {
     /**
      * @Route("/notifications/update", name="notifications_update", methods={"POST"})
      * @Security("has_role('ROLE_LENDER')")
-     * @param Request $request
+     *
+     * @param Request                    $request
+     * @param UserInterface|Clients|null $client
      *
      * @return JsonResponse
      */
-    public function updateAction(Request $request): JsonResponse
+    public function updateAction(Request $request, ?UserInterface $client): JsonResponse
     {
         $action = $request->request->get('action');
         $list   = $request->request->get('list');
@@ -31,11 +33,9 @@ class NotificationsController extends Controller
             ]);
         }
 
-        /** @var UserLender $user */
-        $user                    = $this->getUser();
         $entityManager           = $this->get('doctrine.orm.entity_manager');
         $notificationsRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Notifications');
-        $wallet                  = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($user->getClientId(), WalletType::LENDER);
+        $wallet                  = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
 
         switch ($action) {
             case 'all_read':
@@ -62,11 +62,12 @@ class NotificationsController extends Controller
      * @Route("/notifications/pagination", name="notifications_pagination", methods={"GET"})
      * @Security("has_role('ROLE_LENDER')")
      *
-     * @param Request $request
+     * @param request                    $request
+     * @param userinterface|clients|null $client
      *
      * @return JsonResponse
      */
-    public function paginationAction(Request $request): JsonResponse
+    public function paginationAction(Request $request, ?UserInterface $client): JsonResponse
     {
         $perPage     = $request->query->getInt('perPage');
         $currentPage = $request->query->getInt('currentPage');
@@ -79,16 +80,12 @@ class NotificationsController extends Controller
             ]);
         }
 
-        /** @var UserLender $user */
-        $user                        = $this->getUser();
-        $entityManager               = $this->get('doctrine.orm.entity_manager');
         $notificationsDisplayManager = $this->get('unilend.frontbundle.notification_display_manager');
-        $wallet                      = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($user->getClientId(), WalletType::LENDER);
         $start                       = $perPage * ($currentPage - 1) + 1;
         $length                      = $perPage;
 
         return new JsonResponse([
-            'notifications' => $notificationsDisplayManager->getLenderNotifications($wallet->getIdClient(), $start, $length),
+            'notifications' => $notificationsDisplayManager->getLenderNotifications($client, $start, $length),
             'pagination'    => [
                 'perPage'     => $perPage,
                 'currentPage' => $currentPage

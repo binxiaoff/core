@@ -22,7 +22,7 @@
             </tr>
             <tr>
                 <th>Secteur d'activité</th>
-                <?php if ($this->companies->code_naf === \Unilend\Bundle\CoreBusinessBundle\Entity\Companies::NAF_CODE_NO_ACTIVITY) : ?>
+                <?php if ($this->companies->code_naf === \Unilend\Bundle\CoreBusinessBundle\Entity\Companies::NAF_CODE_NO_ACTIVITY || empty($this->companies->sector)) : ?>
                     <td> - </td>
                 <?php else : ?>
                     <td><?= $this->translator->trans('company-sector_sector-' . $this->companies->sector) ?></td>

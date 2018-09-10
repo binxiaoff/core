@@ -66,7 +66,7 @@ EOF
         foreach ($clients as $client) {
             foreach ($client->getAttachments() as $attachment) {
                 try {
-                    $isValidated = $this->validationManager->validateAttachement($attachment);
+                    $this->validationManager->validateAttachement($attachment);
                 } catch (\Exception $exception) {
                     $this->logger->error(
                         'An error occurred during sending attachment to GreenPoint - Message: ' . $exception->getMessage() . ' - Code: ' . $exception->getCode(), [
@@ -76,23 +76,20 @@ EOF
                         'line'      => $exception->getLine(),
                         'id_client' => $client->getIdClient()
                     ]);
-                    $isValidated = false;
                 }
             }
 
-            if ($isValidated) {
-                try {
-                    $this->validationManager->saveClientKycStatus($client);
-                } catch (\Exception $exception) {
-                    $this->logger->error(
-                        'An error occurred during getting of KYC status from GreenPoint - Message: ' . $exception->getMessage() . ' - Code: ' . $exception->getCode(), [
-                        'class'     => __CLASS__,
-                        'function'  => __FUNCTION__,
-                        'file'      => $exception->getFile(),
-                        'line'      => $exception->getLine(),
-                        'id_client' => $client->getIdClient()
-                    ]);
-                }
+            try {
+                $this->validationManager->saveClientKycStatus($client);
+            } catch (\Exception $exception) {
+                $this->logger->error(
+                    'An error occurred during getting of KYC status from GreenPoint - Message: ' . $exception->getMessage() . ' - Code: ' . $exception->getCode(), [
+                    'class'     => __CLASS__,
+                    'function'  => __FUNCTION__,
+                    'file'      => $exception->getFile(),
+                    'line'      => $exception->getLine(),
+                    'id_client' => $client->getIdClient()
+                ]);
             }
         }
     }

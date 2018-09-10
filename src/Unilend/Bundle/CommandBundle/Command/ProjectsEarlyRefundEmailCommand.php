@@ -93,10 +93,9 @@ class ProjectsEarlyRefundEmailCommand extends ContainerAwareCommand
             foreach ($projectLenders as $projectLender) {
                 $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->find($projectLender['id_lender']);
                 /** @var Clients $client */
-                $client       = $wallet->getIdClient();
-                $clientStatus = $client->getIdClientStatusHistory()->getIdStatus()->getId();
+                $client = $wallet->getIdClient();
 
-                if (in_array($clientStatus, ClientsStatus::GRANTED_LOGIN)) {
+                if ($client->isGrantedLogin()) {
                     $lenderRemainingCapital = $operationRepository->getTotalEarlyRepaymentByLoan($projectLender['id_loan']);
 
                     $notification->type       = Notifications::TYPE_REPAYMENT;

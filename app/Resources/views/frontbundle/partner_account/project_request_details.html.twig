@@ -187,7 +187,7 @@
                                         </div><!-- /.form-field -->
                                     </div>
                                 </fieldset><!-- /.form-project-details-fieldset -->
-
+                                {# partner initialized in the parent template #}
                                 <fieldset class="form-project-details-fieldset">
                                     <h4>
                                         {% trans %} partner-project-details_description-section-title {% endtrans %}
@@ -196,7 +196,7 @@
                                     <div class="row">
                                         <div class="form-field col-lg-12 col-md-12{% if form.errors.project.description is defined %} ui-formvalidation-error{% endif %}">
                                             <div class="row">
-                                                <p>{{ ('partner-project-details_description-instructions-' ~ app.user.partner.label)|trans|raw }}</p>
+                                                <p>{{ ('partner-project-details_description-instructions-' ~ partner.label)|trans|raw }}</p>
                                             </div>
                                             <textarea id="form-project-details-description" name="description" class="input-field" rows="5" placeholder="{{ 'partner-project-details_description-placeholder'|trans|escape('html_attr') }}" data-formvalidation-input data-formvalidation-required="true">{{ form.values.project.description }}</textarea>
                                             {% if form.errors.project.description is defined %}
@@ -209,13 +209,13 @@
                                 <fieldset class="form-project-details-fieldset last">
                                     <h4>{% trans %} partner-project-details_documents-section-title {% endtrans %}</h4>
                                     <div class="row">
-                                        <p>{{ ('partner-project-details_documents-instructions-' ~ app.user.partner.label)|trans|raw }}</p>
+                                        <p>{{ ('partner-project-details_documents-instructions-' ~ partner.label)|trans|raw }}</p>
                                     </div>
                                     {% for attachment in attachments %}
                                         <div class="row">
                                             <div class="form-field">
                                                 <label>
-                                                    {{ ('partner-project-request_attachment-name-' ~ app.user.partner.id ~ '-' ~ attachment.attachmentType.id)|trans }}
+                                                    {{ ('partner-project-request_attachment-name-' ~ partner.id ~ '-' ~ attachment.attachmentType.id)|trans }}
                                                     {% if attachment.mandatory %}
                                                         <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                                                     {% endif %}

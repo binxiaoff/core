@@ -241,7 +241,7 @@
                 <th><label for="capital_social_etape2">Capital social</label></th>
                 <td><input type="text" name="capital_social_etape2" id="capital_social_etape2" class="input_large" value="<?= empty($this->companies->capital) ? '' : $this->ficelle->formatNumber($this->companies->capital, 0) ?>"></td>
                 <th><label for="creation_date_etape2">Date de création</label></th>
-                <td><input readonly="readonly" type="text" name="creation_date_etape2" id="creation_date_etape2" class="input_dp" value="<?= empty($this->companies->date_creation) || $this->companies->date_creation === '0000-00-00' ? '' : $this->dates->formatDate($this->companies->date_creation, 'd/m/Y') ?>"></td>
+                <td><input readonly="readonly" type="text" name="creation_date_etape2" id="creation_date_etape2" class="input_dp" value="<?= empty($this->companies->date_creation) || $this->companies->date_creation === '0000-00-00' ? '' : $this->formatDate($this->companies->date_creation, 'd/m/Y') ?>"></td>
             </tr>
             <tr>
                 <th colspan="4" style="text-align:left;"><br>Coordonnées du siège social</th>
@@ -404,7 +404,7 @@
             </tr>
             <tr>
                 <th><label for="date_naissance_gerant">Date de naissance</label></th>
-                <td colspan="3"><input type="text" name="date_naissance_gerant" id="date_naissance_gerant" class="input_dp" value="<?= empty($this->clients->naissance) || $this->clients->naissance === '0000-00-00' ? '' : $this->dates->formatDate($this->clients->naissance, 'd/m/Y') ?>"></td>
+                <td colspan="3"><input type="text" name="date_naissance_gerant" id="date_naissance_gerant" class="input_dp" value="<?= empty($this->clients->naissance) || $this->clients->naissance === '0000-00-00' ? '' : $this->formatDate($this->clients->naissance, 'd/m/Y') ?>"></td>
             </tr>
         </table>
         <div id="spinner_etape2" class="spinner_etape"></div>

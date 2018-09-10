@@ -92,7 +92,7 @@ class statsController extends bootstrap
                     $u['prenom'],
                     $u['email'],
                     $u['telephone'] . ' ' . $u['mobile'],
-                    $this->dates->formatDate($u['added'], 'd/m/Y'),
+                    date('d/m/Y', strtotime($u['added'])),
                     $u['etape_inscription_preteur'],
                     $u['source'],
                     $u['source2']

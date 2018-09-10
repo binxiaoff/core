@@ -629,7 +629,7 @@ class LenderProfileFormsHandler
     private function isUpdatingUsingExistingEmail(Clients $client, Clients $unattachedClient)
     {
         return $client->getEmail() !== $unattachedClient->getEmail()
-            && false === empty($this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->findByEmailAndStatus($client->getEmail(), ClientsStatus::GRANTED_LOGIN));
+            && false === empty($this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->findGrantedLoginAccountsByEmail($client->getEmail()));
     }
 
     /**

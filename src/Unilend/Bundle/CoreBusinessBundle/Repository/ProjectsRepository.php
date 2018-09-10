@@ -5,17 +5,11 @@ namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 use Doctrine\DBAL\Cache\QueryCacheProfile;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Driver\ResultStatement;
-use Doctrine\ORM\{
-    AbstractQuery, EntityRepository, Query\Expr\Join, Query\ResultSetMappingBuilder
-};
+use Doctrine\ORM\{AbstractQuery, EntityRepository, QueryBuilder, Query\Expr\Join, Query\ResultSetMappingBuilder};
 use PDO;
 use Psr\Log\InvalidArgumentException;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Bids, Clients, Companies, CompanyStatus, Echeanciers, EcheanciersEmprunteur, Factures, OperationType, Partner, Projects, ProjectsStatus, UnilendStats
-};
-use Unilend\Bundle\CoreBusinessBundle\Service\{
-    DebtCollectionMissionManager, ProjectCloseOutNettingManager
-};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{Bids, Clients, ClientsMandats, Companies, CompanyStatus, Echeanciers, EcheanciersEmprunteur, Factures, OperationType, Partner, Projects, ProjectsPouvoir, ProjectsStatus, UnilendStats, Users, Virements};
+use Unilend\Bundle\CoreBusinessBundle\Service\{DebtCollectionMissionManager, ProjectCloseOutNettingManager};
 use Unilend\librairies\CacheKeys;
 
 class ProjectsRepository extends EntityRepository
@@ -327,29 +321,13 @@ class ProjectsRepository extends EntityRepository
     }
 
     /**
-     * @param $siren
-     *
-     * @return Projects[]
-     */
-    public function findBySiren(string $siren): array
-    {
-        $queryBuilder = $this->createQueryBuilder('p');
-        $queryBuilder
-            ->innerJoin('UnilendCoreBusinessBundle:Companies', 'c', Join::WITH, 'p.idCompany = c.idCompany')
-            ->where('c.siren = :siren')
-            ->setParameter('siren', $siren);
-
-        return $queryBuilder->getQuery()->getResult();
-    }
-
-    /**
      * @param string         $siren
      * @param array          $projectStatus
      * @param \DateTime|null $createdBefore
      *
      * @return Projects[]
      */
-    public function findBySirenAndStatus(string $siren, array $projectStatus = [], ?\DateTime $createdBefore = null): array
+    public function findBySiren(string $siren, array $projectStatus = [], ?\DateTime $createdBefore = null): array
     {
         $queryBuilder = $this->createQueryBuilder('p');
         $queryBuilder
@@ -367,6 +345,31 @@ class ProjectsRepository extends EntityRepository
             $queryBuilder
                 ->andWhere('p.added <= :createdBefore')
                 ->setParameter('createdBefore', $createdBefore);
+        }
+
+        return $queryBuilder->getQuery()->getResult();
+    }
+
+    /**
+     * @param Companies|int $company
+     * @param array         $projectStatus
+     *
+     * @return Projects[]
+     */
+    public function findByCompany($company, array $projectStatus = []): array
+    {
+        $queryBuilder = $this->createQueryBuilder('p');
+        $queryBuilder
+            ->where('p.idCompany = :company')
+            ->setParameter('company', $company)
+            ->orderBy('p.status', 'DESC')
+            ->addOrderBy('p.dateRetrait', 'DESC')
+            ->addOrderBy('p.added', 'DESC');
+
+        if (false === empty($projectStatus)) {
+            $queryBuilder
+                ->andWhere('p.status IN (:projectStatus)')
+                ->setParameter('projectStatus', $projectStatus);
         }
 
         return $queryBuilder->getQuery()->getResult();
@@ -1638,5 +1641,164 @@ class ProjectsRepository extends EntityRepository
             ->addOrderBy('p.period', 'DESC');
 
         return $queryBuilder->getQuery()->getResult();
+    }
+
+    /**
+     * @param Users $user
+     *
+     * @return array
+     */
+    public function getSaleUserProjects(Users $user): array
+    {
+        $queryBuilder = $this->getSaleProjectsQueryBuilder(ProjectsStatus::SALES_TEAM);
+        $queryBuilder
+              ->andWhere('p.idCommercial = :userId')
+              ->setParameter('userId', $user->getIdUser());
+
+        return $queryBuilder->getQuery()->getArrayResult();
+    }
+
+    /**
+     * @param Users $user
+     *
+     * @return array
+     */
+    public function getSaleProjectsExcludingUser(Users $user): array
+    {
+        $queryBuilder = $this->getSaleProjectsQueryBuilder(ProjectsStatus::SALES_TEAM);
+        $queryBuilder
+          ->andWhere('p.idCommercial != :userId')
+          ->setParameter('userId', $user->getIdUser());
+
+        return $queryBuilder->getQuery()->getArrayResult();
+    }
+
+    /**
+     * @return array
+     */
+    public function getUpcomingSaleProjects(): array
+    {
+        $oneWeekAgo   = new \DateTime('-1 week');
+        $queryBuilder = $this->getSaleProjectsQueryBuilder(ProjectsStatus::SALES_TEAM_UPCOMING_STATUS);
+        $queryBuilder
+            ->andWhere(
+                $queryBuilder->expr()->orX(
+                    'p.status = :incompleteProjectStatus AND :oneWeekAgo < p.updated',
+                    'p.status != :incompleteProjectStatus'
+                )
+            )
+            ->setParameter('incompleteProjectStatus', ProjectsStatus::INCOMPLETE_REQUEST)
+            ->setParameter('oneWeekAgo', $oneWeekAgo);
+
+        return $queryBuilder->getQuery()->getArrayResult();
+    }
+
+    /**
+     * @return array
+     */
+    public function getProjectsInRepaymentWithPendingMandate(): array
+    {
+        $queryBuilder = $this->getSaleProjectsQueryBuilder([ProjectsStatus::REMBOURSEMENT]);
+        $queryBuilder
+             ->innerJoin('UnilendCoreBusinessBundle:ClientsMandats', 'cm', Join::WITH, 'cm.idProject = p.idProject')
+             ->andWhere('cm.status = :pending')
+             ->setParameter('pending', ClientsMandats::STATUS_PENDING)
+             ->addOrderBy('cm.added', 'ASC');
+
+        return $queryBuilder->getQuery()->getArrayResult();
+    }
+
+    /**
+     * @return array
+     */
+    public function getProjectsWithFundsToRelease(): array
+    {
+        $wireTransferExistSubQuery = $this->getEntityManager()
+            ->createQueryBuilder()
+            ->select('v')
+            ->from('UnilendCoreBusinessBundle:Virements', 'v')
+            ->where('v.idProject = p.idProject')
+            ->andWhere('v.type = :borrower');
+
+        $queryBuilder = $this->getSaleProjectsQueryBuilder([ProjectsStatus::REMBOURSEMENT]);
+        $queryBuilder
+            ->innerJoin('UnilendCoreBusinessBundle:ProjectsPouvoir', 'pp', Join::WITH, 'pp.idProject = p.idProject')
+            ->andWhere('pp.statusRemb = :repaymentStatus')
+            ->andWhere($queryBuilder->expr()->not($queryBuilder->expr()->exists($wireTransferExistSubQuery->getDQL())))
+            ->setParameter('repaymentStatus', ProjectsPouvoir::STATUS_REPAYMENT_VALIDATED)
+            ->setParameter('borrower', Virements::TYPE_BORROWER);
+
+        return $queryBuilder->getQuery()->getArrayResult();
+    }
+
+    /**
+     * @param array $status
+     *
+     * @return QueryBuilder
+     */
+    private function getSaleProjectsQueryBuilder(array $status): QueryBuilder
+    {
+        $memoContentSubQuery = $this->getEntityManager()
+            ->createQueryBuilder()
+            ->select('pc_content.content')
+            ->from('UnilendCoreBusinessBundle:ProjectsComments', 'pc_content')
+            ->where('pc_content.idProject = p.idProject')
+            ->orderBy('pc_content.added', 'DESC')
+            ->orderBy('pc_content.idProjectComment', 'DESC')
+            ->setMaxResults(1);
+
+        $memoAddedSubQuery = $this->getEntityManager()
+            ->createQueryBuilder()
+            ->select('pc_added.added')
+            ->from('UnilendCoreBusinessBundle:ProjectsComments', 'pc_added')
+            ->where('pc_added.idProject = p.idProject')
+            ->orderBy('pc_added.added', 'DESC')
+            ->orderBy('pc_added.idProjectComment', 'DESC')
+            ->setMaxResults(1);
+
+        $memoAuthorSubQuery = $this->getEntityManager()
+            ->createQueryBuilder()
+            ->select('CONCAT(u_memo.firstname, \' \', u_memo.name)')
+            ->from('UnilendCoreBusinessBundle:ProjectsComments', 'pc_user')
+            ->innerJoin('UnilendCoreBusinessBundle:Users', 'u_memo', 'pc_user.idUser = u_memo.idUser')
+            ->where('pc_user.idProject = p.idProject')
+            ->orderBy('pc_user.added', 'DESC')
+            ->orderBy('pc_user.idProjectComment', 'DESC')
+            ->setMaxResults(1);
+
+        $queryBuilder = $this->createQueryBuilder('p')
+            ->select('
+                p.idProject AS id_project,
+                p.amount AS amount,
+                p.period AS duration,
+                p.status AS status,
+                ps.label AS status_label,
+                co.name AS company_name,
+                co.siren AS siren,
+                CONCAT(cl.prenom, \' \', cl.nom) AS client_name,
+                cl.telephone AS client_phone,
+                p.added AS creation,
+                CASE WHEN pa.logo IS NULL THEN \'\' ELSE pa.logo END AS partner_logo,
+                CASE WHEN u.idUser IS NULL THEN \'\' ELSE CONCAT(u.firstname, \' \', u.name) END AS assignee,
+                IFNULL((' . $memoContentSubQuery->getQuery()->getDQL() . '), \'\') AS memo_content,
+                IFNULL((' . $memoAddedSubQuery->getQuery()->getDQL() . '), \'\') AS memo_datetime,
+                IFNULL((' . $memoAuthorSubQuery->getQuery()->getDQL() . '), \'\') AS memo_author,
+                IFNULL(pn.preScoring, -1) AS priority'
+            )
+             ->innerJoin('UnilendCoreBusinessBundle:Companies', 'co', Join::WITH, 'p.idCompany = co.idCompany')
+             ->innerJoin('UnilendCoreBusinessBundle:Clients', 'cl', Join::WITH, 'co.idClientOwner = cl.idClient')
+             ->innerJoin('UnilendCoreBusinessBundle:ProjectsStatus', 'ps', Join::WITH, 'p.status = ps.status')
+             ->leftJoin('UnilendCoreBusinessBundle:Users', 'u', Join::WITH, 'p.idCommercial = u.idUser')
+             ->leftJoin('UnilendCoreBusinessBundle:Partner', 'pa', Join::WITH, 'p.idPartner = pa.id')
+             ->leftJoin('UnilendCoreBusinessBundle:ProjectsNotes', 'pn', Join::WITH, 'p.idProject = pn.idProject')
+             ->where('p.status IN (:projectStatus)')
+             ->setParameter('projectStatus', $status, Connection::PARAM_INT_ARRAY)
+             ->addOrderBy('status', 'DESC')
+             ->addOrderBy('priority', 'DESC')
+             ->addOrderBy('amount', 'DESC')
+             ->addOrderBy('duration', 'DESC')
+             ->addOrderBy('creation', 'ASC');
+
+        return $queryBuilder;
     }
 }

@@ -3,6 +3,7 @@
 namespace Unilend\Bundle\FrontBundle\Security;
 
 use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\OptimisticLockException;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\{
     Cookie, RedirectResponse, Request
@@ -30,9 +31,6 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\{
     CIPManager, GoogleRecaptchaManager, LenderManager
-};
-use Unilend\Bundle\FrontBundle\Security\User\{
-    BaseUser, UserLender
 };
 
 class LoginAuthenticator extends AbstractFormLoginAuthenticator
@@ -166,11 +164,11 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
     public function getUser($credentials, UserProviderInterface $userProvider)
     {
         try {
-            $username = $userProvider->loadUserByUsername($credentials['username']);
+            $user = $userProvider->loadUserByUsername($credentials['username']);
         } catch (UsernameNotFoundException $exception) {
             throw new CustomUserMessageAuthenticationException('login-unknown');
         }
-        return $username;
+        return $user;
     }
 
     /**
@@ -202,20 +200,29 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
     {
         $request->getSession()->remove(self::SESSION_NAME_LOGIN_CAPTCHA);
 
-        /** @var BaseUser $user */
-        $user   = $token->getUser();
-        $client = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($user->getClientId());
+        /** @var Clients $client */
+        $client = $token->getUser();
 
-        // Update the password encoder if it's legacy
-        if ($user instanceof EncoderAwareInterface && (null !== $encoderName = $user->getEncoderName())) {
-            $user->useDefaultEncoder(); // force to use the default password encoder
+        // Force to use the default password encoder if it's legacy
+        if ($client instanceof EncoderAwareInterface && Clients::PASSWORD_ENCODER_MD5 === $client->getEncoderName()) {
+            $client->useDefaultEncoder();
             try {
-                $client->setPassword($this->securityPasswordEncoder->encodePassword($user, $this->getCredentials($request)['password']));
-            } catch (BadCredentialsException $exeption) {
+                $client->setPassword($this->securityPasswordEncoder->encodePassword($client, $this->getCredentials($request)['password']));
+            } catch (BadCredentialsException $exception) {
                 // hack for the old password which cannot pass the security check in encodePassword()
                 $client->setPassword(password_hash($this->getCredentials($request)['password'], PASSWORD_DEFAULT));
             }
-            $this->entityManager->flush($client);
+            try {
+                $this->entityManager->flush($client);
+            } catch (OptimisticLockException $exception) {
+                $this->logger->warning('Cannot save the re-encoded password. Error: ' . $exception->getMessage(), [
+                    'id_client' => $client->getIdClient(),
+                    'class'     => __CLASS__,
+                    'function'  => __FUNCTION__,
+                    'file'      => $exception->getFile(),
+                    'line'      => $exception->getLine()
+                ]);
+            }
         }
 
         $this->saveLogin($client);
@@ -245,7 +252,7 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
         } elseif ($needCipEvaluation) {
             $targetPath = $this->router->generate('cip_index');
         } else {
-            $targetPath = $this->getUserSpecificTargetPath($request, $providerKey, $user);
+            $targetPath = $this->getUserSpecificTargetPath($request, $providerKey, $client);
         }
 
         $response = new RedirectResponse($targetPath);
@@ -387,24 +394,24 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
     }
 
     /**
-     * @param Request  $request
-     * @param string   $providerKey
-     * @param BaseUser $user
+     * @param Request $request
+     * @param string  $providerKey
+     * @param Clients $client
      *
      * @return string
      */
-    private function getUserSpecificTargetPath(Request $request, string $providerKey, BaseUser $user): string
+    private function getUserSpecificTargetPath(Request $request, string $providerKey, Clients $client): string
     {
         $targetPath = $this->getTargetPath($request->getSession(), $providerKey);
 
         if (! $targetPath) {
-            $targetPath = $this->getDefaultSuccessRedirectUrl($request, $user);
+            $targetPath = $this->getDefaultSuccessRedirectUrl($request, $client);
         }
 
-        if ($user instanceof UserLender) {
-            switch ($user->getClientStatus()) {
+        if ($client->isLender()) {
+            switch ($client->getIdClientStatusHistory()->getIdStatus()->getId()) {
                 case ClientsStatus::STATUS_CREATION:
-                    $targetPath = $this->router->generate('lender_subscription_documents', ['clientHash' => $user->getHash()]);
+                    $targetPath = $this->router->generate('lender_subscription_documents', ['clientHash' => $client->getHash()]);
                     break;
                 case ClientsStatus::STATUS_COMPLETENESS:
                 case ClientsStatus::STATUS_COMPLETENESS_REMINDER:

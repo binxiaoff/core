@@ -88,7 +88,7 @@ if (1 === count($formTypes) && array_values($formTypes)[0] == company_tax_form_t
                     <tr>
                         <th>Solvabilité</th>
                         <?php foreach ($this->lbilans as $aAnnualAccounts) : ?>
-                            <th width="200"><?= $this->dates->formatDate($aAnnualAccounts['cloture_exercice_fiscal'], 'd/m/Y') ?> (<?= $aAnnualAccounts['duree_exercice_fiscal'] ?> mois)</th>
+                            <th width="200"><?= $this->formatDate($aAnnualAccounts['cloture_exercice_fiscal'], 'd/m/Y') ?> (<?= $aAnnualAccounts['duree_exercice_fiscal'] ?> mois)</th>
                             <?php if ($aAnnualAccounts['id_bilan'] != $iOldestAnnualAccountsId) { ?><th width="50"></th><?php } ?>
                         <?php endforeach; ?>
                     </tr>
@@ -334,7 +334,7 @@ if (1 === count($formTypes) && array_values($formTypes)[0] == company_tax_form_t
                     <tr>
                         <th>Endettement et structure</th>
                         <?php foreach ($this->lbilans as $aAnnualAccounts) : ?>
-                            <th width="200"><?= $this->dates->formatDate($aAnnualAccounts['cloture_exercice_fiscal'], 'd/m/Y') ?> (<?= $aAnnualAccounts['duree_exercice_fiscal'] ?> mois)</th>
+                            <th width="200"><?= $this->formatDate($aAnnualAccounts['cloture_exercice_fiscal'], 'd/m/Y') ?> (<?= $aAnnualAccounts['duree_exercice_fiscal'] ?> mois)</th>
                             <?php if ($aAnnualAccounts['id_bilan'] != $iOldestAnnualAccountsId) { ?><th width="50"></th><?php } ?>
                         <?php endforeach; ?>
                     </tr>
@@ -544,7 +544,7 @@ if (1 === count($formTypes) && array_values($formTypes)[0] == company_tax_form_t
                     <tr>
                         <th>Rotations</th>
                         <?php foreach ($this->lbilans as $aAnnualAccounts) : ?>
-                            <th width="200"><?= $this->dates->formatDate($aAnnualAccounts['cloture_exercice_fiscal'], 'd/m/Y') ?> (<?= $aAnnualAccounts['duree_exercice_fiscal'] ?> mois)</th>
+                            <th width="200"><?= $this->formatDate($aAnnualAccounts['cloture_exercice_fiscal'], 'd/m/Y') ?> (<?= $aAnnualAccounts['duree_exercice_fiscal'] ?> mois)</th>
                             <?php if ($aAnnualAccounts['id_bilan'] != $iOldestAnnualAccountsId) { ?><th width="50"></th><?php } ?>
                         <?php endforeach; ?>
                     </tr>
@@ -853,7 +853,7 @@ if (1 === count($formTypes) && array_values($formTypes)[0] == company_tax_form_t
                     <tr>
                         <th>Rentabilité</th>
                         <?php foreach ($this->lbilans as $aAnnualAccounts) : ?>
-                            <th width="200"><?= $this->dates->formatDate($aAnnualAccounts['cloture_exercice_fiscal'], 'd/m/Y') ?> (<?= $aAnnualAccounts['duree_exercice_fiscal'] ?> mois)</th>
+                            <th width="200"><?= $this->formatDate($aAnnualAccounts['cloture_exercice_fiscal'], 'd/m/Y') ?> (<?= $aAnnualAccounts['duree_exercice_fiscal'] ?> mois)</th>
                             <?php if ($aAnnualAccounts['id_bilan'] != $iOldestAnnualAccountsId) { ?><th width="50"></th><?php } ?>
                         <?php endforeach; ?>
                     </tr>

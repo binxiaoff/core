@@ -1,7 +1,7 @@
 security:
     encoders:
-        Unilend\Bundle\FrontBundle\Security\User\BaseUser:
-            id: unilend.frontbundle.security.password_encoder
+        Unilend\Bundle\CoreBusinessBundle\Entity\Clients:
+            id: Unilend\Bundle\FrontBundle\Security\BCryptPasswordEncoder
         md5:
             algorithm: md5
             encode_as_base64: false
@@ -9,7 +9,7 @@ security:
 
     providers:
         unilend_front_bundle:
-            id: unilend.frontbundle.security.user_provider
+            id: Unilend\Bundle\FrontBundle\Security\User\UserProvider
     firewalls:
         dev:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
@@ -20,11 +20,12 @@ security:
             anonymous: ~
             guard:
                 authenticators:
-                    - unilend.frontbundle.security.login_authenticator
+                    - Unilend\Bundle\FrontBundle\Security\LoginAuthenticator
+            user_checker: Unilend\Bundle\FrontBundle\Security\User\UserChecker
             logout:
                 path: logout
                 target: /
-                success_handler: unilend.frontbundle.security.logout.success_handler
+                success_handler: Unilend\Bundle\FrontBundle\Security\LogoutSuccessHandler
 
     access_denied_url: /login
 
