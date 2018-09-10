@@ -6,10 +6,10 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\{JsonResponse, Request, Response};
 use Symfony\Component\Routing\Annotation\Route;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{Companies, ProjectAbandonReason, Projects, ProjectsComments, ProjectsStatus};
+use Symfony\Component\Security\Core\User\UserInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{Clients, ProjectAbandonReason, Projects, ProjectsComments, ProjectsStatus};
 use Unilend\Bundle\CoreBusinessBundle\Repository\ProjectsRepository;
 use Unilend\Bundle\CoreBusinessBundle\Service\TermsOfSaleManager;
-use Unilend\Bundle\FrontBundle\Security\User\UserPartner;
 
 class ProjectsListController extends Controller
 {
@@ -17,18 +17,20 @@ class ProjectsListController extends Controller
      * @Route("partenaire/emprunteurs", name="partner_projects_list", methods={"GET"})
      * @Security("has_role('ROLE_PARTNER')")
      *
+     * @param UserInterface|Clients|null $partnerUser
+     *
      * @return Response
      */
-    public function projectsListAction(): Response
+    public function projectsListAction(?UserInterface $partnerUser): Response
     {
-        /** @var UserPartner $user */
-        $user          = $this->getUser();
-        $entityManager = $this->get('doctrine.orm.entity_manager');
-        $companies     = $this->getUserCompanies();
-        $submitter     = null;
+        $entityManager  = $this->get('doctrine.orm.entity_manager');
+        $partnerManager = $this->get('unilend.service.partner_manager');
 
-        if (false === in_array(UserPartner::ROLE_ADMIN, $user->getRoles())) {
-            $submitter = $user->getClientId();
+        $companies = $partnerManager->getUserCompanies($partnerUser);
+        $submitter = null;
+
+        if (false === in_array(Clients::ROLE_PARTNER_ADMIN, $partnerUser->getRoles())) {
+            $submitter = $partnerUser->getIdClient();
         }
 
         /** @var ProjectsRepository $projectRepository */
@@ -51,11 +53,11 @@ class ProjectsListController extends Controller
         unset($borrowers);
 
         return $this->render('/partner_account/projects_list.html.twig', [
-            'prospects'          => $this->formatProject($prospects, false),
-            'incompleteProjects' => $this->formatProject($incompleteProjects, false),
-            'completeProjects'   => $this->formatProject($completeProjects, true),
-            'abandoned'          => $this->formatProject($abandoned, true, true),
-            'rejected'           => $this->formatProject($rejected, true),
+            'prospects'          => $this->formatProject($partnerUser, $prospects, false),
+            'incompleteProjects' => $this->formatProject($partnerUser, $incompleteProjects, false),
+            'completeProjects'   => $this->formatProject($partnerUser, $completeProjects, true),
+            'abandoned'          => $this->formatProject($partnerUser, $abandoned, true, true),
+            'rejected'           => $this->formatProject($partnerUser, $rejected, true),
             'abandonReasons'     => $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectAbandonReason')
                 ->findBy(['status' => ProjectAbandonReason::STATUS_ONLINE], ['reason' => 'ASC'])
         ]);
@@ -65,11 +67,12 @@ class ProjectsListController extends Controller
      * @Route("partenaire/emprunteurs", name="partner_project_tos", condition="request.isXmlHttpRequest()", methods={"POST"})
      * @Security("has_role('ROLE_PARTNER')")
      *
-     * @param Request $request
+     * @param Request                    $request
+     * @param UserInterface|Clients|null $partnerUser
      *
      * @return Response
      */
-    public function projectRequestDetailsFormAction(Request $request): Response
+    public function projectRequestDetailsFormAction(Request $request, ?UserInterface $partnerUser): Response
     {
         $hash = $request->request->getAlnum('hash');
 
@@ -79,9 +82,11 @@ class ProjectsListController extends Controller
 
         $translator        = $this->get('translator');
         $entityManager     = $this->get('doctrine.orm.entity_manager');
+        $partnerManager    = $this->get('unilend.service.partner_manager');
+
         $projectRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
         $project           = $projectRepository->findOneBy(['hash' => $hash]);
-        $userCompanies     = $this->getUserCompanies();
+        $userCompanies     = $partnerManager->getUserCompanies($partnerUser);
 
         if (false === ($project instanceof Projects) || false === in_array($project->getIdCompanySubmitter(), $userCompanies)) {
             return new JsonResponse([
@@ -125,49 +130,14 @@ class ProjectsListController extends Controller
     }
 
     /**
-     * @return Companies[]
-     */
-    private function getUserCompanies()
-    {
-        /** @var UserPartner $user */
-        $user      = $this->getUser();
-        $companies = [$user->getCompany()];
-
-        if (in_array(UserPartner::ROLE_ADMIN, $user->getRoles())) {
-            $companies = $this->getCompanyTree($user->getCompany(), $companies);
-        }
-
-        return $companies;
-    }
-
-    /**
-     * @param Companies $rootCompany
-     * @param array     $tree
-     *
-     * @return Companies[]
-     */
-    private function getCompanyTree(Companies $rootCompany, array $tree)
-    {
-        $childCompanies = $this->get('doctrine.orm.entity_manager')
-            ->getRepository('UnilendCoreBusinessBundle:Companies')
-            ->findBy(['idParentCompany' => $rootCompany]);
-
-        foreach ($childCompanies as $company) {
-            $tree[] = $company;
-            $tree = $this->getCompanyTree($company, $tree);
-        }
-
-        return $tree;
-    }
-
-    /**
+     * @param Clients    $client
      * @param Projects[] $projects
      * @param bool       $loadNotes
      * @param bool       $abandoned
      *
      * @return array
      */
-    private function formatProject(array $projects, $loadNotes, $abandoned = false)
+    private function formatProject(Clients $client, array $projects, $loadNotes, $abandoned = false): array
     {
         $display    = [];
         $translator = $this->get('translator');
@@ -188,7 +158,7 @@ class ProjectsListController extends Controller
                 ],
                 'motive'     => $project->getIdBorrowingMotive() ? $translator->trans('borrowing-motive_motive-' . $project->getIdBorrowingMotive()) : '',
                 'memos'      => $loadNotes ? $this->formatNotes($project->getPublicNotes()) : [],
-                'hasChanged' => $loadNotes ? $this->hasProjectChanged($project) : false,
+                'hasChanged' => $loadNotes ? $this->hasProjectChanged($project, $client) : false,
                 'tos'        => []
             ];
 
@@ -234,14 +204,15 @@ class ProjectsListController extends Controller
 
     /**
      * @param Projects $project
+     * @param Clients  $client
      *
      * @return bool
      */
-    private function hasProjectChanged(Projects $project)
+    private function hasProjectChanged(Projects $project, Clients $client): bool
     {
         $entityManager                  = $this->get('doctrine.orm.entity_manager');
         $projectStatusRepositoryHistory = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatusHistory');
-        $lastLoginDate                  = $this->getUser()->getLastLoginDate();
+        $lastLoginDate                  = $client->getLastlogin();
         $notes                          = $project->getPublicNotes();
 
         return (

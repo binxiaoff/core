@@ -7,6 +7,8 @@ use Doctrine\ORM\Mapping as ORM;
 use Hashids\Hashids;
 use Ramsey\Uuid\Exception\UnsatisfiedDependencyException;
 use Ramsey\Uuid\Uuid;
+use Symfony\Component\Security\Core\Encoder\EncoderAwareInterface;
+use Symfony\Component\Security\Core\User\{EquatableInterface, UserInterface};
 
 /**
  * Clients
@@ -15,7 +17,7 @@ use Ramsey\Uuid\Uuid;
  * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\ClientsRepository")
  * @ORM\HasLifecycleCallbacks
  */
-class Clients
+class Clients implements UserInterface, EquatableInterface, EncoderAwareInterface
 {
     const TYPE_PERSON                 = 1;
     const TYPE_LEGAL_ENTITY           = 2;
@@ -37,6 +39,15 @@ class Clients
     const ORIGIN_WELCOME_OFFER      = 1;
     const ORIGIN_WELCOME_OFFER_HOME = 2;
     const ORIGIN_WELCOME_OFFER_LP   = 3;
+
+    const ROLE_USER            = 'ROLE_USER';
+    const ROLE_LENDER          = 'ROLE_LENDER';
+    const ROLE_BORROWER        = 'ROLE_BORROWER';
+    const ROLE_PARTNER_DEFAULT = 'ROLE_PARTNER';
+    const ROLE_PARTNER_ADMIN   = 'ROLE_PARTNER_ADMIN';
+    const ROLE_PARTNER_USER    = 'ROLE_PARTNER_USER';
+
+    const PASSWORD_ENCODER_MD5 = 'md5';
 
     /**
      * @var string
@@ -351,6 +362,18 @@ class Clients
      * @ORM\JoinColumn(name="id_postal_address", referencedColumnName="id")
      */
     private $idPostalAddress;
+
+    /**
+     * @var CompanyClient|null
+     *
+     * @ORM\OneToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\CompanyClient", mappedBy="idClient")
+     */
+    private $companyClient;
+
+    /**
+     * @var bool
+     */
+    private $userOnlyDefaultEncoder;
 
     /**
      * Clients constructor.
@@ -1426,6 +1449,7 @@ class Clients
     }
 
     //@todo once sponsor codes are repaired this method should be private
+
     /**
      * @return null|string
      */
@@ -1532,5 +1556,186 @@ class Clients
         $this->personalDataUpdated = $personalDataUpdated;
 
         return $this;
+    }
+
+    /**
+     * @return CompanyClient|null
+     */
+    public function getCompanyClient(): ?CompanyClient
+    {
+        return $this->companyClient;
+    }
+
+    /**
+     * @return string
+     */
+    public function getInitials(): string
+    {
+        return mb_substr($this->getPrenom(), 0, 1) . mb_substr($this->getNom(), 0, 1);
+    }
+
+    /**
+     * @return bool
+     */
+    public function isGrantedLogin(): bool
+    {
+        return in_array($this->getIdClientStatusHistory()->getIdStatus()->getId(), ClientsStatus::GRANTED_LOGIN);
+    }
+
+    /**
+     * @return bool
+     */
+    public function isGrantedLenderRead(): bool
+    {
+        return in_array($this->getIdClientStatusHistory()->getIdStatus()->getId(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ);
+    }
+
+    /**
+     * @return bool
+     *
+     */
+    public function isGrantedLenderDeposit(): bool
+    {
+        return in_array($this->getIdClientStatusHistory()->getIdStatus()->getId(), ClientsStatus::GRANTED_LENDER_DEPOSIT);
+    }
+
+    /**
+     * @return bool
+     */
+    public function isGrantedLenderWithdraw(): bool
+    {
+        return in_array($this->getIdClientStatusHistory()->getIdStatus()->getId(), ClientsStatus::GRANTED_LENDER_WITHDRAW);
+    }
+
+    /**
+     * @return bool
+     */
+    public function isGreantedLenderSponsorship(): bool
+    {
+        return in_array($this->getIdClientStatusHistory()->getIdStatus()->getId(), ClientsStatus::GRANTED_LENDER_SPONSORSHIP);
+    }
+
+    /**
+     * @return bool
+     */
+    public function isValidated(): bool
+    {
+        return $this->getIdClientStatusHistory()->getIdStatus()->getId() === ClientsStatus::STATUS_VALIDATED;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isInCompleteness(): bool
+    {
+        return in_array($this->getIdClientStatusHistory()->getIdStatus()->getId(), [ClientsStatus::STATUS_COMPLETENESS, ClientsStatus::STATUS_COMPLETENESS_REMINDER]);
+    }
+
+    /**
+     * @return bool
+     */
+    public function isInSubscription(): bool
+    {
+        return $this->getIdClientStatusHistory()->getIdStatus()->getId() === ClientsStatus::STATUS_CREATION;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isSuspended(): bool
+    {
+        return $this->getIdClientStatusHistory()->getIdStatus()->getId() === ClientsStatus::STATUS_SUSPENDED;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getEncoderName(): ?string
+    {
+        if (true !== $this->userOnlyDefaultEncoder && 1 === preg_match('/^[0-9a-f]{32}$/', $this->password)) {
+            return self::PASSWORD_ENCODER_MD5;
+        }
+
+        // For other users, use the default encoder
+        return null;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function isEqualTo(UserInterface $user): bool
+    {
+        if (false === $user instanceof Clients) {
+            return false;
+        }
+
+        if ($this->getHash() !== $user->getHash()) {
+            return false;
+        }
+
+        if ($this->getUsername() !== $user->getUsername() && $this->getPassword() !== $user->getPassword()) {
+            return false;
+        }
+
+        if (false === $user->isGrantedLogin()) {
+            return false; // The client has been changed to a critical status. He/she is no longer the client that we known as he/she was.
+        }
+
+        return true;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getRoles(): array
+    {
+        $roles = [self::ROLE_USER];
+
+        if ($this->isLender()) {
+            $roles[] = self::ROLE_LENDER;
+        }
+
+        if ($this->isBorrower()) {
+            $roles[] = self::ROLE_BORROWER;
+        }
+
+        if ($this->isPartner() && null !== $this->getCompanyClient()) {
+            $roles[] = self::ROLE_PARTNER_DEFAULT;
+            $roles[] = $this->getCompanyClient()->getRole();
+        }
+
+        return $roles;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getSalt(): string
+    {
+        return ''; // Since we use the BCrypt password encoder, the salt will be ignored. The auto-generated one is always the best.
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getUsername(): string
+    {
+        return $this->getEmail();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function eraseCredentials(): void
+    {
+        // Not yet Implemented
+    }
+
+    /**
+     * For backwards compatibility (for the user who has already MD5 encoded password), we force the user to use the default encoder (which is BCrypt), even though his/her encoder is MD5
+     */
+    public function useDefaultEncoder(): void
+    {
+        $this->userOnlyDefaultEncoder = true;
     }
 }

@@ -47,7 +47,7 @@ class GenerateLenderAcceptedTosCommand extends Command
     protected function configure(): void
     {
         $this
-            ->setName('lender:terms_of_sale:generate')
+            ->setName('unilend:lender:terms_of_sale:generate')
             ->setDescription('Generates terms of sale pdf document')
             ->setHelp(<<<EOF
 The <info>lender:terms_of_sale:generate</info> command generates the pdf version of accepted lenders terms of sale.

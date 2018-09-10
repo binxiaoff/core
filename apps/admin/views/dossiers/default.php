@@ -304,7 +304,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{Projects, ProjectsStatus};
                         <td><?= $p['id_project'] ?></td>
                         <td><a href="<?= $this->lurl ?>/emprunteurs/edit/<?= $p['id_client_owner'] ?>"><?= $p['siren'] ?></a></td>
                         <td><a href="<?= $this->lurl ?>/emprunteurs/edit/<?= $p['id_client_owner'] ?>"><?= $p['name'] ?></a></td>
-                        <td><?= $this->dates->formatDate($p['added'], 'd/m/Y') ?></td>
+                        <td><?= $this->formatDate($p['added'], 'd/m/Y') ?></td>
                         <td><?= $this->ficelle->formatNumber($p['amount'], 0) ?> €</td>
                         <td><?= empty($p['period']) ? '' : $p['period'] . ' mois' ?></td>
                         <td><?= $p['label'] ?></td>

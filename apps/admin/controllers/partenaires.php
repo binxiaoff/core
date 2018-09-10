@@ -619,11 +619,9 @@ class partenairesController extends bootstrap
             return null;
         }
 
-        $clientStatus = $companyClient->getIdClient()->getIdClientStatusHistory()->getIdStatus()->getId();
-
-        if ('activate' === $request->request->get('action') && ClientsStatus::STATUS_VALIDATED !== $clientStatus) {
+        if ('activate' === $request->request->get('action') && false === $companyClient->getIdClient()->isValidated()) {
             $clientsRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
-            $duplicates        = $clientsRepository->findByEmailAndStatus($companyClient->getIdClient()->getEmail(), ClientsStatus::GRANTED_LOGIN);
+            $duplicates        = $clientsRepository->findGrantedLoginAccountsByEmail($companyClient->getIdClient()->getEmail());
 
             if (count($duplicates)) {
                 $errors[] = 'Il existe déjà un compte en ligne avec cette adresse email';
@@ -674,9 +672,7 @@ class partenairesController extends bootstrap
             return null;
         }
 
-        $clientStatus = $companyClient->getIdClient()->getIdClientStatusHistory()->getIdStatus()->getId();
-
-        if (ClientsStatus::STATUS_VALIDATED !== $clientStatus) {
+        if (false === $companyClient->getIdClient()->isValidated()) {
             $errors[] = 'Cet utilisateur est désactivé. Vous devez d’abord le passer en ligne pour lui envoyer le mail de réinitialisation de mot de passe.';
             return null;
         }
@@ -742,7 +738,7 @@ class partenairesController extends bootstrap
             $errors[] = 'Vous devez renseigner une adresse email valide';
         }
         $clientsRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
-        $duplicates        = $clientsRepository->findByEmailAndStatus($email, ClientsStatus::GRANTED_LOGIN);
+        $duplicates        = $clientsRepository->findGrantedLoginAccountsByEmail($email);
 
         if (false === empty($duplicates) && (null === $companyClient->getIdClient() || $companyClient->getIdClient()->getEmail() !== $email)) {
             $errors[] = 'Il existe déjà un compte en ligne avec cette adresse email';

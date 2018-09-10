@@ -4,12 +4,8 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\Asset\Packages;
-use Symfony\Component\Routing\RouterInterface;
-use Symfony\Component\Translation\TranslatorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    ClientsGestionTypeNotif, CompanyStatus, Notifications, Projects, ProjectsStatus, Wallet
-};
+use Symfony\Component\{Asset\Packages, Routing\RouterInterface, Translation\TranslatorInterface};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{ClientsGestionTypeNotif, CompanyStatus, Notifications, Projects, ProjectsStatus, Wallet};
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessageProvider;
 
@@ -85,32 +81,46 @@ class ProjectStatusNotificationSender
      */
     public function sendCloseOutNettingEmailToBorrower(Projects $project)
     {
-        $paymentSchedule      = $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur');
-        $overdueScheduleCount = $paymentSchedule->getOverdueScheduleCount($project);
-        if (0 === $overdueScheduleCount) {
-            throw new \Exception('Cannot send email "emprunteur-projet-statut-recouvrement" total overdue amount is empty on project: ' . $project->getIdProject());
+        $keywords               = [];
+        $paymentSchedule        = $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur');
+        $closeOutNettingPayment = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CloseOutNettingPayment')->findOneBy(['idProject' => $project]);
+
+        if (null === $closeOutNettingPayment) {
+            throw new \Exception('Could not send close out netting borrower email for project: ' . $project->getIdProject() . ': No close out netting payment found.');
         }
 
-        $nextPaymentSchedule    = $paymentSchedule->getNextPaymentSchedule($project);
-        $remainingCapitalDue    = $paymentSchedule->getRemainingCapitalFrom($project, $nextPaymentSchedule->getOrdre());
-        $overDueScheduleAmounts = $paymentSchedule->getTotalOverdueAmounts($project);
-        $totalOverdueAmount     = round(bcadd(bcadd($overDueScheduleAmounts['capital'], $overDueScheduleAmounts['interest'], 4), $overDueScheduleAmounts['commission'], 4), 2);
+        if ($closeOutNettingPayment->getIdEmailContent()) {
+            $keywords['mailContent'] = $closeOutNettingPayment->getIdEmailContent()->getBorrowerContent();
+        } else {
+            $keywords['mailContent'] = '';
+        }
 
-        $overdueScheduleCountAndAmount = $this->translator->transChoice(
-            'borrower-close-out-netting-email_payments-count-and-amount',
-            $overdueScheduleCount,
-            [
-                '%overdueScheduleCount%' => $this->numberFormatter->format($overdueScheduleCount),
-                '%totalOverdueAmount%'   => $this->currencyFormatter->formatCurrency($totalOverdueAmount, 'EUR')
-            ]
-        );
+        $overdueScheduleCount = $paymentSchedule->getOverdueScheduleCount($project);
 
-        $keywords = [
-            'overduePaymentsCountAndAmount' => $overdueScheduleCountAndAmount,
-            'owedCapitalAmount'             => $this->currencyFormatter->formatCurrency($remainingCapitalDue, 'EUR')
-        ];
+        if (0 === $overdueScheduleCount) {
+            $mailType            = 'emprunteur-projet-recouvrement-sans-retard-paiement';
+            $remainingCapitalDue = $closeOutNettingPayment->getCapital();
+        } else {
+            $mailType               = 'emprunteur-projet-recouvrement';
+            $nextPaymentSchedule    = $paymentSchedule->getNextPaymentSchedule($project);
+            $remainingCapitalDue    = $paymentSchedule->getRemainingCapitalFrom($project, $nextPaymentSchedule->getOrdre());
+            $overDueScheduleAmounts = $paymentSchedule->getTotalOverdueAmounts($project);
+            $totalOverdueAmount     = round(bcadd(bcadd($overDueScheduleAmounts['capital'], $overDueScheduleAmounts['interest'], 4), $overDueScheduleAmounts['commission'], 4), 2);
 
-        $this->sendBorrowerEmail($project, 'emprunteur-projet-statut-recouvrement', $keywords);
+            $overdueScheduleCountAndAmount             = $this->translator->transChoice(
+                'borrower-close-out-netting-email_payments-count-and-amount',
+                $overdueScheduleCount,
+                [
+                    '%overdueScheduleCount%' => $this->numberFormatter->format($overdueScheduleCount),
+                    '%totalOverdueAmount%'   => $this->currencyFormatter->formatCurrency($totalOverdueAmount, 'EUR')
+                ]
+            );
+            $keywords['overduePaymentsCountAndAmount'] = $overdueScheduleCountAndAmount;
+        }
+
+        $keywords['owedCapitalAmount'] = $this->currencyFormatter->formatCurrency($remainingCapitalDue, 'EUR');
+
+        $this->sendBorrowerEmail($project, $mailType, $keywords);
     }
 
     /**
@@ -188,6 +198,8 @@ class ProjectStatusNotificationSender
 
     /**
      * @param Projects $project
+     *
+     * @throws \Exception
      */
     public function sendProblemStatusNotificationsToLenders(Projects $project)
     {
@@ -216,6 +228,8 @@ class ProjectStatusNotificationSender
     /**
      * @param Projects $project
      * @param array    $keywords
+     *
+     * @throws \Exception
      */
     private function sendProjectLossNotificationToLenders(Projects $project, array $keywords = [])
     {
@@ -240,22 +254,36 @@ class ProjectStatusNotificationSender
      */
     public function sendCloseOutNettingNotificationsToLenders(Projects $project)
     {
-        $repaymentSchedule             = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers');
+        $keywords               = [];
+        $repaymentSchedule      = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers');
+        $closeOutNettingPayment = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CloseOutNettingPayment')->findOneBy(['idProject' => $project]);
+
+        if (null === $closeOutNettingPayment) {
+            throw new \Exception('Could not send close out netting lenders email for project: ' . $project->getIdProject() . ': No close out netting payment found.');
+        }
+
+        if ($closeOutNettingPayment->getIdEmailContent()) {
+            $keywords['mailContent'] = $closeOutNettingPayment->getIdEmailContent()->getLendersContent();
+        } else {
+            $keywords['mailContent'] = '';
+        }
+
         $overdueRepaymentScheduleCount = $repaymentSchedule->getOverdueRepaymentCountByProject($project);
 
         if (0 === $overdueRepaymentScheduleCount) {
-            throw new \Exception('Could not send email "preteur-projet-statut-recouvrement" on project ' . $project->getIdProject() . '. No overdue repayment found');
+            $mailType = 'preteur-projet-recouvrement-sans-retard-paiement';
+        } else {
+            $mailType = 'preteur-projet-recouvrement';
+            $keywords = $keywords + [
+                    'overdueRepaymentCount' => $this->translator->transChoice(
+                        'lender-close-out-netting-email_repayments-count',
+                        $overdueRepaymentScheduleCount,
+                        ['%overdueScheduleRepaymentCount%' => $this->numberFormatter->format($overdueRepaymentScheduleCount)]
+                    )
+                ];
         }
 
-        $keywords = [
-            'overdueRepaymentCount' => $this->translator->transChoice(
-                'lender-close-out-netting-email_repayments-count',
-                $overdueRepaymentScheduleCount,
-                ['%overdueScheduleRepaymentCount%' => $this->numberFormatter->format($overdueRepaymentScheduleCount)]
-            )
-        ];
-
-        $this->sendLenderNotifications($project, Notifications::TYPE_PROJECT_RECOVERY, 'preteur-projet-statut-recouvrement', 'preteur-projet-statut-recouvrement', $keywords);
+        $this->sendLenderNotifications($project, Notifications::TYPE_PROJECT_RECOVERY, $mailType, $mailType, $keywords);
     }
 
     /**

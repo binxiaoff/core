@@ -180,9 +180,9 @@ class AcceptationsLegalDocs
     }
 
     /**
-     * @return string
+     * @return string|null
      */
-    public function getPdfName(): string
+    public function getPdfName(): ?string
     {
         return $this->pdfName;
     }

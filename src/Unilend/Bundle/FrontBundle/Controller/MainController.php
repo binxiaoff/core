@@ -12,11 +12,11 @@ use Symfony\Component\HttpFoundation\{JsonResponse, RedirectResponse, Request, R
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\Authorization\AuthorizationChecker;
+use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, Clients, OffresBienvenues, ProjectsStatus, Tree, Users, WalletType};
 use Unilend\Bundle\CoreBusinessBundle\Service\{NewsletterManager, ProjectManager, ProjectRequestManager, StatisticsManager, WelcomeOfferManager};
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
-use Unilend\Bundle\FrontBundle\Security\User\UserLender;
 use Unilend\Bundle\FrontBundle\Service\{ContentManager, ProjectDisplayManager, SourceManager, TestimonialManager};
 use Unilend\core\Loader;
 
@@ -65,17 +65,15 @@ class MainController extends Controller
     /**
      * @Route("/preter", name="home_lender")
      *
+     * @param UserInterface|Clients|null $client
+     *
      * @return Response
      */
-    public function homeLenderAction(): Response
+    public function homeLenderAction(?UserInterface $client): Response
     {
         $projectDisplayManager = $this->get('unilend.frontbundle.service.project_display_manager');
-        $entityManager         = $this->get('doctrine.orm.entity_manager');
-        $authorizationChecker  = $this->get('security.authorization_checker');
         $welcomeOfferManager   = $this->get('unilend.service.welcome_offer_manager');
         $testimonialService    = $this->get('unilend.frontbundle.service.testimonial_manager');
-        $user                  = $this->getUser();
-        $client                = null;
 
         $template = [
             'showWelcomeOffer'   => $welcomeOfferManager->displayOfferOnHome(),
@@ -87,20 +85,13 @@ class MainController extends Controller
             'sortDirection'      => strtolower(\projects::SORT_DIRECTION_DESC)
         ];
 
-        if (
-            $authorizationChecker->isGranted('IS_AUTHENTICATED_FULLY')
-            && $authorizationChecker->isGranted('ROLE_LENDER')
-        ) {
-            $client = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($user->getClientId());
-        }
-
         $template['projects'] = $projectDisplayManager->getProjectsList([], [\projects::SORT_FIELD_END => \projects::SORT_DIRECTION_DESC], null, 3, $client);
 
         $translator        = $this->get('translator');
         $projectRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Projects');
 
-        array_walk($template['projects'], function(&$project) use ($translator, $projectDisplayManager, $user, $projectRepository) {
-            if (ProjectDisplayManager::VISIBILITY_FULL !== $projectDisplayManager->getVisibility($projectRepository->find($project['projectId']), $user)) {
+        array_walk($template['projects'], function(&$project) use ($translator, $projectDisplayManager, $client, $projectRepository) {
+            if (ProjectDisplayManager::VISIBILITY_FULL !== $projectDisplayManager->getVisibility($projectRepository->find($project['projectId']), $client)) {
                 $project['title'] = $translator->trans('company-sector_sector-' . $project['company']['sectorId']);
             }
         });
@@ -252,28 +243,21 @@ class MainController extends Controller
     /**
      * @Route("/cgv_preteurs/{type}", name="lenders_terms_of_sales", requirements={"type": "morale"})
      *
-     * @param string $type
+     * @param string                     $type
+     * @param UserInterface|Clients|null $client
      *
      * @return Response
      */
-    public function lenderTermsOfSalesAction(string $type = ''): Response
+    public function lenderTermsOfSalesAction(?UserInterface $client, string $type = ''): Response
     {
         /** @var EntityManagerSimulator $entityManagerSimulator */
         $entityManagerSimulator = $this->get('unilend.service.entity_manager');
         $termsOfSaleManager     = $this->get('unilend.service.terms_of_sale_manager');
 
-        $user   = $this->getUser();
-
-        if ($user instanceof UserLender) {
-            /** @var \clients $client */
-            $client = $entityManagerSimulator->getRepository('clients');
-            $client->get($user->getClientId());
-
-            if (in_array($client->type, [Clients::TYPE_LEGAL_ENTITY, Clients::TYPE_LEGAL_ENTITY_FOREIGNER])) {
-                $idTree = $termsOfSaleManager->getCurrentVersionForLegalEntity();
-            } else {
-                $idTree = $termsOfSaleManager->getCurrentVersionForPerson();
-            }
+        if ($client instanceof Clients && false === $client->isNaturalPerson()) {
+            $idTree = $termsOfSaleManager->getCurrentVersionForPerson();
+        } else {
+            $idTree = $termsOfSaleManager->getCurrentVersionForLegalEntity();
         }
 
         /** @var \tree $tree */
@@ -281,15 +265,16 @@ class MainController extends Controller
         $tree->get(['id_tree' => $idTree]);
         $this->setCmsSeoData($tree);
 
-        return $this->renderTermsOfUse($tree, $type);
+        return $this->renderTermsOfUse($client, $tree, $type);
     }
 
     /**
-     * @param Request $request
+     * @param Request                    $request
+     * @param UserInterface|Clients|null $client
      *
      * @return Response
      */
-    public function cmsAction(Request $request): Response
+    public function cmsAction(Request $request, ?UserInterface $client): Response
     {
         /** @var EntityManagerSimulator $entityManager */
         $entityManager = $this->get('unilend.service.entity_manager');
@@ -339,7 +324,7 @@ class MainController extends Controller
             case self::CMS_TEMPLATE_BORROWER_LANDING_PAGE:
                 return $this->renderBorrowerLandingPage($request, $finalElements['content'], $finalElements['complement']);
             case self::CMS_TEMPLATE_TOS:
-                return $this->renderTermsOfUse($tree);
+                return $this->renderTermsOfUse($client, $tree);
             default:
                 return new RedirectResponse('/');
         }
@@ -478,12 +463,13 @@ class MainController extends Controller
     }
 
     /**
-     * @param \tree  $tree
-     * @param string $lenderType
+     * @param Clients|null $client
+     * @param \tree        $tree
+     * @param string       $lenderType
      *
      * @return Response
      */
-    private function renderTermsOfUse(\tree $tree, string $lenderType = ''): Response
+    private function renderTermsOfUse(?Clients $client, \tree $tree, string $lenderType = ''): Response
     {
         $entityManagerSimulator = $this->get('unilend.service.entity_manager');
         /** @var EntityManager $entityManager */
@@ -507,14 +493,9 @@ class MainController extends Controller
             'main_content' => $content['contenu-cgu']
         ];
 
-        /** @var UserLender $user */
-        $user             = $this->getUser();
-        $clientRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
-
         if (
             $this->get('security.authorization_checker')->isGranted('IS_AUTHENTICATED_FULLY')
             && $this->get('security.authorization_checker')->isGranted('ROLE_LENDER')
-            && null !== $client = $clientRepository->find($user->getClientId())
         ) {
             $dateAccept   = '';
             $userAccepted = $acceptedTermsOfUse->select('id_client = ' . $client->getIdClient() . ' AND id_legal_doc = ' . $tree->id_tree, 'added DESC', 0, 1);
@@ -922,17 +903,15 @@ class MainController extends Controller
      * @Route("/cgv-popup", name="lender_tos_popup", condition="request.isXmlHttpRequest()")
      * @Security("has_role('ROLE_LENDER')")
      *
-     * @param Request $request
+     * @param Request                    $request
+     * @param UserInterface|Clients|null $client
      *
      * @return JsonResponse|Response
      */
-    public function lastTermsOfServiceAction(Request $request): Response
+    public function lastTermsOfServiceAction(Request $request, ?UserInterface $client): Response
     {
         $entityManager          = $this->get('doctrine.orm.entity_manager');
         $entityManagerSimulator = $this->get('unilend.service.entity_manager');
-        /** @var UserLender $user */
-        $user            = $this->getUser();
-        $client          = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($user->getClientId());
         $tosDetails      = '';
         $newsletterOptIn = true;
 

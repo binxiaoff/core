@@ -27,7 +27,6 @@ class bootstrap extends Controller
         $this->projects                = $this->loadData('projects');
 
         $this->ficelle = $this->loadLib('ficelle');
-        $this->dates   = $this->loadLib('dates');
 
         // XSS protection
         if (false === empty($_POST)) {

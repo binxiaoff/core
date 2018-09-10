@@ -18,8 +18,8 @@
 "Cotation FIBEN / Note interne banque";"<?php if (isset($this->ratings['cotation_fiben']['value'])) : ?><?= $this->ratings['cotation_fiben']['value'] ?><?php endif; ?>";"<?php if (isset($this->ratings['note_interne_banque']['value'])) : ?><?= $this->ratings['note_interne_banque']['value'] ?><?php endif; ?>";"<?php if (isset($this->ratings['nom_banque']['value'])) : ?><?= $this->ratings['nom_banque']['value'] ?><?php endif; ?>"
 "Cotation dirigeant FIBEN";"<?php if (isset($this->ratings['cotation_dirigeant_fiben']['value'])) : ?><?= $this->ratings['cotation_dirigeant_fiben']['value'] ?><?php endif; ?>"
 "Score sectoriel Xerfi";"<?php if (isset($this->ratings['xerfi']['value'], $this->ratings['xerfi_unilend']['value'])) : ?><?= $this->ratings['xerfi']['value'] ?> / <?= $this->ratings['xerfi_unilend']['value'] ?><?php else : ?>N/A<?php endif; ?>"
-"Date du privilège le plus récent";"<?php if (isset($this->ratings['date_dernier_privilege']['value']) && false === empty($this->ratings['date_dernier_privilege']['value'])) : ?><?= $this->dates->formatDate($this->ratings['date_dernier_privilege']['value'], 'd/m/Y') ?><?php endif; ?>"
-"Dernière situation de trésorerie connue";"<?php if (isset($this->ratings['date_tresorerie']['value']) && false === empty($this->ratings['date_tresorerie']['value'])) : ?><?= $this->dates->formatDate($this->ratings['date_tresorerie']['value'], 'd/m/Y') ?><?php endif; ?>";"<?php if (isset($this->ratings['montant_tresorerie']['value'])) : ?><?= $this->ratings['montant_tresorerie']['value'] ?><?php endif; ?>"
+"Date du privilège le plus récent";"<?php if (isset($this->ratings['date_dernier_privilege']['value']) && false === empty($this->ratings['date_dernier_privilege']['value'])) : ?><?= $this->formatDate($this->ratings['date_dernier_privilege']['value'], 'd/m/Y') ?><?php endif; ?>"
+"Dernière situation de trésorerie connue";"<?php if (isset($this->ratings['date_tresorerie']['value']) && false === empty($this->ratings['date_tresorerie']['value'])) : ?><?= $this->formatDate($this->ratings['date_tresorerie']['value'], 'd/m/Y') ?><?php endif; ?>";"<?php if (isset($this->ratings['montant_tresorerie']['value'])) : ?><?= $this->ratings['montant_tresorerie']['value'] ?><?php endif; ?>"
 "Délais de paiement Altares (à date)";"<?php if (isset($this->ratings['delais_paiement_altares']['value'])) : ?><?= $this->ratings['delais_paiement_altares']['value'] ?><?php endif; ?>"
 "Délais de paiement du secteur";"<?php if (isset($this->ratings['delais_paiement_secteur']['value'])) : ?><?= $this->ratings['delais_paiement_secteur']['value'] ?><?php endif; ?>"
 "Dailly";"<?= isset($this->ratings['dailly']['value']) && '1' === $this->ratings['dailly']['value'] ? 'Oui' : (isset($this->ratings['dailly']['value']) ? 'Non' : 'N/A') ?>"
@@ -28,7 +28,7 @@
 "Capital restant dû à date";"<?= $this->fCompanyOwedCapital ?>"
 ""
 "Bilans"
-"Actif";<?php foreach ($this->aAnnualAccounts as $aAnnualAccounts) : ?>"<?= $this->dates->formatDate($aAnnualAccounts['cloture_exercice_fiscal'], 'd/m/Y') ?>";"<?= $aAnnualAccounts['duree_exercice_fiscal'] ?>";<?php endforeach; ?>
+"Actif";<?php foreach ($this->aAnnualAccounts as $aAnnualAccounts) : ?>"<?= $this->formatDate($aAnnualAccounts['cloture_exercice_fiscal'], 'd/m/Y') ?>";"<?= $aAnnualAccounts['duree_exercice_fiscal'] ?>";<?php endforeach; ?>
 
 "Capital souscrit non appelé";"AA";<?php
     $iColumn = 0;

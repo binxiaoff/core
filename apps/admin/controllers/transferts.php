@@ -866,9 +866,8 @@ class transfertsController extends bootstrap
             }
 
             $newOwnerEntity = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($newOwner->id_client);
-            $newOwnerStatus = $newOwnerEntity->getIdClientStatusHistory() ? $newOwnerEntity->getIdClientStatusHistory()->getIdStatus()->getId() : null;
 
-            if ($newOwnerStatus !== ClientsStatus::STATUS_VALIDATED) {
+            if (false === $newOwnerEntity->isValidated()) {
                 $this->addErrorMessageAndRedirect('Le compte de l\'héritier n\'est pas validé');
             }
 
@@ -970,7 +969,7 @@ class transfertsController extends bootstrap
                     $clientStatusManager->addClientStatus(
                         $newOwner,
                         $_SESSION['user']['id_user'],
-                        $newOwnerStatus,
+                        $newOwnerEntity->getIdClientStatusHistory() ? $newOwnerEntity->getIdClientStatusHistory()->getIdStatus()->getId() : null,
                         'Reçu solde (' . $this->ficelle->formatNumber($originalClientBalance) . ') et prêts (' . $numberLoans . ') du compte ' . $originalClient->id_client
                     );
 

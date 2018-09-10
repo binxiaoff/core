@@ -5,6 +5,7 @@
 {% endblock %}
 
 {% block siteContent %}
+    {% set partner = partner(app.user) %}
     <article{% if page.id is not empty %} id="{{ page.id }}"{% endif %} class="dashboard{% if page.classNames is not empty %} {{ page.classNames }}{% endif %}">
         <div class="dashboard-inner">
             <div class="site-wrap">
@@ -14,7 +15,7 @@
                             <ul>
                                 <li role="branding" class="dashboard-nav-header">
                                     <a href="{{ path('partner_home') }}">
-                                        <img src="{{ siteurlmedia('partners/' ~ app.user.partner.logo) }}" alt="{{ app.user.partner.idCompany.name }}">
+                                        <img src="{{ siteurlmedia('partners/' ~ partner.logo) }}" alt="{{ partner.idCompany.name }}">
                                     </a>
                                 </li>
                                 <li role="presentation" class="dashboard-nav-project-request{% if app.request.get('_route') in ['partner_project_request', 'partner_project_request_eligibility', 'partner_project_request_details', 'partner_project_request_end'] %} active{% endif %}">
@@ -29,7 +30,7 @@
                                         <span class="label">{% trans %} partner-account-nav_projects-list {% endtrans %}</span>
                                     </a>
                                 </li>
-                                {% if is_granted(constant('\\Unilend\\Bundle\\FrontBundle\\Security\\User\\UserPartner::ROLE_ADMIN')) %}
+                                {% if is_granted(constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::ROLE_PARTNER_ADMIN')) %}
                                     <li role="presentation" class="dashboard-nav-users{% if app.request.get('_route') in ['partner_users', 'partner_user_creation'] %} active{% endif %}">
                                         <a href="{{ path('partner_users') }}">
                                             <span class="icon fa-profile-u"></span>
@@ -60,25 +61,25 @@
                                 <li>
                                     <a href="{{ path('partner_cost_simulator') }}">
                                         <span class="icon fa-balance-u"></span>
-                                        <span class="label">{{ ('partner-account-nav_text-simulator-' ~ app.user.partner.label)|trans }}</span>
+                                        <span class="label">{{ ('partner-account-nav_text-simulator-' ~ partner.label)|trans }}</span>
                                     </a>
                                 </li>
                                 <li>
-                                    <a href="{{ ('partner-account-nav_link-arguments-' ~ app.user.partner.label)|trans }}">
+                                    <a href="{{ ('partner-account-nav_link-arguments-' ~ partner.label)|trans }}">
                                         <span class="icon fa-list-u"></span>
-                                        <span class="label">{{ ('partner-account-nav_text-arguments-' ~ app.user.partner.label)|trans }}</span>
+                                        <span class="label">{{ ('partner-account-nav_text-arguments-' ~ partner.label)|trans }}</span>
                                     </a>
                                 </li>
                                 <li>
-                                    <a href="{{ ('partner-account-nav_link-sale-help-' ~ app.user.partner.label)|trans }}">
+                                    <a href="{{ ('partner-account-nav_link-sale-help-' ~ partner.label)|trans }}">
                                         <span class="icon fa-star-o"></span>
-                                        <span class="label">{{ ('partner-account-nav_text-sale-help-' ~ app.user.partner.label)|trans }}</span>
+                                        <span class="label">{{ ('partner-account-nav_text-sale-help-' ~ partner.label)|trans }}</span>
                                     </a>
                                 </li>
                                 <li>
-                                    <a href="{{ ('partner-account-nav_link-faq-' ~ app.user.partner.label)|trans }}">
+                                    <a href="{{ ('partner-account-nav_link-faq-' ~ partner.label)|trans }}">
                                         <span class="icon fa-question-circle-o"></span>
-                                        <span class="label">{{ ('partner-account-nav_text-faq-' ~ app.user.partner.label)|trans }}</span>
+                                        <span class="label">{{ ('partner-account-nav_text-faq-' ~ partner.label)|trans }}</span>
                                     </a>
                                 </li>
                             </ul>
@@ -86,10 +87,10 @@
                     </nav>
                 </div><!-- /.col-menu -->
                 <div class="col-content dashboard-content">
-                    {% if ('partner-header_message-' ~ app.user.partner.label)|trans|trim is not empty %}
+                    {% if ('partner-header_message-' ~ partner.label)|trans|trim is not empty %}
                         <div class="dashboard-messages">
                             <div class="message-info">
-                                <p>{{ ('partner-header_message-' ~ app.user.partner.label)|trans }}</p>
+                                <p>{{ ('partner-header_message-' ~ partner.label)|trans }}</p>
                             </div>
                         </div>
                     {% endif %}

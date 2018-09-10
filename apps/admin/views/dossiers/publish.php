@@ -7,7 +7,7 @@
                 <tr>
                     <th><label for="date_publication">Date de publication&nbsp;*</label></th>
                     <td>
-                        <input type="text" name="date_publication" id="date_publication" class="input_dp" value="<?= ($this->projects->date_publication != '0000-00-00 00:00:00' ? $this->dates->formatDate($this->projects->date_publication, 'd/m/Y') : '') ?>">
+                        <input type="text" name="date_publication" id="date_publication" class="input_dp" value="<?= ($this->projects->date_publication != '0000-00-00 00:00:00' ? $this->formatDate($this->projects->date_publication, 'd/m/Y') : '') ?>">
                         <select name="date_publication_heure" class="selectMini" title="Heure">
                             <?php for ($hour = 0; $hour < 24; $hour++) : ?>
                                 <option value="<?= sprintf('%02d', $hour) ?>"<?= (substr($this->projects->date_publication, 11, 2) == $hour ? ' selected' : '') ?>><?= sprintf('%02d', $hour) ?></option>
@@ -23,7 +23,7 @@
                 <tr>
                     <th><label for="date_retrait">Date de retrait&nbsp;*</label></th>
                     <td>
-                        <input type="text" name="date_retrait" id="date_retrait" class="input_dp" value="<?= ($this->projects->date_retrait != '0000-00-00 00:00:00' ? $this->dates->formatDate($this->projects->date_retrait, 'd/m/Y') : '') ?>">
+                        <input type="text" name="date_retrait" id="date_retrait" class="input_dp" value="<?= ($this->projects->date_retrait != '0000-00-00 00:00:00' ? $this->formatDate($this->projects->date_retrait, 'd/m/Y') : '') ?>">
                         <select name="date_retrait_heure" class="selectMini" title="Heure">
                             <?php for ($hour = 0; $hour < 24; $hour++) : ?>
                                 <option value="<?= sprintf('%02d', $hour) ?>"<?= (substr($this->projects->date_retrait, 11, 2) == $hour ? ' selected' : '') ?>><?= sprintf('%02d', $hour) ?></option>

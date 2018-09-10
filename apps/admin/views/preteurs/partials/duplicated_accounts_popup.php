@@ -7,7 +7,7 @@
             <p>Séléctionnez le compte à valider. Les autres comptes seront clôturés.</p>
             <hr>
             <div class="margin-10-l">
-                <form method="post" action="<?= $this->lurl ?>/preteurs/valider_preteur" id="form-validate-lender">
+                <form method="post" action="<?= $this->lurl ?>/preteurs/valider_preteur" id="form-validate-duplicate-lender" class="lender-validation-form">
                     <?php foreach ($this->duplicateAccounts as $client) : ?>
                         <p>
                             <input type="radio"
@@ -43,7 +43,7 @@
             },
             onComplete: function () {
                 $btnValidate.on('click', function () {
-                    $('#form-validate-lender').submit()
+                    $('#form-validate-duplicate-lender').submit()
                 })
             }
         })
