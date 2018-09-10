@@ -10,13 +10,11 @@ use Symfony\Component\Form\{Extension\Core\Type\CheckboxType, FormError, FormInt
 use Symfony\Component\HttpFoundation\{File\UploadedFile, JsonResponse, RedirectResponse, Request, Response};
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\User\UserInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, Attachment, AttachmentType, Clients, ClientsGestionNotifications, ClientsGestionTypeNotif, ClientsHistoryActions, ClientsStatus, Ifu,
-    LenderTaxExemption, Pays, TaxType, Wallet, WalletBalanceHistory, WalletType};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, Attachment, AttachmentType, Clients, ClientsGestionNotifications, ClientsGestionTypeNotif, ClientsHistoryActions, ClientsStatus, Ifu, LenderTaxExemption, Pays, TaxType, Wallet, WalletBalanceHistory, WalletType};
 use Unilend\Bundle\CoreBusinessBundle\Service\{ClientDataHistoryManager, LocationManager, NewsletterManager};
 use Unilend\Bundle\FrontBundle\Form\ClientPasswordType;
 use Unilend\Bundle\FrontBundle\Form\LenderPersonContactType;
-use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\{BankAccountType, ClientEmailType, CompanyIdentityType, LegalEntityProfileType, OriginOfFundsType, PersonPhoneType, PersonProfileType,
-    SecurityQuestionType};
+use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\{BankAccountType, ClientEmailType, CompanyIdentityType, LegalEntityProfileType, OriginOfFundsType, PersonProfileType, SecurityQuestionType};
 use Unilend\Bundle\FrontBundle\Service\LenderProfileFormsHandler;
 
 class LenderProfileController extends Controller
@@ -272,10 +270,9 @@ class LenderProfileController extends Controller
             return $this->redirectToRoute('home');
         }
 
-        $entityManager    = $this->get('doctrine.orm.entity_manager');
-        $client           = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($this->getUser()->getClientId());
-        $passwordForm     = $this->createForm(ClientPasswordType::class);
-        $questionForm     = $this->createForm(SecurityQuestionType::class, $client);
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+        $passwordForm  = $this->createForm(ClientPasswordType::class);
+        $questionForm  = $this->createForm(SecurityQuestionType::class, $client);
 
         if ($request->isMethod(Request::METHOD_POST)) {
             $isValid     = false;
