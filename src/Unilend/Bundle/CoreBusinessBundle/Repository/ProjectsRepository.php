@@ -5,15 +5,11 @@ namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 use Doctrine\DBAL\Cache\QueryCacheProfile;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Driver\ResultStatement;
-use Doctrine\ORM\{
-    AbstractQuery, EntityRepository, QueryBuilder, Query\Expr\Join, Query\ResultSetMappingBuilder
-};
+use Doctrine\ORM\{AbstractQuery, EntityRepository, QueryBuilder, Query\Expr\Join, Query\ResultSetMappingBuilder};
 use PDO;
 use Psr\Log\InvalidArgumentException;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{Bids, Clients, ClientsMandats, Companies, CompanyStatus, Echeanciers, EcheanciersEmprunteur, Factures, OperationType, Partner, Projects, ProjectsPouvoir, ProjectsStatus, UnilendStats, Users, Virements};
-use Unilend\Bundle\CoreBusinessBundle\Service\{
-    DebtCollectionMissionManager, ProjectCloseOutNettingManager
-};
+use Unilend\Bundle\CoreBusinessBundle\Service\{DebtCollectionMissionManager, ProjectCloseOutNettingManager};
 use Unilend\librairies\CacheKeys;
 
 class ProjectsRepository extends EntityRepository
@@ -325,29 +321,13 @@ class ProjectsRepository extends EntityRepository
     }
 
     /**
-     * @param $siren
-     *
-     * @return Projects[]
-     */
-    public function findBySiren(string $siren): array
-    {
-        $queryBuilder = $this->createQueryBuilder('p');
-        $queryBuilder
-            ->innerJoin('UnilendCoreBusinessBundle:Companies', 'c', Join::WITH, 'p.idCompany = c.idCompany')
-            ->where('c.siren = :siren')
-            ->setParameter('siren', $siren);
-
-        return $queryBuilder->getQuery()->getResult();
-    }
-
-    /**
      * @param string         $siren
      * @param array          $projectStatus
      * @param \DateTime|null $createdBefore
      *
      * @return Projects[]
      */
-    public function findBySirenAndStatus(string $siren, array $projectStatus = [], ?\DateTime $createdBefore = null): array
+    public function findBySiren(string $siren, array $projectStatus = [], ?\DateTime $createdBefore = null): array
     {
         $queryBuilder = $this->createQueryBuilder('p');
         $queryBuilder
@@ -365,6 +345,31 @@ class ProjectsRepository extends EntityRepository
             $queryBuilder
                 ->andWhere('p.added <= :createdBefore')
                 ->setParameter('createdBefore', $createdBefore);
+        }
+
+        return $queryBuilder->getQuery()->getResult();
+    }
+
+    /**
+     * @param Companies|int $company
+     * @param array         $projectStatus
+     *
+     * @return Projects[]
+     */
+    public function findByCompany($company, array $projectStatus = []): array
+    {
+        $queryBuilder = $this->createQueryBuilder('p');
+        $queryBuilder
+            ->where('p.idCompany = :company')
+            ->setParameter('company', $company)
+            ->orderBy('p.status', 'DESC')
+            ->addOrderBy('p.dateRetrait', 'DESC')
+            ->addOrderBy('p.added', 'DESC');
+
+        if (false === empty($projectStatus)) {
+            $queryBuilder
+                ->andWhere('p.status IN (:projectStatus)')
+                ->setParameter('projectStatus', $projectStatus);
         }
 
         return $queryBuilder->getQuery()->getResult();

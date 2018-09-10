@@ -128,11 +128,11 @@
                         <?php else : ?>
                             <td>&nbsp;</td>
                         <?php endif; ?>
-                        <td<?= $rowspan ?>><?= $this->dates->formatDate($loan['debut'], 'd/m/Y') ?></td>
+                        <td<?= $rowspan ?>><?= $this->formatDate($loan['debut'], 'd/m/Y') ?></td>
                         <?php if (in_array($loan['project_status'], [ProjectsStatus::REMBOURSEMENT_ANTICIPE, ProjectsStatus::REMBOURSE])) : ?>
-                            <td<?= $rowspan ?>>Remboursé le <?= $this->dates->formatDate($loan['final_repayment_date'], 'd/m/Y') ?></td>
+                            <td<?= $rowspan ?>>Remboursé le <?= $this->formatDate($loan['final_repayment_date'], 'd/m/Y') ?></td>
                         <?php else : ?>
-                            <td<?= $rowspan ?>><?= $this->dates->formatDate($loan['fin'], 'd/m/Y') ?></td>
+                            <td<?= $rowspan ?>><?= $this->formatDate($loan['fin'], 'd/m/Y') ?></td>
                         <?php endif; ?>
                         <?php if ($this->hasTransferredLoans) : ?>
                             <?php if ($loan['nb_loan'] == 1) : ?>

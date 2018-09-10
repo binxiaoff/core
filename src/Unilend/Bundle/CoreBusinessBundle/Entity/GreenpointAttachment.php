@@ -16,7 +16,7 @@ class GreenpointAttachment
     const STATUS_VALIDATION_VALID = 9;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="validation_status", type="integer", nullable=true)
      */
@@ -51,7 +51,7 @@ class GreenpointAttachment
     private $updated;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id_greenpoint_attachment", type="integer")
      * @ORM\Id
@@ -77,13 +77,11 @@ class GreenpointAttachment
     private $greenpointAttachmentDetail;
 
     /**
-     * Set validationStatus
-     *
-     * @param integer $validationStatus
+     * @param int|null $validationStatus
      *
      * @return GreenpointAttachment
      */
-    public function setValidationStatus($validationStatus)
+    public function setValidationStatus(?int $validationStatus): GreenpointAttachment
     {
         $this->validationStatus = $validationStatus;
 
@@ -91,23 +89,19 @@ class GreenpointAttachment
     }
 
     /**
-     * Get validationStatus
-     *
-     * @return integer
+     * @return int|null
      */
-    public function getValidationStatus()
+    public function getValidationStatus(): ?int
     {
         return $this->validationStatus;
     }
 
     /**
-     * Set validationCode
-     *
-     * @param string $validationCode
+     * @param string|null $validationCode
      *
      * @return GreenpointAttachment
      */
-    public function setValidationCode($validationCode)
+    public function setValidationCode(?string $validationCode): GreenpointAttachment
     {
         $this->validationCode = $validationCode;
 
@@ -115,23 +109,19 @@ class GreenpointAttachment
     }
 
     /**
-     * Get validationCode
-     *
-     * @return string
+     * @return string|null
      */
-    public function getValidationCode()
+    public function getValidationCode(): ?string
     {
         return $this->validationCode;
     }
 
     /**
-     * Set validationStatusLabel
-     *
-     * @param string $validationStatusLabel
+     * @param string|null $validationStatusLabel
      *
      * @return GreenpointAttachment
      */
-    public function setValidationStatusLabel($validationStatusLabel)
+    public function setValidationStatusLabel(?string $validationStatusLabel): GreenpointAttachment
     {
         $this->validationStatusLabel = $validationStatusLabel;
 
@@ -139,23 +129,19 @@ class GreenpointAttachment
     }
 
     /**
-     * Get validationStatusLabel
-     *
-     * @return string
+     * @return string|null
      */
-    public function getValidationStatusLabel()
+    public function getValidationStatusLabel(): ?string
     {
         return $this->validationStatusLabel;
     }
 
     /**
-     * Set added
-     *
      * @param \DateTime $added
      *
      * @return GreenpointAttachment
      */
-    public function setAdded($added)
+    public function setAdded(\DateTime $added): GreenpointAttachment
     {
         $this->added = $added;
 
@@ -163,23 +149,19 @@ class GreenpointAttachment
     }
 
     /**
-     * Get added
-     *
      * @return \DateTime
      */
-    public function getAdded()
+    public function getAdded(): \DateTime
     {
         return $this->added;
     }
 
     /**
-     * Set updated
-     *
-     * @param \DateTime $updated
+     * @param \DateTime|null $updated
      *
      * @return GreenpointAttachment
      */
-    public function setUpdated($updated)
+    public function setUpdated(?\DateTime $updated): GreenpointAttachment
     {
         $this->updated = $updated;
 
@@ -187,33 +169,27 @@ class GreenpointAttachment
     }
 
     /**
-     * Get updated
-     *
-     * @return \DateTime
+     * @return \DateTime|null
      */
-    public function getUpdated()
+    public function getUpdated(): ?\DateTime
     {
         return $this->updated;
     }
 
     /**
-     * Get idGreenpointAttachment
-     *
-     * @return integer
+     * @return int
      */
-    public function getIdGreenpointAttachment()
+    public function getIdGreenpointAttachment(): int
     {
         return $this->idGreenpointAttachment;
     }
 
     /**
-     * Set idAttachment
-     *
-     * @param \Unilend\Bundle\CoreBusinessBundle\Entity\Attachment $idAttachment
+     * @param Attachment $idAttachment
      *
      * @return GreenpointAttachment
      */
-    public function setIdAttachment(\Unilend\Bundle\CoreBusinessBundle\Entity\Attachment $idAttachment = null)
+    public function setIdAttachment(Attachment $idAttachment): GreenpointAttachment
     {
         $this->idAttachment = $idAttachment;
 
@@ -221,11 +197,9 @@ class GreenpointAttachment
     }
 
     /**
-     * Get idAttachment
-     *
-     * @return \Unilend\Bundle\CoreBusinessBundle\Entity\Attachment
+     * @return Attachment
      */
-    public function getIdAttachment()
+    public function getIdAttachment(): Attachment
     {
         return $this->idAttachment;
     }
@@ -233,7 +207,7 @@ class GreenpointAttachment
     /**
      * @ORM\PrePersist
      */
-    public function setAddedValue()
+    public function setAddedValue(): void
     {
         if (! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
             $this->added = new \DateTime();
@@ -243,17 +217,15 @@ class GreenpointAttachment
     /**
      * @ORM\PreUpdate
      */
-    public function setUpdatedValue()
+    public function setUpdatedValue(): void
     {
         $this->updated = new \DateTime();
     }
 
     /**
-     * Get greenpointAttachmentDetail
-     *
-     * @return GreenpointAttachmentDetail
+     * @return GreenpointAttachmentDetail|null
      */
-    public function getGreenpointAttachmentDetail()
+    public function getGreenpointAttachmentDetail(): ?GreenpointAttachmentDetail
     {
         return $this->greenpointAttachmentDetail;
     }

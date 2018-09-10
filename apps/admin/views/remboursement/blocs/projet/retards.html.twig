@@ -1,17 +1,17 @@
-{% if totalOverdueAmount > 0 %}
-    <div class="row">
-        <div class="col-lg-12">
-            <div id="retards" class="block">
-                <div class="block-header">
-                    <h3 class="block-title">
-                        {% if project.getCloseOutNettingDate is empty %}
-                            Échéances en retard
-                        {% else %}
-                            Retards
-                        {% endif %}
-                    </h3>
-                </div>
-                <div class="block-content block-content-full">
+<div class="row">
+    <div class="col-lg-12">
+        <div id="retards" class="block">
+            <div class="block-header">
+                <h3 class="block-title">
+                    {% if project.getCloseOutNettingDate is empty %}
+                        Échéances en retard
+                    {% else %}
+                        Retards
+                    {% endif %}
+                </h3>
+            </div>
+            <div class="block-content block-content-full">
+                {% if totalOverdueAmount > 0 %}
                     <table class="table table-bordered table-hover table-header-bg">
                         <thead>
                         <tr>
@@ -19,14 +19,14 @@
                                 {% if project.getCloseOutNettingDate is empty %}
                                     Date théorique
                                 {% else %}
-                                    Date du DDT
+                                    Date de DDT
                                 {% endif %}
                             </th>
                             <th>
                                 {% if project.getCloseOutNettingDate is empty %}
                                     Montant théorique
                                 {% else %}
-                                    Montant du DDT
+                                    Montant de DDT
                                 {% endif %}
                             </th>
                             <th>
@@ -76,31 +76,35 @@
                             </tfoot>
                         {% endif %}
                     </table>
-                    <div class="text-right">
-                        {% if canBeDeclined %}
-                            <button type="button" class="btn btn-default push-10-r" data-toggle="modal" data-target="#modal-close-out-netting">Déchoir le terme</button>
-                        {% endif %}
-
-                        {% if constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::REMBOURSEMENT') == project.status %}
-                            <button type="button" class="btn btn-primary push-10-r" data-toggle="modal" data-target="#modal-status-problem">Passer en statut problème</button>
-                        {% endif %}
-
-                        {% if totalOverdueAmount > 0 and constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::PROBLEME') == project.status %}
-                            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#modal-debt-collection" {% if pendingWireTransferIn|length > 0 %}disabled{% endif %}>
-                                Missionner un recouvreur
-                                ({{ totalOverdueAmount|localizedcurrency('EUR') }})
-                            </button>
-                            {% if pendingWireTransferIn|length > 0 %}
-                                <div class="text-muted">
-                                    <small>
-                                        <em style="display: inline-block; max-width: 300px; margin-top: 3px;">Merci de traiter les derniers remboursements avant de créer une nouvelle mission.</em>
-                                    </small>
-                                </div>
-                            {% endif %}
-                        {% endif %}
+                {% else %}
+                    <div class="alert">
+                        <p>Aucune échéance en retard sur ce projet.</p>
                     </div>
+                {% endif %}
+                <div class="text-right">
+                    {% if canBeDeclined %}
+                        <button type="button" class="btn btn-default push-10-r" data-toggle="modal" data-target="#modal-close-out-netting">Déchoir le terme</button>
+                    {% endif %}
+
+                    {% if constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::REMBOURSEMENT') == project.status %}
+                        <button type="button" class="btn btn-primary push-10-r" data-toggle="modal" data-target="#modal-status-problem">Passer en statut problème</button>
+                    {% endif %}
+
+                    {% if totalOverdueAmount > 0 and constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::PROBLEME') == project.status %}
+                        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#modal-debt-collection" {% if pendingWireTransferIn|length > 0 %}disabled{% endif %}>
+                            Missionner un recouvreur
+                            ({{ totalOverdueAmount|localizedcurrency('EUR') }})
+                        </button>
+                        {% if pendingWireTransferIn|length > 0 %}
+                            <div class="text-muted">
+                                <small>
+                                    <em style="display: inline-block; max-width: 300px; margin-top: 3px;">Merci de traiter les derniers remboursements avant de créer une nouvelle mission.</em>
+                                </small>
+                            </div>
+                        {% endif %}
+                    {% endif %}
                 </div>
             </div>
         </div>
     </div>
-{% endif %}
+</div>

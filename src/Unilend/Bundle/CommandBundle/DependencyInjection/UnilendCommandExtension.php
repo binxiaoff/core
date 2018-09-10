@@ -3,9 +3,8 @@
 namespace Unilend\Bundle\CommandBundle\DependencyInjection;
 
 use Symfony\Component\Config\FileLocator;
-use Symfony\Component\DependencyInjection\{
-    ContainerBuilder, Loader
-};
+use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 use Symfony\Component\HttpKernel\DependencyInjection\Extension;
 
 /**
@@ -23,10 +22,7 @@ class UnilendCommandExtension extends Extension
         $configuration = new Configuration();
         $config = $this->processConfiguration($configuration, $configs);
 
-        $xmlLoader = new Loader\XmlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
-        $xmlLoader->load('events.xml');
-
-        $ymlLoader = new Loader\YamlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
+        $ymlLoader = new YamlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
         $ymlLoader->load('services.yml');
     }
 }

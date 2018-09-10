@@ -38,7 +38,6 @@ class CodinfManager
      * @param ClientInterface    $client
      * @param string             $user
      * @param string             $password
-     * @param string             $baseUrl
      * @param LoggerInterface    $logger
      * @param CallHistoryManager $callHistoryManager
      * @param Serializer         $serializer
@@ -48,7 +47,6 @@ class CodinfManager
         ClientInterface $client,
         $user,
         $password,
-        $baseUrl,
         LoggerInterface $logger,
         CallHistoryManager $callHistoryManager,
         Serializer $serializer,

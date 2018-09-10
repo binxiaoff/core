@@ -137,7 +137,7 @@ class AltaresManager
      */
     public function getScore($siren)
     {
-        if (null !== ($response = $this->soapCall('risk', self::RESOURCE_COMPANY_SCORE, ['siren' => $siren]))) {
+        if (null !== ($response = $this->soapCall($this->riskClient, self::RESOURCE_COMPANY_SCORE, ['siren' => $siren]))) {
             /** @var CompanyRating $companyRating */
             $companyRating = $this->serializer->deserialize(json_encode($response->return), CompanyRating::class, 'json');
 
@@ -155,7 +155,7 @@ class AltaresManager
      */
     public function getBalanceSheets($siren, $balanceSheetsCount = 3)
     {
-        if (null !== ($response = $this->soapCall('identity', self::RESOURCE_BALANCE_SHEET, ['siren' => $siren, 'nbBilans' => $balanceSheetsCount]))) {
+        if (null !== ($response = $this->soapCall($this->identityClient, self::RESOURCE_BALANCE_SHEET, ['siren' => $siren, 'nbBilans' => $balanceSheetsCount]))) {
             if (isset($response->return->myInfo->nbBilan) && 1 === $response->return->myInfo->nbBilan) {
                 $response->return->myInfo->bilans = [$response->return->myInfo->bilans];
             }
@@ -177,7 +177,7 @@ class AltaresManager
      */
     public function getCompanyIdentity($siren)
     {
-        $response = $this->soapCall('identity', self::RESOURCE_COMPANY_IDENTITY, ['sirenRna' => $siren]);
+        $response = $this->soapCall($this->identityClient, self::RESOURCE_COMPANY_IDENTITY, ['sirenRna' => $siren]);
 
         if (null === $response) {
             throw new \RuntimeException(self::RESOURCE_COMPANY_IDENTITY . ' resource is down', self::EXCEPTION_CODE_ALTARES_DOWN);
@@ -198,7 +198,7 @@ class AltaresManager
      */
     public function getEstablishmentIdentity($siren)
     {
-        if (null !== ($response = $this->soapCall('identity', self::RESOURCE_ESTABLISHMENT_IDENTITY, ['sirenSiret' => $siren]))) {
+        if (null !== ($response = $this->soapCall($this->identityClient, self::RESOURCE_ESTABLISHMENT_IDENTITY, ['sirenSiret' => $siren]))) {
             /** @var EstablishmentIdentity $establishmentIdentity */
             $establishmentIdentity = $this->serializer->deserialize(json_encode($response->return), EstablishmentIdentity::class, 'json');
 
@@ -218,7 +218,7 @@ class AltaresManager
      */
     public function getFinancialSummary($siren, $balanceId)
     {
-        if (null !== ($response = $this->soapCall('identity', self::RESOURCE_FINANCIAL_SUMMARY, ['siren' => $siren, 'bilanId' => $balanceId]))) {
+        if (null !== ($response = $this->soapCall($this->identityClient, self::RESOURCE_FINANCIAL_SUMMARY, ['siren' => $siren, 'bilanId' => $balanceId]))) {
             /** @var FinancialSummary $financialSummary */
             $financialSummary = $this->serializer->deserialize(json_encode($response->return), FinancialSummary::class, 'json');
 
@@ -238,7 +238,7 @@ class AltaresManager
      */
     public function getBalanceManagementLine($siren, $balanceId)
     {
-        if (null !== ($response = $this->soapCall('identity', self::RESOURCE_MANAGEMENT_LINE, ['siren' => $siren, 'bilanId' => $balanceId]))) {
+        if (null !== ($response = $this->soapCall($this->identityClient, self::RESOURCE_MANAGEMENT_LINE, ['siren' => $siren, 'bilanId' => $balanceId]))) {
             /** @var FinancialSummary $financialSummaryListDetail */
             $balanceManagementLine = $this->serializer->deserialize(json_encode($response->return), FinancialSummary::class, 'json');
 
@@ -249,13 +249,13 @@ class AltaresManager
     }
 
     /**
-     * @param string $client
-     * @param string $resourceLabel
-     * @param array  $params
+     * @param \SoapClient $soapClient
+     * @param string      $resourceLabel
+     * @param array       $params
      *
      * @return mixed
      */
-    private function soapCall($client, $resourceLabel, array $params)
+    private function soapCall(\SoapClient $soapClient, $resourceLabel, array $params)
     {
         $wsResource = $this->resourceManager->getResource($resourceLabel);
         $siren      = $params[$this->getSirenKey($wsResource->getResourceName())];
@@ -269,9 +269,7 @@ class AltaresManager
             $callable = $this->callHistoryManager->addResourceCallHistoryLog($wsResource, $siren, $this->saveToCache);
             ini_set('default_socket_timeout', self::CALL_TIMEOUT);
 
-            /** @var \SoapClient $soapClient */
-            $soapClient = $this->{$client . 'Client'};
-            $response   = $soapClient->__soapCall(
+            $response = $soapClient->__soapCall(
                 $wsResource->getResourceName(), [
                 ['identification' => $this->getIdentification(), 'refClient' => 'sffpme'] + $params
             ]);

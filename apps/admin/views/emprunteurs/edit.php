@@ -118,7 +118,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{
                         <input type="text" name="email" id="email" value="<?= $this->clientEntity->getEmail() ?>" class="form-control">
                     </div>
                 </div>
-                <?php if (ClientsStatus::STATUS_VALIDATED === $this->clientEntity->getIdClientStatusHistory()->getIdStatus()->getId()) : ?>
+                <?php if ($this->clientEntity->isValidated()) : ?>
                     <div class="alert alert-success" role="alert">Validé</div>
                 <?php else : ?>
                     <div class="alert alert-danger" role="alert">Désactivé</div>
@@ -208,7 +208,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{
             <a role="button" class="btn-primary" href="<?= $this->lurl ?>/societe/notation/<?= $this->companyEntity->getIdCompany() ?>"><i class="fa fa-line-chart"></i>Suivi des notations</a>
         <?php endif; ?>
         <a role="button" class="btn-primary" href="<?= $this->lurl ?>/beneficiaires_effectifs/<?= $this->companyEntity->getIdCompany() ?>">Bénéficiaires effectifs</a>
-        <?php if (ClientsStatus::STATUS_VALIDATED === $this->clientEntity->getIdClientStatusHistory()->getIdStatus()->getId()) : ?>
+        <?php if ($this->clientEntity->isValidated()) : ?>
             <?php if (empty($this->clientEntity->getSecreteQuestion()) && empty($this->clientEntity->getSecreteReponse())) : ?>
                 <a role="button" class="btn-primary" href="javascript:send_email_borrower_area('<?= $this->clientEntity->getIdClient() ?>', 'open');">Ouvrir l'espace emprunteur</a>
             <?php else : ?>
@@ -337,7 +337,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{
                             }
                             ?>
                         </td>
-                        <td><?= $this->dates->formatDate($aMoneyOrder['added'], 'd/m/Y à H:i:s') ?></td>
+                        <td><?= $this->formatDate($aMoneyOrder['added'], 'd/m/Y à H:i:s') ?></td>
                     </tr>
                 <?php endforeach; ?>
                 </tbody>
