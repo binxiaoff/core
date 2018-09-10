@@ -14,13 +14,13 @@ class Kyc
 
     /**
      * @JMS\SerializedName("modification")
-     * @JMS\Type("DateTime")
+     * @JMS\Type("string")
      */
     private $lastModified;
 
     /**
      * @JMS\SerializedName("creation")
-     * @JMS\Type("DateTime")
+     * @JMS\Type("string")
      */
     private $created;
 
@@ -37,7 +37,7 @@ class Kyc
      */
     public function getLastModified(): \DateTime
     {
-        return $this->lastModified;
+        return new \DateTime($this->lastModified);
     }
 
     /**
@@ -45,6 +45,6 @@ class Kyc
      */
     public function getCreated(): \DateTime
     {
-        return $this->created;
+        return new \DateTime($this->created);
     }
 }

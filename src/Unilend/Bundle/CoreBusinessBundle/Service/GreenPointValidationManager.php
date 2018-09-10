@@ -193,9 +193,9 @@ class GreenPointValidationManager
      */
     public function saveClientKycStatus(Clients $client): void
     {
-        $kycInfo = $this->greenPointWsManager->getClientKYCStatus($client);
+        $kycInfo   = $this->greenPointWsManager->getClientKYCStatus($client);
+        $clientKyc = $this->entityManager->getRepository('UnilendCoreBusinessBundle:GreenpointKyc')->findOneBy(['idClient' => $client->getIdClient()]);
 
-        $clientKyc = $this->entityManager->getRepository('UnilendCoreBusinessBundle:GreenPointKyc')->findOneBy(['idClient' => $client->getIdClient()]);
         if (null === $clientKyc) {
             $clientKyc = new GreenpointKyc();
             $clientKyc->setCreationDate($kycInfo->getCreated());
