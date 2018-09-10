@@ -42,7 +42,7 @@ class GreenpointKyc
     private $added;
 
     /**
-     * @var \DateTime
+     * @var \DateTime|null
      *
      * @ORM\Column(name="updated", type="datetime", nullable=true)
      */

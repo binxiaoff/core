@@ -198,7 +198,9 @@ class GreenPointValidationManager
 
         if (null === $clientKyc) {
             $clientKyc = new GreenpointKyc();
-            $clientKyc->setCreationDate($kycInfo->getCreated());
+            $clientKyc
+                ->setIdClient($client)
+                ->setCreationDate($kycInfo->getCreated());
 
             $this->entityManager->persist($clientKyc);
         }
@@ -246,7 +248,7 @@ class GreenPointValidationManager
      *
      * @throws \Exception
      */
-    private function handleHousingCertificateReturn(Attachment $attachment, GreenpointAttachment $greenPointAttachment)
+    private function handleHousingCertificateReturn(Attachment $attachment, GreenpointAttachment $greenPointAttachment): void
     {
         if (AttachmentType::JUSTIFICATIF_DOMICILE === $attachment->getType()->getId() && GreenpointAttachment::STATUS_VALIDATION_VALID === $greenPointAttachment->getValidationStatus()) {
             /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\ClientAddressAttachment $addressAttachment */
@@ -270,7 +272,7 @@ class GreenPointValidationManager
      *
      * @throws \Exception
      */
-    private function handleRibReturn(Attachment $attachment, GreenpointAttachment $greenPointAttachment)
+    private function handleRibReturn(Attachment $attachment, GreenpointAttachment $greenPointAttachment): void
     {
         if (AttachmentType::RIB === $attachment->getType()->getId() && GreenpointAttachment::STATUS_VALIDATION_VALID === $greenPointAttachment->getValidationStatus()) {
             $bankAccountToValidate = $attachment->getBankAccount();
