@@ -44,10 +44,6 @@ ADDCOLUMN;
 
         $this->addSql('UPDATE close_out_netting_payment SET lenders_notified = notified, borrower_notified = notified');
 
-        $this->addSql('UPDATE mail_templates SET type = \'emprunteur-projet-recouvrement\' WHERE type = \'emprunteur-projet-statut-recouvrement\'');
-
-        $this->addSql('UPDATE mail_templates SET type = \'preteur-projet-recouvrement\' WHERE type = \'preteur-projet-statut-recouvrement\'');
-
         $this->addSql('ALTER TABLE close_out_netting_payment DROP COLUMN notified');
 
         $this->addSql('ANALYZE TABLE close_out_netting_payment');
@@ -70,10 +66,6 @@ ADDCOLUMN;
         $this->addSql('ALTER TABLE close_out_netting_payment ADD COLUMN notified TINYINT(1) NOT NULL AFTER paid_commission_tax_incl');
 
         $this->addSql('UPDATE close_out_netting_payment SET notified = lenders_notified');
-
-        $this->addSql('UPDATE mail_templates SET type = \'emprunteur-projet-statut-recouvrement\' WHERE type = \'emprunteur-projet-recouvrement\'');
-
-        $this->addSql('UPDATE mail_templates SET type = \'preteur-projet-statut-recouvrement\' WHERE type = \'preteur-projet-recouvrement\'');
 
         $dropColumnQuery = <<<'DROPCOLUMN'
 ALTER TABLE close_out_netting_payment

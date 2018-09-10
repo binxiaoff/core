@@ -337,7 +337,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{
                             }
                             ?>
                         </td>
-                        <td><?= $this->dates->formatDate($aMoneyOrder['added'], 'd/m/Y à H:i:s') ?></td>
+                        <td><?= $this->formatDate($aMoneyOrder['added'], 'd/m/Y à H:i:s') ?></td>
                     </tr>
                 <?php endforeach; ?>
                 </tbody>

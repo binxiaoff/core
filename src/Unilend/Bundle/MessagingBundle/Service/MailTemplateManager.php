@@ -20,28 +20,28 @@ class MailTemplateManager
     /** @var ToInlineStyleEmailConverter */
     private $cssToInlineConverter;
     /** @var string */
-    private $defaultLanguage;
+    private $defaultLocale;
 
     /**
      * @param EntityManager               $entityManager
      * @param MailQueueManager            $mailQueueManager
      * @param TranslationManager          $translationManager
      * @param ToInlineStyleEmailConverter $cssToInlineConverter
-     * @param string                      $defaultLanguage
+     * @param string                      $defaultLocale
      */
     public function __construct(
         EntityManager $entityManager,
         MailQueueManager $mailQueueManager,
         TranslationManager $translationManager,
         ToInlineStyleEmailConverter $cssToInlineConverter,
-        $defaultLanguage
+        $defaultLocale
     )
     {
         $this->entityManager        = $entityManager;
         $this->mailQueueManager     = $mailQueueManager;
         $this->translationManager   = $translationManager;
         $this->cssToInlineConverter = $cssToInlineConverter;
-        $this->defaultLanguage      = $defaultLanguage;
+        $this->defaultLocale      = $defaultLocale;
     }
 
     /**
@@ -74,7 +74,7 @@ class MailTemplateManager
         $part         = null === $part ? MailTemplates::PART_TYPE_CONTENT : $part;
         $mailTemplate = $this->entityManager->getRepository('UnilendCoreBusinessBundle:MailTemplates')->findOneBy([
             'type'   => $type,
-            'locale' => $this->defaultLanguage,
+            'locale' => $this->defaultLocale,
             'status' => MailTemplates::STATUS_ACTIVE,
             'part'   => $part
         ]);
@@ -94,7 +94,7 @@ class MailTemplateManager
             ->setSenderEmail($senderEmail)
             ->setSubject($subject)
             ->setContent($content)
-            ->setLocale($this->defaultLanguage)
+            ->setLocale($this->defaultLocale)
             ->setStatus(MailTemplates::STATUS_ACTIVE);
 
         $this->compileTemplate($mailTemplate);

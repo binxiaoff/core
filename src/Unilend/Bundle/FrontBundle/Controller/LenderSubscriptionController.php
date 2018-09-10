@@ -1252,8 +1252,6 @@ class LenderSubscriptionController extends Controller
     public function checkAgeAction(Request $request): Response
     {
         if ($request->isXmlHttpRequest()) {
-            /** @var \dates $dates */
-            $dates      = Loader::loadLib('dates');
             $translator = $this->get('translator');
             $lenderValidationManager = $this->get('unilend.service.lender_validation_manager');
             $birthday = \DateTime::createFromFormat('Y-m-d', $request->request->get('year_of_birth') . '-' . $request->request->get('month_of_birth') . '-' . $request->request->get('day_of_birth'));

@@ -20,7 +20,7 @@
                 <?php $capRestant = 0; ?>
             <?php endif; ?>
             <tr>
-                <td height="35" style="width: 15%; border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;" class="nowrap"><?= $this->dates->formatDate($r['date_echeance_emprunteur'], 'd/m/Y') ?></td>
+                <td height="35" style="width: 15%; border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;" class="nowrap"><?= $this->formatDate($r['date_echeance_emprunteur'], 'd/m/Y') ?></td>
                 <td height="35" style="width: 15%; border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;" class="nowrap"><?= $this->ficelle->formatNumber($r['capital'] / 100) ?>&nbsp;€</td>
                 <td height="35" style="width: 10%; border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;" class="nowrap"><?= $this->ficelle->formatNumber($r['interets'] / 100) ?>&nbsp;€</td>
                 <td height="35" style="width: 15%; border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;" class="nowrap"><?= $this->ficelle->formatNumber($r['commission'] / 100) ?>&nbsp;€</td>
