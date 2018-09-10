@@ -35,9 +35,8 @@ class SlackManager
      * @param ApiClientInterface $apiClient
      * @param EntityManager      $entityManager
      * @param Packages           $assetsPackages
-     * @param string             $scheme
-     * @param string             $frontHost
-     * @param string             $backHost
+     * @param string             $frontUrl
+     * @param string             $adminUrl
      * @param string             $defaultChannel
      * @param string             $environment
      * @param LoggerInterface    $logger
@@ -46,19 +45,18 @@ class SlackManager
         ApiClientInterface $apiClient,
         EntityManager $entityManager,
         Packages $assetsPackages,
-        $scheme,
-        $frontHost,
-        $backHost,
-        $defaultChannel,
-        $environment,
+        string $frontUrl,
+        string $adminUrl,
+        string $defaultChannel,
+        string $environment,
         LoggerInterface $logger
     )
     {
         $this->apiClient      = $apiClient;
         $this->entityManager  = $entityManager;
         $this->iconUrl        = $assetsPackages->getUrl('/assets/images/slack/unilend.png');
-        $this->frontUrl       = $scheme . '://' . $frontHost;
-        $this->backUrl        = $scheme . '://' . $backHost;
+        $this->frontUrl       = $frontUrl;
+        $this->backUrl        = $adminUrl;
         $this->defaultChannel = $defaultChannel;
         $this->environment    = $environment;
         $this->logger         = $logger;

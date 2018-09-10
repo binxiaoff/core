@@ -59,8 +59,7 @@ class LenderValidationManager
      * @param \Swift_Mailer           $mailer
      * @param LoggerInterface         $logger
      * @param Packages                $assetsPackages
-     * @param string                  $schema
-     * @param string                  $frontHost
+     * @param string                  $frontUrl
      */
     public function __construct(
         EntityManager $entityManager,
@@ -75,8 +74,7 @@ class LenderValidationManager
         \Swift_Mailer $mailer,
         LoggerInterface $logger,
         Packages $assetsPackages,
-        string $schema,
-        string $frontHost
+        string $frontUrl
     )
     {
         $this->entityManager       = $entityManager;
@@ -91,7 +89,7 @@ class LenderValidationManager
         $this->mailer              = $mailer;
         $this->logger              = $logger;
         $this->staticUrl           = $assetsPackages->getUrl('');
-        $this->frontUrl            = $schema . '://' . $frontHost;
+        $this->frontUrl            = $frontUrl;
     }
 
     /**

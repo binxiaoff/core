@@ -66,7 +66,7 @@ class ProjectRepaymentNotificationSender
         RouterInterface $router,
         LoggerInterface $logger,
         Packages $assetsPackages,
-        $frontUrl
+        string $frontUrl
     )
     {
         $this->entityManager     = $entityManager;

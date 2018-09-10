@@ -4,7 +4,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\ORM\{EntityManager, ORMException};
 use Psr\Log\LoggerInterface;
-use Symfony\Component\{Asset\Packages, DependencyInjection\ContainerInterface, Translation\TranslatorInterface};
+use Symfony\Component\{Asset\Packages, DependencyInjection\ContainerInterface, Routing\RouterInterface, Translation\TranslatorInterface};
 use Unilend\Bundle\CoreBusinessBundle\Entity\{Bids, Clients, ClientSettingType, ClientsGestionTypeNotif, ClientsMandats, ClientsStatus, Companies, Operation, OperationSubType, ProjectCgv, Projects, ProjectsPouvoir, Settings, UniversignEntityInterface, Wallet, WalletType};
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\{TemplateMessage, TemplateMessageProvider};
@@ -24,7 +24,10 @@ class MailerManager
     private $sSUrl;
     /** @var string */
     private $sFUrl;
-    /** @var ContainerInterface */
+    /**
+     * @deprecated inject the service instead
+     * @var ContainerInterface
+     */
     private $container;
     /** @var EntityManagerSimulator */
     private $entityManagerSimulator;
@@ -38,23 +41,26 @@ class MailerManager
     private $locale;
     /** @var TranslatorInterface */
     private $translator;
+    /** @var RouterInterface */
+    private $router;
 
     public function __construct(
         ContainerInterface $container,
+        RouterInterface $router,
         EntityManagerSimulator $entityManagerSimulator,
         EntityManager $entityManager,
         TemplateMessageProvider $messageProvider,
         \Swift_Mailer $mailer,
         $defaultLocale,
         Packages $assetsPackages,
-        $schema,
-        $frontHost,
-        $adminHost,
+        $frontUrl,
+        $adminUrl,
         TranslatorInterface $translator,
         LoggerInterface $logger
     )
     {
         $this->container              = $container;
+        $this->router                 = $router;
         $this->entityManagerSimulator = $entityManagerSimulator;
         $this->entityManager          = $entityManager;
         $this->messageProvider        = $messageProvider;
@@ -67,8 +73,8 @@ class MailerManager
         $this->locale = $defaultLocale;
 
         $this->sSUrl   = $assetsPackages->getUrl('');
-        $this->sFUrl   = $schema . '://' . $frontHost;
-        $this->sAUrl   = $schema . '://' . $adminHost;
+        $this->sFUrl   = $frontUrl;
+        $this->sAUrl   = $adminUrl;
         $this->oLogger = $logger;
     }
 
@@ -1651,7 +1657,7 @@ class MailerManager
         $token     = $this->entityManagerSimulator->getRepository('temporary_links_login')->generateTemporaryLink($client->getIdClient(), \temporary_links_login::PASSWORD_TOKEN_LIFETIME_LONG);
         $variables = [
             'firstName'                  => $client->getPrenom(),
-            'activationLink'             => $this->sFUrl . $this->container->get('router')->generate('partner_security', ['securityToken' => $token]),
+            'activationLink'             => $this->sFUrl . $this->router->generate('partner_security', ['securityToken' => $token]),
             'borrowerServicePhoneNumber' => $this->settingsRepository->findOneBy(['type' => 'Téléphone emprunteur'])->getValue(),
             'borrowerServiceEmail'       => $this->settingsRepository->findOneBy(['type' => 'Adresse emprunteur'])->getValue(),
         ];

@@ -52,7 +52,7 @@ class AltaresManager
      * @param ExternalDataManager $externalDataManager
      * @param DataWriter          $dataWriter
      * @param MonitoringManger    $monitoringManager
-     * @param LoggerInterface     $logger
+     * @param LoggerInterface     $wsClientLogger
      */
     public function __construct(
         EntityManager $entityManager,
@@ -61,7 +61,7 @@ class AltaresManager
         ExternalDataManager $externalDataManager,
         DataWriter $dataWriter,
         MonitoringManger $monitoringManager,
-        LoggerInterface $logger
+        LoggerInterface $wsClientLogger
     )
     {
         $this->entityManager       = $entityManager;
@@ -70,7 +70,7 @@ class AltaresManager
         $this->externalDataManager = $externalDataManager;
         $this->dataWriter          = $dataWriter;
         $this->monitoringManager   = $monitoringManager;
-        $this->logger              = $logger;
+        $this->logger              = $wsClientLogger;
     }
 
     /**

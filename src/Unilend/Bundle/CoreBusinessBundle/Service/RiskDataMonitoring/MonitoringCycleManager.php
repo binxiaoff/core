@@ -47,7 +47,7 @@ class MonitoringCycleManager
      * @param AltaresManager     $altaresManager
      * @param DataWriter         $dataWriter
      * @param MonitoringManger   $monitoringManager
-     * @param LoggerInterface    $logger
+     * @param LoggerInterface    $wsClientLogger
      */
     public function __construct(
         EntityManager $entityManager,
@@ -55,7 +55,7 @@ class MonitoringCycleManager
         AltaresManager $altaresManager,
         DataWriter $dataWriter,
         MonitoringManger $monitoringManager,
-        LoggerInterface $logger
+        LoggerInterface $wsClientLogger
     )
     {
         $this->entityManager      = $entityManager;
@@ -63,7 +63,7 @@ class MonitoringCycleManager
         $this->altaresManager     = $altaresManager;
         $this->dataWriter         = $dataWriter;
         $this->monitoringManager  = $monitoringManager;
-        $this->logger             = $logger;
+        $this->logger             = $wsClientLogger;
     }
 
     /**

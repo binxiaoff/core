@@ -49,8 +49,7 @@ class MailChimpEventSubscriber implements EventSubscriberInterface, ProviderInte
     {
         return [
             WebhookEvent::EVENT_SUBSCRIBE   => 'subscribe',
-            WebhookEvent::EVENT_UNSUBSCRIBE => 'unsubscribe',
-            WebhookEvent::EVENT_UPEMAIL     => 'upemail'
+            WebhookEvent::EVENT_UNSUBSCRIBE => 'unsubscribe'
         ];
     }
 

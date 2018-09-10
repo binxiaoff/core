@@ -75,9 +75,11 @@ class BidManager
     }
 
     /**
-     * @param LoggerInterface $logger
+     * @required
+     *
+     * @param LoggerInterface|null $logger
      */
-    public function setLogger(LoggerInterface $logger)
+    public function setLogger(?LoggerInterface $logger): void
     {
         $this->logger = $logger;
     }

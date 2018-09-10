@@ -138,9 +138,12 @@ class ProjectLifecycleManager
     }
 
     /**
-     * @param LoggerInterface $logger
+     * @required
+     *
+     * @param LoggerInterface|null $logger
+     *
      */
-    public function setLogger(LoggerInterface $logger): void
+    public function setLogger(?LoggerInterface $logger): void
     {
         $this->logger = $logger;
     }

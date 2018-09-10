@@ -34,24 +34,24 @@ class TermsOfSaleManager
      * @param MailerManager         $mailerManager
      * @param TokenStorageInterface $tokenStorage
      * @param RequestStack          $requestStack
-     * @param string                $rootDirectory
-     * @param string                $locale
+     * @param string                $rootDir
+     * @param string                $defaultLocale
      */
     public function __construct(
         EntityManager $entityManager,
         MailerManager $mailerManager,
         TokenStorageInterface $tokenStorage,
         RequestStack $requestStack,
-        string $rootDirectory,
-        string $locale
+        string $rootDir,
+        string $defaultLocale
     )
     {
         $this->entityManager = $entityManager;
         $this->mailerManager = $mailerManager;
         $this->tokenStorage  = $tokenStorage;
         $this->requestStack  = $requestStack;
-        $this->rootDirectory = $rootDirectory;
-        $this->locale        = $locale;
+        $this->rootDirectory = $rootDir;
+        $this->locale        = $defaultLocale;
     }
 
     /**

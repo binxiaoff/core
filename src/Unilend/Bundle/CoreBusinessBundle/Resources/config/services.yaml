@@ -1,0 +1,57 @@
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+        public: false
+        bind:
+            $rootDir: '%kernel.root_dir%'
+            $frontUrl: '%router.request_context.scheme%://%url.host_default%'
+            $adminUrl: '%router.request_context.scheme%://%url.host_admin%'
+            $numberFormatter: '@number_formatter'
+            $currencyFormatter: '@currency_formatter'
+            $defaultLocale: '%locale%'
+            $environment: '%kernel.environment%'
+            $protectedPath: '%path.protected%'
+            $wsClientLogger: '@monolog.logger.wsclient'
+
+    Unilend\Bundle\CoreBusinessBundle\:
+        resource: '%kernel.project_dir%/src/Unilend/Bundle/CoreBusinessBundle/*'
+        exclude: '%kernel.project_dir%/src/Unilend/Bundle/CoreBusinessBundle/Entity'
+
+    CL\Slack\Transport\ApiClientInterface: '@cl_slack.api_client'
+    Knp\Snappy\GeneratorInterface: '@knp_snappy.pdf'
+
+    Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductManager:
+        abstract: true
+
+    Unilend\Bundle\CoreBusinessBundle\Service\SalesforceManager:
+        $extractionDir: '%path.protected%dataloader'
+        $configDir: '%kernel.root_dir%/dataloader/conf'
+
+    Unilend\Bundle\CoreBusinessBundle\Service\LocationManager:
+        $mapboxToken: '%mapbox.token%'
+
+    Unilend\Bundle\CoreBusinessBundle\Service\SearchService:
+        $deskUser: '%desk_user%'
+        $deskPassword: '%desk_password%'
+
+    Unilend\Bundle\CoreBusinessBundle\Service\Ekomi:
+        $url: '%ekomi.url%'
+        $shopId: '%ekomi.shop_id%'
+        $password: '%ekomi.password%'
+
+    Unilend\Bundle\CoreBusinessBundle\Service\PaylineManager:
+        $merchantId: '%payline.merchant_id%'
+        $accessKey: '%payline.access_key%'
+        $logPath: '%path.payline%'
+
+    Unilend\Bundle\CoreBusinessBundle\Service\SlackManager:
+        $defaultChannel: '%slack.default_channel%'
+
+    Unilend\Bundle\CoreBusinessBundle\Service\AttachmentManager:
+        $uploadRootDirectory: '%path.protected%attachments'
+        $tmpDirectory: '%path.shared_tmp%'
+
+    Unilend\Bundle\CoreBusinessBundle\Service\GoogleRecaptchaManager:
+        $client: '@eight_points_guzzle.client.google_recaptcha'
+        $secret: '%google.recaptcha_secret%'

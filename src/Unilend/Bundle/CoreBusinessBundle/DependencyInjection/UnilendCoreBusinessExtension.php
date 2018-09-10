@@ -4,7 +4,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\DependencyInjection;
 
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
-use Symfony\Component\DependencyInjection\Loader;
+use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 use Symfony\Component\HttpKernel\DependencyInjection\Extension;
 
 /**
@@ -22,12 +22,8 @@ class UnilendCoreBusinessExtension extends Extension
         $configuration = new Configuration();
         $config        = $this->processConfiguration($configuration, $configs);
 
-        $loader = new Loader\XmlFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));
-        $loader->load('services.xml');
-        $loader->load('product_model.xml');
-        $loader->load('eligibility.xml');
-        $loader->load('repayment.xml');
-        $loader->load('events.xml');
-        $loader->load('document.xml');
+        $loader = new YamlFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));
+        $loader->load('services.yaml');
+        $loader->load('legacy.yaml');
     }
 }

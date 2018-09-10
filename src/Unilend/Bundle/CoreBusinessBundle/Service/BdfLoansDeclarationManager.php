@@ -16,11 +16,11 @@ class BdfLoansDeclarationManager
     private $baseDir;
 
     /**
-     * @param string $baseDir
+     * @param string $protectedPath
      */
-    public function __construct(string $baseDir)
+    public function __construct(string $protectedPath)
     {
-        $this->baseDir = $baseDir;
+        $this->baseDir = $protectedPath;
     }
 
     /**

@@ -30,21 +30,21 @@ class EulerHermesManager
      * @param EulerHermesWsClient $eulerHermesManager
      * @param DataWriter          $dataWriter
      * @param MonitoringManger    $monitoringManager
-     * @param LoggerInterface     $logger
+     * @param LoggerInterface     $wsClientLogger
      */
     public function __construct(
         EntityManager $entityManager,
         EulerHermesWsClient $eulerHermesManager,
         DataWriter $dataWriter,
         MonitoringManger $monitoringManager,
-        LoggerInterface $logger
+        LoggerInterface $wsClientLogger
     )
     {
         $this->entityManager      = $entityManager;
         $this->eulerHermesManager = $eulerHermesManager;
         $this->dataWriter         = $dataWriter;
         $this->monitoringManager  = $monitoringManager;
-        $this->logger             = $logger;
+        $this->logger             = $wsClientLogger;
     }
 
     /**
