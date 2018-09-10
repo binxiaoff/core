@@ -2,11 +2,11 @@
 
 namespace Unilend\Bundle\WSClientBundle\Service;
 
-use JMS\Serializer\Serializer;
-use Psr\Http\Message\ResponseInterface;
-use Psr\Log\LoggerInterface;
 use GuzzleHttp\Client;
 use GuzzleHttp\ClientInterface;
+use JMS\Serializer\SerializerInterface;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WsExternalResource;
 use Unilend\Bundle\WSClientBundle\Entity\Codinf\IncidentList;
 
@@ -25,7 +25,7 @@ class CodinfManager
     private $logger;
     /** @var CallHistoryManager */
     private $callHistoryManager;
-    /** @var Serializer */
+    /** @var SerializerInterface */
     private $serializer;
     /** @var ResourceManager */
     private $resourceManager;
@@ -35,13 +35,13 @@ class CodinfManager
     private $readFromCache = true;
 
     /**
-     * @param ClientInterface    $client
-     * @param string             $user
-     * @param string             $password
-     * @param LoggerInterface    $logger
-     * @param CallHistoryManager $callHistoryManager
-     * @param Serializer         $serializer
-     * @param ResourceManager    $resourceManager
+     * @param ClientInterface     $client
+     * @param string              $user
+     * @param string              $password
+     * @param LoggerInterface     $logger
+     * @param CallHistoryManager  $callHistoryManager
+     * @param SerializerInterface $serializer
+     * @param ResourceManager     $resourceManager
      */
     public function __construct(
         ClientInterface $client,
@@ -49,7 +49,7 @@ class CodinfManager
         $password,
         LoggerInterface $logger,
         CallHistoryManager $callHistoryManager,
-        Serializer $serializer,
+        SerializerInterface $serializer,
         ResourceManager $resourceManager
     )
     {
