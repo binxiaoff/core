@@ -2,19 +2,19 @@
 
 namespace Unilend\Bundle\FrontBundle\Service;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\OptimisticLockException;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Form\{FormError, FormInterface};
 use Symfony\Component\HttpFoundation\{File\UploadedFile, FileBag};
 use Symfony\Component\Translation\TranslatorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, Attachment, AttachmentType, BankAccount, ClientAddress, Clients, ClientsStatus, Companies, CompanyAddress, Pays, Users, WalletType};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, Attachment, AttachmentType, BankAccount, ClientAddress, Clients, Companies, CompanyAddress, Pays, Users, WalletType};
 use Unilend\Bundle\CoreBusinessBundle\Service\{AddressManager, AttachmentManager, BankAccountManager, ClientAuditer, ClientDataHistoryManager, ClientStatusManager};
 use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessageProvider;
 
 class LenderProfileFormsHandler
 {
-    /** @var EntityManager */
+    /** @var EntityManagerInterface */
     private $entityManager;
     /** @var AttachmentManager */
     private $attachmentManager;
@@ -38,7 +38,7 @@ class LenderProfileFormsHandler
     private $logger;
 
     /**
-     * @param EntityManager            $entityManager
+     * @param EntityManagerInterface   $entityManager
      * @param AttachmentManager        $attachmentManager
      * @param ClientStatusManager      $clientStatusManager
      * @param ClientAuditer            $clientAuditer
@@ -51,7 +51,7 @@ class LenderProfileFormsHandler
      * @param LoggerInterface          $logger
      */
     public function __construct(
-        EntityManager $entityManager,
+        EntityManagerInterface $entityManager,
         AttachmentManager $attachmentManager,
         ClientStatusManager $clientStatusManager,
         ClientAuditer $clientAuditer,

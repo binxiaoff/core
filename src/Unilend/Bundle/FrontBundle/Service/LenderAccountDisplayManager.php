@@ -2,7 +2,7 @@
 
 namespace Unilend\Bundle\FrontBundle\Service;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Psr\Cache\CacheItemPoolInterface;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Bids;
@@ -30,18 +30,17 @@ class LenderAccountDisplayManager
     private $cipIndicators = false;
     /** @var  ProductManager */
     private $productManager;
-    /** @var EntityManager */
+    /** @var EntityManagerInterface */
     private $entityManager;
 
     /**
-     * LenderAccountDisplayManager constructor.
      * @param EntityManagerSimulator $entityManagerSimulator
      * @param LocationManager        $locationManager
      * @param TranslatorInterface    $translator
      * @param CacheItemPoolInterface $cachePool
      * @param CIPManager             $cipManager
      * @param ProductManager         $productManager
-     * @param EntityManager          $entityManager
+     * @param EntityManagerInterface $entityManager
      */
     public function __construct(
         EntityManagerSimulator $entityManagerSimulator,
@@ -50,7 +49,7 @@ class LenderAccountDisplayManager
         CacheItemPoolInterface $cachePool,
         CIPManager $cipManager,
         ProductManager $productManager,
-        EntityManager $entityManager
+        EntityManagerInterface $entityManager
     ) {
         $this->entityManagerSimulator = $entityManagerSimulator;
         $this->locationManager        = $locationManager;

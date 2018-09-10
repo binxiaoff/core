@@ -2,7 +2,7 @@
 
 namespace Unilend\Bundle\FrontBundle\Service;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use PhpXmlRpc\Client;
 use PhpXmlRpc\Request;
 use PhpXmlRpc\Value;
@@ -28,7 +28,7 @@ use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessageProvider;
 
 class UniversignManager
 {
-    /** @var EntityManager */
+    /** @var EntityManagerInterface */
     private $entityManager;
     /** @var MailerManager */
     private $mailerManager;
@@ -52,7 +52,7 @@ class UniversignManager
     private $slackManager;
 
     /**
-     * @param EntityManager           $entityManager
+     * @param EntityManagerInterface  $entityManager
      * @param MailerManager           $mailerManager
      * @param RouterInterface         $router
      * @param LoggerInterface         $logger
@@ -65,7 +65,7 @@ class UniversignManager
      * @param string                  $rootDir
      */
     public function __construct(
-        EntityManager $entityManager,
+        EntityManagerInterface $entityManager,
         MailerManager $mailerManager,
         RouterInterface $router,
         LoggerInterface $logger,
@@ -756,7 +756,7 @@ class UniversignManager
             && $termsOfSale->getIdProject()->getIdCommercial()->getIdUser() > 0
             && false === empty($termsOfSale->getIdProject()->getIdCommercial()->getSlack())
         ) {
-            $message = $this->slackManager->getProjectName($termsOfSale->getIdProject()) . ' : les CGV emprunteurs sont signées.';
+            $message = $this->slackManager->getProjectName($termsOfSale->getIdProject()) . ' : les CGV emprunteurs sont signï¿½es.';
             $this->slackManager->sendMessage($message, '@' . $termsOfSale->getIdProject()->getIdCommercial()->getSlack());
         }
     }

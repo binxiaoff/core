@@ -3,7 +3,7 @@
 namespace Unilend\Bundle\WSClientBundle\Service;
 
 use GuzzleHttp\Client;
-use JMS\Serializer\Serializer;
+use JMS\Serializer\SerializerInterface;
 use Psr\Cache\CacheItemPoolInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Log\LoggerInterface;
@@ -33,7 +33,7 @@ class EulerHermesManager
     private $logger;
     /** @var CallHistoryManager */
     private $callHistoryManager;
-    /** @var Serializer */
+    /** @var SerializerInterface */
     private $serializer;
     /** @var string */
     private $accountPassword;
@@ -56,7 +56,7 @@ class EulerHermesManager
      * @param string                 $accountEmail
      * @param LoggerInterface        $logger
      * @param CallHistoryManager     $callHistoryManager
-     * @param Serializer             $serializer
+     * @param SerializerInterface    $serializer
      * @param ResourceManager        $resourceManager
      * @param CacheItemPoolInterface $cachePool
      */
@@ -68,7 +68,7 @@ class EulerHermesManager
         $accountEmail,
         LoggerInterface $logger,
         CallHistoryManager $callHistoryManager,
-        Serializer $serializer,
+        SerializerInterface $serializer,
         ResourceManager $resourceManager,
         CacheItemPoolInterface $cachePool
     )

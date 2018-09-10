@@ -2,7 +2,7 @@
 
 namespace Unilend\Bundle\WSClientBundle\Service;
 
-use JMS\Serializer\Serializer;
+use JMS\Serializer\SerializerInterface;
 use Psr\Log\LoggerInterface;
 use Unilend\Bundle\WSClientBundle\Entity\Infogreffe\CompanyIndebtedness;
 
@@ -33,7 +33,7 @@ class InfogreffeManager
     private $logger;
     /** @var CallHistoryManager */
     private $callHistoryManager;
-    /** @var Serializer */
+    /** @var SerializerInterface */
     private $serializer;
     /** @var ResourceManager */
     private $resourceManager;
@@ -45,14 +45,14 @@ class InfogreffeManager
     private $monitoring = false;
 
     /**
-     * @param string             $login
-     * @param string             $password
-     * @param string             $wsdl
-     * @param string             $url
-     * @param LoggerInterface    $logger
-     * @param CallHistoryManager $callHistoryManager
-     * @param Serializer         $serializer
-     * @param ResourceManager    $resourceManager
+     * @param string              $login
+     * @param string              $password
+     * @param string              $wsdl
+     * @param string              $url
+     * @param LoggerInterface     $logger
+     * @param CallHistoryManager  $callHistoryManager
+     * @param SerializerInterface $serializer
+     * @param ResourceManager     $resourceManager
      */
     public function __construct(
         $login,
@@ -61,7 +61,7 @@ class InfogreffeManager
         $url,
         LoggerInterface $logger,
         CallHistoryManager $callHistoryManager,
-        Serializer $serializer,
+        SerializerInterface $serializer,
         ResourceManager $resourceManager
     )
     {
