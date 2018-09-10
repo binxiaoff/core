@@ -2,7 +2,7 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service\Repayment;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\DebtCollectionMission;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectCharge;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRepaymentTask;
@@ -16,7 +16,7 @@ use Unilend\Bundle\CoreBusinessBundle\Service\ProjectChargeManager;
 
 class ProjectCloseOutNettingPaymentManager
 {
-    /** @var EntityManager */
+    /** @var EntityManagerInterface */
     private $entityManager;
 
     /** @var ProjectRepaymentTaskManager */
@@ -34,14 +34,14 @@ class ProjectCloseOutNettingPaymentManager
     /**
      * ProjectRepaymentManager constructor.
      *
-     * @param EntityManager                $entityManager
+     * @param EntityManagerInterface       $entityManager
      * @param ProjectRepaymentTaskManager  $projectRepaymentTaskManager
      * @param DebtCollectionMissionManager $debtCollectionMissionManager
      * @param DebtCollectionFeeManager     $debtCollectionFeeManager
      * @param ProjectChargeManager         $projectChargeManager
      */
     public function __construct(
-        EntityManager $entityManager,
+        EntityManagerInterface $entityManager,
         ProjectRepaymentTaskManager $projectRepaymentTaskManager,
         DebtCollectionMissionManager $debtCollectionMissionManager,
         DebtCollectionFeeManager $debtCollectionFeeManager,

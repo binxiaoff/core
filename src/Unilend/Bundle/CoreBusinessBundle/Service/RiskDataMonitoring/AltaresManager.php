@@ -2,12 +2,10 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service\RiskDataMonitoring;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\OptimisticLockException;
 use Psr\Log\LoggerInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Companies, CompanyRatingHistory
-};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{Companies, CompanyRatingHistory};
 use Unilend\Bundle\CoreBusinessBundle\Service\Eligibility\Validator\CompanyValidator;
 use Unilend\Bundle\CoreBusinessBundle\Service\ExternalDataManager;
 use Unilend\Bundle\WSClientBundle\Entity\Altares\RiskDataMonitoring\EventDetail;
@@ -30,7 +28,7 @@ class AltaresManager
         'ALTA_BIL'
     ];
 
-    /** @var EntityManager */
+    /** @var EntityManagerInterface */
     private $entityManager;
     /** @var AltaresWsClient */
     private $altaresWsManager;
@@ -46,16 +44,16 @@ class AltaresManager
     private $logger;
 
     /**
-     * @param EntityManager       $entityManager
-     * @param AltaresWsClient     $altaresWsManager
-     * @param CompanyValidator    $companyValidator
-     * @param ExternalDataManager $externalDataManager
-     * @param DataWriter          $dataWriter
-     * @param MonitoringManger    $monitoringManager
-     * @param LoggerInterface     $wsClientLogger
+     * @param EntityManagerInterface $entityManager
+     * @param AltaresWsClient        $altaresWsManager
+     * @param CompanyValidator       $companyValidator
+     * @param ExternalDataManager    $externalDataManager
+     * @param DataWriter             $dataWriter
+     * @param MonitoringManger       $monitoringManager
+     * @param LoggerInterface        $wsClientLogger
      */
     public function __construct(
-        EntityManager $entityManager,
+        EntityManagerInterface $entityManager,
         AltaresWsClient $altaresWsManager,
         CompanyValidator $companyValidator,
         ExternalDataManager $externalDataManager,

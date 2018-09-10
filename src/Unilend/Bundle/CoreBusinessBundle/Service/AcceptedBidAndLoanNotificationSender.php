@@ -2,7 +2,7 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{ClientsGestionNotifications, ClientsStatus, Loans, Notifications, Projects, UnderlyingContract, Wallet};
@@ -10,7 +10,7 @@ use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\{TemplateMessage, Template
 
 class AcceptedBidAndLoanNotificationSender
 {
-    /** @var EntityManager */
+    /** @var EntityManagerInterface */
     private $entityManager;
     /** @var NotificationManager */
     private $notificationManager;
@@ -28,7 +28,7 @@ class AcceptedBidAndLoanNotificationSender
     private $currencyFormatter;
 
     /**
-     * @param EntityManager           $entityManager
+     * @param EntityManagerInterface  $entityManager
      * @param NotificationManager     $notificationManager
      * @param TemplateMessageProvider $messageProvider
      * @param \Swift_Mailer           $mailer
@@ -38,7 +38,7 @@ class AcceptedBidAndLoanNotificationSender
      * @param \NumberFormatter        $currencyFormatter
      */
     public function __construct(
-        EntityManager $entityManager,
+        EntityManagerInterface $entityManager,
         NotificationManager $notificationManager,
         TemplateMessageProvider $messageProvider,
         \Swift_Mailer $mailer,

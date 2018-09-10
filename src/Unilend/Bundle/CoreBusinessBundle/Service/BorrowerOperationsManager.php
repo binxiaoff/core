@@ -2,7 +2,7 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Translation\Translator;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{OperationSubType, OperationType, Receptions, TaxType, Wallet};
@@ -16,7 +16,7 @@ class BorrowerOperationsManager
     const OP_BORROWER_DIRECT_DEBIT     = 'monthly-payment-direct-debit';
     const OP_WIRE_TRANSFER_IN          = 'wire-transfer-in';
 
-    /** @var EntityManager */
+    /** @var EntityManagerInterface */
     private $entityManager;
     /** @var Translator */
     private $translator;
@@ -26,11 +26,11 @@ class BorrowerOperationsManager
     /**
      * BorrowerOperationsManager constructor.
      *
-     * @param EntityManager   $entityManager
-     * @param Translator      $translator
-     * @param LoggerInterface $logger
+     * @param EntityManagerInterface $entityManager
+     * @param Translator             $translator
+     * @param LoggerInterface        $logger
      */
-    public function __construct(EntityManager $entityManager, Translator $translator, LoggerInterface $logger)
+    public function __construct(EntityManagerInterface $entityManager, Translator $translator, LoggerInterface $logger)
     {
         $this->entityManager = $entityManager;
         $this->translator    = $translator;

@@ -2,7 +2,7 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\LenderStatistic;
@@ -44,12 +44,17 @@ class IRRManager
     /** @var EntityManagerSimulator  */
     private $entityManagerSimulator;
 
-    /** @var  EntityManager */
+    /** @var  EntityManagerInterface */
     private $entityManager;
 
+    /**
+     * @param EntityManagerSimulator $entityManagerSimulator
+     * @param EntityManagerInterface $entityManager
+     * @param LoggerInterface        $logger
+     */
     public function __construct(
         EntityManagerSimulator $entityManagerSimulator,
-        EntityManager $entityManager,
+        EntityManagerInterface $entityManager,
         LoggerInterface $logger
     )
     {

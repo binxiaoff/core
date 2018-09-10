@@ -2,7 +2,7 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service\Product\Checker;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Bids;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Product;
@@ -17,17 +17,17 @@ trait LenderChecker
      * For example, the max loan amount for IFP is 2000 €, and a lender has 1500 € pending bid(s), the method will return 500.
      *
      *
-     * @param Clients         $client
-     * @param Projects        $project
-     * @param ContractManager $contractManager
-     * @param EntityManager   $entityManager
-     * @param bool            $isAutoBid
+     * @param Clients                $client
+     * @param Projects               $project
+     * @param ContractManager        $contractManager
+     * @param EntityManagerInterface $entityManager
+     * @param bool                   $isAutoBid
      *
      * @return null|string
      *
      * @throws \Exception
      */
-    public function getAmountLenderCanStillBid(Clients $client, Projects $project, ContractManager $contractManager, EntityManager $entityManager, $isAutoBid = false)
+    public function getAmountLenderCanStillBid(Clients $client, Projects $project, ContractManager $contractManager, EntityManagerInterface $entityManager, $isAutoBid = false)
     {
         $wallet  = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
         $product = $entityManager->getRepository('UnilendCoreBusinessBundle:Product')->find($project->getIdProduct());
@@ -44,14 +44,14 @@ trait LenderChecker
     }
 
     /**
-     * @param Clients|null    $client
-     * @param Projects        $project
-     * @param ContractManager $contractManager
-     * @param EntityManager   $entityManager
+     * @param Clients|null           $client
+     * @param Projects               $project
+     * @param ContractManager        $contractManager
+     * @param EntityManagerInterface $entityManager
      *
      * @return bool
      */
-    public function canStillBid(?Clients $client, Projects $project, ContractManager $contractManager, EntityManager $entityManager)
+    public function canStillBid(?Clients $client, Projects $project, ContractManager $contractManager, EntityManagerInterface $entityManager)
     {
         if (null === $client) {
             return false;

@@ -91,32 +91,9 @@ services:
     Unilend\Bundle\CoreBusinessBundle\Service\NewsletterManager:
         $listId: '%mailchimp.list_id%'
 
-    currency_formatter:
-        class: \NumberFormatter
-        arguments:
-        - '%locale%'
-        - !php/const \NumberFormatter::CURRENCY
-
-    number_formatter:
-        class: \NumberFormatter
-        arguments:
-        - '%locale%'
-        - !php/const \NumberFormatter::DEFAULT_STYLE
-
-    date_formatter:
-        class: \IntlDateFormatter
-        arguments:
-        - '%locale%'
-        - !php/const \IntlDateFormatter::MEDIUM
-        - !php/const \IntlDateFormatter::SHORT
-
     # define these services as public so that they can still be accessed via $container->get()
-    Unilend\Bundle\CoreBusinessBundle\Service\AcceptedBidAndLoanNotificationSender: ~
     Unilend\Bundle\CoreBusinessBundle\Service\ClientAuditer: ~
     Unilend\Bundle\CoreBusinessBundle\Service\ClientDataHistoryManager: ~
     Unilend\Bundle\CoreBusinessBundle\Service\GreenPointValidationManager: ~
     Unilend\Bundle\CoreBusinessBundle\Service\Repayment\ProjectRepaymentScheduleManager: ~
     Unilend\Bundle\CoreBusinessBundle\Service\WorkingDaysManager: ~
-
-    # It can be removed, once all "Doctrine\ORM\EntityManager" type-hints are replaced by "Doctrine\ORM\EntityManagerInterface"
-    Doctrine\ORM\EntityManager: '@Doctrine\ORM\EntityManagerInterface'

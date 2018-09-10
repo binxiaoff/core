@@ -2,20 +2,17 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Event;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Clients, Users
-};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{Clients, Users};
 use Unilend\Bundle\CoreBusinessBundle\Service\ClientAuditer;
 use Welp\MailchimpBundle\Event\WebhookEvent;
 use Welp\MailchimpBundle\Provider\ProviderInterface;
 
-
 class MailChimpEventSubscriber implements EventSubscriberInterface, ProviderInterface
 {
-    /** @var EntityManager */
+    /** @var EntityManagerInterface */
     private $entityManager;
     /** @var ClientAuditer */
     private $clientAuditer;
@@ -23,11 +20,11 @@ class MailChimpEventSubscriber implements EventSubscriberInterface, ProviderInte
     private $logger;
 
     /**
-     * @param EntityManager   $entityManager
-     * @param ClientAuditer   $clientAuditer
-     * @param LoggerInterface $logger
+     * @param EntityManagerInterface $entityManager
+     * @param ClientAuditer          $clientAuditer
+     * @param LoggerInterface        $logger
      */
-    public function __construct(EntityManager $entityManager, ClientAuditer $clientAuditer, LoggerInterface $logger)
+    public function __construct(EntityManagerInterface $entityManager, ClientAuditer $clientAuditer, LoggerInterface $logger)
     {
         $this->entityManager = $entityManager;
         $this->clientAuditer = $clientAuditer;

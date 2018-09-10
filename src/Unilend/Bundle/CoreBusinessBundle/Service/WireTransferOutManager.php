@@ -2,15 +2,11 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Asset\Packages;
-use Symfony\Component\Routing\{
-    Generator\UrlGeneratorInterface, RouterInterface
-};
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    BankAccount, Projects, Users, Virements, Wallet, WalletType
-};
+use Symfony\Component\Routing\{Generator\UrlGeneratorInterface, RouterInterface};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{BankAccount, Projects, Users, Virements, Wallet, WalletType};
 use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessageProvider;
 
 class WireTransferOutManager
@@ -18,7 +14,7 @@ class WireTransferOutManager
     const TRANSFER_OUT_BY_PROJECT = 'project';
     const TRANSFER_OUT_BY_COMPANY = 'company';
 
-    /** @var EntityManager */
+    /** @var EntityManagerInterface */
     private $entityManager;
     /** @var ProjectManager */
     private $projectManager;
@@ -42,7 +38,7 @@ class WireTransferOutManager
     private $logger;
 
     /**
-     * @param EntityManager           $entityManager
+     * @param EntityManagerInterface  $entityManager
      * @param ProjectManager          $projectManager
      * @param \NumberFormatter        $currencyFormatter
      * @param TemplateMessageProvider $messageProvider
@@ -55,7 +51,7 @@ class WireTransferOutManager
      * @param LoggerInterface         $logger
      */
     public function __construct(
-        EntityManager $entityManager,
+        EntityManagerInterface $entityManager,
         ProjectManager $projectManager,
         \NumberFormatter $currencyFormatter,
         TemplateMessageProvider $messageProvider,

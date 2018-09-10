@@ -3,7 +3,7 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\OptimisticLockException;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientAtypicalOperation;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
@@ -15,16 +15,16 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\VigilanceRule;
 class ClientVigilanceStatusManager
 {
     /**
-     * @var EntityManager
+     * @var EntityManagerInterface
      */
     private $entityManager;
 
     /**
      * VigilanceRuleManager constructor.
      *
-     * @param EntityManager $entityManager
+     * @param EntityManagerInterface $entityManager
      */
-    public function __construct(EntityManager $entityManager)
+    public function __construct(EntityManagerInterface $entityManager)
     {
         $this->entityManager = $entityManager;
     }

@@ -24,6 +24,10 @@ services:
     Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductManager:
         abstract: true
 
+    # The "public: true" can be removed if there is no more access via $container->get()
+    Unilend\Bundle\CoreBusinessBundle\Service\AcceptedBidAndLoanNotificationSender:
+        public: true
+
     Unilend\Bundle\CoreBusinessBundle\Service\SalesforceManager:
         $extractionDir: '%path.protected%dataloader'
         $configDir: '%kernel.root_dir%/dataloader/conf'
@@ -55,3 +59,25 @@ services:
     Unilend\Bundle\CoreBusinessBundle\Service\GoogleRecaptchaManager:
         $client: '@eight_points_guzzle.client.google_recaptcha'
         $secret: '%google.recaptcha_secret%'
+
+    currency_formatter:
+        public: true
+        class: \NumberFormatter
+        arguments:
+        - '%locale%'
+        - !php/const \NumberFormatter::CURRENCY
+
+    number_formatter:
+        public: true
+        class: \NumberFormatter
+        arguments:
+        - '%locale%'
+        - !php/const \NumberFormatter::DEFAULT_STYLE
+
+    date_formatter:
+        public: true
+        class: \IntlDateFormatter
+        arguments:
+        - '%locale%'
+        - !php/const \IntlDateFormatter::MEDIUM
+        - !php/const \IntlDateFormatter::SHORT

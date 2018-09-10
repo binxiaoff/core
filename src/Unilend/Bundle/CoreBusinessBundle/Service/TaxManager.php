@@ -2,7 +2,7 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{Clients, NationalitesV2, Pays, TaxType, UnderlyingContract, Users, WalletType};
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 
@@ -33,7 +33,7 @@ class TaxManager
      */
     private $entityManagerSimulator;
     /**
-     * @var EntityManager
+     * @var EntityManagerInterface
      */
     private $entityManager;
 
@@ -41,9 +41,9 @@ class TaxManager
      * TaxManager constructor.
      *
      * @param EntityManagerSimulator $entityManagerSimulator
-     * @param EntityManager          $entityManager
+     * @param EntityManagerInterface $entityManager
      */
-    public function __construct(EntityManagerSimulator $entityManagerSimulator, EntityManager $entityManager)
+    public function __construct(EntityManagerSimulator $entityManagerSimulator, EntityManagerInterface $entityManager)
     {
         $this->entityManagerSimulator = $entityManagerSimulator;
         $this->entityManager          = $entityManager;

@@ -2,12 +2,10 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Translation\TranslatorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    BorrowingMotive, Companies, CompanyRating, Partner, ProjectRejectionReason, Projects, ProjectsStatus, ProjectStatusHistoryReason, TaxType, Users
-};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{BorrowingMotive, Companies, CompanyRating, Partner, ProjectRejectionReason, Projects, ProjectsStatus, ProjectStatusHistoryReason, TaxType, Users};
 use Unilend\Bundle\CoreBusinessBundle\Service\Eligibility\EligibilityManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\Bundle\FrontBundle\Service\SourceManager;
@@ -24,7 +22,7 @@ class ProjectRequestManager
 
     /** @var EntityManagerSimulator */
     private $entityManagerSimulator;
-    /** @var EntityManager */
+    /** @var EntityManagerInterface */
     private $entityManager;
     /** @var ClientCreationManager */
     private $clientCreationManager;
@@ -49,7 +47,7 @@ class ProjectRequestManager
 
     /**
      * @param EntityManagerSimulator $entityManagerSimulator
-     * @param EntityManager          $entityManager
+     * @param EntityManagerInterface $entityManager
      * @param ClientCreationManager  $clientCreationManager
      * @param SourceManager          $sourceManager
      * @param PartnerManager         $partnerManager
@@ -63,7 +61,7 @@ class ProjectRequestManager
      */
     public function __construct(
         EntityManagerSimulator $entityManagerSimulator,
-        EntityManager $entityManager,
+        EntityManagerInterface $entityManager,
         ClientCreationManager $clientCreationManager,
         SourceManager $sourceManager,
         PartnerManager $partnerManager,

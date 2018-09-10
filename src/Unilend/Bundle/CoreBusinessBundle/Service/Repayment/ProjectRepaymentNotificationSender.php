@@ -2,7 +2,7 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service\Repayment;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Asset\Packages;
 use Symfony\Component\Routing\RouterInterface;
@@ -17,7 +17,7 @@ use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessageProvider;
 
 class ProjectRepaymentNotificationSender
 {
-    /** @var EntityManager */
+    /** @var EntityManagerInterface */
     protected $entityManager;
 
     /** @var LoggerInterface */
@@ -45,9 +45,7 @@ class ProjectRepaymentNotificationSender
     protected $mailer;
 
     /**
-     * ProjectRepaymentManager constructor.
-     *
-     * @param EntityManager           $entityManager
+     * @param EntityManagerInterface  $entityManager
      * @param TemplateMessageProvider $messageProvider
      * @param \Swift_Mailer           $mailer
      * @param \NumberFormatter        $numberFormatter
@@ -58,7 +56,7 @@ class ProjectRepaymentNotificationSender
      * @param string                  $frontUrl
      */
     public function __construct(
-        EntityManager $entityManager,
+        EntityManagerInterface $entityManager,
         TemplateMessageProvider $messageProvider,
         \Swift_Mailer $mailer,
         \NumberFormatter $numberFormatter,

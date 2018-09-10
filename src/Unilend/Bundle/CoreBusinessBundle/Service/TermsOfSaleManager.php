@@ -2,7 +2,7 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{AcceptationsLegalDocs, Clients, Companies, Elements, ProjectCgv, Projects, UniversignEntityInterface};
@@ -16,7 +16,7 @@ class TermsOfSaleManager
     const EXCEPTION_CODE_INVALID_PHONE_NUMBER = 2;
     const EXCEPTION_CODE_PDF_FILE_NOT_FOUND   = 3;
 
-    /** @var EntityManager */
+    /** @var EntityManagerInterface */
     private $entityManager;
     /** @var MailerManager */
     private $mailerManager;
@@ -30,15 +30,15 @@ class TermsOfSaleManager
     private $locale;
 
     /**
-     * @param EntityManager         $entityManager
-     * @param MailerManager         $mailerManager
-     * @param TokenStorageInterface $tokenStorage
-     * @param RequestStack          $requestStack
-     * @param string                $rootDir
-     * @param string                $defaultLocale
+     * @param EntityManagerInterface $entityManager
+     * @param MailerManager          $mailerManager
+     * @param TokenStorageInterface  $tokenStorage
+     * @param RequestStack           $requestStack
+     * @param string                 $rootDir
+     * @param string                 $defaultLocale
      */
     public function __construct(
-        EntityManager $entityManager,
+        EntityManagerInterface $entityManager,
         MailerManager $mailerManager,
         TokenStorageInterface $tokenStorage,
         RequestStack $requestStack,

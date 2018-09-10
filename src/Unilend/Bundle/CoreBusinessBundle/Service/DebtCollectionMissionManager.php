@@ -3,7 +3,7 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Filesystem\Filesystem;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
@@ -31,7 +31,7 @@ class DebtCollectionMissionManager
     const DEBT_COLLECTION_MISSION_FOLDER = 'debt_collection_missions';
     const FILE_EXTENSION                 = '.xlsx';
 
-    /** @var EntityManager */
+    /** @var EntityManagerInterface */
     private $entityManager;
 
     /** @var ProjectRepaymentTaskManager */
@@ -51,15 +51,13 @@ class DebtCollectionMissionManager
     private $fileSystem;
 
     /**
-     * DebtCollectionMissionManager constructor.
-     *
-     * @param EntityManager               $entityManager
+     * @param EntityManagerInterface      $entityManager
      * @param ProjectRepaymentTaskManager $projectRepaymentTaskManager
      * @param LoggerInterface             $logger
      * @param Filesystem                  $filesystem
      * @param   string                    $protectedPath
      */
-    public function __construct(EntityManager $entityManager, ProjectRepaymentTaskManager $projectRepaymentTaskManager, LoggerInterface $logger, Filesystem $filesystem, $protectedPath)
+    public function __construct(EntityManagerInterface $entityManager, ProjectRepaymentTaskManager $projectRepaymentTaskManager, LoggerInterface $logger, Filesystem $filesystem, $protectedPath)
     {
         $this->entityManager               = $entityManager;
         $this->projectRepaymentTaskManager = $projectRepaymentTaskManager;

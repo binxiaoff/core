@@ -2,10 +2,11 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
-use Doctrine\ORM\{EntityManager, ORMException};
+use Doctrine\ORM\{EntityManagerInterface, ORMException};
 use Psr\Log\LoggerInterface;
 use Symfony\Component\{Asset\Packages, DependencyInjection\ContainerInterface, Routing\RouterInterface, Translation\TranslatorInterface};
-use Unilend\Bundle\CoreBusinessBundle\Entity\{Bids, Clients, ClientSettingType, ClientsGestionTypeNotif, ClientsMandats, ClientsStatus, Companies, Operation, OperationSubType, ProjectCgv, Projects, ProjectsPouvoir, Settings, UniversignEntityInterface, Wallet, WalletType};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{Bids, Clients, ClientSettingType, ClientsGestionTypeNotif, ClientsMandats, Companies, Operation, OperationSubType, ProjectCgv, Projects, ProjectsPouvoir,
+    Settings, UniversignEntityInterface, Wallet, WalletType};
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\{TemplateMessage, TemplateMessageProvider};
 use Unilend\core\Loader;
@@ -31,7 +32,7 @@ class MailerManager
     private $container;
     /** @var EntityManagerSimulator */
     private $entityManagerSimulator;
-    /** @var EntityManager */
+    /** @var EntityManagerInterface */
     private $entityManager;
     /** @var TemplateMessageProvider */
     private $messageProvider;
@@ -44,17 +45,31 @@ class MailerManager
     /** @var RouterInterface */
     private $router;
 
+    /**
+     * @param ContainerInterface      $container
+     * @param RouterInterface         $router
+     * @param EntityManagerSimulator  $entityManagerSimulator
+     * @param EntityManagerInterface  $entityManager
+     * @param TemplateMessageProvider $messageProvider
+     * @param \Swift_Mailer           $mailer
+     * @param string                  $defaultLocale
+     * @param Packages                $assetsPackages
+     * @param string                  $frontUrl
+     * @param string                  $adminUrl
+     * @param TranslatorInterface     $translator
+     * @param LoggerInterface         $logger
+     */
     public function __construct(
         ContainerInterface $container,
         RouterInterface $router,
         EntityManagerSimulator $entityManagerSimulator,
-        EntityManager $entityManager,
+        EntityManagerInterface $entityManager,
         TemplateMessageProvider $messageProvider,
         \Swift_Mailer $mailer,
-        $defaultLocale,
+        string $defaultLocale,
         Packages $assetsPackages,
-        $frontUrl,
-        $adminUrl,
+        string $frontUrl,
+        string $adminUrl,
         TranslatorInterface $translator,
         LoggerInterface $logger
     )

@@ -6,17 +6,16 @@ use CL\Slack\Exception\SlackException;
 use CL\Slack\Payload\ChatPostMessagePayload;
 use CL\Slack\Payload\PayloadResponseInterface;
 use CL\Slack\Transport\ApiClientInterface;
+use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Asset\Packages;
-use Doctrine\ORM\EntityManager;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{Projects, ProjectsStatus};
 
 class SlackManager
 {
     /** @var ApiClientInterface */
     private $apiClient;
-    /** @var EntityManager */
+    /** @var EntityManagerInterface */
     private $entityManager;
     /** @var string */
     private $iconUrl;
@@ -32,18 +31,18 @@ class SlackManager
     private $logger;
 
     /**
-     * @param ApiClientInterface $apiClient
-     * @param EntityManager      $entityManager
-     * @param Packages           $assetsPackages
-     * @param string             $frontUrl
-     * @param string             $adminUrl
-     * @param string             $defaultChannel
-     * @param string             $environment
-     * @param LoggerInterface    $logger
+     * @param ApiClientInterface     $apiClient
+     * @param EntityManagerInterface $entityManager
+     * @param Packages               $assetsPackages
+     * @param string                 $frontUrl
+     * @param string                 $adminUrl
+     * @param string                 $defaultChannel
+     * @param string                 $environment
+     * @param LoggerInterface        $logger
      */
     public function __construct(
         ApiClientInterface $apiClient,
-        EntityManager $entityManager,
+        EntityManagerInterface $entityManager,
         Packages $assetsPackages,
         string $frontUrl,
         string $adminUrl,

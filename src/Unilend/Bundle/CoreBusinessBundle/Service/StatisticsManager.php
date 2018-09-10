@@ -2,7 +2,7 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Psr\Cache\CacheItemPoolInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
     Clients, OperationType, ProjectsStatus, UnderlyingContract,UnilendStats
@@ -40,7 +40,7 @@ class StatisticsManager
 
     /** @var EntityManagerSimulator */
     private $entityManagerSimulator;
-    /** @var  EntityManager */
+    /** @var  EntityManagerInterface */
     private $entityManager;
     /** @var IRRManager */
     private $IRRManager;
@@ -49,9 +49,16 @@ class StatisticsManager
     /** @var LocationManager */
     private $locationManager;
 
+    /**
+     * @param EntityManagerSimulator $entityManagerSimulator
+     * @param EntityManagerInterface $entityManager
+     * @param IRRManager             $IRRManager
+     * @param CacheItemPoolInterface $cachePool
+     * @param LocationManager        $locationManager
+     */
     public function __construct(
         EntityManagerSimulator $entityManagerSimulator,
-        EntityManager $entityManager,
+        EntityManagerInterface $entityManager,
         IRRManager $IRRManager,
         CacheItemPoolInterface $cachePool,
         LocationManager $locationManager

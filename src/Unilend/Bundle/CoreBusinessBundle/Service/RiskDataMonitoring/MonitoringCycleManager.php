@@ -2,11 +2,9 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service\RiskDataMonitoring;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Companies, CompanyStatus, ProjectsStatus, RiskDataMonitoring
-};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{Companies, CompanyStatus, ProjectsStatus, RiskDataMonitoring};
 
 class MonitoringCycleManager
 {
@@ -28,7 +26,7 @@ class MonitoringCycleManager
         CompanyStatus::STATUS_COMPULSORY_LIQUIDATION
     ];
 
-    /** @var EntityManager */
+    /** @var EntityManagerInterface */
     private $entityManager;
     /** @var EulerHermesManager */
     private $eulerHermesManager;
@@ -42,15 +40,15 @@ class MonitoringCycleManager
     private $logger;
 
     /**
-     * @param EntityManager      $entityManager
-     * @param EulerHermesManager $eulerHermesManager
-     * @param AltaresManager     $altaresManager
-     * @param DataWriter         $dataWriter
-     * @param MonitoringManger   $monitoringManager
-     * @param LoggerInterface    $wsClientLogger
+     * @param EntityManagerInterface $entityManager
+     * @param EulerHermesManager     $eulerHermesManager
+     * @param AltaresManager         $altaresManager
+     * @param DataWriter             $dataWriter
+     * @param MonitoringManger       $monitoringManager
+     * @param LoggerInterface        $wsClientLogger
      */
     public function __construct(
-        EntityManager $entityManager,
+        EntityManagerInterface $entityManager,
         EulerHermesManager $eulerHermesManager,
         AltaresManager $altaresManager,
         DataWriter $dataWriter,

@@ -2,7 +2,7 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{CloseOutNettingEmailExtraContent, CloseOutNettingPayment, CloseOutNettingRepayment, CompanyStatus, ProjectRepaymentTask, Projects, ProjectsStatus};
 
 class ProjectCloseOutNettingManager
@@ -10,13 +10,17 @@ class ProjectCloseOutNettingManager
     const OVERDUE_LIMIT_DAYS_FIRST_GENERATION_LOANS  = 60;
     const OVERDUE_LIMIT_DAYS_SECOND_GENERATION_LOANS = 180;
 
-    /** @var EntityManager */
+    /** @var EntityManagerInterface */
     private $entityManager;
 
     /** @var ProjectStatusManager */
     private $projectStatusManager;
 
-    public function __construct(EntityManager $entityManager, ProjectStatusManager $projectStatusManager)
+    /**
+     * @param EntityManagerInterface $entityManager
+     * @param ProjectStatusManager   $projectStatusManager
+     */
+    public function __construct(EntityManagerInterface $entityManager, ProjectStatusManager $projectStatusManager)
     {
         $this->entityManager        = $entityManager;
         $this->projectStatusManager = $projectStatusManager;

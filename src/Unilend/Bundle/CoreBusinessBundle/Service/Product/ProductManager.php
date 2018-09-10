@@ -2,14 +2,10 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service\Product;
 
-use Doctrine\ORM\EntityManager;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Bids, Clients, Product, ProductAttributeType, Projects, UnderlyingContract
-};
+use Doctrine\ORM\EntityManagerInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{Bids, Clients, Product, ProductAttributeType, Projects, UnderlyingContract};
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\ContractManager;
-use Unilend\Bundle\CoreBusinessBundle\Service\Product\Validator\{
-    BidValidator, ClientValidator, LenderValidator, ProjectValidator
-};
+use Unilend\Bundle\CoreBusinessBundle\Service\Product\Validator\{BidValidator, ClientValidator, LenderValidator, ProjectValidator};
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 
 abstract class ProductManager
@@ -28,7 +24,7 @@ abstract class ProductManager
     protected $productAttributeManager;
     /** @var ContractManager */
     protected $contractManager;
-    /** @var  EntityManager */
+    /** @var  EntityManagerInterface */
     protected $entityManager;
 
     /**
@@ -39,7 +35,7 @@ abstract class ProductManager
      * @param LenderValidator         $lenderValidator
      * @param ProductAttributeManager $productAttributeManager
      * @param ContractManager         $contractManager
-     * @param EntityManager           $entityManager
+     * @param EntityManagerInterface  $entityManager
      */
     public function __construct(
         EntityManagerSimulator $entityManagerSimulator,
@@ -49,7 +45,7 @@ abstract class ProductManager
         LenderValidator $lenderValidator,
         ProductAttributeManager $productAttributeManager,
         ContractManager $contractManager,
-        EntityManager $entityManager
+        EntityManagerInterface $entityManager
     )
     {
         $this->entityManagerSimulator  = $entityManagerSimulator;

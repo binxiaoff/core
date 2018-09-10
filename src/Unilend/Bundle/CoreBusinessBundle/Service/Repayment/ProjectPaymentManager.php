@@ -2,7 +2,7 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service\Repayment;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\DebtCollectionMission;
 use Unilend\Bundle\CoreBusinessBundle\Entity\EcheanciersEmprunteur;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectCharge;
@@ -18,7 +18,7 @@ use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityM
 
 class ProjectPaymentManager
 {
-    /** @var EntityManager */
+    /** @var EntityManagerInterface */
     private $entityManager;
 
     /** @var EntityManagerSimulator */
@@ -39,7 +39,7 @@ class ProjectPaymentManager
     /**
      * ProjectRepaymentManager constructor.
      *
-     * @param EntityManager                $entityManager
+     * @param EntityManagerInterface       $entityManager
      * @param EntityManagerSimulator       $entityManagerSimulator
      * @param ProjectRepaymentTaskManager  $projectRepaymentTaskManager
      * @param DebtCollectionMissionManager $debtCollectionMissionManager
@@ -47,7 +47,7 @@ class ProjectPaymentManager
      * @param ProjectChargeManager         $projectChargeManager
      */
     public function __construct(
-        EntityManager $entityManager,
+        EntityManagerInterface $entityManager,
         EntityManagerSimulator $entityManagerSimulator,
         ProjectRepaymentTaskManager $projectRepaymentTaskManager,
         DebtCollectionMissionManager $debtCollectionMissionManager,

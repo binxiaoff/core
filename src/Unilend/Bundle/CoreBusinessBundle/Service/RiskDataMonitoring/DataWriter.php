@@ -2,14 +2,15 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service\RiskDataMonitoring;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Translation\TranslatorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{Companies, CompanyRatingHistory, ProjectEligibilityRuleSet, ProjectsComments, RiskDataMonitoring, RiskDataMonitoringAssessment, RiskDataMonitoringCallLog, RiskDataMonitoringType, Users};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{Companies, CompanyRatingHistory, ProjectEligibilityRuleSet, ProjectsComments, RiskDataMonitoring, RiskDataMonitoringAssessment, RiskDataMonitoringCallLog,
+    RiskDataMonitoringType, Users};
 use Unilend\Bundle\CoreBusinessBundle\Service\ProjectStatusManager;
 
 class DataWriter
 {
-    /** @var EntityManager */
+    /** @var EntityManagerInterface */
     private $entityManager;
     /** @var TranslatorInterface */
     private $translator;
@@ -19,13 +20,13 @@ class DataWriter
     private $monitoringManager;
 
     /**
-     * @param EntityManager        $entityManager
-     * @param TranslatorInterface  $translator
-     * @param ProjectStatusManager $projectStatusManager
-     * @param MonitoringManger     $monitoringManager
+     * @param EntityManagerInterface $entityManager
+     * @param TranslatorInterface    $translator
+     * @param ProjectStatusManager   $projectStatusManager
+     * @param MonitoringManger       $monitoringManager
      */
     public function __construct(
-        EntityManager $entityManager,
+        EntityManagerInterface $entityManager,
         TranslatorInterface $translator,
         ProjectStatusManager $projectStatusManager,
         MonitoringManger $monitoringManager
