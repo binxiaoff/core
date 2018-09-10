@@ -53,7 +53,7 @@ EOF
     protected function execute(InputInterface $input, OutputInterface $output): void
     {
         $limit = $input->getOption('limit');
-        $limit = $limit ? round($limit / 2, 0, PHP_ROUND_HALF_DOWN) : 100;
+        $limit = $limit ?? 100;
 
         $clientAddress = $this->entityManager
             ->getRepository('UnilendCoreBusinessBundle:ClientAddress')
@@ -63,12 +63,17 @@ EOF
             ->getRepository('UnilendCoreBusinessBundle:CompanyAddress')
             ->findLenderAddressWithoutCog($limit);
 
+        $completedAddresses    = 0;
         $addressWithMissingCog = array_merge($clientAddress, $companyAddress);
+
+        $output->writeln(count($addressWithMissingCog) . ' addresses have no cog');
 
         foreach ($addressWithMissingCog as $address) {
             try {
-                $this->addressManager->addCogToLenderAddress($address);
-
+                $addressCompleted = $this->addressManager->addCogToLenderAddress($address);
+                if ($addressCompleted) {
+                    $completedAddresses++;
+                }
             } catch (\Exception $exception) {
                 $this->logger->error('An error occurred during adding cog to lender address. message: ' . $exception->getMessage(), [
                     'class'        => __CLASS__,
@@ -80,5 +85,7 @@ EOF
                 ]);
             }
         }
+
+        $output->writeln($completedAddresses . ' addresses have been updated');
     }
 }

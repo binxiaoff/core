@@ -98,7 +98,7 @@ EOF
                 /** @var ClientAddress $mostRecentAddress */
                 $mostRecentAddress = $clientAddressRepository->findLastModifiedNotArchivedAddressByType($client, AddressType::TYPE_MAIN_ADDRESS);
                 if (null === $mostRecentAddress) {
-                    $logger->error('Client ' . $client->getIdClient() . ' has no main address' . [
+                    $logger->error('Client ' . $client->getIdClient() . ' has no main address.', [
                             'class'     => __CLASS__,
                             'function'  => __FUNCTION__,
                             'id_client' => $client->getIdClient()
@@ -106,7 +106,7 @@ EOF
 
                     $mostRecentAddress = $clientAddressRepository->findLastModifiedNotArchivedAddressByType($client, AddressType::TYPE_POSTAL_ADDRESS);
                     if (null === $mostRecentAddress) {
-                        $logger->error('Client ' . $client->getIdClient() . ' has no postal address' . [
+                        $logger->error('Client ' . $client->getIdClient() . ' has no postal address.', [
                                 'class'     => __CLASS__,
                                 'function'  => __FUNCTION__,
                                 'id_client' => $client->getIdClient()
@@ -183,7 +183,7 @@ EOF
                 /** @var CompanyAddress $mostRecentAddress */
                 $mostRecentAddress = $companyAddressRepository->findLastModifiedNotArchivedAddressByType($company, AddressType::TYPE_MAIN_ADDRESS);
                 if (null === $mostRecentAddress) {
-                    $logger->error('Company ' . $company->getIdCompany() . ' has no main address' . [
+                    $logger->error('Company ' . $company->getIdCompany() . ' has no main address.', [
                             'class'      => __CLASS__,
                             'function'   => __FUNCTION__,
                             'id_company' => $company->getIdCompany()
@@ -191,7 +191,7 @@ EOF
 
                     $mostRecentAddress = $companyAddressRepository->findLastModifiedNotArchivedAddressByType($company, AddressType::TYPE_POSTAL_ADDRESS);
                     if (null === $mostRecentAddress) {
-                        $logger->error('Company ' . $company->getIdCompany() . ' has no postal address' . [
+                        $logger->error('Company ' . $company->getIdCompany() . ' has no postal address.', [
                                 'class'      => __CLASS__,
                                 'function'   => __FUNCTION__,
                                 'id_company' => $company->getIdCompany()

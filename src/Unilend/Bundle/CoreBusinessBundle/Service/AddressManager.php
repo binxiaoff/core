@@ -554,12 +554,14 @@ class AddressManager
 
     /**
      * Method to change to private once RUN-3156 is closed and all French addresses have COG value
+     * The return can then be void.
      * @param ClientAddress|CompanyAddress $address
      *
+     * @return bool
      * @throws \Doctrine\ORM\ORMException
      * @throws \Doctrine\ORM\OptimisticLockException
      */
-    public function addCogToLenderAddress($address): void
+    public function addCogToLenderAddress($address): bool
     {
         if ($address instanceof ClientAddress && false === $address->getIdClient()->isLender()) {
             throw new \InvalidArgumentException('Address is no lender address');
@@ -575,6 +577,10 @@ class AddressManager
 
             $address->setCog($inseeCode);
             $this->entityManager->flush($address);
+
+            return true;
         }
+
+        return false;
     }
 }

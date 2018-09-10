@@ -44,6 +44,7 @@ class ClientAddress
     private $city;
 
     /**
+     * Code officiel géographique designated by INSEE
      * @var string
      *
      * @ORM\Column(name="cog", type="string", length=5, nullable=true)
