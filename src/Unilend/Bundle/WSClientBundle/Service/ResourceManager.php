@@ -3,17 +3,17 @@
 namespace Unilend\Bundle\WSClientBundle\Service;
 
 use Unilend\Bundle\CoreBusinessBundle\Entity\WsExternalResource;
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 
 class ResourceManager
 {
-    /** @var EntityManager */
+    /** @var EntityManagerInterface */
     private $entityManager;
 
     /**
-     * @param EntityManager $entityManager
+     * @param EntityManagerInterface $entityManager
      */
-    public function __construct(EntityManager $entityManager)
+    public function __construct(EntityManagerInterface $entityManager)
     {
         $this->entityManager = $entityManager;
     }

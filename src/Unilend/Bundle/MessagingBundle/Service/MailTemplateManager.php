@@ -2,10 +2,9 @@
 
 namespace Unilend\Bundle\MessagingBundle\Service;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use RobertoTru\ToInlineStyleEmailBundle\Converter\ToInlineStyleEmailConverter;
-use Unilend\Bundle\CoreBusinessBundle\Entity\MailTemplates;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Translations;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{MailTemplates, Translations};
 use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessageProvider;
 use Unilend\Bundle\TranslationBundle\Service\TranslationManager;
 
@@ -13,7 +12,7 @@ class MailTemplateManager
 {
     /** @var MailQueueManager */
     private $mailQueueManager;
-    /** @var EntityManager */
+    /** @var EntityManagerInterface */
     private $entityManager;
     /** @var TranslationManager */
     private $translationManager;
@@ -23,25 +22,25 @@ class MailTemplateManager
     private $defaultLocale;
 
     /**
-     * @param EntityManager               $entityManager
+     * @param EntityManagerInterface      $entityManager
      * @param MailQueueManager            $mailQueueManager
      * @param TranslationManager          $translationManager
      * @param ToInlineStyleEmailConverter $cssToInlineConverter
      * @param string                      $defaultLocale
      */
     public function __construct(
-        EntityManager $entityManager,
+        EntityManagerInterface $entityManager,
         MailQueueManager $mailQueueManager,
         TranslationManager $translationManager,
         ToInlineStyleEmailConverter $cssToInlineConverter,
-        $defaultLocale
+        string $defaultLocale
     )
     {
         $this->entityManager        = $entityManager;
         $this->mailQueueManager     = $mailQueueManager;
         $this->translationManager   = $translationManager;
         $this->cssToInlineConverter = $cssToInlineConverter;
-        $this->defaultLocale      = $defaultLocale;
+        $this->defaultLocale        = $defaultLocale;
     }
 
     /**

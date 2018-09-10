@@ -2,14 +2,14 @@
 
 namespace Unilend\Bundle\TranslationBundle\Service;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Sonata\CacheBundle\Adapter\SymfonyCache;
 use Symfony\Component\Translation\Translator;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Translations;
 
 class TranslationManager
 {
-    /** @var EntityManager */
+    /** @var EntityManagerInterface */
     private $entityManager;
     /** @var Translator */
     private $translator;
@@ -19,12 +19,12 @@ class TranslationManager
     private $defaultLocale;
 
     /**
-     * @param EntityManager $entityManager
-     * @param Translator    $translator
-     * @param SymfonyCache  $symfonyCache
-     * @param string        $defaultLocale
+     * @param EntityManagerInterface $entityManager
+     * @param Translator             $translator
+     * @param SymfonyCache           $symfonyCache
+     * @param string                 $defaultLocale
      */
-    public function __construct(EntityManager $entityManager, Translator $translator, SymfonyCache $symfonyCache, string $defaultLocale)
+    public function __construct(EntityManagerInterface $entityManager, Translator $translator, SymfonyCache $symfonyCache, string $defaultLocale)
     {
         $this->entityManager = $entityManager;
         $this->translator    = $translator;

@@ -2,18 +2,12 @@
 
 namespace Unilend\Bundle\FrontBundle\Service;
 
-use Doctrine\ORM\EntityManager;
-use Symfony\Component\Form\{
-    Extension\Core\Type\CheckboxType, FormBuilderInterface, FormFactory, FormInterface
-};
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\Form\{Extension\Core\Type\CheckboxType, FormBuilderInterface, FormFactory, FormInterface};
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Translation\TranslatorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AddressType, ClientAddress, Clients, ClientsHistoryActions, CompanyAddress
-};
-use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\{
-    BankAccountType, ClientAddressType, CompanyAddressType, OriginOfFundsType
-};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, ClientAddress, Clients, ClientsHistoryActions, CompanyAddress};
+use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\{BankAccountType, ClientAddressType, CompanyAddressType, OriginOfFundsType};
 
 class FormManager
 {
@@ -21,18 +15,18 @@ class FormManager
     private $formFactory;
     /** @var TranslatorInterface */
     private $translator;
-    /** EntityManager */
+    /** EntityManagerInterface */
     private $entityManager;
 
     /**
-     * @param FormFactory         $formFactory
-     * @param TranslatorInterface $translator
-     * @param EntityManager       $entityManager
+     * @param FormFactory            $formFactory
+     * @param TranslatorInterface    $translator
+     * @param EntityManagerInterface $entityManager
      */
     public function __construct(
         FormFactory $formFactory,
         TranslatorInterface $translator,
-        EntityManager $entityManager
+        EntityManagerInterface $entityManager
     )
     {
         $this->formFactory   = $formFactory;

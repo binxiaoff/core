@@ -2,16 +2,15 @@
 
 namespace Unilend\Bundle\MessagingBundle\Service;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\MailQueue;
 use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage;
 use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessageProvider;
 
 class MailQueueManager
 {
-    /** @var EntityManager */
+    /** @var EntityManagerInterface */
     private $entityManager;
     /** @var TemplateMessageProvider */
     private $templateMessage;
@@ -21,16 +20,16 @@ class MailQueueManager
     private $sharedTemporaryPath;
 
     /**
-     * @param EntityManager           $entityManager
+     * @param EntityManagerInterface  $entityManager
      * @param TemplateMessageProvider $templateMessage
      * @param LoggerInterface         $logger
      * @param string                  $sharedTemporaryPath
      */
     public function __construct(
-        EntityManager $entityManager,
+        EntityManagerInterface $entityManager,
         TemplateMessageProvider $templateMessage,
         LoggerInterface $logger,
-        $sharedTemporaryPath
+        string $sharedTemporaryPath
     )
     {
         $this->entityManager       = $entityManager;

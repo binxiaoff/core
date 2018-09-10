@@ -2,14 +2,10 @@
 
 namespace Unilend\Bundle\FrontBundle\Service;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Psr\Cache\CacheItemPoolInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Clients, ClientsStatus, Product, Projects, ProjectsStatus
-};
-use Unilend\Bundle\CoreBusinessBundle\Service\{
-    BidManager, CompanyBalanceSheetManager, ProjectManager
-};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{Clients, ClientsStatus, Product, Projects, ProjectsStatus};
+use Unilend\Bundle\CoreBusinessBundle\Service\{BidManager, CompanyBalanceSheetManager, ProjectManager};
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\librairies\CacheKeys;
@@ -21,7 +17,7 @@ class ProjectDisplayManager
     const VISIBILITY_ANONYMOUS            = 'anonymous';
     const VISIBILITY_NONE                 = 'none';
 
-    /** @var EntityManager */
+    /** @var EntityManagerInterface */
     private $entityManager;
     /** @var EntityManagerSimulator */
     private $entityManagerSimulator;
@@ -50,7 +46,7 @@ class ProjectDisplayManager
     ];
 
     /**
-     * @param EntityManager               $entityManager
+     * @param EntityManagerInterface      $entityManager
      * @param EntityManagerSimulator      $entityManagerSimulator
      * @param ProjectManager              $projectManager
      * @param BidManager                  $bidManager
@@ -60,7 +56,7 @@ class ProjectDisplayManager
      * @param CacheItemPoolInterface      $cachePool
      */
     public function __construct(
-        EntityManager $entityManager,
+        EntityManagerInterface $entityManager,
         EntityManagerSimulator $entityManagerSimulator,
         ProjectManager $projectManager,
         BidManager $bidManager,
