@@ -5,7 +5,7 @@ namespace Unilend\Bundle\WSClientBundle\Service;
 use CL\Slack\Payload\PayloadResponseInterface;
 use Doctrine\Bundle\MongoDBBundle\ManagerRegistry;
 use Doctrine\ODM\MongoDB\Query\Builder;
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\{EntityManager, ORMException};
 use Psr\Cache\CacheItemPoolInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Asset\Packages;
@@ -143,14 +143,15 @@ class CallHistoryManager
      * @param string             $alertType
      * @param string             $extraInfo
      */
-    public function sendMonitoringAlert(WsExternalResource $wsResource, $alertType, $extraInfo = null)
+    public function sendMonitoringAlert(WsExternalResource $wsResource, string $alertType, string $extraInfo = null): void
     {
         switch ($alertType) {
             case 'down':
                 if (false == $wsResource->isIsAvailable()) {
                     return;
                 }
-                $wsResource->setIsAvailable(WsExternalResource::STATUS_UNAVAILABLE)
+                $wsResource
+                    ->setIsAvailable(WsExternalResource::STATUS_UNAVAILABLE)
                     ->setUpdated(new \DateTime());
                 $slackMessage = $wsResource->getProviderName() . '(' . $wsResource->getResourceName() . ') is down  :skull_and_crossbones:';
 
@@ -162,7 +163,8 @@ class CallHistoryManager
                 if ($wsResource->isIsAvailable()) {
                     return;
                 }
-                $wsResource->setIsAvailable(WsExternalResource::STATUS_AVAILABLE)
+                $wsResource
+                    ->setIsAvailable(WsExternalResource::STATUS_AVAILABLE)
                     ->setUpdated(new \DateTime());
                 $slackMessage = $wsResource->getProviderName() . '(' . $wsResource->getResourceName() . ') is up  :white_check_mark:';
 
@@ -173,17 +175,48 @@ class CallHistoryManager
             default:
                 return;
         }
-        $this->entityManager->flush($wsResource);
-        $logContext = ['class' => __CLASS__, 'function' => __FUNCTION__, 'provider' => $wsResource->getProviderName()];
+
+        try {
+            $this->entityManager->flush($wsResource);
+        } catch (ORMException $exception) {
+            $this->logger->warning('Could not update status for WS ' . $wsResource->getLabel() . '. ' . $exception->getMessage(), [
+                'provider' => $wsResource->getProviderName(),
+                'resource' => $wsResource->getResourceName(),
+                'class'    => __CLASS__,
+                'function' => __FUNCTION__,
+                'file'     => $exception->getFile(),
+                'line'     => $exception->getLine()
+            ]);
+            return;
+        }
 
         try {
             $response = $this->slackManager->sendMessage($slackMessage, $this->alertChannel);
 
-            if (false === ($response instanceof PayloadResponseInterface) || false === $response->isOk()) {
-                $this->logger->warning('Could not send slack notification for ' . $wsResource->getProviderName() . '. Error: ' . $response->getError(), $logContext);
+            if (false === $response instanceof PayloadResponseInterface) {
+                $this->logger->warning('Could not send Slack notification for ' . $wsResource->getLabel() . ' monitoring. Empty payload', [
+                    'provider' => $wsResource->getProviderName(),
+                    'resource' => $wsResource->getResourceName(),
+                    'class'    => __CLASS__,
+                    'function' => __FUNCTION__
+                ]);
+            } elseif (false === $response->isOk()) {
+                $this->logger->warning('Could not send Slack notification for ' . $wsResource->getLabel() . ' monitoring. Error: ' . $response->getError(), [
+                    'provider' => $wsResource->getProviderName(),
+                    'resource' => $wsResource->getResourceName(),
+                    'class'    => __CLASS__,
+                    'function' => __FUNCTION__
+                ]);
             }
         } catch (\Exception $exception) {
-            $this->logger->error('Unable to send slack notification for ' . $wsResource->getProviderName() . '. Error message: ' . $exception->getMessage(), $logContext);
+            $this->logger->error('Unable to send Slack notification for ' . $wsResource->getLabel() . ' monitoring. Exception: ' . $exception->getMessage(), [
+                'provider' => $wsResource->getProviderName(),
+                'resource' => $wsResource->getResourceName(),
+                'class'    => __CLASS__,
+                'function' => __FUNCTION__,
+                'file'     => $exception->getFile(),
+                'line'     => $exception->getLine()
+            ]);
             unset($exception);
         }
     }
