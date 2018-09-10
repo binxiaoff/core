@@ -254,7 +254,7 @@ class MainController extends Controller
         $entityManagerSimulator = $this->get('unilend.service.entity_manager');
         $termsOfSaleManager     = $this->get('unilend.service.terms_of_sale_manager');
 
-        if ($client instanceof Clients && false === $client->isNaturalPerson()) {
+        if ($client instanceof Clients && $client->isNaturalPerson()) {
             $idTree = $termsOfSaleManager->getCurrentVersionForPerson();
         } else {
             $idTree = $termsOfSaleManager->getCurrentVersionForLegalEntity();
