@@ -10,12 +10,11 @@ use Symfony\Component\Form\{Extension\Core\Type\CheckboxType, FormError, FormInt
 use Symfony\Component\HttpFoundation\{File\UploadedFile, JsonResponse, RedirectResponse, Request, Response};
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\User\UserInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, Attachment, AttachmentType, Clients, ClientsGestionNotifications, ClientsGestionTypeNotif, ClientsHistoryActions, ClientsStatus, Ifu,
-    LenderTaxExemption, Pays, TaxType, Wallet, WalletBalanceHistory, WalletType};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, Attachment, AttachmentType, Clients, ClientsGestionNotifications, ClientsGestionTypeNotif, ClientsHistoryActions, ClientsStatus, Ifu, LenderTaxExemption, Pays, TaxType, Wallet, WalletBalanceHistory, WalletType};
 use Unilend\Bundle\CoreBusinessBundle\Service\{ClientDataHistoryManager, LocationManager, NewsletterManager};
 use Unilend\Bundle\FrontBundle\Form\ClientPasswordType;
-use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\{BankAccountType, ClientEmailType, CompanyIdentityType, LegalEntityProfileType, OriginOfFundsType, PersonPhoneType, PersonProfileType,
-    SecurityQuestionType};
+use Unilend\Bundle\FrontBundle\Form\LenderPersonContactType;
+use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\{BankAccountType, ClientEmailType, CompanyIdentityType, LegalEntityProfileType, OriginOfFundsType, PersonProfileType, SecurityQuestionType};
 use Unilend\Bundle\FrontBundle\Service\LenderProfileFormsHandler;
 
 class LenderProfileController extends Controller
@@ -44,9 +43,9 @@ class LenderProfileController extends Controller
         $clientAddressRepository  = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientAddress');
         $unattachedClient         = clone $client;
 
-        $phoneForm = $this->createForm(PersonPhoneType::class, $client);
-
         if ($client->isNaturalPerson()) {
+            $contactForm = $this->createForm(LenderPersonContactType::class, $client);
+
             $lastModifiedMainAddress = $clientAddressRepository->findLastModifiedNotArchivedAddressByType($client, AddressType::TYPE_MAIN_ADDRESS);
             $postalAddress           = $client->getIdPostalAddress();
 
@@ -67,6 +66,8 @@ class LenderProfileController extends Controller
                 ->add('client', LegalEntityProfileType::class, ['data' => $client])
                 ->add('company', CompanyIdentityType::class, ['data' => $company]);
             $identityFormBuilder->get('company')->remove('siren');
+            $identityFormBuilder->get('client')->remove('email');
+            $identityFormBuilder->add('clientEmail', ClientEmailType::class, ['data' => $client]);
 
             $mainAddressForm   = $formManager->getCompanyAddressFormBuilder($lastModifiedMainAddress, AddressType::TYPE_MAIN_ADDRESS)->getForm();
             $postalAddressForm = $formManager->getCompanyAddressFormBuilder($postalAddress, AddressType::TYPE_POSTAL_ADDRESS)->getForm();
@@ -120,12 +121,15 @@ class LenderProfileController extends Controller
                 }
             }
 
-            $phoneForm->handleRequest($request);
-            if ($phoneForm->isSubmitted() && $phoneForm->isValid()) {
-                $formHandler->handlePhoneForm($client, $unattachedClient);
-                $this->addFlash('phoneSuccess', $translator->trans('lender-profile_information-tab-phone-form-success-message'));
+            if (isset($contactForm) && $contactForm instanceof FormInterface) {
+                $contactForm->handleRequest($request);
+                if ($contactForm->isSubmitted() && $contactForm->isValid()) {
+                    $isValid = $formHandler->handleContactForm($client, $unattachedClient, $contactForm);
 
-                $isValid = true;
+                    if ($isValid) {
+                        $this->addFlash('contactSuccess', $translator->trans('lender-profile_information-tab-contact-form-success-message'));
+                    }
+                }
             }
 
             if ($isValid) {
@@ -144,11 +148,13 @@ class LenderProfileController extends Controller
             'forms'                => [
                 'identity'      => $identityForm->createView(),
                 'mainAddress'   => $mainAddressForm->createView(),
-                'postalAddress' => $postalAddressForm->createView(),
-                'phone'         => $phoneForm->createView()
+                'postalAddress' => $postalAddressForm->createView()
             ],
             'isLivingAbroad'       => $lastModifiedMainAddress ? ($lastModifiedMainAddress->getIdCountry()->getIdPays() !== Pays::COUNTRY_FRANCE) : false
         ];
+        if (isset($contactForm) && $contactForm instanceof FormInterface) {
+            $templateData['forms']['contact'] = $contactForm->createView();
+        }
 
         $setting                             = $entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Liste deroulante conseil externe de l\'entreprise']);
         $templateData['externalCounselList'] = json_decode($setting->getValue(), true);
@@ -264,25 +270,12 @@ class LenderProfileController extends Controller
             return $this->redirectToRoute('home');
         }
 
-        $entityManager    = $this->get('doctrine.orm.entity_manager');
-        $unattachedClient = clone $client;
-        $emailForm        = $this->createForm(ClientEmailType::class, $client);
-        $passwordForm     = $this->createForm(ClientPasswordType::class);
-        $questionForm     = $this->createForm(SecurityQuestionType::class, $client);
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+        $passwordForm  = $this->createForm(ClientPasswordType::class);
+        $questionForm  = $this->createForm(SecurityQuestionType::class, $client);
 
         if ($request->isMethod(Request::METHOD_POST)) {
             $isValid     = false;
-            $formHandler = $this->get(LenderProfileFormsHandler::class);
-
-            $emailForm->handleRequest($request);
-            if (
-                $emailForm->isSubmitted() &&
-                $emailForm->isValid() &&
-                $formHandler->handleEmailForm($client, $unattachedClient, $emailForm)
-            ) {
-                $this->addFlash('securityIdentificationSuccess', $this->get('translator')->trans('lender-profile_security-identification-form-success-message'));
-                $isValid = true;
-            }
 
             $passwordForm->handleRequest($request);
             if ($passwordForm->isSubmitted()) {
@@ -315,7 +308,6 @@ class LenderProfileController extends Controller
             'client'      => $client,
             'isCIPActive' => $this->isCIPActive($client),
             'forms'       => [
-                'securityEmail'    => $emailForm->createView(),
                 'securityPwd'      => $passwordForm->createView(),
                 'securityQuestion' => $questionForm->createView()
             ]
