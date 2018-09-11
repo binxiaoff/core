@@ -32,6 +32,32 @@ function escapeQuotes (input) {
   return input.replace(/'/g, '&#39;').replace(/"/g, '&#34;')
 }
 
+var passwordMinLength = 8
+
+var passwordRequirements = function(input) {
+  var lowerUpperCaseRule = /(?=.*[a-z])(?=.*[A-Z])/,
+      hasDigitRule       = /[0-9]/,
+      hasMinLengthRule   = new RegExp('\\S{'+ passwordMinLength +',}'),
+      passWordGroupRules = {
+          'pw-has-lower-upper-case': lowerUpperCaseRule,
+          'pw-has-digit': hasDigitRule,
+          'pw-has-min-length': hasMinLengthRule
+      }
+
+  for (var idRuleLabel in passWordGroupRules) {
+    var displayRule = passWordGroupRules[idRuleLabel]
+    if (displayRule instanceof RegExp) {
+      if (displayRule.test(input)) {
+        $('#' + idRuleLabel).removeClass('fa-cross-u16 c-error').addClass('fa-check-u16 c-success')
+      } else {
+        $('#' + idRuleLabel).removeClass('fa-check-u16 c-success').addClass('fa-cross-u16 c-error')
+      }
+    } else {
+      console.error(displayRule + ' is not a correct regex');
+    }
+  }
+}
+
 // PasswordCheck
 // @class
 // @param {Mixed} input
@@ -62,7 +88,7 @@ var PasswordCheck = function (input, options) {
     maxScore: 15,
 
     // The minimum length of the password
-    minLength: 8,
+    minLength: passwordMinLength,
 
     // The UI elements to output messages or other feedback to (can be {String} selectors, {HTMLElement}s or {jQueryObject}s as well as {String} HTML code)
     levelElem: self.templates.level,
@@ -302,6 +328,7 @@ var PasswordCheck = function (input, options) {
 
   // Hook events to the element
   self.$input.on('keyup', function (event) {
+    passwordRequirements($(this).val())
     // Evaluate the element's input
     if ($(this).val().length > 0) {
       self.evaluate()
@@ -357,6 +384,9 @@ $(document)
   // Auto-init component behaviours on document ready, or when parent element (or self) is made visible with `UI:visible` custom event
   .on('ready UI:visible', function (event) {
     $(event.target).find('[data-passwordcheck]').not('.ui-passwordcheck').uiPasswordCheck()
+  })
+  .on('hidden.bs.collapse', function () {
+    passwordRequirements($('.ui-passwordcheck-input').val())
   })
 
 module.exports = PasswordCheck
