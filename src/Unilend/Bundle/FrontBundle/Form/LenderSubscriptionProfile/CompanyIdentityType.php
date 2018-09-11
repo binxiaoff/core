@@ -4,7 +4,7 @@
 namespace Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile;
 
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
@@ -17,13 +17,17 @@ use Unilend\Bundle\FrontBundle\Form\Components\GenderType;
 
 class CompanyIdentityType extends AbstractType
 {
-    /** @var  EntityManager */
+    /** @var EntityManagerInterface */
     private $entityManager;
 
-    /** @var  TranslatorInterface */
+    /** @var TranslatorInterface */
     private $translator;
 
-    public function __construct(EntityManager $entityManager, TranslatorInterface $translator)
+    /**
+     * @param EntityManagerInterface $entityManager
+     * @param TranslatorInterface    $translator
+     */
+    public function __construct(EntityManagerInterface $entityManager, TranslatorInterface $translator)
     {
         $this->entityManager = $entityManager;
         $this->translator    = $translator;

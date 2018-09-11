@@ -2,7 +2,7 @@
 
 namespace Unilend\Bundle\FrontBundle\Form;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
@@ -15,10 +15,14 @@ class PartnerContactType extends AbstractType
 {
     /** @var Clients */
     private $user;
-    /** @var EntityManager */
+    /** @var EntityManagerInterface */
     private $entityManager;
 
-    public function __construct(EntityManager $entityManager, TokenStorage $tokenStorage)
+    /**
+     * @param EntityManagerInterface $entityManager
+     * @param TokenStorage           $tokenStorage
+     */
+    public function __construct(EntityManagerInterface $entityManager, TokenStorage $tokenStorage)
     {
         $this->entityManager = $entityManager;
         $this->user          = $tokenStorage->getToken()->getUser();

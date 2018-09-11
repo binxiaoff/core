@@ -2,17 +2,17 @@
 
 namespace Unilend\Bundle\FrontBundle\Security\User;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Security\Core\Exception\{UnsupportedUserException, UsernameNotFoundException};
 use Symfony\Component\Security\Core\User\{UserInterface, UserProviderInterface};
-use Unilend\Bundle\CoreBusinessBundle\Entity\{Clients, ClientsStatus};
+use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Service\{ClientManager, LenderManager, SlackManager, TermsOfSaleManager};
 use Unilend\Bundle\FrontBundle\Service\NotificationDisplayManager;
 
 class UserProvider implements UserProviderInterface
 {
-    /** @var EntityManager */
+    /** @var EntityManagerInterface */
     private $entityManager;
     /** @var ClientManager */
     private $clientManager;
@@ -28,7 +28,7 @@ class UserProvider implements UserProviderInterface
     private $logger;
 
     /**
-     * @param EntityManager              $entityManager
+     * @param EntityManagerInterface     $entityManager
      * @param ClientManager              $clientManager
      * @param NotificationDisplayManager $notificationDisplayManager
      * @param LenderManager              $lenderManager
@@ -37,7 +37,7 @@ class UserProvider implements UserProviderInterface
      * @param LoggerInterface            $logger
      */
     public function __construct(
-        EntityManager $entityManager,
+        EntityManagerInterface $entityManager,
         ClientManager $clientManager,
         NotificationDisplayManager $notificationDisplayManager,
         LenderManager $lenderManager,
