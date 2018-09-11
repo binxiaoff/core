@@ -7,7 +7,7 @@ use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Service\PartnerManager;
-use Xynnn\GoogleTagManagerBundle\Service\GoogleTagManager;
+use Xynnn\GoogleTagManagerBundle\Service\GoogleTagManagerInterface;
 
 /**
  * UserIdCollector
@@ -22,18 +22,18 @@ class DataLayerCollector
     private $tokenStorage;
     /** @var RequestStack */
     private $requestStack;
-    /** @var GoogleTagManager */
+    /** @var GoogleTagManagerInterface */
     private $googleTagManager;
     /** @var PartnerManager */
     private $partnerManager;
 
     /**
-     * @param TokenStorageInterface $tokenStorage
-     * @param RequestStack          $requestStack
-     * @param GoogleTagManager      $googleTagManager
-     * @param PartnerManager        $partnerManager
+     * @param TokenStorageInterface     $tokenStorage
+     * @param RequestStack              $requestStack
+     * @param GoogleTagManagerInterface $googleTagManager
+     * @param PartnerManager            $partnerManager
      */
-    public function __construct(TokenStorageInterface $tokenStorage, RequestStack $requestStack, GoogleTagManager $googleTagManager, PartnerManager $partnerManager)
+    public function __construct(TokenStorageInterface $tokenStorage, RequestStack $requestStack, GoogleTagManagerInterface $googleTagManager, PartnerManager $partnerManager)
     {
         $this->tokenStorage     = $tokenStorage;
         $this->requestStack     = $requestStack;

@@ -3,7 +3,7 @@
 namespace Unilend\Bundle\FrontBundle\Service;
 
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\Form\{Extension\Core\Type\CheckboxType, FormBuilderInterface, FormFactory, FormInterface};
+use Symfony\Component\Form\{Extension\Core\Type\CheckboxType, FormBuilderInterface, FormFactoryInterface, FormInterface};
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, ClientAddress, Clients, ClientsHistoryActions, CompanyAddress};
@@ -11,7 +11,7 @@ use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\{BankAccountType, 
 
 class FormManager
 {
-    /** @var FormFactory */
+    /** @var FormFactoryInterface */
     private $formFactory;
     /** @var TranslatorInterface */
     private $translator;
@@ -19,12 +19,12 @@ class FormManager
     private $entityManager;
 
     /**
-     * @param FormFactory            $formFactory
+     * @param FormFactoryInterface   $formFactory
      * @param TranslatorInterface    $translator
      * @param EntityManagerInterface $entityManager
      */
     public function __construct(
-        FormFactory $formFactory,
+        FormFactoryInterface $formFactory,
         TranslatorInterface $translator,
         EntityManagerInterface $entityManager
     )

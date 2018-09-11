@@ -7,7 +7,7 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\{Cookie, RedirectResponse, Request};
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
-use Symfony\Component\Security\Core\Encoder\{EncoderAwareInterface, UserPasswordEncoder};
+use Symfony\Component\Security\Core\Encoder\{EncoderAwareInterface, UserPasswordEncoderInterface};
 use Symfony\Component\Security\Core\Exception\{AccountExpiredException, AuthenticationException, BadCredentialsException, CustomUserMessageAuthenticationException, DisabledException, LockedException,
     UsernameNotFoundException};
 use Symfony\Component\Security\Core\Security;
@@ -26,7 +26,7 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
     const COOKIE_NO_CF               = 'uld-nocf';
     const SESSION_NAME_LOGIN_CAPTCHA = 'displayLoginCaptcha';
 
-    /** @var UserPasswordEncoder */
+    /** @var UserPasswordEncoderInterface */
     private $securityPasswordEncoder;
     /** @var RouterInterface */
     private $router;
@@ -46,7 +46,7 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
     private $logger;
 
     /**
-     * @param UserPasswordEncoder                    $securityPasswordEncoder
+     * @param UserPasswordEncoderInterface           $securityPasswordEncoder
      * @param RouterInterface                        $router
      * @param EntityManagerInterface                 $entityManager
      * @param SessionAuthenticationStrategyInterface $sessionStrategy
@@ -57,7 +57,7 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
      * @param LoggerInterface                        $logger
      */
     public function __construct(
-        UserPasswordEncoder $securityPasswordEncoder,
+        UserPasswordEncoderInterface $securityPasswordEncoder,
         RouterInterface $router,
         EntityManagerInterface $entityManager,
         SessionAuthenticationStrategyInterface $sessionStrategy,

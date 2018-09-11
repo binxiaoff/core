@@ -6,7 +6,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\{ChoiceType, EmailType, TextareaType, TextType};
 use Symfony\Component\Form\FormBuilderInterface;
-use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorage;
+use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 
 class BorrowerContactType extends AbstractType
@@ -17,11 +17,10 @@ class BorrowerContactType extends AbstractType
     private $entityManager;
 
     /**
-     *
      * @param EntityManagerInterface $entityManager
-     * @param TokenStorage           $tokenStorage
+     * @param TokenStorageInterface  $tokenStorage
      */
-    public function __construct(EntityManagerInterface $entityManager, TokenStorage $tokenStorage)
+    public function __construct(EntityManagerInterface $entityManager, TokenStorageInterface $tokenStorage)
     {
         $this->entityManager = $entityManager;
         $this->borrower      = $tokenStorage->getToken()->getUser();
