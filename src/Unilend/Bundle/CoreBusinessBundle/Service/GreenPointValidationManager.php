@@ -283,7 +283,7 @@ class GreenPointValidationManager
                 ]);
             }
             else {
-                $this->bankAccountManager->validateBankAccount($bankAccountToValidate);
+                $this->bankAccountManager->validate($bankAccountToValidate);
             }
         }
     }

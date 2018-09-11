@@ -95,7 +95,7 @@ class prescripteursController extends bootstrap
                     $clientEntity       = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($this->prescripteurs->id_client);
                     $bankAccount        = $bankAccountManager->saveBankInformation($clientEntity, $_POST['bic'], $_POST['iban']);
                     if ($bankAccount) {
-                        $bankAccountManager->validateBankAccount($bankAccount);
+                        $bankAccountManager->validate($bankAccount);
                     }
                 }
             } catch (Exception $exception) {
