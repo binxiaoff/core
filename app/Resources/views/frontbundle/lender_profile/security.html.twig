@@ -55,10 +55,9 @@ classNames: 'user-preter-profile'
                                 <span class="label">{% trans %} lender-profile_security-password-section-modify-button {% endtrans %}</span>
                             </button>
 
-                            <dl class="list-2col">
-                                <dt>{% trans %} common_password {% endtrans %}</dt>
-                                <dd>{% trans %} lender-profile_security-password-section-hidden-pwd-placeholder {% endtrans %}</dd>
-                            </dl>
+                            <div class="profile-security-password-explanation">
+                                <span>{% trans %} lender-profile_security-password-usage-recommandation-message {% endtrans %}</span>
+                            </div>
 
                         </section><!-- /#profile-security-password-view -->
 
@@ -70,6 +69,11 @@ classNames: 'user-preter-profile'
                                     'data-formvalidation data-formvalidation-notificationselem' : '#form-profile-security-password-notifications'
                                 }
                             }) }}
+
+                            <div class="field-help">
+                                <p>{% trans %} lender-profile_security-password-usage-recommandation-message {% endtrans %}</p>
+                            </div>
+
                              <div class="row row-multi-col-computer">
                                     <div class="form-field col-lg-6 col-md-6 {% if forms.securityPwd.formerPassword.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
                                         <label for="form-profile-security-password-passe">{% trans %} lender-profile_security-password-section-former-password-field-label {% endtrans %}
