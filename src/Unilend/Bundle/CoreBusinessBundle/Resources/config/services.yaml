@@ -18,11 +18,7 @@ services:
         resource: '%kernel.project_dir%/src/Unilend/Bundle/CoreBusinessBundle/*'
         exclude: '%kernel.project_dir%/src/Unilend/Bundle/CoreBusinessBundle/Entity'
 
-    CL\Slack\Transport\ApiClientInterface: '@cl_slack.api_client'
-    Knp\Snappy\GeneratorInterface: '@knp_snappy.pdf'
-
-    Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductManager:
-        abstract: true
+    Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductManager: '@Unilend\Bundle\CoreBusinessBundle\Service\PartnerProductManager'
 
     # The "public: true" can be removed if there is no more access via $container->get()
     Unilend\Bundle\CoreBusinessBundle\Service\AcceptedBidAndLoanNotificationSender:

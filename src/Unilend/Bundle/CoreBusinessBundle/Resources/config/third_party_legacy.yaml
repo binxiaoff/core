@@ -1,0 +1,11 @@
+# remove these if/when the third-party bundles register correctly the services
+services:
+    CL\Slack\Transport\ApiClientInterface: '@cl_slack.api_client'
+    Knp\Snappy\GeneratorInterface: '@knp_snappy.pdf'
+    DrewM\MailChimp\MailChimp: '@welp_mailchimp.mailchimp_master'
+    RobertoTru\ToInlineStyleEmailBundle\Converter\ToInlineStyleEmailConverter: '@css_to_inline_email_converter'
+    Symfony\Component\Security\Http\HttpUtils: '@security.http_utils'
+    Xynnn\GoogleTagManagerBundle\Service\GoogleTagManagerInterface: '@google_tag_manager'
+    Sonata\SeoBundle\Seo\SeoPage: '@sonata.seo.page.default'
+    Sonata\CacheBundle\Adapter\SymfonyCache: '@sonata.cache.symfony'
+    Swift_Events_EventDispatcher: '@swiftmailer.mailer.default.transport.eventdispatcher'
