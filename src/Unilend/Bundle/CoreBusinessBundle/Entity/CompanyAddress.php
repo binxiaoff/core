@@ -46,6 +46,13 @@ class CompanyAddress
     /**
      * @var string
      *
+     * @ORM\Column(name="cog", type="string", length=5, nullable=true)
+     */
+    private $cog;
+
+    /**
+     * @var string
+     *
      * @ORM\Column(name="latitude", type="decimal", precision=10, scale=8, nullable=true)
      */
     private $latitude;
@@ -133,8 +140,6 @@ class CompanyAddress
     }
 
     /**
-     * Set address
-     *
      * @param string $address
      *
      * @return CompanyAddress
@@ -147,8 +152,6 @@ class CompanyAddress
     }
 
     /**
-     * Get address
-     *
      * @return string
      */
     public function getAddress(): string
@@ -157,8 +160,6 @@ class CompanyAddress
     }
 
     /**
-     * Set zip
-     *
      * @param string $zip
      *
      * @return CompanyAddress
@@ -171,8 +172,6 @@ class CompanyAddress
     }
 
     /**
-     * Get zip
-     *
      * @return string
      */
     public function getZip(): string
@@ -181,8 +180,6 @@ class CompanyAddress
     }
 
     /**
-     * Set city
-     *
      * @param string $city
      *
      * @return CompanyAddress
@@ -195,8 +192,6 @@ class CompanyAddress
     }
 
     /**
-     * Get city
-     *
      * @return string
      */
     public function getCity(): string
@@ -205,8 +200,26 @@ class CompanyAddress
     }
 
     /**
-     * Set latitude
+     * @param string|null $cog
      *
+     * @return CompanyAddress
+     */
+    public function setCog(?string $cog): CompanyAddress
+    {
+        $this->cog = $cog;
+
+        return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getCog(): ?string
+    {
+        return $this->cog;
+    }
+
+    /**
      * @param string|null $latitude
      *
      * @return CompanyAddress
@@ -219,8 +232,6 @@ class CompanyAddress
     }
 
     /**
-     * Get latitude
-     *
      * @return string|null
      */
     public function getLatitude(): ?string
@@ -229,8 +240,6 @@ class CompanyAddress
     }
 
     /**
-     * Set longitude
-     *
      * @param string|null $longitude
      *
      * @return CompanyAddress
@@ -243,8 +252,6 @@ class CompanyAddress
     }
 
     /**
-     * Get longitude
-     *
      * @return string|null
      */
     public function getLongitude(): ?string
@@ -253,8 +260,6 @@ class CompanyAddress
     }
 
     /**
-     * Set datePending
-     *
      * @param \DateTime $datePending
      *
      * @return CompanyAddress
@@ -267,8 +272,6 @@ class CompanyAddress
     }
 
     /**
-     * Get datePending
-     *
      * @return \DateTime
      */
     public function getDatePending(): \DateTime
@@ -277,8 +280,6 @@ class CompanyAddress
     }
 
     /**
-     * Set dateValidated
-     *
      * @param \DateTime|null $dateValidated
      *
      * @return CompanyAddress
@@ -291,8 +292,6 @@ class CompanyAddress
     }
 
     /**
-     * Get dateValidated
-     *
      * @return \DateTime|null
      */
     public function getDateValidated(): ?\DateTime
@@ -301,8 +300,6 @@ class CompanyAddress
     }
 
     /**
-     * Set dateArchived
-     *
      * @param \DateTime|null $dateArchived
      *
      * @return CompanyAddress
@@ -315,8 +312,6 @@ class CompanyAddress
     }
 
     /**
-     * Get dateArchived
-     *
      * @return \DateTime|null
      */
     public function getDateArchived(): ?\DateTime
@@ -325,8 +320,6 @@ class CompanyAddress
     }
 
     /**
-     * Set added
-     *
      * @param \DateTime $added
      *
      * @return CompanyAddress
@@ -339,8 +332,6 @@ class CompanyAddress
     }
 
     /**
-     * Get added
-     *
      * @return \DateTime
      */
     public function getAdded(): \DateTime
@@ -349,8 +340,6 @@ class CompanyAddress
     }
 
     /**
-     * Set updated
-     *
      * @param \DateTime|null $updated
      *
      * @return CompanyAddress
@@ -363,8 +352,6 @@ class CompanyAddress
     }
 
     /**
-     * Get updated
-     *
      * @return \DateTime|null
      */
     public function getUpdated(): ?\DateTime
@@ -373,8 +360,6 @@ class CompanyAddress
     }
 
     /**
-     * Set idCompany
-     *
      * @param Companies $idCompany
      *
      * @return CompanyAddress
@@ -387,8 +372,6 @@ class CompanyAddress
     }
 
     /**
-     * Get idCompany
-     *
      * @return Companies|null
      */
     public function getIdCompany(): ?Companies
@@ -397,8 +380,6 @@ class CompanyAddress
     }
 
     /**
-     * Set idCountry
-     *
      * @param Pays $idCountry
      *
      * @return CompanyAddress
@@ -411,8 +392,6 @@ class CompanyAddress
     }
 
     /**
-     * Get idCountry
-     *
      * @return Pays
      */
     public function getIdCountry(): Pays
