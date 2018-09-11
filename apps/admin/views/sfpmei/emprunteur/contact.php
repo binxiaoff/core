@@ -91,7 +91,7 @@
                             <th>Document</th>
                             <td>
                                 <a href="<?= $this->url ?>/attachment/download/id/<?= $attachment->getId() ?>/file/<?= urlencode($attachment->getPath()) ?>">
-                                    <?= empty($attachment->getOriginalName()) ? $attachment->getPath() : $attachment->getOriginalName() ?>
+                                    <?= $attachment->getOriginalName() ?? $attachment->getPath() ?>
                                 </a>
                             </td>
                         </tr>

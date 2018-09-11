@@ -2,7 +2,7 @@
 
 namespace Unilend\Bundle\WSClientBundle\Service;
 
-use JMS\Serializer\Serializer;
+use JMS\Serializer\SerializerInterface;
 use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WsExternalResource;
 use Unilend\Bundle\WSClientBundle\Entity\Altares\BalanceSheetList;
@@ -61,7 +61,7 @@ class AltaresManager
     private $riskClient;
     /** @var \SoapClient */
     private $riskMonitoringClient;
-    /** @var Serializer */
+    /** @var SerializerInterface */
     private $serializer;
     /** @var ResourceManager */
     private $resourceManager;
@@ -71,15 +71,15 @@ class AltaresManager
     private $readFromCache = true;
 
     /**
-     * @param string             $login
-     * @param string             $password
-     * @param LoggerInterface    $logger
-     * @param CallHistoryManager $callHistoryManager
-     * @param \SoapClient        $identityClient
-     * @param \SoapClient        $riskClient
-     * @param \SoapClient        $riskMonitoringClient
-     * @param Serializer         $serializer
-     * @param ResourceManager    $resourceManager
+     * @param string              $login
+     * @param string              $password
+     * @param LoggerInterface     $logger
+     * @param CallHistoryManager  $callHistoryManager
+     * @param \SoapClient         $identityClient
+     * @param \SoapClient         $riskClient
+     * @param \SoapClient         $riskMonitoringClient
+     * @param SerializerInterface $serializer
+     * @param ResourceManager     $resourceManager
      */
     public function __construct(
         $login,
@@ -89,7 +89,7 @@ class AltaresManager
         \SoapClient $identityClient,
         \SoapClient $riskClient,
         \SoapClient $riskMonitoringClient,
-        Serializer $serializer,
+        SerializerInterface $serializer,
         ResourceManager $resourceManager
     )
     {

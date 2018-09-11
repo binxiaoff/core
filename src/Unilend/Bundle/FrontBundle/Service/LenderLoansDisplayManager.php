@@ -2,7 +2,7 @@
 
 namespace Unilend\Bundle\FrontBundle\Service;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Asset\Packages;
 use Symfony\Component\Routing\{Generator\UrlGeneratorInterface, RouterInterface};
 use Symfony\Component\Translation\TranslatorInterface;
@@ -40,7 +40,7 @@ class LenderLoansDisplayManager
 
     /** @var TranslatorInterface */
     private $translator;
-    /** @var EntityManager */
+    /** @var EntityManagerInterface */
     private $entityManager;
     /** @var RouterInterface */
     private $router;
@@ -48,12 +48,12 @@ class LenderLoansDisplayManager
     private $assetPackage;
 
     /**
-     * @param TranslatorInterface $translator
-     * @param EntityManager       $entityManager
-     * @param RouterInterface     $router
-     * @param Packages            $assetPackage
+     * @param TranslatorInterface    $translator
+     * @param EntityManagerInterface $entityManager
+     * @param RouterInterface        $router
+     * @param Packages               $assetPackage
      */
-    public function __construct(TranslatorInterface $translator, EntityManager $entityManager, RouterInterface $router, Packages $assetPackage)
+    public function __construct(TranslatorInterface $translator, EntityManagerInterface $entityManager, RouterInterface $router, Packages $assetPackage)
     {
         $this->translator    = $translator;
         $this->entityManager = $entityManager;

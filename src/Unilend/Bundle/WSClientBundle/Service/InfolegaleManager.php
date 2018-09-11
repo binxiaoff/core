@@ -2,16 +2,13 @@
 
 namespace Unilend\Bundle\WSClientBundle\Service;
 
-use GuzzleHttp\{
-    Client, ClientInterface
-};
-use JMS\Serializer\Serializer;
+use GuzzleHttp\{Client, ClientInterface};
+use JMS\Serializer\SerializerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WsExternalResource;
-use Unilend\Bundle\WSClientBundle\Entity\Infolegale\{
-    AnnouncementCollection, AnnouncementDetailsCollection, DirectorAnnouncementCollection, ExecutiveCollection, HomonymCollection, Identity, MandateCollection, ScoreDetails
-};
+use Unilend\Bundle\WSClientBundle\Entity\Infolegale\{AnnouncementCollection, AnnouncementDetailsCollection, DirectorAnnouncementCollection, ExecutiveCollection, HomonymCollection, Identity,
+    MandateCollection, ScoreDetails};
 
 class InfolegaleManager
 {
@@ -33,7 +30,7 @@ class InfolegaleManager
     private $logger;
     /** @var CallHistoryManager */
     private $callHistoryManager;
-    /** @var Serializer */
+    /** @var SerializerInterface */
     private $serializer;
     /** @var ResourceManager */
     private $resourceManager;
@@ -43,19 +40,19 @@ class InfolegaleManager
     private $readFromCache = true;
 
     /**
-     * @param ClientInterface    $client
-     * @param string             $token
-     * @param LoggerInterface    $logger
-     * @param CallHistoryManager $callHistoryManager
-     * @param Serializer         $serializer
-     * @param ResourceManager    $resourceManager
+     * @param ClientInterface     $client
+     * @param string              $token
+     * @param LoggerInterface     $logger
+     * @param CallHistoryManager  $callHistoryManager
+     * @param SerializerInterface $serializer
+     * @param ResourceManager     $resourceManager
      */
     public function __construct(
         ClientInterface $client,
         $token,
         LoggerInterface $logger,
         CallHistoryManager $callHistoryManager,
-        Serializer $serializer,
+        SerializerInterface $serializer,
         ResourceManager $resourceManager
     )
     {

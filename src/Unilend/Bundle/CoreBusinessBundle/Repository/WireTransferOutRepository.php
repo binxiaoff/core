@@ -97,8 +97,8 @@ class WireTransferOutRepository extends EntityRepository
         $queryBuilder = $this->createQueryBuilder('v');
         $queryBuilder
             ->select('ROUND(SUM(v.montant) / 100, 2) AS amount')
-            ->addSelect('DATE(v.addedXml) AS date')
-            ->where('v.addedXml BETWEEN :start AND :end')
+            ->addSelect('DATE(DATE_SUB(v.addedXml, 1, \'day\')) AS date')
+            ->where('DATE_SUB(v.addedXml, 1, \'day\') BETWEEN :start AND :end')
             ->andWhere('v.status = :status')
             ->groupBy('date')
             ->orderBy('DATE(v.addedXml)', 'ASC')

@@ -5,7 +5,7 @@ namespace Unilend\Bundle\WSClientBundle\Service;
 use CL\Slack\Payload\PayloadResponseInterface;
 use Doctrine\Bundle\MongoDBBundle\ManagerRegistry;
 use Doctrine\ODM\MongoDB\Query\Builder;
-use Doctrine\ORM\{EntityManager, ORMException};
+use Doctrine\ORM\{EntityManagerInterface, ORMException};
 use Psr\Cache\CacheItemPoolInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Asset\Packages;
@@ -19,7 +19,7 @@ use Unilend\librairies\CacheKeys;
 
 class CallHistoryManager
 {
-    /** @var EntityManager */
+    /** @var EntityManagerInterface */
     private $entityManager;
     /** @var CacheItemPoolInterface */
     private $cacheItemPool;
@@ -41,7 +41,7 @@ class CallHistoryManager
     private $entityManagerSimulator;
 
     /**
-     * @param EntityManager          $entityManager
+     * @param EntityManagerInterface $entityManager
      * @param CacheItemPoolInterface $cacheItemPool
      * @param Stopwatch              $stopwatch
      * @param SlackManager           $slackManager
@@ -53,7 +53,7 @@ class CallHistoryManager
      * @param EntityManagerSimulator $entityManagerSimulator
      */
     public function __construct(
-        EntityManager $entityManager,
+        EntityManagerInterface $entityManager,
         CacheItemPoolInterface $cacheItemPool,
         Stopwatch $stopwatch,
         SlackManager $slackManager,

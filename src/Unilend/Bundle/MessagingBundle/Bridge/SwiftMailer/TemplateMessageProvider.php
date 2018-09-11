@@ -2,18 +2,18 @@
 
 namespace Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Asset\Packages;
 use Symfony\Component\Translation\TranslatorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{MailTemplates, Translations, UniversignEntityInterface};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{MailTemplates, Translations};
 
 class TemplateMessageProvider
 {
     const KEYWORDS_PREFIX = '[EMV DYN]';
     const KEYWORDS_SUFFIX = '[EMV /DYN]';
 
-    /** @var EntityManager */
+    /** @var EntityManagerInterface */
     private $entityManager;
     /** @var string */
     private $templateMessageFQCN;
@@ -31,16 +31,16 @@ class TemplateMessageProvider
     private $logger;
 
     /**
-     * @param EntityManager       $entityManager
-     * @param string              $templateMessageFQCN
-     * @param string              $defaultLocale
-     * @param TranslatorInterface $translator
-     * @param Packages            $assetsPackages
-     * @param string              $frontUrl
-     * @param string              $adminUrl
+     * @param EntityManagerInterface $entityManager
+     * @param string                 $templateMessageFQCN
+     * @param string                 $defaultLocale
+     * @param TranslatorInterface    $translator
+     * @param Packages               $assetsPackages
+     * @param string                 $frontUrl
+     * @param string                 $adminUrl
      */
     public function __construct(
-        EntityManager $entityManager,
+        EntityManagerInterface $entityManager,
         string $templateMessageFQCN,
         string $defaultLocale,
         TranslatorInterface $translator,

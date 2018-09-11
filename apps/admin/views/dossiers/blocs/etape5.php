@@ -147,7 +147,7 @@
                                         <img src="<?= $this->surl ?>/images/admin/delete.png" alt="Supprimer">
                                     </a>
                                     <a href="<?= $this->lurl ?>/viewer/project/<?= $this->projectEntity->getIdProject() ?>/<?= $projectAttachment->getAttachment()->getId() ?>" target="_blank">
-                                        <?= $projectAttachment->getAttachment()->getOriginalName() ?>
+                                        <?= $projectAttachment->getAttachment()->getOriginalName() ?? basename($projectAttachment->getAttachment()->getPath()) ?>
                                     </a>
                                 </div>
                             <?php endforeach; ?>
@@ -180,7 +180,7 @@
                                         <img src="<?= $this->surl ?>/images/admin/delete.png" alt="Supprimer">
                                     </a>
                                     <a href="<?= $this->lurl ?>/viewer/project/<?= $this->projectEntity->getIdProject() ?>/<?= $projectAttachment->getAttachment()->getId() ?>" target="_blank">
-                                        <?= $projectAttachment->getAttachment()->getOriginalName() ?>
+                                        <?= $projectAttachment->getAttachment()->getOriginalName() ?? basename($projectAttachment->getAttachment()->getPath()) ?>
                                     </a>
                                 </div>
                             <?php endforeach; ?>

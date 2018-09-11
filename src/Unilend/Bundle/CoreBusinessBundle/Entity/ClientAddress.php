@@ -44,6 +44,14 @@ class ClientAddress
     private $city;
 
     /**
+     * Code officiel géographique designated by INSEE
+     * @var string
+     *
+     * @ORM\Column(name="cog", type="string", length=5, nullable=true)
+     */
+    private $cog;
+
+    /**
      * @var \DateTime
      *
      * @ORM\Column(name="date_pending", type="datetime", nullable=false)
@@ -109,8 +117,6 @@ class ClientAddress
     private $idType;
 
     /**
-     * Get id
-     *
      * @return integer
      */
     public function getId(): int
@@ -119,8 +125,6 @@ class ClientAddress
     }
 
     /**
-     * Set address
-     *
      * @param string $address
      *
      * @return ClientAddress
@@ -133,8 +137,6 @@ class ClientAddress
     }
 
     /**
-     * Get address
-     *
      * @return string
      */
     public function getAddress(): string
@@ -143,8 +145,6 @@ class ClientAddress
     }
 
     /**
-     * Set zip
-     *
      * @param string $zip
      *
      * @return ClientAddress
@@ -157,8 +157,6 @@ class ClientAddress
     }
 
     /**
-     * Get zip
-     *
      * @return string
      */
     public function getZip(): string
@@ -167,8 +165,6 @@ class ClientAddress
     }
 
     /**
-     * Set city
-     *
      * @param string $city
      *
      * @return ClientAddress
@@ -181,8 +177,6 @@ class ClientAddress
     }
 
     /**
-     * Get city
-     *
      * @return string
      */
     public function getCity(): string
@@ -191,8 +185,26 @@ class ClientAddress
     }
 
     /**
-     * Set datePending
+     * @param string|null $cog
      *
+     * @return ClientAddress
+     */
+    public function setCog(?string $cog): ClientAddress
+    {
+        $this->cog = $cog;
+
+        return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getCog(): ?string
+    {
+        return $this->cog;
+    }
+
+    /**
      * @param \DateTime $datePending
      *
      * @return ClientAddress
@@ -205,8 +217,6 @@ class ClientAddress
     }
 
     /**
-     * Get datePending
-     *
      * @return \DateTime
      */
     public function getDatePending(): \DateTime
@@ -215,8 +225,6 @@ class ClientAddress
     }
 
     /**
-     * Set dateValidated
-     *
      * @param \DateTime|null $dateValidated
      *
      * @return ClientAddress
@@ -229,8 +237,6 @@ class ClientAddress
     }
 
     /**
-     * Get dateValidated
-     *
      * @return \DateTime|null
      */
     public function getDateValidated(): ?\DateTime
@@ -239,8 +245,6 @@ class ClientAddress
     }
 
     /**
-     * Set dateArchived
-     *
      * @param \DateTime|null $dateArchived
      *
      * @return ClientAddress
@@ -253,8 +257,6 @@ class ClientAddress
     }
 
     /**
-     * Get dateArchived
-     *
      * @return \DateTime|null
      */
     public function getDateArchived(): ?\DateTime
@@ -263,8 +265,6 @@ class ClientAddress
     }
 
     /**
-     * Set added
-     *
      * @param \DateTime $added
      *
      * @return ClientAddress
@@ -277,8 +277,6 @@ class ClientAddress
     }
 
     /**
-     * Get added
-     *
      * @return \DateTime
      */
     public function getAdded(): \DateTime
@@ -287,8 +285,6 @@ class ClientAddress
     }
 
     /**
-     * Set updated
-     *
      * @param \DateTime|null $updated
      *
      * @return ClientAddress
@@ -301,8 +297,6 @@ class ClientAddress
     }
 
     /**
-     * Get updated
-     *
      * @return \DateTime|null
      */
     public function getUpdated(): ?\DateTime
@@ -311,8 +305,6 @@ class ClientAddress
     }
 
     /**
-     * Set idCountry
-     *
      * @param Pays $idCountry
      *
      * @return ClientAddress
@@ -325,8 +317,6 @@ class ClientAddress
     }
 
     /**
-     * Get idCountry
-     *
      * @return Pays
      */
     public function getIdCountry(): Pays
@@ -335,8 +325,6 @@ class ClientAddress
     }
 
     /**
-     * Set idClient
-     *
      * @param Clients $idClient
      *
      * @return ClientAddress
@@ -349,8 +337,6 @@ class ClientAddress
     }
 
     /**
-     * Get idClient
-     *
      * @return Clients
      */
     public function getIdClient(): Clients

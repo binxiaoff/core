@@ -98,7 +98,7 @@ EOF
                 /** @var ClientAddress $mostRecentAddress */
                 $mostRecentAddress = $clientAddressRepository->findLastModifiedNotArchivedAddressByType($client, AddressType::TYPE_MAIN_ADDRESS);
                 if (null === $mostRecentAddress) {
-                    $logger->error('Client ' . $client->getIdClient() . ' has no main address' . [
+                    $logger->error('Client ' . $client->getIdClient() . ' has no main address.', [
                             'class'     => __CLASS__,
                             'function'  => __FUNCTION__,
                             'id_client' => $client->getIdClient()
@@ -106,7 +106,7 @@ EOF
 
                     $mostRecentAddress = $clientAddressRepository->findLastModifiedNotArchivedAddressByType($client, AddressType::TYPE_POSTAL_ADDRESS);
                     if (null === $mostRecentAddress) {
-                        $logger->error('Client ' . $client->getIdClient() . ' has no postal address' . [
+                        $logger->error('Client ' . $client->getIdClient() . ' has no postal address.', [
                                 'class'     => __CLASS__,
                                 'function'  => __FUNCTION__,
                                 'id_client' => $client->getIdClient()
@@ -121,7 +121,7 @@ EOF
                     'id_country'       => null === $mostRecentAddress ? '' : $mostRecentAddress->getIdCountry()->getIdPays(),
                     'isoFiscal'        => null === $mostRecentAddress ? '' : $mostRecentAddress->getIdCountry()->getIso(),
                     'location'         => '',
-                    'inseeFiscal'      => '',
+                    'inseeFiscal'      => null === $mostRecentAddress ? '' : $mostRecentAddress->getCog(),
                     'deductedAtSource' => ''
                 ];
 
@@ -141,18 +141,6 @@ EOF
                         // But as we don't have the history of tax rate, we leave it unchanged till March 2018.
                         $taxType                                   = $entityManager->getRepository('UnilendCoreBusinessBundle:TaxType')->find(TaxType::TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE);
                         $fiscalAndLocationData['deductedAtSource'] = $numberFormatter->format($taxType->getRate()) . '%';
-                    } else {
-                        $inseeCode = $locationManager->getInseeCode($fiscalAndLocationData['zip'], $fiscalAndLocationData['city']);
-                        if (false === $inseeCode) {
-                            $logger->error('Client ' . $client->getIdClient() . ' has no insee code corresponding to his ' . $mostRecentAddress->getIdType()->getLabel(), [
-                                    'class'     => __CLASS__,
-                                    'function'  => __FUNCTION__,
-                                    'id_client' => $client->getIdClient()
-                                ]);
-                            $inseeCode = '';
-                        }
-                        $fiscalAndLocationData['inseeFiscal'] = $inseeCode;
-                        $fiscalAndLocationData['location']    = ''; //commune fiscal
                     }
                 }
 
@@ -195,7 +183,7 @@ EOF
                 /** @var CompanyAddress $mostRecentAddress */
                 $mostRecentAddress = $companyAddressRepository->findLastModifiedNotArchivedAddressByType($company, AddressType::TYPE_MAIN_ADDRESS);
                 if (null === $mostRecentAddress) {
-                    $logger->error('Company ' . $company->getIdCompany() . ' has no main address' . [
+                    $logger->error('Company ' . $company->getIdCompany() . ' has no main address.', [
                             'class'      => __CLASS__,
                             'function'   => __FUNCTION__,
                             'id_company' => $company->getIdCompany()
@@ -203,7 +191,7 @@ EOF
 
                     $mostRecentAddress = $companyAddressRepository->findLastModifiedNotArchivedAddressByType($company, AddressType::TYPE_POSTAL_ADDRESS);
                     if (null === $mostRecentAddress) {
-                        $logger->error('Company ' . $company->getIdCompany() . ' has no postal address' . [
+                        $logger->error('Company ' . $company->getIdCompany() . ' has no postal address.', [
                                 'class'      => __CLASS__,
                                 'function'   => __FUNCTION__,
                                 'id_company' => $company->getIdCompany()
@@ -218,7 +206,7 @@ EOF
                     'id_country'  => null === $mostRecentAddress ? '' : $mostRecentAddress->getIdCountry()->getIdPays(),
                     'isoFiscal'   => null === $mostRecentAddress ? '' : $mostRecentAddress->getIdCountry()->getIso(),
                     'location'    => '',
-                    'inseeFiscal' => null === $mostRecentAddress ? '' : $locationManager->getInseeCode($mostRecentAddress->getZip(), $mostRecentAddress->getCity())
+                    'inseeFiscal' => null === $mostRecentAddress ? '' : $mostRecentAddress->getCog()
                 ];
 
                 $data[] = $this->addLegalEntityLineToBeneficiaryQueryData($company, $wallet, $fiscalAndLocationData);
