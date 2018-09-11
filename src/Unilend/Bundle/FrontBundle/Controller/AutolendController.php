@@ -7,7 +7,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\{Request, Response};
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\User\UserInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{Autobid, Clients, ClientSettingType, ClientsHistoryActions, ClientsStatus, ProjectPeriod, ProjectRateSettings, Projects, WalletType};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{Autobid, Clients, ClientSettingType, ClientsHistoryActions, ProjectPeriod, ProjectRateSettings, Projects, WalletType};
 use Unilend\Bundle\CoreBusinessBundle\Service\AutoBidSettingsManager;
 use Unilend\core\Loader;
 
@@ -100,19 +100,27 @@ class AutolendController extends Controller
         $autoBidSettings   = $autobidRepository->getSettings($wallet, null, null, [Autobid::STATUS_ACTIVE, Autobid::STATUS_INACTIVE]);
         $autoBidSettings   = $this->fillMissingAutolendSettings($autoBidSettings, $projectPeriods, $project, $projectRateSettings);
 
-        foreach ($autoBidSettings as $aSetting) {
-            $aSetting['project_rate_min'] = $template['projectRatesGlobal']['rate_min'];
-            $aSetting['project_rate_max'] = $template['projectRatesGlobal']['rate_max'];
+        foreach ($autoBidSettings as $setting) {
+            $setting['project_rate_min'] = $template['projectRatesGlobal']['rate_min'];
+            $setting['project_rate_max'] = $template['projectRatesGlobal']['rate_max'];
 
-            if (isset($projectRateFormatted[$aSetting['id_period']][$aSetting['evaluation']])) {
-                $aSetting['project_rate_min'] = $projectRateFormatted[$aSetting['id_period']][$aSetting['evaluation']]['rate_min'];
-                $aSetting['project_rate_max'] = $projectRateFormatted[$aSetting['id_period']][$aSetting['evaluation']]['rate_max'];
+            if (isset($projectRateFormatted[$setting['id_period']][$setting['evaluation']])) {
+                $setting['project_rate_min'] = $projectRateFormatted[$setting['id_period']][$setting['evaluation']]['rate_min'];
+                $setting['project_rate_max'] = $projectRateFormatted[$setting['id_period']][$setting['evaluation']]['rate_max'];
             }
 
-            $averageRateUnilend                                    = $project->getAvgRate($aSetting['evaluation'], $aSetting['period_min'], $aSetting['period_max'], $startingDate);
-            $medianRateForSetting                                  = bcdiv(bcadd($aSetting['project_rate_min'], $aSetting['project_rate_max']), 2, 1);
-            $aSetting['cellAverageRateUnilend']                    = ($averageRateUnilend > 0) ? $averageRateUnilend : $medianRateForSetting;
-            $template['autoBidSettings'][$aSetting['id_period']][] = $aSetting;
+            $averageRateUnilend = $project->getAvgRate($setting['evaluation'], $setting['period_min'], $setting['period_max'], $startingDate);
+
+            if (false === $averageRateUnilend) {
+                $averageRateUnilend = bcdiv(bcadd($setting['project_rate_min'], $setting['project_rate_max']), 2, 1); // median rate
+            } elseif ($averageRateUnilend < $setting['project_rate_min']) {
+                $averageRateUnilend = $setting['project_rate_min'];
+            } elseif ($averageRateUnilend > $setting['project_rate_max']) {
+                $averageRateUnilend = $setting['project_rate_max'];
+            }
+
+            $setting['cellAverageRateUnilend']                    = $averageRateUnilend;
+            $template['autoBidSettings'][$setting['id_period']][] = $setting;
         }
 
         try {
