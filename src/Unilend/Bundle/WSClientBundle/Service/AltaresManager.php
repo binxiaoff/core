@@ -61,7 +61,7 @@ class AltaresManager
     private $riskClient;
     /** @var \SoapClient */
     private $riskMonitoringClient;
-    /** @var Serializer */
+    /** @var SerializerInterface */
     private $serializer;
     /** @var ResourceManager */
     private $resourceManager;
