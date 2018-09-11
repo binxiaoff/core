@@ -5,15 +5,6 @@ id: 'user-preter-profile',
 classNames: 'user-preter-profile'
 } %}
 
-{% form_theme forms.securityEmail '/frontbundle/forms/fields.html.twig' %}
-{% if forms.securityEmail.vars.valid == false %}
-    {% set emailFormCollapse = 'in' %}
-    {% set emailViewCollapse = '' %}
-{% else %}
-    {% set emailFormCollapse = '' %}
-    {% set emailViewCollapse = 'in' %}
-{% endif %}
-
 {% form_theme forms.securityPwd '/frontbundle/forms/fields.html.twig' %}
 {% if forms.securityPwd.vars.valid == false %}
     {% set pwdFormCollapse = 'in' %}
@@ -40,93 +31,6 @@ classNames: 'user-preter-profile'
 
         <div class="dashboard-tabs-content tab-content">
             <div id="profile-info" role="tabpanel" class="dashboard-tab-pane tab-pane active">
-
-                {# IDENTIFICATION #}
-                <article id="panel-identification" class="panel">
-
-                    <header class="panel-header">
-                        <h3>{% trans %} lender-profile_security-identification-section-title {% endtrans %}</h3>
-                        <div id="profile-security-identification-notifications">
-                            {% if app.session.flashBag.has('securityIdentificationSuccess') %}
-                                <div class="message-success">
-                                    {% for message in app.session.flashBag.get('securityIdentificationSuccess') %}
-                                        <span>{{ message }}</span>
-                                    {% endfor %}
-                                </div>
-                            {% endif %}
-                        </div>
-                    </header><!-- .panel-header -->
-
-                    <section id="profile-security-identification-section" role="tablist" class="ui-toggle-group" aria-multiselectable="true">
-                        <section id="profile-security-identification-view" role="tabpanel" class="profile-security-identification-view collapse {{ emailViewCollapse }}">
-
-                            <button data-target="#profile-security-identification-edit" role="button" data-toggle="collapse" data-parent="#profile-security-identification-section" class="btn-edit" aria-controls="#profile-security-identification-edit" aria-expanded="false">
-                                <span class="icon fa-pencil-u32"></span>
-                                <span class="label">{% trans %} lender-profile_security-identity-section-modify-button {% endtrans %}</span>
-                            </button>
-
-                            <dl class="list-2col">
-                                <dt>{% trans %} common_email {% endtrans %}</dt>
-                                <dd id="profile-security-identification-email-output">{{ client.email }}</dd>
-                                <dt>{% trans %} common_mobile-phone {% endtrans %}</dt>
-                                <dd id="profile-security-identification-mobile-output">{{ client.mobile }}</dd>
-                            </dl>
-                            <div class="field-help">
-                                <p>{% trans %} lender-profile_security-identity-section-mobile-help-message {% endtrans %}</p>
-                            </div>
-                        </section><!-- /#profile-security-identification-view -->
-
-                        <section id="profile-security-identification-edit" role="tabpanel" class="profile-security-identification-view collapse {{ emailFormCollapse }}">
-                            {{ form_start(forms.securityEmail, {
-                                'id' : 'form-profile-security-identification-edit',
-                                'attr' : {
-                                    'class' : 'form-security form-profile-security-identification-edit',
-                                    'data-formvalidation data-formvalidation-notificationselem' : '#form-profile-security-identification-notifications'
-                                }
-                            }) }}
-                            {{ form_errors(forms.securityEmail) }}
-                                <div id="form-profile-security-identification-notifications"></div>
-                                <div class="row row-multi-col-computer">
-                                    <div class="form-field col-lg-6 col-md-6 {% if forms.securityEmail.email.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
-                                        <label for="form-profile-security-identification-email">{% trans %} common_email {% endtrans %}
-                                            <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
-                                        <div class="input-group">
-                                            {{ form_widget(forms.securityEmail.email.first, {
-                                                'id' : 'form-profile-security-identification-email',
-                                                'attr' : {
-                                                    'class' : 'input-field',
-                                                    'data-formvalidation-input data-formvalidation-required' : 'true'
-                                                }
-                                            }) }}
-                                        </div>
-                                    </div><!-- /.form-field -->
-                                    <div class="form-field col-lg-6 col-md-6 {% if forms.securityEmail.email.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
-                                        <label for="form-profile-security-identification-email-conf">{% trans %} common_email-confirmation {% endtrans %}
-                                            <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
-                                        <div class="input-group">
-                                            {{ form_widget(forms.securityEmail.email.second, {
-                                                'id' : 'form-profile-security-identification-email-conf',
-                                                'attr' :  {
-                                                    'class' : 'input-field',
-                                                    'data-formvalidation-input data-formvalidation-required' : 'true',
-                                                    'data-formvalidation-samevalueas' : '#form-profile-security-identification-email'
-                                                }
-                                            }) }}
-                                        </div>
-                                    </div><!-- /.form-field -->
-                                    {{ form_errors(forms.securityEmail.email) }}
-                                </div>
-
-                                <div class="btn-controls">
-                                    <button class="btn-primary" data-spinnerbutton>{% trans %} lender-profile_security-identity-section-submit-button {% endtrans %}</button>
-                                    <button type="reset" role="button" data-toggle="collapse" data-target="#profile-security-identification-view" data-parent="#profile-security-identification-section" class="btn-default">{% trans %} lender-profile_security-identity-section-cancel-button {% endtrans %}</button>
-                                </div><!-- /.btn-controls -->
-                            {{ form_end(forms.securityEmail) }}
-                        </section><!-- /#profile-security-identification-edit -->
-
-                    </section><!-- /.ui-toggle-group -->
-                </article><!-- /.panel -->
-
                 {# PASSWORD #}
                 <article id="panel-password" class="panel">
                     <header class="panel-header">

@@ -244,21 +244,39 @@
                 }) }}
                 {{ form_errors(forms.identity.client.mobile) }}
             </div><!-- /.form-field -->
+        </div><!-- /.row -->
 
-            <div class="form-field col-lg-6 col-md-6">
-                <label for="form-profile-info-company-client-email {% if forms.identity.client.email.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
+        <div class="row row-multi-col-computer">
+            <div class="form-field col-lg-6 col-md-6 {% if forms.identity.clientEmail.email.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
+                <label for="form-profile-info-company-client-email">
                     {% trans %} common_email {% endtrans %}
                     <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                 </label>
-                {{ form_widget(forms.identity.client.email, {
+                {{ form_widget(forms.identity.clientEmail.email.first, {
                     'id': 'form-profile-info-company-client-email',
                     'required': false,
                     'attr': {
                         'class': 'input-field',
-                        'data-formvalidation-input data-formvalidation-required': 'true'
+                        'data-formvalidation-input data-formvalidation-required': 'true',
+                        'data-formvalidation-type': 'email'
                     }
                 }) }}
-                {{ form_errors(forms.identity.client.email) }}
+            </div><!-- /.form-field -->
+
+            <div class="form-field col-lg-6 col-md-6 {% if forms.identity.clientEmail.email.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
+                <label for="form-profile-info-company-client-email-conf"> {% trans %} common_email-confirmation {% endtrans %}
+                    <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
+                <div class="input-group">
+                    {{ form_widget(forms.identity.clientEmail.email.second, {
+                        'id' : 'form-profile-info-company-client-email-conf',
+                        'attr' :  {
+                            'class' : 'input-field',
+                            'data-formvalidation-input data-formvalidation-required' : 'true',
+                            'data-formvalidation-samevalueas' : '#form-profile-info-company-client-email'
+                        }
+                    }) }}
+                </div><!-- /.form-field -->
+                {{ form_errors(forms.identity.clientEmail.email) }}
             </div><!-- /.form-field -->
         </div><!-- /.row -->
 

@@ -163,6 +163,10 @@ class LenderProfileFormsHandler
     {
         $this->checkCompanyIdentityForm($company, $form);
 
+        if ($this->isUpdatingUsingExistingEmail($client, $unattachedClient)) {
+            $form->addError(new FormError($this->translator->trans('lender-profile_identification-error-existing-email')));
+        }
+
         $newAttachments = $this->uploadCompanyIdentityDocuments($client, $company, $form, $fileBag);
 
         if ($this->isFormValid($form)) {
@@ -600,10 +604,11 @@ class LenderProfileFormsHandler
      * @throws \Doctrine\ORM\ORMException
      * @throws \Doctrine\ORM\OptimisticLockException
      */
-    public function handleEmailForm(Clients $client, Clients $unattachedClient, FormInterface $form): bool
+    public function handleContactForm(Clients $client, Clients $unattachedClient, FormInterface $form): bool
     {
-        if (false === empty($this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->findGrantedLoginAccountsByEmail($client->getEmail()))) {
-            $form->addError(new FormError($this->translator->trans('lender-profile_security-identification-error-existing-email')));
+        if ($this->isUpdatingUsingExistingEmail($client, $unattachedClient)) {
+            $form->get('email')->addError(new FormError($this->translator->trans('lender-profile_identification-error-existing-email')));
+            $this->logger->error('Same email found ' . $client->getEmail(), [__METHOD__, $form->getErrors(), $form->isValid()]);
         }
 
         if ($form->isValid()) {
@@ -620,13 +625,11 @@ class LenderProfileFormsHandler
      * @param Clients $unattachedClient
      *
      * @return bool
-     * @throws OptimisticLockException
      */
-    public function handlePhoneForm(Clients $client, Clients $unattachedClient): bool
+    private function isUpdatingUsingExistingEmail(Clients $client, Clients $unattachedClient)
     {
-        $this->saveAndNotifyChanges($client, $unattachedClient);
-
-        return true;
+        return $client->getEmail() !== $unattachedClient->getEmail()
+            && false === empty($this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->findGrantedLoginAccountsByEmail($client->getEmail()));
     }
 
     /**
