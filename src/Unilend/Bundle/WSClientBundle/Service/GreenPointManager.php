@@ -2,9 +2,9 @@
 
 namespace Unilend\Bundle\WSClientBundle\Service;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use GuzzleHttp\Client;
-use JMS\Serializer\Serializer;
+use JMS\Serializer\SerializerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
@@ -45,32 +45,32 @@ class GreenPointManager
     private $logger;
     /** @var ResourceManager */
     private $resourceManager;
-    /** @var EntityManager */
+    /** @var EntityManagerInterface */
     private $entityManager;
     /** @var string */
     private $login;
     /** @var string */
     private $password;
-    /** @var Serializer */
+    /** @var SerializerInterface */
     private $serializer;
 
     /**
-     * @param Client          $client
-     * @param LoggerInterface $logger
-     * @param ResourceManager $resourceManager
-     * @param EntityManager   $entityManager
-     * @param string          $login
-     * @param string          $password
-     * @param Serializer      $serializer
+     * @param Client                 $client
+     * @param LoggerInterface        $logger
+     * @param ResourceManager        $resourceManager
+     * @param EntityManagerInterface $entityManager
+     * @param string                 $login
+     * @param string                 $password
+     * @param SerializerInterface    $serializer
      */
     public function __construct(
         Client $client,
         LoggerInterface $logger,
         ResourceManager $resourceManager,
-        EntityManager $entityManager,
+        EntityManagerInterface $entityManager,
         string $login,
         string $password,
-        Serializer $serializer
+        SerializerInterface $serializer
     )
     {
         $this->client          = $client;
@@ -194,7 +194,7 @@ class GreenPointManager
      */
     private function handleResponse(ResponseInterface $response)
     {
-        if (false === in_array($response->getStatusCode(), self::SUCCESS_HTTP_STATUS)){
+        if (false === in_array($response->getStatusCode(), self::SUCCESS_HTTP_STATUS)) {
             throw new \Exception('GreenPoint returned unexpected response. statusCode: ' . $response->getStatusCode() . ' reasonPhrase: ' . $response->getReasonPhrase());
         }
 

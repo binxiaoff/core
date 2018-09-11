@@ -2,27 +2,11 @@
 
 namespace Unilend\Bundle\MessagingBundle\Event;
 
-use Doctrine\ORM\EntityManager;
-use Doctrine\ORM\ORMException;
-use Knp\Bundle\MailjetBundle\Event\Adapter\{
-    BlockedEvent,
-    BounceEvent,
-    ClickEvent,
-    OpenEvent,
-    SentEvent,
-    SpamEvent,
-    UnsubEvent
-};
+use Doctrine\ORM\{EntityManagerInterface, ORMException};
+use Knp\Bundle\MailjetBundle\Event\Adapter\{BlockedEvent, BounceEvent, ClickEvent, OpenEvent, SentEvent, SpamEvent, UnsubEvent};
 use Knp\Bundle\MailjetBundle\Event\Listener\EventListenerInterface;
 use Psr\Log\LoggerInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    MailjetEventBlocked,
-    MailjetEventBounce,
-    MailjetEventClick,
-    MailjetEventOpen,
-    MailjetEventSpam,
-    MailjetEventUnsub
-};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{MailjetEventBlocked, MailjetEventBounce, MailjetEventClick, MailjetEventOpen, MailjetEventSpam, MailjetEventUnsub};
 
 /**
  * @package Unilend\Bundle\MessagingBundle\Event
@@ -30,16 +14,16 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{
  */
 class MailjetEventListener implements EventListenerInterface
 {
-    /** @var EntityManager */
+    /** @var EntityManagerInterface */
     private $entityManager;
     /** @var LoggerInterface */
     private $logger;
 
     /**
-     * @param EntityManager   $entityManager
-     * @param LoggerInterface $logger
+     * @param EntityManagerInterface $entityManager
+     * @param LoggerInterface        $logger
      */
-    public function __construct(EntityManager $entityManager, LoggerInterface $logger)
+    public function __construct(EntityManagerInterface $entityManager, LoggerInterface $logger)
     {
         $this->entityManager = $entityManager;
         $this->logger        = $logger;

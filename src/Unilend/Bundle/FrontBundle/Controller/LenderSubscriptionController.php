@@ -8,10 +8,11 @@ use Symfony\Component\HttpFoundation\{FileBag, JsonResponse, RedirectResponse, R
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, Attachment, AttachmentType, Backpayline, Clients, ClientsHistory, ClientsHistoryActions, ClientsStatus, Companies, NationalitesV2, OffresBienvenues, Pays, Users, WalletType};
+use Symfony\Component\Security\Core\User\UserInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, Attachment, AttachmentType, Backpayline, Clients, ClientsHistory, ClientsHistoryActions, ClientsStatus, Companies, NationalitesV2,
+    OffresBienvenues, Pays, Users, WalletType};
 use Unilend\Bundle\CoreBusinessBundle\Service\{GoogleRecaptchaManager, NewsletterManager, SponsorshipManager};
 use Unilend\Bundle\FrontBundle\Form\{LenderSubscriptionIdentityLegalEntity, LenderSubscriptionIdentityPerson};
-use Unilend\Bundle\FrontBundle\Security\{BCryptPasswordEncoder, User\UserPartner};
 use Unilend\Bundle\FrontBundle\Service\{DataLayerCollector, SourceManager};
 use Unilend\core\Loader;
 
@@ -22,13 +23,14 @@ class LenderSubscriptionController extends Controller
     /**
      * @Route("/inscription_preteur/etape1", name="lender_subscription_personal_information")
      *
-     * @param Request $request
+     * @param Request                    $request
+     * @param UserInterface|Clients|null $client
      *
      * @return Response
      */
-    public function personalInformationAction(Request $request): Response
+    public function personalInformationAction(Request $request, ?UserInterface $client): Response
     {
-        $response = $this->checkProgressAndRedirect($request);
+        $response = $this->checkProgressAndRedirect($request, null, $client);
         if ($response instanceof RedirectResponse) {
             return $response;
         }
@@ -204,7 +206,7 @@ class LenderSubscriptionController extends Controller
 
         if ($isValidCaptcha && $form->isValid()) {
             $clientType        = ($client->getIdPaysNaissance() == NationalitesV2::NATIONALITY_FRENCH) ? Clients::TYPE_PERSON : Clients::TYPE_PERSON_FOREIGNER;
-            $password          = password_hash($client->getPassword(), PASSWORD_DEFAULT); // TODO: use the Symfony\Component\Security\Core\Encoder\UserPasswordEncoder (need TECH-108)
+            $password          = $this->get('security.password_encoder')->encodePassword($client, $client->getPassword());
             $slug              = $ficelle->generateSlug($client->getPrenom() . '-' . $client->getNom());
             $newsletterConsent = $client->getOptin1() ? Clients::NEWSLETTER_OPT_IN_ENROLLED : Clients::NEWSLETTER_OPT_IN_NOT_ENROLLED;
 
@@ -296,7 +298,7 @@ class LenderSubscriptionController extends Controller
 
         if ($isValidCaptcha && $form->isValid()) {
             $clientType = $form->get('mainAddress')->get('idCountry')->getData() === Pays::COUNTRY_FRANCE ? Clients::TYPE_LEGAL_ENTITY : Clients::TYPE_LEGAL_ENTITY_FOREIGNER;
-            $password   = password_hash($client->getPassword(), PASSWORD_DEFAULT); // TODO: use the Symfony\Component\Security\Core\Encoder\UserPasswordEncoder (need TECH-108)
+            $password   = $this->get('security.password_encoder')->encodePassword($client, $client->getPassword());
             $slug       = $ficelle->generateSlug($client->getPrenom() . '-' . $client->getNom());
 
             $client
@@ -510,14 +512,16 @@ class LenderSubscriptionController extends Controller
     {
         $translator    = $this->get('translator');
         $entityManager = $this->get('doctrine.orm.entity_manager');
-        $duplicates    = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->findByEmailAndStatus($client->getEmail(), ClientsStatus::GRANTED_LOGIN);
+        $duplicates    = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->findGrantedLoginAccountsByEmail($client->getEmail());
 
         if (false === empty($duplicates)) {
             $form->get('client')->get('email')->addError(new FormError($translator->trans('lender-profile_security-identification-error-existing-email')));
             $this->get('session')->set(self::SESSION_NAME_CAPTCHA, true);
         }
 
-        if (false === BCryptPasswordEncoder::isPasswordSafe($client->getPassword())) { // todo: "try" BCryptPasswordEncoder::encodePassword() to check if the password is safe (need TECH-108)
+        try {
+            $this->get('security.password_encoder')->encodePassword($client, $client->getPassword());
+        } catch (\Exception $exception) {
             $form->get('client')->get('password')->addError(new FormError($translator->trans('common-validator_password-invalid')));
         }
     }
@@ -546,17 +550,17 @@ class LenderSubscriptionController extends Controller
     /**
      * @Route("/inscription_preteur/etape2/{clientHash}", name="lender_subscription_documents", requirements={"clientHash": "[0-9a-f-]{32,36}"})
      *
-     * @param string  $clientHash
-     * @param Request $request
+     * @param string                     $clientHash
+     * @param Request                    $request
+     * @param UserInterface|Clients|null $client
      *
      * @return Response
-     * @throws \Doctrine\ORM\NonUniqueResultException
      * @throws \Doctrine\ORM\OptimisticLockException
      * @throws \Exception
      */
-    public function documentsAction(string $clientHash, Request $request): Response
+    public function documentsAction(string $clientHash, Request $request, ?UserInterface $client): Response
     {
-        $response = $this->checkProgressAndRedirect($request, $clientHash);
+        $response = $this->checkProgressAndRedirect($request, $clientHash, $client);
         if ($response instanceof RedirectResponse) {
             return $response;
         }
@@ -801,14 +805,15 @@ class LenderSubscriptionController extends Controller
      * @Route("/inscription_preteur/etape3/{clientHash}", name="lender_subscription_money_deposit",
      *     requirements={"clientHash": "[0-9a-f-]{32,36}"}, methods={"GET"})
      *
-     * @param string  $clientHash
-     * @param Request $request
+     * @param string                     $clientHash
+     * @param Request                    $request
+     * @param UserInterface|Clients|null $client
      *
      * @return Response
      */
-    public function moneyDepositAction(string $clientHash, Request $request): Response
+    public function moneyDepositAction(string $clientHash, Request $request, ?UserInterface $client): Response
     {
-        $response = $this->checkProgressAndRedirect($request, $clientHash);
+        $response = $this->checkProgressAndRedirect($request, $clientHash, $client);
         if ($response instanceof RedirectResponse) {
             return $response;
         }
@@ -833,14 +838,15 @@ class LenderSubscriptionController extends Controller
      * @Route("/inscription_preteur/etape3/{clientHash}", name="lender_subscription_money_deposit_form",
      *     requirements={"clientHash": "[0-9a-f-]{32,36}"}, methods={"POST"})
      *
-     * @param string  $clientHash
-     * @param Request $request
+     * @param string                     $clientHash
+     * @param Request                    $request
+     * @param UserInterface|Clients|null $client
      *
      * @return RedirectResponse
      */
-    public function moneyDepositFormAction(string $clientHash, Request $request): RedirectResponse
+    public function moneyDepositFormAction(string $clientHash, Request $request, ?UserInterface $client): RedirectResponse
     {
-        $response = $this->checkProgressAndRedirect($request, $clientHash);
+        $response = $this->checkProgressAndRedirect($request, $clientHash, $client);
         if ($response instanceof RedirectResponse) {
             return $response;
         }
@@ -1050,14 +1056,14 @@ class LenderSubscriptionController extends Controller
     }
 
     /**
-     * @param Request     $request
-     * @param string|null $clientHash
+     * @param Request      $request
+     * @param string|null  $clientHash
+     * @param Clients|null $client
      *
      * @return RedirectResponse|null
      */
-    private function checkProgressAndRedirect(Request $request, ?string $clientHash = null): ?RedirectResponse
+    private function checkProgressAndRedirect(Request $request, ?string $clientHash, ?Clients $client): ?RedirectResponse
     {
-        $client               = null;
         $redirectPath         = null;
         $currentPath          = $request->getPathInfo();
         $authorizationChecker = $this->get('security.authorization_checker');
@@ -1068,18 +1074,14 @@ class LenderSubscriptionController extends Controller
                 return $this->redirectToRoute('projects_list');
             }
 
-            if ($authorizationChecker->isGranted(UserPartner::ROLE_DEFAULT)) {
+            if ($authorizationChecker->isGranted(Clients::ROLE_PARTNER_DEFAULT)) {
                 return $this->redirectToRoute('partner_home');
-            }
-
-            if ($authorizationChecker->isGranted('ROLE_LENDER')) {
-                $client = $clientRepository->find($this->getUser()->getClientId());
             }
         } elseif (null !== $clientHash) {
             $client = $clientRepository->findOneBy(['hash' => $clientHash]);
         }
 
-        if ($client) {
+        if ($client instanceof Clients && $client->isLender()) {
             switch ($client->getIdClientStatusHistory()->getIdStatus()->getId()) {
                 case ClientsStatus::STATUS_CREATION:
                 case ClientsStatus::STATUS_TO_BE_CHECKED:
@@ -1140,23 +1142,24 @@ class LenderSubscriptionController extends Controller
         $post        = $formManager->cleanPostData($request->request->all());
         $files       = $request->files->all();
 
-        if (isset($post['form_person'])) {
-            $form = $post['form_person'];
-        } elseif (isset($post['form_legal_entity'])) {
-            $form = $post['form_legal_entity'];
-        } else {
-            $this->get('logger')->error('Unable to save client action history: submitted form cannot be found.', [
-                'class'    => __CLASS__,
-                'function' => __FUNCTION__
-            ]);
-
-            return;
-        }
-
         if (Clients::SUBSCRIPTION_STEP_PERSONAL_INFORMATION === $step) {
-            $form['client']['password']['first']  = md5($form['client']['password']['first']);
-            $form['client']['password']['second'] = md5($form['client']['password']['second']);
-            $form['security']['secreteReponse']   = md5($form['security']['secreteReponse']);
+            if (isset($post['form_person'])) {
+                $form = &$post['form_person'];
+            } elseif (isset($post['form_legal_entity'])) {
+                $form = &$post['form_legal_entity'];
+            } else {
+                $this->get('logger')->error('Unable to save client action history: submitted form cannot be found.', [
+                    'class'    => __CLASS__,
+                    'function' => __FUNCTION__
+                ]);
+            }
+
+            if (isset($form)) {
+                $form['client']['password']['first']  = md5($form['client']['password']['first']);
+                $form['client']['password']['second'] = md5($form['client']['password']['second']);
+                $form['security']['secreteReponse']   = md5($form['security']['secreteReponse']);
+            }
+
             $formType = $client->isNaturalPerson() ? ClientsHistoryActions::LENDER_PERSON_SUBSCRIPTION_PERSONAL_INFORMATION : ClientsHistoryActions::LENDER_LEGAL_ENTITY_SUBSCRIPTION_PERSONAL_INFORMATION;
         } else {
             $formType = $client->isNaturalPerson() ? ClientsHistoryActions::LENDER_PERSON_SUBSCRIPTION_BANK_DOCUMENTS : ClientsHistoryActions::LENDER_LEGAL_ENTITY_SUBSCRIPTION_BANK_DOCUMENTS;
@@ -1251,8 +1254,6 @@ class LenderSubscriptionController extends Controller
     public function checkAgeAction(Request $request): Response
     {
         if ($request->isXmlHttpRequest()) {
-            /** @var \dates $dates */
-            $dates      = Loader::loadLib('dates');
             $translator = $this->get('translator');
             $lenderValidationManager = $this->get('unilend.service.lender_validation_manager');
             $birthday = \DateTime::createFromFormat('Y-m-d', $request->request->get('year_of_birth') . '-' . $request->request->get('month_of_birth') . '-' . $request->request->get('day_of_birth'));

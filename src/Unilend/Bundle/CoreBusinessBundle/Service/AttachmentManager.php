@@ -146,12 +146,12 @@ class AttachmentManager
             }
         }
 
-        $fileName = empty($attachment->getOriginalName()) ? basename($attachment->getPath()) : $attachment->getOriginalName();
+        $fileName = $attachment->getOriginalName() ?? basename($attachment->getPath());
 
         header('Content-Description: File Transfer');
         header('Content-Type: application/octet-stream');
         header('Content-Disposition: attachment; filename="' . $fileName . '";');
-        header('Content-Length: '. filesize($path));
+        header('Content-Length: ' . filesize($path));
 
         echo file_get_contents($path);
     }
@@ -172,7 +172,7 @@ class AttachmentManager
             $writer->setTempDir($this->tmpDirectory);
             $writer->save($temporaryPath);
 
-            $fileName = empty($attachment->getOriginalName()) ? basename($attachment->getPath()) : $attachment->getOriginalName();
+            $fileName = $attachment->getOriginalName() ?? basename($attachment->getPath());
             $fileName = pathinfo($fileName, PATHINFO_FILENAME) . '.pdf';
             $fileSize = filesize($temporaryPath);
 

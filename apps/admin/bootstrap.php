@@ -362,8 +362,6 @@ class bootstrap extends Controller
     /**
      * Helpers
      */
-    /** @var \dates */
-    protected $dates;
     /** @var \ficelle */
     protected $ficelle;
     /** @var \upload */
@@ -439,7 +437,6 @@ class bootstrap extends Controller
 
         $this->staticsKey = filemtime(__FILE__);
 
-        $this->dates   = $this->loadLib('dates');
         $this->ficelle = $this->loadLib('ficelle');
         $this->upload  = $this->loadLib('upload');
 

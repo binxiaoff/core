@@ -161,12 +161,12 @@
                             <?php else : ?>
                                 <td>&nbsp;</td>
                             <?php endif; ?>
-                            <td<?= $rowspan ?>><?= $this->dates->formatDate($aProjectLoans['debut'], 'd/m/Y') ?></td>
+                            <td<?= $rowspan ?>><?= $this->formatDate($aProjectLoans['debut'], 'd/m/Y') ?></td>
                             <?php if (in_array($aProjectLoans['project_status'], [\projects_status::REMBOURSEMENT_ANTICIPE, \projects_status::REMBOURSE])) : ?>
-                                <td<?= $rowspan ?> colspan="2"><p>Remboursé intégralement le <?= $this->dates->formatDate($aProjectLoans['final_repayment_date'], 'd/m/Y') ?></p></td>
+                                <td<?= $rowspan ?> colspan="2"><p>Remboursé intégralement le <?= $this->formatDate($aProjectLoans['final_repayment_date'], 'd/m/Y') ?></p></td>
                             <?php else : ?>
-                                <td<?= $rowspan ?>><?= $this->dates->formatDate($aProjectLoans['next_echeance'], 'd/m/Y') ?></td>
-                                <td<?= $rowspan ?>><?= $this->dates->formatDate($aProjectLoans['fin'], 'd/m/Y') ?></td>
+                                <td<?= $rowspan ?>><?= $this->formatDate($aProjectLoans['next_echeance'], 'd/m/Y') ?></td>
+                                <td<?= $rowspan ?>><?= $this->formatDate($aProjectLoans['fin'], 'd/m/Y') ?></td>
                             <?php endif; ?>
                             <?php if ($this->hasTransferredLoans) : ?>
                                 <?php if ($aProjectLoans['nb_loan'] == 1) : ?>

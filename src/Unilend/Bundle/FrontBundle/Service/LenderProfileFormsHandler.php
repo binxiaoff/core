@@ -2,19 +2,19 @@
 
 namespace Unilend\Bundle\FrontBundle\Service;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\OptimisticLockException;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Form\{FormError, FormInterface};
 use Symfony\Component\HttpFoundation\{File\UploadedFile, FileBag};
 use Symfony\Component\Translation\TranslatorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, Attachment, AttachmentType, BankAccount, ClientAddress, Clients, ClientsStatus, Companies, CompanyAddress, Pays, Users, WalletType};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, Attachment, AttachmentType, BankAccount, ClientAddress, Clients, Companies, CompanyAddress, Pays, Users, WalletType};
 use Unilend\Bundle\CoreBusinessBundle\Service\{AddressManager, AttachmentManager, BankAccountManager, ClientAuditer, ClientDataHistoryManager, ClientStatusManager};
 use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessageProvider;
 
 class LenderProfileFormsHandler
 {
-    /** @var EntityManager */
+    /** @var EntityManagerInterface */
     private $entityManager;
     /** @var AttachmentManager */
     private $attachmentManager;
@@ -38,7 +38,7 @@ class LenderProfileFormsHandler
     private $logger;
 
     /**
-     * @param EntityManager            $entityManager
+     * @param EntityManagerInterface   $entityManager
      * @param AttachmentManager        $attachmentManager
      * @param ClientStatusManager      $clientStatusManager
      * @param ClientAuditer            $clientAuditer
@@ -51,7 +51,7 @@ class LenderProfileFormsHandler
      * @param LoggerInterface          $logger
      */
     public function __construct(
-        EntityManager $entityManager,
+        EntityManagerInterface $entityManager,
         AttachmentManager $attachmentManager,
         ClientStatusManager $clientStatusManager,
         ClientAuditer $clientAuditer,
@@ -163,10 +163,7 @@ class LenderProfileFormsHandler
     {
         $this->checkCompanyIdentityForm($company, $form);
 
-        if (
-            $client->getEmail() !== $unattachedClient->getEmail()
-            && false === empty($this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->findByEmailAndStatus($client->getEmail(), ClientsStatus::GRANTED_LOGIN))
-        ) {
+        if ($this->isUpdatingUsingExistingEmail($client, $unattachedClient)) {
             $form->addError(new FormError($this->translator->trans('lender-profile_identification-error-existing-email')));
         }
 
@@ -609,10 +606,7 @@ class LenderProfileFormsHandler
      */
     public function handleContactForm(Clients $client, Clients $unattachedClient, FormInterface $form): bool
     {
-        if (
-            $client->getEmail() !== $unattachedClient->getEmail()
-            && false === empty($this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->findByEmailAndStatus($client->getEmail(), ClientsStatus::GRANTED_LOGIN))
-        ) {
+        if ($this->isUpdatingUsingExistingEmail($client, $unattachedClient)) {
             $form->get('email')->addError(new FormError($this->translator->trans('lender-profile_identification-error-existing-email')));
             $this->logger->error('Same email found ' . $client->getEmail(), [__METHOD__, $form->getErrors(), $form->isValid()]);
         }
@@ -624,6 +618,18 @@ class LenderProfileFormsHandler
         }
 
         return false;
+    }
+
+    /**
+     * @param Clients $client
+     * @param Clients $unattachedClient
+     *
+     * @return bool
+     */
+    private function isUpdatingUsingExistingEmail(Clients $client, Clients $unattachedClient)
+    {
+        return $client->getEmail() !== $unattachedClient->getEmail()
+            && false === empty($this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->findGrantedLoginAccountsByEmail($client->getEmail()));
     }
 
     /**

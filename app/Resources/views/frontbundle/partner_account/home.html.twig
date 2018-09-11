@@ -10,10 +10,11 @@
         <div class="dashboard-tabs-content tab-content">
             <article class="dashboard-tab-pane">
                 <div class="panel">
+                    {# partner initialized in the parent template #}
                     <header class="panel-header">
-                        <h3>{{ ('partner-home_title-' ~ app.user.partner.label)|trans }}</h3>
+                        <h3>{{ ('partner-home_title-' ~ partner.label)|trans }}</h3>
                     </header>
-                    <section>{{ ('partner-home_content-' ~ app.user.partner.label)|trans|raw }}</section>
+                    <section>{{ ('partner-home_content-' ~ partner.label)|trans|raw }}</section>
                 </div>
             </article><!-- /.panel -->
         </div><!-- /.dashboard-tabs-content -->

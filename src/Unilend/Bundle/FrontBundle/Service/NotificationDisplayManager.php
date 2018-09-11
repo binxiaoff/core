@@ -2,16 +2,11 @@
 
 namespace Unilend\Bundle\FrontBundle\Service;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\Translation\TranslatorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Notifications;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
-use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
-use Unilend\Bundle\CoreBusinessBundle\Service\AutoBidSettingsManager;
-use Unilend\Bundle\CoreBusinessBundle\Service\BidManager;
-use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{Clients, Notifications, Projects, WalletType};
+use Unilend\Bundle\CoreBusinessBundle\Service\{AutoBidSettingsManager, BidManager, Simulator\EntityManager as EntityManagerSimulator};
 use Unilend\core\Loader;
 
 class NotificationDisplayManager
@@ -24,18 +19,17 @@ class NotificationDisplayManager
     private $translator;
     /** @var RouterInterface */
     private $router;
-    /** @var  EntityManager */
+    /** @var EntityManagerInterface */
     private $entityManager;
-    /** @var  BidManager */
+    /** @var BidManager */
     private $bidManager;
 
     /**
-     * NotificationDisplayManager constructor.
      * @param EntityManagerSimulator $entityManagerSimulator
      * @param AutoBidSettingsManager $autoBidSettingsManager
      * @param TranslatorInterface    $translator
      * @param RouterInterface        $router
-     * @param EntityManager          $entityManager
+     * @param EntityManagerInterface $entityManager
      * @param BidManager             $bidManager
      */
     public function __construct(
@@ -43,7 +37,7 @@ class NotificationDisplayManager
         AutoBidSettingsManager $autoBidSettingsManager,
         TranslatorInterface $translator,
         RouterInterface $router,
-        EntityManager $entityManager,
+        EntityManagerInterface $entityManager,
         BidManager $bidManager
     )
     {
@@ -63,10 +57,6 @@ class NotificationDisplayManager
      */
     public function getLastLenderNotifications(Clients $client)
     {
-        if (false === $client->isLender()) {
-            throw new \Exception('Client ' . $client->getIdClient() . ' is not a Lender');
-        }
-
         return $this->getLenderNotifications($client, 1, 20);
     }
 

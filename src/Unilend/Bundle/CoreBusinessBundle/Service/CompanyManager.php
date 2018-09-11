@@ -140,7 +140,7 @@ class CompanyManager
         $this->entityManager->getConnection()->beginTransaction();
         try {
             if (null !== $email) {
-                $duplicates = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->findByEmailAndStatus($email, ClientsStatus::GRANTED_LOGIN);
+                $duplicates = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->findGrantedLoginAccountsByEmail($email);
                 if (false === empty($duplicates)) {
                     $email .= '-' . time();
                 }

@@ -2,17 +2,9 @@ services:
     _defaults:
         autowire: true
         autoconfigure: true
-        public: true
+        public: false
+        bind:
+            $logger: '@monolog.logger.console'
 
-    Unilend\Bundle\CommandBundle\Command\:
-        resource:  '../../Command'
-
-    ekino.new_relic.console:
-        class: Ekino\Bundle\NewRelicBundle\NewRelic\NewRelic
-        arguments:
-            -
-            -
-            -
-            -
-            - []
-        public: true
+    Unilend\Bundle\CommandBundle\:
+        resource: '%kernel.project_dir%/src/Unilend/Bundle/CommandBundle/*'

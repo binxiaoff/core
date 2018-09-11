@@ -49,9 +49,9 @@ use Doctrine\ORM\EntityManager;
                             <td><?= $user['firstname'] ?></td>
                             <td><?= $user['email'] ?></td>
                             <td><?= $entityManager->getRepository('UnilendCoreBusinessBundle:UsersTypes')->find($user['id_user_type'])->getLabel() ?></td>
-                            <td><?= $this->dates->formatDate($user['added'], 'd/m/Y') ?></td>
-                            <td><?= $this->dates->formatDate($user['updated'], 'd/m/Y') ?></td>
-                            <td><?= $this->dates->formatDate($user['lastlogin'], 'd/m/Y') ?></td>
+                            <td><?= $this->formatDate($user['added'], 'd/m/Y') ?></td>
+                            <td><?= $this->formatDate($user['updated'], 'd/m/Y') ?></td>
+                            <td><?= $this->formatDate($user['lastlogin'], 'd/m/Y') ?></td>
                             <td align="center">
                                 <a href="<?= $this->lurl ?>/users/status/<?= $user['id_user'] ?>/<?= $user['status'] ?>" title="<?= ($user['status'] == \Unilend\Bundle\CoreBusinessBundle\Entity\Users::STATUS_ONLINE ? 'Passer hors ligne' : 'Passer en ligne') ?>">
                                     <img src="<?= $this->surl ?>/images/admin/<?= ($user['status'] == \Unilend\Bundle\CoreBusinessBundle\Entity\Users::STATUS_ONLINE ? 'offline' : 'online') ?>.png" alt="<?= ($user['status'] == \Unilend\Bundle\CoreBusinessBundle\Entity\Users::STATUS_ONLINE ? 'Passer hors ligne' : 'Passer en ligne') ?>">

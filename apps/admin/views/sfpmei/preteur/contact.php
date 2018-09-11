@@ -20,7 +20,7 @@
             <tbody>
             <tr>
                 <th>Date d'inscription</th>
-                <td><?= $this->dates->formatDate($this->clients->added, 'd/m/Y') ?></td>
+                <td><?= $this->formatDate($this->clients->added, 'd/m/Y') ?></td>
             </tr>
             <tr>
                 <th>Source</th>
