@@ -10,9 +10,7 @@ use Psr\Cache\CacheItemPoolInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Asset\Packages;
 use Symfony\Component\Stopwatch\Stopwatch;
-use Unilend\Bundle\CoreBusinessBundle\Entity\WsCallHistory;
-use Unilend\Bundle\CoreBusinessBundle\Entity\WsExternalResource;
-use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{WsCallHistory, WsExternalResource};
 use Unilend\Bundle\CoreBusinessBundle\Service\SlackManager;
 use Unilend\Bundle\StoreBundle\Document\WsCall;
 use Unilend\librairies\CacheKeys;
@@ -37,8 +35,6 @@ class CallHistoryManager
     private $managerRegistry;
     /** @var LoggerInterface */
     private $mongoDBLogger;
-    /** @var EntityManagerSimulator */
-    private $entityManagerSimulator;
 
     /**
      * @param EntityManagerInterface $entityManager
@@ -50,7 +46,6 @@ class CallHistoryManager
      * @param LoggerInterface        $logger
      * @param ManagerRegistry        $managerRegistry
      * @param LoggerInterface        $mongoDBLogger
-     * @param EntityManagerSimulator $entityManagerSimulator
      */
     public function __construct(
         EntityManagerInterface $entityManager,
@@ -61,20 +56,18 @@ class CallHistoryManager
         Packages $assetPackage,
         LoggerInterface $logger,
         ManagerRegistry $managerRegistry,
-        LoggerInterface $mongoDBLogger,
-        EntityManagerSimulator $entityManagerSimulator
+        LoggerInterface $mongoDBLogger
     )
     {
-        $this->entityManager          = $entityManager;
-        $this->cacheItemPool          = $cacheItemPool;
-        $this->stopwatch              = $stopwatch;
-        $this->slackManager           = $slackManager;
-        $this->alertChannel           = $alertChannel;
-        $this->assetPackage           = $assetPackage;
-        $this->logger                 = $logger;
-        $this->managerRegistry        = $managerRegistry;
-        $this->mongoDBLogger          = $mongoDBLogger;
-        $this->entityManagerSimulator = $entityManagerSimulator;
+        $this->entityManager   = $entityManager;
+        $this->cacheItemPool   = $cacheItemPool;
+        $this->stopwatch       = $stopwatch;
+        $this->slackManager    = $slackManager;
+        $this->alertChannel    = $alertChannel;
+        $this->assetPackage    = $assetPackage;
+        $this->logger          = $logger;
+        $this->managerRegistry = $managerRegistry;
+        $this->mongoDBLogger   = $mongoDBLogger;
     }
 
     /**
