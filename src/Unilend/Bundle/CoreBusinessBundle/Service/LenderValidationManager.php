@@ -154,7 +154,7 @@ class LenderValidationManager
 
         try {
             if (isset($bankAccount) && $bankAccount instanceof BankAccount) {
-                $this->bankAccountManager->validateBankAccount($bankAccount);
+                $this->bankAccountManager->validate($bankAccount);
             }
 
             if (isset($address) && ($address instanceof ClientAddress || $address instanceof CompanyAddress)) {

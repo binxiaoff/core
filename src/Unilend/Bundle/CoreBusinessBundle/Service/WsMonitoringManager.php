@@ -3,8 +3,7 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\ORM\EntityManagerInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{Projects, ProjectsStatus};
 use Unilend\Bundle\WSClientBundle\Service\CallHistoryManager;
 
 class WsMonitoringManager

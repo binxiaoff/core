@@ -98,7 +98,7 @@ class bank_accountController extends bootstrap
 
                     /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BankAccountManager $bankAccountManager */
                     $bankAccountManager = $this->get('unilend.service.bank_account_manager');
-                    $bankAccountManager->validateBankAccount($bankAccount);
+                    $bankAccountManager->validate($bankAccount);
                 }
                 $entityManager->commit();
             } catch (Exception $exception) {

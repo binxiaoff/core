@@ -10,31 +10,36 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, Attachment, Attachmen
 
 class ClientStatusManager
 {
+    /** @var EntityManagerInterface */
+    private $entityManager;
     /** @var NotificationManager */
     private $notificationManager;
     /** @var AutoBidSettingsManager */
     private $autoBidSettingsManager;
-    /** @var EntityManagerInterface */
-    private $entityManager;
+    /** @var BankAccountManager */
+    private $bankAccountManager;
     /** @var LoggerInterface */
     private $logger;
 
     /**
+     * @param EntityManagerInterface $entityManager
      * @param NotificationManager    $notificationManager
      * @param AutoBidSettingsManager $autoBidSettingsManager
-     * @param EntityManagerInterface $entityManager
+     * @param BankAccountManager     $bankAccountManager
      * @param LoggerInterface        $logger
      */
     public function __construct(
+        EntityManagerInterface $entityManager,
         NotificationManager $notificationManager,
         AutoBidSettingsManager $autoBidSettingsManager,
-        EntityManagerInterface $entityManager,
+        BankAccountManager $bankAccountManager,
         LoggerInterface $logger
     )
     {
+        $this->entityManager          = $entityManager;
         $this->notificationManager    = $notificationManager;
         $this->autoBidSettingsManager = $autoBidSettingsManager;
-        $this->entityManager          = $entityManager;
+        $this->bankAccountManager     = $bankAccountManager;
         $this->logger                 = $logger;
     }
 
@@ -49,12 +54,19 @@ class ClientStatusManager
     public function closeLenderAccount(\clients $client, $userId, $comment): void
     {
         $wallet = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client->id_client, WalletType::LENDER);
+
         if ($wallet->getAvailableBalance() > 0) {
             throw new \Exception('The client still has money in his account');
         }
 
         $this->notificationManager->deactivateAllNotificationSettings($client);
         $this->autoBidSettingsManager->off($wallet->getIdClient());
+
+        $currentlyValidBankAccount = $this->entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($client->id_client);
+
+        if ($currentlyValidBankAccount) {
+            $this->bankAccountManager->archive($currentlyValidBankAccount);
+        }
 
         $client->changePassword($client->email, mt_rand());
 

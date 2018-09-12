@@ -2,19 +2,16 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
-use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\{EntityManagerInterface, OptimisticLockException};
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Validator\Constraints\{Bic, Iban};
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{Attachment, BankAccount, Clients};
-use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 
 class BankAccountManager
 {
     /** @var EntityManagerInterface */
     private $entityManager;
-    /** @var EntityManagerSimulator */
-    private $entityManagerSimulator;
     /** @var LenderManager */
     private $lenderManager;
     /** @var LoggerInterface */
@@ -24,24 +21,21 @@ class BankAccountManager
 
     /**
      * @param EntityManagerInterface $entityManager
-     * @param EntityManagerSimulator $entityManagerSimulator
-     * @param LenderManager          $lenderManager
-     * @param LoggerInterface        $logger
-     * @param ValidatorInterface     $validator
+     * @param LenderManager      $lenderManager
+     * @param LoggerInterface    $logger
+     * @param ValidatorInterface $validator
      */
     public function __construct(
         EntityManagerInterface $entityManager,
-        EntityManagerSimulator $entityManagerSimulator,
         LenderManager $lenderManager,
         LoggerInterface $logger,
         ValidatorInterface $validator
     )
     {
-        $this->entityManager          = $entityManager;
-        $this->entityManagerSimulator = $entityManagerSimulator;
-        $this->lenderManager          = $lenderManager;
-        $this->logger                 = $logger;
-        $this->validator              = $validator;
+        $this->entityManager = $entityManager;
+        $this->lenderManager = $lenderManager;
+        $this->logger        = $logger;
+        $this->validator     = $validator;
     }
 
     /**
@@ -116,16 +110,16 @@ class BankAccountManager
      *
      * @throws \Exception
      */
-    public function validateBankAccount(BankAccount $bankAccountToValidate)
+    public function validate(BankAccount $bankAccountToValidate): void
     {
         $this->entityManager->getConnection()->beginTransaction();
         try {
             $currentlyValidBankAccount = $this->entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($bankAccountToValidate->getIdClient());
             if ($currentlyValidBankAccount !== $bankAccountToValidate) {
                 if ($currentlyValidBankAccount) {
-                    $currentlyValidBankAccount->setDateArchived(new \DateTime());
-                    $this->entityManager->flush($currentlyValidBankAccount);
+                    $this->archive($currentlyValidBankAccount);
                 }
+
                 $bankAccountToValidate->setDateValidated(new \DateTime());
                 $bankAccountToValidate->setDateArchived(null);
                 $this->entityManager->flush($bankAccountToValidate);
@@ -135,5 +129,16 @@ class BankAccountManager
             $this->entityManager->getConnection()->rollBack();
             throw $exception;
         }
+    }
+
+    /**
+     * @param BankAccount $bankAccount
+     *
+     * @throws OptimisticLockException
+     */
+    public function archive(BankAccount $bankAccount): void
+    {
+        $bankAccount->setDateArchived(new \DateTime());
+        $this->entityManager->flush($bankAccount);
     }
 }

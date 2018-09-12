@@ -6,7 +6,7 @@
             <td>
                 <?php if ($this->bankAccount->getAttachment()) : ?>
                     <a href="<?= $this->url ?>/attachment/download/id/<?= $this->bankAccount->getAttachment()->getId() ?>/file/<?= urlencode($this->bankAccount->getAttachment()->getPath()) ?>">
-                        <?= empty($this->bankAccount->getAttachment()->getOriginalName()) ? $this->bankAccount->getAttachment()->getPath() : $this->bankAccount->getAttachment()->getOriginalName() ?>
+                        <?= $this->bankAccount->getAttachment()->getOriginalName() ?? $this->bankAccount->getAttachment()->getPath() ?>
                     </a>
                 <?php else : ?>
                     Aucun document fourni
