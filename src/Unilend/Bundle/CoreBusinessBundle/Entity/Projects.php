@@ -47,6 +47,8 @@ class Projects
     const DEFAULT_COMMISSION_RATE_FUNDS     = 4;
     const DEFAULT_COMMISSION_RATE_REPAYMENT = 1;
 
+    const PROJECT_PHOTO_PATH = 'public/default/images/dyn/projets/source/';
+
     /**
      * @var string
      *

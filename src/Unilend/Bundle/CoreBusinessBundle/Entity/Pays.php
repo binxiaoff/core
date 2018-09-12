@@ -7,55 +7,57 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * Pays
  *
- * @ORM\Table(name="pays", uniqueConstraints={@ORM\UniqueConstraint(name="id_pays", columns={"id_pays", "id_zone"})})
+ * @ORM\Table(name="pays")
  * @ORM\Entity
  */
 class Pays
 {
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="id_langue", type="string", length=50, nullable=false)
-     */
-    private $idLangue;
+    const VIGILANCE_STATUS_LOW_RISK    = 0;
+    const VIGILANCE_STATUS_MEDIUM_RISK = 1;
+    const VIGILANCE_STATUS_HIGH_RISK   = 2;
+
+    const COUNTRY_FRANCE  = 1;
+    const COUNTRY_USA     = 62;
+    const COUNTRY_ERITREA = 59;
+
+    const FRANCE_DOM_TOM = [155, 195, 196, 197, 198];
+
+    /** Name is misleading, it is a list fo EU countries, excluding France, to be confirmed https://unilend.atlassian.net/browse/TSK-147 */
+    const EUROPEAN_ECONOMIC_AREA = [6, 14, 21, 31, 41, 50, 52, 60, 61, 65, 70, 79, 84, 87, 98, 103, 104, 111, 139, 142, 143, 148, 150, 151, 165, 166, 171];
+
+    /** Countries for which we allow lender IBANs */
+    const EEA_COUNTRIES_ISO = ['FR', 'DE', 'AT','BE', 'BG', 'CY', 'HR', 'DK', 'ES', 'EE', 'FI', 'GR', 'HU', 'IE', 'IS', 'IT', 'LV', 'LI', 'LT', 'LU', 'MT', 'NO', 'NL', 'PL', 'PT', 'CZ', 'RO', 'GB', 'SK', 'SI', 'SE'];
 
     /**
      * @var string
      *
-     * @ORM\Column(name="fr", type="string", length=191, nullable=false)
+     * @ORM\Column(name="fr", type="string", length=191, nullable=true)
      */
     private $fr;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="en", type="string", length=191, nullable=false)
+     * @ORM\Column(name="iso", type="string", length=2, nullable=false)
      */
-    private $en;
+    private $iso;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="id_zone", type="integer", nullable=false)
+     * @ORM\Column(name="ordre", type="integer", nullable=false)
      */
-    private $idZone;
+    private $ordre;
 
     /**
-     * @var \DateTime
+     * @var int
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="vigilance_status", type="integer", nullable=false)
      */
-    private $added;
+    private $vigilanceStatus;
 
     /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="updated", type="datetime", nullable=false)
-     */
-    private $updated;
-
-    /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id_pays", type="integer")
      * @ORM\Id
@@ -63,40 +65,14 @@ class Pays
      */
     private $idPays;
 
-
-
-    /**
-     * Set idLangue
-     *
-     * @param string $idLangue
-     *
-     * @return Pays
-     */
-    public function setIdLangue($idLangue)
-    {
-        $this->idLangue = $idLangue;
-
-        return $this;
-    }
-
-    /**
-     * Get idLangue
-     *
-     * @return string
-     */
-    public function getIdLangue()
-    {
-        return $this->idLangue;
-    }
-
     /**
      * Set fr
      *
-     * @param string $fr
+     * @param string|null $fr
      *
      * @return Pays
      */
-    public function setFr($fr)
+    public function setFr(?string $fr): Pays
     {
         $this->fr = $fr;
 
@@ -106,115 +82,87 @@ class Pays
     /**
      * Get fr
      *
-     * @return string
+     * @return string|null
      */
-    public function getFr()
+    public function getFr(): ?string
     {
         return $this->fr;
     }
 
     /**
-     * Set en
+     * Set iso
      *
-     * @param string $en
+     * @param string $iso
      *
      * @return Pays
      */
-    public function setEn($en)
+    public function setIso(string $iso): Pays
     {
-        $this->en = $en;
+        $this->iso = $iso;
 
         return $this;
     }
 
     /**
-     * Get en
+     * Get iso
      *
      * @return string
      */
-    public function getEn()
+    public function getIso(): string
     {
-        return $this->en;
+        return $this->iso;
     }
 
     /**
-     * Set idZone
+     * Set ordre
      *
-     * @param integer $idZone
+     * @param int $ordre
      *
      * @return Pays
      */
-    public function setIdZone($idZone)
+    public function setOrdre(int $ordre): Pays
     {
-        $this->idZone = $idZone;
+        $this->ordre = $ordre;
 
         return $this;
     }
 
     /**
-     * Get idZone
+     * Get ordre
      *
-     * @return integer
+     * @return int
      */
-    public function getIdZone()
+    public function getOrdre(): int
     {
-        return $this->idZone;
+        return $this->ordre;
     }
 
     /**
-     * Set added
-     *
-     * @param \DateTime $added
+     * @param int $vigilanceStatus
      *
      * @return Pays
      */
-    public function setAdded($added)
+    public function setVigilanceStatus(int $vigilanceStatus): Pays
     {
-        $this->added = $added;
+        $this->vigilanceStatus = $vigilanceStatus;
 
         return $this;
     }
 
     /**
-     * Get added
-     *
-     * @return \DateTime
+     * @return int
      */
-    public function getAdded()
+    public function getVigilanceStatus(): int
     {
-        return $this->added;
-    }
-
-    /**
-     * Set updated
-     *
-     * @param \DateTime $updated
-     *
-     * @return Pays
-     */
-    public function setUpdated($updated)
-    {
-        $this->updated = $updated;
-
-        return $this;
-    }
-
-    /**
-     * Get updated
-     *
-     * @return \DateTime
-     */
-    public function getUpdated()
-    {
-        return $this->updated;
+        return $this->vigilanceStatus;
     }
 
     /**
      * Get idPays
      *
-     * @return integer
+     * @return int
      */
-    public function getIdPays()
+    public function getIdPays(): int
     {
         return $this->idPays;
     }

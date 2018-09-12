@@ -2,28 +2,16 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
-use Doctrine\ORM\{
-    EntityManager, ORMException
-};
+use Doctrine\ORM\{EntityManager, ORMException};
 use Psr\Log\LoggerInterface;
-use Symfony\Component\{
-    Asset\Packages, DependencyInjection\ContainerInterface, Translation\TranslatorInterface
-};
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Bids, Clients, ClientSettingType, ClientsGestionTypeNotif, ClientsMandats, ClientsStatus, Companies, Loans, Notifications, Operation, OperationSubType, ProjectCgv, Projects, ProjectsPouvoir,
-    Settings, UnderlyingContract, UniversignEntityInterface, Wallet, WalletType
-};
+use Symfony\Component\{Asset\Packages, DependencyInjection\ContainerInterface, Translation\TranslatorInterface};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{Bids, Clients, ClientSettingType, ClientsGestionTypeNotif, ClientsMandats, ClientsStatus, Companies, Operation, OperationSubType, ProjectCgv, Projects, ProjectsPouvoir, Settings, UnderlyingContract, UniversignEntityInterface, Wallet, WalletType};
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
-use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\{
-    TemplateMessage, TemplateMessageProvider
-};
+use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\{TemplateMessage, TemplateMessageProvider};
 use Unilend\core\Loader;
 
 class MailerManager
 {
-    /** old transaction type for backwards compatibility. It can be removed one all transaction id is null in clients_gestion_mails_notif */
-    const TYPE_TRANSACTION_LENDER_ANTICIPATED_REPAYMENT = 23;
-
     /** @var Settings */
     private $settingsRepository;
     /** @var LoggerInterface */
@@ -365,139 +353,6 @@ class MailerManager
                 'file'             => $exception->getFile(),
                 'line'             => $exception->getLine()
             ]);
-        }
-    }
-
-    /**
-     * @param Projects $project
-     */
-    public function sendBidAccepted(Projects $project): void
-    {
-        /** @var \loans $loanData */
-        $loanData = $this->entityManagerSimulator->getRepository('loans');
-        /** @var \echeanciers $repaymentSchedule */
-        $repaymentSchedule = $this->entityManagerSimulator->getRepository('echeanciers');
-        /** @var \accepted_bids $acceptedBid */
-        $acceptedBid = $this->entityManagerSimulator->getRepository('accepted_bids');
-        /** @var \underlying_contract $contract */
-        $contract = $this->entityManagerSimulator->getRepository('underlying_contract');
-
-        $contracts     = $contract->select();
-        $contractLabel = [];
-        foreach ($contracts as $contractType) {
-            $contractLabel[$contractType['id_contract']] = $this->translator->trans('contract-type-label_' . $contractType['label']);
-        }
-
-        $lenders          = $loanData->getProjectLoansByLender($project->getIdProject());
-        $nbLenders        = count($lenders);
-        $nbTreatedLenders = 0;
-
-        if ($this->oLogger instanceof LoggerInterface) {
-            $this->oLogger->info($nbLenders . ' lenders to send email (project ' . $project->getIdProject() . ')', [
-                'id_project' => $project->getIdProject(),
-                'class'      => __CLASS__,
-                'function'   => __FUNCTION__
-            ]);
-        }
-
-        if (null === $project->getIdCompany()) {
-            $companyName = '';
-            $this->oLogger->error('No company found for project ' . $project->getIdProject(), [
-                'id_project' => $project->getIdProject(),
-                'class'      => __CLASS__,
-                'function'   => __FUNCTION__
-            ]);
-        } else {
-            $companyName = $project->getIdCompany()->getName();
-        }
-
-        foreach ($lenders as $lender) {
-            /** @var Wallet $wallet */
-            $wallet       = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->find($lender['id_lender']);
-            $clientStatus = $wallet->getIdClient()->getIdClientStatusHistory()->getIdStatus()->getId();
-
-            if (in_array($clientStatus, ClientsStatus::GRANTED_LOGIN)) {
-                $loansOfLender          = $loanData->select('id_project = ' . $project->getIdProject() . ' AND id_lender = ' . $wallet->getId(), '`id_type_contract` DESC');
-                $numberOfLoansForLender = count($loansOfLender);
-                $numberOfAcceptedBids   = $acceptedBid->getDistinctBidsForLenderAndProject($wallet->getId(), $project->getIdProject());
-                $loansDetails           = '';
-                $multiBidsDisclaimer    = '';
-                $multiBidsExplanation   = '';
-
-                if ($wallet->getIdClient()->isNaturalPerson()) {
-                    $contract->get(UnderlyingContract::CONTRACT_IFP, 'label');
-                    $loanIFP               = $loanData->select('id_project = ' . $project->getIdProject() . ' AND id_lender = ' . $wallet->getId() . ' AND id_type_contract = ' . $contract->id_contract);
-                    $numberOfBidsInLoanIFP = $acceptedBid->counter('id_loan = ' . $loanIFP[0]['id_loan']);
-
-                    if ($numberOfBidsInLoanIFP > 1) {
-                        $multiBidsDisclaimer  = '<p>L\'ensemble de vos offres à concurrence de <span class="text-primary" style="color: #b20066;">2&nbsp;000&nbsp;€</span> seront regroupées sous la forme d\'un seul contrat de prêt. Son taux d\'intérêt correspondra donc à la moyenne pondérée de vos <span class="text-primary" style="color: #b20066;">' . $numberOfBidsInLoanIFP . ' offres de prêt</span>.</p>';
-                        $multiBidsExplanation = '<p>Pour en savoir plus sur les règles de regroupement des offres de prêt, vous pouvez consulter <a href="' . $this->sSUrl . '/document-de-pret" style="color: #b20066; font-weight: normal; text-decoration: none;">cette page</a>.</p>';
-                    }
-                }
-
-                if ($numberOfAcceptedBids > 1) {
-                    $selectedOffers = 'vos offres ont été sélectionnées';
-                    $offers         = 'vos offres';
-                    $does           = 'font';
-                } else {
-                    $selectedOffers = 'votre offre a été sélectionnée';
-                    $offers         = 'votre offre';
-                    $does           = 'fait';
-                }
-
-                $loansText = ($numberOfLoansForLender > 1) ? 'vos prêts' : 'votre prêt';
-
-                foreach ($loansOfLender as $loan) {
-                    $firstPayment = $repaymentSchedule->getPremiereEcheancePreteurByLoans($loan['id_project'], $loan['id_lender'], $loan['id_loan']);
-                    $contractType = '';
-                    if (isset($contractLabel[$loan['id_type_contract']])) {
-                        $contractType = $contractLabel[$loan['id_type_contract']];
-                    }
-                    $loansDetails .= '<tr>
-                                           <td class="td text-center">' . $this->oFicelle->formatNumber($loan['amount'] / 100, 0) . '&nbsp;€</td>
-                                           <td class="td text-center">' . $this->oFicelle->formatNumber($loan['rate']) . '&nbsp;%</td>
-                                           <td class="td text-center">' . $project->getPeriod() . ' mois</td>
-                                           <td class="td text-center">' . $this->oFicelle->formatNumber($firstPayment['montant'] / 100) . '&nbsp;€</td>
-                                           <td class="td text-center">' . $contractType . '</td>
-                                      </tr>';
-                }
-
-                $keywords = [
-                    'firstName'            => $wallet->getIdClient()->getPrenom(),
-                    'companyName'          => $companyName,
-                    'bidWording'           => $offers,
-                    'doesWording'          => $does,
-                    'loanWording'          => $loansText,
-                    'selectedOfferWording' => $selectedOffers,
-                    'loansDetails'         => $loansDetails,
-                    'multiBidsDisclaimer'  => $multiBidsDisclaimer,
-                    'multiBidsExplanation' => $multiBidsExplanation,
-                    'lenderPattern'        => $wallet->getWireTransferPattern()
-                ];
-
-                /** @var TemplateMessage $message */
-                $message = $this->messageProvider->newMessage('preteur-bid-ok', $keywords);
-
-                try {
-                    $message->setTo($wallet->getIdClient()->getEmail());
-                    $this->mailer->send($message);
-                } catch (\Exception $exception){
-                    $this->oLogger->warning(
-                        'Could not send email: preteur-bid-ok - Exception: ' . $exception->getMessage(),
-                        ['id_mail_template' => $message->getTemplateId(), 'id_client' => $wallet->getIdClient()->getIdClient(), 'class' => __CLASS__, 'function' => __FUNCTION__]
-                    );
-                }
-            }
-
-            $nbTreatedLenders++;
-
-            if ($this->oLogger instanceof LoggerInterface) {
-                $this->oLogger->info('Loan notification emails sent to ' . $nbTreatedLenders . '/' . $nbLenders . ' lenders  (project ' . $project->getIdProject() . ')', [
-                    'id_project' => $project->getIdProject(),
-                    'class'      => __CLASS__,
-                    'function'   => __FUNCTION__
-                ]);
-            }
         }
     }
 
@@ -867,122 +722,6 @@ class MailerManager
         $message = $this->messageProvider->newMessage('uninotification-modification-iban-bo', $aMail);
         $message->setTo('controle_interne@unilend.fr');
         $this->mailer->send($message);
-    }
-
-    /**
-     * @param Projects $project
-     */
-    public function sendLoanAccepted(Projects $project)
-    {
-        /** @var \loans $loans */
-        $loans = $this->entityManagerSimulator->getRepository('loans');
-
-        /** @var \clients_gestion_notifications $clientNotifications */
-        $clientNotifications = $this->entityManagerSimulator->getRepository('clients_gestion_notifications');
-
-        foreach ($loans->getProjectLoansByLender($project->getIdProject()) as $lendersId) {
-            /** @var Loans $loan */
-            $loan = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Loans')->find($lendersId['loans']);
-            /** @var \echeanciers $paymentSchedule */
-            $paymentSchedule = $this->entityManagerSimulator->getRepository('echeanciers');
-            /** @var \accepted_bids $acceptedBids */
-            $acceptedBids = $this->entityManagerSimulator->getRepository('accepted_bids');
-            /** @var \underlying_contract $contract */
-            $contract = $this->entityManagerSimulator->getRepository('underlying_contract');
-            /** @var \clients_gestion_mails_notif $clientMailNotifications */
-            $clientMailNotifications = $this->entityManagerSimulator->getRepository('clients_gestion_mails_notif');
-
-            $contracts     = $contract->select();
-            $contractLabel = [];
-            foreach ($contracts as $contractType) {
-                $contractLabel[$contractType['id_contract']] = $this->translator->trans('contract-type-label_' . $contractType['label']);
-            }
-
-            if ($clientNotifications->getNotif($loan->getIdLender()->getIdClient()->getIdClient(), Notifications::TYPE_LOAN_ACCEPTED, 'immediatement')) {
-                $lenderLoans          = $loans->select('id_project = ' . $project->getIdProject() . ' AND id_lender = ' . $loan->getIdLender()->getId(), 'id_type_contract DESC');
-                $iSumMonthlyPayments  = $paymentSchedule->getTotalAmount(['id_lender' => $loan->getIdLender()->getId(), 'id_project' => $project->getIdProject(), 'ordre' => 1]);
-                $aFirstPayment        = $paymentSchedule->getPremiereEcheancePreteur($project->getIdProject(), $loan->getIdLender()->getId());
-                $sDateFirstPayment    = $aFirstPayment['date_echeance'];
-                $sLoansDetails        = '';
-                $multiBidsDisclaimer  = '';
-                $multiBidsExplanation = '';
-
-                if (in_array($loan->getIdLender()->getIdClient()->getType(), [Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER])) {
-                    $contract->get(UnderlyingContract::CONTRACT_IFP, 'label');
-                    $loanIFP               = $loans->select('id_project = ' . $project->getIdProject() . ' AND id_lender = ' . $loan->getIdLender()->getId() . ' AND id_type_contract = ' . $contract->id_contract);
-                    $numberOfBidsInLoanIFP = $acceptedBids->counter('id_loan = ' . $loanIFP[0]['id_loan']);
-
-                    if ($numberOfBidsInLoanIFP > 1) {
-                        $multiBidsDisclaimer  = '<p>L\'ensemble de vos offres à concurrence de 2&nbsp;000 euros sont regroupées sous la forme d\'un seul contrat de prêt. Son taux d\'intérêt correspond donc à la moyenne pondérée de vos <span class="text-primary" style="color: #b20066;">' . $numberOfBidsInLoanIFP . ' offres de prêt</span>.</p>';
-                        $multiBidsExplanation = '<p>Pour en savoir plus sur les règles de regroupement des offres de prêt, vous pouvez consulter <a href="' . $this->sSUrl . '/document-de-pret" style="color: #b20066; font-weight: normal; text-decoration: none;">cette page</a>.</p>';
-                    }
-                }
-
-                if ($acceptedBids->getDistinctBidsForLenderAndProject($loan->getIdLender()->getId(), $project->getIdProject()) > 1) {
-                    $offers = 'vos offres';
-                } else {
-                    $offers = 'votre offre';
-                }
-
-                if (count($lenderLoans) > 1) {
-                    $contractsWording = 'Vos contrats sont disponibles';
-                    $loansWording     = 'vos prêts';
-                } else {
-                    $contractsWording = 'Votre contrat est disponible';
-                    $loansWording     = 'votre prêt';
-                }
-
-                foreach ($lenderLoans as $aLoan) {
-                    $aFirstPayment = $paymentSchedule->getPremiereEcheancePreteurByLoans($aLoan['id_project'], $aLoan['id_lender'], $aLoan['id_loan']);
-                    $sContractType = '';
-                    if (isset($contractLabel[$aLoan['id_type_contract']])) {
-                        $sContractType = $contractLabel[$aLoan['id_type_contract']];
-                    }
-                    $sLoansDetails .= '<tr>
-                                        <td class="td text-center">' . $this->oFicelle->formatNumber($aLoan['amount'] / 100, 0) . '&nbsp;€</td>
-                                        <td class="td text-center">' . $this->oFicelle->formatNumber($aLoan['rate']) . ' %</td>
-                                        <td class="td text-center">' . $project->getPeriod() . ' mois</td>
-                                        <td class="td text-center">' . $this->oFicelle->formatNumber($aFirstPayment['montant'] / 100) . '&nbsp;€</td>
-                                        <td class="td text-center">' . $sContractType . '</td></tr>';
-
-                    if (true == $clientNotifications->getNotif($loan->getIdLender()->getIdClient()->getIdClient(), ClientsGestionTypeNotif::TYPE_LOAN_ACCEPTED, 'immediatement')) {
-                        $clientMailNotifications->get($aLoan['id_loan'], 'id_client = ' . $loan->getIdLender()->getIdClient()->getIdClient() . ' AND id_loan');
-                        $clientMailNotifications->immediatement = 1;
-                        $clientMailNotifications->update();
-                    }
-                }
-
-                $sTimeAdd = strtotime($sDateFirstPayment);
-                $sMonth   = $this->oDate->tableauMois['fr'][date('n', $sTimeAdd)];
-
-                $keywords = [
-                    'firstName'            => $loan->getIdLender()->getIdClient()->getPrenom(),
-                    'companyName'          => $project->getIdCompany()->getName(),
-                    'bidWording'           => $offers,
-                    'loanWording'          => $loansWording,
-                    'contractWording'      => $contractsWording,
-                    'loansDetails'         => $sLoansDetails,
-                    'monthlyRepayment'     => $this->oFicelle->formatNumber($iSumMonthlyPayments),
-                    'firstRepaymentDate'   => date('d', $sTimeAdd) . ' ' . $sMonth . ' ' . date('Y', $sTimeAdd),
-                    'multiBidsDisclaimer'  => $multiBidsDisclaimer,
-                    'multiBidsExplanation' => $multiBidsExplanation,
-                    'lenderPattern'        => $loan->getIdLender()->getWireTransferPattern(),
-                ];
-
-                /** @var TemplateMessage $message */
-                $message = $this->messageProvider->newMessage('preteur-contrat', $keywords);
-
-                try {
-                    $message->setTo($loan->getIdLender()->getIdClient()->getEmail());
-                    $this->mailer->send($message);
-                } catch (\Exception $exception){
-                    $this->oLogger->warning(
-                        'Could not send email: preteur-contrat - Exception: ' . $exception->getMessage(),
-                        ['id_mail_template' => $message->getTemplateId(), 'id_client' => $loan->getIdLender()->getIdClient()->getIdClient(), 'class' => __CLASS__, 'function' => __FUNCTION__]
-                    );
-                }
-            }
-        }
     }
 
     /**

@@ -9,36 +9,16 @@ use Doctrine\ORM\Mapping as ORM;
  *
  * @ORM\Table(name="greenpoint_kyc", uniqueConstraints={@ORM\UniqueConstraint(name="id_client", columns={"id_client"})}, indexes={@ORM\Index(name="index_gp_kyc_id_client", columns={"id_client"})})
  * @ORM\Entity
+* @ORM\HasLifecycleCallbacks
  */
 class GreenpointKyc
 {
-    /**
-     * @var integer
-     *
-     * @ORM\Column(name="id_client", type="integer", nullable=false)
-     */
-    private $idClient;
-
     /**
      * @var string
      *
      * @ORM\Column(name="status", type="string", length=3, nullable=false)
      */
     private $status;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="token", type="string", length=191, nullable=true)
-     */
-    private $token;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="pdf_token", type="string", length=191, nullable=true)
-     */
-    private $pdfToken;
 
     /**
      * @var \DateTime
@@ -62,14 +42,24 @@ class GreenpointKyc
     private $added;
 
     /**
-     * @var \DateTime
+     * @var \DateTime|null
      *
-     * @ORM\Column(name="updated", type="datetime", nullable=false)
+     * @ORM\Column(name="updated", type="datetime", nullable=true)
      */
     private $updated;
 
     /**
-     * @var integer
+     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Clients
+     *
+     * @ORM\OneToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Clients", mappedBy="idClient")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_client", referencedColumnName="id_client")
+     * })
+     */
+    private $idClient;
+
+    /**
+     * @var int
      *
      * @ORM\Column(name="id_greenpoint_kyc", type="integer")
      * @ORM\Id
@@ -77,16 +67,12 @@ class GreenpointKyc
      */
     private $idGreenpointKyc;
 
-
-
     /**
-     * Set idClient
-     *
-     * @param integer $idClient
+     * @param Clients $idClient
      *
      * @return GreenpointKyc
      */
-    public function setIdClient($idClient)
+    public function setIdClient(Clients $idClient): GreenpointKyc
     {
         $this->idClient = $idClient;
 
@@ -94,23 +80,19 @@ class GreenpointKyc
     }
 
     /**
-     * Get idClient
-     *
-     * @return integer
+     * @return Clients
      */
-    public function getIdClient()
+    public function getIdClient(): Clients
     {
         return $this->idClient;
     }
 
     /**
-     * Set status
-     *
      * @param string $status
      *
      * @return GreenpointKyc
      */
-    public function setStatus($status)
+    public function setStatus(string $status): GreenpointKyc
     {
         $this->status = $status;
 
@@ -118,71 +100,19 @@ class GreenpointKyc
     }
 
     /**
-     * Get status
-     *
      * @return string
      */
-    public function getStatus()
+    public function getStatus(): string
     {
         return $this->status;
     }
 
     /**
-     * Set token
-     *
-     * @param string $token
-     *
-     * @return GreenpointKyc
-     */
-    public function setToken($token)
-    {
-        $this->token = $token;
-
-        return $this;
-    }
-
-    /**
-     * Get token
-     *
-     * @return string
-     */
-    public function getToken()
-    {
-        return $this->token;
-    }
-
-    /**
-     * Set pdfToken
-     *
-     * @param string $pdfToken
-     *
-     * @return GreenpointKyc
-     */
-    public function setPdfToken($pdfToken)
-    {
-        $this->pdfToken = $pdfToken;
-
-        return $this;
-    }
-
-    /**
-     * Get pdfToken
-     *
-     * @return string
-     */
-    public function getPdfToken()
-    {
-        return $this->pdfToken;
-    }
-
-    /**
-     * Set creationDate
-     *
      * @param \DateTime $creationDate
      *
      * @return GreenpointKyc
      */
-    public function setCreationDate($creationDate)
+    public function setCreationDate(\DateTime $creationDate): GreenpointKyc
     {
         $this->creationDate = $creationDate;
 
@@ -190,23 +120,19 @@ class GreenpointKyc
     }
 
     /**
-     * Get creationDate
-     *
      * @return \DateTime
      */
-    public function getCreationDate()
+    public function getCreationDate(): \DateTime
     {
         return $this->creationDate;
     }
 
     /**
-     * Set lastUpdate
-     *
      * @param \DateTime $lastUpdate
      *
      * @return GreenpointKyc
      */
-    public function setLastUpdate($lastUpdate)
+    public function setLastUpdate(\DateTime $lastUpdate): GreenpointKyc
     {
         $this->lastUpdate = $lastUpdate;
 
@@ -214,23 +140,19 @@ class GreenpointKyc
     }
 
     /**
-     * Get lastUpdate
-     *
      * @return \DateTime
      */
-    public function getLastUpdate()
+    public function getLastUpdate(): \DateTime
     {
         return $this->lastUpdate;
     }
 
     /**
-     * Set added
-     *
      * @param \DateTime $added
      *
      * @return GreenpointKyc
      */
-    public function setAdded($added)
+    public function setAdded(\DateTime $added): GreenpointKyc
     {
         $this->added = $added;
 
@@ -238,23 +160,19 @@ class GreenpointKyc
     }
 
     /**
-     * Get added
-     *
      * @return \DateTime
      */
-    public function getAdded()
+    public function getAdded(): \DateTime
     {
         return $this->added;
     }
 
     /**
-     * Set updated
-     *
-     * @param \DateTime $updated
+     * @param \DateTime|null $updated
      *
      * @return GreenpointKyc
      */
-    public function setUpdated($updated)
+    public function setUpdated(?\DateTime $updated): GreenpointKyc
     {
         $this->updated = $updated;
 
@@ -262,22 +180,36 @@ class GreenpointKyc
     }
 
     /**
-     * Get updated
-     *
-     * @return \DateTime
+     * @return \DateTime|null
      */
-    public function getUpdated()
+    public function getUpdated(): ?\DateTime
     {
         return $this->updated;
     }
 
     /**
-     * Get idGreenpointKyc
-     *
-     * @return integer
+     * @return int
      */
-    public function getIdGreenpointKyc()
+    public function getIdGreenpointKyc(): int
     {
         return $this->idGreenpointKyc;
+    }
+
+    /**
+     * @ORM\PrePersist
+     */
+    public function setAddedValue()
+    {
+        if (! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
+            $this->added = new \DateTime();
+        }
+    }
+
+    /**
+     * @ORM\PreUpdate
+     */
+    public function setUpdatedValue()
+    {
+        $this->updated = new \DateTime();
     }
 }

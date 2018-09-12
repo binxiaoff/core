@@ -88,7 +88,6 @@ class rootController extends bootstrap
     {
         $this->params = (false === is_null($aParams)) ? $aParams : $this->params;
 
-        $this->pays                    = $this->loadData('pays_v2');
         $this->acceptations_legal_docs = $this->loadData('acceptations_legal_docs');
         $this->companies               = $this->loadData('companies');
 

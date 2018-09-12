@@ -1,16 +1,11 @@
 <?php
 
-use Box\Spout\{
-    Common\Type, Writer\Style\StyleBuilder, Writer\WriterFactory
-};
+use Box\Spout\{Common\Type, Writer\Style\StyleBuilder, Writer\WriterFactory};
 use Doctrine\ORM\EntityManager;
 use Symfony\Component\Translation\TranslatorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AddressType, BankAccount, Bids, ClientsStatus, LenderStatistic, Loans, OperationType, ProjectsStatus, Receptions, VigilanceRule, Wallet, WalletType, Zones
-};
-use Unilend\Bundle\CoreBusinessBundle\Service\{
-    ClientDataHistoryManager, LenderOperationsManager
-};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, BankAccount, Bids, ClientsStatus, LenderStatistic, Loans, OperationType, ProjectsStatus, Receptions, VigilanceRule, Wallet, WalletType,
+    Zones};
+use Unilend\Bundle\CoreBusinessBundle\Service\{ClientDataHistoryManager, LenderOperationsManager};
 
 class sfpmeiController extends bootstrap
 {
@@ -275,13 +270,13 @@ class sfpmeiController extends bootstrap
                 );
 
                 /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Operation $firstProvision */
-                $provisionType    = $entityManager->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneByLabel(OperationType::LENDER_PROVISION);
-                $firstProvision   = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation')->findOneBy(['idWalletCreditor' => $this->wallet, 'idType' => $provisionType], ['id' => 'ASC']);
-                $paysV2Repository = $entityManager->getRepository('UnilendCoreBusinessBundle:PaysV2');
+                $provisionType  = $entityManager->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneByLabel(OperationType::LENDER_PROVISION);
+                $firstProvision = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation')->findOneBy(['idWalletCreditor' => $this->wallet, 'idType' => $provisionType], ['id' => 'ASC']);
+                $paysRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Pays');
 
                 $this->lenderStatusMessage    = $this->getLenderStatusMessage();
                 $this->cipEnabled             = $this->get('unilend.service.cip_manager')->hasValidEvaluation($this->wallet->getIdClient());
-                $this->birthCountry           = empty($this->clients->id_pays_naissance) ? '' : $paysV2Repository->find($this->clients->id_pays_naissance)->getFr();
+                $this->birthCountry           = empty($this->clients->id_pays_naissance) ? '' : $paysRepository->find($this->clients->id_pays_naissance)->getFr();
                 $lenderTaxExemptionRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:LenderTaxExemption');
                 $this->exemptionYears         = [];
                 foreach ($lenderTaxExemptionRepository->findBy(['idLender' => $this->wallet], ['year' => 'DESC']) as $taxExemption) {

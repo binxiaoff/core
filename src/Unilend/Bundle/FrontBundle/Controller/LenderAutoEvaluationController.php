@@ -33,7 +33,7 @@ class LenderAutoEvaluationController extends Controller
     }
 
     /**
-     * @Route("/auto-evaluation/questionnaire/{step}", name="lender_auto_evaluation_survey")
+     * @Route("/auto-evaluation/questionnaire/{step}", name="lender_auto_evaluation_survey", requirements={"step": "\d{1}"} )
      *
      * @param int     $step
      * @param Request $request

@@ -5,13 +5,8 @@ namespace Unilend\Bundle\CommandBundle\Command;
 use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
-use Symfony\Component\Console\Input\{
-    InputInterface, InputOption
-};
-use Symfony\Component\Console\Output\OutputInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    ClientAddress, CompanyAddress, Loans, PaysV2, ProjectsStatus
-};
+use Symfony\Component\Console\{Input\InputInterface, Input\InputOption, Output\OutputInterface};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{ClientAddress, CompanyAddress, Loans, Pays, ProjectsStatus};
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 
 class GenerateLoanContractCommand extends ContainerAwareCommand
@@ -96,7 +91,7 @@ EOF
                         continue;
                     }
 
-                    if ($validatedLenderAddress->getIdCountry()->getIdPays() !== PaysV2::COUNTRY_FRANCE) {
+                    if ($validatedLenderAddress->getIdCountry()->getIdPays() !== Pays::COUNTRY_FRANCE) {
                         $lenderCode = '99';
                     } else {
                         $lenderCode = substr(trim($validatedLenderAddress->getZip()), 0, 2);

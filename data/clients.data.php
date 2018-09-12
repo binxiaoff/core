@@ -1,7 +1,7 @@
 <?php
 
 use Doctrine\DBAL\Driver\Statement;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, AttachmentType, Clients as ClientEntity, ClientsStatus, GreenpointAttachment, OperationSubType, PaysV2, Users, VigilanceRule, WalletType};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, AttachmentType, Clients as ClientEntity, ClientsStatus, GreenpointAttachment, OperationSubType, Pays, Users, VigilanceRule, WalletType};
 
 class clients extends clients_crud
 {
@@ -374,8 +374,8 @@ class clients extends clients_crud
               INNER JOIN companies co on c.id_client = co.id_client_owner
               INNER JOIN projects p ON p.id_company = co.id_company
               LEFT JOIN company_address ca ON co.id_company = ca.id_company AND id_type = (SELECT id FROM address_type WHERE label = '" . AddressType::TYPE_MAIN_ADDRESS . "') 
-              LEFT JOIN pays_v2 ccountry on c.id_pays_naissance = ccountry.id_pays
-              LEFT JOIN pays_v2 acountry on ca.id_country = acountry.id_pays
+              LEFT JOIN pays ccountry on c.id_pays_naissance = ccountry.id_pays
+              LEFT JOIN pays acountry on ca.id_country = acountry.id_pays
               LEFT JOIN nationalites_v2 nv2 on c.id_nationalite = nv2.id_nationalite
             GROUP BY c.id_client";
 
@@ -426,7 +426,7 @@ class clients extends clients_crud
               INNER JOIN wallet_type wt ON w.id_type = wt.id
               INNER JOIN clients_status_history csh ON c.id_client_status_history = csh.id
               WHERE csh.id_status IN ('. implode(',', ClientsStatus::GRANTED_LOGIN) . ')
-                AND (cliad.id_country = ' . PaysV2::COUNTRY_FRANCE . ' OR coad.id_country = ' . PaysV2::COUNTRY_FRANCE . ')
+                AND (cliad.id_country = ' . Pays::COUNTRY_FRANCE . ' OR coad.id_country = ' . Pays::COUNTRY_FRANCE . ')
             ) AS client_base
             GROUP BY insee_region_code
             HAVING insee_region_code != "0"';
@@ -438,88 +438,5 @@ class clients extends clients_crud
         }
 
         return $regionsCount;
-    }
-
-    /**
-     * @return array
-     * @throws Exception
-     */
-    public function getClientsToAutoValidate(): array
-    {
-        $bind = [
-            'statusValid'            => GreenpointAttachment::STATUS_VALIDATION_VALID,
-            'clientStatus'           => [ClientsStatus::STATUS_TO_BE_CHECKED, ClientsStatus::STATUS_COMPLETENESS_REPLY, ClientsStatus::STATUS_MODIFICATION],
-            'attachmentTypeIdentity' => AttachmentType::CNI_PASSPORTE,
-            'attachmentTypeAddress'  => AttachmentType::JUSTIFICATIF_DOMICILE,
-            'attachmentTypeRib'      => AttachmentType::RIB,
-            'vigilanceStatus'        => [VigilanceRule::VIGILANCE_STATUS_HIGH, VigilanceRule::VIGILANCE_STATUS_REFUSE],
-            'lenderWallet'           => WalletType::LENDER,
-            'clientStatusSuspended'  => ClientsStatus::STATUS_SUSPENDED,
-            'idUserFront'            => Users::USER_ID_FRONT,
-            'mainAddressType'        => AddressType::TYPE_MAIN_ADDRESS,
-            'idCountryFr'            => PaysV2::COUNTRY_FRANCE
-        ];
-        $type = [
-            'statusValid'            => PDO::PARAM_INT,
-            'clientStatus'           => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY,
-            'attachmentTypeIdentity' => PDO::PARAM_INT,
-            'attachmentTypeAddress'  => PDO::PARAM_INT,
-            'attachmentTypeRib'      => PDO::PARAM_INT,
-            'vigilanceStatus'        => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY,
-            'lenderWallet'           => PDO::PARAM_STR,
-            'clientStatusSuspended'  => PDO::PARAM_INT,
-            'idUserFront'            => PDO::PARAM_INT,
-            'mainAddressType'        => PDO::PARAM_STR,
-            'idCountryFr'            => PDO::PARAM_INT
-        ];
-
-        $sql = "
-            SELECT
-              c.id_client,
-              ga_identity.id AS identity_attachment_id,
-              ga_identity.validation_status identity_attachment_status,
-              ga_address.id AS address_attachment_id,
-              ga_address.validation_status address_attachment_status,
-              ga_rib.id AS rib_attachment_id,
-              ga_rib.validation_status rib_attachment_status
-            FROM clients c 
-            INNER JOIN clients_status_history csh ON c.id_client_status_history = csh.id
-            INNER JOIN (SELECT a.id_client, a.id, ga.validation_status FROM greenpoint_attachment ga INNER JOIN attachment a ON a.id = ga.id_attachment AND ga.validation_status = :statusValid AND a.id_type = :attachmentTypeIdentity AND a.archived IS NULL) ga_identity ON ga_identity.id_client = csh.id_client
-            INNER JOIN (SELECT a.id_client, a.id, ga.validation_status FROM greenpoint_attachment ga INNER JOIN attachment a ON a.id = ga.id_attachment AND ga.validation_status = :statusValid AND a.id_type = :attachmentTypeAddress AND a.archived IS NULL) ga_address ON ga_address.id_client = csh.id_client
-            INNER JOIN (SELECT a.id_client, a.id, ga.validation_status FROM greenpoint_attachment ga INNER JOIN attachment a ON a.id = ga.id_attachment AND ga.validation_status = :statusValid AND a.id_type = :attachmentTypeRib AND a.archived IS NULL) ga_rib ON ga_rib.id_client = csh.id_client
-            INNER JOIN client_address_attachment cadatt ON cadatt.id_attachment = ga_address.id
-            INNER JOIN wallet w ON c.id_client = w.id_client
-            INNER JOIN wallet_type wt ON w.id_type = wt.id AND wt.label = :lenderWallet
-            LEFT JOIN (
-              SELECT * 
-              FROM client_vigilance_status_history cvsh
-              WHERE cvsh.id = (
-                SELECT cvsh_max.id
-                FROM client_vigilance_status_history cvsh_max
-                WHERE cvsh.id_client = cvsh_max.id_client
-                ORDER BY cvsh_max.added DESC, cvsh_max.id DESC LIMIT 1
-              )
-            ) last_cvsh ON c.id_client = last_cvsh.id_client AND last_cvsh.vigilance_status IN (:vigilanceStatus)
-            WHERE (
-                csh.id_status IN (:clientStatus)
-                OR csh.id_status = :clientStatusSuspended
-                   AND csh.id_user = :idUserFront
-                   AND (
-                         SELECT id_country
-                         FROM client_address
-                           INNER JOIN address_type at ON client_address.id_type = at.id
-                         WHERE id_client = c.id_client
-                               AND at.label = :mainAddressType
-                         ORDER BY added DESC
-                         LIMIT 1
-                       ) = :idCountryFr
-              )
-              AND TIMESTAMPDIFF(YEAR, c.naissance, CURDATE()) < 80
-              AND last_cvsh.id_client IS NULL";
-
-        /** @var \Doctrine\DBAL\Statement $statement */
-        $statement = $this->bdd->executeQuery($sql, $bind, $type);
-
-        return $statement->fetchAll(\PDO::FETCH_ASSOC);
     }
 }

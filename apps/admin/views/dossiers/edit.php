@@ -666,7 +666,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{AttachmentType, Companies, Project
                             <th><label for="duree">Durée du prêt&nbsp;*</label></th>
                             <td>
                                 <select name="duree" id="duree" class="select"<?php if ($this->projects->status >= ProjectsStatus::PREP_FUNDING) : ?> disabled<?php endif; ?>>
-                                    <option<?= (in_array($this->projects->period, [0, 1000000]) ? ' selected' : '') ?> value="0"></option>
+                                    <option<?= empty($this->projects->period) ? ' selected' : '' ?> value=""></option>
                                     <?php foreach ($this->dureePossible as $duree) : ?>
                                         <option<?= ($this->projects->period == $duree ? ' selected' : '') ?> value="<?= $duree ?>"><?= $duree ?> mois</option>
                                     <?php endforeach ?>
@@ -948,7 +948,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{AttachmentType, Companies, Project
                             <?php
                             $blockingPublishingError = [];
 
-                            if (in_array($this->projects->period, [0, 1000000])) {
+                            if (empty($this->projects->period)) {
                                 $blockingPublishingError[] = 'Veuillez sélectionner une durée de prêt';
                             }
 
@@ -984,27 +984,6 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{AttachmentType, Companies, Project
                                     </tr>
                                 <?php endif; ?>
                             <?php endif; ?>
-                        <?php endif; ?>
-                        <?php if ($this->canBeDeclined) : ?>
-                            <script>
-                                $(function(){
-                                    var popupHtml = '<form id="close_out_netting_popup" method="post" action="<?= $this->lurl ?>/dossiers/dechoir_terme">' +
-                                        '<p style="margin-top: 20px">Merci de confirmer la déchéance du terme en cliquant sur "Valider".</p>' +
-                                        '<div>' +
-                                        '<input type="hidden" name="id_project" value="<?= $this->projects->id_project ?>">' +
-                                        '<button type="button" class="btn-default" onclick="parent.$.fn.colorbox.close();">Annuler</button>' +
-                                        '<button type="submit" class="btn-primary" style="margin-left: 10px">Valider</button>' +
-                                        '</div>' +
-                                        '</form>'
-                                    $("#close_out_netting_link").colorbox({html:popupHtml});
-                                })
-                            </script>
-                            <tr>
-                                <th><label for="close_out_netting_link">Déchéance du terme</label></th>
-                                <td>
-                                    <a id="close_out_netting_link" class="btn_link" style="font-size: 10px; padding: 2px 5px;">Déchoir le terme</a>
-                                </td>
-                            </tr>
                         <?php endif; ?>
                         <?php if ($this->projects->status >= ProjectsStatus::A_FUNDER) : ?>
                             <tr>

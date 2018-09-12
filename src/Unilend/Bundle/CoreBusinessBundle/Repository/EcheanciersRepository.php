@@ -2,19 +2,9 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
-use Doctrine\DBAL\Cache\QueryCacheProfile;
-use Doctrine\DBAL\Connection;
-use Doctrine\ORM\EntityRepository;
-use Doctrine\ORM\Query\Expr\Join;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Echeanciers;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Loans;
-use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
-use Unilend\Bundle\CoreBusinessBundle\Entity\UnilendStats;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
+use Doctrine\DBAL\{Cache\QueryCacheProfile, Connection};
+use Doctrine\ORM\{EntityRepository, NoResultException, Query\Expr\Join};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{Clients, CompanyStatus, Echeanciers, Loans, OperationType, Projects, ProjectsStatus, UnilendStats, Wallet};
 use Unilend\Bundle\CoreBusinessBundle\Service\TaxManager;
 use Unilend\Bundle\FrontBundle\Controller\LenderDashboardController;
 use Unilend\librairies\CacheKeys;
@@ -514,7 +504,7 @@ class EcheanciersRepository extends EntityRepository
         }
 
         $queryBuilder = $this->createQueryBuilder('e');
-        $queryBuilder->select('ROUND(SUM(e.capital  - e.capitalRembourse) / 100, 2) AS capital, ROUND(SUM(e.interets  - e.interetsRembourses) / 100, 2) AS interest')
+        $queryBuilder->select('IFNULL(ROUND(SUM(e.capital  - e.capitalRembourse) / 100, 2), 0) AS capital, IFNULL(ROUND(SUM(e.interets  - e.interetsRembourses) / 100, 2), 0) AS interest')
             ->innerJoin('UnilendCoreBusinessBundle:Loans', 'l', Join::WITH, 'e.idLoan = l.idLoan')
             ->innerJoin('UnilendCoreBusinessBundle:EcheanciersEmprunteur', 'ee', Join::WITH, 'ee.idProject = l.idProject AND ee.ordre = e.ordre')
             ->where('e.idLoan = :loan')
@@ -590,9 +580,10 @@ class EcheanciersRepository extends EntityRepository
     }
 
     /**
-     * @param Projects|integer $project
+     * @param $project
      *
      * @return int
+     * @throws \Doctrine\ORM\NonUniqueResultException
      */
     public function getOverdueRepaymentCountByProject($project)
     {
@@ -607,7 +598,11 @@ class EcheanciersRepository extends EntityRepository
             ->groupBy('e.idProject, e.idLender')
             ->setMaxResults(1);
 
-        return (int) $queryBuilder->getQuery()->getSingleScalarResult();
+        try {
+            return (int) $queryBuilder->getQuery()->getSingleScalarResult();
+        } catch (NoResultException $exception) {
+            return 0;
+        }
     }
 
     /**
@@ -648,5 +643,29 @@ class EcheanciersRepository extends EntityRepository
             ->groupBy('e.idProject, e.ordre');
 
         return $queryBuilder->getQuery()->getResult();
+    }
+
+
+    /**
+     * @param Wallet|int   $wallet
+     * @param Projects|int $project
+     * @param int          $order
+     *
+     * @return int
+     * @throws \Doctrine\ORM\NoResultException
+     */
+    public function getSumCapitalAndInterestByLenderAndProjectAndOrder($wallet, $project, int $order): int
+    {
+        $queryBuilder = $this->createQueryBuilder('e');
+        $queryBuilder
+            ->select('SUM(e.capital + e.interets)')
+            ->where('e.ordre = :order')
+            ->andWhere('e.idLender = :wallet')
+            ->andWhere('e.idProject = :project')
+            ->setParameter('order', $order)
+            ->setParameter('wallet', $wallet)
+            ->setParameter('project', $project);
+
+        return (int) $queryBuilder->getQuery()->getSingleScalarResult();
     }
 }

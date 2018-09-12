@@ -47,16 +47,20 @@
     <div class="form-group col-md-3">
         <label for="id_pays_naissance">Pays de naissance</label>
         <select name="id_pays_naissance" id="id_pays_naissance" class="form-control">
-            <?php foreach ($this->lPays as $pays) : ?>
-                <option <?= ($this->client->getIdPaysNaissance() == $pays['id_pays'] ? 'selected' : '') ?> value="<?= $pays['id_pays'] ?>"><?= $pays['fr'] ?></option>
+            <option value=""></option>
+            <?php foreach ($this->countries as $country) : ?>
+                <option<?= ($this->client->getIdPaysNaissance() === $country->getIdPays() ? ' selected' : '') ?> value="<?= $country->getIdPays() ?>">
+                    <?= $country->getFr() ?>
+                </option>
             <?php endforeach; ?>
         </select>
     </div>
     <div class="form-group col-md-3">
         <label for="nationalite">Nationalité</label>
         <select name="nationalite" id="nationalite" class="form-control">
+            <option value=""></option>
             <?php foreach ($this->lNatio as $p) : ?>
-                <option <?= ($this->client->getIdNationalite() == $p['id_nationalite'] ? 'selected' : '') ?> value="<?= $p['id_nationalite'] ?>"><?= $p['fr_f'] ?></option>
+                <option<?= ($this->client->getIdNationalite() == $p['id_nationalite'] ? ' selected' : '') ?> value="<?= $p['id_nationalite'] ?>"><?= $p['fr_f'] ?></option>
             <?php endforeach; ?>
         </select>
     </div>
@@ -94,9 +98,10 @@
                 <div class="form-group col-md-6">
                     <label for="main_country">Pays</label>
                     <select name="main_country" id="main_country" class="form-control" disabled>
-                        <?php foreach ($this->lPays as $pays) : ?>
-                            <option <?= ($this->client->getIdAddress()->getIdCountry()->getIdPays() == $pays['id_pays'] ? 'selected' : '') ?> value="<?= $pays['id_pays'] ?>">
-                                <?= $pays['fr'] ?>
+                        <option value=""></option>
+                        <?php foreach ($this->countries as $country) : ?>
+                            <option<?= $this->client->getIdAddress() && $this->client->getIdAddress()->getIdCountry() && $this->client->getIdAddress()->getIdCountry()->getIdPays() === $country->getIdPays() ? ' selected' : '' ?> value="<?= $country->getIdPays() ?>">
+                                <?= $country->getFr() ?>
                             </option>
                         <?php endforeach; ?>
                     </select>
@@ -125,9 +130,10 @@
                 <div class="form-group col-md-6">
                     <label for="id_pays">Pays</label>
                     <select name="id_pays" id="id_pays" class="form-control" disabled>
-                        <?php foreach ($this->lPays as $pays) : ?>
-                            <option <?= ($this->lastModifiedAddress->getIdCountry()->getIdPays() == $pays['id_pays'] ? 'selected' : '') ?> value="<?= $pays['id_pays'] ?> ">
-                                <?= $pays['fr'] ?>
+                        <option value=""></option>
+                        <?php foreach ($this->countries as $country) : ?>
+                            <option<?= ($this->lastModifiedAddress->getIdCountry() && $this->lastModifiedAddress->getIdCountry()->getIdPays() === $country->getIdPays() ? ' selected' : '') ?> value="<?= $country->getIdPays() ?> ">
+                                <?= $country->getFr() ?>
                             </option>
                         <?php endforeach; ?>
                     </select>
@@ -166,9 +172,10 @@
         <div class="form-group col-md-6">
             <label for="id_pays2">Pays</label>
             <select name="id_pays2" id="id_pays2" class="form-control" disabled>
-                <?php foreach ($this->lPays as $pays) : ?>
-                    <option <?= (null !== $this->client->getIdPostalAddress() ? $this->client->getIdPostalAddress()->getIdCountry()->getIdPays() == $pays['id_pays'] ? 'selected' : '' : '' ) ?> value="<?= $pays['id_pays'] ?>">
-                        <?= $pays['fr'] ?>
+                <option value=""></option>
+                <?php foreach ($this->countries as $country) : ?>
+                    <option<?= ($this->client->getIdPostalAddress() && $this->client->getIdPostalAddress()->getIdCountry() && $this->client->getIdPostalAddress()->getIdCountry()->getIdPays() === $country->getIdPays() ? ' selected' : '' ) ?> value="<?= $country->getIdPays() ?>">
+                        <?= $country->getFr() ?>
                     </option>
                 <?php endforeach; ?>
             </select>

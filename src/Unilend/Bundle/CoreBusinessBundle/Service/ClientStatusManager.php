@@ -5,7 +5,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 use Doctrine\DBAL\ConnectionException;
 use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, Attachment, AttachmentType, ClientAddress, Clients, ClientsStatus, ClientsStatusHistory, Companies, CompanyAddress, NationalitesV2, PaysV2, Users, WalletType};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, Attachment, AttachmentType, ClientAddress, Clients, ClientsStatus, ClientsStatusHistory, Companies, CompanyAddress, NationalitesV2, Pays, Users, WalletType};
 
 class ClientStatusManager
 {
@@ -388,7 +388,7 @@ class ClientStatusManager
 
         try {
             $pendingMainAddress = $this->getPendingMainAddress($client);
-            if (null !== $pendingMainAddress & in_array($pendingMainAddress->getIdCountry()->getIdPays(), [PaysV2::COUNTRY_USA, PaysV2::COUNTRY_ERITREA])) {
+            if (null !== $pendingMainAddress & in_array($pendingMainAddress->getIdCountry()->getIdPays(), [Pays::COUNTRY_USA, Pays::COUNTRY_ERITREA])) {
                 return true;
             }
         } catch (\Exception $exception) {
