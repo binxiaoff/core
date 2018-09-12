@@ -2,15 +2,11 @@
 
 namespace Unilend\Bundle\FrontBundle\Service;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Asset\Packages;
-use Symfony\Component\Routing\{
-    Generator\UrlGeneratorInterface, RouterInterface
-};
+use Symfony\Component\Routing\{Generator\UrlGeneratorInterface, RouterInterface};
 use Symfony\Component\Translation\TranslatorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    CompanyStatus, Loans, Notifications, Projects, ProjectsStatus, UnderlyingContract, Wallet
-};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{CompanyStatus, Loans, Notifications, Projects, ProjectsStatus, UnderlyingContract, Wallet};
 
 class LenderLoansDisplayManager
 {
@@ -44,7 +40,7 @@ class LenderLoansDisplayManager
 
     /** @var TranslatorInterface */
     private $translator;
-    /** @var EntityManager */
+    /** @var EntityManagerInterface */
     private $entityManager;
     /** @var RouterInterface */
     private $router;
@@ -52,12 +48,12 @@ class LenderLoansDisplayManager
     private $assetPackage;
 
     /**
-     * @param TranslatorInterface $translator
-     * @param EntityManager       $entityManager
-     * @param RouterInterface     $router
-     * @param Packages            $assetPackage
+     * @param TranslatorInterface    $translator
+     * @param EntityManagerInterface $entityManager
+     * @param RouterInterface        $router
+     * @param Packages               $assetPackage
      */
-    public function __construct(TranslatorInterface $translator, EntityManager $entityManager, RouterInterface $router, Packages $assetPackage)
+    public function __construct(TranslatorInterface $translator, EntityManagerInterface $entityManager, RouterInterface $router, Packages $assetPackage)
     {
         $this->translator    = $translator;
         $this->entityManager = $entityManager;
@@ -327,7 +323,7 @@ class LenderLoansDisplayManager
 
         if ($projectStatus >= \projects_status::REMBOURSEMENT) {
             $documents[] = [
-                'url'   => $this->assetPackage->getUrl('') . '/pdf/contrat/' . $hash . '/' . $loanId,
+                'url'   => $this->router->generate('loan_contract_pdf', ['clientHash' => $hash, 'idLoan' => $loanId]),
                 'label' => $this->translator->trans('contract-type-label_' . $contract->getLabel()),
                 'type'  => 'bond'
             ];

@@ -16,7 +16,7 @@ final class Version20180820153551BLD267 extends AbstractMigration
     {
         $this->abortIf($this->connection->getDatabasePlatform()->getName() != 'mysql', 'Migration can only be executed safely on \'mysql\'.');
 
-        $this->addSql('INSERT IGNORE INTO translations (locale, section, name, translation, added, updated) VALUES (\'fr_FR\', \'project-request\', \'step-1-franchiser-information-title\', \'L\'\'entreprise cible\', NOW(), NOW())');
+        $this->addSql('INSERT IGNORE INTO translations (locale, section, name, translation, added, updated) VALUES (\'fr_FR\', \'project-request\', \'step-1-target-company-information-title\', \'L\'\'entreprise cible\', NOW(), NOW())');
     }
 
     /**
@@ -28,6 +28,6 @@ final class Version20180820153551BLD267 extends AbstractMigration
     {
         $this->abortIf($this->connection->getDatabasePlatform()->getName() != 'mysql', 'Migration can only be executed safely on \'mysql\'.');
 
-        $this->addSql('DELETE FROM translations WHERE section = \'project-request\' AND name = \'step-1-franchiser-information-title\'');
+        $this->addSql('DELETE FROM translations WHERE section = \'project-request\' AND name = \'step-1-target-company-information-title\'');
     }
 }

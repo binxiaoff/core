@@ -2,44 +2,34 @@
 
 namespace Unilend\Bundle\TranslationBundle\Service;
 
+use Doctrine\ORM\EntityManagerInterface;
 use Sonata\CacheBundle\Adapter\SymfonyCache;
-use Symfony\Component\Translation\Translator;
-use Doctrine\ORM\EntityManager;
+use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Translations;
 
 class TranslationManager
 {
-    /** @var EntityManager */
+    /** @var EntityManagerInterface */
     private $entityManager;
-    /** @var Translator */
+    /** @var TranslatorInterface */
     private $translator;
     /** @var SymfonyCache */
     private $symfonyCache;
     /** @var string */
     private $defaultLocale;
-    /** @var string */
-    private $cacheDirectory;
 
     /**
-     * @param EntityManager $entityManager
-     * @param Translator    $translator
-     * @param SymfonyCache  $symfonyCache
-     * @param string        $defaultLocale
-     * @param string        $cacheDirectory
+     * @param EntityManagerInterface $entityManager
+     * @param TranslatorInterface    $translator
+     * @param SymfonyCache           $symfonyCache
+     * @param string                 $defaultLocale
      */
-    public function __construct(
-        EntityManager $entityManager,
-        Translator $translator,
-        SymfonyCache $symfonyCache,
-        $defaultLocale,
-        $cacheDirectory
-    )
+    public function __construct(EntityManagerInterface $entityManager, TranslatorInterface $translator, SymfonyCache $symfonyCache, string $defaultLocale)
     {
-        $this->entityManager  = $entityManager;
-        $this->translator     = $translator;
-        $this->symfonyCache   = $symfonyCache;
-        $this->defaultLocale  = $defaultLocale;
-        $this->cacheDirectory = $cacheDirectory;
+        $this->entityManager = $entityManager;
+        $this->translator    = $translator;
+        $this->symfonyCache  = $symfonyCache;
+        $this->defaultLocale = $defaultLocale;
     }
 
     /**
@@ -158,7 +148,7 @@ class TranslationManager
         foreach ($allTranslation as $domain => $translations) {
             foreach ($translations as $label => $translation) {
                 if (substr($label, 0, $length) === $section) {
-                    $translationLabelWithoutSection = substr($label, $length);
+                    $translationLabelWithoutSection                          = substr($label, $length);
                     $translationsForSection[$translationLabelWithoutSection] = $translation;
                 }
             }

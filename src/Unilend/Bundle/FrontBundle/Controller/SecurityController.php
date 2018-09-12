@@ -2,6 +2,7 @@
 
 namespace Unilend\Bundle\FrontBundle\Controller;
 
+use Doctrine\ORM\OptimisticLockException;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\{JsonResponse, RedirectResponse, Request, Response};
 use Symfony\Component\Routing\Annotation\Route;
@@ -10,7 +11,7 @@ use Symfony\Component\Security\Core\Exception\BadCredentialsException;
 use Symfony\Component\Security\Csrf\CsrfToken;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 use Symfony\Component\Translation\TranslatorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{ClientsHistoryActions, ClientsStatus, WalletType};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{Clients, ClientsHistoryActions, WalletType};
 use Unilend\Bundle\CoreBusinessBundle\Service\GoogleRecaptchaManager;
 use Unilend\Bundle\FrontBundle\Security\{BCryptPasswordEncoder, LoginAuthenticator};
 
@@ -106,7 +107,7 @@ class SecurityController extends Controller
 
         $entityManager     = $this->get('doctrine.orm.entity_manager');
         $clientsRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
-        $clients           = $clientsRepository->findByEmailAndStatus($email, ClientsStatus::GRANTED_LOGIN);
+        $clients           = $clientsRepository->findGrantedLoginAccountsByEmail($email);
         $clientsCount      = count($clients);
 
         if (0 === $clientsCount) {
@@ -281,10 +282,11 @@ class SecurityController extends Controller
      */
     public function changePasswordFormAction(string $securityToken, Request $request): Response
     {
-        $entityManager = $this->get('unilend.service.entity_manager');
+        $entityManager          = $this->get('doctrine.orm.entity_manager');
+        $entityManagerSimulator = $this->get('unilend.service.entity_manager');
 
         /** @var \temporary_links_login $temporaryLink */
-        $temporaryLink = $entityManager->getRepository('temporary_links_login');
+        $temporaryLink = $entityManagerSimulator->getRepository('temporary_links_login');
 
         if (false === $temporaryLink->get($securityToken, 'expires > NOW() AND token')) {
             $this->addFlash('tokenError', $this->get('translator')->trans('password-forgotten_invalid-token'));
@@ -294,9 +296,7 @@ class SecurityController extends Controller
         $temporaryLink->accessed = (new \DateTime('NOW'))->format('Y-m-d H:i:s');
         $temporaryLink->update();
 
-        /** @var \clients $client */
-        $client = $entityManager->getRepository('clients');
-        $client->get($temporaryLink->id_client, 'id_client');
+        $client = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($temporaryLink->id_client);
 
         /** @var TranslatorInterface $translator */
         $translator = $this->get('translator');
@@ -307,61 +307,87 @@ class SecurityController extends Controller
         if (empty($request->request->get('client_new_password_confirmation'))) {
             $this->addFlash('passwordErrors', $translator->trans('common-validator_missing-new-password-confirmation'));
         }
-        if (empty($request->request->get('client_secret_answer')) || md5($request->request->get('client_secret_answer')) !== $client->secrete_reponse) {
+        if (empty($request->request->get('client_secret_answer')) || md5($request->request->get('client_secret_answer')) !== $client->getSecreteReponse()) {
             $this->addFlash('passwordErrors', $translator->trans('common-validator_secret-answer-invalid'));
         }
-        $password = '';
+
         if (false === empty($request->request->get('client_new_password')) && false === empty($request->request->get('client_new_password_confirmation')) && false === empty($request->request->get('client_secret_answer'))) {
             if ($request->request->get('client_new_password') !== $request->request->get('client_new_password_confirmation')) {
                 $this->addFlash('passwordErrors', $translator->trans('common-validator_password-not-equal'));
             }
 
-            $user = $this->get('unilend.frontbundle.security.user_provider')->loadUserByUsername($client->email);
             try {
-                $password = $this->get('security.password_encoder')->encodePassword($user, $request->request->get('client_new_password'));
-            } catch (\Exception $exception) {
+                $password = $this->get('security.password_encoder')->encodePassword($client, $request->request->get('client_new_password'));
+                $temporaryLink->revokeTemporaryLinks($temporaryLink->id_client);
+                $client->setPassword($password);
+                $entityManager->flush($client);
+
+                try {
+                    $this->sendPasswordModificationEmail($client);
+                } catch (\Exception $exception) {
+                    $this->get('logger')->error(
+                        'Could not send password modification email - Exception: ' . $exception->getMessage(), [
+                            'id_client' => $client->getIdClient(),
+                            'class'     => __CLASS__,
+                            'function'  => __FUNCTION__,
+                            'file'      => $exception->getFile(),
+                            'line'      => $exception->getLine(),
+                        ]
+                    );
+                }
+                $this->addFlash('passwordSuccess', $translator->trans('password-forgotten_new-password-form-success-message'));
+
+                $formManager = $this->get('unilend.frontbundle.service.form_manager');
+
+                try {
+                    $formManager->saveFormSubmission($client, ClientsHistoryActions::CHANGE_PASSWORD,
+                        serialize(['id_client' => $client->getIdClient(), 'newmdp' => md5($request->request->get('client_new_password'))]), $request->getClientIp());
+                } catch (OptimisticLockException $exception) {
+                    $this->get('logger')->error(
+                        'Could not save the password modification form submission log to the database - Exception: ' . $exception->getMessage(), [
+                            'id_client' => $client->getIdClient(),
+                            'class'     => __CLASS__,
+                            'function'  => __FUNCTION__,
+                            'file'      => $exception->getFile(),
+                            'line'      => $exception->getLine(),
+                        ]
+                    );
+                }
+            } catch (BadCredentialsException $exception) {
                 $this->addFlash('passwordErrors', $translator->trans('common-validator_password-invalid'));
-            }
-        }
-
-        if (false === $this->get('session')->getFlashBag()->has('passwordErrors')) {
-            $temporaryLink->revokeTemporaryLinks($temporaryLink->id_client);
-            $client->password = $password;
-            $client->update();
-
-            try {
-                $this->sendPasswordModificationEmail($client);
-            } catch (\Exception $exception) {
-                $this->get('logger')->error(
-                    'Could not send password modification email - Exception: ' . $exception->getMessage(),
-                    ['id_client' => $client->id_client, 'class' => __CLASS__, 'function' => __FUNCTION__]
+            } catch (OptimisticLockException $exception) {
+                $this->get('logger')->critical(
+                    'Could not save the password modification to the database - Exception: ' . $exception->getMessage(), [
+                        'id_client' => $client->getIdClient(),
+                        'class'     => __CLASS__,
+                        'function'  => __FUNCTION__,
+                        'file'      => $exception->getFile(),
+                        'line'      => $exception->getLine(),
+                    ]
                 );
             }
-            $this->addFlash('passwordSuccess', $translator->trans('password-forgotten_new-password-form-success-message'));
-
-            $formManager = $this->get('unilend.frontbundle.service.form_manager');
-            $formManager->saveFormSubmission($client, ClientsHistoryActions::CHANGE_PASSWORD, serialize(['id_client' => $client->id_client, 'newmdp' => md5($request->request->get('client_new_password'))]), $request->getClientIp());
         }
 
         return $this->redirectToRoute('define_new_password', ['securityToken' => $securityToken]);
     }
 
     /**
-     * @param \clients $client
+     * @param Clients $client
      *
      * @throws \Swift_RfcComplianceException
+     * @throws \Exception
      */
-    private function sendPasswordModificationEmail(\clients $client)
+    private function sendPasswordModificationEmail(Clients $client)
     {
         $keywords = [
-            'firstName'     => $client->prenom,
+            'firstName'     => $client->getPrenom(),
             'password'      => '',
-            'lenderPattern' => $client->getLenderPattern($client->id_client)
+            'lenderPattern' => $this->get('unilend.service.lender_manager')->getLenderPattern($client)
         ];
 
         /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
         $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('generation-mot-de-passe', $keywords);
-        $message->setTo($client->email);
+        $message->setTo($client->getEmail());
         $mailer = $this->get('mailer');
         $mailer->send($message);
     }

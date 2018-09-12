@@ -1,7 +1,9 @@
 <?php
 
 use Psr\Log\LoggerInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, AttachmentType, BorrowingMotive, Companies, CompanyAddress, CompanyStatus, Echeanciers, Loans, Partner, PartnerProjectAttachment, Prelevements, ProjectAbandonReason, ProjectNotification, ProjectRejectionReason, ProjectRepaymentTask, Projects, ProjectsComments, ProjectsPouvoir, ProjectsStatus, Users, UsersTypes, Virements, WalletType, Zones};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, AttachmentType, BorrowingMotive, Companies, CompanyAddress, CompanyStatus, Echeanciers, Loans, Partner, PartnerProjectAttachment,
+    Prelevements, ProjectAbandonReason, ProjectNotification, ProjectRejectionReason, ProjectRepaymentTask, Projects, ProjectsComments, ProjectsPouvoir, ProjectsStatus, Users, UsersTypes, Virements,
+    WalletType, Zones};
 use Unilend\Bundle\CoreBusinessBundle\Service\{BackOfficeUserManager, ProjectManager, ProjectRequestManager, TermsOfSaleManager, WireTransferOutManager, WorkingDaysManager};
 use Unilend\Bundle\WSClientBundle\Entity\Altares\EstablishmentIdentityDetail;
 
@@ -77,32 +79,34 @@ class dossiersController extends bootstrap
         $projectNeed = $this->loadData('project_need');
         $this->needs = $projectNeed->getTree();
 
+        $this->page = isset($_POST['page']) ? filter_var($_POST['page'], FILTER_VALIDATE_INT) : 1;
+        $this->page = $this->page > 0 ? $this->page : 1;
+
         if (isset($_POST['form_search_dossier'])) {
-            $startDate          = empty($_POST['date1']) ? '' : \DateTime::createFromFormat('d/m/Y', $_POST['date1'])->format('Y-m-d');
-            $endDate            = empty($_POST['date2']) ? '' : \DateTime::createFromFormat('d/m/Y', $_POST['date2'])->format('Y-m-d');
-            $projectNeed        = empty($_POST['projectNeed']) ? '' : $_POST['projectNeed'];
-            $duration           = empty($_POST['duree']) ? '' : $_POST['duree'];
-            $status             = empty($_POST['status']) ? '' : $_POST['status'];
-            $analyst            = empty($_POST['analyste']) ? '' : $_POST['analyste'];
-            $siren              = empty($_POST['siren']) ? '' : $_POST['siren'];
-            $projectId          = empty($_POST['id']) ? '' : $_POST['id'];
-            $companyName        = empty($_POST['raison-sociale']) ? '' : $_POST['raison-sociale'];
-            $commercial         = empty($_POST['commercial']) ? '' : $_POST['commercial'];
-            $iNbStartPagination = isset($_POST['nbLignePagination']) ? (int) $_POST['nbLignePagination'] : 0;
-            $this->nb_lignes    = isset($this->nb_lignes) ? (int) $this->nb_lignes : 100;
-            $this->lProjects    = $this->projects->searchDossiers($startDate, $endDate, $projectNeed, $duration, $status, $analyst, $siren, $projectId, $companyName, null, $commercial, $iNbStartPagination, $this->nb_lignes);
+            $startDate       = empty($_POST['date1']) ? '' : \DateTime::createFromFormat('d/m/Y', $_POST['date1'])->format('Y-m-d');
+            $endDate         = empty($_POST['date2']) ? '' : \DateTime::createFromFormat('d/m/Y', $_POST['date2'])->format('Y-m-d');
+            $projectNeed     = empty($_POST['projectNeed']) ? '' : $_POST['projectNeed'];
+            $duration        = empty($_POST['duree']) ? '' : $_POST['duree'];
+            $status          = empty($_POST['status']) ? '' : $_POST['status'];
+            $analyst         = empty($_POST['analyste']) ? '' : $_POST['analyste'];
+            $siren           = empty($_POST['siren']) ? '' : $_POST['siren'];
+            $projectId       = empty($_POST['id']) ? '' : $_POST['id'];
+            $companyName     = empty($_POST['raison-sociale']) ? '' : $_POST['raison-sociale'];
+            $commercial      = empty($_POST['commercial']) ? '' : $_POST['commercial'];
+            $offset          = ($this->page - 1) * $this->nb_lignes;
+            $this->lProjects = $this->projects->searchDossiers($startDate, $endDate, $projectNeed, $duration, $status, $analyst, $siren, $projectId, $companyName, null, $commercial, $offset, $this->nb_lignes);
         } elseif (isset($this->params[0]) && 1 === preg_match('/^[1-9]([0-9,]*[0-9]+)*$/', $this->params[0])) {
             $this->lProjects = $this->projects->searchDossiers('', '', '', '', $this->params[0]);
         }
 
-        $this->iCountProjects = isset($this->lProjects) && is_array($this->lProjects) ? array_shift($this->lProjects) : null;
+        $this->projectsCount = isset($this->lProjects) && is_array($this->lProjects) ? array_shift($this->lProjects) : null;
 
         /** @var BackOfficeUserManager $backOfficeUserManager */
         $backOfficeUserManager    = $this->get('unilend.service.back_office_user_manager');
         $this->isRiskUser         = $backOfficeUserManager->isUserGroupRisk($this->userEntity);
         $this->hasRepaymentAccess = $backOfficeUserManager->isGrantedZone($this->userEntity, Zones::ZONE_LABEL_REPAYMENT);
 
-        if (1 === $this->iCountProjects && (false === empty($projectId) || false === empty($companyName))) {
+        if (1 === $this->projectsCount && (false === empty($projectId) || false === empty($companyName))) {
             header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->lProjects[0]['id_project']);
             die;
         }
@@ -216,8 +220,6 @@ class dossiersController extends bootstrap
             $projectStatusManager   = $this->get('unilend.service.project_status_manager');
             $this->statusReasonText = $projectStatusManager->getStatusReasonByProject($this->projectEntity);
             $this->hasAdvisor       = false;
-
-            $this->canBeDeclined = $projectCloseOutNettingManager->canBeDeclined($this->projectEntity);
 
             if ($this->projects->status == ProjectsStatus::FUNDE) {
                 $proxy       = $this->projects_pouvoir->select('id_project = ' . $this->projects->id_project);
@@ -973,6 +975,8 @@ class dossiersController extends bootstrap
      * @param Projects $project
      *
      * @return array
+     * @throws \Doctrine\ORM\ORMException
+     * @throws \Doctrine\ORM\OptimisticLockException
      */
     private function problematicStatusForm(Projects $project)
     {
@@ -982,7 +986,7 @@ class dossiersController extends bootstrap
         $projectStatusNotificationSender = $this->get('unilend.service.project_status_notification_sender');
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectStatusManager $projectStatusManager */
         $projectStatusManager = $this->get('unilend.service.project_status_manager');
-        $projectStatusManager->addProjectStatus($this->userEntity, $_POST['problematic_status'], $project);
+        $projectStatusManager->addProjectStatus($this->userEntity, $this->request->request->getInt('problematic_status'), $project);
 
         /** @var \projects_status_history $projectStatusHistory */
         $projectStatusHistory = $this->loadData('projects_status_history');
@@ -991,12 +995,11 @@ class dossiersController extends bootstrap
         /** @var \projects_status_history_details $projectStatusHistoryDetails */
         $projectStatusHistoryDetails                            = $this->loadData('projects_status_history_details');
         $projectStatusHistoryDetails->id_project_status_history = $projectStatusHistory->id_project_status_history;
-        $projectStatusHistoryDetails->mail_content              = isset($_POST['mail_content']) ? $_POST['mail_content'] : '';
+        $projectStatusHistoryDetails->mail_content              = $this->request->request->get('mail_content', '');
         $projectStatusHistoryDetails->create();
 
         // This will be displayed on lender loans notifications table
-        if (false === empty($_POST['site_content'])) {
-            $user                = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find($_SESSION['user']['id_user']);
+        if (false === empty($this->request->request->get('site_content'))) {
             $firstNotRepaidRepaymentSchedule = $entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers')->findOneBy([
                 'idProject' => $project,
                 'status'    => [Echeanciers::STATUS_PENDING, Echeanciers::STATUS_PARTIALLY_REPAID]
@@ -1004,22 +1007,22 @@ class dossiersController extends bootstrap
 
             /** @var \Symfony\Component\Translation\TranslatorInterface $translator */
             $translator = $this->get('translator');
-            $subject = $translator->trans('lender-notifications_later-repayment-title');
+            $subject    = $translator->trans('lender-notifications_later-repayment-title');
             if (null !== $firstNotRepaidRepaymentSchedule && $firstNotRepaidRepaymentSchedule->getDateEcheance() < new DateTime()) {
                 $subject = $translator->trans('lender-notifications_later-repayment-with-repayment-schedule-title', ['%scheduleSequence%' => $firstNotRepaidRepaymentSchedule->getOrdre()]);
             }
             $projectNotification = new ProjectNotification();
             $projectNotification->setIdProject($project)
                 ->setSubject($subject)
-                ->setContent($_POST['site_content'])
-                ->setIdUser($user);
+                ->setContent($this->request->request->get('site_content'))
+                ->setIdUser($this->userEntity);
 
             $entityManager->persist($projectNotification);
             $entityManager->flush($projectNotification);
         }
-        $errors               = [];
+        $errors = [];
 
-        if (false === empty($_POST['send_email_borrower'])) {
+        if ($this->request->request->getBoolean('send_email_borrower')) {
             try {
                 $projectStatusNotificationSender->sendProblemStatusEmailToBorrower($project);
             } catch (\Exception $exception) {
@@ -1031,7 +1034,7 @@ class dossiersController extends bootstrap
             }
         }
 
-        if (false === empty($_POST['send_email']) || ProjectsStatus::LOSS == $_POST['problematic_status']) {
+        if ($this->request->request->getBoolean('send_email') || ProjectsStatus::LOSS === $this->request->request->getInt('problematic_status')) {
             try {
                 $projectStatusNotificationSender->sendProblemStatusNotificationsToLenders($project);
             } catch (\Exception $exception) {
@@ -2788,35 +2791,6 @@ class dossiersController extends bootstrap
             header('Location: ' . $this->request->server->get('HTTP_REFERER'));
             die;
         }
-    }
-
-    public function _dechoir_terme()
-    {
-        $projectId = $this->request->request->getInt('project-id');
-        $includeUnilendCommission =  $this->request->request->getboolean('include-unilend-commission');
-        /** @var BackOfficeUserManager $userManager */
-        $userManager = $this->get('unilend.service.back_office_user_manager');
-
-        if ($userManager->isGrantedRisk($this->userEntity) && $projectId) {
-            /** @var \Doctrine\ORM\EntityManager $entityManager */
-            $entityManager = $this->get('doctrine.orm.entity_manager');
-            $project       = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($projectId);
-
-            if ($project) {
-                /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectCloseOutNettingManager $projectCloseOutNettingManager */
-                $projectCloseOutNettingManager = $this->get('unilend.service.project_close_out_netting_manager');
-                try {
-                    $projectCloseOutNettingManager->decline($project, new DateTime(), $includeUnilendCommission);
-                } catch (\Exception $exception) {
-                    $this->get('logger')->error($exception->getMessage(), ['file' => $exception->getFile(), 'line' => $exception->getLine(), 'method' => __METHOD__]);
-                    $_SESSION['freeow']['title']   = 'Déchéance du terme';
-                    $_SESSION['freeow']['message'] = 'L\'opétation échouée.';
-                }
-            }
-        }
-
-        header('Location: ' . $this->request->server->get('HTTP_REFERER'));
-        die;
     }
 
     public function _projets_avec_retard()

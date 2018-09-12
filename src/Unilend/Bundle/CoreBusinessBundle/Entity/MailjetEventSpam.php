@@ -14,7 +14,7 @@ use Doctrine\ORM\Mapping as ORM;
 class MailjetEventSpam
 {
     /**
-     *@var int
+     * @var int
      *
      * @ORM\Column(name="time", type="integer", nullable=false)
      */
@@ -28,14 +28,14 @@ class MailjetEventSpam
     private $email;
 
     /**
-     *@var int
+     * @var int
      *
      * @ORM\Column(name="campaign_id", type="integer", nullable=false)
      */
     private $campaignId;
 
     /**
-     *@var int
+     * @var int
      *
      * @ORM\Column(name="contact_id", type="integer", nullable=false)
      */
@@ -49,14 +49,14 @@ class MailjetEventSpam
     private $customCampaign;
 
     /**
-     *@var int
+     * @var int
      *
      * @ORM\Column(name="message_id", type="integer", nullable=false)
      */
     private $messageId;
 
     /**
-     *@var int
+     * @var int
      *
      * @ORM\Column(name="custom_id", type="integer", nullable=true)
      */
@@ -84,7 +84,7 @@ class MailjetEventSpam
     private $added;
 
     /**
-     *@var int
+     * @var int
      *
      * @ORM\Column(name="id", type="integer")
      * @ORM\Id

@@ -109,13 +109,13 @@
                     <?php if (0 == $childStatus) : ?>
                         {id: 'level2-<?= $childStatus ?>', label: 'Pas de changement : <?= $child['count'] ?>', level: 2, group: 'disabled'},
                     <?php else : ?>
-                        {id: 'level2-<?= $childStatus ?>', label: '<?= $child['label'] ?> : <?= $child['count'] ?>\n\nMoyenne : <?= $child['avg_days'] ?> jours\nDate max : <?= $this->dates->formatDate($child['max_date'], 'd/m/Y') ?>', level: 2},
+                        {id: 'level2-<?= $childStatus ?>', label: '<?= $child['label'] ?> : <?= $child['count'] ?>\n\nMoyenne : <?= $child['avg_days'] ?> jours\nDate max : <?= $this->formatDate($child['max_date'], 'd/m/Y') ?>', level: 2},
                         <?php if (count($child['children']) > 1 || false === isset($child['children'][0])) : ?>
                             <?php foreach ($child['children'] as $subChildStatus => $subChild) : ?>
                                 <?php if (0 == $subChildStatus) : ?>
                                     {id: 'level3-<?= $childStatus ?>-<?= $subChildStatus ?>', label: 'Pas de changement : <?= $subChild['count'] ?>', level: 3, group: 'disabled'},
                                 <?php else : ?>
-                                    {id: 'level3-<?= $childStatus ?>-<?= $subChildStatus ?>', label: '<?= $subChild['label'] ?> : <?= $subChild['count'] ?>\n\nMoyenne : <?= $subChild['avg_days'] ?> jours\nDate max : <?= $this->dates->formatDate($subChild['max_date'], 'd/m/Y') ?>', level: 3},
+                                    {id: 'level3-<?= $childStatus ?>-<?= $subChildStatus ?>', label: '<?= $subChild['label'] ?> : <?= $subChild['count'] ?>\n\nMoyenne : <?= $subChild['avg_days'] ?> jours\nDate max : <?= $this->formatDate($subChild['max_date'], 'd/m/Y') ?>', level: 3},
                                 <?php endif; ?>
                             <?php endforeach; ?>
                         <?php endif; ?>
@@ -215,13 +215,13 @@
                         <?php if (0 == $childStatus) : ?>
                             {id: 'level2-<?= $childStatus ?>', label: 'Pas de changement : <?= $child['count'] ?>', level: 2, group: 'disabled'},
                         <?php else : ?>
-                            {id: 'level2-<?= $childStatus ?>', label: '<?= $child['label'] ?> : <?= $child['count'] ?>\n\nMoyenne : <?= $child['avg_days'] ?> jours\nDate max : <?= $this->dates->formatDate($child['max_date'], 'd/m/Y') ?>', level: 2},
+                            {id: 'level2-<?= $childStatus ?>', label: '<?= $child['label'] ?> : <?= $child['count'] ?>\n\nMoyenne : <?= $child['avg_days'] ?> jours\nDate max : <?= $this->formatDate($child['max_date'], 'd/m/Y') ?>', level: 2},
                             <?php if (count($child['children']) > 1 || false === isset($child['children'][0])) : ?>
                                 <?php foreach ($child['children'] as $subChildStatus => $subChild) : ?>
                                     <?php if (0 == $subChildStatus) : ?>
                                         {id: 'level3-<?= $childStatus ?>-<?= $subChildStatus ?>', label: 'Pas de changement : <?= $subChild['count'] ?>', level: 3, group: 'disabled'},
                                     <?php else : ?>
-                                        {id: 'level3-<?= $childStatus ?>-<?= $subChildStatus ?>', label: '<?= $subChild['label'] ?> : <?= $subChild['count'] ?>\n\nMoyenne : <?= $subChild['avg_days'] ?> jours\nDate max : <?= $this->dates->formatDate($subChild['max_date'], 'd/m/Y') ?>', level: 3},
+                                        {id: 'level3-<?= $childStatus ?>-<?= $subChildStatus ?>', label: '<?= $subChild['label'] ?> : <?= $subChild['count'] ?>\n\nMoyenne : <?= $subChild['avg_days'] ?> jours\nDate max : <?= $this->formatDate($subChild['max_date'], 'd/m/Y') ?>', level: 3},
                                     <?php endif; ?>
                                 <?php endforeach; ?>
                             <?php endif; ?>

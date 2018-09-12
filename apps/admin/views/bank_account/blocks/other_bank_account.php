@@ -19,7 +19,7 @@
                 <tr<?= ($i % 2 == 1 ? '' : ' class="odd"') ?>>
                     <td style="padding-bottom:20px">
                         <a href="<?= $this->lurl ?>/attachment/download/id/<?= $attachment->getId() ?>/file/<?= urlencode($attachment->getPath()) ?>">
-                            <?= empty($attachment->getOriginalName()) ? $attachment->getPath() : $attachment->getOriginalName() ?>
+                            <?= $attachment->getOriginalName() ?? $attachment->getPath() ?>
                         </a>
                     </td>
                     <td>

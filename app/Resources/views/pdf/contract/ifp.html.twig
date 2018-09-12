@@ -1,0 +1,258 @@
+{% extends 'pdf/layout.html.twig' %}
+
+{% block cssFiles %}
+    <link rel="stylesheet" type="text/css" href="{{ staticUrl }}/styles/default/pdf/style.css" media="all">
+{% endblock %}
+
+{% block header %} {% endblock %}
+
+{% block content %}
+    <!-- Doc Wrapper -->
+    <div class="doc-wrapper">
+        <!-- Shell -->
+        <div class="shell">
+            <div>
+                <h3>PRINCIPALES CARACTERISTIQUES DU CONTRAT DE PRET</h3>
+                <div class="list">
+                    <ul>
+                        <li>
+                            <div class="col-long">Montant total emprunté :</div>
+                            <div class="col-small">{{ loan.formattedAmount }}&nbsp;€</div>
+                            <div class="cl">&nbsp;</div>
+                            <br/>
+                        </li>
+                        <li>
+                            <div class="col-long">Taux d'intérêt annuel :</div>
+                            <div class="col-small">{{ loan.rate }}&nbsp;%</div>
+                            <div class="cl">&nbsp;</div>
+                        </li>
+                        <li>
+                            <div class="col-long">Montant total des intérêts :</div>
+                            <div class="col-small">{{ loan.interests }}</div>
+                            <div class="cl">&nbsp;</div>
+                        </li>
+                        <li>
+                            <div class="col-long">Montant de l’échéance (capital et intérêts, hors commission Unilend) :</div>
+                            <div class="col-small">{{ loan.repaymentAmount }}</div>
+                            <div class="cl">&nbsp;</div>
+                        </li>
+                        <li>
+                            <div class="col-long">Date de création :</div>
+                            <div class="col-small">{{ loan.creationDate }}</div>
+                            <div class="cl">&nbsp;</div>
+                        </li>
+                        <li>
+                            <div class="col-long">Date d'échéance :</div>
+                            <div class="col-small">{{ loan.lastRepaymentDate }}</div>
+                            <div class="cl">&nbsp;</div>
+                            <br/>
+                        </li>
+                        <li>
+                            Modalités d’amortissement : {{ content['modalites-amortissement']|nl2br|raw }}
+                            <br/>
+                        </li>
+                        <li>
+                            <div class="col-long">Coût total du prêt pour l’Emprunteur :</div>
+                            <div class="col-small">{{ loan.borrowerCost }}</div>
+                            <div class="cl">&nbsp;</div>
+                            <br/>
+                        </li>
+                        <li>Conditions de mise à disposition des fonds : {{ content['conditions-de-mise-a-disposition-des-fonds']|nl2br|raw }}</li>
+                    </ul>
+                </div>
+
+                <h3>{{ content['titre-contrat-de-pret']|raw }} - #{{ loan.id }}</h3>
+                <h5>Désignation de l'Emprunteur</h5>
+                <div class="list">
+                    <ul>
+                        <li>
+                            <div class="col-long">Raison sociale</div>
+                            <div class="col-small">{{ borrower.name }}</div>
+                            <div class="cl">&nbsp;</div>
+                        </li>
+                        <li>
+                            <div class="col-long">Forme juridique</div>
+                            <div class="col-small">{{ borrower.legalStatus }}</div>
+                            <div class="cl">&nbsp;</div>
+                        </li>
+                        <li>
+                            <div class="col-long">Capital social</div>
+                            <div class="col-small">{{ borrower.capitalStock }}&nbsp;€</div>
+                            <div class="cl">&nbsp;</div>
+                        </li>
+                        <li>
+                            <div class="col-long">Adresse du siège social</div>
+                            <div class="col-small">{{ borrower.address.address }}</div>
+                            <div class="cl">&nbsp;</div>
+                        </li>
+                        <li>
+                            <div class="col-long">Code postal</div>
+                            <div class="col-small">{{ borrower.address.zip }}</div>
+                            <div class="cl">&nbsp;</div>
+                        </li>
+                        <li>
+                            <div class="col-long">Ville</div>
+                            <div class="col-small">{{ borrower.address.city }}</div>
+                            <div class="cl">&nbsp;</div>
+                        </li>
+                        <li>
+                            <div class="col-long">Tribunal de commerce</div>
+                            <div class="col-small">{{ borrower.commercialCourt }}</div>
+                            <div class="cl">&nbsp;</div>
+                        </li>
+                        <li>
+                            <div class="col-long">SIREN</div>
+                            <div class="col-small">{{ borrower.siren }}</div>
+                            <div class="cl">&nbsp;</div>
+                        </li>
+                        <li>
+                            <div class="col-long">Activité</div>
+                            <div class="col-small">{{ borrower.activity }}</div>
+                            <div class="cl">&nbsp;</div>
+                        </li>
+                        <li>
+                            <div class="col-long">Lieu d'exploitation</div>
+                            <div class="col-small">{{ borrower.address.city }}</div>
+                            <div class="cl">&nbsp;</div>
+                        </li>
+                    </ul>
+                </div>
+                <h5>Désignation du prêteur</h5>
+                <div class="list">
+                    <ul>
+                        <li>
+                            <div class="col-long">Nom</div>
+                            <div class="col-small">{{ lender.lastName }}</div>
+                            <div class="cl">&nbsp;</div>
+                        </li>
+                        <li>
+                            <div class="col-long">Prénom</div>
+                            <div class="col-small">{{ lender.firstName }}</div>
+                            <div class="cl">&nbsp;</div>
+                        </li>
+                        <li>
+                            <div class="col-long">Date de naissance</div>
+                            <div class="col-small">{{ lender.birthDate }}</div>
+                            <div class="cl">&nbsp;</div>
+                        </li>
+                        <li>
+                            <div class="col-long">Adresse</div>
+                            <div class="col-small">{{ lender.address.address }}</div>
+                            <div class="cl">&nbsp;</div>
+                        </li>
+                        <li>
+                            <div class="col-long">Code postal</div>
+                            <div class="col-small">{{ lender.address.zip }}</div>
+                            <div class="cl">&nbsp;</div>
+                        </li>
+                        <li>
+                            <div class="col-long">Ville</div>
+                            <div class="col-small">{{ lender.address.city }}</div>
+                            <div class="cl">&nbsp;</div>
+                        </li>
+                    </ul>
+                    <p>En présence de :</p>
+                    {{ content['description-unilend']|raw }}
+                </div>
+                <h3>RECONNAISSANCE D’INFORMATION PRECONTRACTUELLE</h3>
+                <div>{{ content['information-precontractuelle']|raw }}</div>
+                <h3>CARACTERISTIQUES DU PROJET</h3>
+                <div>
+                    {{ content['caracteristiques-du-projet']|raw }}
+                    <p>{{ project }}</p>
+                </div>
+                <h3>CARACTERISTIQUES DU PRET</h3>
+                <div class="list">
+                    <ul>
+                        <li>
+                            <div class="col-long">Montant total emprunté :</div>
+                            <div class="col-small">{{ loan.formattedAmount }}&nbsp;€</div>
+                            <div class="cl">&nbsp;</div>
+                        </li>
+                        <li>&nbsp;</li>
+                        <li>
+                            <div class="col-long">Taux d'intérêt annuel :</div>
+                            <div class="col-small">{{ loan.rate }}&nbsp;%</div>
+                            <div class="cl">&nbsp;</div>
+                        </li>
+                        <li>
+                            <div class="col-long">Montant total des intérêts :</div>
+                            <div class="col-small">{{ loan.interests }}</div>
+                            <div class="cl">&nbsp;</div>
+                        </li>
+                        <li>
+                            <div class="col-long">Montant de l’échéance (capital et intérêts, hors commission Unilend) :</div>
+                            <div class="col-small">{{ loan.repaymentAmount }}</div>
+                            <div class="cl">&nbsp;</div>
+                        </li>
+                        <li>
+                            <div class="col-long">Date de création :</div>
+                            <div class="col-small">{{ loan.creationDate }}</div>
+                            <div class="cl">&nbsp;</div>
+                        </li>
+                        <li>
+                            <div class="col-long">Date d'échéance :</div>
+                            <div class="col-small">{{ loan.lastRepaymentDate }}</div>
+                            <div class="cl">&nbsp;</div>
+                        </li>
+                        <li>&nbsp;</li>
+                        <li>
+                            Modalités d’amortissement : {{ content['modalites-amortissement']|nl2br|raw }}
+                        </li>
+                        <li>
+                            <div class="col-long">Coût total du prêt pour l’Emprunteur :</div>
+                            <div class="col-small">{{ loan.borrowerCost }}</div>
+                            <div class="cl">&nbsp;</div>
+                        </li>
+                        <li>&nbsp;</li>
+                        <li>Conditions de mise à disposition des fonds : {{ content['conditions-de-mise-a-disposition-des-fonds']|nl2br|raw }}</li>
+                    </ul>
+                    <p>{{ content['legitimite']|raw }}</p>
+                    <p>La signature du contrat de prêt engage l'Emprunteur, en contrepartie des sommes remises ce jour, à rembourser au Prêteur la somme de {{ loan.formattedAmount }}&nbsp;€ assortie des intérêts à {{ loan.rate }}&nbsp;% selon l'échéancier annexé aux présentes.</p>
+                </div>
+            </div>
+            <div>
+                {{ content['conditions-ifp']|raw }}
+                <br>
+                <br>
+                <br>
+                <br>
+                <br>
+                <p>Fait à Paris, le {{ 'now'|date('d/m/Y') }}</p>
+                <p>Signé par l'Emprunteur Représenté par Unilend</p>
+                <p>Signé par le Prêteur Représenté par Unilend</p>
+            </div>
+            <!-- End Page Break -->
+
+            <!-- Page Break -->
+            <div class="pageBreakBefore">
+                <h3>ECHEANCIER DES REMBOURSEMENTS</h3>
+                <div class="dates-table">
+                    <table width="100%" cellspacing="0" cellpadding="0">
+                        <tr>
+                            <th valign="bottom">DATE</th>
+                            <th valign="bottom">CAPITAL</th>
+                            <th valign="bottom">INTERETS</th>
+                            <th valign="bottom">TOTAL</th>
+                            <th valign="bottom">CAPITAL RESTANT DÛ</th>
+                        </tr>
+                        {% set remainingCapital = loan.amount %}
+                        {% for repayment in loan.repaymentSchedule %}
+                            {% set remainingCapital = remainingCapital - repayment.getCapital() / 100 %}
+                            <tr>
+                                <td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;">{{ repayment.getDateEcheance()|date('d/m/Y') }}</td>
+                                <td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;">{{ (repayment.getCapital() / 100)|localizedcurrency('EUR') }}</td>
+                                <td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;">{{ (repayment.getInterets() / 100)|localizedcurrency('EUR') }}</td>
+                                <td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;">{{ (repayment.getMontant() / 100)|localizedcurrency('EUR') }}</td>
+                                <td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;">{{ remainingCapital|abs|localizedcurrency('EUR') }}</td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                </div>
+            </div>
+            <!-- End Page Break -->
+        </div>
+        <!-- End Shell -->
+    </div>
+    <!-- End Doc Wrapper -->
+{% endblock %}

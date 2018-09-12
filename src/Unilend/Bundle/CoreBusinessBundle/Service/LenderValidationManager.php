@@ -6,9 +6,7 @@ use Doctrine\DBAL\DBALException;
 use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Asset\Packages;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    BankAccount, ClientAddress, Clients, ClientsStatus, CompanyAddress, Users, WalletType
-};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{BankAccount, ClientAddress, Clients, ClientsStatus, CompanyAddress, Users, WalletType};
 use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessageProvider;
 
 /**
@@ -158,7 +156,7 @@ class LenderValidationManager
 
         try {
             if (isset($bankAccount) && $bankAccount instanceof BankAccount) {
-                $this->bankAccountManager->validateBankAccount($bankAccount);
+                $this->bankAccountManager->validate($bankAccount);
             }
 
             if (isset($address) && ($address instanceof ClientAddress || $address instanceof CompanyAddress)) {

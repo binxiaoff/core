@@ -2,31 +2,38 @@
 
 namespace Unilend\Bundle\TranslationBundle\Service;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Translation\Exception\{InvalidResourceException, NotFoundResourceException};
 use Symfony\Component\Translation\Loader\LoaderInterface;
 use Symfony\Component\Translation\MessageCatalogue;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Translations;
+use Unilend\Bundle\CoreBusinessBundle\Repository\TranslationsRepository;
 
 class TranslationLoader implements LoaderInterface
 {
     const SECTION_SEPARATOR = '_';
 
+    /** @var TranslationsRepository */
     private $translationRepository;
-    private $defaultLanguage;
+    /** @var string */
+    private $defaultLocale;
 
-    public function __construct(EntityManager $entityManager, string $defaultLanguage)
+    /**
+     * @param EntityManagerInterface $entityManager
+     * @param string                 $defaultLocale
+     */
+    public function __construct(EntityManagerInterface $entityManager, string $defaultLocale)
     {
         $this->translationRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Translations');
-        $this->defaultLanguage       = $defaultLanguage;
+        $this->defaultLocale         = $defaultLocale;
     }
 
     /**
      * Loads a locale.
      *
-     * @param mixed $resource A resource
-     * @param string $locale A locale
-     * @param string $domain The domain
+     * @param mixed  $resource A resource
+     * @param string $locale   A locale
+     * @param string $domain   The domain
      *
      * @return MessageCatalogue A MessageCatalogue instance
      *
@@ -35,10 +42,10 @@ class TranslationLoader implements LoaderInterface
      */
     public function load($resource, $locale, $domain = 'messages')
     {
-        $catalogue = new MessageCatalogue($this->defaultLanguage);
+        $catalogue = new MessageCatalogue($this->defaultLocale);
 
         /** @var Translations $translation */
-        foreach ($this->translationRepository->findBy(['locale' => $this->defaultLanguage]) as $translation) {
+        foreach ($this->translationRepository->findBy(['locale' => $this->defaultLocale]) as $translation) {
             $catalogue->set($translation->getSection() . self::SECTION_SEPARATOR . $translation->getName(), $translation->getTranslation(), $domain);
         }
 

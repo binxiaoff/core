@@ -91,7 +91,7 @@
                         <td class="text-right"><?= $this->ficelle->formatNumber($p['amount'], 0) ?> €</td>
                         <td><?= empty($p['period']) ? '' : $p['period'] . ' mois' ?></td>
                         <td><?= $p['label'] ?></td>
-                        <td><?= $this->dates->formatDate($p['added'], 'd/m/Y') ?></td>
+                        <td><?= $this->formatDate($p['added'], 'd/m/Y') ?></td>
                         <td><?= $this->users->firstname ?> <?= $this->users->name ?></td>
                         <td align="center">
                             <a href="<?= $this->lurl ?>/dossiers/edit/<?= $p['id_project'] ?>">

@@ -26,7 +26,7 @@
             <h3>Nombre de projets à probleme dans le portefeuille : <?= $this->problProjects ?></h3>
             <h3>Nombre de projets total dans le portefeuille : <?= $this->totalProjects ?></h3>
             <h3>Nombre de projets mis en ligne depuis son inscription : <?= $this->projectsPublished ?></h3>
-            <h3>CIP évalué : <?= $this->cipEnabled ? 'Oui (<a href="' . $this->surl  . '/pdf/conseil-cip/' . $this->clients->hash . '" target="_blank">Télécharger le PDF des conseils</a>)' : 'Non' ?></h3>
+            <h3>CIP évalué : <?= $this->cipEnabled ? 'oui' : 'non' ?></h3>
         </div>
         <br/>
         <div id="autobid">
@@ -161,12 +161,12 @@
                             <?php else : ?>
                                 <td>&nbsp;</td>
                             <?php endif; ?>
-                            <td<?= $rowspan ?>><?= $this->dates->formatDate($aProjectLoans['debut'], 'd/m/Y') ?></td>
+                            <td<?= $rowspan ?>><?= $this->formatDate($aProjectLoans['debut'], 'd/m/Y') ?></td>
                             <?php if (in_array($aProjectLoans['project_status'], [\projects_status::REMBOURSEMENT_ANTICIPE, \projects_status::REMBOURSE])) : ?>
-                                <td<?= $rowspan ?> colspan="2"><p>Remboursé intégralement le <?= $this->dates->formatDate($aProjectLoans['final_repayment_date'], 'd/m/Y') ?></p></td>
+                                <td<?= $rowspan ?> colspan="2"><p>Remboursé intégralement le <?= $this->formatDate($aProjectLoans['final_repayment_date'], 'd/m/Y') ?></p></td>
                             <?php else : ?>
-                                <td<?= $rowspan ?>><?= $this->dates->formatDate($aProjectLoans['next_echeance'], 'd/m/Y') ?></td>
-                                <td<?= $rowspan ?>><?= $this->dates->formatDate($aProjectLoans['fin'], 'd/m/Y') ?></td>
+                                <td<?= $rowspan ?>><?= $this->formatDate($aProjectLoans['next_echeance'], 'd/m/Y') ?></td>
+                                <td<?= $rowspan ?>><?= $this->formatDate($aProjectLoans['fin'], 'd/m/Y') ?></td>
                             <?php endif; ?>
                             <?php if ($this->hasTransferredLoans) : ?>
                                 <?php if ($aProjectLoans['nb_loan'] == 1) : ?>

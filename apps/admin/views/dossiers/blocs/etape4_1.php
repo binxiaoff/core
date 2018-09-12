@@ -379,7 +379,7 @@ use Unilend\Bundle\WSClientBundle\Service\InfogreffeManager;
                     <td>
                         <?php if (false === empty($this->ratings['date_dernier_privilege']['value'])) : ?><span class="rating-tooltip" title="date_dernier_privilege"><?php endif; ?>
                         <?php if ($this->projects->status <= \projects_status::COMITY_REVIEW) : ?>
-                            <input type="text" name="ratings[date_dernier_privilege]" id="date_dernier_privilege" value="<?php if (false === empty($this->ratings['date_dernier_privilege']['value'])) : ?><?=  $this->dates->formatDate($this->ratings['date_dernier_privilege']['value'], 'd/m/Y') ?><?php endif; ?>" class="input_dp" readonly>
+                            <input type="text" name="ratings[date_dernier_privilege]" id="date_dernier_privilege" value="<?php if (false === empty($this->ratings['date_dernier_privilege']['value'])) : ?><?=  $this->formatDate($this->ratings['date_dernier_privilege']['value'], 'd/m/Y') ?><?php endif; ?>" class="input_dp" readonly>
                         <?php elseif (false === empty($this->ratings['date_dernier_privilege']['value'])) : ?>
                             <span class="rating-tooltip" title="date_dernier_privilege"><?= $this->ratings['date_dernier_privilege']['value'] ?></span>
                         <?php else : ?>-<?php endif; ?>
@@ -389,7 +389,7 @@ use Unilend\Bundle\WSClientBundle\Service\InfogreffeManager;
                         <td>
                             <?php if (false === empty($this->ratings['date_dernier_privilege']['value'])) : ?><span class="rating-tooltip" title="target_date_dernier_privilege"><?php endif; ?>
                             <?php if ($this->projects->status <= \projects_status::COMITY_REVIEW) : ?>
-                                <input type="text" name="target_ratings[date_dernier_privilege]" id="target_date_dernier_privilege" value="<?php if (false === empty($this->ratings['date_dernier_privilege']['value'])) : ?><?=  $this->dates->formatDate($this->ratings['date_dernier_privilege']['value'], 'd/m/Y') ?><?php endif; ?>" class="input_dp" readonly>
+                                <input type="text" name="target_ratings[date_dernier_privilege]" id="target_date_dernier_privilege" value="<?php if (false === empty($this->ratings['date_dernier_privilege']['value'])) : ?><?=  $this->formatDate($this->ratings['date_dernier_privilege']['value'], 'd/m/Y') ?><?php endif; ?>" class="input_dp" readonly>
                             <?php elseif (false === empty($this->ratings['date_dernier_privilege']['value'])) : ?>
                                 <span class="rating-tooltip" title="target_date_dernier_privilege"><?= $this->ratings['date_dernier_privilege']['value'] ?></span>
                             <?php else : ?>-<?php endif; ?>
@@ -403,7 +403,7 @@ use Unilend\Bundle\WSClientBundle\Service\InfogreffeManager;
                         <?php if ($this->projects->status <= \projects_status::COMITY_REVIEW) : ?>
                             <?php if (isset($this->ratings['date_tresorerie']) && '' !== $this->ratings['date_tresorerie']['value']) : ?>
                                 <span class="rating-tooltip" title="date_tresorerie">
-                                    <input type="text" name="ratings[date_tresorerie]" id="date_tresorerie" value="<?= $this->dates->formatDate($this->ratings['date_tresorerie']['value'], 'd/m/Y') ?>" class="input_dp" readonly>
+                                    <input type="text" name="ratings[date_tresorerie]" id="date_tresorerie" value="<?= $this->formatDate($this->ratings['date_tresorerie']['value'], 'd/m/Y') ?>" class="input_dp" readonly>
                                 </span>
                             <?php else : ?>
                                 <input type="text" name="ratings[date_tresorerie]" id="date_tresorerie" class="input_dp" readonly>
@@ -419,7 +419,7 @@ use Unilend\Bundle\WSClientBundle\Service\InfogreffeManager;
                         <?php elseif (isset($this->ratings['montant_tresorerie']) && '' !== $this->ratings['montant_tresorerie']['value'] || isset($this->ratings['date_tresorerie']) && '' !== $this->ratings['date_tresorerie']['value']) : ?>
                             <?php if (isset($this->ratings['montant_tresorerie']) && '' !== $this->ratings['montant_tresorerie']['value']) : ?><span class="rating-tooltip" title="montant_tresorerie"><?= $this->ficelle->formatNumber($this->ratings['montant_tresorerie']['value'], 0) ?>&nbsp;€</span><?php endif; ?>
                             <?php if (isset($this->ratings['montant_tresorerie'], $this->ratings['date_tresorerie']) && '' !== $this->ratings['montant_tresorerie']['value'] && '' !== $this->ratings['date_tresorerie']['value']) : ?> au <?php endif; ?>
-                            <?php if (isset($this->ratings['date_tresorerie']) && '' !== $this->ratings['date_tresorerie']['value']) : ?><span class="rating-tooltip" title="date_tresorerie"><?= $this->dates->formatDate($this->ratings['date_tresorerie']['value'], 'd/m/Y') ?></span><?php endif; ?>
+                            <?php if (isset($this->ratings['date_tresorerie']) && '' !== $this->ratings['date_tresorerie']['value']) : ?><span class="rating-tooltip" title="date_tresorerie"><?= $this->formatDate($this->ratings['date_tresorerie']['value'], 'd/m/Y') ?></span><?php endif; ?>
                         <?php else : ?>-<?php endif; ?>
                     </td>
                     <?php if (isset($this->targetRatings)) : ?>
@@ -427,7 +427,7 @@ use Unilend\Bundle\WSClientBundle\Service\InfogreffeManager;
                             <?php if ($this->projects->status <= \projects_status::COMITY_REVIEW) : ?>
                                 <?php if (isset($this->targetRatings['date_tresorerie']) && '' !== $this->targetRatings['date_tresorerie']['value']) : ?>
                                     <span class="rating-tooltip" title="target_date_tresorerie">
-                                        <input type="text" name="target_ratings[date_tresorerie]" id="target_date_tresorerie" value="<?= $this->dates->formatDate($this->targetRatings['date_tresorerie']['value'], 'd/m/Y') ?>" class="input_dp" readonly>
+                                        <input type="text" name="target_ratings[date_tresorerie]" id="target_date_tresorerie" value="<?= $this->formatDate($this->targetRatings['date_tresorerie']['value'], 'd/m/Y') ?>" class="input_dp" readonly>
                                     </span>
                                 <?php else : ?>
                                     <input type="text" name="target_ratings[date_tresorerie]" id="target_date_tresorerie" class="input_dp" readonly>
@@ -443,7 +443,7 @@ use Unilend\Bundle\WSClientBundle\Service\InfogreffeManager;
                             <?php elseif (isset($this->targetRatings['montant_tresorerie']) && '' !== $this->targetRatings['montant_tresorerie']['value'] || isset($this->targetRatings['date_tresorerie']) && '' !== $this->targetRatings['date_tresorerie']['value']) : ?>
                                 <?php if (isset($this->targetRatings['montant_tresorerie']) && '' !== $this->targetRatings['montant_tresorerie']['value']) : ?><span class="rating-tooltip" title="target_montant_tresorerie"><?= $this->ficelle->formatNumber($this->targetRatings['montant_tresorerie']['value'], 0) ?>&nbsp;€</span><?php endif; ?>
                                 <?php if (isset($this->targetRatings['montant_tresorerie'], $this->targetRatings['date_tresorerie']) && '' !== $this->targetRatings['montant_tresorerie']['value'] && '' !== $this->targetRatings['date_tresorerie']['value']) : ?> au <?php endif; ?>
-                                <?php if (isset($this->targetRatings['date_tresorerie']) && '' !== $this->targetRatings['date_tresorerie']['value']) : ?><span class="rating-tooltip" title="target_date_tresorerie"><?= $this->dates->formatDate($this->targetRatings['date_tresorerie']['value'], 'd/m/Y') ?></span><?php endif; ?>
+                                <?php if (isset($this->targetRatings['date_tresorerie']) && '' !== $this->targetRatings['date_tresorerie']['value']) : ?><span class="rating-tooltip" title="target_date_tresorerie"><?= $this->formatDate($this->targetRatings['date_tresorerie']['value'], 'd/m/Y') ?></span><?php endif; ?>
                             <?php else : ?>-<?php endif; ?>
                         </td>
                     <?php endif; ?>
@@ -584,8 +584,8 @@ use Unilend\Bundle\WSClientBundle\Service\InfogreffeManager;
                         <tr class="company_projects<?php if ($iIndex % 2) : ?> odd<?php endif; ?>" data-project="<?= $aProject['id_project'] ?>">
                             <td><?= $aProject['id_project'] ?></td>
                             <td><?= $aProject['title'] ?></td>
-                            <td><?= $this->dates->formatDate($aProject['added'], 'd/m/Y') ?></td>
-                            <td><?= $this->dates->formatDate($aProject['updated'], 'd/m/Y') ?></td>
+                            <td><?= $this->formatDate($aProject['added'], 'd/m/Y') ?></td>
+                            <td><?= $this->formatDate($aProject['updated'], 'd/m/Y') ?></td>
                             <td><?= $this->ficelle->formatNumber($aProject['amount'], 0) ?>&nbsp;€</td>
                             <td><?= $aProject['period'] ?> mois</td>
                             <td><?= $aProject['status_label'] ?></td>

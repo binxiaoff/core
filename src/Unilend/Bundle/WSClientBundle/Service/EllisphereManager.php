@@ -2,7 +2,7 @@
 
 namespace Unilend\Bundle\WSClientBundle\Service;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use GuzzleHttp\ClientInterface;
 use JMS\Serializer\SerializerInterface;
 use Psr\Http\Message\ResponseInterface;
@@ -39,7 +39,7 @@ class EllisphereManager
     private $client;
     /** @var CallHistoryManager */
     private $callHistoryManager;
-    /** @var EntityManager */
+    /** @var EntityManagerInterface */
     private $entityManager;
     /** @var SerializerInterface */
     private $serializer;
@@ -49,18 +49,18 @@ class EllisphereManager
     private $readFromCache = true;
 
     /**
-     * @param EntityManager       $entityManager
-     * @param ClientInterface     $client
-     * @param CallHistoryManager  $callHistoryManager
-     * @param SerializerInterface $serializer
-     * @param LoggerInterface     $logger
-     * @param string              $contractId
-     * @param string              $userPrefix
-     * @param string              $userId
-     * @param string              $password
+     * @param EntityManagerInterface $entityManager
+     * @param ClientInterface        $client
+     * @param CallHistoryManager     $callHistoryManager
+     * @param SerializerInterface    $serializer
+     * @param LoggerInterface        $logger
+     * @param string                 $contractId
+     * @param string                 $userPrefix
+     * @param string                 $userId
+     * @param string                 $password
      */
     public function __construct(
-        EntityManager $entityManager,
+        EntityManagerInterface $entityManager,
         ClientInterface $client,
         CallHistoryManager $callHistoryManager,
         SerializerInterface $serializer,

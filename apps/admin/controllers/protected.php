@@ -1,5 +1,7 @@
 <?php
 
+use Unilend\Bundle\CoreBusinessBundle\Service\Document\LoanContractGenerator;
+
 class protectedController extends bootstrap
 {
     public function initialize()
@@ -63,6 +65,8 @@ class protectedController extends bootstrap
 
     public function _contrat()
     {
+        $this->autoFireView = false;
+
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
         $loan          = $entityManager->getRepository('UnilendCoreBusinessBundle:Loans')->find($this->params[1]);
@@ -72,18 +76,22 @@ class protectedController extends bootstrap
             exit;
         }
 
-        $namePdfClient = 'CONTRAT-UNILEND-' . $loan->getProject()->getSlug() . '-' . $loan->getIdLoan();
-        $filePath      = $this->path . 'protected/pdf/contrat/contrat-' . $loan->getIdLender()->getIdClient()->getHash() . '-' . $loan->getIdLoan() . '.pdf';
+        /** @var LoanContractGenerator $loanContractGenerator */
+        $loanContractGenerator = $this->get(LoanContractGenerator::class);
 
-        if (file_exists($filePath)) {
-            header('Content-Description: File Transfer');
-            header('Content-Type: application/octet-stream');
-            header('Content-Disposition: attachment; filename="' . $namePdfClient . '";');
-            @readfile($filePath);
-            die();
-        } else {
-            header('location: ' . $this->url . '/protected/document_not_found');
-            die;
+        try {
+            if (false === $loanContractGenerator->exists($loan)) {
+                $loanContractGenerator->generate($loan);
+            }
+
+            $filePath = $loanContractGenerator->getPath($loan);
+
+            header('Content-Type: ' . $loanContractGenerator->getContentType());
+            header('Content-Length: ' . filesize($filePath));
+            header('Content-Disposition: attachment; filename="CONTRAT-UNILEND-' . $loan->getProject()->getSlug() . '-' . $loan->getIdLoan() . '.pdf"');
+            readfile($filePath);
+        } catch (\Exception $exception) {
+            header('Location: ' . $this->url . '/protected/document_not_found');
         }
     }
 
