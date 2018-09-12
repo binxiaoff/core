@@ -37,20 +37,20 @@ var passwordMinLength = 8
 var passwordRequirements = function(input) {
   var lowerUpperCaseRule = /(?=.*[a-z])(?=.*[A-Z])/,
       hasDigitRule       = /[0-9]/,
-      hasMinLengthRule   = new RegExp('\\S{'+ passwordMinLength +',}'),
+      hasMinLengthRule   = new RegExp('\\S{' + passwordMinLength + ',}'),
       passWordGroupRules = {
-          'pw-has-lower-upper-case': lowerUpperCaseRule,
-          'pw-has-digit': hasDigitRule,
-          'pw-has-min-length': hasMinLengthRule
+          '#pw-has-lower-upper-case': lowerUpperCaseRule,
+          '#pw-has-digit': hasDigitRule,
+          '#pw-has-min-length': hasMinLengthRule
       }
 
   for (var idRuleLabel in passWordGroupRules) {
     var displayRule = passWordGroupRules[idRuleLabel]
     if (displayRule instanceof RegExp) {
       if (displayRule.test(input)) {
-        $('#' + idRuleLabel).removeClass('fa-cross-u16 c-error').addClass('fa-check-u16 c-success')
+        $(idRuleLabel).removeClass('fa-cross-u16 c-error').addClass('fa-check-u16 c-success')
       } else {
-        $('#' + idRuleLabel).removeClass('fa-check-u16 c-success').addClass('fa-cross-u16 c-error')
+        $(idRuleLabel).removeClass('fa-check-u16 c-success').addClass('fa-cross-u16 c-error')
       }
     } else {
       console.error(displayRule + ' is not a correct regex');

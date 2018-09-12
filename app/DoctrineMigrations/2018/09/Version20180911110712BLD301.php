@@ -5,9 +5,6 @@ namespace Application\Migrations;
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\Migrations\AbstractMigration;
 
-/**
- * Auto-generated Migration: Please modify to your needs!
- */
 final class Version20180911110712BLD301 extends AbstractMigration
 {
     /**
