@@ -28,13 +28,7 @@
             </tr>
             <tr>
                 <th>Évaluation CIP</th>
-                <td>
-                    <?php if ($this->cipEnabled) : ?>
-                        Oui (<a href="<?= $this->furl ?>/pdf/conseil-cip/<?= $this->clients->hash ?>" target="_blank"> Télécharger le PDF des conseils</a>)
-                    <?php else : ?>
-                        Non
-                    <?php endif; ?>
-                </td>
+                <td><?= $this->cipEnabled ? 'Oui' : 'Non' ?></td>
             </tr>
             <tr>
                 <th>Exonération fiscale</th>
