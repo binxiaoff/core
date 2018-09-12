@@ -9,6 +9,7 @@ use Doctrine\ORM\Mapping as ORM;
  *
  * @ORM\Table(name="greenpoint_kyc", uniqueConstraints={@ORM\UniqueConstraint(name="id_client", columns={"id_client"})}, indexes={@ORM\Index(name="index_gp_kyc_id_client", columns={"id_client"})})
  * @ORM\Entity
+* @ORM\HasLifecycleCallbacks
  */
 class GreenpointKyc
 {
@@ -41,7 +42,7 @@ class GreenpointKyc
     private $added;
 
     /**
-     * @var \DateTime
+     * @var \DateTime|null
      *
      * @ORM\Column(name="updated", type="datetime", nullable=true)
      */
@@ -192,5 +193,23 @@ class GreenpointKyc
     public function getIdGreenpointKyc(): int
     {
         return $this->idGreenpointKyc;
+    }
+
+    /**
+     * @ORM\PrePersist
+     */
+    public function setAddedValue()
+    {
+        if (! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
+            $this->added = new \DateTime();
+        }
+    }
+
+    /**
+     * @ORM\PreUpdate
+     */
+    public function setUpdatedValue()
+    {
+        $this->updated = new \DateTime();
     }
 }

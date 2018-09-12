@@ -274,11 +274,11 @@ class GreenpointAttachmentDetail
     }
 
     /**
-     * @param \DateTime $identityExpirationDate
+     * @param \DateTime|null $identityExpirationDate
      *
      * @return GreenpointAttachmentDetail
      */
-    public function setIdentityExpirationDate($identityExpirationDate): GreenpointAttachmentDetail
+    public function setIdentityExpirationDate(?\DateTime $identityExpirationDate): GreenpointAttachmentDetail
     {
         $this->identityExpirationDate = $identityExpirationDate;
 
@@ -286,19 +286,19 @@ class GreenpointAttachmentDetail
     }
 
     /**
-     * @return \DateTime
+     * @return \DateTime|null
      */
-    public function getIdentityExpirationDate(): ?string
+    public function getIdentityExpirationDate(): ?\DateTime
     {
         return $this->identityExpirationDate;
     }
 
     /**
-     * @param \DateTime $identityBirthdate
+     * @param \DateTime|null $identityBirthdate
      *
      * @return GreenpointAttachmentDetail
      */
-    public function setIdentityBirthdate($identityBirthdate): GreenpointAttachmentDetail
+    public function setIdentityBirthdate(?\DateTime $identityBirthdate): GreenpointAttachmentDetail
     {
         $this->identityBirthdate = $identityBirthdate;
 
@@ -306,9 +306,9 @@ class GreenpointAttachmentDetail
     }
 
     /**
-     * @return \DateTime
+     * @return \DateTime|null
      */
-    public function getIdentityBirthdate(): ?string
+    public function getIdentityBirthdate(): ?\DateTime
     {
         return $this->identityBirthdate;
     }
@@ -638,7 +638,7 @@ class GreenpointAttachmentDetail
      *
      * @return GreenpointAttachmentDetail
      */
-    public function setUpdated(?\DateTime $updated)
+    public function setUpdated(?\DateTime $updated): GreenpointAttachmentDetail
     {
         $this->updated = $updated;
 
