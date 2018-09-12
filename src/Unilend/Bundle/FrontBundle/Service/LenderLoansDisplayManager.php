@@ -82,10 +82,38 @@ class LenderLoansDisplayManager
         $lenderProjectLoans = [];
 
         foreach ($lenderLoans as $projectLoans) {
-            if ($projectLoans['project_status'] >= ProjectsStatus::REMBOURSEMENT) {
-                $project        = $projectRepository->find($projectLoans['id_project']);
-                $loanStatusInfo = $this->getLenderLoanStatusToDisplay($project);
+            $project        = $projectRepository->find($projectLoans['id_project']);
+            $loanStatusInfo = $this->getLenderLoanStatusToDisplay($project);
+            $loanData       = [
+                'id'                       => $projectLoans['id_project'],
+                'url'                      => $this->router->generate('project_detail', ['projectSlug' => $projectLoans['slug']], UrlGeneratorInterface::ABSOLUTE_PATH),
+                'name'                     => $projectLoans['title'],
+                'rate'                     => round($projectLoans['rate'], 1),
+                'risk'                     => $projectLoans['risk'],
+                'amount'                   => round($projectLoans['amount']),
+                'start_date'               => null,
+                'end_date'                 => null,
+                'next_payment_date'        => null,
+                'monthly_repayment_amount' => null,
+                'duration'                 => 0,
+                'final_repayment_date'     => null,
+                'remaining_capital_amount' => null,
+                'project_status'           => $projectLoans['project_status'],
+                'loanStatus'               => $loanStatusInfo['status'],
+                'loanStatusLabel'          => $loanStatusInfo['statusLabel'],
+                'isCloseOutNetting'        => false
+            ];
 
+            if (in_array($projectLoans['project_status'], [ProjectsStatus::BID_TERMINATED, ProjectsStatus::FUNDE])) {
+                if (false === empty($statusFilter) && false === in_array($loanStatusInfo['status'], self::LOAN_STATUS_AGGREGATE[$statusFilter])) {
+                    continue;
+                }
+
+                ++$loanStatus['pending'];
+
+                $lenderProjectLoans[] = $loanData;
+                unset($loanData);
+            } elseif ($projectLoans['project_status'] >= ProjectsStatus::REMBOURSEMENT) {
                 if (false === empty($statusFilter) && false === in_array($loanStatusInfo['status'], self::LOAN_STATUS_AGGREGATE[$statusFilter])) {
                     continue;
                 }
@@ -94,25 +122,14 @@ class LenderLoansDisplayManager
                 $endDateTime       = new \DateTime($projectLoans['fin']);
                 $remainingDuration = $startDateTime->diff($endDateTime);
 
-                $loanData = [
-                    'id'                       => $projectLoans['id_project'],
-                    'url'                      => $this->router->generate('project_detail', ['projectSlug' => $projectLoans['slug']], UrlGeneratorInterface::ABSOLUTE_PATH),
-                    'name'                     => $projectLoans['title'],
-                    'rate'                     => round($projectLoans['rate'], 1),
-                    'risk'                     => $projectLoans['risk'],
-                    'amount'                   => round($projectLoans['amount']),
-                    'start_date'               => \DateTime::createFromFormat('Y-m-d', $projectLoans['debut']),
-                    'end_date'                 => \DateTime::createFromFormat('Y-m-d', $projectLoans['fin']),
-                    'next_payment_date'        => \DateTime::createFromFormat('Y-m-d', $projectLoans['next_echeance']),
-                    'monthly_repayment_amount' => $projectLoans['monthly_repayment_amount'],
-                    'duration'                 => $remainingDuration->y * 12 + $remainingDuration->m + ($remainingDuration->d > 0 ? 1 : 0),
-                    'final_repayment_date'     => \DateTime::createFromFormat('Y-m-d H:i:s', $projectLoans['final_repayment_date']),
-                    'remaining_capital_amount' => $projectLoans['remaining_capital'],
-                    'project_status'           => $projectLoans['project_status'],
-                    'loanStatus'               => $loanStatusInfo['status'],
-                    'loanStatusLabel'          => $loanStatusInfo['statusLabel'],
-                    'isCloseOutNetting'        => $project->getCloseOutNettingDate() instanceof \DateTime,
-                ];
+                $loanData['start_date']               = \DateTime::createFromFormat('Y-m-d', $projectLoans['debut']);
+                $loanData['end_date']                 = \DateTime::createFromFormat('Y-m-d', $projectLoans['fin']);
+                $loanData['next_payment_date']        = \DateTime::createFromFormat('Y-m-d', $projectLoans['next_echeance']);
+                $loanData['monthly_repayment_amount'] = $projectLoans['monthly_repayment_amount'];
+                $loanData['duration']                 = $remainingDuration->y * 12 + $remainingDuration->m + ($remainingDuration->d > 0 ? 1 : 0);
+                $loanData['final_repayment_date']     = \DateTime::createFromFormat('Y-m-d H:i:s', $projectLoans['final_repayment_date']);
+                $loanData['remaining_capital_amount'] = $projectLoans['remaining_capital'];
+                $loanData['isCloseOutNetting']        = $project->getCloseOutNettingDate() instanceof \DateTime;
 
                 switch ($loanData['loanStatus']) {
                     case self::LOAN_STATUS_DISPLAY_PROCEEDING:
@@ -176,38 +193,6 @@ class LenderLoansDisplayManager
                 $loanData['loans']    = $loans;
                 $lenderProjectLoans[] = $loanData;
                 unset($loans, $loanData);
-            } elseif (in_array($projectLoans['project_status'], [ProjectsStatus::BID_TERMINATED, ProjectsStatus::FUNDE])) {
-                $project        = $projectRepository->find($projectLoans['id_project']);
-                $loanStatusInfo = $this->getLenderLoanStatusToDisplay($project);
-
-                if (false === empty($statusFilter) && false === in_array($loanStatusInfo['status'], self::LOAN_STATUS_AGGREGATE[$statusFilter])) {
-                    continue;
-                }
-
-                $loanData = [
-                    'id'                       => $projectLoans['id_project'],
-                    'url'                      => $this->router->generate('project_detail', ['projectSlug' => $projectLoans['slug']], UrlGeneratorInterface::ABSOLUTE_PATH),
-                    'name'                     => $projectLoans['title'],
-                    'rate'                     => round($projectLoans['rate'], 1),
-                    'risk'                     => $projectLoans['risk'],
-                    'amount'                   => round($projectLoans['amount']),
-                    'start_date'               => null,
-                    'end_date'                 => null,
-                    'next_payment_date'        => null,
-                    'monthly_repayment_amount' => null,
-                    'duration'                 => 0,
-                    'final_repayment_date'     => null,
-                    'remaining_capital_amount' => null,
-                    'project_status'           => $projectLoans['project_status'],
-                    'loanStatus'               => $loanStatusInfo['status'],
-                    'loanStatusLabel'          => $loanStatusInfo['statusLabel'],
-                    'isCloseOutNetting'        => false,
-                ];
-
-                ++$loanStatus['pending'];
-
-                $lenderProjectLoans[] = $loanData;
-                unset($loanData);
             }
         }
 
@@ -249,50 +234,42 @@ class LenderLoansDisplayManager
         $lenderProjectLoans = [];
 
         foreach ($lenderLoans as $projectLoans) {
+            $project        = $projectRepository->find($projectLoans['id_project']);
+            $loanStatusInfo = $this->getLenderLoanStatusToDisplay($project);
+            $loanData = [
+                'id'                     => $projectLoans['id_project'],
+                'name'                   => $projectLoans['title'],
+                'loanStatusLabel'        => $loanStatusInfo['statusLabel'],
+                'amount'                 => round($projectLoans['amount']),
+                'risk'                   => $projectLoans['risk'],
+                'rate'                   => round($projectLoans['rate'], 1),
+                'startDate'              => '',
+                'loanStatus'             => $loanStatusInfo['status'],
+                'isCloseOutNetting'      => false,
+                'finalRepaymentDate'     => '',
+                'nextRepaymentDate'      => '',
+                'endDate'                => '',
+                'monthlyRepaymentAmount' => '',
+                'numberOfLoansInDebt'    => 0
+            ];
+
             if ($projectLoans['project_status'] >= ProjectsStatus::REMBOURSEMENT) {
-                $project            = $projectRepository->find($projectLoans['id_project']);
-                $loanStatusInfo     = $this->getLenderLoanStatusToDisplay($project);
                 $startDate          = \DateTime::createFromFormat('Y-m-d', $projectLoans['debut']);
                 $finalRepaymentDate = \DateTime::createFromFormat('Y-m-d H:i:s', $projectLoans['final_repayment_date']);
                 $nextRepaymentDate  = \DateTime::createFromFormat('Y-m-d', $projectLoans['next_echeance']);
                 $endDate            = \DateTime::createFromFormat('Y-m-d', $projectLoans['fin']);
 
-                $lenderProjectLoans[] = [
-                    'id'                     => $projectLoans['id_project'],
-                    'name'                   => $projectLoans['title'],
-                    'loanStatusLabel'        => $loanStatusInfo['statusLabel'],
-                    'amount'                 => round($projectLoans['amount']),
-                    'risk'                   => $projectLoans['risk'],
-                    'rate'                   => round($projectLoans['rate'], 1),
-                    'startDate'              => $startDate ? $startDate->format('d/m/Y') : '',
-                    'loanStatus'             => $loanStatusInfo['status'],
-                    'isCloseOutNetting'      => $project->getCloseOutNettingDate() instanceof \DateTime,
-                    'finalRepaymentDate'     => $finalRepaymentDate ? $finalRepaymentDate->format('d/m/Y') : '',
-                    'nextRepaymentDate'      => $nextRepaymentDate ? $nextRepaymentDate->format('d/m/Y') : '',
-                    'endDate'                => $endDate ? $endDate->format('d/m/Y') : '',
-                    'monthlyRepaymentAmount' => $projectLoans['monthly_repayment_amount'],
-                    'numberOfLoansInDebt'    => in_array($project->getIdProject(), $projectsInDept) ? $projectLoans['nb_loan'] : 0
-                ];
-            } elseif (in_array($projectLoans['project_status'], [ProjectsStatus::BID_TERMINATED, ProjectsStatus::FUNDE])) {
-                $project        = $projectRepository->find($projectLoans['id_project']);
-                $loanStatusInfo = $this->getLenderLoanStatusToDisplay($project);
+                $loanData['startDate']              = $startDate ? $startDate->format('d/m/Y') : '';
+                $loanData['isCloseOutNetting']      = $project->getCloseOutNettingDate() instanceof \DateTime;
+                $loanData['finalRepaymentDate']     = $finalRepaymentDate ? $finalRepaymentDate->format('d/m/Y') : '';
+                $loanData['nextRepaymentDate']      = $nextRepaymentDate ? $nextRepaymentDate->format('d/m/Y') : '';
+                $loanData['endDate']                = $endDate ? $endDate->format('d/m/Y') : '';
+                $loanData['monthlyRepaymentAmount'] = $projectLoans['monthly_repayment_amount'];
+                $loanData['numberOfLoansInDebt']    = in_array($project->getIdProject(), $projectsInDept) ? $projectLoans['nb_loan'] : 0;
 
-                $lenderProjectLoans[] = [
-                    'id'                     => $projectLoans['id_project'],
-                    'name'                   => $projectLoans['title'],
-                    'loanStatusLabel'        => $loanStatusInfo['statusLabel'],
-                    'amount'                 => round($projectLoans['amount']),
-                    'risk'                   => $projectLoans['risk'],
-                    'rate'                   => round($projectLoans['rate'], 1),
-                    'startDate'              => '',
-                    'loanStatus'             => $loanStatusInfo['status'],
-                    'isCloseOutNetting'      => false,
-                    'finalRepaymentDate'     => '',
-                    'nextRepaymentDate'      => '',
-                    'endDate'                => '',
-                    'monthlyRepaymentAmount' => '',
-                    'numberOfLoansInDebt'    => 0
-                ];
+                $lenderProjectLoans[] = $loanData;
+            } elseif (in_array($projectLoans['project_status'], [ProjectsStatus::BID_TERMINATED, ProjectsStatus::FUNDE])) {
+                $lenderProjectLoans[] = $loanData;
             }
         }
 
