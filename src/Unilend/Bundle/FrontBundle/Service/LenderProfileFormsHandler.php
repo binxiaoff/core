@@ -105,7 +105,7 @@ class LenderProfileFormsHandler
      * @param FormInterface $form
      * @param FileBag       $fileBag
      *
-     * @return array
+     * @return Attachment[]
      */
     private function uploadPersonalIdentityDocuments(Clients $client, Clients $unattachedClient, FormInterface $form, FileBag $fileBag): array
     {
@@ -357,9 +357,9 @@ class LenderProfileFormsHandler
      * @param FileBag       $fileBag
      * @param string        $type
      *
-     * @return array
+     * @return Attachment[]
      */
-    private function uploadPersonAddressDocument(Clients $client, FormInterface $form, FileBag $fileBag, string $type)
+    private function uploadPersonAddressDocument(Clients $client, FormInterface $form, FileBag $fileBag, string $type): array
     {
         $newAttachments = [];
 
@@ -381,7 +381,7 @@ class LenderProfileFormsHandler
         foreach ($files as $attachmentTypeId => $file) {
             if ($file instanceof UploadedFile) {
                 try {
-                    $newAttachments[$attachmentTypeId] = $attachement = $this->upload($client, $attachmentTypeId, $file);
+                    $newAttachments[$attachmentTypeId] = $this->upload($client, $attachmentTypeId, $file);
                 } catch (\Exception $exception) {
                     $form->addError(new FormError($this->translator->trans('lender-profile_information-tab-fiscal-address-section-upload-files-error-message')));
                     $this->logger->error('An error occurred while uploading attachment type id: ' . $attachmentTypeId . '. Error message: ' . $exception->getMessage(), [
@@ -394,16 +394,16 @@ class LenderProfileFormsHandler
                 }
             } else {
                 switch ($attachmentTypeId) {
-                    case AttachmentType::JUSTIFICATIF_FISCAL :
+                    case AttachmentType::JUSTIFICATIF_FISCAL:
                         $error = $this->translator->trans('lender-profile_information-tab-fiscal-address-section-missing-tax-certificate');
                         break;
-                    case AttachmentType::ATTESTATION_HEBERGEMENT_TIERS :
+                    case AttachmentType::ATTESTATION_HEBERGEMENT_TIERS:
                         $error = $this->translator->trans('lender-profile_information-tab-fiscal-address-missing-housed-by-third-person-declaration');
                         break;
-                    case AttachmentType::CNI_PASSPORT_TIERS_HEBERGEANT :
+                    case AttachmentType::CNI_PASSPORT_TIERS_HEBERGEANT:
                         $error = $this->translator->trans('lender-profile_information-tab-fiscal-address-missing-id-third-person-housing');
                         break;
-                    default :
+                    default:
                         continue 2;
                 }
                 $form->addError(new FormError($error));
@@ -444,17 +444,16 @@ class LenderProfileFormsHandler
             );
         }
 
-        $housingCertificate = null;
-        if (isset($newAttachments[AttachmentType::JUSTIFICATIF_DOMICILE])) {
-            $housingCertificate = $newAttachments[AttachmentType::JUSTIFICATIF_DOMICILE];
-        }
-
-        if (AddressType::TYPE_MAIN_ADDRESS === $type && $housingCertificate) {
+        if (
+            AddressType::TYPE_MAIN_ADDRESS === $type
+            && isset($newAttachments[AttachmentType::JUSTIFICATIF_DOMICILE])
+            && $newAttachments[AttachmentType::JUSTIFICATIF_DOMICILE] instanceof Attachment
+        ) {
             $lastModifiedAddress = $this->entityManager
                 ->getRepository('UnilendCoreBusinessBundle:ClientAddress')
                 ->findLastModifiedNotArchivedAddressByType($client, AddressType::TYPE_MAIN_ADDRESS);
 
-            $this->addressManager->linkAttachmentToAddress($lastModifiedAddress, $housingCertificate);
+            $this->addressManager->linkAttachmentToAddress($lastModifiedAddress, $newAttachments[AttachmentType::JUSTIFICATIF_DOMICILE]);
         }
     }
 

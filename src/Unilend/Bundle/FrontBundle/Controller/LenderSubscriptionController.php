@@ -252,7 +252,15 @@ class LenderSubscriptionController extends Controller
                 $entityManager->commit();
             } catch (\Exception $exception) {
                 $entityManager->getConnection()->rollBack();
-                $this->get('logger')->error('An error occurred while creating client ', [['class' => __CLASS__, 'function' => __FUNCTION__]]);
+
+                $this->get('logger')->error('An error occurred while creating client. Message: ' . $exception->getMessage(), [
+                    'class'    => __CLASS__,
+                    'function' => __FUNCTION__,
+                    'file'     => $exception->getFile(),
+                    'line'     => $exception->getLine()
+                ]);
+
+                return false;
             }
 
             if (Clients::NEWSLETTER_OPT_IN_ENROLLED === $newsletterConsent) {
@@ -265,6 +273,7 @@ class LenderSubscriptionController extends Controller
 
             return true;
         }
+
         return false;
     }
 
@@ -699,11 +708,11 @@ class LenderSubscriptionController extends Controller
         foreach ($files as $attachmentTypeId => $file) {
             if ($file instanceof UploadedFile) {
                 try {
-                    $attachement = $this->upload($client,  $attachmentTypeId, $file);
+                    $attachment = $this->upload($client,  $attachmentTypeId, $file);
 
-                    if ($attachmentTypeId == AttachmentType::JUSTIFICATIF_DOMICILE) {
+                    if ($attachmentTypeId == AttachmentType::JUSTIFICATIF_DOMICILE && $attachment instanceof Attachment) {
                         $address = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientAddress')->findLastModifiedNotArchivedAddressByType($client, AddressType::TYPE_MAIN_ADDRESS);
-                        $addressManager->linkAttachmentToAddress($address, $attachement);
+                        $addressManager->linkAttachmentToAddress($address, $attachment);
                     }
                 } catch (\Exception $exception) {
                     $form->addError(new FormError($uploadErrorMessage));
@@ -733,7 +742,7 @@ class LenderSubscriptionController extends Controller
                     case AttachmentType::CNI_PASSPORT_TIERS_HEBERGEANT:
                         $error = $translator->trans('lender-subscription_documents-person-missing-id-third-person-housing');
                         break;
-                    default :
+                    default:
                         continue 2;
                 }
                 $form->addError(new FormError($error));
