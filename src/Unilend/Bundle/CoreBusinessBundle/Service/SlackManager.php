@@ -66,14 +66,13 @@ class SlackManager
     {
         try {
             $payload = $this->apiClient->createMessage();
-            $payload->setIcon($this->iconUrl);
 
             if (null !== $channel) {
-                $payload->setChannel($channel);
-            }
-
-            if ('prod' !== $this->environment) {
-                $message = '[' . $channel . '] ' . $message;
+                if ('prod' === $this->environment) {
+                    $payload->setChannel($channel);
+                } else {
+                    $message = '[' . $channel . '] ' . $message;
+                }
             }
 
             $payload->setText($message);

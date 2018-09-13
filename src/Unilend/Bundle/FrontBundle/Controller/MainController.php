@@ -39,17 +39,6 @@ class MainController extends Controller
      */
     public function homeAction(): Response
     {
-        $slack = $this->get('nexy_slack.client');
-
-        $message = $slack->createMessage();
-
-        $message
-            ->to('#it-testing')
-            ->setText('This is an test message!')
-        ;
-
-        $slack->sendMessage($message);die;
-
         /** @var TestimonialManager $testimonialService */
         $testimonialService = $this->get('unilend.frontbundle.service.testimonial_manager');
         /** @var AuthorizationChecker $authorizationChecker */
