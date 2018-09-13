@@ -4,12 +4,9 @@ namespace Unilend\Bundle\CommandBundle\Command;
 
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
-use Symfony\Component\Console\{
-    Input\InputInterface, Input\InputOption, Output\OutputInterface
-};
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Clients, ClientsGestionTypeNotif, ClientsStatus, EcheanciersEmprunteur, Notifications, Prelevements, Projects, ProjectsStatus, Receptions, SepaRejectionReason, Users, Wallet, WalletType
-};
+use Symfony\Component\Console\{Input\InputInterface, Input\InputOption, Output\OutputInterface};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{Clients, ClientsGestionTypeNotif, EcheanciersEmprunteur, Notifications, Prelevements, Projects, ProjectsStatus, Receptions, SepaRejectionReason, Users,
+    Wallet, WalletType};
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 
 class FeedsSfpmeiIncomingCommand extends ContainerAwareCommand
@@ -547,20 +544,13 @@ EOF
      */
     private function sendBorrowerRepaymentRejectionNotification(Receptions $wireTransferIn): void
     {
-        try {
-            $motive = '';
-            if ($wireTransferIn->getRejectionIsoCode() instanceof SepaRejectionReason) {
-                $motive = ' Motif: ' . $wireTransferIn->getRejectionIsoCode()->getIsoCode() . ' (*' . $wireTransferIn->getRejectionIsoCode()->getLabel() . '*)';
-            }
-
-            $slackManager = $this->getContainer()->get('unilend.service.slack_manager');
-            $slackManager->sendMessage('SFPMEI - *Rejet* - Projet: ' . $slackManager->getProjectName($wireTransferIn->getIdProject()) .
-                ' - La réception (ID: ' . $wireTransferIn->getIdReceptionRejected()->getIdReception() . ') *du ' . $wireTransferIn->getIdReceptionRejected()->getAdded()->format('d/m/Y') . '* a été rejetée.' . $motive);
-        } catch (\Exception $exception) {
-            $this->logger->warning(
-                'Could not send rejection notification message: ' . $exception->getMessage(),
-                ['id_reception_rejected' => $wireTransferIn->getIdReceptionRejected()->getIdReception(), 'id_project' => $wireTransferIn->getIdProject()->getIdProject(), 'file' => $exception->getFile(), 'line' => $exception->getLine()]
-            );
+        $motive = '';
+        if ($wireTransferIn->getRejectionIsoCode() instanceof SepaRejectionReason) {
+            $motive = ' Motif: ' . $wireTransferIn->getRejectionIsoCode()->getIsoCode() . ' (*' . $wireTransferIn->getRejectionIsoCode()->getLabel() . '*)';
         }
+
+        $slackManager = $this->getContainer()->get('unilend.service.slack_manager');
+        $slackManager->sendMessage('SFPMEI - *Rejet* - Projet: ' . $slackManager->getProjectName($wireTransferIn->getIdProject()) .
+            ' - La réception (ID: ' . $wireTransferIn->getIdReceptionRejected()->getIdReception() . ') *du ' . $wireTransferIn->getIdReceptionRejected()->getAdded()->format('d/m/Y') . '* a été rejetée.' . $motive);
     }
 }

@@ -4,9 +4,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AcceptedBids, Clients, Loans, UnderlyingContract, UnderlyingContractAttributeType
-};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{AcceptedBids, Clients, Loans, UnderlyingContract, UnderlyingContractAttributeType};
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\ContractAttributeManager;
 
 /**
@@ -47,9 +45,10 @@ class LoanManager
      * @param array              $acceptedBids
      * @param UnderlyingContract $contract
      *
+     * @throws \Doctrine\ORM\ORMException
      * @throws \Doctrine\ORM\OptimisticLockException
      */
-    public function create(array $acceptedBids, UnderlyingContract $contract)
+    public function create(array $acceptedBids, UnderlyingContract $contract): void
     {
         $loanAmount = 0;
         $interests  = 0;
@@ -74,6 +73,10 @@ class LoanManager
             //todo: check also if this is the only one loan to build for IFP (We can only have one IFP loan per project)
         }
 
+        $currentAcceptedTermsOfSale = $this->entityManager
+            ->getRepository('UnilendCoreBusinessBundle:AcceptationsLegalDocs')
+            ->findOneBy(['idClient' => $acceptedBids[0]->getIdBid()->getIdLenderAccount()->getIdClient()], ['added' => 'DESC']);
+
         $rate = round(bcdiv($interests, $loanAmount, 4), 1);
 
         $loan = new Loans();
@@ -83,7 +86,8 @@ class LoanManager
             ->setAmount($loanAmount)
             ->setRate($rate)
             ->setStatus(Loans::STATUS_ACCEPTED)
-            ->setIdTypeContract($contract);
+            ->setIdTypeContract($contract)
+            ->setIdAcceptationLegalDoc($currentAcceptedTermsOfSale);
 
         $this->entityManager->persist($loan);
         $this->entityManager->flush($loan);

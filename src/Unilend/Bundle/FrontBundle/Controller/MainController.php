@@ -250,21 +250,17 @@ class MainController extends Controller
      */
     public function lenderTermsOfSalesAction(?UserInterface $client, string $type = ''): Response
     {
-        /** @var EntityManagerSimulator $entityManager */
-        $entityManager = $this->get('unilend.service.entity_manager');
-        /** @var \settings $settings */
-        $settings = $entityManager->getRepository('settings');
-        $settings->get('Lien conditions generales inscription preteur particulier', 'type');
-
-        $idTree = $settings->value;
+        /** @var EntityManagerSimulator $entityManagerSimulator */
+        $entityManagerSimulator = $this->get('unilend.service.entity_manager');
+        $termsOfSaleManager     = $this->get('unilend.service.terms_of_sale_manager');
+        $idTree                 = $termsOfSaleManager->getCurrentVersionForPerson();
 
         if ($client instanceof Clients && false === $client->isNaturalPerson()) {
-            $settings->get('Lien conditions generales inscription preteur societe', 'type');
-            $idTree = $settings->value;
+            $idTree = $termsOfSaleManager->getCurrentVersionForLegalEntity();
         }
 
         /** @var \tree $tree */
-        $tree = $entityManager->getRepository('tree');
+        $tree = $entityManagerSimulator->getRepository('tree');
         $tree->get(['id_tree' => $idTree]);
         $this->setCmsSeoData($tree);
 

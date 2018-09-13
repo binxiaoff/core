@@ -748,11 +748,7 @@ class transfertsController extends bootstrap
                 $slackMessage = $slackManager->getProjectName($project) . ' - :warning: Une erreur est survenue lors du déblocage des fonds par  ' . $_SESSION['user']['firstname'] . ' ' . $_SESSION['user']['name'];
             }
 
-            try {
-                $slackManager->sendMessage($slackMessage);
-            } catch (\Exception $exception) {
-                $logger->error('Slack message for release funds failed. Error message : ' . $exception->getMessage());
-            }
+            $slackManager->sendMessage($slackMessage);
 
             header('Location: ' . $this->lurl . '/dossiers/edit/' . $project->getIdProject());
             die;

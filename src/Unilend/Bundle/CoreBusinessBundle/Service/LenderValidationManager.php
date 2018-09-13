@@ -216,7 +216,9 @@ class LenderValidationManager
 
         foreach ($duplicates as $idClient) {
             $clientToClose = $clientRepository->find($idClient);
-            $this->clientStatusManager->addClientStatus($clientToClose, $user->getIdUser(), ClientsStatus::STATUS_CLOSED_BY_UNILEND, 'Doublon avec client ID : ' . $client->getIdClient());
+            if ($clientToClose->isLender()) {
+                $this->clientStatusManager->addClientStatus($clientToClose, $user->getIdUser(), ClientsStatus::STATUS_CLOSED_BY_UNILEND, 'Doublon avec client ID : ' . $client->getIdClient());
+            }
         }
     }
 
