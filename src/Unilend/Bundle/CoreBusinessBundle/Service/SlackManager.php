@@ -62,7 +62,7 @@ class SlackManager
      *
      * @return bool
      */
-    public function sendMessage($message, $channel = null): bool
+    public function sendMessage(string $message, ?string $channel = null): bool
     {
         try {
             $payload = $this->apiClient->createMessage();

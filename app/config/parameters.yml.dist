@@ -126,7 +126,7 @@ parameters:
     slack.command_token:            u2AOiDVHg1WQQgL1MjZ83IQe
     slack.monitoring_channel:       '#it-monitoring'
     slack.default_username:         Unilend
-    slack.endpoint:                 'https://hooks.slack.com/services/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'
+    slack.endpoint:                 https://hooks.slack.com/services/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
 
     mailchimp.api_key:              8a4c593b992cc7e57cb343dd13c9c89b-us7
     mailchimp.webhook_secret:       16deb224527196c9eaae
