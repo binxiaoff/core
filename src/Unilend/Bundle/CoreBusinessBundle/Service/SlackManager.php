@@ -87,15 +87,12 @@ class SlackManager
     }
 
     /**
-     * @param \projects|Projects $project
+     * @param Projects $project
      *
      * @return string
      */
-    public function getProjectName($project)
+    public function getProjectName(Projects $project)
     {
-        if ($project instanceof \projects) {
-            $project = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($project->id_project);
-        }
         $title   = $project->getTitle();
         $backUrl = $this->backUrl . '/dossiers/edit/' . $project->getIdProject();
         $company = $project->getIdCompany();
