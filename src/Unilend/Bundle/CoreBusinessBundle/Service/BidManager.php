@@ -359,12 +359,15 @@ class BidManager
             $this->cipManager->isCIPValidationNeeded($bid)
             && false === $this->cipManager->hasValidEvaluation($bid->getIdLenderAccount()->getIdClient())
         ) {
-            $this->logger->warning('CIP validation is needed for a bid', [
-                'project_id' => $bid->getProject()->getIdProject(),
-                'lender_id'  => $bid->getIdLenderAccount()->getId(),
-                'amount'     => $bid->getAmount() / 100,
-                'rate'       => $bid->getRate()
-            ]);
+            // Do not log when placing initial autobids
+            if (empty($bid->getAutobid())) {
+                $this->logger->warning('CIP validation is needed for a bid', [
+                    'project_id' => $bid->getProject()->getIdProject(),
+                    'lender_id'  => $bid->getIdLenderAccount()->getId(),
+                    'amount'     => $bid->getAmount() / 100,
+                    'rate'       => $bid->getRate()
+                ]);
+            }
 
             throw new BidException('bids-cip-validation-needed');
         }
