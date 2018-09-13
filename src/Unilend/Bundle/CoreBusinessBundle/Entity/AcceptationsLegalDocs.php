@@ -8,7 +8,7 @@ use Doctrine\ORM\Mapping as ORM;
  * AcceptationsLegalDocs
  *
  * @ORM\Table(name="acceptations_legal_docs", indexes={@ORM\Index(name="id_client", columns={"id_client"})})
- * @ORM\Entity
+ * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\AcceptationLegalDocsRepository")
  * @ORM\HasLifecycleCallbacks
  */
 class AcceptationsLegalDocs
@@ -21,11 +21,11 @@ class AcceptationsLegalDocs
     private $idLegalDoc;
 
     /**
-     * @var integer
+     * @var string
      *
-     * @ORM\Column(name="id_client", type="integer", nullable=false)
+     * @ORM\Column(name="pdf_name", type="string", length=191, nullable=true)
      */
-    private $idClient;
+    private $pdfName;
 
     /**
      * @var \DateTime
@@ -42,6 +42,16 @@ class AcceptationsLegalDocs
     private $updated;
 
     /**
+     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Clients
+     *
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Clients")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_client", referencedColumnName="id_client")
+     * })
+     */
+    private $idClient;
+
+    /**
      * @var integer
      *
      * @ORM\Column(name="id_acceptation", type="integer")
@@ -50,16 +60,12 @@ class AcceptationsLegalDocs
      */
     private $idAcceptation;
 
-
-
     /**
-     * Set idLegalDoc
-     *
-     * @param integer $idLegalDoc
+     * @param int $idLegalDoc
      *
      * @return AcceptationsLegalDocs
      */
-    public function setIdLegalDoc($idLegalDoc)
+    public function setIdLegalDoc(int $idLegalDoc): AcceptationsLegalDocs
     {
         $this->idLegalDoc = $idLegalDoc;
 
@@ -67,23 +73,19 @@ class AcceptationsLegalDocs
     }
 
     /**
-     * Get idLegalDoc
-     *
-     * @return integer
+     * @return int
      */
-    public function getIdLegalDoc()
+    public function getIdLegalDoc(): int
     {
         return $this->idLegalDoc;
     }
 
     /**
-     * Set idClient
-     *
-     * @param integer $idClient
+     * @param Clients $idClient
      *
      * @return AcceptationsLegalDocs
      */
-    public function setIdClient($idClient)
+    public function setIdClient(Clients $idClient): AcceptationsLegalDocs
     {
         $this->idClient = $idClient;
 
@@ -91,23 +93,19 @@ class AcceptationsLegalDocs
     }
 
     /**
-     * Get idClient
-     *
-     * @return integer
+     * @return Clients
      */
-    public function getIdClient()
+    public function getIdClient(): Clients
     {
         return $this->idClient;
     }
 
     /**
-     * Set added
-     *
      * @param \DateTime $added
      *
      * @return AcceptationsLegalDocs
      */
-    public function setAdded($added)
+    public function setAdded(\DateTime $added): AcceptationsLegalDocs
     {
         $this->added = $added;
 
@@ -115,23 +113,19 @@ class AcceptationsLegalDocs
     }
 
     /**
-     * Get added
-     *
      * @return \DateTime
      */
-    public function getAdded()
+    public function getAdded(): \DateTime
     {
         return $this->added;
     }
 
     /**
-     * Set updated
-     *
-     * @param \DateTime $updated
+     * @param \DateTime|null $updated
      *
      * @return AcceptationsLegalDocs
      */
-    public function setUpdated($updated)
+    public function setUpdated(?\DateTime $updated): AcceptationsLegalDocs
     {
         $this->updated = $updated;
 
@@ -139,21 +133,17 @@ class AcceptationsLegalDocs
     }
 
     /**
-     * Get updated
-     *
-     * @return \DateTime
+     * @return \DateTime|null
      */
-    public function getUpdated()
+    public function getUpdated(): ?\DateTime
     {
         return $this->updated;
     }
 
     /**
-     * Get idAcceptation
-     *
      * @return integer
      */
-    public function getIdAcceptation()
+    public function getIdAcceptation(): int
     {
         return $this->idAcceptation;
     }
@@ -174,5 +164,26 @@ class AcceptationsLegalDocs
     public function setUpdatedValue()
     {
         $this->updated = new \DateTime();
+    }
+
+    /**
+     * @param string|null $pdfName
+     *
+     * @return AcceptationsLegalDocs
+     */
+    public function setPdfName(?string $pdfName): AcceptationsLegalDocs
+    {
+        $this->pdfName = $pdfName;
+
+        return $this;
+
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getPdfName(): ?string
+    {
+        return $this->pdfName;
     }
 }
