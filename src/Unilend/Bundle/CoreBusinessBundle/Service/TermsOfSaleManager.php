@@ -142,7 +142,7 @@ class TermsOfSaleManager
         if (false === empty($client)) {
             $termsOfUse = new AcceptationsLegalDocs();
             $termsOfUse->setIdLegalDoc($this->getCurrentVersionId($client));
-            $termsOfUse->setIdClient($client->getIdClient());
+            $termsOfUse->setIdClient($client);
 
             $this->entityManager->persist($termsOfUse);
             $this->entityManager->flush($termsOfUse);
