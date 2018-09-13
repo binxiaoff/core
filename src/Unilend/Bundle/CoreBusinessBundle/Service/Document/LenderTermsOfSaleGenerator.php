@@ -2,19 +2,19 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service\Document;
 
-use Doctrine\ORM\EntityManager;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{AcceptationsLegalDocs, AddressType, Elements, TreeElements, WalletType};
+use Doctrine\ORM\EntityManagerInterface;
 use Knp\Snappy\Pdf;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Asset\Packages;
 use Symfony\Component\Filesystem\Filesystem;
 use Twig\Environment;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{AcceptationsLegalDocs, AddressType, Elements, TreeElements, WalletType};
 
 class LenderTermsOfSaleGenerator implements DocumentGeneratorInterface
 {
     const PATH = 'pdf' . DIRECTORY_SEPARATOR . 'cgv_preteurs';
 
-    /** @var EntityManager */
+    /** @var EntityManagerInterface */
     private $entityManager;
     /** @var Filesystem */
     private $filesystem;
@@ -36,19 +36,19 @@ class LenderTermsOfSaleGenerator implements DocumentGeneratorInterface
     private $logger;
 
     /**
-     * @param EntityManager    $entityManager
-     * @param Filesystem       $filesystem
-     * @param string           $protectedPath
-     * @param string           $staticPath
-     * @param Environment      $twig
-     * @param Pdf              $snappy
-     * @param Packages         $assetsPackages
-     * @param \NumberFormatter $numberFormatter
-     * @param \NumberFormatter $currencyFormatter
-     * @param LoggerInterface  $logger
+     * @param EntityManagerInterface $entityManager
+     * @param Filesystem             $filesystem
+     * @param string                 $protectedPath
+     * @param string                 $staticPath
+     * @param Environment            $twig
+     * @param Pdf                    $snappy
+     * @param Packages               $assetsPackages
+     * @param \NumberFormatter       $numberFormatter
+     * @param \NumberFormatter       $currencyFormatter
+     * @param LoggerInterface        $logger
      */
     public function __construct(
-        EntityManager $entityManager,
+        EntityManagerInterface $entityManager,
         Filesystem $filesystem,
         string $protectedPath,
         string $staticPath,

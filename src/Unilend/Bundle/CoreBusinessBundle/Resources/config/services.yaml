@@ -13,6 +13,7 @@ services:
             $environment: '%kernel.environment%'
             $protectedPath: '%path.protected%'
             $wsClientLogger: '@monolog.logger.wsclient'
+            $staticPath: '%path.static%'
 
     Unilend\Bundle\CoreBusinessBundle\:
         resource: '%kernel.project_dir%/src/Unilend/Bundle/CoreBusinessBundle/*'
@@ -44,9 +45,6 @@ services:
         $merchantId: '%payline.merchant_id%'
         $accessKey: '%payline.access_key%'
         $logPath: '%path.payline%'
-
-    Unilend\Bundle\CoreBusinessBundle\Service\SlackManager:
-        $defaultChannel: '%slack.default_channel%'
 
     Unilend\Bundle\CoreBusinessBundle\Service\AttachmentManager:
         $uploadRootDirectory: '%path.protected%attachments'
