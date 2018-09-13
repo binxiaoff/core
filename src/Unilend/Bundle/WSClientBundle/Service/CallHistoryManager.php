@@ -2,7 +2,6 @@
 
 namespace Unilend\Bundle\WSClientBundle\Service;
 
-use CL\Slack\Payload\PayloadResponseInterface;
 use Doctrine\Bundle\MongoDBBundle\ManagerRegistry;
 use Doctrine\ODM\MongoDB\Query\Builder;
 use Doctrine\ORM\{EntityManagerInterface, ORMException};
@@ -183,34 +182,15 @@ class CallHistoryManager
             return;
         }
 
-        try {
-            $response = $this->slackManager->sendMessage($slackMessage, $this->alertChannel);
+        $response = $this->slackManager->sendMessage($slackMessage, $this->alertChannel);
 
-            if (false === $response instanceof PayloadResponseInterface) {
-                $this->logger->warning('Could not send Slack notification for ' . $wsResource->getLabel() . ' monitoring. Empty payload', [
-                    'provider' => $wsResource->getProviderName(),
-                    'resource' => $wsResource->getResourceName(),
-                    'class'    => __CLASS__,
-                    'function' => __FUNCTION__
-                ]);
-            } elseif (false === $response->isOk()) {
-                $this->logger->warning('Could not send Slack notification for ' . $wsResource->getLabel() . ' monitoring. Error: ' . $response->getError(), [
-                    'provider' => $wsResource->getProviderName(),
-                    'resource' => $wsResource->getResourceName(),
-                    'class'    => __CLASS__,
-                    'function' => __FUNCTION__
-                ]);
-            }
-        } catch (\Exception $exception) {
-            $this->logger->error('Unable to send Slack notification for ' . $wsResource->getLabel() . ' monitoring. Exception: ' . $exception->getMessage(), [
+        if (false === $response) {
+            $this->logger->warning('Could not send Slack notification for ' . $wsResource->getLabel() . ' monitoring', [
                 'provider' => $wsResource->getProviderName(),
                 'resource' => $wsResource->getResourceName(),
                 'class'    => __CLASS__,
-                'function' => __FUNCTION__,
-                'file'     => $exception->getFile(),
-                'line'     => $exception->getLine()
+                'function' => __FUNCTION__
             ]);
-            unset($exception);
         }
     }
 

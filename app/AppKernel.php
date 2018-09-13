@@ -27,7 +27,6 @@ class AppKernel extends Kernel
             new Ekino\Bundle\NewRelicBundle\EkinoNewRelicBundle(),
             new Sonata\CacheBundle\SonataCacheBundle(),
             new Knp\Bundle\MailjetBundle\KnpMailjetBundle(),
-            new CL\Bundle\SlackBundle\CLSlackBundle(),
             new Doctrine\Bundle\MongoDBBundle\DoctrineMongoDBBundle(),
             new Unilend\Bundle\StoreBundle\UnilendStoreBundle(),
             new JMS\SerializerBundle\JMSSerializerBundle(),
@@ -36,6 +35,8 @@ class AppKernel extends Kernel
             new RobertoTru\ToInlineStyleEmailBundle\RobertoTruToInlineStyleEmailBundle(),
             new Welp\MailchimpBundle\WelpMailchimpBundle(),
             new Doctrine\Bundle\MigrationsBundle\DoctrineMigrationsBundle(),
+            new Http\HttplugBundle\HttplugBundle(),
+            new Nexy\SlackBundle\NexySlackBundle(),
         ];
 
         if (in_array($this->getEnvironment(), ['dev', 'test'], true)) {
