@@ -118,6 +118,7 @@ parameters:
 
     security.bcrypt.cost:           13
 
+    new_relic.api_key:              edc37da0a36bfd74eded96d4d454c8f7b4b0ab8d4bce97e
     new_relic.front_app_name:       Unilend-front
     new_relic.back_app_name:        Unilend-backoffice
     new_relic.console_app_name:     Unilend-batchjobs

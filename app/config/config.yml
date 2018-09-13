@@ -284,7 +284,15 @@ knp_snappy:
             - { name: 'encoding', value : 'UTF-8'}
 
 ekino_new_relic:
-    enabled: false
+    application_name: "%new_relic.front_app_name%"
+    api_key: "%new_relic.api_key%"
+    instrument: true
+    deprecations: false
+    http:
+        using_symfony_cache: true
+    monolog:
+        enabled: true
+        channels: ~
 
 sonata_cache:
     caches:

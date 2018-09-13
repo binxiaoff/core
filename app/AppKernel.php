@@ -24,7 +24,7 @@ class AppKernel extends Kernel
             new Xynnn\GoogleTagManagerBundle\GoogleTagManagerBundle(),
             new Sonata\SeoBundle\SonataSeoBundle(),
             new Knp\Bundle\SnappyBundle\KnpSnappyBundle(),
-            new Ekino\Bundle\NewRelicBundle\EkinoNewRelicBundle(),
+            new Ekino\NewRelicBundle\EkinoNewRelicBundle(),
             new Sonata\CacheBundle\SonataCacheBundle(),
             new Knp\Bundle\MailjetBundle\KnpMailjetBundle(),
             new CL\Bundle\SlackBundle\CLSlackBundle(),
