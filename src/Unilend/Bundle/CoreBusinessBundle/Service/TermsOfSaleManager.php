@@ -18,6 +18,7 @@ class TermsOfSaleManager
 
     const SETTING_TYPE_LENDER_TOS_LEGAL_ENTITY   = 'Lien conditions generales inscription preteur societe';
     const SETTING_TYPE_LENDER_TOS_NATURAL_PERSON = 'Lien conditions generales inscription preteur particulier';
+    const SETTING_TYPE_DATE_LENDER_TOS           = 'Date nouvelles CGV avec 2 mandats';
     const SETTING_TYPE_BORROWER_TOS              = 'Lien conditions generales depot dossier';
 
     /** @var EntityManager */
@@ -129,6 +130,19 @@ class TermsOfSaleManager
             ->getRepository('UnilendCoreBusinessBundle:Settings')
              ->findOneBy(['type' => self::SETTING_TYPE_LENDER_TOS_LEGAL_ENTITY])
              ->getValue();
+    }
+
+    /**
+     * @return \DateTime
+     */
+    public function getDateOfNewTermsOfService(): \DateTime
+    {
+        $setting = $this->entityManager
+            ->getRepository('UnilendCoreBusinessBundle:Settings')
+            ->findOneBy(['type' => self::SETTING_TYPE_DATE_LENDER_TOS])
+            ->getValue();
+
+        return new \DateTime($setting);
     }
 
     /**

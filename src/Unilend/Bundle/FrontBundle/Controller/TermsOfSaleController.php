@@ -7,10 +7,14 @@ use Psr\Log\LoggerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\HttpFoundation\{BinaryFileResponse, Request, Response};
-use Unilend\Bundle\CoreBusinessBundle\Entity\{AcceptationsLegalDocs, Tree};
+use Symfony\Component\HttpFoundation\{BinaryFileResponse, JsonResponse, Request, Response};
+use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Translation\TranslatorInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{AcceptationsLegalDocs, Clients, Tree, WalletType};
 use Unilend\Bundle\CoreBusinessBundle\Service\Document\LenderTermsOfSaleGenerator;
-use Unilend\Bundle\CoreBusinessBundle\Service\TermsOfSaleManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\{NewsletterManager, TermsOfSaleManager};
+use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
+use Unilend\Bundle\FrontBundle\Service\SeoManager;
 
 class TermsOfSaleController extends Controller
 {
@@ -23,31 +27,53 @@ class TermsOfSaleController extends Controller
 
     const ROUTE_PARAMETER_LEGAL_ENTITY = 'morale';
 
-    /** @var LoggerInterface  */
-    private $logger;
     /** @var EntityManagerInterface */
     private $entityManager;
     /** @var LenderTermsOfSaleGenerator */
     private $lenderTermsOfSaleGenerator;
     /** @var TermsOfSaleManager */
     private $termsOfSaleManager;
+    /** @var LoggerInterface  */
+    private $logger;
+
+    /**
+     * @param EntityManagerInterface     $entityManager
+     * @param LenderTermsOfSaleGenerator $lenderTermsOfSaleGenerator
+     * @param TermsOfSaleManager         $termsOfSaleManager
+     * @param LoggerInterface            $logger
+     */
+    public function __construct(
+        EntityManagerInterface $entityManager,
+        LenderTermsOfSaleGenerator $lenderTermsOfSaleGenerator,
+        TermsOfSaleManager $termsOfSaleManager,
+        LoggerInterface $logger
+    )
+    {
+        $this->entityManager              = $entityManager;
+        $this->termsOfSaleManager         = $termsOfSaleManager;
+        $this->lenderTermsOfSaleGenerator = $lenderTermsOfSaleGenerator;
+        $this->logger                     = $logger;
+    }
 
     /**
      * @Route("/pdf/cgv/{clientHash}/{idTree}", name="lender_terms_of_sale_pdf", requirements={"clientHash": "[0-9a-f-]{32,36}", "idTree": "\d+"})
      * @Security("has_role('ROLE_LENDER')")
      *
-     * @param string $clientHash
-     * @param int    $idTree
+     * @param UserInterface|Clients|null $client
+     * @param string                     $clientHash
+     * @param int                        $idTree
      *
      * @return Response
      */
-    public function lenderTermsOfSaleDownloadAction(string $clientHash, int $idTree)
+    public function lenderTermsOfSaleDownloadAction(?UserInterface $client, string $clientHash, int $idTree, TranslatorInterface $translator)
     {
-        //TODO create constructor once TECH-494 is merged
-        $this->logger                     = $this->get('logger');
-        $this->entityManager              = $this->get('doctrine.orm.entity_manager');
-        $this->lenderTermsOfSaleGenerator = $this->get(LenderTermsOfSaleGenerator::class);
-        $this->termsOfSaleManager         = $this->get('unilend.service.terms_of_sale_manager');
+        if ($client instanceof Clients && $client->getHash() !== $clientHash) {
+            return $this->getTermsOfSaleErrorResponse($translator, self::ERROR_ACCESS_DENIED, $idTree);
+        }
+
+        if ($client->isInSubscription()) {
+            $this->redirectToRoute('lender_subscription_personal_information');
+        }
 
         /** @var Tree $termsOfSalesTree */
         $termsOfSalesTree = $this->entityManager
@@ -55,26 +81,8 @@ class TermsOfSaleController extends Controller
             ->findBy(['idTree' => $idTree]);
 
         if (null === $termsOfSalesTree) {
-            return $this->getTermsOfSaleResponse(self::ERROR_CANNOT_FIND_TOS, $idTree);
+            return $this->getTermsOfSaleErrorResponse($translator, self::ERROR_CANNOT_FIND_TOS, $idTree);
         }
-
-        $client = $this->entityManager
-            ->getRepository('UnilendCoreBusinessBundle:Clients')
-            ->findOneBy(['hash' => $clientHash]);
-
-        if (null === $client) {
-            return $this->getTermsOfSaleResponse(self::ERROR_CANNOT_FIND_CLIENT, $idTree);
-        }
-
-        //TODO compare user and client once clientrefacto has been merged
-//        if ($user->getClientId() !== $loan->getIdLender()->getIdClient()->getIdClient()) {
-//            return $this->getLoanErrorResponse(self::ERROR_ACCESS_DENIED, $loan);
-//        }
-
-//        if (ClientsStatus::STATUS_TO_BE_CHECKED > $user->getClientStatus()) {
-//            header('Location: ' . $this->lurl . '/inscription-preteurs');
-//            exit;
-//        }
 
         /** @var AcceptationsLegalDocs $acceptedTos */
         $acceptedTos = $this->entityManager
@@ -82,7 +90,7 @@ class TermsOfSaleController extends Controller
             ->findOneBy(['idClient' => $client, 'idLegalDoc' => $idTree]);
 
         if (null === $acceptedTos) {
-            return $this->getTermsOfSaleResponse(self::ERROR_CANNOT_FIND_ACCEPTED_TOS, $idTree);
+            return $this->getTermsOfSaleErrorResponse($translator, self::ERROR_CANNOT_FIND_ACCEPTED_TOS, $idTree);
         }
 
         try {
@@ -92,7 +100,7 @@ class TermsOfSaleController extends Controller
 
             $filePath = $this->lenderTermsOfSaleGenerator->getPath($acceptedTos);
         } catch (\Exception $exception) {
-            return $this->getTermsOfSaleResponse(self::ERROR_EXCEPTION_OCCURRED, $acceptedTos, $exception);
+            return $this->getTermsOfSaleErrorResponse($translator, self::ERROR_EXCEPTION_OCCURRED, $idTree, $acceptedTos, $exception);
         }
 
         return new BinaryFileResponse($filePath, 200, [
@@ -105,32 +113,38 @@ class TermsOfSaleController extends Controller
     /**
      * @Route("/cgv_preteurs/{type}", name="lenders_terms_of_sales", requirements={"type": "morale"})
      *
-     * @param string $type
+     * @param UserInterface|Clients|null $client
+     * @param SeoManager                 $seoManager
+     * @param string                     $type
      *
      * @return Response
      */
-    public function lenderTermsOfSalesAction(string $type = ''): Response
+    public function lenderTermsOfSalesAction(SeoManager $seoManager, ?UserInterface $client, string $type = ''): Response
     {
-        //TODO create constructor once TECH-494 is merged
-        $this->termsOfSaleManager = $this->get('unilend.service.terms_of_sale_manager');
-        $this->entityManager      = $this->get('doctrine.orm.entity_manager');
+        $idTree = $this->termsOfSaleManager->getCurrentVersionForPerson();
 
-        //TODO check if lender is connected then redirect to PDF download once TECH-108 is merged
-
-        if ($type === self::ROUTE_PARAMETER_LEGAL_ENTITY) {
+        if ($type ===  self::ROUTE_PARAMETER_LEGAL_ENTITY) {
             $idTree = $this->termsOfSaleManager->getCurrentVersionForLegalEntity();
-        } else {
-            $idTree = $this->termsOfSaleManager->getCurrentVersionForPerson();
+        }
+
+        if ($client instanceof Clients) {
+            $accepted = $this->entityManager
+                ->getRepository('UnilendCoreBusinessBundle:AcceptationsLegalDocs')
+                ->findOneBy(['idClient' => $client], ['added' => 'DESC']);
+
+            if ($accepted->getIdLegalDoc() === $idTree) {
+                $this->redirectToRoute('lender_terms_of_sale_pdf', ['clientHash' => $client->getHash(), 'idTree' => $accepted->getIdLegalDoc()]);
+            }
         }
 
         $tree = $this->entityManager
             ->getRepository('UnilendCoreBusinessBundle:Tree')
             ->findOneBy(['idTree' => $idTree]);
 
-        $this->get('unilend.frontbundle.seo_manager')->setCmsSeoData($tree);
+        $seoManager->setCmsSeoData($tree);
 
-        $content = $this->get(LenderTermsOfSaleGenerator::class)->getNonPersonalizedContent($tree->getIdTree(), $type);
-        $cms  = [
+        $content = $this->lenderTermsOfSaleGenerator->getNonPersonalizedContent($tree->getIdTree(), $type);
+        $cms     = [
             'title'         => $tree->getTitle(),
             'header_image'  => $tree->getImgMenu(),
             'left_content'  => '',
@@ -141,6 +155,7 @@ class TermsOfSaleController extends Controller
     }
 
     /**
+     * @param TranslatorInterface        $translator
      * @param string                     $error
      * @param int                        $idTree
      * @param AcceptationsLegalDocs|null $acceptedTermsOfSale
@@ -148,7 +163,13 @@ class TermsOfSaleController extends Controller
      *
      * @return Response
      */
-    private function getTermsOfSaleResponse(string $error, int $idTree, ?AcceptationsLegalDocs $acceptedTermsOfSale = null, ?\Exception $exception = null): Response
+    private function getTermsOfSaleErrorResponse(
+        TranslatorInterface $translator,
+        string $error,
+        int $idTree,
+        ?AcceptationsLegalDocs $acceptedTermsOfSale = null,
+        ?\Exception $exception = null
+    ): Response
     {
         $context = [];
 
@@ -187,9 +208,7 @@ class TermsOfSaleController extends Controller
                 break;
         }
 
-        $this->get('logger')->error($message, $context);
-
-        $translator = $this->get('translator');
+        $this->logger->error($message, $context);
 
         return $this->render('exception/error.html.twig', [
             'errorTitle'   => $translator->trans('tos-pdf-download_' . $error . '-error-title'),
@@ -202,17 +221,15 @@ class TermsOfSaleController extends Controller
      * @Route("/cgv-popup", name="lender_tos_popup", condition="request.isXmlHttpRequest()")
      * @Security("has_role('ROLE_LENDER')")
      *
-     * @param Request $request
+     * @param Request                    $request
+     * @param UserInterface|Clients|null $client
+     * @param EntityManagerSimulator     $entityManagerSimulator
+     * @param NewsletterManager          $newsletterManager
      *
      * @return JsonResponse|Response
      */
-    public function lastTermsOfServiceAction(Request $request): Response
+    public function lastTermsOfServiceAction(Request $request, ?UserInterface $client, EntityManagerSimulator $entityManagerSimulator, NewsletterManager $newsletterManager): Response
     {
-        $entityManager          = $this->get('doctrine.orm.entity_manager');
-        $entityManagerSimulator = $this->get('unilend.service.entity_manager');
-        /** @var UserLender $user */
-        $user            = $this->getUser();
-        $client          = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($user->getClientId());
         $tosDetails      = '';
         $newsletterOptIn = true;
 
@@ -225,12 +242,12 @@ class TermsOfSaleController extends Controller
                 $acceptationsTos = $entityManagerSimulator->getRepository('acceptations_legal_docs');
 
                 if ($acceptationsTos->exist($client->getIdClient(), 'id_client')) {
-                    $wallet                = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client->getIdClient(), WalletType::LENDER);
-                    $newTermsOfServiceDate = $entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Date nouvelles CGV avec 2 mandats'])->getValue();
+                    $wallet                = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client->getIdClient(), WalletType::LENDER);
+                    $newTermsOfServiceDate = $this->termsOfSaleManager->getDateOfNewTermsOfService();
                     /** @var \loans $loans */
                     $loans = $entityManagerSimulator->getRepository('loans');
 
-                    if (0 < $loans->counter('id_lender = ' . $wallet->getId() . ' AND added < "' . $newTermsOfServiceDate . '"')) {
+                    if (0 < $loans->counter('id_lender = ' . $wallet->getId() . ' AND added < "' . $newTermsOfServiceDate->format('Y-m-d H:i:s') . '"')) {
                         $elementSlug = 'tos-update-lended';
                     } else {
                         $elementSlug = 'tos-update';
@@ -247,16 +264,16 @@ class TermsOfSaleController extends Controller
                     if ($blockElement->get($elements->id_element, 'id_element')) {
                         $tosDetails = $blockElement->value;
                     } else {
-                        $this->get('logger')->error('The block element ID: ' . $elements->id_element . ' doesn\'t exist');
+                        $this->logger->error('The block element ID: ' . $elements->id_element . ' doesn\'t exist');
                     }
                 } else {
-                    $this->get('logger')->error('The element slug: ' . $elementSlug . ' doesn\'t exist');
+                    $this->logger->error('The element slug: ' . $elementSlug . ' doesn\'t exist');
                 }
             } elseif ($request->isMethod(Request::METHOD_POST)) {
                 if ('true' === $request->request->get('terms')) {
                     try {
-                        $this->get('unilend.service.terms_of_sale_manager')->acceptCurrentVersion($client);
-                    } catch (OptimisticLockException $exception) {
+                        $this->termsOfSaleManager->acceptCurrentVersion($client);
+                    } catch (\Exception $exception) {
                         $this->get('logger')->error('TOS could not be accepted by lender ' . $client->getIdClient() . ' - Message: ' . $exception->getMessage(), [
                             'id_client' => $client->getIdClient(),
                             'class'     => __CLASS__,
@@ -269,9 +286,9 @@ class TermsOfSaleController extends Controller
 
                 if ($newsletterOptIn) {
                     if ('true' === $request->request->get('newsletterOptIn')) {
-                        $this->get(NewsletterManager::class)->subscribeNewsletter($client, $request->getClientIp());
+                        $newsletterManager->subscribeNewsletter($client, $request->getClientIp());
                     } else {
-                        $this->get(NewsletterManager::class)->unsubscribeNewsletter($client, $request->getClientIp());
+                        $newsletterManager->unsubscribeNewsletter($client, $request->getClientIp());
                     }
                 }
 

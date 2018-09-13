@@ -9,6 +9,7 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\Asset\Packages;
 use Symfony\Component\Filesystem\Filesystem;
 use Twig\Environment;
+use Unilend\Bundle\CoreBusinessBundle\Service\TermsOfSaleManager;
 
 class LenderTermsOfSaleGenerator implements DocumentGeneratorInterface
 {
@@ -37,6 +38,8 @@ class LenderTermsOfSaleGenerator implements DocumentGeneratorInterface
 
     /** @var EntityManager */
     private $entityManager;
+    /** @var TermsOfSaleManager */
+    private $termsOfSaleManager;
     /** @var Filesystem */
     private $filesystem;
     /** @var string */
@@ -57,19 +60,21 @@ class LenderTermsOfSaleGenerator implements DocumentGeneratorInterface
     private $logger;
 
     /**
-     * @param EntityManager    $entityManager
-     * @param Filesystem       $filesystem
-     * @param string           $protectedPath
-     * @param string           $staticPath
-     * @param Environment      $twig
-     * @param Pdf              $snappy
-     * @param Packages         $assetsPackages
-     * @param \NumberFormatter $numberFormatter
-     * @param \NumberFormatter $currencyFormatter
-     * @param LoggerInterface  $logger
+     * @param EntityManager      $entityManager
+     * @param TermsOfSaleManager $termsOfSaleManager
+     * @param Filesystem         $filesystem
+     * @param string             $protectedPath
+     * @param string             $staticPath
+     * @param Environment        $twig
+     * @param Pdf                $snappy
+     * @param Packages           $assetsPackages
+     * @param \NumberFormatter   $numberFormatter
+     * @param \NumberFormatter   $currencyFormatter
+     * @param LoggerInterface    $logger
      */
     public function __construct(
         EntityManager $entityManager,
+        TermsOfSaleManager $termsOfSaleManager,
         Filesystem $filesystem,
         string $protectedPath,
         string $staticPath,
@@ -81,16 +86,17 @@ class LenderTermsOfSaleGenerator implements DocumentGeneratorInterface
         LoggerInterface $logger
     )
     {
-        $this->entityManager     = $entityManager;
-        $this->filesystem        = $filesystem;
-        $this->protectedPath     = $protectedPath;
-        $this->staticPath        = $staticPath;
-        $this->twig              = $twig;
-        $this->snappy            = $snappy;
-        $this->staticUrl         = $assetsPackages->getUrl('');
-        $this->numberFormatter   = $numberFormatter;
-        $this->currencyFormatter = $currencyFormatter;
-        $this->logger            = $logger;
+        $this->entityManager      = $entityManager;
+        $this->termsOfSaleManager = $termsOfSaleManager;
+        $this->filesystem         = $filesystem;
+        $this->protectedPath      = $protectedPath;
+        $this->staticPath         = $staticPath;
+        $this->twig               = $twig;
+        $this->snappy             = $snappy;
+        $this->staticUrl          = $assetsPackages->getUrl('');
+        $this->numberFormatter    = $numberFormatter;
+        $this->currencyFormatter  = $currencyFormatter;
+        $this->logger             = $logger;
 
         $this->snappy->setBinary('/usr/local/bin/wkhtmltopdf');
     }
@@ -186,8 +192,7 @@ class LenderTermsOfSaleGenerator implements DocumentGeneratorInterface
             throw new \InvalidArgumentException('Client is no lender');
         }
 
-        $newTermsOfServiceDateSetting = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Date nouvelles CGV avec 2 mandats']);
-        $newTermsOfServiceDate        = new \DateTime($newTermsOfServiceDateSetting->getValue());
+        $newTermsOfServiceDate        = $this->termsOfSaleManager->getDateOfNewTermsOfService();
         $wallet                       = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($acceptedLegalDoc->getIdClient(), WalletType::LENDER);
         $loansCount                   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Loans')->getCountLoansForLenderBeforeDate($wallet, $newTermsOfServiceDate);
 
