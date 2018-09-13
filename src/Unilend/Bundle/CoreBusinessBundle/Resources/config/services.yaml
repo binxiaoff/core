@@ -4,7 +4,7 @@ services:
         autoconfigure: true
         public: false
         bind:
-            $rootDir: '%kernel.root_dir%'
+            $rootDirectory: '%kernel.root_dir%'
             $frontUrl: '%router.request_context.scheme%://%url.host_default%'
             $adminUrl: '%router.request_context.scheme%://%url.host_admin%'
             $numberFormatter: '@number_formatter'
@@ -60,20 +60,20 @@ services:
         public: true
         class: \NumberFormatter
         arguments:
-        - '%locale%'
-        - !php/const \NumberFormatter::CURRENCY
+            - '%locale%'
+            - !php/const \NumberFormatter::CURRENCY
 
     number_formatter:
         public: true
         class: \NumberFormatter
         arguments:
-        - '%locale%'
-        - !php/const \NumberFormatter::DEFAULT_STYLE
+            - '%locale%'
+            - !php/const \NumberFormatter::DEFAULT_STYLE
 
     date_formatter:
         public: true
         class: \IntlDateFormatter
         arguments:
-        - '%locale%'
-        - !php/const \IntlDateFormatter::MEDIUM
-        - !php/const \IntlDateFormatter::SHORT
+            - '%locale%'
+            - !php/const \IntlDateFormatter::MEDIUM
+            - !php/const \IntlDateFormatter::SHORT

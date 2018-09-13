@@ -34,7 +34,7 @@ class TermsOfSaleManager
      * @param MailerManager          $mailerManager
      * @param TokenStorageInterface  $tokenStorage
      * @param RequestStack           $requestStack
-     * @param string                 $rootDir
+     * @param string                 $rootDirectory
      * @param string                 $defaultLocale
      */
     public function __construct(
@@ -42,7 +42,7 @@ class TermsOfSaleManager
         MailerManager $mailerManager,
         TokenStorageInterface $tokenStorage,
         RequestStack $requestStack,
-        string $rootDir,
+        string $rootDirectory,
         string $defaultLocale
     )
     {
@@ -50,7 +50,7 @@ class TermsOfSaleManager
         $this->mailerManager = $mailerManager;
         $this->tokenStorage  = $tokenStorage;
         $this->requestStack  = $requestStack;
-        $this->rootDirectory = $rootDir;
+        $this->rootDirectory = $rootDirectory;
         $this->locale        = $defaultLocale;
     }
 

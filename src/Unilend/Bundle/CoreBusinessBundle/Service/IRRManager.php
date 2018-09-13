@@ -44,7 +44,7 @@ class IRRManager
     /** @var EntityManagerSimulator  */
     private $entityManagerSimulator;
 
-    /** @var  EntityManagerInterface */
+    /** @var EntityManagerInterface */
     private $entityManager;
 
     /**

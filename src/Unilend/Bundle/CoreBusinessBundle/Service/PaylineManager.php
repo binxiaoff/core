@@ -44,8 +44,6 @@ class PaylineManager
     private $logger;
 
     /**
-     * PaylineManager constructor.
-     *
      * @param EntityManagerInterface  $entityManager
      * @param TemplateMessageProvider $messageProvider
      * @param \Swift_Mailer           $mailer

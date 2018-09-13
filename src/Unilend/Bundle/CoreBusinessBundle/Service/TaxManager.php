@@ -38,8 +38,6 @@ class TaxManager
     private $entityManager;
 
     /**
-     * TaxManager constructor.
-     *
      * @param EntityManagerSimulator $entityManagerSimulator
      * @param EntityManagerInterface $entityManager
      */

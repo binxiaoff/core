@@ -24,7 +24,7 @@ abstract class ProductManager
     protected $productAttributeManager;
     /** @var ContractManager */
     protected $contractManager;
-    /** @var  EntityManagerInterface */
+    /** @var EntityManagerInterface */
     protected $entityManager;
 
     /**

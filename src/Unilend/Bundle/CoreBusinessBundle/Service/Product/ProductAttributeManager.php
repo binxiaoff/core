@@ -15,7 +15,7 @@ class ProductAttributeManager
     protected $cachePool;
 
     /**
-     * @param EntityManagerInterface          $entityManager
+     * @param EntityManagerInterface $entityManager
      * @param CacheItemPoolInterface $cachePool
      */
     public function __construct(EntityManagerInterface $entityManager, CacheItemPoolInterface $cachePool)

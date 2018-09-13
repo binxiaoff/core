@@ -25,8 +25,6 @@ class SalesforceManager
     private $configDir;
 
     /**
-     * SalesForceManager constructor.
-     *
      * @param EntityManagerSimulator $entityManagerSimulator
      * @param EntityManagerInterface $entityManager
      * @param                        $extractionDir

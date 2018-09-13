@@ -21,9 +21,9 @@ class BankAccountManager
 
     /**
      * @param EntityManagerInterface $entityManager
-     * @param LenderManager      $lenderManager
-     * @param LoggerInterface    $logger
-     * @param ValidatorInterface $validator
+     * @param LenderManager          $lenderManager
+     * @param LoggerInterface        $logger
+     * @param ValidatorInterface     $validator
      */
     public function __construct(
         EntityManagerInterface $entityManager,

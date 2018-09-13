@@ -40,7 +40,7 @@ class StatisticsManager
 
     /** @var EntityManagerSimulator */
     private $entityManagerSimulator;
-    /** @var  EntityManagerInterface */
+    /** @var EntityManagerInterface */
     private $entityManager;
     /** @var IRRManager */
     private $IRRManager;

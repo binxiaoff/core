@@ -20,8 +20,6 @@ class ClientVigilanceStatusManager
     private $entityManager;
 
     /**
-     * VigilanceRuleManager constructor.
-     *
      * @param EntityManagerInterface $entityManager
      */
     public function __construct(EntityManagerInterface $entityManager)

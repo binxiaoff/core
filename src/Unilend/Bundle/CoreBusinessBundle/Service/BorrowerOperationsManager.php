@@ -24,8 +24,6 @@ class BorrowerOperationsManager
     private $logger;
 
     /**
-     * BorrowerOperationsManager constructor.
-     *
      * @param EntityManagerInterface $entityManager
      * @param TranslatorInterface    $translator
      * @param LoggerInterface        $logger

@@ -10,7 +10,7 @@ class NotificationManager
 {
     /** @var MailerManager */
     private $mailerManager;
-    /** @var  EntityManagerInterface */
+    /** @var EntityManagerInterface */
     private $entityManager;
     /** @var EntityManagerSimulator */
     private $entityManagerSimulator;

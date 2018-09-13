@@ -37,8 +37,6 @@ class ProjectPaymentManager
     private $projectChargeManager;
 
     /**
-     * ProjectRepaymentManager constructor.
-     *
      * @param EntityManagerInterface       $entityManager
      * @param EntityManagerSimulator       $entityManagerSimulator
      * @param ProjectRepaymentTaskManager  $projectRepaymentTaskManager

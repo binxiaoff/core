@@ -23,8 +23,6 @@ class ProjectRepaymentTaskManager
     private $workingDaysManager;
 
     /**
-     * ProjectRepaymentTaskManager constructor.
-     *
      * @param EntityManagerInterface             $entityManager
      * @param ProjectRepaymentNotificationSender $projectRepaymentNotificationSender
      * @param LoggerInterface                    $logger

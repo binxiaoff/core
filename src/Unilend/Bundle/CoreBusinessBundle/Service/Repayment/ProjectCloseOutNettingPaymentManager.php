@@ -32,8 +32,6 @@ class ProjectCloseOutNettingPaymentManager
     private $projectChargeManager;
 
     /**
-     * ProjectRepaymentManager constructor.
-     *
      * @param EntityManagerInterface       $entityManager
      * @param ProjectRepaymentTaskManager  $projectRepaymentTaskManager
      * @param DebtCollectionMissionManager $debtCollectionMissionManager

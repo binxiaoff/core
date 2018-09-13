@@ -29,16 +29,16 @@ class AttachmentManager
      * @param Filesystem             $filesystem
      * @param string                 $uploadRootDirectory
      * @param string                 $tmpDirectory
-     * @param string                 $rootDir
+     * @param string                 $rootDirectory
      * @param LoggerInterface        $logger
      */
-    public function __construct(EntityManagerInterface $entityManager, Filesystem $filesystem, string $uploadRootDirectory, string $tmpDirectory, string $rootDir, LoggerInterface $logger)
+    public function __construct(EntityManagerInterface $entityManager, Filesystem $filesystem, string $uploadRootDirectory, string $tmpDirectory, string $rootDirectory, LoggerInterface $logger)
     {
         $this->entityManager       = $entityManager;
         $this->filesystem          = $filesystem;
         $this->uploadRootDirectory = $uploadRootDirectory;
         $this->tmpDirectory        = $tmpDirectory;
-        $this->rootDirectory       = $rootDir;
+        $this->rootDirectory       = $rootDirectory;
         $this->logger              = $logger;
     }
 
