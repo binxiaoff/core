@@ -159,7 +159,7 @@ class LenderTermsOfSaleGenerator implements DocumentGeneratorInterface
      * @throws \Exception
      * @throws \Doctrine\ORM\NonUniqueResultException
      */
-    public function getPersonalizedContent(AcceptationsLegalDocs $acceptedLegalDoc): array
+    private function getPersonalizedContent(AcceptationsLegalDocs $acceptedLegalDoc): array
     {
         if (false === $acceptedLegalDoc->getIdClient()->isLender()) {
             throw new \InvalidArgumentException('Client is no lender');
