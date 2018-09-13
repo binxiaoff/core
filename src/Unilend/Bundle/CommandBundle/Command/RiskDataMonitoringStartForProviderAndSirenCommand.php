@@ -6,9 +6,7 @@ use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Unilend\Bundle\CoreBusinessBundle\Service\RiskDataMonitoring\AltaresManager;
-use Unilend\Bundle\CoreBusinessBundle\Service\RiskDataMonitoring\EulerHermesManager;
-use Unilend\Bundle\CoreBusinessBundle\Service\RiskDataMonitoring\MonitoringManger;
+use Unilend\Bundle\CoreBusinessBundle\Service\RiskDataMonitoring\{AltaresManager, EulerHermesManager, MonitoringManager};
 
 class RiskDataMonitoringStartForProviderAndSirenCommand extends ContainerAwareCommand
 {
@@ -46,8 +44,8 @@ class RiskDataMonitoringStartForProviderAndSirenCommand extends ContainerAwareCo
         $siren    = $input->getArgument('siren');
         $shortTerm = $input->getArgument('short_term');
 
-        if (false === in_array($provider, MonitoringManger::PROVIDERS)) {
-            $output->writeln('<error>Provider is not supported. It can be one of the following: ' . implode(',', MonitoringManger::PROVIDERS) . '</error>');
+        if (false === in_array($provider, MonitoringManager::PROVIDERS)) {
+            $output->writeln('<error>Provider is not supported. It can be one of the following: ' . implode(',', MonitoringManager::PROVIDERS) . '</error>');
 
             return;
         }
@@ -58,10 +56,9 @@ class RiskDataMonitoringStartForProviderAndSirenCommand extends ContainerAwareCo
             return;
         }
 
-        /** @var MonitoringManger $monitoringManger */
-        $monitoringManger = $this->getContainer()->get('unilend.service.risk_data_monitoring_manager');
+        $monitoringManager = $this->getContainer()->get('unilend.service.risk_data_monitoring_manager');
 
-        if ($monitoringManger->isSirenMonitored($siren, $provider)) {
+        if ($monitoringManager->isSirenMonitored($siren, $provider)) {
             $output->writeln('<error>Siren is already monitored for that provider</error>');
 
             return;
