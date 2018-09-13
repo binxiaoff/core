@@ -2,7 +2,7 @@
 
 namespace Unilend\Bundle\CommandBundle\Command;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -14,19 +14,19 @@ class GreenPointValidationCommand extends Command
 {
     /** @var LoggerInterface */
     private $logger;
-    /** @var EntityManager */
+    /** @var EntityManagerInterface */
     private $entityManager;
     /** @var GreenPointValidationManager */
     private $validationManager;
 
     /**
      * @param LoggerInterface             $logger
-     * @param EntityManager               $entityManager
+     * @param EntityManagerInterface      $entityManager
      * @param GreenPointValidationManager $validationManager
      */
     public function __construct(
         LoggerInterface $logger,
-        EntityManager $entityManager,
+        EntityManagerInterface $entityManager,
         GreenPointValidationManager $validationManager
     )
     {
@@ -64,9 +64,12 @@ EOF
         }
 
         foreach ($clients as $client) {
+            $checkKYCStatus = false;
+
             foreach ($client->getAttachments() as $attachment) {
                 try {
-                    $isValidated = $this->validationManager->validateAttachement($attachment);
+                    $isAttachmentValidated = $this->validationManager->validateAttachement($attachment);
+                    $checkKYCStatus        = $checkKYCStatus || $isAttachmentValidated;
                 } catch (\Exception $exception) {
                     $this->logger->error(
                         'An error occurred during sending attachment to GreenPoint - Message: ' . $exception->getMessage() . ' - Code: ' . $exception->getCode(), [
@@ -76,11 +79,10 @@ EOF
                         'line'      => $exception->getLine(),
                         'id_client' => $client->getIdClient()
                     ]);
-                    $isValidated = false;
                 }
             }
 
-            if ($isValidated) {
+            if ($checkKYCStatus) {
                 try {
                     $this->validationManager->saveClientKycStatus($client);
                 } catch (\Exception $exception) {

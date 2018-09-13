@@ -7,7 +7,6 @@ use Psr\Cache\CacheItemPoolInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Redirections;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Tree;
 use Unilend\librairies\CacheKeys;
 
 /**

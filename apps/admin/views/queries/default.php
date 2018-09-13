@@ -35,7 +35,7 @@
                 <?php foreach ($this->lRequetes as $r) : ?>
                     <tr<?= ($i % 2 == 1 ? '' : ' class="odd"') ?>>
                         <td><?= $r['name'] ?></td>
-                        <td><?= ($r['executed'] != '0000-00-00 00:00:00' ? $this->dates->formatDate($r['executed'], 'd/m/Y H:i:s') : 'Jamais') ?></td>
+                        <td><?= ($r['executed'] != '0000-00-00 00:00:00' ? $this->formatDate($r['executed'], 'd/m/Y H:i:s') : 'Jamais') ?></td>
                         <td><?= $r['executions'] ?></td>
                         <td align="center">
                             <?php if (strrchr($r['sql'], '@')) : ?>

@@ -22,7 +22,7 @@
             </tr>
             <tr>
                 <th>Secteur d'activité</th>
-                <?php if ($this->companies->code_naf === \Unilend\Bundle\CoreBusinessBundle\Entity\Companies::NAF_CODE_NO_ACTIVITY) : ?>
+                <?php if ($this->companies->code_naf === \Unilend\Bundle\CoreBusinessBundle\Entity\Companies::NAF_CODE_NO_ACTIVITY || empty($this->companies->sector)) : ?>
                     <td> - </td>
                 <?php else : ?>
                     <td><?= $this->translator->trans('company-sector_sector-' . $this->companies->sector) ?></td>
@@ -91,7 +91,7 @@
                             <th>Document</th>
                             <td>
                                 <a href="<?= $this->url ?>/attachment/download/id/<?= $attachment->getId() ?>/file/<?= urlencode($attachment->getPath()) ?>">
-                                    <?= empty($attachment->getOriginalName()) ? $attachment->getPath() : $attachment->getOriginalName() ?>
+                                    <?= $attachment->getOriginalName() ?? $attachment->getPath() ?>
                                 </a>
                             </td>
                         </tr>

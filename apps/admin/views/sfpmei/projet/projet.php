@@ -116,11 +116,11 @@
             </tr>
             <tr>
                 <th>Date de publication</th>
-                <td><?= ($this->projects->date_publication != '0000-00-00 00:00:00' ? $this->dates->formatDate($this->projects->date_publication, 'd/m/Y H:i') : '') ?></td>
+                <td><?= ($this->projects->date_publication != '0000-00-00 00:00:00' ? $this->formatDate($this->projects->date_publication, 'd/m/Y H:i') : '') ?></td>
             </tr>
             <tr>
                 <th>Date de retrait</th>
-                <td><?= ($this->projects->date_retrait != '0000-00-00 00:00:00' ? $this->dates->formatDate($this->projects->date_retrait, 'd/m/Y H:i') : '') ?></td>
+                <td><?= ($this->projects->date_retrait != '0000-00-00 00:00:00' ? $this->formatDate($this->projects->date_retrait, 'd/m/Y H:i') : '') ?></td>
             </tr>
             <?php if ($this->projects_pouvoir->get($this->projects->id_project, 'id_project') && $this->projects_pouvoir->status == \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsPouvoir::STATUS_SIGNED) : ?>
                 <tr>

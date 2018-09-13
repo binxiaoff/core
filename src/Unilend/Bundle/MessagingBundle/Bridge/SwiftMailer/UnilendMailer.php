@@ -2,7 +2,7 @@
 
 namespace Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Swift_Transport;
 
@@ -10,14 +10,15 @@ class UnilendMailer extends \Swift_Mailer
 {
     /** @var LoggerInterface */
     private $logger;
-    /** @var EntityManager */
+    /** @var EntityManagerInterface */
     private $entityManager;
 
     /**
-     * @param Swift_Transport $transport
-     * @param LoggerInterface $logger
+     * @param Swift_Transport        $transport
+     * @param LoggerInterface        $logger
+     * @param EntityManagerInterface $entityManager
      */
-    public function __construct(Swift_Transport $transport, LoggerInterface $logger, EntityManager $entityManager)
+    public function __construct(Swift_Transport $transport, LoggerInterface $logger, EntityManagerInterface $entityManager)
     {
         $this->logger        = $logger;
         $this->entityManager = $entityManager;

@@ -6,9 +6,10 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\{BinaryFileResponse, Response};
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Core\User\UserInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Loans;
 use Unilend\Bundle\CoreBusinessBundle\Service\Document\LoanContractGenerator;
-use Unilend\Bundle\FrontBundle\Security\User\UserLender;
 
 class DocumentController extends Controller
 {
@@ -23,12 +24,13 @@ class DocumentController extends Controller
      * @Route("/pdf/contrat/{clientHash}/{idLoan}", name="loan_contract_pdf", requirements={"clientHash": "[0-9a-f-]{32,36}", "idLoan": "\d+"})
      * @Security("has_role('ROLE_LENDER')")
      *
-     * @param string $clientHash
-     * @param int    $idLoan
+     * @param UserInterface|Clients|null $client
+     * @param string                     $clientHash
+     * @param int                        $idLoan
      *
      * @return Response
      */
-    public function loanContractPdfAction(string $clientHash, int $idLoan): Response
+    public function loanContractPdfAction(?UserInterface $client, string $clientHash, int $idLoan): Response
     {
         /** @var Loans $loan */
         $loan = $this->get('doctrine.orm.entity_manager')
@@ -47,10 +49,7 @@ class DocumentController extends Controller
             return $this->getLoanErrorResponse(self::ERROR_WRONG_CLIENT_HASH, $loan);
         }
 
-        /** @var UserLender $user */
-        $user = $this->getUser();
-
-        if ($user->getClientId() !== $loan->getIdLender()->getIdClient()->getIdClient()) {
+        if (null === $client || $client->getIdClient() !== $loan->getIdLender()->getIdClient()->getIdClient()) {
             return $this->getLoanErrorResponse(self::ERROR_ACCESS_DENIED, $loan);
         }
 

@@ -460,7 +460,7 @@
                         <?php
                         $i = 1;
                         foreach ($this->lEncheres as $e) :
-                            $year = $this->dates->formatDate($e['added'], 'Y');
+                            $year = $this->formatDate($e['added'], 'Y');
                             $this->projects->get($e['id_project'], 'id_project');
                             $sumMontant = $this->echeanciers->getTotalAmount(array('id_loan' => $e['id_loan']));
                         ?>

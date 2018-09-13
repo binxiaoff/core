@@ -2,28 +2,27 @@
 
 namespace Unilend\Bundle\FrontBundle\Form;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Form\AbstractType;
-use Symfony\Component\Form\Extension\Core\Type\EmailType;
-use Symfony\Component\Form\Extension\Core\Type\TextareaType;
-use Symfony\Component\Form\Extension\Core\Type\TextType;
+use Symfony\Component\Form\Extension\Core\Type\{EmailType, TextareaType, TextType};
 use Symfony\Component\Form\FormBuilderInterface;
-use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorage;
+use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 
 class PartnerContactType extends AbstractType
 {
     /** @var Clients */
     private $user;
-    /** @var EntityManager */
+    /** @var EntityManagerInterface */
     private $entityManager;
-    /** @var string */
-    private $language;
 
-    public function __construct(EntityManager $entityManager, TokenStorage $tokenStorage, $language)
+    /**
+     * @param EntityManagerInterface $entityManager
+     * @param TokenStorageInterface  $tokenStorage
+     */
+    public function __construct(EntityManagerInterface $entityManager, TokenStorageInterface $tokenStorage)
     {
         $this->entityManager = $entityManager;
-        $this->language      = $language;
         $this->user          = $tokenStorage->getToken()->getUser();
     }
 

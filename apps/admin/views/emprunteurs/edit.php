@@ -1,8 +1,6 @@
 <?php
 
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    ClientsStatus, Companies, CompanyStatus, ProjectsStatus, UniversignEntityInterface
-};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{Companies, CompanyStatus, ProjectsStatus, UniversignEntityInterface};
 
 ?>
 <script>
@@ -134,7 +132,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{
                     </div>
                     <div class="form-group col-md-6">
                         <label for="sector">Secteur d'activité</label>
-                        <?php if ($this->companyEntity->getCodeNaf() === Companies::NAF_CODE_NO_ACTIVITY) : ?>
+                        <?php if ($this->companyEntity->getCodeNaf() === Companies::NAF_CODE_NO_ACTIVITY || empty($this->companyEntity->getSector())) : ?>
                             <select name="sector" id="sector" class="form-control">
                                 <option value="0"></option>
                                 <?php foreach ($this->sectors as $sector) : ?>
@@ -337,7 +335,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{
                             }
                             ?>
                         </td>
-                        <td><?= $this->dates->formatDate($aMoneyOrder['added'], 'd/m/Y à H:i:s') ?></td>
+                        <td><?= $this->formatDate($aMoneyOrder['added'], 'd/m/Y à H:i:s') ?></td>
                     </tr>
                 <?php endforeach; ?>
                 </tbody>

@@ -16,6 +16,10 @@ class TermsOfSaleManager
     const EXCEPTION_CODE_INVALID_PHONE_NUMBER = 2;
     const EXCEPTION_CODE_PDF_FILE_NOT_FOUND   = 3;
 
+    const SETTING_TYPE_LENDER_TOS_LEGAL_ENTITY   = 'Lien conditions generales inscription preteur societe';
+    const SETTING_TYPE_LENDER_TOS_NATURAL_PERSON = 'Lien conditions generales inscription preteur particulier';
+    const SETTING_TYPE_BORROWER_TOS              = 'Lien conditions generales depot dossier';
+
     /** @var EntityManager */
     private $entityManager;
     /** @var MailerManager */
@@ -112,7 +116,7 @@ class TermsOfSaleManager
     {
         return (int) $this->entityManager
             ->getRepository('UnilendCoreBusinessBundle:Settings')
-            ->findOneBy(['type' => 'Lien conditions generales inscription preteur particulier'])
+            ->findOneBy(['type' => self::SETTING_TYPE_LENDER_TOS_NATURAL_PERSON])
             ->getValue();
     }
 
@@ -123,7 +127,7 @@ class TermsOfSaleManager
     {
         return (int) $this->entityManager
             ->getRepository('UnilendCoreBusinessBundle:Settings')
-             ->findOneBy(['type' => 'Lien conditions generales inscription preteur societe'])
+             ->findOneBy(['type' => self::SETTING_TYPE_LENDER_TOS_LEGAL_ENTITY])
              ->getValue();
     }
 
@@ -181,7 +185,7 @@ class TermsOfSaleManager
         $termsOfSale = $project->getTermsOfSale();
 
         if (null === $termsOfSale) {
-            $tree = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Lien conditions generales depot dossier']);
+            $tree = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => self::SETTING_TYPE_BORROWER_TOS]);
 
             if (null === $tree) {
                 throw new \Exception('Unable to find tree element', self::EXCEPTION_CODE_PDF_FILE_NOT_FOUND);

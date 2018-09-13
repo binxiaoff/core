@@ -9,7 +9,8 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, Attachment, AttachmentType, Backpayline, Clients, ClientsHistory, ClientsHistoryActions, ClientsStatus, Companies, NationalitesV2, OffresBienvenues, Pays, Users, WalletType};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, Attachment, AttachmentType, Backpayline, Clients, ClientsHistory, ClientsHistoryActions, ClientsStatus, Companies, NationalitesV2,
+    OffresBienvenues, Pays, Users, WalletType};
 use Unilend\Bundle\CoreBusinessBundle\Service\{GoogleRecaptchaManager, NewsletterManager, SponsorshipManager};
 use Unilend\Bundle\FrontBundle\Form\{LenderSubscriptionIdentityLegalEntity, LenderSubscriptionIdentityPerson};
 use Unilend\Bundle\FrontBundle\Service\{DataLayerCollector, SourceManager};
@@ -1141,23 +1142,24 @@ class LenderSubscriptionController extends Controller
         $post        = $formManager->cleanPostData($request->request->all());
         $files       = $request->files->all();
 
-        if (isset($post['form_person'])) {
-            $form = $post['form_person'];
-        } elseif (isset($post['form_legal_entity'])) {
-            $form = $post['form_legal_entity'];
-        } else {
-            $this->get('logger')->error('Unable to save client action history: submitted form cannot be found.', [
-                'class'    => __CLASS__,
-                'function' => __FUNCTION__
-            ]);
-
-            return;
-        }
-
         if (Clients::SUBSCRIPTION_STEP_PERSONAL_INFORMATION === $step) {
-            $form['client']['password']['first']  = md5($form['client']['password']['first']);
-            $form['client']['password']['second'] = md5($form['client']['password']['second']);
-            $form['security']['secreteReponse']   = md5($form['security']['secreteReponse']);
+            if (isset($post['form_person'])) {
+                $form = &$post['form_person'];
+            } elseif (isset($post['form_legal_entity'])) {
+                $form = &$post['form_legal_entity'];
+            } else {
+                $this->get('logger')->error('Unable to save client action history: submitted form cannot be found.', [
+                    'class'    => __CLASS__,
+                    'function' => __FUNCTION__
+                ]);
+            }
+
+            if (isset($form)) {
+                $form['client']['password']['first']  = md5($form['client']['password']['first']);
+                $form['client']['password']['second'] = md5($form['client']['password']['second']);
+                $form['security']['secreteReponse']   = md5($form['security']['secreteReponse']);
+            }
+
             $formType = $client->isNaturalPerson() ? ClientsHistoryActions::LENDER_PERSON_SUBSCRIPTION_PERSONAL_INFORMATION : ClientsHistoryActions::LENDER_LEGAL_ENTITY_SUBSCRIPTION_PERSONAL_INFORMATION;
         } else {
             $formType = $client->isNaturalPerson() ? ClientsHistoryActions::LENDER_PERSON_SUBSCRIPTION_BANK_DOCUMENTS : ClientsHistoryActions::LENDER_LEGAL_ENTITY_SUBSCRIPTION_BANK_DOCUMENTS;
@@ -1252,8 +1254,6 @@ class LenderSubscriptionController extends Controller
     public function checkAgeAction(Request $request): Response
     {
         if ($request->isXmlHttpRequest()) {
-            /** @var \dates $dates */
-            $dates      = Loader::loadLib('dates');
             $translator = $this->get('translator');
             $lenderValidationManager = $this->get('unilend.service.lender_validation_manager');
             $birthday = \DateTime::createFromFormat('Y-m-d', $request->request->get('year_of_birth') . '-' . $request->request->get('month_of_birth') . '-' . $request->request->get('day_of_birth'));

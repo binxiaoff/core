@@ -23,13 +23,15 @@ classNames: 'user-preter-profile'
     {% set fiscalAddressViewCollapse = 'in' %}
 {% endif %}
 
-{% form_theme forms.phone '/frontbundle/forms/fields.html.twig' %}
-{% if forms.phone.vars.valid == false %}
-    {% set phoneFormCollapse = 'in' %}
-    {% set phoneViewCollapse = '' %}
-{% else %}
-    {% set phoneFormCollapse = '' %}
-    {% set phoneViewCollapse = 'in' %}
+{% if client.type in [constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::TYPE_PERSON'), constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::TYPE_PERSON_FOREIGNER')] %}
+    {% form_theme forms.contact '/frontbundle/forms/fields.html.twig' %}
+    {% if forms.contact.vars.valid == false %}
+        {% set contactFormCollapse = 'in' %}
+        {% set contactViewCollapse = '' %}
+    {% else %}
+        {% set contactFormCollapse = '' %}
+        {% set contactViewCollapse = 'in' %}
+    {% endif %}
 {% endif %}
 
 
@@ -66,22 +68,22 @@ classNames: 'user-preter-profile'
             </article><!-- /.panel -->
 
             {% if client.type in [constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::TYPE_PERSON'), constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::TYPE_PERSON_FOREIGNER')] %}
-                <article id="panel-phone" class="panel">
+                <article id="panel-contact" class="panel">
                     <header class="panel-header">
-                        <h3>{% trans %} lender-profile_information-tab-phone-section-title {% endtrans %}</h3>
-                        <div id="form-profile-phone-notifications">
-                            {{ form_errors(forms.phone) }}
-                            {% if app.session.flashBag.has('phoneSuccess') %}
+                        <h3>{% trans %} lender-profile_information-tab-contact-section-title {% endtrans %}</h3>
+                        <div id="form-profile-contact-notifications">
+                            {{ form_errors(forms.contact) }}
+                            {% if app.session.flashBag.has('contactSuccess') %}
                                 <div class="message-success">
-                                    {% for message in app.session.flashBag.get('phoneSuccess') %}
+                                    {% for message in app.session.flashBag.get('contactSuccess') %}
                                         <span>{{ message }}</span>
                                     {% endfor %}
                                 </div>
                             {% endif %}
                         </div>
                     </header>
-                    <section id="profile-phone-section" role="tablist" class="ui-toggle-group" aria-multiselectable="true">
-                        {% include 'lender_profile/partials/phone_details.html.twig' %}
+                    <section id="profile-contact-section" role="tablist" class="ui-toggle-group" aria-multiselectable="true">
+                        {% include 'lender_profile/partials/person_contact_form.html.twig' %}
                     </section><!-- /.ui-toggle-group -->
                 </article><!-- /.panel -->
             {% endif %}

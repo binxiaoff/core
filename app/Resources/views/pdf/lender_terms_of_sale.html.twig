@@ -13,11 +13,11 @@
                 <div class="logo"></div>
                 {{ content['contenu-cgu']|raw }}
                 <div style="page-break-after: always;"></div>
-                    {{ content['debtCollectionMandate']|raw }}
-                    {% if content['debtCollectionMandateWithExitingLoans'] is defined and content['debtCollectionMandateWithExitingLoans'] is not empty %}
-                        <div style="page-break-after: always;"></div>
-                        {{ content['debtCollectionMandateWithExitingLoans']|raw }}
-                    {% endif %}
+                {{ content['debtCollectionMandate']|raw }}
+                {% if content['debtCollectionMandateWithExitingLoans'] is defined and content['debtCollectionMandateWithExitingLoans'] is not empty %}
+                    <div style="page-break-after: always;"></div>
+                    {{ content['debtCollectionMandateWithExitingLoans']|raw }}
+                {% endif %}
             </div>
         </div>
     </div>

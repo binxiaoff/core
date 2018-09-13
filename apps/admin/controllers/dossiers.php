@@ -1,7 +1,9 @@
 <?php
 
 use Psr\Log\LoggerInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, AttachmentType, BorrowingMotive, Companies, CompanyAddress, CompanyStatus, Echeanciers, Loans, Partner, PartnerProjectAttachment, Prelevements, ProjectAbandonReason, ProjectNotification, ProjectRejectionReason, ProjectRepaymentTask, Projects, ProjectsComments, ProjectsPouvoir, ProjectsStatus, Users, UsersTypes, Virements, WalletType, Zones};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, AttachmentType, BorrowingMotive, Companies, CompanyAddress, CompanyStatus, Echeanciers, Loans, Partner, PartnerProjectAttachment,
+    Prelevements, ProjectAbandonReason, ProjectNotification, ProjectRejectionReason, ProjectRepaymentTask, Projects, ProjectsComments, ProjectsPouvoir, ProjectsStatus, Users, UsersTypes, Virements,
+    WalletType, Zones};
 use Unilend\Bundle\CoreBusinessBundle\Service\{BackOfficeUserManager, ProjectManager, ProjectRequestManager, TermsOfSaleManager, WireTransferOutManager, WorkingDaysManager};
 use Unilend\Bundle\WSClientBundle\Entity\Altares\EstablishmentIdentityDetail;
 
@@ -77,32 +79,34 @@ class dossiersController extends bootstrap
         $projectNeed = $this->loadData('project_need');
         $this->needs = $projectNeed->getTree();
 
+        $this->page = isset($_POST['page']) ? filter_var($_POST['page'], FILTER_VALIDATE_INT) : 1;
+        $this->page = $this->page > 0 ? $this->page : 1;
+
         if (isset($_POST['form_search_dossier'])) {
-            $startDate          = empty($_POST['date1']) ? '' : \DateTime::createFromFormat('d/m/Y', $_POST['date1'])->format('Y-m-d');
-            $endDate            = empty($_POST['date2']) ? '' : \DateTime::createFromFormat('d/m/Y', $_POST['date2'])->format('Y-m-d');
-            $projectNeed        = empty($_POST['projectNeed']) ? '' : $_POST['projectNeed'];
-            $duration           = empty($_POST['duree']) ? '' : $_POST['duree'];
-            $status             = empty($_POST['status']) ? '' : $_POST['status'];
-            $analyst            = empty($_POST['analyste']) ? '' : $_POST['analyste'];
-            $siren              = empty($_POST['siren']) ? '' : $_POST['siren'];
-            $projectId          = empty($_POST['id']) ? '' : $_POST['id'];
-            $companyName        = empty($_POST['raison-sociale']) ? '' : $_POST['raison-sociale'];
-            $commercial         = empty($_POST['commercial']) ? '' : $_POST['commercial'];
-            $iNbStartPagination = isset($_POST['nbLignePagination']) ? (int) $_POST['nbLignePagination'] : 0;
-            $this->nb_lignes    = isset($this->nb_lignes) ? (int) $this->nb_lignes : 100;
-            $this->lProjects    = $this->projects->searchDossiers($startDate, $endDate, $projectNeed, $duration, $status, $analyst, $siren, $projectId, $companyName, null, $commercial, $iNbStartPagination, $this->nb_lignes);
+            $startDate       = empty($_POST['date1']) ? '' : \DateTime::createFromFormat('d/m/Y', $_POST['date1'])->format('Y-m-d');
+            $endDate         = empty($_POST['date2']) ? '' : \DateTime::createFromFormat('d/m/Y', $_POST['date2'])->format('Y-m-d');
+            $projectNeed     = empty($_POST['projectNeed']) ? '' : $_POST['projectNeed'];
+            $duration        = empty($_POST['duree']) ? '' : $_POST['duree'];
+            $status          = empty($_POST['status']) ? '' : $_POST['status'];
+            $analyst         = empty($_POST['analyste']) ? '' : $_POST['analyste'];
+            $siren           = empty($_POST['siren']) ? '' : $_POST['siren'];
+            $projectId       = empty($_POST['id']) ? '' : $_POST['id'];
+            $companyName     = empty($_POST['raison-sociale']) ? '' : $_POST['raison-sociale'];
+            $commercial      = empty($_POST['commercial']) ? '' : $_POST['commercial'];
+            $offset          = ($this->page - 1) * $this->nb_lignes;
+            $this->lProjects = $this->projects->searchDossiers($startDate, $endDate, $projectNeed, $duration, $status, $analyst, $siren, $projectId, $companyName, null, $commercial, $offset, $this->nb_lignes);
         } elseif (isset($this->params[0]) && 1 === preg_match('/^[1-9]([0-9,]*[0-9]+)*$/', $this->params[0])) {
             $this->lProjects = $this->projects->searchDossiers('', '', '', '', $this->params[0]);
         }
 
-        $this->iCountProjects = isset($this->lProjects) && is_array($this->lProjects) ? array_shift($this->lProjects) : null;
+        $this->projectsCount = isset($this->lProjects) && is_array($this->lProjects) ? array_shift($this->lProjects) : null;
 
         /** @var BackOfficeUserManager $backOfficeUserManager */
         $backOfficeUserManager    = $this->get('unilend.service.back_office_user_manager');
         $this->isRiskUser         = $backOfficeUserManager->isUserGroupRisk($this->userEntity);
         $this->hasRepaymentAccess = $backOfficeUserManager->isGrantedZone($this->userEntity, Zones::ZONE_LABEL_REPAYMENT);
 
-        if (1 === $this->iCountProjects && (false === empty($projectId) || false === empty($companyName))) {
+        if (1 === $this->projectsCount && (false === empty($projectId) || false === empty($companyName))) {
             header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->lProjects[0]['id_project']);
             die;
         }
