@@ -45,7 +45,7 @@
     "twig/extensions": "^1.5",
     "xynnn/google-tag-manager-bundle": "^2.0",
     "sonata-project/seo-bundle": "^2.0",
-    "ekino/newrelic-bundle": "^1.4",
+    "ekino/newrelic-bundle": "^2.0",
     "sonata-project/cache-bundle": "^2.4",
     "knplabs/mailjet-api-php": "v2.x-dev",
     "knplabs/knp-mailjet-bundle": "v2.x-dev",
