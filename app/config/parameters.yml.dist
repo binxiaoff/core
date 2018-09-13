@@ -123,7 +123,6 @@ parameters:
     new_relic.console_app_name:     Unilend-batchjobs
 
     slack.team_id:                  T09JRNH40
-    slack.token:                    xoxb-54621264262-6EXEn7g59rpWe7vDxzHht5z5
     slack.command_token:            u2AOiDVHg1WQQgL1MjZ83IQe
     slack.monitoring_channel:       '#it-monitoring'
     slack.default_username:         Unilend

@@ -40,10 +40,10 @@ class SlackManager
         Client $apiClient,
         EntityManager $entityManager,
         Packages $assetsPackages,
-        $scheme,
-        $frontHost,
-        $backHost,
-        $environment,
+        string $scheme,
+        string $frontHost,
+        string $backHost,
+        string $environment,
         LoggerInterface $logger
     )
     {
