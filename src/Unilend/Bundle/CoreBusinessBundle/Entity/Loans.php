@@ -108,16 +108,23 @@ class Loans
      */
     private $idTypeContract;
 
+    /**
+     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\AcceptationsLegalDocs
+     *
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\AcceptationsLegalDocs")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_acceptation_legal_doc", referencedColumnName="id_acceptation")
+     * })
+     */
+    private $idAcceptationLegalDoc;
 
 
     /**
-     * Set idTransfer
-     *
      * @param LoanTransfer|null $idTransfer
      *
      * @return Loans
      */
-    public function setIdTransfer(?LoanTransfer $idTransfer) : Loans
+    public function setIdTransfer(?LoanTransfer $idTransfer): Loans
     {
         $this->idTransfer = $idTransfer;
 
@@ -125,11 +132,9 @@ class Loans
     }
 
     /**
-     * Get idTransfer
-     *
      * @return LoanTransfer|null
      */
-    public function getIdTransfer() : ?LoanTransfer
+    public function getIdTransfer(): ?LoanTransfer
     {
         /** @todo to be removed when it is fully under doctrine */
         if (null !==  $this->idTransfer) {
@@ -144,13 +149,11 @@ class Loans
     }
 
     /**
-     * Set idProject
-     *
      * @param Projects $idProject
      *
      * @return Loans
      */
-    public function setProject(Projects $idProject) : Loans
+    public function setProject(Projects $idProject): Loans
     {
         $this->idProject = $idProject;
 
@@ -158,23 +161,19 @@ class Loans
     }
 
     /**
-     * Get idProject
-     *
      * @return Projects
      */
-    public function getProject() : Projects
+    public function getProject(): Projects
     {
         return $this->idProject;
     }
 
     /**
-     * Set amount
-     *
      * @param float $amount
      *
      * @return Loans
      */
-    public function setAmount(float $amount) : Loans
+    public function setAmount(float $amount): Loans
     {
         $this->amount = $amount;
 
@@ -182,23 +181,19 @@ class Loans
     }
 
     /**
-     * Get amount
-     *
      * @return float
      */
-    public function getAmount() : float
+    public function getAmount(): float
     {
         return $this->amount;
     }
 
     /**
-     * Set rate
-     *
      * @param float $rate
      *
      * @return Loans
      */
-    public function setRate(float $rate) : Loans
+    public function setRate(float $rate): Loans
     {
         $this->rate = $rate;
 
@@ -206,23 +201,19 @@ class Loans
     }
 
     /**
-     * Get rate
-     *
      * @return float
      */
-    public function getRate() : float
+    public function getRate(): float
     {
         return $this->rate;
     }
 
     /**
-     * Set status
-     *
      * @param integer $status
      *
      * @return Loans
      */
-    public function setStatus(int $status) : Loans
+    public function setStatus(int $status): Loans
     {
         $this->status = $status;
 
@@ -230,23 +221,19 @@ class Loans
     }
 
     /**
-     * Get status
-     *
      * @return integer
      */
-    public function getStatus() : int
+    public function getStatus(): int
     {
         return $this->status;
     }
 
     /**
-     * Set fichierDeclarationcontratpret
-     *
-     * @param string $fichierDeclarationcontratpret
+     * @param string|null $fichierDeclarationcontratpret
      *
      * @return Loans
      */
-    public function setFichierDeclarationcontratpret(string $fichierDeclarationcontratpret) : Loans
+    public function setFichierDeclarationcontratpret(?string $fichierDeclarationcontratpret): Loans
     {
         $this->fichierDeclarationcontratpret = $fichierDeclarationcontratpret;
 
@@ -254,23 +241,19 @@ class Loans
     }
 
     /**
-     * Get fichierDeclarationcontratpret
-     *
-     * @return string
+     * @return string|null
      */
-    public function getFichierDeclarationcontratpret() : string
+    public function getFichierDeclarationcontratpret(): ?string
     {
         return $this->fichierDeclarationcontratpret;
     }
 
     /**
-     * Set added
-     *
      * @param \DateTime $added
      *
      * @return Loans
      */
-    public function setAdded(\DateTime $added) : Loans
+    public function setAdded(\DateTime $added): Loans
     {
         $this->added = $added;
 
@@ -278,23 +261,19 @@ class Loans
     }
 
     /**
-     * Get added
-     *
      * @return \DateTime
      */
-    public function getAdded() : \DateTime
+    public function getAdded(): \DateTime
     {
         return $this->added;
     }
 
     /**
-     * Set updated
-     *
-     * @param \DateTime $updated
+     * @param \DateTime|null $updated
      *
      * @return Loans
      */
-    public function setUpdated(?\DateTime $updated) : Loans
+    public function setUpdated(?\DateTime $updated): Loans
     {
         $this->updated = $updated;
 
@@ -302,33 +281,27 @@ class Loans
     }
 
     /**
-     * Get updated
-     *
-     * @return \DateTime
+     * @return \DateTime|null
      */
-    public function getUpdated() : \DateTime
+    public function getUpdated(): ?\DateTime
     {
         return $this->updated;
     }
 
     /**
-     * Get idLoan
-     *
      * @return integer
      */
-    public function getIdLoan() : int
+    public function getIdLoan(): int
     {
         return $this->idLoan;
     }
 
     /**
-     * Set idLender
-     *
-     * @param \Unilend\Bundle\CoreBusinessBundle\Entity\Wallet $idLender
+     * @param Wallet $idLender
      *
      * @return Loans
      */
-    public function setIdLender(Wallet $idLender) : Loans
+    public function setIdLender(Wallet $idLender): Loans
     {
         $this->idLender = $idLender;
 
@@ -336,23 +309,19 @@ class Loans
     }
 
     /**
-     * Get idLender
-     *
-     * @return \Unilend\Bundle\CoreBusinessBundle\Entity\Wallet
+     * @return Wallet
      */
-    public function getIdLender() : Wallet
+    public function getIdLender(): Wallet
     {
         return $this->idLender;
     }
 
     /**
-     * Set idTypeContract
-     *
      * @param UnderlyingContract $idTypeContract
      *
      * @return Loans
      */
-    public function setIdTypeContract(UnderlyingContract $idTypeContract) : Loans
+    public function setIdTypeContract(UnderlyingContract $idTypeContract): Loans
     {
         $this->idTypeContract = $idTypeContract;
 
@@ -360,11 +329,9 @@ class Loans
     }
 
     /**
-     * Get idTypeContract
-     *
-     * @return \Unilend\Bundle\CoreBusinessBundle\Entity\UnderlyingContract
+     * @return UnderlyingContract
      */
-    public function getIdTypeContract() : UnderlyingContract
+    public function getIdTypeContract(): UnderlyingContract
     {
         return $this->idTypeContract;
     }
@@ -372,7 +339,7 @@ class Loans
     /**
      * @ORM\PrePersist
      */
-    public function setAddedValue() : void
+    public function setAddedValue(): void
     {
         if (! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
             $this->added = new \DateTime();
@@ -382,8 +349,28 @@ class Loans
     /**
      * @ORM\PreUpdate
      */
-    public function setUpdatedValue() : void
+    public function setUpdatedValue(): void
     {
         $this->updated = new \DateTime();
+    }
+
+    /**
+     * @param AcceptationsLegalDocs|null $idAcceptationLegalDocs
+     *
+     * @return Loans
+     */
+    public function setIdAcceptationLegalDoc(?AcceptationsLegalDocs $idAcceptationLegalDocs): Loans
+    {
+        $this->idAcceptationLegalDoc = $idAcceptationLegalDocs;
+
+        return $this;
+    }
+
+    /**
+     * @return AcceptationsLegalDocs|null
+     */
+    public function getIdAcceptationLegalDoc(): ?AcceptationsLegalDocs
+    {
+        return $this->idAcceptationLegalDoc;
     }
 }

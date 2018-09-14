@@ -5,10 +5,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 use Doctrine\ORM\EntityManager;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AcceptationsLegalDocs, Clients, Companies, Elements, ProjectCgv, Projects, UniversignEntityInterface
-};
-use Unilend\Bundle\FrontBundle\Security\User\UserLender;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{AcceptationsLegalDocs, Clients, Companies, Elements, ProjectCgv, Projects, UniversignEntityInterface};
 use Unilend\core\Loader;
 
 class TermsOfSaleManager
@@ -18,6 +15,10 @@ class TermsOfSaleManager
     const EXCEPTION_CODE_INVALID_EMAIL        = 1;
     const EXCEPTION_CODE_INVALID_PHONE_NUMBER = 2;
     const EXCEPTION_CODE_PDF_FILE_NOT_FOUND   = 3;
+
+    const SETTING_TYPE_LENDER_TOS_LEGAL_ENTITY   = 'Lien conditions generales inscription preteur societe';
+    const SETTING_TYPE_LENDER_TOS_NATURAL_PERSON = 'Lien conditions generales inscription preteur particulier';
+    const SETTING_TYPE_BORROWER_TOS              = 'Lien conditions generales depot dossier';
 
     /** @var EntityManager */
     private $entityManager;
@@ -72,15 +73,10 @@ class TermsOfSaleManager
         $token = $this->tokenStorage->getToken();
 
         if ($token) {
-            $user = $token->getUser();
+            $client = $token->getUser();
 
-            if ($user instanceof UserLender) {
-                $client = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')
-                    ->find($user->getClientId());
-
-                if (null !== $client && false === $user->hasAcceptedCurrentTerms()) {
-                    $session->set(self::SESSION_KEY_TOS_ACCEPTED, false);
-                }
+            if ($client instanceof Clients && $client->isLender() && false === $this->hasAcceptedCurrentVersion($client)) {
+                $session->set(self::SESSION_KEY_TOS_ACCEPTED, false);
             }
         }
     }
@@ -93,8 +89,9 @@ class TermsOfSaleManager
      */
     public function isAcceptedVersion(Clients $client, int $legalDocId): bool
     {
-        $legalDocsAcceptance = $this->entityManager->getRepository('UnilendCoreBusinessBundle:AcceptationsLegalDocs')
-            ->findOneBy(['idClient' => $client->getIdClient(), 'idLegalDoc' => $legalDocId]);
+        $legalDocsAcceptance = $this->entityManager
+            ->getRepository('UnilendCoreBusinessBundle:AcceptationsLegalDocs')
+            ->findOneBy(['idClient' => $client, 'idLegalDoc' => $legalDocId]);
 
         return null !== $legalDocsAcceptance;
     }
@@ -106,28 +103,48 @@ class TermsOfSaleManager
      */
     private function getCurrentVersionId(Clients $client): int
     {
-        if (in_array($client->getType(), [Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER])) {
-            $type = 'Lien conditions generales inscription preteur particulier';
-        } else {
-            $type = 'Lien conditions generales inscription preteur societe';
+        if ($client->isNaturalPerson()) {
+            return $this->getCurrentVersionForPerson();
         }
 
-        return (int) $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')
-            ->findOneBy(['type' => $type])
+        return $this->getCurrentVersionForLegalEntity();
+    }
+
+    /**
+     * @return int
+     */
+    public function getCurrentVersionForPerson(): int
+    {
+        return (int) $this->entityManager
+            ->getRepository('UnilendCoreBusinessBundle:Settings')
+            ->findOneBy(['type' => self::SETTING_TYPE_LENDER_TOS_NATURAL_PERSON])
             ->getValue();
+    }
+
+    /**
+     * @return int
+     */
+    public function  getCurrentVersionForLegalEntity(): int
+    {
+        return (int) $this->entityManager
+            ->getRepository('UnilendCoreBusinessBundle:Settings')
+             ->findOneBy(['type' => self::SETTING_TYPE_LENDER_TOS_LEGAL_ENTITY])
+             ->getValue();
     }
 
     /**
      * @param Clients $client
      *
+     * @throws \Doctrine\ORM\ORMException
      * @throws \Doctrine\ORM\OptimisticLockException
      */
     public function acceptCurrentVersion(Clients $client): void
     {
         if (false === empty($client)) {
             $termsOfUse = new AcceptationsLegalDocs();
-            $termsOfUse->setIdLegalDoc($this->getCurrentVersionId($client));
-            $termsOfUse->setIdClient($client->getIdClient());
+            $termsOfUse
+                ->setIdLegalDoc($this->getCurrentVersionId($client))
+                ->setIdClient($client);
 
             $this->entityManager->persist($termsOfUse);
             $this->entityManager->flush($termsOfUse);
@@ -170,7 +187,7 @@ class TermsOfSaleManager
         $termsOfSale = $project->getTermsOfSale();
 
         if (null === $termsOfSale) {
-            $tree = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Lien conditions generales depot dossier']);
+            $tree = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => self::SETTING_TYPE_BORROWER_TOS]);
 
             if (null === $tree) {
                 throw new \Exception('Unable to find tree element', self::EXCEPTION_CODE_PDF_FILE_NOT_FOUND);

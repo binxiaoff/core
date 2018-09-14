@@ -2,9 +2,9 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
+use JMS\Serializer\SerializerInterface;
 use Psr\Log\LoggerInterface;
-use JMS\Serializer\Serializer;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{Attachment, AttachmentType, Clients, ClientsStatus, GreenpointAttachment, GreenpointKyc};
 use Unilend\Bundle\WSClientBundle\Entity\GreenPoint\{HousingCertificate, Identity, Rib};
 use Unilend\Bundle\WSClientBundle\Service\GreenPointManager;
@@ -27,7 +27,7 @@ class GreenPointValidationManager
         ClientsStatus::STATUS_SUSPENDED
     ];
 
-    /** @var EntityManager */
+    /** @var EntityManagerInterface */
     private $entityManager;
     /** @var AttachmentManager */
     private $attachmentManager;
@@ -41,28 +41,28 @@ class GreenPointValidationManager
     private $greenPointDataManager;
     /** @var GreenPointManager  */
     private $greenPointWsManager;
-    /** @var Serializer */
+    /** @var SerializerInterface */
     private $serializer;
 
     /**
-     * @param EntityManager         $entityManager
-     * @param AttachmentManager     $attachmentManager
-     * @param LoggerInterface       $logger
-     * @param AddressManager        $addressManager
-     * @param BankAccountManager    $bankAccountManager
-     * @param GreenPointDataManager $greenPointDataManager
-     * @param GreenPointManager     $greenPointWsManager
-     * @param Serializer            $serializer
+     * @param EntityManagerInterface $entityManager
+     * @param AttachmentManager      $attachmentManager
+     * @param LoggerInterface        $logger
+     * @param AddressManager         $addressManager
+     * @param BankAccountManager     $bankAccountManager
+     * @param GreenPointDataManager  $greenPointDataManager
+     * @param GreenPointManager      $greenPointWsManager
+     * @param SerializerInterface    $serializer
      */
     public function __construct(
-        EntityManager $entityManager,
+        EntityManagerInterface $entityManager,
         AttachmentManager $attachmentManager,
         LoggerInterface $logger,
         AddressManager $addressManager,
         BankAccountManager $bankAccountManager,
         GreenPointDataManager $greenPointDataManager,
         GreenPointManager $greenPointWsManager,
-        Serializer $serializer
+        SerializerInterface $serializer
     )
     {
         $this->entityManager         = $entityManager;
@@ -285,7 +285,7 @@ class GreenPointValidationManager
                 ]);
             }
             else {
-                $this->bankAccountManager->validateBankAccount($bankAccountToValidate);
+                $this->bankAccountManager->validate($bankAccountToValidate);
             }
         }
     }

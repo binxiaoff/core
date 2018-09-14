@@ -7,7 +7,6 @@ use Symfony\Component\Asset\Packages;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{Pays, Projects};
 use Unilend\Bundle\CoreBusinessBundle\Service\{LocationManager, Simulator\EntityManager, StatisticsManager};
 use Unilend\Bundle\TranslationBundle\Service\TranslationManager;
-use Unilend\core\Loader;
 use Unilend\librairies\CacheKeys;
 
 class FrontBundleExtension extends \Twig_Extension
@@ -53,7 +52,6 @@ class FrontBundleExtension extends \Twig_Extension
             new \Twig_SimpleFunction('svgimage', [$this, 'svgImageFunction']),
             new \Twig_SimpleFunction('siteurlmedia', [$this, 'completeUrlMediaFunction']),
             new \Twig_SimpleFunction('uploadedImage', [$this, 'uploadedImageFunction']),
-            new \Twig_SimpleFunction('getMonths', [$this, 'getMonths']),
             new \Twig_SimpleFunction('photo', [$this, 'photo']),
             new \Twig_SimpleFunction('dictionary', [$this, 'dictionary']),
             new \Twig_SimpleFunction('getStatistic', [$this, 'getStatisticFunction']),
@@ -187,24 +185,6 @@ class FrontBundleExtension extends \Twig_Extension
         $nationalityList = $this->locationManager->getNationalities();
 
         return $nationalityList[$nationalityId];
-    }
-
-    public function getMonths()
-    {
-        $cachedItem = $this->cachePool->getItem('monthsList');
-
-        if ($cachedItem->isHit()) {
-            return $cachedItem->get();
-        }
-
-        /** @var \dates $dates */
-        $dates     = Loader::loadLib('dates');
-        $monthList = $dates->tableauMois['fr'];
-
-        $cachedItem->set($monthList)->expiresAfter(CacheKeys::LONG_TIME);
-        $this->cachePool->save($cachedItem);
-
-        return $monthList;
     }
 
     /**

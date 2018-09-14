@@ -50,8 +50,8 @@ cmf_routing:
             cmf_routing.dynamic_router: 100
     dynamic:
         enabled: true
-        default_controller: UnilendFrontBundle:Main:cms
-        route_provider_service_id: "unilend.frontbundle.provider.route_provider"
+        default_controller: Unilend\Bundle\FrontBundle\Controller\MainController::cmsAction
+        route_provider_service_id: Unilend\Bundle\FrontBundle\Service\RouteProvider
 
 twig:
     strict_variables: "%kernel.debug%"
@@ -137,7 +137,7 @@ doctrine_mongodb:
                 ssl:            "%mongodb_ssl_connect%"
                 password:       "%mongodb_password%"
                 username:       "%mongodb_username%"
-                readPreference: secondaryPreferred
+                readPreference: primaryPreferred
                 replicaSet:     "%mongodb_replica_set_name%"
     default_database: "%mongodb_default_database%"
     document_managers:
@@ -253,14 +253,11 @@ services:
     # Since we use the cache/adapter-bundle as the cache system, the configuration framework.cache.app won't work.
     # It can be removed once TECH-333 will be done.
     cache.app: '@memcache.default'
-    twig.extension.text:
-        class: Twig_Extensions_Extension_Text
-        tags:
-            - { name: twig.extension }
-    twig.extension.intl:
-        class: Unilend\Bundle\FrontBundle\Twig\IntlExtension
-        tags:
-            - { name: twig.extension }
+    # Define the logger service as public so we can continue to have access to it via $container->get().
+    # But $container->get('logger') is deprecated, do not use it any more.
+    logger:
+        alias: 'monolog.logger'
+        public: true
 
 google_tag_manager:
     enabled: true
@@ -293,6 +290,15 @@ knp_snappy:
 
 ekino_new_relic:
     enabled: false
+    application_name: "%new_relic.front_app_name%"
+    api_key: "%new_relic.api_key%"
+    instrument: true
+    deprecations: false
+    http:
+        using_symfony_cache: true
+    monolog:
+        enabled: true
+        channels: ~
 
 sonata_cache:
     caches:
@@ -338,10 +344,6 @@ eight_points_guzzle:
                     Accept: "application/json"
                 http_errors: false
 
-cl_slack:
-    api_token: "%slack.token%"
-    test:      false
-
 welp_mailchimp:
     api_key: "%mailchimp.api_key%"
     list_provider: welp_mailchimp.list_provider
@@ -361,3 +363,20 @@ welp_mailchimp:
                     name: Nom
                     type: text
                     public: true
+
+httplug:
+    plugins:
+        logger: ~
+    clients:
+        nexy_slack:
+            factory: 'httplug.factory.guzzle6'
+            plugins: ['httplug.plugin.logger']
+            config:
+                timeout: 2
+
+nexy_slack:
+    http:
+        client: httplug.client.nexy_slack
+    endpoint: '%slack.endpoint%'
+    channel: '%slack.default_channel%'
+    username: '%slack.default_username%'

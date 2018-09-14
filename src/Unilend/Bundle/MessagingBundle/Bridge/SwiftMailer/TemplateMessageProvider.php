@@ -2,24 +2,23 @@
 
 namespace Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Asset\Packages;
 use Symfony\Component\Translation\TranslatorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\MailTemplates;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Translations;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{MailTemplates, Translations};
 
 class TemplateMessageProvider
 {
     const KEYWORDS_PREFIX = '[EMV DYN]';
     const KEYWORDS_SUFFIX = '[EMV /DYN]';
 
-    /** @var EntityManager */
+    /** @var EntityManagerInterface */
     private $entityManager;
     /** @var string */
-    private $templateMessageClass;
+    private $templateMessageFQCN;
     /** @var string */
-    private $defaultLanguage;
+    private $defaultLocale;
     /** @var TranslatorInterface */
     private $translator;
     /** @var string */
@@ -32,41 +31,41 @@ class TemplateMessageProvider
     private $logger;
 
     /**
-     * @param EntityManager       $entityManager
-     * @param string              $templateMessageClass
-     * @param string              $defaultLanguage
-     * @param TranslatorInterface $translator
-     * @param Packages            $assetsPackages
-     * @param string              $schema
-     * @param string              $frontHost
-     * @param string              $adminHost
+     * @param EntityManagerInterface $entityManager
+     * @param string                 $templateMessageFQCN
+     * @param string                 $defaultLocale
+     * @param TranslatorInterface    $translator
+     * @param Packages               $assetsPackages
+     * @param string                 $frontUrl
+     * @param string                 $adminUrl
      */
     public function __construct(
-        EntityManager $entityManager,
-        $templateMessageClass,
-        $defaultLanguage,
+        EntityManagerInterface $entityManager,
+        string $templateMessageFQCN,
+        string $defaultLocale,
         TranslatorInterface $translator,
         Packages $assetsPackages,
-        $schema,
-        $frontHost,
-        $adminHost
+        string $frontUrl,
+        string $adminUrl
     )
     {
-        $this->entityManager        = $entityManager;
-        $this->templateMessageClass = $templateMessageClass;
-        $this->defaultLanguage      = $defaultLanguage;
-        $this->translator           = $translator;
-        $this->staticUrl            = $assetsPackages->getUrl('');
-        $this->frontUrl             = $schema . '://' . $frontHost;
-        $this->adminUrl             = $schema . '://' . $adminHost;
+        $this->entityManager       = $entityManager;
+        $this->templateMessageFQCN = $templateMessageFQCN;
+        $this->defaultLocale       = $defaultLocale;
+        $this->translator          = $translator;
+        $this->staticUrl           = $assetsPackages->getUrl('');
+        $this->frontUrl            = $frontUrl;
+        $this->adminUrl            = $adminUrl;
     }
 
     /**
-     * @param LoggerInterface $logger
+     * @required
+     *
+     * @param LoggerInterface|null $logger
      *
      * @return $this
      */
-    public function setLogger(LoggerInterface $logger)
+    public function setLogger(?LoggerInterface $logger)
     {
         $this->logger = $logger;
         return $this;
@@ -84,13 +83,13 @@ class TemplateMessageProvider
     {
         $mailTemplate = $this->entityManager->getRepository('UnilendCoreBusinessBundle:MailTemplates')->findOneBy([
             'type'   => $templateName,
-            'locale' => $this->defaultLanguage,
+            'locale' => $this->defaultLocale,
             'status' => MailTemplates::STATUS_ACTIVE,
             'part'   => MailTemplates::PART_TYPE_CONTENT
         ]);
 
         if (null === $mailTemplate) {
-            throw new \InvalidArgumentException('The mail template ' . $templateName . ' for the language ' . $this->defaultLanguage . ' is not found.');
+            throw new \InvalidArgumentException('The mail template ' . $templateName . ' for the language ' . $this->defaultLocale . ' is not found.');
         }
 
         return $this->setMessageAttributes($mailTemplate, $keywords, $wrapKeywords);
@@ -103,7 +102,7 @@ class TemplateMessageProvider
      *
      * @return TemplateMessage
      */
-    public function newMessageByTemplate(MailTemplates $mailTemplate, array $keywords = [], bool $wrapKeywords = true) : TemplateMessage
+    public function newMessageByTemplate(MailTemplates $mailTemplate, array $keywords = [], bool $wrapKeywords = true): TemplateMessage
     {
         return $this->setMessageAttributes($mailTemplate, $keywords, $wrapKeywords);
     }
@@ -116,7 +115,7 @@ class TemplateMessageProvider
      * @return TemplateMessage
      * @throws \Swift_RfcComplianceException
      */
-    private function setMessageAttributes(MailTemplates $mailTemplate, array $keywords = [], bool $wrapKeywords = true) : TemplateMessage
+    private function setMessageAttributes(MailTemplates $mailTemplate, array $keywords = [], bool $wrapKeywords = true): TemplateMessage
     {
         $commonKeywords      = $this->getCommonKeywords();
         $overwrittenKeywords = array_intersect_key($keywords, $commonKeywords);
@@ -145,7 +144,7 @@ class TemplateMessageProvider
         $body     = strtr($body, $keywords);
 
         /** @var TemplateMessage $message */
-        $message = new $this->templateMessageClass($mailTemplate->getIdMailTemplate());
+        $message = new $this->templateMessageFQCN($mailTemplate->getIdMailTemplate());
         $message
             ->setVariables($keywords)
             ->setFrom($mailTemplate->getSenderEmail(), $fromName)

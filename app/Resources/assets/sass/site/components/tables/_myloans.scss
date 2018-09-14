@@ -173,6 +173,14 @@
     }
   }
 
+  &.ui-loan-status-pending {
+    td:first-child {
+      border-color: $c-chart-grey;
+    }
+    filter: grayscale(.6);
+    opacity: 0.4;
+  }
+
   &#{$js-details-open} {
     background-color: $c-bg3!important;
   }

@@ -524,6 +524,8 @@ class ClientsRepository extends EntityRepository
         $query = '
             SELECT c.*, cs.label
             FROM clients c
+            INNER JOIN wallet w ON c.id_client = w.id_client
+            INNER JOIN wallet_type wt ON w.id_type = wt.id AND label = "' . WalletType::LENDER . '"
             INNER JOIN clients_status_history csh ON c.id_client_status_history = csh.id
             INNER JOIN clients_status cs ON csh.id_status = cs.id
             WHERE ' . str_repeat('REPLACE(', count($charactersToReplace)) . 'c.nom' . $replaceCharacters . ' LIKE :lastName
@@ -808,11 +810,10 @@ class ClientsRepository extends EntityRepository
 
     /**
      * @param string $email
-     * @param int[]  $status
      *
-     * @return array
+     * @return Clients[]
      */
-    public function findByEmailAndStatus(string $email, array $status): array
+    public function findGrantedLoginAccountsByEmail(string $email): array
     {
         $queryBuilder = $this->createQueryBuilder('c');
         $queryBuilder
@@ -820,7 +821,7 @@ class ClientsRepository extends EntityRepository
             ->where('c.email = :email')
             ->andWhere('csh.idStatus IN (:status)')
             ->setParameter('email', $email, \PDO::PARAM_STR)
-            ->setParameter('status', $status);
+            ->setParameter('status', ClientsStatus::GRANTED_LOGIN);
 
         return $queryBuilder->getQuery()->getResult();
     }

@@ -371,8 +371,13 @@ class ExternalDataManager
      *
      * @throws \Exception
      */
-    public function refreshExecutiveChanges($siren)
+    public function refreshExecutiveChanges($siren): void
     {
+        $executiveCollection = $this->infolegaleManager->getExecutives($siren);
+        if (null === $executiveCollection) {
+            return;
+        }
+
         $executives         = $this->infolegaleManager->getExecutives($siren)->getExecutives();
         $refreshedExecutive = [];
         foreach ($executives as $executive) {

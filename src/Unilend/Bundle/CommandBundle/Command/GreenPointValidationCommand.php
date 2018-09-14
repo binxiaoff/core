@@ -2,7 +2,7 @@
 
 namespace Unilend\Bundle\CommandBundle\Command;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -14,19 +14,19 @@ class GreenPointValidationCommand extends Command
 {
     /** @var LoggerInterface */
     private $logger;
-    /** @var EntityManager */
+    /** @var EntityManagerInterface */
     private $entityManager;
     /** @var GreenPointValidationManager */
     private $validationManager;
 
     /**
      * @param LoggerInterface             $logger
-     * @param EntityManager               $entityManager
+     * @param EntityManagerInterface      $entityManager
      * @param GreenPointValidationManager $validationManager
      */
     public function __construct(
         LoggerInterface $logger,
-        EntityManager $entityManager,
+        EntityManagerInterface $entityManager,
         GreenPointValidationManager $validationManager
     )
     {

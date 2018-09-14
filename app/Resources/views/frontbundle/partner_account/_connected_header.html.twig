@@ -21,7 +21,7 @@
                                 <a href="{{ path('partner_project_request') }}">{{ app.user.initials }}</a>
                             </div><!-- /.profile-avatar -->
 
-                            <div class="profile-name">{% trans with {'%firstName%': app.user.firstName} %} partner-header_greeting {% endtrans %}</div>
+                            <div class="profile-name">{% trans with {'%firstName%': app.user.getPrenom()} %} partner-header_greeting {% endtrans %}</div>
 
                             <a href="{{ path('logout') }}" class="profile-logout link"><span class="label">{% trans %} partner-header_logout {% endtrans %}</span></a>
 

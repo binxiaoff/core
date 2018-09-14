@@ -1,24 +1,25 @@
 <?php
+
 namespace Unilend\Bundle\CommandBundle\DependencyInjection\Compiler;
 
-
+use Ekino\NewRelicBundle\Listener\CommandListener;
+use Ekino\NewRelicBundle\NewRelic\Config;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 
 class OverrideNewRelicSettingsPass implements CompilerPassInterface
 {
-    public function process(ContainerBuilder $container)
+    /**
+     * {@inheritdoc}
+     */
+    public function process(ContainerBuilder $container): void
     {
-        $newRelic = $container->getDefinition('ekino.new_relic');
+        $newRelic        = $container->getDefinition(Config::class);
+        $newRelicConsole = $container->register('ekino.new_relic.console', Config::class);
+        $newRelicConsole->setArguments($newRelic->getArguments());
 
-        $newRelicConsole = $container->getDefinition('ekino.new_relic.console');
-        $newRelicConsole->replaceArgument(0, $container->getParameter('new_relic.console_app_name'))
-            ->replaceArgument(1, $newRelic->getArgument(1))
-            ->replaceArgument(2, $newRelic->getArgument(2))
-            ->replaceArgument(3, $newRelic->getArgument(3))
-            ->replaceArgument(4, $newRelic->getArgument(4))
-        ;
+        $newRelicConsole->replaceArgument('$name', $container->getParameter('new_relic.console_app_name'));
 
-        $container->getDefinition('ekino.new_relic.command_listener')->replaceArgument(0, $newRelicConsole);
+        $container->getDefinition(CommandListener::class)->replaceArgument('$config', $newRelicConsole);
     }
 }

@@ -483,3 +483,27 @@
     }
   }
 }
+
+@mixin security-icon-blocks {
+  position: relative;
+  padding: 20px;
+  text-align: left;
+
+  @include devices('md', 'lg') {
+    padding: 30px;
+  }
+
+  @include message-icon($c-t1);
+
+  @include devices('md', 'lg') {
+    @include message-md-icon;
+  }
+}
+
+.profile-security-password-explanation {
+  @include security-icon-blocks;
+
+  &:before {
+    content: $fa-lock-u64;
+  }
+}

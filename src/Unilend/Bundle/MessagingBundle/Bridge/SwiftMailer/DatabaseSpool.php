@@ -2,8 +2,7 @@
 
 namespace Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer;
 
-use Doctrine\ORM\EntityManager;
-use Doctrine\ORM\OptimisticLockException;
+use Doctrine\ORM\{EntityManagerInterface, OptimisticLockException};
 use Mailjet\Response;
 use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\MailQueue;
@@ -13,17 +12,17 @@ class DatabaseSpool extends \Swift_ConfigurableSpool
 {
     /** @var MailQueueManager */
     protected $mailQueueManager;
-    /** @var EntityManager */
+    /** @var EntityManagerInterface */
     protected $entityManager;
     /** @var LoggerInterface */
     protected $logger;
 
     /**
-     * @param MailQueueManager $mailQueueManager
-     * @param EntityManager    $entityManager
-     * @param LoggerInterface  $logger
+     * @param MailQueueManager       $mailQueueManager
+     * @param EntityManagerInterface $entityManager
+     * @param LoggerInterface        $logger
      */
-    public function __construct(MailQueueManager $mailQueueManager, EntityManager $entityManager, LoggerInterface $logger)
+    public function __construct(MailQueueManager $mailQueueManager, EntityManagerInterface $entityManager, LoggerInterface $logger)
     {
         $this->mailQueueManager = $mailQueueManager;
         $this->entityManager    = $entityManager;
@@ -133,11 +132,22 @@ class DatabaseSpool extends \Swift_ConfigurableSpool
                             $email->setIdMessageMailjet($transport->getMessageId($email, $response));
                         }
                     } else {
+                        $errorEmails  = [];
                         $reasonPhrase = json_encode($response->getReasonPhrase());
 
                         foreach ($batch as $email) {
                             $email->setStatus(MailQueue::STATUS_ERROR);
                             $email->setErrorMailjet($reasonPhrase);
+
+                            $errorEmails[] = $email->getIdQueue();
+                        }
+
+                        if ($response->getBody() && isset($response->getBody()['Messages'])) {
+                            $this->logger->warning('An error occurred while sending emails via Mailjet: ' . $reasonPhrase . '. Response was ' . json_encode($response->getBody()['Messages']), [
+                                'emails'   => $errorEmails,
+                                'class'    => __CLASS__,
+                                'function' => __FUNCTION__
+                            ]);
                         }
                     }
                 }

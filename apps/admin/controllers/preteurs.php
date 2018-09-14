@@ -845,10 +845,10 @@ class preteursController extends bootstrap
             $timeCreate    = $statusHistory->getAdded();
         }
 
-        $month    = $this->dates->tableauMois['fr'][$timeCreate->format('n')];
-        $keywords = [
+        $dateFormatter = new \IntlDateFormatter($this->getParameter('locale'), \IntlDateFormatter::LONG, \IntlDateFormatter::NONE);
+        $keywords      = [
             'firstName'        => $this->clients->prenom,
-            'modificationDate' => $timeCreate->format('j') . ' ' . $month . ' ' . $timeCreate->format('Y'),
+            'modificationDate' => $dateFormatter->format($timeCreate),
             'content'          => $_SESSION['content_email_completude'][$this->clients->id_client],
             'uploadLink'       => $this->furl . '/profile/documents',
             'lenderPattern'    => $this->clients->getLenderPattern($this->clients->id_client),
@@ -1315,12 +1315,12 @@ class preteursController extends bootstrap
      */
     private function sendCompletenessRequest(Clients $client): void
     {
-        $wallet     = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
-        $timeCreate = empty($this->statusHistory[0]) ? $client->getAdded() : $this->statusHistory[0]->getAdded();
-        $month      = $this->dates->tableauMois['fr'][$timeCreate->format('n')];
-        $keywords   = [
+        $wallet        = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
+        $timeCreate    = empty($this->statusHistory[0]) ? $client->getAdded() : $this->statusHistory[0]->getAdded();
+        $dateFormatter = new \IntlDateFormatter($this->getParameter('locale'), \IntlDateFormatter::LONG, \IntlDateFormatter::NONE);
+        $keywords      = [
             'firstName'        => $client->getPrenom(),
-            'modificationDate' => $timeCreate->format('j') . ' ' . $month . ' ' . $timeCreate->format('Y'),
+            'modificationDate' => $dateFormatter->format($timeCreate),
             'content'          => $_SESSION['content_email_completude'][$client->getIdClient()],
             'uploadLink'       => $this->furl . '/profile/documents',
             'lenderPattern'    => $wallet->getWireTransferPattern()
@@ -1571,7 +1571,7 @@ class preteursController extends bootstrap
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager    = $this->get('doctrine.orm.entity_manager');
         $clientRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
-        $duplicates       = $clientRepository->findByEmailAndStatus($client->getEmail(), ClientsStatus::GRANTED_LOGIN);
+        $duplicates       = $clientRepository->findGrantedLoginAccountsByEmail($client->getEmail());
 
         if (false === empty($duplicates)) {
             $_SESSION['freeow']['title']   = 'Statut prêteur';
@@ -1706,7 +1706,7 @@ class preteursController extends bootstrap
 
         $duplicates = $entityManager
             ->getRepository('UnilendCoreBusinessBundle:Clients')
-            ->findByEmailAndStatus($email, ClientsStatus::GRANTED_LOGIN);
+            ->findGrantedLoginAccountsByEmail($email);
 
         if (count($duplicates) > 0) {
             $_SESSION['error_email_exist'] = 'Impossible de modifier l‘adresse email. Cette adresse est déjà utilisée par un autre compte.';

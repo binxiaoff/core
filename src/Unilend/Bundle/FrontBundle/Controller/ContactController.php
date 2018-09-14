@@ -5,29 +5,35 @@ namespace Unilend\Bundle\FrontBundle\Controller;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\{Request, Response};
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Translation\TranslatorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{Clients, Companies};
-use Unilend\Bundle\FrontBundle\Security\User\{BaseUser, UserBorrower, UserLender, UserPartner};
+use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\FrontBundle\Service\ProjectDisplayManager;
 use Unilend\core\Loader;
 
 class ContactController extends Controller
 {
+    const CONTACT_ROLE_PRESS       = 1;
+    const CONTACT_ROLE_LENDER      = 2;
+    const CONTACT_ROLE_BORROWER    = 3;
+    const CONTACT_ROLE_RECRUITMENT = 4;
+    const CONTACT_ROLE_OTHER       = 5;
+    const CONTACT_ROLE_PARTNER     = 6;
+
     /**
      * @Route("/contact", name="contact")
      *
-     * @param Request $request
+     * @param Request                     $request
+     * @param UserInterface|Clients|null $client
      *
      * @return Response
      */
-    public function contactAction(Request $request): Response
+    public function contactAction(Request $request, ?UserInterface $client): Response
     {
-        /** @var BaseUser $user */
-        $user     = $this->getUser();
         $template = [];
 
-        if ($user instanceof UserLender || $user instanceof UserBorrower || $user instanceof UserPartner) {
-            $template['formData'] = $this->getContactFormTemplateData($user);
+        if ($client instanceof Clients) {
+            $template['formData'] = $this->getContactFormTemplateData($client);
         }
 
         if ($request->request->has('message')) {
@@ -41,45 +47,45 @@ class ContactController extends Controller
         return $this->render('contact/contact.html.twig', $template);
     }
 
-
     /**
      * @Route("/contact/search/{query}", name="contact_search_result")
      *
+     * @param Request                     $request
+     * @param string                      $query
+     * @param UserInterface|Clients|null $client
+     *
      * @return Response
      */
-    public function contactSearchResultAction(Request $request, string $query): Response
+    public function contactSearchResultAction(Request $request, string $query, ?UserInterface $client): Response
     {
-        /** @var BaseUser $user */
-        $user              = $this->getUser();
         $template['query'] = $query;
 
         if (Request::METHOD_GET === $request->getMethod()) {
             if (null !== $query) {
-                $template['results'] = $this->getSearchResult($query, $user);
+                $template['results'] = $this->getSearchResult($query, $client);
             }
         }
 
-        if ($user instanceof UserLender || $user instanceof UserBorrower || $user instanceof UserPartner) {
-            $template['formData'] = $this->getContactFormTemplateData($user);
+        if ($client instanceof Clients) {
+            $template['formData'] = $this->getContactFormTemplateData($client);
         }
 
         return $this->render('contact/contact.html.twig', $template);
     }
 
     /**
-     * @param BaseUser $user
+     * @param Clients $client
      *
      * @return array
      */
-    private function getContactFormTemplateData(BaseUser $user): array
+    private function getContactFormTemplateData(Clients $client): array
     {
-        $entityManager = $this->get('doctrine.orm.entity_manager');
-        /** @var Clients $client */
-        $client = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($user->getClientId());
+        if (false === $client->isLender() && false === $client->isBorrower() && false === $client->isPartner()) {
+            return [];
+        }
 
-        if (false === $client->isNaturalPerson() || $user instanceof UserBorrower || $user instanceof UserPartner) {
-            /** @var Companies $company */
-            $company = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $client->getIdClient()]);
+        if (false === $client->isNaturalPerson() || $client->isBorrower() || $client->isPartner()) {
+            $company = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $client]);
         }
 
         $formData = [
@@ -87,11 +93,11 @@ class ContactController extends Controller
             'lastname'  => $client->getNom(),
             'phone'     => $client->getMobile(),
             'email'     => $client->getEmail(),
-            'company'   => isset($company) ? $company->getName() : '',
-            'role'      => $user instanceof UserLender ? 2 : ($user instanceof UserBorrower ? 3 : ($user instanceof UserPartner ? 4 : ''))
+            'company'   => empty($company) ? '' : $company->getName(),
+            'role'      => $client->isLender() ? self::CONTACT_ROLE_LENDER : ($client->isBorrower() ? self::CONTACT_ROLE_BORROWER : ($client->isPartner() ? self::CONTACT_ROLE_PARTNER : ''))
         ];
 
-         return $formData;
+        return $formData;
     }
 
     /**
@@ -106,19 +112,19 @@ class ContactController extends Controller
     }
 
     /**
-     * @param string        $query
-     * @param BaseUser|null $user
+     * @param  string       $query
+     * @param  Clients|null $client
      *
      * @return array
      */
-    private function getSearchResult(string $query, ?BaseUser $user): array
+    private function getSearchResult(string $query, ?Clients $client): array
     {
         $query   = filter_var(urldecode($query), FILTER_SANITIZE_STRING);
         $search  = $this->get('unilend.service.search_service');
         $results = $search->search($query);
 
         if (false === empty($results['projects'])) {
-            if (null === $user) {
+            if (false === $client instanceof Clients) {
                 unset($results['projects']);
             } else {
                 $projectDisplayManager = $this->get('unilend.frontbundle.service.project_display_manager');
@@ -127,7 +133,7 @@ class ContactController extends Controller
                 foreach ($results['projects'] as $index => $result) {
                     $project = $projectRepository->find($result['projectId']);
 
-                    if (ProjectDisplayManager::VISIBILITY_FULL !== $projectDisplayManager->getVisibility($project, $user)) {
+                    if (ProjectDisplayManager::VISIBILITY_FULL !== $projectDisplayManager->getVisibility($project, $client)) {
                         unset($results['projects'][$index]);
                     }
                 }
@@ -200,22 +206,22 @@ class ContactController extends Controller
             }
 
             switch ($post['role']) {
-                case 1:
+                case self::CONTACT_ROLE_PRESS:
                     $settingType = 'Adresse presse';
                     break;
-                case 2:
+                case self::CONTACT_ROLE_LENDER:
                     $settingType = 'Adresse preteur';
                     break;
-                case 3:
+                case self::CONTACT_ROLE_BORROWER:
                     $settingType = 'Adresse emprunteur';
                     break;
-                case 4:
+                case self::CONTACT_ROLE_RECRUITMENT:
                     $settingType = 'Adresse recrutement';
                     break;
-                case 6:
+                case self::CONTACT_ROLE_PARTNER:
                     $settingType = 'Adresse partenariat';
                     break;
-                case 5:
+                case self::CONTACT_ROLE_OTHER:
                 default:
                     $settingType = 'Adresse autre';
                     break;

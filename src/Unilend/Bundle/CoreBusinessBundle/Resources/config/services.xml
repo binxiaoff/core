@@ -211,9 +211,10 @@
         </service>
 
         <service id="unilend.service.client_status_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\ClientStatusManager">
+            <argument type="service" id="doctrine.orm.entity_manager"/>
             <argument type="service" id="unilend.service.notification_manager"/>
             <argument type="service" id="unilend.service.autobid_settings_manager"/>
-            <argument type="service" id="doctrine.orm.entity_manager"/>
+            <argument type="service" id="unilend.service.bank_account_manager"/>
             <argument type="service" id="logger"/>
         </service>
 
@@ -271,7 +272,6 @@
 
         <service id="unilend.service.bank_account_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\BankAccountManager">
             <argument type="service" id="doctrine.orm.entity_manager"/>
-            <argument type="service" id="unilend.service.entity_manager"/>
             <argument type="service" id="unilend.service.lender_manager"/>
             <argument type="service" id="logger"/>
             <argument type="service" id="validator"/>
@@ -310,13 +310,12 @@
         </service>
 
         <service id="unilend.service.slack_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\SlackManager">
-            <argument type="service" id="cl_slack.api_client"/>
+            <argument type="service" id="nexy_slack.client"/>
             <argument type="service" id="doctrine.orm.entity_manager"/>
             <argument type="service" id="assets.packages"/>
             <argument>%router.request_context.scheme%</argument>
             <argument>%url.host_default%</argument>
             <argument>%url.host_admin%</argument>
-            <argument>%slack.default_channel%</argument>
             <argument>%kernel.environment%</argument>
             <argument type="service" id="logger"/>
         </service>
@@ -426,7 +425,7 @@
             <argument type="service" id="unilend.service.risk_data_monitoring_manager"/>
         </service>
 
-        <service id="unilend.service.risk_data_monitoring_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\RiskDataMonitoring\MonitoringManger">
+        <service id="unilend.service.risk_data_monitoring_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\RiskDataMonitoring\MonitoringManager">
             <argument type="service" id="doctrine.orm.entity_manager"/>
         </service>
 

@@ -26,8 +26,6 @@
 //
 // **************************************************************************************************** //
 
-use Unilend\core\Loader;
-
 class companies_actif_passif extends companies_actif_passif_crud
 {
     public function __construct($bdd, $params = '')

@@ -100,22 +100,16 @@ class SendUpcomingProjectCloseOutNettingNotificationCommand extends ContainerAwa
         $slackManager = $this->getContainer()->get('unilend.service.slack_manager');
         $logger       = $this->getContainer()->get('monolog.logger.console');
         $settingType  = 'Slack notification decheance du terme a venir';
-        try {
-            /** @var Settings $slackListSetting */
-            $slackListSetting = $this->getContainer()->get('doctrine.orm.entity_manager')
-                ->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => $settingType]);
-            if (null !== $slackListSetting) {
-                foreach (explode(',', $slackListSetting->getValue()) as $slackChannel) {
-                    $slackManager->sendMessage('Projets à déchoir sous ' . $interval . ' jours: ' . implode(', ', $projectNames), $slackChannel);
-                }
-            } else {
-                $logger->error('Could not send slack notification, no configured slack channels found.', ['method' => __METHOD__, 'setting_type' => $settingType]);
+
+        /** @var Settings $slackListSetting */
+        $slackListSetting = $this->getContainer()->get('doctrine.orm.entity_manager')
+            ->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => $settingType]);
+        if (null !== $slackListSetting) {
+            foreach (explode(',', $slackListSetting->getValue()) as $slackChannel) {
+                $slackManager->sendMessage('Projets à déchoir sous ' . $interval . ' jours: ' . implode(', ', $projectNames), $slackChannel);
             }
-        } catch (\Exception $exception) {
-            $logger->error(
-                'Could not send slack notification about upcoming projects to decline. Exception: ' . $exception->getMessage(),
-                ['method' => __METHOD__, 'file' => $exception->getFile(), 'line' => $exception->getLine()]
-            );
+        } else {
+            $logger->error('Could not send slack notification, no configured slack channels found.', ['method' => __METHOD__, 'setting_type' => $settingType]);
         }
     }
 
