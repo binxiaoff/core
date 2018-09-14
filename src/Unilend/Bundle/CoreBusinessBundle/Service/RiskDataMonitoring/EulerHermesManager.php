@@ -18,7 +18,7 @@ class EulerHermesManager
     private $eulerHermesManager;
     /** @var DataWriter */
     private $dataWriter;
-    /** @var MonitoringManger */
+    /** @var MonitoringManager */
     private $monitoringManager;
     /** @var LoggerInterface */
     private $logger;
@@ -27,14 +27,14 @@ class EulerHermesManager
      * @param EntityManagerInterface $entityManager
      * @param EulerHermesWsClient    $eulerHermesManager
      * @param DataWriter             $dataWriter
-     * @param MonitoringManger       $monitoringManager
+     * @param MonitoringManager      $monitoringManager
      * @param LoggerInterface        $wsClientLogger
      */
     public function __construct(
         EntityManagerInterface $entityManager,
         EulerHermesWsClient $eulerHermesManager,
         DataWriter $dataWriter,
-        MonitoringManger $monitoringManager,
+        MonitoringManager $monitoringManager,
         LoggerInterface $wsClientLogger
     )
     {

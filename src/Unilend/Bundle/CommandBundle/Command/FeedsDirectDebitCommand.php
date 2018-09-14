@@ -24,19 +24,19 @@ class FeedsDirectDebitCommand extends ContainerAwareCommand
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $entityMangerSimulator = $this->getContainer()->get('unilend.service.entity_manager');
+        $entityManagerSimulator = $this->getContainer()->get('unilend.service.entity_manager');
         /** @var \compteur_transferts $counter */
-        $counter        = $entityMangerSimulator->getRepository('compteur_transferts');
+        $counter        = $entityManagerSimulator->getRepository('compteur_transferts');
         $counterId      = $counter->counter('type = 2') + 1;
         $counter->type  = 2;
         $counter->ordre = $counterId;
         $counter->create();
 
-        $entityManger = $this->getContainer()->get('doctrine.orm.entity_manager');
+        $entityManager = $this->getContainer()->get('doctrine.orm.entity_manager');
 
-        $directDebitRepository = $entityManger->getRepository('UnilendCoreBusinessBundle:Prelevements');
-        $mandateRepository     = $entityManger->getRepository('UnilendCoreBusinessBundle:ClientsMandats');
-        $settingsRepository    = $entityManger->getRepository('UnilendCoreBusinessBundle:Settings');
+        $directDebitRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Prelevements');
+        $mandateRepository     = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsMandats');
+        $settingsRepository    = $entityManager->getRepository('UnilendCoreBusinessBundle:Settings');
 
         $now           = new \DateTime();
         $bic           = $settingsRepository->findOneBy(['type' => 'Virement - BIC'])->getValue();
@@ -113,7 +113,7 @@ class FeedsDirectDebitCommand extends ContainerAwareCommand
                 ->setStatus(Prelevements::STATUS_SENT)
                 ->setAddedXml(new \DateTime());
 
-            $entityManger->flush($borrowerDirectDebit);
+            $entityManager->flush($borrowerDirectDebit);
         }
 
         $xml .= '

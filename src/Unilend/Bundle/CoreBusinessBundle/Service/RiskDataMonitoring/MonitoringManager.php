@@ -2,12 +2,10 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service\RiskDataMonitoring;
 
-use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\NoResultException;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
-use Unilend\Bundle\CoreBusinessBundle\Entity\RiskDataMonitoring;
+use Doctrine\ORM\{EntityManager, NoResultException};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{Projects, RiskDataMonitoring};
 
-class MonitoringManger
+class MonitoringManager
 {
     const PROVIDERS = [
         AltaresManager::PROVIDER_NAME,

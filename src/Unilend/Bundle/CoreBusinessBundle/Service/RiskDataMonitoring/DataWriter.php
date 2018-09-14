@@ -16,20 +16,20 @@ class DataWriter
     private $translator;
     /** @var ProjectStatusManager */
     private $projectStatusManager;
-    /** @var MonitoringManger */
+    /** @var MonitoringManager */
     private $monitoringManager;
 
     /**
      * @param EntityManagerInterface $entityManager
      * @param TranslatorInterface    $translator
      * @param ProjectStatusManager   $projectStatusManager
-     * @param MonitoringManger       $monitoringManager
+     * @param MonitoringManager      $monitoringManager
      */
     public function __construct(
         EntityManagerInterface $entityManager,
         TranslatorInterface $translator,
         ProjectStatusManager $projectStatusManager,
-        MonitoringManger $monitoringManager
+        MonitoringManager $monitoringManager
     )
     {
         $this->entityManager        = $entityManager;

@@ -5,8 +5,7 @@ namespace Unilend\Bundle\CommandBundle\Command;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Prelevements;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{Clients, Prelevements};
 
 class EmailBorrowerUpcomingRepaymentCommand extends ContainerAwareCommand
 {
@@ -25,14 +24,14 @@ class EmailBorrowerUpcomingRepaymentCommand extends ContainerAwareCommand
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $entityManger    = $this->getContainer()->get('doctrine.orm.entity_manager');
+        $entityManager   = $this->getContainer()->get('doctrine.orm.entity_manager');
         $numberFormatter = $this->getContainer()->get('number_formatter');
 
-        $loanRepository     = $entityManger->getRepository('UnilendCoreBusinessBundle:Loans');
-        $settingsRepository = $entityManger->getRepository('UnilendCoreBusinessBundle:Settings');
+        $loanRepository     = $entityManager->getRepository('UnilendCoreBusinessBundle:Loans');
+        $settingsRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Settings');
 
         /** @var Prelevements[] $upcomingDirectDebits */
-        $upcomingDirectDebits = $entityManger->getRepository('UnilendCoreBusinessBundle:Prelevements')->getUpcomingDirectDebits(7);
+        $upcomingDirectDebits = $entityManager->getRepository('UnilendCoreBusinessBundle:Prelevements')->getUpcomingDirectDebits(7);
 
         $borrowerServicePhoneNumber = $settingsRepository->findOneBy(['type' => 'Téléphone emprunteur'])->getValue();
         $borrowerServiceEmail       = $settingsRepository->findOneBy(['type' => 'Adresse emprunteur'])->getValue();

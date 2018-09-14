@@ -34,7 +34,7 @@ class MonitoringCycleManager
     private $altaresManager;
     /** @var DataWriter */
     private $dataWriter;
-    /** @var MonitoringManger */
+    /** @var MonitoringManager */
     private $monitoringManager;
     /** @var LoggerInterface */
     private $logger;
@@ -44,7 +44,7 @@ class MonitoringCycleManager
      * @param EulerHermesManager     $eulerHermesManager
      * @param AltaresManager         $altaresManager
      * @param DataWriter             $dataWriter
-     * @param MonitoringManger       $monitoringManager
+     * @param MonitoringManager      $monitoringManager
      * @param LoggerInterface        $wsClientLogger
      */
     public function __construct(
@@ -52,7 +52,7 @@ class MonitoringCycleManager
         EulerHermesManager $eulerHermesManager,
         AltaresManager $altaresManager,
         DataWriter $dataWriter,
-        MonitoringManger $monitoringManager,
+        MonitoringManager $monitoringManager,
         LoggerInterface $wsClientLogger
     )
     {

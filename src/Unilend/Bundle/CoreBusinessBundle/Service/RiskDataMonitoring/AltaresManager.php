@@ -8,9 +8,7 @@ use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{Companies, CompanyRatingHistory};
 use Unilend\Bundle\CoreBusinessBundle\Service\Eligibility\Validator\CompanyValidator;
 use Unilend\Bundle\CoreBusinessBundle\Service\ExternalDataManager;
-use Unilend\Bundle\WSClientBundle\Entity\Altares\RiskDataMonitoring\EventDetail;
-use Unilend\Bundle\WSClientBundle\Entity\Altares\RiskDataMonitoring\Notification;
-use Unilend\Bundle\WSClientBundle\Entity\Altares\RiskDataMonitoring\NotificationInformation;
+use Unilend\Bundle\WSClientBundle\Entity\Altares\RiskDataMonitoring\{EventDetail, Notification, NotificationInformation};
 use Unilend\Bundle\WSClientBundle\Service\AltaresManager as AltaresWsClient;
 
 class AltaresManager
@@ -38,7 +36,7 @@ class AltaresManager
     private $externalDataManager;
     /** @var DataWriter */
     private $dataWriter;
-    /** @var MonitoringManger */
+    /** @var MonitoringManager */
     private $monitoringManager;
     /** @var LoggerInterface */
     private $logger;
@@ -49,7 +47,7 @@ class AltaresManager
      * @param CompanyValidator       $companyValidator
      * @param ExternalDataManager    $externalDataManager
      * @param DataWriter             $dataWriter
-     * @param MonitoringManger       $monitoringManager
+     * @param MonitoringManager      $monitoringManager
      * @param LoggerInterface        $wsClientLogger
      */
     public function __construct(
@@ -58,7 +56,7 @@ class AltaresManager
         CompanyValidator $companyValidator,
         ExternalDataManager $externalDataManager,
         DataWriter $dataWriter,
-        MonitoringManger $monitoringManager,
+        MonitoringManager $monitoringManager,
         LoggerInterface $wsClientLogger
     )
     {
