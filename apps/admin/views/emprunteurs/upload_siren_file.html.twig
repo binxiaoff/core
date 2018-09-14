@@ -5,19 +5,6 @@
     <link rel="stylesheet" href="{{ app.adminUrl }}/oneui/js/plugins/datatables/jquery.dataTables.min.css">
 {% endblock %}
 
-{% block pageScripts %}
-    <script>
-        $(function () {
-            var messageDiv = $('.alert');
-            if (messageDiv) {
-                setTimeout(function () {
-                    messageDiv.remove();
-                }, 5000);
-            }
-        })
-    </script>
-{% endblock %}
-
 {% block pageHeader %}
     <h1 class="page-heading push">
         {{ pageTitle }}
@@ -26,6 +13,9 @@
 
 {% block content %}
     <div class="content">
+        <div class="alert alert-warning">
+            <p>Les limites imposées par Altares ne permettent pas de vérifier plus de 2500 SIREN par heure.</p>
+        </div>
         <div class="block">
             <div class="block-content block-content-full">
                 <div class="row">
@@ -44,7 +34,7 @@
                         <p>{{ success }}</p>
                     </div>
                 {% elseif error is not empty %}
-                    <div class="alert alert-warning push-10-t">
+                    <div class="alert alert-danger push-10-t">
                         <p>{{ error }}</p>
                     </div>
                 {% endif %}
