@@ -425,7 +425,7 @@
             <argument type="service" id="unilend.service.risk_data_monitoring_manager"/>
         </service>
 
-        <service id="unilend.service.risk_data_monitoring_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\RiskDataMonitoring\MonitoringManger">
+        <service id="unilend.service.risk_data_monitoring_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\RiskDataMonitoring\MonitoringManager">
             <argument type="service" id="doctrine.orm.entity_manager"/>
         </service>
 

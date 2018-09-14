@@ -4,9 +4,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service\RiskDataMonitoring;
 
 use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Companies, CompanyRating, CompanyRatingHistory
-};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{Companies, CompanyRating, CompanyRatingHistory};
 use Unilend\Bundle\WSClientBundle\Entity\Euler\CompanyRating as EulerCompanyRating;
 use Unilend\Bundle\WSClientBundle\Service\EulerHermesManager as EulerHermesWsClient;
 
@@ -20,7 +18,7 @@ class EulerHermesManager
     private $eulerHermesManager;
     /** @var DataWriter */
     private $dataWriter;
-    /** @var MonitoringManger */
+    /** @var MonitoringManager */
     private $monitoringManager;
     /** @var LoggerInterface */
     private $logger;
@@ -29,14 +27,14 @@ class EulerHermesManager
      * @param EntityManager       $entityManager
      * @param EulerHermesWsClient $eulerHermesManager
      * @param DataWriter          $dataWriter
-     * @param MonitoringManger    $monitoringManager
+     * @param MonitoringManager   $monitoringManager
      * @param LoggerInterface     $logger
      */
     public function __construct(
         EntityManager $entityManager,
         EulerHermesWsClient $eulerHermesManager,
         DataWriter $dataWriter,
-        MonitoringManger $monitoringManager,
+        MonitoringManager $monitoringManager,
         LoggerInterface $logger
     )
     {
