@@ -24,15 +24,17 @@
                 })
 
                 myDropzone.on('success', function (file, response) {
-                    myDropzone.removeFile(file)
+                    var uploadedFileName = file.name
 
                     if (false === $.isEmptyObject(response) && response.hasOwnProperty('success') && response.success && response.hasOwnProperty('data') && $.isArray(response.data)) {
                         $.each(response.data, function (index, file) {
-                            var $removeLink = $('<a>').addClass('attachment-remove').attr('href', '<?= $this->lurl ?>/attachment/remove_project/' + file.projectAttachmentId).append('<img src="<?= $this->surl ?>/images/admin/delete.png" alt="Supprimer">')
-                            var $viewerLink = $('<a>').attr('href', '<?= $this->lurl ?>/viewer/project/<?= $this->projectEntity->getIdProject() ?>/' + file.attachmentId).attr('target', '_blank').append(file.name)
-                            var $file = $('<div>').addClass('attachment-file').append($removeLink).append($viewerLink)
+                            if (uploadedFileName === file.name) {
+                                var $removeLink = $('<a>').addClass('attachment-remove').attr('href', '<?= $this->lurl ?>/attachment/remove_project/' + file.projectAttachmentId).append('<img src="<?= $this->surl ?>/images/admin/delete.png" alt="Supprimer">')
+                                var $viewerLink = $('<a>').attr('href', '<?= $this->lurl ?>/viewer/project/<?= $this->projectEntity->getIdProject() ?>/' + file.attachmentId).attr('target', '_blank').append(file.name)
+                                var $file = $('<div>').addClass('attachment-file').append($removeLink).append($viewerLink)
 
-                            $form.closest('tr').find('td:nth(1)').append($file)
+                                $form.closest('tr').find('td:nth(1)').append($file)
+                            }
                         })
                     } else {
                         var errorMessage = 'Erreur de chargement. Réponse serveur incorrecte.'
