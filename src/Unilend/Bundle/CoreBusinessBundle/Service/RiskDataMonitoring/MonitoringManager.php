@@ -2,7 +2,7 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service\RiskDataMonitoring;
 
-use Doctrine\ORM\{EntityManager, NoResultException};
+use Doctrine\ORM\{EntityManagerInterface, NoResultException};
 use Unilend\Bundle\CoreBusinessBundle\Entity\{Projects, RiskDataMonitoring};
 
 class MonitoringManager
