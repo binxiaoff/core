@@ -65,7 +65,7 @@ class TermsOfSaleController extends Controller
      *
      * @return Response
      */
-    public function lenderTermsOfSaleDownloadAction(?UserInterface $client, string $clientHash, int $idTree, TranslatorInterface $translator)
+    public function lenderTermsOfSaleDownload(?UserInterface $client, string $clientHash, int $idTree, TranslatorInterface $translator)
     {
         if ($client instanceof Clients && $client->getHash() !== $clientHash) {
             return $this->getTermsOfSaleErrorResponse($translator, self::ERROR_ACCESS_DENIED, $idTree);
@@ -75,19 +75,15 @@ class TermsOfSaleController extends Controller
             $this->redirectToRoute('lender_subscription_personal_information');
         }
 
-        /** @var Tree $termsOfSalesTree */
-        $termsOfSalesTree = $this->entityManager
-            ->getRepository('UnilendCoreBusinessBundle:Tree')
-            ->findBy(['idTree' => $idTree]);
+        $termsOfSalesRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Tree');
+        $termsOfSalesTree       = $termsOfSalesRepository->findBy(['idTree' => $idTree]);
 
         if (null === $termsOfSalesTree) {
             return $this->getTermsOfSaleErrorResponse($translator, self::ERROR_CANNOT_FIND_TOS, $idTree);
         }
 
-        /** @var AcceptationsLegalDocs $acceptedTos */
-        $acceptedTos = $this->entityManager
-            ->getRepository('UnilendCoreBusinessBundle:AcceptationsLegalDocs')
-            ->findOneBy(['idClient' => $client, 'idLegalDoc' => $idTree]);
+        $acceptedTosRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:AcceptationsLegalDocs');
+        $acceptedTos           = $acceptedTosRepository->findOneBy(['idClient' => $client, 'idLegalDoc' => $idTree]);
 
         if (null === $acceptedTos) {
             return $this->getTermsOfSaleErrorResponse($translator, self::ERROR_CANNOT_FIND_ACCEPTED_TOS, $idTree);
@@ -114,16 +110,16 @@ class TermsOfSaleController extends Controller
      * @Route("/cgv_preteurs/{type}", name="lenders_terms_of_sales", requirements={"type": "morale"})
      *
      * @param UserInterface|Clients|null $client
-     * @param SeoManager                 $seoManager
      * @param string                     $type
+     * @param SeoManager                 $seoManager
      *
      * @return Response
      */
-    public function lenderTermsOfSalesAction(SeoManager $seoManager, ?UserInterface $client, string $type = ''): Response
+    public function lenderTermsOfSalesAction(?UserInterface $client, string $type = '', SeoManager $seoManager): Response
     {
         $idTree = $this->termsOfSaleManager->getCurrentVersionForPerson();
 
-        if ($type ===  self::ROUTE_PARAMETER_LEGAL_ENTITY) {
+        if ($type === self::ROUTE_PARAMETER_LEGAL_ENTITY) {
             $idTree = $this->termsOfSaleManager->getCurrentVersionForLegalEntity();
         }
 
@@ -151,7 +147,7 @@ class TermsOfSaleController extends Controller
             'right_content' => $content
         ];
 
-        return $this->render('cms_templates/template_cgv.html.twig', ['cms' => $cms]);
+        return $this->render('terms_of_sale/template_cgv.html.twig', ['cms' => $cms]);
     }
 
     /**
@@ -243,7 +239,7 @@ class TermsOfSaleController extends Controller
 
                 if ($acceptationsTos->exist($client->getIdClient(), 'id_client')) {
                     $wallet                = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client->getIdClient(), WalletType::LENDER);
-                    $newTermsOfServiceDate = $this->termsOfSaleManager->getDateOfNewTermsOfService();
+                    $newTermsOfServiceDate = $this->termsOfSaleManager->getDateOfNewTermsOfSaleWithTwoMandates();
                     /** @var \loans $loans */
                     $loans = $entityManagerSimulator->getRepository('loans');
 

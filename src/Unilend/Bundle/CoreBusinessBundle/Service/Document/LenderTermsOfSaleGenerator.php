@@ -192,7 +192,7 @@ class LenderTermsOfSaleGenerator implements DocumentGeneratorInterface
             throw new \InvalidArgumentException('Client is no lender');
         }
 
-        $newTermsOfServiceDate        = $this->termsOfSaleManager->getDateOfNewTermsOfService();
+        $newTermsOfServiceDate        = $this->termsOfSaleManager->getDateOfNewTermsOfSaleWithTwoMandates();
         $wallet                       = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($acceptedLegalDoc->getIdClient(), WalletType::LENDER);
         $loansCount                   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Loans')->getCountLoansForLenderBeforeDate($wallet, $newTermsOfServiceDate);
 

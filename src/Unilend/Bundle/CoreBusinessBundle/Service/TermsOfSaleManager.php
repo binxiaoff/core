@@ -5,7 +5,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 use Doctrine\ORM\EntityManager;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{AcceptationsLegalDocs, Clients, Companies, Elements, ProjectCgv, Projects, UniversignEntityInterface};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{AcceptationsLegalDocs, Clients, Companies, Elements, ProjectCgv, Projects, Settings, UniversignEntityInterface};
 use Unilend\core\Loader;
 
 class TermsOfSaleManager
@@ -15,11 +15,6 @@ class TermsOfSaleManager
     const EXCEPTION_CODE_INVALID_EMAIL        = 1;
     const EXCEPTION_CODE_INVALID_PHONE_NUMBER = 2;
     const EXCEPTION_CODE_PDF_FILE_NOT_FOUND   = 3;
-
-    const SETTING_TYPE_LENDER_TOS_LEGAL_ENTITY   = 'Lien conditions generales inscription preteur societe';
-    const SETTING_TYPE_LENDER_TOS_NATURAL_PERSON = 'Lien conditions generales inscription preteur particulier';
-    const SETTING_TYPE_DATE_LENDER_TOS           = 'Date nouvelles CGV avec 2 mandats';
-    const SETTING_TYPE_BORROWER_TOS              = 'Lien conditions generales depot dossier';
 
     /** @var EntityManager */
     private $entityManager;
@@ -118,7 +113,7 @@ class TermsOfSaleManager
     {
         return (int) $this->entityManager
             ->getRepository('UnilendCoreBusinessBundle:Settings')
-            ->findOneBy(['type' => self::SETTING_TYPE_LENDER_TOS_NATURAL_PERSON])
+            ->findOneBy(['type' => Settings::TYPE_LENDER_TOS_NATURAL_PERSON])
             ->getValue();
     }
 
@@ -129,18 +124,18 @@ class TermsOfSaleManager
     {
         return (int) $this->entityManager
             ->getRepository('UnilendCoreBusinessBundle:Settings')
-             ->findOneBy(['type' => self::SETTING_TYPE_LENDER_TOS_LEGAL_ENTITY])
+             ->findOneBy(['type' => Settings::TYPE_LENDER_TOS_LEGAL_ENTITY])
              ->getValue();
     }
 
     /**
      * @return \DateTime
      */
-    public function getDateOfNewTermsOfService(): \DateTime
+    public function getDateOfNewTermsOfSaleWithTwoMandates(): \DateTime
     {
         $setting = $this->entityManager
             ->getRepository('UnilendCoreBusinessBundle:Settings')
-            ->findOneBy(['type' => self::SETTING_TYPE_DATE_LENDER_TOS])
+            ->findOneBy(['type' => Settings::TYPE_DATE_LENDER_TOS])
             ->getValue();
 
         return new \DateTime($setting);
@@ -201,7 +196,7 @@ class TermsOfSaleManager
         $termsOfSale = $project->getTermsOfSale();
 
         if (null === $termsOfSale) {
-            $tree = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => self::SETTING_TYPE_BORROWER_TOS]);
+            $tree = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => Settings::TYPE_BORROWER_TOS]);
 
             if (null === $tree) {
                 throw new \Exception('Unable to find tree element', self::EXCEPTION_CODE_PDF_FILE_NOT_FOUND);

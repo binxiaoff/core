@@ -3,7 +3,6 @@
         <h3>{% trans %} lender-profile_information-tab-terms-of-use-section-title {% endtrans %}</h3>
     </header>
     <section id="profile-terms-of-use-section">
-        {% if acceptedTermsOfSale is defined %}
             <div class="list-files">
                 {% for acceptedTos in acceptedTermsOfSale %}
                     {% if acceptedTos.getPdfName() is not empty %} {# display only terms of sale for which we have the PDF the client can download (BLD-319 / BLD-320 #}
@@ -16,6 +15,5 @@
                     {% endif %}
                 {% endfor %}
             </div><!-- /.ulist-files -->
-        {% endif %}
     </section><!-- /.ui-toggle-group -->
 </article><!-- /.panel -->
