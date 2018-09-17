@@ -212,10 +212,11 @@ class LenderTermsOfSaleGenerator implements DocumentGeneratorInterface
      */
     private function getNaturalPersonData(AcceptationsLegalDocs $accepted): array
     {
-        $clientAddress = $accepted->getIdClient()->getIdAddress();
+        $clientAddressRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ClientAddress');
+        $clientAddress           = $clientAddressRepository->findMainAddressAddedBeforeDate($accepted->getAdded(), $accepted->getIdClient());
+
         if (null === $clientAddress) {
-            $clientAddress = $this->entityManager
-                ->getRepository('UnilendCoreBusinessBundle:ClientAddress')
+            $clientAddress = $clientAddressRepository
                 ->findLastModifiedNotArchivedAddressByType($accepted->getIdClient(), AddressType::TYPE_MAIN_ADDRESS);
         }
 
@@ -243,12 +244,11 @@ class LenderTermsOfSaleGenerator implements DocumentGeneratorInterface
             throw new \InvalidArgumentException('Client of type legal entity has no attached company');
         }
 
-        $companyAddress = $company->getIdAddress();
+        $companyAddressRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress');
+        $companyAddress           = $companyAddressRepository->findMainAddressAddedBeforeDate($accepted->getAdded(), $company);
 
         if (null === $companyAddress) {
-            $companyAddress = $this->entityManager
-                ->getRepository('UnilendCoreBusinessBundle:CompanyAddress')
-                ->findLastModifiedNotArchivedAddressByType($company, AddressType::TYPE_MAIN_ADDRESS);
+            $companyAddress = $companyAddressRepository->findLastModifiedNotArchivedAddressByType($company, AddressType::TYPE_MAIN_ADDRESS);
         }
 
         return [

@@ -16,6 +16,8 @@ class TermsOfSaleManager
     const EXCEPTION_CODE_INVALID_PHONE_NUMBER = 2;
     const EXCEPTION_CODE_PDF_FILE_NOT_FOUND   = 3;
 
+    const ID_TREE_ROOT_SECTION_LENDER_TOS = 43;
+
     /** @var EntityManager */
     private $entityManager;
     /** @var MailerManager */
