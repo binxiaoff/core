@@ -9,13 +9,37 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\Asset\Packages;
 use Symfony\Component\Filesystem\Filesystem;
 use Twig\Environment;
+use Unilend\Bundle\CoreBusinessBundle\Service\TermsOfSaleManager;
 
 class LenderTermsOfSaleGenerator implements DocumentGeneratorInterface
 {
     const PATH = 'pdf' . DIRECTORY_SEPARATOR . 'cgv_preteurs';
 
+    const LEGAL_ENTITY_PLACEHOLDERS = [
+        '[Civilite]',
+        '[Prenom]',
+        '[Nom]',
+        '[Fonction]',
+        '[Raison_sociale]',
+        '[SIREN]',
+        '[adresse_fiscale]',
+        '[date_validation_cgv]'
+    ];
+
+    const NATURAL_PERSON_PLACEHOLDERS = [
+        '[Civilite]',
+        '[Prenom]',
+        '[Nom]',
+        '[date]',
+        '[ville_naissance]',
+        '[adresse_fiscale]',
+        '[date_validation_cgv]'
+    ];
+
     /** @var EntityManager */
     private $entityManager;
+    /** @var TermsOfSaleManager */
+    private $termsOfSaleManager;
     /** @var Filesystem */
     private $filesystem;
     /** @var string */
@@ -36,19 +60,21 @@ class LenderTermsOfSaleGenerator implements DocumentGeneratorInterface
     private $logger;
 
     /**
-     * @param EntityManager    $entityManager
-     * @param Filesystem       $filesystem
-     * @param string           $protectedPath
-     * @param string           $staticPath
-     * @param Environment      $twig
-     * @param Pdf              $snappy
-     * @param Packages         $assetsPackages
-     * @param \NumberFormatter $numberFormatter
-     * @param \NumberFormatter $currencyFormatter
-     * @param LoggerInterface  $logger
+     * @param EntityManager      $entityManager
+     * @param TermsOfSaleManager $termsOfSaleManager
+     * @param Filesystem         $filesystem
+     * @param string             $protectedPath
+     * @param string             $staticPath
+     * @param Environment        $twig
+     * @param Pdf                $snappy
+     * @param Packages           $assetsPackages
+     * @param \NumberFormatter   $numberFormatter
+     * @param \NumberFormatter   $currencyFormatter
+     * @param LoggerInterface    $logger
      */
     public function __construct(
         EntityManager $entityManager,
+        TermsOfSaleManager $termsOfSaleManager,
         Filesystem $filesystem,
         string $protectedPath,
         string $staticPath,
@@ -60,16 +86,17 @@ class LenderTermsOfSaleGenerator implements DocumentGeneratorInterface
         LoggerInterface $logger
     )
     {
-        $this->entityManager     = $entityManager;
-        $this->filesystem        = $filesystem;
-        $this->protectedPath     = $protectedPath;
-        $this->staticPath        = $staticPath;
-        $this->twig              = $twig;
-        $this->snappy            = $snappy;
-        $this->staticUrl         = $assetsPackages->getUrl('');
-        $this->numberFormatter   = $numberFormatter;
-        $this->currencyFormatter = $currencyFormatter;
-        $this->logger            = $logger;
+        $this->entityManager      = $entityManager;
+        $this->termsOfSaleManager = $termsOfSaleManager;
+        $this->filesystem         = $filesystem;
+        $this->protectedPath      = $protectedPath;
+        $this->staticPath         = $staticPath;
+        $this->twig               = $twig;
+        $this->snappy             = $snappy;
+        $this->staticUrl          = $assetsPackages->getUrl('');
+        $this->numberFormatter    = $numberFormatter;
+        $this->currencyFormatter  = $currencyFormatter;
+        $this->logger             = $logger;
 
         $this->snappy->setBinary('/usr/local/bin/wkhtmltopdf');
     }
@@ -165,8 +192,7 @@ class LenderTermsOfSaleGenerator implements DocumentGeneratorInterface
             throw new \InvalidArgumentException('Client is no lender');
         }
 
-        $newTermsOfServiceDateSetting = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Date nouvelles CGV avec 2 mandats']);
-        $newTermsOfServiceDate        = new \DateTime($newTermsOfServiceDateSetting->getValue());
+        $newTermsOfServiceDate        = $this->termsOfSaleManager->getDateOfNewTermsOfSaleWithTwoMandates();
         $wallet                       = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($acceptedLegalDoc->getIdClient(), WalletType::LENDER);
         $loansCount                   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Loans')->getCountLoansForLenderBeforeDate($wallet, $newTermsOfServiceDate);
 
@@ -277,5 +303,28 @@ class LenderTermsOfSaleGenerator implements DocumentGeneratorInterface
     private function replacePlaceHolders(array $placeholders, string $content): string
     {
         return str_replace(array_keys($placeholders), $placeholders, $content);
+    }
+
+    /**
+     * @param int    $idTree
+     * @param string $type
+     *
+     * @return array
+     * @throws \Exception
+     */
+    public function getNonPersonalizedContent(int $idTree, string $type): array
+    {
+        $content = $this->getContent($idTree);
+
+        if (false === empty($type)) {
+            $replacements = explode(';', $content['contenu-variables-par-defaut-morale']);
+            $content['debtCollectionContract'] = str_replace(self::LEGAL_ENTITY_PLACEHOLDERS, $replacements, $content['mandat-de-recouvrement-personne-morale']);
+
+        } else {
+            $replacements = explode(';', $content['contenu-variables-par-defaut']);
+            $content['debtCollectionContract'] = str_replace(self::NATURAL_PERSON_PLACEHOLDERS, $replacements, $content['mandat-de-recouvrement']);
+        }
+
+        return $content;
     }
 }

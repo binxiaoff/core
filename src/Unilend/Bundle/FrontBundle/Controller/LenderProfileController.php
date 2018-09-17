@@ -150,7 +150,8 @@ class LenderProfileController extends Controller
                 'mainAddress'   => $mainAddressForm->createView(),
                 'postalAddress' => $postalAddressForm->createView()
             ],
-            'isLivingAbroad'       => $lastModifiedMainAddress ? ($lastModifiedMainAddress->getIdCountry()->getIdPays() !== Pays::COUNTRY_FRANCE) : false
+            'isLivingAbroad'       => $lastModifiedMainAddress ? ($lastModifiedMainAddress->getIdCountry()->getIdPays() !== Pays::COUNTRY_FRANCE) : false,
+            'acceptedTermsOfSale'  => $entityManager->getRepository('UnilendCoreBusinessBundle:AcceptationsLegalDocs')->findBy(['idClient' => $client], ['added' => 'ASC'])
         ];
         if (isset($contactForm) && $contactForm instanceof FormInterface) {
             $templateData['forms']['contact'] = $contactForm->createView();
