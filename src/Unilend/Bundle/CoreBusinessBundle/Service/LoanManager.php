@@ -4,9 +4,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AcceptedBids, Clients, Loans, UnderlyingContract, UnderlyingContractAttributeType
-};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{AcceptedBids, Clients, Loans, UnderlyingContract, UnderlyingContractAttributeType};
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\ContractAttributeManager;
 
 /**
@@ -71,7 +69,7 @@ class LoanManager
 
         $currentAcceptedTermsOfSale = $this->entityManager
             ->getRepository('UnilendCoreBusinessBundle:AcceptationsLegalDocs')
-            ->findOneBy(['idClient' => $acceptedBids[0]->getIdBid()->getIdLenderAccount()->getIdClient()->getIdClient()], ['added' => 'DESC']);
+            ->findOneBy(['idClient' => $acceptedBids[0]->getIdBid()->getIdLenderAccount()->getIdClient()], ['added' => 'DESC']);
 
         $rate = round(bcdiv($interests, $loanAmount, 4), 1);
 

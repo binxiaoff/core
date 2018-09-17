@@ -1,7 +1,7 @@
 <?php
 
 use Doctrine\ORM\EntityManager;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, Bids, Clients, ClientsStatus, Pays, ProjectRejectionReason, Projects, ProjectsComments, ProjectsNotes, ProjectsStatus, WalletType, Zones};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, Bids, Clients, Pays, ProjectRejectionReason, Projects, ProjectsComments, ProjectsNotes, ProjectsStatus, WalletType, Zones};
 use Unilend\Bundle\CoreBusinessBundle\Service\LenderOperationsManager;
 use Unilend\Bundle\TranslationBundle\Service\TranslationManager;
 
@@ -555,15 +555,15 @@ class ajaxController extends bootstrap
         $this->projects = $this->loadData('projects');
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BidManager $bidManger */
-        $bidManger = $this->get('unilend.service.bid_manager');
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BidManager $bidManager */
+        $bidManager = $this->get('unilend.service.bid_manager');
 
         if (isset($_POST['id_bid']) && $bids->get($_POST['id_bid'], 'id_bid')) {
             $serialize = serialize($_POST);
             $this->users_history->histo(4, 'Bid en cours delete', $_SESSION['user']['id_user'], $serialize);
 
             $bid = $entityManager->getRepository('UnilendCoreBusinessBundle:Bids')->find($_POST['id_bid']);
-            $bidManger->reject($bid, false);
+            $bidManager->reject($bid, false);
 
             $this->lBids = $bids->select('id_lender_account = ' . $bid->getIdLenderAccount()->getId() . ' AND status = ' . Bids::STATUS_PENDING, 'added DESC');
         }

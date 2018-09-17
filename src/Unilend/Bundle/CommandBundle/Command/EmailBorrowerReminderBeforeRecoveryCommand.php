@@ -6,7 +6,6 @@ use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Unilend\core\Loader;
-use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 
 class EmailBorrowerReminderBeforeRecoveryCommand extends ContainerAwareCommand
 {
@@ -25,11 +24,10 @@ class EmailBorrowerReminderBeforeRecoveryCommand extends ContainerAwareCommand
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        /** @var EntityManager $entityManger */
-        $entityManger = $this->getContainer()->get('unilend.service.entity_manager');
+        $entityManager = $this->getContainer()->get('unilend.service.entity_manager');
 
         /** @var \projects $projectsRepository */
-        $projectsRepository = $entityManger->getRepository('projects');
+        $projectsRepository = $entityManager->getRepository('projects');
         $projects           = $projectsRepository->getProblematicProjectsWithUpcomingRepayment();
 
         if (false === empty($projects)) {
@@ -37,17 +35,17 @@ class EmailBorrowerReminderBeforeRecoveryCommand extends ContainerAwareCommand
             $ficelle = Loader::loadLib('ficelle');
 
             /** @var \clients $client */
-            $client = $entityManger->getRepository('clients');
+            $client = $entityManager->getRepository('clients');
             /** @var \companies $company */
-            $company = $entityManger->getRepository('companies');
+            $company = $entityManager->getRepository('companies');
             /** @var \echeanciers $lenderRepaymentSchedule */
-            $lenderRepaymentSchedule = $entityManger->getRepository('echeanciers');
+            $lenderRepaymentSchedule = $entityManager->getRepository('echeanciers');
             /** @var \echeanciers_emprunteur $borrowerRepaymentSchedule */
-            $borrowerRepaymentSchedule = $entityManger->getRepository('echeanciers_emprunteur');
+            $borrowerRepaymentSchedule = $entityManager->getRepository('echeanciers_emprunteur');
             /** @var \loans $loans */
-            $loans = $entityManger->getRepository('loans');
+            $loans = $entityManager->getRepository('loans');
             /** @var \settings $settings */
-            $settings = $entityManger->getRepository('settings');
+            $settings = $entityManager->getRepository('settings');
 
             $settings->get('Virement - BIC', 'type');
             $bic = $settings->value;

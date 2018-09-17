@@ -118,14 +118,16 @@ parameters:
 
     security.bcrypt.cost:           13
 
+    new_relic.api_key:              edc37da0a36bfd74eded96d4d454c8f7b4b0ab8d4bce97e
     new_relic.front_app_name:       Unilend-front
     new_relic.back_app_name:        Unilend-backoffice
     new_relic.console_app_name:     Unilend-batchjobs
 
     slack.team_id:                  T09JRNH40
-    slack.token:                    xoxb-54621264262-6EXEn7g59rpWe7vDxzHht5z5
     slack.command_token:            u2AOiDVHg1WQQgL1MjZ83IQe
     slack.monitoring_channel:       '#it-monitoring'
+    slack.default_username:         Unilend
+    slack.endpoint:                 https://hooks.slack.com/services/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
 
     mailchimp.api_key:              8a4c593b992cc7e57cb343dd13c9c89b-us7
     mailchimp.webhook_secret:       16deb224527196c9eaae

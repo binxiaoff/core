@@ -90,8 +90,9 @@ class TermsOfSaleManager
      */
     public function isAcceptedVersion(Clients $client, int $legalDocId): bool
     {
-        $legalDocsAcceptance = $this->entityManager->getRepository('UnilendCoreBusinessBundle:AcceptationsLegalDocs')
-            ->findOneBy(['idClient' => $client->getIdClient(), 'idLegalDoc' => $legalDocId]);
+        $legalDocsAcceptance = $this->entityManager
+            ->getRepository('UnilendCoreBusinessBundle:AcceptationsLegalDocs')
+            ->findOneBy(['idClient' => $client, 'idLegalDoc' => $legalDocId]);
 
         return null !== $legalDocsAcceptance;
     }
@@ -155,8 +156,9 @@ class TermsOfSaleManager
     {
         if (false === empty($client)) {
             $termsOfUse = new AcceptationsLegalDocs();
-            $termsOfUse->setIdLegalDoc($this->getCurrentVersionId($client));
-            $termsOfUse->setIdClient($client);
+            $termsOfUse
+                ->setIdLegalDoc($this->getCurrentVersionId($client))
+                ->setIdClient($client);
 
             $this->entityManager->persist($termsOfUse);
             $this->entityManager->flush($termsOfUse);

@@ -951,7 +951,7 @@ class LenderProfileController extends Controller
      * @return bool
      * @throws \Doctrine\ORM\OptimisticLockException
      */
-    public function handlePasswordForm(Clients $client, FormInterface $form): bool
+    private function handlePasswordForm(Clients $client, FormInterface $form): bool
     {
         $translator              = $this->get('translator');
         $securityPasswordEncoder = $this->get('security.password_encoder');

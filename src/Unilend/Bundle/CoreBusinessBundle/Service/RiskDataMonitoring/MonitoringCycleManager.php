@@ -4,9 +4,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service\RiskDataMonitoring;
 
 use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Companies, CompanyStatus, ProjectsStatus, RiskDataMonitoring
-};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{Companies, CompanyStatus, ProjectsStatus, RiskDataMonitoring};
 
 class MonitoringCycleManager
 {
@@ -36,7 +34,7 @@ class MonitoringCycleManager
     private $altaresManager;
     /** @var DataWriter */
     private $dataWriter;
-    /** @var MonitoringManger */
+    /** @var MonitoringManager */
     private $monitoringManager;
     /** @var LoggerInterface */
     private $logger;
@@ -46,7 +44,7 @@ class MonitoringCycleManager
      * @param EulerHermesManager $eulerHermesManager
      * @param AltaresManager     $altaresManager
      * @param DataWriter         $dataWriter
-     * @param MonitoringManger   $monitoringManager
+     * @param MonitoringManager  $monitoringManager
      * @param LoggerInterface    $logger
      */
     public function __construct(
@@ -54,7 +52,7 @@ class MonitoringCycleManager
         EulerHermesManager $eulerHermesManager,
         AltaresManager $altaresManager,
         DataWriter $dataWriter,
-        MonitoringManger $monitoringManager,
+        MonitoringManager $monitoringManager,
         LoggerInterface $logger
     )
     {

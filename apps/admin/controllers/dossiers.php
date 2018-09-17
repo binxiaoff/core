@@ -2137,7 +2137,7 @@ class dossiersController extends bootstrap
             $publicationDate = new \DateTime($this->projects->date_publication);
             $project         = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->projects->id_project);
             $star            = str_replace('.', ',', $projectRatingManager->getRating($project));
-            $message         = $slackManager->getProjectName($this->projects) . ' sera mis en ligne le *' . $publicationDate->format('d/m/Y à H:i') . '* - ' . $this->projects->period . ' mois :calendar: / ' . $this->ficelle->formatNumber($this->projects->amount,
+            $message         = $slackManager->getProjectName($project) . ' sera mis en ligne le *' . $publicationDate->format('d/m/Y à H:i') . '* - ' . $this->projects->period . ' mois :calendar: / ' . $this->ficelle->formatNumber($this->projects->amount,
                     0) . ' € :moneybag: / ' . $star . ' :star:';
 
             $slackManager->sendMessage($message);

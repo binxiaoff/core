@@ -93,7 +93,7 @@ class ClientExtension extends \Twig_Extension
      */
     public function getLenderNotifications(?Clients $client): array
     {
-        if (false === $client instanceof Clients) {
+        if (false === $client instanceof Clients || false === $client->isLender()) {
             return [];
         }
 

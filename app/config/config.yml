@@ -253,6 +253,11 @@ services:
     # Since we use the cache/adapter-bundle as the cache system, the configuration framework.cache.app won't work.
     # It can be removed once TECH-333 will be done.
     cache.app: '@memcache.default'
+    # Define the logger service as public so we can continue to have access to it via $container->get().
+    # But $container->get('logger') is deprecated, do not use it any more.
+    logger:
+        alias: 'monolog.logger'
+        public: true
 
 google_tag_manager:
     enabled: true
@@ -285,6 +290,15 @@ knp_snappy:
 
 ekino_new_relic:
     enabled: false
+    application_name: "%new_relic.front_app_name%"
+    api_key: "%new_relic.api_key%"
+    instrument: true
+    deprecations: false
+    http:
+        using_symfony_cache: true
+    monolog:
+        enabled: true
+        channels: ~
 
 sonata_cache:
     caches:
@@ -330,10 +344,6 @@ eight_points_guzzle:
                     Accept: "application/json"
                 http_errors: false
 
-cl_slack:
-    api_token: "%slack.token%"
-    test:      false
-
 welp_mailchimp:
     api_key: "%mailchimp.api_key%"
     list_provider: welp_mailchimp.list_provider
@@ -353,3 +363,20 @@ welp_mailchimp:
                     name: Nom
                     type: text
                     public: true
+
+httplug:
+    plugins:
+        logger: ~
+    clients:
+        nexy_slack:
+            factory: 'httplug.factory.guzzle6'
+            plugins: ['httplug.plugin.logger']
+            config:
+                timeout: 2
+
+nexy_slack:
+    http:
+        client: httplug.client.nexy_slack
+    endpoint: '%slack.endpoint%'
+    channel: '%slack.default_channel%'
+    username: '%slack.default_username%'
