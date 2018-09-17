@@ -257,15 +257,6 @@ class AltaresManager
      */
     private function soapCall(\SoapClient $soapClient, $resourceLabel, array $params)
     {
-        //db.getCollection('WsCall')
-        //.find({
-        //    provider: 'altares',
-        ////    resource: 'getIdentiteAltaN3Entreprise',
-        //    response: /la limite/
-        ////    added: {$gte: new ISODate('2018-08-16T12:15')}
-        //})
-        //.sort({added: 1})
-
         $wsResource = $this->resourceManager->getResource($resourceLabel);
         $siren      = $params[$this->getSirenKey($wsResource->getResourceName())];
 
