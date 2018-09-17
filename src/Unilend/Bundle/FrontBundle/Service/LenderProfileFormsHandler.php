@@ -421,7 +421,7 @@ class LenderProfileFormsHandler
      * @param Clients       $client
      * @param FormInterface $form
      * @param string        $type
-     * @param array         $newAttachments
+     * @param Attachment[]  $newAttachments
      *
      * @throws OptimisticLockException
      * @throws \Exception
@@ -453,7 +453,15 @@ class LenderProfileFormsHandler
                 ->getRepository('UnilendCoreBusinessBundle:ClientAddress')
                 ->findLastModifiedNotArchivedAddressByType($client, AddressType::TYPE_MAIN_ADDRESS);
 
-            $this->addressManager->linkAttachmentToAddress($lastModifiedAddress, $newAttachments[AttachmentType::JUSTIFICATIF_DOMICILE]);
+            if ($lastModifiedAddress instanceof ClientAddress) {
+                $this->addressManager->linkAttachmentToAddress($lastModifiedAddress, $newAttachments[AttachmentType::JUSTIFICATIF_DOMICILE]);
+            } else {
+                $this->logger->error('Client has no address to link to housing certificate', [
+                    'id_client' => $client->getIdClient(),
+                    'class'     => __CLASS__,
+                    'function'  => __FUNCTION__
+                ]);
+            }
         }
     }
 

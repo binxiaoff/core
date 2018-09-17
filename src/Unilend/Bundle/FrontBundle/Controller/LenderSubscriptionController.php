@@ -9,8 +9,8 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, Attachment, AttachmentType, Backpayline, Clients, ClientsHistory, ClientsHistoryActions, ClientsStatus, Companies, NationalitesV2,
-    OffresBienvenues, Pays, Users, WalletType};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, Attachment, AttachmentType, Backpayline, ClientAddress, Clients, ClientsHistory, ClientsHistoryActions, ClientsStatus, Companies,
+    NationalitesV2, OffresBienvenues, Pays, Users, WalletType};
 use Unilend\Bundle\CoreBusinessBundle\Service\{GoogleRecaptchaManager, NewsletterManager, SponsorshipManager};
 use Unilend\Bundle\FrontBundle\Form\{LenderSubscriptionIdentityLegalEntity, LenderSubscriptionIdentityPerson};
 use Unilend\Bundle\FrontBundle\Service\{DataLayerCollector, SourceManager};
@@ -711,8 +711,19 @@ class LenderSubscriptionController extends Controller
                     $attachment = $this->upload($client,  $attachmentTypeId, $file);
 
                     if ($attachmentTypeId == AttachmentType::JUSTIFICATIF_DOMICILE && $attachment instanceof Attachment) {
-                        $address = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientAddress')->findLastModifiedNotArchivedAddressByType($client, AddressType::TYPE_MAIN_ADDRESS);
-                        $addressManager->linkAttachmentToAddress($address, $attachment);
+                        $address = $entityManager
+                            ->getRepository('UnilendCoreBusinessBundle:ClientAddress')
+                            ->findLastModifiedNotArchivedAddressByType($client, AddressType::TYPE_MAIN_ADDRESS);
+
+                        if ($address instanceof ClientAddress) {
+                            $addressManager->linkAttachmentToAddress($address, $attachment);
+                        } else {
+                            $this->get('logger')->error('Client has no address to link housing certificate to during subscription process.', [
+                                'id_client' => $client->getIdClient(),
+                                'class'     => __CLASS__,
+                                'function'  => __FUNCTION__
+                            ]);
+                        }
                     }
                 } catch (\Exception $exception) {
                     $form->addError(new FormError($uploadErrorMessage));
