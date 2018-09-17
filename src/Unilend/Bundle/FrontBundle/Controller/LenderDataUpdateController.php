@@ -176,7 +176,6 @@ class LenderDataUpdateController extends Controller
      * @Route("/profile/mise-a-jour/fin", name="lender_data_update_end")
      * @Security("has_role('ROLE_LENDER')")
      *
-     * @param Request                    $request
      * @param UserInterface|Clients|null $client
      *
      * @return Response
