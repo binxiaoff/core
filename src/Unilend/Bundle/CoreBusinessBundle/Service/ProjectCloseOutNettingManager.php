@@ -3,7 +3,8 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\ORM\EntityManager;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{CloseOutNettingEmailExtraContent, CloseOutNettingPayment, CloseOutNettingRepayment, CompanyStatus, ProjectRepaymentTask, Projects, ProjectsStatus};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{CloseOutNettingEmailExtraContent, CloseOutNettingPayment, CloseOutNettingRepayment, CompanyStatus, Loans, ProjectRepaymentTask, Projects, ProjectsStatus};
+use Unilend\Bundle\CoreBusinessBundle\Service\Repayment\ProjectRepaymentTaskManager;
 
 class ProjectCloseOutNettingManager
 {
@@ -16,10 +17,14 @@ class ProjectCloseOutNettingManager
     /** @var ProjectStatusManager */
     private $projectStatusManager;
 
-    public function __construct(EntityManager $entityManager, ProjectStatusManager $projectStatusManager)
+    /** @var ProjectRepaymentTaskManager */
+    private $projectRepaymentTaskManager;
+
+    public function __construct(EntityManager $entityManager, ProjectStatusManager $projectStatusManager, ProjectRepaymentTaskManager $projectRepaymentTaskManager)
     {
-        $this->entityManager        = $entityManager;
-        $this->projectStatusManager = $projectStatusManager;
+        $this->entityManager               = $entityManager;
+        $this->projectStatusManager        = $projectStatusManager;
+        $this->projectRepaymentTaskManager = $projectRepaymentTaskManager;
     }
 
     /**
@@ -33,7 +38,15 @@ class ProjectCloseOutNettingManager
      *
      * @throws \Exception
      */
-    public function decline(Projects $project, \DateTime $closeOutNettingDate, bool $includeUnilendCommission, bool $sendLendersEmail, bool $sendBorrowerEmail, ?string $lendersEmailContent, ?string $borrowerEmailContent): void
+    public function decline(
+        Projects $project,
+        \DateTime $closeOutNettingDate,
+        bool $includeUnilendCommission,
+        bool $sendLendersEmail,
+        bool $sendBorrowerEmail,
+        ?string $lendersEmailContent,
+        ?string $borrowerEmailContent
+    ): void
     {
         if ($project->getCloseOutNettingDate()) {
             throw new \Exception('The project (id: ' . $project->getIdProject() . ') has already been declined.');
@@ -121,7 +134,14 @@ class ProjectCloseOutNettingManager
      * @throws \Doctrine\ORM\OptimisticLockException
      * @throws \Exception
      */
-    private function buildPayments(Projects $project, bool $includeUnilendCommission, bool $sendLendersEmail, bool $sendBorrowerEmail, ?string $lendersEmailContent, ?string $borrowerEmailContent): void
+    private function buildPayments(
+        Projects $project,
+        bool $includeUnilendCommission,
+        bool $sendLendersEmail,
+        bool $sendBorrowerEmail,
+        ?string $lendersEmailContent,
+        ?string $borrowerEmailContent
+    ): void
     {
         if (null === $project->getCloseOutNettingDate()) {
             throw new \Exception('The project (id:' . $project->getIdProject() . ' has not the close out netting date');
@@ -174,7 +194,13 @@ class ProjectCloseOutNettingManager
      * @throws \Doctrine\ORM\ORMException
      * @throws \Doctrine\ORM\OptimisticLockException
      */
-    private function createCloseOutNettingEmailExtraContent(Projects $project, bool $sendLendersEmail, bool $sendBorrowerEmail, ?string $lendersEmailContent, ?string $borrowerEmailContent): ?CloseOutNettingEmailExtraContent
+    private function createCloseOutNettingEmailExtraContent(
+        Projects $project,
+        bool $sendLendersEmail,
+        bool $sendBorrowerEmail,
+        ?string $lendersEmailContent,
+        ?string $borrowerEmailContent
+    ): ?CloseOutNettingEmailExtraContent
     {
         $extraMailContent = null;
 
@@ -194,5 +220,56 @@ class ProjectCloseOutNettingManager
         }
 
         return $extraMailContent;
+    }
+
+    /**
+     * @param Projects $project
+     *
+     * @return array
+     */
+    public function getRemainingAmountsForEachLoanOfProject(Projects $project): array
+    {
+        $this->projectRepaymentTaskManager->prepareNonFinishedTask($project);
+
+        $loanDetails = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Loans')->getBasicInformation($project); // for resolve the memory issue. 30 MB reduced.
+
+        foreach ($loanDetails as $loanId => $loanDetail) {
+
+            $loanDetails[$loanId]          = array_merge($loanDetails[$loanId], $this->getRemainingAmountByLoan($loanId));
+            $loanDetails[$loanId]['total'] = round(bcadd($loanDetails[$loanId]['capital'], $loanDetails[$loanId]['interest'], 4), 2);
+        }
+
+        return $loanDetails;
+    }
+
+    /**
+     * @param Loans|int $loan
+     *
+     * @return array
+     */
+    public function getRemainingAmountByLoan($loan)
+    {
+        $closeOutNettingRepayment = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CloseOutNettingRepayment')->findOneBy(['idLoan' => $loan]);
+        $remainingCapital         = round(bcsub($closeOutNettingRepayment->getCapital(), $closeOutNettingRepayment->getRepaidCapital(), 4), 2);
+        $remainingInterest        = round(bcsub($closeOutNettingRepayment->getInterest(), $closeOutNettingRepayment->getRepaidInterest(), 4), 2);
+
+        $pendingCapital  = 0;
+        $pendingInterest = 0;
+
+        $pendingAmount = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRepaymentDetail')->getPendingAmountToRepay($loan);
+        if ($pendingAmount) {
+            $pendingCapital  = $pendingAmount['capital'];
+            $pendingInterest = $pendingAmount['interest'];
+        }
+
+        $remainingCapital  = round(bcsub($remainingCapital, $pendingCapital, 4), 2);
+        $remainingInterest = round(bcsub($remainingInterest, $pendingInterest, 4), 2);
+
+        $loanDetails = [
+            'capital'  => $remainingCapital,
+            'interest' => $remainingInterest
+        ];
+
+        return $loanDetails;
     }
 }
