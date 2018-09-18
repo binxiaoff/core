@@ -43,7 +43,7 @@ class AcceptationLegalDocsRepository extends EntityRepository
             ->innerJoin('UnilendCoreBusinessBundle:WalletType', 'wt', Join::WITH, 'wt.id = w.idType')
             ->andWhere('ald.pdfName IS NULL')
             ->andWhere('wt.label = :walletLabel')
-            ->andWhere('ald.idLegalDoc != rootFolderIdTree')
+            ->andWhere('ald.idLegalDoc != :rootFolderIdTree')
             ->orderBy('ald.idAcceptation', 'ASC')
             ->setParameter('walletLabel', WalletType::LENDER)
             ->setParameter('rootFolderIdTree', TermsOfSaleManager::ID_TREE_ROOT_SECTION_LENDER_TOS)
