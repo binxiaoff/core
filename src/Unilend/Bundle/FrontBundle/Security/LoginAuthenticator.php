@@ -8,15 +8,14 @@ use Symfony\Component\HttpFoundation\{Cookie, RedirectResponse, Request};
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Encoder\{EncoderAwareInterface, UserPasswordEncoderInterface};
-use Symfony\Component\Security\Core\Exception\{AccountExpiredException, AuthenticationException, BadCredentialsException, CustomUserMessageAuthenticationException, DisabledException, LockedException,
-    UsernameNotFoundException};
+use Symfony\Component\Security\Core\Exception\{AccountExpiredException, AuthenticationException, BadCredentialsException, CustomUserMessageAuthenticationException, DisabledException, LockedException, UsernameNotFoundException};
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Security\Core\User\{UserInterface, UserProviderInterface};
 use Symfony\Component\Security\Csrf\{CsrfToken, CsrfTokenManagerInterface};
 use Symfony\Component\Security\Guard\Authenticator\AbstractFormLoginAuthenticator;
 use Symfony\Component\Security\Http\Session\SessionAuthenticationStrategyInterface;
 use Symfony\Component\Security\Http\Util\TargetPathTrait;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{Clients, ClientsHistory, ClientsStatus, LoginLog};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{Clients, ClientsStatus};
 use Unilend\Bundle\CoreBusinessBundle\Service\{CIPManager, GoogleRecaptchaManager, LenderManager};
 
 class LoginAuthenticator extends AbstractFormLoginAuthenticator
@@ -44,6 +43,8 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
     private $cipManager;
     /** @var LoggerInterface */
     private $logger;
+    /** @var LoginHistoryLogger */
+    private $loginHistoryLogger;
 
     /**
      * @param UserPasswordEncoderInterface           $securityPasswordEncoder
@@ -55,6 +56,7 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
      * @param LenderManager                          $lenderManager
      * @param CIPManager                             $cipManager
      * @param LoggerInterface                        $logger
+     * @param LoginHistoryLogger                     $loginHistoryLogger
      */
     public function __construct(
         UserPasswordEncoderInterface $securityPasswordEncoder,
@@ -65,7 +67,8 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
         GoogleRecaptchaManager $googleRecaptchaManager,
         LenderManager $lenderManager,
         CIPManager $cipManager,
-        LoggerInterface $logger
+        LoggerInterface $logger,
+        LoginHistoryLogger $loginHistoryLogger
     )
     {
         $this->securityPasswordEncoder = $securityPasswordEncoder;
@@ -77,6 +80,7 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
         $this->lenderManager           = $lenderManager;
         $this->cipManager              = $cipManager;
         $this->logger                  = $logger;
+        $this->loginHistoryLogger      = $loginHistoryLogger;
     }
 
     /**
@@ -211,7 +215,7 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
             }
         }
 
-        $this->saveLogin($client);
+        $this->loginHistoryLogger->saveSuccessfulLogin($client, $request);
         $this->sessionStrategy->onAuthentication($request, $token);
 
         try {
@@ -281,17 +285,11 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
             $request->getSession()->set(self::SESSION_NAME_LOGIN_CAPTCHA, $displayCaptcha);
         }
 
-        $loginLog = new LoginLog();
-        $loginLog->setPseudo($this->getCredentials($request)['username']);
-        $loginLog->setIp($request->getClientIp());
-        $loginLog->setRetour($exception->getMessage());
-
-        $this->entityManager->persist($loginLog);
-        $this->entityManager->flush($loginLog);
+        $loginLog = $this->loginHistoryLogger->saveFailureLogin($this->getCredentials($request)['username'], $request->getClientIp(), $exception->getMessage());
 
         if ('wrong-security-token' === $exception->getMessage()) {
             $this->logger->warning('Invalid CSRF token', [
-                'login_log ID' => $loginLog->getIdLogLogin(),
+                'login_log ID' => null !== $loginLog ? $loginLog->getIdLogLogin() : '',
                 'server'       => exec('hostname'),
                 'token'        => $this->getCredentials($request)['csrfToken'],
                 'tries'        => $previousFailures,
@@ -318,43 +316,6 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
         }
 
         return true;
-    }
-
-    /**
-     * @param Clients $client
-     */
-    private function saveLogin(Clients $client)
-    {
-        try {
-            $client->setLastlogin(new \DateTime('NOW'));
-
-            $isLender   = $client->isLender();
-            $isBorrower = $client->isBorrower();
-            $isPartner  = $client->isPartner();
-
-            if ($isLender && $isBorrower) {
-                $type = ClientsHistory::TYPE_CLIENT_LENDER_BORROWER;
-            } elseif ($isLender) {
-                $type = ClientsHistory::TYPE_CLIENT_LENDER;
-            } elseif ($isBorrower) {
-                $type = ClientsHistory::TYPE_CLIENT_BORROWER;
-            } elseif ($isPartner) {
-                $type = ClientsHistory::TYPE_CLIENT_PARTNER;
-            }
-
-            $clientHistory = new ClientsHistory();
-            $clientHistory->setIdClient($client);
-            $clientHistory->setType($type);
-            $clientHistory->setStatus(ClientsHistory::STATUS_ACTION_LOGIN);
-
-            $this->entityManager->persist($clientHistory);
-            $this->entityManager->flush();
-        } catch (\Exception $exception) {
-            $this->logger->error(
-                'An error occurred while logging user login: ' . $exception->getMessage(),
-                ['id_client' => $client->getIdClient(), 'file' => $exception->getFile(), 'line' => $exception->getLine()]
-            );
-        }
     }
 
     /**

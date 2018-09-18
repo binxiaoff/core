@@ -66,7 +66,11 @@
     "monext/payline-sdk": "^4.53",
     "azuyalabs/yasumi": "^1.8",
     "nexylan/slack-bundle": "^2.0",
-    "php-http/guzzle6-adapter": "^1.1"
+    "php-http/guzzle6-adapter": "^1.1",
+    "piwik/device-detector": "^3.11",
+    "thadafinser/user-agent-parser": "^2.0",
+    "whichbrowser/parser": "^2.0",
+    "cravler/maxmind-geoip-bundle": "dev-master"
   },
   "require-dev": {
   },

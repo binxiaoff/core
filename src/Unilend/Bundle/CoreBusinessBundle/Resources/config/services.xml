@@ -571,5 +571,22 @@
         <service id="Unilend\Bundle\CoreBusinessBundle\Service\GreenPointDataManager" autowire="true" public="false"/>
 
         <service id="Unilend\Bundle\CoreBusinessBundle\Service\GreenPointValidationManager" autowire="true"/>
+
+        <service id="UserAgentParser\Provider\WhichBrowser" class="UserAgentParser\Provider\WhichBrowser"/>
+
+        <service id="UserAgentParser\Provider\PiwikDeviceDetector" class="UserAgentParser\Provider\PiwikDeviceDetector"/>
+
+        <service id="UserAgentParser\Provider\Chain" class="UserAgentParser\Provider\Chain" autowire="true">
+            <argument key="$providers" type="collection">
+                <argument type="service" id="UserAgentParser\Provider\WhichBrowser"/>
+                <argument type="service" id="UserAgentParser\Provider\PiwikDeviceDetector"/>
+            </argument>
+        </service>
+
+        <service id="Unilend\Bundle\CoreBusinessBundle\Service\UserActivity\UserAgentManager" autowire="true"/>
+
+        <service id="Unilend\Bundle\CoreBusinessBundle\Service\UserActivity\IpGeoLocManager" autowire="true">
+            <argument type="string" key="$defaultLocale">%kernel.default_locale%</argument>
+        </service>
     </services>
 </container>

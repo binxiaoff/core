@@ -1,6 +1,7 @@
 <?php
-use Symfony\Component\HttpKernel\Kernel;
+
 use Symfony\Component\Config\Loader\LoaderInterface;
+use Symfony\Component\HttpKernel\Kernel;
 
 class AppKernel extends Kernel
 {
@@ -37,6 +38,7 @@ class AppKernel extends Kernel
             new Doctrine\Bundle\MigrationsBundle\DoctrineMigrationsBundle(),
             new Http\HttplugBundle\HttplugBundle(),
             new Nexy\SlackBundle\NexySlackBundle(),
+            new Cravler\MaxMindGeoIpBundle\CravlerMaxMindGeoIpBundle(),
         ];
 
         if (in_array($this->getEnvironment(), ['dev', 'test'], true)) {
