@@ -12,7 +12,7 @@ class GenerateOldLenderTosFilesCommand extends Command
 {
     /** @var EntityManagerInterface */
     private $entityManager;
-    /** @var LenderTermsOfSaleGenerator  */
+    /** @var LenderTermsOfSaleGenerator */
     private $lenderTermsOfSaleGenerator;
     /** @var LoggerInterface */
     private $logger;
@@ -78,7 +78,6 @@ EOF
                 $accepted->setPdfName($this->lenderTermsOfSaleGenerator->getName($accepted));
 
                 $this->entityManager->flush();
-
             } catch (\Exception $exception) {
                 $this->logger->error('An error occurred while generating lender terms of sale pdf. Message: ' . $exception->getMessage(), [
                     'class'          => __CLASS__,
