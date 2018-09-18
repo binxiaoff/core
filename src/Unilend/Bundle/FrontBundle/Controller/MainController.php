@@ -78,11 +78,11 @@ class MainController extends Controller
             'featureLender'      => $testimonialService->getFeaturedTestimonialLender(),
             'showPagination'     => false,
             'showSortable'       => false,
-            'sortType'           => strtolower(\projects::SORT_FIELD_END),
-            'sortDirection'      => strtolower(\projects::SORT_DIRECTION_DESC)
+            'sortType'           => ProjectDisplayManager::SORT_FIELD_END,
+            'sortDirection'      => 'desc'
         ];
 
-        $template['projects'] = $projectDisplayManager->getProjectsList([], [\projects::SORT_FIELD_END => \projects::SORT_DIRECTION_DESC], null, 3, $client);
+        $template['projects'] = $projectDisplayManager->getProjectsList([], [ProjectDisplayManager::SORT_FIELD_END => 'DESC'], null, 3, $client);
 
         $translator        = $this->get('translator');
         $projectRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Projects');
@@ -114,8 +114,8 @@ class MainController extends Controller
         $template['projectAmountMin']  = $projectManager->getMinProjectAmount();
         $template['borrowingMotives']  = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:BorrowingMotive')->findBy([], ['rank' => 'ASC']);
         $template['projects'] = $projectDisplayManager->getProjectsList(
-            [\projects_status::EN_FUNDING],
-            [\projects::SORT_FIELD_END => \projects::SORT_DIRECTION_DESC]
+            [ProjectsStatus::EN_FUNDING],
+            [ProjectDisplayManager::SORT_FIELD_END => 'DESC']
         );
 
         $template['featureBorrower'] = $testimonialService->getFeaturedTestimonialBorrower();

@@ -654,7 +654,7 @@ class ProjectRequestController extends Controller
             return $this->redirectStatus($project, self::PAGE_ROUTE_END, ProjectsStatus::NOT_ELIGIBLE, ProjectRejectionReason::NEGATIVE_EQUITY_CAPITAL);
         }
 
-        if (isset($values['fl']) && $values['fl'] < \projects::MINIMUM_REVENUE) {
+        if (isset($values['fl']) && $values['fl'] < ProjectRequestManager::MINIMUM_REVENUE) {
             return $this->redirectStatus($project, self::PAGE_ROUTE_END, ProjectsStatus::NOT_ELIGIBLE, ProjectRejectionReason::LOW_TURNOVER);
         }
 
@@ -662,7 +662,7 @@ class ProjectRequestController extends Controller
             return $this->redirectStatus($project, self::PAGE_ROUTE_END, ProjectsStatus::NOT_ELIGIBLE, ProjectRejectionReason::NEGATIVE_RAW_OPERATING_INCOMES);
         }
 
-        if (isset($values['ag_2035']) && $values['ag_2035'] < \projects::MINIMUM_REVENUE) {
+        if (isset($values['ag_2035']) && $values['ag_2035'] < ProjectRequestManager::MINIMUM_REVENUE) {
             return $this->redirectStatus($project, self::PAGE_ROUTE_END, ProjectsStatus::NOT_ELIGIBLE, ProjectRejectionReason::LOW_TURNOVER);
         }
 
