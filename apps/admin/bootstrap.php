@@ -16,7 +16,7 @@ class bootstrap extends Controller
                     'uri'   => ''
                 ],
                 [
-                    'title' => 'Activité commercial',
+                    'title' => 'Activité commerciale',
                     'uri'   => 'dashboard/activite'
                 ]
             ]

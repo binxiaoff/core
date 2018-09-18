@@ -1,8 +1,6 @@
 <?php
 
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    BorrowingMotive, Partner, Projects, ProjectsStatus, Users, UsersTypes, Zones
-};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{BorrowingMotive, Partner, Projects, ProjectsStatus, Users, UsersTypes, Zones};
 use Unilend\Bundle\CoreBusinessBundle\Service\ProjectRequestManager;
 use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessageProvider;
 
@@ -366,10 +364,10 @@ class dashboardController extends bootstrap
             $monthOverMonth        = $this->getReleaseProjectAndDelta($firstDayOfLastMonth, $lastDayOfLastMonth, $firstDayOfTwoMonthAgo, $lastDayOfTwoMonthAgo);
 
             // projets par canal d’arrivée
-            $twelveMonthAgo     = new DateTime('first day of 11 months ago');
-            $twelveMonths       = $this->getRollingMonths($twelveMonthAgo, $today);
-            $statSentToAnalysis = $this->getProjectCountInStatus(ProjectsStatus::PENDING_ANALYSIS, $twelveMonthAgo, $today);
-            $statRepayment      = $this->getProjectCountInStatus(ProjectsStatus::REMBOURSEMENT, $twelveMonthAgo, $today);
+            $thirteenMonthAgo   = new DateTime('first day of 12 months ago');
+            $thirteenMonths     = $this->getRollingMonths($thirteenMonthAgo, $today);
+            $statSentToAnalysis = $this->getProjectCountInStatus(ProjectsStatus::PENDING_ANALYSIS, $thirteenMonthAgo, $today);
+            $statRepayment      = $this->getProjectCountInStatus(ProjectsStatus::REMBOURSEMENT, $thirteenMonthAgo, $today);
 
             // projets en cours
             $countableStatus        = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatus')->findBy([
@@ -395,9 +393,10 @@ class dashboardController extends bootstrap
             // émissions n vs n-1 (12 mois glissants)
             $twentyFourMonthsAgo             = new DateTime('first day of 23 months ago');
             $twelveMonthsLastYear            = $this->getRollingMonths($twentyFourMonthsAgo, $sameDayOfLastYear);
-            $releasedProjectsThisRollingYear = $projectRepository->getStatisticsByStatusByMonth(ProjectsStatus::REMBOURSEMENT, false, $twelveMonthAgo, $today);
+            $releasedProjectsThisRollingYear = $projectRepository->getStatisticsByStatusByMonth(ProjectsStatus::REMBOURSEMENT, false, $thirteenMonthAgo, $today);
             $releasedProjectsLastRollingYear = $projectRepository->getStatisticsByStatusByMonth(ProjectsStatus::REMBOURSEMENT, false, $twentyFourMonthsAgo, $sameDayOfLastYear);
 
+            // temps de traitement par statut
             $borrowingMotives = [
                 BorrowingMotive::ID_MOTIVE_PURCHASE_MATERIAL,
                 BorrowingMotive::ID_MOTIVE_DEVELOPMENT,
@@ -444,7 +443,7 @@ class dashboardController extends bootstrap
             'releasedProjectLastMonthAmount'      => $monthOverMonth['amount'],
             'deltaMomCountInPercentage'           => $monthOverMonth['deltaCountInPercentage'],
             'deltaMomAmountInPercentage'          => $monthOverMonth['deltaAmountInPercentage'],
-            'twelveMonths'                        => $twelveMonths,
+            'twelveMonths'                        => $thirteenMonths,
             'statSentToAnalysisHighcharts'        => $statSentToAnalysis,
             'statRepaymentHighcharts'             => $statRepayment,
             'twelveMonthsLastYear'                => $twelveMonthsLastYear,
