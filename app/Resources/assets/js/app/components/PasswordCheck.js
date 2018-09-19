@@ -173,7 +173,6 @@ var PasswordCheck = function (input, options) {
     // Soft reset
     if (!soft) {
       self.$input.val('')
-      // Reset password requirements display
       $('.password-requirements').find('.fa-check-u16.c-success').removeClass('fa-check-u16 c-success').addClass('fa-cross-u16 c-error')
     }
 
@@ -183,16 +182,16 @@ var PasswordCheck = function (input, options) {
 
   self.passwordRequirements = function() {
     var lowerUpperCaseRule = /(?=.*[a-z])(?=.*[A-Z])/,
-        hasDigitRule       = /[0-9]/,
-        hasMinLengthRule   = new RegExp('\\S{' + self.settings.minLength + ',}'),
-        passWordGroupRules = {
+        digitRule          = /[0-9]/,
+        minLengthRule      = new RegExp('\\S{' + self.settings.minLength + ',}'),
+        passwordGroupRules = {
           '#pw-has-lower-upper-case': lowerUpperCaseRule,
-          '#pw-has-digit': hasDigitRule,
-          '#pw-has-min-length': hasMinLengthRule
+          '#pw-has-digit': digitRule,
+          '#pw-has-min-length': minLengthRule
         }
 
-    for (var idRuleLabel in passWordGroupRules) {
-      var displayRule = passWordGroupRules[idRuleLabel]
+    for (var idRuleLabel in passwordGroupRules) {
+      var displayRule = passwordGroupRules[idRuleLabel]
       if (displayRule instanceof RegExp) {
         if (displayRule.test(self.$input.val())) {
           $(idRuleLabel).removeClass('fa-cross-u16 c-error').addClass('fa-check-u16 c-success')
@@ -340,7 +339,7 @@ var PasswordCheck = function (input, options) {
     }
   })
   // Reset the UI when the password form is collapsed
-  $(document).on('hidden.bs.collapse', function () {
+  $('#profile-security-password-section').on('hidden.bs.collapse', function () {
     self.reset()
   })
 
