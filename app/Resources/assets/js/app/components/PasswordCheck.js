@@ -32,32 +32,6 @@ function escapeQuotes (input) {
   return input.replace(/'/g, '&#39;').replace(/"/g, '&#34;')
 }
 
-var passwordMinLength = 8
-
-var passwordRequirements = function(input) {
-  var lowerUpperCaseRule = /(?=.*[a-z])(?=.*[A-Z])/,
-      hasDigitRule       = /[0-9]/,
-      hasMinLengthRule   = new RegExp('\\S{' + passwordMinLength + ',}'),
-      passWordGroupRules = {
-          '#pw-has-lower-upper-case': lowerUpperCaseRule,
-          '#pw-has-digit': hasDigitRule,
-          '#pw-has-min-length': hasMinLengthRule
-      }
-
-  for (var idRuleLabel in passWordGroupRules) {
-    var displayRule = passWordGroupRules[idRuleLabel]
-    if (displayRule instanceof RegExp) {
-      if (displayRule.test(input)) {
-        $(idRuleLabel).removeClass('fa-cross-u16 c-error').addClass('fa-check-u16 c-success')
-      } else {
-        $(idRuleLabel).removeClass('fa-check-u16 c-success').addClass('fa-cross-u16 c-error')
-      }
-    } else {
-      console.error(displayRule + ' is not a correct regex');
-    }
-  }
-}
-
 // PasswordCheck
 // @class
 // @param {Mixed} input
@@ -88,7 +62,7 @@ var PasswordCheck = function (input, options) {
     maxScore: 15,
 
     // The minimum length of the password
-    minLength: passwordMinLength,
+    minLength: 8,
 
     // The UI elements to output messages or other feedback to (can be {String} selectors, {HTMLElement}s or {jQueryObject}s as well as {String} HTML code)
     levelElem: self.templates.level,
@@ -199,10 +173,36 @@ var PasswordCheck = function (input, options) {
     // Soft reset
     if (!soft) {
       self.$input.val('')
+      // Reset password requirements display
+      $('.password-requirements').find('.fa-check-u16.c-success').removeClass('fa-check-u16 c-success').addClass('fa-cross-u16 c-error')
     }
 
     // Trigger element event in case anything else wants to hook
     self.$input.trigger('PasswordCheck:resetted', [self, soft])
+  }
+
+  self.passwordRequirements = function() {
+    var lowerUpperCaseRule = /(?=.*[a-z])(?=.*[A-Z])/,
+        hasDigitRule       = /[0-9]/,
+        hasMinLengthRule   = new RegExp('\\S{' + self.settings.minLength + ',}'),
+        passWordGroupRules = {
+          '#pw-has-lower-upper-case': lowerUpperCaseRule,
+          '#pw-has-digit': hasDigitRule,
+          '#pw-has-min-length': hasMinLengthRule
+        }
+
+    for (var idRuleLabel in passWordGroupRules) {
+      var displayRule = passWordGroupRules[idRuleLabel]
+      if (displayRule instanceof RegExp) {
+        if (displayRule.test(self.$input.val())) {
+          $(idRuleLabel).removeClass('fa-cross-u16 c-error').addClass('fa-check-u16 c-success')
+        } else {
+          $(idRuleLabel).removeClass('fa-check-u16 c-success').addClass('fa-cross-u16 c-error')
+        }
+      } else {
+        console.error(displayRule + ' is not a correct regex');
+      }
+    }
   }
 
   // Evaluate an input value to see how secure it is
@@ -259,6 +259,8 @@ var PasswordCheck = function (input, options) {
     if (self.settings.evaluationRules instanceof Array && self.settings.evaluationRules.length > 0) {
       evaluationRules += self.settings.evaluationRules
     }
+    // Display password requirements as they are completed
+    self.passwordRequirements()
 
     // Evaluate the string based on the minLength
     var inputLengthDiff = input.length - self.settings.minLength
@@ -328,7 +330,6 @@ var PasswordCheck = function (input, options) {
 
   // Hook events to the element
   self.$input.on('keyup', function (event) {
-    passwordRequirements($(this).val())
     // Evaluate the element's input
     if ($(this).val().length > 0) {
       self.evaluate()
@@ -337,6 +338,10 @@ var PasswordCheck = function (input, options) {
     } else if ($(this).val().length === 0) {
       self.reset()
     }
+  })
+  // Reset the UI when the password form is collapsed
+  $(document).on('hidden.bs.collapse', function () {
+    self.reset()
   })
 
   // Show/hide the info
@@ -384,9 +389,6 @@ $(document)
   // Auto-init component behaviours on document ready, or when parent element (or self) is made visible with `UI:visible` custom event
   .on('ready UI:visible', function (event) {
     $(event.target).find('[data-passwordcheck]').not('.ui-passwordcheck').uiPasswordCheck()
-  })
-  .on('hidden.bs.collapse', function () {
-    passwordRequirements($('.ui-passwordcheck-input').val())
   })
 
 module.exports = PasswordCheck
