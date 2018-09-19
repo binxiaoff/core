@@ -410,23 +410,23 @@ class dashboardController extends bootstrap
             ];
 
             $delays = [
-                ['label' => 'Fundé', 'data' => $this->getDelayByStatus(ProjectsStatus::FUNDE, $borrowingMotives, $treeMonthsAgo, $today)],
-                ['label' => 'En funding', 'data' => $this->getDelayByStatus(ProjectsStatus::EN_FUNDING, $borrowingMotives, $treeMonthsAgo, $today)],
-                ['label' => 'Prép funding', 'data' => $this->getDelayByStatus(ProjectsStatus::PREP_FUNDING, $borrowingMotives, $treeMonthsAgo, $today)],
-                ['label' => 'Reveue analyste', 'data' => $this->getDelayByStatus(ProjectsStatus::ANALYSIS_REVIEW, $borrowingMotives, $treeMonthsAgo, $today)],
-                ['label' => 'Attent analyste', 'data' => $this->getDelayByStatus(ProjectsStatus::PENDING_ANALYSIS, $borrowingMotives, $treeMonthsAgo, $today)],
-                ['label' => 'Traitement commercial', 'data' => $this->getDelayByStatus(ProjectsStatus::COMMERCIAL_REVIEW, $borrowingMotives, $treeMonthsAgo, $today)],
-                ['label' => 'Demande complète', 'data' => $this->getDelayByStatus(ProjectsStatus::COMPLETE_REQUEST, $borrowingMotives, $treeMonthsAgo, $today)]
+                ['label' => 'Fundé', 'color' => '#94EB86', 'data' => $this->getDelayByStatus(ProjectsStatus::FUNDE, $borrowingMotives, $treeMonthsAgo, $today)],
+                ['label' => 'En funding', 'color' => '#26ABE6', 'data' => $this->getDelayByStatus(ProjectsStatus::EN_FUNDING, $borrowingMotives, $treeMonthsAgo, $today)],
+                ['label' => 'Prép funding', 'color' => '#163380', 'data' => $this->getDelayByStatus(ProjectsStatus::PREP_FUNDING, $borrowingMotives, $treeMonthsAgo, $today)],
+                ['label' => 'Reveue analyste', 'color' => '#F15C5E', 'data' => $this->getDelayByStatus(ProjectsStatus::ANALYSIS_REVIEW, $borrowingMotives, $treeMonthsAgo, $today)],
+                ['label' => 'Attent analyste', 'color' => '#F5A263', 'data' => $this->getDelayByStatus(ProjectsStatus::PENDING_ANALYSIS, $borrowingMotives, $treeMonthsAgo, $today)],
+                ['label' => 'Traitement commercial', 'color' => '#8088E6', 'data' => $this->getDelayByStatus(ProjectsStatus::COMMERCIAL_REVIEW, $borrowingMotives, $treeMonthsAgo, $today)],
+                ['label' => 'Demande complète', 'color' => '#555555', 'data' => $this->getDelayByStatus(ProjectsStatus::COMPLETE_REQUEST, $borrowingMotives, $treeMonthsAgo, $today)]
             ];
 
             $delaysOfAYearAgo = [
-                ['label' => 'Fundé (N-1)', 'data' => $this->getDelayByStatus(ProjectsStatus::FUNDE, $borrowingMotives, $aYearAndTreeMonthsAgo, $aYearAgo)],
-                ['label' => 'En funding (N-1)', 'data' => $this->getDelayByStatus(ProjectsStatus::EN_FUNDING, $borrowingMotives, $aYearAndTreeMonthsAgo, $aYearAgo)],
-                ['label' => 'Prép funding (N-1)', 'data' => $this->getDelayByStatus(ProjectsStatus::PREP_FUNDING, $borrowingMotives, $aYearAndTreeMonthsAgo, $aYearAgo)],
-                ['label' => 'Reveue analyste (N-1)', 'data' => $this->getDelayByStatus(ProjectsStatus::ANALYSIS_REVIEW, $borrowingMotives, $aYearAndTreeMonthsAgo, $aYearAgo)],
-                ['label' => 'Attent analyste (N-1)', 'data' => $this->getDelayByStatus(ProjectsStatus::PENDING_ANALYSIS, $borrowingMotives, $aYearAndTreeMonthsAgo, $aYearAgo)],
-                ['label' => 'Traitement commercial (N-1)', 'data' => $this->getDelayByStatus(ProjectsStatus::COMMERCIAL_REVIEW, $borrowingMotives, $aYearAndTreeMonthsAgo, $aYearAgo)],
-                ['label' => 'Demande complète (N-1)', 'data' => $this->getDelayByStatus(ProjectsStatus::COMPLETE_REQUEST, $borrowingMotives, $aYearAndTreeMonthsAgo, $aYearAgo)]
+                ['label' => 'Fundé (N-1)', 'color' => '#94EB86', 'data' => $this->getDelayByStatus(ProjectsStatus::FUNDE, $borrowingMotives, $aYearAndTreeMonthsAgo, $aYearAgo)],
+                ['label' => 'En funding (N-1)', 'color' => '#26ABE6', 'data' => $this->getDelayByStatus(ProjectsStatus::EN_FUNDING, $borrowingMotives, $aYearAndTreeMonthsAgo, $aYearAgo)],
+                ['label' => 'Prép funding (N-1)', 'color' => '#163380', 'data' => $this->getDelayByStatus(ProjectsStatus::PREP_FUNDING, $borrowingMotives, $aYearAndTreeMonthsAgo, $aYearAgo)],
+                ['label' => 'Reveue analyste (N-1)', 'color' => '#F15C5E', 'data' => $this->getDelayByStatus(ProjectsStatus::ANALYSIS_REVIEW, $borrowingMotives, $aYearAndTreeMonthsAgo, $aYearAgo)],
+                ['label' => 'Attent analyste (N-1)', 'color' => '#F5A263', 'data' => $this->getDelayByStatus(ProjectsStatus::PENDING_ANALYSIS, $borrowingMotives, $aYearAndTreeMonthsAgo, $aYearAgo)],
+                ['label' => 'Traitement commercial (N-1)', 'color' => '#8088E6', 'data' => $this->getDelayByStatus(ProjectsStatus::COMMERCIAL_REVIEW, $borrowingMotives, $aYearAndTreeMonthsAgo, $aYearAgo)],
+                ['label' => 'Demande complète (N-1)', 'color' => '#555555', 'data' => $this->getDelayByStatus(ProjectsStatus::COMPLETE_REQUEST, $borrowingMotives, $aYearAndTreeMonthsAgo, $aYearAgo)]
             ];
 
         } catch (Exception $exception) {

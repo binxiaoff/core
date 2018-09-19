@@ -33,6 +33,7 @@ Highcharts.chart('treatment-delay', {
                     valueSuffix: ' jours'
                 },
                 stack: 'N'
+                {% if delay.color is not empty %}, color: '{{ delay.color }}'{% endif %}
             }
         {% endfor %}
         ,
@@ -45,6 +46,7 @@ Highcharts.chart('treatment-delay', {
                     valueSuffix: ' jours'
                 },
                 stack: 'N-1'
+                {% if delay.color is not empty %}, color: '{{ delay.color }}'{% endif %}
             }
         {% endfor %}
     ]
