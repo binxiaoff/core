@@ -1,8 +1,6 @@
 <?php
 
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    CompanyStatus, Echeanciers, EcheanciersEmprunteur as EcheanciersEmprunteurEntity, ProjectsStatus, UnilendStats
-};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{CompanyStatus, Echeanciers, EcheanciersEmprunteur as EcheanciersEmprunteurEntity, ProjectsStatus, UnilendStats};
 
 class echeanciers_emprunteur extends echeanciers_emprunteur_crud
 {
@@ -314,54 +312,47 @@ class echeanciers_emprunteur extends echeanciers_emprunteur_crud
     /**
      * @param bool $groupFirstYears
      *
-     * @return mixed
+     * @return array
+     * @throws Exception
      */
-    public function getLateCapitalRepaymentsHealthyProjects($groupFirstYears = true)
+    public function getLateCapitalRepaymentsHealthyProjects(bool $groupFirstYears = true): array
     {
         $query = '
             SELECT
-                SUM(echeanciers_emprunteur.capital)/100 AS amount,
-                (
-                    SELECT ' . $this->getCohortSelect($groupFirstYears) . ' AS date_range
-                    FROM projects_status_history
-                    INNER JOIN projects_status ON projects_status_history.id_project_status = projects_status.id_project_status
-                    WHERE  projects_status.status = '. ProjectsStatus::REMBOURSEMENT . ' AND echeanciers_emprunteur.id_project = projects_status_history.id_project
-                    ORDER BY projects_status_history.added ASC, id_project_status_history ASC 
-                    LIMIT 1
-                ) AS cohort
+              SUM(echeanciers_emprunteur.capital) / 100 AS amount,
+              (
+                SELECT ' . $this->getCohortSelect($groupFirstYears) . ' AS date_range
+                FROM projects_status_history
+                INNER JOIN projects_status ON projects_status_history.id_project_status = projects_status.id_project_status
+                WHERE  projects_status.status = ' . ProjectsStatus::REMBOURSEMENT . ' AND echeanciers_emprunteur.id_project = projects_status_history.id_project
+                ORDER BY projects_status_history.added ASC, id_project_status_history ASC
+                LIMIT 1
+              ) AS cohort
             FROM echeanciers_emprunteur
-            INNER JOIN projects ON echeanciers_emprunteur.id_project = projects.id_project AND projects.status >= '. ProjectsStatus::REMBOURSEMENT . '
+            INNER JOIN projects ON echeanciers_emprunteur.id_project = projects.id_project AND projects.status >= ' . ProjectsStatus::REMBOURSEMENT . '
+            INNER JOIN (
+              SELECT status, date_echeance, ordre, id_project
+              FROM echeanciers
+              GROUP BY ordre, id_project
+            ) lender_payment ON lender_payment.ordre = echeanciers_emprunteur.ordre AND echeanciers_emprunteur.id_project = lender_payment.id_project
             INNER JOIN companies c ON c.id_company = projects.id_company
             INNER JOIN company_status cs ON cs.id = c.id_status
-            WHERE (
-                    SELECT lender_payment_status.status
-                    FROM echeanciers lender_payment_status
-                    WHERE lender_payment_status.ordre = echeanciers_emprunteur.ordre
-                    AND echeanciers_emprunteur.id_project = lender_payment_status.id_project
-                    LIMIT 1
-                ) = ' . Echeanciers::STATUS_PENDING . '
-                AND (
-                    SELECT lender_payment_date.date_echeance
-                    FROM echeanciers lender_payment_date
-                    WHERE lender_payment_date.ordre = echeanciers_emprunteur.ordre
-                    AND echeanciers_emprunteur.id_project = lender_payment_date.id_project
-                    LIMIT 1
-                ) < NOW()
-                AND IF((
-                    cs.label IN (:companyStatus)
-                    OR projects.status = ' . ProjectsStatus::LOSS . '
-                    OR (
-                        projects.status = ' . ProjectsStatus::PROBLEME . '
-                        AND DATEDIFF(NOW(), (
-                            SELECT psh2.added
-                            FROM projects_status_history psh2
-                            INNER JOIN projects_status ps2 ON psh2.id_project_status = ps2.id_project_status
-                            WHERE ps2.status = ' . ProjectsStatus::PROBLEME . ' AND psh2.id_project = echeanciers_emprunteur.id_project
-                            ORDER BY psh2.added DESC, psh2.id_project_status_history DESC
-                            LIMIT 1
-                        )) > ' . UnilendStats::DAYS_AFTER_LAST_PROBLEM_STATUS_FOR_STATISTIC_LOSS . '
-                    )
-                ), TRUE, FALSE) = FALSE
+            WHERE lender_payment.status = ' . Echeanciers::STATUS_PENDING . '
+              AND lender_payment.date_echeance < NOW()
+              AND cs.label NOT IN (:companyStatus)
+              AND projects.status != ' . ProjectsStatus::LOSS . '
+              AND (
+                projects.status != ' . ProjectsStatus::PROBLEME . '
+                OR DATEDIFF(NOW(), (
+                  SELECT psh2.added
+                  FROM projects_status_history psh2
+                  INNER JOIN projects_status ps2 ON psh2.id_project_status = ps2.id_project_status
+                  WHERE ps2.status = ' . ProjectsStatus::PROBLEME . ' AND psh2.id_project = echeanciers_emprunteur.id_project
+                  ORDER BY psh2.added DESC, psh2.id_project_status_history DESC
+                  LIMIT 1
+                  )
+                ) <= ' . UnilendStats::DAYS_AFTER_LAST_PROBLEM_STATUS_FOR_STATISTIC_LOSS . '
+              )
             GROUP BY cohort';
 
         $statement = $this->bdd->executeQuery(
