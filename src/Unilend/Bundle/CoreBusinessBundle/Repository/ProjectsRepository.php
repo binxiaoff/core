@@ -1358,11 +1358,13 @@ class ProjectsRepository extends EntityRepository
     /**
      * @param int   $status
      * @param array $borrowingMotives
+     * @param \DateTime $from
+     * @param \DateTime $to
      *
      * @return array
      * @throws \Doctrine\DBAL\DBALException
      */
-    public function getDelayByStatus(int $status, array $borrowingMotives) : array
+    public function getDelayByStatus(int $status, array $borrowingMotives, \DateTime $from, \DateTime $to) : array
     {
         $query = '
         SELECT b.id_motive,
@@ -1383,6 +1385,8 @@ class ProjectsRepository extends EntityRepository
         INNER JOIN projects p ON p.id_project = psh.id_project
         INNER JOIN borrowing_motive b ON p.id_borrowing_motive = b.id_motive
         WHERE b.id_motive IN (:motives)
+        AND psh.added >= :from
+        AND psh.added <= :to
         GROUP BY b.id_motive
         ORDER BY b.rank';
 
@@ -1391,7 +1395,7 @@ class ProjectsRepository extends EntityRepository
             ->getConnection()
             ->executeQuery(
                 $query,
-                ['status' => $status, 'motives' => $borrowingMotives],
+                ['status' => $status, 'motives' => $borrowingMotives, 'from' => $from->format('Y-m-d'), 'to' => $to->format('Y-m-d')],
                 ['motives' => Connection::PARAM_INT_ARRAY]
             )
             ->fetchAll();

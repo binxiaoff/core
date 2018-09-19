@@ -397,7 +397,10 @@ class dashboardController extends bootstrap
             $releasedProjectsLastRollingYear = $projectRepository->getStatisticsByStatusByMonth(ProjectsStatus::REMBOURSEMENT, false, $twentyFourMonthsAgo, $sameDayOfLastYear);
 
             // temps de traitement par statut
-            $borrowingMotives = [
+            $treeMonthsAgo         = new DateTime('3 months ago');
+            $aYearAgo              = new DateTime('12 months ago');
+            $aYearAndTreeMonthsAgo = new DateTime('15 months ago');
+            $borrowingMotives      = [
                 BorrowingMotive::ID_MOTIVE_PURCHASE_MATERIAL,
                 BorrowingMotive::ID_MOTIVE_DEVELOPMENT,
                 BorrowingMotive::ID_MOTIVE_REAL_ESTATE,
@@ -406,23 +409,26 @@ class dashboardController extends bootstrap
                 BorrowingMotive::ID_MOTIVE_OTHER
             ];
 
-            $readyFundingDelay      = $this->getDelayByStatus(ProjectsStatus::SUSPENSIVE_CONDITIONS, $borrowingMotives);
-            $suspenseConditionDelay = $this->getDelayByStatus(ProjectsStatus::PREP_FUNDING, $borrowingMotives);
-            $beforeFundingDelay     = [];
-
-            foreach ($borrowingMotives as $motive) {
-                $beforeFundingDelay[$motive] = (isset($readyFundingDelay[$motive]) ? $readyFundingDelay[$motive] : 0) + (isset($suspenseConditionDelay[$motive]) ? $suspenseConditionDelay[$motive] : 0);
-            }
-
             $delays = [
-                ['label' => 'Fundé', 'data' => $this->getDelayByStatus(ProjectsStatus::FUNDE, $borrowingMotives)],
-                ['label' => 'En funding', 'data' => $this->getDelayByStatus(ProjectsStatus::EN_FUNDING, $borrowingMotives)],
-                ['label' => 'Prép funding + conditions suspensives', 'data' => $beforeFundingDelay],
-                ['label' => 'Reveue analyste', 'data' => $this->getDelayByStatus(ProjectsStatus::ANALYSIS_REVIEW, $borrowingMotives)],
-                ['label' => 'Attent analyste', 'data' => $this->getDelayByStatus(ProjectsStatus::PENDING_ANALYSIS, $borrowingMotives)],
-                ['label' => 'Traitement commercial', 'data' => $this->getDelayByStatus(ProjectsStatus::COMMERCIAL_REVIEW, $borrowingMotives)],
-                ['label' => 'Demande complète', 'data' => $this->getDelayByStatus(ProjectsStatus::COMPLETE_REQUEST, $borrowingMotives)]
+                ['label' => 'Fundé', 'data' => $this->getDelayByStatus(ProjectsStatus::FUNDE, $borrowingMotives, $treeMonthsAgo, $today)],
+                ['label' => 'En funding', 'data' => $this->getDelayByStatus(ProjectsStatus::EN_FUNDING, $borrowingMotives, $treeMonthsAgo, $today)],
+                ['label' => 'Prép funding', 'data' => $this->getDelayByStatus(ProjectsStatus::PREP_FUNDING, $borrowingMotives, $treeMonthsAgo, $today)],
+                ['label' => 'Reveue analyste', 'data' => $this->getDelayByStatus(ProjectsStatus::ANALYSIS_REVIEW, $borrowingMotives, $treeMonthsAgo, $today)],
+                ['label' => 'Attent analyste', 'data' => $this->getDelayByStatus(ProjectsStatus::PENDING_ANALYSIS, $borrowingMotives, $treeMonthsAgo, $today)],
+                ['label' => 'Traitement commercial', 'data' => $this->getDelayByStatus(ProjectsStatus::COMMERCIAL_REVIEW, $borrowingMotives, $treeMonthsAgo, $today)],
+                ['label' => 'Demande complète', 'data' => $this->getDelayByStatus(ProjectsStatus::COMPLETE_REQUEST, $borrowingMotives, $treeMonthsAgo, $today)]
             ];
+
+            $delaysOfAYearAgo = [
+                ['label' => 'Fundé (N-1)', 'data' => $this->getDelayByStatus(ProjectsStatus::FUNDE, $borrowingMotives, $aYearAndTreeMonthsAgo, $aYearAgo)],
+                ['label' => 'En funding (N-1)', 'data' => $this->getDelayByStatus(ProjectsStatus::EN_FUNDING, $borrowingMotives, $aYearAndTreeMonthsAgo, $aYearAgo)],
+                ['label' => 'Prép funding (N-1)', 'data' => $this->getDelayByStatus(ProjectsStatus::PREP_FUNDING, $borrowingMotives, $aYearAndTreeMonthsAgo, $aYearAgo)],
+                ['label' => 'Reveue analyste (N-1)', 'data' => $this->getDelayByStatus(ProjectsStatus::ANALYSIS_REVIEW, $borrowingMotives, $aYearAndTreeMonthsAgo, $aYearAgo)],
+                ['label' => 'Attent analyste (N-1)', 'data' => $this->getDelayByStatus(ProjectsStatus::PENDING_ANALYSIS, $borrowingMotives, $aYearAndTreeMonthsAgo, $aYearAgo)],
+                ['label' => 'Traitement commercial (N-1)', 'data' => $this->getDelayByStatus(ProjectsStatus::COMMERCIAL_REVIEW, $borrowingMotives, $aYearAndTreeMonthsAgo, $aYearAgo)],
+                ['label' => 'Demande complète (N-1)', 'data' => $this->getDelayByStatus(ProjectsStatus::COMPLETE_REQUEST, $borrowingMotives, $aYearAndTreeMonthsAgo, $aYearAgo)]
+            ];
+
         } catch (Exception $exception) {
             /** @var \Psr\Log\LoggerInterface $logger */
             $logger = $this->get('logger');
@@ -450,6 +456,7 @@ class dashboardController extends bootstrap
             'releasedProjectsThisYear'            => $releasedProjectsThisRollingYear,
             'releasedProjectsLastYear'            => $releasedProjectsLastRollingYear,
             'delays'                              => $delays,
+            'delaysOfAYearAgo'                    => $delaysOfAYearAgo,
             'borrowingMotives'                    => $borrowingMotives,
             'countableStatus'                     => $countableStatus,
             'statusAllCount'                      => $statusAllCount,
@@ -560,15 +567,17 @@ class dashboardController extends bootstrap
     /**
      * @param  int   $status
      * @param  array $motives
+     * @param  DateTime $from
+     * @param  DateTime $to
      *
      * @return array
      * @throws \Doctrine\DBAL\DBALException
      */
-    private function getDelayByStatus(int $status, array $motives) : array
+    private function getDelayByStatus(int $status, array $motives, DateTime $from, DateTime $to) : array
     {
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
-        $delays        = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->getDelayByStatus($status, $motives);
+        $delays        = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->getDelayByStatus($status, $motives, $from, $to);
 
         $formattedDelays = [];
         foreach ($delays as $delay) {

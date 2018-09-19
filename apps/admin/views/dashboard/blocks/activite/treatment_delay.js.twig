@@ -3,10 +3,11 @@ Highcharts.chart('treatment-delay', {
         type: 'bar'
     },
     title: {
-        text: 'Temps de traitement par statut (sauf reprises de FdC)'
+        text: 'Temps de traitement par statut sur 3 mois glissants vs la même période N-1 (sauf reprises de FdC)'
     },
     xAxis: {
-        categories: ['Achat d\'équipement ou matériel', 'Développement', 'Immobilier', 'Travaux', 'Trésorerie', 'Autre']
+        categories: ['Achat d\'équipement ou matériel<br>N-1', 'Développement<br>N-1', 'Immobilier<br>N-1', 'Travaux<br>N-1', 'Trésorerie<br>N-1', 'Autre<br>N-1'],
+        crosshair: true
     },
     yAxis: {
         min: 0,
@@ -24,14 +25,27 @@ Highcharts.chart('treatment-delay', {
     },
     series: [
         {% for delay in delays %}
-        {% if not loop.first %},{% endif %}
-        {
-            name: '{{ delay.label }}',
-            data: [{% for motive in borrowingMotives %} {% if not loop.first %},{% endif %}{% if delay.data[motive] is defined %}{{ delay.data[motive] }}{% else %}0{% endif %} {% endfor %}],
-            tooltip: {
-                valueSuffix: ' jours'
+            {% if not loop.first %},{% endif %}
+            {
+                name: '{{ delay.label }}',
+                data: [{% for motive in borrowingMotives %} {% if not loop.first %},{% endif %}{% if delay.data[motive] is defined %}{{ delay.data[motive] }}{% else %}0{% endif %} {% endfor %}],
+                tooltip: {
+                    valueSuffix: ' jours'
+                },
+                stack: 'N'
             }
-        }
+        {% endfor %}
+        ,
+        {% for delay in delaysOfAYearAgo %}
+            {% if not loop.first %},{% endif %}
+            {
+                name: '{{ delay.label }}',
+                data: [{% for motive in borrowingMotives %} {% if not loop.first %},{% endif %}{% if delay.data[motive] is defined %}{{ delay.data[motive] }}{% else %}0{% endif %} {% endfor %}],
+                tooltip: {
+                    valueSuffix: ' jours'
+                },
+                stack: 'N-1'
+            }
         {% endfor %}
     ]
 });
