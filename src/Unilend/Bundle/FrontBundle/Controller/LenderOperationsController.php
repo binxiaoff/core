@@ -222,7 +222,7 @@ class LenderOperationsController extends Controller
         $activeSheet->setCellValue('K1', 'Capital restant dû');
         $activeSheet->setCellValue('L1', 'Note');
 
-        $lenderLoans               = $entityManagerSimulator->getRepository('loans')->getSumLoansByProject($wallet->getId(), 'debut ASC, p.title ASC');
+        $lenderLoans               = $entityManagerSimulator->getRepository('loans')->getSumLoansByProject($wallet->getId(), 'debut ASC, title ASC', null, true);
         $lenderLoansDisplayManager = $this->get(LenderLoansDisplayManager::class);
 
         try {
@@ -235,6 +235,10 @@ class LenderOperationsController extends Controller
                 $activeSheet->setCellValue('F' . ($rowIndex + 2), $projectLoans['startDate']);
 
                 switch ($projectLoans['loanStatus']) {
+                    case LenderLoansDisplayManager::LOAN_STATUS_DISPLAY_PENDING:
+                        $activeSheet->mergeCells('G' . ($rowIndex + 2) . ':K' . ($rowIndex + 2));
+                        $activeSheet->setCellValue('G' . ($rowIndex + 2), $this->get('translator')->trans('lender-operations_loans-table-project-status-label-pending'));
+                        break;
                     case LenderLoansDisplayManager::LOAN_STATUS_DISPLAY_COMPLETED:
                         if ($projectLoans['isCloseOutNetting']) {
                             $translationId = 'lender-operations_loans-table-project-status-label-collected-on-date';
@@ -370,7 +374,7 @@ class LenderOperationsController extends Controller
         /** @var \loans $loan */
         $loan = $this->get('unilend.service.entity_manager')->getRepository('loans');
         try {
-            $lenderLoans = $loan->getSumLoansByProject($wallet->getId(), 'debut ASC, p.title ASC', $year);
+            $lenderLoans = $loan->getSumLoansByProject($wallet->getId(), 'debut ASC, title ASC', $year, true);
         } catch (\Exception $exception) {
             $lenderLoans = [];
 
@@ -382,6 +386,7 @@ class LenderOperationsController extends Controller
                 'line'      => $exception->getLine()
             ]);
         }
+
         $lenderLoansDisplayManager = $this->get(LenderLoansDisplayManager::class);
 
         return $lenderLoansDisplayManager->formatLenderLoansData($wallet, $lenderLoans, $statusFilter);
@@ -862,7 +867,7 @@ class LenderOperationsController extends Controller
         $lenderLoansDisplayManager = $this->get(LenderLoansDisplayManager::class);
 
         try {
-            $lenderLoans = $loans->getSumLoansByProject($wallet->getId(), 'debut DESC, p.title ASC');
+            $lenderLoans = $loans->getSumLoansByProject($wallet->getId(), 'debut DESC, title ASC', null, true);
             $lenderLoans = $lenderLoansDisplayManager->formatLenderLoansForExport($lenderLoans);
         } catch (\Exception $exception) {
             $lenderLoans = [];

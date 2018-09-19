@@ -1,7 +1,6 @@
 <?php
 
-use Unilend\Bundle\CoreBusinessBundle\Entity\Loans as LoansEntity;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{Bids, Loans as LoansEntity, ProjectsStatus};
 
 class loans extends loans_crud
 {
@@ -188,14 +187,16 @@ class loans extends loans_crud
      * @param int         $idLender
      * @param string|null $order
      * @param int|null    $year
+     * @param bool        $includePendingBids
      *
      * @return array
      * @throws Exception
      */
-    public function getSumLoansByProject(int $idLender, $order = null, $year = null): array
+    public function getSumLoansByProject(int $idLender, $order = null, $year = null, $includePendingBids = false): array
     {
         $query = '
             SELECT
+                MAX(l.added) AS added,
                 l.id_project,
                 p.title,
                 p.period,
@@ -204,8 +205,8 @@ class loans extends loans_crud
                 p.status AS project_status,
                 ps.label AS project_status_label,
                 IFNULL((SELECT MIN(added) FROM projects_status_history WHERE id_project = p.id_project AND id_project_status IN (SELECT id_project_status FROM projects_status WHERE status IN (:repaidStatus))), "") AS final_repayment_date,
-                SUM(ROUND(l.amount / 100, 2)) AS amount,
-                ROUND(SUM(rate * l.amount) / SUM(l.amount), 2) AS rate,
+                ROUND(SUM(l.amount) / 100, 2) AS amount,
+                ROUND(SUM(l.rate * l.amount) / SUM(l.amount), 2) AS rate,
                 COUNT(DISTINCT l.id_loan) AS nb_loan,
                 l.id_loan AS id_loan_if_one_loan,
                 YEAR(l.added) AS loan_year,
@@ -220,17 +221,54 @@ class loans extends loans_crud
             INNER JOIN projects_status ps ON p.status = ps.status
             INNER JOIN echeanciers first_repayment ON (l.id_loan = first_repayment.id_loan AND first_repayment.ordre = 1)
             WHERE l.id_lender = :idLender
-                AND l.status = ' . LoansEntity::STATUS_ACCEPTED . '
-                ' . (null === $year ? '' : 'AND YEAR(l.added) = :year') . '
-            GROUP BY l.id_project
-            ORDER BY ' . (null === $order ? 'l.added DESC' : $order);
+                AND l.status = ' . LoansEntity::STATUS_ACCEPTED .
+                (null === $year ? '' : ' AND YEAR(l.added) = :year') . '
+            GROUP BY l.id_project';
+
+        if ($includePendingBids) {
+            $query .= '
+            UNION
+            
+            SELECT
+                MAX(b.added) AS added,
+                b.id_project,
+                p.title,
+                p.period,
+                p.slug,
+                p.risk,
+                p.status AS project_status,
+                ps.label AS project_status_label,
+                NULL AS final_repayment_date,
+                ROUND(SUM(b.amount) / 100, 2) AS amount,
+                ROUND(SUM(b.rate * b.amount) / SUM(b.amount), 2) AS rate,
+                0 AS nb_loan,
+                NULL AS id_loan_if_one_loan,
+                YEAR(MAX(b.added)) AS loan_year,
+                NULL AS id_type_contract,
+                p.date_fin AS debut,
+                NULL AS fin,
+                NULL AS next_echeance,
+                NULL AS monthly_repayment_amount,
+                NULL AS remaining_capital
+            FROM bids b
+            INNER JOIN projects p ON b.id_project = p.id_project
+            INNER JOIN projects_status ps ON p.status = ps.status
+            WHERE b.id_lender_account = :idLender
+                AND p.status IN (:fundedStatus)
+                AND b.status = ' . Bids::STATUS_ACCEPTED . '
+            GROUP BY p.id_project';
+        }
+
+        $query .= ' ORDER BY ' . (null === $order ? 'MAX(added) DESC' : $order);
 
         $statement = $this->bdd->executeQuery($query, [
                 'repaidStatus'  => [ProjectsStatus::REMBOURSE, ProjectsStatus::REMBOURSEMENT_ANTICIPE],
+                'fundedStatus'  => [ProjectsStatus::BID_TERMINATED, ProjectsStatus::FUNDE],
                 'idLender'      => $idLender,
                 'year'          => $year
             ], [
                 'repaidStatus'  => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY,
+                'fundedStatus'  => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY,
                 'idLender'      => PDO::PARAM_INT,
                 'year'          => PDO::PARAM_INT
             ]

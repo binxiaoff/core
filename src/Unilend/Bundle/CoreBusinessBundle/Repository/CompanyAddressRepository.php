@@ -76,4 +76,27 @@ class CompanyAddressRepository extends EntityRepository
 
         return $queryBuilder->getQuery()->getResult();
     }
+
+    /**
+     * @param \DateTime     $date
+     * @param Companies|int $idCompany
+     *
+     * @return null|CompanyAddress
+     */
+    public function findMainAddressAddedBeforeDate(\DateTime $date, $idCompany): ?CompanyAddress
+    {
+        $queryBuilder = $this->createQueryBuilder('ca');
+        $queryBuilder
+            ->innerJoin('UnilendCoreBusinessBundle:AddressType', 'at', Join::WITH, 'ca.idType = at.id')
+            ->where('ca.idCompany = :idCompany')
+            ->andWhere('at.label = :type')
+            ->andWhere('ca.added <= :date')
+            ->orderBy('ca.added', 'DESC')
+            ->setParameter('date', $date)
+            ->setParameter(':idCompany', $idCompany)
+            ->setParameter('type', AddressType::TYPE_MAIN_ADDRESS)
+            ->setMaxResults(1);
+
+        return $queryBuilder->getQuery()->getOneOrNullResult();
+    }
 }

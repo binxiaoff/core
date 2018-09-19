@@ -132,11 +132,22 @@ class DatabaseSpool extends \Swift_ConfigurableSpool
                             $email->setIdMessageMailjet($transport->getMessageId($email, $response));
                         }
                     } else {
+                        $errorEmails  = [];
                         $reasonPhrase = json_encode($response->getReasonPhrase());
 
                         foreach ($batch as $email) {
                             $email->setStatus(MailQueue::STATUS_ERROR);
                             $email->setErrorMailjet($reasonPhrase);
+
+                            $errorEmails[] = $email->getIdQueue();
+                        }
+
+                        if ($response->getBody() && isset($response->getBody()['Messages'])) {
+                            $this->logger->warning('An error occurred while sending emails via Mailjet: ' . $reasonPhrase . '. Response was ' . json_encode($response->getBody()['Messages']), [
+                                'emails'   => $errorEmails,
+                                'class'    => __CLASS__,
+                                'function' => __FUNCTION__
+                            ]);
                         }
                     }
                 }

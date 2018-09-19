@@ -10,5 +10,12 @@
             <argument key="$numberFormatter" type="service" id="number_formatter"/>
             <argument key="$currencyFormatter" type="service" id="currency_formatter"/>
         </service>
+
+        <service id="Unilend\Bundle\CoreBusinessBundle\Service\Document\LenderTermsOfSaleGenerator" autowire="true">
+            <argument key="$protectedPath">%path.protected%</argument>
+            <argument key="$staticPath">%path.static%</argument>
+            <argument key="$numberFormatter" type="service" id="number_formatter"/>
+            <argument key="$currencyFormatter" type="service" id="currency_formatter"/>
+        </service>
     </services>
 </container>

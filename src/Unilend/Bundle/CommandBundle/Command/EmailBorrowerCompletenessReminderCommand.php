@@ -2,14 +2,10 @@
 
 namespace Unilend\Bundle\CommandBundle\Command;
 
-use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    ProjectAbandonReason, Projects, ProjectsStatus, Users
-};
-use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{ProjectAbandonReason, Projects, ProjectsStatus, Users};
 use Unilend\core\Loader;
 
 class EmailBorrowerCompletenessReminderCommand extends ContainerAwareCommand
@@ -31,10 +27,8 @@ class EmailBorrowerCompletenessReminderCommand extends ContainerAwareCommand
     {
         ini_set('memory_limit', '1G');
 
-        /** @var EntityManager $entityManagerSimulator */
         $entityManagerSimulator = $this->getContainer()->get('unilend.service.entity_manager');
-        /** @var LoggerInterface $logger */
-        $logger = $this->getContainer()->get('monolog.logger.console');
+        $logger                 = $this->getContainer()->get('monolog.logger.console');
 
         /** @var \ficelle $ficelle */
         $ficelle = Loader::loadLib('ficelle');
@@ -60,14 +54,11 @@ class EmailBorrowerCompletenessReminderCommand extends ContainerAwareCommand
         $settings->get('Téléphone emprunteur', 'type');
         $sBorrowerPhoneNumber = $settings->value;
 
-        $sUrl = $this->getContainer()->getParameter('router.request_context.scheme') . '://' . $this->getContainer()->getParameter('url.host_default');
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectStatusManager $projectStatusManager */
+        $sUrl                 = $this->getContainer()->getParameter('router.request_context.scheme') . '://' . $this->getContainer()->getParameter('url.host_default');
         $projectStatusManager = $this->getContainer()->get('unilend.service.project_status_manager');
-
         $entityManager        = $this->getContainer()->get('doctrine.orm.entity_manager');
         $projectsRepository   = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
-        $projectAbandonReason = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectAbandonReason')
-            ->findBy(['label' => ProjectAbandonReason::BORROWER_FOLLOW_UP_UNSUCCESSFUL]);
+        $projectAbandonReason = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectAbandonReason')->findBy(['label' => ProjectAbandonReason::BORROWER_FOLLOW_UP_UNSUCCESSFUL]);
 
         foreach ($aReminderIntervals as $sStatus => $aIntervals) {
             if (1 === preg_match('/^status-([1-9][0-9]*)$/', $sStatus, $aMatches)) {

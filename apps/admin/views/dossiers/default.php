@@ -4,8 +4,6 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{Projects, ProjectsStatus};
 
 ?>
 <script>
-  var nbPages = <?= isset($this->nb_lignes) && $this->nb_lignes > 0 ? ceil($this->iCountProjects / $this->nb_lignes) : 0 ?>;
-
   $(function () {
     $('[data-toggle="tooltip"]').tooltip();
 
@@ -82,42 +80,24 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{Projects, ProjectsStatus};
         }
     });
 
-    $('#display-pager').html($('#page-active').val() + '/' + nbPages);
-
-    $('#send-dossier').click(function () {
-      $('#nb-ligne-pagination').val(0);
-      $('#page-active').val(1);
+    $('#send-dossier, #reset').on('click', function () {
+      $('#page').val(1);
     });
   });
 
   function paginationDossiers(directionPagination) {
-    var nbLignePagination = Math.round($('#nb-ligne-pagination').val());
-    var pageActive = Math.round($('#page-active').val());
-    var totalLignePagination = <?= $this->iCountProjects - $this->nb_lignes ?>;
-
     switch (directionPagination) {
       case 'first':
-        $('#nb-ligne-pagination').val(0);
-        $('#page-active').val(1);
+        $('#page').val(1);
         break;
       case 'prev':
-        if (nbLignePagination > <?= $this->nb_lignes ?>) {
-          nbLignePagination = nbLignePagination -<?= $this->nb_lignes ?>;
-          $('#page-active').val(pageActive - 1);
-        }
-        $('#nb-ligne-pagination').val(nbLignePagination);
+        $('#page').val(<?= max(1, $this->page - 1) ?>);
         break;
       case 'next':
-        nbLignePagination = nbLignePagination +<?= $this->nb_lignes ?>;
-        if (nbLignePagination <= totalLignePagination) {
-          $('#nb-ligne-pagination').val(nbLignePagination);
-          $('#page-active').val(pageActive + 1);
-        }
+        $('#page').val(<?= min(ceil($this->projectsCount / $this->nb_lignes), $this->page + 1) ?>);
         break;
       case 'last':
-        nbLignePagination = totalLignePagination;
-        $('#nb-ligne-pagination').val(nbLignePagination);
-        $('#page-active').val(nbPages);
+        $('#page').val(<?= ceil($this->projectsCount / $this->nb_lignes) ?>);
         break;
     }
 
@@ -146,9 +126,8 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{Projects, ProjectsStatus};
     </div>
 
     <form method="post" name="search-dossier" id="search-dossier" class="form" enctype="multipart/form-data" action="<?= $this->lurl ?>/dossiers">
-        <input type="hidden" name="form_search_dossier" id="search-dossier-input">
-        <input type="hidden" name="nbLignePagination" id="nb-ligne-pagination" value="<?= isset($_POST['nbLignePagination']) ? $_POST['nbLignePagination'] : 0 ?>">
-        <input type="hidden" name="page-active" id="page-active" value="<?= isset($_POST['page-active']) ? $_POST['page-active'] : 1 ?>">
+        <input type="hidden" name="form_search_dossier">
+        <input type="hidden" name="page" id="page" value="<?= $this->page ?>">
         <fieldset class="row primary">
             <div class="col-md-2 col-md-offset-1">
                 <div class="form-group">
@@ -260,12 +239,12 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{Projects, ProjectsStatus};
     <?php if (isset($this->lProjects)) : ?>
         <div class="row">
             <div class="col-md-12">
-                <?php if ($this->iCountProjects == 0) : ?>
+                <?php if ($this->projectsCount == 0) : ?>
                     <h1>Aucun projet trouvé</h1>
-                <?php elseif ($this->iCountProjects == 1) : ?>
+                <?php elseif ($this->projectsCount == 1) : ?>
                     <h1>1 projet trouvé</h1>
-                <?php elseif ($this->iCountProjects > 0) : ?>
-                    <h1><?= $this->ficelle->formatNumber($this->iCountProjects, 0) ?> projets trouvés</h1>
+                <?php elseif ($this->projectsCount > 0) : ?>
+                    <h1><?= $this->ficelle->formatNumber($this->projectsCount, 0) ?> projets trouvés</h1>
                 <?php endif; ?>
             </div>
         </div>
@@ -341,22 +320,20 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{Projects, ProjectsStatus};
                 <?php endforeach; ?>
                 </tbody>
             </table>
-            <?php if ($this->nb_lignes != '') : ?>
-                <table>
-                    <tr>
-                        <td id="pager">
+            <table>
+                <tr>
+                    <td id="pager">
+                        <?php if ($this->page > 1) : ?>
                             <img src="<?= $this->surl ?>/images/admin/first.png" alt="Première" class="first" onclick="paginationDossiers('first');">
                             <img src="<?= $this->surl ?>/images/admin/prev.png" alt="Précédente" class="prev" onclick="paginationDossiers('prev');">
-                            <span id="displayPager"></span>
+                        <?php endif; ?>
+                        <?php if ($this->page < ceil($this->projectsCount / $this->nb_lignes)) : ?>
                             <img src="<?= $this->surl ?>/images/admin/next.png" alt="Suivante" class="next" onclick="paginationDossiers('next');">
                             <img src="<?= $this->surl ?>/images/admin/last.png" alt="Dernière" class="last" onclick="paginationDossiers('last');">
-                            <select class="pagesize">
-                                <option value="<?= $this->nb_lignes ?>" selected="selected"><?= $this->nb_lignes ?></option>
-                            </select>
-                        </td>
-                    </tr>
-                </table>
-            <?php endif; ?>
+                        <?php endif; ?>
+                    </td>
+                </tr>
+            </table>
         <?php else : ?>
             <p>Il n'y a aucun projet pour cette recherche.</p>
         <?php endif; ?>

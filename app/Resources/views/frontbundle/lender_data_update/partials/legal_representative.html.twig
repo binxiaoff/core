@@ -2,11 +2,13 @@
     <h5>{% trans %} lender-profile_information-tab-identity-section-company-representative-title {% endtrans %}</h5>
     <dl class="list-2col">
         <dt>{% trans %} common_title {% endtrans %}</dt>
-        {% if client.civilite == constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::TITLE_MISTER') %}
-            <dd id="data-update-info-civilite-output">{% trans %} common_title-male {% endtrans %}</dd>
-        {% else %}
-            <dd id="data-update-info-civilite-output">{% trans %} common_title-female {% endtrans %}</dd>
-        {% endif %}
+        <dd id="data-update-info-civilite-output">
+            {% if client.civilite == constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::TITLE_MISTER') %}
+                {% trans %} common_title-male {% endtrans %}
+            {% elseif client.civilite == constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::TITLE_MISS') %}
+                {% trans %} common_title-female {% endtrans %}
+            {% endif %}
+        </dd>
         <dt>{% trans %} lender-profile_information-tab-identity-section-company-client-status-label {% endtrans %}</dt>
         <dd>
             <span id="data-update-info-company-client-status-output">{{ "lender-profile_information-tab-identity-section-company-client-status-#{ company.statusClient }" | trans }} </span>
