@@ -221,7 +221,6 @@ class dashboardController extends bootstrap
         ];
     }
 
-
     /**
      * @param array $projects
      *
@@ -309,7 +308,7 @@ class dashboardController extends bootstrap
     }
 
     /**
-     * @param Projects                 $project
+     * @param Projects $project
      */
     private function sendProjectRejectionEmail(Projects $project): void
     {
@@ -349,12 +348,14 @@ class dashboardController extends bootstrap
             // nombre de projets en cours de traitement commercial
             $projectsInSalesTreatmentStatusCount = count($projectRepository->findBy(['status' => ProjectsStatus::COMMERCIAL_REVIEW]));
 
+            // shared variables
+            $today      = new DateTime();
+            $oneYearAgo = new DateTime('1 year ago');
+
             // émissions yoy
             $firstDayOfThisYear = new DateTime('first day of this year');
-            $today              = new DateTime();
             $firstOfLastYear    = new DateTime('first day of last year');
-            $sameDayOfLastYear  = new DateTime('1 year ago');
-            $yearOverYear       = $this->getReleaseProjectAndDelta($firstDayOfThisYear, $today, $firstOfLastYear, $sameDayOfLastYear);
+            $yearOverYear       = $this->getReleaseProjectAndDelta($firstDayOfThisYear, $today, $firstOfLastYear, $oneYearAgo);
 
             // émissions mom
             $firstDayOfLastMonth   = new DateTime('first day of last month');
@@ -364,10 +365,10 @@ class dashboardController extends bootstrap
             $monthOverMonth        = $this->getReleaseProjectAndDelta($firstDayOfLastMonth, $lastDayOfLastMonth, $firstDayOfTwoMonthAgo, $lastDayOfTwoMonthAgo);
 
             // projets par canal d’arrivée
-            $thirteenMonthAgo   = new DateTime('first day of 12 months ago');
-            $thirteenMonths     = $this->getRollingMonths($thirteenMonthAgo, $today);
-            $statSentToAnalysis = $this->getProjectCountInStatus(ProjectsStatus::PENDING_ANALYSIS, $thirteenMonthAgo, $today);
-            $statRepayment      = $this->getProjectCountInStatus(ProjectsStatus::REMBOURSEMENT, $thirteenMonthAgo, $today);
+            $thirteenMonthsAgo  = new DateTime('first day of 12 months ago');
+            $thirteenMonths     = $this->getRollingMonths($thirteenMonthsAgo, $today);
+            $statSentToAnalysis = $this->getProjectCountInStatus(ProjectsStatus::PENDING_ANALYSIS, $thirteenMonthsAgo, $today);
+            $statRepayment      = $this->getProjectCountInStatus(ProjectsStatus::REMBOURSEMENT, $thirteenMonthsAgo, $today);
 
             // projets en cours
             $countableStatus        = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatus')->findBy([
@@ -391,15 +392,16 @@ class dashboardController extends bootstrap
             ]);
 
             // émissions n vs n-1 (12 mois glissants)
+            $twelveMonthsAgo                 = new DateTime('first day of 11 months ago');
             $twentyFourMonthsAgo             = new DateTime('first day of 23 months ago');
-            $twelveMonthsLastYear            = $this->getRollingMonths($twentyFourMonthsAgo, $sameDayOfLastYear);
-            $releasedProjectsThisRollingYear = $projectRepository->getStatisticsByStatusByMonth(ProjectsStatus::REMBOURSEMENT, false, $thirteenMonthAgo, $today);
-            $releasedProjectsLastRollingYear = $projectRepository->getStatisticsByStatusByMonth(ProjectsStatus::REMBOURSEMENT, false, $twentyFourMonthsAgo, $sameDayOfLastYear);
+            $twelveMonths                    = $this->getRollingMonths($twelveMonthsAgo, $today);
+            $twelveMonthsLastYear            = $this->getRollingMonths($twentyFourMonthsAgo, $oneYearAgo);
+            $releasedProjectsThisRollingYear = $projectRepository->getStatisticsByStatusByMonth(ProjectsStatus::REMBOURSEMENT, false, $twelveMonthsAgo, $today);
+            $releasedProjectsLastRollingYear = $projectRepository->getStatisticsByStatusByMonth(ProjectsStatus::REMBOURSEMENT, false, $twentyFourMonthsAgo, $oneYearAgo);
 
             // temps de traitement par statut
-            $treeMonthsAgo         = new DateTime('3 months ago');
-            $aYearAgo              = new DateTime('12 months ago');
-            $aYearAndTreeMonthsAgo = new DateTime('15 months ago');
+            $threeMonthsAgo        = new DateTime('3 months ago');
+            $oneYearThreeMonthsAgo = new DateTime('15 months ago');
             $borrowingMotives      = [
                 BorrowingMotive::ID_MOTIVE_PURCHASE_MATERIAL,
                 BorrowingMotive::ID_MOTIVE_DEVELOPMENT,
@@ -423,37 +425,37 @@ class dashboardController extends bootstrap
                 [
                     'label' => 'Fundé',
                     'color' => $statusColor[ProjectsStatus::FUNDE],
-                    'data'  => $this->getDelayByStatus(ProjectsStatus::FUNDE, $borrowingMotives, $treeMonthsAgo, $today)
+                    'data'  => $this->getDelayByStatus(ProjectsStatus::FUNDE, $borrowingMotives, $threeMonthsAgo, $today)
                 ],
                 [
                     'label' => 'En funding',
                     'color' => $statusColor[ProjectsStatus::EN_FUNDING],
-                    'data'  => $this->getDelayByStatus(ProjectsStatus::EN_FUNDING, $borrowingMotives, $treeMonthsAgo, $today)
+                    'data'  => $this->getDelayByStatus(ProjectsStatus::EN_FUNDING, $borrowingMotives, $threeMonthsAgo, $today)
                 ],
                 [
                     'label' => 'Prép funding',
                     'color' => $statusColor[ProjectsStatus::PREP_FUNDING],
-                    'data'  => $this->getDelayByStatus(ProjectsStatus::PREP_FUNDING, $borrowingMotives, $treeMonthsAgo, $today)
+                    'data'  => $this->getDelayByStatus(ProjectsStatus::PREP_FUNDING, $borrowingMotives, $threeMonthsAgo, $today)
                 ],
                 [
                     'label' => 'Reveue analyste',
                     'color' => $statusColor[ProjectsStatus::ANALYSIS_REVIEW],
-                    'data'  => $this->getDelayByStatus(ProjectsStatus::ANALYSIS_REVIEW, $borrowingMotives, $treeMonthsAgo, $today)
+                    'data'  => $this->getDelayByStatus(ProjectsStatus::ANALYSIS_REVIEW, $borrowingMotives, $threeMonthsAgo, $today)
                 ],
                 [
                     'label' => 'Attent analyste',
                     'color' => $statusColor[ProjectsStatus::PENDING_ANALYSIS],
-                    'data'  => $this->getDelayByStatus(ProjectsStatus::PENDING_ANALYSIS, $borrowingMotives, $treeMonthsAgo, $today)
+                    'data'  => $this->getDelayByStatus(ProjectsStatus::PENDING_ANALYSIS, $borrowingMotives, $threeMonthsAgo, $today)
                 ],
                 [
                     'label' => 'Traitement commercial',
                     'color' => $statusColor[ProjectsStatus::COMMERCIAL_REVIEW],
-                    'data'  => $this->getDelayByStatus(ProjectsStatus::COMMERCIAL_REVIEW, $borrowingMotives, $treeMonthsAgo, $today)
+                    'data'  => $this->getDelayByStatus(ProjectsStatus::COMMERCIAL_REVIEW, $borrowingMotives, $threeMonthsAgo, $today)
                 ],
                 [
                     'label' => 'Demande complète',
                     'color' => $statusColor[ProjectsStatus::COMPLETE_REQUEST],
-                    'data'  => $this->getDelayByStatus(ProjectsStatus::COMPLETE_REQUEST, $borrowingMotives, $treeMonthsAgo, $today)
+                    'data'  => $this->getDelayByStatus(ProjectsStatus::COMPLETE_REQUEST, $borrowingMotives, $threeMonthsAgo, $today)
                 ]
             ];
 
@@ -461,37 +463,37 @@ class dashboardController extends bootstrap
                 [
                     'label' => 'Fundé (N-1)',
                     'color' => $statusColor[ProjectsStatus::FUNDE],
-                    'data'  => $this->getDelayByStatus(ProjectsStatus::FUNDE, $borrowingMotives, $aYearAndTreeMonthsAgo, $aYearAgo)
+                    'data'  => $this->getDelayByStatus(ProjectsStatus::FUNDE, $borrowingMotives, $oneYearThreeMonthsAgo, $oneYearAgo)
                 ],
                 [
                     'label' => 'En funding (N-1)',
                     'color' => $statusColor[ProjectsStatus::EN_FUNDING],
-                    'data'  => $this->getDelayByStatus(ProjectsStatus::EN_FUNDING, $borrowingMotives, $aYearAndTreeMonthsAgo, $aYearAgo)
+                    'data'  => $this->getDelayByStatus(ProjectsStatus::EN_FUNDING, $borrowingMotives, $oneYearThreeMonthsAgo, $oneYearAgo)
                 ],
                 [
                     'label' => 'Prép funding (N-1)',
                     'color' => $statusColor[ProjectsStatus::PREP_FUNDING],
-                    'data'  => $this->getDelayByStatus(ProjectsStatus::PREP_FUNDING, $borrowingMotives, $aYearAndTreeMonthsAgo, $aYearAgo)
+                    'data'  => $this->getDelayByStatus(ProjectsStatus::PREP_FUNDING, $borrowingMotives, $oneYearThreeMonthsAgo, $oneYearAgo)
                 ],
                 [
                     'label' => 'Reveue analyste (N-1)',
                     'color' => $statusColor[ProjectsStatus::ANALYSIS_REVIEW],
-                    'data'  => $this->getDelayByStatus(ProjectsStatus::ANALYSIS_REVIEW, $borrowingMotives, $aYearAndTreeMonthsAgo, $aYearAgo)
+                    'data'  => $this->getDelayByStatus(ProjectsStatus::ANALYSIS_REVIEW, $borrowingMotives, $oneYearThreeMonthsAgo, $oneYearAgo)
                 ],
                 [
                     'label' => 'Attent analyste (N-1)',
                     'color' => $statusColor[ProjectsStatus::PENDING_ANALYSIS],
-                    'data'  => $this->getDelayByStatus(ProjectsStatus::PENDING_ANALYSIS, $borrowingMotives, $aYearAndTreeMonthsAgo, $aYearAgo)
+                    'data'  => $this->getDelayByStatus(ProjectsStatus::PENDING_ANALYSIS, $borrowingMotives, $oneYearThreeMonthsAgo, $oneYearAgo)
                 ],
                 [
                     'label' => 'Traitement commercial (N-1)',
                     'color' => $statusColor[ProjectsStatus::COMMERCIAL_REVIEW],
-                    'data'  => $this->getDelayByStatus(ProjectsStatus::COMMERCIAL_REVIEW, $borrowingMotives, $aYearAndTreeMonthsAgo, $aYearAgo)
+                    'data'  => $this->getDelayByStatus(ProjectsStatus::COMMERCIAL_REVIEW, $borrowingMotives, $oneYearThreeMonthsAgo, $oneYearAgo)
                 ],
                 [
                     'label' => 'Demande complète (N-1)',
                     'color' => $statusColor[ProjectsStatus::COMPLETE_REQUEST],
-                    'data'  => $this->getDelayByStatus(ProjectsStatus::COMPLETE_REQUEST, $borrowingMotives, $aYearAndTreeMonthsAgo, $aYearAgo)
+                    'data'  => $this->getDelayByStatus(ProjectsStatus::COMPLETE_REQUEST, $borrowingMotives, $oneYearThreeMonthsAgo, $oneYearAgo)
                 ]
             ];
 
@@ -515,7 +517,8 @@ class dashboardController extends bootstrap
             'releasedProjectLastMonthAmount'      => $monthOverMonth['amount'],
             'deltaMomCountInPercentage'           => $monthOverMonth['deltaCountInPercentage'],
             'deltaMomAmountInPercentage'          => $monthOverMonth['deltaAmountInPercentage'],
-            'twelveMonths'                        => $thirteenMonths,
+            'twelveMonths'                        => $twelveMonths,
+            'thirteenMonths'                      => $thirteenMonths,
             'statSentToAnalysisHighcharts'        => $statSentToAnalysis,
             'statRepaymentHighcharts'             => $statRepayment,
             'twelveMonthsLastYear'                => $twelveMonthsLastYear,
@@ -543,7 +546,7 @@ class dashboardController extends bootstrap
      * @return array
      * @throws \Doctrine\DBAL\DBALException
      */
-    private function getReleaseProjectAndDelta(DateTime $from, DateTime $end, DateTime $compareWithFrom, DateTime $compareWithEnd) : array
+    private function getReleaseProjectAndDelta(DateTime $from, DateTime $end, DateTime $compareWithFrom, DateTime $compareWithEnd): array
     {
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
@@ -564,8 +567,10 @@ class dashboardController extends bootstrap
             $releasedProjectToCompareAmount += $project['amount'];
         }
 
-        $deltaCountInPercentage  = $releasedProjectToCompareCount ? round(bcmul(bcdiv(bcsub($releasedProjectCount, $releasedProjectToCompareCount, 4), $releasedProjectToCompareCount, 5), 100, 2), 1) : 0;
-        $deltaAmountInPercentage = $releasedProjectToCompareAmount ? round(bcmul(bcdiv(bcsub($releasedProjectAmount, $releasedProjectToCompareAmount, 4), $releasedProjectToCompareAmount, 5), 100, 2), 1) : 0;
+        $deltaCountInPercentage  = $releasedProjectToCompareCount ? round(bcmul(bcdiv(bcsub($releasedProjectCount, $releasedProjectToCompareCount, 4), $releasedProjectToCompareCount, 5), 100, 2),
+            1) : 0;
+        $deltaAmountInPercentage = $releasedProjectToCompareAmount ? round(bcmul(bcdiv(bcsub($releasedProjectAmount, $releasedProjectToCompareAmount, 4), $releasedProjectToCompareAmount, 5), 100, 2),
+            1) : 0;
 
         return [
             'number'                  => $releasedProjectCount,
@@ -581,7 +586,7 @@ class dashboardController extends bootstrap
      *
      * @return array
      */
-    private function getRollingMonths(DateTime $start, DateTime $end) : array
+    private function getRollingMonths(DateTime $start, DateTime $end): array
     {
         $months     = [];
         $firstMonth = clone $start;
@@ -603,7 +608,7 @@ class dashboardController extends bootstrap
      * @return array
      * @throws \Doctrine\DBAL\DBALException
      */
-    private function getProjectCountInStatus(int $status, DateTime $start, DateTime $end) : array
+    private function getProjectCountInStatus(int $status, DateTime $start, DateTime $end): array
     {
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
@@ -631,15 +636,15 @@ class dashboardController extends bootstrap
     }
 
     /**
-     * @param  int   $status
-     * @param  array $motives
-     * @param  DateTime $from
-     * @param  DateTime $to
+     * @param  int      $status
+     * @param  array    $motives
+     * @param  \DateTime $from
+     * @param  \DateTime $to
      *
      * @return array
      * @throws \Doctrine\DBAL\DBALException
      */
-    private function getDelayByStatus(int $status, array $motives, DateTime $from, DateTime $to) : array
+    private function getDelayByStatus(int $status, array $motives, \DateTime $from, \DateTime $to): array
     {
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
@@ -660,7 +665,7 @@ class dashboardController extends bootstrap
      *
      * @return array
      */
-    private function countByStatus(array $countableStatus, ?array $borrowingMotives = null, ?array $partners = null) : array
+    private function countByStatus(array $countableStatus, ?array $borrowingMotives = null, ?array $partners = null): array
     {
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');

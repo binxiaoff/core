@@ -5,10 +5,11 @@ namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 use Doctrine\DBAL\Cache\QueryCacheProfile;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Driver\ResultStatement;
-use Doctrine\ORM\{AbstractQuery, EntityRepository, QueryBuilder, Query\Expr\Join, Query\ResultSetMappingBuilder};
+use Doctrine\ORM\{AbstractQuery, EntityRepository, Query\Expr\Join, Query\ResultSetMappingBuilder, QueryBuilder};
 use PDO;
 use Psr\Log\InvalidArgumentException;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{Bids, Clients, ClientsMandats, Companies, CompanyStatus, Echeanciers, EcheanciersEmprunteur, Factures, OperationType, Partner, Projects, ProjectsPouvoir, ProjectsStatus, UnilendStats, Users, Virements};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{Bids, Clients, ClientsMandats, Companies, CompanyStatus, Echeanciers, EcheanciersEmprunteur, Factures, OperationType, Partner, Projects, ProjectsPouvoir,
+    ProjectsStatus, UnilendStats, Users, Virements};
 use Unilend\Bundle\CoreBusinessBundle\Service\{DebtCollectionMissionManager, ProjectCloseOutNettingManager};
 use Unilend\librairies\CacheKeys;
 
@@ -1356,8 +1357,8 @@ class ProjectsRepository extends EntityRepository
     }
 
     /**
-     * @param int   $status
-     * @param array $borrowingMotives
+     * @param int       $status
+     * @param array     $borrowingMotives
      * @param \DateTime $from
      * @param \DateTime $to
      *
