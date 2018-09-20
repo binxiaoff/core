@@ -636,8 +636,8 @@ class dashboardController extends bootstrap
     }
 
     /**
-     * @param  int      $status
-     * @param  array    $motives
+     * @param  int       $status
+     * @param  array     $motives
      * @param  \DateTime $from
      * @param  \DateTime $to
      *
