@@ -8,12 +8,13 @@
         <dt>{% trans %} lender-profile_information-tab-identity-section-client-type-label {% endtrans %}</dt>
             <dd id="profile-info-statut-output">{% trans %} lender-profile_information-tab-identity-section-client-type-person-label {% endtrans %}</dd>
         <dt>{% trans %} common_title {% endtrans %}</dt>
-        {% if client.civilite == 'M.' %}
-            <dd id="profile-info-civilite-output">{% trans %} common_title-male {% endtrans %}</dd>
-        {% else %}
-            <dd id="profile-info-civilite-output">{% trans %} common_title-female {% endtrans %}</dd>
-        {% endif %}
-
+        <dd id="profile-info-civilite-output">
+            {% if client.civilite == constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::TITLE_MISTER') %}
+                {% trans %} common_title-male {% endtrans %}
+            {% elseif client.civilite == constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::TITLE_MISS') %}
+                {% trans %} common_title-female {% endtrans %}
+            {% endif %}
+        </dd>
         <dt>{% trans %} common_birth-name {% endtrans %}</dt>
         <dd id="profile-info-nom-output">{{ client.nom }}</dd>
         <dt>{% trans %} common_used-name {% endtrans %}</dt>
