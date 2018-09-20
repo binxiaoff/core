@@ -146,8 +146,8 @@ class ProjectsController extends Controller
         $sortDirection = strtoupper($sortDirection);
 
         if (
-            in_array($sortType, [\projects::SORT_FIELD_SECTOR, \projects::SORT_FIELD_AMOUNT, \projects::SORT_FIELD_RATE, \projects::SORT_FIELD_RISK, \projects::SORT_FIELD_END])
-            && in_array($sortDirection, [\projects::SORT_DIRECTION_ASC, \projects::SORT_DIRECTION_DESC])
+            in_array($sortType, [ProjectDisplayManager::SORT_FIELD_SECTOR, ProjectDisplayManager::SORT_FIELD_AMOUNT, ProjectDisplayManager::SORT_FIELD_RATE, ProjectDisplayManager::SORT_FIELD_RISK, ProjectDisplayManager::SORT_FIELD_END])
+            && in_array($sortDirection, ['ASC', 'DESC'])
         ) {
             $sort = [$sortType => $sortDirection];
         }
@@ -167,7 +167,7 @@ class ProjectsController extends Controller
             return $product->getIdProduct();
         }, $products);
 
-        $template['projectsInFunding'] = $projects->countSelectProjectsByStatus([\projects_status::EN_FUNDING], ' AND display = ' . \projects::DISPLAY_PROJECT_ON, $productIds);
+        $template['projectsInFunding'] = $projects->countSelectProjectsByStatus([ProjectsStatus::EN_FUNDING], ' AND display = ' . Projects::DISPLAY_YES, $productIds);
         $template['pagination']        = $this->pagination($page, $limit, $client);
         $template['showPagination']    = true;
         $template['showSortable']      = true;
@@ -375,7 +375,7 @@ class ProjectsController extends Controller
 
         $template['conditions'] = [
             'visibility'           => $visibility,
-            'bids'                 => isset($template['project']['bids']) && $template['project']['status'] == \projects_status::EN_FUNDING,
+            'bids'                 => isset($template['project']['bids']) && $template['project']['status'] == ProjectsStatus::EN_FUNDING,
             'myBids'               => isset($template['project']['lender']) && $template['project']['lender']['bids']['count'] > 0,
             'finance'              => ProjectDisplayManager::VISIBILITY_FULL === $visibility,
             'canBid'               => ProjectDisplayManager::VISIBILITY_FULL === $visibility
@@ -413,7 +413,7 @@ class ProjectsController extends Controller
         $projectEntity         = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($project->id_project);
 
         if (
-            $project->status >= \projects_status::A_FUNDER && $project->status < \projects_status::EN_FUNDING
+            $project->status >= ProjectsStatus::A_FUNDER && $project->status < ProjectsStatus::EN_FUNDING
             || ProjectDisplayManager::VISIBILITY_NONE !== $projectDisplayManager->getVisibility($projectEntity, $client)
             || $this->get('security.authorization_checker')->isGranted('IS_AUTHENTICATED_FULLY') && 28002 == $project->id_project
         ) {
@@ -643,7 +643,7 @@ class ProjectsController extends Controller
         $project = $this->get('unilend.service.entity_manager')->getRepository('projects');
 
         if (false === $project->get($projectId, 'id_project')
-            || $project->display != \projects::DISPLAY_PROJECT_ON
+            || $project->display != Projects::DISPLAY_YES
             || false === $this->get('security.authorization_checker')->isGranted('ROLE_LENDER')
         ) {
             return new RedirectResponse('/');
@@ -706,7 +706,7 @@ class ProjectsController extends Controller
         $project = $this->get('unilend.service.entity_manager')->getRepository('projects');
 
         if (false === $project->get($projectId, 'id_project')
-            || $project->display != \projects::DISPLAY_PROJECT_ON
+            || $project->display != Projects::DISPLAY_YES
             || false === $this->get('security.authorization_checker')->isGranted('IS_AUTHENTICATED_FULLY')
             || false === $this->get('security.authorization_checker')->isGranted('ROLE_LENDER')
         ) {
@@ -844,7 +844,7 @@ class ProjectsController extends Controller
         if ($project->get($projectId, 'id_project')) {
             $translator = $this->get('translator');
 
-            if ($project->status == \projects_status::EN_FUNDING) {
+            if ($project->status == ProjectsStatus::EN_FUNDING) {
                 ob_start();
                 echo "\xEF\xBB\xBF";
                 echo '"N°";"' . $translator->trans('preteur-projets_taux-dinteret') . '";"' . $translator->trans('preteur-projets_montant') . '";"' . $translator->trans('preteur-projets_statuts') . '"' . PHP_EOL;
@@ -1147,7 +1147,7 @@ class ProjectsController extends Controller
         /** @var GeneratorInterface $snappy */
         $snappy = $this->get('knp_snappy.pdf');
 
-        if ($project->status >= \projects_status::EN_FUNDING) {
+        if ($project->status >= ProjectsStatus::EN_FUNDING) {
             $outputFile = $this->getParameter('path.user') . 'dirs/' . $filename;
             $snappy->generateFromHtml($html, $outputFile, $options, true);
         }

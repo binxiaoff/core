@@ -17,6 +17,12 @@ class ProjectDisplayManager
     const VISIBILITY_ANONYMOUS            = 'anonymous';
     const VISIBILITY_NONE                 = 'none';
 
+    const SORT_FIELD_SECTOR = 'sector';
+    const SORT_FIELD_AMOUNT = 'amount';
+    const SORT_FIELD_RATE   = 'rate';
+    const SORT_FIELD_RISK   = 'risk';
+    const SORT_FIELD_END    = 'end';
+
     /** @var EntityManagerInterface */
     private $entityManager;
     /** @var EntityManagerSimulator */
@@ -103,7 +109,7 @@ class ProjectDisplayManager
         $productIds   = array_map(function (Product $product) {
             return $product->getIdProduct();
         }, $products);
-        $projectList  = $projectsEntity->selectProjectsByStatus($projectStatus, ' AND p.display = ' . \projects::DISPLAY_PROJECT_ON, $sort, $start, $limit, true, $productIds);
+        $projectList  = $projectsEntity->selectProjectsByStatus($projectStatus, ' AND p.display = ' . Projects::DISPLAY_YES, $sort, $start, $limit, true, $productIds);
 
         foreach ($projectList as $item) {
             $project->get($item['id_project']);
@@ -206,7 +212,7 @@ class ProjectDisplayManager
             return $product->getIdProduct();
         }, $products);
 
-        $projectData['navigation'] = $project->positionProject($project->id_project, self::$projectsStatus, [\projects::SORT_FIELD_END => \projects::SORT_DIRECTION_DESC], $productIds);
+        $projectData['navigation'] = $project->positionProject($project->id_project, self::$projectsStatus, [self::SORT_FIELD_END => 'DESC'], $productIds);
 
         $now = new \DateTime('NOW');
         if ($projectData['endDate'] <= $now && $projectData['status'] == ProjectsStatus::EN_FUNDING) {
@@ -425,7 +431,7 @@ class ProjectDisplayManager
             return $product->getIdProduct();
         }, $products);
 
-        return $projects->countSelectProjectsByStatus(self::$projectsStatus, ' AND display = ' . \projects::DISPLAY_PROJECT_ON, $productIds);
+        return $projects->countSelectProjectsByStatus(self::$projectsStatus, ' AND display = ' . Projects::DISPLAY_YES, $productIds);
     }
 
     /**
