@@ -51,28 +51,4 @@ class AcceptationLegalDocsRepository extends EntityRepository
 
         return $queryBuilder->getQuery()->getResult();
     }
-
-    /**
-     * @param int $limit
-     *
-     * @return array
-     */
-    public function getLenderWithAcceptedIdLegalDocAndNoPdfValue(int $limit): array
-    {
-        $queryBuilder = $this->createQueryBuilder('ald');
-        $queryBuilder
-            ->select('IDENTITY(ald.idClient) AS idClient')
-            ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'w.idClient = ald.idClient')
-            ->innerJoin('UnilendCoreBusinessBundle:WalletType', 'wt', Join::WITH, 'wt.id = w.idType')
-            ->andWhere('ald.pdfName IS NULL')
-            ->andWhere('wt.label = :walletLabel')
-            ->andWhere('ald.idLegalDoc != :rootFolderIdTree')
-            ->orderBy('ald.idAcceptation', 'ASC')
-            ->groupBy('ald.idClient')
-            ->setParameter('walletLabel', WalletType::LENDER)
-            ->setParameter('rootFolderIdTree', TermsOfSaleManager::ID_TREE_ROOT_SECTION_LENDER_TOS)
-            ->setMaxResults($limit);
-
-        return $queryBuilder->getQuery()->getArrayResult();
-    }
 }
