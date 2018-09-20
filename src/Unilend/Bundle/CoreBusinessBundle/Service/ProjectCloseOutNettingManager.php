@@ -20,6 +20,11 @@ class ProjectCloseOutNettingManager
     /** @var ProjectRepaymentTaskManager */
     private $projectRepaymentTaskManager;
 
+    /**
+     * @param EntityManager               $entityManager
+     * @param ProjectStatusManager        $projectStatusManager
+     * @param ProjectRepaymentTaskManager $projectRepaymentTaskManager
+     */
     public function __construct(EntityManager $entityManager, ProjectStatusManager $projectStatusManager, ProjectRepaymentTaskManager $projectRepaymentTaskManager)
     {
         $this->entityManager               = $entityManager;
@@ -234,7 +239,6 @@ class ProjectCloseOutNettingManager
         $loanDetails = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Loans')->getBasicInformation($project); // for resolve the memory issue. 30 MB reduced.
 
         foreach ($loanDetails as $loanId => $loanDetail) {
-
             $loanDetails[$loanId]          = array_merge($loanDetails[$loanId], $this->getRemainingAmountByLoan($loanId));
             $loanDetails[$loanId]['total'] = round(bcadd($loanDetails[$loanId]['capital'], $loanDetails[$loanId]['interest'], 4), 2);
         }
@@ -247,7 +251,7 @@ class ProjectCloseOutNettingManager
      *
      * @return array
      */
-    public function getRemainingAmountByLoan($loan)
+    public function getRemainingAmountByLoan($loan): array
     {
         $closeOutNettingRepayment = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CloseOutNettingRepayment')->findOneBy(['idLoan' => $loan]);
         $remainingCapital         = round(bcsub($closeOutNettingRepayment->getCapital(), $closeOutNettingRepayment->getRepaidCapital(), 4), 2);
