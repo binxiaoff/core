@@ -155,7 +155,7 @@ EOF
                     if (null === $accepted->getPdfName()) {
                         $accepted->setPdfName($this->lenderTermsOfSaleGenerator->getName($accepted));
 
-                        $this->entityManager->flush();
+                        $this->entityManager->flush($accepted);
                         $savedPdfNames++;
                     }
                 }
