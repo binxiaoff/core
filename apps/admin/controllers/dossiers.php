@@ -110,7 +110,7 @@ class dossiersController extends bootstrap
             $limit         = $this->nb_lignes;
             $offset        = ($this->page - 1) * $this->nb_lignes;
 
-            $this->searchResult = $projectRepository->search($status, $siren, $companyName, $startDate, $endDate, $duration, $projectNeed, $salesPersonId, $riskAnalystId, null, $limit, $offset);
+            $this->searchResult = $projectRepository->search($status, $siren, $companyName, $startDate, $endDate, $duration, $projectNeed, $salesPersonId, $riskAnalystId, $limit, $offset);
             $this->resultsCount = count($this->searchResult);
 
             if ($this->resultsCount >= $this->nb_lignes) {

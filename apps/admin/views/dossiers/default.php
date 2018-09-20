@@ -157,7 +157,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{Projects, ProjectsStatus};
                         <?php foreach ($this->needs as $need) : ?>
                             <optgroup label="<?= $need['label'] ?>">
                                 <?php foreach ($need['children'] as $needChild) : ?>
-                                    <option value="<?= $needChild['id_project_need'] ?>"><?= $needChild['label'] ?></option>
+                                    <option<?= isset($_POST['projectNeed']) && $_POST['projectNeed'] == $needChild['id_project_need'] ? ' selected' : '' ?> value="<?= $needChild['id_project_need'] ?>"><?= $needChild['label'] ?></option>
                                 <?php endforeach; ?>
                             </optgroup>
                         <?php endforeach; ?>
@@ -282,8 +282,13 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{Projects, ProjectsStatus};
                 <?php foreach ($this->searchResult as $project) : ?>
                     <tr<?= ($i % 2 == 1 ? '' : ' class="odd"') ?> data-project="<?= $project->getIdProject() ?>">
                         <td><?= $project->getIdProject() ?></td>
-                        <td><a href="<?= $this->lurl ?>/emprunteurs/edit/<?= $project->getIdCompany()->getIdClientOwner()->getIdClient() ?>"><?= $project->getIdCompany()->getSiren() ?></a></td>
-                        <td><a href="<?= $this->lurl ?>/emprunteurs/edit/<?= $project->getIdCompany()->getIdClientOwner()->getIdClient() ?>"><?= $project->getIdCompany()->getName() ?></a></td>
+                        <?php if ($project->getIdCompany()->getIdClientOwner()) : ?>
+                            <td><a href="<?= $this->lurl ?>/emprunteurs/edit/<?= $project->getIdCompany()->getIdClientOwner()->getIdClient() ?>"><?= $project->getIdCompany()->getSiren() ?></a></td>
+                            <td><a href="<?= $this->lurl ?>/emprunteurs/edit/<?= $project->getIdCompany()->getIdClientOwner()->getIdClient() ?>"><?= $project->getIdCompany()->getName() ?></a></td>
+                        <?php else : ?>
+                            <td><?= $project->getIdCompany()->getSiren() ?></td>
+                            <td><?= $project->getIdCompany()->getName() ?></td>
+                        <?php endif; ?>
                         <td><?= $project->getAdded()->format('d/m/Y') ?></td>
                         <td><?= $this->ficelle->formatNumber($project->getAmount(), 0) ?> €</td>
                         <td><?= empty($project->getPeriod()) ? '' : $project->getPeriod() . ' mois' ?></td>
