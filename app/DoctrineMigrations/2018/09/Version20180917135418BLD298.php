@@ -27,8 +27,6 @@ CREATE TABLE user_agent(
     device_model VARCHAR(48),
     device_brand VARCHAR(48),
     device_type VARCHAR(7),
-    granted_date DATETIME,
-    revocation_date DATETIME,
     added DATETIME NOT NULL,
     updated DATETIME,
     user_agent_string VARCHAR(256),

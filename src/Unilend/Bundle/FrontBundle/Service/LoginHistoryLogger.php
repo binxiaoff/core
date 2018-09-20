@@ -1,33 +1,43 @@
 <?php
 
-namespace Unilend\Bundle\FrontBundle\Security;
+namespace Unilend\Bundle\FrontBundle\Service;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\HttpFoundation\Request;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{Clients, ClientsHistory, LoginLog};
 use Unilend\Bundle\CoreBusinessBundle\Service\{UserActivity\IpGeoLocManager, UserActivity\UserAgentManager};
 
 class LoginHistoryLogger
 {
+    /** @var EntityManagerInterface */
     private $entityManager;
+    /** @var IpGeoLocManager */
     private $ipGeoLocManager;
+    /** @var UserAgentManager */
     private $userAgentManager;
+    /** @var LoggerInterface */
     private $logger;
 
+    /**
+     * @param EntityManagerInterface $entityManager
+     * @param IpGeoLocManager        $ipGeoLocManager
+     * @param UserAgentManager       $userAgentManager
+     * @param LoggerInterface        $logger
+     */
     public function __construct(EntityManagerInterface $entityManager, IpGeoLocManager $ipGeoLocManager, UserAgentManager $userAgentManager, LoggerInterface $logger)
     {
-        $this->entityManager = $entityManager;
-        $this->ipGeoLocManager = $ipGeoLocManager;
+        $this->entityManager    = $entityManager;
+        $this->ipGeoLocManager  = $ipGeoLocManager;
         $this->userAgentManager = $userAgentManager;
-        $this->logger = $logger;
+        $this->logger           = $logger;
     }
 
     /**
      * @param Clients $client
-     * @param Request $request
+     * @param string  $ip
+     * @param string  $userAgent
      */
-    public function saveSuccessfulLogin(Clients $client, Request $request): void
+    public function saveSuccessfulLogin(Clients $client, string $ip, string $userAgent): void
     {
         try {
             $client->setLastlogin(new \DateTime('NOW'));
@@ -47,14 +57,14 @@ class LoginHistoryLogger
             }
 
             try {
-                $userAgent = $this->userAgentManager->saveClientUserAgent($client, $request->headers->get('User-Agent'));
+                $userAgent = $this->userAgentManager->saveClientUserAgent($client, $userAgent);
             } catch (\Exception $exception) {
                 $userAgent = null;
                 $this->logger->error('An error occurred while trying to save user agent data. Exception: ' . $exception->getMessage(), [
                     'class'      => __CLASS__,
                     'function'   => __FUNCTION__,
                     'id_client'  => $client->getIdClient(),
-                    'user_agent' => $request->headers->get('User-Agent'),
+                    'user_agent' => $userAgent,
                     'file'       => $exception->getFile(),
                     'line'       => $exception->getLine(),
                 ]);
@@ -65,10 +75,10 @@ class LoginHistoryLogger
                 ->setIdClient($client)
                 ->setType($type)
                 ->setStatus(ClientsHistory::STATUS_ACTION_LOGIN)
-                ->setIp($request->getClientIp())
+                ->setIp($ip)
                 ->setIdUserAgent($userAgent);
 
-            $geoLocData = $this->ipGeoLocManager->getCountryAndCity($request->getClientIp());
+            $geoLocData = $this->ipGeoLocManager->getCountryAndCity($ip);
             if (is_array($geoLocData)) {
                 $clientHistory
                     ->setCity($geoLocData['city'])
@@ -82,7 +92,7 @@ class LoginHistoryLogger
                 'class'     => __CLASS__,
                 'function'  => __FUNCTION__,
                 'id_client' => $client->getIdClient(),
-                'ip'        => $request->getClientIp(),
+                'ip'        => $ip,
                 'file'      => $exception->getFile(),
                 'line'      => $exception->getLine()
             ]);
@@ -118,8 +128,8 @@ class LoginHistoryLogger
                 'file'     => $exception->getFile(),
                 'line'     => $exception->getLine()
             ]);
-        }
 
-        return null;
+            return null;
+        }
     }
 }

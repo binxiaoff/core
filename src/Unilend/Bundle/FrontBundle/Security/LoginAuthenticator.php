@@ -17,6 +17,7 @@ use Symfony\Component\Security\Http\Session\SessionAuthenticationStrategyInterfa
 use Symfony\Component\Security\Http\Util\TargetPathTrait;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{Clients, ClientsStatus};
 use Unilend\Bundle\CoreBusinessBundle\Service\{CIPManager, GoogleRecaptchaManager, LenderManager};
+use Unilend\Bundle\FrontBundle\Service\LoginHistoryLogger;
 
 class LoginAuthenticator extends AbstractFormLoginAuthenticator
 {
@@ -215,7 +216,7 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
             }
         }
 
-        $this->loginHistoryLogger->saveSuccessfulLogin($client, $request);
+        $this->loginHistoryLogger->saveSuccessfulLogin($client, $request->getClientIp(), $request->headers->get('User-Agent'));
         $this->sessionStrategy->onAuthentication($request, $token);
 
         try {

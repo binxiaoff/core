@@ -58,20 +58,6 @@ class UserAgent
     private $deviceType;
 
     /**
-     * @var \DateTime|null
-     *
-     * @ORM\Column(name="granted_date", type="datetime", nullable=true)
-     */
-    private $grantedDate;
-
-    /**
-     * @var \DateTime|null
-     *
-     * @ORM\Column(name="revocation_date", type="datetime", nullable=true)
-     */
-    private $revocationDate;
-
-    /**
      * @var string|null
      *
      * @ORM\Column(name="user_agent_string", type="string", length=256, nullable=true)
@@ -218,46 +204,6 @@ class UserAgent
     public function setDeviceType(?string $deviceType): UserAgent
     {
         $this->deviceType = $deviceType;
-
-        return $this;
-    }
-
-    /**
-     * @return \DateTime|null
-     */
-    public function getGrantedDate(): ?\DateTime
-    {
-        return $this->grantedDate;
-    }
-
-    /**
-     * @param \DateTime|null $grantedDate
-     *
-     * @return UserAgent
-     */
-    public function setGrantedDate(?\DateTime $grantedDate): UserAgent
-    {
-        $this->grantedDate = $grantedDate;
-
-        return $this;
-    }
-
-    /**
-     * @return \DateTime|null
-     */
-    public function getRevocationDate(): ?\DateTime
-    {
-        return $this->revocationDate;
-    }
-
-    /**
-     * @param \DateTime|null $revocationDate
-     *
-     * @return UserAgent
-     */
-    public function setRevocationDate(?\DateTime $revocationDate): UserAgent
-    {
-        $this->revocationDate = $revocationDate;
 
         return $this;
     }
