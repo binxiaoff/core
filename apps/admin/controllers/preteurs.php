@@ -1,6 +1,7 @@
 <?php
 
 use Box\Spout\{Common\Type, Writer\WriterFactory};
+use Doctrine\ORM\EntityManager;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, Attachment, AttachmentType, Autobid, Bids, Clients, ClientsGestionNotifications, ClientsGestionTypeNotif, ClientsStatus, Companies,
     LenderStatistic, LenderTaxExemption, Loans, MailTemplates, OffresBienvenues, OperationType, ProjectNotification, ProjectsStatus, UsersHistory, VigilanceRule, Wallet, WalletType, Zones};
 use Unilend\Bundle\CoreBusinessBundle\Repository\LenderStatisticRepository;
@@ -123,7 +124,7 @@ class preteursController extends bootstrap
     {
         /** @var \Symfony\Component\Translation\TranslatorInterface $translator */
         $this->translator = $this->get('translator');
-        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        /** @var EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
         /** @var LenderOperationsManager $lenderOperationsManager */
         $lenderOperationsManager = $this->get('unilend.service.lender_operations_manager');
@@ -335,7 +336,7 @@ class preteursController extends bootstrap
 
         $this->lNatio = $this->nationalites->select('', 'ordre ASC');
 
-        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        /** @var EntityManager $entityManager */
         $entityManager                = $this->get('doctrine.orm.entity_manager');
         $lenderTaxExemptionRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:LenderTaxExemption');
 
@@ -663,7 +664,7 @@ class preteursController extends bootstrap
 
         $_SESSION['freeow']['title'] = 'Validation client';
         $idClient                    = $this->request->request->getInt('id_client_to_validate');
-        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        /** @var EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
         $client        = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($idClient);
 
@@ -779,7 +780,7 @@ class preteursController extends bootstrap
             ClientsStatus::STATUS_SUSPENDED
         ];
 
-        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        /** @var EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
         /** @var \Unilend\Bundle\CoreBusinessBundle\Repository\ClientsRepository $clientsRepository */
         $clientsRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
@@ -816,7 +817,7 @@ class preteursController extends bootstrap
         $this->clients = $this->loadData('clients');
         $this->clients->get($this->params[0], 'id_client');
 
-        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        /** @var EntityManager $entityManager */
         $entityManager      = $this->get('doctrine.orm.entity_manager');
         $this->mailTemplate = $entityManager->getRepository('UnilendCoreBusinessBundle:MailTemplates')->findOneBy([
             'type'   => 'completude',
@@ -836,7 +837,7 @@ class preteursController extends bootstrap
         $this->clients = $this->loadData('clients');
         $this->clients->get($this->params[0], 'id_client');
 
-        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        /** @var EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
         $timeCreate    = \DateTime::createFromFormat('Y-m-d H:i:s', $this->clients->added);
 
@@ -889,7 +890,7 @@ class preteursController extends bootstrap
         $this->numberFormatter = $this->get('number_formatter');
         /** @var \NumberFormatter $currencyFormatter */
         $this->currencyFormatter = $this->get('currency_formatter');
-        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        /** @var EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\WelcomeOfferManager $welcomeOfferManager */
         $welcomeOfferManager  = $this->get('unilend.service.welcome_offer_manager');
@@ -970,7 +971,7 @@ class preteursController extends bootstrap
 
     private function createNewWelcomeOffer()
     {
-        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        /** @var EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
 
         $start     = $this->request->request->get('start');
@@ -1034,7 +1035,7 @@ class preteursController extends bootstrap
         $this->hideDecoration();
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\WelcomeOfferManager $welcomeOfferManager */
         $welcomeOfferManager = $this->get('unilend.service.welcome_offer_manager');
-        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        /** @var EntityManager $entityManager */
         $entityManager      = $this->get('doctrine.orm.entity_manager');
         $this->client       = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($this->params[0]);
         $welcomeOfferType   = $welcomeOfferManager->getWelcomeOfferTypeForClient($this->client);
@@ -1050,7 +1051,7 @@ class preteursController extends bootstrap
         $this->hideDecoration();
         $this->autoFireView = false;
 
-        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        /** @var EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
         $welcomeOffer  = $entityManager->getRepository('UnilendCoreBusinessBundle:OffresBienvenues')->find($this->request->request->getInt('welcome_offer_id'));
 
@@ -1082,7 +1083,7 @@ class preteursController extends bootstrap
             && filter_var($this->params[0], FILTER_VALIDATE_INT)
             && $this->clients->get($this->params[0], 'id_client')
         ) {
-            /** @var \Doctrine\ORM\EntityManager $entityManager */
+            /** @var EntityManager $entityManager */
             $entityManager = $this->get('doctrine.orm.entity_manager');
             $this->wallet  = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($this->clients->id_client, WalletType::LENDER);
             $this->client  = $this->wallet->getIdClient();
@@ -1221,7 +1222,7 @@ class preteursController extends bootstrap
         $this->loan = $this->loadData('loans');
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\LenderManager lenderManager */
         $lenderManager = $this->get('unilend.service.lender_manager');
-        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        /** @var EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
         /** @var LenderStatisticRepository $lenderStatisticsRepository */
         $lenderStatisticsRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:LenderStatistic');
@@ -1404,7 +1405,7 @@ class preteursController extends bootstrap
 
     private function setClientVigilanceStatusData()
     {
-        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        /** @var EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
 
         $this->vigilanceStatusHistory = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientVigilanceStatusHistory')->findBy(['client' => $this->client], ['id' => 'DESC']);
@@ -1465,7 +1466,7 @@ class preteursController extends bootstrap
         $this->hideDecoration();
         $this->autoFireView = false;
 
-        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        /** @var EntityManager $entityManager */
         $entityManager    = $this->get('doctrine.orm.entity_manager');
         $clientRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
 
@@ -1497,7 +1498,7 @@ class preteursController extends bootstrap
             die;
         }
 
-        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        /** @var EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
         /** @var Clients $client */
         $client = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($clientId);
@@ -1568,7 +1569,7 @@ class preteursController extends bootstrap
      */
     private function switchOnline(Clients $client): bool
     {
-        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        /** @var EntityManager $entityManager */
         $entityManager    = $this->get('doctrine.orm.entity_manager');
         $clientRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
         $duplicates       = $clientRepository->findGrantedLoginAccountsByEmail($client->getEmail());
@@ -1597,7 +1598,7 @@ class preteursController extends bootstrap
 
     public function _bids()
     {
-        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        /** @var EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
         $this->clients = $this->loadData('clients');
         /** @var \bids $bids */
@@ -1648,7 +1649,7 @@ class preteursController extends bootstrap
         $this->hideDecoration();
         /** @var \bids $bids */
         $bids = $this->loadData('bids');
-        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        /** @var EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
 
         if (
@@ -1695,7 +1696,7 @@ class preteursController extends bootstrap
             return true;
         }
 
-        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        /** @var EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
         $emailRegex    = $entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Regex validation email'])->getValue();
 
@@ -1749,7 +1750,7 @@ class preteursController extends bootstrap
             $this->autoFireView = false;
             $this->hideDecoration();
 
-            /** @var \Doctrine\ORM\EntityManager $entityManager */
+            /** @var EntityManager $entityManager */
             $entityManager = $this->get('doctrine.orm.entity_manager');
             /** @var LenderOperationsManager $lenderOperationsManager */
             $lenderOperationsManager = $this->get('unilend.service.lender_operations_manager');
@@ -1768,19 +1769,17 @@ class preteursController extends bootstrap
         $this->autoFireHead   = true;
         $this->autoFireFooter = true;
 
-        $this->projectList = [];
-
         if (isset($_POST['searchProject'])) {
-            /** @var \projects $project */
-            $project = $this->loadData('projects');
+            /** @var EntityManager $entityManager */
+            $entityManager                 = $this->get('doctrine.orm.entity_manager');
+            $projectRepository             = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
+            $this->projectStatusRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatus');
+            $this->projectList             = [];
 
-            if (false === empty($_POST['projectId'])) {
-                $this->projectList = $project->searchDossiers(null, null, null, null, null, null, null, $_POST['projectId']);
+            if (isset($_POST['projectId']) && filter_var($_POST['projectId'], FILTER_VALIDATE_INT)) {
+                $this->projectList = $projectRepository->findBy(['idProject' => $_POST['projectId']]);
             } elseif (false === empty($_POST['projectTitle'])) {
-                $this->projectList = $project->searchDossiers(null, null, null, null, null, null, null, null, filter_var($_POST['projectTitle'], FILTER_SANITIZE_STRING));
-            }
-            if (isset($this->projectList[0])) {
-                array_shift($this->projectList);
+                $this->projectList = $projectRepository->search(null, null, filter_var($_POST['projectTitle'], FILTER_SANITIZE_STRING));
             }
         }
     }
@@ -1794,7 +1793,7 @@ class preteursController extends bootstrap
 
         header('Content-Type: application/json');
 
-        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        /** @var EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
 
         if (

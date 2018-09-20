@@ -406,7 +406,7 @@ class Projects
      * @ORM\OneToMany(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsComments", mappedBy="idProject")
      * @ORM\OrderBy({"added" = "DESC"})
      */
-    private $notes;
+    private $memos;
 
     /**
      * @var ProjectsPouvoir
@@ -454,13 +454,20 @@ class Projects
     private $debtCollectionMissions;
 
     /**
+     * @var ProjectsNotes
+     *
+     * @ORM\OneToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsNotes", mappedBy="idProject")
+     */
+    private $notes;
+
+    /**
      * Projects constructor.
      */
     public function __construct()
     {
         $this->attachments            = new ArrayCollection();
         $this->mandates               = new ArrayCollection();
-        $this->notes                  = new ArrayCollection();
+        $this->memos                  = new ArrayCollection();
         $this->wireTransferOuts       = new ArrayCollection();
         $this->invoices               = new ArrayCollection();
         $this->debtCollectionMissions = new ArrayCollection();
@@ -1526,33 +1533,36 @@ class Projects
     public function getMandates()
     {
         $criteria = Criteria::create();
-        $criteria->orderBy(['updated' => 'DESC']);
+        $criteria->orderBy(['updated' => Criteria::DESC]);
 
         return $this->mandates->matching($criteria);
     }
 
     /**
-     * Get project notes
+     * Get project memos
      *
      * @return ProjectsComments[]
      */
-    public function getNotes()
+    public function getMemos(): array
     {
-        return $this->notes;
+        $criteria = Criteria::create();
+        $criteria->orderBy(['added' => Criteria::DESC]);
+
+        return $this->memos->matching($criteria);
     }
 
     /**
-     * Get project public notes
+     * Get project public memos
      *
      * @return ProjectsComments[]
      */
-    public function getPublicNotes()
+    public function getPublicMemos(): array
     {
         $criteria = Criteria::create()
             ->where(Criteria::expr()->eq('public', true))
             ->orderBy(['added' => Criteria::DESC]);
 
-        return $this->notes->matching($criteria);
+        return $this->memos->matching($criteria);
     }
 
     /**
@@ -1589,6 +1599,14 @@ class Projects
     public function getInvoices()
     {
         return $this->invoices;
+    }
+
+    /**
+     * @return ProjectsNotes|null
+     */
+    public function getNotes(): ?ProjectsNotes
+    {
+        return $this->notes;
     }
 
     /**

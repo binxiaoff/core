@@ -85,24 +85,26 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{Projects, ProjectsStatus};
     });
   });
 
-  function paginationDossiers(directionPagination) {
-    switch (directionPagination) {
-      case 'first':
-        $('#page').val(1);
-        break;
-      case 'prev':
-        $('#page').val(<?= max(1, $this->page - 1) ?>);
-        break;
-      case 'next':
-        $('#page').val(<?= min(ceil($this->projectsCount / $this->nb_lignes), $this->page + 1) ?>);
-        break;
-      case 'last':
-        $('#page').val(<?= ceil($this->projectsCount / $this->nb_lignes) ?>);
-        break;
-    }
+  <?php if (isset($this->resultsCount)) : ?>
+      function paginationDossiers(directionPagination) {
+        switch (directionPagination) {
+          case 'first':
+            $('#page').val(1);
+            break;
+          case 'prev':
+            $('#page').val(<?= max(1, $this->page - 1) ?>);
+            break;
+          case 'next':
+            $('#page').val(<?= min(ceil($this->resultsCount / $this->nb_lignes), $this->page + 1) ?>);
+            break;
+          case 'last':
+            $('#page').val(<?= ceil($this->resultsCount / $this->nb_lignes) ?>);
+            break;
+        }
 
-    $('#search-dossier').submit();
-  }
+        $('#search-dossier').submit();
+      }
+  <?php endif; ?>
 </script>
 <style>
     #search-dossier {
@@ -167,9 +169,10 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{Projects, ProjectsStatus};
                     <label for="status">Statut</label>
                     <select name="status" id="status" class="form-control">
                         <option value=""></option>
-                        <?php foreach ($this->lProjects_status as $s) : ?>
-                            <option<?= isset($_POST['status']) && $_POST['status'] == $s['status'] || isset($this->params[0]) && $this->params[0] == $s['status'] ? ' selected' : '' ?> value="<?= $s['status'] ?>">
-                                <?= $s['label'] ?>
+                        <?php /** @var ProjectsStatus $projectStatus */ ?>
+                        <?php foreach ($this->projectStatus as $projectStatus) : ?>
+                            <option<?= isset($_POST['status']) && $_POST['status'] == $projectStatus->getStatus() || isset($this->params[0]) && $this->params[0] == $projectStatus->getStatus() ? ' selected' : '' ?> value="<?= $projectStatus->getStatus() ?>">
+                                <?= $projectStatus->getLabel() ?>
                             </option>
                         <?php endforeach; ?>
                     </select>
@@ -236,19 +239,20 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{Projects, ProjectsStatus};
         </div>
     </form>
 
-    <?php if (isset($this->lProjects)) : ?>
-        <div class="row">
-            <div class="col-md-12">
-                <?php if ($this->projectsCount == 0) : ?>
-                    <h1>Aucun projet trouvé</h1>
-                <?php elseif ($this->projectsCount == 1) : ?>
-                    <h1>1 projet trouvé</h1>
-                <?php elseif ($this->projectsCount > 0) : ?>
-                    <h1><?= $this->ficelle->formatNumber($this->projectsCount, 0) ?> projets trouvés</h1>
-                <?php endif; ?>
+    <?php if (isset($this->searchResult, $this->resultsCount)) : ?>
+        <?php if (0 === $this->resultsCount) : ?>
+            <h1>Aucun projet trouvé</h1>
+            <p>Il n'y a aucun projet pour cette recherche.</p>
+        <?php else : ?>
+            <div class="row">
+                <div class="col-md-12">
+                    <?php if ($this->resultsCount == 1) : ?>
+                        <h1>1 projet trouvé</h1>
+                    <?php elseif ($this->resultsCount > 0) : ?>
+                        <h1><?= $this->ficelle->formatNumber($this->resultsCount, 0) ?> projets trouvés</h1>
+                    <?php endif; ?>
+                </div>
             </div>
-        </div>
-        <?php if (count($this->lProjects) > 0) : ?>
             <table class="tablesorter table table-hover table-striped">
                 <thead>
                 <tr>
@@ -274,35 +278,32 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{Projects, ProjectsStatus};
                 </thead>
                 <tbody>
                 <?php $i = 1; ?>
-                <?php foreach ($this->lProjects as $p) : ?>
-                    <?php
-                    $this->oUserAnalyst->get($p['id_analyste'], 'id_user');
-                    $this->oUserSalesPerson->get($p['id_commercial'], 'id_user');
-                    ?>
-                    <tr<?= ($i % 2 == 1 ? '' : ' class="odd"') ?> data-project="<?= $p['id_project'] ?>">
-                        <td><?= $p['id_project'] ?></td>
-                        <td><a href="<?= $this->lurl ?>/emprunteurs/edit/<?= $p['id_client_owner'] ?>"><?= $p['siren'] ?></a></td>
-                        <td><a href="<?= $this->lurl ?>/emprunteurs/edit/<?= $p['id_client_owner'] ?>"><?= $p['name'] ?></a></td>
-                        <td><?= $this->formatDate($p['added'], 'd/m/Y') ?></td>
-                        <td><?= $this->ficelle->formatNumber($p['amount'], 0) ?> €</td>
-                        <td><?= empty($p['period']) ? '' : $p['period'] . ' mois' ?></td>
-                        <td><?= $p['label'] ?></td>
-                        <td><?= $this->oUserSalesPerson->firstname ?> <?= $this->oUserSalesPerson->name ?></td>
-                        <td><?= $this->oUserAnalyst->firstname ?> <?= $this->oUserAnalyst->name ?></td>
+                <?php /** @var Projects $project */ ?>
+                <?php foreach ($this->searchResult as $project) : ?>
+                    <tr<?= ($i % 2 == 1 ? '' : ' class="odd"') ?> data-project="<?= $project->getIdProject() ?>">
+                        <td><?= $project->getIdProject() ?></td>
+                        <td><a href="<?= $this->lurl ?>/emprunteurs/edit/<?= $project->getIdCompany()->getIdClientOwner()->getIdClient() ?>"><?= $project->getIdCompany()->getSiren() ?></a></td>
+                        <td><a href="<?= $this->lurl ?>/emprunteurs/edit/<?= $project->getIdCompany()->getIdClientOwner()->getIdClient() ?>"><?= $project->getIdCompany()->getName() ?></a></td>
+                        <td><?= $project->getAdded()->format('d/m/Y') ?></td>
+                        <td><?= $this->ficelle->formatNumber($project->getAmount(), 0) ?> €</td>
+                        <td><?= empty($project->getPeriod()) ? '' : $project->getPeriod() . ' mois' ?></td>
+                        <td><?= $this->projectStatus[$project->getStatus()]->getLabel() ?></td>
+                        <td><?= $project->getIdCommercial() && $project->getIdCommercial()->getIdUser() ? $project->getIdCommercial()->getFirstname() . ' ' . $project->getIdCommercial()->getName() : '' ?></td>
+                        <td><?= $project->getIdAnalyste() && $project->getIdAnalyste()->getIdUser() ? $project->getIdAnalyste()->getFirstname() . ' ' . $project->getIdAnalyste()->getName() : '' ?></td>
                         <?php if ($this->isRiskUser) : ?>
-                            <td><?= -1 == $p['pre_scoring'] ? '' : $p['pre_scoring'] ?></td>
+                            <td><?= $project->getNotes() && $project->getNotes()->getPreScoring() ? $project->getNotes()->getPreScoring() : '' ?></td>
                         <?php endif; ?>
-                        <?php if (false === empty($p['comments'])) : ?>
-                            <td data-toggle="tooltip" class="tooltip" title="<?= htmlspecialchars($p['comments']) ?>">oui</td>
+                        <?php if (false === empty($project->getComments())) : ?>
+                            <td data-toggle="tooltip" class="tooltip" title="<?= htmlspecialchars($project->getComments()) ?>">oui</td>
                         <?php else : ?>
                             <td>non</td>
                         <?php endif; ?>
                         <?php if ($this->hasRepaymentAccess) : ?>
-                            <?php if ($p['status'] >= ProjectsStatus::REMBOURSEMENT) : ?>
-                                <td><?= Projects::AUTO_REPAYMENT_ON == $p['remb_auto'] ? 'oui' : 'non' ?></td>
+                            <?php if ($project->getStatus() >= ProjectsStatus::REMBOURSEMENT) : ?>
+                                <td><?= Projects::AUTO_REPAYMENT_ON === $project->getRembAuto() ? 'oui' : 'non' ?></td>
                                 <td align="center">
-                                    <a href="<?= $this->lurl ?>/remboursement/projet/<?= $p['id_project'] ?>">
-                                        <img src="<?= $this->surl ?>/images/admin/duplique.png" alt="Remboursement du projet <?= htmlspecialchars($p['title']) ?>">
+                                    <a href="<?= $this->lurl ?>/remboursement/projet/<?= $project->getIdProject() ?>">
+                                        <img src="<?= $this->surl ?>/images/admin/duplique.png" alt="Remboursement du projet <?= htmlspecialchars($project->getTitle()) ?>">
                                     </a>
                                 </td>
                             <?php else : ?>
@@ -311,8 +312,8 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{Projects, ProjectsStatus};
                             <?php endif; ?>
                         <?php endif; ?>
                         <td align="center">
-                            <a href="<?= $this->lurl ?>/dossiers/edit/<?= $p['id_project'] ?>">
-                                <img src="<?= $this->surl ?>/images/admin/edit.png" alt="Modifier <?= htmlspecialchars($p['title']) ?>">
+                            <a href="<?= $this->lurl ?>/dossiers/edit/<?= $project->getIdProject() ?>">
+                                <img src="<?= $this->surl ?>/images/admin/edit.png" alt="Modifier <?= htmlspecialchars($project->getTitle()) ?>">
                             </a>
                         </td>
                     </tr>
@@ -327,15 +328,13 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{Projects, ProjectsStatus};
                             <img src="<?= $this->surl ?>/images/admin/first.png" alt="Première" class="first" onclick="paginationDossiers('first');">
                             <img src="<?= $this->surl ?>/images/admin/prev.png" alt="Précédente" class="prev" onclick="paginationDossiers('prev');">
                         <?php endif; ?>
-                        <?php if ($this->page < ceil($this->projectsCount / $this->nb_lignes)) : ?>
+                        <?php if ($this->page < ceil($this->resultsCount / $this->nb_lignes)) : ?>
                             <img src="<?= $this->surl ?>/images/admin/next.png" alt="Suivante" class="next" onclick="paginationDossiers('next');">
                             <img src="<?= $this->surl ?>/images/admin/last.png" alt="Dernière" class="last" onclick="paginationDossiers('last');">
                         <?php endif; ?>
                     </td>
                 </tr>
             </table>
-        <?php else : ?>
-            <p>Il n'y a aucun projet pour cette recherche.</p>
         <?php endif; ?>
     <?php endif; ?>
 </div>
