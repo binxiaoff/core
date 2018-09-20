@@ -30,7 +30,7 @@ class DebtCollectionMissionManager
     /** @var LoggerInterface */
     private $logger;
 
-    /**  @var string */
+    /** @var string */
     private $protectedPath;
 
     /** @var Filesystem */

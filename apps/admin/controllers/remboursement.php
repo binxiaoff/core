@@ -634,14 +634,25 @@ class remboursementController extends bootstrap
 
     public function _restant_du_loan_ddt()
     {
-        /** @var \Doctrine\ORM\EntityManager $entityManager */
-        $entityManager = $this->get('doctrine.orm.entity_manager');
+        if (empty($this->params[0])) {
+            header('Location: ' . $this->lurl . '/dossiers');
+            exit;
+        }
 
         $projectId = filter_var($this->params[0], FILTER_VALIDATE_INT);
-        $project   = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($projectId);
+
+        if (false !== $projectId) {
+            header('Location: ' . $this->lurl . '/dossiers');
+            exit;
+        }
+
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+        $project       = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($projectId);
+
         if (null === $project || null === $project->getCloseOutNettingDate()) {
             header('Location: ' . $this->lurl . '/dossiers');
-            die;
+            exit;
         }
         /** @var ProjectCloseOutNettingManager $projectCloseOutNettingManager */
         $projectCloseOutNettingManager = $this->get('unilend.service.project_close_out_netting_manager');
