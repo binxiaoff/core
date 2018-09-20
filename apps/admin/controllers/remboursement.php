@@ -641,7 +641,7 @@ class remboursementController extends bootstrap
 
         $projectId = filter_var($this->params[0], FILTER_VALIDATE_INT);
 
-        if (false !== $projectId) {
+        if (false === $projectId) {
             header('Location: ' . $this->lurl . '/dossiers');
             exit;
         }
