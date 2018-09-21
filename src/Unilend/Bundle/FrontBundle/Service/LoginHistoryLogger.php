@@ -33,11 +33,11 @@ class LoginHistoryLogger
     }
 
     /**
-     * @param Clients $client
-     * @param string  $ip
-     * @param string  $userAgent
+     * @param Clients     $client
+     * @param string|null $ip
+     * @param string|null $userAgent
      */
-    public function saveSuccessfulLogin(Clients $client, string $ip, string $userAgent): void
+    public function saveSuccessfulLogin(Clients $client, ?string $ip, ?string $userAgent): void
     {
         try {
             $client->setLastlogin(new \DateTime('NOW'));
@@ -56,18 +56,21 @@ class LoginHistoryLogger
                 $type = ClientsHistory::TYPE_CLIENT_PARTNER;
             }
 
-            try {
-                $userAgent = $this->userAgentManager->saveClientUserAgent($client, $userAgent);
-            } catch (\Exception $exception) {
-                $userAgent = null;
-                $this->logger->error('An error occurred while trying to save user agent data. Exception: ' . $exception->getMessage(), [
-                    'class'      => __CLASS__,
-                    'function'   => __FUNCTION__,
-                    'id_client'  => $client->getIdClient(),
-                    'user_agent' => $userAgent,
-                    'file'       => $exception->getFile(),
-                    'line'       => $exception->getLine(),
-                ]);
+            $userAgentEntity = null;
+            if (null !== $userAgent) {
+                try {
+                    $userAgentEntity = $this->userAgentManager->saveClientUserAgent($client, $userAgent);
+                } catch (\Exception $exception) {
+                    $userAgentEntity = null;
+                    $this->logger->error('An error occurred while trying to save user agent data. Exception: ' . $exception->getMessage(), [
+                        'class'      => __CLASS__,
+                        'function'   => __FUNCTION__,
+                        'id_client'  => $client->getIdClient(),
+                        'user_agent' => $userAgentEntity,
+                        'file'       => $exception->getFile(),
+                        'line'       => $exception->getLine(),
+                    ]);
+                }
             }
 
             $clientHistory = new ClientsHistory();
@@ -76,9 +79,12 @@ class LoginHistoryLogger
                 ->setType($type)
                 ->setStatus(ClientsHistory::STATUS_ACTION_LOGIN)
                 ->setIp($ip)
-                ->setIdUserAgent($userAgent);
+                ->setIdUserAgent($userAgentEntity);
 
-            $geoLocData = $this->ipGeoLocManager->getCountryAndCity($ip);
+            $geoLocData = null;
+            if ($ip) {
+                $geoLocData = $this->ipGeoLocManager->getCountryAndCity($ip);
+            }
             if (is_array($geoLocData)) {
                 $clientHistory
                     ->setCity($geoLocData['city'])
@@ -106,7 +112,7 @@ class LoginHistoryLogger
      *
      * @return LoginLog|null
      */
-    public function saveFailureLogin(string $pseudo, string $ip, string $message): ?LoginLog
+    public function saveFailureLogin(string $pseudo, ?string $ip, string $message): ?LoginLog
     {
         try {
             $loginLog = new LoginLog();

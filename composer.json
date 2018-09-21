@@ -75,6 +75,9 @@
   "require-dev": {
   },
   "scripts": {
+    "unilend-scripts": [
+      "Cravler\\MaxMindGeoIpBundle\\Composer\\ScriptHandler::maxMindGeoIpUpdate"
+    ],
     "symfony-scripts": [
       "Incenteev\\ParameterHandler\\ScriptHandler::buildParameters",
       "Sensio\\Bundle\\DistributionBundle\\Composer\\ScriptHandler::buildBootstrap",
@@ -84,9 +87,11 @@
       "Sensio\\Bundle\\DistributionBundle\\Composer\\ScriptHandler::prepareDeploymentTarget"
     ],
     "post-install-cmd": [
+      "@unilend-scripts",
       "@symfony-scripts"
     ],
     "post-update-cmd": [
+      "@unilend-scripts",
       "@symfony-scripts"
     ]
   },

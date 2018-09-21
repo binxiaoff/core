@@ -36,7 +36,7 @@ class UserAgentManager
      * @return UserAgentEntity|null
      * @throws \Exception
      */
-    public function saveClientUserAgent(Clients $client, ?string $userAgent): ?UserAgentEntity
+    public function saveClientUserAgent(Clients $client, string $userAgent): ?UserAgentEntity
     {
         if ($parser = $this->parse($userAgent)) {
             $browser = $parser->getBrowser();
@@ -48,8 +48,8 @@ class UserAgentManager
             if ($knownUserAgent) {
                 return $knownUserAgent;
             } else {
-                $userAgent = new UserAgentEntity();
-                $userAgent
+                $newUserAgent = new UserAgentEntity();
+                $newUserAgent
                     ->setIdClient($client)
                     ->setBrowserName($browser->getName())
                     ->setBrowserVersion($browser->getVersion()->getComplete())
@@ -58,10 +58,10 @@ class UserAgentManager
                     ->setDeviceType(strtolower($device->getType()))
                     ->setUserAgentString($userAgent);
 
-                $this->entityManager->persist($userAgent);
-                $this->entityManager->flush($userAgent);
+                $this->entityManager->persist($newUserAgent);
+                $this->entityManager->flush($newUserAgent);
 
-                return $userAgent;
+                return $newUserAgent;
             }
         }
 
@@ -69,11 +69,11 @@ class UserAgentManager
     }
 
     /**
-     * @param string|null $userAgent
+     * @param string $userAgent
      *
      * @return UserAgent|null
      */
-    private function parse(?string $userAgent = null): ?UserAgent
+    private function parse(string $userAgent): ?UserAgent
     {
         try {
             return $this->chain->parse($userAgent);

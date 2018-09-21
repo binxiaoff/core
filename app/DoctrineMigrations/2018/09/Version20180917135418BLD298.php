@@ -23,7 +23,7 @@ CREATE TABLE user_agent(
     id INT(11) PRIMARY KEY AUTO_INCREMENT,
     id_client INT(11) NOT NULL,
     browser_name VARCHAR(48),
-    browser_version VARCHAR(10),
+    browser_version VARCHAR(16),
     device_model VARCHAR(48),
     device_brand VARCHAR(48),
     device_type VARCHAR(7),

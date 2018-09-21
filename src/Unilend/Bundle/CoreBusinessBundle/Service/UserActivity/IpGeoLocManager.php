@@ -31,11 +31,11 @@ class IpGeoLocManager
     }
 
     /**
-     * @param string|null $ip
+     * @param string $ip
      *
      * @return array|null
      */
-    public function getCountryAndCity(?string $ip): ?array
+    public function getCountryAndCity(string $ip): ?array
     {
         $geoIp = $this->getGeoIpRecord($ip);
         if (null !== $geoIp) {
@@ -49,11 +49,11 @@ class IpGeoLocManager
     }
 
     /**
-     * @param string|null
+     * @param string
      *
      * @return \GeoIp2\Model\City|null
      */
-    private function getGeoIpRecord(?string $ip)
+    private function getGeoIpRecord(string $ip)
     {
         try {
             return $this->geoIpService->getRecord($ip, self::DATABASE_TYPE, [$this->defaultLocal]);
