@@ -720,6 +720,26 @@ class ProjectRepaymentTaskManager
         }
     }
 
+    /**
+     * @param Projects $project
+     */
+    public function prepareNonFinishedTask(Projects $project): void
+    {
+        $repaymentTasks = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRepaymentTask')->findBy([
+            'idProject' => $project,
+            'status'    => [
+                ProjectRepaymentTask::STATUS_ERROR,
+                ProjectRepaymentTask::STATUS_PENDING,
+                ProjectRepaymentTask::STATUS_READY,
+                ProjectRepaymentTask::STATUS_IN_PROGRESS,
+            ]
+        ]);
+
+        foreach ($repaymentTasks as $projectRepaymentTask) {
+            $this->projectRepaymentTaskManager->prepare($projectRepaymentTask);
+        }
+    }
+
     private function prepareRegularRepayment(ProjectRepaymentTask $projectRepaymentTask)
     {
         $repaidCapital               = 0;
