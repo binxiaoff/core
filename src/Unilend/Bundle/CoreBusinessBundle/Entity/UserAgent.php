@@ -32,7 +32,7 @@ class UserAgent
     /**
      * @var string|null
      *
-     * @ORM\Column(name="browser_version", type="string", length=10, nullable=true)
+     * @ORM\Column(name="browser_version", type="string", length=32, nullable=true)
      */
     private $browserVersion;
 
@@ -53,14 +53,14 @@ class UserAgent
     /**
      * @var string|null
      *
-     * @ORM\Column(name="device_type", type="string", length=7, nullable=true)
+     * @ORM\Column(name="device_type", type="string", length=32, nullable=true)
      */
     private $deviceType;
 
     /**
      * @var string|null
      *
-     * @ORM\Column(name="user_agent_string", type="string", length=256, nullable=true)
+     * @ORM\Column(name="user_agent_string", type="string", length=256, nullable=false)
      */
     private $userAgentString;
 
@@ -70,13 +70,6 @@ class UserAgent
      * @ORM\Column(name="added", type="datetime", nullable=false)
      */
     private $added;
-
-    /**
-     * @var \DateTime|null
-     *
-     * @ORM\Column(name="updated", type="datetime", nullable=true)
-     */
-    private $updated;
 
     /**
      * @var int
@@ -209,19 +202,19 @@ class UserAgent
     }
 
     /**
-     * @return string|null
+     * @return string
      */
-    public function getUserAgentString(): ?string
+    public function getUserAgentString(): string
     {
         return $this->userAgentString;
     }
 
     /**
-     * @param string|null $userAgentString
+     * @param string $userAgentString
      *
      * @return UserAgent
      */
-    public function setUserAgentString(?string $userAgentString): UserAgent
+    public function setUserAgentString(string $userAgentString): UserAgent
     {
         $this->userAgentString = $userAgentString;
 
@@ -249,26 +242,6 @@ class UserAgent
     }
 
     /**
-     * @return \DateTime|null
-     */
-    public function getUpdated(): ?\DateTime
-    {
-        return $this->updated;
-    }
-
-    /**
-     * @param \DateTime|null $updated
-     *
-     * @return UserAgent
-     */
-    public function setUpdated(?\DateTime $updated): UserAgent
-    {
-        $this->updated = $updated;
-
-        return $this;
-    }
-
-    /**
      * @return int
      */
     public function getId(): int
@@ -284,13 +257,5 @@ class UserAgent
         if (! $this->added instanceof \DateTime || -1 > $this->getAdded()->getTimestamp()) {
             $this->added = new \DateTime();
         }
-    }
-
-    /**
-     * @ORM\PreUpdate
-     */
-    public function setUpdatedValue(): void
-    {
-        $this->updated = new \DateTime();
     }
 }
