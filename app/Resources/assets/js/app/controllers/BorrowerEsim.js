@@ -3,6 +3,8 @@
  */
 
 var $ = require('jquery')
+var Utility = require('Utility')
+
 var $esim = $('.emprunter-sim')
 
 // Continue only if sim is within DOM
@@ -72,5 +74,26 @@ $doc
       $('a[href*="esim1"]')
         .removeAttr("href data-toggle aria-expanded")
         .attr("nohref", "nohref")
+    }
+  })
+  .on(Utility.clickEvent, 'form.emprunter-sim button.btn-submit', function (event) {
+    event.preventDefault()
+
+    if (!$(".form-validation-notifications .message-error").length) {
+      var formData = $esim.serializeArray();
+
+      $.ajax({
+        type: 'POST',
+        url: '/simulateur-projet',
+        data: formData,
+        dataType: 'json',
+        statusCode: {
+          400: function () {
+            //console.log("error data");
+          }
+        }
+      }).done(function (result) {
+        window.location.replace(result.data.redirectTo);
+      })
     }
   })

@@ -218,7 +218,6 @@
                                                type="text"
                                                step="any"
                                                name="esim[amount]"
-                                               value="{% if app.session.has('esim') and app.session.get('esim')['amount'] is defined %}{{ app.session.get('esim')['amount'] }}{% endif %}"
                                                placeholder="{% trans %} home-borrower_simulator-amount-field-placeholder {% endtrans %}"
                                                class="input-field"
                                                data-formvalidation-input
@@ -245,8 +244,7 @@
                                                 {% trans %} home-borrower_simulator-borrowing-motif-select {% endtrans %}&hellip;
                                             </option>
                                             {% for motive in borrowingMotives %}
-                                                <option value="{{ motive.idMotive }}"
-                                                        {% if app.session.has('esim') and app.session.get('esim')['reason'] is defined and app.session.get('esim')['reason'] == motive.idMotive %} selected{% endif %}>
+                                                <option value="{{ motive.idMotive }}">
                                                     {{ ('borrowing-motive_motive-' ~ motive.idMotive)|trans }}
                                                 </option>
                                             {% endfor %}
@@ -270,8 +268,7 @@
                                                     <input type="radio"
                                                            id="esim-input-duration-{{ period }}"
                                                            name="esim[duration]"
-                                                           value="{{ period }}"
-                                                            {% if app.session.has('esim') and app.session.get('esim')['duration'] is defined and app.session.get('esim')['duration'] == period %}checked{% endif %}>
+                                                           value="{{ period }}">
                                                     <span class="label">{{ period }}</span>
                                                 </label>
                                             {% endfor %}
@@ -314,7 +311,6 @@
                                         <input type="text"
                                                id="esim-input-company-name"
                                                name="esim[company_name]"
-                                               value="{% if app.session.has('esim') and app.session.get('esim')['company_name'] is defined %}{{ app.session.get('esim')['company_name'] }}{% endif %}"
                                                class="input-field"
                                                data-formvalidation-input>
                                     </div>
@@ -333,7 +329,6 @@
                                         <input type="text"
                                                id="esim-input-siren"
                                                name="esim[siren]"
-                                               value="{% if app.session.has('esim') and app.session.get('esim')['siren'] is defined %}{{ app.session.get('esim')['siren'] }}{% endif %}"
                                                class="input-field"
                                                data-formvalidation-input
                                                data-formvalidation-required="true"
@@ -351,7 +346,6 @@
                                             <input type="email"
                                                    id="esim-input-email"
                                                    name="esim[email]"
-                                                   value="{% if app.session.has('esim') and app.session.get('esim')['email'] is defined %}{{ app.session.get('esim')['email'] }}{% endif %}"
                                                    class="input-field"
                                                    data-formvalidation-input
                                                    data-formvalidation-required="true"

@@ -124,63 +124,59 @@ class MainController extends Controller
     }
 
     /**
-     * @Route("/simulateur-projet-etape1", name="project_simulator", methods={"POST"})
+     * @Route("simulateur-projet-etape1", name="project_simulator", methods={"POST"}, condition="request.isXmlHttpRequest()")
      *
      * @param Request $request
      *
-     * @return Response
+     * @return JsonResponse
      */
-    public function projectSimulatorStepOneAction(Request $request): Response
+    public function projectSimulatorStepOneAction(Request $request): JsonResponse
     {
-        if ($request->isXmlHttpRequest()) {
-            $period   = $request->request->getInt('period');
-            $motiveId = $request->request->getInt('motiveId');
+        $period   = $request->request->getInt('period');
+        $motiveId = $request->request->getInt('motiveId');
 
-            /** @var ProjectRequestManager $projectRequestManager */
-            $projectRequestManager = $this->get('unilend.service.project_request_manager');
-            /** @var ProjectManager $projectManager */
-            $projectManager = $this->get('unilend.service.project_manager');
-            /** @var TranslatorInterface $translator */
-            $translator = $this->get('translator');
-            /** @var \ficelle $ficelle */
-            $ficelle = Loader::loadLib('ficelle');
+        /** @var ProjectRequestManager $projectRequestManager */
+        $projectRequestManager = $this->get('unilend.service.project_request_manager');
+        /** @var ProjectManager $projectManager */
+        $projectManager = $this->get('unilend.service.project_manager');
+        /** @var TranslatorInterface $translator */
+        $translator = $this->get('translator');
+        /** @var \ficelle $ficelle */
+        $ficelle = Loader::loadLib('ficelle');
 
-            $projectPeriods = $projectManager->getPossibleProjectPeriods();
-            $amount         = filter_var(str_replace([' ', '€'], '', $request->request->get('amount')), FILTER_VALIDATE_INT, ['options' => ['min_range' => $projectManager->getMinProjectAmount(), 'max_range' => $projectManager->getMaxProjectAmount()]]);
+        $projectPeriods = $projectManager->getPossibleProjectPeriods();
+        $amount         = filter_var(str_replace([' ', '€'], '', $request->request->get('amount')), FILTER_VALIDATE_INT, ['options' => ['min_range' => $projectManager->getMinProjectAmount(), 'max_range' => $projectManager->getMaxProjectAmount()]]);
 
-            if (in_array($period, $projectPeriods) && $amount) {
-                $estimatedRate                           = $projectRequestManager->getMonthlyRateEstimate();
-                $estimatedMonthlyRepayment               = $projectRequestManager->getMonthlyPaymentEstimate($amount, $period, $estimatedRate);
-                $estimatedFundingDuration                = $projectManager->getAverageFundingDuration($amount);
-                $isMotiveSentenceComplementToBeDisplayed = (false === in_array($motiveId, ['', \borrowing_motive::OTHER]));
-                $translationComplement                   = $isMotiveSentenceComplementToBeDisplayed ? $translator->trans('home-borrower_simulator-step-2-text-segment-motive-' . $motiveId) : '';
+        if (in_array($period, $projectPeriods) && $amount) {
+            $estimatedRate                           = $projectRequestManager->getMonthlyRateEstimate();
+            $estimatedMonthlyRepayment               = $projectRequestManager->getMonthlyPaymentEstimate($amount, $period, $estimatedRate);
+            $estimatedFundingDuration                = $projectManager->getAverageFundingDuration($amount);
+            $isMotiveSentenceComplementToBeDisplayed = (false === in_array($motiveId, ['', \borrowing_motive::OTHER]));
+            $translationComplement                   = $isMotiveSentenceComplementToBeDisplayed ? $translator->trans('home-borrower_simulator-step-2-text-segment-motive-' . $motiveId) : '';
 
-                return new JsonResponse([
-                    'estimatedMonthlyRepayment'             => $translator->trans('home-borrower_simulator-footer-monthly-repayment-with-value', ['%monthlyRepayment%' => $ficelle->formatNumber($estimatedMonthlyRepayment, 0)]),
-                    'estimatedFundingDuration'              => $translator->transChoice('home-borrower_simulator-footer-funding-duration-with-value', $estimatedFundingDuration, ['%fundingDuration%' => $estimatedFundingDuration]),
-                    'amount'                                => $ficelle->formatNumber($amount, 0),
-                    'period'                                => $period,
-                    'motiveSentenceComplementToBeDisplayed' => $isMotiveSentenceComplementToBeDisplayed,
-                    'translationComplement'                 => $translationComplement
-                ]);
-            }
-
-            return new JsonResponse('nok');
+            return new JsonResponse([
+                'estimatedMonthlyRepayment'             => $translator->trans('home-borrower_simulator-footer-monthly-repayment-with-value', ['%monthlyRepayment%' => $ficelle->formatNumber($estimatedMonthlyRepayment, 0)]),
+                'estimatedFundingDuration'              => $translator->transChoice('home-borrower_simulator-footer-funding-duration-with-value', $estimatedFundingDuration, ['%fundingDuration%' => $estimatedFundingDuration]),
+                'amount'                                => $ficelle->formatNumber($amount, 0),
+                'period'                                => $period,
+                'motiveSentenceComplementToBeDisplayed' => $isMotiveSentenceComplementToBeDisplayed,
+                'translationComplement'                 => $translationComplement
+            ]);
         }
-        return new Response('not an ajax request');
+
+        return new JsonResponse('nok');
     }
 
     /**
-     * @Route("/simulateur-projet", name="project_simulator_form", methods={"POST"})
+     * @Route("simulateur-projet", name="project_simulator_form", methods={"POST"}, condition="request.isXmlHttpRequest()")
      *
      * @param Request $request
      *
-     * @return RedirectResponse
+     * @return JsonResponse
      */
-    public function projectSimulatorStepTwoAction(Request $request): RedirectResponse
+    public function projectSimulatorStepTwoAction(Request $request): JsonResponse
     {
         $formData = $request->request->get('esim');
-        $session  = $request->getSession();
         $user     = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Users')->find(Users::USER_ID_FRONT);
 
         $projectRequestManager = $this->get('unilend.service.project_request_manager');
@@ -221,19 +217,21 @@ class MainController extends Controller
 
             $partner = $this->get('unilend.service.partner_manager')->getDefaultPartner();
 
-            $project = $projectRequestManager->newProject($user, $partner, ProjectsStatus::INCOMPLETE_REQUEST, $formData['amount'], $siren, $siret, $companyName, $formData['email'], $formData['duration'], $formData['reason']);
+            $project = $projectRequestManager->newProject($user, $partner, ProjectsStatus::INCOMPLETE_REQUEST, $formData['amount'], $siren, $siret, $companyName, $formData['email'],
+                $formData['duration'], $formData['reason']);
 
-            return $this->redirectToRoute('project_request_simulator_start', ['hash' => $project->getHash()]);
+            return $this->json([
+                'success' => true,
+                'data'    => [
+                    'redirectTo' => $this->get('router')->generate('project_request_simulator_start', ['hash' => $project->getHash()])
+                ]
+            ]);
         } catch (\Exception $exception) {
-            $this->get('logger')->warning('Could not save project : ' . $exception->getMessage() . '. Form data = ' . json_encode($formData), ['class' => __CLASS__, 'function' => __FUNCTION__]);
-
-            if ($exception instanceof \InvalidArgumentException) {
-                $this->addFlash('projectSimulatorError', $exception->getCode());
+            if (false === $exception instanceof \InvalidArgumentException) {
+                $this->get('logger')->error('Could not save project : ' . $exception->getMessage() . '. Form data = ' . json_encode($formData), ['class' => __CLASS__, 'function' => __FUNCTION__]);
             }
 
-            $session->set('esim', $formData);
-
-            return $this->redirect($this->generateUrl('home_borrower') . '#homeemp-section-esim');
+            return $this->json(['success' => false, 'error' => [$exception->getCode()]], 400);
         }
     }
 
