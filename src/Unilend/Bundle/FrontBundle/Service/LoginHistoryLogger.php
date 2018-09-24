@@ -88,7 +88,7 @@ class LoginHistoryLogger
             if (is_array($geoLocData)) {
                 $clientHistory
                     ->setCity($geoLocData['city'])
-                    ->setCountyIsoCode($geoLocData['countryIsoCode']);
+                    ->setCountryIsoCode($geoLocData['countryIsoCode']);
             }
 
             $this->entityManager->persist($clientHistory);

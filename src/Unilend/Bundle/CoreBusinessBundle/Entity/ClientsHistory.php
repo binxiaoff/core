@@ -55,9 +55,9 @@ class ClientsHistory
     /**
      * @var string|null
      *
-     * @ORM\Column(name="county_iso_code", type="string", length=2, nullable=true)
+     * @ORM\Column(name="country_iso_code", type="string", length=2, nullable=true)
      */
-    private $countyIsoCode;
+    private $countryIsoCode;
 
     /**
      * @var string|null
@@ -189,19 +189,19 @@ class ClientsHistory
     /**
      * @return string|null
      */
-    public function getCountyIsoCode(): ?string
+    public function getCountryIsoCode(): ?string
     {
-        return $this->countyIsoCode;
+        return $this->countryIsoCode;
     }
 
     /**
-     * @param string|null $countyIsoCode
+     * @param string|null $countryIsoCode
      *
      * @return ClientsHistory
      */
-    public function setCountyIsoCode(?string $countyIsoCode): ClientsHistory
+    public function setCountryIsoCode(?string $countryIsoCode): ClientsHistory
     {
-        $this->countyIsoCode = $countyIsoCode;
+        $this->countryIsoCode = $countryIsoCode;
 
         return $this;
     }
