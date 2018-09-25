@@ -231,7 +231,7 @@ class MainController extends Controller
                 $this->get('logger')->error('Could not save project : ' . $exception->getMessage() . '. Form data = ' . json_encode($formData), ['class' => __CLASS__, 'function' => __FUNCTION__]);
             }
 
-            return $this->json(['success' => false, 'error' => [$exception->getCode()]], 400);
+            return $this->json(['success' => false, 'error' => $exception->getCode()], 400);
         }
     }
 

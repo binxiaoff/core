@@ -188,22 +188,6 @@
                                       data-formvalidation
                                       data-formvalidation-notificationselem=".form-validation-notifications">
                                 <div class="form-validation-notifications">
-                                    {% if projectSimulatorErrorCode is defined %}
-                                        <div class="message-error">
-                                            {% if constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Service\\ProjectRequestManager::EXCEPTION_CODE_INVALID_AMOUNT') in projectSimulatorErrorCode %}
-                                                <p>{% trans %} project-request-simulator_invalid-amount {% endtrans %}</p>
-                                            {% elseif constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Service\\ProjectRequestManager::EXCEPTION_CODE_INVALID_DURATION') in projectSimulatorErrorCode %}
-                                                <p>{% trans %} project-request-simulator_invalid-duration {% endtrans %}</p>
-                                            {% elseif constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Service\\ProjectRequestManager::EXCEPTION_CODE_INVALID_REASON') in projectSimulatorErrorCode %}
-                                                <p>{% trans %} project-request-simulator_invalid-reason {% endtrans %}</p>
-                                            {% else %}
-                                                {% if constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Service\\ProjectRequestManager::EXCEPTION_CODE_INVALID_SIREN') not in projectSimulatorErrorCode
-                                                and constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Service\\ProjectRequestManager::EXCEPTION_CODE_INVALID_EMAIL') not in projectSimulatorErrorCode %}
-                                                    <p>{% trans %} project-request-simulator_unknown-error {% endtrans %}</p>
-                                                {% endif %}
-                                            {% endif %}
-                                        </div>
-                                    {% endif %}
                                 </div>
                                 <div class="row row-multicol-computer">
                                     <div class="form-field col-lg-6 col-md-6">
@@ -283,15 +267,6 @@
                                       data-formvalidation
                                       data-formvalidation-notificationselem=".form-validation-notifications">
                                 <div class="form-validation-notifications">
-                                    {% if projectSimulatorErrorCode is defined %}
-                                        <div class="message-error">
-                                            {% if constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Service\\ProjectRequestManager::EXCEPTION_CODE_INVALID_SIREN') in projectSimulatorErrorCode %}
-                                                <p>{% trans %} project-request-simulator_invalid-siren {% endtrans %}</p>
-                                            {% elseif constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Service\\ProjectRequestManager::EXCEPTION_CODE_INVALID_EMAIL') in projectSimulatorErrorCode %}
-                                                <p>{% trans %} project-request-simulator_invalid-email {% endtrans %}</p>
-                                            {% endif %}
-                                        </div>
-                                    {% endif %}
                                 </div>
                                 <div class="row">
                                     <div class="col-lg-12 col-md-12">
@@ -448,6 +423,21 @@
         idMotiveAcquisitionMerger: {{ constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\BorrowingMotive::ID_MOTIVE_ACQUISITION_MERGER') }},
         idMotiveFranchiserCreation: {{ constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\BorrowingMotive::ID_MOTIVE_FRANCHISER_CREATION') }},
         idMotiveShareBuyBack: {{ constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\BorrowingMotive::ID_MOTIVE_SHARE_BUYBACK') }}
+      }
+      var borrowerEsimErrorCode = {
+        invalidAmount: {{ constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Service\\ProjectRequestManager::EXCEPTION_CODE_INVALID_AMOUNT') }},
+        invalidDuration: {{ constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Service\\ProjectRequestManager::EXCEPTION_CODE_INVALID_DURATION') }},
+        invalidReason: {{ constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Service\\ProjectRequestManager::EXCEPTION_CODE_INVALID_REASON') }},
+        invalidSiren: {{ constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Service\\ProjectRequestManager::EXCEPTION_CODE_INVALID_SIREN') }},
+        invalidEmail: {{ constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Service\\ProjectRequestManager::EXCEPTION_CODE_INVALID_EMAIL') }}
+      }
+      var borrowerEsimErrorMessages = {
+        invalidAmount: '{% trans %} project-request-simulator_invalid-amount {% endtrans %}',
+        invalidDuration: '{% trans %} project-request-simulator_invalid-duration {% endtrans %}',
+        invalidReason: '{% trans %} project-request-simulator_invalid-reason {% endtrans %}',
+        invalidSiren: '{% trans %} project-request-simulator_invalid-siren {% endtrans %}',
+        invalidEmail: '{% trans %} project-request-simulator_invalid-email {% endtrans %}',
+        unknownError: '{% trans %} project-request-simulator_unknown-error {% endtrans %}'
       }
     </script>
 {% endblock %}

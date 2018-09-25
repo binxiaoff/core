@@ -15,7 +15,7 @@ if (!$esim.length) {
 var $doc = $(document)
 
 $doc
-  // Errors on Step 1
+// Errors on Step 1
   .on('FormValidation:validate:error', '#esim1', function (event) {
     $esim.removeClass('ui-emprunter-sim-estimate-show')
     event.stopPropagation()
@@ -35,7 +35,7 @@ $doc
           amount: amount,
           motiveId: motiveId
         },
-        success: function(response) {
+        success: function (response) {
           // Show the continue button
           $esim.addClass('ui-emprunter-sim-estimate-show')
 
@@ -45,7 +45,7 @@ $doc
             $('#esim-input-siren').focus()
           }
 
-          $(".ui-esim-output-cost").prepend(response.amount);
+          $(".ui-esim-output-cost").prepend(response.amount)
           $('.ui-esim-output-duration').prepend(response.period)
           $('.ui-esim-funding-duration-output').html(response.estimatedFundingDuration)
           $('.ui-esim-monthly-output').html(response.estimatedMonthlyRepayment)
@@ -66,10 +66,10 @@ $doc
               .html(text + response.translationComplement + '.')
           }
         },
-        error: function() {
-          console.log("error retrieving data");
+        error: function () {
+          console.log("error retrieving data")
         }
-      });
+      })
 
       $('a[href*="esim1"]')
         .removeAttr("href data-toggle aria-expanded")
@@ -80,7 +80,7 @@ $doc
     event.preventDefault()
 
     if (!$(".form-validation-notifications .message-error").length) {
-      var formData = $esim.serializeArray();
+      var formData = $esim.serializeArray()
 
       $.ajax({
         type: 'POST',
@@ -88,12 +88,49 @@ $doc
         data: formData,
         dataType: 'json',
         statusCode: {
-          400: function () {
-            //console.log("error data");
+          400: function (result) {
+            var errorMessage
+            var tab = $('#esim2')
+            var response = $.parseJSON(result.responseText)
+
+            switch (response.error) {
+              case borrowerEsimErrorCode.invalidAmount:
+                errorMessage = borrowerEsimErrorMessages.invalidAmount
+                tab = $('#esim1')
+                tab.tab('show')
+                break
+              case borrowerEsimErrorCode.invalidDuration:
+                errorMessage = borrowerEsimErrorMessages.invalidDuration
+                tab = $('#esim1')
+                tab.tab('show')
+                break
+              case borrowerEsimErrorCode.invalidReason:
+                errorMessage = borrowerEsimErrorMessages.invalidReason
+                tab = $('#esim1')
+                tab.tab('show')
+                break
+              case borrowerEsimErrorCode.invalidEmail:
+                errorMessage = borrowerEsimErrorMessages.invalidEmail
+                break
+              case borrowerEsimErrorCode.invalidSiren:
+                errorMessage = borrowerEsimErrorMessages.invalidSiren
+                break
+              default:
+                errorMessage = borrowerEsimErrorMessages.unknownError
+                break
+            }
+
+            tab.find('.form-validation-notifications').html('<div class="message-error">' + errorMessage + '</div>')
           }
         }
       }).done(function (result) {
-        window.location.replace(result.data.redirectTo);
+        window.location.replace(result.data.redirectTo)
       })
     }
   })
+  .on('change', $esim.find(':input'), function () {
+    $(".form-validation-notifications .message-error").fadeOut(1000, function() {
+      $(this).remove();
+    });
+  })
+
