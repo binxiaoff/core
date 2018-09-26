@@ -176,7 +176,7 @@ class MainController extends Controller
      */
     public function projectSimulatorStepTwoAction(Request $request): JsonResponse
     {
-        $user     = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Users')->find(Users::USER_ID_FRONT);
+        $user = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Users')->find(Users::USER_ID_FRONT);
 
         $projectRequestManager = $this->get('unilend.service.project_request_manager');
         $projectManager        = $this->get('unilend.service.project_manager');
