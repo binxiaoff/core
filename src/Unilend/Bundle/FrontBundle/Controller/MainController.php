@@ -145,7 +145,7 @@ class MainController extends Controller
         $ficelle = Loader::loadLib('ficelle');
 
         $projectPeriods = $projectManager->getPossibleProjectPeriods();
-        $amount         = filter_var(str_replace([' ', '€'], '', $request->request->get('amount')), FILTER_VALIDATE_INT, ['options' => ['min_range' => $projectManager->getMinProjectAmount(), 'max_range' => $projectManager->getMaxProjectAmount()]]);
+        $amount         = $projectRequestManager->verifyRequestedAmount((int) str_replace([' ', '€'], '', $request->request->get('amount')));
 
         if (in_array($period, $projectPeriods) && $amount) {
             $estimatedRate                           = $projectRequestManager->getMonthlyRateEstimate();
@@ -176,49 +176,61 @@ class MainController extends Controller
      */
     public function projectSimulatorStepTwoAction(Request $request): JsonResponse
     {
-        $formData = $request->request->get('esim');
         $user     = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Users')->find(Users::USER_ID_FRONT);
 
         $projectRequestManager = $this->get('unilend.service.project_request_manager');
+        $projectManager        = $this->get('unilend.service.project_manager');
+
+        $errors = [];
+
+        $email = filter_var($request->request->get('email'), FILTER_VALIDATE_EMAIL);
+        if (empty($email)) {
+            $errors[] = ProjectRequestManager::EXCEPTION_CODE_INVALID_EMAIL;
+        }
+
+        $amount = $projectRequestManager->verifyRequestedAmount((int) str_replace([' ', '€'], '', $request->request->get('amount')));
+        if (empty($amount)) {
+            $errors[] = ProjectRequestManager::EXCEPTION_CODE_INVALID_AMOUNT;
+        }
+
+        $projectPeriods = $projectManager->getPossibleProjectPeriods();
+        $period         = $request->request->getInt('duration');
+        if (false === in_array($period, $projectPeriods)) {
+            $errors[] = ProjectRequestManager::EXCEPTION_CODE_INVALID_DURATION;
+        }
+
+        $borrowingMotive = $request->request->getInt('reason');
+        if (empty($borrowingMotive) || null === $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:BorrowingMotive')->find($borrowingMotive)) {
+            $errors[] = ProjectRequestManager::EXCEPTION_CODE_INVALID_REASON;
+        }
+
+        $siren = $request->request->get('siren');
+        if (false === empty($siren)) {
+            $siren = $projectRequestManager->validateSiren($siren);
+            if (false === $siren) {
+                $errors[] = ProjectRequestManager::EXCEPTION_CODE_INVALID_SIREN;
+            }
+            // We accept in the same field both siren and siret
+            $siret = $projectRequestManager->validateSiret($siren);
+            $siret = $siret === false ? null : $siret;
+        } else {
+            $siren = null;
+            $siret = null;
+        }
+
+        if (false === empty($errors)) {
+            return $this->json(['success' => false, 'error' => $errors], 400);
+        }
+
+        $companyName = $request->request->get('company_name');
+        if (empty($companyName)) {
+            $companyName = null;
+        }
+
+        $partner = $this->get('unilend.service.partner_manager')->getDefaultPartner();
 
         try {
-            if (empty($formData['email'])) {
-                throw new \InvalidArgumentException('Invalid email', ProjectRequestManager::EXCEPTION_CODE_INVALID_EMAIL);
-            }
-
-            if (empty($formData['amount'])) {
-                throw new \InvalidArgumentException('Invalid amount = ' . $formData['amount'], ProjectRequestManager::EXCEPTION_CODE_INVALID_AMOUNT);
-            }
-
-            if (empty($formData['duration'])) {
-                throw new \InvalidArgumentException('Invalid duration', ProjectRequestManager::EXCEPTION_CODE_INVALID_DURATION);
-            }
-
-            if (empty($formData['reason'])) {
-                throw new \InvalidArgumentException('Invalid reason', ProjectRequestManager::EXCEPTION_CODE_INVALID_REASON);
-            }
-
-            if (false === empty($formData['siren'])) {
-                $siren = $projectRequestManager->validateSiren($formData['siren']);
-                $siren = $siren === false ? null : $siren;
-                // We accept in the same field both siren and siret
-                $siret = $projectRequestManager->validateSiret($formData['siren']);
-                $siret = $siret === false ? null : $siret;
-            } else {
-                $siren = null;
-                $siret = null;
-            }
-
-            if (empty($formData['company_name'])) {
-                $companyName = null;
-            } else {
-                $companyName = $formData['company_name'];
-            }
-
-            $partner = $this->get('unilend.service.partner_manager')->getDefaultPartner();
-
-            $project = $projectRequestManager->newProject($user, $partner, ProjectsStatus::INCOMPLETE_REQUEST, $formData['amount'], $siren, $siret, $companyName, $formData['email'],
-                $formData['duration'], $formData['reason']);
+            $project = $projectRequestManager->newProject($user, $partner, ProjectsStatus::INCOMPLETE_REQUEST, $amount, $siren, $siret, $companyName, $email, $period, $borrowingMotive);
 
             return $this->json([
                 'success' => true,
@@ -227,11 +239,14 @@ class MainController extends Controller
                 ]
             ]);
         } catch (\Exception $exception) {
-            if (false === $exception instanceof \InvalidArgumentException) {
-                $this->get('logger')->error('Could not save project : ' . $exception->getMessage() . '. Form data = ' . json_encode($formData), ['class' => __CLASS__, 'function' => __FUNCTION__]);
-            }
+            $this->get('logger')->error('Could not save project : ' . $exception->getMessage() . '. Form data = ' . json_encode($request->request->all()), [
+                'class'    => __CLASS__,
+                'function' => __FUNCTION__,
+                'file'     => $exception->getFile(),
+                'line'     => $exception->getLine()
+            ]);
 
-            return $this->json(['success' => false, 'error' => $exception->getCode()], 400);
+            return $this->json(['success' => false, 'error' => [$exception->getCode()]], 400);
         }
     }
 

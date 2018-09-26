@@ -152,38 +152,19 @@
         <section id="homeemp-section-esim" class="page-section bg-bg3">
             <div class="site-wrap">
                 <h2 class="h2">{% trans %} home-borrower_simulator-title {% endtrans %}</h2>
-
-                {% if app.session.flashBag.has('projectSimulatorError') %}
-                    {% set projectSimulatorErrorCode = app.session.flashBag.get('projectSimulatorError') %}
-                {% endif %}
-
-                {% if projectSimulatorErrorCode is defined
-                    and constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Service\\ProjectRequestManager::EXCEPTION_CODE_INVALID_AMOUNT') not in projectSimulatorErrorCode
-                    and constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Service\\ProjectRequestManager::EXCEPTION_CODE_INVALID_DURATION') not in projectSimulatorErrorCode
-                    and constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Service\\ProjectRequestManager::EXCEPTION_CODE_INVALID_REASON') not in projectSimulatorErrorCode
-                    and (
-                        constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Service\\ProjectRequestManager::EXCEPTION_CODE_INVALID_SIREN') in projectSimulatorErrorCode
-                        or constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Service\\ProjectRequestManager::EXCEPTION_CODE_INVALID_EMAIL') in projectSimulatorErrorCode
-                    )
-                %}
-                    {% set activeTab = 'second' %}
-                {% else %}
-                    {% set activeTab = 'first' %}
-                {% endif %}
-
                 <form action="{{ path('project_simulator_form') }}" method="post" class="emprunter-sim tabs ui-tabs-progress">
                     <div class="emprunter-sim-nav">
                         <ul class="nav nav-steps" role="tablist">
-                            <li role="presentation"{% if activeTab == 'first' %} class="active"{% endif %}>
+                            <li role="presentation" class="active">
                                 <a role="tab">{% trans %} home-borrower_simulator-step-1 {% endtrans %}</a>
                             </li>
-                            <li role="presentation"{% if activeTab == 'second' %} class="active"{% endif %}>
+                            <li role="presentation">
                                 <a href="#esim2" role="tab" data-toggle="tab">{% trans %} home-borrower_simulator-step-2 {% endtrans %}</a>
                             </li>
                         </ul>
                     </div><!-- /.emprunter-sim-nav -->
                     <div class="tab-content emprunter-sim-content">
-                        <div id="esim1" role="tabpanel" class="tab-pane{% if activeTab == 'first' %} active{% endif %}">
+                        <div id="esim1" role="tabpanel" class="tab-pane active">
                             <fieldset class="emprunter-sim-pane-inner"
                                       data-formvalidation
                                       data-formvalidation-notificationselem=".form-validation-notifications">
@@ -201,7 +182,7 @@
                                         <input id="esim-input-amount"
                                                type="text"
                                                step="any"
-                                               name="esim[amount]"
+                                               name="amount"
                                                placeholder="{% trans %} home-borrower_simulator-amount-field-placeholder {% endtrans %}"
                                                class="input-field"
                                                data-formvalidation-input
@@ -218,7 +199,7 @@
                                                 </span></span>
                                         </label>
                                         <select id="esim-input-reason"
-                                                name="esim[reason]"
+                                                name="reason"
                                                 class="input-field"
                                                 data-formvalidation-input
                                                 data-formvalidation-required="true"
@@ -251,7 +232,7 @@
                                                 <label>
                                                     <input type="radio"
                                                            id="esim-input-duration-{{ period }}"
-                                                           name="esim[duration]"
+                                                           name="duration"
                                                            value="{{ period }}">
                                                     <span class="label">{{ period }}</span>
                                                 </label>
@@ -262,7 +243,7 @@
                             </fieldset><!-- /.emprunter-sim-pane-inner -->
                         </div><!-- /.tab-pane -->
 
-                        <div id="esim2" role="tabpanel" class="tab-pane{% if activeTab == 'second' %} active{% endif %}">
+                        <div id="esim2" role="tabpanel" class="tab-pane">
                             <fieldset class="emprunter-sim-pane-inner"
                                       data-formvalidation
                                       data-formvalidation-notificationselem=".form-validation-notifications">
@@ -285,7 +266,7 @@
                                         </label>
                                         <input type="text"
                                                id="esim-input-company-name"
-                                               name="esim[company_name]"
+                                               name="company_name"
                                                class="input-field"
                                                data-formvalidation-input>
                                     </div>
@@ -303,7 +284,7 @@
                                         </label>
                                         <input type="text"
                                                id="esim-input-siren"
-                                               name="esim[siren]"
+                                               name="siren"
                                                class="input-field"
                                                data-formvalidation-input
                                                data-formvalidation-required="true"
@@ -320,7 +301,7 @@
                                         <div class="input-group">
                                             <input type="email"
                                                    id="esim-input-email"
-                                                   name="esim[email]"
+                                                   name="email"
                                                    class="input-field"
                                                    data-formvalidation-input
                                                    data-formvalidation-required="true"
@@ -352,10 +333,10 @@
                                         <span class="spacer">&nbsp;</span>
                                     </div>
                                     <div class="col-lg-3 col-md-3">
-                                        <a href="#esim2" role="tab" data-toggle="tab" class="btn-continue btn-alternate btn-size-full"{% if activeTab == 'second' %} style="display: none;"{% endif %}>
+                                        <a href="#esim2" role="tab" data-toggle="tab" class="btn-continue btn-alternate btn-size-full">
                                             {% trans %} home-borrower_simulator-footer-continue-button {% endtrans %}
                                         </a>
-                                        <button class="btn-submit btn-alternate btn-size-full" data-spinnerbutton{% if activeTab == 'second' %} style="display: block;"{% endif %}>
+                                        <button class="btn-submit btn-alternate btn-size-full" data-spinnerbutton>
                                             {% trans %} home-borrower_simulator-footer-validate-button {% endtrans %}
                                         </button>
                                     </div>
