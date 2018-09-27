@@ -3,7 +3,7 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\ORM\{EntityManager, OptimisticLockException};
+use Doctrine\ORM\{EntityManagerInterface, OptimisticLockException};
 use Psr\Cache\{CacheException, CacheItemPoolInterface};
 use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, CompanyRating, CompanyRatingHistory, InfolegaleExecutivePersonalChange, Pays};
@@ -18,7 +18,7 @@ use Unilend\librairies\CacheKeys;
 
 class ExternalDataManager
 {
-    /** @var EntityManager */
+    /** @var EntityManagerInterface */
     private $entityManager;
     /** @var AltaresManager */
     private $altaresManager;
@@ -44,7 +44,7 @@ class ExternalDataManager
     private $cachePool;
 
     /**
-     * @param EntityManager              $entityManager
+     * @param EntityManagerInterface     $entityManager
      * @param AltaresManager             $altaresManager
      * @param EulerHermesManager         $eulerHermesManager
      * @param CodinfManager              $codinfManager
@@ -57,7 +57,7 @@ class ExternalDataManager
      * @param CacheItemPoolInterface     $cachePool
      */
     public function __construct(
-        EntityManager $entityManager,
+        EntityManagerInterface $entityManager,
         AltaresManager $altaresManager,
         EulerHermesManager $eulerHermesManager,
         CodinfManager $codinfManager,

@@ -2,7 +2,7 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
@@ -31,7 +31,7 @@ class BulkCompanyCheckManager
     private $baseDir;
     /** @var Filesystem */
     private $fileSystem;
-    /** @var EntityManager */
+    /** @var EntityManagerInterface */
     private $entityManager;
     /** @var LoggerInterface */
     private $logger;
@@ -39,21 +39,21 @@ class BulkCompanyCheckManager
     private $slackManager;
 
     /**
-     * @param string          $baseDir
-     * @param Filesystem      $filesystem
-     * @param EntityManager   $entityManager
-     * @param LoggerInterface $logger
-     * @param SlackManager    $slackManager
+     * @param string                 $protectedPath
+     * @param Filesystem             $filesystem
+     * @param EntityManagerInterface $entityManager
+     * @param LoggerInterface        $logger
+     * @param SlackManager           $slackManager
      */
     public function __construct(
-        $baseDir,
+        $protectedPath,
         Filesystem $filesystem,
-        EntityManager $entityManager,
+        EntityManagerInterface $entityManager,
         LoggerInterface $logger,
         SlackManager $slackManager
     )
     {
-        $this->baseDir       = $baseDir;
+        $this->baseDir       = $protectedPath;
         $this->fileSystem    = $filesystem;
         $this->entityManager = $entityManager;
         $this->logger        = $logger;

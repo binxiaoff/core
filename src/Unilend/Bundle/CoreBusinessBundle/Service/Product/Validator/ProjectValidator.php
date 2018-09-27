@@ -2,7 +2,7 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service\Product\Validator;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Product;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProductAttributeType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectProductAssessment;
@@ -24,13 +24,13 @@ class ProjectValidator
     /** @var ContractManager */
     private $contractManager;
 
-    /** @var EntityManager */
+    /** @var EntityManagerInterface */
     private $entityManager;
 
     /** @var InfolegaleManager */
     private $infolegaleManager;
 
-    public function __construct(ProductAttributeManager $productAttributeManager, ContractManager $contractManager, EntityManager $entityManager, InfolegaleManager $infolegaleManager)
+    public function __construct(ProductAttributeManager $productAttributeManager, ContractManager $contractManager, EntityManagerInterface $entityManager, InfolegaleManager $infolegaleManager)
     {
         $this->productAttributeManager = $productAttributeManager;
         $this->contractManager         = $contractManager;

@@ -2,11 +2,9 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Psr\Cache\CacheItemPoolInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Clients, OperationType, ProjectsStatus, UnderlyingContract,UnilendStats
-};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{Clients, OperationType, ProjectsStatus, UnderlyingContract, UnilendStats};
 use Unilend\Bundle\CoreBusinessBundle\Repository\ClientsRepository;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\librairies\CacheKeys;
@@ -40,7 +38,7 @@ class StatisticsManager
 
     /** @var EntityManagerSimulator */
     private $entityManagerSimulator;
-    /** @var  EntityManager */
+    /** @var EntityManagerInterface */
     private $entityManager;
     /** @var IRRManager */
     private $IRRManager;
@@ -49,9 +47,16 @@ class StatisticsManager
     /** @var LocationManager */
     private $locationManager;
 
+    /**
+     * @param EntityManagerSimulator $entityManagerSimulator
+     * @param EntityManagerInterface $entityManager
+     * @param IRRManager             $IRRManager
+     * @param CacheItemPoolInterface $cachePool
+     * @param LocationManager        $locationManager
+     */
     public function __construct(
         EntityManagerSimulator $entityManagerSimulator,
-        EntityManager $entityManager,
+        EntityManagerInterface $entityManager,
         IRRManager $IRRManager,
         CacheItemPoolInterface $cachePool,
         LocationManager $locationManager
@@ -449,7 +454,6 @@ class StatisticsManager
         $data = [];
 
         foreach ($years as $year) {
-
             if ($year == '2013-2014') {
                 $cohortStartDate = '2013-01-01 00:00:00';
                 $cohortEndDate   = '2014-12-31 23:59:59';
@@ -467,16 +471,16 @@ class StatisticsManager
             $data['projects'][$year]                            = $fundedProjects[$year];
 
             $data['borrowed-capital'][$year]                    = $borrowedCapital[$year];
-            $data['repaid-capital'][$year]                      = bcsub($repaidCapital[$year], $repaidCapitalRegularized[$year], 2);
-            $data['repaid-interest'][$year]                     = bcsub($repaidInterest[$year], $repaidInterestRegularized[$year], 2);
+            $data['repaid-capital'][$year]                      = max(0, bcsub($repaidCapital[$year], $repaidCapitalRegularized[$year], 2));
+            $data['repaid-interest'][$year]                     = max(0, bcsub($repaidInterest[$year], $repaidInterestRegularized[$year], 2));
             $data['owed-healthy-interest'][$year]               = $interestHealthyProjects[$year];
 
             $data['future-owed-capital-healthy'][$year]         = $futureCapitalHealthyProjects[$year];
             $data['future-owed-capital-problematic'][$year]     = $futureCapitalProblematicProjects[$year];
             $data['future-owed-capital'][$year]                 = bcadd($data['future-owed-capital-healthy'][$year],$data['future-owed-capital-problematic'][$year], 2);
 
-            $data['late-owed-capital-problematic'][$year]       = bcsub($lateCapitalRepaymentsProblematicProjects[$year], bcsub($debtCollectionRepaymentProblematicProjects[$year], $debtCollectionCommissionProblematicProjects[$year], 2), 2);
-            $data['late-owed-capital-healthy'][$year]           = bcsub($lateCapitalRepaymentsHealthyProjects[$year], bcsub($debtCollectionRepaymentHealthyProjects[$year], $debtCollectionCommissionHealthyProjects[$year], 2), 2);
+            $data['late-owed-capital-problematic'][$year]       = max(0, bcsub($lateCapitalRepaymentsProblematicProjects[$year], bcsub($debtCollectionRepaymentProblematicProjects[$year], $debtCollectionCommissionProblematicProjects[$year], 2), 2));
+            $data['late-owed-capital-healthy'][$year]           = max(0, bcsub($lateCapitalRepaymentsHealthyProjects[$year], bcsub($debtCollectionRepaymentHealthyProjects[$year], $debtCollectionCommissionHealthyProjects[$year], 2), 2));
             $data['late-owed-capital'][$year]                   = bcadd($data['late-owed-capital-problematic'][$year], $data['late-owed-capital-healthy'][$year], 2);
 
             $data['global-owed-capital'][$year]                     = bcadd($data['late-owed-capital'][$year], $data['future-owed-capital'][$year], 2);
@@ -488,7 +492,7 @@ class StatisticsManager
             $data['pct']['owed-problematic-over-borrowed-capital'][$year] = $data['borrowed-capital'][$year] > 0 ? bcmul(bcdiv($data['total-owed-problematic-and-late-capital'][$year], $data['borrowed-capital'][$year], 4), 100, 2) : 0;
             $data['pct']['interest-over-owed-problematic-capital'][$year] = $data['total-owed-problematic-and-late-capital'][$year] > 0 ? bcmul(bcdiv(($data['repaid-interest'][$year] + $data['owed-healthy-interest'][$year]), $data['total-owed-problematic-and-late-capital'][$year], 4), 100, 2) : 0;
 
-            $capitalAndInterestLessProblemsPerYear      = bcsub(bcadd(bcadd($data['borrowed-capital'][$year], $data['repaid-interest'][$year], 2), $data['owed-healthy-interest'][$year], 2), $data['total-owed-problematic-capital'][$year], 2);
+            $capitalAndInterestLessProblemsPerYear      = max(0, bcsub(bcadd(bcadd($data['borrowed-capital'][$year], $data['repaid-interest'][$year], 2), $data['owed-healthy-interest'][$year], 2), $data['total-owed-problematic-capital'][$year], 2));
             $data['pct']['expected-performance'][$year] = $data['borrowed-capital'][$year] > 0 ? bcmul((bcdiv($capitalAndInterestLessProblemsPerYear, $data['borrowed-capital'][$year], 4) - 1), 100, 2) : 0;
             $data['pct']['problematic-rate'][$year]     = $countFundedCompanies[$year] > 0 ? bcmul(bcdiv($problematicCompanies[$year], $countFundedCompanies[$year], 4), 100, 2) : 0;
         }
@@ -666,17 +670,17 @@ class StatisticsManager
                 'volume' => $weightedAverageLoanAge[$year],
                 'number' => $NotWeightedAverageLoanAge[$year]
             ];
-            $data['repaid-capital'][$year]                   = round(bcsub($repaidCapital[$year], $repaidCapitalRegularized[$year], 4));
+            $data['repaid-capital'][$year]                   = max(0, round(bcsub($repaidCapital[$year], $repaidCapitalRegularized[$year], 4)));
             $data['repaid-capital-ratio'][$year]             = round(bcmul(bcdiv($data['repaid-capital'][$year], $data['borrowed-capital'][$year], 6), 100, 3), 2);
-            $data['repaid-interest'][$year]                  = round(bcsub($repaidInterest[$year], $repaidInterestRegularized[$year], 4), 2);
+            $data['repaid-interest'][$year]                  = max(0, round(bcsub($repaidInterest[$year], $repaidInterestRegularized[$year], 4), 2));
             $data['repaid-interest-ratio'][$year]            = round(bcmul(bcdiv($data['repaid-interest'][$year], $totalInterest[$year], 6), 100, 3), 2);
-            $data['annual-cost-of-risk'][$year]              = self::NOT_APPLICABLE === $data['optimistic-unilend-irr'][$year] ? self::NOT_APPLICABLE : round(bcsub($data['optimistic-unilend-irr'][$year], $data['realistic-unilend-irr'][$year], 4), 2);
-            $data['late-owed-capital-healthy'][$year]        = round(bcsub($lateCapitalRepaymentsHealthyProjects[$year], bcsub($debtCollectionRepaymentHealthyProjects[$year], $debtCollectionCommissionHealthyProjects[$year], 4), 4));
+            $data['annual-cost-of-risk'][$year]              = self::NOT_APPLICABLE === $data['optimistic-unilend-irr'][$year] ? self::NOT_APPLICABLE : max(0, round(bcsub($data['optimistic-unilend-irr'][$year], $data['realistic-unilend-irr'][$year], 4), 2));
+            $data['late-owed-capital-healthy'][$year]        = max(0, round(bcsub($lateCapitalRepaymentsHealthyProjects[$year], bcsub($debtCollectionRepaymentHealthyProjects[$year], $debtCollectionCommissionHealthyProjects[$year], 4), 4)));
             $data['late-capital-percentage'][$year]          = [
                 'volume' => round(bcmul(bcdiv($data['late-owed-capital-healthy'][$year], $data['borrowed-capital'][$year], 6), 100, 3), 2),
                 'number' => round(bcmul(bcdiv($numberLateHealthyProjects[$year], $data['number-of-projects'][$year], 6), 100, 3), 2)
             ];
-            $data['late-owed-capital-problematic'][$year]    = round(bcadd($futureCapitalProblematicProjects[$year], bcsub($lateCapitalRepaymentsProblematicProjects[$year], bcsub($debtCollectionRepaymentProblematicProjects[$year], $debtCollectionCommissionProblematicProjects[$year], 4), 4), 4));
+            $data['late-owed-capital-problematic'][$year]    = max(0, round(bcadd($futureCapitalProblematicProjects[$year], bcsub($lateCapitalRepaymentsProblematicProjects[$year], bcsub($debtCollectionRepaymentProblematicProjects[$year], $debtCollectionCommissionProblematicProjects[$year], 4), 4), 4)));
 
             $data['late-problematic-capital-percentage'][$year] = [
                 'volume' => round(bcmul(bcdiv($data['late-owed-capital-problematic'][$year], $data['borrowed-capital'][$year], 6), 100, 3), 2),
@@ -695,7 +699,7 @@ class StatisticsManager
         $data['late-owed-capital-problematic']['total']       = array_sum($data['late-owed-capital-problematic']);
         $data['optimistic-unilend-irr']['total']              = $this->IRRManager->getLastOptimisticUnilendIRR()->getValue();
         $data['realistic-unilend-irr']['total']               = $this->IRRManager->getLastUnilendIRR()->getValue();
-        $data['annual-cost-of-risk']['total']                 = self::NOT_APPLICABLE === $data['optimistic-unilend-irr']['total'] ? self::NOT_APPLICABLE : bcsub($data['optimistic-unilend-irr']['total'], $data['realistic-unilend-irr']['total'], 4);
+        $data['annual-cost-of-risk']['total']                 = self::NOT_APPLICABLE === $data['optimistic-unilend-irr']['total'] ? self::NOT_APPLICABLE : max(0, bcsub($data['optimistic-unilend-irr']['total'], $data['realistic-unilend-irr']['total'], 4));
         $data['average-interest-rate']['total']               = [
             'volume' => $this->getStatistic('averageInterestRateForLenders', $date),
             'number' => $projectRepository->getNonWeightedAverageInterestRateUntil()

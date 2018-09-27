@@ -2,7 +2,7 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OffresBienvenues;
@@ -18,7 +18,7 @@ class WelcomeOfferManager
 {
     /** @var OperationManager  */
     private $operationManager;
-    /** @var EntityManager  */
+    /** @var EntityManagerInterface  */
     private $entityManager;
     /** @var \NumberFormatter */
     private $numberFormatter;
@@ -29,9 +29,17 @@ class WelcomeOfferManager
     /** @var LoggerInterface */
     private $logger;
 
+    /**
+     * @param OperationManager        $operationManager
+     * @param EntityManagerInterface  $entityManager
+     * @param \NumberFormatter        $numberFormatter
+     * @param TemplateMessageProvider $messageProvider
+     * @param \Swift_Mailer           $mailer
+     * @param LoggerInterface         $logger
+     */
     public function __construct(
         OperationManager $operationManager,
-        EntityManager $entityManager,
+        EntityManagerInterface $entityManager,
         \NumberFormatter $numberFormatter,
         TemplateMessageProvider $messageProvider,
         \Swift_Mailer $mailer,

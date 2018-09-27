@@ -2,16 +2,15 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service\Repayment;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Companies, DebtCollectionMission, Echeanciers, EcheanciersEmprunteur, Loans, ProjectRepaymentDetail, ProjectRepaymentTask, ProjectRepaymentTaskLog, Projects, ProjectsStatus, Receptions, Users
-};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{Companies, DebtCollectionMission, Echeanciers, EcheanciersEmprunteur, Loans, ProjectRepaymentDetail, ProjectRepaymentTask, ProjectRepaymentTaskLog,
+    Projects, ProjectsStatus, Receptions, Users};
 use Unilend\Bundle\CoreBusinessBundle\Service\WorkingDaysManager;
 
 class ProjectRepaymentTaskManager
 {
-    /** @var EntityManager */
+    /** @var EntityManagerInterface */
     private $entityManager;
 
     /** @var ProjectRepaymentNotificationSender */
@@ -24,14 +23,12 @@ class ProjectRepaymentTaskManager
     private $workingDaysManager;
 
     /**
-     * ProjectRepaymentTaskManager constructor.
-     *
-     * @param EntityManager                      $entityManager
+     * @param EntityManagerInterface             $entityManager
      * @param ProjectRepaymentNotificationSender $projectRepaymentNotificationSender
      * @param LoggerInterface                    $logger
      * @param WorkingDaysManager                 $workingDaysManager
      */
-    public function __construct(EntityManager $entityManager, ProjectRepaymentNotificationSender $projectRepaymentNotificationSender, LoggerInterface $logger, WorkingDaysManager $workingDaysManager)
+    public function __construct(EntityManagerInterface $entityManager, ProjectRepaymentNotificationSender $projectRepaymentNotificationSender, LoggerInterface $logger, WorkingDaysManager $workingDaysManager)
     {
         $this->entityManager                      = $entityManager;
         $this->logger                             = $logger;
@@ -717,6 +714,26 @@ class ProjectRepaymentTaskManager
             $this->prepareRegularRepayment($projectRepaymentTask);
         } elseif (ProjectRepaymentTask::TYPE_CLOSE_OUT_NETTING === $projectRepaymentTask->getType()) {
             $this->prepareCloseOutNettingRepayment($projectRepaymentTask);
+        }
+    }
+
+    /**
+     * @param Projects $project
+     */
+    public function prepareNonFinishedTask(Projects $project): void
+    {
+        $repaymentTasks = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRepaymentTask')->findBy([
+            'idProject' => $project,
+            'status'    => [
+                ProjectRepaymentTask::STATUS_ERROR,
+                ProjectRepaymentTask::STATUS_PENDING,
+                ProjectRepaymentTask::STATUS_READY,
+                ProjectRepaymentTask::STATUS_IN_PROGRESS,
+            ]
+        ]);
+
+        foreach ($repaymentTasks as $projectRepaymentTask) {
+            $this->projectRepaymentTaskManager->prepare($projectRepaymentTask);
         }
     }
 

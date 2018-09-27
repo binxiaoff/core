@@ -2,15 +2,13 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Clients, ClientSettingType
-};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{Clients, ClientSettingType};
 
 class ClientManager
 {
-    /** @var EntityManager */
+    /** @var EntityManagerInterface */
     private $entityManager;
     /** @var ClientSettingsManager */
     private $clientSettingsManager;
@@ -20,13 +18,13 @@ class ClientManager
     private $logger;
 
     /**
-     * @param EntityManager         $entityManager
-     * @param ClientSettingsManager $clientSettingsManager
-     * @param TermsOfSaleManager    $termsOfSaleManager
-     * @param LoggerInterface       $logger
+     * @param EntityManagerInterface $entityManager
+     * @param ClientSettingsManager  $clientSettingsManager
+     * @param TermsOfSaleManager     $termsOfSaleManager
+     * @param LoggerInterface        $logger
      */
     public function __construct(
-        EntityManager $entityManager,
+        EntityManagerInterface $entityManager,
         ClientSettingsManager $clientSettingsManager,
         TermsOfSaleManager $termsOfSaleManager,
         LoggerInterface $logger

@@ -3,7 +3,7 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\DBAL\Statement;
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 
@@ -15,7 +15,7 @@ class SalesforceManager
     /** @var EntityManagerSimulator */
     private $entityManagerSimulator;
 
-    /** @var  EntityManager */
+    /** @var EntityManagerInterface */
     private $entityManager;
 
     /** @var string */
@@ -25,15 +25,13 @@ class SalesforceManager
     private $configDir;
 
     /**
-     * SalesForceManager constructor.
-     *
      * @param EntityManagerSimulator $entityManagerSimulator
-     * @param EntityManager          $entityManager
+     * @param EntityManagerInterface $entityManager
      * @param                        $extractionDir
      * @param                        $configDir
      * @param LoggerInterface        $logger
      */
-    public function __construct(EntityManagerSimulator $entityManagerSimulator, EntityManager $entityManager, $extractionDir, $configDir, LoggerInterface $logger)
+    public function __construct(EntityManagerSimulator $entityManagerSimulator, EntityManagerInterface $entityManager, $extractionDir, $configDir, LoggerInterface $logger)
     {
         $this->entityManagerSimulator = $entityManagerSimulator;
         $this->entityManager          = $entityManager;

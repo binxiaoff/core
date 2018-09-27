@@ -2,30 +2,27 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
-use Doctrine\ORM\EntityManager;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Clients, ClientsGestionMailsNotif, ClientsGestionNotifications, ClientsGestionTypeNotif, WalletBalanceHistory, WalletType
-};
+use Doctrine\ORM\EntityManagerInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{Clients, ClientsGestionMailsNotif, ClientsGestionNotifications, ClientsGestionTypeNotif, WalletBalanceHistory, WalletType};
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 
 class NotificationManager
 {
     /** @var MailerManager */
     private $mailerManager;
-    /** @var  EntityManager */
+    /** @var EntityManagerInterface */
     private $entityManager;
     /** @var EntityManagerSimulator */
     private $entityManagerSimulator;
 
     /**
-     * NotificationManager constructor.
      * @param EntityManagerSimulator $entityManagerSimulator
-     * @param EntityManager $entityManager
-     * @param MailerManager $mailerManager
+     * @param EntityManagerInterface $entityManager
+     * @param MailerManager          $mailerManager
      */
     public function __construct(
         EntityManagerSimulator $entityManagerSimulator,
-        EntityManager $entityManager,
+        EntityManagerInterface $entityManager,
         MailerManager $mailerManager
     )
     {

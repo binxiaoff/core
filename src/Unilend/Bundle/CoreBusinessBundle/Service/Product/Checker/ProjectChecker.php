@@ -2,12 +2,11 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service\Product\Checker;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Product;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProductAttributeType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductAttributeManager;
-use Unilend\Bundle\WSClientBundle\Service\InfolegaleManager;
 
 trait ProjectChecker
 {
@@ -103,11 +102,11 @@ trait ProjectChecker
      * @param Projects                $project
      * @param Product                 $product
      * @param ProductAttributeManager $productAttributeManager
-     * @param EntityManager           $entityManager
+     * @param EntityManagerInterface  $entityManager
      *
      * @return bool|null
      */
-    private function isEligibleForMinPreScore(Projects $project, Product $product, ProductAttributeManager $productAttributeManager, EntityManager $entityManager)
+    private function isEligibleForMinPreScore(Projects $project, Product $product, ProductAttributeManager $productAttributeManager, EntityManagerInterface $entityManager)
     {
         $minPreScore = $productAttributeManager->getProductAttributesByType($product, ProductAttributeType::MIN_PRE_SCORE);
 
@@ -128,11 +127,11 @@ trait ProjectChecker
      * @param Projects                $project
      * @param Product                 $product
      * @param ProductAttributeManager $productAttributeManager
-     * @param EntityManager           $entityManager
+     * @param EntityManagerInterface  $entityManager
      *
      * @return bool|null
      */
-    private function isEligibleForMaxPreScore(Projects $project, Product $product, ProductAttributeManager $productAttributeManager, EntityManager $entityManager)
+    private function isEligibleForMaxPreScore(Projects $project, Product $product, ProductAttributeManager $productAttributeManager, EntityManagerInterface $entityManager)
     {
         $maxPreScore = $productAttributeManager->getProductAttributesByType($product, ProductAttributeType::MAX_PRE_SCORE);
 

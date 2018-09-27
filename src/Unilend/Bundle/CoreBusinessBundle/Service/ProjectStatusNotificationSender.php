@@ -2,7 +2,7 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\{Asset\Packages, Routing\RouterInterface, Translation\TranslatorInterface};
 use Unilend\Bundle\CoreBusinessBundle\Entity\{ClientsGestionTypeNotif, CompanyStatus, Notifications, Projects, ProjectsStatus, Wallet};
@@ -15,7 +15,7 @@ class ProjectStatusNotificationSender
     private $entityManagerSimulator;
     /** @var TranslatorInterface */
     private $translator;
-    /** @var EntityManager */
+    /** @var EntityManagerInterface */
     private $entityManager;
     /** @var \NumberFormatter */
     protected $numberFormatter;
@@ -37,7 +37,7 @@ class ProjectStatusNotificationSender
     /**
      * @param EntityManagerSimulator  $entityManagerSimulator
      * @param TranslatorInterface     $translator
-     * @param EntityManager           $entityManager
+     * @param EntityManagerInterface  $entityManager
      * @param \NumberFormatter        $numberFormatter
      * @param \NumberFormatter        $currencyFormatter
      * @param Packages                $assetsPackage
@@ -50,7 +50,7 @@ class ProjectStatusNotificationSender
     public function __construct(
         EntityManagerSimulator $entityManagerSimulator,
         TranslatorInterface $translator,
-        EntityManager $entityManager,
+        EntityManagerInterface $entityManager,
         \NumberFormatter $numberFormatter,
         \NumberFormatter $currencyFormatter,
         Packages $assetsPackage,

@@ -3,21 +3,11 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Filesystem\Filesystem;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Entity\DebtCollectionFeeDetail;
-use Unilend\Bundle\CoreBusinessBundle\Entity\DebtCollectionMission;
-use Unilend\Bundle\CoreBusinessBundle\Entity\DebtCollectionMissionPaymentSchedule;
-use Unilend\Bundle\CoreBusinessBundle\Entity\EcheanciersEmprunteur;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectCharge;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRepaymentTask;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Receptions;
-use Unilend\Bundle\CoreBusinessBundle\Entity\TaxType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{Clients, DebtCollectionFeeDetail, DebtCollectionMission, DebtCollectionMissionPaymentSchedule, EcheanciersEmprunteur, ProjectCharge, Projects,
+    ProjectsStatus, Receptions, TaxType, Users};
 use Unilend\Bundle\CoreBusinessBundle\Service\Repayment\ProjectRepaymentTaskManager;
 
 class DebtCollectionMissionManager
@@ -31,41 +21,47 @@ class DebtCollectionMissionManager
     const DEBT_COLLECTION_MISSION_FOLDER = 'debt_collection_missions';
     const FILE_EXTENSION                 = '.xlsx';
 
-    /** @var EntityManager */
+    /** @var EntityManagerInterface */
     private $entityManager;
 
     /** @var ProjectRepaymentTaskManager */
     private $projectRepaymentTaskManager;
 
-    /**
-     * @var LoggerInterface
-     */
+    /** @var LoggerInterface */
     private $logger;
 
-    /**
-     * @var string
-     */
+    /** @var string */
     private $protectedPath;
 
     /** @var Filesystem */
     private $fileSystem;
 
+    /** @var ProjectCloseOutNettingManager */
+    private $projectCloseOutNettingManager;
+
     /**
-     * DebtCollectionMissionManager constructor.
-     *
-     * @param EntityManager               $entityManager
-     * @param ProjectRepaymentTaskManager $projectRepaymentTaskManager
-     * @param LoggerInterface             $logger
-     * @param Filesystem                  $filesystem
-     * @param   string                    $protectedPath
+     * @param EntityManagerInterface        $entityManager
+     * @param ProjectRepaymentTaskManager   $projectRepaymentTaskManager
+     * @param LoggerInterface               $logger
+     * @param Filesystem                    $filesystem
+     * @param string                        $protectedPath
+     * @param ProjectCloseOutNettingManager $projectCloseOutNettingManager
      */
-    public function __construct(EntityManager $entityManager, ProjectRepaymentTaskManager $projectRepaymentTaskManager, LoggerInterface $logger, Filesystem $filesystem, $protectedPath)
+    public function __construct(
+        EntityManagerInterface $entityManager,
+        ProjectRepaymentTaskManager $projectRepaymentTaskManager,
+        LoggerInterface $logger,
+        Filesystem $filesystem,
+        string $protectedPath,
+        ProjectCloseOutNettingManager $projectCloseOutNettingManager
+    )
     {
-        $this->entityManager               = $entityManager;
-        $this->projectRepaymentTaskManager = $projectRepaymentTaskManager;
-        $this->logger                      = $logger;
-        $this->fileSystem                  = $filesystem;
-        $this->protectedPath               = $protectedPath;
+        $this->entityManager                 = $entityManager;
+        $this->projectRepaymentTaskManager   = $projectRepaymentTaskManager;
+        $this->logger                        = $logger;
+        $this->fileSystem                    = $filesystem;
+        $this->protectedPath                 = $protectedPath;
+        $this->projectCloseOutNettingManager = $projectCloseOutNettingManager;
     }
 
     /**
@@ -410,28 +406,14 @@ class DebtCollectionMissionManager
      */
     private function getLoanDetails(DebtCollectionMission $debtCollectionMission)
     {
-        $projectRepaymentTaskRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRepaymentTask');
-        $missionPaymentSchedules        = $debtCollectionMission->getDebtCollectionMissionPaymentSchedules();
+        $missionPaymentSchedules = $debtCollectionMission->getDebtCollectionMissionPaymentSchedules();
 
         $isCloseOutNetting = null !== $debtCollectionMission->getIdProject()->getCloseOutNettingDate();
 
-        $repaymentTasks = $projectRepaymentTaskRepository->findBy([
-            'idProject' => $debtCollectionMission->getIdProject(),
-            'status'    => [
-                ProjectRepaymentTask::STATUS_ERROR,
-                ProjectRepaymentTask::STATUS_PENDING,
-                ProjectRepaymentTask::STATUS_READY,
-                ProjectRepaymentTask::STATUS_IN_PROGRESS,
-            ]
-        ]);
-
-        foreach ($repaymentTasks as $projectRepaymentTask) {
-            $this->projectRepaymentTaskManager->prepare($projectRepaymentTask);
-        }
+        $this->projectRepaymentTaskManager->prepareNonFinishedTask($debtCollectionMission->getIdProject());
 
         $repaymentScheduleRepository        = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers');
         $projectRepaymentDetailRepository   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRepaymentDetail');
-        $closeOutNettingRepaymentRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CloseOutNettingRepayment');
         $loanRepository                     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Loans');
 
         $project                 = $debtCollectionMission->getIdProject();
@@ -473,27 +455,12 @@ class DebtCollectionMissionManager
                     $totalRemainingAmount = round(bcadd($totalRemainingAmount, bcadd($remainingCapital, $remainingInterest, 4), 4), 2);
                 }
             } else {
-                $closeOutNettingRepayment = $closeOutNettingRepaymentRepository->findOneBy(['idLoan' => $loanId]);
+                $remainingAmountsByLoan = $this->projectCloseOutNettingManager->getRemainingAmountByLoan($loanId);
 
-                $remainingCapital  = round(bcsub($closeOutNettingRepayment->getCapital(), $closeOutNettingRepayment->getRepaidCapital(), 4), 2);
-                $remainingInterest = round(bcsub($closeOutNettingRepayment->getInterest(), $closeOutNettingRepayment->getRepaidInterest(), 4), 2);
+                $loanDetails[$loanId]['remaining_capital']  = $remainingAmountsByLoan['capital'];
+                $loanDetails[$loanId]['remaining_interest'] = $remainingAmountsByLoan['interest'];
 
-                $pendingCapital  = 0;
-                $pendingInterest = 0;
-
-                $pendingAmount = $projectRepaymentDetailRepository->getPendingAmountToRepay($loanId);
-                if ($pendingAmount) {
-                    $pendingCapital  = $pendingAmount['capital'];
-                    $pendingInterest = $pendingAmount['interest'];
-                }
-
-                $remainingCapital  = round(bcsub($remainingCapital, $pendingCapital, 4), 2);
-                $remainingInterest = round(bcsub($remainingInterest, $pendingInterest, 4), 2);
-
-                $loanDetails[$loanId]['remaining_capital']  = $remainingCapital;
-                $loanDetails[$loanId]['remaining_interest'] = $remainingInterest;
-
-                $totalRemainingAmount = round(bcadd($totalRemainingAmount, bcadd($remainingCapital, $remainingInterest, 4), 4), 2);
+                $totalRemainingAmount = round(bcadd($remainingAmountsByLoan['capital'], $remainingAmountsByLoan['interest'], 4), 2);
             }
 
             if ($this->isDebtCollectionFeeDueToBorrower($debtCollectionMission->getIdProject())) {

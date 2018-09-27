@@ -2,7 +2,7 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{AcceptationsLegalDocs, Clients, Companies, Elements, ProjectCgv, Projects, Settings, UniversignEntityInterface};
@@ -16,7 +16,9 @@ class TermsOfSaleManager
     const EXCEPTION_CODE_INVALID_PHONE_NUMBER = 2;
     const EXCEPTION_CODE_PDF_FILE_NOT_FOUND   = 3;
 
-    /** @var EntityManager */
+    const ID_TREE_ROOT_SECTION_LENDER_TOS = 43;
+
+    /** @var EntityManagerInterface */
     private $entityManager;
     /** @var MailerManager */
     private $mailerManager;
@@ -30,20 +32,20 @@ class TermsOfSaleManager
     private $locale;
 
     /**
-     * @param EntityManager         $entityManager
-     * @param MailerManager         $mailerManager
-     * @param TokenStorageInterface $tokenStorage
-     * @param RequestStack          $requestStack
-     * @param string                $rootDirectory
-     * @param string                $locale
+     * @param EntityManagerInterface $entityManager
+     * @param MailerManager          $mailerManager
+     * @param TokenStorageInterface  $tokenStorage
+     * @param RequestStack           $requestStack
+     * @param string                 $rootDirectory
+     * @param string                 $defaultLocale
      */
     public function __construct(
-        EntityManager $entityManager,
+        EntityManagerInterface $entityManager,
         MailerManager $mailerManager,
         TokenStorageInterface $tokenStorage,
         RequestStack $requestStack,
         string $rootDirectory,
-        string $locale
+        string $defaultLocale
     )
     {
         $this->entityManager = $entityManager;
@@ -51,7 +53,7 @@ class TermsOfSaleManager
         $this->tokenStorage  = $tokenStorage;
         $this->requestStack  = $requestStack;
         $this->rootDirectory = $rootDirectory;
-        $this->locale        = $locale;
+        $this->locale        = $defaultLocale;
     }
 
     /**

@@ -2,16 +2,12 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
-use Doctrine\ORM\{
-    EntityManager, EntityRepository, NonUniqueResultException, NoResultException, OptimisticLockException
-};
+use Doctrine\ORM\{EntityManagerInterface, EntityRepository, NonUniqueResultException, NoResultException, OptimisticLockException};
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\Translation\TranslatorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AcceptedBids, Autobid, Bids, BidsLogs, Clients, ClientsGestionTypeNotif, ClientsStatus, Notifications, Projects, ProjectsStatus, RepaymentType, Settings, TaxType, UnderlyingContract,
-    UnderlyingContractAttributeType, Users, Wallet, WalletType
-};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{AcceptedBids, Autobid, Bids, BidsLogs, Clients, ClientsGestionTypeNotif, ClientsStatus, Notifications, Projects, ProjectsStatus, RepaymentType, Settings,
+    TaxType, UnderlyingContract, UnderlyingContractAttributeType, Users, Wallet, WalletType};
 use Unilend\Bundle\CoreBusinessBundle\Repository\WalletRepository;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\ContractAttributeManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductManager;
@@ -23,7 +19,7 @@ class ProjectLifecycleManager
 {
     /** @var EntityManagerSimulator */
     private $entityManagerSimulator;
-    /** @var EntityManager */
+    /** @var EntityManagerInterface */
     private $entityManager;
     /** @var BidManager */
     private $bidManager;
@@ -68,7 +64,7 @@ class ProjectLifecycleManager
 
     /**
      * @param EntityManagerSimulator          $entityManagerSimulator
-     * @param EntityManager                   $entityManager
+     * @param EntityManagerInterface          $entityManager
      * @param BidManager                      $bidManager
      * @param LoanManager                     $loanManager
      * @param NotificationManager             $notificationManager
@@ -92,7 +88,7 @@ class ProjectLifecycleManager
      */
     public function __construct(
         EntityManagerSimulator $entityManagerSimulator,
-        EntityManager $entityManager,
+        EntityManagerInterface $entityManager,
         BidManager $bidManager,
         LoanManager $loanManager,
         NotificationManager $notificationManager,
@@ -138,9 +134,12 @@ class ProjectLifecycleManager
     }
 
     /**
-     * @param LoggerInterface $logger
+     * @required
+     *
+     * @param LoggerInterface|null $logger
+     *
      */
-    public function setLogger(LoggerInterface $logger): void
+    public function setLogger(?LoggerInterface $logger): void
     {
         $this->logger = $logger;
     }

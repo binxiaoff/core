@@ -2,7 +2,7 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{ClientAtypicalOperation, Clients, Operation, OperationType, Pays, Users, VigilanceRule};
 
@@ -18,7 +18,7 @@ class VigilanceRuleManager
     const VIGILANCE_DEPOSIT_FOLLOWED_BY_WITHDRAW_AMOUNT    = 5000;
 
     /**
-     * @var EntityManager
+     * @var EntityManagerInterface
      */
     private $entityManager;
 
@@ -32,12 +32,11 @@ class VigilanceRuleManager
     private $logger;
 
     /**
-     * VigilanceRuleManager constructor.
-     * @param EntityManager                $entityManager
+     * @param EntityManagerInterface       $entityManager
      * @param ClientVigilanceStatusManager $clientVigilanceStatusManager
      * @param LoggerInterface              $logger
      */
-    public function __construct(EntityManager $entityManager, ClientVigilanceStatusManager $clientVigilanceStatusManager, LoggerInterface $logger)
+    public function __construct(EntityManagerInterface $entityManager, ClientVigilanceStatusManager $clientVigilanceStatusManager, LoggerInterface $logger)
     {
         $this->entityManager                = $entityManager;
         $this->clientVigilanceStatusManager = $clientVigilanceStatusManager;
