@@ -2,7 +2,7 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service\RiskDataMonitoring;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{Companies, CompanyStatus, ProjectsStatus, RiskDataMonitoring};
 
@@ -26,7 +26,7 @@ class MonitoringCycleManager
         CompanyStatus::STATUS_COMPULSORY_LIQUIDATION
     ];
 
-    /** @var EntityManager */
+    /** @var EntityManagerInterface */
     private $entityManager;
     /** @var EulerHermesManager */
     private $eulerHermesManager;
@@ -40,20 +40,20 @@ class MonitoringCycleManager
     private $logger;
 
     /**
-     * @param EntityManager      $entityManager
-     * @param EulerHermesManager $eulerHermesManager
-     * @param AltaresManager     $altaresManager
-     * @param DataWriter         $dataWriter
-     * @param MonitoringManager  $monitoringManager
-     * @param LoggerInterface    $logger
+     * @param EntityManagerInterface $entityManager
+     * @param EulerHermesManager     $eulerHermesManager
+     * @param AltaresManager         $altaresManager
+     * @param DataWriter             $dataWriter
+     * @param MonitoringManager      $monitoringManager
+     * @param LoggerInterface        $wsClientLogger
      */
     public function __construct(
-        EntityManager $entityManager,
+        EntityManagerInterface $entityManager,
         EulerHermesManager $eulerHermesManager,
         AltaresManager $altaresManager,
         DataWriter $dataWriter,
         MonitoringManager $monitoringManager,
-        LoggerInterface $logger
+        LoggerInterface $wsClientLogger
     )
     {
         $this->entityManager      = $entityManager;
@@ -61,7 +61,7 @@ class MonitoringCycleManager
         $this->altaresManager     = $altaresManager;
         $this->dataWriter         = $dataWriter;
         $this->monitoringManager  = $monitoringManager;
-        $this->logger             = $logger;
+        $this->logger             = $wsClientLogger;
     }
 
     /**

@@ -2,7 +2,7 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service\RiskDataMonitoring;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{Companies, CompanyRating, CompanyRatingHistory};
 use Unilend\Bundle\WSClientBundle\Entity\Euler\CompanyRating as EulerCompanyRating;
@@ -12,7 +12,7 @@ class EulerHermesManager
 {
     const PROVIDER_NAME = 'euler_hermes';
 
-    /** @var EntityManager */
+    /** @var EntityManagerInterface */
     private $entityManager;
     /** @var EulerHermesWsClient */
     private $eulerHermesManager;
@@ -24,25 +24,25 @@ class EulerHermesManager
     private $logger;
 
     /**
-     * @param EntityManager       $entityManager
-     * @param EulerHermesWsClient $eulerHermesManager
-     * @param DataWriter          $dataWriter
-     * @param MonitoringManager   $monitoringManager
-     * @param LoggerInterface     $logger
+     * @param EntityManagerInterface $entityManager
+     * @param EulerHermesWsClient    $eulerHermesManager
+     * @param DataWriter             $dataWriter
+     * @param MonitoringManager      $monitoringManager
+     * @param LoggerInterface        $wsClientLogger
      */
     public function __construct(
-        EntityManager $entityManager,
+        EntityManagerInterface $entityManager,
         EulerHermesWsClient $eulerHermesManager,
         DataWriter $dataWriter,
         MonitoringManager $monitoringManager,
-        LoggerInterface $logger
+        LoggerInterface $wsClientLogger
     )
     {
         $this->entityManager      = $entityManager;
         $this->eulerHermesManager = $eulerHermesManager;
         $this->dataWriter         = $dataWriter;
         $this->monitoringManager  = $monitoringManager;
-        $this->logger             = $logger;
+        $this->logger             = $wsClientLogger;
     }
 
     /**

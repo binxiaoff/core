@@ -3,7 +3,7 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\DBAL\DBALException;
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Asset\Packages;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{BankAccount, ClientAddress, Clients, ClientsStatus, CompanyAddress, Users, WalletType};
@@ -17,7 +17,7 @@ class LenderValidationManager
     const MIN_LEGAL_AGE                = 18;
     const MAX_AGE_AUTOMATIC_VALIDATION = 80;
 
-    /** @var EntityManager */
+    /** @var EntityManagerInterface */
     private $entityManager;
     /** @var ClientStatusManager */
     private $clientStatusManager;
@@ -45,7 +45,7 @@ class LenderValidationManager
     private $frontUrl;
 
     /**
-     * @param EntityManager           $entityManager
+     * @param EntityManagerInterface  $entityManager
      * @param ClientStatusManager     $clientStatusManager
      * @param WelcomeOfferManager     $welcomeOfferManager
      * @param SponsorshipManager      $sponsorshipManager
@@ -57,11 +57,10 @@ class LenderValidationManager
      * @param \Swift_Mailer           $mailer
      * @param LoggerInterface         $logger
      * @param Packages                $assetsPackages
-     * @param string                  $schema
-     * @param string                  $frontHost
+     * @param string                  $frontUrl
      */
     public function __construct(
-        EntityManager $entityManager,
+        EntityManagerInterface $entityManager,
         ClientStatusManager $clientStatusManager,
         WelcomeOfferManager $welcomeOfferManager,
         SponsorshipManager $sponsorshipManager,
@@ -73,8 +72,7 @@ class LenderValidationManager
         \Swift_Mailer $mailer,
         LoggerInterface $logger,
         Packages $assetsPackages,
-        string $schema,
-        string $frontHost
+        string $frontUrl
     )
     {
         $this->entityManager       = $entityManager;
@@ -89,7 +87,7 @@ class LenderValidationManager
         $this->mailer              = $mailer;
         $this->logger              = $logger;
         $this->staticUrl           = $assetsPackages->getUrl('');
-        $this->frontUrl            = $schema . '://' . $frontHost;
+        $this->frontUrl            = $frontUrl;
     }
 
     /**

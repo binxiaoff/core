@@ -2,17 +2,20 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
     Users, UsersTypes, Zones
 };
 
 class BackOfficeUserManager
 {
-    /** @var EntityManager */
+    /** @var EntityManagerInterface */
     private $entityManager;
 
-    public function __construct(EntityManager $entityManager)
+    /**
+     * @param EntityManagerInterface $entityManager
+     */
+    public function __construct(EntityManagerInterface $entityManager)
     {
         $this->entityManager = $entityManager;
     }

@@ -2,7 +2,7 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Knp\Snappy\GeneratorInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -29,7 +29,7 @@ class BeneficialOwnerManager
 
     const BENEFICIAL_OWNER_DECLARATION_EXEMPTED_LEGAL_FORM_CODES = [1100, 1200, 1300, 1500, 1600, 1700, 1900];
 
-    /** @var EntityManager */
+    /** @var EntityManagerInterface */
     private $entityManager;
     /** @var GeneratorInterface $snappy */
     private $snappy;
@@ -47,16 +47,16 @@ class BeneficialOwnerManager
     private $logger;
 
     /**
-     * @param EntityManager      $entityManager
-     * @param GeneratorInterface $snappy
-     * @param Twig_Environment   $twig
-     * @param RouterInterface    $router
-     * @param UniversignManager  $universignManager
-     * @param AttachmentManager  $attachmentManager
-     * @param string             $protectedPath
+     * @param EntityManagerInterface $entityManager
+     * @param GeneratorInterface     $snappy
+     * @param Twig_Environment       $twig
+     * @param RouterInterface        $router
+     * @param UniversignManager      $universignManager
+     * @param AttachmentManager      $attachmentManager
+     * @param string                 $protectedPath
      */
     public function __construct(
-        EntityManager $entityManager,
+        EntityManagerInterface $entityManager,
         GeneratorInterface $snappy,
         Twig_Environment $twig,
         RouterInterface $router,

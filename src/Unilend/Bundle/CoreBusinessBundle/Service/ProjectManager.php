@@ -2,7 +2,7 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
-use Doctrine\ORM\{EntityManager, NonUniqueResultException, NoResultException};
+use Doctrine\ORM\{EntityManagerInterface, NonUniqueResultException, NoResultException};
 use Unilend\Bundle\CoreBusinessBundle\Entity\{Bids, CompanyStatus, Factures, Loans, Projects, TaxType, Virements};
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 
@@ -10,12 +10,17 @@ class ProjectManager
 {
     /** @var EntityManagerSimulator */
     private $entityManagerSimulator;
-    /** @var EntityManager */
+    /** @var EntityManagerInterface */
     private $entityManager;
     /** @var BidManager */
     private $bidManager;
 
-    public function __construct(EntityManagerSimulator $entityManagerSimulator, EntityManager $entityManager, BidManager $bidManager)
+    /**
+     * @param EntityManagerSimulator $entityManagerSimulator
+     * @param EntityManagerInterface $entityManager
+     * @param BidManager             $bidManager
+     */
+    public function __construct(EntityManagerSimulator $entityManagerSimulator, EntityManagerInterface $entityManager, BidManager $bidManager)
     {
         $this->entityManagerSimulator = $entityManagerSimulator;
         $this->entityManager          = $entityManager;

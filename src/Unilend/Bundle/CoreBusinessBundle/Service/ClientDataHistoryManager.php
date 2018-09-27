@@ -2,17 +2,15 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Translation\TranslatorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AddressType, Attachment, Clients, Companies, WalletType
-};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, Attachment, Clients, Companies, WalletType};
 use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessageProvider;
 
 class ClientDataHistoryManager
 {
-    /** @var EntityManager */
+    /** @var EntityManagerInterface */
     private $entityManager;
     /** @var TranslatorInterface */
     private $translator;
@@ -24,14 +22,14 @@ class ClientDataHistoryManager
     private $mailer;
 
     /**
-     * @param EntityManager           $entityManager
+     * @param EntityManagerInterface  $entityManager
      * @param TranslatorInterface     $translator
      * @param LoggerInterface         $logger
      * @param TemplateMessageProvider $messageProvider
      * @param \Swift_Mailer           $mailer
      */
     public function __construct(
-        EntityManager $entityManager,
+        EntityManagerInterface $entityManager,
         TranslatorInterface $translator,
         LoggerInterface $logger,
         TemplateMessageProvider $messageProvider,

@@ -3,7 +3,7 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Service\Repayment;
 
 use Doctrine\DBAL\Connection;
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Echeanciers;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRepaymentTask;
@@ -15,7 +15,7 @@ use Unilend\Bundle\CoreBusinessBundle\Service\ProjectStatusManager;
 
 class ProjectEarlyRepaymentManager
 {
-    /** @var EntityManager */
+    /** @var EntityManagerInterface */
     private $entityManager;
     /** @var OperationManager */
     private $operationManager;
@@ -29,7 +29,7 @@ class ProjectEarlyRepaymentManager
     private $logger;
 
     /**
-     * @param EntityManager                      $entityManager
+     * @param EntityManagerInterface             $entityManager
      * @param OperationManager                   $operationManager
      * @param ProjectStatusManager               $projectStatusManager
      * @param ProjectRepaymentTaskManager        $projectRepaymentTaskManager
@@ -37,7 +37,7 @@ class ProjectEarlyRepaymentManager
      * @param LoggerInterface                    $logger
      */
     public function __construct(
-        EntityManager $entityManager,
+        EntityManagerInterface $entityManager,
         OperationManager $operationManager,
         ProjectStatusManager $projectStatusManager,
         ProjectRepaymentTaskManager $projectRepaymentTaskManager,

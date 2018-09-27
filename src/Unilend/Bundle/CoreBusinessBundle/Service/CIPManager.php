@@ -2,11 +2,9 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Translation\TranslatorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Bids, Clients, UnderlyingContract, UnderlyingContractAttributeType, Wallet, WalletType
-};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{Bids, Clients, UnderlyingContract, UnderlyingContractAttributeType, Wallet, WalletType};
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\ContractManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
@@ -33,7 +31,7 @@ class CIPManager
     /** @var TranslatorInterface */
     private $translator;
 
-    /** @var EntityManager */
+    /** @var EntityManagerInterface */
     private $entityManager;
 
     /**
@@ -41,14 +39,14 @@ class CIPManager
      * @param ContractManager        $contractManager
      * @param EntityManagerSimulator $entityManagerSimulator
      * @param TranslatorInterface    $translator
-     * @param EntityManager          $entityManager
+     * @param EntityManagerInterface $entityManager
      */
     public function __construct(
         ProductManager $productManager,
         ContractManager $contractManager,
         EntityManagerSimulator $entityManagerSimulator,
         TranslatorInterface $translator,
-        EntityManager $entityManager
+        EntityManagerInterface $entityManager
     )
     {
         $this->productManager         = $productManager;

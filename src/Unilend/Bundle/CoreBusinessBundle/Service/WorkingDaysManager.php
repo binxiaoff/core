@@ -12,8 +12,6 @@ class WorkingDaysManager
     private $logger;
 
     /**
-     * WorkingDaysManager constructor.
-     *
      * @param LoggerInterface $logger
      */
     public function __construct(LoggerInterface $logger)

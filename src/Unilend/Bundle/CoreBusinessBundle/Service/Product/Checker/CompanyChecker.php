@@ -2,10 +2,8 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service\Product\Checker;
 
-use Doctrine\ORM\EntityManager;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Companies, Product, ProductAttributeType, ProjectsStatus
-};
+use Doctrine\ORM\EntityManagerInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{Companies, Product, ProductAttributeType, ProjectsStatus};
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductAttributeManager;
 
 trait CompanyChecker
@@ -101,11 +99,11 @@ trait CompanyChecker
      * @param Companies               $company
      * @param Product                 $product
      * @param ProductAttributeManager $productAttributeManager
-     * @param EntityManager           $entityManager
+     * @param EntityManagerInterface  $entityManager
      *
      * @return bool|null
      */
-    private function isEligibleForMaxXerfiScore(Companies $company, Product $product, ProductAttributeManager $productAttributeManager, EntityManager $entityManager)
+    private function isEligibleForMaxXerfiScore(Companies $company, Product $product, ProductAttributeManager $productAttributeManager, EntityManagerInterface $entityManager)
     {
         $maxXerfiScore = $productAttributeManager->getProductAttributesByType($product, ProductAttributeType::MAX_XERFI_SCORE);
 
@@ -129,11 +127,11 @@ trait CompanyChecker
      * @param Companies               $company
      * @param Product                 $product
      * @param ProductAttributeManager $productAttributeManager
-     * @param EntityManager           $entityManager
+     * @param EntityManagerInterface  $entityManager
      *
      * @return bool
      */
-    private function isEligibleForNoBlendProject(Companies $company, Product $product, ProductAttributeManager $productAttributeManager, EntityManager $entityManager)
+    private function isEligibleForNoBlendProject(Companies $company, Product $product, ProductAttributeManager $productAttributeManager, EntityManagerInterface $entityManager)
     {
         $noInProgressBlendSince = $productAttributeManager->getProductAttributesByType($product, ProductAttributeType::NO_IN_PROGRESS_BLEND_PROJECT_DAYS);
 
@@ -176,11 +174,11 @@ trait CompanyChecker
      * @param Companies               $company
      * @param Product                 $product
      * @param ProductAttributeManager $productAttributeManager
-     * @param EntityManager           $entityManager
+     * @param EntityManagerInterface  $entityManager
      *
      * @return bool
      */
-    private function isEligibleForNoUnilendProjectIncident(Companies $company, Product $product, ProductAttributeManager $productAttributeManager, EntityManager $entityManager)
+    private function isEligibleForNoUnilendProjectIncident(Companies $company, Product $product, ProductAttributeManager $productAttributeManager, EntityManagerInterface $entityManager)
     {
         $noUnilendIncidentSince = $productAttributeManager->getProductAttributesByType($product, ProductAttributeType::NO_INCIDENT_UNILEND_PROJECT_DAYS);
         if (empty($noUnilendIncidentSince)) {
@@ -215,11 +213,11 @@ trait CompanyChecker
      * @param Companies               $company
      * @param Product                 $product
      * @param ProductAttributeManager $productAttributeManager
-     * @param EntityManager           $entityManager
+     * @param EntityManagerInterface  $entityManager
      *
      * @return bool
      */
-    private function isEligibleForNoBlendProjectIncident(Companies $company, Product $product, ProductAttributeManager $productAttributeManager, EntityManager $entityManager)
+    private function isEligibleForNoBlendProjectIncident(Companies $company, Product $product, ProductAttributeManager $productAttributeManager, EntityManagerInterface $entityManager)
     {
         $noBlendIncidentSince = $productAttributeManager->getProductAttributesByType($product, ProductAttributeType::NO_INCIDENT_BLEND_PROJECT_DAYS);
         if (empty($noBlendIncidentSince)) {

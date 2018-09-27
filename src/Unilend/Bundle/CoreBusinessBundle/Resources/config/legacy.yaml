@@ -1,0 +1,99 @@
+# remove these if/when you are not fetching these directly
+# from the container via $container->get()
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+        public: true
+
+    # aliases so that the old service ids can still be accessed
+
+    unilend.service.address_manager: '@Unilend\Bundle\CoreBusinessBundle\Service\AddressManager'
+    unilend.service.attachment_manager: '@Unilend\Bundle\CoreBusinessBundle\Service\AttachmentManager'
+    unilend.service.autobid_settings_manager: '@Unilend\Bundle\CoreBusinessBundle\Service\AutoBidSettingsManager'
+    unilend.service.back_office_user_manager: '@Unilend\Bundle\CoreBusinessBundle\Service\BackOfficeUserManager'
+    unilend.service.bank_account_manager: '@Unilend\Bundle\CoreBusinessBundle\Service\BankAccountManager'
+    unilend.service.bdf_loans_declaration_manager: '@Unilend\Bundle\CoreBusinessBundle\Service\BdfLoansDeclarationManager'
+    unilend.service.beneficial_owner_manager: '@Unilend\Bundle\CoreBusinessBundle\Service\BeneficialOwnerManager'
+    unilend.service.bid_manager: '@Unilend\Bundle\CoreBusinessBundle\Service\BidManager'
+    unilend.service.borrower_manager: '@Unilend\Bundle\CoreBusinessBundle\Service\BorrowerManager'
+    unilend.service.borrower_operations_manager: '@Unilend\Bundle\CoreBusinessBundle\Service\BorrowerOperationsManager'
+    unilend.service.client_vigilance_status_manager: '@Unilend\Bundle\CoreBusinessBundle\Service\ClientVigilanceStatusManager'
+    unilend.service.cip_manager: '@Unilend\Bundle\CoreBusinessBundle\Service\CIPManager'
+    unilend.service.client_creation_manager: '@Unilend\Bundle\CoreBusinessBundle\Service\ClientCreationManager'
+    unilend.service.client_manager: '@Unilend\Bundle\CoreBusinessBundle\Service\ClientManager'
+    unilend.service.client_settings_manager: '@Unilend\Bundle\CoreBusinessBundle\Service\ClientSettingsManager'
+    unilend.service.client_status_manager: '@Unilend\Bundle\CoreBusinessBundle\Service\ClientStatusManager'
+    unilend.service.company_balance_sheet_manager: '@Unilend\Bundle\CoreBusinessBundle\Service\CompanyBalanceSheetManager'
+    unilend.service.company_manager: '@Unilend\Bundle\CoreBusinessBundle\Service\CompanyManager'
+    unilend.service.debt_collection_mission_manager: '@Unilend\Bundle\CoreBusinessBundle\Service\DebtCollectionMissionManager'
+    unilend.service.ekomi: '@Unilend\Bundle\CoreBusinessBundle\Service\Ekomi'
+    unilend.service.eligibility.bulk_company_check_manager: '@Unilend\Bundle\CoreBusinessBundle\Service\BulkCompanyCheckManager'
+    unilend.service.eligibility.company_validator: '@Unilend\Bundle\CoreBusinessBundle\Service\Eligibility\Validator\CompanyValidator'
+    unilend.service.eligibility.eligibility_manager: '@Unilend\Bundle\CoreBusinessBundle\Service\Eligibility\EligibilityManager'
+    unilend.service.email_manager: '@Unilend\Bundle\CoreBusinessBundle\Service\MailerManager'
+    unilend.service.entity_manager: '@Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager'
+    unilend.service.external_data_manager: '@Unilend\Bundle\CoreBusinessBundle\Service\ExternalDataManager'
+    unilend.service.google_recaptcha_manager: '@Unilend\Bundle\CoreBusinessBundle\Service\GoogleRecaptchaManager'
+    unilend.service.ifu_manager: '@Unilend\Bundle\CoreBusinessBundle\Service\IfuManager'
+    unilend.service.invoice_manager: '@Unilend\Bundle\CoreBusinessBundle\Service\InvoiceManager'
+    unilend.service.irr_manager: '@Unilend\Bundle\CoreBusinessBundle\Service\IRRManager'
+    unilend.service.lender_manager: '@Unilend\Bundle\CoreBusinessBundle\Service\LenderManager'
+    unilend.service.lender_operations_manager: '@Unilend\Bundle\CoreBusinessBundle\Service\LenderOperationsManager'
+    unilend.service.lender_validation_manager: '@Unilend\Bundle\CoreBusinessBundle\Service\LenderValidationManager'
+    unilend.service.loan_manager: '@Unilend\Bundle\CoreBusinessBundle\Service\LoanManager'
+    unilend.service.location_manager: '@Unilend\Bundle\CoreBusinessBundle\Service\LocationManager'
+    unilend.service.notification_manager: '@Unilend\Bundle\CoreBusinessBundle\Service\NotificationManager'
+    unilend.service.operation_manager: '@Unilend\Bundle\CoreBusinessBundle\Service\OperationManager'
+    unilend.service.partner_manager: '@Unilend\Bundle\CoreBusinessBundle\Service\PartnerManager'
+    unilend.service.payline_manager: '@Unilend\Bundle\CoreBusinessBundle\Service\PaylineManager'
+    unilend.service.project_close_out_netting_manager: '@Unilend\Bundle\CoreBusinessBundle\Service\ProjectCloseOutNettingManager'
+    unilend.service.project_lifecycle_manager: '@Unilend\Bundle\CoreBusinessBundle\Service\ProjectLifecycleManager'
+    unilend.service.project_manager: '@Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager'
+    unilend.service.project_rate_settings_manager: '@Unilend\Bundle\CoreBusinessBundle\Service\ProjectRateSettingsManager'
+    unilend.service.project_rating_manager: '@Unilend\Bundle\CoreBusinessBundle\Service\ProjectRatingManager'
+    unilend.service.project_request_manager: '@Unilend\Bundle\CoreBusinessBundle\Service\ProjectRequestManager'
+    unilend.service.project_status_manager: '@Unilend\Bundle\CoreBusinessBundle\Service\ProjectStatusManager'
+    unilend.service.project_status_notification_sender: '@Unilend\Bundle\CoreBusinessBundle\Service\ProjectStatusNotificationSender'
+    unilend.service.risk_data_altares_manager: '@Unilend\Bundle\CoreBusinessBundle\Service\RiskDataMonitoring\AltaresManager'
+    unilend.service.risk_data_euler_hermes_manager: '@Unilend\Bundle\CoreBusinessBundle\Service\RiskDataMonitoring\EulerHermesManager'
+    unilend.service.risk_data_monitoring_cycle_manager: '@Unilend\Bundle\CoreBusinessBundle\Service\RiskDataMonitoring\MonitoringCycleManager'
+    unilend.service.risk_data_monitoring_manager: '@Unilend\Bundle\CoreBusinessBundle\Service\RiskDataMonitoring\MonitoringManager'
+    unilend.service.salesforce: '@Unilend\Bundle\CoreBusinessBundle\Service\SalesforceManager'
+    unilend.service.search_service: '@Unilend\Bundle\CoreBusinessBundle\Service\SearchService'
+    unilend.service.slack_manager: '@Unilend\Bundle\CoreBusinessBundle\Service\SlackManager'
+    unilend.service.sponsorship_manager: '@Unilend\Bundle\CoreBusinessBundle\Service\SponsorshipManager'
+    unilend.service.statistics_manager: '@Unilend\Bundle\CoreBusinessBundle\Service\StatisticsManager'
+    unilend.service.terms_of_sale_manager: '@Unilend\Bundle\CoreBusinessBundle\Service\TermsOfSaleManager'
+    unilend.service.vigilance_rule_manager: '@Unilend\Bundle\CoreBusinessBundle\Service\VigilanceRuleManager'
+    unilend.service.welcome_offer_manager: '@Unilend\Bundle\CoreBusinessBundle\Service\WelcomeOfferManager'
+    unilend.service.wire_transfer_out_manager: '@Unilend\Bundle\CoreBusinessBundle\Service\WireTransferOutManager'
+    unilend.service.ws_monitoring_manager: '@Unilend\Bundle\CoreBusinessBundle\Service\WsMonitoringManager'
+
+    unilend.service_product.product_manager: '@Unilend\Bundle\CoreBusinessBundle\Service\PartnerProductManager'
+    unilend.service_product_contract.contract_manager: '@Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\ContractManager'
+
+    unilend.service_repayment.project_repayment_manager: '@Unilend\Bundle\CoreBusinessBundle\Service\Repayment\ProjectRepaymentManager'
+    unilend.service_repayment.project_early_repayment_manager: '@Unilend\Bundle\CoreBusinessBundle\Service\Repayment\ProjectEarlyRepaymentManager'
+    unilend.service_repayment.project_repayment_notification_sender: '@Unilend\Bundle\CoreBusinessBundle\Service\Repayment\ProjectRepaymentNotificationSender'
+    unilend.service_repayment.project_repayment_task_manager: '@Unilend\Bundle\CoreBusinessBundle\Service\Repayment\ProjectRepaymentTaskManager'
+    unilend.service_repayment.project_payment_manager: '@Unilend\Bundle\CoreBusinessBundle\Service\Repayment\ProjectPaymentManager'
+    unilend.service_repayment.project_close_out_netting_payment_manager: '@Unilend\Bundle\CoreBusinessBundle\Service\Repayment\ProjectCloseOutNettingPaymentManager'
+    unilend.service_repayment.project_close_out_netting_repayment_manager: '@Unilend\Bundle\CoreBusinessBundle\Service\Repayment\ProjectCloseOutNettingRepaymentManager'
+
+    # move these services to services.yaml, once the related deprecations are fixed
+    Unilend\Bundle\CoreBusinessBundle\Service\Document\LoanContractGenerator:
+        $protectedPath: '%path.protected%'
+        $staticPath: '%path.static%'
+        $numberFormatter: '@number_formatter'
+        $currencyFormatter: '@currency_formatter'
+
+    Unilend\Bundle\CoreBusinessBundle\Service\NewsletterManager:
+        $listId: '%mailchimp.list_id%'
+
+    # define these services as public so that they can still be accessed via $container->get()
+    Unilend\Bundle\CoreBusinessBundle\Service\ClientAuditer: ~
+    Unilend\Bundle\CoreBusinessBundle\Service\ClientDataHistoryManager: ~
+    Unilend\Bundle\CoreBusinessBundle\Service\GreenPointValidationManager: ~
+    Unilend\Bundle\CoreBusinessBundle\Service\Repayment\ProjectRepaymentScheduleManager: ~
+    Unilend\Bundle\CoreBusinessBundle\Service\WorkingDaysManager: ~

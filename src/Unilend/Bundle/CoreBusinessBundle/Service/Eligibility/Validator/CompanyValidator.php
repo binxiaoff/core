@@ -8,19 +8,17 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service\Eligibility\Validator;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Companies, ProjectEligibilityAssessment, ProjectEligibilityRule, ProjectEligibilityRuleSet, ProjectRejectionReason, Projects, ProjectsNotes, ProjectsStatus, Xerfi
-};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{Companies, ProjectEligibilityAssessment, ProjectEligibilityRule, ProjectEligibilityRuleSet, ProjectRejectionReason, Projects, ProjectsNotes,
+    ProjectsStatus, Xerfi};
 use Unilend\Bundle\CoreBusinessBundle\Service\ExternalDataManager;
-use Unilend\Bundle\WSClientBundle\Entity\{
-    Altares\CompanyBalanceSheet, Altares\CompanyIdentityDetail, Euler\CompanyRating as EulerHermesCompanyRating, Infolegale\AnnouncementDetails, Infolegale\AnnouncementEvent, Infolegale\ContentiousParticipant
-};
+use Unilend\Bundle\WSClientBundle\Entity\{Altares\CompanyBalanceSheet, Altares\CompanyIdentityDetail, Euler\CompanyRating as EulerHermesCompanyRating, Infolegale\AnnouncementDetails,
+    Infolegale\AnnouncementEvent, Infolegale\ContentiousParticipant};
 
 class CompanyValidator
 {
-    /** @var EntityManager */
+    /** @var EntityManagerInterface */
     private $entityManager;
     /** @var ExternalDataManager */
     private $externalDataManager;
@@ -51,11 +49,11 @@ class CompanyValidator
     ];
 
     /**
-     * @param EntityManager       $entityManager
-     * @param ExternalDataManager $externalDataManager
-     * @param LoggerInterface     $logger
+     * @param EntityManagerInterface $entityManager
+     * @param ExternalDataManager    $externalDataManager
+     * @param LoggerInterface        $logger
      */
-    public function __construct(EntityManager $entityManager, ExternalDataManager $externalDataManager, LoggerInterface $logger)
+    public function __construct(EntityManagerInterface $entityManager, ExternalDataManager $externalDataManager, LoggerInterface $logger)
     {
         $this->entityManager       = $entityManager;
         $this->externalDataManager = $externalDataManager;

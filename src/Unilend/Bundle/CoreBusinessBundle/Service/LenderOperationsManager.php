@@ -3,14 +3,10 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Box\Spout\Common\Type;
-use Box\Spout\Writer\{
-    AbstractWriter, Style\Border, Style\BorderBuilder, Style\Color, Style\StyleBuilder, WriterFactory, XLSX\Writer
-};
-use Doctrine\ORM\EntityManager;
+use Box\Spout\Writer\{AbstractWriter, Style\Border, Style\BorderBuilder, Style\Color, Style\StyleBuilder, WriterFactory, XLSX\Writer};
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Translation\TranslatorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Operation, OperationSubType, OperationType, Wallet, WalletType
-};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{Operation, OperationSubType, OperationType, Wallet, WalletType};
 
 class LenderOperationsManager
 {
@@ -89,16 +85,16 @@ class LenderOperationsManager
     const FILTER_OFFERS             = 5;
     const FILTER_REPAYMENT          = 6;
 
-    /** @var EntityManager */
+    /** @var EntityManagerInterface */
     private $entityManager;
     /** @var TranslatorInterface */
     private $translator;
 
     /**
-     * @param EntityManager       $entityManager
-     * @param TranslatorInterface $translator
+     * @param EntityManagerInterface $entityManager
+     * @param TranslatorInterface    $translator
      */
-    public function __construct(EntityManager $entityManager, TranslatorInterface $translator)
+    public function __construct(EntityManagerInterface $entityManager, TranslatorInterface $translator)
     {
         $this->entityManager = $entityManager;
         $this->translator    = $translator;
