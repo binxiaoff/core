@@ -133,6 +133,10 @@ class dossiersController extends bootstrap
             }
         }
 
+        if (isset($this->searchResult)) {
+            $this->projectNotesRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsNotes');
+        }
+
         /** @var BackOfficeUserManager $backOfficeUserManager */
         $backOfficeUserManager    = $this->get('unilend.service.back_office_user_manager');
         $this->isRiskUser         = $backOfficeUserManager->isUserGroupRisk($this->userEntity);

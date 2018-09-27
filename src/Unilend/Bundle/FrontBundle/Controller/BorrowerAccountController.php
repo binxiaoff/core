@@ -10,7 +10,8 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Routing\Exception\RouteNotFoundException;
 use Symfony\Component\Security\Core\User\UserInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{Clients, Companies, Factures, OperationSubType, OperationType, Projects, ProjectsStatus, Users, Virements, Wallet, WalletType};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{Clients, ClientsMandats, Companies, Factures, OperationSubType, OperationType, Projects, ProjectsPouvoir, ProjectsStatus, Users, Virements, Wallet,
+    WalletType};
 use Unilend\Bundle\CoreBusinessBundle\Service\{BorrowerOperationsManager, ProjectStatusManager};
 use Unilend\Bundle\FrontBundle\Form\{BorrowerContactType, SimpleProjectType};
 
@@ -225,6 +226,27 @@ class BorrowerAccountController extends Controller
             }
         }
 
+        $proxiesByProject = [];
+        $proxies          = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsPouvoir')->findBy([
+            'idProject' => $projectsPostFunding,
+            'status'    => ProjectsPouvoir::STATUS_SIGNED
+        ]);
+
+        foreach ($proxies as $proxy) {
+            $proxiesByProject[$proxy->getIdProject()->getIdProject()] = $proxy;
+        }
+
+        // For performance purpose, load all signed mandates here instead of checking mandates associated to project in template
+        $mandatesByProject = [];
+        $mandates          = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsMandats')->findBy([
+            'idProject' => $projectsPostFunding,
+            'status'    => ClientsMandats::STATUS_SIGNED
+        ]);
+
+        foreach ($mandates as $mandate) {
+            $mandatesByProject[$mandate->getIdProject()->getIdProject()] = $mandate;
+        }
+
         $thirdPartyWireTransfersOuts = $entityManager->getRepository('UnilendCoreBusinessBundle:Virements')
             ->findWireTransferToThirdParty($client, [
                 Virements::STATUS_PENDING,
@@ -237,6 +259,8 @@ class BorrowerAccountController extends Controller
             'borrower_account/operations.html.twig', [
                 'default_filter_date'            => $defaultFilterDate,
                 'projects_ids'                   => $projectsIds,
+                'signedProxies'                  => $proxiesByProject,
+                'signedMandates'                 => $mandatesByProject,
                 'invoices'                       => $clientsInvoices,
                 'post_funding_projects'          => $projectsPostFunding,
                 'third_party_wire_transfer_outs' => $thirdPartyWireTransfersOuts,

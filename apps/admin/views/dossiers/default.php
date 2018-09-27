@@ -296,7 +296,8 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{Projects, ProjectsStatus};
                         <td><?= $project->getIdCommercial() && $project->getIdCommercial()->getIdUser() ? $project->getIdCommercial()->getFirstname() . ' ' . $project->getIdCommercial()->getName() : '' ?></td>
                         <td><?= $project->getIdAnalyste() && $project->getIdAnalyste()->getIdUser() ? $project->getIdAnalyste()->getFirstname() . ' ' . $project->getIdAnalyste()->getName() : '' ?></td>
                         <?php if ($this->isRiskUser) : ?>
-                            <td><?= $project->getNotes() && $project->getNotes()->getPreScoring() ? $project->getNotes()->getPreScoring() : '' ?></td>
+                            <?php $notes = $this->projectNotesRepository->findOneBy(['idProject' => $project]); ?>
+                            <td><?= $notes && $notes->getPreScoring() ? $notes->getPreScoring() : '' ?></td>
                         <?php endif; ?>
                         <?php if (false === empty($project->getComments())) : ?>
                             <td data-toggle="tooltip" class="tooltip" title="<?= htmlspecialchars($project->getComments()) ?>">oui</td>
