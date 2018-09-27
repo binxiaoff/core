@@ -3,7 +3,7 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Service\Document;
 
 use Doctrine\ORM\EntityManager;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{AcceptationsLegalDocs, AddressType, Elements, TreeElements, WalletType};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{AcceptationsLegalDocs, AddressType, ClientAddress, CompanyAddress, Elements, TreeElements, WalletType};
 use Knp\Snappy\Pdf;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Asset\Packages;
@@ -226,7 +226,7 @@ class LenderTermsOfSaleGenerator implements DocumentGeneratorInterface
             '[Nom]'                 => $accepted->getIdClient()->getNom(),
             '[date]'                => $accepted->getIdClient()->getNaissance()->format('d/m/Y'),
             '[ville_naissance]'     => $accepted->getIdClient()->getVilleNaissance(),
-            '[adresse_fiscale]'     => $clientAddress->getAddress() . ', ' . $clientAddress->getZip() . ', ' . $clientAddress->getCity() . ', ' . $clientAddress->getIdCountry()->getFr(),
+            '[adresse_fiscale]'     => $clientAddress instanceof ClientAddress ? $clientAddress->getAddress() . ', ' . $clientAddress->getZip() . ', ' . $clientAddress->getCity() . ', ' . $clientAddress->getIdCountry()->getFr() : '',
             '[date_validation_cgv]' => 'Sign&eacute; &eacute;lectroniquement le ' . $accepted->getAdded()->format('d/m/Y')
         ];
     }
@@ -258,7 +258,7 @@ class LenderTermsOfSaleGenerator implements DocumentGeneratorInterface
             '[Fonction]'            => $accepted->getIdClient()->getFonction(),
             '[Raison_sociale]'      => $company->getName(),
             '[SIREN]'               => $company->getSiren(),
-            '[adresse_fiscale]'     => $companyAddress->getAddress() . ', ' . $companyAddress->getZip() . ', ' . $companyAddress->getCity() . ', ' . $companyAddress->getIdCountry()->getFr(),
+            '[adresse_fiscale]'     => $companyAddress instanceof CompanyAddress ? $companyAddress->getAddress() . ', ' . $companyAddress->getZip() . ', ' . $companyAddress->getCity() . ', ' . $companyAddress->getIdCountry()->getFr() : '',
             '[date_validation_cgv]' => 'Sign&eacute; &eacute;lectroniquement le ' . $accepted->getAdded()->format('d/m/Y')
         ];
     }
