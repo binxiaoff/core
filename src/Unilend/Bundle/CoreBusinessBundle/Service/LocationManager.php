@@ -267,9 +267,9 @@ class LocationManager
      * @param string $postCode
      * @param string $city
      *
-     * @return bool|string
+     * @return null|string
      */
-    public function getInseeCode($postCode, $city)
+    public function getInseeCog($postCode, $city): ?string
     {
         $citiesInsee = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Villes')->findBy(['cp' => $postCode]);
 
@@ -283,7 +283,7 @@ class LocationManager
             }
         }
 
-        return false;
+        return null;
     }
 
     /**
