@@ -98,17 +98,23 @@ class dossiersController extends bootstrap
                 exit;
             }
 
-            $status        = isset($_POST['status']) && filter_var($_POST['status'], FILTER_VALIDATE_INT) ? [$_POST['status']] : null;
-            $siren         = isset($_POST['siren']) && 1 === preg_match('/^[0-9]{9}$/', $_POST['siren']) ?: null;
-            $companyName   = isset($_POST['raison-sociale']) ? filter_var($_POST['raison-sociale'], FILTER_SANITIZE_STRING) : null;
-            $startDate     = isset($_POST['date1']) && 1 === preg_match('#^[0-9]{2}/[0-9]{2}/[0-9]{4}^#', $_POST['date1']) ? \DateTime::createFromFormat('d/m/Y', $_POST['date1']) : null;
-            $endDate       = isset($_POST['date2']) && 1 === preg_match('#^[0-9]{2}/[0-9]{2}/[0-9]{4}^#', $_POST['date2']) ? \DateTime::createFromFormat('d/m/Y', $_POST['date2']) : null;
-            $duration      = isset($_POST['duree']) && filter_var($_POST['duree'], FILTER_VALIDATE_INT) ? $_POST['duree'] : null;
-            $projectNeed   = isset($_POST['projectNeed']) && filter_var($_POST['projectNeed'], FILTER_VALIDATE_INT) ? $_POST['projectNeed'] : null;
-            $salesPersonId = isset($_POST['commercial']) && filter_var($_POST['commercial'], FILTER_VALIDATE_INT) ? $_POST['commercial'] : null;
-            $riskAnalystId = isset($_POST['analyste']) && filter_var($_POST['analyste'], FILTER_VALIDATE_INT) ? $_POST['analyste'] : null;
-            $limit         = $this->nb_lignes;
-            $offset        = ($this->page - 1) * $this->nb_lignes;
+            $projectRequestManager = $this->get('unilend.service.project_request_manager');
+
+            $status        = $this->request->request->filter('status', null, FILTER_VALIDATE_INT);
+            $status        = $status ? [$status] : null;
+            $siren         = $projectRequestManager->validateSiren($this->request->request->filter('siren', null, FILTER_SANITIZE_STRING)) ?: null;
+            $companyName   = $this->request->request->filter('raison-sociale', null, FILTER_SANITIZE_STRING) ?: null;
+            $startDate     = $this->request->request->get('date1');
+            $startDate     = $startDate && 1 === preg_match('#^[0-9]{2}/[0-9]{2}/[0-9]{4}$#', $startDate) ? \DateTime::createFromFormat('d/m/Y', $startDate) : null;
+            $endDate       = $this->request->request->get('date2');
+            $endDate       = $endDate && 1 === preg_match('#^[0-9]{2}/[0-9]{2}/[0-9]{4}$#', $endDate) ? \DateTime::createFromFormat('d/m/Y', $endDate) : null;
+            $duration      = $this->request->request->filter('duree', null, FILTER_VALIDATE_INT) ?: null;
+            $projectNeed   = $this->request->request->filter('projectNeed', null, FILTER_VALIDATE_INT) ?: null;
+            $salesPersonId = $this->request->request->filter('commercial', null, FILTER_VALIDATE_INT) ?: null;
+            $riskAnalystId = $this->request->request->filter('analyste', null, FILTER_VALIDATE_INT) ?: null;
+
+            $limit  = $this->nb_lignes;
+            $offset = ($this->page - 1) * $this->nb_lignes;
 
             $this->searchResult = $projectRepository->search($status, $siren, $companyName, $startDate, $endDate, $duration, $projectNeed, $salesPersonId, $riskAnalystId, $limit, $offset);
             $this->resultsCount = count($this->searchResult);
@@ -117,12 +123,13 @@ class dossiersController extends bootstrap
                 $this->resultsCount = $projectRepository->countSearch($status, $siren, $companyName, $startDate, $endDate, $duration, $projectNeed, $salesPersonId, $riskAnalystId);
             }
         } elseif (isset($this->params[0]) && 1 === preg_match('/^[1-9]([0-9,]*[0-9]+)*$/', $this->params[0])) {
+            $statuses           = explode(',', $this->params[0]);
             $projectRepository  = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
-            $this->searchResult = $projectRepository->search(explode(',', $this->params[0]));
+            $this->searchResult = $projectRepository->search($statuses);
             $this->resultsCount = count($this->searchResult);
 
             if ($this->resultsCount >= $this->nb_lignes) {
-                $this->resultsCount = $projectRepository->countSearch(explode(',', $this->params[0]));
+                $this->resultsCount = $projectRepository->countSearch($statuses);
             }
         }
 
