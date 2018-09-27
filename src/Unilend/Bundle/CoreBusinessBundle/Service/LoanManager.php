@@ -2,7 +2,7 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{AcceptedBids, Clients, Loans, UnderlyingContract, UnderlyingContractAttributeType};
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\ContractAttributeManager;
@@ -15,12 +15,16 @@ class LoanManager
 {
     /** @var LoggerInterface */
     private $logger;
-    /** @var EntityManager */
+    /** @var EntityManagerInterface */
     private $entityManager;
     /** @var ContractAttributeManager */
     private $contractAttributeManager;
 
-    public function __construct(EntityManager $entityManager, ContractAttributeManager $contractAttributeManager)
+    /**
+     * @param EntityManagerInterface   $entityManager
+     * @param ContractAttributeManager $contractAttributeManager
+     */
+    public function __construct(EntityManagerInterface $entityManager, ContractAttributeManager $contractAttributeManager)
     {
         $this->entityManager            = $entityManager;
         $this->contractAttributeManager = $contractAttributeManager;
@@ -28,9 +32,11 @@ class LoanManager
     }
 
     /**
-     * @param LoggerInterface $logger
+     * @required
+     *
+     * @param LoggerInterface|null $logger
      */
-    public function setLogger(LoggerInterface $logger)
+    public function setLogger(?LoggerInterface $logger): void
     {
         $this->logger = $logger;
     }

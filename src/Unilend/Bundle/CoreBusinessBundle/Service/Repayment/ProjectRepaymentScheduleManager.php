@@ -2,25 +2,23 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service\Repayment;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Service\WorkingDaysManager;
 
 class ProjectRepaymentScheduleManager
 {
     const WORKING_DAY_DIFF_BETWEEN_BORROWER_AND_LENDER = 6;
 
-    /** @var EntityManager */
+    /** @var EntityManagerInterface */
     private $entityManager;
     /** @var WorkingDaysManager */
     private $workingDaysManager;
 
     /**
-     * ProjectRepaymentScheduleManager constructor.
-     *
-     * @param EntityManager      $entityManager
-     * @param WorkingDaysManager $workingDaysManager
+     * @param EntityManagerInterface $entityManager
+     * @param WorkingDaysManager     $workingDaysManager
      */
-    public function __construct(EntityManager $entityManager, WorkingDaysManager $workingDaysManager)
+    public function __construct(EntityManagerInterface $entityManager, WorkingDaysManager $workingDaysManager)
     {
         $this->entityManager      = $entityManager;
         $this->workingDaysManager = $workingDaysManager;

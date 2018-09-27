@@ -2,7 +2,7 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\OptimisticLockException;
 use DrewM\MailChimp\MailChimp;
 use Psr\Log\LoggerInterface;
@@ -18,7 +18,7 @@ class NewsletterManager
     const MAILCHIMP_STATUS_UNSUBSCRIBED = 'unsubscribed';
     const MAILCHIMP_STATUS_CLEANED      = 'cleaned';
 
-    /** @var EntityManager */
+    /** @var EntityManagerInterface */
     private $entityManager;
     /** @var MailChimp */
     private $mailChimp;
@@ -28,12 +28,12 @@ class NewsletterManager
     private $logger;
 
     /**
-     * @param EntityManager   $entityManager
-     * @param MailChimp       $mailChimp
-     * @param string          $listId
+     * @param EntityManagerInterface $entityManager
+     * @param MailChimp              $mailChimp
+     * @param string                 $listId
      * @param LoggerInterface $logger
      */
-    public function __construct(EntityManager $entityManager, MailChimp $mailChimp, string $listId, LoggerInterface $logger)
+    public function __construct(EntityManagerInterface $entityManager, MailChimp $mailChimp, string $listId, LoggerInterface $logger)
     {
         $this->entityManager = $entityManager;
         $this->mailChimp     = $mailChimp;

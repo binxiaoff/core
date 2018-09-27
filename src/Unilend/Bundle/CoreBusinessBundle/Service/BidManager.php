@@ -2,7 +2,7 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
-use Doctrine\ORM\{EntityManager, NonUniqueResultException, NoResultException, OptimisticLockException};
+use Doctrine\ORM\{EntityManagerInterface, NonUniqueResultException, NoResultException, OptimisticLockException};
 use Psr\Cache\CacheException;
 use Psr\Cache\CacheItemPoolInterface;
 use Psr\Log\LoggerInterface;
@@ -30,7 +30,7 @@ class BidManager
     private $productManager;
     /** @var CIPManager */
     private $cipManager;
-    /** @var EntityManager */
+    /** @var EntityManagerInterface */
     private $entityManager;
     /** @var WalletManager */
     private $walletManager;
@@ -45,11 +45,10 @@ class BidManager
      * @param LenderManager          $lenderManager
      * @param ProductManager         $productManager
      * @param CIPManager             $cipManager
-     * @param EntityManager          $entityManager
+     * @param EntityManagerInterface $entityManager
      * @param WalletManager          $walletManager
      * @param SponsorshipManager     $sponsorshipManager
      * @param CacheItemPoolInterface $cachePool
-     *
      */
     public function __construct(
         NotificationManager $notificationManager,
@@ -57,7 +56,7 @@ class BidManager
         LenderManager $lenderManager,
         ProductManager $productManager,
         CIPManager $cipManager,
-        EntityManager $entityManager,
+        EntityManagerInterface $entityManager,
         WalletManager $walletManager,
         SponsorshipManager $sponsorshipManager,
         CacheItemPoolInterface $cachePool
@@ -75,9 +74,11 @@ class BidManager
     }
 
     /**
-     * @param LoggerInterface $logger
+     * @required
+     *
+     * @param LoggerInterface|null $logger
      */
-    public function setLogger(LoggerInterface $logger)
+    public function setLogger(?LoggerInterface $logger): void
     {
         $this->logger = $logger;
     }

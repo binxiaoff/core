@@ -2,16 +2,14 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Translation\TranslatorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Clients, ClientsStatus, Companies, CompanyStatus, CompanyStatusHistory, Prelevements, ProjectsStatus, Users, WalletType
-};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{Clients, ClientsStatus, Companies, CompanyStatus, CompanyStatusHistory, Prelevements, ProjectsStatus, Users, WalletType};
 
 class CompanyManager
 {
-    /** @var EntityManager */
+    /** @var EntityManagerInterface */
     private $entityManager;
     /** @var ProjectStatusManager */
     private $projectStatusManager;
@@ -23,14 +21,14 @@ class CompanyManager
     private $logger;
 
     /**
-     * @param EntityManager         $entityManager
-     * @param ProjectStatusManager  $projectStatusManager
-     * @param ClientCreationManager $clientCreationManager
-     * @param TranslatorInterface   $translator
-     * @param LoggerInterface       $logger
+     * @param EntityManagerInterface $entityManager
+     * @param ProjectStatusManager   $projectStatusManager
+     * @param ClientCreationManager  $clientCreationManager
+     * @param TranslatorInterface    $translator
+     * @param LoggerInterface        $logger
      */
     public function __construct(
-        EntityManager $entityManager,
+        EntityManagerInterface $entityManager,
         ProjectStatusManager $projectStatusManager,
         ClientCreationManager $clientCreationManager,
         TranslatorInterface $translator,

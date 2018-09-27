@@ -2,7 +2,7 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, Attachment, AttachmentType, GreenpointAttachment, GreenpointAttachmentDetail};
 use Unilend\Bundle\WSClientBundle\Entity\Greenpoint\{HousingCertificate, Identity, Rib};
@@ -10,7 +10,7 @@ use Unilend\Bundle\WSClientBundle\Service\GreenPointManager;
 
 class GreenPointDataManager
 {
-    /** @var EntityManager */
+    /** @var EntityManagerInterface */
     private $entityManager;
     /** @var LoggerInterface */
     private $logger;
@@ -18,12 +18,12 @@ class GreenPointDataManager
     private $attachmentManager;
 
     /**
-     * @param EntityManager      $entityManager
-     * @param LoggerInterface    $logger
-     * @param AttachmentManager  $attachmentManager
+     * @param EntityManagerInterface $entityManager
+     * @param LoggerInterface        $logger
+     * @param AttachmentManager      $attachmentManager
      */
     public function __construct(
-        EntityManager $entityManager,
+        EntityManagerInterface $entityManager,
         LoggerInterface $logger,
         AttachmentManager $attachmentManager
     )

@@ -2,7 +2,7 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{ProjectAbandonReason, ProjectRejectionReason, Projects, ProjectsStatus, ProjectsStatusHistory, ProjectStatusHistoryReason, Users};
@@ -14,7 +14,7 @@ class ProjectStatusManager
 {
     /** @var EntityManagerSimulator */
     private $entityManagerSimulator;
-    /** @var EntityManager */
+    /** @var EntityManagerInterface */
     private $entityManager;
     /** @var TranslatorInterface */
     private $translator;
@@ -31,7 +31,7 @@ class ProjectStatusManager
 
     /**
      * @param EntityManagerSimulator      $entityManagerSimulator
-     * @param EntityManager               $entityManager
+     * @param EntityManagerInterface      $entityManager
      * @param TranslatorInterface         $translator
      * @param LoggerInterface             $logger
      * @param SlackManager                $slackManager
@@ -41,7 +41,7 @@ class ProjectStatusManager
      */
     public function __construct(
         EntityManagerSimulator $entityManagerSimulator,
-        EntityManager $entityManager,
+        EntityManagerInterface $entityManager,
         TranslatorInterface $translator,
         LoggerInterface $logger,
         SlackManager $slackManager,

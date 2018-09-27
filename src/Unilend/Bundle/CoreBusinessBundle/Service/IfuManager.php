@@ -2,7 +2,7 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
 
 class IfuManager
@@ -13,17 +13,17 @@ class IfuManager
 
     const LOSS_PROJECT_IDS = [2017 => [32108, 28957]];
 
-    /** @var EntityManager */
+    /** @var EntityManagerInterface */
     private $entityManager;
 
     /** @var string */
     private $protectedPath;
 
     /**
-     * @param EntityManager $entityManager
-     * @param string        $protectedPath
+     * @param EntityManagerInterface $entityManager
+     * @param string                 $protectedPath
      */
-    public function __construct(EntityManager $entityManager, $protectedPath)
+    public function __construct(EntityManagerInterface $entityManager, $protectedPath)
     {
         $this->entityManager = $entityManager;
         $this->protectedPath = $protectedPath;

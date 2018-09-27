@@ -3,7 +3,7 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Service\Repayment;
 
 use Doctrine\DBAL\Connection;
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRepaymentDetail;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRepaymentTask;
@@ -14,7 +14,7 @@ use Unilend\Bundle\CoreBusinessBundle\Service\ProjectChargeManager;
 
 class ProjectCloseOutNettingRepaymentManager
 {
-    /** @var EntityManager */
+    /** @var EntityManagerInterface */
     private $entityManager;
 
     /** @var OperationManager */
@@ -36,9 +36,7 @@ class ProjectCloseOutNettingRepaymentManager
     private $debtCollectionFeeManager;
 
     /**
-     * ProjectRepaymentManager constructor.
-     *
-     * @param EntityManager                      $entityManager
+     * @param EntityManagerInterface             $entityManager
      * @param OperationManager                   $operationManager
      * @param ProjectRepaymentTaskManager        $projectRepaymentTaskManager
      * @param ProjectRepaymentNotificationSender $projectRepaymentNotificationSender
@@ -47,7 +45,7 @@ class ProjectCloseOutNettingRepaymentManager
      * @param LoggerInterface                    $logger
      */
     public function __construct(
-        EntityManager $entityManager,
+        EntityManagerInterface $entityManager,
         OperationManager $operationManager,
         ProjectRepaymentTaskManager $projectRepaymentTaskManager,
         ProjectRepaymentNotificationSender $projectRepaymentNotificationSender,

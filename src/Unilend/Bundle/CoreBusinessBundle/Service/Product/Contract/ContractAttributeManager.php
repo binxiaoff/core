@@ -15,8 +15,6 @@ class ContractAttributeManager
     protected $cachePool;
 
     /**
-     * ContractAttributeManager constructor.
-     *
      * @param EntityManager          $entityManager
      * @param CacheItemPoolInterface $cachePool
      */
