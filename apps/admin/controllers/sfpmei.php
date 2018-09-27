@@ -132,13 +132,25 @@ class sfpmeiController extends bootstrap
     public function _projets()
     {
         if (false === empty($_POST)) {
+            /** @var EntityManager $entityManager */
+            $entityManager     = $this->get('doctrine.orm.entity_manager');
+            $projectRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
+
             if (empty($_POST['id']) && empty($_POST['siren']) && empty($_POST['company'])) {
                 $_SESSION['error_search'][] = 'Veuillez remplir au moins un champ';
             }
 
-            $projectId = empty($_POST['id']) ? '' : filter_var($_POST['id'], FILTER_SANITIZE_NUMBER_INT);
-            if (false === $projectId) {
-                $_SESSION['error_search'][] = 'L\'ID du projet doit être un nombre';
+            if (false === empty($_POST['id'])) {
+                if (false === filter_var($_POST['id'], FILTER_VALIDATE_INT)) {
+                    $_SESSION['error_search'][] = 'L\'ID du projet doit être un nombre';
+                } else {
+                    $project = $projectRepository->find($_POST['id']);
+
+                    if (null !== $project) {
+                        header('Location: ' . $this->lurl . '/sfpmei/projet/' . $project->getIdProject());
+                        exit;
+                    }
+                }
             }
 
             $siren = empty($_POST['siren']) ? '' : filter_var(str_replace(' ', '', $_POST['siren']), FILTER_SANITIZE_STRING);
@@ -153,18 +165,15 @@ class sfpmeiController extends bootstrap
 
             if (false === empty($_SESSION['error_search'])) {
                 header('Location: ' . $this->lurl . '/sfpmei/projets');
-                die;
+                exit;
             }
 
-            /** @var \projects $projects */
-            $projects       = $this->get('unilend.service.entity_manager')->getRepository('projects');
-            $this->projects = $projects->searchDossiers('', '', '', '', '', '', $siren, $projectId, $companyName);
-
-            array_shift($this->projects);
+            $this->projectStatusRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatus');
+            $this->projects                = $projectRepository->search(null, $siren, $companyName);
 
             if (false === empty($this->projects) && 1 === count($this->projects)) {
-                header('Location: ' . $this->lurl . '/sfpmei/projet/' . $this->projects[0]['id_project']);
-                die;
+                header('Location: ' . $this->lurl . '/sfpmei/projet/' . $this->projects[0]->getIdProject());
+                exit;
             }
         }
     }

@@ -1,3 +1,8 @@
+<?php
+
+use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
+
+?>
 <div id="contenu">
     <div class="container-fluid">
         <div class="row">
@@ -23,7 +28,7 @@
             </div>
             <div class="form-group row">
                 <div class="col-md-12">
-                    <button type="submit" class="btn col-md-2 pull-right">Chercher</button>
+                    <button type="submit" class="btn-primary col-md-2 pull-right">Chercher</button>
                 </div>
             </div>
         </form>
@@ -41,7 +46,7 @@
             <?php if (count($this->projects) > 0) : ?>
                 <div class="row">
                     <div class="col-md-12">
-                        <h2><?= count($this->projects) ?> projet<?= count($this->projects) > 1 ? 's' : '' ?> trouvé<?= count($this->projects) > 1 ? 's' : '' ?></h2>
+                        <h2><?= count($this->projects) ?> projet<?= count($this->projects) > 1 ? 's' : '' ?></h2>
                     </div>
                 </div>
                 <table class="tablesorter table table-hover table-striped">
@@ -58,17 +63,18 @@
                     </tr>
                     </thead>
                     <tbody>
+                    <?php /** @var Projects $project */ ?>
                     <?php foreach ($this->projects as $project) : ?>
                         <tr>
-                            <td><?= $project['id_project'] ?></td>
-                            <td><?= $project['siren'] ?></td>
-                            <td><?= $project['name'] ?></td>
-                            <td><?= $this->formatDate($project['added'], 'd/m/Y') ?></td>
-                            <td><?= empty($project['amount']) ? '' : $this->ficelle->formatNumber($project['amount'], 0) . ' €' ?></td>
-                            <td><?= empty($project['period']) ? '' : $project['period'] . ' mois' ?></td>
-                            <td><?= $project['label'] ?></td>
+                            <td><a href="<?= $this->lurl ?>/sfpmei/projet/<?= $project->getIdProject() ?>"><?= $project->getIdProject() ?></a></td>
+                            <td><a href="<?= $this->lurl ?>/sfpmei/emprunteur/<?= $project->getIdCompany()->getIdClientOwner()->getIdClient() ?>"><?= $project->getIdCompany()->getSiren() ?></a></td>
+                            <td><a href="<?= $this->lurl ?>/sfpmei/emprunteur/<?= $project->getIdCompany()->getIdClientOwner()->getIdClient() ?>"><?= $project->getIdCompany()->getName() ?></a></td>
+                            <td><?= $project->getAdded()->format('d/m/Y') ?></td>
+                            <td><?= empty($project->getAmount()) ? '' : $this->ficelle->formatNumber($project->getAmount(), 0) . ' €' ?></td>
+                            <td><?= empty($project->getPeriod()) ? '' : $project->getPeriod() . ' mois' ?></td>
+                            <td><?= $this->projectStatusRepository->findOneBy(['status' => $project->getStatus()])->getLabel() ?></td>
                             <td align="center">
-                                <a href="<?= $this->lurl ?>/sfpmei/projet/<?= $project['id_project'] ?>">
+                                <a href="<?= $this->lurl ?>/sfpmei/projet/<?= $project->getIdProject() ?>">
                                     <img src="<?= $this->surl ?>/images/admin/modif.png" alt="Voir la fiche du projet">
                                 </a>
                             </td>

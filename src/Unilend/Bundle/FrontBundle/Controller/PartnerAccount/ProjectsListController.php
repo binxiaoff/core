@@ -157,7 +157,7 @@ class ProjectsListController extends Controller
                     'entity'    => $project->getIdCompanySubmitter()->getName()
                 ],
                 'motive'     => $project->getIdBorrowingMotive() ? $translator->trans('borrowing-motive_motive-' . $project->getIdBorrowingMotive()) : '',
-                'memos'      => $loadNotes ? $this->formatNotes($project->getPublicNotes()) : [],
+                'memos'      => $loadNotes ? $this->formatNotes($project->getPublicMemos()) : [],
                 'hasChanged' => $loadNotes ? $this->hasProjectChanged($project, $client) : false,
                 'tos'        => []
             ];
@@ -213,7 +213,7 @@ class ProjectsListController extends Controller
         $entityManager                  = $this->get('doctrine.orm.entity_manager');
         $projectStatusRepositoryHistory = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatusHistory');
         $lastLoginDate                  = $client->getLastlogin();
-        $notes                          = $project->getPublicNotes();
+        $notes                          = $project->getPublicMemos();
 
         return (
             null === $lastLoginDate

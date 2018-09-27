@@ -1,3 +1,8 @@
+<?php
+
+use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
+
+?>
 <style>
     #project_form {
         margin-bottom: 30px;
@@ -21,10 +26,14 @@
         margin-left: 104px;
         color: #75757d;
     }
+    #project_list {
+        background: #fff;
+        margin-top: 15px;
+        padding: 15px;
+    }
 </style>
 <script>
     $(function () {
-
         $("#notificationDate").datepicker({
             changeMonth: true,
             changeYear: true,
@@ -53,7 +62,6 @@
                 data: form.serialize(),
                 dataType: 'json'
             }).done(function (response) {
-                console.log(response);
                 $('#add_notification_result').text(response.message)
                 if (response.status == 'ok') {
                     $('#add_notification_result').css('color', 'green')
@@ -68,7 +76,7 @@
     <div id="search_project">
         <table style="width: 100%">
             <tr>
-                <td style="width: 33%">
+                <td style="width: 30%">
                     <h2>Choisir un projet</h2>
                     <br>
                     <form method="post" name="project_form" id="project_form" enctype="multipart/form-data" action="<?= $this->lurl ?>/preteurs/notifications" target="_parent">
@@ -83,13 +91,14 @@
                             </p>
                         </fieldset>
                         <fieldset>
-                            <input type="submit" title="valider" value="Valider" id="searchProject" name="searchProject" class="btn">
+                            <input type="submit" title="valider" value="Valider" id="searchProject" name="searchProject" class="btn-primary" style="float: right">
                         </fieldset>
                     </form>
                 </td>
-                <td style="width: 66%">
+                <td style="width: 10%"></td>
+                <td style="width: 60%">
                     <form method="post" name="add_notification_form" id="add_notification_form" enctype="multipart/form-data" action="<?= $this->lurl ?>/preteurs/addNotification" target="_parent">
-                        <h2>Détails de la notification <div class="send_project"><span class="name"></span>  <span class="id"></span></div></h2>
+                        <h2>Détails de la notification <span class="send_project"><span class="name"></span>  <span class="id"></span></span></h2>
                         <br>
                         <table style="width: 100%">
                             <tr>
@@ -111,7 +120,7 @@
                                     </p>
                                     <div>
                                         <div id="add_notification_result" style="float: left;"></div>
-                                        <input type="submit" title="envoyer" value="Envoyer" id="addNotification" name="addNotification" class="btn" style="float: right;">
+                                        <input type="submit" title="envoyer" value="Envoyer" id="addNotification" name="addNotification" class="btn-primary" style="float: right;">
                                     </div>
                                 </td>
                             </tr>
@@ -120,28 +129,35 @@
                  </td>
             </tr>
         </table>
-        <?php if (false === empty($this->projectList)) : ?>
-            <div id="project_list">
-                <table class="tablesorter table-clickable table-hover">
-                    <thead>
-                    <tr>
-                        <th class="header">ID</th>
-                        <th class="header">Raison sociale</th>
-                        <th class="header">Statut</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <?php $i = 1; ?>
-                    <?php foreach ($this->projectList as $project) : ?>
-                        <tr <?= ($i % 2 === 1 ? '' : ' class="odd"') ?> data-project-id="<?= $project['id_project'] ?>"  data-project-name="<?= $project['name'] ?>">
-                            <td><?= $project['id_project'] ?></td>
-                            <td><?= $project['name'] ?></td>
-                            <td><?= $project['label'] ?></td>
-                        </tr>
-                    <?php endforeach; ?>
-                    </tbody>
-                </table>
-            </div>
-        <? endif; ?>
     </div>
 </div>
+
+<?php if (isset($this->projectList)) : ?>
+    <div id="project_list">
+        <?php if (empty($this->projectList)) : ?>
+            <h2>Aucun résultat</h2>
+        <?php else : ?>
+            <h2><?= count($this->projectList) ?> résultat<?= 1 === count($this->projectList) ? '' : 's' ?></h2>
+            <table class="tablesorter table-clickable table-hover">
+                <thead>
+                <tr>
+                    <th class="header">ID</th>
+                    <th class="header">Raison sociale</th>
+                    <th class="header">Statut</th>
+                </tr>
+                </thead>
+                <tbody>
+                <?php $i = 1; ?>
+                <?php /** @var Projects $project */ ?>
+                <?php foreach ($this->projectList as $project) : ?>
+                    <tr <?= ($i % 2 === 1 ? '' : ' class="odd"') ?> data-project-id="<?= $project->getIdProject() ?>"  data-project-name="<?= htmlentities($project->getIdCompany()->getName()) ?>">
+                        <td><a href="<?= $this->lurl ?>/dossiers/edit/<?= $project->getIdProject() ?>"><?= $project->getIdProject() ?></a></td>
+                        <td><a href="<?= $this->lurl ?>/emprunteurs/edit/<?= $project->getIdCompany()->getIdClientOwner()->getIdClient() ?>"><?= $project->getIdCompany()->getName() ?></a></td>
+                        <td><?= $this->projectStatusRepository->findOneBy(['status' => $project->getStatus()])->getLabel() ?></td>
+                    </tr>
+                <?php endforeach; ?>
+                </tbody>
+            </table>
+        <?php endif; ?>
+    </div>
+<?php endif; ?>
