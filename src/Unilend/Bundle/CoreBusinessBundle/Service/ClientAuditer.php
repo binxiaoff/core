@@ -2,12 +2,10 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\OptimisticLockException;
 use Psr\Log\LoggerInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    ClientDataHistory, Clients, Users
-};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{ClientDataHistory, Clients, Users};
 
 class ClientAuditer
 {
@@ -31,16 +29,16 @@ class ClientAuditer
         'usPerson'
     ];
 
-    /** @var EntityManager */
+    /** @var EntityManagerInterface */
     private $entityManager;
     /** @var LoggerInterface */
     private $logger;
 
     /**
-     * @param EntityManager   $entityManager
-     * @param LoggerInterface $logger
+     * @param EntityManagerInterface $entityManager
+     * @param LoggerInterface        $logger
      */
-    public function __construct(EntityManager $entityManager, LoggerInterface $logger)
+    public function __construct(EntityManagerInterface $entityManager, LoggerInterface $logger)
     {
         $this->entityManager = $entityManager;
         $this->logger        = $logger;

@@ -144,6 +144,24 @@ classNames: 'user-preter-profile'
                                     {{ form_errors(forms.securityPwd.password) }}
                                 </div>
 
+                                <div class="password-requirements">
+                                    <p>{% trans %} lender-profile_security-password-section-requirements {% endtrans %}</p>
+                                    <dl>
+                                        <dd>
+                                            <span id="pw-has-lower-upper-case" class="icon fa-cross-u16 c-error"></span>
+                                            <span class="label">{% trans %} lender-profile_security-password-section-has-lower-upper-char-check {% endtrans %}</span>
+                                        </dd>
+                                        <dd>
+                                            <span id="pw-has-digit" class="icon fa-cross-u16 c-error"></span>
+                                            <span class="label">{% trans %} lender-profile_security-password-section-has-digit-check {% endtrans %}</span>
+                                        </dd>
+                                        <dd>
+                                            <span id="pw-has-min-length" class="icon fa-cross-u16 c-error"></span>
+                                            <span class="label">{% trans %} lender-profile_security-password-section-has-min-length-check {% endtrans %}</span>
+                                        </dd>
+                                    </dl>
+                                </div>
+
                                 <div class="btn-controls">
                                     <button class="btn-primary" data-spinnerbutton>{% trans %} lender-profile_security-password-section-submit-form-button {% endtrans %}</button>
                                     <button type="reset" role="button" data-toggle="collapse" data-target="#profile-security-password-view" data-parent="#profile-security-password-section" class="btn-default" aria-controls="#profile-security-password-view" aria-expanded="true">{% trans %} lender-profile_security-password-section-cancel-form-button {% endtrans %}</button>

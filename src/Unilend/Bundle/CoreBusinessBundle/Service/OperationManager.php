@@ -2,25 +2,9 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
-use Doctrine\ORM\EntityManager;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Backpayline;
-use Unilend\Bundle\CoreBusinessBundle\Entity\CloseOutNettingRepayment;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Echeanciers;
-use Unilend\Bundle\CoreBusinessBundle\Entity\EcheanciersEmprunteur;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Loans;
-use Unilend\Bundle\CoreBusinessBundle\Entity\OffresBienvenuesDetails;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Operation;
-use Unilend\Bundle\CoreBusinessBundle\Entity\OperationSubType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRepaymentTaskLog;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Receptions;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Sponsorship;
-use Unilend\Bundle\CoreBusinessBundle\Entity\TaxType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Transfer;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
-use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
+use Doctrine\ORM\EntityManagerInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{Backpayline, CloseOutNettingRepayment, Echeanciers, EcheanciersEmprunteur, Loans, OffresBienvenuesDetails, Operation, OperationSubType, OperationType,
+    ProjectRepaymentTaskLog, Projects, Receptions, Sponsorship, TaxType, Transfer, Virements, Wallet, WalletType};
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 
 /**
@@ -31,7 +15,7 @@ class OperationManager
 {
     /** @var EntityManagerSimulator */
     private $entityManagerSimulator;
-    /** @var EntityManager */
+    /** @var EntityManagerInterface */
     private $entityManager;
     /** @var WalletManager */
     private $walletManager;
@@ -41,13 +25,13 @@ class OperationManager
     const OPERATION_MANAGER_EXCEPTION_CODE = 2;
 
     /**
-     * @param EntityManager          $entityManager
+     * @param EntityManagerInterface $entityManager
      * @param EntityManagerSimulator $entityManagerSimulator
      * @param WalletManager          $walletManager
      * @param TaxManager             $taxManager
      */
     public function __construct(
-        EntityManager $entityManager,
+        EntityManagerInterface $entityManager,
         EntityManagerSimulator $entityManagerSimulator,
         WalletManager $walletManager,
         TaxManager $taxManager

@@ -2,7 +2,7 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service\Document;
 
-use Doctrine\ORM\{EntityManager, NonUniqueResultException};
+use Doctrine\ORM\{EntityManagerInterface, NonUniqueResultException};
 use Knp\Snappy\Pdf;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Asset\Packages;
@@ -15,7 +15,7 @@ class LoanContractGenerator implements DocumentGeneratorInterface
 {
     const PATH = 'pdf' . DIRECTORY_SEPARATOR . 'contrat';
 
-    /** @var EntityManager */
+    /** @var EntityManagerInterface */
     private $entityManager;
     /** @var Filesystem */
     private $filesystem;
@@ -39,20 +39,20 @@ class LoanContractGenerator implements DocumentGeneratorInterface
     private $logger;
 
     /**
-     * @param EntityManager    $entityManager
-     * @param Filesystem       $filesystem
-     * @param string           $protectedPath
-     * @param string           $staticPath
-     * @param Environment      $twig
-     * @param Pdf              $snappy
-     * @param Packages         $assetsPackages
-     * @param \NumberFormatter $numberFormatter
-     * @param \NumberFormatter $currencyFormatter
-     * @param LoanManager      $loanManager
-     * @param LoggerInterface  $logger
+     * @param EntityManagerInterface $entityManager
+     * @param Filesystem             $filesystem
+     * @param string                 $protectedPath
+     * @param string                 $staticPath
+     * @param Environment            $twig
+     * @param Pdf                    $snappy
+     * @param Packages               $assetsPackages
+     * @param \NumberFormatter       $numberFormatter
+     * @param \NumberFormatter       $currencyFormatter
+     * @param LoanManager            $loanManager
+     * @param LoggerInterface        $logger
      */
     public function __construct(
-        EntityManager $entityManager,
+        EntityManagerInterface $entityManager,
         Filesystem $filesystem,
         string $protectedPath,
         string $staticPath,
