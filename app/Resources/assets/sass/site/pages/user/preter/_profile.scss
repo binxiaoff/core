@@ -486,6 +486,8 @@
   @include devices('md', 'lg') {
     @include message-md-icon;
   }
+
+  min-height: 0 !important;
 }
 
 .profile-security-password-explanation {

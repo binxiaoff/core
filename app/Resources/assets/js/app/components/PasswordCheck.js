@@ -173,10 +173,35 @@ var PasswordCheck = function (input, options) {
     // Soft reset
     if (!soft) {
       self.$input.val('')
+      $('.password-requirements').find('.fa-check-u16.c-success').removeClass('fa-check-u16 c-success').addClass('fa-cross-u16 c-error')
     }
 
     // Trigger element event in case anything else wants to hook
     self.$input.trigger('PasswordCheck:resetted', [self, soft])
+  }
+
+  self.passwordRequirements = function() {
+    var lowerUpperCaseRule = /(?=.*[a-z])(?=.*[A-Z])/,
+        digitRule          = /[0-9]/,
+        minLengthRule      = new RegExp('\\S{' + self.settings.minLength + ',}'),
+        passwordGroupRules = {
+          '#pw-has-lower-upper-case': lowerUpperCaseRule,
+          '#pw-has-digit': digitRule,
+          '#pw-has-min-length': minLengthRule
+        }
+
+    for (var idRuleLabel in passwordGroupRules) {
+      var displayRule = passwordGroupRules[idRuleLabel]
+      if (displayRule instanceof RegExp) {
+        if (displayRule.test(self.$input.val())) {
+          $(idRuleLabel).removeClass('fa-cross-u16 c-error').addClass('fa-check-u16 c-success')
+        } else {
+          $(idRuleLabel).removeClass('fa-check-u16 c-success').addClass('fa-cross-u16 c-error')
+        }
+      } else {
+        console.error(displayRule + ' is not a correct regex');
+      }
+    }
   }
 
   // Evaluate an input value to see how secure it is
@@ -233,6 +258,8 @@ var PasswordCheck = function (input, options) {
     if (self.settings.evaluationRules instanceof Array && self.settings.evaluationRules.length > 0) {
       evaluationRules += self.settings.evaluationRules
     }
+    // Display password requirements as they are completed
+    self.passwordRequirements()
 
     // Evaluate the string based on the minLength
     var inputLengthDiff = input.length - self.settings.minLength
@@ -310,6 +337,10 @@ var PasswordCheck = function (input, options) {
     } else if ($(this).val().length === 0) {
       self.reset()
     }
+  })
+  // Reset the UI when the password form is collapsed
+  $('#profile-security-password-section').on('hidden.bs.collapse', function () {
+    self.reset()
   })
 
   // Show/hide the info
