@@ -420,32 +420,33 @@ class LenderProfileFormsHandler
     /**
      * @param Clients       $client
      * @param FormInterface $form
-     * @param string        $type
+     * @param string        $addressType
      * @param Attachment[]  $newAttachments
      *
      * @throws OptimisticLockException
      * @throws \Exception
      */
-    private function savePersonAddress(Clients $client, FormInterface $form, string $type, array $newAttachments): void
+    private function savePersonAddress(Clients $client, FormInterface $form, string $addressType, array $newAttachments): void
     {
-        if ($form->has('samePostalAddress') && $form->get('samePostalAddress')->getData()) {
-            $this->addressManager->clientPostalAddressSameAsMainAddress($client);
-        } elseif (
-            false === $form->has('samePostalAddress')
-            || $form->has('samePostalAddress') && empty($form->get('samePostalAddress')->getData())
+        if (
+            AddressType::TYPE_POSTAL_ADDRESS === $addressType
+            && $form->has('samePostalAddress')
+            && $form->get('samePostalAddress')->getData()
         ) {
+            $this->addressManager->clientPostalAddressSameAsMainAddress($client);
+        } else {
             $this->addressManager->saveClientAddress(
                 $form->get('address')->getData(),
                 $form->get('zip')->getData(),
                 $form->get('city')->getData(),
                 $form->get('idCountry')->getData(),
                 $client,
-                $type
+                $addressType
             );
         }
 
         if (
-            AddressType::TYPE_MAIN_ADDRESS === $type
+            AddressType::TYPE_MAIN_ADDRESS === $addressType
             && isset($newAttachments[AttachmentType::JUSTIFICATIF_DOMICILE])
             && $newAttachments[AttachmentType::JUSTIFICATIF_DOMICILE] instanceof Attachment
         ) {
@@ -502,14 +503,15 @@ class LenderProfileFormsHandler
      *
      * @throws \Exception
      */
-    private function saveCompanyAddress(Companies $company, FormInterface $form, string $addressType)
+    private function saveCompanyAddress(Companies $company, FormInterface $form, string $addressType): void
     {
-        if ($form->has('samePostalAddress') && $form->get('samePostalAddress')->getData()) {
-            $this->addressManager->companyPostalAddressSameAsMainAddress($company);
-        } elseif (
-            false === $form->has('samePostalAddress')
-            || $form->has('samePostalAddress') && empty($form->get('samePostalAddress')->getData())
+        if (
+            AddressType::TYPE_POSTAL_ADDRESS === $addressType
+            && $form->has('samePostalAddress')
+            && $form->get('samePostalAddress')->getData()
         ) {
+            $this->addressManager->companyPostalAddressSameAsMainAddress($company);
+        } else {
             $this->addressManager->saveCompanyAddress(
                 $form->get('address')->getData(),
                 $form->get('zip')->getData(),
