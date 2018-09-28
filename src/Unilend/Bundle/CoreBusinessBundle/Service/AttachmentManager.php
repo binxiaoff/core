@@ -2,7 +2,7 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use PhpOffice\PhpSpreadsheet\{Exception as PhpSpreadsheetException, IOFactory as PhpSpreadsheetIOFactory, Writer\Pdf\Mpdf as PhpSpreadsheetMpdf};
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Filesystem\{Exception\FileNotFoundException, Filesystem};
@@ -11,7 +11,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{Attachment, AttachmentType, Client
 
 class AttachmentManager
 {
-    /** @var EntityManager */
+    /** @var EntityManagerInterface */
     private $entityManager;
     /** @var Filesystem */
     private $filesystem;
@@ -25,16 +25,14 @@ class AttachmentManager
     private $logger;
 
     /**
-     * AttachmentManager constructor.
-     *
-     * @param EntityManager   $entityManager
-     * @param Filesystem      $filesystem
-     * @param string          $uploadRootDirectory
-     * @param string          $tmpDirectory
-     * @param string          $rootDirectory
-     * @param LoggerInterface $logger
+     * @param EntityManagerInterface $entityManager
+     * @param Filesystem             $filesystem
+     * @param string                 $uploadRootDirectory
+     * @param string                 $tmpDirectory
+     * @param string                 $rootDirectory
+     * @param LoggerInterface        $logger
      */
-    public function __construct(EntityManager $entityManager, Filesystem $filesystem, string $uploadRootDirectory, string $tmpDirectory, string $rootDirectory, LoggerInterface $logger)
+    public function __construct(EntityManagerInterface $entityManager, Filesystem $filesystem, string $uploadRootDirectory, string $tmpDirectory, string $rootDirectory, LoggerInterface $logger)
     {
         $this->entityManager       = $entityManager;
         $this->filesystem          = $filesystem;

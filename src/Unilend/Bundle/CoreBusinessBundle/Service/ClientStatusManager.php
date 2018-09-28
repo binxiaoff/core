@@ -3,14 +3,14 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\DBAL\ConnectionException;
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, Attachment, AttachmentType, ClientAddress, Clients, ClientsStatus, ClientsStatusHistory, Companies, CompanyAddress, NationalitesV2, Pays,
     Users, WalletType};
 
 class ClientStatusManager
 {
-    /** @var EntityManager */
+    /** @var EntityManagerInterface */
     private $entityManager;
     /** @var NotificationManager */
     private $notificationManager;
@@ -22,14 +22,14 @@ class ClientStatusManager
     private $logger;
 
     /**
-     * @param EntityManager          $entityManager
+     * @param EntityManagerInterface $entityManager
      * @param NotificationManager    $notificationManager
      * @param AutoBidSettingsManager $autoBidSettingsManager
      * @param BankAccountManager     $bankAccountManager
      * @param LoggerInterface        $logger
      */
     public function __construct(
-        EntityManager $entityManager,
+        EntityManagerInterface $entityManager,
         NotificationManager $notificationManager,
         AutoBidSettingsManager $autoBidSettingsManager,
         BankAccountManager $bankAccountManager,

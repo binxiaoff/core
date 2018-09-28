@@ -2,7 +2,7 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Psr\Cache\CacheItemPoolInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{CompanyAddress, Pays};
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
@@ -16,7 +16,7 @@ class LocationManager
 {
     /** @var EntityManagerSimulator */
     private $entityManagerSimulator;
-    /** @var EntityManager */
+    /** @var EntityManagerInterface */
     private $entityManager;
     /** @var string */
     private $mapboxToken;
@@ -24,13 +24,13 @@ class LocationManager
     private $cachePool;
 
     /**
-     * @param EntityManager          $entityManager
+     * @param EntityManagerInterface $entityManager
      * @param EntityManagerSimulator $entityManagerSimulator
      * @param string                 $mapboxToken
      * @param CacheItemPoolInterface $cachePool
      */
     public function __construct(
-        EntityManager $entityManager,
+        EntityManagerInterface $entityManager,
         EntityManagerSimulator $entityManagerSimulator,
         string $mapboxToken,
         CacheItemPoolInterface $cachePool

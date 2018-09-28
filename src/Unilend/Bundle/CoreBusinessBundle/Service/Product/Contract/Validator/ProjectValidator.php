@@ -9,7 +9,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\UnderlyingContractAttributeType;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\Checker\CompanyChecker;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\Checker\ProjectChecker;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\ContractAttributeManager;
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 
 class ProjectValidator
 {
@@ -18,10 +18,14 @@ class ProjectValidator
 
     /** @var ContractAttributeManager */
     private $contractAttributeManager;
-    /** @var EntityManager */
+    /** @var EntityManagerInterface */
     private $entityManager;
 
-    public function __construct(ContractAttributeManager $contractAttributeManager, EntityManager $entityManager)
+    /**
+     * @param ContractAttributeManager $contractAttributeManager
+     * @param EntityManagerInterface   $entityManager
+     */
+    public function __construct(ContractAttributeManager $contractAttributeManager, EntityManagerInterface $entityManager)
     {
         $this->contractAttributeManager = $contractAttributeManager;
         $this->entityManager            = $entityManager;

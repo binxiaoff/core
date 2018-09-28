@@ -5,6 +5,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 use Doctrine\ORM\EntityManager;
 use Http\Client\Exception;
 use Nexy\Slack\Client;
+use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Asset\Packages;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{Projects, ProjectsStatus};
@@ -13,7 +14,7 @@ class SlackManager
 {
     /** @var Client */
     private $apiClient;
-    /** @var EntityManager */
+    /** @var EntityManagerInterface */
     private $entityManager;
     /** @var string */
     private $iconUrl;
@@ -27,22 +28,20 @@ class SlackManager
     private $logger;
 
     /**
-     * @param Client          $apiClient
-     * @param EntityManager   $entityManager
-     * @param Packages        $assetsPackages
-     * @param string          $scheme
-     * @param string          $frontHost
-     * @param string          $backHost
-     * @param string          $environment
-     * @param LoggerInterface $logger
+     * @param Client                 $apiClient
+     * @param EntityManagerInterface $entityManager
+     * @param Packages               $assetsPackages
+     * @param string                 $frontUrl
+     * @param string                 $adminUrl
+     * @param string                 $environment
+     * @param LoggerInterface        $logger
      */
     public function __construct(
         Client $apiClient,
-        EntityManager $entityManager,
+        EntityManagerInterface $entityManager,
         Packages $assetsPackages,
-        string $scheme,
-        string $frontHost,
-        string $backHost,
+        string $frontUrl,
+        string $adminUrl,
         string $environment,
         LoggerInterface $logger
     )
@@ -50,8 +49,8 @@ class SlackManager
         $this->apiClient     = $apiClient;
         $this->entityManager = $entityManager;
         $this->iconUrl       = $assetsPackages->getUrl('/assets/images/slack/unilend.png');
-        $this->frontUrl      = $scheme . '://' . $frontHost;
-        $this->backUrl       = $scheme . '://' . $backHost;
+        $this->frontUrl      = $frontUrl;
+        $this->backUrl       = $adminUrl;
         $this->environment   = $environment;
         $this->logger        = $logger;
     }

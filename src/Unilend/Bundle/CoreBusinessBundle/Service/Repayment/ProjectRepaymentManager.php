@@ -3,7 +3,7 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Service\Repayment;
 
 use Doctrine\DBAL\Connection;
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Echeanciers;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRepaymentDetail;
@@ -19,7 +19,7 @@ use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityM
 
 class ProjectRepaymentManager
 {
-    /** @var EntityManager */
+    /** @var EntityManagerInterface */
     private $entityManager;
     /** @var OperationManager */
     private $operationManager;
@@ -39,7 +39,7 @@ class ProjectRepaymentManager
     private $debtCollectionFeeManager;
 
     /**
-     * @param EntityManager                      $entityManager
+     * @param EntityManagerInterface             $entityManager
      * @param EntityManagerSimulator             $entityManagerSimulator
      * @param OperationManager                   $operationManager
      * @param ProjectStatusManager               $projectStatusManager
@@ -50,7 +50,7 @@ class ProjectRepaymentManager
      * @param LoggerInterface                    $logger
      */
     public function __construct(
-        EntityManager $entityManager,
+        EntityManagerInterface $entityManager,
         EntityManagerSimulator $entityManagerSimulator,
         OperationManager $operationManager,
         ProjectStatusManager $projectStatusManager,

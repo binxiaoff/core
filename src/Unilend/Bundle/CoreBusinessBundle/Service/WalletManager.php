@@ -2,7 +2,7 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Bids;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Loans;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Operation;
@@ -19,7 +19,7 @@ use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityM
 class WalletManager
 {
     /**
-     * @var EntityManager
+     * @var EntityManagerInterface
      */
     private $entityManager;
     /**
@@ -28,12 +28,10 @@ class WalletManager
     private $legacyEntityManager;
 
     /**
-     * WalletManager constructor.
-     *
-     * @param EntityManager          $entityManager
+     * @param EntityManagerInterface $entityManager
      * @param EntityManagerSimulator $legacyEntityManager
      */
-    public function __construct(EntityManager $entityManager, EntityManagerSimulator $legacyEntityManager)
+    public function __construct(EntityManagerInterface $entityManager, EntityManagerSimulator $legacyEntityManager)
     {
         $this->entityManager       = $entityManager;
         $this->legacyEntityManager = $legacyEntityManager;

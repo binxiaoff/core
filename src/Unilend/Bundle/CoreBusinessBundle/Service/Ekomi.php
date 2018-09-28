@@ -2,14 +2,14 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
+use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
-use Doctrine\ORM\EntityManager;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 
 class Ekomi
 {
-    /** @var EntityManager */
+    /** @var EntityManagerInterface */
     private $entityManager;
 
     /** @var LoggerInterface */
@@ -25,13 +25,13 @@ class Ekomi
     private $password;
 
     /**
-     * @param EntityManager   $entityManager
-     * @param LoggerInterface $logger
-     * @param string          $url
-     * @param int             $shopId
-     * @param string          $password
+     * @param EntityManagerInterface $entityManager
+     * @param LoggerInterface        $logger
+     * @param string                 $url
+     * @param int                    $shopId
+     * @param string                 $password
      */
-    public function __construct(EntityManager $entityManager, LoggerInterface $logger, $url, $shopId, $password)
+    public function __construct(EntityManagerInterface $entityManager, LoggerInterface $logger, $url, $shopId, $password)
     {
         $this->entityManager = $entityManager;
         $this->logger        = $logger;

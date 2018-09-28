@@ -2,16 +2,12 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Routing\RouterInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Bids, Clients, OperationSubType, OperationType, Sponsorship, SponsorshipBlacklist, SponsorshipCampaign, Users, WalletType
-};
-use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\{
-    TemplateMessage, TemplateMessageProvider
-};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{Bids, Clients, OperationSubType, OperationType, Sponsorship, SponsorshipBlacklist, SponsorshipCampaign, Users, WalletType};
+use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\{TemplateMessage, TemplateMessageProvider};
 
 class SponsorshipManager
 {
@@ -21,7 +17,7 @@ class SponsorshipManager
 
     const SPONSORSHIP_MANAGER_EXCEPTION_CODE = 1;
 
-    /** @var EntityManager  */
+    /** @var EntityManagerInterface  */
     private $entityManager;
     /** @var OperationManager  */
     private $operationManager;
@@ -39,7 +35,7 @@ class SponsorshipManager
     private $router;
 
     /**
-     * @param EntityManager           $entityManager
+     * @param EntityManagerInterface  $entityManager
      * @param OperationManager        $operationManager
      * @param ClientStatusManager     $clientStatusManager
      * @param \NumberFormatter        $numberFormatter
@@ -49,7 +45,7 @@ class SponsorshipManager
      * @param RouterInterface         $router
      */
     public function __construct(
-        EntityManager $entityManager,
+        EntityManagerInterface $entityManager,
         OperationManager $operationManager,
         ClientStatusManager $clientStatusManager,
         \NumberFormatter $numberFormatter,

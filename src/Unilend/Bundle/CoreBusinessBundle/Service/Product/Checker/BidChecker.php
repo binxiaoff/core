@@ -2,7 +2,7 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service\Product\Checker;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Bids;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\ContractManager;
 
@@ -12,13 +12,13 @@ trait BidChecker
     use LenderChecker;
 
     /**
-     * @param Bids            $bid
-     * @param ContractManager $contractManager
-     * @param EntityManager   $entityManager
+     * @param Bids                   $bid
+     * @param ContractManager        $contractManager
+     * @param EntityManagerInterface $entityManager
      *
      * @return bool
      */
-    private function isEligibleForMaxTotalAmount(Bids $bid, ContractManager $contractManager, $entityManager)
+    private function isEligibleForMaxTotalAmount(Bids $bid, ContractManager $contractManager, EntityManagerInterface $entityManager)
     {
         $isAutobid = false;
 
