@@ -589,5 +589,7 @@
         <service id="Unilend\Bundle\CoreBusinessBundle\Service\UserActivity\IpGeoLocManager" autowire="true">
             <argument type="string" key="$defaultLocale">%kernel.default_locale%</argument>
         </service>
+
+        <service id="Unilend\Bundle\CoreBusinessBundle\Service\UserActivity\UserActivityDisplayManager" autowire="true"/>
     </services>
 </container>

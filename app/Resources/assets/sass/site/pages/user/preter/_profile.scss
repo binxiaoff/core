@@ -495,3 +495,53 @@
     content: $fa-lock-u64;
   }
 }
+
+.profile-security-activity-explanation {
+  @include security-icon-blocks;
+
+  &:before {
+    content: $fa-mobile-devices-u64;
+  }
+}
+
+@mixin devices-icon-info {
+  position: relative;
+  padding: 10px;
+  text-align: left;
+  min-height: 5px !important;
+
+  @include message-icon($c-t1);
+
+  @include devices('md', 'lg') {
+    @include message-md-icon;
+  }
+
+  &:before {
+    font-size: 25px;
+    line-height: 25px;
+  }
+}
+
+.profile-security-activity-desktop {
+  @include devices-icon-info;
+
+  &:before {
+    content: $fa-desktop-u64;
+  }
+}
+
+.profile-security-activity-mobile {
+  @include devices-icon-info;
+
+  &:before {
+    content: $fa-mobile-u64;
+  }
+}
+
+.profile-security-activity-tablet {
+  @include devices-icon-info;
+
+  &:before {
+    content: $fa-tablet-u64;
+  }
+}
