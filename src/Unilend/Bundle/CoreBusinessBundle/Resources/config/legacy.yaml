@@ -97,3 +97,4 @@ services:
     Unilend\Bundle\CoreBusinessBundle\Service\GreenPointValidationManager: ~
     Unilend\Bundle\CoreBusinessBundle\Service\Repayment\ProjectRepaymentScheduleManager: ~
     Unilend\Bundle\CoreBusinessBundle\Service\WorkingDaysManager: ~
+    Unilend\Bundle\CoreBusinessBundle\Service\UserActivity\UserActivityDisplayManager: ~

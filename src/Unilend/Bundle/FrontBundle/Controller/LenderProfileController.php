@@ -308,7 +308,7 @@ class LenderProfileController extends Controller
         $templateData = [
             'client'       => $client,
             'isCIPActive'  => $this->isCIPActive($client),
-            'loginHistory' => $this->get(UserActivityDisplayManager::class)->getLoginHistory($client),
+            'loginHistory' => $this->get(UserActivityDisplayManager::class)->getLoginHistory($client, $request->headers->get('User-Agent')),
             'forms'        => [
                 'securityPwd'      => $passwordForm->createView(),
                 'securityQuestion' => $questionForm->createView()

@@ -29,11 +29,12 @@ class UserActivityDisplayManager
     }
 
     /**
-     * @param Clients $client
+     * @param Clients     $client
+     * @param string|null $currentRequestUserAgent
      *
      * @return array
      */
-    public function getLoginHistory(Clients $client): array
+    public function getLoginHistory(Clients $client, ?string $currentRequestUserAgent): array
     {
         $result = [];
         try {
@@ -41,13 +42,16 @@ class UserActivityDisplayManager
                 ->getRecentLoginHistoryAndDevices($client);
 
             foreach ($loginHistory as $login) {
+                $historyUserAgent   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:UserAgent')->find($login['id_user_agent']);
+                $isCurrentUserAgent = 0 === strcmp($historyUserAgent->getUserAgentString(), $currentRequestUserAgent);
+
                 $result[] = [
                     'deviceType'  => $this->getDeviceType($login['device_type']),
                     'deviceModel' => $login['device_model'],
                     'city'        => $login['city'],
                     'country'     => $login['fr'],
                     'browserName' => $login['browser_name'],
-                    'date'        => $this->getLoginTimeSentence(new \DateTime($login['added']), $client->getLastlogin())
+                    'date'        => $this->getLoginTimeSentence(new \DateTime($login['added']), $client->getLastlogin(), $isCurrentUserAgent)
                 ];
             }
         } catch (\Exception $exception) {
@@ -90,18 +94,19 @@ class UserActivityDisplayManager
     /**
      * @param \DateTime $loginDate
      * @param \DateTime $lastLoginDate
+     * @param bool      $isCurrentUserAgent
      *
      * @return string
      */
-    private function getLoginTimeSentence(\DateTime $loginDate, \DateTime $lastLoginDate): string
+    private function getLoginTimeSentence(\DateTime $loginDate, \DateTime $lastLoginDate, bool $isCurrentUserAgent): string
     {
-        $interval   = $loginDate->diff($lastLoginDate);
+        $interval = $loginDate->diff($lastLoginDate);
 
         if (false === $interval && $loginDate instanceof \DateTime) {
             return $loginDate->format('d/m/Y H:i');
         }
 
-        if ($lastLoginDate < $loginDate) {
+        if ($lastLoginDate < $loginDate || $isCurrentUserAgent) {
             $minutes = 0;
         } elseif (0 === $interval->days && 0 === $interval->h) {
             $minutes = $interval->i;
