@@ -506,6 +506,14 @@
   }
 }
 
+.profile-security-2fa-explanation {
+  @include security-icon-blocks;
+
+  &:before {
+    content: $fa-shield-u64;
+  }
+}
+
 @mixin devices-icon-info {
   position: relative;
   padding: 10px;
