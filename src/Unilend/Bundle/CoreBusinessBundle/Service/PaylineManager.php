@@ -245,7 +245,7 @@ class PaylineManager
             }
         } else {
             $this->logger->error('Payline order cannot be found', [
-                'wallet'   => $backPayline->getWallet()->getId(),
+                'ref'      => $response['order']['ref'],
                 'response' => $response,
                 'class'    => __CLASS__,
                 'function' => __FUNCTION__

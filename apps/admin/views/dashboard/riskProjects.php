@@ -37,7 +37,7 @@
                     <td style="text-align:right"><?= $this->ficelle->formatNumber($project['amount'], 0) ?>&nbsp;€</td>
                     <td><?php if (false === empty($project['duration'])) : ?><?= $project['duration'] ?> mois<?php endif; ?></td>
                     <td><?= $project['need'] ?></td>
-                    <td><?= $project['creation']->format('d/m/Y - H\hi') ?></td>
+                    <td><?= \DateTime::createFromFormat('Y-m-d H:i:s', $project['creation'])->format('d/m/Y - H\hi') ?></td>
                     <td data-toggle="tooltip" class="tooltip<?php if ($project['risk_status_duration'] > 48) : ?> warning<?php endif; ?>" title="<?= $project['risk_status_datetime']->format('d/m/Y - H\hi') ?>"><?= $this->ficelle->formatNumber($project['risk_status_duration'], 0) ?> heures</td>
                     <?php if (empty($project['memo_content'])) : ?>
                         <td></td>
