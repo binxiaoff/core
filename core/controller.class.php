@@ -342,10 +342,16 @@ abstract class Controller implements ContainerAwareInterface
      * @param string $date
      * @param string $format
      *
-     * @return false|string
+     * @return string
      */
-    public function formatDate(string $date, $format = 'd/m/Y')
+    public function formatDate(?string $date, $format = 'd/m/Y'): string
     {
-        return date($format, strtotime($date));
+        if (empty($date)) {
+            return '';
+        }
+
+        $formattedDate = date($format, strtotime($date));
+
+        return $formattedDate ? $formattedDate : '';
     }
 }
