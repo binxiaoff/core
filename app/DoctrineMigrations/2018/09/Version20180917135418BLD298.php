@@ -29,9 +29,8 @@ CREATE TABLE user_agent(
     device_type VARCHAR(32),
     added DATETIME NOT NULL,
     user_agent_string VARCHAR(256) NOT NULL,
-    INDEX idx_user_agent_browser_device_model_brand_type (browser_name, device_model, device_brand, device_type),
-    INDEX idx_user_agent_id_client (id_client),
-    CONSTRAINT fk_user_agent_id_client FOREIGN KEY (id_client) REFERENCES clients(id_client)
+    INDEX idx_user_agent_client_browser_device_model_brand_type (id_client, browser_name, device_model, device_brand, device_type),
+    CONSTRAINT fk_user_agent_id_client FOREIGN KEY (id_client) REFERENCES clients(id_client) ON UPDATE CASCADE
 )
 CREATETABLE;
        $this->addSql($createTable);
@@ -69,5 +68,7 @@ ALTERTABLE;
         $this->addSql('ALTER TABLE clients_history DROP ip, DROP county_iso_code, DROP city, DROP id_user_agent, DROP INDEX idx_clients_history_ip, DROP INDEX idx_clients_history_added, DROP INDEX idx_clients_history_id_user_agent, DROP FOREIGN KEY fk_clients_history_id_user_agent');
 
         $this->addSql('SET FOREIGN_KEY_CHECKS = 1');
+
+        $this->addSql('ANALYZE TABLE clients_history');
     }
 }

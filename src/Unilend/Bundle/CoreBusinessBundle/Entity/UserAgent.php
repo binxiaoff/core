@@ -5,8 +5,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Entity;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * @ORM\Table(name="user_agent", indexes={@ORM\Index(name="idx_user_agent_browser_device_model_brand_type", columns={"browser_name", "device_model", "device_brand", "device_type"}),
- *                               @ORM\Index(name="idx_user_agent_id_client", columns={"id_client"})})
+ * @ORM\Table(name="user_agent", indexes={@ORM\Index(name="idx_user_agent_client_browser_device_model_brand_type", columns={"id_client", "browser_name", "device_model", "device_brand", "device_type"})})
  * @ORM\Entity
  * @ORM\HasLifecycleCallbacks
  */
