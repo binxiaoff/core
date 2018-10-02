@@ -619,7 +619,7 @@ class ProjectRequestManager
      *
      * @return int|false
      */
-    public function verifyRequestedAmount(int $amount)
+    public function checkRequestedAmount(int $amount)
     {
         $amount = filter_var($amount, FILTER_VALIDATE_INT, ['options' => ['min_range' => $this->projectManager->getMinProjectAmount(), 'max_range' => $this->projectManager->getMaxProjectAmount()]]);
 

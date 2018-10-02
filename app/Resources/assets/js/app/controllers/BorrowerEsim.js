@@ -92,31 +92,35 @@ $doc
             var needActiveFirstTab = false;
             var response = $.parseJSON(result.responseText)
 
-            response.error.forEach(function (errorCode) {
-              switch (errorCode) {
-                case borrowerEsimErrorCode.invalidAmount:
-                  needActiveFirstTab = true;
-                  messages += '<p>' + borrowerEsimErrorMessages.invalidAmount + '</p>'
-                  break
-                case borrowerEsimErrorCode.invalidDuration:
-                  messages += '<p>' + borrowerEsimErrorMessages.invalidDuration + '</p>'
-                  needActiveFirstTab = true;
-                  break
-                case borrowerEsimErrorCode.invalidReason:
-                  messages += '<p>' + borrowerEsimErrorMessages.invalidReason + '</p>'
-                  needActiveFirstTab = true;
-                  break
-                case borrowerEsimErrorCode.invalidEmail:
-                  messages += '<p>' + borrowerEsimErrorMessages.invalidEmail + '</p>'
-                  break
-                case borrowerEsimErrorCode.invalidSiren:
-                  messages += '<p>' + borrowerEsimErrorMessages.invalidSiren + '</p>'
-                  break
-                default:
-                  messages += '<p>' + borrowerEsimErrorMessages.unknownError + '</p>'
-                  break
-              }
-            });
+            if ('error' in response && response.error.length > 0) {
+              response.error.forEach(function (errorCode) {
+                switch (errorCode) {
+                  case borrowerEsimErrorCode.invalidAmount:
+                    needActiveFirstTab = true;
+                    messages += '<p>' + borrowerEsimErrorMessages.invalidAmount + '</p>'
+                    break
+                  case borrowerEsimErrorCode.invalidDuration:
+                    messages += '<p>' + borrowerEsimErrorMessages.invalidDuration + '</p>'
+                    needActiveFirstTab = true;
+                    break
+                  case borrowerEsimErrorCode.invalidReason:
+                    messages += '<p>' + borrowerEsimErrorMessages.invalidReason + '</p>'
+                    needActiveFirstTab = true;
+                    break
+                  case borrowerEsimErrorCode.invalidEmail:
+                    messages += '<p>' + borrowerEsimErrorMessages.invalidEmail + '</p>'
+                    break
+                  case borrowerEsimErrorCode.invalidSiren:
+                    messages += '<p>' + borrowerEsimErrorMessages.invalidSiren + '</p>'
+                    break
+                  default:
+                    messages += '<p>' + borrowerEsimErrorMessages.unknownError + '</p>'
+                    break
+                }
+              });
+            } else {
+              messages = '<p>' + borrowerEsimErrorMessages.unknownError + '</p>'
+            }
 
             if (messages.length > 0) {
               if (needActiveFirstTab) {
@@ -126,10 +130,21 @@ $doc
                 secondTab.find('.form-validation-notifications').html('<div class="message-error">' + messages + '</div>')
               }
             }
+          },
+          500: function () {
+            secondTab.find('.form-validation-notifications').html('<div class="message-error">' + borrowerEsimErrorMessages.unknownError + '</div>')
           }
         }
       }).done(function (result) {
         window.location.assign(result.data.redirectTo)
+      })
+    }
+  })
+  .on('change', $esim.find(':input'), function () {
+    var $errorMessageContainer = $(".form-validation-notifications .message-error")
+    if ($errorMessageContainer.length) {
+      $errorMessageContainer.fadeOut(1000, function () {
+        $(this).remove()
       })
     }
   })

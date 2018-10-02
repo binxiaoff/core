@@ -12,7 +12,7 @@ use Symfony\Component\Security\Core\Authorization\AuthorizationChecker;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{Clients, OffresBienvenues, ProjectsStatus, Tree, Users};
-use Unilend\Bundle\CoreBusinessBundle\Service\{ProjectManager, ProjectRequestManager, StatisticsManager, WelcomeOfferManager};
+use Unilend\Bundle\CoreBusinessBundle\Service\{ProjectRequestManager, StatisticsManager, WelcomeOfferManager};
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\Bundle\FrontBundle\Service\{ContentManager, ProjectDisplayManager, SeoManager, SourceManager, TestimonialManager};
 use Unilend\core\Loader;
@@ -135,17 +135,14 @@ class MainController extends Controller
         $period   = $request->request->getInt('period');
         $motiveId = $request->request->getInt('motiveId');
 
-        /** @var ProjectRequestManager $projectRequestManager */
         $projectRequestManager = $this->get('unilend.service.project_request_manager');
-        /** @var ProjectManager $projectManager */
-        $projectManager = $this->get('unilend.service.project_manager');
-        /** @var TranslatorInterface $translator */
-        $translator = $this->get('translator');
+        $projectManager        = $this->get('unilend.service.project_manager');
+        $translator            = $this->get('translator');
         /** @var \ficelle $ficelle */
         $ficelle = Loader::loadLib('ficelle');
 
         $projectPeriods = $projectManager->getPossibleProjectPeriods();
-        $amount         = $projectRequestManager->verifyRequestedAmount((int) str_replace([' ', '€'], '', $request->request->get('amount')));
+        $amount         = $projectRequestManager->checkRequestedAmount((int) str_replace([' ', '€'], '', $request->request->get('amount')));
 
         if (in_array($period, $projectPeriods) && $amount) {
             $estimatedRate                           = $projectRequestManager->getMonthlyRateEstimate();
@@ -176,10 +173,11 @@ class MainController extends Controller
      */
     public function projectSimulatorStepTwoAction(Request $request): JsonResponse
     {
-        $user = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Users')->find(Users::USER_ID_FRONT);
-
+        $entityManager         = $this->get('doctrine.orm.entity_manager');
         $projectRequestManager = $this->get('unilend.service.project_request_manager');
         $projectManager        = $this->get('unilend.service.project_manager');
+
+        $user = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find(Users::USER_ID_FRONT);
 
         $errors = [];
 
@@ -188,7 +186,7 @@ class MainController extends Controller
             $errors[] = ProjectRequestManager::EXCEPTION_CODE_INVALID_EMAIL;
         }
 
-        $amount = $projectRequestManager->verifyRequestedAmount((int) str_replace([' ', '€'], '', $request->request->get('amount')));
+        $amount = $projectRequestManager->checkRequestedAmount((int) str_replace([' ', '€'], '', $request->request->get('amount')));
         if (empty($amount)) {
             $errors[] = ProjectRequestManager::EXCEPTION_CODE_INVALID_AMOUNT;
         }
@@ -200,7 +198,7 @@ class MainController extends Controller
         }
 
         $borrowingMotive = $request->request->getInt('reason');
-        if (empty($borrowingMotive) || null === $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:BorrowingMotive')->find($borrowingMotive)) {
+        if (empty($borrowingMotive) || null === $entityManager->getRepository('UnilendCoreBusinessBundle:BorrowingMotive')->find($borrowingMotive)) {
             $errors[] = ProjectRequestManager::EXCEPTION_CODE_INVALID_REASON;
         }
 
@@ -246,7 +244,7 @@ class MainController extends Controller
                 'line'     => $exception->getLine()
             ]);
 
-            return $this->json(['success' => false, 'error' => [$exception->getCode()]], 400);
+            return $this->json(['success' => false, 'error' => [$exception->getCode()]], 500);
         }
     }
 
