@@ -66,11 +66,18 @@
     "monext/payline-sdk": "^4.53",
     "azuyalabs/yasumi": "^1.8",
     "nexylan/slack-bundle": "^2.0",
-    "php-http/guzzle6-adapter": "^1.1"
+    "php-http/guzzle6-adapter": "^1.1",
+    "piwik/device-detector": "^3.11",
+    "thadafinser/user-agent-parser": "^2.0",
+    "whichbrowser/parser": "^2.0",
+    "cravler/maxmind-geoip-bundle": "dev-master"
   },
   "require-dev": {
   },
   "scripts": {
+    "unilend-scripts": [
+      "Cravler\\MaxMindGeoIpBundle\\Composer\\ScriptHandler::maxMindGeoIpUpdate"
+    ],
     "symfony-scripts": [
       "Incenteev\\ParameterHandler\\ScriptHandler::buildParameters",
       "Sensio\\Bundle\\DistributionBundle\\Composer\\ScriptHandler::buildBootstrap",
@@ -80,10 +87,12 @@
       "Sensio\\Bundle\\DistributionBundle\\Composer\\ScriptHandler::prepareDeploymentTarget"
     ],
     "post-install-cmd": [
-      "@symfony-scripts"
+      "@symfony-scripts",
+      "@unilend-scripts"
     ],
     "post-update-cmd": [
-      "@symfony-scripts"
+      "@symfony-scripts",
+      "@unilend-scripts"
     ]
   },
   "extra": {

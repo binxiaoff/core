@@ -75,3 +75,14 @@ services:
             - '%locale%'
             - !php/const \IntlDateFormatter::MEDIUM
             - !php/const \IntlDateFormatter::SHORT
+
+    UserAgentParser\Provider\WhichBrowser:
+        class: UserAgentParser\Provider\WhichBrowser
+
+    UserAgentParser\Provider\PiwikDeviceDetector:
+        class: UserAgentParser\Provider\PiwikDeviceDetector
+
+    UserAgentParser\Provider\Chain:
+        $providers:
+            - '@UserAgentParser\Provider\WhichBrowser'
+            - '@UserAgentParser\Provider\PiwikDeviceDetector'
