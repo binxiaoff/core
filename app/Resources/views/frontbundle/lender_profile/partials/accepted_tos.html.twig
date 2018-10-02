@@ -1,0 +1,19 @@
+<article id="panel-terms-of-use" class="panel">
+    <header class="panel-header">
+        <h3>{% trans %} lender-profile_information-tab-terms-of-use-section-title {% endtrans %}</h3>
+    </header>
+    <section id="profile-terms-of-use-section">
+            <div class="list-files">
+                {% for acceptedTos in acceptedTermsOfSale %}
+                    {% if acceptedTos.getPdfName() is not empty %} {# display only terms of sale for which we have the PDF the client can download (BLD-319 / BLD-320 #}
+                        <p>
+                            <a href="{{ path('lender_terms_of_sale_pdf', {'clientHash': client.hash, 'idTree': acceptedTos.getIdLegalDoc()}) }}" target="_blank" class="link">
+                                <span class="icon fa-file-pdf-o"></span>
+                            </a>
+                            {% trans with {'%date%' : acceptedTos.added|date('d/m/Y')} %} lender-profile_information-tab-terms-of-use-section-link-label {% endtrans %}
+                        </p>
+                    {% endif %}
+                {% endfor %}
+            </div><!-- /.ulist-files -->
+    </section><!-- /.ui-toggle-group -->
+</article><!-- /.panel -->

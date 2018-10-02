@@ -1,11 +1,13 @@
 <section id="data-update-info-view" role="tabpanel" class="lender-data-update-view collapse in">
     <dl class="list-2col">
         <dt>{% trans %} common_title {% endtrans %}</dt>
-        {% if client.civilite == constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::TITLE_MISTER') %}
-            <dd id="data-update-info-title-output">{% trans %} common_title-male {% endtrans %}</dd>
-        {% else %}
-            <dd id="data-update-info-title-output">{% trans %} common_title-female {% endtrans %}</dd>
-        {% endif %}
+        <dd id="data-update-info-title-output">
+            {% if client.civilite == constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::TITLE_MISTER') %}
+                {% trans %} common_title-male {% endtrans %}
+            {% elseif client.civilite == constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::TITLE_MISS') %}
+                {% trans %} common_title-female {% endtrans %}
+            {% endif %}
+        </dd>
         <dt>{% trans %} common_used-name {% endtrans %}</dt>
         <dd id="data-update-info-used-name-output">{{ client.nomUsage }}</dd>
         <dt>{% trans %} common_firstname {% endtrans %}</dt>

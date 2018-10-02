@@ -1,8 +1,10 @@
 <?php
 
+use Box\Spout\Common\Type;
+use Box\Spout\Writer\WriterFactory;
 use Doctrine\ORM\EntityManager;
 use Symfony\Component\HttpFoundation\Request;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{DebtCollectionFeeDetail, EcheanciersEmprunteur, ProjectRepaymentTask, Projects, ProjectsStatus, Receptions, Zones};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{Clients, DebtCollectionFeeDetail, EcheanciersEmprunteur, ProjectRepaymentTask, Projects, ProjectsStatus, Receptions, Zones};
 use Unilend\Bundle\CoreBusinessBundle\Service\{BackOfficeUserManager, ProjectCloseOutNettingManager, Repayment\ProjectCloseOutNettingPaymentManager, Repayment\ProjectPaymentManager};
 
 class remboursementController extends bootstrap
@@ -472,7 +474,7 @@ class remboursementController extends bootstrap
                     'plannedRepaymentTasks'      => $plannedRepaymentTasks,
                     'lenderCount'                => $entityManager->getRepository('UnilendCoreBusinessBundle:Loans')->getLenderNumber($project),
                     'paymentSchedules'           => $paymentSchedules,
-                    'repaymentProjectStatus'     => ProjectsStatus::FUNDE.','.ProjectsStatus::REMBOURSEMENT.','.ProjectsStatus::REMBOURSE.','.ProjectsStatus::REMBOURSEMENT_ANTICIPE
+                    'repaymentProjectStatus'     => ProjectsStatus::FUNDE . ',' . ProjectsStatus::REMBOURSEMENT . ',' . ProjectsStatus::REMBOURSE . ',' . ProjectsStatus::REMBOURSEMENT_ANTICIPE
                 ];
 
                 $this->render(null, $templateData);
@@ -628,5 +630,67 @@ class remboursementController extends bootstrap
             ];
         }
         return $latePaymentData;
+    }
+
+    public function _restant_du_loan_ddt()
+    {
+        if (empty($this->params[0])) {
+            header('Location: ' . $this->lurl . '/dossiers');
+            exit;
+        }
+
+        $projectId = filter_var($this->params[0], FILTER_VALIDATE_INT);
+
+        if (false === $projectId) {
+            header('Location: ' . $this->lurl . '/dossiers');
+            exit;
+        }
+
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+        $project       = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($projectId);
+
+        if (null === $project || null === $project->getCloseOutNettingDate()) {
+            header('Location: ' . $this->lurl . '/dossiers');
+            exit;
+        }
+        /** @var ProjectCloseOutNettingManager $projectCloseOutNettingManager */
+        $projectCloseOutNettingManager = $this->get('unilend.service.project_close_out_netting_manager');
+        $remainingByLoans              = $projectCloseOutNettingManager->getRemainingAmountsForEachLoanOfProject($project);
+
+        $writer = WriterFactory::create(Type::XLSX);
+
+        $writer
+            ->openToBrowser('ddt_details_par_loan_' . $project->getIdProject() . '.xlsx')
+            ->addRow([
+                'Identifiant du prêt',
+                'Nom',
+                'Prénom',
+                'Email',
+                'Type',
+                'Raison social',
+                'Date de naissance',
+                'Téléphone',
+                'Mobile',
+                'Adresse',
+                'Code postal',
+                'Ville',
+                'Montant du prêt',
+                'Capital restant dû',
+                'Intérêts restant dû',
+                'Total restant dû'
+            ]);
+
+        foreach ($remainingByLoans as $loan) {
+            if ($loan['birthday'] instanceof DateTime) {
+                $loan['birthday'] = $loan['birthday']->format('d/m/Y');
+            }
+            $loan['type'] = in_array($loan['type'], [Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER]) ? 'Physique' : 'Morale';
+            $writer->addRow($loan);
+        }
+
+        $writer->close();
+
+        exit;
     }
 }

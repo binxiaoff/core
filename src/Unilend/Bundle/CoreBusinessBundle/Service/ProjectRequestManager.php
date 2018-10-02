@@ -5,9 +5,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Translation\TranslatorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    BorrowingMotive, Companies, CompanyRating, Partner, ProjectRejectionReason, Projects, ProjectsStatus, ProjectStatusHistoryReason, TaxType, Users
-};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{BorrowingMotive, Companies, CompanyRating, Partner, ProjectRejectionReason, Projects, ProjectsStatus, ProjectStatusHistoryReason, TaxType, Users};
 use Unilend\Bundle\CoreBusinessBundle\Service\Eligibility\EligibilityManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\Bundle\FrontBundle\Service\SourceManager;
@@ -21,6 +19,7 @@ class ProjectRequestManager
     const EXCEPTION_CODE_INVALID_REASON   = 104;
 
     const DEFAULT_PROJECT_AMOUNT = 10000;
+    const MINIMUM_REVENUE        = 100000;
 
     /** @var EntityManagerSimulator */
     private $entityManagerSimulator;

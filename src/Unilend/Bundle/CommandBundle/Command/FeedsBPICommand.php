@@ -60,7 +60,7 @@ class FeedsBPICommand extends ContainerAwareCommand
         }, $products);
 
         $projectsToSerialise = [];
-        $projectList         = $projectData->selectProjectsByStatus($projectStatuses, 'AND p.display = ' . \projects::DISPLAY_PROJECT_ON, [], '', '', false, $productIds);
+        $projectList         = $projectData->selectProjectsByStatus($projectStatuses, 'AND p.display = ' . Projects::DISPLAY_YES, [], '', '', false, $productIds);
 
         foreach ($projectList as $item) {
             /** @var Projects $project */

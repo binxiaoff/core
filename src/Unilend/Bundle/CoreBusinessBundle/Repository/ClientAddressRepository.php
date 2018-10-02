@@ -50,7 +50,7 @@ class ClientAddressRepository extends EntityRepository
             ->andWhere('ca.dateValidated IS NOT NULL')
             ->andWhere('ca.dateArchived IS NULL')
             ->orderBy('ca.dateValidated', 'DESC')
-            ->setParameter(':idClient', $idClient)
+            ->setParameter('idClient', $idClient)
             ->setParameter('type', AddressType::TYPE_MAIN_ADDRESS)
             ->setMaxResults(1);
 
@@ -74,5 +74,28 @@ class ClientAddressRepository extends EntityRepository
             ->setParameter('lender', WalletType::LENDER);
 
         return $queryBuilder->getQuery()->getResult();
+    }
+
+    /**
+     * @param \DateTime   $date
+     * @param Clients|int $idClient
+     *
+     * @return ClientAddress|null
+     */
+    public function findMainAddressAddedBeforeDate(\DateTime $date, $idClient): ?ClientAddress
+    {
+        $queryBuilder = $this->createQueryBuilder('ca');
+        $queryBuilder
+            ->innerJoin('UnilendCoreBusinessBundle:AddressType', 'at', Join::WITH, 'ca.idType = at.id')
+            ->where('ca.idClient = :idClient')
+            ->andWhere('at.label = :type')
+            ->andWhere('ca.added <= :date')
+            ->orderBy('ca.added', 'DESC')
+            ->setParameter('date', $date)
+            ->setParameter('idClient', $idClient)
+            ->setParameter('type', AddressType::TYPE_MAIN_ADDRESS)
+            ->setMaxResults(1);
+
+        return $queryBuilder->getQuery()->getOneOrNullResult();
     }
 }

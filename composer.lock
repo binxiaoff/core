@@ -6075,16 +6075,16 @@
         },
         {
             "name": "sonata-project/seo-bundle",
-            "version": "2.5.1",
+            "version": "2.6.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sonata-project/SonataSeoBundle.git",
-                "reference": "62affda210bc3f19890fb03aaa91c753109c85ae"
+                "reference": "8192b1280a4d793f71f7aa6d7b6daff90a340faa"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sonata-project/SonataSeoBundle/zipball/62affda210bc3f19890fb03aaa91c753109c85ae",
-                "reference": "62affda210bc3f19890fb03aaa91c753109c85ae",
+                "url": "https://api.github.com/repos/sonata-project/SonataSeoBundle/zipball/8192b1280a4d793f71f7aa6d7b6daff90a340faa",
+                "reference": "8192b1280a4d793f71f7aa6d7b6daff90a340faa",
                 "shasum": ""
             },
             "require": {
@@ -6103,7 +6103,7 @@
                 "sonata-project/block-bundle": "<3.11"
             },
             "require-dev": {
-                "guzzle/guzzle": "3.*",
+                "guzzle/guzzle": "^3.8",
                 "sonata-project/admin-bundle": "^3.31",
                 "sonata-project/block-bundle": "^3.11",
                 "sonata-project/core-bundle": "^3.9",
@@ -6149,7 +6149,7 @@
                 "seo",
                 "sonata"
             ],
-            "time": "2018-02-23T16:33:11+00:00"
+            "time": "2018-08-27T08:02:50+00:00"
         },
         {
             "name": "swiftmailer/swiftmailer",
