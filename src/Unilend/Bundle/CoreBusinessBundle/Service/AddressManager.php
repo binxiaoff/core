@@ -572,13 +572,14 @@ class AddressManager
         }
 
         if ($address->getIdCountry()->getIdPays() === Pays::COUNTRY_FRANCE || in_array($address->getIdCountry()->getIdPays(), Pays::FRANCE_DOM_TOM)) {
-            $inseeCode = $this->locationManager->getInseeCode($address->getZip(), $address->getCity());
-            $inseeCode = false !== $inseeCode ? $inseeCode : null;
+            $inseeCog = $this->locationManager->getInseeCog($address->getZip(), $address->getCity());
 
-            $address->setCog($inseeCode);
-            $this->entityManager->flush($address);
+            if (null !== $inseeCog) {
+                $address->setCog($inseeCog);
+                $this->entityManager->flush($address);
 
-            return true;
+                return true;
+            }
         }
 
         return false;

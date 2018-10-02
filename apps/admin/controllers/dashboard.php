@@ -1,8 +1,6 @@
 <?php
 
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    BorrowingMotive, Partner, Projects, ProjectsStatus, Users, UsersTypes, Zones
-};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{BorrowingMotive, Partner, Projects, ProjectsStatus, Users, UsersTypes, Zones};
 use Unilend\Bundle\CoreBusinessBundle\Service\ProjectRequestManager;
 use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessageProvider;
 
@@ -62,8 +60,8 @@ class dashboardController extends bootstrap
             $this->collapsedStatus              = self::SALES_MY_PROJECTS_COLLAPSED_STATUS;
             $this->salesPeople                  = $user->select('status = ' . Users::STATUS_ONLINE . ' AND id_user_type = ' . UsersTypes::TYPE_COMMERCIAL, 'firstname ASC, name ASC');
             $this->otherTasksProjects           = [
-                'Transfet de fonds'       => $this->getProjectsWithFundsToRelease(),
-                'Changement Rib en cours' => $this->getProjectsWithMandatesPendingSignature()
+                'Transfert de fonds'      => $this->getProjectsWithFundsToRelease(),
+                'Changement RIB en cours' => $this->getProjectsWithMandatesPendingSignature()
             ];
         } else {
             header('Location: ' . $this->lurl);

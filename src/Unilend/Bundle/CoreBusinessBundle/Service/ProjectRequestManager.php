@@ -613,4 +613,16 @@ class ProjectRequestManager
 
         return $this->translator->trans($translation, ['%borrowerServiceEmail%' => $borrowerServiceEmail->getValue()]);
     }
+
+    /**
+     * @param int $amount
+     *
+     * @return int|false
+     */
+    public function checkRequestedAmount(int $amount)
+    {
+        $amount = filter_var($amount, FILTER_VALIDATE_INT, ['options' => ['min_range' => $this->projectManager->getMinProjectAmount(), 'max_range' => $this->projectManager->getMaxProjectAmount()]]);
+
+        return $amount;
+    }
 }
