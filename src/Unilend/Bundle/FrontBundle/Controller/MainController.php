@@ -12,6 +12,7 @@ use Symfony\Component\Security\Core\Authorization\AuthorizationChecker;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{Clients, OffresBienvenues, ProjectsStatus, Tree, Users};
+use Unilend\Bundle\CoreBusinessBundle\Repository\ProjectsRepository;
 use Unilend\Bundle\CoreBusinessBundle\Service\{ProjectManager, ProjectRequestManager, StatisticsManager, WelcomeOfferManager};
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\Bundle\FrontBundle\Service\{ContentManager, ProjectDisplayManager, SeoManager, SourceManager, TestimonialManager};
@@ -78,11 +79,11 @@ class MainController extends Controller
             'featureLender'      => $testimonialService->getFeaturedTestimonialLender(),
             'showPagination'     => false,
             'showSortable'       => false,
-            'sortType'           => ProjectDisplayManager::SORT_FIELD_END,
+            'sortType'           => ProjectsRepository::SORT_FIELD_END,
             'sortDirection'      => 'desc'
         ];
 
-        $template['projects'] = $projectDisplayManager->getProjectsList([], [ProjectDisplayManager::SORT_FIELD_END => 'DESC'], null, 3, $client);
+        $template['projects'] = $projectDisplayManager->getProjectsList([], [ProjectsRepository::SORT_FIELD_END => 'DESC'], null, 3, $client);
 
         $translator        = $this->get('translator');
         $projectRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Projects');
@@ -115,7 +116,7 @@ class MainController extends Controller
         $template['borrowingMotives']  = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:BorrowingMotive')->findBy([], ['rank' => 'ASC']);
         $template['projects'] = $projectDisplayManager->getProjectsList(
             [ProjectsStatus::EN_FUNDING],
-            [ProjectDisplayManager::SORT_FIELD_END => 'DESC']
+            [ProjectsRepository::SORT_FIELD_END => 'DESC']
         );
 
         $template['featureBorrower'] = $testimonialService->getFeaturedTestimonialBorrower();

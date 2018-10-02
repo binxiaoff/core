@@ -2,7 +2,6 @@
 
 namespace Unilend\Bundle\CommandBundle\Command;
 
-use Cache\Adapter\Memcache\MemcacheCachePool;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\{Input\InputInterface, Output\OutputInterface};
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
@@ -109,9 +108,8 @@ class ProjectsFundingCommand extends ContainerAwareCommand
         }
 
         if ($hasProjectFinished) {
-            /** @var MemcacheCachePool $cachePool */
-            $cachePool = $this->getContainer()->get('memcache.default');
-            $cachePool->deleteItem(CacheKeys::LIST_PROJECTS);
+            $cacheDriver = $entityManager->getConfiguration()->getResultCacheImpl();
+            $cacheDriver->delete(CacheKeys::LIST_PROJECTS);
         }
     }
 }

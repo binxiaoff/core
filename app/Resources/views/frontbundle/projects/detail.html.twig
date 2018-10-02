@@ -185,11 +185,11 @@
 
                     </div><!-- /.project-single-header-inner -->
                 </div><!-- /.project-single-header-position -->
-                {% if project.navigation.previousProject is defined and project.navigation.previousProject is not empty %}
-                    <a href="{{ path('project_detail', {'projectSlug' : project.navigation.previousProject.slug}) }}" class="btn-nav-previous" title="{{ project.navigation.previousProject.title }}" data-toggle="tooltip" data-placement="right"><span class="sr-only">{% trans %} project-detail_next-project-label {% endtrans %}</span></a>
+                {% if project.navigation.previous is defined and project.navigation.previous is not empty %}
+                    <a href="{{ path('project_detail', {'projectSlug' : project.navigation.previous.slug}) }}" class="btn-nav-previous" title="{{ project.navigation.previous.title }}" data-toggle="tooltip" data-placement="right"><span class="sr-only">{% trans %} project-detail_next-project-label {% endtrans %}</span></a>
                 {%  endif %}
-                {% if project.navigation.nextProject is defined and project.navigation.nextProject is not empty %}
-                    <a href="{{ path('project_detail', {'projectSlug' : project.navigation.nextProject.slug}) }}" class="btn-nav-next" title="{{ project.navigation.nextProject.title }}" data-toggle="tooltip" data-placement="left"><span class="sr-only">{% trans %} project-detail_previous-project-label {% endtrans %}</span></a>
+                {% if project.navigation.next is defined and project.navigation.next is not empty %}
+                    <a href="{{ path('project_detail', {'projectSlug' : project.navigation.next.slug}) }}" class="btn-nav-next" title="{{ project.navigation.next.title }}" data-toggle="tooltip" data-placement="left"><span class="sr-only">{% trans %} project-detail_previous-project-label {% endtrans %}</span></a>
                 {%  endif %}
             </div><!-- /.project-single-header -->
 

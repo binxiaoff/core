@@ -45,7 +45,7 @@
 
             // Item visibility
             if (in_array($zone, $this->lZonesHeader)) {
-                $active = $this->menu_admin === $zone ? ' class="active"' : '';
+                $active = isset($this->menu_admin) && $this->menu_admin === $zone ? ' class="active"' : '';
                 $menuHtml .= '<li>';
                 $menuHtml .= empty($item['uri']) ? '<span' . $active . '>' . $title . '</span>' : '<a href="' . $this->lurl . '/' . $item['uri'] . '"' . $active . '>' . $title . '</a>';
 

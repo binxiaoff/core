@@ -64,8 +64,8 @@ class dashboardController extends bootstrap
                 'Changement RIB en cours' => $this->getProjectsWithMandatesPendingSignature()
             ];
         } else {
-            header('Location: ' . $this->lurl);
-            die;
+            header('Location: ' . $this->lurl . '/dashboard/activite');
+            exit;
         }
     }
 

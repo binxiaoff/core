@@ -3,9 +3,7 @@
 namespace Unilend\Bundle\CommandBundle\Command;
 
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
-use Symfony\Component\Console\{
-    Input\InputInterface, Output\OutputInterface
-};
+use Symfony\Component\Console\{Input\InputInterface, Output\OutputInterface};
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 
 class ProjectsPrePublishCommand extends ContainerAwareCommand
@@ -32,7 +30,7 @@ class ProjectsPrePublishCommand extends ContainerAwareCommand
 
         $projectLifecycleManager->setLogger($logger);
 
-        /** @var $project Projects */
+        /** @var Projects $project */
         foreach ($projectsToFund as $project) {
             $output->writeln('Project : ' . $project->getTitle());
 
