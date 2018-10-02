@@ -14,7 +14,7 @@ use Doctrine\ORM\Mapping as ORM;
 class ProjectsNotes
 {
     /**
-     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Projects
+     * @var Projects
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Projects")
      * @ORM\JoinColumns({

@@ -409,20 +409,6 @@ class Projects
     private $memos;
 
     /**
-     * @var ProjectsPouvoir
-     *
-     * @ORM\OneToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsPouvoir", mappedBy="idProject")
-     */
-    private $proxy;
-
-    /**
-     * @var ProjectCgv
-     *
-     * @ORM\OneToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\ProjectCgv", mappedBy="idProject")
-     */
-    private $termsOfSale;
-
-    /**
      * @var Virements[]
      *
      * @ORM\OneToMany(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Virements", mappedBy="idProject")
@@ -452,13 +438,6 @@ class Projects
      * @ORM\OneToMany(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\DebtCollectionMission", mappedBy="idProject")
      */
     private $debtCollectionMissions;
-
-    /**
-     * @var ProjectsNotes
-     *
-     * @ORM\OneToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsNotes", mappedBy="idProject")
-     */
-    private $notes;
 
     /**
      * Projects constructor.
@@ -1541,9 +1520,9 @@ class Projects
     /**
      * Get project memos
      *
-     * @return ProjectsComments[]
+     * @return ArrayCollection|ProjectsComments[]
      */
-    public function getMemos(): array
+    public function getMemos(): ArrayCollection
     {
         $criteria = Criteria::create();
         $criteria->orderBy(['added' => Criteria::DESC]);
@@ -1554,35 +1533,15 @@ class Projects
     /**
      * Get project public memos
      *
-     * @return ProjectsComments[]
+     * @return ArrayCollection|ProjectsComments[]
      */
-    public function getPublicMemos(): array
+    public function getPublicMemos(): ArrayCollection
     {
         $criteria = Criteria::create()
             ->where(Criteria::expr()->eq('public', true))
             ->orderBy(['added' => Criteria::DESC]);
 
         return $this->memos->matching($criteria);
-    }
-
-    /**
-     * Get project proxy
-     *
-     * @return ProjectsPouvoir
-     */
-    public function getProxy()
-    {
-        return $this->proxy;
-    }
-
-    /**
-     * Get project terms of sale
-     *
-     * @return ProjectCgv
-     */
-    public function getTermsOfSale()
-    {
-        return $this->termsOfSale;
     }
 
     /**
@@ -1599,14 +1558,6 @@ class Projects
     public function getInvoices()
     {
         return $this->invoices;
-    }
-
-    /**
-     * @return ProjectsNotes|null
-     */
-    public function getNotes(): ?ProjectsNotes
-    {
-        return $this->notes;
     }
 
     /**
