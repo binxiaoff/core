@@ -70,7 +70,7 @@
     "piwik/device-detector": "^3.11",
     "thadafinser/user-agent-parser": "^2.0",
     "whichbrowser/parser": "^2.0",
-    "cravler/maxmind-geoip-bundle": "dev-master"
+    "cravler/maxmind-geoip-bundle": "^1.2"
   },
   "require-dev": {
   },

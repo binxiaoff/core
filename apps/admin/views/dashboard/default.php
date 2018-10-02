@@ -239,7 +239,7 @@
                                 <td><?php if (false === empty($project['duration'])) : ?><?= $project['duration'] ?> mois<?php endif; ?></td>
                                 <td><?= $project['client_name'] ?></td>
                                 <td><a href="tel:0<?= $project['client_phone'] ?>"><?= $project['client_phone'] ?></a></td>
-                                <td><?= $project['creation']->format('d/m/Y - H\hi') ?></td>
+                                <td><?= \DateTime::createFromFormat('Y-m-d H:i:s', $project['creation'])->format('d/m/Y - H\hi') ?></td>
                                 <?php if (empty($project['memo_content'])) : ?>
                                     <td></td>
                                 <?php else : ?>

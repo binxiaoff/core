@@ -26,18 +26,18 @@ class rootController extends bootstrap
             exit;
         }
 
-        $user = $token->getUser();
-        if (!$user instanceof Clients) {
+        $client = $token->getUser();
+        if (!$client instanceof Clients) {
             header('Location: ' . $this->lurl);
             exit;
         }
 
-        if ($user->isInSubscription()) {
+        if ($client->isInSubscription()) {
             header('Location: ' . $this->lurl . '/inscription-preteurs');
             exit;
         }
 
-        $listeAccept = $this->acceptations_legal_docs->select('id_client = ' . $this->clients->id_client, 'added DESC', 0, 1);
+        $listeAccept = $this->acceptations_legal_docs->select('id_client = ' . $client->getIdClient(), 'added DESC', 0, 1);
         $listeAccept = array_shift($listeAccept);
 
         $id_tree_cgu = $listeAccept['id_legal_doc'];
@@ -55,16 +55,16 @@ class rootController extends bootstrap
             header("Content-Type: application/force-download");
             @readfile($this->surl . '/var/fichiers/' . $this->content['pdf-cgu']);
         } else {
-            $oCommandPdf    = new \Command('pdf', 'cgv_preteurs', array($this->clients->hash), $this->language);
+            $oCommandPdf    = new \Command('pdf', 'cgv_preteurs', array($client->getHash()), $this->language);
             $oPdf           = new \pdfController($oCommandPdf, 'default', $this->request);
             $oPdf->setContainer($this->container);
             $oPdf->initialize();
-            $path           = $this->path . 'protected/pdf/cgv_preteurs/' . $this->clients->id_client . '/';
-            $sNamePdf       = 'cgv_preteurs-' . $this->clients->hash . '-' . $id_tree_cgu;
-            $sNamePdfClient = 'CGV-UNILEND-PRETEUR-' . $this->clients->id_client . '-' . $id_tree_cgu;
+            $path           = $this->path . 'protected/pdf/cgv_preteurs/' . $client->getIdClient() . '/';
+            $sNamePdf       = 'cgv_preteurs-' . $client->getHash() . '-' . $id_tree_cgu;
+            $sNamePdfClient = 'CGV-UNILEND-PRETEUR-' . $client->getIdClient() . '-' . $id_tree_cgu;
 
             if (false  === file_exists($path . $sNamePdf)) {
-                $this->cgv_preteurs(true, $oPdf, [$this->clients->hash]);
+                $this->cgv_preteurs(true, $oPdf, [$client->getHash()]);
                 $oPdf->WritePdf($path . $sNamePdf, 'cgv_preteurs');
             }
 

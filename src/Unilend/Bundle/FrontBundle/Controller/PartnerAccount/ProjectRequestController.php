@@ -9,7 +9,8 @@ use Symfony\Component\HttpFoundation\{RedirectResponse, Request, Response};
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\User\UserInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{BorrowingMotive, Clients, ClientsStatus, CompanyClient, PartnerProjectAttachment, ProjectAbandonReason, ProjectRejectionReason, Projects, ProjectsStatus, Users};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{BorrowingMotive, Clients, ClientsStatus, CompanyClient, PartnerProjectAttachment, ProjectAbandonReason, ProjectRejectionReason, Projects, ProjectsStatus,
+    Users};
 use Unilend\Bundle\CoreBusinessBundle\Service\ProjectRequestManager;
 use Unilend\core\Loader;
 
@@ -517,11 +518,12 @@ class ProjectRequestController extends Controller
      * @Route("partenaire/depot/abandon", name="partner_project_request_abandon", methods={"POST"})
      * @Security("has_role('ROLE_PARTNER')")
      *
-     * @param Request $request
+     * @param Request                    $request
+     * @param UserInterface|Clients|null $partnerUser
      *
      * @return Response
      */
-    public function projectRequestAbandon(Request $request): Response
+    public function projectRequestAbandon(Request $request, ?UserInterface $partnerUser): Response
     {
         $hash = $request->request->get('hash');
 
