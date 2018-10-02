@@ -5,10 +5,15 @@ namespace Application\Migrations;
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\Migrations\AbstractMigration;
 
-
 final class Version20181001092129BLD309 extends AbstractMigration
 {
-    public function up(Schema $schema) : void
+    /**
+     * @param Schema $schema
+     *
+     * @throws \Doctrine\DBAL\DBALException
+     * @throws \Doctrine\DBAL\Migrations\AbortMigrationException
+     */
+    public function up(Schema $schema): void
     {
         $this->abortIf($this->connection->getDatabasePlatform()->getName() !== 'mysql', 'Migration can only be executed safely on "mysql".');
 
@@ -20,20 +25,28 @@ INSERT IGNORE INTO translations (locale, section, name, translation, added) VALU
 NEWTRANSLATIONS;
 
         $this->addSql($newTranslations);
-
     }
 
-    public function down(Schema $schema) : void
+    /**
+     * @param Schema $schema
+     *
+     * @throws \Doctrine\DBAL\DBALException
+     * @throws \Doctrine\DBAL\Migrations\AbortMigrationException
+     */
+    public function down(Schema $schema): void
     {
         $this->abortIf($this->connection->getDatabasePlatform()->getName() !== 'mysql', 'Migration can only be executed safely on "mysql".');
 
-        $this->addSql('
-        DELETE FROM translations 
-        WHERE section = \'lender-profile\' 
-        AND name IN (
-            \'security-2fa-section-title\',
-            \'security-2fa-section-edit-button\',
-            \'security-2fa-explanation-message\'
-        )');
+        $deleteTranslations = <<<DELETETRANSLATIONS
+DELETE FROM translations 
+    WHERE section = 'lender-profile'
+    AND name IN (
+        'security-2fa-section-title',
+        'security-2fa-section-edit-button',
+        'security-2fa-explanation-message'
+    )
+DELETETRANSLATIONS;
+
+        $this->addSql($deleteTranslations);
     }
 }
