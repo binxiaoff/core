@@ -39,7 +39,7 @@ CREATETABLE;
 ALTER TABLE clients_history
     ADD COLUMN ip VARCHAR(45) AFTER status,
     ADD COLUMN country_iso_code VARCHAR(2) AFTER ip,
-    ADD COLUMN city VARCHAR(64) AFTER county_iso_code,
+    ADD COLUMN city VARCHAR(64) AFTER country_iso_code,
     ADD COLUMN id_user_agent INT(11),
     ADD INDEX idx_clients_history_ip (ip),
     ADD INDEX idx_clients_history_id_user_agent (id_user_agent),

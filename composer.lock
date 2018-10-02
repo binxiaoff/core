@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "b17973a8d4b3bafebb8c1bb6c219e7d8",
+    "content-hash": "424d23f49a91f59e6370a6f94e4c90a5",
     "packages": [
         {
             "name": "alcaeus/mongo-php-adapter",
@@ -798,7 +798,7 @@
         },
         {
             "name": "cravler/maxmind-geoip-bundle",
-            "version": "dev-master",
+            "version": "v1.2.1",
             "target-dir": "Cravler/MaxMindGeoIpBundle",
             "source": {
                 "type": "git",
@@ -7937,8 +7937,7 @@
     "minimum-stability": "stable",
     "stability-flags": {
         "knplabs/mailjet-api-php": 20,
-        "knplabs/knp-mailjet-bundle": 20,
-        "cravler/maxmind-geoip-bundle": 20
+        "knplabs/knp-mailjet-bundle": 20
     },
     "prefer-stable": false,
     "prefer-lowest": false,
