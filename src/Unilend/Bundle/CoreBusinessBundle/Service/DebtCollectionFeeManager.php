@@ -2,7 +2,7 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\DebtCollectionFeeDetail;
 use Unilend\Bundle\CoreBusinessBundle\Entity\DebtCollectionMission;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Loans;
@@ -13,7 +13,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 
 class DebtCollectionFeeManager
 {
-    /** @var EntityManager */
+    /** @var EntityManagerInterface */
     private $entityManager;
 
     /** @var DebtCollectionMissionManager */
@@ -22,7 +22,12 @@ class DebtCollectionFeeManager
     /** @var OperationManager */
     private $operationManager;
 
-    public function __construct(EntityManager $entityManager, DebtCollectionMissionManager $debtCollectionMissionManager, OperationManager $operationManager)
+    /**
+     * @param EntityManagerInterface       $entityManager
+     * @param DebtCollectionMissionManager $debtCollectionMissionManager
+     * @param OperationManager             $operationManager
+     */
+    public function __construct(EntityManagerInterface $entityManager, DebtCollectionMissionManager $debtCollectionMissionManager, OperationManager $operationManager)
     {
         $this->entityManager                = $entityManager;
         $this->debtCollectionMissionManager = $debtCollectionMissionManager;

@@ -2,16 +2,14 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Knp\Snappy\GeneratorInterface;
 use Twig_Environment;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    CompteurFactures, EcheanciersEmprunteur, Factures, Projects, ProjectsStatus, TaxType
-};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{CompteurFactures, EcheanciersEmprunteur, Factures, Projects, ProjectsStatus, TaxType};
 
 class InvoiceManager
 {
-    /** @var EntityManager */
+    /** @var EntityManagerInterface */
     private $entityManager;
     /** @var GeneratorInterface $snappy */
     private $snappy;
@@ -23,13 +21,13 @@ class InvoiceManager
     private $projectManager;
 
     /**
-     * @param EntityManager      $entityManager
-     * @param GeneratorInterface $snappy
-     * @param Twig_Environment   $twig
-     * @param string             $protectedPath
-     * @param ProjectManager     $projectManager
+     * @param EntityManagerInterface $entityManager
+     * @param GeneratorInterface     $snappy
+     * @param Twig_Environment       $twig
+     * @param string                 $protectedPath
+     * @param ProjectManager         $projectManager
      */
-    public function __construct(EntityManager $entityManager, GeneratorInterface $snappy, Twig_Environment $twig, ProjectManager $projectManager, string $protectedPath)
+    public function __construct(EntityManagerInterface $entityManager, GeneratorInterface $snappy, Twig_Environment $twig, ProjectManager $projectManager, string $protectedPath)
     {
         $this->entityManager  = $entityManager;
         $this->snappy         = $snappy;

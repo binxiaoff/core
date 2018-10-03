@@ -2,7 +2,7 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
-use Doctrine\ORM\{EntityManager, OptimisticLockException};
+use Doctrine\ORM\{EntityManagerInterface, OptimisticLockException};
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Validator\Constraints\{Bic, Iban};
 use Symfony\Component\Validator\Validator\ValidatorInterface;
@@ -10,7 +10,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{Attachment, BankAccount, Clients};
 
 class BankAccountManager
 {
-    /** @var EntityManager */
+    /** @var EntityManagerInterface */
     private $entityManager;
     /** @var LenderManager */
     private $lenderManager;
@@ -20,13 +20,13 @@ class BankAccountManager
     private $validator;
 
     /**
-     * @param EntityManager      $entityManager
-     * @param LenderManager      $lenderManager
-     * @param LoggerInterface    $logger
-     * @param ValidatorInterface $validator
+     * @param EntityManagerInterface $entityManager
+     * @param LenderManager          $lenderManager
+     * @param LoggerInterface        $logger
+     * @param ValidatorInterface     $validator
      */
     public function __construct(
-        EntityManager $entityManager,
+        EntityManagerInterface $entityManager,
         LenderManager $lenderManager,
         LoggerInterface $logger,
         ValidatorInterface $validator

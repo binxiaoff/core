@@ -2,14 +2,14 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectCharge;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Receptions;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 
 class ProjectChargeManager
 {
-    /** @var EntityManager */
+    /** @var EntityManagerInterface */
     private $entityManager;
 
     /** @var DebtCollectionMissionManager */
@@ -18,7 +18,12 @@ class ProjectChargeManager
     /** @var OperationManager */
     private $operationManager;
 
-    public function __construct(EntityManager $entityManager, DebtCollectionMissionManager $debtCollectionMissionManager, OperationManager $operationManager)
+    /**
+     * @param EntityManagerInterface       $entityManager
+     * @param DebtCollectionMissionManager $debtCollectionMissionManager
+     * @param OperationManager             $operationManager
+     */
+    public function __construct(EntityManagerInterface $entityManager, DebtCollectionMissionManager $debtCollectionMissionManager, OperationManager $operationManager)
     {
         $this->entityManager                = $entityManager;
         $this->debtCollectionMissionManager = $debtCollectionMissionManager;

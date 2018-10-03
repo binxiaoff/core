@@ -7,7 +7,8 @@ use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\{JsonResponse, Request, Response};
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\User\UserInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{Bids, Clients, ClientsStatus, LenderStatistic, OperationType, Product, Wallet, WalletType};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{Bids, Clients, ClientsStatus, LenderStatistic, OperationType, Product, ProjectsStatus, Wallet, WalletType};
+use Unilend\Bundle\FrontBundle\Service\ProjectDisplayManager;
 
 class LenderDashboardController extends Controller
 {
@@ -53,7 +54,7 @@ class LenderDashboardController extends Controller
         $productIds      = array_map(function (Product $product) {
             return $product->getIdProduct();
         }, $products);
-        $ongoingProjects = $project->selectProjectsByStatus([\projects_status::EN_FUNDING], '', [\projects::SORT_FIELD_END => \projects::SORT_DIRECTION_ASC], 0, 30, true, $productIds);
+        $ongoingProjects = $project->selectProjectsByStatus([ProjectsStatus::EN_FUNDING], '', [ProjectDisplayManager::SORT_FIELD_END => 'ASC'], 0, 30, true, $productIds);
 
         foreach ($ongoingProjects as $iKey => $aProject) {
             $project->get($aProject['id_project']);
@@ -78,7 +79,7 @@ class LenderDashboardController extends Controller
                     'amount'           => $aProject['amount'],
                     'publication_date' => $aProject['date_publication'],
                     'days_left'        => $aProject['daysLeft'],
-                    'finished'         => ($aProject['status'] > \projects_status::EN_FUNDING || (new \DateTime($aProject['date_retrait'])) < (new \DateTime('NOW'))),
+                    'finished'         => ($aProject['status'] > ProjectsStatus::EN_FUNDING || (new \DateTime($aProject['date_retrait'])) < (new \DateTime('NOW'))),
                     'end_date'         => $aProject['date_retrait'],
                     'funding_duration' => $projectStats->days,
                     'pending_bids'     => $bid->getBidsByStatus(Bids::STATUS_PENDING, $aProject['id_project'], $wallet->getId())
@@ -95,7 +96,7 @@ class LenderDashboardController extends Controller
                 'risk'             => $aProject['risk'],
                 'average_rate'     => $aProject['avgrate'],
                 'bid_count'        => count($bid->getBidsByStatus(Bids::STATUS_PENDING, $aProject['id_project'])),
-                'finished'         => ($aProject['status'] > \projects_status::EN_FUNDING || (new \DateTime($aProject['date_retrait'])) < (new \DateTime('NOW'))),
+                'finished'         => ($aProject['status'] > ProjectsStatus::EN_FUNDING || (new \DateTime($aProject['date_retrait'])) < (new \DateTime('NOW'))),
                 'end_date'         => $aProject['date_retrait'],
                 'funding_duration' => $projectStats->days
             ];

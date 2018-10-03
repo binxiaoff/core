@@ -35,6 +35,9 @@
                             <th>
                                 Restant dû
                             </th>
+                            <th>
+                                Détails des prêts
+                            </th>
                         </tr>
                         </thead>
                         <tbody>
@@ -53,6 +56,10 @@
                                 </td>
                                 <td class="text-right">
                                     {{ payment.remainingAmount > 0 ? payment.remainingAmount|localizedcurrency('EUR') : 'N/A' }}
+                                </td>
+                                <td>
+                                    <a href="/remboursement/restant_du_loan_ddt/{{ project.getIdProject() }}" class="btn btn-xs btn-default push-10-r" data-toggle="tooltip"
+                                       data-original-title="Télécharger une extraction des détails des prêts"><i class="fa fa-download"></i></a>
                                 </td>
                             </tr>
                             {% set totalPaymentsAmount = totalPaymentsAmount + payment.amount %}

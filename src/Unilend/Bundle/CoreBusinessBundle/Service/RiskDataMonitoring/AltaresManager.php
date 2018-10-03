@@ -2,7 +2,7 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service\RiskDataMonitoring;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\OptimisticLockException;
 use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{Companies, CompanyRatingHistory};
@@ -26,7 +26,7 @@ class AltaresManager
         'ALTA_BIL'
     ];
 
-    /** @var EntityManager */
+    /** @var EntityManagerInterface */
     private $entityManager;
     /** @var AltaresWsClient */
     private $altaresWsManager;
@@ -42,22 +42,22 @@ class AltaresManager
     private $logger;
 
     /**
-     * @param EntityManager       $entityManager
-     * @param AltaresWsClient     $altaresWsManager
-     * @param CompanyValidator    $companyValidator
-     * @param ExternalDataManager $externalDataManager
-     * @param DataWriter          $dataWriter
-     * @param MonitoringManager   $monitoringManager
-     * @param LoggerInterface     $logger
+     * @param EntityManagerInterface $entityManager
+     * @param AltaresWsClient        $altaresWsManager
+     * @param CompanyValidator       $companyValidator
+     * @param ExternalDataManager    $externalDataManager
+     * @param DataWriter             $dataWriter
+     * @param MonitoringManager      $monitoringManager
+     * @param LoggerInterface        $wsClientLogger
      */
     public function __construct(
-        EntityManager $entityManager,
+        EntityManagerInterface $entityManager,
         AltaresWsClient $altaresWsManager,
         CompanyValidator $companyValidator,
         ExternalDataManager $externalDataManager,
         DataWriter $dataWriter,
         MonitoringManager $monitoringManager,
-        LoggerInterface $logger
+        LoggerInterface $wsClientLogger
     )
     {
         $this->entityManager       = $entityManager;
@@ -66,7 +66,7 @@ class AltaresManager
         $this->externalDataManager = $externalDataManager;
         $this->dataWriter          = $dataWriter;
         $this->monitoringManager   = $monitoringManager;
-        $this->logger              = $logger;
+        $this->logger              = $wsClientLogger;
     }
 
     /**

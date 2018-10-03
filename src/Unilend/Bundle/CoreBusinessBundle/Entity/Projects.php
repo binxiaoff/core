@@ -32,6 +32,9 @@ class Projects
     const AUTO_REPAYMENT_ON  = 0;
     const AUTO_REPAYMENT_OFF = 1;
 
+    const DISPLAY_YES = 0;
+    const DISPLAY_NO  = 1;
+
     // project rating mapping (letter to start)
     const RISK_A = 5;
     const RISK_B = 4.5;

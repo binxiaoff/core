@@ -3,18 +3,6 @@
 //
 
 #user-preter-profile.dashboard {
-  .nav.nav-dashboard-tabs {
-    > li {
-      width: 25%; // 4 items / 100%
-    }
-
-    &.nav-has-cip {
-      > li {
-        width: 20%; // 5 items / 100%
-      }
-    }
-  }
-
   .panel {
     position: relative;
 
@@ -498,6 +486,8 @@
   @include devices('md', 'lg') {
     @include message-md-icon;
   }
+
+  min-height: 0 !important;
 }
 
 .profile-security-password-explanation {

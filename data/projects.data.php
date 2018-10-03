@@ -2,45 +2,11 @@
 
 use Doctrine\DBAL\Statement;
 use Unilend\Bridge\Doctrine\DBAL\Connection;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Bids;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
-use Unilend\Bundle\CoreBusinessBundle\Entity\EcheanciersEmprunteur;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Loans;
-use Unilend\Bundle\CoreBusinessBundle\Entity\OperationSubType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{Bids, Clients, CompanyStatus, EcheanciersEmprunteur, Loans, OperationSubType, Projects as ProjectsEntity, ProjectsStatus};
+use Unilend\Bundle\FrontBundle\Service\ProjectDisplayManager;
 
 class projects extends projects_crud
 {
-    const MINIMUM_REVENUE = 100000;
-
-    const DISPLAY_PROJECT_ON  = 0;
-    const DISPLAY_PROJECT_OFF = 1;
-
-    const SORT_FIELD_SECTOR = 'sector';
-    const SORT_FIELD_AMOUNT = 'amount';
-    const SORT_FIELD_RATE   = 'rate';
-    const SORT_FIELD_RISK   = 'risk';
-    const SORT_FIELD_END    = 'end';
-
-    const SORT_DIRECTION_ASC  = 'ASC';
-    const SORT_DIRECTION_DESC = 'DESC';
-
-    public function __construct($bdd, $params = '')
-    {
-        parent::__construct($bdd, $params);
-    }
-
-    public function create($cs = '')
-    {
-        parent::create($cs);
-
-        $this->hash = md5($this->id_project . $this->added);
-        $this->update();
-
-        return $this->id_project;
-    }
-
     public function select($where = '', $order = '', $start = '', $nb = '')
     {
         if ($where != '') {
@@ -57,16 +23,6 @@ class projects extends projects_crud
             $result[] = $record;
         }
         return $result;
-    }
-
-    public function counter($where = '')
-    {
-        if ($where != '') {
-            $where = ' WHERE ' . $where;
-        }
-
-        $result = $this->bdd->query('SELECT COUNT(*) FROM projects ' . $where);
-        return (int) $this->bdd->result($result, 0, 0);
     }
 
     public function exist($id, $field = 'id_project')
@@ -182,16 +138,16 @@ class projects extends projects_crud
         $tables = '
             FROM projects p FORCE INDEX (status)';
 
-        $sortField     = self::SORT_FIELD_END;
-        $sortDirection = self::SORT_DIRECTION_DESC;
+        $sortField     = ProjectDisplayManager::SORT_FIELD_END;
+        $sortDirection = 'DESC';
 
         if (false === empty($sort)) {
             $field     = key($sort);
             $direction = current($sort);
 
             if (
-                in_array($field, [\projects::SORT_FIELD_SECTOR, \projects::SORT_FIELD_AMOUNT, \projects::SORT_FIELD_RATE, \projects::SORT_FIELD_RISK, \projects::SORT_FIELD_END])
-                && in_array($direction, [self::SORT_DIRECTION_ASC, self::SORT_DIRECTION_DESC])
+                in_array($field, [ProjectDisplayManager::SORT_FIELD_SECTOR, ProjectDisplayManager::SORT_FIELD_AMOUNT, ProjectDisplayManager::SORT_FIELD_RATE, ProjectDisplayManager::SORT_FIELD_RISK, ProjectDisplayManager::SORT_FIELD_END])
+                && in_array($direction, ['ASC', 'DESC'])
             ) {
                 $sortField     = $field;
                 $sortDirection = $direction;
@@ -199,15 +155,15 @@ class projects extends projects_crud
         }
 
         switch ($sortField) {
-            case self::SORT_FIELD_SECTOR:
+            case ProjectDisplayManager::SORT_FIELD_SECTOR:
                 $order  = 'c.sector ' . $sortDirection . ', p.date_retrait DESC, p.status ASC';
                 $tables .= '
                     INNER JOIN companies c ON p.id_company = c.id_company';
                 break;
-            case self::SORT_FIELD_AMOUNT:
+            case ProjectDisplayManager::SORT_FIELD_AMOUNT:
                 $order = 'p.amount ' . $sortDirection . ', p.date_retrait DESC, p.status ASC';
                 break;
-            case self::SORT_FIELD_RATE:
+            case ProjectDisplayManager::SORT_FIELD_RATE:
                 $select .= ',
                     CASE
                         WHEN p.status IN (' . implode(', ', [ProjectsStatus::FUNDE, ProjectsStatus::REMBOURSEMENT, ProjectsStatus::REMBOURSE, ProjectsStatus::REMBOURSEMENT_ANTICIPE, ProjectsStatus::PROBLEME, ProjectsStatus::LOSS]) . ') THEN (SELECT SUM(amount * rate) / SUM(amount) AS avg_rate FROM loans WHERE id_project = p.id_project)
@@ -216,13 +172,13 @@ class projects extends projects_crud
                     END AS avg_rate';
                 $order  = 'avg_rate ' . $sortDirection . ', p.date_retrait DESC, p.status ASC';
                 break;
-            case self::SORT_FIELD_RISK:
-                $sortDirection = $sortDirection === self::SORT_DIRECTION_DESC ? self::SORT_DIRECTION_ASC : self::SORT_DIRECTION_DESC;
+            case ProjectDisplayManager::SORT_FIELD_RISK:
+                $sortDirection = $sortDirection === 'DESC' ? 'ASC' : 'DESC';
                 $order         = 'p.risk ' . $sortDirection . ', p.date_retrait DESC, p.status ASC';
                 break;
-            case self::SORT_FIELD_END:
+            case ProjectDisplayManager::SORT_FIELD_END:
             default:
-                if ($sortDirection === self::SORT_DIRECTION_ASC) {
+                if ($sortDirection === 'ASC') {
                     $order = 'lestatut DESC, IF(lestatut = 2, p.date_fin, "") ASC, IF(lestatut = 1, p.date_retrait, "") DESC, p.status ASC';
                 } else {
                     $order = 'lestatut ASC, IF(lestatut = 2, p.date_fin, "") DESC, IF(lestatut = 1, p.date_retrait, "") ASC, p.status DESC';
@@ -306,57 +262,9 @@ class projects extends projects_crud
         }
     }
 
-    public function searchDossiersByStatus(array $aStatus, $siren = null, $societe = null, $nom = null, $prenom = null, $projet = null, $email = null, $start = null, $nb = null)
-    {
-        $where = '';
-        if (false === empty($siren)) {
-            $where .= ' AND co.siren = "' . $siren . '"';
-        }
-        if (false === empty($societe)) {
-            $where .= ' AND co.name = "' . $societe . '"';
-        }
-        if (false === empty($nom)) {
-            $where .= ' AND c.nom = "' . $nom . '"';
-        }
-        if (false === empty($prenom)) {
-            $where .= ' AND c.prenom = "' . $prenom . '"';
-        }
-        if (false === empty($projet)) {
-            $where .= ' AND p.title LIKE "%' . $projet . '%"';
-        }
-        if (false === empty($email)) {
-            $where .= ' AND c.email = "' . $email . '"';
-        }
-
-        $result   = array();
-        $resultat = $this->bdd->query('
-            SELECT p.id_project,
-                p.title,
-                p.remb_auto,
-                c.nom,
-                c.prenom,
-                c.email,
-                co.name AS company,
-                ps.label AS status_label
-            FROM projects p
-            INNER JOIN projects_status ps ON (p.status = ps.status)
-            LEFT JOIN companies co ON (p.id_company = co.id_company)
-            LEFT JOIN clients c ON (co.id_client_owner = c.id_client)
-            WHERE p.status IN (' . implode(', ', $aStatus) . ')
-            ' . $where . '
-            ORDER BY p.added DESC
-            ' . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''))
-        );
-
-        while ($record = $this->bdd->fetch_assoc($resultat)) {
-            $result[] = $record;
-        }
-        return $result;
-    }
-
     public function positionProject($projectId, array $status, $order, array $products = [])
     {
-        $aProjects = $this->selectProjectsByStatus($status, ' AND p.display = ' . self::DISPLAY_PROJECT_ON, $order, '', '', true, $products);
+        $aProjects = $this->selectProjectsByStatus($status, ' AND p.display = ' . ProjectsEntity::DISPLAY_YES, $order, '', '', true, $products);
         $previous  = '';
         $next      = '';
 
@@ -1236,7 +1144,7 @@ class projects extends projects_crud
               p.title AS title,
               (SELECT ps.status FROM projects_status ps LEFT JOIN projects_status_history psh ON (ps.id_project_status = psh.id_project_status) WHERE psh.id_project = p.id_project ORDER BY psh.added DESC, psh.id_project_status_history DESC LIMIT 1) AS status
             FROM projects p
-            WHERE p.display = ' . self::DISPLAY_PROJECT_ON . ' AND p.title LIKE :search
+            WHERE p.display = ' . ProjectsEntity::DISPLAY_YES . ' AND p.title LIKE :search
             HAVING status >= ' . ProjectsStatus::EN_FUNDING . '
             ORDER BY p.title ASC';
 
