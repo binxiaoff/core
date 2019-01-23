@@ -127,7 +127,7 @@ parameters:
     slack.command_token:              ''
     slack.monitoring_channel:         '#it-monitoring'
     slack.default_username:           Unilend
-    slack.endpoint:                   https://hooks.slack.com/services/
+    slack.endpoint:                   https://hooks.slack.com/services
 
     mailchimp.api_key:                ''
     mailchimp.webhook_secret:         ''
