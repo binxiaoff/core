@@ -6,8 +6,9 @@ class rootController extends bootstrap
 {
     public function _default()
     {
-        header('Location: /erreur404');
-        exit;
+        header($_SERVER['SERVER_PROTOCOL'] . ' 404 Not Found');
+        $this->hideDecoration();
+        $this->setView('../root/404');
     }
 
     public function _pdf_cgv_preteurs()
