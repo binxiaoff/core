@@ -45,8 +45,11 @@ class dossiersController extends bootstrap
     protected $clients_prescripteurs;
     /** @var \companies */
     protected $companies_prescripteurs;
-    /** @var int Count project in searchDossiers */
-    public $iCountProjects;
+
+    /** @var array */
+    protected $searchResult;
+    /** @var int */
+    protected $resultsCount;
 
     public function initialize()
     {
@@ -60,17 +63,22 @@ class dossiersController extends bootstrap
         $this->translator = $this->get('translator');
     }
 
+    /**
+     * Search page
+     */
     public function _default()
     {
-        $this->projects_status = $this->loadData('projects_status');
-        $this->projects        = $this->loadData('projects');
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager       = $this->get('doctrine.orm.entity_manager');
+        $projectStatus       = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatus')->findBy([], ['status' => 'ASC']);
+        $this->projectStatus = [];
 
-        $this->lProjects_status = $this->projects_status->select('', ' status ASC ');
+        foreach ($projectStatus as $status) {
+            $this->projectStatus[$status->getStatus()] = $status;
+        }
+
         $this->aAnalysts        = $this->users->select('status = ' . Users::STATUS_ONLINE . ' AND id_user_type = ' . UsersTypes::TYPE_RISK);
         $this->aSalesPersons    = $this->users->select('status = ' . Users::STATUS_ONLINE . ' AND id_user_type = ' . UsersTypes::TYPE_COMMERCIAL);
-
-        $this->oUserAnalyst     = $this->loadData('users');
-        $this->oUserSalesPerson = $this->loadData('users');
 
         $this->settings->get('Durée des prêts autorisées', 'type');
         $this->fundingTimeValues = explode(',', $this->settings->value);
@@ -83,33 +91,56 @@ class dossiersController extends bootstrap
         $this->page = $this->page > 0 ? $this->page : 1;
 
         if (isset($_POST['form_search_dossier'])) {
-            $startDate       = empty($_POST['date1']) ? '' : \DateTime::createFromFormat('d/m/Y', $_POST['date1'])->format('Y-m-d');
-            $endDate         = empty($_POST['date2']) ? '' : \DateTime::createFromFormat('d/m/Y', $_POST['date2'])->format('Y-m-d');
-            $projectNeed     = empty($_POST['projectNeed']) ? '' : $_POST['projectNeed'];
-            $duration        = empty($_POST['duree']) ? '' : $_POST['duree'];
-            $status          = empty($_POST['status']) ? '' : $_POST['status'];
-            $analyst         = empty($_POST['analyste']) ? '' : $_POST['analyste'];
-            $siren           = empty($_POST['siren']) ? '' : $_POST['siren'];
-            $projectId       = empty($_POST['id']) ? '' : $_POST['id'];
-            $companyName     = empty($_POST['raison-sociale']) ? '' : $_POST['raison-sociale'];
-            $commercial      = empty($_POST['commercial']) ? '' : $_POST['commercial'];
-            $offset          = ($this->page - 1) * $this->nb_lignes;
-            $this->lProjects = $this->projects->searchDossiers($startDate, $endDate, $projectNeed, $duration, $status, $analyst, $siren, $projectId, $companyName, null, $commercial, $offset, $this->nb_lignes);
+            $projectRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
+
+            if (false === empty($_POST['id']) && filter_var($_POST['id'], FILTER_VALIDATE_INT) && null !== $projectRepository->find($_POST['id'])) {
+                header('Location: ' . $this->lurl . '/dossiers/edit/' . $_POST['id']);
+                exit;
+            }
+
+            $projectRequestManager = $this->get('unilend.service.project_request_manager');
+
+            $status        = $this->request->request->filter('status', null, FILTER_VALIDATE_INT);
+            $status        = $status ? [$status] : null;
+            $siren         = $projectRequestManager->validateSiren($this->request->request->filter('siren', null, FILTER_SANITIZE_STRING)) ?: null;
+            $companyName   = $this->request->request->filter('raison-sociale', null, FILTER_SANITIZE_STRING) ?: null;
+            $startDate     = $this->request->request->get('date1');
+            $startDate     = $startDate && 1 === preg_match('#^[0-9]{2}/[0-9]{2}/[0-9]{4}$#', $startDate) ? \DateTime::createFromFormat('d/m/Y', $startDate) : null;
+            $endDate       = $this->request->request->get('date2');
+            $endDate       = $endDate && 1 === preg_match('#^[0-9]{2}/[0-9]{2}/[0-9]{4}$#', $endDate) ? \DateTime::createFromFormat('d/m/Y', $endDate) : null;
+            $duration      = $this->request->request->filter('duree', null, FILTER_VALIDATE_INT) ?: null;
+            $projectNeed   = $this->request->request->filter('projectNeed', null, FILTER_VALIDATE_INT) ?: null;
+            $salesPersonId = $this->request->request->filter('commercial', null, FILTER_VALIDATE_INT) ?: null;
+            $riskAnalystId = $this->request->request->filter('analyste', null, FILTER_VALIDATE_INT) ?: null;
+
+            $limit  = $this->nb_lignes;
+            $offset = ($this->page - 1) * $this->nb_lignes;
+
+            $this->searchResult = $projectRepository->search($status, $siren, $companyName, $startDate, $endDate, $duration, $projectNeed, $salesPersonId, $riskAnalystId, $limit, $offset);
+            $this->resultsCount = count($this->searchResult);
+
+            if ($this->resultsCount >= $this->nb_lignes) {
+                $this->resultsCount = $projectRepository->countSearch($status, $siren, $companyName, $startDate, $endDate, $duration, $projectNeed, $salesPersonId, $riskAnalystId);
+            }
         } elseif (isset($this->params[0]) && 1 === preg_match('/^[1-9]([0-9,]*[0-9]+)*$/', $this->params[0])) {
-            $this->lProjects = $this->projects->searchDossiers('', '', '', '', $this->params[0]);
+            $statuses           = explode(',', $this->params[0]);
+            $projectRepository  = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
+            $this->searchResult = $projectRepository->search($statuses);
+            $this->resultsCount = count($this->searchResult);
+
+            if ($this->resultsCount >= $this->nb_lignes) {
+                $this->resultsCount = $projectRepository->countSearch($statuses);
+            }
         }
 
-        $this->projectsCount = isset($this->lProjects) && is_array($this->lProjects) ? array_shift($this->lProjects) : null;
+        if (isset($this->searchResult)) {
+            $this->projectNotesRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsNotes');
+        }
 
         /** @var BackOfficeUserManager $backOfficeUserManager */
         $backOfficeUserManager    = $this->get('unilend.service.back_office_user_manager');
         $this->isRiskUser         = $backOfficeUserManager->isUserGroupRisk($this->userEntity);
         $this->hasRepaymentAccess = $backOfficeUserManager->isGrantedZone($this->userEntity, Zones::ZONE_LABEL_REPAYMENT);
-
-        if (1 === $this->projectsCount && (false === empty($projectId) || false === empty($companyName))) {
-            header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->lProjects[0]['id_project']);
-            die;
-        }
     }
 
     public function _edit()
@@ -152,8 +183,6 @@ class dossiersController extends bootstrap
         $entityManager = $this->get('doctrine.orm.entity_manager');
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BeneficialOwnerManager $beneficialOwnerManager */
         $beneficialOwnerManager = $this->get('unilend.service.beneficial_owner_manager');
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectCloseOutNettingManager $projectCloseOutNettingManager */
-        $projectCloseOutNettingManager = $this->get('unilend.service.project_close_out_netting_manager');
         /** @var BackOfficeUserManager $userManager */
         $userManager = $this->get('unilend.service.back_office_user_manager');
 
@@ -265,7 +294,7 @@ class dossiersController extends bootstrap
                     $this->salesPersons[] = $currentSalesPerson;
                 }
             }
-           $this->projectComments     = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsComments')
+            $this->projectComments     = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsComments')
                 ->findBy(['idProject' => $this->projects->id_project], ['added' => 'DESC']);
             $this->aAllAnnualAccounts = $this->companies_bilans->select('id_company = ' . $this->companies->id_company, 'cloture_exercice_fiscal DESC');
 
@@ -1414,15 +1443,6 @@ class dossiersController extends bootstrap
         $this->dureePossible = explode(',', $this->settings->value);
 
         $this->sources = $this->getSourcesList();
-    }
-
-    public function _funding()
-    {
-        $this->projects  = $this->loadData('projects');
-        $this->companies = $this->loadData('companies');
-        $this->bids      = $this->loadData('bids');
-
-        $this->lProjects = $this->projects->selectProjectsByStatus([ProjectsStatus::EN_FUNDING]);
     }
 
     public function _detail_remb_preteur()

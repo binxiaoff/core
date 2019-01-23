@@ -5,8 +5,12 @@ namespace Unilend\Bundle\CommandBundle\Command;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\{InputArgument, InputInterface};
 use Symfony\Component\Console\Output\OutputInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{Bids, Product, Projects, ProjectsStatus};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{Bids, Projects, ProjectsStatus};
 
+/**
+ * https://unilend.atlassian.net/browse/RUN-1065
+ * https://tousnosprojets.bpifrance.fr/var/storage/20160422-bpifrance-tnp-import-projets.pdf
+ */
 class FeedsBPICommand extends ContainerAwareCommand
 {
     /**
@@ -33,14 +37,12 @@ class FeedsBPICommand extends ContainerAwareCommand
         $logger                 = $this->getContainer()->get('monolog.logger.console');
         $projectRepository      = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
 
-        /** @var \projects $projectData */
-        $projectData = $entityManagerSimulator->getRepository('projects');
         /** @var \bids $bids */
         $bids = $entityManagerSimulator->getRepository('bids');
         /** @var \loans $loans */
         $loans = $entityManagerSimulator->getRepository('loans');
 
-        $projectStatuses = [
+        $projectStatus = [
             ProjectsStatus::EN_FUNDING,
             ProjectsStatus::FUNDE,
             ProjectsStatus::FUNDING_KO,
@@ -51,33 +53,29 @@ class FeedsBPICommand extends ContainerAwareCommand
             ProjectsStatus::LOSS
         ];
 
-        $hostUrl    = $this->getContainer()->getParameter('router.request_context.scheme') . '://' . $this->getContainer()->getParameter('url.host_default');
-        $userPath   = $this->getContainer()->getParameter('path.user');
-        $partner    = strtolower($input->getArgument('partner'));
-        $products   = $entityManager->getRepository('UnilendCoreBusinessBundle:Product')->findAvailableProductsByClient();
-        $productIds = array_map(function (Product $product) {
-            return $product->getIdProduct();
-        }, $products);
+        $hostUrl  = $this->getContainer()->getParameter('router.request_context.scheme') . '://' . $this->getContainer()->getParameter('url.host_default');
+        $userPath = $this->getContainer()->getParameter('path.user');
+        $partner  = strtolower($input->getArgument('partner'));
+        $products = $entityManager->getRepository('UnilendCoreBusinessBundle:Product')->findAvailableProductsByClient();
 
         $projectsToSerialise = [];
-        $projectList         = $projectData->selectProjectsByStatus($projectStatuses, 'AND p.display = ' . Projects::DISPLAY_YES, [], '', '', false, $productIds);
+        $projects            = $projectRepository->findBy([
+            'status'    => $projectStatus,
+            'display'   => Projects::DISPLAY_YES,
+            'idProduct' => $products
+        ]);
 
-        foreach ($projectList as $item) {
-            /** @var Projects $project */
-            $project = $projectRepository->find($item['id_project']);
-            $company = $project->getIdCompany();
-
+        foreach ($projects as $project) {
             if ((empty($project->getDatePublication()) || empty($project->getDateRetrait())) && 'bpi' === $partner) {
                 $logger->warning('The project ' . $project->getIdProject() . ' will not be added into xml file. No publishing/withdrawal date was set', [
-                        'class'      => __CLASS__,
-                        'function'   => __FUNCTION__,
-                        'id_project' => $project->getIdProject()
-                    ]
-                );
+                    'class'      => __CLASS__,
+                    'function'   => __FUNCTION__,
+                    'id_project' => $project->getIdProject()
+                ]);
                 continue;
             }
 
-            if ($project->getStatus() == ProjectsStatus::EN_FUNDING) {
+            if ($project->getStatus() === ProjectsStatus::EN_FUNDING) {
                 $totalBids = $bids->sum('id_project = ' . $project->getIdProject() . ' AND status = ' . Bids::STATUS_PENDING, 'amount') / 100;
             } else {
                 $totalBids = $bids->sum('id_project = ' . $project->getIdProject() . ' AND status = ' . Bids::STATUS_ACCEPTED, 'amount') / 100;
@@ -87,6 +85,7 @@ class FeedsBPICommand extends ContainerAwareCommand
                 $totalBids = $project->getAmount();
             }
 
+            $company = $project->getIdCompany();
             $details = [
                 'reference_partenaire'             => '045',
                 'date_export'                      => date('Y-m-d'),
@@ -110,7 +109,7 @@ class FeedsBPICommand extends ContainerAwareCommand
                         ['projectSlug' => $project->getSlug()]) . '/?utm_source=TNProjets&utm_medium=Part&utm_campaign=Permanent',
                 'url_photo'                        => $hostUrl . '/images/dyn/projets/169/' . $project->getPhotoProjet(),
                 'date_debut_collecte'              => $project->getDatePublication() ? $project->getDatePublication()->format('Y-m-d') : '',
-                'date_fin_collecte'                => $project->getDateRetrait()? $project->getDateRetrait()->format('Y-m-d') : '',
+                'date_fin_collecte'                => $project->getDateRetrait() ? $project->getDateRetrait()->format('Y-m-d') : '',
                 'montant_recherche'                => $project->getAmount(),
                 'montant_collecte'                 => number_format($totalBids, 0, ',', ''),
                 'nb_contributeurs'                 => $loans->getNbPreteurs($project->getIdProject()),
@@ -124,6 +123,7 @@ class FeedsBPICommand extends ContainerAwareCommand
 
             $projectsToSerialise['projet'][] = $details;
         }
+
         $xml = $serializer->serialize($projectsToSerialise, 'xml', ['xml_root_node_name' => 'partenaire', 'xml_encoding' => 'UTF-8']);
 
         $fileName = $this->getFileName($partner);

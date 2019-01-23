@@ -11,9 +11,9 @@ use Symfony\Component\HttpFoundation\{JsonResponse, RedirectResponse, Request, R
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Translation\TranslatorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{AttachmentType, Bids, Clients, ClientsHistoryActions, Loans, Product, Projects, ProjectsStatus, UnderlyingContract, UnderlyingContractAttributeType,
-    WalletType};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{AttachmentType, Bids, Clients, ClientsHistoryActions, Loans, Projects, ProjectsStatus, UnderlyingContract, UnderlyingContractAttributeType, WalletType};
 use Unilend\Bundle\CoreBusinessBundle\Exception\BidException;
+use Unilend\Bundle\CoreBusinessBundle\Repository\ProjectsRepository;
 use Unilend\Bundle\CoreBusinessBundle\Service\CIPManager;
 use Unilend\Bundle\FrontBundle\Security\LoginAuthenticator;
 use Unilend\Bundle\FrontBundle\Service\{LenderAccountDisplayManager, ProjectDisplayManager};
@@ -135,7 +135,6 @@ class ProjectsController extends Controller
         $entityManager         = $this->get('doctrine.orm.entity_manager');
         $translator            = $this->get('translator');
         $projectDisplayManager = $this->get('unilend.frontbundle.service.project_display_manager');
-        $productRepository     = $entityManager->getRepository('UnilendCoreBusinessBundle:Product');
         $projectRepository     = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
 
         $template      = [];
@@ -146,7 +145,7 @@ class ProjectsController extends Controller
         $sortDirection = strtoupper($sortDirection);
 
         if (
-            in_array($sortType, [ProjectDisplayManager::SORT_FIELD_SECTOR, ProjectDisplayManager::SORT_FIELD_AMOUNT, ProjectDisplayManager::SORT_FIELD_RATE, ProjectDisplayManager::SORT_FIELD_RISK, ProjectDisplayManager::SORT_FIELD_END])
+            in_array($sortType, [ProjectsRepository::SORT_FIELD_SECTOR, ProjectsRepository::SORT_FIELD_AMOUNT, ProjectsRepository::SORT_FIELD_RATE, ProjectsRepository::SORT_FIELD_RISK, ProjectsRepository::SORT_FIELD_END])
             && in_array($sortDirection, ['ASC', 'DESC'])
         ) {
             $sort = [$sortType => $sortDirection];
@@ -160,14 +159,11 @@ class ProjectsController extends Controller
             }
         });
 
-        /** @var \projects $projects */
-        $projects        = $this->get('unilend.service.entity_manager')->getRepository('projects');
-        $products        = $productRepository->findAvailableProductsByClient($client);
-        $productIds      = array_map(function (Product $product) {
-            return $product->getIdProduct();
-        }, $products);
+        $productRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Product');
+        $products          = $productRepository->findAvailableProductsByClient($client);
+        $projects          = $projectRepository->findBy(['status' => ProjectsStatus::EN_FUNDING, 'display' => Projects::DISPLAY_YES, 'idProduct' => $products]);
 
-        $template['projectsInFunding'] = $projects->countSelectProjectsByStatus([ProjectsStatus::EN_FUNDING], ' AND display = ' . Projects::DISPLAY_YES, $productIds);
+        $template['projectsInFunding'] = count($projects);
         $template['pagination']        = $this->pagination($page, $limit, $client);
         $template['showPagination']    = true;
         $template['showSortable']      = true;
@@ -187,11 +183,9 @@ class ProjectsController extends Controller
      */
     private function pagination($page, $limit, ?Clients $client)
     {
-        /** @var ProjectDisplayManager $projectDisplayManager */
         $projectDisplayManager = $this->get('unilend.frontbundle.service.project_display_manager');
-
-        $totalNumberProjects = $projectDisplayManager->getTotalNumberOfDisplayedProjects($client);
-        $totalPages          = ceil($totalNumberProjects / $limit);
+        $totalNumberProjects   = $projectDisplayManager->getTotalNumberOfDisplayedProjects($client);
+        $totalPages            = ceil($totalNumberProjects / $limit);
 
         $paginationSettings = [
             'itemsPerPage'      => $limit,
@@ -355,21 +349,20 @@ class ProjectsController extends Controller
                 ];
             }
         } else {
-            $translator             = $this->get('translator');
-            $entityManagerSimulator = $this->get('unilend.service.entity_manager');
-            /** @var \companies $company */
-            $company = $entityManagerSimulator->getRepository('companies');
+            $translator = $this->get('translator');
 
             $template['project']['title'] = $translator->trans('company-sector_sector-' . $template['project']['company']['sectorId']);
 
-            if (isset($template['project']['navigation']['previousProject']['title'])) {
-                $company->get($template['project']['navigation']['previousProject']['id_company']);
-                $template['project']['navigation']['previousProject']['title'] = $translator->trans('company-sector_sector-' . $company->sector);
+            if (isset($template['project']['navigation']['previous']['title']) && $template['project']['navigation']['previous']['project'] instanceof Projects) {
+                /** @var Projects $previousProject */
+                $previousProject = $template['project']['navigation']['previous']['project'];
+                $template['project']['navigation']['previous']['title'] = $translator->trans('company-sector_sector-' . $previousProject->getIdCompany()->getSector());
             }
 
-            if (isset($template['project']['navigation']['nextProject']['title'])) {
-                $company->get($template['project']['navigation']['nextProject']['id_company']);
-                $template['project']['navigation']['nextProject']['title'] = $translator->trans('company-sector_sector-' . $company->sector);
+            if (isset($template['project']['navigation']['next']['title']) && $template['project']['navigation']['next']['project'] instanceof Projects) {
+                /** @var Projects $nextProject */
+                $nextProject = $template['project']['navigation']['next']['project'];
+                $template['project']['navigation']['next']['title'] = $translator->trans('company-sector_sector-' . $nextProject->getIdCompany()->getSector());
             }
         }
 

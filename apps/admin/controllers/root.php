@@ -1,8 +1,7 @@
 <?php
 
 use Doctrine\ORM\EntityManager;
-use Unilend\Bundle\CoreBusinessBundle\Entity\LoginConnectionAdmin;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{LoginConnectionAdmin, Zones};
 
 class rootController extends bootstrap
 {
@@ -63,21 +62,9 @@ class rootController extends bootstrap
     public function _default()
     {
         $this->users->checkAccess(Zones::ZONE_LABEL_DASHBOARD);
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BackOfficeUserManager $userManager */
-        $userManager = $this->get('unilend.service.back_office_user_manager');
 
-        if ($userManager->isUserGroupRisk($this->userEntity) || $userManager->isUserGroupSales($this->userEntity)) {
-            header('Location: ' . $this->lurl . '/dashboard');
-            die;
-        }
-
-        $this->menu_admin = 'dashboard';
-
-        $this->projects_status = $this->loadData('projects_status');
-        $this->projects        = $this->loadData('projects');
-
-        $this->lProjectsNok = $this->projects->selectProjectsByStatus([\Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus::PROBLEME, \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus::LOSS]);
-        $this->lStatus      = $this->projects_status->select('', 'status ASC');
+        header('Location: ' . $this->lurl . '/dashboard');
+        exit;
     }
 
     public function _edit_password()

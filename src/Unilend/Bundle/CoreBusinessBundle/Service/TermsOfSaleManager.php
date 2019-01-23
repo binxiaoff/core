@@ -195,7 +195,7 @@ class TermsOfSaleManager
             throw new \Exception('Invalid client mobile phone number', self::EXCEPTION_CODE_INVALID_PHONE_NUMBER);
         }
 
-        $termsOfSale = $project->getTermsOfSale();
+        $termsOfSale = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectCgv')->findOneBy(['idProject' => $project]);
 
         if (null === $termsOfSale) {
             $tree = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => Settings::TYPE_BORROWER_TOS]);
@@ -205,12 +205,13 @@ class TermsOfSaleManager
             }
 
             $termsOfSale = new ProjectCgv();
-            $termsOfSale->setIdProject($project);
-            $termsOfSale->setIdTree($tree->getValue());
-            $termsOfSale->setName($termsOfSale->generateFileName());
-            $termsOfSale->setIdUniversign('');
-            $termsOfSale->setUrlUniversign('');
-            $termsOfSale->setStatus(UniversignEntityInterface::STATUS_PENDING);
+            $termsOfSale
+                ->setIdProject($project)
+                ->setIdTree($tree->getValue())
+                ->setName($termsOfSale->generateFileName())
+                ->setIdUniversign('')
+                ->setUrlUniversign('')
+                ->setStatus(UniversignEntityInterface::STATUS_PENDING);
 
             $this->entityManager->persist($termsOfSale);
             $this->entityManager->flush($termsOfSale);

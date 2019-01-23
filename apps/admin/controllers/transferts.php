@@ -2,9 +2,8 @@
 
 use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AttachmentType, Bids, ClientsGestionTypeNotif, ClientsStatus, Factures, LenderStatisticQueue, Notifications, OperationSubType, OperationType, Prelevements, ProjectRepaymentTask, ProjectsPouvoir, ProjectsStatus, Receptions, UniversignEntityInterface, Virements, Wallet, WalletType, Zones
-};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{AttachmentType, Bids, ClientsGestionTypeNotif, Factures, LenderStatisticQueue, Notifications, OperationSubType, OperationType, Prelevements,
+    ProjectRepaymentTask, ProjectsPouvoir, ProjectsStatus, Receptions, UniversignEntityInterface, Virements, Wallet, WalletType, Zones};
 
 class transfertsController extends bootstrap
 {
@@ -753,74 +752,71 @@ class transfertsController extends bootstrap
             header('Location: ' . $this->lurl . '/dossiers/edit/' . $project->getIdProject());
             die;
         }
-        /** @var projects $projectData */
-        $projectData = $this->loadData('projects');
-        $aProjects   = $projectData->selectProjectsByStatus([\projects_status::FUNDE], '', [], '', '', false);
 
-        $this->aProjects = [];
-        foreach ($aProjects as $index => $aProject) {
-            $this->aProjects[$index] = $aProject;
-            $project                 = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($aProject['id_project']);
+        $this->projects = [];
+        $projects       = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->findBy(['status' => ProjectsStatus::FUNDE]);
+        foreach ($projects as $index => $project) {
+            $this->projects[$index]['project'] = $project;
             $mandate                 = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsMandats')->findOneBy([
-                'idProject' => $aProject['id_project'],
+                'idProject' => $project,
                 'status'    => UniversignEntityInterface::STATUS_SIGNED
             ], ['added' => 'DESC']);
             $proxy                   = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsPouvoir')->findOneBy([
-                'idProject' => $aProject['id_project'],
+                'idProject' => $project,
                 'status'    => UniversignEntityInterface::STATUS_SIGNED
             ], ['added' => 'DESC']);
 
             if ($mandate) {
-                $this->aProjects[$index]['mandat']        = $mandate->getName();
-                $this->aProjects[$index]['status_mandat'] = $mandate->getStatus();
+                $this->projects[$index]['mandat']        = $mandate->getName();
+                $this->projects[$index]['status_mandat'] = $mandate->getStatus();
             }
 
             if ($proxy) {
-                $this->aProjects[$index]['url_pdf']          = $proxy->getName();
-                $this->aProjects[$index]['status_remb']      = $proxy->getStatusRemb();
-                $this->aProjects[$index]['authority_status'] = $proxy->getStatus();
+                $this->projects[$index]['url_pdf']          = $proxy->getName();
+                $this->projects[$index]['status_remb']      = $proxy->getStatusRemb();
+                $this->projects[$index]['authority_status'] = $proxy->getStatus();
             }
 
-            $this->aProjects[$index]['needsBeneficialOwnerDeclaration'] = $beneficialOwnerManager->projectNeedsBeneficialOwnerDeclaration($project);
-            if ($this->aProjects[$index]['needsBeneficialOwnerDeclaration']) {
+            $this->projects[$index]['needsBeneficialOwnerDeclaration'] = $beneficialOwnerManager->projectNeedsBeneficialOwnerDeclaration($project);
+            if ($this->projects[$index]['needsBeneficialOwnerDeclaration']) {
                 $beneficialOwnerDeclaration = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectBeneficialOwnerUniversign')->findOneBy([
-                    'idProject' => $aProject['id_project'],
+                    'idProject' => $project,
                     'status'    => UniversignEntityInterface::STATUS_SIGNED
                 ], ['added' => 'DESC']);
 
                 if (null !== $beneficialOwnerDeclaration) {
-                    $this->aProjects[$index]['beneficial_owner_declaration']        = $beneficialOwnerDeclaration->getName();
-                    $this->aProjects[$index]['beneficial_owner_declaration_status'] = $beneficialOwnerDeclaration->getStatus();
+                    $this->projects[$index]['beneficial_owner_declaration']        = $beneficialOwnerDeclaration->getName();
+                    $this->projects[$index]['beneficial_owner_declaration_status'] = $beneficialOwnerDeclaration->getStatus();
                 }
             }
 
             $bankAccount = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($project->getIdCompany()->getIdClientOwner());
 
-            $this->aProjects[$index]['bic']  = '';
-            $this->aProjects[$index]['iban'] = '';
+            $this->projects[$index]['bic']  = '';
+            $this->projects[$index]['iban'] = '';
             if ($bankAccount) {
-                $this->aProjects[$index]['bic']  = $bankAccount->getBic();
-                $this->aProjects[$index]['iban'] = $bankAccount->getIban();
+                $this->projects[$index]['bic']  = $bankAccount->getBic();
+                $this->projects[$index]['iban'] = $bankAccount->getIban();
                 $bankAccountAttachment           = $bankAccount->getAttachment();
             }
 
-            $this->aProjects[$index]['rib']    = '';
-            $this->aProjects[$index]['id_rib'] = '';
+            $this->projects[$index]['rib']    = '';
+            $this->projects[$index]['id_rib'] = '';
 
             if (false === empty($bankAccountAttachment)) {
-                $this->aProjects[$index]['rib']    = $bankAccountAttachment->getPath();
-                $this->aProjects[$index]['id_rib'] = $bankAccountAttachment->getId();
+                $this->projects[$index]['rib']    = $bankAccountAttachment->getPath();
+                $this->projects[$index]['id_rib'] = $bankAccountAttachment->getId();
             }
 
-            $kbis = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectAttachment')->getAttachedAttachmentsByType($aProject['id_project'], AttachmentType::KBIS);
+            $kbis = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectAttachment')->getAttachedAttachmentsByType($project, AttachmentType::KBIS);
 
-            $this->aProjects[$index]['kbis']    = '';
-            $this->aProjects[$index]['id_kbis'] = '';
+            $this->projects[$index]['kbis']    = '';
+            $this->projects[$index]['id_kbis'] = '';
 
             if (false === empty($kbis[0])) {
                 $attachment                         = $kbis[0]->getAttachment();
-                $this->aProjects[$index]['kbis']    = $attachment->getPath();
-                $this->aProjects[$index]['id_kbis'] = $attachment->getId();
+                $this->projects[$index]['kbis']    = $attachment->getPath();
+                $this->projects[$index]['id_kbis'] = $attachment->getId();
             }
         }
     }
