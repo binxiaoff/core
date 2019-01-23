@@ -168,7 +168,7 @@ class dossiersController extends bootstrap
                 $this->allTaxFormTypes[$formType['label']] = $companyBalanceDetailsType->select('id_company_tax_form_type = ' . $formType['id_type']);
             }
 
-            $this->aBorrowingMotives = $borrowingMotive->select('rank');
+            $this->aBorrowingMotives = $borrowingMotive->select('`rank`');
 
             /** @var \tax_type $taxType */
             $taxType = $this->loadData('tax_type');
