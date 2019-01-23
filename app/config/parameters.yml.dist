@@ -2,134 +2,134 @@ parameters:
     database_driver:                pdo_mysql
 
     # Begin of parameters managed also by Ansible in parameters_extended.yml
-    database_host:                  localhost
-    database_port:                  ~
-    database_name:                  unilend
-    database_user:                  unilend
-    database_password:              myPassw0rd
-    database_user_migration:        unilend
-    database_password_migration:    myPassw0rd
+    database_host:                    localhost
+    database_port:                    ~
+    database_name:                    unilend
+    database_user:                    unilend
+    database_password:                myPassw0rd
+    database_user_migration:          unilend
+    database_password_migration:      myPassw0rd
     database_ssl_key:               ~
     database_ssl_cert:              ~
     database_ssl_ca:                ~
 
-    mongodb_server:                 "mongodb://127.0.0.1:27017"
-    mongodb_username:               "unilend"
-    mongodb_password:               "passw0rd"
-    mongodb_default_database:       "ws_call"
-    mongodb_auth_source:            "ws_call"
-    mongodb_ssl_connect:            false
-    mongodb_replica_set_name:       ~
+    mongodb_server:                   mongodb://127.0.0.1:27017
+    mongodb_username:                 unilend
+    mongodb_password:                 passw0rd
+    mongodb_default_database:         ws_call
+    mongodb_auth_source:              ws_call
+    mongodb_ssl_connect:              false
+    mongodb_replica_set_name:         ~
 
-    mailjet.api_key:                ~
-    mailjet.api_secret:             ~
-    mailjet.api_version:            v3.1
-    mailer_transport:               smtp # mailjet for prod, smtp for the rest of the environments
-    mailer_host:                    localhost
-    mailer_port:                    1025
+    mailjet.api_key:                  ~
+    mailjet.api_secret:               ~
+    mailjet.api_version:              v3.1
+    mailer_transport:                 smtp # mailjet for prod, smtp for the rest of the environments
+    mailer_host:                      localhost
+    mailer_port:                      1025
 
-    desk_user:                      equipeit@unilend.fr
-    desk_password:                  password
+    desk_user:                        ''
+    desk_password:                    ''
 
-    google.gtm_token:               GTM-W2WQKW
-    google.recaptcha_key:           6LeLBB8UAAAAABqR-NE95tO55l8pTaAzFRAplm3J
-    google.recaptcha_secret:        ~
-    google.recaptcha_url:           'https://www.google.com/recaptcha/api/siteverify'
+    google.gtm_token:                 ''
+    google.recaptcha_key:             ''
+    google.recaptcha_secret:          ''
+    google.recaptcha_url:             https://www.google.com/recaptcha/api/siteverify
 
-    url.universign:                 'https://equipeit@unilend.fr:7RM6X40A@sign.test.cryptolog.com/sign/rpc/'
-    url.host_admin:                 'admin.local.unilend.fr' # for Front to know the url BO
-    url.host_default:               'www.local.unilend.fr' # for BO to know the url Front
+    url.universign:                   ''
+    url.host_admin:                   admin.local.unilend.fr # for Front to know the url BO
+    url.host_default:                 www.local.unilend.fr # for BO to know the url Front
 
     sonata_cache.servers:
         - { domain: www.local.unilend.fr, ip: 192.168.110.12, port: 443 }
 
-    payline.merchant_id:            '16828263878877'
-    payline.access_key:             'vtPtmVrGFhFx6OPeg7No'
+    payline.merchant_id:              ''
+    payline.access_key:               ''
 
-    ekomi.url:                      https://srr.ekomi.com/add-recipient
-    ekomi.shop_id:                  ~
-    ekomi.password:                 ~
+    ekomi.url:                        https://srr.ekomi.com/add-recipient
+    ekomi.shop_id:                    ~
+    ekomi.password:                   ~
 
-    euler.account_key:              JTP0gJbzwOzct7HTsKYcpjayoK5urpcLkxSAKIPnoXMNUEhN6RMe4bJjalU6n
-    euler.grading_key:              kXZVEwuNtZhczOicgd2X74Gj8tSI5NqKKyPXr1ll30zyWUftRSN7aQ0M3mxvOBtX
-    euler.url:                      'https://api-demo.single-invoice.co/v2.0/'
-    euler.email:                    equipeit@unilend.fr
-    euler.password:                 )XZpX~x4]"Lr6)BR
+    euler.account_key:                ''
+    euler.grading_key:                ''
+    euler.url:                        https://api-demo.single-invoice.co/v2.0/
+    euler.email:                      ''
+    euler.password:                   ''
 
-    codinf.user:                    ~
-    codinf.password:                ~
-    codinf.url:                     'https://www.codinf.fr/incidents/'
+    codinf.user:                      ~
+    codinf.password:                  ~
+    codinf.url:                       https://www.codinf.fr/incidents/
 
-    infolegale.token:               VCDju3hCKiMV8x0TllLV1gplHGkDC6bo
-    infolegale.url:                 'https://wspreprod.infolegale.fr/'
+    infolegale.token:                 ''
+    infolegale.url:                   https://wspreprod.infolegale.fr/
 
-    infogreffe.login:               '85000371'
-    infogreffe.password:            1234567
-    infogreffe.url:                 'https://qual.infogreffe.fr:443/WSContextInfogreffe/INFOGREFFE'
-    infogreffe.wsdl_url:            'https://qual.infogreffe.fr/InfogreffeWs/wsdl.jsp'
+    infogreffe.login:                 ''
+    infogreffe.password:              ''
+    infogreffe.url:                   https://qual.infogreffe.fr:443/WSContextInfogreffe/INFOGREFFE
+    infogreffe.wsdl_url:              https://qual.infogreffe.fr/InfogreffeWs/wsdl.jsp
 
-    altares.login:                  U2016014914
-    altares.password:               6e0f641ab06a4cc8eb998c9108b63d423e9f837c
-    altares.wsdl_url_identity:      'https://intuiz.altares.fr/iws-v3.13/services/CallistoIdentite?wsdl'
-    altares.wsdl_url_risk:          'https://intuiz.altares.fr/iws-v3.13/services/CallistoRisque?wsdl'
-    altares.wsdl_url_risk_monitoring: 'https://intuiz.altares.fr/iws-v3.13/services/CallistoAlerte?wsdl'
+    altares.login:                    ''
+    altares.password:                 ''
+    altares.wsdl_url_identity:        https://intuiz.altares.fr/iws-v3.13/services/CallistoIdentite?wsdl
+    altares.wsdl_url_risk:            https://intuiz.altares.fr/iws-v3.13/services/CallistoRisque?wsdl
+    altares.wsdl_url_risk_monitoring: https://intuiz.altares.fr/iws-v3.13/services/CallistoAlerte?wsdl
 
-    ellisphere.contract_id:         ~
-    ellisphere.user_prefix:         ~
-    ellisphere.user_id:             ~
-    ellisphere.password:            ~
-    ellisphere.url:                 https://services.data-access-gateway.com/1/rest/
+    ellisphere.contract_id:           ~
+    ellisphere.user_prefix:           ~
+    ellisphere.user_id:               ~
+    ellisphere.password:              ~
+    ellisphere.url:                   https://services.data-access-gateway.com/1/rest/
 
-    greenpoint.url:                 'https://id-control.fr/api/'
-    greenpoint.login:               'unilend'
-    greenpoint.password:            'XqLeYkqj3h'
+    greenpoint.url:                   https://id-control.fr/api/
+    greenpoint.login:                 ''
+    greenpoint.password:              ''
 
-    slack.default_channel:          '#it-testing'
+    slack.default_channel:            '#it-testing'
 
     # End of parameters managed also by Ansible
 
-    dbal_wrapper_class:             Unilend\Bridge\Doctrine\DBAL\Connection
-    dbal_driver_class:              Facile\DoctrineMySQLComeBack\Doctrine\DBAL\Driver\PDOMySql\Driver
+    dbal_wrapper_class:               Unilend\Bridge\Doctrine\DBAL\Connection
+    dbal_driver_class:                Facile\DoctrineMySQLComeBack\Doctrine\DBAL\Driver\PDOMySql\Driver
 
-    secret:                         440caf9a41b35b72dc75ec333e3a33b7cab2366b
-    locale:                         fr_FR
+    secret:                           ''
+    locale:                           fr_FR
 
-    server1.memcache_host:          127.0.0.1
-    server1.memcache_port:          11211
+    server1.memcache_host:            127.0.0.1
+    server1.memcache_port:            11211
 
     image_resize:
         projets:
-            authorized:             [72, 169] # Authorized heights
-            height:                 1365      # Source image maximum height
-            width:                  2048      # Source image maximum width
+            authorized:               [72, 169] # Authorized heights
+            height:                   1365      # Source image maximum height
+            width:                    2048      # Source image maximum width
 
-    router.request_context.scheme:  https
+    router.request_context.scheme:    https
 
-    path.static:                    /data/sites/unilend/public/default/
-    path.shared:                    /data/medias/nfs/
-    path.shared_tmp:                %path.shared%tmp/
-    path.user:                      %path.shared%var/
-    path.sftp:                      %path.shared%sftp/
-    path.protected:                 %path.shared%protected/
-    path.logs:                      /data/log
-    path.payline:                   %path.logs%/payline
+    path.static:                      /data/sites/unilend/public/default/
+    path.shared:                      /data/medias/nfs/
+    path.shared_tmp:                  %path.shared%tmp/
+    path.user:                        %path.shared%var/
+    path.sftp:                        %path.shared%sftp/
+    path.protected:                   %path.shared%protected/
+    path.logs:                        /data/log
+    path.payline:                     %path.logs%/payline
 
-    mapbox.token:                   pk.eyJ1IjoidW5pbGVuZCIsImEiOiJjaXJiczA4ejQwMDVvaWZsdzdmMmpnOGRtIn0._IBtG2TUy17m7S6jwVBrcg
+    mapbox.token:                     ''
 
-    security.bcrypt.cost:           13
+    security.bcrypt.cost:             13
 
-    new_relic.api_key:              edc37da0a36bfd74eded96d4d454c8f7b4b0ab8d4bce97e
-    new_relic.front_app_name:       Unilend-front
-    new_relic.back_app_name:        Unilend-backoffice
-    new_relic.console_app_name:     Unilend-batchjobs
+    new_relic.api_key:                edc37da0a36bfd74eded96d4d454c8f7b4b0ab8d4bce97e
+    new_relic.front_app_name:         Unilend-front
+    new_relic.back_app_name:          Unilend-backoffice
+    new_relic.console_app_name:       Unilend-batchjobs
 
-    slack.team_id:                  T09JRNH40
-    slack.command_token:            u2AOiDVHg1WQQgL1MjZ83IQe
-    slack.monitoring_channel:       '#it-monitoring'
-    slack.default_username:         Unilend
-    slack.endpoint:                 https://hooks.slack.com/services/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
+    slack.team_id:                    ''
+    slack.command_token:              ''
+    slack.monitoring_channel:         '#it-monitoring'
+    slack.default_username:           Unilend
+    slack.endpoint:                   ''
 
-    mailchimp.api_key:              8a4c593b992cc7e57cb343dd13c9c89b-us7
-    mailchimp.webhook_secret:       16deb224527196c9eaae
-    mailchimp.list_id:              b4ed751d74
-    mailchimp.gdpr_segment_id:      81
+    mailchimp.api_key:                ''
+    mailchimp.webhook_secret:         ''
+    mailchimp.list_id:                ''
+    mailchimp.gdpr_segment_id:        ''

@@ -110,15 +110,15 @@ class companies extends companies_crud
         }
 
         return (float) $this->bdd->result($this->bdd->query('
-            SELECT CASE
-                   WHEN p.close_out_netting_date IS NOT NULL AND p.close_out_netting_date != \'0000-00-00\'
-                     THEN conp.capital - conp.paid_capital
-                   ELSE IFNULL(ROUND(SUM(ee.capital - ee.paid_capital) / 100, 2), 0)
-                   END
-            FROM echeanciers_emprunteur ee
-              INNER JOIN projects p ON ee.id_project = p.id_project
-              INNER JOIN companies c ON p.id_company = c.id_company
-              LEFT JOIN close_out_netting_payment conp ON p.id_project = conp.id_project
+          SELECT CASE
+            WHEN p.close_out_netting_date IS NOT NULL AND p.close_out_netting_date != \'0000-00-00\' 
+              THEN conp.capital - conp.paid_capital
+              ELSE IFNULL(ROUND(SUM(ee.capital - ee.paid_capital) / 100, 2), 0)
+            END
+          FROM echeanciers_emprunteur ee
+          INNER JOIN projects p ON ee.id_project = p.id_project
+          INNER JOIN companies c ON p.id_company = c.id_company
+          LEFT JOIN close_out_netting_payment conp ON p.id_project = conp.id_project
             WHERE c.siren =  "' . $this->siren . '"'
         ));
     }
@@ -133,7 +133,7 @@ class companies extends companies_crud
         }
         $projects = [];
         $result   = $this->bdd->query('
-            SELECT 1 AS rank, p.id_project, p.slug, p.id_company, p.amount, p.period, p.title, p.added, p.updated, ps.label AS status_label, p.status, IFNULL(CONCAT(sales_person.firstname, " ", sales_person.name), "") AS sales_person, IFNULL(CONCAT(analysts.firstname, " ", analysts.name), "") AS analyst
+            SELECT 1 AS `rank`, p.id_project, p.slug, p.id_company, p.amount, p.period, p.title, p.added, p.updated, ps.label AS status_label, p.status, IFNULL(CONCAT(sales_person.firstname, " ", sales_person.name), "") AS sales_person, IFNULL(CONCAT(analysts.firstname, " ", analysts.name), "") AS analyst
             FROM companies current_company
             INNER JOIN companies c ON current_company.siren = c.siren
             INNER JOIN projects p ON c.id_company = p.id_company
@@ -144,7 +144,7 @@ class companies extends companies_crud
 
             UNION
 
-            SELECT 2 AS rank, p.id_project, p.slug, p.id_company, p.amount, p.period, p.title, p.added, p.updated, ps.label AS status_label, p.status, IFNULL(CONCAT(sales_person.firstname, " ", sales_person.name), "") AS sales_person, IFNULL(CONCAT(analysts.firstname, " ", analysts.name), "") AS analyst
+            SELECT 2 AS `rank`, p.id_project, p.slug, p.id_company, p.amount, p.period, p.title, p.added, p.updated, ps.label AS status_label, p.status, IFNULL(CONCAT(sales_person.firstname, " ", sales_person.name), "") AS sales_person, IFNULL(CONCAT(analysts.firstname, " ", analysts.name), "") AS analyst
             FROM companies current_company
             INNER JOIN companies c ON current_company.siren = c.siren
             INNER JOIN projects p ON c.id_company = p.id_company
@@ -155,7 +155,7 @@ class companies extends companies_crud
 
             UNION
 
-            SELECT 3 AS rank, p.id_project, p.slug, p.id_company, p.amount, p.period, p.title, p.added, p.updated, ps.label AS status_label, p.status, IFNULL(CONCAT(sales_person.firstname, " ", sales_person.name), "") AS sales_person, IFNULL(CONCAT(analysts.firstname, " ", analysts.name), "") AS analyst
+            SELECT 3 AS `rank`, p.id_project, p.slug, p.id_company, p.amount, p.period, p.title, p.added, p.updated, ps.label AS status_label, p.status, IFNULL(CONCAT(sales_person.firstname, " ", sales_person.name), "") AS sales_person, IFNULL(CONCAT(analysts.firstname, " ", analysts.name), "") AS analyst
             FROM companies current_company
             INNER JOIN companies c ON current_company.siren = c.siren
             INNER JOIN projects p ON c.id_company = p.id_company
@@ -163,7 +163,7 @@ class companies extends companies_crud
             LEFT JOIN users sales_person ON p.id_commercial = sales_person.id_user
             LEFT JOIN users analysts ON p.id_analyste = analysts.id_user
             WHERE p.status < ' . ProjectsStatus::COMMERCIAL_REVIEW . ' AND current_company.id_company = ' . $this->id_company . '
-            ORDER BY rank ASC, added DESC'
+            ORDER BY `rank` ASC, added DESC'
         );
         while ($record = $this->bdd->fetch_assoc($result)) {
             $projects[] = $record;

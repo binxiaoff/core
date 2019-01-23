@@ -3,12 +3,12 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Service\Document;
 
 use Doctrine\ORM\EntityManagerInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{AcceptationsLegalDocs, AddressType, ClientAddress, CompanyAddress, Elements, TreeElements, WalletType};
 use Knp\Snappy\Pdf;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Asset\Packages;
 use Symfony\Component\Filesystem\Filesystem;
 use Twig\Environment;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{AcceptationsLegalDocs, AddressType, ClientAddress, CompanyAddress, Elements, TreeElements, WalletType};
 use Unilend\Bundle\CoreBusinessBundle\Service\TermsOfSaleManager;
 
 class LenderTermsOfSaleGenerator implements DocumentGeneratorInterface

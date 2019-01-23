@@ -260,7 +260,7 @@ services:
         public: true
 
 google_tag_manager:
-    enabled: true
+    enabled: false
     id: "%google.gtm_token%"
     autoAppend: false
 

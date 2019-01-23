@@ -41,7 +41,7 @@ class project_need extends project_need_crud
     {
         $tree = [];
 
-        foreach ($this->select(null, 'id_parent ASC, rank ASC') as $need) {
+        foreach ($this->select(null, 'id_parent ASC, `rank` ASC') as $need) {
             if (0 == $need['id_parent']) {
                 $tree[$need['id_project_need']]             = $need;
                 $tree[$need['id_project_need']]['children'] = [];
