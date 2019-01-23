@@ -196,7 +196,7 @@ class loans extends loans_crud
     {
         $query = '
             SELECT
-                MAX(l.added) AS added,
+                MAX(l.added) AS maxAdded,
                 l.id_project,
                 p.title,
                 p.period,
@@ -230,7 +230,7 @@ class loans extends loans_crud
             UNION
             
             SELECT
-                MAX(b.added) AS added,
+                MAX(b.added) AS maxAdded,
                 b.id_project,
                 p.title,
                 p.period,
@@ -259,7 +259,7 @@ class loans extends loans_crud
             GROUP BY p.id_project';
         }
 
-        $query .= ' ORDER BY ' . (null === $order ? 'MAX(added) DESC' : $order);
+        $query .= ' ORDER BY ' . (null === $order ? 'maxAdded DESC' : $order);
 
         $statement = $this->bdd->executeQuery($query, [
                 'repaidStatus'  => [ProjectsStatus::REMBOURSE, ProjectsStatus::REMBOURSEMENT_ANTICIPE],

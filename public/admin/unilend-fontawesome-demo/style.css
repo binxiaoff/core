@@ -2,9 +2,9 @@
   font-family: 'unilend-fontawesome';
   src:  url('fonts/unilend-fontawesome.eot?9tbki1');
   src:  url('fonts/unilend-fontawesome.eot?9tbki1#iefix') format('embedded-opentype'),
-  url('fonts/unilend-fontawesome.ttf?9tbki1') format('truetype'),
-  url('fonts/unilend-fontawesome.woff?9tbki1') format('woff'),
-  url('fonts/unilend-fontawesome.svg?9tbki1#unilend-fontawesome') format('svg');
+    url('fonts/unilend-fontawesome.ttf?9tbki1') format('truetype'),
+    url('fonts/unilend-fontawesome.woff?9tbki1') format('woff'),
+    url('fonts/unilend-fontawesome.svg?9tbki1#unilend-fontawesome') format('svg');
   font-weight: normal;
   font-style: normal;
 }
