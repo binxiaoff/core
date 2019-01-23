@@ -2,18 +2,22 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{Projects, ProjectsStatus};
 use Unilend\Bundle\WSClientBundle\Service\CallHistoryManager;
 
 class WsMonitoringManager
 {
-    /** @var EntityManager */
+    /** @var EntityManagerInterface */
     private $entityManager;
     /** @var CallHistoryManager */
     private $callHistoryManager;
 
-    public function __construct(EntityManager $entityManager, CallHistoryManager $callHistoryManager)
+    /**
+     * @param EntityManagerInterface $entityManager
+     * @param CallHistoryManager     $callHistoryManager
+     */
+    public function __construct(EntityManagerInterface $entityManager, CallHistoryManager $callHistoryManager)
     {
         $this->entityManager      = $entityManager;
         $this->callHistoryManager = $callHistoryManager;

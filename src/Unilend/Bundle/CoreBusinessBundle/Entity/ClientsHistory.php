@@ -7,8 +7,8 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * ClientsHistory
  *
- * @ORM\Table(name="clients_history", indexes={@ORM\Index(name="id_client", columns={"id_client"})})
- * @ORM\Entity
+ * @ORM\Table(name="clients_history", indexes={@ORM\Index(name="id_client", columns={"id_client"}), @ORM\Index(name="idx_clients_history_ip", columns={"ip"}), @ORM\Index(name="idx_clients_history_added", columns={"added"}), @ORM\Index(name="idx_clients_history_id_user_agent", columns={"id_user_agent"})})
+ * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\ClientsHistoryRepository")
  * @ORM\HasLifecycleCallbacks
  */
 class ClientsHistory
@@ -44,6 +44,37 @@ class ClientsHistory
      * @ORM\Column(name="status", type="integer", nullable=false)
      */
     private $status;
+
+    /**
+     * @var string|null
+     *
+     * @ORM\Column(name="ip", type="string", length=45, nullable=true)
+     */
+    private $ip;
+
+    /**
+     * @var string|null
+     *
+     * @ORM\Column(name="country_iso_code", type="string", length=2, nullable=true)
+     */
+    private $countryIsoCode;
+
+    /**
+     * @var string|null
+     *
+     * @ORM\Column(name="city", type="string", length=64, nullable=true)
+     */
+    private $city;
+
+    /**
+     * @var UserAgent|null
+     *
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\UserAgent")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_user_agent", referencedColumnName="id")
+     * })
+     */
+    private $idUserAgent;
 
     /**
      * @var \DateTime
@@ -133,6 +164,86 @@ class ClientsHistory
     public function getStatus(): int
     {
         return $this->status;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getIp(): ?string
+    {
+        return $this->ip;
+    }
+
+    /**
+     * @param string|null $ip
+     *
+     * @return ClientsHistory
+     */
+    public function setIp(?string $ip): ClientsHistory
+    {
+        $this->ip = $ip;
+
+        return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getCountryIsoCode(): ?string
+    {
+        return $this->countryIsoCode;
+    }
+
+    /**
+     * @param string|null $countryIsoCode
+     *
+     * @return ClientsHistory
+     */
+    public function setCountryIsoCode(?string $countryIsoCode): ClientsHistory
+    {
+        $this->countryIsoCode = $countryIsoCode;
+
+        return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getCity(): ?string
+    {
+        return $this->city;
+    }
+
+    /**
+     * @param string|null $city
+     *
+     * @return ClientsHistory
+     */
+    public function setCity(?string $city): ClientsHistory
+    {
+        $this->city = $city;
+
+        return $this;
+    }
+
+    /**
+     * @return UserAgent|null
+     */
+    public function getIdUserAgent(): ?UserAgent
+    {
+        return $this->idUserAgent;
+    }
+
+    /**
+     * @param UserAgent $idUserAgent
+     *
+     * @return ClientsHistory
+     */
+    public function setIdUserAgent(?UserAgent $idUserAgent): ClientsHistory
+    {
+        $this->idUserAgent = $idUserAgent;
+
+        return $this;
     }
 
     /**

@@ -2,7 +2,7 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\Validator;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Bids;
 use Unilend\Bundle\CoreBusinessBundle\Entity\UnderlyingContract;
 use Unilend\Bundle\CoreBusinessBundle\Entity\UnderlyingContractAttributeType;
@@ -16,10 +16,14 @@ class BidValidator
     /** @var ContractAttributeManager */
     private $contractAttributeManager;
 
-    /** @var EntityManager */
+    /** @var EntityManagerInterface */
     private $entityManager;
 
-    public function __construct(ContractAttributeManager $contractAttributeManager, EntityManager $entityManager)
+    /**
+     * @param ContractAttributeManager $contractAttributeManager
+     * @param EntityManagerInterface   $entityManager
+     */
+    public function __construct(ContractAttributeManager $contractAttributeManager, EntityManagerInterface $entityManager)
     {
         $this->contractAttributeManager = $contractAttributeManager;
         $this->entityManager            = $entityManager;

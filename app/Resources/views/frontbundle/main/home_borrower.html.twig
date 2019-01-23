@@ -152,58 +152,23 @@
         <section id="homeemp-section-esim" class="page-section bg-bg3">
             <div class="site-wrap">
                 <h2 class="h2">{% trans %} home-borrower_simulator-title {% endtrans %}</h2>
-
-                {% if app.session.flashBag.has('projectSimulatorError') %}
-                    {% set projectSimulatorErrorCode = app.session.flashBag.get('projectSimulatorError') %}
-                {% endif %}
-
-                {% if projectSimulatorErrorCode is defined
-                    and constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Service\\ProjectRequestManager::EXCEPTION_CODE_INVALID_AMOUNT') not in projectSimulatorErrorCode
-                    and constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Service\\ProjectRequestManager::EXCEPTION_CODE_INVALID_DURATION') not in projectSimulatorErrorCode
-                    and constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Service\\ProjectRequestManager::EXCEPTION_CODE_INVALID_REASON') not in projectSimulatorErrorCode
-                    and (
-                        constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Service\\ProjectRequestManager::EXCEPTION_CODE_INVALID_SIREN') in projectSimulatorErrorCode
-                        or constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Service\\ProjectRequestManager::EXCEPTION_CODE_INVALID_EMAIL') in projectSimulatorErrorCode
-                    )
-                %}
-                    {% set activeTab = 'second' %}
-                {% else %}
-                    {% set activeTab = 'first' %}
-                {% endif %}
-
                 <form action="{{ path('project_simulator_form') }}" method="post" class="emprunter-sim tabs ui-tabs-progress">
                     <div class="emprunter-sim-nav">
                         <ul class="nav nav-steps" role="tablist">
-                            <li role="presentation"{% if activeTab == 'first' %} class="active"{% endif %}>
+                            <li role="presentation" class="active">
                                 <a role="tab">{% trans %} home-borrower_simulator-step-1 {% endtrans %}</a>
                             </li>
-                            <li role="presentation"{% if activeTab == 'second' %} class="active"{% endif %}>
+                            <li role="presentation">
                                 <a href="#esim2" role="tab" data-toggle="tab">{% trans %} home-borrower_simulator-step-2 {% endtrans %}</a>
                             </li>
                         </ul>
                     </div><!-- /.emprunter-sim-nav -->
                     <div class="tab-content emprunter-sim-content">
-                        <div id="esim1" role="tabpanel" class="tab-pane{% if activeTab == 'first' %} active{% endif %}">
+                        <div id="esim1" role="tabpanel" class="tab-pane active">
                             <fieldset class="emprunter-sim-pane-inner"
                                       data-formvalidation
                                       data-formvalidation-notificationselem=".form-validation-notifications">
                                 <div class="form-validation-notifications">
-                                    {% if projectSimulatorErrorCode is defined %}
-                                        <div class="message-error">
-                                            {% if constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Service\\ProjectRequestManager::EXCEPTION_CODE_INVALID_AMOUNT') in projectSimulatorErrorCode %}
-                                                <p>{% trans %} project-request-simulator_invalid-amount {% endtrans %}</p>
-                                            {% elseif constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Service\\ProjectRequestManager::EXCEPTION_CODE_INVALID_DURATION') in projectSimulatorErrorCode %}
-                                                <p>{% trans %} project-request-simulator_invalid-duration {% endtrans %}</p>
-                                            {% elseif constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Service\\ProjectRequestManager::EXCEPTION_CODE_INVALID_REASON') in projectSimulatorErrorCode %}
-                                                <p>{% trans %} project-request-simulator_invalid-reason {% endtrans %}</p>
-                                            {% else %}
-                                                {% if constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Service\\ProjectRequestManager::EXCEPTION_CODE_INVALID_SIREN') not in projectSimulatorErrorCode
-                                                and constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Service\\ProjectRequestManager::EXCEPTION_CODE_INVALID_EMAIL') not in projectSimulatorErrorCode %}
-                                                    <p>{% trans %} project-request-simulator_unknown-error {% endtrans %}</p>
-                                                {% endif %}
-                                            {% endif %}
-                                        </div>
-                                    {% endif %}
                                 </div>
                                 <div class="row row-multicol-computer">
                                     <div class="form-field col-lg-6 col-md-6">
@@ -217,8 +182,7 @@
                                         <input id="esim-input-amount"
                                                type="text"
                                                step="any"
-                                               name="esim[amount]"
-                                               value="{% if app.session.has('esim') and app.session.get('esim')['amount'] is defined %}{{ app.session.get('esim')['amount'] }}{% endif %}"
+                                               name="amount"
                                                placeholder="{% trans %} home-borrower_simulator-amount-field-placeholder {% endtrans %}"
                                                class="input-field"
                                                data-formvalidation-input
@@ -235,7 +199,7 @@
                                                 </span></span>
                                         </label>
                                         <select id="esim-input-reason"
-                                                name="esim[reason]"
+                                                name="reason"
                                                 class="input-field"
                                                 data-formvalidation-input
                                                 data-formvalidation-required="true"
@@ -245,8 +209,7 @@
                                                 {% trans %} home-borrower_simulator-borrowing-motif-select {% endtrans %}&hellip;
                                             </option>
                                             {% for motive in borrowingMotives %}
-                                                <option value="{{ motive.idMotive }}"
-                                                        {% if app.session.has('esim') and app.session.get('esim')['reason'] is defined and app.session.get('esim')['reason'] == motive.idMotive %} selected{% endif %}>
+                                                <option value="{{ motive.idMotive }}">
                                                     {{ ('borrowing-motive_motive-' ~ motive.idMotive)|trans }}
                                                 </option>
                                             {% endfor %}
@@ -269,9 +232,8 @@
                                                 <label>
                                                     <input type="radio"
                                                            id="esim-input-duration-{{ period }}"
-                                                           name="esim[duration]"
-                                                           value="{{ period }}"
-                                                            {% if app.session.has('esim') and app.session.get('esim')['duration'] is defined and app.session.get('esim')['duration'] == period %}checked{% endif %}>
+                                                           name="duration"
+                                                           value="{{ period }}">
                                                     <span class="label">{{ period }}</span>
                                                 </label>
                                             {% endfor %}
@@ -281,20 +243,11 @@
                             </fieldset><!-- /.emprunter-sim-pane-inner -->
                         </div><!-- /.tab-pane -->
 
-                        <div id="esim2" role="tabpanel" class="tab-pane{% if activeTab == 'second' %} active{% endif %}">
+                        <div id="esim2" role="tabpanel" class="tab-pane">
                             <fieldset class="emprunter-sim-pane-inner"
                                       data-formvalidation
                                       data-formvalidation-notificationselem=".form-validation-notifications">
                                 <div class="form-validation-notifications">
-                                    {% if projectSimulatorErrorCode is defined %}
-                                        <div class="message-error">
-                                            {% if constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Service\\ProjectRequestManager::EXCEPTION_CODE_INVALID_SIREN') in projectSimulatorErrorCode %}
-                                                <p>{% trans %} project-request-simulator_invalid-siren {% endtrans %}</p>
-                                            {% elseif constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Service\\ProjectRequestManager::EXCEPTION_CODE_INVALID_EMAIL') in projectSimulatorErrorCode %}
-                                                <p>{% trans %} project-request-simulator_invalid-email {% endtrans %}</p>
-                                            {% endif %}
-                                        </div>
-                                    {% endif %}
                                 </div>
                                 <div class="row">
                                     <div class="col-lg-12 col-md-12">
@@ -313,8 +266,7 @@
                                         </label>
                                         <input type="text"
                                                id="esim-input-company-name"
-                                               name="esim[company_name]"
-                                               value="{% if app.session.has('esim') and app.session.get('esim')['company_name'] is defined %}{{ app.session.get('esim')['company_name'] }}{% endif %}"
+                                               name="company_name"
                                                class="input-field"
                                                data-formvalidation-input>
                                     </div>
@@ -332,8 +284,7 @@
                                         </label>
                                         <input type="text"
                                                id="esim-input-siren"
-                                               name="esim[siren]"
-                                               value="{% if app.session.has('esim') and app.session.get('esim')['siren'] is defined %}{{ app.session.get('esim')['siren'] }}{% endif %}"
+                                               name="siren"
                                                class="input-field"
                                                data-formvalidation-input
                                                data-formvalidation-required="true"
@@ -350,8 +301,7 @@
                                         <div class="input-group">
                                             <input type="email"
                                                    id="esim-input-email"
-                                                   name="esim[email]"
-                                                   value="{% if app.session.has('esim') and app.session.get('esim')['email'] is defined %}{{ app.session.get('esim')['email'] }}{% endif %}"
+                                                   name="email"
                                                    class="input-field"
                                                    data-formvalidation-input
                                                    data-formvalidation-required="true"
@@ -383,10 +333,10 @@
                                         <span class="spacer">&nbsp;</span>
                                     </div>
                                     <div class="col-lg-3 col-md-3">
-                                        <a href="#esim2" role="tab" data-toggle="tab" class="btn-continue btn-alternate btn-size-full"{% if activeTab == 'second' %} style="display: none;"{% endif %}>
+                                        <a href="#esim2" role="tab" data-toggle="tab" class="btn-continue btn-alternate btn-size-full">
                                             {% trans %} home-borrower_simulator-footer-continue-button {% endtrans %}
                                         </a>
-                                        <button class="btn-submit btn-alternate btn-size-full" data-spinnerbutton{% if activeTab == 'second' %} style="display: block;"{% endif %}>
+                                        <button class="btn-submit btn-alternate btn-size-full" data-spinnerbutton>
                                             {% trans %} home-borrower_simulator-footer-validate-button {% endtrans %}
                                         </button>
                                     </div>
@@ -454,6 +404,21 @@
         idMotiveAcquisitionMerger: {{ constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\BorrowingMotive::ID_MOTIVE_ACQUISITION_MERGER') }},
         idMotiveFranchiserCreation: {{ constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\BorrowingMotive::ID_MOTIVE_FRANCHISER_CREATION') }},
         idMotiveShareBuyBack: {{ constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\BorrowingMotive::ID_MOTIVE_SHARE_BUYBACK') }}
+      }
+      var borrowerEsimErrorCode = {
+        invalidAmount: {{ constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Service\\ProjectRequestManager::EXCEPTION_CODE_INVALID_AMOUNT') }},
+        invalidDuration: {{ constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Service\\ProjectRequestManager::EXCEPTION_CODE_INVALID_DURATION') }},
+        invalidReason: {{ constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Service\\ProjectRequestManager::EXCEPTION_CODE_INVALID_REASON') }},
+        invalidSiren: {{ constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Service\\ProjectRequestManager::EXCEPTION_CODE_INVALID_SIREN') }},
+        invalidEmail: {{ constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Service\\ProjectRequestManager::EXCEPTION_CODE_INVALID_EMAIL') }}
+      }
+      var borrowerEsimErrorMessages = {
+        invalidAmount: '{% trans %} project-request-simulator_invalid-amount {% endtrans %}',
+        invalidDuration: '{% trans %} project-request-simulator_invalid-duration {% endtrans %}',
+        invalidReason: '{% trans %} project-request-simulator_invalid-reason {% endtrans %}',
+        invalidSiren: '{% trans %} project-request-simulator_invalid-siren {% endtrans %}',
+        invalidEmail: '{% trans %} project-request-simulator_invalid-email {% endtrans %}',
+        unknownError: '{% trans %} project-request-simulator_unknown-error {% endtrans %}'
       }
     </script>
 {% endblock %}

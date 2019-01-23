@@ -32,3 +32,5 @@
 npm-debug.log
 /public/default/assets/
 /app/Resources/assets/css
+
+/app/Resources/MaxMind/

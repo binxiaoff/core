@@ -18,9 +18,9 @@ class ProjectsPouvoir implements UniversignEntityInterface
     const STATUS_REPAYMENT_VALIDATED = 1;
 
     /**
-     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Projects
+     * @var Projects
      *
-     * @ORM\OneToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Projects", inversedBy="proxy")
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Projects")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="id_project", referencedColumnName="id_project")
      * })

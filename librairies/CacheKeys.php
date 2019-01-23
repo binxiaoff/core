@@ -16,10 +16,9 @@ class CacheKeys
     const DAY             = 86400;
 
     /**
-     * constant for list and count projects
+     * constant for list of projects
      */
-    const LIST_PROJECTS     = 'List_Counter_Projects';
-    const AVG_RATE_PROJECTS = 'projects_getAvgRate';
+    const LIST_PROJECTS = 'List_Projects';
 
     /**
      * constant for product

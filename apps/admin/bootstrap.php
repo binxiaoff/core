@@ -16,7 +16,7 @@ class bootstrap extends Controller
                     'uri'   => ''
                 ],
                 [
-                    'title' => 'Activité commercial',
+                    'title' => 'Activité commerciale',
                     'uri'   => 'dashboard/activite'
                 ]
             ]
@@ -189,10 +189,6 @@ class bootstrap extends Controller
                 [
                     'title' => 'Prescripteurs',
                     'uri'   => 'prescripteurs/gestion'
-                ],
-                [
-                    'title' => 'Projets en funding',
-                    'uri'   => 'dossiers/funding '
                 ],
                 [
                     'title' => 'Remboursements',

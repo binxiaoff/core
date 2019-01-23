@@ -1,11 +1,5 @@
 <script>
     $(function() {
-        $(".tablesorter").tablesorter({headers:{7: {sorter: false}}});
-
-        <?php  if ($this->nb_lignes != '') : ?>
-            $(".tablesorter").tablesorterPager({container: $("#pager"), positionFixed: false, size: <?= $this->nb_lignes ?>});
-        <?php endif; ?>
-
         $("#Reset").click(function() {
             $("#nom").val('');
             $("#prenom").val('');
@@ -96,22 +90,6 @@
                 <?php endforeach; ?>
             </tbody>
         </table>
-        <?php if ($this->nb_lignes != '') : ?>
-            <table>
-                <tr>
-                    <td id="pager">
-                        <img src="<?= $this->surl ?>/images/admin/first.png" alt="Première" class="first">
-                        <img src="<?= $this->surl ?>/images/admin/prev.png" alt="Précédente" class="prev">
-                        <input type="text" class="pagedisplay">
-                        <img src="<?= $this->surl ?>/images/admin/next.png" alt="Suivante" class="next">
-                        <img src="<?= $this->surl ?>/images/admin/last.png" alt="Dernière" class="last">
-                        <select class="pagesize">
-                            <option value="<?= $this->nb_lignes ?>" selected="selected"><?= $this->nb_lignes ?></option>
-                        </select>
-                    </td>
-                </tr>
-            </table>
-        <?php endif; ?>
     <?php elseif (isset($_POST['form_search_prescripteurs'])) : ?>
         <p>Il n'y a aucun prescripteurs pour cette recherche.</p>
     <?php endif; ?>

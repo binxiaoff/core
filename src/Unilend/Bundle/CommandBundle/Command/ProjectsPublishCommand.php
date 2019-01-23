@@ -2,17 +2,16 @@
 
 namespace Unilend\Bundle\CommandBundle\Command;
 
-use Doctrine\ORM\EntityManager;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\OutputInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Attachment;
-use Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType;
-use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
+use Symfony\Component\Console\{Input\InputInterface, Output\OutputInterface};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{Attachment, AttachmentType, Projects};
 use Unilend\librairies\CacheKeys;
 
 class ProjectsPublishCommand extends ContainerAwareCommand
 {
+    /**
+     * {@inheritdoc}
+     */
     protected function configure()
     {
         $this
@@ -25,78 +24,77 @@ EOF
             );
     }
 
+    /**
+     * {@inheritdoc}
+     */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $logger = $this->getContainer()->get('monolog.logger.console');
-        /** @var EntityManagerSimulator $entityManagerSimulator */
-        $entityManagerSimulator = $this->getContainer()->get('unilend.service.entity_manager');
-        /** @var \projects $project */
-        $project = $entityManagerSimulator->getRepository('projects');
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectLifecycleManager $projectLifecycleManager */
-        $projectLifecycleManager = $this->getContainer()->get('unilend.service.project_lifecycle_manager');
         $hasProjectPublished     = false;
-
-        // One project each execution, to avoid the memory issue.
-        $projectToFund = $project->selectProjectsByStatus([\projects_status::AUTO_BID_PLACED], "AND p.date_publication <= NOW()", [], '', 1, false);
-        $logger->info('Number of projects to publish: ' . count($projectToFund), ['class' => __CLASS__, 'function' => __FUNCTION__]);
-
+        $logger                  = $this->getContainer()->get('monolog.logger.console');
+        $entityManager           = $this->getContainer()->get('doctrine.orm.entity_manager');
+        $projectRepository       = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
+        $projectLifecycleManager = $this->getContainer()->get('unilend.service.project_lifecycle_manager');
         $projectLifecycleManager->setLogger($logger);
 
-        foreach ($projectToFund as $projectRow) {
-            if ($project->get($projectRow['id_project'])) {
-                $logger->info('Publishing the project ' . $projectRow['id_project'], ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $projectRow['id_project']]);
+        // One project each execution, to avoid the memory issue.
+        $projectToPublish = $projectRepository->findPublish(1);
 
-                try {
-                    $hasProjectPublished = true;
-                    $projectLifecycleManager->publish($project);
+        $logger->info('Number of projects to publish: ' . count($projectToPublish), ['class' => __CLASS__, 'function' => __FUNCTION__]);
 
-                    $this->zipProjectAttachments($project, $entityManagerSimulator);
-                } catch (\Exception $exception) {
-                    $logger->critical('An exception occurred during publishing of project ' . $project->id_project . ' with message: ' . $exception->getMessage(), [
-                        'method' => __METHOD__,
-                        'file'   => $exception->getFile(),
-                        'line'   => $exception->getLine()
-                    ]);
-                }
+        /** @var Projects $project */
+        foreach ($projectToPublish as $project) {
+            $output->writeln('Project : ' . $project->getTitle());
+
+            $logger->info('Publishing the project ' . $project->getIdProject(), [
+                'id_project' => $project->getIdProject(),
+                'class'      => __CLASS__,
+                'function'   => __FUNCTION__
+            ]);
+
+            try {
+                $hasProjectPublished = true;
+                $projectLifecycleManager->publish($project);
+
+                $this->zipProjectAttachments($project);
+            } catch (\Exception $exception) {
+                $logger->critical('An exception occurred during publishing of project ' . $project->getIdProject() . ' with message: ' . $exception->getMessage(), [
+                    'id_project' => $project->getIdProject(),
+                    'class'      => __CLASS__,
+                    'function'   => __FUNCTION__,
+                    'file'       => $exception->getFile(),
+                    'line'       => $exception->getLine()
+                ]);
             }
         }
 
         if ($hasProjectPublished) {
-            /** @var \Cache\Adapter\Memcache\MemcacheCachePool $cachePool */
-            $cachePool = $this->getContainer()->get('memcache.default');
-            $cachePool->deleteItem(CacheKeys::LIST_PROJECTS);
+            $cacheDriver = $entityManager->getConfiguration()->getResultCacheImpl();
+            $cacheDriver->delete(CacheKeys::LIST_PROJECTS);
         }
     }
 
     /**
-     * @param \projects              $project
-     * @param EntityManagerSimulator $entityManagerSimulator
+     * @param Projects $project
      */
-    private function zipProjectAttachments(\projects $project, EntityManagerSimulator $entityManagerSimulator)
+    private function zipProjectAttachments(Projects $project): void
     {
-        /** @var \companies $companies */
-        $companies = $entityManagerSimulator->getRepository('companies');
-        $companies->get($project->id_company, 'id_company');
+        $company   = $project->getIdCompany();
+        $noZipPath = $this->getContainer()->getParameter('path.sftp') . 'groupama_nozip/';
+        $path      = $this->getContainer()->getParameter('path.sftp') . 'groupama/';
 
-        $sPathNoZip = $this->getContainer()->getParameter('path.sftp') . 'groupama_nozip/';
-        $sPath      = $this->getContainer()->getParameter('path.sftp') . 'groupama/';
-
-        if (false === is_dir($sPath)) {
-            mkdir($sPath);
+        if (false === is_dir($path)) {
+            mkdir($path);
         }
 
-        if (false === is_dir($sPathNoZip)) {
-            mkdir($sPathNoZip);
+        if (false === is_dir($noZipPath)) {
+            mkdir($noZipPath);
         }
 
-        if (false === is_dir($sPathNoZip . $companies->siren)) {
-            mkdir($sPathNoZip . $companies->siren);
+        if (false === is_dir($noZipPath . $company->getSiren())) {
+            mkdir($noZipPath . $company->getSiren());
         }
 
-        /** @var EntityManager $entityManager */
-        $entityManager = $this->getContainer()->get('doctrine.orm.entity_manager');
-        $projectEntity = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($project->id_project);
-        $attachments   = $projectEntity->getAttachments();
+        $attachments = $project->getAttachments();
 
         foreach ($attachments as $projectAttachment) {
             $attachment = $projectAttachment->getAttachment();
@@ -133,17 +131,21 @@ EOF
                     continue 2;
                     break;
             }
-            $this->copyAttachment($attachment, $prefix, $companies->siren, $sPathNoZip);
+
+            $this->copyAttachment($attachment, $prefix, $company->getSiren(), $noZipPath);
         }
 
         $zip = new \ZipArchive();
-        if (is_dir($sPathNoZip . $companies->siren)) {
-            if ($zip->open($sPath . $companies->siren . '.zip', \ZipArchive::CREATE) == true) {
-                $aFiles = scandir($sPathNoZip . $companies->siren);
-                unset($aFiles[0], $aFiles[1]);
-                foreach ($aFiles as $f) {
-                    $zip->addFile($sPathNoZip . $companies->siren . '/' . $f, $f);
+
+        if (is_dir($noZipPath . $company->getSiren())) {
+            if ($zip->open($path . $company->getSiren() . '.zip', \ZipArchive::CREATE) == true) {
+                $files = scandir($noZipPath . $company->getSiren());
+                unset($files[0], $files[1]);
+
+                foreach ($files as $file) {
+                    $zip->addFile($noZipPath . $company->getSiren() . '/' . $file, $file);
                 }
+
                 $zip->close();
             }
         }
@@ -153,37 +155,39 @@ EOF
 
     /**
      * @param Attachment $attachment
-     * @param string     $sPrefix
+     * @param string     $prefix
      * @param string     $siren
      * @param string     $pathNoZip
      */
-    private function copyAttachment(Attachment $attachment, $sPrefix, $siren, $pathNoZip)
+    private function copyAttachment(Attachment $attachment, string $prefix, string $siren, string $pathNoZip): void
     {
         $attachmentManager = $this->getContainer()->get('unilend.service.attachment_manager');
         $fullPath          = $attachmentManager->getFullPath($attachment);
+
         if (file_exists($fullPath)) {
             $pathInfo  = pathinfo($fullPath);
             $extension = isset($pathInfo['extension']) ? $pathInfo['extension'] : '';
-            $newName   = $sPrefix . $siren . '.' . $extension;
+            $newName   = $prefix . $siren . '.' . $extension;
 
             copy($fullPath, $pathNoZip . $siren . '/' . $newName);
         }
     }
 
-    private function deleteOldFiles()
+    private function deleteOldFiles(): void
     {
         $fileSystem = $this->getContainer()->get('filesystem');
         $path       = $this->getContainer()->getParameter('path.sftp') . 'groupama/';
         $duration   = 30; // jours
-        $aFiles     = scandir($path);
-        unset($aFiles[0], $aFiles[1]);
-        foreach ($aFiles as $f) {
-            $sFilePath    = $path . $f;
-            $time         = filemtime($sFilePath);
-            $deletionDate = mktime(date("H", $time), date("i", $time), date("s", $time), date("n", $time), date("d", $time) + $duration, date("Y", $time));
+        $files      = scandir($path);
+        unset($files[0], $files[1]);
+
+        foreach ($files as $file) {
+            $filePath     = $path . $file;
+            $time         = filemtime($filePath);
+            $deletionDate = mktime(date('H', $time), date('i', $time), date('s', $time), date('n', $time), date('d', $time) + $duration, date('Y', $time));
 
             if (time() >= $deletionDate) {
-                $fileSystem->remove($sFilePath);
+                $fileSystem->remove($filePath);
             }
         }
     }

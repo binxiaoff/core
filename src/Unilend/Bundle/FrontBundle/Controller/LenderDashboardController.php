@@ -7,8 +7,8 @@ use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\{JsonResponse, Request, Response};
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\User\UserInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{Bids, Clients, ClientsStatus, LenderStatistic, OperationType, Product, ProjectsStatus, Wallet, WalletType};
-use Unilend\Bundle\FrontBundle\Service\ProjectDisplayManager;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{Bids, Clients, ClientsStatus, LenderStatistic, OperationType, Projects, ProjectsStatus, Wallet, WalletType};
+use Unilend\Bundle\CoreBusinessBundle\Repository\ProjectsRepository;
 
 class LenderDashboardController extends Controller
 {
@@ -39,27 +39,25 @@ class LenderDashboardController extends Controller
         $loan = $entityManagerSimulator->getRepository('loans');
         /** @var \echeanciers $lenderRepayment */
         $lenderRepayment = $entityManagerSimulator->getRepository('echeanciers');
-        /** @var \projects $project */
-        $project = $entityManagerSimulator->getRepository('projects');
         /** @var \bids $bid */
         $bid = $entityManagerSimulator->getRepository('bids');
 
         $entityManager               = $this->get('doctrine.orm.entity_manager');
         $walletRepository            = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet');
         $repaymentScheduleRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers');
+        $projectRepository           = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
 
         /** @var Wallet $wallet */
         $wallet          = $walletRepository->getWalletByType($client, WalletType::LENDER);
         $products        = $entityManager->getRepository('UnilendCoreBusinessBundle:Product')->findAvailableProductsByClient($wallet->getIdClient());
-        $productIds      = array_map(function (Product $product) {
-            return $product->getIdProduct();
-        }, $products);
-        $ongoingProjects = $project->selectProjectsByStatus([ProjectsStatus::EN_FUNDING], '', [ProjectDisplayManager::SORT_FIELD_END => 'ASC'], 0, 30, true, $productIds);
 
-        foreach ($ongoingProjects as $iKey => $aProject) {
-            $project->get($aProject['id_project']);
-            $ongoingProjects[$iKey]['avgrate'] = $project->getAverageInterestRate();
-        }
+        $ongoingProjects = $projectRepository->findByWithCustomSort(
+            ['status' => ProjectsStatus::EN_FUNDING, 'idProduct' => $products],
+            [ProjectsRepository::SORT_FIELD_END => 'ASC'],
+            30,
+            0,
+            true
+        );
 
         $problematicProjects    = $lenderRepayment->getProblematicProjects($wallet->getId());
         $upcomingGrossInterests = $lenderRepayment->getOwedInterests(['id_lender' => $wallet->getId()]);
@@ -68,37 +66,33 @@ class LenderDashboardController extends Controller
         $ongoingBidsByProject = [];
         $publishedProjects    = [];
 
-        foreach ($ongoingProjects as $iKey => $aProject) {
-            $project->get($aProject['id_project']);
-            $projectStats = $this->get('unilend.frontbundle.service.project_display_manager')->getFundingDuration($project);
-
-            if (0 < $bid->counter('id_project = ' . $aProject['id_project'] . ' AND id_lender_account = ' . $wallet->getId())) {
-                $ongoingBidsByProject[$iKey] = [
-                    'title'            => $aProject['title'],
-                    'slug'             => $aProject['slug'],
-                    'amount'           => $aProject['amount'],
-                    'publication_date' => $aProject['date_publication'],
-                    'days_left'        => $aProject['daysLeft'],
-                    'finished'         => ($aProject['status'] > ProjectsStatus::EN_FUNDING || (new \DateTime($aProject['date_retrait'])) < (new \DateTime('NOW'))),
-                    'end_date'         => $aProject['date_retrait'],
-                    'funding_duration' => $projectStats->days,
-                    'pending_bids'     => $bid->getBidsByStatus(Bids::STATUS_PENDING, $aProject['id_project'], $wallet->getId())
+        /** @var Projects $project */
+        foreach ($ongoingProjects as $project) {
+            if (0 < $bid->counter('id_project = ' . $project->getIdProject() . ' AND id_lender_account = ' . $wallet->getId())) {
+                $ongoingBidsByProject[] = [
+                    'title'            => $project->getTitle(),
+                    'slug'             => $project->getSlug(),
+                    'amount'           => $project->getAmount(),
+                    'publication_date' => $project->getDatePublication(),
+                    'days_left'        => $project->getDateRetrait()->diff(new \DateTime('NOW'))->days,
+                    'finished'         => $project->getStatus() > ProjectsStatus::EN_FUNDING || $project->getDateRetrait() < new \DateTime('NOW'),
+                    'end_date'         => $project->getDateRetrait(),
+                    'pending_bids'     => $bid->getBidsByStatus(Bids::STATUS_PENDING, $project->getIdProject(), $wallet->getId())
                 ];
             }
 
-            $company = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->find($aProject['id_company']);
+            $company = $project->getIdCompany();
             $publishedProjects[] = [
-                'title'            => $aProject['title'],
-                'slug'             => $aProject['slug'],
+                'title'            => $project->getTitle(),
+                'slug'             => $project->getSlug(),
                 'company_address'  => ($company->getIdAddress() ? $company->getIdAddress()->getCity() . ', ' : '') . $company->getIdAddress()->getZip(),
-                'amount'           => $aProject['amount'],
-                'days_left'        => $aProject['daysLeft'],
-                'risk'             => $aProject['risk'],
-                'average_rate'     => $aProject['avgrate'],
-                'bid_count'        => count($bid->getBidsByStatus(Bids::STATUS_PENDING, $aProject['id_project'])),
-                'finished'         => ($aProject['status'] > ProjectsStatus::EN_FUNDING || (new \DateTime($aProject['date_retrait'])) < (new \DateTime('NOW'))),
-                'end_date'         => $aProject['date_retrait'],
-                'funding_duration' => $projectStats->days
+                'amount'           => $project->getAmount(),
+                'days_left'        => $project->getDateRetrait()->diff(new \DateTime('NOW'))->days,
+                'risk'             => $project->getRisk(),
+                'average_rate'     => $projectRepository->getAverageInterestRate($project),
+                'bid_count'        => count($bid->getBidsByStatus(Bids::STATUS_PENDING, $project->getIdProject())),
+                'finished'         => $project->getStatus() > ProjectsStatus::EN_FUNDING || $project->getDateRetrait() < new \DateTime('NOW'),
+                'end_date'         => $project->getDateRetrait()
             ];
         }
 

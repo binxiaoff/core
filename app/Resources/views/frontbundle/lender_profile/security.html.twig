@@ -23,7 +23,6 @@ classNames: 'user-preter-profile'
     {% set questionViewCollapse = 'in' %}
 {% endif %}
 
-
 {% block dashboardContent %}
     <div class="dashboard-tabs tabs">
 
@@ -31,6 +30,28 @@ classNames: 'user-preter-profile'
 
         <div class="dashboard-tabs-content tab-content">
             <div id="profile-info" role="tabpanel" class="dashboard-tab-pane tab-pane active">
+                <article id="panel-activity" class="panel">
+                    <header class="panel-header">
+                        <h3>{% trans %} lender-profile_security-activity-section-title {% endtrans %}</h3>
+                    </header>
+                    <section id="profile-security-activity-section" role="tablist" class="ui-toggle-group" >
+                        <section id="profile-security-activity-view" role="tabpanel" class="profile-security-activity-view collapse in">
+
+                            <button data-target="#profile-security-activity-edit" role="button" data-toggle="collapse" data-parent="#profile-security-activity-section" class="btn-edit">
+                                <span class="icon fa-pencil-u32"></span>
+                                <span class="label">{% trans %} lender-profile_security-activity-section-see-activity-button {% endtrans %}</span>
+                            </button>
+
+                            <div class="profile-security-activity-explanation">
+                                <span>{% trans %} lender-profile_security-activity-and-devices-message {% endtrans %}</span>
+                            </div>
+
+                        </section><!-- /#profile-security-activity-view -->
+
+                        {% include 'lender_profile/partials/activity_devices_list.html.twig' %}
+                    </section>
+                </article>
+
                 {# PASSWORD #}
                 <article id="panel-password" class="panel">
                     <header class="panel-header">
@@ -123,15 +144,51 @@ classNames: 'user-preter-profile'
                                     {{ form_errors(forms.securityPwd.password) }}
                                 </div>
 
+                                <div class="password-requirements">
+                                    <p>{% trans %} lender-profile_security-password-section-requirements {% endtrans %}</p>
+                                    <dl>
+                                        <dd>
+                                            <span id="pw-has-lower-upper-case" class="icon fa-cross-u16 c-error"></span>
+                                            <span class="label">{% trans %} lender-profile_security-password-section-has-lower-upper-char-check {% endtrans %}</span>
+                                        </dd>
+                                        <dd>
+                                            <span id="pw-has-digit" class="icon fa-cross-u16 c-error"></span>
+                                            <span class="label">{% trans %} lender-profile_security-password-section-has-digit-check {% endtrans %}</span>
+                                        </dd>
+                                        <dd>
+                                            <span id="pw-has-min-length" class="icon fa-cross-u16 c-error"></span>
+                                            <span class="label">{% trans %} lender-profile_security-password-section-has-min-length-check {% endtrans %}</span>
+                                        </dd>
+                                    </dl>
+                                </div>
+
                                 <div class="btn-controls">
                                     <button class="btn-primary" data-spinnerbutton>{% trans %} lender-profile_security-password-section-submit-form-button {% endtrans %}</button>
                                     <button type="reset" role="button" data-toggle="collapse" data-target="#profile-security-password-view" data-parent="#profile-security-password-section" class="btn-default" aria-controls="#profile-security-password-view" aria-expanded="true">{% trans %} lender-profile_security-password-section-cancel-form-button {% endtrans %}</button>
                                 </div><!-- /.btn-controls -->
-                            {{ form_end(forms.securityPwd) }}
+                             {{ form_end(forms.securityPwd) }}
                         </section><!-- /#profile-security-password-edit -->
 
                     </section><!-- /.ui-toggle-group -->
                 </article><!-- /.panel -->
+
+                <article id="panel-2fa" class="panel">
+                    <header class="panel-header">
+                        <h3>{% trans %} lender-profile_security-2fa-section-title {% endtrans %}</h3>
+                    </header>
+                    <section id="profile-security-2fa-section" role="tablist" class="ui-toggle-group" >
+                        <section id="profile-security-2fa-view" role="tabpanel" class="profile-security-2fa-view collapse in">
+                            <button data-target="#profile-security-2fa-edit" role="button" data-toggle="collapse" data-parent="#profile-security-2fa-section" class="btn-edit">
+                                <span class="icon fa-pencil-u32"></span>
+                                <span class="label">{% trans %} lender-profile_security-2fa-section-edit-button {% endtrans %}</span>
+                            </button>
+
+                            <div class="profile-security-2fa-explanation">
+                                <span>{% trans %} lender-profile_security-2fa-explanation-message {% endtrans %}</span>
+                            </div>
+                        </section><!-- /#profile-security-2fa-view -->
+                    </section>
+                </article>
 
                 {# SECURITY QUESTION #}
                 <article id="panel-question" class="panel">

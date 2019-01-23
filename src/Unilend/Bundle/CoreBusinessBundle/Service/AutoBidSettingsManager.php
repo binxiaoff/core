@@ -2,7 +2,7 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{Autobid, Clients, ClientSettingType, ClientsHistoryActions, Notifications, ProjectPeriod, Wallet, WalletType};
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\{Contract\ContractManager, ProductManager};
@@ -15,7 +15,7 @@ class AutoBidSettingsManager
 {
     /** @var EntityManagerSimulator */
     private $entityManagerSimulator;
-    /** @var EntityManager */
+    /** @var EntityManagerInterface */
     private $entityManager;
     /** @var ClientSettingsManager */
     private $clientSettingsManager;
@@ -38,7 +38,7 @@ class AutoBidSettingsManager
 
     /**
      * @param EntityManagerSimulator $entityManagerSimulator
-     * @param EntityManager          $entityManager
+     * @param EntityManagerInterface $entityManager
      * @param ClientSettingsManager  $clientSettingsManager
      * @param ClientManager          $clientManager
      * @param NotificationManager    $notificationManager
@@ -51,7 +51,7 @@ class AutoBidSettingsManager
      */
     public function __construct(
         EntityManagerSimulator $entityManagerSimulator,
-        EntityManager $entityManager,
+        EntityManagerInterface $entityManager,
         ClientSettingsManager $clientSettingsManager,
         ClientManager $clientManager,
         NotificationManager $notificationManager,

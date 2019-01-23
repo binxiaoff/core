@@ -2,7 +2,7 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Psr\Cache\CacheItemPoolInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{Clients, OperationType, ProjectsStatus, UnderlyingContract, UnilendStats};
 use Unilend\Bundle\CoreBusinessBundle\Repository\ClientsRepository;
@@ -38,7 +38,7 @@ class StatisticsManager
 
     /** @var EntityManagerSimulator */
     private $entityManagerSimulator;
-    /** @var  EntityManager */
+    /** @var EntityManagerInterface */
     private $entityManager;
     /** @var IRRManager */
     private $IRRManager;
@@ -47,9 +47,16 @@ class StatisticsManager
     /** @var LocationManager */
     private $locationManager;
 
+    /**
+     * @param EntityManagerSimulator $entityManagerSimulator
+     * @param EntityManagerInterface $entityManager
+     * @param IRRManager             $IRRManager
+     * @param CacheItemPoolInterface $cachePool
+     * @param LocationManager        $locationManager
+     */
     public function __construct(
         EntityManagerSimulator $entityManagerSimulator,
-        EntityManager $entityManager,
+        EntityManagerInterface $entityManager,
         IRRManager $IRRManager,
         CacheItemPoolInterface $cachePool,
         LocationManager $locationManager
@@ -300,14 +307,15 @@ class StatisticsManager
         /** @var \projects $projects */
         $projects = $this->entityManagerSimulator->getRepository('projects');
         /** @var \loans $loans */
-        $loans            = $this->entityManagerSimulator->getRepository('loans');
-        $startDate        = new \DateTime('NOW - 6 MONTHS');
-        $clientRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
+        $loans             = $this->entityManagerSimulator->getRepository('loans');
+        $startDate         = new \DateTime('NOW - 6 MONTHS');
+        $clientRepository  = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
+        $projectRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
 
         $statistics = [
             'numberOfLendersInCommunity'      => $clientRepository->countLenders(),
             'numberOfActiveLenders'           => $clientRepository->countLenders(true),
-            'numberOfFinancedProjects'        => $projects->countSelectProjectsByStatus(ProjectsStatus::AFTER_REPAYMENT),
+            'numberOfFinancedProjects'        => count($projectRepository->findBy(['status' => ProjectsStatus::AFTER_REPAYMENT])),
             'numberOfProjectRequests'         => self::HISTORIC_NUMBER_OF_SIREN + $projects->getNumberOfUniqueProjectRequests(self::VALUE_DATE_HISTORIC_NUMBER_OF_SIREN),
             'averageFundingTime'              => $projects->getAverageFundingTime($startDate),
             'averageInterestRateForLenders'   => $projects->getGlobalAverageRateOfFundedProjects(PHP_INT_MAX),

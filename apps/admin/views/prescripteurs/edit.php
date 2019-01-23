@@ -1,6 +1,20 @@
+<?php
+
+use Unilend\Bundle\CoreBusinessBundle\Entity\{BankAccount, Projects};
+
+?>
+<script>
+    $('body').on('click', '[data-project]', function (event) {
+        var projectId = $(this).data('project')
+        if (projectId && !$(event.target).is('a') && !$(event.target).is('img')) {
+            $(location).attr('href', '<?= $this->lurl ?>/dossiers/edit/' + projectId)
+        }
+    })
+</script>
+
 <div id="contenu">
     <h1>Prescripteur</h1>
-    <h2><?= $this->clients->nom . ' ' . $this->clients->prenom ?></h2>
+    <h2><?= $this->clients->nom ?> <?= $this->clients->prenom ?></h2>
     <?php if (false === empty($_SESSION['error_email_exist'])) : ?>
         <p style="color:#c84747;text-align:center;font-size:14px;font-weight:bold;"><?= $_SESSION['error_email_exist'] ?></p>
         <?php unset($_SESSION['error_email_exist']); ?>
@@ -9,12 +23,12 @@
     <form method="post" action="<?= $this->lurl ?>/prescripteurs/edit/<?= $this->prescripteurs->id_prescripteur ?>">
         <table class="formColor" style="width: 775px;margin:auto;">
             <tr>
-                <th>Civilité :</th>
+                <th>Civilité</th>
                 <td colspan="3">
-                    <input <?= $this->clients->civilite == 'Mme' ? 'checked' : '' ?> type="radio" name="civilite" id="civilite_mme" value="Mme"/>
+                    <input <?= $this->clients->civilite === 'Mme' ? 'checked' : '' ?> type="radio" name="civilite" id="civilite_mme" value="Mme"/>
                     <label for="civilite_mme">Madame</label>
 
-                    <input <?= $this->clients->civilite == 'M.' ? 'checked' : '' ?> type="radio" name="civilite" id="civilite_m" value="M."/>
+                    <input <?= $this->clients->civilite === 'M.' ? 'checked' : '' ?> type="radio" name="civilite" id="civilite_m" value="M."/>
                     <label for="civilite_m">Monsieur</label>
                 </td>
             </tr>
@@ -48,22 +62,23 @@
             </tr>
             <tr>
                 <th><label for="iban">IBAN</label></th>
-                <td><input type="text" name="iban" id="iban" class="input_large" value="<?= $this->bankAccount instanceof \Unilend\Bundle\CoreBusinessBundle\Entity\BankAccount ? $this->bankAccount->getIban() : '' ?>"/></td>
+                <td><input type="text" name="iban" id="iban" class="input_large" value="<?= $this->bankAccount instanceof BankAccount ? $this->bankAccount->getIban() : '' ?>"/></td>
                 <th><label for="bic">BIC</label></th>
-                <td><input type="text" name="bic" id="bic" class="input_large" value="<?= $this->bankAccount instanceof \Unilend\Bundle\CoreBusinessBundle\Entity\BankAccount ? $this->bankAccount->getBic() : '' ?>"/></td>
+                <td><input type="text" name="bic" id="bic" class="input_large" value="<?= $this->bankAccount instanceof BankAccount ? $this->bankAccount->getBic() : '' ?>"/></td>
             </tr>
             <tr>
                 <th colspan="4">
-                    <input type="hidden" name="form_edit_prescripteur" id="form_edit_prescripteur" />
+                    <input type="hidden" name="form_edit_prescripteur"/>
                     <button type="submit" class="btn-primary">Valider</button>
                 </th>
             </tr>
         </table>
     </form>
 </div>
+
 <div style="margin: 30px auto; padding: 10px 20px 20px; background-color: #fff; text-align: left;">
-    <h1>Liste des projets<?= $this->iProjectsCount > 0 ? ' (' . $this->iProjectsCount . ' résultat' . ($this->iProjectsCount == 1 ? '' : 's') . ')' : '' ?></h1>
-    <?php if ($this->iProjectsCount > 0) : ?>
+    <h1>Liste des projets</h1>
+    <?php if (count($this->projects) > 0) : ?>
         <table class="tablesorter">
             <thead>
                 <tr>
@@ -81,27 +96,22 @@
             </thead>
             <tbody>
                 <?php $i = 1; ?>
-                <?php foreach ($this->aProjects as $p) : ?>
-                    <?php $this->users->get($p['id_analyste'], 'id_user'); ?>
-                    <tr<?= ($i % 2 == 1 ? '' : ' class="odd"') ?> id="project-<?= $p['id_project'] ?>">
-                        <td><a href="<?= $this->lurl ?>/dossiers/edit/<?= $p['id_project'] ?>"><?= $p['id_project'] ?></a></td>
-                        <td><a href="<?= $this->lurl ?>/dossiers/edit/<?= $p['id_project'] ?>"><?= $p['title'] ?></a></td>
-                        <td><?= $p['siren'] ?></td>
-                        <td><?= $p['name'] ?></td>
-                        <td class="text-right"><?= $this->ficelle->formatNumber($p['amount'], 0) ?> €</td>
-                        <td><?= empty($p['period']) ? '' : $p['period'] . ' mois' ?></td>
-                        <td><?= $p['label'] ?></td>
-                        <td><?= $this->formatDate($p['added'], 'd/m/Y') ?></td>
-                        <td><?= $this->users->firstname ?> <?= $this->users->name ?></td>
+                <?php /** @var Projects $project */ ?>
+                <?php foreach ($this->projects as $project) : ?>
+                    <tr<?= ($i % 2 == 1 ? '' : ' class="odd"') ?> data-project="<?= $project->getIdProject() ?>">
+                        <td><a href="<?= $this->lurl ?>/dossiers/edit/<?= $project->getIdProject() ?>"><?= $project->getIdProject() ?></a></td>
+                        <td><a href="<?= $this->lurl ?>/dossiers/edit/<?= $project->getIdProject() ?>"><?= $project->getTitle() ?></a></td>
+                        <td><a href="<?= $this->lurl ?>/emprunteurs/edit/<?= $project->getIdCompany()->getIdClientOwner()->getIdClient() ?>"><?= $project->getIdCompany()->getSiren() ?></a></td>
+                        <td><a href="<?= $this->lurl ?>/emprunteurs/edit/<?= $project->getIdCompany()->getIdClientOwner()->getIdClient() ?>"><?= $project->getIdCompany()->getName() ?></a></td>
+                        <td class="text-right"><?= $this->ficelle->formatNumber($project->getAmount(), 0) ?> €</td>
+                        <td><?= empty($project->getPeriod()) ? '' : $project->getPeriod() . ' mois' ?></td>
+                        <td><?= $this->projectStatusRepository->findOneBy(['status' => $project->getStatus()])->getLabel() ?></td>
+                        <td><?= $project->getAdded()->format('d/m/Y') ?></td>
+                        <td><?= $project->getIdAnalyste() && $project->getIdAnalyste()->getIdUser() ? $project->getIdAnalyste()->getFirstname() . ' ' . $project->getIdAnalyste()->getName() : '' ?></td>
                         <td align="center">
-                            <a href="<?= $this->lurl ?>/dossiers/edit/<?= $p['id_project'] ?>">
-                                <img src="<?= $this->surl ?>/images/admin/edit.png" alt="Modifier <?= $p['title'] ?>"/>
+                            <a href="<?= $this->lurl ?>/dossiers/edit/<?= $project->getIdProject() ?>">
+                                <img src="<?= $this->surl ?>/images/admin/edit.png" alt="Modifier <?= $project->getTitle() ?>"/>
                             </a>
-                            <script>
-                                $("#project-<?= $p['id_project']?> ").click(function () {
-                                    $(location).attr('href', '<?= $this->lurl ?>/dossiers/edit/<?= $p['id_project'] ?>');
-                                });
-                            </script>
                         </td>
                     </tr>
                     <?php $i++; ?>

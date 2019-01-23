@@ -6,7 +6,7 @@ use Doctrine\DBAL\Cache\QueryCacheProfile;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Driver\ResultStatement;
 use Doctrine\DBAL\Query\QueryBuilder;
-use Doctrine\ORM\{AbstractQuery, EntityRepository, Query\Expr\Join, Query\ResultSetMappingBuilder};
+use Doctrine\ORM\{AbstractQuery, EntityRepository, NonUniqueResultException, Query\Expr\Join, Query\ResultSetMappingBuilder};
 use PDO;
 use Psr\Log\InvalidArgumentException;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{Bids, Clients, ClientsMandats, Companies, CompanyStatus, Echeanciers, EcheanciersEmprunteur, Factures, OperationType, Partner, Projects, ProjectsPouvoir,
@@ -16,6 +16,12 @@ use Unilend\librairies\CacheKeys;
 
 class ProjectsRepository extends EntityRepository
 {
+    const SORT_FIELD_SECTOR = 'sector';
+    const SORT_FIELD_AMOUNT = 'amount';
+    const SORT_FIELD_RATE   = 'rate';
+    const SORT_FIELD_RISK   = 'risk';
+    const SORT_FIELD_END    = 'end';
+
     /**
      * @param int $lenderId
      *
@@ -1358,13 +1364,15 @@ class ProjectsRepository extends EntityRepository
     }
 
     /**
-     * @param int   $status
-     * @param array $borrowingMotives
+     * @param int       $status
+     * @param array     $borrowingMotives
+     * @param \DateTime $from
+     * @param \DateTime $to
      *
      * @return array
      * @throws \Doctrine\DBAL\DBALException
      */
-    public function getDelayByStatus(int $status, array $borrowingMotives) : array
+    public function getDelayByStatus(int $status, array $borrowingMotives, \DateTime $from, \DateTime $to) : array
     {
         $query = '
         SELECT b.id_motive,
@@ -1385,6 +1393,8 @@ class ProjectsRepository extends EntityRepository
         INNER JOIN projects p ON p.id_project = psh.id_project
         INNER JOIN borrowing_motive b ON p.id_borrowing_motive = b.id_motive
         WHERE b.id_motive IN (:motives)
+        AND psh.added >= :from
+        AND psh.added <= :to
         GROUP BY b.id_motive
         ORDER BY b.rank';
 
@@ -1393,7 +1403,7 @@ class ProjectsRepository extends EntityRepository
             ->getConnection()
             ->executeQuery(
                 $query,
-                ['status' => $status, 'motives' => $borrowingMotives],
+                ['status' => $status, 'motives' => $borrowingMotives, 'from' => $from->format('Y-m-d'), 'to' => $to->format('Y-m-d')],
                 ['motives' => Connection::PARAM_INT_ARRAY]
             )
             ->fetchAll();
@@ -1539,6 +1549,26 @@ class ProjectsRepository extends EntityRepository
             ->andWhere('p.datePublication <= :publicationDate')
             ->setParameter('status', ProjectsStatus::A_FUNDER)
             ->setParameter('publicationDate', new \DateTime('+ 15 minutes'));
+
+        if ($limit) {
+            $queryBuilder->setMaxResults($limit);
+        }
+
+        return $queryBuilder->getQuery()->getResult();
+    }
+
+    /**
+     * @param int|null $limit
+     *
+     * @return Projects[]
+     */
+    public function findPublish(?int $limit = null): array
+    {
+        $queryBuilder = $this->createQueryBuilder('p');
+        $queryBuilder
+            ->where('p.status = :status')
+            ->andWhere('p.datePublication <= NOW()')
+            ->setParameter('status', ProjectsStatus::AUTO_BID_PLACED);
 
         if ($limit) {
             $queryBuilder->setMaxResults($limit);
@@ -1787,5 +1817,277 @@ class ProjectsRepository extends EntityRepository
             ->addOrderBy('amount', 'DESC')
             ->addOrderBy('duration', 'DESC')
             ->addOrderBy('creation', 'ASC');
+    }
+
+    /**
+     * @param array|null     $status
+     * @param string|null    $siren
+     * @param string|null    $companyName
+     * @param \DateTime|null $startDate
+     * @param \DateTime|null $endDate
+     * @param int|null       $duration
+     * @param int|null       $need
+     * @param int|null       $salesPersonId
+     * @param int|null       $riskAnalystId
+     * @param int|null       $limit
+     * @param int|null       $offset
+     *
+     * @return Projects[]
+     */
+    public function search(
+        ?array $status = null,
+        ?string $siren = null,
+        ?string $companyName = null,
+        ?\DateTime $startDate = null,
+        ?\DateTime $endDate = null,
+        ?int $duration = null,
+        ?int $need = null,
+        ?int $salesPersonId = null,
+        ?int $riskAnalystId = null,
+        ?int $limit = 100,
+        ?int $offset = 0
+    ): array
+    {
+        $queryBuilder = $this->getSearchQueryBuilder($status, $siren, $companyName, $startDate, $endDate, $duration, $need, $salesPersonId, $riskAnalystId);
+        $queryBuilder
+            ->setMaxResults($limit)
+            ->setFirstResult($offset);
+
+        return $queryBuilder->getQuery()->getResult();
+    }
+
+    /**
+     * @param array|null     $status
+     * @param string|null    $siren
+     * @param string|null    $companyName
+     * @param \DateTime|null $startDate
+     * @param \DateTime|null $endDate
+     * @param int|null       $duration
+     * @param int|null       $need
+     * @param int|null       $salesPersonId
+     * @param int|null       $riskAnalystId
+     *
+     * @return int
+     */
+    public function countSearch(
+        ?array $status = null,
+        ?string $siren = null,
+        ?string $companyName = null,
+        ?\DateTime $startDate = null,
+        ?\DateTime $endDate = null,
+        ?int $duration = null,
+        ?int $need = null,
+        ?int $salesPersonId = null,
+        ?int $riskAnalystId = null
+    ): int
+    {
+        $queryBuilder = $this->getSearchQueryBuilder($status, $siren, $companyName, $startDate, $endDate, $duration, $need, $salesPersonId, $riskAnalystId);
+        $queryBuilder->select('COUNT(p)');
+
+        try {
+            return $queryBuilder->getQuery()->getSingleScalarResult();
+        } catch (NonUniqueResultException $exception) {
+            return 0;
+        }
+    }
+
+    /**
+     * @param array|null     $status
+     * @param string|null    $siren
+     * @param string|null    $companyName
+     * @param \DateTime|null $startDate
+     * @param \DateTime|null $endDate
+     * @param int|null       $duration
+     * @param int|null       $need
+     * @param int|null       $salesPersonId
+     * @param int|null       $riskAnalystId
+     *
+     * @return QueryBuilder
+     */
+    private function getSearchQueryBuilder(
+        ?array $status = null,
+        ?string $siren = null,
+        ?string $companyName = null,
+        ?\DateTime $startDate = null,
+        ?\DateTime $endDate = null,
+        ?int $duration = null,
+        ?int $need = null,
+        ?int $salesPersonId = null,
+        ?int $riskAnalystId = null
+    ): QueryBuilder
+    {
+        $queryBuilder = $this->createQueryBuilder('p');
+
+        if (null !== $siren || null !== $companyName) {
+            $queryBuilder->innerJoin('UnilendCoreBusinessBundle:Companies', 'co', Join::WITH, 'p.idCompany = co.idCompany');
+        }
+
+        if (null !== $status) {
+            $queryBuilder
+                ->andWhere('p.status IN (:status)')
+                ->setParameter('status', $status, Connection::PARAM_INT_ARRAY);
+        }
+
+        if (null !== $siren) {
+            $queryBuilder
+                ->andWhere('co.siren = :siren')
+                ->setParameter('siren', $siren, PDO::PARAM_STR);
+        }
+
+        if (null !== $companyName) {
+            $queryBuilder
+                ->andWhere('co.name LIKE :companyName')
+                ->setParameter('companyName', '%' . $companyName . '%', PDO::PARAM_STR);
+        }
+
+        if (null !== $startDate) {
+            $startDate = clone $startDate;
+            $startDate->setTime(0, 0, 0);
+
+            $queryBuilder
+                ->andWhere('p.added >= :startDate')
+                ->setParameter('startDate', $startDate);
+        }
+
+        if (null !== $endDate) {
+            $endDate = clone $endDate;
+            $endDate->setTime(23, 59, 59);
+
+            $queryBuilder
+                ->andWhere('p.added <= :endDate')
+                ->setParameter('endDate', $endDate);
+        }
+
+        if (null !== $duration) {
+            $queryBuilder
+                ->andWhere('p.period = :duration')
+                ->setParameter('duration', $duration, PDO::PARAM_INT);
+        }
+
+        if (null !== $need) {
+            $queryBuilder
+                ->andWhere('p.idProjectNeed = :projectNeed')
+                ->setParameter('projectNeed', $need, PDO::PARAM_INT);
+        }
+
+        if (null !== $salesPersonId) {
+            $queryBuilder
+                ->andWhere('p.idCommercial = :salesPersonId')
+                ->setParameter('salesPersonId', $salesPersonId, PDO::PARAM_INT);
+        }
+
+        if (null !== $riskAnalystId) {
+            $queryBuilder
+                ->andWhere('p.idAnalyste = :riskAnalystId')
+                ->setParameter('riskAnalystId', $riskAnalystId, PDO::PARAM_INT);
+        }
+
+        return $queryBuilder;
+    }
+
+    /**
+     * Search based on "project_search" view
+     *
+     * @param array      $criteria
+     * @param array|null $orderBy
+     * @param int|null   $limit
+     * @param int|null   $offset
+     *
+     * @return Projects[]
+     */
+    public function findByWithCustomSort(array $criteria, array $orderBy = [self::SORT_FIELD_END => 'DESC'], int $limit = null, int $offset = null): array
+    {
+        $queryBuilder = $this->createQueryBuilder('p');
+        $queryBuilder
+            ->select('p')
+            ->innerJoin('UnilendCoreBusinessBundle:ProjectSearch', 's', Join::WITH, 'p.idProject = s.idProject')
+            ->setFirstResult($offset)
+            ->setMaxResults($limit);
+
+        foreach ($criteria as $name => $value) {
+            switch ($name) {
+                case 'status':
+                case 'display':
+                case 'idProduct':
+                    if (is_array($value)) {
+                        $queryBuilder
+                            ->andWhere('p.' . $name . ' IN (:' . $name . ')')
+                            ->setParameter($name, $value, Connection::PARAM_INT_ARRAY);
+                    } else {
+                        $queryBuilder
+                            ->andWhere('p.' . $name . ' = :' . $name)
+                            ->setParameter($name, $value);
+                    }
+                    break;
+                default:
+                    throw new \InvalidArgumentException();
+            }
+        }
+
+        foreach ($orderBy as $field => $direction) {
+            if (false === in_array($direction, ['ASC', 'DESC'])) {
+                throw new \InvalidArgumentException();
+            }
+
+            switch ($field) {
+                case self::SORT_FIELD_SECTOR:
+                    $queryBuilder
+                        ->addOrderBy('s.sector', $direction)
+                        ->addOrderBy('s.sortDate', 'ASC');
+                    break;
+                case self::SORT_FIELD_AMOUNT:
+                    $queryBuilder
+                        ->addOrderBy('p.amount', $direction)
+                        ->addOrderBy('s.sortDate', 'ASC');
+                    break;
+                case self::SORT_FIELD_RATE:
+                    $queryBuilder
+                        ->addOrderBy('s.avgRate', $direction)
+                        ->addOrderBy('s.sortDate', 'ASC');
+                    break;
+                case self::SORT_FIELD_RISK:
+                    $queryBuilder
+                        ->addOrderBy('p.risk', $direction)
+                        ->addOrderBy('s.sortDate', 'ASC');
+                    break;
+                case self::SORT_FIELD_END:
+                    $queryBuilder
+                        ->addOrderBy('s.sortDate', $direction);
+                    break;
+                default:
+                    throw new \InvalidArgumentException();
+            }
+        }
+
+        $query = $queryBuilder->getQuery();
+        $query->useQueryCache(true);
+        $query->useResultCache(true, CacheKeys::SHORT_TIME, CacheKeys::LIST_PROJECTS);
+
+        return $query->getResult();
+    }
+
+    /**
+     * Search based on "project_search" view
+     *
+     * @param int   $projectId
+     * @param array $criteria
+     * @param array $orderBy
+     *
+     * @return Projects[]
+     */
+    public function findNeighbors(int $projectId, array $criteria, array $orderBy): array
+    {
+        $neighbors = [];
+        $projects  = $this->findByWithCustomSort($criteria, $orderBy);
+
+        foreach ($projects as $index => $possibleNeighbor) {
+            if ($possibleNeighbor->getIdProject() === $projectId) {
+                $neighbors['previous'] = $projects[$index - 1] ?? null;
+                $neighbors['next']     = $projects[$index + 1] ?? null;
+                break;
+            }
+        }
+
+        return $neighbors;
     }
 }

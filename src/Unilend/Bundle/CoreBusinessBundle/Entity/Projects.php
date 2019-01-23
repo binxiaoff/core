@@ -14,7 +14,6 @@ use Ramsey\Uuid\Uuid;
  * @ORM\Table(name="projects", indexes={
  *     @ORM\Index(name="id_company", columns={"id_company"}),
  *     @ORM\Index(name="slug", columns={"slug"}),
- *     @ORM\Index(name="status", columns={"status"}),
  *     @ORM\Index(name="display", columns={"display"}),
  *     @ORM\Index(name="date_retrait", columns={"date_retrait"}),
  *     @ORM\Index(name="hash", columns={"hash"}),
@@ -22,7 +21,8 @@ use Ramsey\Uuid\Uuid;
  *     @ORM\Index(name="id_commercial", columns={"id_commercial"}),
  *     @ORM\Index(name="id_dernier_bilan", columns={"id_dernier_bilan"}),
  *     @ORM\Index(name="fk_projects_id_company_submitter", columns={"id_company_submitter"}),
- *     @ORM\Index(name="fk_projects_id_client_submitter", columns={"id_client_submitter"})
+ *     @ORM\Index(name="fk_projects_id_client_submitter", columns={"id_client_submitter"}),
+ *     @ORM\Index(name="fk_projects_status", columns={"status"})
  * })
  * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\ProjectsRepository")
  * @ORM\HasLifecycleCallbacks
@@ -406,21 +406,7 @@ class Projects
      * @ORM\OneToMany(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsComments", mappedBy="idProject")
      * @ORM\OrderBy({"added" = "DESC"})
      */
-    private $notes;
-
-    /**
-     * @var ProjectsPouvoir
-     *
-     * @ORM\OneToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsPouvoir", mappedBy="idProject")
-     */
-    private $proxy;
-
-    /**
-     * @var ProjectCgv
-     *
-     * @ORM\OneToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\ProjectCgv", mappedBy="idProject")
-     */
-    private $termsOfSale;
+    private $memos;
 
     /**
      * @var Virements[]
@@ -460,7 +446,7 @@ class Projects
     {
         $this->attachments            = new ArrayCollection();
         $this->mandates               = new ArrayCollection();
-        $this->notes                  = new ArrayCollection();
+        $this->memos                  = new ArrayCollection();
         $this->wireTransferOuts       = new ArrayCollection();
         $this->invoices               = new ArrayCollection();
         $this->debtCollectionMissions = new ArrayCollection();
@@ -1526,53 +1512,36 @@ class Projects
     public function getMandates()
     {
         $criteria = Criteria::create();
-        $criteria->orderBy(['updated' => 'DESC']);
+        $criteria->orderBy(['updated' => Criteria::DESC]);
 
         return $this->mandates->matching($criteria);
     }
 
     /**
-     * Get project notes
+     * Get project memos
      *
-     * @return ProjectsComments[]
+     * @return ArrayCollection|ProjectsComments[]
      */
-    public function getNotes()
+    public function getMemos(): ArrayCollection
     {
-        return $this->notes;
+        $criteria = Criteria::create();
+        $criteria->orderBy(['added' => Criteria::DESC]);
+
+        return $this->memos->matching($criteria);
     }
 
     /**
-     * Get project public notes
+     * Get project public memos
      *
-     * @return ProjectsComments[]
+     * @return ArrayCollection|ProjectsComments[]
      */
-    public function getPublicNotes()
+    public function getPublicMemos(): ArrayCollection
     {
         $criteria = Criteria::create()
             ->where(Criteria::expr()->eq('public', true))
             ->orderBy(['added' => Criteria::DESC]);
 
-        return $this->notes->matching($criteria);
-    }
-
-    /**
-     * Get project proxy
-     *
-     * @return ProjectsPouvoir
-     */
-    public function getProxy()
-    {
-        return $this->proxy;
-    }
-
-    /**
-     * Get project terms of sale
-     *
-     * @return ProjectCgv
-     */
-    public function getTermsOfSale()
-    {
-        return $this->termsOfSale;
+        return $this->memos->matching($criteria);
     }
 
     /**

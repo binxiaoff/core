@@ -325,7 +325,7 @@ class Companies
     /**
      * @var CompanyAddress
      *
-     * @ORM\OneToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\CompanyAddress", mappedBy="id")
+     * @ORM\OneToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\CompanyAddress")
      * @ORM\JoinColumn(name="id_postal_address", referencedColumnName="id")
      */
     private $idPostalAddress;

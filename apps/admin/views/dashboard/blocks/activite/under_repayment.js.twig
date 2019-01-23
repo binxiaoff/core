@@ -6,7 +6,7 @@ Highcharts.chart('under-repayment', {
         text: 'En remboursement'
     },
     xAxis: {
-        categories: [{% for month in twelveMonths %} {% if not loop.first %},{% endif %} '{{ month }}' {% endfor %}]
+        categories: [{% for month in thirteenMonths %} {% if not loop.first %},{% endif %} '{{ month }}' {% endfor %}]
     },
     yAxis: {
         min: 0,
@@ -50,7 +50,7 @@ Highcharts.chart('under-repayment', {
         {% if not loop.first %},{% endif %}
         {
             name: '{{ partnerStat.label|addslashes }}',
-            data: [{% for month in twelveMonths %} {% if not loop.first %},{% endif %} {% if partnerStat['data'][month] is defined %} {{ partnerStat['data'][month] }} {% else %} 0 {% endif %} {% endfor %}]
+            data: [{% for month in thirteenMonths %} {% if not loop.first %},{% endif %} {% if partnerStat['data'][month] is defined %} {{ partnerStat['data'][month] }} {% else %} 0 {% endif %} {% endfor %}]
             {% if partnerStat.color is not empty %},color: '{{ partnerStat.color }}'{% endif %}
         }
         {% endfor %}

@@ -1,10 +1,10 @@
 @font-face {
   font-family: 'unilend-fontawesome';
-  src:  url('fonts/unilend-fontawesome.eot?kntfb9');
-  src:  url('fonts/unilend-fontawesome.eot?kntfb9#iefix') format('embedded-opentype'),
-    url('fonts/unilend-fontawesome.ttf?kntfb9') format('truetype'),
-    url('fonts/unilend-fontawesome.woff?kntfb9') format('woff'),
-    url('fonts/unilend-fontawesome.svg?kntfb9#unilend-fontawesome') format('svg');
+  src:  url('fonts/unilend-fontawesome.eot?9tbki1');
+  src:  url('fonts/unilend-fontawesome.eot?9tbki1#iefix') format('embedded-opentype'),
+  url('fonts/unilend-fontawesome.ttf?9tbki1') format('truetype'),
+  url('fonts/unilend-fontawesome.woff?9tbki1') format('woff'),
+  url('fonts/unilend-fontawesome.svg?9tbki1#unilend-fontawesome') format('svg');
   font-weight: normal;
   font-style: normal;
 }
@@ -873,9 +873,6 @@
 .fa-times:before {
   content: "\f00d";
 }
-.fa-power-off:before {
-  content: "\f011";
-}
 .fa-cog:before {
   content: "\f013";
 }
@@ -902,9 +899,6 @@
 }
 .fa-lock:before {
   content: "\f023";
-}
-.fa-flag:before {
-  content: "\f024";
 }
 .fa-print:before {
   content: "\f02f";
@@ -1134,4 +1128,93 @@
 .fa-question-circle-o:before {
   content: "\f29c";
 }
-
+.fa-mobile-devices-u64:before {
+  content: "\e000";
+}
+.fa-laptop-u64:before {
+  content: "\e001";
+}
+.fa-computer-u64:before {
+  content: "\e001";
+}
+.fa-desktop-u64:before {
+  content: "\e002";
+}
+.fa-screen-u64:before {
+  content: "\e002";
+}
+.fa-tablet-u64:before {
+  content: "\e003";
+}
+.fa-phone-u64:before {
+  content: "\e004";
+}
+.fa-mobile-u64:before {
+  content: "\e004";
+}
+.fa-shield-u64:before {
+  content: "\e022";
+}
+.fa-security-u64:before {
+  content: "\e022";
+}
+.fa-opened-envelope-u64:before {
+  content: "\e028";
+}
+.fa-key-u64:before {
+  content: "\e02c";
+}
+.fa-desktop-u32:before {
+  content: "\e30c";
+}
+.fa-screen-u32:before {
+  content: "\e30c";
+}
+.fa-phonelink-u32:before {
+  content: "\e326";
+}
+.fa-devices-u32:before {
+  content: "\e326";
+}
+.fa-phone-u32:before {
+  content: "\e325";
+}
+.fa-mobile-u32:before {
+  content: "\e325";
+}
+.fa-shield-u32:before {
+  content: "\e32a";
+}
+.fa-security-u32:before {
+  content: "\e32a";
+}
+.fa-tablet-u32:before {
+  content: "\e331";
+}
+.fa-verified-user-u32:before {
+  content: "\e8e8";
+}
+.fa-basic-key-u32:before {
+  content: "\e0da";
+}
+.fa-laptop-u32:before {
+  content: "\1f544";
+}
+.fa-computer-u32:before {
+  content: "\1f544";
+}
+.fa-closed-envelope-u32:before {
+  content: "\e96d";
+}
+.fa-key-u32:before {
+  content: "\e96e";
+}
+.fa-mobile-devices-u32:before {
+  content: "\e96f";
+}
+.fa-star-shield-u32:before {
+  content: "\e970";
+}
+.fa-star-security-u32:before {
+  content: "\e970";
+}

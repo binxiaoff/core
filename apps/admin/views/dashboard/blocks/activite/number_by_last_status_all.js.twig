@@ -3,7 +3,7 @@ Highcharts.chart('number-by-last-status-all', {
         type: 'column'
     },
     title: {
-        text: 'Projects en cours'
+        text: 'Projets en cours'
     },
     subtitle: {
         text: 'Nombre de projets par statut'
@@ -21,20 +21,37 @@ Highcharts.chart('number-by-last-status-all', {
         min: 0,
         title: {
             text: 'Nombre de projets'
+        },
+        stackLabels: {
+          enabled: true,
+          style: {
+            fontWeight: 'bold',
+            color: (Highcharts.theme && Highcharts.theme.textColor) || 'gray'
+          }
         }
     },
+    legend: {
+        align: 'right',
+        x: -30,
+        verticalAlign: 'top',
+        y: 25,
+        floating: true,
+        backgroundColor: (Highcharts.theme && Highcharts.theme.background2) || 'white',
+        borderColor: '#CCC',
+        borderWidth: 1,
+        shadow: false
+    },
     tooltip: {
-        headerFormat: '<strong>{point.key}</strong><table>',
-        pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name} : </td>' +
-        '<td style="padding:0"><b>{point.y}</b></td></tr>',
-        footerFormat: '</table>',
-        shared: true,
-        useHTML: true
+        headerFormat: '<b>{point.x}</b><br/>',
+        pointFormat: '{series.name}: {point.y}<br/>Total: {point.stackTotal}'
     },
     plotOptions: {
         column: {
-            pointPadding: 0.2,
-            borderWidth: 0
+            stacking: 'normal',
+            dataLabels: {
+                enabled: true,
+                color: (Highcharts.theme && Highcharts.theme.dataLabelsColor) || 'white'
+            }
         }
     },
     series: [

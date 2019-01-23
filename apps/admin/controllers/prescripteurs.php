@@ -9,6 +9,11 @@ class prescripteursController extends bootstrap
     /** @var \prescripteurs */
     public $prescripteurs;
 
+    /** @var array */
+    protected $projects;
+    /** @var int */
+    protected $projectsCount;
+
     public function initialize()
     {
         parent::initialize();
@@ -49,10 +54,11 @@ class prescripteursController extends bootstrap
         $this->clients_adresses = $this->loadData('clients_adresses');
         $this->prescripteurs    = $this->loadData('prescripteurs');
         $this->companies        = $this->loadData('companies');
-        $this->projects         = $this->loadData('projects');
 
         if (
-            ! isset($this->params[0])
+            false === isset($this->params[0])
+            || false === filter_var($this->params[0], FILTER_VALIDATE_INT)
+            || null === ($this->client)
             || ! $this->prescripteurs->get($this->params[0], 'id_prescripteur')
             || ! $this->clients->get($this->prescripteurs->id_client, 'id_client')
             || ! $this->clients_adresses->get($this->clients->id_client, 'id_client')
@@ -61,12 +67,12 @@ class prescripteursController extends bootstrap
             header('Location:' . $this->lurl . '/prescripteurs/gestion/');
             return;
         }
-        /** @var \Doctrine\ORM\EntityManager $entityManager */
-        $entityManager = $this->get('doctrine.orm.entity_manager');
 
-        $this->aProjects      = $this->projects->searchDossiers('', '', '', '', '', '', '', '', '', $this->params[0]);
-        $this->iProjectsCount = array_shift($this->aProjects);
-        $this->bankAccount    = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($this->prescripteurs->id_client);
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager                 = $this->get('doctrine.orm.entity_manager');
+        $this->projects                = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->findBy(['idPrescripteur' => $this->params[0]]);
+        $this->bankAccount             = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($this->prescripteurs->id_client);
+        $this->projectStatusRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatus');
 
         if (isset($_POST['form_edit_prescripteur'])) {
             $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);

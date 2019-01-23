@@ -2,23 +2,23 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service\Product;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Psr\Cache\CacheItemPoolInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Product;
 use Unilend\librairies\CacheKeys;
 
 class ProductAttributeManager
 {
-    /** @var EntityManager */
+    /** @var EntityManagerInterface */
     protected $entityManager;
     /** @var CacheItemPoolInterface */
     protected $cachePool;
 
     /**
-     * @param EntityManager          $entityManager
+     * @param EntityManagerInterface $entityManager
      * @param CacheItemPoolInterface $cachePool
      */
-    public function __construct(EntityManager $entityManager, CacheItemPoolInterface $cachePool)
+    public function __construct(EntityManagerInterface $entityManager, CacheItemPoolInterface $cachePool)
     {
         $this->entityManager = $entityManager;
         $this->cachePool     = $cachePool;

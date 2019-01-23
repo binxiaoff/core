@@ -17,9 +17,9 @@ class ProjectCgv implements UniversignEntityInterface
     const BASE_PATH     = 'protected/pdf/cgv_emprunteurs/';
 
     /**
-     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Projects
+     * @var Projects
      *
-     * @ORM\OneToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Projects", inversedBy="termsOfSale")
+     * @ORM\OneToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Projects")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="id_project", referencedColumnName="id_project")
      * })

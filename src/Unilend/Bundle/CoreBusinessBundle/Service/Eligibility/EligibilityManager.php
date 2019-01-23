@@ -2,26 +2,22 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service\Eligibility;
 
-use Doctrine\ORM\EntityManager;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
+use Doctrine\ORM\EntityManagerInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{Companies, Projects};
 use Unilend\Bundle\CoreBusinessBundle\Service\Eligibility\Validator\CompanyValidator;
 
 class EligibilityManager
 {
-    /** @var EntityManager */
+    /** @var EntityManagerInterface */
     private $entityManager;
     /** @var CompanyValidator */
     private $companyValidator;
 
     /**
-     * @param EntityManager    $entityManager
-     * @param CompanyValidator $companyValidator
+     * @param EntityManagerInterface $entityManager
+     * @param CompanyValidator       $companyValidator
      */
-    public function __construct(
-        EntityManager $entityManager,
-        CompanyValidator $companyValidator
-    )
+    public function __construct(EntityManagerInterface $entityManager, CompanyValidator $companyValidator)
     {
         $this->entityManager    = $entityManager;
         $this->companyValidator = $companyValidator;

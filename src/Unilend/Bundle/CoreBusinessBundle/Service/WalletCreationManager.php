@@ -2,29 +2,22 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Clients, Wallet, WalletType
-};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{Clients, Wallet, WalletType};
 
 class WalletCreationManager
 {
-    /** @var EntityManager */
+    /** @var EntityManagerInterface */
     private $entityManager;
     /** @var LoggerInterface */
     private $logger;
 
     /**
-     * WalletCreationManager constructor.
-     *
-     * @param entityManager   $entityManager
-     * @param LoggerInterface $logger
+     * @param EntityManagerInterface $entityManager
+     * @param LoggerInterface        $logger
      */
-    public function __construct(
-        EntityManager $entityManager,
-        LoggerInterface $logger
-    )
+    public function __construct(EntityManagerInterface $entityManager, LoggerInterface $logger)
     {
         $this->entityManager = $entityManager;
         $this->logger        = $logger;

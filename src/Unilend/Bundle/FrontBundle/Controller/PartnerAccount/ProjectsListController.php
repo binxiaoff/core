@@ -74,9 +74,9 @@ class ProjectsListController extends Controller
      */
     public function projectRequestDetailsFormAction(Request $request, ?UserInterface $partnerUser): Response
     {
-        $hash = $request->request->getAlnum('hash');
+        $hash = $request->request->filter('hash', null, FILTER_SANITIZE_STRING);
 
-        if (1 !== preg_match('/^[0-9a-f]{32}$/', $hash)) {
+        if (1 !== preg_match('/^[0-9a-f-]{32,36}$/', $hash)) {
             return $this->redirect($request->headers->get('referer'));
         }
 
@@ -88,7 +88,7 @@ class ProjectsListController extends Controller
         $project           = $projectRepository->findOneBy(['hash' => $hash]);
         $userCompanies     = $partnerManager->getUserCompanies($partnerUser);
 
-        if (false === ($project instanceof Projects) || false === in_array($project->getIdCompanySubmitter(), $userCompanies)) {
+        if (false === $project instanceof Projects || false === in_array($project->getIdCompanySubmitter(), $userCompanies)) {
             return new JsonResponse([
                 'error'   => true,
                 'message' => $translator->trans('partner-project-list_popup-project-tos-message-error')
@@ -137,10 +137,13 @@ class ProjectsListController extends Controller
      *
      * @return array
      */
-    private function formatProject(Clients $client, array $projects, $loadNotes, $abandoned = false): array
+    private function formatProject(Clients $client, array $projects, bool $loadNotes, bool $abandoned = false): array
     {
-        $display    = [];
-        $translator = $this->get('translator');
+        $display                        = [];
+        $translator                     = $this->get('translator');
+        $entityManager                  = $this->get('doctrine.orm.entity_manager');
+        $projectStatusHistoryRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatusHistory');
+        $termsOfSaleRepository          = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectCgv');
 
         foreach ($projects as $project) {
             $display[$project->getIdProject()] = [
@@ -157,21 +160,24 @@ class ProjectsListController extends Controller
                     'entity'    => $project->getIdCompanySubmitter()->getName()
                 ],
                 'motive'     => $project->getIdBorrowingMotive() ? $translator->trans('borrowing-motive_motive-' . $project->getIdBorrowingMotive()) : '',
-                'memos'      => $loadNotes ? $this->formatNotes($project->getPublicNotes()) : [],
+                'memos'      => $loadNotes ? $this->formatNotes($project->getPublicMemos()) : [],
                 'hasChanged' => $loadNotes ? $this->hasProjectChanged($project, $client) : false,
                 'tos'        => []
             ];
 
-            if ($termsOfSale = $project->getTermsOfSale()) {
+            $termsOfSale = $termsOfSaleRepository->findOneBy(['idProject' => $project]);
+
+            if ($termsOfSale) {
                 $dateFormatter = new \IntlDateFormatter($this->getParameter('locale'), \IntlDateFormatter::MEDIUM, \IntlDateFormatter::SHORT);
                 $display[$project->getIdProject()]['tos'][] = $dateFormatter->format($termsOfSale->getAdded());
             }
 
             if ($abandoned) {
-                $entityManager        = $this->get('doctrine.orm.entity_manager');
-                $historyRepository    = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatusHistory');
-                $abandonProjectStatus = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatus')->findOneBy(['status' => ProjectsStatus::ABANDONED]);
-                $history = $historyRepository->findOneBy([
+                if (false === isset($abandonProjectStatus)) {
+                    $abandonProjectStatus = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatus')->findOneBy(['status' => ProjectsStatus::ABANDONED]);
+                }
+
+                $history = $projectStatusHistoryRepository->findOneBy([
                     'idProject'       => $project->getIdProject(),
                     'idProjectStatus' => $abandonProjectStatus
                 ]);
@@ -213,7 +219,7 @@ class ProjectsListController extends Controller
         $entityManager                  = $this->get('doctrine.orm.entity_manager');
         $projectStatusRepositoryHistory = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatusHistory');
         $lastLoginDate                  = $client->getLastlogin();
-        $notes                          = $project->getPublicNotes();
+        $notes                          = $project->getPublicMemos();
 
         return (
             null === $lastLoginDate
