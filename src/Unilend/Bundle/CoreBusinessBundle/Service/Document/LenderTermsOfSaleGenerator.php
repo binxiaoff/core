@@ -2,13 +2,13 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service\Document;
 
-use Doctrine\ORM\EntityManager;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{AcceptationsLegalDocs, AddressType, ClientAddress, CompanyAddress, Elements, TreeElements, WalletType};
+use Doctrine\ORM\EntityManagerInterface;
 use Knp\Snappy\Pdf;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Asset\Packages;
 use Symfony\Component\Filesystem\Filesystem;
 use Twig\Environment;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{AcceptationsLegalDocs, AddressType, ClientAddress, CompanyAddress, Elements, TreeElements, WalletType};
 use Unilend\Bundle\CoreBusinessBundle\Service\TermsOfSaleManager;
 
 class LenderTermsOfSaleGenerator implements DocumentGeneratorInterface
@@ -36,7 +36,7 @@ class LenderTermsOfSaleGenerator implements DocumentGeneratorInterface
         '[date_validation_cgv]'
     ];
 
-    /** @var EntityManager */
+    /** @var EntityManagerInterface */
     private $entityManager;
     /** @var TermsOfSaleManager */
     private $termsOfSaleManager;
@@ -60,20 +60,20 @@ class LenderTermsOfSaleGenerator implements DocumentGeneratorInterface
     private $logger;
 
     /**
-     * @param EntityManager      $entityManager
-     * @param TermsOfSaleManager $termsOfSaleManager
-     * @param Filesystem         $filesystem
-     * @param string             $protectedPath
-     * @param string             $staticPath
-     * @param Environment        $twig
-     * @param Pdf                $snappy
-     * @param Packages           $assetsPackages
-     * @param \NumberFormatter   $numberFormatter
-     * @param \NumberFormatter   $currencyFormatter
-     * @param LoggerInterface    $logger
+     * @param EntityManagerInterface $entityManager
+     * @param TermsOfSaleManager     $termsOfSaleManager
+     * @param Filesystem             $filesystem
+     * @param string                 $protectedPath
+     * @param string                 $staticPath
+     * @param Environment            $twig
+     * @param Pdf                    $snappy
+     * @param Packages               $assetsPackages
+     * @param \NumberFormatter       $numberFormatter
+     * @param \NumberFormatter       $currencyFormatter
+     * @param LoggerInterface        $logger
      */
     public function __construct(
-        EntityManager $entityManager,
+        EntityManagerInterface $entityManager,
         TermsOfSaleManager $termsOfSaleManager,
         Filesystem $filesystem,
         string $protectedPath,

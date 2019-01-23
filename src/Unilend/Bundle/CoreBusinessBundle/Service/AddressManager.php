@@ -2,21 +2,21 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, Attachment, ClientAddress, ClientAddressAttachment, Clients, Companies, CompanyAddress, Pays};
 
 class AddressManager
 {
-    /** @var EntityManager */
+    /** @var EntityManagerInterface */
     private $entityManager;
     /** @var LocationManager */
     private $locationManager;
 
     /**
-     * @param EntityManager   $entityManager
-     * @param LocationManager $locationManager
+     * @param EntityManagerInterface $entityManager
+     * @param LocationManager        $locationManager
      */
-    public function __construct(EntityManager $entityManager, LocationManager $locationManager)
+    public function __construct(EntityManagerInterface $entityManager, LocationManager $locationManager)
     {
         $this->entityManager   = $entityManager;
         $this->locationManager = $locationManager;

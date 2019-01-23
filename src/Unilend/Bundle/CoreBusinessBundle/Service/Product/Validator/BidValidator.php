@@ -2,10 +2,8 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service\Product\Validator;
 
-use Doctrine\ORM\EntityManager;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Bids;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProductAttributeType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\UnderlyingContractAttributeType;
+use Doctrine\ORM\EntityManagerInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{Bids, ProductAttributeType, UnderlyingContractAttributeType};
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\Checker\BidChecker;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\ContractManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductAttributeManager;
@@ -18,14 +16,15 @@ class BidValidator
     private $productAttributeManager;
     /** @var ContractManager */
     private $contractManager;
-    /** @var EntityManager */
+    /** @var EntityManagerInterface */
     private $entityManager;
 
-    public function __construct(
-        ProductAttributeManager $productAttributeManager,
-        ContractManager $contractManager,
-        EntityManager $entityManager
-    )
+    /**
+     * @param ProductAttributeManager $productAttributeManager
+     * @param ContractManager         $contractManager
+     * @param EntityManagerInterface  $entityManager
+     */
+    public function __construct(ProductAttributeManager $productAttributeManager, ContractManager $contractManager, EntityManagerInterface $entityManager)
     {
         $this->productAttributeManager = $productAttributeManager;
         $this->contractManager         = $contractManager;

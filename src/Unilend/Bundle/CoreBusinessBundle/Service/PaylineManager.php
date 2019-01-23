@@ -2,9 +2,8 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
-use Doctrine\ORM\{EntityManager, OptimisticLockException};
+use Doctrine\ORM\{EntityManagerInterface, OptimisticLockException};
 use Monolog\Logger;
-use NumberFormatter;
 use Payline\PaylineSDK;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
@@ -21,7 +20,7 @@ class PaylineManager
     const CONTRACT_NUMBER_LIST        = '4543015';
     const SECOND_CONTRACT_NUMBER_LIST = '';
 
-    /** @var EntityManager */
+    /** @var EntityManagerInterface */
     private $entityManager;
     /** @var TemplateMessageProvider */
     private $messageProvider;
@@ -31,7 +30,7 @@ class PaylineManager
     private $operationManager;
     /** @var RouterInterface */
     private $router;
-    /** @var NumberFormatter */
+    /** @var \NumberFormatter */
     private $currencyFormatter;
     /** @var string */
     private $merchantId;
@@ -44,13 +43,25 @@ class PaylineManager
     /** @var LoggerInterface */
     private $logger;
 
+    /**
+     * @param EntityManagerInterface  $entityManager
+     * @param TemplateMessageProvider $messageProvider
+     * @param \Swift_Mailer           $mailer
+     * @param OperationManager        $operationManager
+     * @param RouterInterface         $router
+     * @param \NumberFormatter        $currencyFormatter
+     * @param string                  $merchantId
+     * @param string                  $accessKey
+     * @param string                  $environment
+     * @param string                  $logPath
+     */
     public function __construct(
-        EntityManager $entityManager,
+        EntityManagerInterface $entityManager,
         TemplateMessageProvider $messageProvider,
         \Swift_Mailer $mailer,
         OperationManager $operationManager,
         RouterInterface $router,
-        NumberFormatter $currencyFormatter,
+        \NumberFormatter $currencyFormatter,
         string $merchantId,
         string $accessKey,
         string $environment,
@@ -70,9 +81,11 @@ class PaylineManager
     }
 
     /**
-     * @param LoggerInterface $logger
+     * @required
+     *
+     * @param LoggerInterface|null $logger
      */
-    public function setLogger(LoggerInterface $logger): void
+    public function setLogger(?LoggerInterface $logger): void
     {
         $this->logger = $logger;
     }

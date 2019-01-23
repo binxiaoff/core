@@ -2,20 +2,21 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
-use Doctrine\ORM\EntityManager;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Companies, Projects, Wallet
-};
+use Doctrine\ORM\EntityManagerInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{Companies, Projects, Wallet};
 use Unilend\Bundle\CoreBusinessBundle\Service\Repayment\ProjectRepaymentTaskManager;
 
 class BorrowerManager
 {
-    /**
-     * @var EntityManager
-     */
+    /** @var EntityManagerInterface */
     private $entityManager;
 
-    public function __construct(EntityManager $entityManager, WireTransferOutManager $wireTransferOutManager, ProjectRepaymentTaskManager $projectRepaymentTaskManager)
+    /**
+     * @param EntityManagerInterface      $entityManager
+     * @param WireTransferOutManager      $wireTransferOutManager
+     * @param ProjectRepaymentTaskManager $projectRepaymentTaskManager
+     */
+    public function __construct(EntityManagerInterface $entityManager, WireTransferOutManager $wireTransferOutManager, ProjectRepaymentTaskManager $projectRepaymentTaskManager)
     {
         $this->entityManager               = $entityManager;
         $this->wireTransferOutManager      = $wireTransferOutManager;
