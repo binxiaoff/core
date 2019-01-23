@@ -40,7 +40,19 @@ class LoginHistoryLogger
     public function saveSuccessfulLogin(Clients $client, ?string $ip, ?string $userAgent): void
     {
         try {
-            $client->setLastlogin(new \DateTime('NOW'));
+            $now = new \DateTime('NOW');
+            $client->setLastlogin($now);
+            try {
+                $this->entityManager->flush($client);
+            } catch (\Exception $exception) {
+                $this->logger->error('Could not save client last login date. Error: ' . $exception->getMessage(), [
+                    'id_client' => $client->getIdClient(),
+                    'class'     => __CLASS__,
+                    'function'  => __FUNCTION__,
+                    'file'      => $exception->getFile(),
+                    'line'      => $exception->getLine()
+                ]);
+            }
 
             $isLender   = $client->isLender();
             $isBorrower = $client->isBorrower();
@@ -79,7 +91,8 @@ class LoginHistoryLogger
                 ->setType($type)
                 ->setStatus(ClientsHistory::STATUS_ACTION_LOGIN)
                 ->setIp($ip)
-                ->setIdUserAgent($userAgentEntity);
+                ->setIdUserAgent($userAgentEntity)
+                ->setAdded($now);
 
             $geoLocData = null;
             if ($ip) {
