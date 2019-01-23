@@ -191,10 +191,6 @@ class bootstrap extends Controller
                     'uri'   => 'prescripteurs/gestion'
                 ],
                 [
-                    'title' => 'Projets en funding',
-                    'uri'   => 'dossiers/funding '
-                ],
-                [
                     'title' => 'Remboursements',
                     'uri'   => 'dossiers/' . ProjectsStatus::FUNDE . ',' . ProjectsStatus::REMBOURSEMENT . ',' . ProjectsStatus::REMBOURSE . ',' . ProjectsStatus::REMBOURSEMENT_ANTICIPE
                 ],

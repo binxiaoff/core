@@ -5,13 +5,8 @@ namespace Unilend\Bundle\FrontBundle\Service;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Cache\CacheItemPoolInterface;
 use Symfony\Component\Translation\TranslatorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Bids;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
-use Unilend\Bundle\CoreBusinessBundle\Service\CIPManager;
-use Unilend\Bundle\CoreBusinessBundle\Service\LocationManager;
-use Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductManager;
-use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{Bids, Clients, Projects, WalletType};
+use Unilend\Bundle\CoreBusinessBundle\Service\{CIPManager, LocationManager, Product\ProductManager, Simulator\EntityManager as EntityManagerSimulator};
 use Unilend\librairies\CacheKeys;
 
 class LenderAccountDisplayManager
@@ -248,12 +243,12 @@ class LenderAccountDisplayManager
     }
 
     /**
-     * @param \projects $project
-     * @param Clients $clients
+     * @param Projects $project
+     * @param Clients  $clients
      *
      * @return bool
      */
-    public function isProjectAdvisedForLender(\projects $project, Clients $clients)
+    public function isProjectAdvisedForLender(Projects $project, Clients $clients): bool
     {
         if (false === $this->productManager->isClientEligible($clients, $project)) {
             return false;
@@ -271,7 +266,7 @@ class LenderAccountDisplayManager
 
         return (
             null === $durationLimit
-            || $project->period <= $durationLimit
+            || $project->getPeriod() <= $durationLimit
         );
     }
 }

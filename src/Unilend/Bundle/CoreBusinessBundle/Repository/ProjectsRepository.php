@@ -16,6 +16,12 @@ use Unilend\librairies\CacheKeys;
 
 class ProjectsRepository extends EntityRepository
 {
+    const SORT_FIELD_SECTOR = 'sector';
+    const SORT_FIELD_AMOUNT = 'amount';
+    const SORT_FIELD_RATE   = 'rate';
+    const SORT_FIELD_RISK   = 'risk';
+    const SORT_FIELD_END    = 'end';
+
     /**
      * @param int $lenderId
      *
@@ -1548,6 +1554,26 @@ class ProjectsRepository extends EntityRepository
     }
 
     /**
+     * @param int|null $limit
+     *
+     * @return Projects[]
+     */
+    public function findPublish(?int $limit = null): array
+    {
+        $queryBuilder = $this->createQueryBuilder('p');
+        $queryBuilder
+            ->where('p.status = :status')
+            ->andWhere('p.datePublication <= NOW()')
+            ->setParameter('status', ProjectsStatus::AUTO_BID_PLACED);
+
+        if ($limit) {
+            $queryBuilder->setMaxResults($limit);
+        }
+
+        return $queryBuilder->getQuery()->getResult();
+    }
+
+    /**
      * @param Projects $project
      * @param bool     $cache
      *
@@ -1953,5 +1979,111 @@ class ProjectsRepository extends EntityRepository
         }
 
         return $queryBuilder;
+    }
+
+    /**
+     * Search based on "project_search" view
+     *
+     * @param array      $criteria
+     * @param array|null $orderBy
+     * @param int|null   $limit
+     * @param int|null   $offset
+     *
+     * @return Projects[]
+     */
+    public function findByWithCustomSort(array $criteria, array $orderBy = [self::SORT_FIELD_END => 'DESC'], int $limit = null, int $offset = null): array
+    {
+        $queryBuilder = $this->createQueryBuilder('p');
+        $queryBuilder
+            ->select('p')
+            ->innerJoin('UnilendCoreBusinessBundle:ProjectSearch', 's', Join::WITH, 'p.idProject = s.idProject')
+            ->setFirstResult($offset)
+            ->setMaxResults($limit);
+
+        foreach ($criteria as $name => $value) {
+            switch ($name) {
+                case 'status':
+                case 'display':
+                case 'idProduct':
+                    if (is_array($value)) {
+                        $queryBuilder
+                            ->andWhere('p.' . $name . ' IN (:' . $name . ')')
+                            ->setParameter($name, $value, Connection::PARAM_INT_ARRAY);
+                    } else {
+                        $queryBuilder
+                            ->andWhere('p.' . $name . ' = :' . $name)
+                            ->setParameter($name, $value);
+                    }
+                    break;
+                default:
+                    throw new \InvalidArgumentException();
+            }
+        }
+
+        foreach ($orderBy as $field => $direction) {
+            if (false === in_array($direction, ['ASC', 'DESC'])) {
+                throw new \InvalidArgumentException();
+            }
+
+            switch ($field) {
+                case self::SORT_FIELD_SECTOR:
+                    $queryBuilder
+                        ->addOrderBy('s.sector', $direction)
+                        ->addOrderBy('s.sortDate', 'ASC');
+                    break;
+                case self::SORT_FIELD_AMOUNT:
+                    $queryBuilder
+                        ->addOrderBy('p.amount', $direction)
+                        ->addOrderBy('s.sortDate', 'ASC');
+                    break;
+                case self::SORT_FIELD_RATE:
+                    $queryBuilder
+                        ->addOrderBy('s.avgRate', $direction)
+                        ->addOrderBy('s.sortDate', 'ASC');
+                    break;
+                case self::SORT_FIELD_RISK:
+                    $queryBuilder
+                        ->addOrderBy('p.risk', $direction)
+                        ->addOrderBy('s.sortDate', 'ASC');
+                    break;
+                case self::SORT_FIELD_END:
+                    $queryBuilder
+                        ->addOrderBy('s.sortDate', $direction);
+                    break;
+                default:
+                    throw new \InvalidArgumentException();
+            }
+        }
+
+        $query = $queryBuilder->getQuery();
+        $query->useQueryCache(true);
+        $query->useResultCache(true, CacheKeys::SHORT_TIME, CacheKeys::LIST_PROJECTS);
+
+        return $query->getResult();
+    }
+
+    /**
+     * Search based on "project_search" view
+     *
+     * @param int   $projectId
+     * @param array $criteria
+     * @param array $orderBy
+     *
+     * @return Projects[]
+     */
+    public function findNeighbors(int $projectId, array $criteria, array $orderBy): array
+    {
+        $neighbors = [];
+        $projects  = $this->findByWithCustomSort($criteria, $orderBy);
+
+        foreach ($projects as $index => $possibleNeighbor) {
+            if ($possibleNeighbor->getIdProject() === $projectId) {
+                $neighbors['previous'] = $projects[$index - 1] ?? null;
+                $neighbors['next']     = $projects[$index + 1] ?? null;
+                break;
+            }
+        }
+
+        return $neighbors;
     }
 }

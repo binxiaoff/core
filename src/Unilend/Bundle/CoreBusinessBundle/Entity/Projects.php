@@ -14,7 +14,6 @@ use Ramsey\Uuid\Uuid;
  * @ORM\Table(name="projects", indexes={
  *     @ORM\Index(name="id_company", columns={"id_company"}),
  *     @ORM\Index(name="slug", columns={"slug"}),
- *     @ORM\Index(name="status", columns={"status"}),
  *     @ORM\Index(name="display", columns={"display"}),
  *     @ORM\Index(name="date_retrait", columns={"date_retrait"}),
  *     @ORM\Index(name="hash", columns={"hash"}),
@@ -22,7 +21,8 @@ use Ramsey\Uuid\Uuid;
  *     @ORM\Index(name="id_commercial", columns={"id_commercial"}),
  *     @ORM\Index(name="id_dernier_bilan", columns={"id_dernier_bilan"}),
  *     @ORM\Index(name="fk_projects_id_company_submitter", columns={"id_company_submitter"}),
- *     @ORM\Index(name="fk_projects_id_client_submitter", columns={"id_client_submitter"})
+ *     @ORM\Index(name="fk_projects_id_client_submitter", columns={"id_client_submitter"}),
+ *     @ORM\Index(name="fk_projects_status", columns={"status"})
  * })
  * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\ProjectsRepository")
  * @ORM\HasLifecycleCallbacks

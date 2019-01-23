@@ -183,8 +183,6 @@ class dossiersController extends bootstrap
         $entityManager = $this->get('doctrine.orm.entity_manager');
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BeneficialOwnerManager $beneficialOwnerManager */
         $beneficialOwnerManager = $this->get('unilend.service.beneficial_owner_manager');
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectCloseOutNettingManager $projectCloseOutNettingManager */
-        $projectCloseOutNettingManager = $this->get('unilend.service.project_close_out_netting_manager');
         /** @var BackOfficeUserManager $userManager */
         $userManager = $this->get('unilend.service.back_office_user_manager');
 
@@ -296,7 +294,7 @@ class dossiersController extends bootstrap
                     $this->salesPersons[] = $currentSalesPerson;
                 }
             }
-           $this->projectComments     = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsComments')
+            $this->projectComments     = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsComments')
                 ->findBy(['idProject' => $this->projects->id_project], ['added' => 'DESC']);
             $this->aAllAnnualAccounts = $this->companies_bilans->select('id_company = ' . $this->companies->id_company, 'cloture_exercice_fiscal DESC');
 
@@ -1445,15 +1443,6 @@ class dossiersController extends bootstrap
         $this->dureePossible = explode(',', $this->settings->value);
 
         $this->sources = $this->getSourcesList();
-    }
-
-    public function _funding()
-    {
-        $this->projects  = $this->loadData('projects');
-        $this->companies = $this->loadData('companies');
-        $this->bids      = $this->loadData('bids');
-
-        $this->lProjects = $this->projects->selectProjectsByStatus([ProjectsStatus::EN_FUNDING]);
     }
 
     public function _detail_remb_preteur()

@@ -4,7 +4,8 @@ namespace Unilend\Bundle\FrontBundle\Service;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Cache\CacheItemPoolInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{Clients, ClientsStatus, Product, Projects, ProjectsStatus};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{Clients, ClientsStatus, Projects, ProjectsStatus};
+use Unilend\Bundle\CoreBusinessBundle\Repository\ProjectsRepository;
 use Unilend\Bundle\CoreBusinessBundle\Service\{BidManager, CompanyBalanceSheetManager, ProjectManager};
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
@@ -16,12 +17,6 @@ class ProjectDisplayManager
     const VISIBILITY_NOT_VALIDATED_LENDER = 'not_validated_lender';
     const VISIBILITY_ANONYMOUS            = 'anonymous';
     const VISIBILITY_NONE                 = 'none';
-
-    const SORT_FIELD_SECTOR = 'sector';
-    const SORT_FIELD_AMOUNT = 'amount';
-    const SORT_FIELD_RATE   = 'rate';
-    const SORT_FIELD_RISK   = 'risk';
-    const SORT_FIELD_END    = 'end';
 
     /** @var EntityManagerInterface */
     private $entityManager;
@@ -93,12 +88,10 @@ class ProjectDisplayManager
      */
     public function getProjectsList(array $projectStatus = [], array $sort = [], $start = null, $limit = null, Clients $client = null)
     {
-        /** @var \projects $projectsEntity */
-        $projectsEntity = $this->entityManagerSimulator->getRepository('projects');
         /** @var \bids $bids */
         $bids = $this->entityManagerSimulator->getRepository('bids');
-        /** @var \projects $project */
-        $project = $this->entityManagerSimulator->getRepository('projects');
+        /** @var \projects $projectData */
+        $projectData = $this->entityManagerSimulator->getRepository('projects');
 
         if (empty($projectStatus)) {
             $projectStatus = self::$projectsStatus;
@@ -106,19 +99,24 @@ class ProjectDisplayManager
 
         $projectsData = [];
         $products     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Product')->findAvailableProductsByClient($client);
-        $productIds   = array_map(function (Product $product) {
-            return $product->getIdProduct();
-        }, $products);
-        $projectList  = $projectsEntity->selectProjectsByStatus($projectStatus, ' AND p.display = ' . Projects::DISPLAY_YES, $sort, $start, $limit, true, $productIds);
 
-        foreach ($projectList as $item) {
-            $project->get($item['id_project']);
-            $projectsData[$project->id_project]              = $this->getBaseData($project);
-            $projectsData[$project->id_project]['bidsCount'] = $bids->counter('id_project = ' . $project->id_project);
+        $projectSearchRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
+        $projects                = $projectSearchRepository->findByWithCustomSort(
+            ['status' => $projectStatus, 'display' => Projects::DISPLAY_YES, 'idProduct' => $products],
+            $sort,
+            $limit,
+            $start
+        );
+
+        /** @var Projects $project */
+        foreach ($projects as $project) {
+            $projectData->get($project->getIdProject());
+            $projectsData[$project->getIdProject()]              = $this->getBaseData($projectData);
+            $projectsData[$project->getIdProject()]['bidsCount'] = $bids->counter('id_project = ' . $project->getIdProject());
 
             if (null !== $client && $client->isLender()) {
-                $projectsData[$project->id_project]['lender']['bids']      = $this->lenderAccountDisplayManager->getBidsForProject($project->id_project, $client);
-                $projectsData[$project->id_project]['lender']['isAdvised'] = $this->lenderAccountDisplayManager->isProjectAdvisedForLender($project, $client);
+                $projectsData[$project->getIdProject()]['lender']['bids']      = $this->lenderAccountDisplayManager->getBidsForProject($project->getIdProject(), $client);
+                $projectsData[$project->getIdProject()]['lender']['isAdvised'] = $this->lenderAccountDisplayManager->isProjectAdvisedForLender($project, $client);
             }
         }
 
@@ -207,12 +205,31 @@ class ProjectDisplayManager
             $projectData['maxValidRate']  = $projectRateSettings['rate_max'];
         }
 
-        $products     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Product')->findAvailableProductsByClient($client);
-        $productIds   = array_map(function (Product $product) {
-            return $product->getIdProduct();
-        }, $products);
+        $products  = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Product')->findAvailableProductsByClient($client);
+        $neighbors = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->findNeighbors(
+            $project->id_project,
+            ['status' => self::$projectsStatus, 'display' => Projects::DISPLAY_YES, 'idProduct' => $products],
+            [ProjectsRepository::SORT_FIELD_END => 'DESC']
+        );
 
-        $projectData['navigation'] = $project->positionProject($project->id_project, self::$projectsStatus, [self::SORT_FIELD_END => 'DESC'], $productIds);
+        // Not clean but will be once migration of Projects to Doctrine is over
+        $projectData['navigation'] = [];
+
+        if ($neighbors['previous']) {
+            $projectData['navigation']['previous'] = [
+                'project' => $neighbors['previous'],
+                'slug'    => $neighbors['previous']->getSlug(),
+                'title'   => $neighbors['previous']->getTitle()
+            ];
+        }
+
+        if ($neighbors['next']) {
+            $projectData['navigation']['next'] = [
+                'project' => $neighbors['next'],
+                'slug'    => $neighbors['next']->getSlug(),
+                'title'   => $neighbors['next']->getTitle()
+            ];
+        }
 
         $now = new \DateTime('NOW');
         if ($projectData['endDate'] <= $now && $projectData['status'] == ProjectsStatus::EN_FUNDING) {
@@ -366,23 +383,13 @@ class ProjectDisplayManager
 
     /**
      * @param \projects $project
-     * @return \DateInterval
-     */
-    public function getFundingDuration(\projects $project)
-    {
-        $startFundingPeriod = new \DateTime($project->date_publication);
-        $endFundingPeriod   = new \DateTime($project->date_funded);
-
-        return $startFundingPeriod->diff($endFundingPeriod);
-    }
-
-    /**
-     * @param \projects $project
      * @return array
      */
     public function getFundingDurationTranslation(\projects $project)
     {
-        $duration = $this->getFundingDuration($project);
+        $startFundingPeriod = new \DateTime($project->date_publication);
+        $endFundingPeriod   = new \DateTime($project->date_funded);
+        $duration           = $startFundingPeriod->diff($endFundingPeriod);
 
         switch (true) {
             case $duration->d > 0:
@@ -420,23 +427,18 @@ class ProjectDisplayManager
      *
      * @return int
      */
-    public function getTotalNumberOfDisplayedProjects(?Clients $client)
+    public function getTotalNumberOfDisplayedProjects(?Clients $client): int
     {
-        /** @var \projects $projects */
-        $projects          = $this->entityManagerSimulator->getRepository('projects');
         $productRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Product');
+        $products          = $productRepository->findAvailableProductsByClient($client);
 
-        $products   = $productRepository->findAvailableProductsByClient($client);
-        $productIds = array_map(function (Product $product) {
-            return $product->getIdProduct();
-        }, $products);
+        $projectRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
+        $projects          = $projectRepository->findBy(['status' => self::$projectsStatus, 'display' => Projects::DISPLAY_YES, 'idProduct' => $products]);
 
-        return $projects->countSelectProjectsByStatus(self::$projectsStatus, ' AND display = ' . Projects::DISPLAY_YES, $productIds);
+        return count($projects);
     }
 
     /**
-     * @todo replace $clientId with Clients instance when client status has been saved in Clients  (TECH-274)
-     *
      * @param Projects      $project
      * @param Clients|null  $client
      *

@@ -54,7 +54,8 @@ class NotificationManager
         $bidId = null,
         WalletBalanceHistory $walletBalanceHistory = null,
         $loanId = null
-    ) {
+    )
+    {
         /** @var \clients_gestion_notifications $notificationSettings */
         $notificationSettings = $this->entityManagerSimulator->getRepository('clients_gestion_notifications');
         $notification         = $this->createNotification($notificationType, $clientId, $projectId, $amount, $bidId);

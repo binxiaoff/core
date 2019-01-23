@@ -8,7 +8,6 @@ use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{AcceptedBids, Autobid, Bids, BidsLogs, Clients, ClientsGestionTypeNotif, ClientsStatus, Notifications, Projects, ProjectsStatus, RepaymentType, Settings,
     TaxType, UnderlyingContract, UnderlyingContractAttributeType, Users, Wallet, WalletType};
-use Unilend\Bundle\CoreBusinessBundle\Repository\WalletRepository;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\ContractAttributeManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Repayment\ProjectRepaymentScheduleManager;
@@ -186,19 +185,26 @@ class ProjectLifecycleManager
     }
 
     /**
-     * @param \projects $project
+     * @param Projects $project
+     *
+     * @throws OptimisticLockException
      */
-    public function publish(\projects $project): void
+    public function publish(Projects $project): void
     {
         $this->projectStatusManager->addProjectStatus(Users::USER_ID_CRON, ProjectsStatus::EN_FUNDING, $project);
+
         $this->insertNewProjectNotification($project);
+
         try {
             $this->sendAcceptedOrRejectedBidNotifications($project);
         } catch (OptimisticLockException $exception) {
-            $this->logger->error(
-                'Error while inserting new project notifications on the project: ' . $project->id_project . ' Error: ' . $exception->getMessage(),
-                ['method' => __METHOD__, 'id_project' => $project->id_project, 'file' => $exception->getFile(), 'line' => $exception->getLine()]
-            );
+            $this->logger->error('Error while inserting new project notifications on the project: ' . $project->getIdProject() . '. Error: ' . $exception->getMessage(), [
+                'id_project' => $project->getIdProject(),
+                'class'      => __CLASS__,
+                'function'   => __FUNCTION__,
+                'file'       => $exception->getFile(),
+                'line'       => $exception->getLine()
+            ]);
         }
     }
 
@@ -1191,24 +1197,32 @@ class ProjectLifecycleManager
     }
 
     /**
-     * @param \projects $project
+     * @param Projects $project
      */
-    private function insertNewProjectNotification(\projects $project): void
+    private function insertNewProjectNotification(Projects $project): void
     {
         /** @var \clients $clientData */
-        $clientData = $this->entityManagerSimulator->getRepository('clients');
-
-        /** @var WalletRepository $walletRepository */
+        $clientData       = $this->entityManagerSimulator->getRepository('clients');
         $walletRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet');
 
         $offset = 0;
         $limit  = 100;
-        $this->logger->info('Insert new project notification for project: ' . $project->id_project, ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $project->id_project]);
+
+        $this->logger->info('Insert new project notification for project: ' . $project->getIdProject(), [
+            'id_project' => $project->getIdProject(),
+            'class'      => __CLASS__,
+            'function'   => __FUNCTION__
+        ]);
 
         while ($lenders = $clientData->selectPreteursByStatus(ClientsStatus::STATUS_VALIDATED, 'c.id_client ASC', $offset, $limit)) {
             $notificationsCount = 0;
             $offset             += $limit;
-            $this->logger->info('Lenders retrieved: ' . count($lenders), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $project->id_project]);
+
+            $this->logger->info('Lenders retrieved: ' . count($lenders), [
+                'id_project' => $project->getIdProject(),
+                'class'      => __CLASS__,
+                'function'   => __FUNCTION__
+            ]);
 
             foreach ($lenders as $lender) {
                 $wallet                 = $walletRepository->getWalletByType($lender['id_client'], WalletType::LENDER);
@@ -1217,36 +1231,42 @@ class ProjectLifecycleManager
 
                 if ($isClientEligible) {
                     $notificationsCount++;
-                    $this->notificationManager->createNotification(Notifications::TYPE_NEW_PROJECT, $wallet->getIdClient()->getIdClient(), $project->id_project);
+                    $this->notificationManager->createNotification(Notifications::TYPE_NEW_PROJECT, $wallet->getIdClient()->getIdClient(), $project->getIdProject());
                 }
             }
-            $this->logger->info('Notifications inserted: ' . $notificationsCount, ['method' => __METHOD__, 'id_project' => $project->id_project]);
+
+            $this->logger->info('Notifications inserted: ' . $notificationsCount, [
+                'id_project' => $project->getIdProject(),
+                'class'      => __CLASS__,
+                'function'   => __FUNCTION__
+            ]);
         }
     }
 
     /**
-     * @param \projects $project
+     * @param Projects $project
      *
      * @throws OptimisticLockException
      */
-    private function sendAcceptedOrRejectedBidNotifications(\projects $project): void
+    private function sendAcceptedOrRejectedBidNotifications(Projects $project): void
     {
         /** @var \bids $bidData */
-        $bidData = $this->entityManagerSimulator->getRepository('bids');
+        $bidData          = $this->entityManagerSimulator->getRepository('bids');
+        $walletRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet');
 
         $offset = 0;
         $limit  = 100;
 
-        while ($bids = $bidData->getFirstProjectBidsByLender($project->id_project, $limit, $offset)) {
+        while ($bids = $bidData->getFirstProjectBidsByLender($project->getIdProject(), $limit, $offset)) {
             foreach ($bids as $bid) {
-                $wallet = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->find($bid['id_lender_account']);
+                $wallet = $walletRepository->find($bid['id_lender_account']);
 
                 if (null !== $wallet && WalletType::LENDER === $wallet->getIdType()->getLabel()) {
                     if ($bid['min_status'] == Bids::STATUS_PENDING) {
                         $this->notificationManager->createNotification(
                             Notifications::TYPE_BID_PLACED,
                             $wallet->getIdClient()->getIdClient(),
-                            $project->id_project,
+                            $project->getIdProject(),
                             $bid['amount'] / 100,
                             $bid['id_bid']
                         );
@@ -1256,7 +1276,7 @@ class ProjectLifecycleManager
                             ($bid['id_autobid'] > 0) ? ClientsGestionTypeNotif::TYPE_AUTOBID_ACCEPTED_REJECTED_BID : ClientsGestionTypeNotif::TYPE_BID_REJECTED,
                             $wallet->getIdClient()->getIdClient(),
                             'sendBidRejected',
-                            $project->id_project,
+                            $project->getIdProject(),
                             $bid['amount'] / 100,
                             $bid['id_bid']
                         );
