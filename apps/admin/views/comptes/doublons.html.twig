@@ -74,8 +74,6 @@
                                             <a href="{{ app.adminUrl }}/emprunteurs/edit/{{ account.idClient }}">{{ account.idClient }}</a>
                                         {% elseif account.walletType == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\WalletType::PARTNER') %}
                                             <a href="{{ app.adminUrl }}/partenaires/edit/{{ account.idPartner }}">{{ account.idClient }}</a>
-                                        {% elseif account.idPrescripteur %}
-                                            <a href="{{ app.adminUrl }}/prescripteurs/edit/{{ account.idPrescripteur }}">{{ account.idClient }}</a>
                                         {% endif %}
                                     </td>
                                     <td>
@@ -85,8 +83,6 @@
                                             <a href="{{ app.adminUrl }}/emprunteurs/edit/{{ account.idClient }}">{{ account.name }}</a>
                                         {% elseif account.walletType == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\WalletType::PARTNER') %}
                                             <a href="{{ app.adminUrl }}/partenaires/edit/{{ account.idPartner }}">{{ account.name }}</a>
-                                        {% elseif account.idPrescripteur %}
-                                            <a href="{{ app.adminUrl }}/prescripteurs/edit/{{ account.idPrescripteur }}">{{ account.name }}</a>
                                         {% endif %}
                                     </td>
                                     <td>
@@ -105,8 +101,6 @@
                                             {{ account.walletType }}
                                         {% elseif account.beneficialOwner %}
                                             Bénéficiaire effectif
-                                        {% elseif account.idPrescripteur %}
-                                            Prescripteur
                                         {% else %}
                                             N/A
                                         {% endif %}
@@ -130,8 +124,6 @@
                                             <a href="{{ app.adminUrl }}/emprunteurs/edit/{{ account.idClient }}" class="btn btn-xs btn-default" title="Modifier"><i class="fa fa-pencil"></i></a>
                                         {% elseif account.walletType == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\WalletType::PARTNER') %}
                                             <a href="{{ app.adminUrl }}/partenaires/edit/{{ account.idPartner }}" class="btn btn-xs btn-default" title="Modifier"><i class="fa fa-pencil"></i></a>
-                                        {% elseif account.idPrescripteur %}
-                                            <a href="{{ app.adminUrl }}/prescripteurs/edit/{{ account.idPrescripteur }}" class="btn btn-xs btn-default" title="Modifier"><i class="fa fa-pencil"></i></a>
                                         {% endif %}
                                     </td>
                                 </tr>

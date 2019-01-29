@@ -26,7 +26,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{AttachmentType, Companies, Project
     }
 
     .project-main td.left-column {
-        border-right: 4px solid #b20066;
+        border-right: 4px solid #2bc9af;
         padding-left: 0;
     }
 
@@ -71,7 +71,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{AttachmentType, Companies, Project
     }
 
     .tab_content {
-        border: 2px solid #b20066;
+        border: 2px solid #2bc9af;
         display: none;
         padding: 10px;
     }
@@ -86,7 +86,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{AttachmentType, Companies, Project
 
     .tab_title {
         display: block;
-        background-color: #b20066;
+        background-color: #2bc9af;
         color: #fff;
         font-size: 16px;
         font-weight: bold;
@@ -105,7 +105,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{AttachmentType, Companies, Project
     }
 
     #contenu_etape4_1 > table td.warning {
-        background-color: #b20066;
+        background-color: #2bc9af;
         color: #fff;
     }
 
@@ -145,7 +145,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{AttachmentType, Companies, Project
     }
 
     #attachments-table > tbody > tr > th {
-        background-color: #6d1f4f;
+        background-color: #288171;
         color: #fff;
         font-size: 13px;
         font-weight: normal;
@@ -203,7 +203,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{AttachmentType, Companies, Project
     }
 
     .btn-small.btnDisabled {
-        border-color: #b20066;
+        border-color: #2bc9af;
     }
 
     .btn-validate {
@@ -421,7 +421,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{AttachmentType, Companies, Project
                     }
                 })
             }
-            if ($select.val() === '<?= \Unilend\Bundle\CoreBusinessBundle\Entity\Partner::PARTNER_UNILEND_ID ?>') {
+            if ($select.val() === '<?= \Unilend\Bundle\CoreBusinessBundle\Entity\Partner::PARTNER_CALS_ID ?>') {
                 return false
             }
 
@@ -1191,7 +1191,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{AttachmentType, Companies, Project
             </tbody>
         </table>
     </form>
-    <hr style="border: 2px solid #b20066;">
+    <hr style="border: 2px solid #2bc9af;">
     <?php $this->fireView('blocs/memos'); ?>
     <?php $this->fireView('blocs/email'); ?>
     <?php $this->fireView('blocs/etape2'); ?>

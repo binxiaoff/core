@@ -7,12 +7,16 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * TemporaryLinksLogin
  *
- * @ORM\Table(name="temporary_links_login", uniqueConstraints={@ORM\UniqueConstraint(name="id_link", columns={"id_link"})})
- * @ORM\Entity
+ * @ORM\Table(name="temporary_links_login", indexes={@ORM\Index(name="fk_temporary_links_login_id_client", columns={"id_client"})})
+ * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\TemporaryLinksLoginRepository")
  * @ORM\HasLifecycleCallbacks
  */
 class TemporaryLinksLogin
 {
+    const PASSWORD_TOKEN_LIFETIME_SHORT  = 'T1H';
+    const PASSWORD_TOKEN_LIFETIME_MEDIUM = '1D';
+    const PASSWORD_TOKEN_LIFETIME_LONG   = '1W';
+
     /**
      * @var string
      *
@@ -30,7 +34,7 @@ class TemporaryLinksLogin
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="accessed", type="datetime", nullable=false)
+     * @ORM\Column(name="accessed", type="datetime", nullable=true)
      */
     private $accessed;
 
@@ -44,7 +48,7 @@ class TemporaryLinksLogin
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="updated", type="datetime", nullable=false)
+     * @ORM\Column(name="updated", type="datetime", nullable=true)
      */
     private $updated;
 
@@ -75,7 +79,7 @@ class TemporaryLinksLogin
      *
      * @return TemporaryLinksLogin
      */
-    public function setIdClient(Clients $idClient)
+    public function setIdClient(Clients $idClient): TemporaryLinksLogin
     {
         $this->idClient = $idClient;
 
@@ -87,7 +91,7 @@ class TemporaryLinksLogin
      *
      * @return Clients
      */
-    public function getIdClient()
+    public function getIdClient(): Clients
     {
         return $this->idClient;
     }
@@ -99,7 +103,7 @@ class TemporaryLinksLogin
      *
      * @return TemporaryLinksLogin
      */
-    public function setToken($token)
+    public function setToken(string $token): TemporaryLinksLogin
     {
         $this->token = $token;
 
@@ -111,7 +115,7 @@ class TemporaryLinksLogin
      *
      * @return string
      */
-    public function getToken()
+    public function getToken(): string
     {
         return $this->token;
     }
@@ -123,7 +127,7 @@ class TemporaryLinksLogin
      *
      * @return TemporaryLinksLogin
      */
-    public function setExpires($expires)
+    public function setExpires(\DateTime $expires): TemporaryLinksLogin
     {
         $this->expires = $expires;
 
@@ -135,7 +139,7 @@ class TemporaryLinksLogin
      *
      * @return \DateTime
      */
-    public function getExpires()
+    public function getExpires(): \DateTime
     {
         return $this->expires;
     }
@@ -143,11 +147,11 @@ class TemporaryLinksLogin
     /**
      * Set accessed
      *
-     * @param \DateTime $accessed
+     * @param \DateTime|null $accessed
      *
      * @return TemporaryLinksLogin
      */
-    public function setAccessed($accessed)
+    public function setAccessed(?\DateTime $accessed): TemporaryLinksLogin
     {
         $this->accessed = $accessed;
 
@@ -157,9 +161,9 @@ class TemporaryLinksLogin
     /**
      * Get accessed
      *
-     * @return \DateTime
+     * @return \DateTime|null
      */
-    public function getAccessed()
+    public function getAccessed(): ?\DateTime
     {
         return $this->accessed;
     }
@@ -171,7 +175,7 @@ class TemporaryLinksLogin
      *
      * @return TemporaryLinksLogin
      */
-    public function setAdded($added)
+    public function setAdded(\DateTime $added): TemporaryLinksLogin
     {
         $this->added = $added;
 
@@ -183,7 +187,7 @@ class TemporaryLinksLogin
      *
      * @return \DateTime
      */
-    public function getAdded()
+    public function getAdded(): \DateTime
     {
         return $this->added;
     }
@@ -191,11 +195,11 @@ class TemporaryLinksLogin
     /**
      * Set updated
      *
-     * @param \DateTime $updated
+     * @param \DateTime|null $updated
      *
      * @return TemporaryLinksLogin
      */
-    public function setUpdated($updated)
+    public function setUpdated(?\DateTime $updated): TemporaryLinksLogin
     {
         $this->updated = $updated;
 
@@ -205,9 +209,9 @@ class TemporaryLinksLogin
     /**
      * Get updated
      *
-     * @return \DateTime
+     * @return \DateTime|null
      */
-    public function getUpdated()
+    public function getUpdated(): ?\DateTime
     {
         return $this->updated;
     }
@@ -215,9 +219,9 @@ class TemporaryLinksLogin
     /**
      * Get idLink
      *
-     * @return integer
+     * @return int
      */
-    public function getIdLink()
+    public function getIdLink(): int
     {
         return $this->idLink;
     }
@@ -225,7 +229,7 @@ class TemporaryLinksLogin
     /**
      * @ORM\PrePersist
      */
-    public function setAddedValue()
+    public function setAddedValue(): void
     {
         if (! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
             $this->added = new \DateTime();
@@ -235,7 +239,7 @@ class TemporaryLinksLogin
     /**
      * @ORM\PreUpdate
      */
-    public function setUpdatedValue()
+    public function setUpdatedValue(): void
     {
         $this->updated = new \DateTime();
     }

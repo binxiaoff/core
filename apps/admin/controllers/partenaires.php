@@ -3,7 +3,7 @@
 use Doctrine\ORM\{EntityManager, ORMException, UnexpectedResultException};
 use Symfony\Component\HttpFoundation\Request;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, Clients, ClientsStatus, Companies, CompanyClient, Partner, PartnerProduct, PartnerProjectAttachment, PartnerThirdParty, Pays, Product,
-    ProjectsStatus, WalletType, Zones};
+    ProjectsStatus, TemporaryLinksLogin, WalletType, Zones};
 use Unilend\Bundle\CoreBusinessBundle\Service\AddressManager;
 
 class partenairesController extends bootstrap
@@ -677,10 +677,11 @@ class partenairesController extends bootstrap
             return null;
         }
 
-        /** @var \temporary_links_login $temporaryLink */
-        $temporaryLink = $this->get('unilend.service.entity_manager')->getRepository('temporary_links_login');
-        $token         = $temporaryLink->generateTemporaryLink($companyClient->getIdClient()->getIdClient(), \temporary_links_login::PASSWORD_TOKEN_LIFETIME_MEDIUM);
-        $keywords      = [
+        $token = $entityManager
+            ->getRepository('UnilendCoreBusinessBundle:TemporaryLinksLogin')
+            ->generateTemporaryLink($companyClient->getIdClient(), TemporaryLinksLogin::PASSWORD_TOKEN_LIFETIME_MEDIUM);
+
+        $keywords = [
             'firstName'    => $companyClient->getIdClient()->getPrenom(),
             'login'        => $companyClient->getIdClient()->getEmail(),
             'passwordLink' => $this->furl . '/partenaire/securite/' . $token

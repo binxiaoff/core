@@ -1,6 +1,6 @@
 <style type="text/css">
     .status-chart {
-        border: 1px solid #b20066;
+        border: 1px solid #2bc9af;
         border-radius: 10px;
         display: inline-block;
         height: 600px;
@@ -10,7 +10,7 @@
         float: right;
     }
     .search-box {
-        border: 1px #b20066 solid;
+        border: 1px #2bc9af solid;
         border-radius: 10px;
         margin: 10px auto;
         padding: 15px;
@@ -167,8 +167,8 @@
                     borderWidth: 6,
                     borderWidthSelected: 6,
                     color: {
-                        background: '#b20066',
-                        border: '#b20066',
+                        background: '#2bc9af',
+                        border: '#2bc9af',
                         highlight: {
                             background: '#8e0252',
                             border: '#8e0252'

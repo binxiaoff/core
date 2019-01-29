@@ -121,6 +121,8 @@ class AutoBidSettingsManager
      */
     public function isQualified(Clients $client): bool
     {
+        return false;
+
         if (false === $client->isLender()) {
             return false;
         }

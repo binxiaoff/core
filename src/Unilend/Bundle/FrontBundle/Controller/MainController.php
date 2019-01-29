@@ -15,7 +15,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{Clients, OffresBienvenues, Project
 use Unilend\Bundle\CoreBusinessBundle\Repository\ProjectsRepository;
 use Unilend\Bundle\CoreBusinessBundle\Service\{ProjectRequestManager, StatisticsManager, WelcomeOfferManager};
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
-use Unilend\Bundle\FrontBundle\Service\{ContentManager, ProjectDisplayManager, SeoManager, SourceManager, TestimonialManager};
+use Unilend\Bundle\FrontBundle\Service\{ContentManager, ProjectDisplayManager, /*SeoManager,*/ SourceManager, TestimonialManager};
 use Unilend\core\Loader;
 
 class MainController extends Controller
@@ -37,8 +37,6 @@ class MainController extends Controller
      */
     public function homeAction(): Response
     {
-        /** @var TestimonialManager $testimonialService */
-        $testimonialService = $this->get('unilend.frontbundle.service.testimonial_manager');
         /** @var AuthorizationChecker $authorizationChecker */
         $authorizationChecker = $this->get('security.authorization_checker');
         /** @var WelcomeOfferManager $welcomeOfferManager */
@@ -46,8 +44,6 @@ class MainController extends Controller
 
         $template = [
             'showWelcomeOffer'   => $welcomeOfferManager->displayOfferOnHome(),
-            'testimonialPeople'  => $testimonialService->getAllBattenbergTestimonials(),
-            'sliderTestimonials' => $testimonialService->getSliderInformation(),
             'welcomeOfferAmount' => $this->get('unilend.service.welcome_offer_manager')->getWelcomeOfferAmount(OffresBienvenues::TYPE_HOME)
         ];
 
@@ -105,11 +101,9 @@ class MainController extends Controller
     public function homeBorrowerAction(): Response
     {
         $projectManager        = $this->get('unilend.service.project_manager');
-        $testimonialService    = $this->get('unilend.frontbundle.service.testimonial_manager');
         $projectDisplayManager = $this->get('unilend.frontbundle.service.project_display_manager');
 
         $template = [];
-        $template['testimonialPeople'] = $testimonialService->getBorrowerBattenbergTestimonials(true);
         $template['loanPeriods']       = $projectManager->getPossibleProjectPeriods();
         $template['projectAmountMax']  = $projectManager->getMaxProjectAmount();
         $template['projectAmountMin']  = $projectManager->getMinProjectAmount();
@@ -118,8 +112,6 @@ class MainController extends Controller
             [ProjectsStatus::EN_FUNDING],
             [ProjectsRepository::SORT_FIELD_END => 'DESC']
         );
-
-        $template['featureBorrower'] = $testimonialService->getFeaturedTestimonialBorrower();
 
         return $this->render('main/home_borrower.html.twig', $template);
     }
@@ -255,7 +247,7 @@ class MainController extends Controller
      *
      * @return Response
      */
-    public function cmsAction(Request $request, ?UserInterface $client, SeoManager $seoManager): Response
+    public function cmsAction(Request $request, ?UserInterface $client/*, SeoManager $seoManager*/): Response
     {
         /** @var EntityManagerSimulator $entityManager */
         $entityManager = $this->get('unilend.service.entity_manager');
@@ -296,7 +288,7 @@ class MainController extends Controller
             $finalElements = $cachedItem->get();
         }
 
-        $seoManager->setCmsSeoData($tree);
+//        $seoManager->setCmsSeoData($tree);
 
         switch ($tree->id_template) {
             case self::CMS_TEMPLATE_BIG_HEADER:
@@ -508,12 +500,12 @@ class MainController extends Controller
      *
      * @return Response
      */
-    public function aboutUsAction(EntityManagerSimulator $entityManagerSimulator, SeoManager $seoManager): Response
+    public function aboutUsAction(EntityManagerSimulator $entityManagerSimulator/*, SeoManager $seoManager*/): Response
     {
         /** @var \tree $tree */
         $tree = $entityManagerSimulator->getRepository('tree');
         $tree->get(['slug' => 'qui-sommes-nous']);
-        $seoManager->setCmsSeoData($tree);
+//        $seoManager->setCmsSeoData($tree);
         $response = $this->render('static_pages/about_us.html.twig');
 
         $finalElements = [
@@ -536,7 +528,7 @@ class MainController extends Controller
      *
      * @return Response
      */
-    public function statisticsAction(EntityManagerSimulator $entityManagerSimulator, SeoManager $seoManager, StatisticsManager $statisticsManager, ?string $requestedDate = null): Response
+    public function statisticsAction(EntityManagerSimulator $entityManagerSimulator/*, SeoManager $seoManager*/, StatisticsManager $statisticsManager, ?string $requestedDate = null): Response
     {
         /** @var \tree $tree */
         $tree = $entityManagerSimulator->getRepository('tree');
@@ -564,7 +556,7 @@ class MainController extends Controller
             'date'  => $date->format('Y-m-d')
         ];
 
-        $seoManager->setCmsSeoData($tree);
+//        $seoManager->setCmsSeoData($tree);
         $response = $this->render('static_pages/statistics.html.twig', $template);
 
         $finalElements = [
@@ -586,7 +578,7 @@ class MainController extends Controller
      *
      * @return Response
      */
-    public function statisticsFpfAction(Request $request, StatisticsManager $statisticsManager, EntityManagerSimulator $entityManagerSimulator, SeoManager $seoManager): Response
+    public function statisticsFpfAction(Request $request, StatisticsManager $statisticsManager, EntityManagerSimulator $entityManagerSimulator/*, SeoManager $seoManager*/): Response
     {
         $now         = new \DateTime('NOW');
         $publishDate = new \DateTime('First day of November 2017');
@@ -630,7 +622,7 @@ class MainController extends Controller
         /** @var \tree $tree */
         $tree = $entityManagerSimulator->getRepository('tree');
         $tree->get(['slug' => 'indicateurs-de-performance']);
-        $seoManager->setCmsSeoData($tree);
+//        $seoManager->setCmsSeoData($tree);
 
         $finalElements = [
             'contenu'      => $response->getContent(),
@@ -707,12 +699,12 @@ class MainController extends Controller
      *
      * @return Response
      */
-    public function testimonialAction(TestimonialManager $testimonialService, EntityManagerSimulator $entityManagerSimulator, SeoManager $seoManager): Response
+    public function testimonialAction(TestimonialManager $testimonialService, EntityManagerSimulator $entityManagerSimulator/*, SeoManager $seoManager*/): Response
     {
         /** @var \tree $tree */
         $tree = $entityManagerSimulator->getRepository('tree');
         $tree->get(['slug' => 'temoignages']);
-        $seoManager->setCmsSeoData($tree);
+//        $seoManager->setCmsSeoData($tree);
 
         $template['testimonialPeople'] = $testimonialService->getBorrowerBattenbergTestimonials(false);
         $response                      = $this->render('static_pages/testimonials.html.twig', $template);

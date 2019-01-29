@@ -129,7 +129,7 @@
         <input type="submit" class="btn-small btn_link" value="Modifier">
     </form>
     <br>
-    <hr style="border: 1px solid #b20066;">
+    <hr style="border: 1px solid #2bc9af;">
     <br>
     <h1>Déclaration client</h1>
     <table class="form">

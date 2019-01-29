@@ -22,13 +22,13 @@ require('highcharts/modules/treemap')(Highcharts)
 var COLORS = {
   none:     'none',
 
-  purple:   '#b20066',
-  purpled:  '#9a1d5a',
-  purpled2: '#6d1f4f',
-  purpled3: '#4e203c',
-  purplel:  '#FCD4EB',
-  purplel2: '#FDF4FA',
-  purplel3: '#ffd0eb',
+  purple:   '#2bc9af',
+  purpled:  '#2ba48f',
+  purpled2: '#288171',
+  purpled3: '#236054',
+  purplel:  '#c5eee4',
+  purplel2: '#e2f7f1',
+  purplel3: '#c5eee4',
 
   green:    '#85C085',
   greenl:   '#B8CEB9',

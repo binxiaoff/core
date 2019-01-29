@@ -31,8 +31,8 @@ if (L && L.mapbox) {
 
 // Private variables
 var groupColors = {
-    'all': '#b20066', // @scss-color $c-purple
-    'active': '#b20066', // @scss-color $c-purple
+    'all': '#2bc9af', // @scss-color $c-purple
+    'active': '#2bc9af', // @scss-color $c-purple
     'expired': '#dedcdf' // @scss-color $c-grey-l2
 }
 
@@ -116,8 +116,8 @@ var MapView = function (elem, options) {
                         });
                     },
                     polygonOptions: {
-                        fillColor: '#b20066',
-                        color: '#b20066',
+                        fillColor: '#2bc9af',
+                        color: '#2bc9af',
                         weight: 2,
                         opacity: 1,
                         fillOpacity: 0.5

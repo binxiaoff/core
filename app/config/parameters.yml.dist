@@ -129,7 +129,7 @@ parameters:
     slack.default_username:           Unilend
     slack.endpoint:                   https://hooks.slack.com/services
 
-    mailchimp.api_key:                ''
+    mailchimp.api_key:                '-'
     mailchimp.webhook_secret:         ''
     mailchimp.list_id:                ''
     mailchimp.gdpr_segment_id:        ''

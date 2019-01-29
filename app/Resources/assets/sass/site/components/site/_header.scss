@@ -75,7 +75,7 @@
   $height: 25px;
 
   background-color: transparent;
-  background-image: url('../images/logo/logo-and-type-unilend-132x25-purple.png');
+  background-image: url('../images/logo/logo-and-type-132x25.png');
   background-repeat: no-repeat;
   background-position: left top;
   width: $width;
@@ -83,7 +83,7 @@
   line-height: $height;
 
   @include retina {
-    background-image: url('../images/logo/logo-and-type-unilend-132x25-purple@2x.png');
+    background-image: url('../images/logo/logo-and-type-132x25@2x.png');
     background-size: contain;
   }
 }
@@ -98,7 +98,7 @@
   overflow: hidden;
 
   background-color: transparent;
-  background-image: url('../images/logo/logo-and-type-unilend-209x44-purple.png');
+  background-image: url('../images/logo/logo-and-type-209x44.png');
   background-repeat: no-repeat;
   background-position: left top;
   line-height: $height;
@@ -107,7 +107,7 @@
   vertical-align: top;
 
   @include retina {
-    background-image: url('../images/logo/logo-and-type-unilend-209x44-purple@2x.png');
+    background-image: url('../images/logo/logo-and-type-209x44@2x.png');
     background-size: contain;
   }
 
@@ -115,13 +115,13 @@
     $width: 245px;
     $height: 52px;
 
-    background-image: url('../images/logo/logo-and-type-unilend-245x52-purple.png');
+    background-image: url('../images/logo/logo-and-type-245x52.png');
     width: $width;
     height: $height;
     line-height: $height;
 
     @include retina {
-      background-image: url('../images/logo/logo-and-type-unilend-245x52-purple@2x.png');
+      background-image: url('../images/logo/logo-and-type-245x52@2x.png');
       background-size: contain;
     }
   }
@@ -136,7 +136,7 @@
   height: $height;
 
   background-color: transparent;
-  background-image: url('../images/logo/logo-unilend-65x65-white.png');
+  background-image: url('../images/logo/logo-65x65-white.png');
   background-repeat: no-repeat;
   background-position: left top;
   text-align: left;
@@ -144,7 +144,7 @@
   vertical-align: top;
 
   @include retina {
-    background-image: url('../images/logo/logo-unilend-65x65-white@2x.png');
+    background-image: url('../images/logo/logo-65x65-white@2x.png');
     background-size: contain;
   }
 }

@@ -66,10 +66,11 @@ class UsersController extends Controller
         if (false === empty($clientHash) && false === empty($action) && ($client = $clientRepository->findOneBy(['hash' => $clientHash]))) {
             switch ($action) {
                 case 'password':
-                    /** @var \temporary_links_login $temporaryLink */
-                    $temporaryLink = $this->get('unilend.service.entity_manager')->getRepository('temporary_links_login');
-                    $token         = $temporaryLink->generateTemporaryLink($client->getIdClient(), \temporary_links_login::PASSWORD_TOKEN_LIFETIME_MEDIUM);
-                    $keywords      = [
+                    $token = $entityManager
+                        ->getRepository('UnilendCoreBusinessBundle:TemporaryLinksLogin')
+                        ->generateTemporaryLink($client, TemporaryLinksLogin::PASSWORD_TOKEN_LIFETIME_MEDIUM);
+
+                    $keywords = [
                         'firstName'    => $client->getPrenom(),
                         'login'        => $client->getEmail(),
                         'passwordLink' => $this->generateUrl('partner_security', ['securityToken' => $token], UrlGeneratorInterface::ABSOLUTE_URL)
@@ -82,10 +83,12 @@ class UsersController extends Controller
                         $mailer = $this->get('mailer');
                         $mailer->send($message);
                     } catch (\Exception $exception) {
-                        $this->get('logger')->warning(
-                            'Could not send email : mot-de-passe-oublie-partenaire - Exception: ' . $exception->getMessage(),
-                            ['id_mail_template' => $message->getTemplateId(), 'id_client' => $client->getIdClient(), 'class' => __CLASS__, 'function' => __FUNCTION__]
-                        );
+                        $this->get('logger')->warning('Could not send email : mot-de-passe-oublie-partenaire - Exception: ' . $exception->getMessage(), [
+                            'id_mail_template' => $message->getTemplateId(),
+                            'id_client'        => $client->getIdClient(),
+                            'class'            => __CLASS__,
+                            'function'         => __FUNCTION__
+                        ]);
                     }
                     break;
                 case 'deactivate':
@@ -213,12 +216,17 @@ class UsersController extends Controller
 
             $entityManager->commit();
 
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\MailerManager $mailerManager */
             $mailerManager = $this->get('unilend.service.email_manager');
             $mailerManager->sendPartnerAccountActivation($client);
         } catch (\Exception $exception) {
+            $this->get('logger')->error('An error occurred while creating client. Message: ' . $exception->getMessage(), [
+                'class'    => __CLASS__,
+                'function' => __FUNCTION__,
+                'file'     => $exception->getFile(),
+                'line'     => $exception->getLine()
+            ]);
+
             $entityManager->getConnection()->rollBack();
-            $this->get('logger')->error('An error occurred while creating client ', [['class' => __CLASS__, 'function' => __FUNCTION__]]);
         }
 
         return $this->redirectToRoute('partner_users');

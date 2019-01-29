@@ -10,8 +10,8 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Routing\Exception\RouteNotFoundException;
 use Symfony\Component\Security\Core\User\UserInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{Clients, ClientsMandats, Companies, Factures, OperationSubType, OperationType, Projects, ProjectsPouvoir, ProjectsStatus, Users, Virements, Wallet,
-    WalletType};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{Clients, ClientsMandats, Companies, Factures, OperationSubType, OperationType, Projects, ProjectsPouvoir, ProjectsStatus,
+    TemporaryLinksLogin, Users, Virements, Wallet, WalletType};
 use Unilend\Bundle\CoreBusinessBundle\Service\{BorrowerOperationsManager, ProjectStatusManager};
 use Unilend\Bundle\FrontBundle\Form\{BorrowerContactType, SimpleProjectType};
 
@@ -34,9 +34,9 @@ class BorrowerAccountController extends Controller
         $projectsPostFunding = $this->getProjectsPostFunding($client);
 
         return [
-            'pre_funding_projects'   => $projectsPreFunding,
-            'funding_projects'       => $projectsFunding,
-            'post_funding_projects'  => $projectsPostFunding
+            'pre_funding_projects'  => $projectsPreFunding,
+            'funding_projects'      => $projectsFunding,
+            'post_funding_projects' => $projectsPostFunding
         ];
     }
 
@@ -585,27 +585,26 @@ class BorrowerAccountController extends Controller
      */
     public function securityAction(string $securityToken, Request $request): Response
     {
-        /** @var \temporary_links_login $temporaryLinks */
-        $temporaryLinks = $this->get('unilend.service.entity_manager')->getRepository('temporary_links_login');
-        $isLinkExpired  = false;
-        $displayForm    = true;
+        $isLinkExpired = false;
+        $displayForm   = true;
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+        /** @var TemporaryLinksLogin $temporaryLinks */
+        $temporaryLinks = $entityManager->getRepository('UnilendCoreBusinessBundle:TemporaryLinksLogin')->findOneBy(['token' => $securityToken]);
 
-        if (false === $temporaryLinks->get($securityToken, 'token')) {
+        if (null === $temporaryLinks) {
             return $this->redirectToRoute('home');
         }
 
         $now         = new \DateTime();
-        $linkExpires = new \DateTime($temporaryLinks->expires);
+        $linkExpires = $temporaryLinks->getExpires();
 
         if ($linkExpires <= $now) {
             $isLinkExpired = true;
         } else {
-            $temporaryLinks->accessed = $now->format('Y-m-d H:i:s');
-            $temporaryLinks->update();
+            $temporaryLinks->setAccessed($now);
+            $entityManager->flush($temporaryLinks);
 
-            $entityManager = $this->get('doctrine.orm.entity_manager');
-            /** @var Clients $client */
-            $client = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($temporaryLinks->id_client);
+            $client = $temporaryLinks->getIdClient();
 
             if (false === $client->isGrantedLogin()) {
                 $displayForm = false;

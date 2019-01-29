@@ -10,24 +10,8 @@
     {% endif %}
     <div class="site-footer">
         <div class="site-wrap">
-            {% block siteFooterNav %}
-                <div class="row site-footer-nav">
-                    {% for menu in menus %}
-                    <div class="col-lg-3 col-md-3 col-sm-4">
-                        <h4>{{ menu.title }}</h4>
-                        <ul class="list-block" data-equal-height="sm" data-equal-height-group="fmenus">
-                            {% for child in menu.children %}
-                                <li>
-                                    <a href="{{ child.url }}" target="{{ child.target }}">{{ child.title }}</a>
-                                </li>
-                            {% endfor %}
-                        </ul>
-                    </div>
-                    {% endfor %}
-                </div>
-            {% endblock %}
             <div class="row">
-                <div class="col-sub-left col-lg-4 col-md-4">
+                <div class="col-sub-left col-lg-6 col-md-6">
                     {% block siteFooterSubLeft %}
                         <ul class="list-socialmedia">
                             <li><a href="{{ setting('Facebook') }}" target="_blank" class="btn-facebook" title="{% trans %} common_facebook-link-title {% endtrans %}"><span class="sr-only">Facebook</span></a></li>
@@ -36,17 +20,7 @@
                         </ul><!-- /.list-sharing -->
                     {% endblock %}
                 </div>
-                <div class="col-sub-center col-lg-4 col-md-4">
-                    {% block siteFooterSubCenter %}
-                        <ul class="list-awards">
-                            <li><a href="http://www.bpifrance.fr/" class="ui-has-tooltip" data-original-title="BPI France" target="_blank"></a></li>
-                            <li><a href="https://www.orias.fr/" class="ui-has-tooltip" data-original-title="ORIAS" target="_blank"></a></li>
-                            <li><a href="http://financeparticipative.org/" class="ui-has-tooltip" data-original-title="Financement Participatif France" target="_blank"></a></li>
-                        </ul>
-                        <div class="site-tagline">{% trans %} footer_site-tagline {% endtrans %}</div>
-                    {% endblock %}
-                </div>
-                <div class="col-sub-right col-lg-4 col-md-4">
+                <div class="col-sub-right col-lg-6 col-md-6">
                     {% block siteFooterSubRight %}
                         <div class="site-admin-nav">
                             <a href="{{ path('mentions-legales') }}">{% trans %} footer_small-mandatory-menu-legal-notice {% endtrans %}</a> |

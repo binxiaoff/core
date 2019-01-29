@@ -127,7 +127,7 @@ class ProjectRepaymentTask
     /**
      * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Receptions
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Receptions")
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Receptions", inversedBy="projectRepaymentTasks")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="id_wire_transfer_in", referencedColumnName="id_reception")
      * })

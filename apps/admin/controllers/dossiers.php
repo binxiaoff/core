@@ -39,12 +39,6 @@ class dossiersController extends bootstrap
     protected $clients_gestion_mails_notif;
     /** @var \clients_gestion_notifications */
     protected $clients_gestion_notifications;
-    /** @var \prescripteurs */
-    protected $prescripteurs;
-    /** @var \clients */
-    protected $clients_prescripteurs;
-    /** @var \companies */
-    protected $companies_prescripteurs;
 
     /** @var array */
     protected $searchResult;
@@ -163,9 +157,6 @@ class dossiersController extends bootstrap
         $this->notifications                 = $this->loadData('notifications');
         $this->clients_gestion_mails_notif   = $this->loadData('clients_gestion_mails_notif');
         $this->clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
-        $this->prescripteurs                 = $this->loadData('prescripteurs');
-        $this->clients_prescripteurs         = $this->loadData('clients');
-        $this->companies_prescripteurs       = $this->loadData('companies');
         $this->settings                      = $this->loadData('settings');
         /** @var \borrowing_motive $borrowingMotive */
         $borrowingMotive = $this->loadData('borrowing_motive');
@@ -248,7 +239,6 @@ class dossiersController extends bootstrap
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectStatusManager $projectStatusManager */
             $projectStatusManager   = $this->get('unilend.service.project_status_manager');
             $this->statusReasonText = $projectStatusManager->getStatusReasonByProject($this->projectEntity);
-            $this->hasAdvisor       = false;
 
             if ($this->projects->status == ProjectsStatus::FUNDE) {
                 $proxy       = $this->projects_pouvoir->select('id_project = ' . $this->projects->id_project);
@@ -268,12 +258,6 @@ class dossiersController extends bootstrap
                         $this->beneficialOwnerDeclaration = $beneficialOwnerDeclaration;
                     }
                 }
-            }
-
-            if ($this->projects->id_prescripteur > 0 && $this->prescripteurs->get($this->projects->id_prescripteur, 'id_prescripteur')) {
-                $this->clients_prescripteurs->get($this->prescripteurs->id_client, 'id_client');
-                $this->companies_prescripteurs->get($this->prescripteurs->id_entite, 'id_company');
-                $this->hasAdvisor = true;
             }
 
             $this->latitude  = null === $this->companyMainAddress ? 0 : (float) $this->companyMainAddress->getLatitude();
@@ -760,7 +744,7 @@ class dossiersController extends bootstrap
             $this->isProductUsable        = empty($product->id_product) ? false : in_array($this->selectedProduct, $this->eligibleProducts);
             $this->partnerList            = $partnerRepository->getPartnersSortedByName(Partner::STATUS_VALIDATED);
             $this->partnerProduct         = $this->loadData('partner_product');
-            $this->isUnilendPartner       = Partner::PARTNER_UNILEND_ID === $this->projectEntity->getIdPartner()->getId();
+            $this->isUnilendPartner       = Partner::PARTNER_CALS_ID === $this->projectEntity->getIdPartner()->getId();
             $this->agencies               = [];
             $this->submitters             = [];
             $this->hasBeneficialOwner     = null !== $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyBeneficialOwnerDeclaration')->findCurrentDeclarationByCompany($this->projects->id_company);

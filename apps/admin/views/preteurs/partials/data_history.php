@@ -7,9 +7,9 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{
 ?>
 <style>
     #data-history-table tbody th {
-        background-color: #6d1f4f;
-        border-left: 1px solid #6d1f4f;
-        border-right: 1px solid #6d1f4f;
+        background-color: #288171;
+        border-left: 1px solid #288171;
+        border-right: 1px solid #288171;
         color: #fff;
         font-weight: normal;
     }

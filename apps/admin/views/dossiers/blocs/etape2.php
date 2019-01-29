@@ -318,10 +318,6 @@
                     <td colspan="2" style="padding-top: 15px; background-color: #ececec;">
                         <h2>Déposant</h2>
                     </td>
-                <?php elseif ($this->hasAdvisor) : ?>
-                    <td colspan="2" style="padding-top: 15px; background-color: #ececec;">
-                        <h2>Prescripteur</h2>
-                    </td>
                 <?php else : ?>
                     <td colspan="2"></td>
                 <?php endif; ?>
@@ -332,9 +328,6 @@
                 <?php if ($this->projectEntity->getIdClientSubmitter() && $this->projectEntity->getIdClientSubmitter()->getIdClient()) : ?>
                     <th style="background-color: #ececec;">Nom</th>
                     <td style="background-color: #ececec;"><?= $this->projectEntity->getIdClientSubmitter()->getPrenom() ?> <?= $this->projectEntity->getIdClientSubmitter()->getNom() ?></td>
-                <?php elseif ($this->hasAdvisor) : ?>
-                    <th style="background-color: #ececec;">Nom</th>
-                    <td style="background-color: #ececec;"><?= $this->clients_prescripteurs->civilite ?> <?= $this->clients_prescripteurs->prenom ?> <?= $this->clients_prescripteurs->nom ?></td>
                 <?php else : ?>
                     <td colspan="2"></td>
                 <?php endif; ?>
@@ -350,9 +343,6 @@
                 <?php if ($this->projectEntity->getIdClientSubmitter() && $this->projectEntity->getIdClientSubmitter()->getIdClient()) : ?>
                     <th style="background-color: #ececec;">Téléphone</th>
                     <td style="background-color: #ececec;"><a href="tel:0<?= str_replace([' ', '.', '-'], '', $this->projectEntity->getIdClientSubmitter()->getTelephone()) ?>"><?= $this->projectEntity->getIdClientSubmitter()->getTelephone() ?></a></td>
-                <?php elseif ($this->hasAdvisor) : ?>
-                    <th style="background-color: #ececec;">Téléphone</th>
-                    <td style="background-color: #ececec;"><a href="tel:0<?= str_replace([' ', '.', '-'], '', $this->clients_prescripteurs->telephone) ?>"><?= $this->clients_prescripteurs->telephone ?></a></td>
                 <?php else : ?>
                     <td colspan="2"></td>
                 <?php endif; ?>
@@ -363,9 +353,6 @@
                 <?php if ($this->projectEntity->getIdClientSubmitter() && $this->projectEntity->getIdClientSubmitter()->getIdClient()) : ?>
                     <th style="background-color: #ececec;">Email</th>
                     <td style="background-color: #ececec;"><a href="mailto:<?= $this->projectEntity->getIdClientSubmitter()->getEmail() ?>"><?= $this->projectEntity->getIdClientSubmitter()->getEmail() ?></a></td>
-                <?php elseif ($this->hasAdvisor) : ?>
-                    <th style="background-color: #ececec;">Email</th>
-                    <td style="background-color: #ececec;"><a href="mailto:<?= $this->clients_prescripteurs->email ?>"><?= $this->clients_prescripteurs->email ?></a></td>
                 <?php else : ?>
                     <td colspan="2"></td>
                 <?php endif; ?>
@@ -376,9 +363,6 @@
                 <?php if ($this->projectEntity->getIdCompanySubmitter() && $this->projectEntity->getIdCompanySubmitter()->getIdCompany()) : ?>
                     <th style="background-color: #ececec;">Agence</th>
                     <td style="background-color: #ececec;"><?= $this->projectEntity->getIdCompanySubmitter()->getName() ?></td>
-                <?php elseif ($this->hasAdvisor) : ?>
-                    <th style="background-color: #ececec;">Raison sociale</th>
-                    <td style="background-color: #ececec;"><?= $this->companies_prescripteurs->name ?><?= empty($this->companies_prescripteurs->siren) ? '' : ' (' . $this->companies_prescripteurs->siren . ')' ?></td>
                 <?php else : ?>
                     <td colspan="2"></td>
                 <?php endif; ?>
@@ -392,8 +376,6 @@
                 <?php if ($this->projectEntity->getIdCompanySubmitter() && $this->projectEntity->getIdCompanySubmitter()->getIdCompany()) : ?>
                     <th style="background-color: #ececec;">Téléphone agence</th>
                     <td style="background-color: #ececec;"><a href="tel:0<?= str_replace([' ', '.', '-'], '', $this->projectEntity->getIdCompanySubmitter()->getPhone()) ?>"><?= $this->projectEntity->getIdCompanySubmitter()->getPhone() ?></a></td>
-                <?php elseif ($this->hasAdvisor) : ?>
-                    <td colspan="2" style="background-color: #ececec; color: #c84747;">Un prescripteur est une personne non enregistrée en tant que partenaire qui a fait un dépôt de dossier via le site.</td>
                 <?php else : ?>
                     <td colspan="2"></td>
                 <?php endif; ?>

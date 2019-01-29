@@ -165,68 +165,6 @@ class clients extends clients_crud
         return $result;
     }
 
-    public function searchPrescripteur($iAdvisorId = '', $nom = '', $prenom = '', $email = '', $sCompanyName = '', $sSiren = '', $offset = '', $limit = 100, $sOperation = 'AND')
-    {
-        $aWhere = array();
-
-        if ('' !== $nom) {
-            $nom = $this->bdd->escape_string($nom);
-            $aWhere[] = 'c.nom LIKE "%' . $nom . '%"';
-        }
-        if ('' !== $email) {
-            $email = $this->bdd->escape_string($email);
-            $aWhere[] = 'c.email LIKE "%' . $email . '%"';
-        }
-        if ('' !== $prenom) {
-            $prenom = $this->bdd->escape_string($prenom);
-            $aWhere[] = 'c.prenom LIKE "%' . $prenom . '%"';
-        }
-
-        if ('' !== $sCompanyName) {
-            $sCompanyName = $this->bdd->escape_string($sCompanyName);
-            $aWhere[] = 'com.name LIKE "%' . $sCompanyName . '%"';
-        }
-
-        if ('' !== $sSiren) {
-            $sSiren = $this->bdd->escape_string($sSiren);
-            $aWhere[] = 'com.siren = "' . $sSiren . '"';
-        }
-
-        $sWhere = '';
-        if ('' !== $iAdvisorId) {
-            $iAdvisorId = $this->bdd->escape_string($iAdvisorId);
-            $sWhere = ' WHERE p.id_prescripteur = '. $iAdvisorId;
-        } elseif (false === empty($aWhere)) {
-            $sWhere = ' WHERE ' . implode(' ' . $sOperation.' ', $aWhere);
-        }
-
-        if ('' !== $offset) {
-            $offset = $this->bdd->escape_string($offset);
-            $offset = ' OFFSET '. $offset;
-        }
-
-        if ('' !== $limit) {
-            $limit = $this->bdd->escape_string($limit);
-            $limit = ' LIMIT '. $limit;
-        }
-
-        $sql = 'SELECT * FROM clients c
-                INNER JOIN prescripteurs p USING (id_client)
-                INNER JOIN companies com ON p.id_entite = com.id_company'
-                . $sWhere
-                . ' ORDER BY c.id_client DESC'
-                . $limit
-                . $offset;
-
-        $oQuery = $this->bdd->query($sql);
-        $result   = array();
-
-        while ($record = $this->bdd->fetch_array($oQuery)) {
-            $result[] = $record;
-        }
-        return $result;
-    }
-
     public function isLender()
     {
         $query = 'SELECT COUNT(*) FROM wallet w

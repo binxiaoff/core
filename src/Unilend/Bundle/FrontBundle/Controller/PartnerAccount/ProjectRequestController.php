@@ -231,7 +231,8 @@ class ProjectRequestController extends Controller
         $partner                  = $this->get('unilend.service.partner_manager')->getPartner($partnerUser);
 
         try {
-            $activeExecutives = $this->get('unilend.service.external_data_manager')->getActiveExecutives($project->getIdCompany()->getSiren());
+            $activeExecutives = [];
+//            $activeExecutives = $this->get('unilend.service.external_data_manager')->getActiveExecutives($project->getIdCompany()->getSiren());
         } catch (\Exception $exception) {
             $activeExecutives = [];
 

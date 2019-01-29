@@ -44,12 +44,12 @@ textarea { overflow: auto; }
 .doc-wrapper .logo { padding: 0 0 20px 0; }
 .doc-wrapper .logo { background:url(images/logo.png) no-repeat 0 0; width:252px; height:61px; text-indent:100%; }
 
-.doc-wrapper h1 { font-size:16px; color: #b20066; }
+.doc-wrapper h1 { font-size:16px; color: #2bc9af; }
 .doc-wrapper h3 { font-size: 12px; line-height: 12px; padding: 0 0 20px 0; letter-spacing: 0; color: #7f7f7f; }
-.doc-wrapper h3.sm { text-transform: none; color: #b20066; }
+.doc-wrapper h3.sm { text-transform: none; color: #2bc9af; }
 .doc-wrapper h3 .red-text { display: block; color: #ff0000; text-transform: none; font-weight: normal; }
 .doc-wrapper h3 .red-text-in { color: #ff0000; }
-.doc-wrapper h3.pink { color: #b20066; }
+.doc-wrapper h3.pink { color: #2bc9af; }
 .doc-wrapper h5 { padding: 0 6px; background: #c0c0c0; font-size: 11px; line-height: 17px; color: #000000; font-weight: bold;letter-spacing: 1.5px; }
 .doc-wrapper h5 .red-text { color: #ff0000; }
 .doc-wrapper p { padding: 0 0 18px 0; font-size: 13px; line-height: 17px; }
@@ -62,7 +62,7 @@ textarea { overflow: auto; }
 .doc-wrapper .list li.bl { color: #000000; }
 .doc-wrapper .list li .col-long { width: 365px; float: left; display: inline; }
 .doc-wrapper .list li .col-small { width: 250px; float: right; display: inline; text-align: center; }
-.doc-wrapper .list li a.btn { font-size: 11px; width: 250px; display: block; height: 50px; text-align: center; line-height: 50px; color: #ffffff; text-transform: uppercase; background: #b20066; }
+.doc-wrapper .list li a.btn { font-size: 11px; width: 250px; display: block; height: 50px; text-align: center; line-height: 50px; color: #ffffff; text-transform: uppercase; background: #2bc9af; }
 .doc-wrapper .list li a.btn-blue { background: #4600a5; }
 .doc-wrapper .list li .orange-text,
 .doc-wrapper .list li .red-text { color: #ff0000; }

@@ -51,7 +51,7 @@ class GreenpointKyc
     /**
      * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Clients
      *
-     * @ORM\OneToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Clients", mappedBy="idClient")
+     * @ORM\OneToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Clients")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="id_client", referencedColumnName="id_client")
      * })

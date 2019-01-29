@@ -1,6 +1,6 @@
 <h2>Remboursement anticipé / Information</h2>
 <?php if (true === $this->earlyRepaymentPossible) : ?>
-    <table class="form" style="width: 100%; border: 1px solid #b20066;">
+    <table class="form" style="width: 100%; border: 1px solid #2bc9af;">
         <tr>
             <th>Statut :</th>
             <td>

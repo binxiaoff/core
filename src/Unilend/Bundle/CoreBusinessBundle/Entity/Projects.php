@@ -17,7 +17,6 @@ use Ramsey\Uuid\Uuid;
  *     @ORM\Index(name="display", columns={"display"}),
  *     @ORM\Index(name="date_retrait", columns={"date_retrait"}),
  *     @ORM\Index(name="hash", columns={"hash"}),
- *     @ORM\Index(name="id_prescripteur", columns={"id_prescripteur"}),
  *     @ORM\Index(name="id_commercial", columns={"id_commercial"}),
  *     @ORM\Index(name="id_dernier_bilan", columns={"id_dernier_bilan"}),
  *     @ORM\Index(name="fk_projects_id_company_submitter", columns={"id_company_submitter"}),
@@ -85,13 +84,6 @@ class Projects
      * })
      */
     private $idTargetCompany;
-
-    /**
-     * @var integer
-     *
-     * @ORM\Column(name="id_prescripteur", type="integer", nullable=true)
-     */
-    private $idPrescripteur;
 
     /**
      * @var float
@@ -546,30 +538,6 @@ class Projects
     public function getIdTargetCompany()
     {
         return $this->idTargetCompany;
-    }
-
-    /**
-     * Set idPrescripteur
-     *
-     * @param integer|null $idPrescripteur
-     *
-     * @return Projects
-     */
-    public function setIdPrescripteur(?int $idPrescripteur = null)
-    {
-        $this->idPrescripteur = $idPrescripteur;
-
-        return $this;
-    }
-
-    /**
-     * Get idPrescripteur
-     *
-     * @return integer|null
-     */
-    public function getIdPrescripteur()
-    {
-        return $this->idPrescripteur;
     }
 
     /**

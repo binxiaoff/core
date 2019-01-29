@@ -109,7 +109,7 @@
 
     .alert-error {
         color: #444;
-        background: #fdf4fa;
+        background: #e2f7f1;
         box-shadow: 0 2px #ca9faf;
 
     }
