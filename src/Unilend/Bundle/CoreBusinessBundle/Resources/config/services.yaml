@@ -25,10 +25,6 @@ services:
     Unilend\Bundle\CoreBusinessBundle\Service\AcceptedBidAndLoanNotificationSender:
         public: true
 
-    Unilend\Bundle\CoreBusinessBundle\Service\SalesforceManager:
-        $extractionDir: '%path.protected%dataloader'
-        $configDir: '%kernel.root_dir%/dataloader/conf'
-
     Unilend\Bundle\CoreBusinessBundle\Service\LocationManager:
         $mapboxToken: '%mapbox.token%'
 

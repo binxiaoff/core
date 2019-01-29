@@ -59,7 +59,6 @@ services:
     unilend.service.risk_data_euler_hermes_manager: '@Unilend\Bundle\CoreBusinessBundle\Service\RiskDataMonitoring\EulerHermesManager'
     unilend.service.risk_data_monitoring_cycle_manager: '@Unilend\Bundle\CoreBusinessBundle\Service\RiskDataMonitoring\MonitoringCycleManager'
     unilend.service.risk_data_monitoring_manager: '@Unilend\Bundle\CoreBusinessBundle\Service\RiskDataMonitoring\MonitoringManager'
-    unilend.service.salesforce: '@Unilend\Bundle\CoreBusinessBundle\Service\SalesforceManager'
     unilend.service.search_service: '@Unilend\Bundle\CoreBusinessBundle\Service\SearchService'
     unilend.service.slack_manager: '@Unilend\Bundle\CoreBusinessBundle\Service\SlackManager'
     unilend.service.sponsorship_manager: '@Unilend\Bundle\CoreBusinessBundle\Service\SponsorshipManager'
