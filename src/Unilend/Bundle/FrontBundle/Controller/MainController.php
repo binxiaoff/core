@@ -15,7 +15,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{Clients, OffresBienvenues, Project
 use Unilend\Bundle\CoreBusinessBundle\Repository\ProjectsRepository;
 use Unilend\Bundle\CoreBusinessBundle\Service\{ProjectRequestManager, StatisticsManager, WelcomeOfferManager};
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
-use Unilend\Bundle\FrontBundle\Service\{ContentManager, ProjectDisplayManager, /*SeoManager,*/ SourceManager, TestimonialManager};
+use Unilend\Bundle\FrontBundle\Service\{ContentManager, ProjectDisplayManager, /*SeoManager,*/ SourceManager};
 use Unilend\core\Loader;
 
 class MainController extends Controller
@@ -67,12 +67,10 @@ class MainController extends Controller
     {
         $projectDisplayManager = $this->get('unilend.frontbundle.service.project_display_manager');
         $welcomeOfferManager   = $this->get('unilend.service.welcome_offer_manager');
-        $testimonialService    = $this->get('unilend.frontbundle.service.testimonial_manager');
 
         $template = [
             'showWelcomeOffer'   => $welcomeOfferManager->displayOfferOnHome(),
             'amountWelcomeOffer' => $welcomeOfferManager->getWelcomeOfferAmount(OffresBienvenues::TYPE_HOME),
-            'featureLender'      => $testimonialService->getFeaturedTestimonialLender(),
             'showPagination'     => false,
             'showSortable'       => false,
             'sortType'           => ProjectsRepository::SORT_FIELD_END,
@@ -692,29 +690,6 @@ class MainController extends Controller
         $template['sections'] =  $pagesBySections;
 
         return $this->render('static_pages/sitemap.html.twig', $template);
-    }
-
-    /**
-     * @Route("/temoignages", name="testimonials")
-     *
-     * @return Response
-     */
-    public function testimonialAction(TestimonialManager $testimonialService, EntityManagerSimulator $entityManagerSimulator/*, SeoManager $seoManager*/): Response
-    {
-        /** @var \tree $tree */
-        $tree = $entityManagerSimulator->getRepository('tree');
-        $tree->get(['slug' => 'temoignages']);
-//        $seoManager->setCmsSeoData($tree);
-
-        $template['testimonialPeople'] = $testimonialService->getBorrowerBattenbergTestimonials(false);
-        $response                      = $this->render('static_pages/testimonials.html.twig', $template);
-        $finalElements                 = [
-            'contenu'      => $response->getContent(),
-            'complement'   => '',
-            'image-header' => ''
-        ];
-
-        return $this->renderCmsNav($tree, $finalElements, $entityManagerSimulator, 'apropos-statistiques');
     }
 
     /**
