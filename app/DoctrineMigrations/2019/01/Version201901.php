@@ -23,6 +23,8 @@ final class Version201901 extends AbstractMigration
         $this->addSql('ALTER TABLE temporary_links_login CHANGE updated updated DATETIME');
         $this->addSql('ALTER TABLE temporary_links_login DROP KEY id_link');
         $this->addSql('ALTER TABLE temporary_links_login ADD CONSTRAINT fk_temporary_links_login_id_client FOREIGN KEY (id_client) REFERENCES clients (id_client)');
+
+        $this->addSql('DROP TABLE non_migrated_transactions');
     }
 
     /**
@@ -43,5 +45,15 @@ final class Version201901 extends AbstractMigration
         $this->addSql('ALTER TABLE temporary_links_login DROP FOREIGN KEY fk_temporary_links_login_id_client');
         $this->addSql('ALTER TABLE temporary_links_login DROP KEY fk_temporary_links_login_id_client');
         $this->addSql('ALTER TABLE temporary_links_login ADD CONSTRAINT id_link UNIQUE (id_link)');
+
+        $this->addSql(<<<CREATETABLE
+CREATE TABLE non_migrated_transactions (
+  id_transaction INT(11) NOT NULL,
+  status TINYINT(1) NOT NULL COMMENT '0 = to be checked | 1 = abandoned',
+  message VARCHAR(120) NOT NULL,
+  PRIMARY KEY (id_transaction)
+)
+CREATETABLE
+        );
     }
 }
