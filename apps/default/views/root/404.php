@@ -193,9 +193,6 @@
                                 <a href="/guide-de-l-emprunteur" target="_self">Guide de l&#039;emprunteur</a>
                             </li>
                             <li>
-                                <a href="/temoignages" target="_self">Avis d&#039;emprunteurs</a>
-                            </li>
-                            <li>
                                 <a href="https://unilend.desk.com/?b_id=13135" target="_blank">FAQ emprunteur</a>
                             </li>
                         </ul>

@@ -3,35 +3,6 @@
 
 {% block siteContent %}
     <article id="homepre" class="page">
-        <section id="homepre-video-hero" class="cta-video-hero" aria-hidden="true" data-set-device-height="xs">
-            <div class="video-hero-wrapper">
-                <div class="video-hero" style="background-image: url('{{ completeTestimonialUrl(featureLender.feature_image, 'image') }}')">
-                    <div class="caption caption-align-left">
-                        <div class="caption-name">{{ featureLender.name }}, {{ featureLender.projects }}</div>
-                        <div class="caption-info">{{ featureLender.info }}</div>
-                    </div><!-- /.caption -->
-                </div><!-- /.video-hero -->
-
-                <div class="video-hero-cta">
-                    <div class="btn-media-wrapper">
-                        <a href="https://www.youtube.com/watch?v=Fmtz6vI65GY" class="btn-media fancybox-media fancybox-embed-videojs">
-                            <span class="icon fa-play"><span class="sr-only">Play</span></span>
-                        </a>
-                    </div>
-                    <h3>{{ featureLender.video_caption }}</h3>
-                </div><!-- /.video-hero-cta -->
-
-                {% include 'partials/list_socialmedia.html.twig' %}
-
-                <div class="btn-toolbar">
-                    <a href="{{ path('lender_subscription_personal_information') }}" class="btn-cta btn-color-primary">
-                        <span class="icon fa-angle-right"></span>
-                        {% trans %} site-general_button-under-video-lender {% endtrans %}
-                    </a>
-                </div>
-            </div><!-- /.video-hero-wrapper -->
-        </section><!-- /.cta-video-hero -->
-
         <section id="homepre-section-steps" class="page-section">
             <div class="site-wrap">
                 <h1 class="h2">{% trans %} home-lender_lending-steps-title {% endtrans %}</h1>

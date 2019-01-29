@@ -19,8 +19,7 @@
             <li role="presentation"{% if app.request.attributes.get('_route') in [
                 'pourquoi-emprunter',
                 'ma-premiere-demande-de-financement',
-                'guide-de-l-emprunteur',
-                'testimonials'
+                'guide-de-l-emprunteur'
             ] %} class="active"{% endif %}><a href="{{ absolute_url('/pourquoi-emprunter') }}" tabindex="2">{% trans %} header_menu-item-borrow {% endtrans %}</a></li>
         {% endif %}
 
