@@ -329,12 +329,9 @@ class preteursController extends bootstrap
 
     public function _edit_preteur()
     {
-        $this->nationalites            = $this->loadData('nationalites_v2');
-        $this->acceptations_legal_docs = $this->loadData('acceptations_legal_docs');
-        $this->settings                = $this->loadData('settings');
-        $this->acceptations_legal_docs = $this->loadData('acceptations_legal_docs');
-
-        $this->lNatio = $this->nationalites->select('', 'ordre ASC');
+        $this->nationalites = $this->loadData('nationalites_v2');
+        $this->settings     = $this->loadData('settings');
+        $this->lNatio       = $this->nationalites->select('', 'ordre ASC');
 
         /** @var EntityManager $entityManager */
         $entityManager                = $this->get('doctrine.orm.entity_manager');
