@@ -377,66 +377,6 @@ class projects extends projects_crud
         return array('A', 'B', 'C', 'D', 'E');
     }
 
-    public function getProjectsSalesForce()
-    {
-        $sQuery = "
-            SELECT
-                p.id_project AS 'IDProjet',
-                REPLACE(cl.source,',','') AS 'Source1',
-                REPLACE(cl.source2,',','') AS 'Source2',
-                p.id_company AS 'IDCompany',
-                p.amount AS 'Amount',
-                p.period AS 'NbMois',
-                CASE p.date_publication
-                  WHEN '0000-00-00 00:00:00' THEN ''
-                  ELSE DATE(p.date_publication)
-                END AS 'Date_Publication',
-                CASE p.date_retrait
-                  WHEN '0000-00-00 00:00:00' THEN ''
-                  ELSE DATE(p.date_retrait)
-                END AS 'Date_Retrait',
-                CASE p.added
-                  WHEN '0000-00-00 00:00:00' THEN ''
-                  ELSE p.added
-                END AS 'Date_Ajout',
-                CASE p.updated
-                  WHEN '0000-00-00 00:00:00' THEN ''
-                  ELSE p.updated
-                END AS 'Date_Mise_Jour',
-                REPLACE(ps.label,',','') AS 'Status',
-                pn.note AS 'Note',
-                CASE REPLACE(co.name,',','')
-                  WHEN '' THEN 'A renseigner'
-                  ELSE REPLACE(co.name,',','')
-                END AS 'Nom_Societe',
-                REPLACE(co.forme,',','') AS 'Forme',
-                REPLACE(REPLACE(co.siren,'\t',''),',','') AS 'Siren',
-                REPLACE(ca.address,',','') as 'Adresse1',
-                '' as 'Adresse2',
-                REPLACE(ca.zip,',','') AS 'CP',
-                REPLACE(ca.city,',','') AS 'Ville',
-                ca.id_country AS 'IdPays',
-                REPLACE(co.phone,'\t','') AS 'Telephone',
-                co.status_client AS 'Status_Client',
-                CASE co.added
-                  WHEN '0000-00-00 00:00:00' THEN ''
-                  ELSE co.added
-                END AS 'Date_ajout',
-                CASE co.updated
-                  WHEN '0000-00-00 00:00:00' THEN ''
-                  ELSE co.updated
-                END AS 'Date_Mise_A_Jour',
-                co.id_client_owner AS 'IDClient'
-            FROM projects p
-            LEFT JOIN companies co ON (p.id_company = co.id_company)
-            LEFT JOIN company_address ca ON co.id_company = ca.id_company
-            LEFT JOIN clients cl ON (cl.id_client = co.id_client_owner)
-            LEFT JOIN projects_notes pn ON (p.id_project = pn.id_project)
-            LEFT JOIN projects_status ps ON ps.status = p.status";
-
-        return $this->bdd->executeQuery($sQuery);
-    }
-
     public function getAverageFundingTime(\DateTime $startingDate = null)
     {
         if (is_null($startingDate)) {

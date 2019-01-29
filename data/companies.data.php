@@ -193,32 +193,6 @@ class companies extends companies_crud
         return $aNames;
     }
 
-    public function getCompaniesSalesForce()
-    {
-        $query = "
-          SELECT
-            co.id_company AS 'IDCompany',
-            REPLACE(REPLACE(co.siren,',',''),'t','') AS 'Siren',
-            CASE REPLACE(co.name,',','')
-              WHEN '' THEN 'A renseigner'
-              ELSE REPLACE(co.name,',','')
-            END AS 'RaisonSociale',
-            REPLACE(IFNULL(ca.address, co.adresse1),',','') AS 'Adresse1',
-            REPLACE(IFNULL(ca.zip, co.zip),',','') AS 'CP',
-            REPLACE(IFNULL(ca.city, co.zip),',','') AS 'Ville',
-            acountry.fr AS 'Pays',
-            REPLACE(co.email_facture,',','') AS 'EmailFacturation',
-            co.id_client_owner AS 'IDClient',
-            co.forme as 'FormeSociale',
-            '012240000002G4U' as 'Sfcompte'
-          FROM
-            companies co
-            LEFT JOIN company_address ca ON co.id_company = ca.id_company AND id_type = (SELECT id FROM address_type WHERE label = '" . AddressType::TYPE_MAIN_ADDRESS . "')
-            LEFT JOIN pays acountry ON (IFNULL(ca.id_country, co.id_pays) = acountry.id_pays)";
-
-        return $this->bdd->executeQuery($query);
-    }
-
     /**
      * sets the company sector according to the naf_code
      * matching provided in DEV-273
