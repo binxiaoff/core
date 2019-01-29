@@ -198,15 +198,18 @@ class LoansRepository extends EntityRepository
     public function getBasicInformation($project)
     {
         $queryBuilder = $this->createQueryBuilder('l');
-        $queryBuilder->select('
-            l.idLoan, c.nom AS name, c.prenom AS first_name, c.email, c.type, com.name AS company_name, c.naissance AS birthday,
-            c.telephone, c.mobile, TRIM(CONCAT(ca.adresse1, \' \', ca.adresse2, \' \', ca.adresse3)) as address, ca.cp AS postal_code,
-            ca.ville AS city, ROUND(l.amount / 100, 2) as amount
-        ')
+        $queryBuilder
+            ->select('
+                l.idLoan,
+                c.nom AS name, c.prenom AS first_name, c.email, c.type, c.naissance AS birthday, c.telephone, c.mobile,
+                com.name AS company_name,
+                ca.address, ca.zip AS postal_code, ca.city,
+                ROUND(l.amount / 100, 2) AS amount
+            ')
             ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'l.idLender = w.id')
             ->innerJoin('UnilendCoreBusinessBundle:Clients', 'c', Join::WITH, 'c.idClient = w.idClient')
             ->leftJoin('UnilendCoreBusinessBundle:Companies', 'com', Join::WITH, 'com.idClientOwner = w.idClient')
-            ->leftJoin('UnilendCoreBusinessBundle:ClientsAdresses', 'ca', Join::WITH, 'ca.idClient = w.idClient')
+            ->leftJoin('UnilendCoreBusinessBundle:ClientAddress', 'ca', Join::WITH, 'ca.id = com.idAddress')
             ->where('l.idProject = :project')
             ->setParameter('project', $project);
 

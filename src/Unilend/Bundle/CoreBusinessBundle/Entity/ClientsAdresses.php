@@ -13,9 +13,6 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class ClientsAdresses
 {
-    const SAME_ADDRESS_FOR_POSTAL_AND_FISCAL      = 1;
-    const DIFFERENT_ADDRESS_FOR_POSTAL_AND_FISCAL = 0;
-
     /**
      * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Clients
      *
