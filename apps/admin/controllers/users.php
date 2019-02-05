@@ -19,6 +19,9 @@ class usersController extends bootstrap
     {
         $this->users->checkAccess(Zones::ZONE_LABEL_ADMINISTRATION);
 
+        /** @var EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+
         if (isset($_POST['form_add_users'])) {
             if (false === isset($_POST['email'])) {
                 $_SESSION['freeow']['title']   = 'Ajout d\'un utilisateur';
@@ -40,31 +43,45 @@ class usersController extends bootstrap
                 die;
             }
 
-            $newPassword               = $this->ficelle->generatePassword(10);
-            $this->users->firstname    = $_POST['firstname'];
-            $this->users->name         = $_POST['name'];
-            $this->users->phone        = $_POST['phone'];
-            $this->users->mobile       = $_POST['mobile'];
-            $this->users->email        = $_POST['email'];
-            $this->users->slack        = $_POST['slack'];
-            $this->users->ip           = $_POST['ip'];
-            $this->users->status       = $_POST['status'];
-            $this->users->id_user_type = $_POST['id_user_type'];
-            $this->users->password     = password_hash($newPassword, PASSWORD_DEFAULT);
-            $this->users->create();
+            $userType = $entityManager->getRepository('UnilendCoreBusinessBundle:UsersTypes')->find($_POST['id_user_type']);
+
+            if (null === $userType) {
+                $_SESSION['freeow']['title']   = 'Ajout d\'un utilisateur';
+                $_SESSION['freeow']['message'] = 'Type d\'utilisateur non renseigné';
+
+                header('Location: ' . $this->lurl . '/users');
+                die;
+            }
+
+            $newPassword = $this->ficelle->generatePassword(10);
+            $user        = new Users();
+            $user
+                ->setFirstname($_POST['firstname'])
+                ->setName($_POST['name'])
+                ->setPhone($_POST['phone'])
+                ->setMobile($_POST['mobile'])
+                ->setEmail($_POST['email'])
+                ->setSlack($_POST['slack'])
+                ->setIp($_POST['ip'])
+                ->setStatus($_POST['status'])
+                ->setIdUserType($userType)
+                ->setPassword(password_hash($newPassword, PASSWORD_DEFAULT));
+
+            $entityManager->persist($user);
+            $entityManager->flush($user);
 
             /** @var \users_zones $usersZones */
             $usersZones = $this->loadData('users_zones');
-            $lZones     = $this->users_types_zones->select('id_user_type = ' . $this->users->id_user_type . ' ');
+            $lZones     = $this->users_types_zones->select('id_user_type = ' . $userType->getIdUserType() . ' ');
             foreach ($lZones as $zone) {
-                $usersZones->id_user = $this->users->id_user;
+                $usersZones->id_user = $user->getIdUser();
                 $usersZones->id_zone = $zone['id_zone'];
                 $usersZones->create();
             }
 
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\MailerManager $mailerManager */
             $mailerManager = $this->get('unilend.service.email_manager');
-            $mailerManager->sendNewPasswordEmail($this->users, $newPassword);
+            $mailerManager->sendNewPasswordEmail($user, $newPassword);
 
             $_SESSION['freeow']['title']   = 'Ajout d\'un utilisateur';
             $_SESSION['freeow']['message'] = 'L\'utilisateur a bien été ajouté';
@@ -74,17 +91,28 @@ class usersController extends bootstrap
         }
 
         if (isset($_POST['form_mod_users'])) {
-            $this->users->get($this->params[0], 'id_user');
-            $this->users->firstname    = $_POST['firstname'];
-            $this->users->name         = $_POST['name'];
-            $this->users->phone        = $_POST['phone'];
-            $this->users->mobile       = $_POST['mobile'];
-            $this->users->email        = $_POST['email'];
-            $this->users->slack        = $_POST['slack'];
-            $this->users->ip           = $_POST['ip'];
-            $this->users->status       = $_POST['status'];
-            $this->users->id_user_type = $_POST['id_user_type'];
-            $this->users->update();
+            $user = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find($this->params[0]);
+
+            if (null === $user) {
+                $_SESSION['freeow']['title']   = 'Modification d\'un utilisateur';
+                $_SESSION['freeow']['message'] = 'Utilisateur inconnu';
+
+                header('Location: ' . $this->lurl . '/users');
+                die;
+            }
+
+            $user
+                ->setFirstname($_POST['firstname'])
+                ->setName($_POST['name'])
+                ->setPhone($_POST['phone'])
+                ->setMobile($_POST['mobile'])
+                ->setEmail($_POST['email'])
+                ->setSlack($_POST['slack'])
+                ->setIp($_POST['ip'])
+                ->setStatus($_POST['status'])
+                ->setIdU($_POST['id_user_type']);
+
+            $entityManager->flush($user);
 
             $_SESSION['freeow']['title']   = 'Modification d\'un utilisateur';
             $_SESSION['freeow']['message'] = 'L\'utilisateur a bien été modifié';
@@ -94,9 +122,10 @@ class usersController extends bootstrap
         }
 
         if (isset($this->params[0]) && $this->params[0] == 'status') {
-            $this->users->get($this->params[1], 'id_user');
-            $this->users->status = ($this->params[2] == Users::STATUS_ONLINE ? Users::STATUS_OFFLINE : Users::STATUS_ONLINE);
-            $this->users->update();
+            $user = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find($this->params[1]);
+            $user->setStatus($this->params[2] == Users::STATUS_ONLINE ? Users::STATUS_OFFLINE : Users::STATUS_ONLINE);
+
+            $entityManager->flush($user);
 
             $_SESSION['freeow']['title']   = 'Modification d\'un utilisateur';
             $_SESSION['freeow']['message'] = 'Le statut de l\'utilisateur a bien été modifié';
@@ -106,8 +135,8 @@ class usersController extends bootstrap
         }
 
         $this->users  = [
-            Users::STATUS_ONLINE  => $this->users->select('id_user NOT IN (' . Users::USER_ID_FRONT . ', ' . Users::USER_ID_CRON . ',  1) AND status = ' . Users::STATUS_ONLINE, 'name ASC, firstname ASC'),
-            Users::STATUS_OFFLINE => $this->users->select('id_user NOT IN (' . Users::USER_ID_FRONT . ', ' . Users::USER_ID_CRON . ',  1) AND status = ' . Users::STATUS_OFFLINE, 'name ASC, firstname ASC')
+            Users::STATUS_ONLINE  => $this->users->select('id_user NOT IN (' . Users::USER_ID_FRONT . ', ' . Users::USER_ID_CRON . ', ' . Users::USER_ID_WEBSERVICE . ',  1) AND status = ' . Users::STATUS_ONLINE, 'name ASC, firstname ASC'),
+            Users::STATUS_OFFLINE => $this->users->select('id_user NOT IN (' . Users::USER_ID_FRONT . ', ' . Users::USER_ID_CRON . ', ' . Users::USER_ID_WEBSERVICE . ',  1) AND status = ' . Users::STATUS_OFFLINE, 'name ASC, firstname ASC')
         ];
     }
 
@@ -168,6 +197,7 @@ class usersController extends bootstrap
             } elseif (false === $previousPasswords->isValidPassword($_POST['new_pass'], $this->users->id_user)) {
                 $template['error'] = "Ce mot de passe a déja été utilisé";
             } else {
+                // @todo migrate to Doctrine
                 $oldPassword                  = $this->users->password;
                 $this->users->password        = password_hash($_POST['new_pass'], PASSWORD_DEFAULT);
                 $this->users->password_edited = date('Y-m-d H:i:s');
