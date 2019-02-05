@@ -724,12 +724,6 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{AttachmentType, Companies, Project
                                 <td><?= $this->rate_min ?> % - <?= $this->rate_max ?> %</td>
                             </tr>
                         <?php endif; ?>
-                        <?php if (false === empty($this->fPredictAutoBid) && $this->projects->status < ProjectsStatus::FUNDE) : ?>
-                            <tr>
-                                <th><label for="autobid_statistic">Financement Autolend</label></th>
-                                <td><?= $this->ficelle->formatNumber($this->fPredictAutoBid, 0) ?> %</td>
-                            </tr>
-                        <?php endif; ?>
                     </table>
                 </td>
                 <td class="right-column">

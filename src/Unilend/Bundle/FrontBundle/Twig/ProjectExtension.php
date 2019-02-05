@@ -34,7 +34,6 @@ class ProjectExtension extends \Twig_Extension
     {
         return array(
             new \Twig_SimpleFunction('projectFundingPercentage', [$this, 'getFundingPercentage']),
-            new \Twig_SimpleFunction('projectPredictedAutoBidPercentage', [$this, 'getPredictedAutoBidFundingPercentage']),
             new \Twig_SimpleFunction('projectAverageInterestRate', [$this, 'getAverageInterestRate']),
             new \Twig_SimpleFunction('projectEnded', [$this, 'getProjectEnded']),
             new \Twig_SimpleFunction('projectRepaymentScheduleAmount', [$this, 'getRepaymentScheduleAmount']),
@@ -57,21 +56,6 @@ class ProjectExtension extends \Twig_Extension
         }
 
         return min(round(($totalBidAmount / $project->getAmount()) * 100, 1), 100);
-    }
-
-    /**
-     * @param Projects $project
-     *
-     * @return float
-     */
-    public function getPredictedAutoBidFundingPercentage(Projects $project): float
-    {
-        $predictAmountAutoBid = 0;
-        if (false === empty($project->getRisk()) && false === empty($project->getPeriod())) {
-            $predictAmountAutoBid = $this->autoBidSettingsManager->predictAmount($project->getRisk(), $project->getPeriod());
-        }
-
-        return round(($predictAmountAutoBid / $project->getAmount()) * 100, 1);
     }
 
     /**
