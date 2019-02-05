@@ -25,7 +25,7 @@ class zonesController extends bootstrap
         /** @var \zones $zoneEntity */
         $zoneEntity = $this->loadData('zones');
 
-        $this->users = $userEntity->select('id_user NOT IN (-1, -2) AND status = ' . Users::STATUS_ONLINE, 'name ASC');
+        $this->users = $userEntity->select('id_user NOT IN (-1, -2, -3) AND status = ' . Users::STATUS_ONLINE, 'name ASC');
         $this->zones = $zoneEntity->select('', 'name ASC');
     }
 }
