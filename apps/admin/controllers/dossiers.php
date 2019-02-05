@@ -221,21 +221,6 @@ class dossiersController extends bootstrap
             }
             $this->isSirenEditable = $this->canEditSiren();
 
-            if (
-                $this->projects->status <= ProjectsStatus::COMMERCIAL_REVIEW
-                && empty($this->projects->id_commercial)
-                && empty($this->companies->phone)
-                && 1 === preg_match('/^[0-9]{9}$/', $this->companies->siren)
-                && null === $projectStatusHistoryRejectionReason
-            ) {
-                /** @var \Unilend\Bundle\WSClientBundle\Entity\Altares\EstablishmentIdentity $establishmentIdentity */
-                $establishmentIdentity = $this->get('unilend.service.ws_client.altares_manager')->getEstablishmentIdentity($this->companies->siren);
-
-                if ($establishmentIdentity instanceof EstablishmentIdentityDetail && false === empty($establishmentIdentity->getPhoneNumber())) {
-                    $this->companies->phone = $establishmentIdentity->getPhoneNumber();
-                    $this->companies->update();
-                }
-            }
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectStatusManager $projectStatusManager */
             $projectStatusManager   = $this->get('unilend.service.project_status_manager');
             $this->statusReasonText = $projectStatusManager->getStatusReasonByProject($this->projectEntity);
@@ -786,9 +771,6 @@ class dossiersController extends bootstrap
             });
 
             if (false === empty($this->projects->risk) && false === empty($this->projects->period) && $this->projects->status >= ProjectsStatus::PREP_FUNDING) {
-                $fPredictAmountAutoBid = $this->get('unilend.service.autobid_settings_manager')->predictAmount($this->projects->risk, $this->projects->period);
-                $this->fPredictAutoBid = round(($fPredictAmountAutoBid / $this->projects->amount) * 100, 1);
-
                 if (false === empty($this->projects->id_rate)) {
                     /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BidManager $bidManager */
                     $bidManager     = $this->get('unilend.service.bid_manager');
