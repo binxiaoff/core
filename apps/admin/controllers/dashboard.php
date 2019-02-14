@@ -7,12 +7,12 @@ use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessageProvider;
 class dashboardController extends bootstrap
 {
     const SALES_MY_PROJECTS_COLLAPSED_STATUS = [
-        ProjectsStatus::EN_FUNDING,
-        ProjectsStatus::SUSPENSIVE_CONDITIONS,
-        ProjectsStatus::ANALYSIS_REVIEW,
-        ProjectsStatus::PENDING_ANALYSIS,
-        ProjectsStatus::POSTPONED,
-        ProjectsStatus::INCOMPLETE_REQUEST
+        ProjectsStatus::STATUS_ONLINE,
+        ProjectsStatus::STATUS_REQUEST,
+        ProjectsStatus::STATUS_REQUEST,
+        ProjectsStatus::STATUS_REQUEST,
+        ProjectsStatus::STATUS_REVIEW,
+        ProjectsStatus::STATUS_REQUEST
     ];
 
     public function initialize()
@@ -276,10 +276,10 @@ class dashboardController extends bootstrap
 
         foreach ($projectRepository->findImpossibleEvaluationProjects() as $project) {
             if (null === $projectRequestManager->checkProjectRisk($project, $this->userEntity->getIdUser())) {
-                $status = ProjectsStatus::INCOMPLETE_REQUEST;
+                $status = ProjectsStatus::STATUS_REQUEST;
 
                 if ($project->getIdCompany() && $project->getIdCompany()->getIdClientOwner() && false === empty($project->getIdCompany()->getIdClientOwner()->getTelephone())) {
-                    $status = ProjectsStatus::COMPLETE_REQUEST;
+                    $status = ProjectsStatus::STATUS_READY;
                 }
 
                 try {
@@ -298,7 +298,7 @@ class dashboardController extends bootstrap
                 $projectRequestManager->assignEligiblePartnerProduct($project, $this->userEntity->getIdUser(), true);
             }
 
-            if ($project->getStatus() === ProjectsStatus::NOT_ELIGIBLE) {
+            if ($project->getStatus() === ProjectsStatus::STATUS_CANCELLED) {
                 $this->sendProjectRejectionEmail($project);
             }
         }
@@ -346,7 +346,7 @@ class dashboardController extends bootstrap
 
         try {
             // nombre de projets en cours de traitement commercial
-            $projectsInSalesTreatmentStatusCount = count($projectRepository->findBy(['status' => ProjectsStatus::COMMERCIAL_REVIEW]));
+            $projectsInSalesTreatmentStatusCount = count($projectRepository->findBy(['status' => ProjectsStatus::STATUS_REQUEST]));
 
             // shared variables
             $today      = new DateTime();
@@ -367,17 +367,17 @@ class dashboardController extends bootstrap
             // projets par canal d’arrivée
             $thirteenMonthsAgo  = new DateTime('first day of 12 months ago');
             $thirteenMonths     = $this->getRollingMonths($thirteenMonthsAgo, $today);
-            $statSentToAnalysis = $this->getProjectCountInStatus(ProjectsStatus::PENDING_ANALYSIS, $thirteenMonthsAgo, $today);
-            $statRepayment      = $this->getProjectCountInStatus(ProjectsStatus::REMBOURSEMENT, $thirteenMonthsAgo, $today);
+            $statSentToAnalysis = $this->getProjectCountInStatus(ProjectsStatus::STATUS_REQUEST, $thirteenMonthsAgo, $today);
+            $statRepayment      = $this->getProjectCountInStatus(ProjectsStatus::STATUS_REPAYMENT, $thirteenMonthsAgo, $today);
 
             // projets en cours
             $countableStatus        = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatus')->findBy([
                 'status' => [
-                    ProjectsStatus::COMMERCIAL_REVIEW,
-                    ProjectsStatus::ANALYSIS_REVIEW,
-                    ProjectsStatus::PREP_FUNDING,
-                    ProjectsStatus::EN_FUNDING,
-                    ProjectsStatus::FUNDE
+                    ProjectsStatus::STATUS_REQUEST,
+                    ProjectsStatus::STATUS_REQUEST,
+                    ProjectsStatus::STATUS_REVIEW,
+                    ProjectsStatus::STATUS_ONLINE,
+                    ProjectsStatus::STATUS_FUNDED
                 ]
             ], ['status' => 'ASC']);
             $statusAllCount         = $this->countByStatus($countableStatus);
@@ -394,8 +394,8 @@ class dashboardController extends bootstrap
             $twentyFourMonthsAgo             = new DateTime('first day of 23 months ago');
             $twelveMonths                    = $this->getRollingMonths($twelveMonthsAgo, $today);
             $twelveMonthsLastYear            = $this->getRollingMonths($twentyFourMonthsAgo, $oneYearAgo);
-            $releasedProjectsThisRollingYear = $projectRepository->getStatisticsByStatusByMonth(ProjectsStatus::REMBOURSEMENT, false, $twelveMonthsAgo, $today);
-            $releasedProjectsLastRollingYear = $projectRepository->getStatisticsByStatusByMonth(ProjectsStatus::REMBOURSEMENT, false, $twentyFourMonthsAgo, $oneYearAgo);
+            $releasedProjectsThisRollingYear = $projectRepository->getStatisticsByStatusByMonth(ProjectsStatus::STATUS_REPAYMENT, false, $twelveMonthsAgo, $today);
+            $releasedProjectsLastRollingYear = $projectRepository->getStatisticsByStatusByMonth(ProjectsStatus::STATUS_REPAYMENT, false, $twentyFourMonthsAgo, $oneYearAgo);
 
             // temps de traitement par statut
             $threeMonthsAgo        = new DateTime('3 months ago');
@@ -410,88 +410,88 @@ class dashboardController extends bootstrap
             ];
 
             $statusColor = [
-                ProjectsStatus::FUNDE             => '#94EB86',
-                ProjectsStatus::EN_FUNDING        => '#26ABE6',
-                ProjectsStatus::PREP_FUNDING      => '#163380',
-                ProjectsStatus::ANALYSIS_REVIEW   => '#F15C5E',
-                ProjectsStatus::PENDING_ANALYSIS  => '#F5A263',
-                ProjectsStatus::COMMERCIAL_REVIEW => '#8088E6',
-                ProjectsStatus::COMPLETE_REQUEST  => '#555555',
+                ProjectsStatus::STATUS_FUNDED             => '#94EB86',
+                ProjectsStatus::STATUS_ONLINE        => '#26ABE6',
+                ProjectsStatus::STATUS_REVIEW      => '#163380',
+                ProjectsStatus::STATUS_REQUEST   => '#F15C5E',
+                ProjectsStatus::STATUS_REQUEST  => '#F5A263',
+                ProjectsStatus::STATUS_REQUEST => '#8088E6',
+                ProjectsStatus::STATUS_REVIEW  => '#555555',
             ];
 
             $delays = [
                 [
                     'label' => 'Fundé',
-                    'color' => $statusColor[ProjectsStatus::FUNDE],
-                    'data'  => $this->getDelayByStatus(ProjectsStatus::FUNDE, $borrowingMotives, $threeMonthsAgo, $today)
+                    'color' => $statusColor[ProjectsStatus::STATUS_FUNDED],
+                    'data'  => $this->getDelayByStatus(ProjectsStatus::STATUS_FUNDED, $borrowingMotives, $threeMonthsAgo, $today)
                 ],
                 [
                     'label' => 'En funding',
-                    'color' => $statusColor[ProjectsStatus::EN_FUNDING],
-                    'data'  => $this->getDelayByStatus(ProjectsStatus::EN_FUNDING, $borrowingMotives, $threeMonthsAgo, $today)
+                    'color' => $statusColor[ProjectsStatus::STATUS_ONLINE],
+                    'data'  => $this->getDelayByStatus(ProjectsStatus::STATUS_ONLINE, $borrowingMotives, $threeMonthsAgo, $today)
                 ],
                 [
                     'label' => 'Prép funding',
-                    'color' => $statusColor[ProjectsStatus::PREP_FUNDING],
-                    'data'  => $this->getDelayByStatus(ProjectsStatus::PREP_FUNDING, $borrowingMotives, $threeMonthsAgo, $today)
+                    'color' => $statusColor[ProjectsStatus::STATUS_REVIEW],
+                    'data'  => $this->getDelayByStatus(ProjectsStatus::STATUS_REVIEW, $borrowingMotives, $threeMonthsAgo, $today)
                 ],
                 [
                     'label' => 'Reveue analyste',
-                    'color' => $statusColor[ProjectsStatus::ANALYSIS_REVIEW],
-                    'data'  => $this->getDelayByStatus(ProjectsStatus::ANALYSIS_REVIEW, $borrowingMotives, $threeMonthsAgo, $today)
+                    'color' => $statusColor[ProjectsStatus::STATUS_REQUEST],
+                    'data'  => $this->getDelayByStatus(ProjectsStatus::STATUS_REQUEST, $borrowingMotives, $threeMonthsAgo, $today)
                 ],
                 [
                     'label' => 'Attent analyste',
-                    'color' => $statusColor[ProjectsStatus::PENDING_ANALYSIS],
-                    'data'  => $this->getDelayByStatus(ProjectsStatus::PENDING_ANALYSIS, $borrowingMotives, $threeMonthsAgo, $today)
+                    'color' => $statusColor[ProjectsStatus::STATUS_REQUEST],
+                    'data'  => $this->getDelayByStatus(ProjectsStatus::STATUS_REQUEST, $borrowingMotives, $threeMonthsAgo, $today)
                 ],
                 [
                     'label' => 'Traitement commercial',
-                    'color' => $statusColor[ProjectsStatus::COMMERCIAL_REVIEW],
-                    'data'  => $this->getDelayByStatus(ProjectsStatus::COMMERCIAL_REVIEW, $borrowingMotives, $threeMonthsAgo, $today)
+                    'color' => $statusColor[ProjectsStatus::STATUS_REQUEST],
+                    'data'  => $this->getDelayByStatus(ProjectsStatus::STATUS_REQUEST, $borrowingMotives, $threeMonthsAgo, $today)
                 ],
                 [
                     'label' => 'Demande complète',
-                    'color' => $statusColor[ProjectsStatus::COMPLETE_REQUEST],
-                    'data'  => $this->getDelayByStatus(ProjectsStatus::COMPLETE_REQUEST, $borrowingMotives, $threeMonthsAgo, $today)
+                    'color' => $statusColor[ProjectsStatus::STATUS_REVIEW],
+                    'data'  => $this->getDelayByStatus(ProjectsStatus::STATUS_REVIEW, $borrowingMotives, $threeMonthsAgo, $today)
                 ]
             ];
 
             $delaysOfAYearAgo = [
                 [
                     'label' => 'Fundé (N-1)',
-                    'color' => $statusColor[ProjectsStatus::FUNDE],
-                    'data'  => $this->getDelayByStatus(ProjectsStatus::FUNDE, $borrowingMotives, $oneYearThreeMonthsAgo, $oneYearAgo)
+                    'color' => $statusColor[ProjectsStatus::STATUS_FUNDED],
+                    'data'  => $this->getDelayByStatus(ProjectsStatus::STATUS_FUNDED, $borrowingMotives, $oneYearThreeMonthsAgo, $oneYearAgo)
                 ],
                 [
                     'label' => 'En funding (N-1)',
-                    'color' => $statusColor[ProjectsStatus::EN_FUNDING],
-                    'data'  => $this->getDelayByStatus(ProjectsStatus::EN_FUNDING, $borrowingMotives, $oneYearThreeMonthsAgo, $oneYearAgo)
+                    'color' => $statusColor[ProjectsStatus::STATUS_ONLINE],
+                    'data'  => $this->getDelayByStatus(ProjectsStatus::STATUS_ONLINE, $borrowingMotives, $oneYearThreeMonthsAgo, $oneYearAgo)
                 ],
                 [
                     'label' => 'Prép funding (N-1)',
-                    'color' => $statusColor[ProjectsStatus::PREP_FUNDING],
-                    'data'  => $this->getDelayByStatus(ProjectsStatus::PREP_FUNDING, $borrowingMotives, $oneYearThreeMonthsAgo, $oneYearAgo)
+                    'color' => $statusColor[ProjectsStatus::STATUS_REVIEW],
+                    'data'  => $this->getDelayByStatus(ProjectsStatus::STATUS_REVIEW, $borrowingMotives, $oneYearThreeMonthsAgo, $oneYearAgo)
                 ],
                 [
                     'label' => 'Reveue analyste (N-1)',
-                    'color' => $statusColor[ProjectsStatus::ANALYSIS_REVIEW],
-                    'data'  => $this->getDelayByStatus(ProjectsStatus::ANALYSIS_REVIEW, $borrowingMotives, $oneYearThreeMonthsAgo, $oneYearAgo)
+                    'color' => $statusColor[ProjectsStatus::STATUS_REQUEST],
+                    'data'  => $this->getDelayByStatus(ProjectsStatus::STATUS_REQUEST, $borrowingMotives, $oneYearThreeMonthsAgo, $oneYearAgo)
                 ],
                 [
                     'label' => 'Attent analyste (N-1)',
-                    'color' => $statusColor[ProjectsStatus::PENDING_ANALYSIS],
-                    'data'  => $this->getDelayByStatus(ProjectsStatus::PENDING_ANALYSIS, $borrowingMotives, $oneYearThreeMonthsAgo, $oneYearAgo)
+                    'color' => $statusColor[ProjectsStatus::STATUS_REQUEST],
+                    'data'  => $this->getDelayByStatus(ProjectsStatus::STATUS_REQUEST, $borrowingMotives, $oneYearThreeMonthsAgo, $oneYearAgo)
                 ],
                 [
                     'label' => 'Traitement commercial (N-1)',
-                    'color' => $statusColor[ProjectsStatus::COMMERCIAL_REVIEW],
-                    'data'  => $this->getDelayByStatus(ProjectsStatus::COMMERCIAL_REVIEW, $borrowingMotives, $oneYearThreeMonthsAgo, $oneYearAgo)
+                    'color' => $statusColor[ProjectsStatus::STATUS_REQUEST],
+                    'data'  => $this->getDelayByStatus(ProjectsStatus::STATUS_REQUEST, $borrowingMotives, $oneYearThreeMonthsAgo, $oneYearAgo)
                 ],
                 [
                     'label' => 'Demande complète (N-1)',
-                    'color' => $statusColor[ProjectsStatus::COMPLETE_REQUEST],
-                    'data'  => $this->getDelayByStatus(ProjectsStatus::COMPLETE_REQUEST, $borrowingMotives, $oneYearThreeMonthsAgo, $oneYearAgo)
+                    'color' => $statusColor[ProjectsStatus::STATUS_REVIEW],
+                    'data'  => $this->getDelayByStatus(ProjectsStatus::STATUS_REVIEW, $borrowingMotives, $oneYearThreeMonthsAgo, $oneYearAgo)
                 ]
             ];
 
@@ -551,14 +551,14 @@ class dashboardController extends bootstrap
 
         $projectRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
 
-        $releasedProject       = $projectRepository->findProjectsHavingHadStatusBetweenDates(ProjectsStatus::REMBOURSEMENT, $from, $end);
+        $releasedProject       = $projectRepository->findProjectsHavingHadStatusBetweenDates(ProjectsStatus::STATUS_REPAYMENT, $from, $end);
         $releasedProjectCount  = count($releasedProject);
         $releasedProjectAmount = 0;
         foreach ($releasedProject as $project) {
             $releasedProjectAmount += $project['amount'];
         }
 
-        $releasedProjectToCompare       = $projectRepository->findProjectsHavingHadStatusBetweenDates(ProjectsStatus::REMBOURSEMENT, $compareWithFrom, $compareWithEnd);
+        $releasedProjectToCompare       = $projectRepository->findProjectsHavingHadStatusBetweenDates(ProjectsStatus::STATUS_REPAYMENT, $compareWithFrom, $compareWithEnd);
         $releasedProjectToCompareCount  = count($releasedProjectToCompare);
         $releasedProjectToCompareAmount = 0;
         foreach ($releasedProjectToCompare as $project) {

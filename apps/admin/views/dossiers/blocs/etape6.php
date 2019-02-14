@@ -1,10 +1,11 @@
+<?php use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus; ?>
 <?php if (
-    $this->projects->status >= \projects_status::ANALYSIS_REVIEW
-    || $this->projects_status_history->projectHasHadStatus($this->projects->id_project, \projects_status::ANALYSIS_REVIEW)
+    $this->projects->status >= ProjectsStatus::STATUS_REVIEW
+    || $this->projects_status_history->projectHasHadStatus($this->projects->id_project, ProjectsStatus::STATUS_REVIEW)
 ) : ?>
     <?php
         $isRiskUser = $this->get('unilend.service.back_office_user_manager')->isUserGroupRisk($this->userEntity);
-        $isEditable = $this->projects->status == \projects_status::ANALYSIS_REVIEW && $isRiskUser;
+        $isEditable = $this->projects->status == ProjectsStatus::STATUS_REVIEW && $isRiskUser;
         $moyenne    = '';
 
         if ($this->projects_notes->id_project_notes) {

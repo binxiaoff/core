@@ -127,7 +127,7 @@ class ProjectRepaymentTaskManager
 
         if (
             Projects::AUTO_REPAYMENT_ON === $project->getRembAuto()
-            && $project->getStatus() < ProjectsStatus::PROBLEME
+            && $project->getStatus() < ProjectsStatus::STATUS_LOSS
             && 0 === bccomp($totalCapital, $capitalToRepay, 2)
             && 0 === bccomp($totalInterest, $interestToRepay, 2)
             && 0 === bccomp($monthlyCommission, $commissionToPay, 2)

@@ -74,17 +74,17 @@ class QueriesMonthlyReportingSfpmeiCommand extends ContainerAwareCommand
         $lenderWithdrawIndicators             = $operationRepository->getLenderWithdrawIndicatorsBetweenDates($startDate, $endDate);
 
         $fundingIndicators                    = [
-            'totalAmount'     => $projectRepository->getIndicatorBetweenDates('SUM(p.amount) AS amount', $startDate, $endDate, ProjectsStatus::REMBOURSEMENT)['amount'],
-            'number'          => $projectRepository->getIndicatorBetweenDates('COUNT(p.id_project) AS number', $startDate, $endDate, ProjectsStatus::REMBOURSEMENT)['number'],
-            'avgPeriod'       => $projectRepository->getIndicatorBetweenDates('AVG(p.period) AS avgPeriod', $startDate, $endDate, ProjectsStatus::REMBOURSEMENT)['avgPeriod'],
-            'avgInterestRate' => $projectRepository->getIndicatorBetweenDates('AVG(p.interest_rate) AS avgInterestRate', $startDate, $endDate, ProjectsStatus::REMBOURSEMENT)['avgInterestRate']
+            'totalAmount'     => $projectRepository->getIndicatorBetweenDates('SUM(p.amount) AS amount', $startDate, $endDate, ProjectsStatus::STATUS_REPAYMENT)['amount'],
+            'number'          => $projectRepository->getIndicatorBetweenDates('COUNT(p.id_project) AS number', $startDate, $endDate, ProjectsStatus::STATUS_REPAYMENT)['number'],
+            'avgPeriod'       => $projectRepository->getIndicatorBetweenDates('AVG(p.period) AS avgPeriod', $startDate, $endDate, ProjectsStatus::STATUS_REPAYMENT)['avgPeriod'],
+            'avgInterestRate' => $projectRepository->getIndicatorBetweenDates('AVG(p.interest_rate) AS avgInterestRate', $startDate, $endDate, ProjectsStatus::STATUS_REPAYMENT)['avgInterestRate']
         ];
         $projectsInRepayment                  = $projectRepository->findProjectsInRepaymentAtDate($endDate);
         $remainingDueCapitalRunningRepayments = $operationRepository->getRemainingDueCapitalForProjects($endDate, array_column($projectsInRepayment, 'id_project'));
         $repaymentsInMonth                    = $repaymentRepository->findRepaidRepaymentsBetweenDates($startDate, $endDate);
         $sumRepaymentsInMonth                 = $repaymentRepository->getSumRepaidRepaymentsBetweenDates($startDate, $endDate);
-        $repaidProjects                       = $projectRepository->findProjectsHavingHadStatusBetweenDates(ProjectsStatus::REMBOURSE, $startDate, $endDate);
-        $earlyRepaidProjects                  = $projectRepository->findProjectsHavingHadStatusBetweenDates(ProjectsStatus::REMBOURSEMENT_ANTICIPE, $startDate, $endDate);
+        $repaidProjects                       = $projectRepository->findProjectsHavingHadStatusBetweenDates(ProjectsStatus::STATUS_REPAID, $startDate, $endDate);
+        $earlyRepaidProjects                  = $projectRepository->findProjectsHavingHadStatusBetweenDates(ProjectsStatus::STATUS_REPAID, $startDate, $endDate);
         $rejectWireTransfersIn                = $wireTransferInRepository->getRejectedDirectDebitIndicatorsBetweenDates($startDate, $endDate);
         $regularizationWireTransfers          = $wireTransferInRepository->getBorrowerProvisionRegularizationIndicatorsBetweenDates($startDate, $endDate);
         $lateRepayments                       = $entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers')->getLateRepaymentIndicators($endDate);
@@ -93,7 +93,7 @@ class QueriesMonthlyReportingSfpmeiCommand extends ContainerAwareCommand
         $projectsInCollectiveProceeding       = $projectRepository->findProjectsHavingHadCompanyStatusInCollectiveProceeding(new \DateTime('January 2013'), $endDate);
         $companiesInCollectiveProceeding      = $companiesRepository->getCountCompaniesInCollectiveProceedingBetweenDates($startDate, $endDate);
         $newlyRiskAnalysisProjects            = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatusHistory')->getCountProjectsInRiskReviewBetweenDates($startDate, $endDate);
-        $newlyPresentedProjects               = $projectRepository->getIndicatorBetweenDates('COUNT(p.id_project) AS newProjects', $startDate, $endDate, ProjectsStatus::EN_FUNDING)['newProjects'];
+        $newlyPresentedProjects               = $projectRepository->getIndicatorBetweenDates('COUNT(p.id_project) AS newProjects', $startDate, $endDate, ProjectsStatus::STATUS_ONLINE)['newProjects'];
         $totalNewLenders                      = $clientStatusHistoryRepository->countLendersValidatedBetweenDatesByType($startDate, $endDate, [
             Clients::TYPE_PERSON,
             Clients::TYPE_PERSON_FOREIGNER,

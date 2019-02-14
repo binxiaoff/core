@@ -122,8 +122,8 @@ class EmailBorrowerCompletenessReminderCommand extends ContainerAwareCommand
                                     'amount'                     => $ficelle->formatNumber($project->getAmount(), 0)
                                 ];
 
-                                if (in_array($iStatus, [ProjectsStatus::INCOMPLETE_REQUEST, ProjectsStatus::COMPLETE_REQUEST])) {
-                                    $oCompletenessDate        = $projectStatusHistory->getDateProjectStatus($project->getIdProject(), ProjectsStatus::INCOMPLETE_REQUEST, true);
+                                if (in_array($iStatus, [ProjectsStatus::STATUS_REQUEST, ProjectsStatus::STATUS_REVIEW])) {
+                                    $oCompletenessDate        = $projectStatusHistory->getDateProjectStatus($project->getIdProject(), ProjectsStatus::STATUS_REQUEST, true);
                                     $keywords['date_demande'] = strftime('%d %B %Y', $oCompletenessDate->getTimestamp());
                                 }
 

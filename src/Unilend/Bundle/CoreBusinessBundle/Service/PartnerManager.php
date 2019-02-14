@@ -25,7 +25,7 @@ class PartnerManager
     {
         return $this->entityManager
             ->getRepository('UnilendCoreBusinessBundle:Partner')
-            ->findOneBy(['label' => Partner::PARTNER_CALS_LABEL]);
+            ->findOneBy(['label' => Partner::PARTNER_CACIB_LABEL]);
     }
 
     /**

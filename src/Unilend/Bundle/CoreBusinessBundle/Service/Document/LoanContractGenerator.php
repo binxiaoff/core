@@ -193,7 +193,7 @@ class LoanContractGenerator implements DocumentGeneratorInterface
 
         $repaymentStatus = $this->entityManager
             ->getRepository('UnilendCoreBusinessBundle:ProjectsStatus')
-            ->findOneBy(['status' => ProjectsStatus::REMBOURSEMENT]);
+            ->findOneBy(['status' => ProjectsStatus::STATUS_REPAYMENT]);
 
         $repaymentStatusHistory = $this->entityManager
             ->getRepository('UnilendCoreBusinessBundle:ProjectsStatusHistory')

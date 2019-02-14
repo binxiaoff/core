@@ -39,7 +39,7 @@ class ProjectsFundingCommand extends ContainerAwareCommand
         /** @var \loans $loan */
         $loan = $entityManagerSimulator->getRepository('loans');
 
-        $projects           = $projectRepository->findBy(['status' => ProjectsStatus::EN_FUNDING]);
+        $projects           = $projectRepository->findBy(['status' => ProjectsStatus::STATUS_ONLINE]);
         $hasProjectFinished = false;
 
         foreach ($projects as $project) {

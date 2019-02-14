@@ -90,7 +90,7 @@ class RiskDataMonitoringRepository extends EntityRepository
             WHERE rdm.end IS NULL
               AND rdmt.id_project_eligibility_rule IS NOT NULL
               AND rdma.value != 1
-              AND ps.status > ' . ProjectsStatus::COMPLETE_REQUEST . '
+              AND ps.status > ' . ProjectsStatus::STATUS_REVIEW . '
             GROUP BY p.status, p.id_company, p.id_project
             ORDER BY rdma.added DESC, p.status DESC, p.id_project DESC';
 

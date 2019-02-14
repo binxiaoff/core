@@ -125,7 +125,7 @@ class bank_accountController extends bootstrap
         foreach ($companies as $company) {
             $projects = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->findBy(['idCompany' => $company]);
             foreach ($projects as $project) {
-                if (in_array($project->getStatus(), [ProjectsStatus::REMBOURSE, ProjectsStatus::REMBOURSEMENT_ANTICIPE])) {
+                if (in_array($project->getStatus(), [ProjectsStatus::STATUS_REPAID, ProjectsStatus::STATUS_REPAID])) {
                     continue;
                 }
                 $mandates = $project->getMandates();

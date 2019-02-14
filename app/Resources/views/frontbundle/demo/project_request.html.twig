@@ -1,0 +1,111 @@
+{% extends 'demo/_layout.html.twig' %}
+
+{% set page = {
+    id: 'demo-project-request',
+    classNames: ''
+} %}
+
+{% block dashboardContent %}
+    <section class="dashboard-tabs tabs">
+        <div class="dashboard-tabs-content tab-content">
+            <article class="dashboard-tab-pane">
+                <div class="panel">
+                    <header class="panel-header">
+                        <h3>{% trans %} demo-project-request_title {% endtrans %}</h3>
+                    </header>
+                    <form action="{{ path('demo_project_request_form') }}" method="post" class="simulator">
+                        <fieldset class="simulator-pane-inner"
+                                  data-formvalidation
+                                  data-formvalidation-notificationselem=".form-validation-notifications">
+                            <div class="form-validation-notifications"></div>
+                            <div class="row">
+                                <div class="form-field">
+                                    <label for="simulator-input-title">
+                                        {% trans %} demo-project-request_simulator-title-field-label {% endtrans %}
+                                        <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span>
+                                    </label>
+                                    <input id="simulator-input-title" type="text" step="any" name="simulator[title]" class="input-field"
+                                           data-formvalidation-input
+                                           data-formvalidation-type="string"
+                                           data-formvalidation-required="true">
+                                </div>
+                            </div>
+                            <div class="row row-multi-col-computer">
+                                <div class="form-field col-lg-6 col-md-6">
+                                    <label for="simulator-input-amount">
+                                        {% trans %} demo-project-request_simulator-amount-field-label {% endtrans %}
+                                        <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span>
+                                    </label>
+                                    <input id="simulator-input-amount" type="text" step="any" name="simulator[amount]" class="input-field"
+                                           data-formvalidation-input
+                                           data-formvalidation-type="integer"
+                                           data-formvalidation-required="true">
+                                </div>
+                                <div class="form-field col-lg-6 col-md-6">
+                                    <label for="simulator-input-product">
+                                        {% trans %} demo-project-request_simulator-product-field-label {% endtrans %}
+                                        <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span>
+                                    </label>
+                                    <select id="simulator-input-amount" name="simulator[product]" class="input-field">
+                                        <option value=""></option>
+                                        {% for product in products %}
+                                            <option value="{{ product.idProduct.idProduct }}">{{ product.idProduct.label }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="form-field">
+                                    <label>
+                                        {% trans %} demo-project-request_simulator-duration-field-label {% endtrans %}
+                                        <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span>
+                                    </label>
+                                    <div class="custom-input-duration simulator-input-duration-wrap"
+                                         data-formvalidation-input
+                                         data-formvalidation-required="true"
+                                         data-formvalidation-type="duration">
+                                        {% for period in loanPeriods %}
+                                            <label>
+                                                <input type="radio" id="simulator-input-duration-{{ period }}" name="simulator[duration]" value="{{ period }}">
+                                                <span class="label">{{ period }}</span>
+                                            </label>
+                                        {% endfor %}
+                                    </div><!-- /.custom-input-duration -->
+                                </div><!-- /.form-field -->
+                            </div>
+                            <div class="row">
+                                <div class="form-field">
+                                    <label for="simulator-input-description">
+                                        {% trans %} demo-project-request_simulator-description-label {% endtrans %}
+                                    </label>
+                                    {% spaceless %}
+                                        <textarea id="simulator-input-description" name="simulator[description]" class="input-field" rows="5"
+                                             data-formvalidation-input
+                                             data-formvalidation-required="true"
+                                             data-formvalidation-type="string">
+                                        </textarea>
+                                    {% endspaceless %}
+                                </div>
+                            </div>
+                        </fieldset><!-- /.simulator-pane-inner -->
+                        <footer class="simulator-pane-inner actions bg-p1 c-bg5 text-align-right">
+                            <button type="submit" class="btn-continue btn-alternate" data-spinnerbutton>
+                                {% trans %} demo-project-request_simulator-footer-continue-button {% endtrans %}
+                            </button>
+                        </footer><!-- /.simulator-pane-inner -->
+                    </form><!-- /.simulator -->
+                </div>
+            </article><!-- /.dashboard-tab-pane -->
+        </div><!-- /.dashboard-tabs-content -->
+    </section><!-- /.dashboard-tabs -->
+{% endblock %}
+
+{% block pageHeadScripts %}
+    <script type="text/javascript">
+      var borrowerEsim = {
+        idMotiveAcquisitionMerger: {{ constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\BorrowingMotive::ID_MOTIVE_ACQUISITION_MERGER') }},
+        idMotiveFranchiserCreation: {{ constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\BorrowingMotive::ID_MOTIVE_FRANCHISER_CREATION') }},
+        idMotiveShareBuyBack: {{ constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\BorrowingMotive::ID_MOTIVE_SHARE_BUYBACK') }}
+      }
+    </script>
+{% endblock %}

@@ -133,7 +133,6 @@ class ProjectsController extends Controller
     private function getProjectsList(int $page, string $sortType, string $sortDirection, ?Clients $client): array
     {
         $entityManager         = $this->get('doctrine.orm.entity_manager');
-        $translator            = $this->get('translator');
         $projectDisplayManager = $this->get('unilend.frontbundle.service.project_display_manager');
         $projectRepository     = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
 
@@ -153,15 +152,9 @@ class ProjectsController extends Controller
 
         $template['projects'] = $projectDisplayManager->getProjectsList([], $sort, $start, $limit, $client);
 
-        array_walk($template['projects'], function(&$project) use ($translator, $projectDisplayManager, $client, $projectRepository) {
-            if (ProjectDisplayManager::VISIBILITY_FULL !== $projectDisplayManager->getVisibility($projectRepository->find($project['projectId']), $client)) {
-                $project['title'] = $translator->trans('company-sector_sector-' . $project['company']['sectorId']);
-            }
-        });
-
         $productRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Product');
         $products          = $productRepository->findAvailableProductsByClient($client);
-        $projects          = $projectRepository->findBy(['status' => ProjectsStatus::EN_FUNDING, 'display' => Projects::DISPLAY_YES, 'idProduct' => $products]);
+        $projects          = $projectRepository->findBy(['status' => ProjectsStatus::STATUS_ONLINE, 'idProduct' => $products]);
 
         $template['projectsInFunding'] = count($projects);
         $template['pagination']        = $this->pagination($page, $limit, $client);
@@ -297,7 +290,7 @@ class ProjectsController extends Controller
                 'bids' => $lenderAccountDisplayManager->getBidsForProject($project->id_project, $client)
             ];
 
-            if ($project->status >= ProjectsStatus::FUNDE) {
+            if ($project->status >= ProjectsStatus::STATUS_FUNDED) {
                 $template['project']['lender']['loans'] = $lenderAccountDisplayManager->getLoansForProject($project->id_project, $client);
             }
 
@@ -323,7 +316,7 @@ class ProjectsController extends Controller
             if (
                 in_array($client->getType(), [Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER])
                 && empty($template['project']['lender']['bids']['count'])
-                && ProjectsStatus::BID_TERMINATED <= $project->status
+                && ProjectsStatus::STATUS_ONLINE <= $project->status
             ) {
                 $template['suggestAutolend'] = true;
             }
@@ -368,7 +361,7 @@ class ProjectsController extends Controller
 
         $template['conditions'] = [
             'visibility'           => $visibility,
-            'bids'                 => isset($template['project']['bids']) && $template['project']['status'] == ProjectsStatus::EN_FUNDING,
+            'bids'                 => isset($template['project']['bids']) && $template['project']['status'] == ProjectsStatus::STATUS_ONLINE,
             'myBids'               => isset($template['project']['lender']) && $template['project']['lender']['bids']['count'] > 0,
             'finance'              => ProjectDisplayManager::VISIBILITY_FULL === $visibility,
             'canBid'               => ProjectDisplayManager::VISIBILITY_FULL === $visibility
@@ -380,7 +373,7 @@ class ProjectsController extends Controller
             'displayCipDisclaimer' => $displayCipDisclaimer
         ];
 
-        $this->setProjectDetailsSeoData($template['project']['company']['sectorId'], $template['project']['company']['city'], $template['project']['amount']);
+//        $this->setProjectDetailsSeoData($template['project']['company']['sectorId'], $template['project']['company']['city'], $template['project']['amount']);
 
         return $this->render('projects/detail.html.twig', $template);
     }
@@ -406,7 +399,7 @@ class ProjectsController extends Controller
         $projectEntity         = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($project->id_project);
 
         if (
-            $project->status >= ProjectsStatus::A_FUNDER && $project->status < ProjectsStatus::EN_FUNDING
+            $project->status >= ProjectsStatus::STATUS_REVIEW && $project->status < ProjectsStatus::STATUS_ONLINE
             || ProjectDisplayManager::VISIBILITY_NONE !== $projectDisplayManager->getVisibility($projectEntity, $client)
             || $this->get('security.authorization_checker')->isGranted('IS_AUTHENTICATED_FULLY') && 28002 == $project->id_project
         ) {
@@ -635,8 +628,8 @@ class ProjectsController extends Controller
         /** @var \projects $project */
         $project = $this->get('unilend.service.entity_manager')->getRepository('projects');
 
-        if (false === $project->get($projectId, 'id_project')
-            || $project->display != Projects::DISPLAY_YES
+        if (
+            false === $project->get($projectId, 'id_project')
             || false === $this->get('security.authorization_checker')->isGranted('ROLE_LENDER')
         ) {
             return new RedirectResponse('/');
@@ -698,8 +691,8 @@ class ProjectsController extends Controller
         /** @var \projects $project */
         $project = $this->get('unilend.service.entity_manager')->getRepository('projects');
 
-        if (false === $project->get($projectId, 'id_project')
-            || $project->display != Projects::DISPLAY_YES
+        if (
+            false === $project->get($projectId, 'id_project')
             || false === $this->get('security.authorization_checker')->isGranted('IS_AUTHENTICATED_FULLY')
             || false === $this->get('security.authorization_checker')->isGranted('ROLE_LENDER')
         ) {
@@ -837,7 +830,7 @@ class ProjectsController extends Controller
         if ($project->get($projectId, 'id_project')) {
             $translator = $this->get('translator');
 
-            if ($project->status == ProjectsStatus::EN_FUNDING) {
+            if ($project->status == ProjectsStatus::STATUS_ONLINE) {
                 ob_start();
                 echo "\xEF\xBB\xBF";
                 echo '"N°";"' . $translator->trans('preteur-projets_taux-dinteret') . '";"' . $translator->trans('preteur-projets_montant') . '";"' . $translator->trans('preteur-projets_statuts') . '"' . PHP_EOL;
@@ -1140,7 +1133,7 @@ class ProjectsController extends Controller
         /** @var GeneratorInterface $snappy */
         $snappy = $this->get('knp_snappy.pdf');
 
-        if ($project->status >= ProjectsStatus::EN_FUNDING) {
+        if ($project->status >= ProjectsStatus::STATUS_ONLINE) {
             $outputFile = $this->getParameter('path.user') . 'dirs/' . $filename;
             $snappy->generateFromHtml($html, $outputFile, $options, true);
         }

@@ -92,7 +92,7 @@ class WsMonitoringManager
                 } else {
                     $errorRate = 0;
                 }
-                $projectList = $this->getNonEvaluatedProjectsList($projectsRepository->getProjectsByStatusFromDate(ProjectsStatus::IMPOSSIBLE_AUTO_EVALUATION, $lastStatusDate));
+                $projectList = $this->getNonEvaluatedProjectsList($projectsRepository->getProjectsByStatusFromDate(ProjectsStatus::STATUS_CANCELLED, $lastStatusDate));
                 $projectList = (empty($projectList)) ? '' : ', liste des projets non évalués : ' . $projectList;
                 $this->callHistoryManager->sendMonitoringAlert(
                     $wsResource,

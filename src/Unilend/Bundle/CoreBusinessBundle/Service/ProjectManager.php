@@ -35,7 +35,7 @@ class ProjectManager
     public function getProjectEndDate($project): \DateTime
     {
         if ($project instanceof \projects) {
-            return $project->date_fin !== '0000-00-00 00:00:00' ? new \DateTime($project->date_fin) : new \DateTime($project->date_retrait);
+            return null !== $project->date_fin && $project->date_fin !== '0000-00-00 00:00:00' ? new \DateTime($project->date_fin) : new \DateTime($project->date_retrait);
         }
 
         return $project->getDateFin() ?? $project->getDateRetrait();

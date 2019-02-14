@@ -35,7 +35,7 @@ class LoansRepository extends EntityRepository
 
         $statement = $this->getEntityManager()->getConnection()->executeCacheQuery(
             $query,
-            ['lenderId' => $wallet->getId(), 'loanStatus' => Loans::STATUS_ACCEPTED, 'projectStatus' => ProjectsStatus::REMBOURSEMENT],
+            ['lenderId' => $wallet->getId(), 'loanStatus' => Loans::STATUS_ACCEPTED, 'projectStatus' => ProjectsStatus::STATUS_REPAYMENT],
             ['lenderId' => \PDO::PARAM_INT, 'loanStatus' => \PDO::PARAM_INT, 'projectStatus' => \PDO::PARAM_INT],
             new QueryCacheProfile(CacheKeys::SHORT_TIME, __FUNCTION__)
         );
@@ -185,7 +185,7 @@ class LoansRepository extends EntityRepository
             ->andWhere('l.status = :accepted')
             ->setParameter('accepted', Loans::STATUS_ACCEPTED)
             ->andWhere('p.status >= :repayment')
-            ->setParameter('repayment', ProjectsStatus::REMBOURSEMENT);
+            ->setParameter('repayment', ProjectsStatus::STATUS_REPAYMENT);
 
         return $queryBuilder->getQuery()->getSingleScalarResult();
     }

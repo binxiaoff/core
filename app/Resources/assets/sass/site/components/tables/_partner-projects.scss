@@ -23,18 +23,8 @@
     }
 }
 
-.table-projects-item-borrower,
-.table-projects-item-submitter,
-.details-memo-author {
-    width: 23%;
-}
-
-.ui-user-type-partner-admin {
-    .table-projects-item-borrower,
-    .table-projects-item-submitter,
-    .details-memo-author {
-        width: 18%;
-    }
+.table-actions {
+    min-width: 100px;
 }
 
 .table-projects-details {

@@ -89,7 +89,7 @@ class ProjectEarlyRepaymentManager
             $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur')->earlyPayAllPendingSchedules($projectRepaymentTask->getIdWireTransferIn());
             $this->projectRepaymentNotificationSender->createEarlyRepaymentEmail($projectRepaymentTask->getIdWireTransferIn());
 
-            $this->projectStatusManager->addProjectStatus($idUser, ProjectsStatus::REMBOURSEMENT_ANTICIPE, $project);
+            $this->projectStatusManager->addProjectStatus($idUser, ProjectsStatus::STATUS_REPAID, $project);
 
             $loans = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Loans')->findBy(['idProject' => $project]);
 

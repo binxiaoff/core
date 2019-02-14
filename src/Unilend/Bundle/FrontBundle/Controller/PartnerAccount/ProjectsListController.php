@@ -35,30 +35,20 @@ class ProjectsListController extends Controller
 
         /** @var ProjectsRepository $projectRepository */
         $projectRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
-        $prospects         = $projectRepository->getPartnerProspects($companies, $submitter);
-        $borrowers         = $projectRepository->getPartnerProjects($companies, $submitter);
-        $abandoned         = $projectRepository->getPartnerAbandoned($companies, $submitter);
-        $rejected          = $projectRepository->getPartnerRejected($companies, $submitter);
-
-        $incompleteProjects = [];
-        $completeProjects   = [];
-
-        foreach ($borrowers as $project) {
-            if (ProjectsStatus::INCOMPLETE_REQUEST === $project->getStatus()) {
-                $incompleteProjects[] = $project;
-            } else {
-                $completeProjects[] = $project;
-            }
-        }
-        unset($borrowers);
+        $pending           = $projectRepository->getPartnerProjects($companies, [ProjectsStatus::STATUS_REQUEST], $submitter);
+        $ready             = $projectRepository->getPartnerProjects($companies, [ProjectsStatus::STATUS_REVIEW], $submitter);
+        $online            = $projectRepository->getPartnerProjects($companies, [ProjectsStatus::STATUS_ONLINE], $submitter);
+        $funded            = $projectRepository->getPartnerProjects($companies, [ProjectsStatus::STATUS_FUNDED, ProjectsStatus::STATUS_REPAYMENT, ProjectsStatus::STATUS_REPAID, ProjectsStatus::STATUS_LOSS], $submitter);
+        $cancelled         = $projectRepository->getPartnerProjects($companies, [ProjectsStatus::STATUS_CANCELLED], $submitter);
 
         return $this->render('/partner_account/projects_list.html.twig', [
-            'prospects'          => $this->formatProject($partnerUser, $prospects, false),
-            'incompleteProjects' => $this->formatProject($partnerUser, $incompleteProjects, false),
-            'completeProjects'   => $this->formatProject($partnerUser, $completeProjects, true),
-            'abandoned'          => $this->formatProject($partnerUser, $abandoned, true, true),
-            'rejected'           => $this->formatProject($partnerUser, $rejected, true),
-            'abandonReasons'     => $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectAbandonReason')
+            'pending'        => $this->formatProject($partnerUser, $pending, false),
+            'ready'          => $this->formatProject($partnerUser, $ready, true),
+            'online'         => $this->formatProject($partnerUser, $online, true, true),
+            'funded'         => $this->formatProject($partnerUser, $funded, true),
+            'cancelled'      => $this->formatProject($partnerUser, $cancelled, false),
+            'abandonReasons' => $entityManager
+                ->getRepository('UnilendCoreBusinessBundle:ProjectAbandonReason')
                 ->findBy(['status' => ProjectAbandonReason::STATUS_ONLINE], ['reason' => 'ASC'])
         ]);
     }
@@ -174,7 +164,7 @@ class ProjectsListController extends Controller
 
             if ($abandoned) {
                 if (false === isset($abandonProjectStatus)) {
-                    $abandonProjectStatus = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatus')->findOneBy(['status' => ProjectsStatus::ABANDONED]);
+                    $abandonProjectStatus = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatus')->findOneBy(['status' => ProjectsStatus::STATUS_CANCELLED]);
                 }
 
                 $history = $projectStatusHistoryRepository->findOneBy([

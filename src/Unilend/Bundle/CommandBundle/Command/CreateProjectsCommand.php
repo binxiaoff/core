@@ -65,7 +65,7 @@ class CreateProjectsCommand extends ContainerAwareCommand
                     }
                     $partner = empty($partner) ? $partnerManager->getDefaultPartner() : $partner;
 
-                    $project = $projectRequestManager->newProject($user, $partner, ProjectsStatus::INCOMPLETE_REQUEST, $amount, $siren);
+                    $project = $projectRequestManager->newProject($user, $partner, ProjectsStatus::STATUS_REQUEST, $amount, $siren);
                     $company = $project->getIdCompany();
                     $createdProjects[] = $project->getIdProject();
 

@@ -28,9 +28,9 @@ class IRRManager
     const IRR_UNILEND_RISK_PERIOD_4_START = '2016-09-01';
 
     const PROJECT_STATUS_TRIGGERING_CHANGE = [
-        ProjectsStatus::REMBOURSEMENT,
-        ProjectsStatus::PROBLEME,
-        ProjectsStatus::LOSS
+        ProjectsStatus::STATUS_REPAYMENT,
+        ProjectsStatus::STATUS_LOSS,
+        ProjectsStatus::STATUS_LOSS
     ];
     const COMPANY_STATUS_TRIGGERING_CHANGE = [
         CompanyStatus::STATUS_PRECAUTIONARY_PROCESS,

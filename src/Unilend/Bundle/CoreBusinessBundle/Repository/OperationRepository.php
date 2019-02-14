@@ -109,9 +109,9 @@ class OperationRepository extends EntityRepository
                         SELECT DISTINCT (p.id_project) FROM projects p
                         INNER JOIN projects_status_history psh ON p.id_project = psh.id_project
                         INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
-                        WHERE ps.status = ' . ProjectsStatus::REMBOURSEMENT . '
+                        WHERE ps.status = ' . ProjectsStatus::STATUS_REPAYMENT . '
                         AND psh.added <= :end
-                        AND p.status != ' . ProjectsStatus::LOSS;
+                        AND p.status != ' . ProjectsStatus::STATUS_LOSS;
 
         $query = '
             SELECT IFNULL(SUM(o_loan.amount), 0) - (
@@ -867,7 +867,7 @@ class OperationRepository extends EntityRepository
         return 'SELECT ' . $cohortSelect . ' AS date_range
                 FROM projects_status_history psh
                   INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
-                WHERE ps.status = ' . ProjectsStatus::REMBOURSEMENT . ' AND o.id_project = psh.id_project
+                WHERE ps.status = ' . ProjectsStatus::STATUS_REPAYMENT . ' AND o.id_project = psh.id_project
                 GROUP BY psh.id_project';
     }
 
@@ -929,8 +929,8 @@ class OperationRepository extends EntityRepository
                 [
                     'isHealthy'                         => $isHealthy,
                     'capital_repayment_debt_collection' => OperationSubType::CAPITAL_REPAYMENT_DEBT_COLLECTION,
-                    'statusLoss'                        => ProjectsStatus::LOSS,
-                    'statusProblem'                     => ProjectsStatus::PROBLEME,
+                    'statusLoss'                        => ProjectsStatus::STATUS_LOSS,
+                    'statusProblem'                     => ProjectsStatus::STATUS_LOSS,
                     'companyStatus'                     => [CompanyStatus::STATUS_PRECAUTIONARY_PROCESS, CompanyStatus::STATUS_RECEIVERSHIP, CompanyStatus::STATUS_COMPULSORY_LIQUIDATION],
                     'inBonis'                           => CompanyStatus::STATUS_IN_BONIS
                 ],
@@ -979,8 +979,8 @@ class OperationRepository extends EntityRepository
                 [
                     'isHealthy'                    => $isHealthy,
                     'collection_commission_lender' => OperationType::COLLECTION_COMMISSION_LENDER,
-                    'statusLoss'                   => ProjectsStatus::LOSS,
-                    'statusProblem'                => ProjectsStatus::PROBLEME,
+                    'statusLoss'                   => ProjectsStatus::STATUS_LOSS,
+                    'statusProblem'                => ProjectsStatus::STATUS_LOSS,
                     'companyStatus'                => [CompanyStatus::STATUS_PRECAUTIONARY_PROCESS, CompanyStatus::STATUS_RECEIVERSHIP, CompanyStatus::STATUS_COMPULSORY_LIQUIDATION],
                     'inBonis'                      => CompanyStatus::STATUS_IN_BONIS
                 ],

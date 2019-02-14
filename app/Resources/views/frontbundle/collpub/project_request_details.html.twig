@@ -1,0 +1,78 @@
+{% extends 'collpub/_layout.html.twig' %}
+
+{% set page = {
+    id: 'collpub-project-request-summary',
+    classNames: ''
+} %}
+
+{% block dashboardContent %}
+    <section class="dashboard-tabs tabs">
+        <h3>{{ project.title }}</h3>
+        <div class="dashboard-tabs-content tab-content">
+            <div class="row columns-with-space">
+                <div class="col-md-6">
+                    <article class="dashboard-tab-pane">
+                        <div class="panel">
+                            <div class="panel-content">
+                                <h4 class="h4">Récapitulatif</h4>
+                                <div class="row columns-with-space">
+                                    <dl class="col-sm-4 col-md-6 col-lg-6">
+                                        <dt>Montant</dt>
+                                        <dd><strong>{{ project.amount|localizednumber }}&nbsp;€</strong></dd>
+                                    </dl>
+                                    <dl class="col-sm-4 col-md-6 col-lg-6">
+                                        <dt>Maturité</dt>
+                                        <dd><strong>{{ project.period }} ans</strong></dd>
+                                    </dl>
+                                </div>
+                                <div class="row columns-with-space">
+                                    <dl class="col-sm-4 col-md-6 col-lg-6">
+                                        <dt>Type de financement</dt>
+                                        <dd><strong>{{ ('product-name_' ~ product.label)|trans }}</strong></dd>
+                                    </dl>
+                                    <dl class="col-sm-4 col-md-6 col-lg-6">
+                                        <dt>Fin de période de tirage</dt>
+                                        <dd><strong>{{ project.dateFin|localizeddate('short', 'none') }}</strong></dd>
+                                    </dl>
+                                </div>
+                                <h4 class="h4 margin-20-t">Description</h4>
+                                <div class="row">
+                                    <em>{{ project.comments|nl2br }}</em>
+                                </div>
+                            </div><!-- /.panel-content -->
+                        </div>
+                    </article><!-- /.dashboard-tab-pane -->
+                    <article class="dashboard-tab-pane margin-20-t">
+                        <div class="panel">
+                            <form>
+                                <fieldset>
+                                    <h4 class="h4">Documents</h4>
+                                    {#{% for attachment in attachments %}#}
+                                        <div class="row">
+                                            <div class="form-field">
+                                                <label>Télécharger un document</label>
+                                                <div class="form-field">
+                                                    <div class="custom-input-file"
+                                                         data-fileattach data-fileattach-inputname="documents[doc]"
+                                                         data-fileattach-maxfiles="1"
+                                                         data-fileattach-filetypes="pdf jpg jpeg png doc docx xls xlsx"></div><!-- /.ui-fileattach -->
+                                                </div><!-- /.form-field -->
+                                            </div><!-- /.form-field -->
+                                        </div>
+                                    {#{% endfor %}#}
+                                </fieldset><!-- /.form-project-details-fieldset -->
+                            </form>
+                        </div>
+                    </article><!-- /.dashboard-tab-pane -->
+                </div>
+                <div class="col-md-6">
+                    <article class="dashboard-tab-pane">
+                        <div class="panel">
+                            <h4 class="h4">Discussions</h4>
+                        </div>
+                    </article>
+                </div>
+            </div>
+        </div><!-- /.dashboard-tabs-content -->
+    </section><!-- /.dashboard-tabs -->
+{% endblock %}

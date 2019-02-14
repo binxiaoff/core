@@ -40,12 +40,12 @@ class Clients implements UserInterface, EquatableInterface, EncoderAwareInterfac
     const ORIGIN_WELCOME_OFFER_HOME = 2;
     const ORIGIN_WELCOME_OFFER_LP   = 3;
 
-    const ROLE_USER            = 'ROLE_USER';
-    const ROLE_LENDER          = 'ROLE_LENDER';
-    const ROLE_BORROWER        = 'ROLE_BORROWER';
-    const ROLE_PARTNER_DEFAULT = 'ROLE_PARTNER';
-    const ROLE_PARTNER_ADMIN   = 'ROLE_PARTNER_ADMIN';
-    const ROLE_PARTNER_USER    = 'ROLE_PARTNER_USER';
+    const ROLE_USER          = 'ROLE_USER';
+    const ROLE_LENDER        = 'ROLE_LENDER';
+    const ROLE_BORROWER      = 'ROLE_BORROWER';
+    const ROLE_PARTNER       = 'ROLE_PARTNER';
+    const ROLE_PARTNER_ADMIN = 'ROLE_PARTNER_ADMIN';
+    const ROLE_PARTNER_USER  = 'ROLE_PARTNER_USER';
 
     const PASSWORD_ENCODER_MD5 = 'md5';
 

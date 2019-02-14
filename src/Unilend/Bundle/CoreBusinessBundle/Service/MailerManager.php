@@ -7,7 +7,7 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\{Asset\Packages, DependencyInjection\ContainerInterface, Routing\RouterInterface,
     Translation\TranslatorInterface};
 use Unilend\Bundle\CoreBusinessBundle\Entity\{Bids, Clients, ClientSettingType, ClientsGestionTypeNotif, ClientsMandats, Companies, Operation, OperationSubType, ProjectCgv,
-    Projects, ProjectsPouvoir, Settings, TemporaryLinksLogin, UniversignEntityInterface, Users, Wallet, WalletType};
+    Projects, ProjectsPouvoir, ProjectsStatus, Settings, TemporaryLinksLogin, UniversignEntityInterface, Users, Wallet, WalletType};
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\{TemplateMessage, TemplateMessageProvider};
 use Unilend\core\Loader;
@@ -798,7 +798,7 @@ class MailerManager
 
                         $oProject->get($aMailNotification['id_project']);
 
-                        if (\projects_status::EN_FUNDING == $oProject->status) {
+                        if (ProjectsStatus::STATUS_ONLINE == $oProject->status) {
                             $sProjectsListHTML .= '
                                 <tr>
                                     <td class="td">

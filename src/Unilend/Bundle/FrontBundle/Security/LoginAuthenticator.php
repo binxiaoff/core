@@ -100,8 +100,9 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
             return $targetPath;
         }
 
-        if (in_array('ROLE_LENDER', $user->getRoles())) {
-            return $this->router->generate('lender_dashboard');
+        // Borrower only
+        if ([Clients::ROLE_BORROWER] === array_values(array_intersect($user->getRoles(), [Clients::ROLE_BORROWER, Clients::ROLE_PARTNER, Clients::ROLE_LENDER]))) {
+            return $this->router->generate('collpub_loans');
         }
 
         if (in_array('ROLE_BORROWER', $user->getRoles())) {

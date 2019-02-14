@@ -20,7 +20,7 @@ class ExceptionSubscriber implements EventSubscriberInterface
     public static function getSubscribedEvents()
     {
         return [
-            KernelEvents::EXCEPTION => 'onNotFoundHttpException'
+//            KernelEvents::EXCEPTION => 'onNotFoundHttpException'
         ];
     }
 

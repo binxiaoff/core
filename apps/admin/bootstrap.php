@@ -188,11 +188,11 @@ class bootstrap extends Controller
                 ],
                 [
                     'title' => 'Remboursements',
-                    'uri'   => 'dossiers/' . ProjectsStatus::FUNDE . ',' . ProjectsStatus::REMBOURSEMENT . ',' . ProjectsStatus::REMBOURSE . ',' . ProjectsStatus::REMBOURSEMENT_ANTICIPE
+                    'uri'   => 'dossiers/' . ProjectsStatus::STATUS_FUNDED . ',' . ProjectsStatus::STATUS_REPAYMENT . ',' . ProjectsStatus::STATUS_REPAID
                 ],
                 [
                     'title' => 'Erreurs remboursements',
-                    'uri'   => 'dossiers/' . ProjectsStatus::PROBLEME . ',' . ProjectsStatus::LOSS
+                    'uri'   => 'dossiers/' . ProjectsStatus::STATUS_LOSS . ',' . ProjectsStatus::STATUS_LOSS
                 ],
                 [
                     'title' => 'Suivi statuts projets',

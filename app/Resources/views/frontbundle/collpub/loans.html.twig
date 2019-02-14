@@ -1,0 +1,111 @@
+{% extends 'collpub/_layout.html.twig' %}
+
+{% set page = {
+    id: 'collpub-loans',
+    classNames: ''
+} %}
+
+{% block dashboardContent %}
+    <section class="dashboard-tabs tabs">
+        <div class="dashboard-tabs-content tab-content">
+            <article class="dashboard-tab-pane tab-pane active" id="tab-lender">
+                <div class="panel">
+                    <header class="panel-header">
+                        <h3>Projets déposés</h3>
+                    </header>
+                    <div class="panel-content">
+                        {% if projects|length == 0 %}
+                            <div class="message-info">Vous n'avez déposé aucun dossier pour le moment.<br>Pour soumettre votre premier projet, <a href="{{ path('collpub_project_request') }}">cliquez ici</a>.</div>
+                        {% else %}
+                            {% for status, projectStatus in projects %}
+                                <h4>
+                                    {% if status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_REQUEST') %}
+                                        En cours de dépôt
+                                    {% elseif status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_REVIEW') %}
+                                        À l‘étude
+                                    {% elseif status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_ONLINE') %}
+                                        En cours de financement
+                                    {% elseif status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_FUNDED') %}
+                                        En attente de signature
+                                    {% elseif status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_SIGNED') %}
+                                        En attente des fonds
+                                    {% elseif status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_REPAYMENT') %}
+                                        En cours de remboursement
+                                    {% elseif status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_REPAID') %}
+                                        Remboursé
+                                    {% elseif status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_LOSS') %}
+                                        Perte
+                                    {% elseif status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_CANCELLED') %}
+                                        Annulé
+                                    {% else %}
+                                        Statut inconnu
+                                    {% endif %}
+                                </h4>
+                                <div class="table-scroll">
+                                    <table class="table table-projects" data-sortable>
+                                        <thead class="table-sortable-columns">
+                                        <tr>
+                                            <th class="table-projects-item-title table-sortable-column" data-sortable-by="title">
+                                                <span class="label" title="Nom du projet" data-toggle="tooltip">
+                                                    Nom
+                                                </span>
+                                            </th>
+                                            <th class="table-projects-item-amount table-sortable-column" data-sortable-by="amount">
+                                                <span class="label" title="Montant" data-toggle="tooltip">
+                                                    Montant
+                                                </span>
+                                            </th>
+                                            <th class="table-projects-item-amount table-sortable-column" data-sortable-by="duration">
+                                                <span class="label" title="Maturité" data-toggle="tooltip">
+                                                    Maturité
+                                                </span>
+                                            </th>
+                                            <th class="table-projects-item-date table-sortable-column" data-sortable-by="date">
+                                                <span class="label" title="Date de dépôt" data-toggle="tooltip">
+                                                    Date de dépôt
+                                                </span>
+                                            </th>
+                                            {% if status != constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_CANCELLED') %}
+                                                <th class="table-actions">
+                                                    <span class="label" title="Actions" data-toggle="tooltip">
+                                                        Actions
+                                                    </span>
+                                                </th>
+                                            {% endif %}
+                                        </tr>
+                                        </thead>
+                                        <tbody data-sortable-content>
+                                        {% for project in projectStatus %}
+                                            <tr id="project-{{ project.idProject }}" class="table-projects-item {% if loop.index is divisible by(2) %}even{% else %}odd{% endif %}"
+                                                data-hash="{{ project.hash }}"
+                                                data-sortable-title="{{ project.title|e('html_attr') }}"
+                                                data-sortable-amount="{{ project.amount }}"
+                                                data-sortable-duration="{{ project.period }}"
+                                                data-sortable-date="{{ project.added|date('U') }}">
+                                                <td class="table-projects-item-title">{{ project.title }}</td>
+                                                <td class="table-projects-item-amount">{{ project.amount|localizednumber }}&nbsp;€</td>
+                                                <td class="table-projects-item-duration">{{ project.period }} ans</td>
+                                                <td class="table-projects-item-date">{{ project.added|date('d/m/Y') }}</td>
+                                                {% if status != constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_CANCELLED') %}
+                                                    <td class="table-actions">
+                                                        {% if status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_REQUEST') %}
+                                                            <a role="button" href="{{ path('collpub_project_request_cancel', {'hash': project.hash}) }}" class="btn-default" title="Annuler la demande" data-toggle="tooltip"><span class="icon fa-ban-u16"></span></a>
+                                                            <a role="button" href="{{ path('collpub_project_request_submit', {'hash': project.hash}) }}" class="btn-default" title="Déposer le dossier" data-toggle="tooltip"><span class="icon fa-check-u16"></span></a>
+                                                        {% else %}
+                                                            <a role="button" href="{{ path('collpub_project_request_details', {'hash': project.hash}) }}" class="btn-default" title="Voir les détails du projet" data-toggle="tooltip"><span class="icon fa-view-u16"></span></a>
+                                                        {% endif %}
+                                                    </td>
+                                                {% endif %}
+                                            </tr>
+                                        {% endfor %}
+                                        </tbody>
+                                    </table><!-- /.table-projects -->
+                                </div><!-- /.table-scroll -->
+                            {% endfor %}
+                        {% endif %}
+                    </div><!-- /.panel-content -->
+                </div><!-- /.panel -->
+            </article><!-- /.dashboard-tab-pane -->
+        </div><!-- /.dashboard-tabs-content -->
+    </section><!-- /.dashboard-tabs -->
+{% endblock %}

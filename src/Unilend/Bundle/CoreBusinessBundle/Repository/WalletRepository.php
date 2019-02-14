@@ -129,7 +129,7 @@ class WalletRepository extends EntityRepository
             ->innerJoin('UnilendCoreBusinessBundle:Projects', 'p', Join::WITH, 'e.idProject = p.idProject')
             ->where('e.dateEcheance < :now')
             ->andWhere('e.status = ' . Echeanciers::STATUS_PENDING)
-            ->andWhere('p.status = ' . ProjectsStatus::PROBLEME);
+            ->andWhere('p.status = ' . ProjectsStatus::STATUS_LOSS);
 
         $subQuery = $this->getEntityManager()->createQueryBuilder()
             ->add('select', 'MAX(ls.added)')

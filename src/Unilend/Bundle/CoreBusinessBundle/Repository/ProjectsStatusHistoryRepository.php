@@ -113,7 +113,7 @@ class ProjectsStatusHistoryRepository extends EntityRepository
                                     MAX(id_project_status_history) AS max_id_project_status_history
                                   FROM projects_status_history psh_max
                                     INNER JOIN projects_status ps_max ON psh_max.id_project_status = ps_max.id_project_status
-                                  WHERE ps_max.status >= ' . ProjectsStatus::COMITY_REVIEW . ' AND ps_max.status <=  ' . ProjectsStatus::A_FUNDER . '
+                                  WHERE ps_max.status >= ' . ProjectsStatus::STATUS_REQUEST . ' AND ps_max.status <=  ' . ProjectsStatus::STATUS_REVIEW . '
                                   GROUP BY id_project) t ON t.max_id_project_status_history = psh.id_project_status_history
                       INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
                     WHERE psh.added BETWEEN :start AND :end';

@@ -30,10 +30,10 @@ class LenderSubscriptionController extends Controller
      */
     public function personalInformationAction(Request $request, ?UserInterface $client): Response
     {
-        $response = $this->checkProgressAndRedirect($request, null, $client);
-        if ($response instanceof RedirectResponse) {
-            return $response;
-        }
+//        $response = $this->checkProgressAndRedirect($request, null, $client);
+//        if ($response instanceof RedirectResponse) {
+//            return $response;
+//        }
 
         $client        = new Clients();
         $company       = new Companies();
@@ -976,7 +976,7 @@ class LenderSubscriptionController extends Controller
                 return $this->redirectToRoute('projects_list');
             }
 
-            if ($authorizationChecker->isGranted(Clients::ROLE_PARTNER_DEFAULT)) {
+            if ($authorizationChecker->isGranted(Clients::ROLE_PARTNER)) {
                 return $this->redirectToRoute('partner_home');
             }
         } elseif (null !== $clientHash) {

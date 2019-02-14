@@ -126,7 +126,7 @@ class CompaniesRepository extends EntityRepository
             ->andWhere('cs.label != :inBonis')
             ->setParameter('inBonis', CompanyStatus::STATUS_IN_BONIS)
             ->andWhere('ps.status IN (:projectStatus)')
-            ->setParameter('projectStatus', [ProjectsStatus::PROBLEME, ProjectsStatus::LOSS]);
+            ->setParameter('projectStatus', [ProjectsStatus::STATUS_LOSS, ProjectsStatus::STATUS_LOSS]);
 
         return $queryBuilder->getQuery()->getSingleScalarResult() > 0;
     }
@@ -170,7 +170,7 @@ class CompaniesRepository extends EntityRepository
             ->andWhere('co.siren != \'\'')
             ->andWhere('co.siren IS NOT NULL')
             ->setParameter('excludedStatus', MonitoringCycleManager::LONG_TERM_MONITORING_EXCLUDED_PROJECTS_STATUS)
-            ->setParameter('firstProjectStatus', ProjectsStatus::IMPOSSIBLE_AUTO_EVALUATION);
+            ->setParameter('firstProjectStatus', ProjectsStatus::STATUS_CANCELLED);
 
         return $queryBuilder->getQuery()->getResult();
     }
@@ -188,7 +188,7 @@ class CompaniesRepository extends EntityRepository
             ->where('cs.label != :inBonis')
             ->orWhere('p.status IN (:finalStatus)')
             ->setParameter('inBonis', CompanyStatus::STATUS_IN_BONIS)
-            ->setParameter('finalStatus', [ProjectsStatus::REMBOURSE, ProjectsStatus::REMBOURSEMENT_ANTICIPE, ProjectsStatus::NOT_ELIGIBLE]);
+            ->setParameter('finalStatus', [ProjectsStatus::STATUS_REPAID, ProjectsStatus::STATUS_REPAID, ProjectsStatus::STATUS_CANCELLED]);
 
         return $queryBuilder->getQuery()->getResult();
     }
@@ -217,7 +217,7 @@ class CompaniesRepository extends EntityRepository
         return $this->getEntityManager()
             ->getConnection()
             ->executeQuery($query, [
-                'completeRequest' => ProjectsStatus::COMPLETE_REQUEST,
+                'completeRequest' => ProjectsStatus::STATUS_REVIEW,
                 'projectStatus'   => MonitoringCycleManager::LONG_TERM_MONITORING_EXCLUDED_PROJECTS_STATUS,
                 'companyStatus'   => MonitoringCycleManager::LONG_TERM_MONITORING_EXCLUDED_COMPANY_STATUS
             ], [
@@ -255,7 +255,7 @@ class CompaniesRepository extends EntityRepository
             ->getConnection()
             ->executeQuery($query, [
                 'provider'        => $provider,
-                'completeRequest' => ProjectsStatus::COMPLETE_REQUEST,
+                'completeRequest' => ProjectsStatus::STATUS_REVIEW,
                 'projectStatus'   => MonitoringCycleManager::LONG_TERM_MONITORING_EXCLUDED_PROJECTS_STATUS,
                 'companyStatus'   => MonitoringCycleManager::LONG_TERM_MONITORING_EXCLUDED_COMPANY_STATUS
             ], [

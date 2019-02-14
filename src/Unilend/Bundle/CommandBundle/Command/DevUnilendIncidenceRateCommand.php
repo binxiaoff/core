@@ -258,8 +258,8 @@ class DevUnilendIncidenceRateCommand extends ContainerAwareCommand
 
         $result = $this->getContainer()->get('doctrine.orm.entity_manager')
             ->getConnection()
-            ->executeQuery($query, ['repayment'    => ProjectsStatus::REMBOURSEMENT,
-                                    'repaid'       => [ProjectsStatus::REMBOURSE, ProjectsStatus::REMBOURSEMENT_ANTICIPE],
+            ->executeQuery($query, ['repayment'    => ProjectsStatus::STATUS_REPAYMENT,
+                                    'repaid'       => [ProjectsStatus::STATUS_REPAID, ProjectsStatus::STATUS_REPAID],
                                     'contractType' => $contractType,
                                     'date'         => $date->format('Y-m-d H:i:s'),
                                     'accepted'     => Loans::STATUS_ACCEPTED

@@ -313,7 +313,7 @@ EOF
 
                         $operationManager->provisionBorrowerWallet($reception);
 
-                        if ($project->getStatus() === ProjectsStatus::REMBOURSEMENT) {
+                        if ($project->getStatus() === ProjectsStatus::STATUS_REPAYMENT) {
                             $user = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find(Users::USER_ID_CRON);
                             $projectPaymentManager->pay($reception, $user);
                         }
@@ -370,7 +370,7 @@ EOF
 
         $operationManager->provisionBorrowerWallet($reception);
 
-        if ($project->getStatus() === ProjectsStatus::REMBOURSEMENT) {
+        if ($project->getStatus() === ProjectsStatus::STATUS_REPAYMENT) {
             $user = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find(Users::USER_ID_CRON);
             $projectPaymentManager->pay($reception, $user);
         }

@@ -1,0 +1,34 @@
+<header class="site-header site-header-dashboard">
+    <div class="site-band"></div>
+
+    <div class="site-header-inner">
+        <div class="site-wrap">
+            <h1 class="site-title">
+                <a href="{{ path('home') }}" class="site-logo" tabindex="2">{{ site.title|default('Crédit Agricole Lending Services') }}</a>
+            </h1>
+
+            <div class="site-controls">
+                {% block siteHeaderControls %}
+                    {% include 'partials/site_search.html.twig' %}
+
+                    <div class="site-user">
+                        <div class="site-user-profile">
+                            <div class="profile-avatar">
+                                <a href="{{ path('connected_home') }}">{{ app.user.initials }}</a>
+                            </div><!-- /.profile-avatar -->
+
+                            <div class="profile-name">{% trans with {'%firstName%': app.user.getPrenom()} %} demo-header_greeting {% endtrans %}</div>
+
+                            <a href="{{ path('logout') }}" class="profile-logout link"><span class="label">{% trans %} demo-header_logout {% endtrans %}</span></a>
+
+                            <a href="{{ path('partner_project_request') }}" class="site-user-mobile-menu-toggle">
+                                <span class="icon fa-ellipsis-v"></span>
+                                <span class="sr-only">{% trans %} demo-header_sr-mobile-menu-toggle {% endtrans %}</span>
+                            </a>
+                        </div><!-- /.site-user-profile -->
+                    </div><!-- /.site-user -->
+                {% endblock %}
+            </div><!-- /.site-controls -->
+        </div><!-- /.site-wrap -->
+    </div><!-- /.site-header-inner -->
+</header>

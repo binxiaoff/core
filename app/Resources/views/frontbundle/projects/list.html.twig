@@ -2,35 +2,53 @@
 
 {% block siteContent %}
     <article id="projets-index" class="page" data-has-spinner>
-        <header class="page-header page-header-hero">
-            <div class="hero-wrap">
+        {% if not is_granted('IS_AUTHENTICATED_ANONYMOUSLY') %}
+            <header class="page-header page-header-hero">
+                <div class="hero-wrap">
+                    <div class="site-wrap">
+                        <h2 class="page-title">{% trans %} project-list_anonymous-user-message {% endtrans %}</h2>
+                    </div><!-- /.site-wrap -->
+                    {% include 'partials/list_socialmedia.html.twig' %}
+                </div><!-- /.hero-wrap -->
+            </header><!-- /.page-header -->
+
+            <section id="projets-index-project-list" class="page-section">
                 <div class="site-wrap">
-                    <h2 class="page-title">
-                        {{ 'projects-listing_page-title'|transchoice(projectsInFunding, {'%numberProjects%' : projectsInFunding|localizednumber , '%numberFinancedProjects%' : getStatistic('numberOfFinancedProjects')|localizednumber , '%numberActiveLenders%' : getStatistic('numberOfActiveLenders')|localizednumber})|raw }}
-                    </h2>
+                    <div class="btn-toolbar">
+                        <a href="{{ path('login') }}" class="btn-primary">{% trans %} project-list_login {% endtrans %}</a>
+                    </div>
+                </div>
+            </section>
+        {% else %}
+            <header class="page-header page-header-hero">
+                <div class="hero-wrap">
+                    <div class="site-wrap">
+                        <h2 class="page-title">
+                            {{ 'projects-listing_page-title'|transchoice(projectsInFunding, {'%numberProjects%' : projectsInFunding|localizednumber , '%numberFinancedProjects%' : getStatistic('numberOfFinancedProjects')|localizednumber , '%numberActiveLenders%' : getStatistic('numberOfActiveLenders')|localizednumber})|raw }}
+                        </h2>
+                    </div><!-- /.site-wrap -->
+
+                    {% include 'partials/list_socialmedia.html.twig' %}
+                </div><!-- /.hero-wrap -->
+            </header><!-- /.page-header -->
+
+            <section id="projets-index-project-list" class="page-section">
+                <div class="site-wrap">
+
+                    {% include 'projects/list/project_list.html.twig' %}
+
+                    {#<div class="row page-section-footer">#}
+                        {#{% if not is_granted('IS_AUTHENTICATED_FULLY') %}#}
+                            {#<div class="btn-toolbar">#}
+                                {#<a href="{{ path('lender_subscription_personal_information') }}" class="btn-primary">{% trans %} projects-listing_become-lender-button {% endtrans %}</a>#}
+                            {#</div>#}
+                        {#{% endif %}#}
+                        {#<p>#}
+                            {#<a href="{{ path('home_borrower') }}" class="link c-p2">{% trans %} projects-listing_become-borrower-button {% endtrans %}</a>#}
+                        {#</p>#}
+                    {#</div><!-- /.page-section-footer -->#}
                 </div><!-- /.site-wrap -->
-
-                {% include 'partials/list_socialmedia.html.twig' %}
-            </div><!-- /.hero-wrap -->
-        </header><!-- /.page-header -->
-
-        <section id="projets-index-project-list" class="page-section">
-            <div class="site-wrap">
-
-                {% include 'projects/list/project_list.html.twig' %}
-
-                <div class="row page-section-footer">
-                    {% if not is_granted('IS_AUTHENTICATED_FULLY') %}
-                        <div class="btn-toolbar">
-                            <a href="{{ path('lender_subscription_personal_information') }}" class="btn-primary">{% trans %} projects-listing_become-lender-button {% endtrans %}</a>
-                        </div>
-                    {% endif %}
-                    <p>
-                        <a href="{{ path('home_borrower') }}" class="link c-p2">{% trans %} projects-listing_become-borrower-button {% endtrans %}</a>
-                    </p>
-                </div><!-- /.page-section-footer -->
-            </div><!-- /.site-wrap -->
-        </section><!-- /.page-section -->
-
+            </section><!-- /.page-section -->
+        {% endif %}
     </article><!-- /.page -->
 {% endblock %}

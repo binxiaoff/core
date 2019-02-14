@@ -94,16 +94,6 @@ class LoginHistoryLogger
                 ->setIdUserAgent($userAgentEntity)
                 ->setAdded($now);
 
-            $geoLocData = null;
-            if ($ip) {
-                $geoLocData = $this->ipGeoLocManager->getCountryAndCity($ip);
-            }
-            if (is_array($geoLocData)) {
-                $clientHistory
-                    ->setCity($geoLocData['city'])
-                    ->setCountryIsoCode($geoLocData['countryIsoCode']);
-            }
-
             $this->entityManager->persist($clientHistory);
             $this->entityManager->flush($clientHistory);
         } catch (\Exception $exception) {

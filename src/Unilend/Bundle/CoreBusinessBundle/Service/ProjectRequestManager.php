@@ -155,16 +155,6 @@ class ProjectRequestManager
             throw new \InvalidArgumentException('Invalid email', self::EXCEPTION_CODE_INVALID_EMAIL);
         }
 
-        if (null !== $siren) {
-            $siren = $this->validateSiren($siren);
-            if (false === $siren) {
-                throw new \InvalidArgumentException('Invalid SIREN = ' . $siren, self::EXCEPTION_CODE_INVALID_SIREN);
-            }
-
-        } elseif (Users::USER_ID_FRONT === $user->getIdUser() && BorrowingMotive::ID_MOTIVE_FRANCHISER_CREATION !== $reason) {
-            throw new \InvalidArgumentException('Invalid SIREN = ' . $siren, self::EXCEPTION_CODE_INVALID_SIREN);
-        }
-
         if (null !== $siret) {
             $siret = $this->validateSiret($siret);
             if (false === $siret) {
@@ -199,7 +189,7 @@ class ProjectRequestManager
         $this->entityManager->beginTransaction();
 
         try {
-            $company = $this->companyManager->createBorrowerCompany($user, $email, $siren, $siret, $companyName);
+            $company = $this->companyManager->createBorrowerCompany($user, $email, null, $siret, $companyName);
             $client  = $company->getIdClientOwner();
             $client
                 ->setSource($this->sourceManager->getSource(SourceManager::SOURCE1))
@@ -253,6 +243,9 @@ class ProjectRequestManager
         $createdInBO = $user->getIdUser() === Users::USER_ID_FRONT ? false : true;
         $reasonId    = null === $reason ? null : $reason->getIdMotive();
 
+        $product = $this->entityManager->getRepository('UnilendCoreBusinessBundle:PartnerProduct')->findBy(['idPartner' => $partner]);
+        $product = $product[array_rand($product)]->getIdProduct();
+
         $project = new Projects();
         $project
             ->setIdCompany($company)
@@ -265,10 +258,13 @@ class ProjectRequestManager
             ->setCommissionRateFunds(Projects::DEFAULT_COMMISSION_RATE_FUNDS)
             ->setCommissionRateRepayment(Projects::DEFAULT_COMMISSION_RATE_REPAYMENT)
             ->setCreateBo($createdInBO)
-            ->setDisplay(Projects::AUTO_REPAYMENT_ON);
+            ->setDisplay(Projects::AUTO_REPAYMENT_ON)
+            ->setSlug(md5($company->getIdCompany()) . '-' . $company->getIdCompany())
+            ->setRisk(['A', 'B', 'C', 'D', 'E'][rand(0, 4)])
+            ->setDateRetrait(new \DateTime('next sunday'))
+            ->setIdProduct($product->getIdProduct());
 
         $this->entityManager->persist($project);
-
         $this->entityManager->flush($project);
 
         $this->projectStatusManager->addProjectStatus($user, $status, $project);
@@ -378,18 +374,18 @@ class ProjectRequestManager
     public function addRejectionProjectStatus(string $motive, $project, int $userId): ?array
     {
         $status = substr($motive, 0, strlen(ProjectsStatus::UNEXPECTED_RESPONSE)) === ProjectsStatus::UNEXPECTED_RESPONSE
-            ? ProjectsStatus::IMPOSSIBLE_AUTO_EVALUATION
-            : ProjectsStatus::NOT_ELIGIBLE;
+            ? ProjectsStatus::STATUS_CANCELLED
+            : ProjectsStatus::STATUS_CANCELLED;
 
         switch ($status) {
-            case ProjectsStatus::IMPOSSIBLE_AUTO_EVALUATION:
+            case ProjectsStatus::STATUS_CANCELLED:
                 $this->projectStatusManager->addProjectStatus($userId, $status, $project, 0, $motive);
                 break;
             default:
                 $rejectionReasons = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRejectionReason')
                     ->findBy(['label' => $motive]);
                 try {
-                    $result = $this->projectStatusManager->rejectProject($project, ProjectsStatus::NOT_ELIGIBLE, $rejectionReasons, $userId);
+                    $result = $this->projectStatusManager->rejectProject($project, ProjectsStatus::STATUS_CANCELLED, $rejectionReasons, $userId);
 
                     if (false === $result) {
                         return null;
@@ -449,7 +445,7 @@ class ProjectRequestManager
                         ->getRepository('UnilendCoreBusinessBundle:ProjectRejectionReason')
                         ->findBy(['label' => ProjectRejectionReason::PRODUCT_NOT_FOUND]);
                     try {
-                        $this->projectStatusManager->rejectProject($project, ProjectsStatus::NOT_ELIGIBLE, $rejectionReason, $userId);
+                        $this->projectStatusManager->rejectProject($project, ProjectsStatus::STATUS_CANCELLED, $rejectionReason, $userId);
                     } catch (\Exception $exception) {
                         $this->logger->error('Could not reject the project: ' . $project->getIdProject() . '. Error: ' . $exception->getMessage(), [
                             'id_project'       => $project->getIdProject(),

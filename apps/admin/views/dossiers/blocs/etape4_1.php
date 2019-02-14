@@ -86,7 +86,7 @@ use Unilend\Bundle\WSClientBundle\Service\InfogreffeManager;
 </script>
 <?php $isRiskUser = $this->get('unilend.service.back_office_user_manager')->isUserGroupRisk($this->userEntity); ?>
 <a class="tab_title" id="section-external-ratings" href="#section-external-ratings">4.1. Notation externe</a>
-<div class="tab_content<?php if (in_array($this->projects->status, [ProjectsStatus::ANALYSIS_REVIEW, ProjectsStatus::COMITY_REVIEW]) && $isRiskUser) : ?> expand<?php endif; ?>" id="etape4_1">
+<div class="tab_content<?php if (in_array($this->projects->status, [ProjectsStatus::STATUS_REQUEST, ProjectsStatus::STATUS_REQUEST]) && $isRiskUser) : ?> expand<?php endif; ?>" id="etape4_1">
     <form method="post" name="dossier_etape4_1" id="dossier_etape4_1" onsubmit="valid_etape4_1(<?= $this->projects->id_project ?>); return false;" enctype="multipart/form-data" action="<?= $this->lurl ?>/dossiers/edit/<?= $this->params[0] ?>" target="_parent">
         <div id="contenu_etape4_1">
             <?php if ($this->bIsProblematicCompany) : ?>
@@ -227,7 +227,7 @@ use Unilend\Bundle\WSClientBundle\Service\InfogreffeManager;
                     <th><label>Présence de RPC < 6 mois *</label></th>
                     <td>
                         <?php if (isset($this->ratings['rpc_6mois']['value']) && in_array($this->ratings['rpc_6mois']['value'], ['0', '1'], true)) : ?><span class="rating-tooltip" title="rpc_6mois"><?php endif; ?>
-                        <?php if ($this->projects->status <= \projects_status::COMITY_REVIEW) : ?>
+                        <?php if ($this->projects->status <= ProjectsStatus::STATUS_REVIEW) : ?>
                             <label><input type="radio" name="ratings[rpc_6mois]" value="1"<?php if (isset($this->ratings['rpc_6mois']['value']) && '1' === $this->ratings['rpc_6mois']['value']) : ?> checked<?php endif; ?>> Oui</label>
                             <label><input type="radio" name="ratings[rpc_6mois]" value="0"<?php if (isset($this->ratings['rpc_6mois']['value']) && '0' === $this->ratings['rpc_6mois']['value']) : ?> checked<?php endif; ?>> Non</label>
                         <?php elseif (isset($this->ratings['rpc_6mois']) && '1' === $this->ratings['rpc_6mois']['value']) : ?>
@@ -240,7 +240,7 @@ use Unilend\Bundle\WSClientBundle\Service\InfogreffeManager;
                     <?php if (isset($this->targetRatings)) : ?>
                         <td>
                             <?php if (isset($this->targetRatings['rpc_6mois']['value']) && in_array($this->targetRatings['rpc_6mois']['value'], ['0', '1'], true)) : ?><span class="rating-tooltip" title="target_rpc_6mois"><?php endif; ?>
-                            <?php if ($this->projects->status <= \projects_status::COMITY_REVIEW) : ?>
+                            <?php if ($this->projects->status <= ProjectsStatus::STATUS_REVIEW) : ?>
                                 <label><input type="radio" name="target_ratings[rpc_6mois]" value="1"<?php if (isset($this->targetRatings['rpc_6mois']['value']) && '1' === $this->targetRatings['rpc_6mois']['value']) : ?> checked<?php endif; ?>> Oui</label>
                                 <label><input type="radio" name="target_ratings[rpc_6mois]" value="0"<?php if (isset($this->targetRatings['rpc_6mois']['value']) && '0' === $this->targetRatings['rpc_6mois']['value']) : ?> checked<?php endif; ?>> Non</label>
                             <?php elseif (isset($this->targetRatings['rpc_6mois']) && '1' === $this->targetRatings['rpc_6mois']['value']) : ?>
@@ -256,7 +256,7 @@ use Unilend\Bundle\WSClientBundle\Service\InfogreffeManager;
                     <th><label>Présence de RPC > 12 mois *</label></th>
                     <td>
                         <?php if (isset($this->ratings['rpc_12mois']['value']) && in_array($this->ratings['rpc_12mois']['value'], ['0', '1'], true)) : ?><span class="rating-tooltip" title="rpc_12mois"><?php endif; ?>
-                        <?php if ($this->projects->status <= \projects_status::COMITY_REVIEW) : ?>
+                        <?php if ($this->projects->status <= ProjectsStatus::STATUS_REVIEW) : ?>
                             <label><input type="radio" name="ratings[rpc_12mois]" value="1"<?php if (isset($this->ratings['rpc_12mois']['value']) && '1' === $this->ratings['rpc_12mois']['value']) : ?> checked<?php endif; ?>> Oui</label>
                             <label><input type="radio" name="ratings[rpc_12mois]" value="0"<?php if (isset($this->ratings['rpc_12mois']['value']) && '0' === $this->ratings['rpc_12mois']['value']) : ?> checked<?php endif; ?>> Non</label>
                         <?php elseif (isset($this->ratings['rpc_12mois']) && '1' === $this->ratings['rpc_12mois']['value']) : ?>
@@ -269,7 +269,7 @@ use Unilend\Bundle\WSClientBundle\Service\InfogreffeManager;
                     <?php if (isset($this->targetRatings)) : ?>
                         <td>
                         <?php if (isset($this->targetRatings['rpc_12mois']['value']) && in_array($this->targetRatings['rpc_12mois']['value'], ['0', '1'], true)) : ?><span class="rating-tooltip" title="target_rpc_12mois"><?php endif; ?>
-                        <?php if ($this->projects->status <= \projects_status::COMITY_REVIEW) : ?>
+                        <?php if ($this->projects->status <= ProjectsStatus::STATUS_REVIEW) : ?>
                             <label><input type="radio" name="target_ratings[rpc_12mois]" value="1"<?php if (isset($this->targetRatings['rpc_12mois']['value']) && '1' === $this->targetRatings['rpc_12mois']['value']) : ?> checked<?php endif; ?>> Oui</label>
                             <label><input type="radio" name="target_ratings[rpc_12mois]" value="0"<?php if (isset($this->targetRatings['rpc_12mois']['value']) && '0' === $this->targetRatings['rpc_12mois']['value']) : ?> checked<?php endif; ?>> Non</label>
                         <?php elseif (isset($this->targetRatings['rpc_12mois']) && '1' === $this->targetRatings['rpc_12mois']['value']) : ?>
@@ -285,7 +285,7 @@ use Unilend\Bundle\WSClientBundle\Service\InfogreffeManager;
                     <th><label for="cotation_fiben">Cotation FIBEN *</label></th>
                     <td>
                         <?php if (false === empty($this->ratings['cotation_fiben']['value'])) : ?><span class="rating-tooltip" title="cotation_fiben"><?php endif; ?>
-                        <?php if ($this->projects->status <= \projects_status::COMITY_REVIEW) : ?>
+                        <?php if ($this->projects->status <= ProjectsStatus::STATUS_REVIEW) : ?>
                             <input type="text" name="ratings[cotation_fiben]" id="cotation_fiben" value="<?php if (false === empty($this->ratings['cotation_fiben']['value'])) : ?><?= $this->ratings['cotation_fiben']['value'] ?><?php endif; ?>" class="input_moy">
                         <?php elseif (false === empty($this->ratings['cotation_fiben']['value'])) : ?>
                             <span class="rating-tooltip" title="cotation_fiben"><?= $this->ratings['cotation_fiben']['value'] ?></span>
@@ -295,7 +295,7 @@ use Unilend\Bundle\WSClientBundle\Service\InfogreffeManager;
                     <?php if (isset($this->targetRatings)) : ?>
                         <td>
                             <?php if (false === empty($this->targetRatings['cotation_fiben']['value'])) : ?><span class="rating-tooltip" title="target_cotation_fiben"><?php endif; ?>
-                            <?php if ($this->projects->status <= \projects_status::COMITY_REVIEW) : ?>
+                            <?php if ($this->projects->status <= ProjectsStatus::STATUS_REVIEW) : ?>
                                 <input type="text" name="target_ratings[cotation_fiben]" id="cotation_fiben" value="<?php if (false === empty($this->targetRatings['cotation_fiben']['value'])) : ?><?= $this->targetRatings['cotation_fiben']['value'] ?><?php endif; ?>" class="input_moy">
                             <?php elseif (false === empty($this->targetRatings['cotation_fiben']['value'])) : ?>
                                 <span class="rating-tooltip" title="target_cotation_fiben"><?= $this->targetRatings['cotation_fiben']['value'] ?></span>
@@ -308,7 +308,7 @@ use Unilend\Bundle\WSClientBundle\Service\InfogreffeManager;
                     <th><label for="cotation_dirigeant_fiben">Cotation dirigeant FIBEN</label></th>
                     <td>
                         <?php if (false === empty($this->ratings['cotation_dirigeant_fiben']['value'])) : ?><span class="rating-tooltip" title="cotation_dirigeant_fiben"><?php endif; ?>
-                        <?php if ($this->projects->status <= \projects_status::COMITY_REVIEW) : ?>
+                        <?php if ($this->projects->status <= ProjectsStatus::STATUS_REVIEW) : ?>
                             <input type="text" name="ratings[cotation_dirigeant_fiben]" id="cotation_dirigeant_fiben" value="<?php if (false === empty($this->ratings['cotation_dirigeant_fiben']['value'])) : ?><?= $this->ratings['cotation_dirigeant_fiben']['value'] ?><?php endif; ?>" class="input_moy">
                         <?php elseif (false === empty($this->ratings['cotation_dirigeant_fiben']['value'])) : ?>
                             <span class="rating-tooltip" title="cotation_dirigeant_fiben"><?= $this->ratings['cotation_dirigeant_fiben']['value'] ?></span>
@@ -318,7 +318,7 @@ use Unilend\Bundle\WSClientBundle\Service\InfogreffeManager;
                     <?php if (isset($this->targetRatings)) : ?>
                         <td>
                             <?php if (false === empty($this->targetRatings['cotation_dirigeant_fiben']['value'])) : ?><span class="rating-tooltip" title="target_cotation_dirigeant_fiben"><?php endif; ?>
-                            <?php if ($this->projects->status <= \projects_status::COMITY_REVIEW) : ?>
+                            <?php if ($this->projects->status <= ProjectsStatus::STATUS_REVIEW) : ?>
                                 <input type="text" name="target_ratings[cotation_dirigeant_fiben]" id="target_cotation_dirigeant_fiben" value="<?php if (false === empty($this->targetRatings['cotation_dirigeant_fiben']['value'])) : ?><?= $this->targetRatings['cotation_dirigeant_fiben']['value'] ?><?php endif; ?>" class="input_moy">
                             <?php elseif (false === empty($this->targetRatings['cotation_dirigeant_fiben']['value'])) : ?>
                                 <span class="rating-tooltip" title="target_cotation_dirigeant_fiben"><?= $this->targetRatings['cotation_dirigeant_fiben']['value'] ?></span>
@@ -330,7 +330,7 @@ use Unilend\Bundle\WSClientBundle\Service\InfogreffeManager;
                 <tr>
                     <th><label for="note_interne_banque">Note interne banque</label></th>
                     <td>
-                        <?php if ($this->projects->status <= \projects_status::COMITY_REVIEW) : ?>
+                        <?php if ($this->projects->status <= ProjectsStatus::STATUS_REVIEW) : ?>
                             <?php if (false === empty($this->ratings['note_interne_banque']['value'])) : ?>
                                 <span class="rating-tooltip" title="note_interne_banque">
                                     <input type="text" name="ratings[note_interne_banque]" id="note_interne_banque" value="<?= $this->ratings['note_interne_banque']['value'] ?>" class="input_moy">
@@ -352,7 +352,7 @@ use Unilend\Bundle\WSClientBundle\Service\InfogreffeManager;
                     </td>
                     <?php if (isset($this->targetRatings)) : ?>
                         <td>
-                            <?php if ($this->projects->status <= \projects_status::COMITY_REVIEW) : ?>
+                            <?php if ($this->projects->status <= ProjectsStatus::STATUS_REVIEW) : ?>
                                 <?php if (false === empty($this->targetRatings['note_interne_banque']['value'])) : ?>
                                     <span class="rating-tooltip" title="target_note_interne_banque">
                                         <input type="text" name="target_ratings[note_interne_banque]" id="target_note_interne_banque" value="<?= $this->targetRatings['note_interne_banque']['value'] ?>" class="input_moy">
@@ -378,7 +378,7 @@ use Unilend\Bundle\WSClientBundle\Service\InfogreffeManager;
                     <th><label for="date_dernier_privilege">Date du privilège le plus récent</label></th>
                     <td>
                         <?php if (false === empty($this->ratings['date_dernier_privilege']['value'])) : ?><span class="rating-tooltip" title="date_dernier_privilege"><?php endif; ?>
-                        <?php if ($this->projects->status <= \projects_status::COMITY_REVIEW) : ?>
+                        <?php if ($this->projects->status <= ProjectsStatus::STATUS_REVIEW) : ?>
                             <input type="text" name="ratings[date_dernier_privilege]" id="date_dernier_privilege" value="<?php if (false === empty($this->ratings['date_dernier_privilege']['value'])) : ?><?=  $this->formatDate($this->ratings['date_dernier_privilege']['value'], 'd/m/Y') ?><?php endif; ?>" class="input_dp" readonly>
                         <?php elseif (false === empty($this->ratings['date_dernier_privilege']['value'])) : ?>
                             <span class="rating-tooltip" title="date_dernier_privilege"><?= $this->ratings['date_dernier_privilege']['value'] ?></span>
@@ -388,7 +388,7 @@ use Unilend\Bundle\WSClientBundle\Service\InfogreffeManager;
                     <?php if (isset($this->targetRatings)) : ?>
                         <td>
                             <?php if (false === empty($this->ratings['date_dernier_privilege']['value'])) : ?><span class="rating-tooltip" title="target_date_dernier_privilege"><?php endif; ?>
-                            <?php if ($this->projects->status <= \projects_status::COMITY_REVIEW) : ?>
+                            <?php if ($this->projects->status <= ProjectsStatus::STATUS_REVIEW) : ?>
                                 <input type="text" name="target_ratings[date_dernier_privilege]" id="target_date_dernier_privilege" value="<?php if (false === empty($this->ratings['date_dernier_privilege']['value'])) : ?><?=  $this->formatDate($this->ratings['date_dernier_privilege']['value'], 'd/m/Y') ?><?php endif; ?>" class="input_dp" readonly>
                             <?php elseif (false === empty($this->ratings['date_dernier_privilege']['value'])) : ?>
                                 <span class="rating-tooltip" title="target_date_dernier_privilege"><?= $this->ratings['date_dernier_privilege']['value'] ?></span>
@@ -400,7 +400,7 @@ use Unilend\Bundle\WSClientBundle\Service\InfogreffeManager;
                 <tr>
                     <th><label for="date_tresorerie">Dernière situation de trésorerie connue *</label></th>
                     <td>
-                        <?php if ($this->projects->status <= \projects_status::COMITY_REVIEW) : ?>
+                        <?php if ($this->projects->status <= ProjectsStatus::STATUS_REVIEW) : ?>
                             <?php if (isset($this->ratings['date_tresorerie']) && '' !== $this->ratings['date_tresorerie']['value']) : ?>
                                 <span class="rating-tooltip" title="date_tresorerie">
                                     <input type="text" name="ratings[date_tresorerie]" id="date_tresorerie" value="<?= $this->formatDate($this->ratings['date_tresorerie']['value'], 'd/m/Y') ?>" class="input_dp" readonly>
@@ -424,7 +424,7 @@ use Unilend\Bundle\WSClientBundle\Service\InfogreffeManager;
                     </td>
                     <?php if (isset($this->targetRatings)) : ?>
                         <td>
-                            <?php if ($this->projects->status <= \projects_status::COMITY_REVIEW) : ?>
+                            <?php if ($this->projects->status <= ProjectsStatus::STATUS_REVIEW) : ?>
                                 <?php if (isset($this->targetRatings['date_tresorerie']) && '' !== $this->targetRatings['date_tresorerie']['value']) : ?>
                                     <span class="rating-tooltip" title="target_date_tresorerie">
                                         <input type="text" name="target_ratings[date_tresorerie]" id="target_date_tresorerie" value="<?= $this->formatDate($this->targetRatings['date_tresorerie']['value'], 'd/m/Y') ?>" class="input_dp" readonly>
@@ -452,7 +452,7 @@ use Unilend\Bundle\WSClientBundle\Service\InfogreffeManager;
                     <th><label for="delais_paiement_altares">Délais de paiement Altares (à date) *</label></th>
                     <td>
                         <?php if (isset($this->ratings['delais_paiement_altares']['value']) && '' !== $this->ratings['delais_paiement_altares']['value']) : ?><span class="rating-tooltip" title="delais_paiement_altares"><?php endif; ?>
-                        <?php if ($this->projects->status <= \projects_status::COMITY_REVIEW) : ?>
+                        <?php if ($this->projects->status <= ProjectsStatus::STATUS_REVIEW) : ?>
                             <input type="text" name="ratings[delais_paiement_altares]" id="delais_paiement_altares" value="<?php if (isset($this->ratings['delais_paiement_altares']['value'])) : ?><?= $this->ratings['delais_paiement_altares']['value'] ?><?php endif; ?>" class="input_moy">
                         <?php elseif (isset($this->ratings['delais_paiement_altares']['value']) && '' !== $this->ratings['delais_paiement_altares']['value']) : ?>
                             <span class="rating-tooltip" title="delais_paiement_altares"><?= $this->ratings['delais_paiement_altares']['value'] ?></span>
@@ -462,7 +462,7 @@ use Unilend\Bundle\WSClientBundle\Service\InfogreffeManager;
                     <?php if (isset($this->targetRatings)) : ?>
                         <td>
                             <?php if (isset($this->targetRatings['delais_paiement_altares']['value']) && '' !== $this->targetRatings['delais_paiement_altares']['value']) : ?><span class="rating-tooltip" title="delais_paiement_altares"><?php endif; ?>
-                            <?php if ($this->projects->status <= \projects_status::COMITY_REVIEW) : ?>
+                            <?php if ($this->projects->status <= ProjectsStatus::STATUS_REVIEW) : ?>
                                 <input type="text" name="ratings[delais_paiement_altares]" id="delais_paiement_altares" value="<?php if (isset($this->targetRatings['delais_paiement_altares']['value'])) : ?><?= $this->targetRatings['delais_paiement_altares']['value'] ?><?php endif; ?>" class="input_moy">
                             <?php elseif (isset($this->targetRatings['delais_paiement_altares']['value']) && '' !== $this->targetRatings['delais_paiement_altares']['value']) : ?>
                                 <span class="rating-tooltip" title="delais_paiement_altares"><?= $this->targetRatings['delais_paiement_altares']['value'] ?></span>
@@ -475,7 +475,7 @@ use Unilend\Bundle\WSClientBundle\Service\InfogreffeManager;
                     <th><label for="delais_paiement_secteur">Délais de paiement du secteur *</label></th>
                     <td>
                         <?php if (isset($this->ratings['delais_paiement_secteur']['value']) && '' !== $this->ratings['delais_paiement_secteur']['value']) : ?><span class="rating-tooltip" title="delais_paiement_secteur"><?php endif; ?>
-                        <?php if ($this->projects->status <= \projects_status::COMITY_REVIEW) : ?>
+                        <?php if ($this->projects->status <= ProjectsStatus::STATUS_REVIEW) : ?>
                             <input type="text" name="ratings[delais_paiement_secteur]" id="delais_paiement_secteur" value="<?php if (isset($this->ratings['delais_paiement_secteur']['value'])) : ?><?= $this->ratings['delais_paiement_secteur']['value'] ?><?php endif; ?>" class="input_moy">
                         <?php elseif (isset($this->ratings['delais_paiement_secteur']['value']) && '' !== $this->ratings['delais_paiement_secteur']['value']) : ?>
                             <span class="rating-tooltip" title="delais_paiement_secteur"><?= $this->ratings['delais_paiement_secteur']['value'] ?></span>
@@ -485,7 +485,7 @@ use Unilend\Bundle\WSClientBundle\Service\InfogreffeManager;
                     <?php if (isset($this->targetRatings)) : ?>
                         <td>
                             <?php if (isset($this->targetRatings['delais_paiement_secteur']['value']) && '' !== $this->targetRatings['delais_paiement_secteur']['value']) : ?><span class="rating-tooltip" title="delais_paiement_secteur"><?php endif; ?>
-                            <?php if ($this->projects->status <= \projects_status::COMITY_REVIEW) : ?>
+                            <?php if ($this->projects->status <= ProjectsStatus::STATUS_REVIEW) : ?>
                                 <input type="text" name="ratings[delais_paiement_secteur]" id="delais_paiement_secteur" value="<?php if (isset($this->targetRatings['delais_paiement_secteur']['value'])) : ?><?= $this->targetRatings['delais_paiement_secteur']['value'] ?><?php endif; ?>" class="input_moy">
                             <?php elseif (isset($this->targetRatings['delais_paiement_secteur']['value']) && '' !== $this->targetRatings['delais_paiement_secteur']['value']) : ?>
                                 <span class="rating-tooltip" title="delais_paiement_secteur"><?= $this->targetRatings['delais_paiement_secteur']['value'] ?></span>
@@ -498,7 +498,7 @@ use Unilend\Bundle\WSClientBundle\Service\InfogreffeManager;
                     <th><label>Dailly</label></th>
                     <td>
                         <?php if (isset($this->ratings['dailly']) && in_array($this->ratings['dailly']['value'], ['0', '1'], true)) : ?><span class="rating-tooltip" title="dailly"><?php endif; ?>
-                        <?php if ($this->projects->status <= \projects_status::COMITY_REVIEW) : ?>
+                        <?php if ($this->projects->status <= ProjectsStatus::STATUS_REVIEW) : ?>
                             <label><input type="radio" name="ratings[dailly]" value="1"<?php if (isset($this->ratings['dailly']) && '1' === $this->ratings['dailly']['value']) : ?> checked<?php endif; ?>> Oui</label>
                             <label><input type="radio" name="ratings[dailly]" value="0"<?php if (isset($this->ratings['dailly']) && '0' === $this->ratings['dailly']['value']) : ?> checked<?php endif; ?>> Non</label>
                         <?php elseif (isset($this->ratings['dailly']) && '1' === $this->ratings['dailly']['value']) : ?>
@@ -511,7 +511,7 @@ use Unilend\Bundle\WSClientBundle\Service\InfogreffeManager;
                     <?php if (isset($this->targetRatings)) : ?>
                         <td>
                             <?php if (isset($this->targetRatings['dailly']) && in_array($this->targetRatings['dailly']['value'], ['0', '1'], true)) : ?><span class="rating-tooltip" title="target_dailly"><?php endif; ?>
-                            <?php if ($this->projects->status <= \projects_status::COMITY_REVIEW) : ?>
+                            <?php if ($this->projects->status <= ProjectsStatus::STATUS_REVIEW) : ?>
                                 <label><input type="radio" name="target_ratings[dailly]" value="1"<?php if (isset($this->targetRatings['dailly']) && '1' === $this->targetRatings['dailly']['value']) : ?> checked<?php endif; ?>> Oui</label>
                                 <label><input type="radio" name="target_ratings[dailly]" value="0"<?php if (isset($this->targetRatings['dailly']) && '0' === $this->targetRatings['dailly']['value']) : ?> checked<?php endif; ?>> Non</label>
                             <?php elseif (isset($this->targetRatings['dailly']) && '1' === $this->targetRatings['dailly']['value']) : ?>
@@ -527,7 +527,7 @@ use Unilend\Bundle\WSClientBundle\Service\InfogreffeManager;
                     <th><label>Affacturage</label></th>
                     <td>
                         <?php if (isset($this->ratings['affacturage']) && in_array($this->ratings['affacturage']['value'], ['0', '1'], true)) : ?><span class="rating-tooltip" title="affacturage"><?php endif; ?>
-                        <?php if ($this->projects->status <= \projects_status::COMITY_REVIEW) : ?>
+                        <?php if ($this->projects->status <= ProjectsStatus::STATUS_REVIEW) : ?>
                             <label><input type="radio" name="ratings[affacturage]" value="1"<?php if (isset($this->ratings['affacturage']) && '1' === $this->ratings['affacturage']['value']) : ?> checked<?php endif; ?>> Oui</label>
                             <label><input type="radio" name="ratings[affacturage]" value="0"<?php if (isset($this->ratings['affacturage']) && '0' === $this->ratings['affacturage']['value']) : ?> checked<?php endif; ?>> Non</label>
                         <?php elseif (isset($this->ratings['affacturage']) && '1' === $this->ratings['affacturage']['value']) : ?>
@@ -540,7 +540,7 @@ use Unilend\Bundle\WSClientBundle\Service\InfogreffeManager;
                     <?php if (isset($this->targetRatings)) : ?>
                         <td>
                             <?php if (isset($this->targetRatings['affacturage']) && in_array($this->targetRatings['affacturage']['value'], ['0', '1'], true)) : ?><span class="rating-tooltip" title="target_affacturage"><?php endif; ?>
-                            <?php if ($this->projects->status <= \projects_status::COMITY_REVIEW) : ?>
+                            <?php if ($this->projects->status <= ProjectsStatus::STATUS_REVIEW) : ?>
                                 <label><input type="radio" name="target_ratings[affacturage]" value="1"<?php if (isset($this->targetRatings['affacturage']) && '1' === $this->targetRatings['affacturage']['value']) : ?> checked<?php endif; ?>> Oui</label>
                                 <label><input type="radio" name="target_ratings[affacturage]" value="0"<?php if (isset($this->targetRatings['affacturage']) && '0' === $this->targetRatings['affacturage']['value']) : ?> checked<?php endif; ?>> Non</label>
                             <?php elseif (isset($this->targetRatings['affacturage']) && '1' === $this->targetRatings['affacturage']['value']) : ?>
@@ -554,7 +554,7 @@ use Unilend\Bundle\WSClientBundle\Service\InfogreffeManager;
                 </tr>
                 </tbody>
             </table>
-            <?php if ($this->projects->status <= \projects_status::COMITY_REVIEW) : ?>
+            <?php if ($this->projects->status <= ProjectsStatus::STATUS_REVIEW) : ?>
                 <div id="valid_etape4_1" class="valid_etape"><br>Données sauvegardées</div>
                 <button type="submit" class="btn-primary pull-right">Sauvegarder</button>
                 <br>

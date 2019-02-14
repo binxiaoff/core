@@ -16,7 +16,7 @@
             <textarea id="site-content" name="site_content" class="form-control" style="height:100px;"><?= isset($this->sInfoStatusChange) ? $this->sInfoStatusChange : ''; ?></textarea>
         </div>
 
-        <?php if ($this->projects_status->status == \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus::PROBLEME) : ?>
+        <?php if ($this->projects_status->status == \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus::STATUS_LOSS) : ?>
             <div class="form-group">
                 <p><em>Envoyer un email d'information aux emprunteurs</em></p>
                 <label><input type="radio" name="send_email_borrower" value="1"> Oui</label>

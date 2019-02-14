@@ -122,7 +122,7 @@
                 return
             }
 
-            check_status_dossier(<?= \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus::COMMERCIAL_REJECTION ?>, <?= $this->projectId ?>)
+            check_status_dossier(<?= \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus::STATUS_CANCELLED ?>, <?= $this->projectId ?>)
         <?php elseif (0 < $this->step) : ?>
             valid_rejete_etape<?= $this->step ?>(2, <?= $this->projectId ?>)
         <?php endif; ?>

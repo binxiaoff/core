@@ -1,15 +1,15 @@
 <div id="projets-index-project-list-module" class="project-list">
     <div class="tabs">
-        <div class="project-list-nav">
-            <ul class="nav nav-tabs">
-                <li role="presentation" class="active">
-                    <a href="#project-list-view" role="tab" data-toggle="tab"><span class="icon fa-list-u"></span><span class="sr-only">{% trans %} project-list_view-list-label {% endtrans %}</span></a>
-                </li>
-                <li role="presentation">
-                    <a href="#project-list-map" role="tab" data-toggle="tab"><span class="icon fa-map-marker-u"></span><span class="sr-only">{% trans %} project-list_view-map-label {% endtrans %}</span></a>
-                </li>
-            </ul>
-        </div><!-- /.project-list-nav -->
+        {#<div class="project-list-nav">#}
+            {#<ul class="nav nav-tabs">#}
+                {#<li role="presentation" class="active">#}
+                    {#<a href="#project-list-view" role="tab" data-toggle="tab"><span class="icon fa-list-u"></span><span class="sr-only">{% trans %} project-list_view-list-label {% endtrans %}</span></a>#}
+                {#</li>#}
+                {#<li role="presentation">#}
+                    {#<a href="#project-list-map" role="tab" data-toggle="tab"><span class="icon fa-map-marker-u"></span><span class="sr-only">{% trans %} project-list_view-map-label {% endtrans %}</span></a>#}
+                {#</li>#}
+            {#</ul>#}
+        {#</div><!-- /.project-list-nav -->#}
         <div class="project-list-content tab-content">
             <div id="project-list-view" role="tabpanel" class="tab-pane active">
                 <div class="project-list-filters">
@@ -92,9 +92,11 @@
                             <div class="project-list-item-info">
                                 <h3 class="project-list-item-title"><a href="{{ path('project_detail', {'projectSlug': project.slug }) }}">{{ project.title }}</a></h3>
                                 <div class="project-list-item-meta">
-                                    <h4 class="project-list-item-location">
-                                        <span class="icon fa-map-marker"></span> {{ project.company.city }}, {{ project.company.zip }}
-                                    </h4>
+                                    {% if project.company.city is not empty and project.company.zip is not empty %}
+                                        <h4 class="project-list-item-location">
+                                            <span class="icon fa-map-marker"></span> {{ project.company.city }}, {{ project.company.zip }}
+                                        </h4>
+                                    {% endif %}
                                     <h5 class="project-list-item-cost">{{ project.amount|localizednumber }}&nbsp;€</h5>
                                 </div>
                                 <div class="project-list-item-description">
@@ -130,7 +132,7 @@
                                 <span class="rating rating-{{ project.risk|convertRisk|split('.')|join('-') }}"><span class="sr-only">{% trans with {'%risk%': project.risk|convertRisk} %} project-detail_unilend-rating-wording-label {% endtrans %}</span></span>
                             </div>
                             <div class="project-list-item-period">
-                                {% if project.status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::FUNDING_KO') %}
+                                {% if project.status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_CANCELLED') %}
                                     {% trans with {'%date%': project.endDate|localizeddate('medium', 'none', app.request.locale)} %} project-list_project-finished-ko {% endtrans %}
                                 {% elseif project.finished %}
                                     {% trans with {

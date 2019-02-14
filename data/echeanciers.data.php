@@ -610,8 +610,8 @@ class echeanciers extends echeanciers_crud
     {
         $delayQuery = '';
         $params     = [
-            'problem'      => ProjectsStatus::PROBLEME,
-            'repayment'    => ProjectsStatus::REMBOURSEMENT,
+            'problem'      => ProjectsStatus::STATUS_LOSS,
+            'repayment'    => ProjectsStatus::STATUS_REPAYMENT,
             'contractType' => $contractType,
             'repaid'       => EcheanciersEntity::STATUS_REPAID,
             'accepted'     => Loans::STATUS_ACCEPTED,

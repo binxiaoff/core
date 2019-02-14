@@ -5,7 +5,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 ?>
 <?php $isSalesUser = $this->get('unilend.service.back_office_user_manager')->isUserGroupSales($this->userEntity) ?>
 <a class="tab_title" id="section-presentation" href="#section-presentation">3. Présentation</a>
-<div class="tab_content<?php if ($this->projects->status == ProjectsStatus::PREP_FUNDING && $isSalesUser) : ?> expand<?php endif; ?>" id="etape3">
+<div class="tab_content<?php if ($this->projects->status == ProjectsStatus::STATUS_REVIEW && $isSalesUser) : ?> expand<?php endif; ?>" id="etape3">
     <form method="post" name="dossier_etape3" id="dossier_etape3" enctype="multipart/form-data" action="<?= $this->lurl ?>/ajax/valid_etapes">
         <input type="hidden" name="etape" value="3">
         <input type="hidden" name="id_project" value="<?= $this->projects->id_project ?>">

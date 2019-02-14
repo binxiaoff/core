@@ -33,10 +33,18 @@ class MainController extends Controller
     /**
      * @Route("/", name="home")
      *
+     * @param UserInterface|Clients|null $client
+     *
      * @return Response
      */
-    public function homeAction(): Response
+    public function homeAction(?UserInterface $client): Response
     {
+        if ($client instanceof Clients) {
+            return $this->redirectToRoute('demo_loans');
+        }
+
+        return $this->redirectToRoute('login');
+
         /** @var AuthorizationChecker $authorizationChecker */
         $authorizationChecker = $this->get('security.authorization_checker');
         /** @var WelcomeOfferManager $welcomeOfferManager */
@@ -107,7 +115,7 @@ class MainController extends Controller
         $template['projectAmountMin']  = $projectManager->getMinProjectAmount();
         $template['borrowingMotives']  = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:BorrowingMotive')->findBy([], ['rank' => 'ASC']);
         $template['projects'] = $projectDisplayManager->getProjectsList(
-            [ProjectsStatus::EN_FUNDING],
+            [ProjectsStatus::STATUS_ONLINE],
             [ProjectsRepository::SORT_FIELD_END => 'DESC']
         );
 
@@ -219,7 +227,7 @@ class MainController extends Controller
         $partner = $this->get('unilend.service.partner_manager')->getDefaultPartner();
 
         try {
-            $project = $projectRequestManager->newProject($user, $partner, ProjectsStatus::INCOMPLETE_REQUEST, $amount, $siren, $siret, $companyName, $email, $period, $borrowingMotive);
+            $project = $projectRequestManager->newProject($user, $partner, ProjectsStatus::STATUS_REQUEST, $amount, $siren, $siret, $companyName, $email, $period, $borrowingMotive);
 
             return $this->json([
                 'success' => true,
@@ -444,7 +452,7 @@ class MainController extends Controller
     {
         return $this->render('partials/footer.html.twig', [
             'menus'             => $contentManager->getFooterMenu(),
-            'displayDisclaimer' => $route !== 'project_detail'
+            'displayDisclaimer' => false//$route !== 'project_detail'
         ]);
     }
 

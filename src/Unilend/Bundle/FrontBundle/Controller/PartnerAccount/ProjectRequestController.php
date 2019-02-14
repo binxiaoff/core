@@ -59,25 +59,11 @@ class ProjectRequestController extends Controller
 
         $formData    = $request->request->get('simulator');
         $amount      = $formData['amount'] ?? null;
-        $reason      = $formData['motive'] ?? null;
         $duration    = $formData['duration'] ?? null;
-        $siren       = $projectRequestManager->validateSiren($formData['siren']);
-        $companyName = $formData['company_name'] ?? null;
 
         try {
-            if (empty($formData) || false === is_array($formData) || empty($formData['amount']) || empty($formData['motive']) || empty($formData['duration'])) {
+            if (empty($formData) || false === is_array($formData) || empty($formData['amount']) || empty($formData['duration'])) {
                 throw new InvalidArgumentException($translator->trans('partner-project-request_required-fields-error'));
-            }
-
-            if (false === empty($formData['siren'])) {
-                $siren = $projectRequestManager->validateSiren($formData['siren']);
-                $siren = $siren === false ? null : $siren;
-                // We accept in the same field both siren and siret
-                $siret = $projectRequestManager->validateSiret($formData['siren']);
-                $siret = $siret === false ? null : $siret;
-            } else {
-                $siren = null;
-                $siret = null;
             }
 
             /** @var Users $frontUser */
@@ -89,22 +75,12 @@ class ProjectRequestController extends Controller
                 $partnerCompany = $partnerRole->getIdCompany();
             }
 
-            $project = $projectRequestManager->newProject($frontUser, $partnerManager->getPartner($partnerUser), ProjectsStatus::SIMULATION, $amount, $siren, $siret, $companyName, null, $duration, $reason);
+            $project = $projectRequestManager->newProject($frontUser, $partnerManager->getPartner($partnerUser), ProjectsStatus::STATUS_REQUEST, $amount, null, null, null, null, $duration);
             $project
                 ->setIdClientSubmitter($partnerUser)
                 ->setIdCompanySubmitter($partnerCompany);
 
             $entityManager->flush($project);
-
-            if ($siren) {
-                $riskCheck = $projectRequestManager->checkProjectRisk($project, Users::USER_ID_FRONT);
-
-                if (null === $riskCheck) {
-                    $projectRequestManager->assignEligiblePartnerProduct($project, Users::USER_ID_FRONT, true);
-                }
-            } elseif (BorrowingMotive::ID_MOTIVE_FRANCHISER_CREATION !== $project->getIdBorrowingMotive()) {
-                throw new \InvalidArgumentException();
-            }
 
             return $this->redirectToRoute('partner_project_request_eligibility', ['hash' => $project->getHash()]);
         } catch (InvalidArgumentException $exception) {
@@ -118,8 +94,6 @@ class ProjectRequestController extends Controller
             $request->getSession()->set('partnerProjectRequest', [
                 'values' => [
                     'amount'   => $amount,
-                    'siren'    => $siren,
-                    'motive'   => $reason,
                     'duration' => $duration
                 ]
             ]);
@@ -155,7 +129,7 @@ class ProjectRequestController extends Controller
             return $project;
         }
 
-        if ($project->getStatus() > ProjectsStatus::SIMULATION) {
+        if ($project->getStatus() > ProjectsStatus::STATUS_REQUEST) {
             return $this->redirectToRoute('partner_project_request_details', ['hash' => $project->getHash()]);
         }
 
@@ -169,7 +143,7 @@ class ProjectRequestController extends Controller
             'hash'     => $project->getHash()
         ];
 
-        if ($project->getStatus() === ProjectsStatus::NOT_ELIGIBLE) {
+        if ($project->getStatus() === ProjectsStatus::STATUS_CANCELLED) {
             $projectRequestManager       = $this->get('unilend.service.project_request_manager');
             $template['rejectionReason'] = $projectRequestManager->getPartnerMainRejectionReasonMessage($project);
         } else {
@@ -217,9 +191,7 @@ class ProjectRequestController extends Controller
             return $project;
         }
 
-        if ($project->getStatus() === ProjectsStatus::SIMULATION) {
-            return $this->redirectToRoute('partner_project_request_eligibility', ['hash' => $project->getHash()]);
-        } elseif ($project->getStatus() === ProjectsStatus::ABANDONED) {
+        if ($project->getStatus() === ProjectsStatus::STATUS_CANCELLED) {
             return $this->redirectToRoute('partner_project_request_end', ['hash' => $project->getHash()]);
         }
 
@@ -250,8 +222,7 @@ class ProjectRequestController extends Controller
             'averageFundingDuration'   => $projectManager->getAverageFundingDuration($project->getAmount()),
             'monthlyPaymentBoundaries' => $projectManager->getMonthlyPaymentBoundaries($project->getAmount(), $project->getPeriod(), $project->getCommissionRateRepayment()),
             'abandonReasons'           => $projectAbandonReasonList,
-            'attachments'              => $entityManager->getRepository('UnilendCoreBusinessBundle:PartnerProjectAttachment')->findBy(['idPartner' => $partner],
-                ['rank' => 'ASC']),
+            'attachments'              => $entityManager->getRepository('UnilendCoreBusinessBundle:PartnerProjectAttachment')->findBy(['idPartner' => $partner], ['rank' => 'ASC']),
             'activeExecutives'         => $activeExecutives
         ];
 
@@ -460,12 +431,12 @@ class ProjectRequestController extends Controller
 
         if (false === $submit) {
             return $this->redirectToRoute('partner_project_request_details', ['hash' => $hash]);
-        } elseif (false === in_array($project->getStatus(), [ProjectsStatus::IMPOSSIBLE_AUTO_EVALUATION, ProjectsStatus::COMPLETE_REQUEST])) {
+        } elseif (false === in_array($project->getStatus(), [ProjectsStatus::STATUS_CANCELLED, ProjectsStatus::STATUS_REVIEW])) {
             try {
                 $termsOfSaleManager = $this->get('unilend.service.terms_of_sale_manager');
                 $termsOfSaleManager->sendBorrowerEmail($project, $project->getIdCompanySubmitter());
             } catch (\Exception $exception) {
-                $this->get('logger')->error('Error while sending terms of sale to partner borrower for project ' . $project->getIdProject(), [
+                $this->get('logger')->error('Error while sending terms of sale to partner borrower for project ' . $project->getIdProject() . ': ' . $exception->getMessage(), [
                     'id_project' => $project->getIdProject(),
                     'class'      => __CLASS__,
                     'function'   => __FUNCTION__,
@@ -474,10 +445,34 @@ class ProjectRequestController extends Controller
                 ]);
             }
 
-            $this->get('unilend.service.project_status_manager')->addProjectStatus(Users::USER_ID_FRONT, ProjectsStatus::COMPLETE_REQUEST, $project);
+            $this->get('unilend.service.project_status_manager')->addProjectStatus(Users::USER_ID_FRONT, ProjectsStatus::STATUS_REVIEW, $project);
         }
 
         return $this->redirectToRoute('partner_project_request_end', ['hash' => $hash]);
+    }
+
+    /**
+     * @Route("partenaire/depot/publier/{hash}", name="partner_project_request_online", requirements={"hash":"[a-z0-9-]{32,36}"})
+     * @Security("has_role('ROLE_PARTNER')")
+     *
+     * @param string                     $hash
+     * @param UserInterface|Clients|null $partnerUser
+     *
+     * @return Response
+     * @throws \Doctrine\ORM\OptimisticLockException
+     */
+    public function projectRequestOnlineAction(string $hash, ?UserInterface $partnerUser): Response
+    {
+        $project = $this->checkProjectHash($partnerUser, $hash);
+
+        if ($project instanceof RedirectResponse) {
+            return $project;
+        }
+
+        $projectStatusManager = $this->get('unilend.service.project_status_manager');
+        $projectStatusManager->addProjectStatus(Users::USER_ID_FRONT, ProjectsStatus::STATUS_ONLINE, $project);
+
+        return $this->redirectToRoute('partner_projects_list');
     }
 
     /**
@@ -503,13 +498,13 @@ class ProjectRequestController extends Controller
             return $project;
         }
 
-        if ($project->getStatus() === ProjectsStatus::SIMULATION) {
+        if ($project->getStatus() === ProjectsStatus::STATUS_REQUEST) {
             /** @var \projects $projectData */
             $projectData = $this->get('unilend.service.entity_manager')->getRepository('projects');
             $projectData->get($project->getIdProject());
 
             $projectStatusManager = $this->get('unilend.service.project_status_manager');
-            $projectStatusManager->addProjectStatus(Users::USER_ID_FRONT, ProjectsStatus::INCOMPLETE_REQUEST, $projectData);
+            $projectStatusManager->addProjectStatus(Users::USER_ID_FRONT, ProjectsStatus::STATUS_REQUEST, $projectData);
         }
 
         return $this->redirectToRoute('partner_project_request_details', ['hash' => $project->getHash()]);
@@ -542,7 +537,7 @@ class ProjectRequestController extends Controller
         $abandonReasonRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectAbandonReason');
 
         if (
-            $project->getStatus() !== ProjectsStatus::ABANDONED
+            $project->getStatus() !== ProjectsStatus::STATUS_CANCELLED
             && $request->request->get('reason')
             && ($abandonReason = $abandonReasonRepository->findBy(['idAbandon' => $request->request->get('reason')]))
         ) {
@@ -573,14 +568,14 @@ class ProjectRequestController extends Controller
         $translator = $this->get('translator');
 
         switch ($project->getStatus()) {
-            case ProjectsStatus::ABANDONED:
+            case ProjectsStatus::STATUS_CANCELLED:
                 $template = [
                     'title'   => $translator->trans('partner-project-end_status-abandon-title'),
                     'message' => $translator->trans('partner-project-end_status-abandon-message'),
                 ];
                 break;
-            case ProjectsStatus::IMPOSSIBLE_AUTO_EVALUATION:
-            case ProjectsStatus::COMPLETE_REQUEST:
+            case ProjectsStatus::STATUS_CANCELLED:
+            case ProjectsStatus::STATUS_REVIEW:
             default:
                 $template = [
                     'title'   => $translator->trans('partner-project-end_status-completed-title'),

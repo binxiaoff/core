@@ -16,6 +16,10 @@ class ProductRepository extends EntityRepository
      */
     public function findAvailableProductsByClient($client = null)
     {
+        if (null === $client) {
+            return [];
+        }
+
         if (null !== $client && false === ($client instanceof Clients)) {
             $client = $this->getEntityManager()->getRepository('UnilendCoreBusinessBundle:Clients')->find($client);
         }

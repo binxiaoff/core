@@ -144,8 +144,8 @@ trait CompanyChecker
         $projectStatusHistoryRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatusHistory');
         $projects                       = $projectRepository->findBySiren($company->getSiren());
 
-        $acceptableStatus        = [ProjectsStatus::REMBOURSE, ProjectsStatus::REMBOURSEMENT_ANTICIPE];
-        $partialAcceptableStatus = [ProjectsStatus::ANALYSIS_REJECTION, ProjectsStatus::COMITY_REJECTION, ProjectsStatus::ABANDONED];
+        $acceptableStatus        = [ProjectsStatus::STATUS_REPAID, ProjectsStatus::STATUS_REPAID];
+        $partialAcceptableStatus = [ProjectsStatus::STATUS_CANCELLED, ProjectsStatus::STATUS_CANCELLED, ProjectsStatus::STATUS_CANCELLED];
 
         foreach ($projects as $project) {
             $usedProduct = null;
@@ -199,7 +199,7 @@ trait CompanyChecker
             if (null === $usedProduct || Product::PRODUCT_BLEND === $usedProduct->getLabel()) {
                 continue;
             }
-            $lastIncidentStatus = $projectStatusHistoryRepository->findStatusLastOccurrence($project, [ProjectsStatus::PROBLEME]);
+            $lastIncidentStatus = $projectStatusHistoryRepository->findStatusLastOccurrence($project, [ProjectsStatus::STATUS_LOSS]);
 
             if ($lastIncidentStatus && $lastIncidentStatus->getAdded()->diff(new \DateTime())->days <= $noUnilendIncidentSince[0]) {
                 return false;
@@ -238,7 +238,7 @@ trait CompanyChecker
             if (null === $usedProduct || Product::PRODUCT_BLEND !== $usedProduct->getLabel()) {
                 continue;
             }
-            $lastIncidentStatus = $projectStatusHistoryRepository->findStatusLastOccurrence($project, [ProjectsStatus::PROBLEME]);
+            $lastIncidentStatus = $projectStatusHistoryRepository->findStatusLastOccurrence($project, [ProjectsStatus::STATUS_LOSS]);
 
             if ($lastIncidentStatus && $lastIncidentStatus->getAdded()->diff(new \DateTime())->days <= $noBlendIncidentSince[0]) {
                 return false;
