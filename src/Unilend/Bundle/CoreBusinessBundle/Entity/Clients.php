@@ -1368,43 +1368,59 @@ class Clients implements UserInterface, EquatableInterface, EncoderAwareInterfac
     }
 
     /**
-     * Check whether client has a borrower wallet or not. Since a client can have only one wallet today, it works so far.
+     * Check whether client has a borrower wallet or not
      *
      * @return bool
      */
-    public function isBorrower()
+    public function isBorrower(): bool
     {
-        return false === empty($this->wallets[0]) && $this->wallets[0]->getIdType()->getLabel() === WalletType::BORROWER;
+        return null !== $this->getWalletByType(WalletType::BORROWER);
     }
 
     /**
-     * Check whether client has a lender wallet or not. Since a client can have only one wallet today, it works so far.
+     * Check whether client has a lender wallet or not
      *
      * @return bool
      */
-    public function isLender()
+    public function isLender(): bool
     {
-        return false === empty($this->wallets[0]) && $this->wallets[0]->getIdType()->getLabel() === WalletType::LENDER;
+        return null !== $this->getWalletByType(WalletType::LENDER);
     }
 
     /**
-     * Check whether client has a partner wallet or not. Since a client can have only one wallet today, it works so far.
+     * Check whether client has a partner wallet or not
      *
      * @return bool
      */
-    public function isPartner()
+    public function isPartner(): bool
     {
-        return false === empty($this->wallets[0]) && $this->wallets[0]->getIdType()->getLabel() === WalletType::PARTNER;
+        return null !== $this->getWalletByType(WalletType::PARTNER);
     }
 
     /**
-     * Check whether client has a partner wallet or not. Since a client can have only one wallet today, it works so far.
+     * Check whether client has a debt collector wallet or not
      *
      * @return bool
      */
-    public function isDebtCollector()
+    public function isDebtCollector(): bool
     {
-        return false === empty($this->wallets[0]) && $this->wallets[0]->getIdType()->getLabel() === WalletType::DEBT_COLLECTOR;
+        return null !== $this->getWalletByType(WalletType::DEBT_COLLECTOR);
+    }
+
+    /**
+     * @param string $walletType
+     *
+     * @return Wallet|null
+     */
+    public function getWalletByType(string $walletType): ?Wallet
+    {
+        foreach ($this->wallets as $wallet) {
+            if ($walletType === $wallet->getIdType()->getLabel()) {
+                return $wallet;
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -1699,9 +1715,12 @@ class Clients implements UserInterface, EquatableInterface, EncoderAwareInterfac
             $roles[] = self::ROLE_BORROWER;
         }
 
-        if ($this->isPartner() && null !== $this->getCompanyClient()) {
+        if ($this->isPartner()) {
             $roles[] = self::ROLE_PARTNER_DEFAULT;
-            $roles[] = $this->getCompanyClient()->getRole();
+
+            if (null !== $this->getCompanyClient()) {
+                $roles[] = $this->getCompanyClient()->getRole();
+            }
         }
 
         return $roles;
