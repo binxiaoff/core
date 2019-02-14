@@ -1716,7 +1716,7 @@ class Clients implements UserInterface, EquatableInterface, EncoderAwareInterfac
         }
 
         if ($this->isPartner()) {
-            $roles[] = self::ROLE_PARTNER_DEFAULT;
+            $roles[] = self::ROLE_PARTNER;
 
             if (null !== $this->getCompanyClient()) {
                 $roles[] = $this->getCompanyClient()->getRole();
