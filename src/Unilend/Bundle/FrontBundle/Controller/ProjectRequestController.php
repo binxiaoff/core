@@ -666,14 +666,6 @@ class ProjectRequestController extends Controller
             return $this->redirectStatus($project, self::PAGE_ROUTE_END, ProjectsStatus::NOT_ELIGIBLE, ProjectRejectionReason::LOW_TURNOVER);
         }
 
-        $product = null;
-        if ($project->getIdProduct()) {
-            $product = $entityManager->getRepository('UnilendCoreBusinessBundle:Product')->find($project->getIdProduct());
-        }
-        if ($product && Product::PRODUCT_BLEND === $product->getLabel()) {
-            return $this->redirectStatus($project, self::PAGE_ROUTE_END, ProjectsStatus::NOT_ELIGIBLE, ProjectRejectionReason::PRODUCT_BLEND);
-        }
-
         if ('true' === $request->request->get('extra_files')) {
             return $this->redirectToRoute(self::PAGE_ROUTE_FILES, ['hash' => $project->getHash()]);
         }
@@ -1204,17 +1196,7 @@ class ProjectRequestController extends Controller
      */
     private function sendSubscriptionConfirmationEmail(Projects $project): void
     {
-        if (false === empty($project->getIdPrescripteur())) {
-            $entityManagerSimulator = $this->get('unilend.service.entity_manager');
-            /** @var \prescripteurs $advisor */
-            $advisor = $entityManagerSimulator->getRepository('prescripteurs');
-            $advisor->get($project->getIdPrescripteur());
-
-            $client = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients')->find($advisor->id_client);
-        } else {
-            $client = $project->getIdCompany()->getIdClientOwner();
-        }
-
+        $client   = $project->getIdCompany()->getIdClientOwner();
         $keywords = [
             'firstName'           => $client->getPrenom(),
             'companyName'         => $project->getIdCompany()->getName(),
@@ -1302,11 +1284,9 @@ class ProjectRequestController extends Controller
                 }
                 break;
             case ProjectsStatus::INCOMPLETE_REQUEST:
-                if (empty($project->getIdCompanyRatingHistory()) && $route !== self::PAGE_ROUTE_SIMULATOR_START) {
-                    return $this->redirectToRoute(self::PAGE_ROUTE_SIMULATOR_START, ['hash' => $hash]);
-                } elseif (false === empty($project->getIdCompanyRatingHistory()) && $route !== self::PAGE_ROUTE_CONTACT && empty($request->getSession()->get('partnerProjectRequest'))) {
+                if ($route !== self::PAGE_ROUTE_CONTACT && empty($request->getSession()->get('partnerProjectRequest'))) {
                     return $this->redirectToRoute(self::PAGE_ROUTE_CONTACT, ['hash' => $hash]);
-                } elseif (false === empty($project->getIdCompanyRatingHistory()) && $route !== self::PAGE_ROUTE_PARTNER && false === empty($request->getSession()->get('partnerProjectRequest'))) {
+                } elseif ($route !== self::PAGE_ROUTE_PARTNER && false === empty($request->getSession()->get('partnerProjectRequest'))) {
                     return $this->redirectToRoute(self::PAGE_ROUTE_PARTNER, ['hash' => $hash]);
                 }
                 break;

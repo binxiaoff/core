@@ -340,9 +340,9 @@ a:hover > .icon-big-facebook { background-position:-60px -90px; }
 .coupon .btn { padding:0; width:92px; margin-left:20px; }
 
 /* === Proccess === */
-.proccess { font:24px 'TrendSansOne', sans-serif; letter-spacing:-0.03em; color:#b20066; padding:27px 0; text-transform: uppercase; }
+.proccess { font:24px 'TrendSansOne', sans-serif; letter-spacing:-0.03em; color:#2bc9af; padding:27px 0; text-transform: uppercase; }
 .proccess a { color:#c2c7c9; }
-.proccess a:hover { color:#b20066; text-decoration:none; }
+.proccess a:hover { color:#2bc9af; text-decoration:none; }
 .proccess .divider { margin:0 18px; }
 .proccess span ~ span { color:#c2c7c9; }
 

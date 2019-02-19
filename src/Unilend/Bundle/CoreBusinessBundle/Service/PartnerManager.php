@@ -23,7 +23,9 @@ class PartnerManager
      */
     public function getDefaultPartner()
     {
-        return $this->entityManager->getRepository('UnilendCoreBusinessBundle:Partner')->findOneBy(['label' => Partner::PARTNER_UNILEND_LABEL]);
+        return $this->entityManager
+            ->getRepository('UnilendCoreBusinessBundle:Partner')
+            ->findOneBy(['label' => Partner::PARTNER_CALS_LABEL]);
     }
 
     /**

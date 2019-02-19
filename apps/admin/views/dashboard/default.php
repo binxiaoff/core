@@ -28,7 +28,7 @@
                 if (event.shiftKey || event.ctrlKey || event.metaKey) {
                     window.open('<?= $this->lurl ?>/dossiers/edit/' + projectId, '_blank')
                 } else {
-                    $(this).parent().children().css('background-color', '#b20066').css('color', '#fff')
+                    $(this).parent().children().css('background-color', '#2bc9af').css('color', '#fff')
                     $(location).attr('href', '<?= $this->lurl ?>/dossiers/edit/' + projectId)
                 }
             }
@@ -126,7 +126,7 @@
         cursor: pointer;
     }
     .projects .status-line td {
-        background-color: #6d1f4f !important;
+        background-color: #288171 !important;
         color: #fff !important;
         font-size: 13px;
     }

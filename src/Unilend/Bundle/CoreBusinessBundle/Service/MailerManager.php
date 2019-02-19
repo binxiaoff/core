@@ -4,9 +4,10 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\ORM\{EntityManagerInterface, ORMException};
 use Psr\Log\LoggerInterface;
-use Symfony\Component\{Asset\Packages, DependencyInjection\ContainerInterface, Routing\RouterInterface, Translation\TranslatorInterface};
-use Unilend\Bundle\CoreBusinessBundle\Entity\{Bids, Clients, ClientSettingType, ClientsGestionTypeNotif, ClientsMandats, Companies, Operation, OperationSubType, ProjectCgv, Projects, ProjectsPouvoir,
-    Settings, UniversignEntityInterface, Wallet, WalletType};
+use Symfony\Component\{Asset\Packages, DependencyInjection\ContainerInterface, Routing\RouterInterface,
+    Translation\TranslatorInterface};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{Bids, Clients, ClientSettingType, ClientsGestionTypeNotif, ClientsMandats, Companies, Operation, OperationSubType, ProjectCgv,
+    Projects, ProjectsPouvoir, Settings, TemporaryLinksLogin, UniversignEntityInterface, Wallet, WalletType};
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\{TemplateMessage, TemplateMessageProvider};
 use Unilend\core\Loader;
@@ -83,7 +84,7 @@ class MailerManager
         $this->translator             = $translator;
         $this->settingsRepository     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings');
 
-        $this->oFicelle    = Loader::loadLib('ficelle');
+        $this->oFicelle = Loader::loadLib('ficelle');
 
         $this->locale = $defaultLocale;
 
@@ -110,7 +111,7 @@ class MailerManager
         $bid = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Bids')->findOneBy(['idBid' => $notification->id_bid, 'idAutobid' => null]);
 
         if (null !== $bid) {
-            $keywords     = [
+            $keywords = [
                 'firstName'     => $bid->getIdLenderAccount()->getIdClient()->getPrenom(),
                 'companyName'   => $bid->getProject()->getIdCompany()->getName(),
                 'projectName'   => $bid->getProject()->getTitle(),
@@ -127,7 +128,7 @@ class MailerManager
             try {
                 $message->setTo($bid->getIdLenderAccount()->getIdClient()->getEmail());
                 $this->mailer->send($message);
-            } catch (\Exception $exception){
+            } catch (\Exception $exception) {
                 $this->oLogger->warning(
                     'Could not send email: "confirmation-bid" - Exception: ' . $exception->getMessage(),
                     ['method' => __METHOD__, 'id_mail_template' => $message->getTemplateId(), 'id_client' => $bid->getIdLenderAccount()->getIdClient()->getIdClient(), 'file' => $exception->getFile(), 'line' => $exception->getLine()]
@@ -164,7 +165,7 @@ class MailerManager
                 try {
                     $message->setTo($wallet->getIdClient()->getEmail());
                     $this->mailer->send($message);
-                } catch (\Exception $exception){
+                } catch (\Exception $exception) {
                     $this->oLogger->warning('Could not send email "preteur-dossier-funding-ko". Exception: ' . $exception->getMessage(), [
                         'id_mail_template' => $message->getTemplateId(),
                         'id_client'        => $wallet->getIdClient()->getIdClient(),
@@ -195,7 +196,7 @@ class MailerManager
         $borrower = $project->getIdCompany()->getIdClientOwner();
 
         if ($this->oLogger instanceof LoggerInterface) {
-            $this->oLogger->info('Project funded - sending email to borrower (project ' . $project->getIdProject() . ')',[
+            $this->oLogger->info('Project funded - sending email to borrower (project ' . $project->getIdProject() . ')', [
                 'id_project' => $project->getIdProject(),
                 'class'      => __CLASS__,
                 'function'   => __FUNCTION__
@@ -249,7 +250,7 @@ class MailerManager
         $mandate = $this->entityManager
             ->getRepository('UnilendCoreBusinessBundle:ClientsMandats')
             ->findOneBy(['idProject' => $project, 'status' => UniversignEntityInterface::STATUS_SIGNED], ['added' => 'DESC']);
-        $proxy = $this->entityManager
+        $proxy   = $this->entityManager
             ->getRepository('UnilendCoreBusinessBundle:ProjectsPouvoir')
             ->findOneBy(['idProject' => $project, 'status' => UniversignEntityInterface::STATUS_SIGNED], ['added' => 'DESC']);
 
@@ -363,12 +364,12 @@ class MailerManager
              */
             $project->get($bid->getProject()->getIdProject());
 
-            $now          = new \DateTime();
+            $now = new \DateTime();
             /**
              * We use: new \DateTime($project->date_fin) instead of: $bid->getProject()->getDateFin() because
              * it seems like that the $bid->getProject() returns a not up-to-date entity data, while $project->date_fin is updated in another process
              */
-            $endDate      = '0000-00-00 00:00:00' === $project->date_fin ? $bid->getProject()->getDateRetrait() : new \DateTime($project->date_fin);
+            $endDate = '0000-00-00 00:00:00' === $project->date_fin ? $bid->getProject()->getDateRetrait() : new \DateTime($project->date_fin);
 
             if (false === $endDate instanceof \DateTime) {
                 $datesUsed = ['endDate' => $endDate, 'date_fin' => $project->date_fin, 'getDateRetrait' => $bid->getProject()->getDateRetrait()];
@@ -444,7 +445,7 @@ class MailerManager
             try {
                 $message->setTo($bid->getIdLenderAccount()->getIdClient()->getEmail());
                 $this->mailer->send($message);
-            } catch (\Exception $exception){
+            } catch (\Exception $exception) {
                 $this->oLogger->warning(
                     'Could not send email: ' . $mailTemplate . ' - Exception: ' . $exception->getMessage(),
                     ['id_mail_template' => $message->getTemplateId(), 'id_client' => $bid->getIdLenderAccount()->getIdClient()->getIdClient(), 'class' => __CLASS__, 'function' => __FUNCTION__]
@@ -478,7 +479,7 @@ class MailerManager
             try {
                 $message->setTo($borrower->getEmail());
                 $this->mailer->send($message);
-            } catch (\Exception $exception){
+            } catch (\Exception $exception) {
                 $this->oLogger->warning('Could not send email "emprunteur-dossier-funding-ko". Exception: ' . $exception->getMessage(), [
                     'id_mail_template' => $message->getTemplateId(),
                     'id_client'        => $borrower->getIdClient(),
@@ -602,7 +603,7 @@ class MailerManager
             $format[] = "%i " . self::plural($interval->i, "minute");
         }
         if ($interval->s !== 0) {
-            if (! count($format)) {
+            if (!count($format)) {
                 return 'moins d\'une minute';
             } else {
                 $format[] = "%s " . self::plural($interval->s, "seconde");
@@ -674,7 +675,7 @@ class MailerManager
             try {
                 $message->setTo($mailClient);
                 $this->mailer->send($message);
-            } catch (\Exception $exception){
+            } catch (\Exception $exception) {
                 $this->oLogger->warning(
                     'Could not send email: annonce-mise-en-ligne-emprunteur - Exception: ' . $exception->getMessage(),
                     ['id_mail_template' => $message->getTemplateId(), 'id_client' => $company->getIdClientOwner()->getIdClient(), 'class' => __CLASS__, 'function' => __FUNCTION__]
@@ -728,7 +729,7 @@ class MailerManager
         try {
             $message->setTo($project->getIdCompany()->getEmailFacture());
             $this->mailer->send($message);
-        } catch (\Exception $exception){
+        } catch (\Exception $exception) {
             $this->oLogger->warning(
                 'Could not send email: facture-emprunteur - Exception: ' . $exception->getMessage(),
                 ['id_mail_template' => $message->getTemplateId(), 'id_client' => $client->getIdClient(), 'class' => __CLASS__, 'function' => __FUNCTION__]
@@ -806,7 +807,7 @@ class MailerManager
                                     <td class="td text-right">' . $this->oFicelle->formatNumber($oProject->amount, 0) . ' €</td>
                                     <td class="td text-right">' . $oProject->period . ' mois</td>
                                 </tr>';
-                            $iProjectsCount += 1;
+                            $iProjectsCount    += 1;
                         }
                     }
 
@@ -848,7 +849,7 @@ class MailerManager
                         try {
                             $message->setTo($oCustomer->email);
                             $this->mailer->send($message);
-                        } catch (\Exception $exception){
+                        } catch (\Exception $exception) {
                             $this->oLogger->warning(
                                 'Could not send email: ' . $mailType . ' - Exception: ' . $exception->getMessage(),
                                 ['id_mail_template' => $message->getTemplateId(), 'id_client' => $iCustomerId, 'class' => __CLASS__, 'function' => __FUNCTION__]
@@ -944,7 +945,7 @@ class MailerManager
                         $sBidsListHTML .= '
                             <tr>
                                 <td class="td">' . $sSpanAutobid . '</td>
-                                <td class="td"><a href="' . $this->sFUrl . '/projects/detail/' . $oProject->slug . '" style="color: #b20066; font-weight: normal; text-decoration: none;">' . $oProject->title . '</a></td>
+                                <td class="td"><a href="' . $this->sFUrl . '/projects/detail/' . $oProject->slug . '" style="color: #2bc9af; font-weight: normal; text-decoration: none;">' . $oProject->title . '</a></td>
                                 <td class="td text-right" style="text-align: right;">' . $this->oFicelle->formatNumber($oBid->amount / 100, 0) . '&nbsp;€</td>
                                 <td class="td text-right" style="text-align: right;">' . $this->oFicelle->formatNumber($oBid->rate, 1) . '&nbsp;%</td>
                             </tr>';
@@ -985,7 +986,7 @@ class MailerManager
                     try {
                         $message->setTo($oCustomer->email);
                         $this->mailer->send($message);
-                    } catch (\Exception $exception){
+                    } catch (\Exception $exception) {
                         $this->oLogger->warning(
                             'Could not send email: ' . $sMail . ' - Exception: ' . $exception->getMessage(),
                             ['id_mail_template' => $message->getTemplateId(), 'id_client' => $oCustomer->id_client, 'class' => __CLASS__, 'function' => __FUNCTION__]
@@ -1079,7 +1080,7 @@ class MailerManager
                         $sBidsListHTML .= '
                             <tr>
                                 <td class="td">' . $sSpanAutobid . '</td>
-                                <td class="td"><a href="' . $this->sFUrl . '/projects/detail/' . $oProject->slug . '" style="color: #b20066; font-weight: normal; text-decoration: none;">' . $oProject->title . '</a></td>
+                                <td class="td"><a href="' . $this->sFUrl . '/projects/detail/' . $oProject->slug . '" style="color: #2bc9af; font-weight: normal; text-decoration: none;">' . $oProject->title . '</a></td>
                                 <td class="td text-right" style="text-align: right;">' . $this->oFicelle->formatNumber($oNotification->amount / 100, 0) . '&nbsp;€</td>
                                 <td class="td text-right" style="text-align: right;">' . $this->oFicelle->formatNumber($oBid->rate, 1) . '&nbsp;%</td>
                             </tr>';
@@ -1121,7 +1122,7 @@ class MailerManager
                     try {
                         $message->setTo($oCustomer->email);
                         $this->mailer->send($message);
-                    } catch (\Exception $exception){
+                    } catch (\Exception $exception) {
                         $this->oLogger->warning(
                             'Could not send email: ' . $sMail . ' - Exception: ' . $exception->getMessage(),
                             ['id_mail_template' => $message->getTemplateId(), 'id_client' => $oCustomer->id_client, 'class' => __CLASS__, 'function' => __FUNCTION__]
@@ -1290,7 +1291,7 @@ class MailerManager
                     try {
                         $message->setTo($wallet->getIdClient()->getEmail());
                         $this->mailer->send($message);
-                    } catch (\Exception $exception){
+                    } catch (\Exception $exception) {
                         $this->oLogger->warning(
                             'Could not send email: ' . $sMail . ' - Exception: ' . $exception->getMessage(),
                             ['id_mail_template' => $message->getTemplateId(), 'id_client' => $wallet->getIdClient()->getIdClient(), 'class' => __CLASS__, 'function' => __FUNCTION__]
@@ -1425,7 +1426,7 @@ class MailerManager
                                 Comme le prévoient les règles d'Unilend, <span class=\"text-primary\">" . htmlentities($oCompanies->name) . "</span> a choisi de rembourser son emprunt par anticipation sans frais.<br/>
                                 Depuis l'origine, il vous a versé <span class=\"text-primary\">" . $this->oFicelle->formatNumber($oLenderRepayment->getRepaidInterests(['id_loan' => $loanId])) . "&nbsp;€</span> d'intérêts soit un taux d'intérêt annualisé moyen de <span class=\"text-primary\">" . $this->oFicelle->formatNumber($oLoan->getWeightedAverageInterestRateForLender($wallet->getId(), $oProject->id_project), 1) . "&nbsp;%.</span>";
 
-                            $earlyRepaymentContent ='<table border="0" cellpadding="0" cellspacing="0" width="100%">
+                            $earlyRepaymentContent = '<table border="0" cellpadding="0" cellspacing="0" width="100%">
                                                         <tr>
                                                             <td class="alert">
                                                                 <table border="0" cellpadding="0" cellspacing="0" width="100%">
@@ -1528,7 +1529,7 @@ class MailerManager
                     try {
                         $message->setTo($wallet->getIdClient()->getEmail());
                         $this->mailer->send($message);
-                    } catch (\Exception $exception){
+                    } catch (\Exception $exception) {
                         $this->oLogger->warning(
                             'Could not send email: ' . $sMail . ' - Exception: ' . $exception->getMessage(),
                             ['id_mail_template' => $message->getTemplateId(), 'id_client' => $wallet->getIdClient()->getIdClient(), 'class' => __CLASS__, 'function' => __FUNCTION__]
@@ -1570,7 +1571,7 @@ class MailerManager
         try {
             $message->setTo(trim($user->email));
             $this->mailer->send($message);
-        } catch (\Exception $exception){
+        } catch (\Exception $exception) {
             $this->oLogger->warning(
                 'Could not send email: user-nouveau-mot-de-passe - Exception: ' . $exception->getMessage(),
                 ['id_mail_template' => $message->getTemplateId(), 'id_user' => $user->id_user, 'class' => __CLASS__, 'function' => __FUNCTION__]
@@ -1669,7 +1670,10 @@ class MailerManager
      */
     public function sendPartnerAccountActivation(Clients $client)
     {
-        $token     = $this->entityManagerSimulator->getRepository('temporary_links_login')->generateTemporaryLink($client->getIdClient(), \temporary_links_login::PASSWORD_TOKEN_LIFETIME_LONG);
+        $token = $this->entityManager
+            ->getRepository('UnilendCoreBusinessBundle:TemporaryLinksLogin')
+            ->generateTemporaryLink($client, TemporaryLinksLogin::PASSWORD_TOKEN_LIFETIME_LONG);
+
         $variables = [
             'firstName'                  => $client->getPrenom(),
             'activationLink'             => $this->sFUrl . $this->router->generate('partner_security', ['securityToken' => $token]),
@@ -1677,17 +1681,20 @@ class MailerManager
             'borrowerServiceEmail'       => $this->settingsRepository->findOneBy(['type' => 'Adresse emprunteur'])->getValue(),
         ];
 
-        /** @var TemplateMessage $message */
         $message = $this->messageProvider->newMessage('ouverture-espace-partenaire', $variables);
 
         try {
             $message->setTo($client->getEmail());
             $this->mailer->send($message);
-        } catch (\Exception $exception){
-            $this->oLogger->warning(
-                'Could not send email: ouverture-espace-partenaire - Exception: ' . $exception->getMessage(),
-                ['id_mail_template' => $message->getTemplateId(), 'id_client' => $client->getIdClient(), 'class' => __CLASS__, 'function' => __FUNCTION__]
-            );
+        } catch (\Exception $exception) {
+            $this->oLogger->warning('Could not send email "ouverture-espace-partenaire". Exception: ' . $exception->getMessage(), [
+                'id_mail_template' => $message->getTemplateId(),
+                'id_client'        => $client->getIdClient(),
+                'class'            => __CLASS__,
+                'function'         => __FUNCTION__,
+                'file'             => $exception->getFile(),
+                'line'             => $exception->getLine()
+            ]);
         }
     }
 
@@ -1721,7 +1728,7 @@ class MailerManager
         try {
             $message->setTo($client->getEmail());
             $this->mailer->send($message);
-        } catch (\Exception $exception){
+        } catch (\Exception $exception) {
             $this->oLogger->warning(
                 'Could not send email: ' . $mailType . ' - Exception: ' . $exception->getMessage(),
                 ['id_mail_template' => $message->getTemplateId(), 'id_client' => $client->getIdClient(), 'class' => __CLASS__, 'function' => __FUNCTION__]
@@ -1740,11 +1747,13 @@ class MailerManager
         }
 
         if ($client->isValidated()) {
-            /** @var \temporary_links_login $temporaryLink */
-            $temporaryLink = $this->entityManagerSimulator->getRepository('temporary_links_login');
-            $keywords      = [
+            $token = $this->entityManager
+                ->getRepository('UnilendCoreBusinessBundle:TemporaryLinksLogin')
+                ->generateTemporaryLink($client, TemporaryLinksLogin::PASSWORD_TOKEN_LIFETIME_LONG);
+
+            $keywords = [
                 'firstName'            => $client->getPrenom(),
-                'temporaryToken'       => $temporaryLink->generateTemporaryLink($client->getIdClient(), \temporary_links_login::PASSWORD_TOKEN_LIFETIME_LONG),
+                'temporaryToken'       => $token,
                 'borrowerServiceEmail' => $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Adresse emprunteur'])->getValue()
             ];
 
@@ -1754,10 +1763,12 @@ class MailerManager
                 $message->setTo($client->getEmail());
                 $this->mailer->send($message);
             } catch (\Exception $exception) {
-                $this->oLogger->warning(
-                    'Could not send email: ' . $email . ' - Exception: ' . $exception->getMessage(),
-                    ['id_mail_template' => $message->getTemplateId(), 'id_client' => $client->getIdClient(), 'class' => __CLASS__, 'function' => __FUNCTION__]
-                );
+                $this->oLogger->warning('Could not send email: ' . $email . ' - Exception: ' . $exception->getMessage(), [
+                    'id_mail_template' => $message->getTemplateId(),
+                    'id_client'        => $client->getIdClient(),
+                    'class'            => __CLASS__,
+                    'function'         => __FUNCTION__
+                ]);
             }
         }
     }

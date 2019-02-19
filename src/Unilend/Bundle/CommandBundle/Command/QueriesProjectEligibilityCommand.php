@@ -39,7 +39,6 @@ class QueriesProjectEligibilityCommand extends ContainerAwareCommand
             'Date de creation',
             'Source',
             'Partenaire',
-            'Prescripteur',
             'Motif exprimé',
             'Montant',
             'Durée',
@@ -75,15 +74,13 @@ class QueriesProjectEligibilityCommand extends ContainerAwareCommand
      */
     private function getProjectEligibilityData(): array
     {
-        $entityManager                  = $this->getContainer()->get('doctrine.orm.entity_manager');
-        $assessmentRepository           = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectEligibilityAssessment');
-        $companyRatingRepository        = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyRating');
-        $borrowingMotiveRepository      = $entityManager->getRepository('UnilendCoreBusinessBundle:BorrowingMotive');
-        $projectNotesRepository         = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsNotes');
-        $advisorRepository              = $entityManager->getRepository('UnilendCoreBusinessBundle:Prescripteurs');
-        $clientRepository               = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
-        $indexedProjectStatus           = $this->getContainer()->get('unilend.service.project_status_manager')->getIndexedProjectStatus();
-        $ratingTypes                    = [
+        $entityManager             = $this->getContainer()->get('doctrine.orm.entity_manager');
+        $assessmentRepository      = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectEligibilityAssessment');
+        $companyRatingRepository   = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyRating');
+        $borrowingMotiveRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:BorrowingMotive');
+        $projectNotesRepository    = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsNotes');
+        $indexedProjectStatus      = $this->getContainer()->get('unilend.service.project_status_manager')->getIndexedProjectStatus();
+        $ratingTypes               = [
             CompanyRating::TYPE_ALTARES_SCORE_20,
             CompanyRating::TYPE_EULER_HERMES_TRAFFIC_LIGHT,
             CompanyRating::TYPE_EULER_HERMES_GRADE,
@@ -110,17 +107,6 @@ class QueriesProjectEligibilityCommand extends ContainerAwareCommand
                 $partner = $project->getIdPartner()->getIdCompany()->getName();
             }
 
-            $advisorName = 'Non';
-            if ($project->getIdPrescripteur()) {
-                $advisor = $advisorRepository->find($project->getIdPrescripteur());
-                if ($advisor) {
-                    $advisorClient = $clientRepository->find($advisor->getIdClient());
-                    if ($advisorClient) {
-                        $advisorName = $advisorClient->getPrenom() . ' ' . $advisorClient->getNom();
-                    }
-                }
-            }
-
             $projectEligibilityAssessment = $assessmentRepository->findOneBy(
                 ['idProject' => $project],
                 ['added' => 'DESC', 'id' => 'DESC']
@@ -134,7 +120,6 @@ class QueriesProjectEligibilityCommand extends ContainerAwareCommand
                 'date_creation'    => $company->getDateCreation() ? $company->getDateCreation()->format('d/m/Y') : '',
                 'source'           => $source,
                 'partner'          => $partner,
-                'advisor'          => $advisorName,
                 'motivation'       => $motivation ? $motivation->getMotive() : '',
                 'amount'           => $project->getAmount(),
                 'duration'         => $project->getPeriod(),

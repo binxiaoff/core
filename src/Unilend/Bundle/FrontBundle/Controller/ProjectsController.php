@@ -185,7 +185,7 @@ class ProjectsController extends Controller
     {
         $projectDisplayManager = $this->get('unilend.frontbundle.service.project_display_manager');
         $totalNumberProjects   = $projectDisplayManager->getTotalNumberOfDisplayedProjects($client);
-        $totalPages            = ceil($totalNumberProjects / $limit);
+        $totalPages            = $limit ? ceil($totalNumberProjects / $limit) : 1;
 
         $paginationSettings = [
             'itemsPerPage'      => $limit,
@@ -193,7 +193,7 @@ class ProjectsController extends Controller
             'totalPages'        => $totalPages,
             'currentIndex'      => $page,
             'currentIndexItems' => min($page * $limit, $totalNumberProjects),
-            'remainingItems'    => ceil($totalNumberProjects - ($totalNumberProjects / $limit)),
+            'remainingItems'    => $limit ? ceil($totalNumberProjects - ($totalNumberProjects / $limit)) : 0,
             'pageUrl'           => 'projects'
         ];
 

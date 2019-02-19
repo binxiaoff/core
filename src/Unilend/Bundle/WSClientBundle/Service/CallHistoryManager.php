@@ -117,13 +117,15 @@ class CallHistoryManager
      *
      * @return WsCallHistory
      */
-    private function createLog($resource, $siren, $transferTime, $callStatus = null)
+    private function createLog(WsExternalResource $resource, string $siren, float $transferTime, ?string $callStatus = null)
     {
         $wsCallHistory = new WsCallHistory();
-        $wsCallHistory->setIdResource($resource)
+        $wsCallHistory
+            ->setIdResource($resource)
             ->setSiren($siren)
-            ->setTransferTime($transferTime)
+            ->setTransferTime(round($transferTime, 3))
             ->setCallStatus($callStatus);
+
         $this->entityManager->persist($wsCallHistory);
         $this->entityManager->flush($wsCallHistory);
 

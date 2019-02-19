@@ -11,7 +11,6 @@ use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
 use Unilend\Bundle\FrontBundle\Form\Components\GenderType;
 
@@ -20,17 +19,12 @@ class CompanyIdentityType extends AbstractType
     /** @var EntityManagerInterface */
     private $entityManager;
 
-    /** @var TranslatorInterface */
-    private $translator;
-
     /**
      * @param EntityManagerInterface $entityManager
-     * @param TranslatorInterface    $translator
      */
-    public function __construct(EntityManagerInterface $entityManager, TranslatorInterface $translator)
+    public function __construct(EntityManagerInterface $entityManager)
     {
         $this->entityManager = $entityManager;
-        $this->translator    = $translator;
     }
 
     /**
@@ -43,9 +37,9 @@ class CompanyIdentityType extends AbstractType
         $externalCounselList = array_flip(json_decode($settingEntity->getValue(), true));
 
         $clientStatusChoices = [
-            $this->translator->trans('lender-identity-form_company-client-status-' . Companies::CLIENT_STATUS_MANAGER)             => Companies::CLIENT_STATUS_MANAGER,
-            $this->translator->trans('lender-identity-form_company-client-status-' . Companies::CLIENT_STATUS_DELEGATION_OF_POWER) => Companies::CLIENT_STATUS_DELEGATION_OF_POWER,
-            $this->translator->trans('lender-identity-form_company-client-status-' . Companies::CLIENT_STATUS_EXTERNAL_CONSULTANT) => Companies::CLIENT_STATUS_EXTERNAL_CONSULTANT
+            'lender-identity-form_company-client-status-' . Companies::CLIENT_STATUS_MANAGER             => Companies::CLIENT_STATUS_MANAGER,
+            'lender-identity-form_company-client-status-' . Companies::CLIENT_STATUS_DELEGATION_OF_POWER => Companies::CLIENT_STATUS_DELEGATION_OF_POWER,
+            'lender-identity-form_company-client-status-' . Companies::CLIENT_STATUS_EXTERNAL_CONSULTANT => Companies::CLIENT_STATUS_EXTERNAL_CONSULTANT
         ];
 
         $builder

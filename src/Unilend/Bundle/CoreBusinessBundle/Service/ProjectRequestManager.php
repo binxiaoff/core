@@ -326,6 +326,8 @@ class ProjectRequestManager
      */
     public function checkProjectRisk($projectToCheck, int $userId): ?array
     {
+        return null;
+
         if ($projectToCheck instanceof \projects) {
             $project = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($projectToCheck->id_project);
         } else {
@@ -434,15 +436,17 @@ class ProjectRequestManager
                         ->findOneBy(['idPartner' => $project->getIdPartner(), 'idProduct' => $products[0]->id_product]);
 
                     if (null !== $partnerProduct) {
-                        $project->setIdProduct($partnerProduct->getIdProduct()->getIdProduct());
-                        $project->setCommissionRateFunds($partnerProduct->getCommissionRateFunds());
-                        $project->setCommissionRateRepayment($partnerProduct->getCommissionRateRepayment());
+                        $project
+                            ->setIdProduct($partnerProduct->getIdProduct()->getIdProduct())
+                            ->setCommissionRateFunds($partnerProduct->getCommissionRateFunds())
+                            ->setCommissionRateRepayment($partnerProduct->getCommissionRateRepayment());
                     }
                     $this->entityManager->flush($project);
                 }
 
                 if (empty($products) && $addProjectStatus) {
-                    $rejectionReason = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRejectionReason')
+                    $rejectionReason = $this->entityManager
+                        ->getRepository('UnilendCoreBusinessBundle:ProjectRejectionReason')
                         ->findBy(['label' => ProjectRejectionReason::PRODUCT_NOT_FOUND]);
                     try {
                         $this->projectStatusManager->rejectProject($project, ProjectsStatus::NOT_ELIGIBLE, $rejectionReason, $userId);
@@ -463,7 +467,7 @@ class ProjectRequestManager
                 $this->logger->warning('Cannot find eligible partner product for project ' . $project->getIdProject() . ' id_partner is empty', [
                     'id_project' => $project->getIdProject(),
                     'class'      => __CLASS__,
-                    'function'   => __FUNCTION__,
+                    'function'   => __FUNCTION__
                 ]);
             }
         } catch (\Exception $exception) {

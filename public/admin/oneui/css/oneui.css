@@ -7930,18 +7930,18 @@ button.text-amethyst-lighter:focus {
   opacity: .75;
 }
 .bg-unilend {
-  background-color: #b20066;
+  background-color: #2bc9af;
 }
 a.bg-unilend:hover,
 a.bg-unilend:focus {
-  background-color: #7f0049;
+  background-color: #2ba48f;
 }
 .bg-unilend-op {
-  background-color: rgba(178, 0, 102, 0.75);
+  background-color: #288171;
 }
 a.bg-unilend-op:hover,
 a.bg-unilend-op:focus {
-  background-color: rgba(127, 0, 73, 0.75);
+  background-color: #236054;
 }
 .bg-unilend-dark {
   background-color: #19000e;
@@ -7965,18 +7965,18 @@ a.bg-unilend-darker:focus {
   background-color: #1f212a;
 }
 .bg-unilend-light {
-  background-color: #a70b64;
+  background-color: #2bc9af;
 }
 a.bg-unilend-light:hover,
 a.bg-unilend-light:focus {
-  background-color: #770848;
+  background-color: #2ba48f;
 }
 .bg-unilend-lighter {
-  background-color: rgba(178, 0, 102, 0.5);
+  background-color: #288171;
 }
 a.bg-unilend-lighter:hover,
 a.bg-unilend-lighter:focus {
-  background-color: rgba(127, 0, 73, 0.5);
+  background-color: #236054;
 }
 .bg-amethyst {
   background-color: #a48ad4;

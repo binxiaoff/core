@@ -2,35 +2,6 @@
 
 {% block siteContent %}
     <article id="homeemp" class="page">
-
-        <section id="homeemp-video-hero" class="cta-video-hero" aria-hidden="true" data-set-device-height="xs">
-            <div class="video-hero-wrapper">
-                <div class="video-hero" style="background-image: url('{{ completeTestimonialUrl(featureBorrower.feature_image, 'image') }}')">
-                    <div class="caption caption-align-left">
-                        <div class="caption-name">{{ featureBorrower.name }}, {{ featureBorrower.location }}</div>
-                        <div class="caption-info">{{ featureBorrower.info }}</div>
-                        <div class="caption-links">
-                            <a href="{{ path('testimonials') }}" class="link">{{ 'home-borrower_link-to-testimonial-on-video'|trans }}</a></div>
-                    </div><!-- /.caption -->
-                </div><!-- /.video-hero -->
-
-                <div class="video-hero-cta">
-                    <div class="btn-media-wrapper">
-                        <a href="https://www.youtube.com/watch?v=EVPq8BYm5tM" class="btn-media fancybox-media fancybox-embed-videojs">
-                            <span class="icon fa-play"><span class="sr-only">Play</span></span>
-                        </a>
-                    </div>
-                    <h3>{{ featureBorrower.video_caption }}</h3>
-                </div><!-- /.video-hero-cta -->
-
-                {% include 'partials/list_socialmedia.html.twig' %}
-
-                <div class="btn-toolbar">
-                    <a href="#homeemp-section-esim" class="btn-cta btn-color-alternate"><span class="icon fa-angle-right"></span> {{ 'home-borrower_link-below-video-text'|trans }}</a>
-                </div>
-            </div><!-- /.video-hero-wrapper -->
-        </section><!-- /.cta-video-hero -->
-
         <section id="homeemp-section-whyborrow" class="page-section">
             <div class="site-wrap">
                 <h2 class="h2">{% trans %} home-borrower_why-borrow-stats-title {% endtrans %}</h2>
@@ -55,18 +26,10 @@
                                     {{ svgimage('#promo-calendarweek', '', 190, 190, 'none')|raw }}
                                     <img src="{{ siteurlmedia('promos/promo-calendar-190x190.png') }}" alt="">
                                 </div>
-                                {% set calendarweekValue = getStatistic('averageFundingTime') %}
-                                {% if calendarweekValue.days < 1 %}
-                                    <h3 class="promo-highlight">
-                                        <span class="ui-text-count" data-start-count="0" data-end-count="{{ calendarweekValue.hours }}" data-total-time="1000" data-round-float="ceil" data-tween-count="easeOutCirc">{{ calendarweekValue.hours }}</span>
-                                    </h3>
-                                    <p>{% trans with {'%avgFundingTime%' : calendarweekValue.hours} %} home-borrower_why-borrow-stats-calendarweek-text-hours {% endtrans %}</p>
-                                {% else  %}
-                                    <h3 class="promo-highlight">
-                                        <span class="ui-text-count" data-start-count="0" data-end-count="{{ calendarweekValue.days }}" data-total-time="500" data-round-float="ceil" data-tween-count="easeOutCirc">{{ calendarweekValue.days }}</span>
-                                    </h3>
-                                    <p>{% trans with {'%avgFundingTime%' : calendarweekValue.days} %} home-borrower_why-borrow-stats-calendarweek-text-days {% endtrans %}</p>
-                                {% endif %}
+                                <h3 class="promo-highlight">
+                                    <span class="ui-text-count" data-start-count="0" data-end-count="17" data-total-time="1000" data-round-float="ceil" data-tween-count="easeOutCirc">17</span>
+                                </h3>
+                                <p>{% trans with {'%avgFundingTime%' : 17} %} home-borrower_why-borrow-stats-calendarweek-text-hours {% endtrans %}</p>
                             </div>
                         </div><!-- /.promo -->
                         <div class="col-lg-4 col-md-4 swiper-slide">
@@ -92,62 +55,6 @@
                 </div><!-- /.page-section-footer -->
             </div><!-- /.site-wrap -->
         </section><!-- /.promos -->
-
-        <section id="homeemp-section-testimonials" class="page-section">
-            <div class="site-wrap">
-                <h1 class="h2">{% trans %} home-borrower_testimonial-section-title {% endtrans %}</h1>
-
-                <div class="promo-battenberg" data-watchscroll-action="enter" data-watchscroll-callback="addClass:ui-is-visible">
-                    {% for i, person in testimonialPeople %}
-                        {% if i % 2 == 1 %}
-                            {% set classPosition = 'promo-align-right' %}
-                            {% set classAnimatePosition = 'ui-animate-from-left' %}
-                            {% set classRow = 'row reverse' %}
-                            {% set classColumnsImage = 'col-lg-5 pull-lg-1 col-md-5 pull-md-1' %}
-                        {% elseif i % 2 == 0 %}
-                            {% set classPosition = 'promo-align-left' %}
-                            {% set classAnimatePosition = 'ui-animate-from-right' %}
-                            {% set classRow = 'row' %}
-                            {% set classColumnsImage = 'col-lg-5 push-lg-1 col-md-5 push-md-1' %}
-                        {% endif %}
-
-                        <div class="promo-borrower {{ classRow }}">
-                            <div class="{{ classColumnsImage }}">
-                                <div class="promo-image promo-p2" style="background-image: url('{{ completeTestimonialUrl(person.battenberg_image, 'image') }}')">
-                                    &nbsp;
-                                    <a href="{{ path('home_borrower') }}#homeemp-section-esim" class="promo-image-cta">
-                                        <div><span class="link">{{ "site-general_testimonial-section-overlay-link-#{person.type}"|trans }}</span></div>
-                                    </a>
-                                </div><!-- /.promo-image -->
-                            </div>
-                            <div class="col-lg-6 col-md-6 vertical-align-content">
-                                <div class="promo-slide promo-p2 {{ classPosition }} {{ classAnimatePosition }}">
-                                    <p class="quote">&quot;{{ person.quote|raw }}&quot;</p>
-                                    <p class="source"><cite>{{ person.name }}&mdash;{{ person.location }}</cite></p>
-                                    <div class="promo-links">
-                                        <a href="{{ path('testimonials') }}#testimonial-{{ person.name }}" class="link">{% trans %} site-general_testimonial-section-link-lender-title {% endtrans %}</a>
-                                        {% if person.project.slug is not empty %}
-                                            <a href="{{ path('project_detail', {'projectSlug' : person.project.slug}) }}" class="link">
-                                                {% trans %} site-general_testimonial-section-link-borrower-title {% endtrans %}
-                                            </a>
-                                        {% endif %}
-                                    </div>
-                                </div><!-- /.promo-slide -->
-                            </div>
-                        </div><!-- /.promo-emprunter -->
-                    {% endfor %}
-                </div><!-- /.promo-battenberg -->
-
-                <div class="row page-section">
-                    <div class="btn-toolbar">
-                        <a href="{{ path('home_borrower') }}#homeemp-section-esim" class="btn-alternate">
-                            <span class="icon fa-angle-right"></span>
-                            {% trans %} home-borrower_submit-project-button {% endtrans %}
-                        </a>
-                    </div>
-                </div>
-            </div><!-- /.site-wrap -->
-        </section><!-- /.page-section -->
 
         <section id="homeemp-section-esim" class="page-section bg-bg3">
             <div class="site-wrap">
@@ -391,10 +298,7 @@
             </div><!-- /.site-wrap -->
         </section><!-- /.page-section -->
 
-        {{ render(controller('UnilendFrontBundle:Main:footerReviews')) }}
-
         {% include 'partials/scroll_more.html.twig' %}
-
     </article><!-- /.page -->
 {% endblock %}
 
@@ -413,12 +317,12 @@
         invalidEmail: {{ constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Service\\ProjectRequestManager::EXCEPTION_CODE_INVALID_EMAIL') }}
       }
       var borrowerEsimErrorMessages = {
-        invalidAmount: '{% trans %} project-request-simulator_invalid-amount {% endtrans %}',
-        invalidDuration: '{% trans %} project-request-simulator_invalid-duration {% endtrans %}',
-        invalidReason: '{% trans %} project-request-simulator_invalid-reason {% endtrans %}',
-        invalidSiren: '{% trans %} project-request-simulator_invalid-siren {% endtrans %}',
-        invalidEmail: '{% trans %} project-request-simulator_invalid-email {% endtrans %}',
-        unknownError: '{% trans %} project-request-simulator_unknown-error {% endtrans %}'
+        invalidAmount: '{{ "project-request-simulator_invalid-amount"|trans|e("js") }}',
+        invalidDuration: '{{ "project-request-simulator_invalid-duration"|trans|e("js") }}',
+        invalidReason: '{{ "project-request-simulator_invalid-reason"|trans|e("js") }}',
+        invalidSiren: '{{ "project-request-simulator_invalid-siren"|trans|e("js") }}',
+        invalidEmail: '{{ "project-request-simulator_invalid-email"|trans|e("js") }}',
+        unknownError: '{{ "project-request-simulator_unknown-error"|trans|e("js") }}'
       }
     </script>
 {% endblock %}

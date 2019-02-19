@@ -11,7 +11,7 @@ use Symfony\Component\Security\Core\Exception\BadCredentialsException;
 use Symfony\Component\Security\Csrf\CsrfToken;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 use Symfony\Component\Translation\TranslatorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{Clients, ClientsHistoryActions, WalletType};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{Clients, ClientsHistoryActions, TemporaryLinksLogin, WalletType};
 use Unilend\Bundle\CoreBusinessBundle\Service\GoogleRecaptchaManager;
 use Unilend\Bundle\FrontBundle\Security\{BCryptPasswordEncoder, LoginAuthenticator};
 
@@ -130,17 +130,18 @@ class SecurityController extends Controller
             ]);
         }
 
-        /** @var \temporary_links_login $temporaryLink */
-        $temporaryLink = $this->get('unilend.service.entity_manager')->getRepository('temporary_links_login');
-        $client        = current($clients);
-        $token         = $temporaryLink->generateTemporaryLink($client->getIdClient(), \temporary_links_login::PASSWORD_TOKEN_LIFETIME_SHORT);
-        $wallet        = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->findOneBy(['idClient' => $client]);
+        $client = current($clients);
+        $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->findOneBy(['idClient' => $client]);
+        $token  = $entityManager
+            ->getRepository('UnilendCoreBusinessBundle:TemporaryLinksLogin')
+            ->generateTemporaryLink($client, TemporaryLinksLogin::PASSWORD_TOKEN_LIFETIME_SHORT);
 
         if (null === $wallet) {
-            $this->get('logger')->error(
-                'Client ' . $client->getIdClient() . ' has no wallet',
-                ['id_client' => $client->getIdClient(), 'class' => __CLASS__, 'function' => __FUNCTION__]
-            );
+            $this->get('logger')->error('Client ' . $client->getIdClient() . ' has no wallet', [
+                'id_client' => $client->getIdClient(),
+                'class'     => __CLASS__,
+                'function'  => __FUNCTION__
+            ]);
 
             return new JsonResponse([
                 'success' => true
@@ -247,28 +248,27 @@ class SecurityController extends Controller
      */
     public function passwordForgottenAction(string $securityToken): Response
     {
-        $entityManager = $this->get('unilend.service.entity_manager');
-
         if ($this->get('session')->getFlashBag()->has('passwordSuccess')) {
             return $this->render('security/password_forgotten.html.twig', ['token' => $securityToken]);
         }
 
-        /** @var \temporary_links_login $temporaryLink */
-        $temporaryLink = $entityManager->getRepository('temporary_links_login');
+        $entityManager           = $this->get('doctrine.orm.entity_manager');
+        $temporaryLinkRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:TemporaryLinksLogin');
+        $temporaryLink           = $temporaryLinkRepository->findOneBy(['token' => $securityToken]);
 
-        if (false === $temporaryLink->get($securityToken, 'expires > NOW() AND token')) {
+        /** @var TemporaryLinksLogin $temporaryLink */
+        if (null === $temporaryLink || $temporaryLink->getExpires() < new \DateTime()) {
             $this->addFlash('tokenError', $this->get('translator')->trans('password-forgotten_invalid-token'));
             return $this->render('security/password_forgotten.html.twig', ['token' => $securityToken]);
         }
 
-        $temporaryLink->accessed = (new \DateTime('NOW'))->format('Y-m-d H:i:s');
-        $temporaryLink->update();
+        $temporaryLink->setAccessed(new \DateTime());
+        $entityManager->flush($temporaryLink);
 
-        /** @var \clients $client */
-        $client = $entityManager->getRepository('clients');
-        $client->get($temporaryLink->id_client, 'id_client');
-
-        return $this->render('security/password_forgotten.html.twig', ['token' => $securityToken, 'secretQuestion' => $client->secrete_question]);
+        return $this->render('security/password_forgotten.html.twig', [
+            'token'          => $securityToken,
+            'secretQuestion' => $temporaryLink->getIdClient()->getSecreteQuestion()
+        ]);
     }
 
     /**
@@ -282,21 +282,20 @@ class SecurityController extends Controller
      */
     public function changePasswordFormAction(string $securityToken, Request $request): Response
     {
-        $entityManager          = $this->get('doctrine.orm.entity_manager');
-        $entityManagerSimulator = $this->get('unilend.service.entity_manager');
+        $entityManager           = $this->get('doctrine.orm.entity_manager');
+        $temporaryLinkRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:TemporaryLinksLogin');
+        $temporaryLink           = $temporaryLinkRepository->findOneBy(['token' => $securityToken]);
 
-        /** @var \temporary_links_login $temporaryLink */
-        $temporaryLink = $entityManagerSimulator->getRepository('temporary_links_login');
-
-        if (false === $temporaryLink->get($securityToken, 'expires > NOW() AND token')) {
+        /** @var TemporaryLinksLogin $temporaryLink */
+        if (null === $temporaryLink || $temporaryLink->getExpires() < new \DateTime()) {
             $this->addFlash('tokenError', $this->get('translator')->trans('password-forgotten_invalid-token'));
             return $this->redirectToRoute('define_new_password', ['securityToken' => $securityToken]);
         }
 
-        $temporaryLink->accessed = (new \DateTime('NOW'))->format('Y-m-d H:i:s');
-        $temporaryLink->update();
+        $temporaryLink->setAccessed(new \DateTime());
+        $entityManager->flush($temporaryLink);
 
-        $client = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($temporaryLink->id_client);
+        $client = $temporaryLink->getIdClient();
 
         /** @var TranslatorInterface $translator */
         $translator = $this->get('translator');
@@ -318,7 +317,7 @@ class SecurityController extends Controller
 
             try {
                 $password = $this->get('security.password_encoder')->encodePassword($client, $request->request->get('client_new_password'));
-                $temporaryLink->revokeTemporaryLinks($temporaryLink->id_client);
+                $entityManager->getRepository('UnilendCoreBusinessBundle:TemporaryLinksLogin')->revokeTemporaryLinks($client);
                 $client->setPassword($password);
                 $entityManager->flush($client);
 

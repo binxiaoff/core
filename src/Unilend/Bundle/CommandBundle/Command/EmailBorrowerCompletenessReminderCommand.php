@@ -33,8 +33,6 @@ class EmailBorrowerCompletenessReminderCommand extends ContainerAwareCommand
         /** @var \ficelle $ficelle */
         $ficelle = Loader::loadLib('ficelle');
 
-        /** @var \prescripteurs $prescripteur */
-        $prescripteur = $entityManagerSimulator->getRepository('prescripteurs');
         /** @var \projects_status_history $projectStatusHistory */
         $projectStatusHistory = $entityManagerSimulator->getRepository('projects_status_history');
         /** @var \settings $settings */
@@ -83,9 +81,7 @@ class EmailBorrowerCompletenessReminderCommand extends ContainerAwareCommand
                             }
                             $company = $project->getIdCompany();
 
-                            if (false === empty($project->getIdPrescripteur()) && $prescripteur->get($project->getIdPrescripteur(), 'id_prescripteur')) {
-                                $client = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($prescripteur->id_client);
-                            } elseif (null !== $company->getIdClientOwner()) {
+                            if (null !== $company->getIdClientOwner()) {
                                 $client = $company->getIdClientOwner();
                             } else {
                                 $logger->error('Cannot send reminder (project ' . $project->getIdProject() . '). No associated client found.', [

@@ -35,7 +35,6 @@ class ProjectRejectionReason
     const PROJECT_NOT_ELIGIBLE     = 'project_not_eligible';
 
     const PRODUCT_NOT_FOUND                                               = 'product_not_found';
-    const PRODUCT_BLEND                                                   = 'product_blend';
     const NO_LEGAL_STATUS                                                 = 'no_legal_status';
     const ENTITY_INACTIVE                                                 = 'entity_inactive';
     const COMPANY_LOCATION                                                = 'company_location';

@@ -786,8 +786,7 @@ class ClientsRepository extends EntityRepository
                 COUNT(wbh.id) AS operations,
                 pa.id AS idPartner,
                 cp.name AS partnerName,
-                COUNT(DISTINCT bo.id) AS beneficialOwner,
-                pr.idPrescripteur'
+                COUNT(DISTINCT bo.id) AS beneficialOwner'
             )
             ->leftJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'c.idClient = w.idClient')
             ->leftJoin('UnilendCoreBusinessBundle:WalletType', 'wt', Join::WITH, 'w.idType = wt.id')
@@ -800,7 +799,6 @@ class ClientsRepository extends EntityRepository
             ->leftJoin('UnilendCoreBusinessBundle:Companies', 'coc', Join::WITH, 'cc.idCompany = coc.idCompany')
             ->leftJoin('UnilendCoreBusinessBundle:Companies', 'cp', Join::WITH, 'coc.idParentCompany = cp.idCompany')
             ->leftJoin('UnilendCoreBusinessBundle:Partner', 'pa', Join::WITH, 'cp.idCompany = pa.idCompany')
-            ->leftJoin('UnilendCoreBusinessBundle:Prescripteurs', 'pr', Join::WITH, 'c.idClient = pr.idClient')
             ->where('c.email LIKE :email')
             ->setParameter('email', $email . '%', \PDO::PARAM_STR)
             ->groupBy('c.idClient');

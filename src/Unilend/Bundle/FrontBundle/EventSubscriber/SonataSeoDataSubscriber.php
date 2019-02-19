@@ -22,7 +22,7 @@ class SonataSeoDataSubscriber implements EventSubscriberInterface
     public static function getSubscribedEvents()
     {
         return [
-            KernelEvents::REQUEST => 'setSeoData'
+//            KernelEvents::REQUEST => 'setSeoData'
         ];
     }
 

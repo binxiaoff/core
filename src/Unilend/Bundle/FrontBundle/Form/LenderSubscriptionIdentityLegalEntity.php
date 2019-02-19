@@ -39,8 +39,8 @@ class LenderSubscriptionIdentityLegalEntity extends AbstractType
             ->add('security', SecurityQuestionType::class, ['data' => $options['data']['client']])
             ->add('clientType', ChoiceType::class, [
                 'choices'  => [
-                    $this->translator->trans('lender-subscription_identity-client-type-person-label')       => 'person',
-                    $this->translator->trans('lender-subscription_identity-client-type-legal-entity-label') => 'legalEntity'
+                    'lender-subscription_identity-client-type-person-label'       => 'person',
+                    'lender-subscription_identity-client-type-legal-entity-label' => 'legalEntity'
                 ],
                 'expanded' => true,
                 'multiple' => false,

@@ -4,12 +4,13 @@
 <!--[if lt IE 9]><html lang="{{ app.request.locale }}" class="lt-ie9 no-js"><![endif]-->
 <!--[if IE 9]><html lang="{{ app.request.locale }}" class="ie9 no-js"><![endif]-->
 <!--[if gt IE 9]><!--><html lang="{{ app.request.locale }}" class="no-js"><!--<![endif]-->
-    <head {{ sonata_seo_head_attributes() }}>
-        {{ google_tag_manager_head() }}
-        {% block metaTags %}
-            {{ sonata_seo_title() }}
-            {{ sonata_seo_metadatas() }}
-        {% endblock %}
+    <head>
+    {#<head {{ sonata_seo_head_attributes() }}>#}
+        {#{{ google_tag_manager_head() }}#}
+        {#{% block metaTags %}#}
+            {#{{ sonata_seo_title() }}#}
+            {#{{ sonata_seo_metadatas() }}#}
+        {#{% endblock %}#}
 
         {% block cssFiles %}
             {% include 'partials/fonts_inline.html.twig' %}
@@ -32,7 +33,7 @@
         <link rel="icon" type="image/png" href="{{ asset('favicons/favicon-32x32.png', 'gulp') }}" sizes="32x32">
         <link rel="icon" type="image/png" href="{{ asset('favicons/favicon-16x16.png', 'gulp') }}" sizes="16x16">
         <link rel="manifest" href="{{ asset('favicons/manifest.json', 'gulp') }}">
-        <link rel="mask-icon" href="{{ asset('favicons/safari-pinned-tab.svg', 'gulp') }}" color="#b20066">
+        <link rel="mask-icon" href="{{ asset('favicons/safari-pinned-tab.svg', 'gulp') }}" color="#2bc9af">
         <link rel="shortcut icon" href="{{ asset('favicons/favicon.ico', 'gulp') }}">
         <meta name="msapplication-config" content="{{ asset('favicons/browserconfig.xml', 'gulp') }}">
         <meta name="theme-color" content="#ffffff">
@@ -63,13 +64,6 @@
                 {{ render(controller('UnilendFrontBundle:Main:footer', {'route': app.request.attributes.get('_route')})) }}
             {% endblock %}
         </div>
-
-        {# Debug tools - Remove "and false" in order to display it #}
-        {% if app.environment == 'dev' and false %}
-            {% block debug %}
-                {% include 'partials/debug.html.twig' %}
-            {% endblock %}
-        {% endif %}
 
         {# As long as lender menu is rendered using LenderAccount:lenderMenu, we need this trick before refactoring menu here and there #}
         {% if app.user is defined and app.user is not empty %}

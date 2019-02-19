@@ -677,6 +677,8 @@ class ExternalDataManager
      */
     public function getActiveExecutives(?string $siren): iterable
     {
+        return [];
+
         if (empty($siren)) {
             return [];
         }

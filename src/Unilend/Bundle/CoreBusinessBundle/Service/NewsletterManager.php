@@ -72,43 +72,43 @@ class NewsletterManager
      */
     private function updateNewsletterSubscription(Clients $client, string $status, ?string $ipAddress = null): bool
     {
-        $currentSubscriptionStatus = $this->getClientSubscriptionStatus($client);
-
-        if (
-            null === $currentSubscriptionStatus && self::MAILCHIMP_STATUS_SUBSCRIBED === $status
-            || null !== $currentSubscriptionStatus && false === in_array($currentSubscriptionStatus, [$status, self::MAILCHIMP_STATUS_CLEANED]) // Do not update status if email was cleaned
-        ) {
-            $mailChimpStatus = $status;
-
-            // If client has already unsubscribed, it cannot be subscribed again directly, email confirmation is needed
-            if (null !== $currentSubscriptionStatus && self::MAILCHIMP_STATUS_UNSUBSCRIBED === $currentSubscriptionStatus) {
-                $mailChimpStatus = self::MAILCHIMP_STATUS_PENDING;
-            }
-
-            $this->mailChimp->put('lists/' . $this->listId . '/members/' . md5(strtolower($client->getEmail())), [
-                'email_address'    => $client->getEmail(),
-                'email_type'       => 'html',
-                'status'           => $mailChimpStatus,
-                'merge_fields'     => [
-                    'FNAME' => $client->getPrenom(),
-                    'LNAME' => $client->getNom(),
-                ],
-                'ip_signup'        => $ipAddress,
-                'timestamp_signup' => date('Y-m-d H:i:s'),
-                'ip_opt'           => $ipAddress,
-                'timestamp_opt'    => date('Y-m-d H:i:s'),
-            ]);
-
-            if (false !== $this->mailChimp->getLastError()) {
-                $this->logger->error('Could not update lender newsletter subscription. MailChimp API error: ' . $this->mailChimp->getLastError(), [
-                    'id_client' => $client->getIdClient(),
-                    'class'     => __CLASS__,
-                    'function'  => __FUNCTION__
-                ]);
-
-                return false;
-            }
-        }
+//        $currentSubscriptionStatus = $this->getClientSubscriptionStatus($client);
+//
+//        if (
+//            null === $currentSubscriptionStatus && self::MAILCHIMP_STATUS_SUBSCRIBED === $status
+//            || null !== $currentSubscriptionStatus && false === in_array($currentSubscriptionStatus, [$status, self::MAILCHIMP_STATUS_CLEANED]) // Do not update status if email was cleaned
+//        ) {
+//            $mailChimpStatus = $status;
+//
+//            // If client has already unsubscribed, it cannot be subscribed again directly, email confirmation is needed
+//            if (null !== $currentSubscriptionStatus && self::MAILCHIMP_STATUS_UNSUBSCRIBED === $currentSubscriptionStatus) {
+//                $mailChimpStatus = self::MAILCHIMP_STATUS_PENDING;
+//            }
+//
+//            $this->mailChimp->put('lists/' . $this->listId . '/members/' . md5(strtolower($client->getEmail())), [
+//                'email_address'    => $client->getEmail(),
+//                'email_type'       => 'html',
+//                'status'           => $mailChimpStatus,
+//                'merge_fields'     => [
+//                    'FNAME' => $client->getPrenom(),
+//                    'LNAME' => $client->getNom(),
+//                ],
+//                'ip_signup'        => $ipAddress,
+//                'timestamp_signup' => date('Y-m-d H:i:s'),
+//                'ip_opt'           => $ipAddress,
+//                'timestamp_opt'    => date('Y-m-d H:i:s'),
+//            ]);
+//
+//            if (false !== $this->mailChimp->getLastError()) {
+//                $this->logger->error('Could not update lender newsletter subscription. MailChimp API error: ' . $this->mailChimp->getLastError(), [
+//                    'id_client' => $client->getIdClient(),
+//                    'class'     => __CLASS__,
+//                    'function'  => __FUNCTION__
+//                ]);
+//
+//                return false;
+//            }
+//        }
 
         $optIn = self::MAILCHIMP_STATUS_SUBSCRIBED === $status ? Clients::NEWSLETTER_OPT_IN_ENROLLED : Clients::NEWSLETTER_OPT_IN_NOT_ENROLLED;
         $client->setOptin1($optIn);
