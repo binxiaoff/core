@@ -1,7 +1,7 @@
 <style type="text/css">
     .tab_title {
         display: block;
-        background-color: #b20066;
+        background-color: #2bc9af;
         color: #fff;
         font-size: 16px;
         font-weight: bold;
@@ -17,7 +17,7 @@
         color: #fff;
         text-decoration: none;
     }
-    .tab_content {border: 2px solid #b20066; padding: 10px;}
+    .tab_content {border: 2px solid #2bc9af; padding: 10px;}
     .valid_etape {display: none; text-align: center; font-size: 16px; font-weight: bold; color: #009933;}
 </style>
 

@@ -60,12 +60,12 @@
 }
 .alert, .alert-info, .alert-warning {
     color: #444;
-    background: #fdf4fa;
+    background: #e2f7f1;
     box-shadow: 0 2px #ca9faf;
 }
 .alert-danger {
     background: rgba(178, 0, 102, 0.7);
-    box-shadow: 0 2px #b20066;
+    box-shadow: 0 2px #2bc9af;
     color: #fff;
 }
 .alert-danger .close {
@@ -74,7 +74,7 @@
     text-shadow: none;
 }
 .alert-collapse.alert-danger button {
-    background-color: #b20066;
+    background-color: #2bc9af;
 }
 
 .alert-success {

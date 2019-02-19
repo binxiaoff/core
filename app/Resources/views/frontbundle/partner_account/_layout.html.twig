@@ -57,32 +57,32 @@
                                     </a>
                                 </li>
                             </ul>
-                            <ul class="help">
-                                <li>
-                                    <a href="{{ path('partner_cost_simulator') }}">
-                                        <span class="icon fa-balance-u"></span>
-                                        <span class="label">{{ ('partner-account-nav_text-simulator-' ~ partner.label)|trans }}</span>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="{{ ('partner-account-nav_link-arguments-' ~ partner.label)|trans }}">
-                                        <span class="icon fa-list-u"></span>
-                                        <span class="label">{{ ('partner-account-nav_text-arguments-' ~ partner.label)|trans }}</span>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="{{ ('partner-account-nav_link-sale-help-' ~ partner.label)|trans }}">
-                                        <span class="icon fa-star-o"></span>
-                                        <span class="label">{{ ('partner-account-nav_text-sale-help-' ~ partner.label)|trans }}</span>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="{{ ('partner-account-nav_link-faq-' ~ partner.label)|trans }}">
-                                        <span class="icon fa-question-circle-o"></span>
-                                        <span class="label">{{ ('partner-account-nav_text-faq-' ~ partner.label)|trans }}</span>
-                                    </a>
-                                </li>
-                            </ul>
+                            {#<ul class="help">#}
+                                {#<li>#}
+                                    {#<a href="{{ path('partner_cost_simulator') }}">#}
+                                        {#<span class="icon fa-balance-u"></span>#}
+                                        {#<span class="label">{{ ('partner-account-nav_text-simulator-' ~ partner.label)|trans }}</span>#}
+                                    {#</a>#}
+                                {#</li>#}
+                                {#<li>#}
+                                    {#<a href="{{ ('partner-account-nav_link-arguments-' ~ partner.label)|trans }}">#}
+                                        {#<span class="icon fa-list-u"></span>#}
+                                        {#<span class="label">{{ ('partner-account-nav_text-arguments-' ~ partner.label)|trans }}</span>#}
+                                    {#</a>#}
+                                {#</li>#}
+                                {#<li>#}
+                                    {#<a href="{{ ('partner-account-nav_link-sale-help-' ~ partner.label)|trans }}">#}
+                                        {#<span class="icon fa-star-o"></span>#}
+                                        {#<span class="label">{{ ('partner-account-nav_text-sale-help-' ~ partner.label)|trans }}</span>#}
+                                    {#</a>#}
+                                {#</li>#}
+                                {#<li>#}
+                                    {#<a href="{{ ('partner-account-nav_link-faq-' ~ partner.label)|trans }}">#}
+                                        {#<span class="icon fa-question-circle-o"></span>#}
+                                        {#<span class="label">{{ ('partner-account-nav_text-faq-' ~ partner.label)|trans }}</span>#}
+                                    {#</a>#}
+                                {#</li>#}
+                            {#</ul>#}
                         {% endblock %}
                     </nav>
                 </div><!-- /.col-menu -->

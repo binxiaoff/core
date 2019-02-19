@@ -57,7 +57,7 @@
                         </thead>
                         <tbody>
                         {% for partner in partners %}
-                            {%  if partner.id != constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Partner::PARTNER_UNILEND_ID') or constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Zones::ZONE_LABEL_CONFIGURATION') in app.userZones %}
+                            {%  if partner.id != constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Partner::PARTNER_CALS_ID') or constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Zones::ZONE_LABEL_CONFIGURATION') in app.userZones %}
                                 <tr data-url="{{ app.adminUrl }}/partenaires/edit/{{ partner.id }}">
                                     <td style="text-align: center">
                                         <img src="{{ app.staticUrl }}/images/admin/partner/{{ partner.logo }}" alt="{{ partner.idCompany.name|e('html_attr') }}" class="img-responsive-vertical box-shadow">

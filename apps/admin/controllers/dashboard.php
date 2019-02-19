@@ -384,11 +384,9 @@ class dashboardController extends bootstrap
             $statusCashFlowCount    = $this->countByStatus($countableStatus, [BorrowingMotive::ID_MOTIVE_CASH_FLOW]);
             $statusAcquisitionCount = $this->countByStatus($countableStatus, [BorrowingMotive::ID_MOTIVE_ACQUISITION_MERGER]);
             $statusPartnerCount     = $this->countByStatus($countableStatus, null, [
-                Partner::PARTNER_U_CAR_ID,
-                Partner::PARTNER_MEDILEND_ID,
-                Partner::PARTNER_AXA_ID,
-                Partner::PARTNER_MAPA_ID,
-                Partner::PARTNER_UNILEND_PARTNERS_ID
+                Partner::PARTNER_CACIB_ID,
+                Partner::PARTNER_CALF_ID,
+                Partner::PARTNER_UNIFERGIE_ID
             ]);
 
             // émissions n vs n-1 (12 mois glissants)
@@ -610,18 +608,14 @@ class dashboardController extends bootstrap
      */
     private function getProjectCountInStatus(int $status, DateTime $start, DateTime $end): array
     {
-        /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
-
         $countInStatus = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->getStatisticsByStatusByMonth($status, true, $start, $end);
 
         $partnerColor = [
-            Partner::PARTNER_U_CAR_ID            => '#FCA234',
-            Partner::PARTNER_MEDILEND_ID         => '#15AAE8',
-            Partner::PARTNER_AXA_ID              => '#133082',
-            Partner::PARTNER_MAPA_ID             => '#EC3846',
-            Partner::PARTNER_UNILEND_PARTNERS_ID => '#91ED81',
-            Partner::PARTNER_UNILEND_ID          => '#B20066'
+            Partner::PARTNER_CACIB_ID     => '#FCA234',
+            Partner::PARTNER_CALF_ID      => '#15AAE8',
+            Partner::PARTNER_UNIFERGIE_ID => '#133082',
+            Partner::PARTNER_CALS_ID      => '#2bc9af'
         ];
 
         $countInStatusHighcharts = [];

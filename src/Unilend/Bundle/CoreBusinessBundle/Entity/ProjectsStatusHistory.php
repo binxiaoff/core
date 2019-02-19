@@ -10,18 +10,19 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * ProjectsStatusHistory
  *
- * @ORM\Table(name="projects_status_history", indexes={@ORM\Index(name="id_project_status",
- *                                            columns={"id_project_status"}), @ORM\Index(name="id_user",
- *                                            columns={"id_user"}), @ORM\Index(name="numero_relance",
- *                                            columns={"numero_relance"}), @ORM\Index(name="idx_psh_idproject",
- *                                            columns={"id_project"})})
- * @ORM\Entity
+ * @ORM\Table(name="projects_status_history", indexes={
+ *     @ORM\Index(name="id_project_status", columns={"id_project_status"}),
+ *     @ORM\Index(name="id_user", columns={"id_user"}),
+ *     @ORM\Index(name="numero_relance", columns={"numero_relance"}),
+ *     @ORM\Index(name="idx_psh_idproject", columns={"id_project"})
+ * })
  * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\ProjectsStatusHistoryRepository")
+ * @ORM\HasLifecycleCallbacks
  */
 class ProjectsStatusHistory
 {
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id_project", type="integer", nullable=false)
      */
@@ -40,14 +41,14 @@ class ProjectsStatusHistory
     /**
      * @var string
      *
-     * @ORM\Column(name="content", type="text", length=16777215, nullable=false)
+     * @ORM\Column(name="content", type="text", length=16777215, nullable=true)
      */
     private $content;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="numero_relance", type="integer", nullable=false)
+     * @ORM\Column(name="numero_relance", type="integer", nullable=true)
      */
     private $numeroRelance;
 
@@ -68,12 +69,12 @@ class ProjectsStatusHistory
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="updated", type="datetime", nullable=false)
+     * @ORM\Column(name="updated", type="datetime", nullable=true)
      */
     private $updated;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id_project_status_history", type="integer")
      * @ORM\Id
@@ -104,11 +105,11 @@ class ProjectsStatusHistory
     /**
      * Set idProject
      *
-     * @param integer $idProject
+     * @param int $idProject
      *
      * @return ProjectsStatusHistory
      */
-    public function setIdProject($idProject)
+    public function setIdProject(int $idProject): ProjectsStatusHistory
     {
         $this->idProject = $idProject;
 
@@ -118,9 +119,9 @@ class ProjectsStatusHistory
     /**
      * Get idProject
      *
-     * @return integer
+     * @return int
      */
-    public function getIdProject()
+    public function getIdProject(): int
     {
         return $this->idProject;
     }
@@ -132,7 +133,7 @@ class ProjectsStatusHistory
      *
      * @return ProjectsStatusHistory
      */
-    public function setIdProjectStatus(ProjectsStatus $idProjectStatus)
+    public function setIdProjectStatus(ProjectsStatus $idProjectStatus): ProjectsStatusHistory
     {
         $this->idProjectStatus = $idProjectStatus;
 
@@ -152,11 +153,11 @@ class ProjectsStatusHistory
     /**
      * Set content
      *
-     * @param string $content
+     * @param string|null $content
      *
      * @return ProjectsStatusHistory
      */
-    public function setContent($content)
+    public function setContent(?string $content): ProjectsStatusHistory
     {
         $this->content = $content;
 
@@ -166,9 +167,9 @@ class ProjectsStatusHistory
     /**
      * Get content
      *
-     * @return string
+     * @return string|null
      */
-    public function getContent()
+    public function getContent(): ?string
     {
         return $this->content;
     }
@@ -176,11 +177,11 @@ class ProjectsStatusHistory
     /**
      * Set numeroRelance
      *
-     * @param integer $numeroRelance
+     * @param int|null $numeroRelance
      *
      * @return ProjectsStatusHistory
      */
-    public function setNumeroRelance($numeroRelance)
+    public function setNumeroRelance(?int $numeroRelance): ProjectsStatusHistory
     {
         $this->numeroRelance = $numeroRelance;
 
@@ -190,9 +191,9 @@ class ProjectsStatusHistory
     /**
      * Get numeroRelance
      *
-     * @return integer
+     * @return int|null
      */
-    public function getNumeroRelance()
+    public function getNumeroRelance(): ?int
     {
         return $this->numeroRelance;
     }
@@ -200,11 +201,11 @@ class ProjectsStatusHistory
     /**
      * Set idUser
      *
-     * @param integer $idUser
+     * @param int $idUser
      *
      * @return ProjectsStatusHistory
      */
-    public function setIdUser($idUser)
+    public function setIdUser(int $idUser): ProjectsStatusHistory
     {
         $this->idUser = $idUser;
 
@@ -214,9 +215,9 @@ class ProjectsStatusHistory
     /**
      * Get idUser
      *
-     * @return integer
+     * @return int
      */
-    public function getIdUser()
+    public function getIdUser(): int
     {
         return $this->idUser;
     }
@@ -228,7 +229,7 @@ class ProjectsStatusHistory
      *
      * @return ProjectsStatusHistory
      */
-    public function setAdded($added)
+    public function setAdded(\DateTime $added): ProjectsStatusHistory
     {
         $this->added = $added;
 
@@ -240,7 +241,7 @@ class ProjectsStatusHistory
      *
      * @return \DateTime
      */
-    public function getAdded()
+    public function getAdded(): \DateTime
     {
         return $this->added;
     }
@@ -248,11 +249,11 @@ class ProjectsStatusHistory
     /**
      * Set updated
      *
-     * @param \DateTime $updated
+     * @param \DateTime|null $updated
      *
      * @return ProjectsStatusHistory
      */
-    public function setUpdated($updated)
+    public function setUpdated(?\DateTime $updated): ProjectsStatusHistory
     {
         $this->updated = $updated;
 
@@ -262,9 +263,9 @@ class ProjectsStatusHistory
     /**
      * Get updated
      *
-     * @return \DateTime
+     * @return \DateTime|null
      */
-    public function getUpdated()
+    public function getUpdated(): ?\DateTime
     {
         return $this->updated;
     }
@@ -272,9 +273,9 @@ class ProjectsStatusHistory
     /**
      * Get idProjectStatusHistory
      *
-     * @return integer
+     * @return int
      */
-    public function getIdProjectStatusHistory()
+    public function getIdProjectStatusHistory(): int
     {
         return $this->idProjectStatusHistory;
     }
@@ -299,5 +300,23 @@ class ProjectsStatusHistory
         $criteria->where(Criteria::expr()->neq('idRejectionReason', null));
 
         return $this->rejectionReasons->matching($criteria);
+    }
+
+    /**
+     * @ORM\PrePersist
+     */
+    public function setAddedValue(): void
+    {
+        if (! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
+            $this->added = new \DateTime();
+        }
+    }
+
+    /**
+     * @ORM\PreUpdate
+     */
+    public function setUpdatedValue(): void
+    {
+        $this->updated = new \DateTime();
     }
 }

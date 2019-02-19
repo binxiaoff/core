@@ -26,6 +26,7 @@
   ],
   "require": {
     "php": ">=7.1.11",
+    "ext-openssl": "^7.1",
     "knplabs/knp-snappy-bundle": "^1.5",
     "phpxmlrpc/phpxmlrpc": "^4.3",
     "phpoffice/phpexcel": "1.8.*",

@@ -59,8 +59,8 @@
     }
     .siren-line td {
         font-weight: bold;
-        color: #6d1f4f;
-        background: #fdf4fa;
+        color: #288171;
+        background: #e2f7f1;
     }
     .siren-line .sign:after{
         content: '+';

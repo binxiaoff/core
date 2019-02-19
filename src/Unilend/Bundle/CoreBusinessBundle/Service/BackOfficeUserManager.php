@@ -27,7 +27,7 @@ class BackOfficeUserManager
      */
     public function isUserGroupRisk(Users $user)
     {
-        if (UsersTypes::TYPE_RISK == $user->getIdUserType()->getIdUserType() || $user->getIdUser() == Users::USER_ID_ALAIN_ELKAIM) {
+        if (UsersTypes::TYPE_RISK === $user->getIdUserType()->getIdUserType()) {
             return true;
         }
 
@@ -41,7 +41,7 @@ class BackOfficeUserManager
      */
     public function isUserGroupCompliance(Users $user)
     {
-        if (UsersTypes::TYPE_COMPLIANCE == $user->getIdUserType()->getIdUserType() || $user->getIdUser() == Users::USER_ID_NICOLAS_LESUR) {
+        if (UsersTypes::TYPE_COMPLIANCE === $user->getIdUserType()->getIdUserType()) {
             return true;
         }
 
@@ -83,7 +83,7 @@ class BackOfficeUserManager
      */
     public function isUserGroupSales(Users $user)
     {
-        if (UsersTypes::TYPE_COMMERCIAL == $user->getIdUserType()->getIdUserType() || $user->getIdUser() == Users::USER_ID_ARNAUD_SCHWARTZ) {
+        if (UsersTypes::TYPE_COMMERCIAL === $user->getIdUserType()->getIdUserType()) {
             return true;
         }
 
@@ -97,7 +97,7 @@ class BackOfficeUserManager
      */
     public function isGrantedRisk(Users $user)
     {
-        if (in_array($user->getIdUserType()->getIdUserType(), [UsersTypes::TYPE_RISK, UsersTypes::TYPE_ADMIN]) || $user->getIdUser() == Users::USER_ID_ALAIN_ELKAIM) {
+        if (in_array($user->getIdUserType()->getIdUserType(), [UsersTypes::TYPE_RISK, UsersTypes::TYPE_ADMIN])) {
             return true;
         }
 
@@ -139,7 +139,7 @@ class BackOfficeUserManager
      */
     public function isGrantedSales(Users $user)
     {
-        if (in_array($user->getIdUserType()->getIdUserType(), [UsersTypes::TYPE_COMMERCIAL, UsersTypes::TYPE_ADMIN]) || $user->getIdUser() == Users::USER_ID_ARNAUD_SCHWARTZ) {
+        if (in_array($user->getIdUserType()->getIdUserType(), [UsersTypes::TYPE_COMMERCIAL, UsersTypes::TYPE_ADMIN])) {
             return true;
         }
 
@@ -174,7 +174,6 @@ class BackOfficeUserManager
     {
         $userRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Users');
         $salesPersons   = $userRepository->findBy(['status' => Users::STATUS_ONLINE, 'idUserType' => UsersTypes::TYPE_COMMERCIAL]);
-        $salesPersons[] = $userRepository->find(Users::USER_ID_ARNAUD_SCHWARTZ);
 
         return $salesPersons;
     }

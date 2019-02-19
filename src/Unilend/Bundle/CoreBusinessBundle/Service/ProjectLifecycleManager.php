@@ -1168,7 +1168,7 @@ class ProjectLifecycleManager
             return $content;
         }
         $customAutolendContent = '
-            <table width="100%" border="1" cellspacing="0" cellpadding="5" bgcolor="d8b5ce" bordercolor="b20066">
+            <table width="100%" border="1" cellspacing="0" cellpadding="5" bgcolor="d8b5ce" bordercolor="2bc9af">
                 <tr>
                     <td class="text-primary text-center">' . $content . '</td>
                 </tr>

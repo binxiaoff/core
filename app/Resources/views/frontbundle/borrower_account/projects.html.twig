@@ -35,9 +35,6 @@
                                             <th class="table-borrower-status">
                                                 <span class="label">{% trans %} borrower-projects_status {% endtrans %}</span>
                                             </th>
-                                            <th class="table-borrower-autolend">
-                                                <span class="label">{% trans %} borrower-projects_autolend-predict-by-precentage {% endtrans %}</span>
-                                            </th>
                                             <th class="table-borrower-upload">
                                                 <span class="label"></span>
                                             </th>
@@ -55,13 +52,11 @@
                                                 {# PREP_FUNDING and A_FUNDER #}
                                                 {% set project_status_label = 'waiting-for-being-on-line' %}
                                             {% endif %}
-                                            {% set predictAutoBid = projectPredictedAutoBidPercentage(project) %}
                                             <tr>
                                                 <td>{{ project.getIdProject() }}</td>
                                                 <td>{{ project.getNatureProject() }}</td>
                                                 <td>{{ project.getAmount()|localizednumber }}&nbsp;€<br>{% transchoice project.getPeriod() with {'%count%' : project.getPeriod()} %} common_month {% endtranschoice %}</td>
                                                 <td>{{ ('borrower-projects_' ~ project_status_label)|trans }}</td>
-                                                <td>{% if predictAutoBid > 0 %} {{ predictAutoBid|localizednumber }}&nbsp;% {% endif %}</td>
                                                 <td class="center">
                                                     {% if project.getHash() %}
                                                         <a href="{{ path('project_request_files', {'hash' : project.getHash()}) }}" class="ui-has-tooltip" data-original-title="{% trans %} borrower-projects_add-documents-icon {% endtrans %}"><span class="icon fa-file-u16"></span></a>

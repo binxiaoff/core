@@ -6,7 +6,7 @@ use Doctrine\DBAL\Cache\QueryCacheProfile;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Driver\ResultStatement;
 use Doctrine\DBAL\Query\QueryBuilder;
-use Doctrine\ORM\{AbstractQuery, EntityRepository, NonUniqueResultException, Query\Expr\Join, Query\ResultSetMappingBuilder};
+use Doctrine\ORM\{AbstractQuery, EntityRepository, NonUniqueResultException, QueryBuilder as ORMQueryBuilder, Query\Expr\Join, Query\ResultSetMappingBuilder};
 use PDO;
 use Psr\Log\InvalidArgumentException;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{Bids, Clients, ClientsMandats, Companies, CompanyStatus, Echeanciers, EcheanciersEmprunteur, Factures, OperationType, Partner, Projects, ProjectsPouvoir,
@@ -1902,7 +1902,7 @@ class ProjectsRepository extends EntityRepository
      * @param int|null       $salesPersonId
      * @param int|null       $riskAnalystId
      *
-     * @return QueryBuilder
+     * @return ORMQueryBuilder
      */
     private function getSearchQueryBuilder(
         ?array $status = null,
@@ -1914,7 +1914,7 @@ class ProjectsRepository extends EntityRepository
         ?int $need = null,
         ?int $salesPersonId = null,
         ?int $riskAnalystId = null
-    ): QueryBuilder
+    ): ORMQueryBuilder
     {
         $queryBuilder = $this->createQueryBuilder('p');
 

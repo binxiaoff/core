@@ -10,11 +10,11 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\{BinaryFileResponse, JsonResponse, Request, Response};
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Translation\TranslatorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{AcceptationsLegalDocs, Clients, Tree, WalletType};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{AcceptationsLegalDocs, Clients, WalletType};
 use Unilend\Bundle\CoreBusinessBundle\Service\Document\LenderTermsOfSaleGenerator;
 use Unilend\Bundle\CoreBusinessBundle\Service\{NewsletterManager, TermsOfSaleManager};
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
-use Unilend\Bundle\FrontBundle\Service\SeoManager;
+//use Unilend\Bundle\FrontBundle\Service\SeoManager;
 
 class TermsOfSaleController extends Controller
 {
@@ -115,7 +115,7 @@ class TermsOfSaleController extends Controller
      *
      * @return Response
      */
-    public function lenderTermsOfSalesAction(?UserInterface $client, string $type = '', SeoManager $seoManager): Response
+    public function lenderTermsOfSalesAction(?UserInterface $client, string $type = ''/*, SeoManager $seoManager*/): Response
     {
         $idTree = $this->termsOfSaleManager->getCurrentVersionForPerson();
 
@@ -137,7 +137,7 @@ class TermsOfSaleController extends Controller
             ->getRepository('UnilendCoreBusinessBundle:Tree')
             ->findOneBy(['idTree' => $idTree]);
 
-        $seoManager->setCmsSeoData($tree);
+//        $seoManager->setCmsSeoData($tree);
 
         $content = $this->lenderTermsOfSaleGenerator->getNonPersonalizedContent($tree->getIdTree(), $type);
         $cms     = [

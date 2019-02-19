@@ -115,12 +115,13 @@ class ProjectManager
      */
     public function getAverageFundingDuration($amount)
     {
-        /** @var \settings $settings */
-        $settings = $this->entityManagerSimulator->getRepository('settings');
-        $settings->get('Durée moyenne financement', 'type');
+        $fundingDurationSetting = $this->entityManager
+            ->getRepository('UnilendCoreBusinessBundle:Settings')
+            ->findOneBy(['type' => 'Durée moyenne financement'])
+            ->getValue();
 
         $projectAverageFundingDuration = 15;
-        foreach (json_decode($settings->value) as $averageFundingDuration) {
+        foreach (json_decode($fundingDurationSetting) as $averageFundingDuration) {
             if ($amount >= $averageFundingDuration->min && $amount <= $averageFundingDuration->max) {
                 $projectAverageFundingDuration = round($averageFundingDuration->heures / 24);
             }

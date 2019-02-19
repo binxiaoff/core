@@ -838,17 +838,17 @@ class LenderSubscriptionController extends Controller
             return $response;
         }
 
-        /** @var \clients $client */
-        $client = $this->get('unilend.service.entity_manager')->getRepository('clients');
-        $client->get($clientHash, 'hash');
-        $client->etape_inscription_preteur = Clients::SUBSCRIPTION_STEP_MONEY_DEPOSIT;
-        $client->update();
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+        $client        = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->findOneBy(['hash' => $clientHash]);
+
+        $client->setEtapeInscriptionPreteur(Clients::SUBSCRIPTION_STEP_MONEY_DEPOSIT);
+        $entityManager->flush($client);
 
         $template = [
-            'client'           => $client->select('id_client = ' . $client->id_client)[0],
+            'client'           => $client,
             'maxDepositAmount' => LenderWalletController::MAX_DEPOSIT_AMOUNT,
             'minDepositAmount' => LenderWalletController::MIN_DEPOSIT_AMOUNT,
-            'lenderBankMotif'  => $client->getLenderPattern($client->id_client)
+            'lenderBankMotif'  => $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER)->getWireTransferPattern()
         ];
 
         return $this->render('lender_subscription/money_deposit.html.twig', $template);

@@ -24,8 +24,8 @@ class GenderType extends AbstractType
     {
         $resolver->setDefaults([
             'choices' => [
-                $this->translator->trans('common_title-female') => Clients::TITLE_MISS,
-                $this->translator->trans('common_title-male')   => Clients::TITLE_MISTER
+                'common_title-female' => Clients::TITLE_MISS,
+                'common_title-male'   => Clients::TITLE_MISTER
             ],
             'expanded' => true,
             'multiple' => false

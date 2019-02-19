@@ -46,10 +46,11 @@ class ClientCreationManager
     public function createAccount(Clients $client, string $walletType, int $userId, ?int $status = null): void
     {
         if (false === in_array($walletType, [WalletType::LENDER, WalletType::BORROWER, WalletType::PARTNER])) {
-            $this->logger->error(
-                'Account creation is not possible for wallet type "' . $walletType . '"',
-                ['id_client' => $client->getIdClient(), 'file' => __FILE__, 'line' => __LINE__]
-            );
+            $this->logger->error('Account creation is not possible for wallet type "' . $walletType . '"', [
+                'id_client' => $client->getIdClient(),
+                'class'     => __CLASS__,
+                'function'  => __FUNCTION__
+            ]);
             return;
         }
 
@@ -78,18 +79,20 @@ class ClientCreationManager
              * The methods isLender/isBorrower/isPartner return false even if the client has a wallet of the correct type */
             $this->entityManager->refresh($client);
         } catch (\Exception $exception) {
-            $this->logger->error(
-                'Error while creating client account. Message: ' . $exception->getMessage(),
-                ['id_client' => $client->getIdClient(), 'file' => $exception->getFile(), 'line' => $exception->getLine()]
-            );
+            $this->logger->error('Error while creating client account. Message: ' . $exception->getMessage(), [
+                'id_client' => $client->getIdClient(),
+                'file'      => $exception->getFile(),
+                'line'      => $exception->getLine()
+            ]);
 
             try {
                 $this->entityManager->getConnection()->rollBack();
             } catch (ConnectionException $rollBackException) {
-                $this->logger->error(
-                    'Error while trying to rollback the transaction client account creation. Message: ' . $rollBackException->getMessage(),
-                    ['id_client' => $client->getIdClient(), 'file' => $rollBackException->getFile(), 'line' => $rollBackException->getLine()]
-                );
+                $this->logger->error('Error while trying to rollback the transaction client account creation. Message: ' . $rollBackException->getMessage(), [
+                    'id_client' => $client->getIdClient(),
+                    'file'      => $rollBackException->getFile(),
+                    'line'      => $rollBackException->getLine()
+                ]);
             }
         }
     }

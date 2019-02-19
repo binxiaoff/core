@@ -71,6 +71,8 @@ class CompanyValidator
      */
     public function validate($siren, Companies $company = null, Projects $project = null)
     {
+        return [];
+
         if (null !== $company) {
             $lastCompanyRatingHistory = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CompanyRatingHistory')->findOneBy(
                 ['idCompany' => $company->getIdCompany()],

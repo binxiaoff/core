@@ -17,11 +17,11 @@
     }
     .form-style-10 .section{
         font: normal 20px 'Bitter', serif;
-        color: #B20066;
+        color: #2bc9af;
         margin-bottom: 5px;
     }
     .form-style-10 .section span {
-        background: #B20066;
+        background: #2bc9af;
         padding: 5px 10px 5px 10px;
         position: absolute;
         border-radius: 50%;

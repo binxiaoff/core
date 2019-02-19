@@ -17,17 +17,15 @@ class Partner
     const STATUS_VALIDATED = 2;
     const STATUS_DISABLED  = 3;
 
-    const PARTNER_UNILEND_ID          = 1;
-    const PARTNER_U_CAR_ID            = 2;
-    const PARTNER_MEDILEND_ID         = 3;
-    const PARTNER_AXA_ID              = 5;
-    const PARTNER_MAPA_ID             = 6;
-    const PARTNER_UNILEND_PARTNERS_ID = 8;
+    const PARTNER_CALS_ID      = 1;
+    const PARTNER_CACIB_ID     = 2;
+    const PARTNER_CALF_ID      = 3;
+    const PARTNER_UNIFERGIE_ID = 4;
 
-    const PARTNER_AXA_LABEL      = 'axa';
-    const PARTNER_MEDILEND_LABEL = 'medilend';
-    const PARTNER_UNILEND_LABEL  = 'unilend';
-    const PARTNER_U_CAR_LABEL    = 'u_car';
+    const PARTNER_CALS_LABEL      = 'cals';
+    const PARTNER_CACIB_LABEL     = 'cacib';
+    const PARTNER_CALF_LABEL      = 'calf';
+    const PARTNER_UNIFERGIE_LABEL = 'unifergie';
 
     /**
      * @var Companies
