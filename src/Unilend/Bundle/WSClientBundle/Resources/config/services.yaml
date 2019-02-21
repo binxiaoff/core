@@ -79,3 +79,6 @@ services:
         $client: '@eight_points_guzzle.client.greenpoint'
         $login: '%greenpoint.login%'
         $password: '%greenpoint.password%'
+
+    Unilend\Bundle\WSClientBundle\Service\InseeManager:
+        $client: '@eight_points_guzzle.client.insee'

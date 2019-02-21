@@ -65,7 +65,7 @@ class ProjectAttachment
      *
      * @return ProjectAttachment
      */
-    public function setAdded($added)
+    public function setAdded(\DateTime $added): ProjectAttachment
     {
         $this->added = $added;
 
@@ -77,7 +77,7 @@ class ProjectAttachment
      *
      * @return \DateTime
      */
-    public function getAdded()
+    public function getAdded(): \DateTime
     {
         return $this->added;
     }
@@ -85,11 +85,11 @@ class ProjectAttachment
     /**
      * Set updated
      *
-     * @param \DateTime $updated
+     * @param \DateTime|null $updated
      *
      * @return ProjectAttachment
      */
-    public function setUpdated($updated)
+    public function setUpdated(?\DateTime $updated): ProjectAttachment
     {
         $this->updated = $updated;
 
@@ -99,9 +99,9 @@ class ProjectAttachment
     /**
      * Get updated
      *
-     * @return \DateTime
+     * @return \DateTime|null
      */
-    public function getUpdated()
+    public function getUpdated(): ?\DateTime
     {
         return $this->updated;
     }
@@ -109,9 +109,9 @@ class ProjectAttachment
     /**
      * Get id
      *
-     * @return integer
+     * @return int
      */
-    public function getId()
+    public function getId(): int
     {
         return $this->id;
     }
@@ -119,11 +119,11 @@ class ProjectAttachment
     /**
      * Set idProject
      *
-     * @param \Unilend\Bundle\CoreBusinessBundle\Entity\Projects $idProject
+     * @param Projects $idProject
      *
      * @return ProjectAttachment
      */
-    public function setProject(Projects $idProject = null)
+    public function setProject(Projects $idProject = null): ProjectAttachment
     {
         $this->idProject = $idProject;
 
@@ -133,9 +133,9 @@ class ProjectAttachment
     /**
      * Get idProject
      *
-     * @return \Unilend\Bundle\CoreBusinessBundle\Entity\Projects
+     * @return Projects
      */
-    public function getProject()
+    public function getProject(): Projects
     {
         return $this->idProject;
     }
@@ -143,11 +143,11 @@ class ProjectAttachment
     /**
      * Set idAttachment
      *
-     * @param \Unilend\Bundle\CoreBusinessBundle\Entity\Attachment $idAttachment
+     * @param Attachment $idAttachment
      *
      * @return ProjectAttachment
      */
-    public function setAttachment(Attachment $idAttachment = null)
+    public function setAttachment(Attachment $idAttachment): ProjectAttachment
     {
         $this->idAttachment = $idAttachment;
 
@@ -157,9 +157,9 @@ class ProjectAttachment
     /**
      * Get idAttachment
      *
-     * @return \Unilend\Bundle\CoreBusinessBundle\Entity\Attachment
+     * @return Attachment
      */
-    public function getAttachment()
+    public function getAttachment(): Attachment
     {
         return $this->idAttachment;
     }
@@ -167,7 +167,7 @@ class ProjectAttachment
     /**
      * @ORM\PrePersist
      */
-    public function setAddedValue()
+    public function setAddedValue(): void
     {
         if (! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
             $this->added = new \DateTime();
@@ -177,7 +177,7 @@ class ProjectAttachment
     /**
      * @ORM\PreUpdate
      */
-    public function setUpdatedValue()
+    public function setUpdatedValue(): void
     {
         $this->updated = new \DateTime();
     }

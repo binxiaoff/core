@@ -1,0 +1,156 @@
+{% extends 'demo/_layout.html.twig' %}
+
+{% set page = {
+    id: 'demo-project-request-details',
+    classNames: ''
+} %}
+
+{% block dashboardContent %}
+    <section class="dashboard-tabs tabs">
+        <h3>{{ project.title }}</h3>
+        <div class="dashboard-tabs-content tab-content">
+            <div class="row columns-with-space">
+                <div class="col-md-6">
+                    <article class="dashboard-tab-pane">
+                        <div class="panel">
+                            <div class="panel-content">
+                                <h4 class="h4">Récapitulatif</h4>
+                                <div class="row columns-with-space">
+                                    <dl class="col-sm-4 col-md-6 col-lg-6">
+                                        <dt>Montant</dt>
+                                        <dd><strong>{{ project.amount|localizednumber }}&nbsp;€</strong></dd>
+                                    </dl>
+                                    <dl class="col-sm-4 col-md-6 col-lg-6">
+                                        <dt>Maturité</dt>
+                                        <dd><strong>{{ project.period }} ans</strong></dd>
+                                    </dl>
+                                </div>
+                                <div class="row margin-10-t">
+                                    <dl>
+                                        <dt>Type de financement</dt>
+                                        <dd><strong>{{ ('product-name_' ~ product.label)|trans }}</strong></dd>
+                                    </dl>
+                                </div>
+                                <div class="row margin-10-t">
+                                    <dl>
+                                        <dt>Fin de période de tirage</dt>
+                                        <dd><strong>{{ project.dateFin|localizeddate('short', 'none') }}</strong></dd>
+                                    </dl>
+                                </div>
+                                <h4 class="h4 margin-20-t">Description</h4>
+                                <div class="row">
+                                    <em>{{ project.comments|nl2br }}</em>
+                                </div>
+                            </div><!-- /.panel-content -->
+                        </div>
+                    </article><!-- /.dashboard-tab-pane -->
+                    <article class="dashboard-tab-pane margin-20-t">
+                        <div class="panel">
+                            <form action="{{ path('demo_project_request_details_form', {'hash': project.hash}) }}" method="post" enctype="multipart/form-data" data-formvalidation data-formvalidation-shownotifications="false">
+                                <fieldset>
+                                    <h4 class="h4">Documents</h4>
+                                    {% for projectAttachment in projectAttachments %}
+                                        <div class="row">
+                                            <span class="icon fa-file-u"></span>
+                                            <a href="{{ path('demo_project_request_document', {'hash': project.hash, 'idProjectAttachment': projectAttachment.id}) }}">
+                                                {{ projectAttachment.attachment.type.label }}
+                                            </a>
+                                            <small>({{ projectAttachment.attachment.added|localizeddate('short', 'short') }})</small>
+                                        </div>
+                                    {% else %}
+                                        <div class="message-info">Vous n‘avez aucun document associé à votre dossier.</div>
+                                    {% endfor %}
+                                    <h5 class="h4 margin-20-t">Ajouter des documents</h5>
+                                    <div class="form-extrafiles-list">
+                                        <div class="form-field form-field-multi file-upload-extra row row-multi-col-computer" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="typedFile">
+                                            <div>
+                                                <select name="files[file]" class="input-field" aria-labelledby="form-extrafiles-document-type-label">
+                                                    <option value="">Sélectionner le type de fichier</option>
+                                                    {% for attachment in attachmentTypes %}
+                                                        <option value="{{ attachment.id }}">{{ attachment.label }}</option>
+                                                    {% endfor %}
+                                                </select>
+                                            </div>
+                                            <div>
+                                                <div class="custom-input-file" id="form-file" data-fileattach data-fileattach-inputname="file" data-fileattach-maxfiles="1" data-fileattach-filetypes="pdf jpg jpeg png doc docx" data-formvalidation-required='input[type="file"][name="file[0]"]' aria-labelledby="form-extrafiles-document-file-label"></div><!-- /.ui-fileattach -->
+                                            </div>
+                                        </div>
+                                    </div><!-- /.form-extrafiles-list -->
+                                    <a href="javascript:;" class="btn-default btn-shape-sq-md ui-form-extrafiles-add">
+                                        <span class="icon fa-plus-u16 c-t2"></span>
+                                        <span class="sr-only">Ajouter un document</span>
+                                    </a>
+                                </fieldset><!-- /.form-project-details-fieldset -->
+                                <div class="text-align-right">
+                                    <button type="submit" class="btn-primary btn-shape-xs" data-spinnerbutton>Charger</button>
+                                </div>
+                            </form>
+
+                            <div id="form-extrafiles-template" class="ui-template-definition" style="display: none" disabled="disabled" aria-hidden="true">
+                                <div class="form-field form-field-multi file-upload-extra row row-multi-col-computer" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="typedFile">
+                                    <div>
+                                        <select name="files[extra__NUM__]" class="input-field" aria-labelledby="form-extrafiles-document-type-label">
+                                            <option value="">{% trans %} project-request_files-select-label {% endtrans %}</option>
+                                            {% for attachment in attachmentTypes %}
+                                                <option value="{{ attachment.id }}">{{ attachment.label }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <div class="custom-input-file" id="form-extrafile" data-fileattach data-fileattach-inputname="extra__NUM__" data-fileattach-maxfiles="1" data-fileattach-filetypes="pdf jpg jpeg png doc docx xls xlsx" data-formvalidation-required='input[type="file"][name="file[__NUM__]"]' aria-labelledby="form-extrafiles-document-file-label"></div><!-- /.ui-fileattach -->
+                                    </div>
+                                </div><!-- /.file-upload-extra -->
+                            </div><!-- /.ui-template-definition -->
+                        </div>
+                    </article><!-- /.dashboard-tab-pane -->
+                </div>
+                <div class="col-md-6">
+                    <article class="dashboard-tab-pane">
+                        <div class="panel" style="font-size: 16px;">
+                            <h4 class="h4">Discussions</h4>
+                            <div class="row">
+                                <div style="display: inline-block; position: relative; width: 100%;">
+                                    <textarea class="input-field" placeholder="Nouveau message ..." rows="1"
+                                              onchange="this.style.height = 'auto'; this.style.height = this.scrollHeight + 'px'"
+                                              onkeyup="this.style.height = 'auto'; this.style.height = this.scrollHeight + 'px'"
+                                              onkeydown="this.style.height = 'auto'; this.style.height = this.scrollHeight + 'px'"
+                                              style="overflow: hidden; resize: none;"></textarea>
+                                    <button type="button" class="btn-primary btn-shape-xxs ui-spinnerbutton"
+                                            onclick="sendChatMessage(this)"
+                                            style="position: absolute; bottom: 4px; right: 4px;">
+                                        <span class="icon fa-pen-u32"></span>
+                                    </button>
+                                </div>
+                            </div>
+                            <div id="chat-content">
+                                {% include 'demo/project_chat.html.twig' %}
+                            </div>
+                        </div>
+                    </article>
+                </div>
+            </div>
+        </div><!-- /.dashboard-tabs-content -->
+    </section><!-- /.dashboard-tabs -->
+{% endblock %}
+
+{% block pageScripts %}
+<script>
+    function sendChatMessage(button) {
+        var $button = $(button)
+        var $textarea = $button.siblings('textarea')
+        var $chatContainer = $('#chat-content')
+
+        $.ajax({
+            url: '{{ path('demo_project_chat', {'hash': project.hash}) }}',
+            method: 'POST',
+            data: {
+                content: $textarea.val()
+            },
+            success: function (response) {
+                $chatContainer.html(response)
+                $textarea.val('')
+            }
+        })
+    }
+</script>
+{% endblock %}

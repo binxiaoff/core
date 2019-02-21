@@ -29,7 +29,7 @@
         <div id="top" class="site">
             {% block siteHeader %}
                 {% if app.user is defined and is_granted(['ROLE_LENDER', 'ROLE_BORROWER', 'ROLE_PARTNER']) %}
-                    {% include 'demo/connected_header.html.twig' %}
+                    {% include 'demo/_connected_header.html.twig' %}
                 {% else %}
                     {% include 'partials/header.html.twig' %}
                 {%  endif %}

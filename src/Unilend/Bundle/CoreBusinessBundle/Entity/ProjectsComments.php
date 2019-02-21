@@ -28,7 +28,7 @@ class ProjectsComments
     private $public = false;
 
     /**
-     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Projects
+     * @var Projects
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Projects", inversedBy="memos")
      * @ORM\JoinColumns({
@@ -38,7 +38,17 @@ class ProjectsComments
     private $idProject;
 
     /**
-     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Users
+     * @var Clients
+     *
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Clients")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_client", referencedColumnName="id_client")
+     * })
+     */
+    private $idClient;
+
+    /**
+     * @var Users
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Users")
      * @ORM\JoinColumns({
@@ -62,7 +72,7 @@ class ProjectsComments
     private $updated;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id_project_comment", type="integer")
      * @ORM\Id
@@ -79,7 +89,7 @@ class ProjectsComments
      *
      * @return ProjectsComments
      */
-    public function setIdProject($idProject)
+    public function setIdProject(Projects $idProject): ProjectsComments
     {
         $this->idProject = $idProject;
 
@@ -91,9 +101,33 @@ class ProjectsComments
      *
      * @return Projects
      */
-    public function getIdProject()
+    public function getIdProject(): Projects
     {
         return $this->idProject;
+    }
+
+    /**
+     * Set idClient
+     *
+     * @param Clients $idClient
+     *
+     * @return ProjectsComments
+     */
+    public function setIdClient(Clients $idClient): ProjectsComments
+    {
+        $this->idClient = $idClient;
+
+        return $this;
+    }
+
+    /**
+     * Get idClient
+     *
+     * @return Clients
+     */
+    public function getIdClient(): Clients
+    {
+        return $this->idClient;
     }
 
     /**
@@ -103,7 +137,7 @@ class ProjectsComments
      *
      * @return ProjectsComments
      */
-    public function setContent($content)
+    public function setContent(string $content): ProjectsComments
     {
         $this->content = $content;
 
@@ -115,7 +149,7 @@ class ProjectsComments
      *
      * @return string
      */
-    public function getContent()
+    public function getContent(): string
     {
         return $this->content;
     }
@@ -127,7 +161,7 @@ class ProjectsComments
      *
      * @return ProjectsComments
      */
-    public function setPublic($public)
+    public function setPublic(bool $public): ProjectsComments
     {
         $this->public = $public;
 
@@ -139,7 +173,7 @@ class ProjectsComments
      *
      * @return bool
      */
-    public function getPublic()
+    public function getPublic(): bool
     {
         return $this->public;
     }
@@ -147,11 +181,11 @@ class ProjectsComments
     /**
      * Set idUser
      *
-     * @param Users $idUser
+     * @param Users|null $idUser
      *
      * @return ProjectsComments
      */
-    public function setIdUser(Users $idUser)
+    public function setIdUser(?Users $idUser): ProjectsComments
     {
         $this->idUser = $idUser;
 
@@ -161,9 +195,9 @@ class ProjectsComments
     /**
      * Get idUser
      *
-     * @return Users
+     * @return Users|null
      */
-    public function getIdUser()
+    public function getIdUser(): ?Users
     {
         return $this->idUser;
     }
@@ -175,7 +209,7 @@ class ProjectsComments
      *
      * @return ProjectsComments
      */
-    public function setAdded($added)
+    public function setAdded(\DateTime $added): ProjectsComments
     {
         $this->added = $added;
 
@@ -187,7 +221,7 @@ class ProjectsComments
      *
      * @return \DateTime
      */
-    public function getAdded()
+    public function getAdded(): \DateTime
     {
         return $this->added;
     }
@@ -195,11 +229,11 @@ class ProjectsComments
     /**
      * Set updated
      *
-     * @param \DateTime $updated
+     * @param \DateTime|null $updated
      *
      * @return ProjectsComments
      */
-    public function setUpdated($updated)
+    public function setUpdated(?\DateTime $updated): ProjectsComments
     {
         $this->updated = $updated;
 
@@ -209,9 +243,9 @@ class ProjectsComments
     /**
      * Get updated
      *
-     * @return \DateTime
+     * @return \DateTime|null
      */
-    public function getUpdated()
+    public function getUpdated(): ?\DateTime
     {
         return $this->updated;
     }
@@ -219,9 +253,9 @@ class ProjectsComments
     /**
      * Get idProjectComment
      *
-     * @return integer
+     * @return int
      */
-    public function getIdProjectComment()
+    public function getIdProjectComment(): int
     {
         return $this->idProjectComment;
     }
@@ -229,7 +263,7 @@ class ProjectsComments
     /**
      * @ORM\PrePersist
      */
-    public function setAddedValue()
+    public function setAddedValue(): void
     {
         if (! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
             $this->added = new \DateTime();
@@ -239,7 +273,7 @@ class ProjectsComments
     /**
      * @ORM\PreUpdate
      */
-    public function setUpdatedValue()
+    public function setUpdatedValue(): void
     {
         $this->updated = new \DateTime();
     }

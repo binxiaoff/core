@@ -22,35 +22,6 @@ class ProjectsStatus
     const STATUS_LOSS      = 80;
     const STATUS_CANCELLED = 100;
 
-//    const IMPOSSIBLE_AUTO_EVALUATION = 1;
-//    const NOT_ELIGIBLE               = 2;
-//    const SIMULATION                 = 3;
-//    const INCOMPLETE_REQUEST         = 5;
-//    const COMPLETE_REQUEST           = 10;
-//    const ABANDONED                  = 15;
-//    const POSTPONED                  = 19;
-//    const COMMERCIAL_REVIEW          = 20;
-//    const COMMERCIAL_REJECTION       = 25;
-//    const PENDING_ANALYSIS           = 30;
-//    const ANALYSIS_REVIEW            = 31;
-//    const ANALYSIS_REJECTION         = 32;
-//    const COMITY_REVIEW              = 33;
-//    const COMITY_REJECTION           = 34;
-//    const SUSPENSIVE_CONDITIONS      = 35;
-//    const PREP_FUNDING               = 37;
-//    const A_FUNDER                   = 40;
-//    const AUTO_BID_PLACED            = 45;
-//    const EN_FUNDING                 = 50;
-//    const BID_TERMINATED             = 55;
-//    const FUNDE                      = 60;
-//    const FUNDING_KO                 = 70;
-//    const PRET_REFUSE                = 75;
-//    const REMBOURSEMENT              = 80;
-//    const REMBOURSE                  = 90;
-//    const REMBOURSEMENT_ANTICIPE     = 95;
-//    const PROBLEME                   = 100;
-//    const LOSS                       = 160;
-
     const UNEXPECTED_RESPONSE = 'unexpected_response_from_';
 
     const AFTER_REPAYMENT = [

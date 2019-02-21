@@ -1,7 +1,7 @@
 {% extends 'demo/_layout.html.twig' %}
 
 {% set page = {
-    id: 'demo-loans-list',
+    id: 'demo-loans',
     classNames: ''
 } %}
 
@@ -11,148 +11,544 @@
             <div class="dashboard-tabs-nav">
                 <ul class="nav nav-dashboard-tabs">
                     <li data-equal-width role="presentation" class="active">
-                        <a href="#tab-lender" role="tab" data-toggle="tab">{% trans %} demo-loans_lender-tab-title {% endtrans %}</a>
+                        <a href="#tab-borrower" role="tab" data-toggle="tab">Emprunts</a>
                     </li>
                     <li data-equal-width role="presentation">
-                        <a href="#tab-borrower" role="tab" data-toggle="tab">{% trans %} demo-loans_borrower-projects-tab-title {% endtrans %}</a>
+                        <a href="#tab-broker" role="tab" data-toggle="tab">Courtages</a>
                     </li>
                     <li data-equal-width role="presentation">
-                        <a href="#tab-broker" role="tab" data-toggle="tab">{% trans %} demo-loans_broker-projects-tab-title {% endtrans %}</a>
+                        <a href="#tab-lender" role="tab" data-toggle="tab">Prêts</a>
                     </li>
                 </ul>
             </div><!-- /.dashboard-tabs-nav -->
         {% endif %}
 
         <div class="dashboard-tabs-content tab-content">
-            <article role="tabpanel" class="dashboard-tab-pane tab-pane active" id="tab-lender">
+            <article role="tabpanel" class="dashboard-tab-pane tab-pane active" id="tab-borrower">
                 <div class="panel">
                     <div class="panel-content">
-                        {% if projects.lender|length > 0 %}
-                            <div class="table-scroll">
-                                <table class="table table-projects" data-sortable>
-                                    <thead class="table-sortable-columns">
-                                    <tr>
-                                        {% if is_granted(constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::ROLE_PARTNER_ADMIN')) %}
-                                            <th class="table-projects-item-submitter table-sortable-column" data-sortable-by="submitter">
-                                                <span class="label" title="{{ 'demo-loans_sr-sort-lender-submitter'|trans|e('html_attr') }}" data-toggle="tooltip">
-                                                    {% trans %} demo-loans_lender-table-submitter {% endtrans %}
+                        {% if projects.borrower|length > 0 %}
+                            {% for status, statusProjects in projects.borrower %}
+                                <div class="row">
+                                    <a href="#borrower-projects-{{ status }}" role="button" data-toggle="collapse" class="margin-20-b" style="display: block; text-decoration: none; color: #787679; background-color: #eceaed; padding: 10px 20px;">
+                                        {% if status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_REQUEST') %}
+                                            À compléter
+                                        {% elseif status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_REVIEW') %}
+                                            Revue
+                                        {% elseif status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_ONLINE') %}
+                                            En cours de financement
+                                        {% elseif status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_FUNDED') %}
+                                            En attente de signature
+                                        {% elseif status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_SIGNED') %}
+                                            Signé
+                                        {% elseif status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_REPAYMENT') %}
+                                            En cours de remboursement
+                                        {% elseif status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_REPAID') %}
+                                            Remboursé
+                                        {% elseif status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_LOSS') %}
+                                            Perte
+                                        {% elseif status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_CANCELLED') %}
+                                            Annulé
+                                        {% endif %}
+                                        ({{ statusProjects|length }})
+                                        <div class="pull-right">
+                                            <span class="icon fa-angle-d-u"></span>
+                                        </div>
+                                    </a>
+                                </div>
+                                <div id="borrower-projects-{{ status }}" class="table-scroll collapse">
+                                    <table class="table table-projects" data-sortable style="table-layout: auto;">
+                                        <thead class="table-sortable-columns">
+                                        <tr>
+                                            <th class="table-projects-item-partner table-sortable-column" data-sortable-by="partner">
+                                                <span class="label" title="Domaine de financement" data-toggle="tooltip">
+                                                    Domaine
                                                 </span>
                                             </th>
-                                        {% endif %}
-                                        <th class="table-projects-item-amount table-sortable-column" data-sortable-by="amount">
-                                            <span class="label" title="{{ 'demo-loans_sr-sort-lender-amount'|trans|e('html_attr') }}" data-toggle="tooltip">
-                                                {% trans %} demo-loans_lender-table-amount {% endtrans %}
-                                            </span>
-                                        </th>
-                                        <th class="table-projects-item-duration table-sortable-column" data-sortable-by="duration">
-                                            <span class="label" title="{{ 'demo-loans_sr-sort-lender-duration'|trans|e('html_attr') }}" data-toggle="tooltip">
-                                                {% trans %} demo-loans_lender-table-duration {% endtrans %}
-                                            </span>
-                                        </th>
-                                        <th class="table-projects-item-date table-sortable-column" data-sortable-by="date">
-                                            <span class="label" title="{{ 'demo-loans_sr-sort-lender-date'|trans|e('html_attr') }}" data-toggle="tooltip">
-                                                {% trans %} demo-loans_lender-table-date {% endtrans %}
-                                            </span>
-                                        </th>
-                                        <th class="table-actions">
-                                            <span class="label" title="{{ 'demo-loans_sr-sort-lender-action'|trans|e('html_attr') }}" data-toggle="tooltip">
-                                                {% trans %} demo-loans_lender-table-action {% endtrans %}
-                                            </span>
-                                        </th>
-                                    </tr>
-                                    </thead>
-                                    <tbody data-sortable-content>
-                                    {% for project in projects.lender %}
-                                        <tr id="lender-{{ project.idProject }}" class="table-projects-item {% if loop.index is divisible by(2) %}even{% else %}odd{% endif %}"
-                                            data-hash="{{ project.hash }}"
-                                            data-sortable-title="{{ project.title|e('html_attr') }}"
-                                            data-sortable-amount="{{ project.amount }}"
-                                            data-sortable-duration="{{ project.period }}"
-                                            data-sortable-date="{{ project.added|date('U') }}">
-                                            <td class="table-projects-item-title">{{ project.title }}</td>
-                                            <td class="table-projects-item-amount">{{ project.amount|localizednumber }}&nbsp;€</td>
-                                            <td class="table-projects-item-duration">{% trans with {'%duration%': project.period} %} demo-loans_lender-table-duration-value {% endtrans %}</td>
-                                            <td class="table-projects-item-date">{{ project.added|date('d/m/Y') }}</td>
-                                            <td class="table-actions">
-                                                <a role="button" class="btn-default" title="{{ 'demo-loans_lender-table-action-cancel'|trans|e('html_attr')}}" data-toggle="tooltip" data-action="abandon"><span class="icon fa-ban-u16"></span></a>
-                                                <a role="button" class="btn-default" title="{{ 'demo-loans_lender-table-action-submit'|trans|e('html_attr')}}" data-toggle="tooltip" data-action="submit"><span class="icon fa-check-u16"></span></a>
-                                            </td>
+                                            <th class="table-projects-item-title table-sortable-column" data-sortable-by="title">
+                                                <span class="label" title="Nom du projet" data-toggle="tooltip">
+                                                    Nom
+                                                </span>
+                                            </th>
+                                            <th class="table-projects-item-amount table-sortable-column" data-sortable-by="amount">
+                                                <span class="label" title="Montant" data-toggle="tooltip">
+                                                    Montant
+                                                </span>
+                                            </th>
+                                            <th class="table-projects-item-duration table-sortable-column" data-sortable-by="duration">
+                                                <span class="label" title="Maturité" data-toggle="tooltip">
+                                                    Maturité
+                                                </span>
+                                            </th>
+                                            <th>&nbsp;</th>
                                         </tr>
-                                    {% endfor %}
-                                    </tbody>
-                                </table><!-- /.table-projects -->
-                            </div><!-- /.table-scroll -->
+                                        </thead>
+                                        <tbody data-sortable-content>
+                                        {% for project in statusProjects %}
+                                            <tr id="borrower-{{ project.idProject }}" class="table-projects-item {% if loop.index is divisible by(2) %}even{% else %}odd{% endif %}"
+                                                data-hash="{{ project.hash }}"
+                                                data-sortable-partner="{{ ('partner-name_bubble-' ~ project.idPartner.label)|trans }}"
+                                                data-sortable-title="{{ project.title|e('html_attr') }}"
+                                                data-sortable-amount="{{ project.amount }}"
+                                                data-sortable-duration="{{ project.period }}">
+                                                <td class="table-projects-item-partner">
+                                                    {% set backgroundColor = '#787679' %}
+                                                    {% if project.idPartner.label == 'cals' %}
+                                                        {% set backgroundColor = '#5fc5d1' %}
+                                                    {% elseif project.idPartner.label == 'cacib' %}
+                                                        {% set backgroundColor = '#1b88db' %}
+                                                    {% elseif project.idPartner.label == 'calf' %}
+                                                        {% set backgroundColor = '#ffca2c' %}
+                                                    {% elseif project.idPartner.label == 'unifergie' %}
+                                                        {% set backgroundColor = '#f76965' %}
+                                                    {% endif %}
+                                                    <span class="bubble" style="background-color: {{ backgroundColor }};">{{ ('partner-name_bubble-' ~ project.idPartner.label)|trans }}</span>
+                                                </td>
+                                                <td class="table-projects-item-title">{{ project.title }}</td>
+                                                <td class="table-projects-item-amount">{{ project.amount|localizednumber }}&nbsp;€</td>
+                                                <td class="table-projects-item-duration">{{ project.period }} ans</td>
+                                                <td class="table-actions">
+                                                    {% if status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_FUNDED') %}
+                                                        <a href="{{ path('demo_project_signing', {'hash': project.hash}) }}" role="button" class="btn-default" title="Signer les contrats" data-toggle="tooltip"><span class="icon fa-pen-u16"></span></a>
+                                                    {% endif %}
+                                                    <a href="{{ path('demo_project_request_details', {'hash': project.hash}) }}" role="button" class="btn-default" title="Voir le détail" data-toggle="tooltip"><span class="icon fa-view-u16"></span></a>
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                        </tbody>
+                                    </table><!-- /.table-projects -->
+                                </div><!-- /.table-scroll -->
+                            {% endfor %}
                         {% else %}
-                            <div class="message-info">{{ 'demo-loans_lender-not-found-message'|trans }}</div>
+                            <div class="message-info">{{ 'demo-loans_borrower-not-found-message'|trans }}</div>
                         {% endif %}
                     </div><!-- /.panel-content -->
                 </div><!-- /.panel -->
             </article><!-- /.dashboard-tab-pane -->
 
-            <article role="tabpanel" class="dashboard-tab-pane tab-pane" id="tab-borrower">
+            <article role="tabpanel" class="dashboard-tab-pane tab-pane" id="tab-broker">
                 <div class="panel">
                     <div class="panel-content">
-                        {% if projects.borrower|length > 0 %}
-                            <div class="table-scroll">
-                                <table class="table table-projects" data-sortable>
-                                    <thead class="table-sortable-columns">
-                                    <tr>
-                                        {% if is_granted(constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::ROLE_PARTNER_ADMIN')) %}
-                                            <th class="table-projects-item-submitter table-sortable-column" data-sortable-by="submitter">
-                                                <span class="label" title="{{ 'demo-loans_sr-sort-lender-submitter'|trans|e('html_attr') }}" data-toggle="tooltip">
-                                                    {% trans %} demo-loans_lender-table-submitter {% endtrans %}
+                        {% if projects.broker|length > 0 %}
+                            {% for status, statusProjects in projects.broker %}
+                                <div class="row">
+                                    <a href="#broker-projects-{{ status }}" role="button" data-toggle="collapse" class="margin-20-b" style="display: block; text-decoration: none; color: #787679; background-color: #eceaed; padding: 10px 20px;">
+                                        {% if status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_REQUEST') %}
+                                            À compléter
+                                        {% elseif status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_REVIEW') %}
+                                            Revue
+                                        {% elseif status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_ONLINE') %}
+                                            En cours de financement
+                                        {% elseif status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_FUNDED') %}
+                                            En attente de signature
+                                        {% elseif status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_SIGNED') %}
+                                            Signé
+                                        {% elseif status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_REPAYMENT') %}
+                                            En cours de remboursement
+                                        {% elseif status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_REPAID') %}
+                                            Remboursé
+                                        {% elseif status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_LOSS') %}
+                                            Perte
+                                        {% elseif status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_CANCELLED') %}
+                                            Annulé
+                                        {% endif %}
+                                        ({{ statusProjects|length }})
+                                        <div class="pull-right">
+                                            <span class="icon fa-angle-d-u"></span>
+                                        </div>
+                                    </a>
+                                </div>
+                                <div id="broker-projects-{{ status }}" class="table-scroll collapse">
+                                    <table class="table table-projects" data-sortable style="table-layout: auto;">
+                                        <thead class="table-sortable-columns">
+                                        <tr>
+                                            <th class="table-projects-item-partner table-sortable-column" data-sortable-by="partner">
+                                                <span class="label" title="Domaine de financement" data-toggle="tooltip">
+                                                    Domaine
                                                 </span>
                                             </th>
-                                        {% endif %}
-                                        <th class="table-projects-item-amount table-sortable-column" data-sortable-by="amount">
-                                            <span class="label" title="{{ 'demo-loans_sr-sort-lender-amount'|trans|e('html_attr') }}" data-toggle="tooltip">
-                                                {% trans %} demo-loans_lender-table-amount {% endtrans %}
-                                            </span>
-                                        </th>
-                                        <th class="table-projects-item-duration table-sortable-column" data-sortable-by="duration">
-                                            <span class="label" title="{{ 'demo-loans_sr-sort-lender-duration'|trans|e('html_attr') }}" data-toggle="tooltip">
-                                                {% trans %} demo-loans_lender-table-duration {% endtrans %}
-                                            </span>
-                                        </th>
-                                        <th class="table-projects-item-date table-sortable-column" data-sortable-by="date">
-                                            <span class="label" title="{{ 'demo-loans_sr-sort-lender-date'|trans|e('html_attr') }}" data-toggle="tooltip">
-                                                {% trans %} demo-loans_lender-table-date {% endtrans %}
-                                            </span>
-                                        </th>
-                                        <th class="table-actions">
-                                            <span class="label" title="{{ 'demo-loans_sr-sort-lender-action'|trans|e('html_attr') }}" data-toggle="tooltip">
-                                                {% trans %} demo-loans_lender-table-action {% endtrans %}
-                                            </span>
-                                        </th>
-                                    </tr>
-                                    </thead>
-                                    <tbody data-sortable-content>
-                                    {% for project in projects.borrower %}
-                                        <tr id="lender-{{ project.idProject }}" class="table-projects-item {% if loop.index is divisible by(2) %}even{% else %}odd{% endif %}"
-                                            data-hash="{{ project.hash }}"
-                                            data-sortable-title="{{ project.title|e('html_attr') }}"
-                                            data-sortable-amount="{{ project.amount }}"
-                                            data-sortable-duration="{{ project.period }}"
-                                            data-sortable-date="{{ project.added|date('U') }}">
-                                            <td class="table-projects-item-title">{{ project.title }}</td>
-                                            <td class="table-projects-item-amount">{{ project.amount|localizednumber }}&nbsp;€</td>
-                                            <td class="table-projects-item-duration">{% trans with {'%duration%': project.period} %} demo-loans_lender-table-duration-value {% endtrans %}</td>
-                                            <td class="table-projects-item-date">{{ project.added|date('d/m/Y') }}</td>
-                                            <td class="table-actions">
-                                                <a role="button" class="btn-default" title="{{ 'demo-loans_lender-table-action-cancel'|trans|e('html_attr')}}" data-toggle="tooltip" data-action="abandon"><span class="icon fa-ban-u16"></span></a>
-                                                <a role="button" class="btn-default" title="{{ 'demo-loans_lender-table-action-submit'|trans|e('html_attr')}}" data-toggle="tooltip" data-action="submit"><span class="icon fa-check-u16"></span></a>
-                                            </td>
+                                            <th class="table-projects-item-title table-sortable-column" data-sortable-by="title">
+                                                <span class="label" title="Nom du projet" data-toggle="tooltip">
+                                                    Nom
+                                                </span>
+                                            </th>
+                                            <th class="table-projects-item-amount table-sortable-column" data-sortable-by="amount">
+                                                <span class="label" title="Montant" data-toggle="tooltip">
+                                                    Montant
+                                                </span>
+                                            </th>
+                                            <th class="table-projects-item-duration table-sortable-column" data-sortable-by="duration">
+                                                <span class="label" title="Maturité" data-toggle="tooltip">
+                                                    Maturité
+                                                </span>
+                                            </th>
+                                            <th>&nbsp;</th>
                                         </tr>
-                                    {% endfor %}
-                                    </tbody>
-                                </table><!-- /.table-projects -->
-                            </div><!-- /.table-scroll -->
+                                        </thead>
+                                        <tbody data-sortable-content>
+                                        {% for project in statusProjects %}
+                                            <tr id="broker-{{ project.idProject }}" class="table-projects-item {% if loop.index is divisible by(2) %}even{% else %}odd{% endif %}"
+                                                data-hash="{{ project.hash }}"
+                                                data-sortable-partner="{{ ('partner-name_bubble-' ~ project.idPartner.label)|trans }}"
+                                                data-sortable-title="{{ project.title|e('html_attr') }}"
+                                                data-sortable-amount="{{ project.amount }}"
+                                                data-sortable-duration="{{ project.period }}">
+                                                <td class="table-projects-item-partner">
+                                                    {% set backgroundColor = '#787679' %}
+                                                    {% if project.idPartner.label == 'cals' %}
+                                                        {% set backgroundColor = '#5fc5d1' %}
+                                                    {% elseif project.idPartner.label == 'cacib' %}
+                                                        {% set backgroundColor = '#1b88db' %}
+                                                    {% elseif project.idPartner.label == 'calf' %}
+                                                        {% set backgroundColor = '#ffca2c' %}
+                                                    {% elseif project.idPartner.label == 'unifergie' %}
+                                                        {% set backgroundColor = '#f76965' %}
+                                                    {% endif %}
+                                                    <span class="bubble" style="background-color: {{ backgroundColor }};">{{ ('partner-name_bubble-' ~ project.idPartner.label)|trans }}</span>
+                                                </td>
+                                                <td class="table-projects-item-title">{{ project.title }}</td>
+                                                <td class="table-projects-item-amount">{{ project.amount|localizednumber }}&nbsp;€</td>
+                                                <td class="table-projects-item-duration">{{ project.period }} ans</td>
+                                                <td class="table-actions">
+                                                    <a href="{{ path('demo_project_request_details', {'hash': project.hash}) }}" role="button" class="btn-default" title="Voir le détail" data-toggle="tooltip"><span class="icon fa-view-u16"></span></a>
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                        </tbody>
+                                    </table><!-- /.table-projects -->
+                                </div><!-- /.table-scroll -->
+                            {% endfor %}
                         {% else %}
-                            <div class="message-info">{{ 'demo-loans_lender-not-found-message'|trans }}</div>
+                            <div class="message-info">{{ 'demo-loans_broker-not-found-message'|trans }}</div>
                         {% endif %}
                     </div><!-- /.panel-content -->
                 </div><!-- /.panel -->
             </article><!-- /.dashboard-tab-pane -->
+
+            <article role="tabpanel" class="dashboard-tab-pane tab-pane" id="tab-lender">
+                <div class="panel">
+                    <div class="panel-content">
+                        {% if projects.bids|length + projects.loans|length == 0 %}
+                            <div class="message-info">{{ 'demo-loans_lender-not-found-message'|trans }}</div>
+                        {% else %}
+                            {% if projects.bids|length > 0 %}
+                                <div class="row">
+                                    <a href="#lender-bids" role="button" data-toggle="collapse" class="margin-20-b" style="display: block; text-decoration: none; color: #787679; background-color: #eceaed; padding: 10px 20px;">
+                                        En cours de financement ({{ projects.bids|length }})
+                                        <div class="pull-right">
+                                            <span class="icon fa-angle-d-u"></span>
+                                        </div>
+                                    </a>
+                                </div>
+                                <div id="lender-bids" class="table-scroll collapse">
+                                    <table class="table table-projects" data-sortable style="table-layout: auto;">
+                                        <thead class="table-sortable-columns">
+                                        <tr>
+                                            <th colspan="4" style="text-align: center;">Projet</th>
+                                            <th colspan="2" style="text-align: center;">Offre</th>
+                                            <th>&nbsp;</th>
+                                        </tr>
+                                        <tr>
+                                            <th class="table-projects-item-partner table-sortable-column" data-sortable-by="partner">
+                                                <span class="label" title="Domaine de financement" data-toggle="tooltip">
+                                                    Domaine
+                                                </span>
+                                            </th>
+                                            <th class="table-projects-item-title table-sortable-column" data-sortable-by="title">
+                                                <span class="label" title="Nom du projet" data-toggle="tooltip">
+                                                    Nom
+                                                </span>
+                                            </th>
+                                            <th class="table-projects-item-amount table-sortable-column" data-sortable-by="project-amount">
+                                                <span class="label" title="Montant du projet" data-toggle="tooltip">
+                                                    Montant
+                                                </span>
+                                            </th>
+                                            <th class="table-projects-item-duration table-sortable-column" data-sortable-by="duration">
+                                                <span class="label" title="Maturité" data-toggle="tooltip">
+                                                    Maturité
+                                                </span>
+                                            </th>
+                                            <th class="table-projects-item-amount table-sortable-column" data-sortable-by="bid-amount">
+                                                <span class="label" title="Montant de l‘offre" data-toggle="tooltip">
+                                                    Montant
+                                                </span>
+                                            </th>
+                                            <th class="table-projects-item-amount table-sortable-column" data-sortable-by="rate">
+                                                <span class="label" title="Taux de l‘offre" data-toggle="tooltip">
+                                                    Taux
+                                                </span>
+                                            </th>
+                                            <th>&nbsp;</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody data-sortable-content>
+                                        {% for bid in projects.bids %}
+                                            {% set project = bid.project %}
+                                            <tr id="lender-bid-{{ bid.idBid }}" class="table-projects-item {% if loop.index is divisible by(2) %}even{% else %}odd{% endif %}"
+                                                data-hash="{{ project.hash }}"
+                                                data-sortable-partner="{{ ('partner-name_bubble-' ~ project.idPartner.label)|trans }}"
+                                                data-sortable-title="{{ project.title|e('html_attr') }}"
+                                                data-sortable-project-amount="{{ project.amount }}"
+                                                data-sortable-duration="{{ project.period }}"
+                                                data-sortable-bid-amount="{{ bid.amount }}"
+                                                data-sortable-rate="{{ bid.rate }}">
+                                                <td class="table-projects-item-partner">
+                                                    {% set backgroundColor = '#787679' %}
+                                                    {% if project.idPartner.label == 'cals' %}
+                                                        {% set backgroundColor = '#5fc5d1' %}
+                                                    {% elseif project.idPartner.label == 'cacib' %}
+                                                        {% set backgroundColor = '#1b88db' %}
+                                                    {% elseif project.idPartner.label == 'calf' %}
+                                                        {% set backgroundColor = '#ffca2c' %}
+                                                    {% elseif project.idPartner.label == 'unifergie' %}
+                                                        {% set backgroundColor = '#f76965' %}
+                                                    {% endif %}
+                                                    <span class="bubble" style="background-color: {{ backgroundColor }};">{{ ('partner-name_bubble-' ~ project.idPartner.label)|trans }}</span>
+                                                </td>
+                                                <td class="table-projects-item-title">{{ project.title }}</td>
+                                                <td class="table-projects-item-project-amount">{{ project.amount|localizednumber }}&nbsp;€</td>
+                                                <td class="table-projects-item-duration">{{ project.period }} ans</td>
+                                                <td class="table-projects-item-bid-amount">{{ bid.amount|localizednumber }}&nbsp;€</td>
+                                                <td class="table-projects-item-rate">{{ bid.rate|localizednumberwithprecision(2) }}&nbsp;%</td>
+                                                <td class="table-actions">
+                                                    <a href="{{ path('demo_project_request_details', {'hash': project.hash}) }}" role="button" class="btn-default" title="Voir le détail" data-toggle="tooltip"><span class="icon fa-view-u16"></span></a>
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                        </tbody>
+                                    </table><!-- /.table-projects -->
+                                </div><!-- /.table-scroll -->
+                            {% endif %}
+
+                            {#{% for status, statusProjects in projects.lender %}#}
+                                {#<div class="row">#}
+                                    {#<a href="#lender-projects-{{ status }}" role="button" data-toggle="collapse" class="margin-20-b" style="display: block; text-decoration: none; color: #787679; background-color: #eceaed; padding: 10px 20px;">#}
+                                        {#{% if status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_REQUEST') %}#}
+                                            {#À compléter#}
+                                        {#{% elseif status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_REVIEW') %}#}
+                                            {#Revue#}
+                                        {#{% elseif status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_ONLINE') %}#}
+                                            {#En cours de financement#}
+                                        {#{% elseif status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_FUNDED') %}#}
+                                            {#En attente de signature#}
+                                        {#{% elseif status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_SIGNED') %}#}
+                                            {#Signé#}
+                                        {#{% elseif status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_REPAYMENT') %}#}
+                                            {#En cours de remboursement#}
+                                        {#{% elseif status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_REPAID') %}#}
+                                            {#Remboursé#}
+                                        {#{% elseif status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_LOSS') %}#}
+                                            {#Perte#}
+                                        {#{% elseif status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_CANCELLED') %}#}
+                                            {#Annulé#}
+                                        {#{% endif %}#}
+                                        {#({{ statusProjects|length }})#}
+                                        {#<div class="pull-right">#}
+                                            {#<span class="icon fa-angle-d-u"></span>#}
+                                        {#</div>#}
+                                    {#</a>#}
+                                {#</div>#}
+                                {#<div id="lender-projects-{{ status }}" class="table-scroll collapse">#}
+                                    {#<table class="table table-projects" data-sortable style="table-layout: auto;">#}
+                                        {#<thead class="table-sortable-columns">#}
+                                        {#<tr>#}
+                                            {#<th class="table-projects-item-partner table-sortable-column" data-sortable-by="partner">#}
+                                                {#<span class="label" title="Domaine de financement" data-toggle="tooltip">#}
+                                                    {#Domaine#}
+                                                {#</span>#}
+                                            {#</th>#}
+                                            {#<th class="table-projects-item-title table-sortable-column" data-sortable-by="title">#}
+                                                {#<span class="label" title="Nom du projet" data-toggle="tooltip">#}
+                                                    {#Nom#}
+                                                {#</span>#}
+                                            {#</th>#}
+                                            {#<th class="table-projects-item-amount table-sortable-column" data-sortable-by="amount">#}
+                                                {#<span class="label" title="Montant" data-toggle="tooltip">#}
+                                                    {#Montant#}
+                                                {#</span>#}
+                                            {#</th>#}
+                                            {#<th class="table-projects-item-duration table-sortable-column" data-sortable-by="duration">#}
+                                                {#<span class="label" title="Maturité" data-toggle="tooltip">#}
+                                                    {#Maturité#}
+                                                {#</span>#}
+                                            {#</th>#}
+                                            {#<th>&nbsp;</th>#}
+                                        {#</tr>#}
+                                        {#</thead>#}
+                                        {#<tbody data-sortable-content>#}
+                                        {#{% for project in statusProjects %}#}
+                                            {#<tr id="lender-{{ project.idProject }}" class="table-projects-item {% if loop.index is divisible by(2) %}even{% else %}odd{% endif %}"#}
+                                                {#data-hash="{{ project.hash }}"#}
+                                                {#data-sortable-partner="{{ ('partner-name_bubble-' ~ project.idPartner.label)|trans }}"#}
+                                                {#data-sortable-title="{{ project.title|e('html_attr') }}"#}
+                                                {#data-sortable-amount="{{ project.amount }}"#}
+                                                {#data-sortable-duration="{{ project.period }}">#}
+                                                {#<td class="table-projects-item-partner">#}
+                                                    {#{% set backgroundColor = '#787679' %}#}
+                                                    {#{% if project.idPartner.label == 'cals' %}#}
+                                                        {#{% set backgroundColor = '#5fc5d1' %}#}
+                                                    {#{% elseif project.idPartner.label == 'cacib' %}#}
+                                                        {#{% set backgroundColor = '#1b88db' %}#}
+                                                    {#{% elseif project.idPartner.label == 'calf' %}#}
+                                                        {#{% set backgroundColor = '#ffca2c' %}#}
+                                                    {#{% elseif project.idPartner.label == 'unifergie' %}#}
+                                                        {#{% set backgroundColor = '#f76965' %}#}
+                                                    {#{% endif %}#}
+                                                    {#<span class="bubble" style="background-color: {{ backgroundColor }};">{{ ('partner-name_bubble-' ~ project.idPartner.label)|trans }}</span>#}
+                                                {#</td>#}
+                                                {#<td class="table-projects-item-title">{{ project.title }}</td>#}
+                                                {#<td class="table-projects-item-amount">{{ project.amount|localizednumber }}&nbsp;€</td>#}
+                                                {#<td class="table-projects-item-duration">{{ project.period }} ans</td>#}
+                                                {#<td class="table-actions">#}
+                                                    {#<a href="{{ path('demo_project_request_details', {'hash': project.hash}) }}" role="button" class="btn-default" title="Voir le détail" data-toggle="tooltip"><span class="icon fa-view-u16"></span></a>#}
+                                                {#</td>#}
+                                            {#</tr>#}
+                                        {#{% endfor %}#}
+                                        {#</tbody>#}
+                                    {#</table><!-- /.table-projects -->#}
+                                {#</div><!-- /.table-scroll -->#}
+                            {#{% endfor %}#}
+                        {% endif %}
+                    </div><!-- /.panel-content -->
+                </div><!-- /.panel -->
+            </article><!-- /.dashboard-tab-pane -->
+
+            {#<article role="tabpanel" class="dashboard-tab-pane tab-pane" id="tab-broker">#}
+                {#<div class="panel">#}
+                    {#<div class="panel-content">#}
+                        {#{% if projects.borrower|length > 0 %}#}
+                            {#<div class="table-scroll">#}
+                                {#<table class="table table-projects" data-sortable>#}
+                                    {#<thead class="table-sortable-columns">#}
+                                    {#<tr>#}
+                                        {#{% if is_granted(constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::ROLE_PARTNER_ADMIN')) %}#}
+                                            {#<th class="table-projects-item-submitter table-sortable-column" data-sortable-by="submitter">#}
+                                                {#<span class="label" title="{{ 'demo-loans_sr-sort-lender-submitter'|trans|e('html_attr') }}" data-toggle="tooltip">#}
+                                                    {#{% trans %} demo-loans_lender-table-submitter {% endtrans %}#}
+                                                {#</span>#}
+                                            {#</th>#}
+                                        {#{% endif %}#}
+                                        {#<th class="table-projects-item-amount table-sortable-column" data-sortable-by="amount">#}
+                                            {#<span class="label" title="{{ 'demo-loans_sr-sort-lender-amount'|trans|e('html_attr') }}" data-toggle="tooltip">#}
+                                                {#{% trans %} demo-loans_lender-table-amount {% endtrans %}#}
+                                            {#</span>#}
+                                        {#</th>#}
+                                        {#<th class="table-projects-item-duration table-sortable-column" data-sortable-by="duration">#}
+                                            {#<span class="label" title="{{ 'demo-loans_sr-sort-lender-duration'|trans|e('html_attr') }}" data-toggle="tooltip">#}
+                                                {#{% trans %} demo-loans_lender-table-duration {% endtrans %}#}
+                                            {#</span>#}
+                                        {#</th>#}
+                                        {#<th class="table-projects-item-date table-sortable-column" data-sortable-by="date">#}
+                                            {#<span class="label" title="{{ 'demo-loans_sr-sort-lender-date'|trans|e('html_attr') }}" data-toggle="tooltip">#}
+                                                {#{% trans %} demo-loans_lender-table-date {% endtrans %}#}
+                                            {#</span>#}
+                                        {#</th>#}
+                                        {#<th class="table-actions">#}
+                                            {#<span class="label" title="{{ 'demo-loans_sr-sort-lender-action'|trans|e('html_attr') }}" data-toggle="tooltip">#}
+                                                {#{% trans %} demo-loans_lender-table-action {% endtrans %}#}
+                                            {#</span>#}
+                                        {#</th>#}
+                                    {#</tr>#}
+                                    {#</thead>#}
+                                    {#<tbody data-sortable-content>#}
+                                    {#{% for project in projects.borrower %}#}
+                                        {#<tr id="lender-{{ project.idProject }}" class="table-projects-item {% if loop.index is divisible by(2) %}even{% else %}odd{% endif %}"#}
+                                            {#data-hash="{{ project.hash }}"#}
+                                            {#data-sortable-title="{{ project.title|e('html_attr') }}"#}
+                                            {#data-sortable-amount="{{ project.amount }}"#}
+                                            {#data-sortable-duration="{{ project.period }}"#}
+                                            {#data-sortable-date="{{ project.added|date('U') }}">#}
+                                            {#<td class="table-projects-item-title">{{ project.title }}</td>#}
+                                            {#<td class="table-projects-item-amount">{{ project.amount|localizednumber }}&nbsp;€</td>#}
+                                            {#<td class="table-projects-item-duration">{% trans with {'%duration%': project.period} %} demo-loans_lender-table-duration-value {% endtrans %}</td>#}
+                                            {#<td class="table-projects-item-date">{{ project.added|date('d/m/Y') }}</td>#}
+                                            {#<td class="table-actions">#}
+                                                {#<a role="button" class="btn-default" title="{{ 'demo-loans_lender-table-action-cancel'|trans|e('html_attr')}}" data-toggle="tooltip" data-action="abandon"><span class="icon fa-ban-u16"></span></a>#}
+                                                {#<a role="button" class="btn-default" title="{{ 'demo-loans_lender-table-action-submit'|trans|e('html_attr')}}" data-toggle="tooltip" data-action="submit"><span class="icon fa-check-u16"></span></a>#}
+                                            {#</td>#}
+                                        {#</tr>#}
+                                    {#{% endfor %}#}
+                                    {#</tbody>#}
+                                {#</table><!-- /.table-projects -->#}
+                            {#</div><!-- /.table-scroll -->#}
+                        {#{% else %}#}
+                            {#<div class="message-info">{{ 'demo-loans_lender-not-found-message'|trans }}</div>#}
+                        {#{% endif %}#}
+                    {#</div><!-- /.panel-content -->#}
+                {#</div><!-- /.panel -->#}
+            {#</article><!-- /.dashboard-tab-pane -->#}
+
+            {#<article role="tabpanel" class="dashboard-tab-pane tab-pane" id="tab-lender">#}
+                {#<div class="panel">#}
+                    {#<div class="panel-content">#}
+                        {#{% if projects.lender|length > 0 %}#}
+                            {#<div class="table-scroll">#}
+                                {#<table class="table table-projects" data-sortable>#}
+                                    {#<thead class="table-sortable-columns">#}
+                                    {#<tr>#}
+                                        {#{% if is_granted(constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::ROLE_PARTNER_ADMIN')) %}#}
+                                            {#<th class="table-projects-item-submitter table-sortable-column" data-sortable-by="submitter">#}
+                                                {#<span class="label" title="{{ 'demo-loans_sr-sort-lender-submitter'|trans|e('html_attr') }}" data-toggle="tooltip">#}
+                                                    {#{% trans %} demo-loans_lender-table-submitter {% endtrans %}#}
+                                                {#</span>#}
+                                            {#</th>#}
+                                        {#{% endif %}#}
+                                        {#<th class="table-projects-item-amount table-sortable-column" data-sortable-by="amount">#}
+                                            {#<span class="label" title="{{ 'demo-loans_sr-sort-lender-amount'|trans|e('html_attr') }}" data-toggle="tooltip">#}
+                                                {#{% trans %} demo-loans_lender-table-amount {% endtrans %}#}
+                                            {#</span>#}
+                                        {#</th>#}
+                                        {#<th class="table-projects-item-duration table-sortable-column" data-sortable-by="duration">#}
+                                            {#<span class="label" title="{{ 'demo-loans_sr-sort-lender-duration'|trans|e('html_attr') }}" data-toggle="tooltip">#}
+                                                {#{% trans %} demo-loans_lender-table-duration {% endtrans %}#}
+                                            {#</span>#}
+                                        {#</th>#}
+                                        {#<th class="table-projects-item-date table-sortable-column" data-sortable-by="date">#}
+                                            {#<span class="label" title="{{ 'demo-loans_sr-sort-lender-date'|trans|e('html_attr') }}" data-toggle="tooltip">#}
+                                                {#{% trans %} demo-loans_lender-table-date {% endtrans %}#}
+                                            {#</span>#}
+                                        {#</th>#}
+                                        {#<th class="table-actions">#}
+                                            {#<span class="label" title="{{ 'demo-loans_sr-sort-lender-action'|trans|e('html_attr') }}" data-toggle="tooltip">#}
+                                                {#{% trans %} demo-loans_lender-table-action {% endtrans %}#}
+                                            {#</span>#}
+                                        {#</th>#}
+                                    {#</tr>#}
+                                    {#</thead>#}
+                                    {#<tbody data-sortable-content>#}
+                                    {#{% for project in projects.lender %}#}
+                                        {#<tr id="lender-{{ project.idProject }}" class="table-projects-item {% if loop.index is divisible by(2) %}even{% else %}odd{% endif %}"#}
+                                            {#data-hash="{{ project.hash }}"#}
+                                            {#data-sortable-title="{{ project.title|e('html_attr') }}"#}
+                                            {#data-sortable-amount="{{ project.amount }}"#}
+                                            {#data-sortable-duration="{{ project.period }}"#}
+                                            {#data-sortable-date="{{ project.added|date('U') }}">#}
+                                            {#<td class="table-projects-item-title">{{ project.title }}</td>#}
+                                            {#<td class="table-projects-item-amount">{{ project.amount|localizednumber }}&nbsp;€</td>#}
+                                            {#<td class="table-projects-item-duration">{% trans with {'%duration%': project.period} %} demo-loans_lender-table-duration-value {% endtrans %}</td>#}
+                                            {#<td class="table-projects-item-date">{{ project.added|date('d/m/Y') }}</td>#}
+                                            {#<td class="table-actions">#}
+                                                {#<a role="button" class="btn-default" title="{{ 'demo-loans_lender-table-action-cancel'|trans|e('html_attr')}}" data-toggle="tooltip" data-action="abandon"><span class="icon fa-ban-u16"></span></a>#}
+                                                {#<a role="button" class="btn-default" title="{{ 'demo-loans_lender-table-action-submit'|trans|e('html_attr')}}" data-toggle="tooltip" data-action="submit"><span class="icon fa-check-u16"></span></a>#}
+                                            {#</td>#}
+                                        {#</tr>#}
+                                    {#{% endfor %}#}
+                                    {#</tbody>#}
+                                {#</table><!-- /.table-projects -->#}
+                            {#</div><!-- /.table-scroll -->#}
+                        {#{% else %}#}
+                            {#<div class="message-info">{{ 'demo-loans_lender-not-found-message'|trans }}</div>#}
+                        {#{% endif %}#}
+                    {#</div><!-- /.panel-content -->#}
+                {#</div><!-- /.panel -->#}
+            {#</article><!-- /.dashboard-tab-pane -->#}
+
+
+
+
+
+
 
             {#<article role="tabpanel" class="dashboard-tab-pane tab-pane" id="tab-incomplete-projects">#}
                 {#<div class="panel">#}
@@ -457,6 +853,19 @@
             {#</article><!-- /.dashboard-tab-pane -->#}
         </div><!-- /.dashboard-tabs-content -->
     </section><!-- /.dashboard-tabs -->
+{% endblock %}
+
+{% block pageHeadScripts %}
+<style>
+    .bubble {
+        display: inline-block;
+        border-radius: 12px;
+        padding: 0 10px;
+        line-height: 18px;
+        color: #fbf9fb;
+        font-weight: 900;
+    }
+</style>
 {% endblock %}
 
 {% block modals %}

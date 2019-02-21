@@ -95,8 +95,6 @@ class ProjectsRepository extends EntityRepository
     {
         $queryBuilder = $this->createQueryBuilder('p');
         $queryBuilder
-            ->innerJoin('UnilendCoreBusinessBundle:Companies', 'co', Join::WITH, 'p.idCompany = co.idCompany')
-            ->innerJoin('UnilendCoreBusinessBundle:Clients', 'c', Join::WITH, 'co.idClientOwner = c.idClient')
             ->where('p.idCompanySubmitter IN (:userCompanies)')
             ->setParameter('userCompanies', $companies)
             ->orderBy('p.added', 'DESC');

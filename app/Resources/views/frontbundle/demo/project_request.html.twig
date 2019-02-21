@@ -18,8 +18,8 @@
                                   data-formvalidation
                                   data-formvalidation-notificationselem=".form-validation-notifications">
                             <div class="form-validation-notifications"></div>
-                            <div class="row">
-                                <div class="form-field">
+                            <div class="row row-multi-col-computer">
+                                <div class="form-field col-lg-8 col-md-8">
                                     <label for="simulator-input-title">
                                         {% trans %} demo-project-request_simulator-title-field-label {% endtrans %}
                                         <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span>
@@ -29,9 +29,47 @@
                                            data-formvalidation-type="string"
                                            data-formvalidation-required="true">
                                 </div>
+                                <div class="form-field col-lg-4 col-md-4">
+                                    <label for="simulator-input-partner">
+                                        {% trans %} demo-project-request_simulator-partner-field-label {% endtrans %}
+                                        <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span>
+                                    </label>
+                                    <select id="simulator-input-partner" name="simulator[partner]" class="input-field"
+                                            onchange="$('#borrower-container').toggle(this.value !== '')"
+                                            data-formvalidation-input
+                                            data-formvalidation-required="true">
+                                        <option value=""></option>
+                                        {% for partner in partners %}
+                                            <option value="{{ partner.id }}">{{ ('partner-name_list-' ~ partner.label)|trans }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
                             </div>
-                            <div class="row row-multi-col-computer">
-                                <div class="form-field col-lg-6 col-md-6">
+                            <div id="borrower-container" class="row row-multi-col-computer" style="display: none;">
+                                <div class="form-field col-lg-8 col-md-8">
+                                    <label for="simulator-input-borrower">
+                                        {% trans %} demo-project-request_simulator-borrower-field-label {% endtrans %}
+                                        <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span>
+                                    </label>
+                                    <select id="simulator-input-borrower" name="simulator[borrower]" class="input-field select2"
+                                            onchange="$('.base-specs-container').toggle(this.value !== ''); $('footer.simulator-pane-inner').toggle(this.value !== '')"
+                                            data-formvalidation-input
+                                            data-formvalidation-required="true">
+                                        <option value=""></option>
+                                        {% for borrower in borrowers %}
+                                            <option value="{{ borrower.idCompany }}">{{ borrower.name }} ({{ borrower.siren }})</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="text-align-right col-lg-4 col-md-4">
+                                    <a href="#dialog-borrower-creation-content" class="btn-default btn-shape-md fancybox-html">
+                                        <span class="icon fa-plus"></span>
+                                        {% trans %} demo-project-request_add-borrower-button {% endtrans %}
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="row row-multi-col-computer base-specs-container" style="display: none;">
+                                <div class="form-field col-lg-4 col-md-4">
                                     <label for="simulator-input-amount">
                                         {% trans %} demo-project-request_simulator-amount-field-label {% endtrans %}
                                         <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span>
@@ -41,39 +79,48 @@
                                            data-formvalidation-type="integer"
                                            data-formvalidation-required="true">
                                 </div>
-                                <div class="form-field col-lg-6 col-md-6">
+                                <div class="form-field col-lg-4 col-md-4">
+                                    <label for="simulator-input-duration">
+                                        {% trans %} demo-project-request_simulator-duration-field-label {% endtrans %}
+                                        <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span>
+                                    </label>
+                                    <select id="simulator-input-duration" name="simulator[duration]" class="input-field"
+                                         data-formvalidation-input
+                                         data-formvalidation-type="integer"
+                                         data-formvalidation-required="true">
+                                        <option value=""></option>
+                                        {% for period in loanPeriods %}
+                                            <option value="{{ period }}">{{ period }} ans</option>
+                                        {% endfor %}
+                                    </select>
+                                </div><!-- /.form-field -->
+                                <div class="form-field col-lg-4 col-md-4">
                                     <label for="simulator-input-product">
                                         {% trans %} demo-project-request_simulator-product-field-label {% endtrans %}
                                         <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span>
                                     </label>
-                                    <select id="simulator-input-amount" name="simulator[product]" class="input-field">
+                                    <select id="simulator-input-product" name="simulator[product]" class="input-field"
+                                            onchange="$('.additional-specs-container').toggle(this.value === '105' || this.value === '106' || this.value === '107' || this.value === '108')"
+                                            data-formvalidation-input
+                                            data-formvalidation-type="integer">
                                         <option value=""></option>
-                                        {% for product in products %}
-                                            <option value="{{ product.idProduct.idProduct }}">{{ product.idProduct.label }}</option>
+                                        {% for productId, productLabel in products %}
+                                            <option value="{{ productId }}">{{ productLabel }}</option>
                                         {% endfor %}
                                     </select>
                                 </div>
                             </div>
-                            <div class="row">
-                                <div class="form-field">
-                                    <label>
-                                        {% trans %} demo-project-request_simulator-duration-field-label {% endtrans %}
-                                        <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span>
+                            <div class="row row-multi-col-computer additional-specs-container" style="display: none;">
+                                <div class="form-field col-lg-4 col-md-4">
+                                    <label for="simulator-input-rate">
+                                        Taux de progressivité
                                     </label>
-                                    <div class="custom-input-duration simulator-input-duration-wrap"
-                                         data-formvalidation-input
-                                         data-formvalidation-required="true"
-                                         data-formvalidation-type="duration">
-                                        {% for period in loanPeriods %}
-                                            <label>
-                                                <input type="radio" id="simulator-input-duration-{{ period }}" name="simulator[duration]" value="{{ period }}">
-                                                <span class="label">{{ period }}</span>
-                                            </label>
-                                        {% endfor %}
-                                    </div><!-- /.custom-input-duration -->
-                                </div><!-- /.form-field -->
+                                    <input id="simulator-input-rate" type="text" name="simulator[rate]" class="input-field"
+                                           data-formvalidation-input
+                                           data-formvalidation-type="float">
+                                </div>
                             </div>
-                            <div class="row">
+                            <div class="row base-specs-container" style="display: none;">
                                 <div class="form-field">
                                     <label for="simulator-input-description">
                                         {% trans %} demo-project-request_simulator-description-label {% endtrans %}
@@ -88,7 +135,7 @@
                                 </div>
                             </div>
                         </fieldset><!-- /.simulator-pane-inner -->
-                        <footer class="simulator-pane-inner actions bg-p1 c-bg5 text-align-right">
+                        <footer class="simulator-pane-inner actions bg-p1 c-bg5 text-align-right" style="display: none;">
                             <button type="submit" class="btn-continue btn-alternate" data-spinnerbutton>
                                 {% trans %} demo-project-request_simulator-footer-continue-button {% endtrans %}
                             </button>
@@ -100,12 +147,110 @@
     </section><!-- /.dashboard-tabs -->
 {% endblock %}
 
-{% block pageHeadScripts %}
-    <script type="text/javascript">
-      var borrowerEsim = {
-        idMotiveAcquisitionMerger: {{ constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\BorrowingMotive::ID_MOTIVE_ACQUISITION_MERGER') }},
-        idMotiveFranchiserCreation: {{ constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\BorrowingMotive::ID_MOTIVE_FRANCHISER_CREATION') }},
-        idMotiveShareBuyBack: {{ constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\BorrowingMotive::ID_MOTIVE_SHARE_BUYBACK') }}
-      }
+
+{% block modals %}
+    <div id="dialog-borrower-creation-content" class="dialog-content readable-wrap text-align-center">
+        <h3> {% trans %} demo-project-request_borrower-creation-pop-up-title {% endtrans %} </h3>
+        <div id="borrower-creation-form-container">
+            <form id="borrower-creation-form" class="secure-form" action="{{ path('demo_borrower_creation_form') }}" method="post">
+                <div class="panel panel-connect">
+                    <div class="panel-inner">
+                        <div class="row row-multi-col-computer">
+                            <div class="form-field col-lg-6 col-md-6">
+                                <label for="input-siren">
+                                    {% trans %} demo-borrower-creation_siren-field-label {% endtrans %}
+                                    <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span>
+                                </label>
+                                <div class="input-group set-right">
+                                    <input id="input-siren" type="text" name="siren" autocomplete="off" class="input-field" maxlength="9"
+                                           data-formvalidation-input
+                                           data-formvalidation-type="siren"
+                                           data-formvalidation-required="true"
+                                           data-has-spinner="#siren-autocomplete-spinner">
+                                    <div class="btn-group">
+                                        <span id="siren-autocomplete-spinner" class="ui-is-spinner"></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-field col-lg-6 col-md-6">
+                                <label for="input-name">
+                                    {% trans %} demo-borrower-creation_name-field-label {% endtrans %}
+                                    <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span>
+                                </label>
+                                <input id="input-name" type="text" name="name" class="input-field"
+                                       data-formvalidation-input
+                                       data-formvalidation-type="string"
+                                       data-formvalidation-required="true">
+                            </div>
+                        </div>
+                        <div class="btn-controls">
+                            <button type="submit" class="btn-primary" data-spinnerbutton>
+                                {% trans %} demo-project-request_borrower-creation-pop-up-submit-button {% endtrans %}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div><!-- /#dialog-borrower-creation-content -->
+{% endblock %}
+
+{% block pageScripts %}
+    <script>
+        $(function() {
+            var siren
+            $('#input-siren').on('change keyup keydown', function () {
+                var field = $(this).val()
+
+                if (siren !== field && field.match(/^[0-9]{9}$/g)) {
+                    siren = field
+                    $('#siren-autocomplete-spinner').addClass('ui-is-loading')
+                    $.ajax({
+                        url: '{{ path('demo_siren_search') }}',
+                        method: 'POST',
+                        data: {
+                            siren: siren
+                        },
+                        success: function (response) {
+                            $('#siren-autocomplete-spinner').removeClass('ui-is-loading')
+                            if (response.success && response.name) {
+                                $('#input-name').val(response.name)
+                            }
+                        }
+                    })
+                }
+            })
+
+            $('#borrower-creation-form').on('submit', function (e) {
+                e.preventDefault();
+
+                $.ajax({
+                    type: $(this).attr('method'),
+                    url: $(this).attr('action'),
+                    data: $(this).serialize(),
+                    success: function (response) {
+                        $.fancybox.close()
+
+                        if (response.success && response.id) {
+                            var exist = false
+
+                            $('#simulator-input-borrower option').each(function () {
+                                if ($(this).val() === response.id + '') {
+                                    $('#simulator-input-borrower').val(response.id).trigger('change')
+                                    exist = true
+                                    return false
+                                }
+                            })
+
+                            if (false === exist) {
+                                var name = response.name + ' (' + response.siren + ')'
+                                var newOption = new Option(name, response.id, true, true)
+                                $('#simulator-input-borrower').append(newOption).trigger('change')
+                            }
+                        }
+                    }
+                })
+            })
+        })
     </script>
 {% endblock %}

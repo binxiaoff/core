@@ -14,16 +14,16 @@
                     <div class="site-user">
                         <div class="site-user-profile">
                             <div class="profile-avatar">
-                                <a href="{{ path('connected_home') }}">{{ app.user.initials }}</a>
+                                <a href="{{ path('demo_loans') }}">{{ app.user.initials }}</a>
                             </div><!-- /.profile-avatar -->
 
-                            <div class="profile-name">{% trans with {'%firstName%': app.user.getPrenom()} %} demo-header_greeting {% endtrans %}</div>
+                            <div class="profile-name">Bonjour {{ app.user.getPrenom() }}</div>
 
-                            <a href="{{ path('logout') }}" class="profile-logout link"><span class="label">{% trans %} demo-header_logout {% endtrans %}</span></a>
+                            <a href="{{ path('logout') }}" class="profile-logout link"><span class="label">Se déconnecter</span></a>
 
                             <a href="{{ path('partner_project_request') }}" class="site-user-mobile-menu-toggle">
                                 <span class="icon fa-ellipsis-v"></span>
-                                <span class="sr-only">{% trans %} demo-header_sr-mobile-menu-toggle {% endtrans %}</span>
+                                <span class="sr-only">Menu</span>
                             </a>
                         </div><!-- /.site-user-profile -->
                     </div><!-- /.site-user -->

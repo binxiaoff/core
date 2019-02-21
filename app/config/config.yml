@@ -343,6 +343,13 @@ eight_points_guzzle:
                 headers:
                     Accept: "application/json"
                 http_errors: false
+        insee:
+            base_url: "https://api.insee.fr/entreprises/sirene/V3/siren/"
+            options:
+                headers:
+                    Accept: "application/json"
+                    Authorization: "Bearer 6a92714f-2b81-313c-be11-d90039c2a53b"
+                http_errors: false
 
 welp_mailchimp:
     api_key: "%mailchimp.api_key%"

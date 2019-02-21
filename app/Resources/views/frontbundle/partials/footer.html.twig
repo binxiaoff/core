@@ -12,13 +12,7 @@
         <div class="site-wrap">
             <div class="row">
                 <div class="col-sub-left col-lg-6 col-md-6">
-                    {% block siteFooterSubLeft %}
-                        <ul class="list-socialmedia">
-                            <li><a href="{{ setting('Facebook') }}" target="_blank" class="btn-facebook" title="{% trans %} common_facebook-link-title {% endtrans %}"><span class="sr-only">Facebook</span></a></li>
-                            <li><a href="{{ setting('Twitter') }}" target="_blank" class="btn-twitter" title="{% trans %} common_twitter-link-title {% endtrans %}"><span class="sr-only">Twitter</span></a></li>
-                            <li><a href="{{ setting('LinkedIn') }}" target="_blank" class="btn-linkedin" title="{% trans %} common_linkedin-link-title {% endtrans %}"><span class="sr-only">LinkedIn</span></a></li>
-                        </ul><!-- /.list-sharing -->
-                    {% endblock %}
+                    {% block siteFooterSubLeft %} &nbsp; {% endblock %}
                 </div>
                 <div class="col-sub-right col-lg-6 col-md-6">
                     {% block siteFooterSubRight %}
