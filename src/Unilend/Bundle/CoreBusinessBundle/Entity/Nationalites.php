@@ -7,7 +7,7 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * Nationalites
  *
- * @ORM\Table(name="nationalites", uniqueConstraints={@ORM\UniqueConstraint(name="code_pays", columns={"code_pays"})})
+ * @ORM\Table(name="nationalites")
  * @ORM\Entity
  */
 class Nationalites
@@ -15,7 +15,7 @@ class Nationalites
     /**
      * @var string
      *
-     * @ORM\Column(name="code_pays", type="string", length=9, nullable=false)
+     * @ORM\Column(name="code_pays", type="string", length=9, unique=true)
      */
     private $codePays = '';
 
@@ -41,7 +41,7 @@ class Nationalites
     private $frF;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id_nationalite", type="integer")
      * @ORM\Id

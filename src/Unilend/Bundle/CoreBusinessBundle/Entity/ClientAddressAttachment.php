@@ -13,9 +13,9 @@ use Doctrine\ORM\Mapping as ORM;
 class ClientAddressAttachment
 {
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="id", type="integer", nullable=false)
+     * @ORM\Column(name="id", type="integer")
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="IDENTITY")
      */
@@ -26,7 +26,7 @@ class ClientAddressAttachment
      *
      * @ORM\ManyToOne(targetEntity="ClientAddress")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_client_address", referencedColumnName="id")
+     *   @ORM\JoinColumn(name="id_client_address", referencedColumnName="id", nullable=false)
      * })
      */
     private $idClientAddress;
@@ -36,7 +36,7 @@ class ClientAddressAttachment
      *
      * @ORM\ManyToOne(targetEntity="Attachment")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_attachment", referencedColumnName="id")
+     *   @ORM\JoinColumn(name="id_attachment", referencedColumnName="id", nullable=false)
      * })
      */
     private $idAttachment;

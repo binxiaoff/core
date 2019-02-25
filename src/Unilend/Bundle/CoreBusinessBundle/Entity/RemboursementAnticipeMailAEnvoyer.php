@@ -17,16 +17,16 @@ class RemboursementAnticipeMailAEnvoyer
     const STATUS_SENT    = 1;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="id_reception", type="integer", nullable=false)
+     * @ORM\Column(name="id_reception", type="integer")
      */
     private $idReception;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="statut", type="integer", nullable=false)
+     * @ORM\Column(name="statut", type="smallint")
      */
     private $statut;
 
@@ -40,19 +40,19 @@ class RemboursementAnticipeMailAEnvoyer
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="updated", type="datetime", nullable=false)
+     * @ORM\Column(name="updated", type="datetime", nullable=true)
      */
     private $updated;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id_remboursement_anticipe_mail_a_envoyer", type="integer")
      * @ORM\Id

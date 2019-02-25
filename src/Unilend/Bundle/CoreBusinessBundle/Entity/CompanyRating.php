@@ -44,7 +44,7 @@ class CompanyRating
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\CompanyRatingHistory")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_company_rating_history", referencedColumnName="id_company_rating_history")
+     *   @ORM\JoinColumn(name="id_company_rating_history", referencedColumnName="id_company_rating_history", nullable=false)
      * })
      */
     private $idCompanyRatingHistory;
@@ -52,19 +52,19 @@ class CompanyRating
     /**
      * @var string
      *
-     * @ORM\Column(name="type", type="string", length=191, nullable=false)
+     * @ORM\Column(name="type", type="string", length=191)
      */
     private $type;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="value", type="string", length=191, nullable=false)
+     * @ORM\Column(name="value", type="string", length=191)
      */
     private $value;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id_company_rating", type="integer")
      * @ORM\Id

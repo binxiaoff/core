@@ -16,14 +16,14 @@ class ClientsGestionMailsNotif
     /**
      * @var int
      *
-     * @ORM\Column(name="id_client", type="integer", nullable=false)
+     * @ORM\Column(name="id_client", type="integer")
      */
     private $idClient;
 
     /**
      * @var int
      *
-     * @ORM\Column(name="id_notif", type="integer", nullable=false)
+     * @ORM\Column(name="id_notif", type="integer")
      */
     private $idNotif;
 
@@ -37,7 +37,7 @@ class ClientsGestionMailsNotif
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="date_notif", type="datetime", nullable=false)
+     * @ORM\Column(name="date_notif", type="datetime")
      */
     private $dateNotif;
 
@@ -56,58 +56,58 @@ class ClientsGestionMailsNotif
     private $idLoan;
 
     /**
-     * @var int
+     * @var bool
      *
-     * @ORM\Column(name="immediatement", type="integer", nullable=true)
+     * @ORM\Column(name="immediatement", type="boolean", nullable=true)
      */
     private $immediatement;
 
     /**
-     * @var int
+     * @var bool
      *
-     * @ORM\Column(name="quotidienne", type="integer", nullable=true)
+     * @ORM\Column(name="quotidienne", type="boolean", nullable=true)
      */
     private $quotidienne;
 
     /**
-     * @var int
+     * @var bool
      *
-     * @ORM\Column(name="status_check_quotidienne", type="integer", nullable=true)
+     * @ORM\Column(name="status_check_quotidienne", type="boolean", nullable=true)
      */
     private $statusCheckQuotidienne;
 
     /**
-     * @var int
+     * @var bool
      *
-     * @ORM\Column(name="hebdomadaire", type="integer", nullable=true)
+     * @ORM\Column(name="hebdomadaire", type="boolean", nullable=true)
      */
     private $hebdomadaire;
 
     /**
-     * @var int
+     * @var bool
      *
-     * @ORM\Column(name="status_check_hebdomadaire", type="integer", nullable=true)
+     * @ORM\Column(name="status_check_hebdomadaire", type="boolean", nullable=true)
      */
     private $statusCheckHebdomadaire;
 
     /**
-     * @var int
+     * @var bool
      *
-     * @ORM\Column(name="mensuelle", type="integer", nullable=true)
+     * @ORM\Column(name="mensuelle", type="boolean", nullable=true)
      */
     private $mensuelle;
 
     /**
-     * @var int
+     * @var bool
      *
-     * @ORM\Column(name="status_check_mensuelle", type="integer", nullable=true)
+     * @ORM\Column(name="status_check_mensuelle", type="boolean", nullable=true)
      */
     private $statusCheckMensuelle;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
@@ -284,11 +284,11 @@ class ClientsGestionMailsNotif
     /**
      * Set immediatement
      *
-     * @param int|null $immediatement
+     * @param bool|null $immediatement
      *
      * @return ClientsGestionMailsNotif
      */
-    public function setImmediatement(?int $immediatement): ClientsGestionMailsNotif
+    public function setImmediatement(?bool $immediatement): ClientsGestionMailsNotif
     {
         $this->immediatement = $immediatement;
 
@@ -298,9 +298,9 @@ class ClientsGestionMailsNotif
     /**
      * Get immediatement
      *
-     * @return int|null
+     * @return bool|null
      */
-    public function getImmediatement(): ?int
+    public function getImmediatement(): ?bool
     {
         return $this->immediatement;
     }
@@ -308,11 +308,11 @@ class ClientsGestionMailsNotif
     /**
      * Set quotidienne
      *
-     * @param int|null $quotidienne
+     * @param bool|null $quotidienne
      *
      * @return ClientsGestionMailsNotif
      */
-    public function setQuotidienne(?int $quotidienne): ClientsGestionMailsNotif
+    public function setQuotidienne(?bool $quotidienne): ClientsGestionMailsNotif
     {
         $this->quotidienne = $quotidienne;
 
@@ -322,9 +322,9 @@ class ClientsGestionMailsNotif
     /**
      * Get quotidienne
      *
-     * @return int|null
+     * @return bool|null
      */
-    public function getQuotidienne(): ?int
+    public function getQuotidienne(): ?bool
     {
         return $this->quotidienne;
     }
@@ -332,11 +332,11 @@ class ClientsGestionMailsNotif
     /**
      * Set statusCheckQuotidienne
      *
-     * @param int|null $statusCheckQuotidienne
+     * @param bool|null $statusCheckQuotidienne
      *
      * @return ClientsGestionMailsNotif
      */
-    public function setStatusCheckQuotidienne(?int $statusCheckQuotidienne): ClientsGestionMailsNotif
+    public function setStatusCheckQuotidienne(?bool $statusCheckQuotidienne): ClientsGestionMailsNotif
     {
         $this->statusCheckQuotidienne = $statusCheckQuotidienne;
 
@@ -346,9 +346,9 @@ class ClientsGestionMailsNotif
     /**
      * Get statusCheckQuotidienne
      *
-     * @return int|null
+     * @return bool|null
      */
-    public function getStatusCheckQuotidienne(): ?int
+    public function getStatusCheckQuotidienne(): ?bool
     {
         return $this->statusCheckQuotidienne;
     }
@@ -356,11 +356,11 @@ class ClientsGestionMailsNotif
     /**
      * Set hebdomadaire
      *
-     * @param int|null $hebdomadaire
+     * @param bool|null $hebdomadaire
      *
      * @return ClientsGestionMailsNotif
      */
-    public function setHebdomadaire(?int $hebdomadaire): ClientsGestionMailsNotif
+    public function setHebdomadaire(?bool $hebdomadaire): ClientsGestionMailsNotif
     {
         $this->hebdomadaire = $hebdomadaire;
 
@@ -370,9 +370,9 @@ class ClientsGestionMailsNotif
     /**
      * Get hebdomadaire
      *
-     * @return int|null
+     * @return bool|null
      */
-    public function getHebdomadaire(): ?int
+    public function getHebdomadaire(): ?bool
     {
         return $this->hebdomadaire;
     }
@@ -380,11 +380,11 @@ class ClientsGestionMailsNotif
     /**
      * Set statusCheckHebdomadaire
      *
-     * @param int|null $statusCheckHebdomadaire
+     * @param bool|null $statusCheckHebdomadaire
      *
      * @return ClientsGestionMailsNotif
      */
-    public function setStatusCheckHebdomadaire(?int $statusCheckHebdomadaire): ClientsGestionMailsNotif
+    public function setStatusCheckHebdomadaire(?bool $statusCheckHebdomadaire): ClientsGestionMailsNotif
     {
         $this->statusCheckHebdomadaire = $statusCheckHebdomadaire;
 
@@ -394,9 +394,9 @@ class ClientsGestionMailsNotif
     /**
      * Get statusCheckHebdomadaire
      *
-     * @return int|null
+     * @return bool|null
      */
-    public function getStatusCheckHebdomadaire(): ?int
+    public function getStatusCheckHebdomadaire(): ?bool
     {
         return $this->statusCheckHebdomadaire;
     }
@@ -404,11 +404,11 @@ class ClientsGestionMailsNotif
     /**
      * Set mensuelle
      *
-     * @param int|null $mensuelle
+     * @param bool|null $mensuelle
      *
      * @return ClientsGestionMailsNotif
      */
-    public function setMensuelle(?int $mensuelle): ClientsGestionMailsNotif
+    public function setMensuelle(?bool $mensuelle): ClientsGestionMailsNotif
     {
         $this->mensuelle = $mensuelle;
 
@@ -418,9 +418,9 @@ class ClientsGestionMailsNotif
     /**
      * Get mensuelle
      *
-     * @return int|null
+     * @return bool|null
      */
-    public function getMensuelle(): ?int
+    public function getMensuelle(): ?bool
     {
         return $this->mensuelle;
     }
@@ -428,11 +428,11 @@ class ClientsGestionMailsNotif
     /**
      * Set statusCheckMensuelle
      *
-     * @param int|null $statusCheckMensuelle
+     * @param bool|null $statusCheckMensuelle
      *
      * @return ClientsGestionMailsNotif
      */
-    public function setStatusCheckMensuelle(?int $statusCheckMensuelle): ClientsGestionMailsNotif
+    public function setStatusCheckMensuelle(?bool $statusCheckMensuelle): ClientsGestionMailsNotif
     {
         $this->statusCheckMensuelle = $statusCheckMensuelle;
 
@@ -442,9 +442,9 @@ class ClientsGestionMailsNotif
     /**
      * Get statusCheckMensuelle
      *
-     * @return int|null
+     * @return bool|null
      */
-    public function getStatusCheckMensuelle(): ?int
+    public function getStatusCheckMensuelle(): ?bool
     {
         return $this->statusCheckMensuelle;
     }

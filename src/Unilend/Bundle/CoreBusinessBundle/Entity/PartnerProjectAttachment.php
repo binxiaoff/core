@@ -14,28 +14,28 @@ use Doctrine\ORM\Mapping as ORM;
 class PartnerProjectAttachment
 {
     /**
-     * @var boolean
+     * @var bool
      *
-     * @ORM\Column(name="mandatory", type="boolean", nullable=false)
+     * @ORM\Column(name="mandatory", type="boolean")
      */
     private $mandatory;
 
     /**
      * @var int
      *
-     * @ORM\Column(name="rank", type="integer", nullable=true)
+     * @ORM\Column(name="rank", type="smallint", nullable=true)
      */
     private $rank;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id", type="integer")
      * @ORM\Id
@@ -48,7 +48,7 @@ class PartnerProjectAttachment
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_attachment_type", referencedColumnName="id")
+     *   @ORM\JoinColumn(name="id_attachment_type", referencedColumnName="id", nullable=false)
      * })
      */
     private $idAttachmentType;
@@ -58,7 +58,7 @@ class PartnerProjectAttachment
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Partner", inversedBy="attachmentTypes")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_partner", referencedColumnName="id")
+     *   @ORM\JoinColumn(name="id_partner", referencedColumnName="id", nullable=false)
      * })
      */
     private $idPartner;

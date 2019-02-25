@@ -7,7 +7,7 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * Translations
  *
- * @ORM\Table(name="translations", indexes={@ORM\Index(name="section", columns={"section"})})
+ * @ORM\Table(name="translations", uniqueConstraints={@ORM\UniqueConstraint(name="unq_translation", columns={"locale", "section", "name"})}, indexes={@ORM\Index(name="section", columns={"section"})})
  * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\TranslationsRepository")
  * @ORM\HasLifecycleCallbacks
  */
@@ -18,35 +18,35 @@ class Translations
     /**
      * @var string
      *
-     * @ORM\Column(name="locale", type="string", length=5, nullable=false)
+     * @ORM\Column(name="locale", type="string", length=5)
      */
     private $locale;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="section", type="string", length=191, nullable=false)
+     * @ORM\Column(name="section", type="string", length=191)
      */
     private $section;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="name", type="string", length=191, nullable=false)
+     * @ORM\Column(name="name", type="string", length=191)
      */
     private $name;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="translation", type="text", length=65535, nullable=false)
+     * @ORM\Column(name="translation", type="text", length=65535)
      */
     private $translation;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
@@ -58,7 +58,7 @@ class Translations
     private $updated;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id_translation", type="integer")
      * @ORM\Id

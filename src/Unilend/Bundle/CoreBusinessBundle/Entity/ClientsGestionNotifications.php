@@ -28,44 +28,44 @@ class ClientsGestionNotifications
     ];
 
     /**
-     * @var int
+     * @var bool
      *
-     * @ORM\Column(name="immediatement", type="integer", nullable=false)
+     * @ORM\Column(name="immediatement", type="boolean")
      */
     private $immediatement;
 
     /**
-     * @var int
+     * @var bool
      *
-     * @ORM\Column(name="quotidienne", type="integer", nullable=false)
+     * @ORM\Column(name="quotidienne", type="boolean")
      */
     private $quotidienne;
 
     /**
-     * @var int
+     * @var bool
      *
-     * @ORM\Column(name="hebdomadaire", type="integer", nullable=false)
+     * @ORM\Column(name="hebdomadaire", type="boolean")
      */
     private $hebdomadaire;
 
     /**
-     * @var int
+     * @var bool
      *
-     * @ORM\Column(name="mensuelle", type="integer", nullable=false)
+     * @ORM\Column(name="mensuelle", type="boolean")
      */
     private $mensuelle;
 
     /**
-     * @var int
+     * @var bool
      *
-     * @ORM\Column(name="uniquement_notif", type="integer", nullable=false)
+     * @ORM\Column(name="uniquement_notif", type="boolean")
      */
     private $uniquementNotif;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
@@ -99,11 +99,11 @@ class ClientsGestionNotifications
     /**
      * Set immediatement
      *
-     * @param int $immediatement
+     * @param bool $immediatement
      *
      * @return ClientsGestionNotifications
      */
-    public function setImmediatement(int $immediatement): ClientsGestionNotifications
+    public function setImmediatement(bool $immediatement): ClientsGestionNotifications
     {
         $this->immediatement = $immediatement;
 
@@ -113,9 +113,9 @@ class ClientsGestionNotifications
     /**
      * Get immediatement
      *
-     * @return int
+     * @return bool
      */
-    public function getImmediatement(): int
+    public function getImmediatement(): bool
     {
         return $this->immediatement;
     }
@@ -123,11 +123,11 @@ class ClientsGestionNotifications
     /**
      * Set quotidienne
      *
-     * @param int $quotidienne
+     * @param bool $quotidienne
      *
      * @return ClientsGestionNotifications
      */
-    public function setQuotidienne(int $quotidienne): ClientsGestionNotifications
+    public function setQuotidienne(bool $quotidienne): ClientsGestionNotifications
     {
         $this->quotidienne = $quotidienne;
 
@@ -137,9 +137,9 @@ class ClientsGestionNotifications
     /**
      * Get quotidienne
      *
-     * @return int
+     * @return bool
      */
-    public function getQuotidienne(): int
+    public function getQuotidienne(): bool
     {
         return $this->quotidienne;
     }
@@ -147,11 +147,11 @@ class ClientsGestionNotifications
     /**
      * Set hebdomadaire
      *
-     * @param int $hebdomadaire
+     * @param bool $hebdomadaire
      *
      * @return ClientsGestionNotifications
      */
-    public function setHebdomadaire(int $hebdomadaire): ClientsGestionNotifications
+    public function setHebdomadaire(bool $hebdomadaire): ClientsGestionNotifications
     {
         $this->hebdomadaire = $hebdomadaire;
 
@@ -161,9 +161,9 @@ class ClientsGestionNotifications
     /**
      * Get hebdomadaire
      *
-     * @return int
+     * @return bool
      */
-    public function getHebdomadaire(): int
+    public function getHebdomadaire(): bool
     {
         return $this->hebdomadaire;
     }
@@ -171,11 +171,11 @@ class ClientsGestionNotifications
     /**
      * Set mensuelle
      *
-     * @param int $mensuelle
+     * @param bool $mensuelle
      *
      * @return ClientsGestionNotifications
      */
-    public function setMensuelle(int $mensuelle): ClientsGestionNotifications
+    public function setMensuelle(bool $mensuelle): ClientsGestionNotifications
     {
         $this->mensuelle = $mensuelle;
 
@@ -185,9 +185,9 @@ class ClientsGestionNotifications
     /**
      * Get mensuelle
      *
-     * @return int
+     * @return bool
      */
-    public function getMensuelle(): int
+    public function getMensuelle(): bool
     {
         return $this->mensuelle;
     }
@@ -195,11 +195,11 @@ class ClientsGestionNotifications
     /**
      * Set uniquementNotif
      *
-     * @param int $uniquementNotif
+     * @param bool $uniquementNotif
      *
      * @return ClientsGestionNotifications
      */
-    public function setUniquementNotif(int $uniquementNotif): ClientsGestionNotifications
+    public function setUniquementNotif(bool $uniquementNotif): ClientsGestionNotifications
     {
         $this->uniquementNotif = $uniquementNotif;
 
@@ -209,9 +209,9 @@ class ClientsGestionNotifications
     /**
      * Get uniquementNotif
      *
-     * @return int
+     * @return bool
      */
-    public function getUniquementNotif(): int
+    public function getUniquementNotif(): bool
     {
         return $this->uniquementNotif;
     }

@@ -13,70 +13,72 @@ use Doctrine\ORM\Mapping as ORM;
 class TreeMenu
 {
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="id_menu", type="integer", nullable=false)
+     * @ORM\Column(name="id_menu", type="integer")
      */
     private $idMenu;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="nom", type="string", length=191, nullable=false)
+     * @ORM\Column(name="nom", type="string", length=191)
      */
     private $nom;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="value", type="string", length=191, nullable=false)
+     * @ORM\Column(name="value", type="string", length=191)
      */
     private $value;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="complement", type="string", length=191, nullable=false)
+     * @ORM\Column(name="complement", type="string", length=191)
      */
     private $complement;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="target", type="string", nullable=false)
+     * @ORM\Column(name="target", type="string")
      */
     private $target;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="ordre", type="integer", nullable=false)
+     * @ORM\Column(name="ordre", type="integer", nullable=false, options={"default": 0})
      */
-    private $ordre = '0';
+    private $ordre = 0;
 
     /**
-     * @var integer
+     * 0 : Hors ligne 1: En ligne
      *
-     * @ORM\Column(name="status", type="integer", nullable=false)
+     * @var bool
+     *
+     * @ORM\Column(name="status", type="boolean")
      */
     private $status;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="updated", type="datetime", nullable=false)
+     * @ORM\Column(name="updated", type="datetime", nullable=true)
      */
     private $updated;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id", type="integer")
      * @ORM\Id
@@ -242,7 +244,7 @@ class TreeMenu
     /**
      * Set status
      *
-     * @param integer $status
+     * @param bool $status
      *
      * @return TreeMenu
      */
@@ -256,7 +258,7 @@ class TreeMenu
     /**
      * Get status
      *
-     * @return integer
+     * @return bool
      */
     public function getStatus()
     {

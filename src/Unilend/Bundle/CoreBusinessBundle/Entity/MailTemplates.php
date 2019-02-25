@@ -26,21 +26,21 @@ class MailTemplates
     /**
      * @var string
      *
-     * @ORM\Column(name="type", type="string", length=191, nullable=false)
+     * @ORM\Column(name="type", type="string", length=191)
      */
     private $type;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="locale", type="string", length=5, nullable=false)
+     * @ORM\Column(name="locale", type="string", length=5)
      */
     private $locale;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="part", type="string", length=30, nullable=false)
+     * @ORM\Column(name="part", type="string", length=30)
      */
     private $part;
 
@@ -107,16 +107,16 @@ class MailTemplates
     private $idFooter;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="status", type="integer", nullable=false)
+     * @ORM\Column(name="status", type="smallint")
      */
     private $status;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
@@ -128,7 +128,7 @@ class MailTemplates
     private $updated;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id_mail_template", type="integer")
      * @ORM\Id

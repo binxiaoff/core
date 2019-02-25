@@ -46,23 +46,23 @@ class Virements
     private $idProject;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="montant", type="integer", nullable=false)
+     * @ORM\Column(name="montant", type="integer")
      */
     private $montant;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="motif", type="string", length=150, nullable=false)
+     * @ORM\Column(name="motif", type="string", length=150)
      */
     private $motif;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="type", type="integer", nullable=false)
+     * @ORM\Column(name="type", type="smallint")
      */
     private $type;
 
@@ -111,9 +111,9 @@ class Virements
     private $transferAt;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="status", type="integer", nullable=false)
+     * @ORM\Column(name="status", type="smallint")
      */
     private $status;
 
@@ -127,19 +127,19 @@ class Virements
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="updated", type="datetime", nullable=false)
+     * @ORM\Column(name="updated", type="datetime", nullable=true)
      */
     private $updated;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id_virement", type="integer")
      * @ORM\Id

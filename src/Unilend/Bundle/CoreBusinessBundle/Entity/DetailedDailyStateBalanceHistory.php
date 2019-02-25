@@ -7,7 +7,7 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * DetailedDailyStateBalanceHistory
  *
- * @ORM\Table(name="detailed_daily_state_balance_history", uniqueConstraints={@ORM\UniqueConstraint(name="date", columns={"date"})}, indexes={@ORM\Index(name="idx_date", columns={"date"})})
+ * @ORM\Table(name="detailed_daily_state_balance_history")
  * @ORM\HasLifecycleCallbacks
  * @ORM\Entity
  */
@@ -16,7 +16,7 @@ class DetailedDailyStateBalanceHistory
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="date", type="date", nullable=false)
+     * @ORM\Column(name="date", type="date", nullable=false, unique=true)
      */
     private $date;
 
@@ -30,54 +30,54 @@ class DetailedDailyStateBalanceHistory
     /**
      * @var string
      *
-     * @ORM\Column(name="lender_balance", type="decimal", precision=12, scale=2, nullable=false)
+     * @ORM\Column(name="lender_balance", type="decimal", precision=12, scale=2)
      */
     private $lenderBalance;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="borrower_balance", type="decimal", precision=12, scale=2, nullable=false)
+     * @ORM\Column(name="borrower_balance", type="decimal", precision=12, scale=2)
      */
     private $borrowerBalance;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="debt_collector_balance", type="decimal", precision=12, scale=2, nullable=false)
+     * @ORM\Column(name="debt_collector_balance", type="decimal", precision=12, scale=2)
      */
     private $debtCollectorBalance;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="unilend_promotional_balance", type="decimal", precision=12, scale=2, nullable=false)
+     * @ORM\Column(name="unilend_promotional_balance", type="decimal", precision=12, scale=2)
      */
     private $unilendPromotionalBalance;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="unilend_balance", type="decimal", precision=12, scale=2, nullable=false)
+     * @ORM\Column(name="unilend_balance", type="decimal", precision=12, scale=2)
      */
     private $unilendBalance;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="tax_balance", type="decimal", precision=12, scale=2, nullable=false)
+     * @ORM\Column(name="tax_balance", type="decimal", precision=12, scale=2)
      */
     private $taxBalance;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id", type="integer")
      * @ORM\Id

@@ -15,35 +15,35 @@ class LenderPanelPreference
     /**
      * @var string
      *
-     * @ORM\Column(name="page_name", type="string", length=64, nullable=false)
+     * @ORM\Column(name="page_name", type="string", length=64)
      */
     private $pageName;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="panel_name", type="string", length=64, nullable=false)
+     * @ORM\Column(name="panel_name", type="string", length=64)
      */
     private $panelName;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="panel_order", type="integer", nullable=false)
+     * @ORM\Column(name="panel_order", type="smallint")
      */
     private $panelOrder;
 
     /**
-     * @var integer
+     * @var bool
      *
-     * @ORM\Column(name="hidden", type="integer", nullable=false)
+     * @ORM\Column(name="hidden", type="boolean")
      */
     private $hidden;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=true)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
@@ -55,7 +55,7 @@ class LenderPanelPreference
     private $updated;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id_lender_panel_preference", type="integer")
      * @ORM\Id
@@ -68,7 +68,7 @@ class LenderPanelPreference
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Wallet")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_lender", referencedColumnName="id")
+     *   @ORM\JoinColumn(name="id_lender", referencedColumnName="id", nullable=false)
      * })
      */
     private $idLender;
@@ -150,7 +150,7 @@ class LenderPanelPreference
     /**
      * Set hidden
      *
-     * @param integer $hidden
+     * @param bool $hidden
      *
      * @return LenderPanelPreference
      */
@@ -164,7 +164,7 @@ class LenderPanelPreference
     /**
      * Get hidden
      *
-     * @return integer
+     * @return bool
      */
     public function getHidden()
     {

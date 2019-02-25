@@ -7,7 +7,7 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * Xerfi
  *
- * @ORM\Table(name="xerfi", uniqueConstraints={@ORM\UniqueConstraint(name="naf", columns={"naf"})})
+ * @ORM\Table(name="xerfi")
  * @ORM\Entity
  */
 class Xerfi
@@ -17,21 +17,21 @@ class Xerfi
     /**
      * @var string
      *
-     * @ORM\Column(name="label", type="string", length=191, nullable=false)
+     * @ORM\Column(name="label", type="string", length=191)
      */
     private $label;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="score", type="integer", nullable=false)
+     * @ORM\Column(name="score", type="smallint")
      */
     private $score;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="unilend_rating", type="string", length=191, nullable=false)
+     * @ORM\Column(name="unilend_rating", type="string", length=191)
      */
     private $unilendRating;
 

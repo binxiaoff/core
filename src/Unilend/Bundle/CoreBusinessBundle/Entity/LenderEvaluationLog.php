@@ -7,7 +7,7 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * LenderEvaluationLog
  *
- * @ORM\Table(name="lender_evaluation_log", indexes={@ORM\Index(name="id_lender_evaluation", columns={"id_lender_evaluation"})})
+ * @ORM\Table(name="lender_evaluation_log")
  * @ORM\Entity
  */
 class LenderEvaluationLog
@@ -15,33 +15,33 @@ class LenderEvaluationLog
     /**
      * @var string
      *
-     * @ORM\Column(name="event", type="string", length=191, nullable=false)
+     * @ORM\Column(name="event", type="string", length=191)
      */
     private $event;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="message", type="text", length=65535, nullable=false)
+     * @ORM\Column(name="message", type="text", length=65535)
      */
     private $message;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="updated", type="datetime", nullable=false)
+     * @ORM\Column(name="updated", type="datetime")
      */
     private $updated;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id_lender_evaluation_log", type="integer")
      * @ORM\Id
@@ -54,7 +54,7 @@ class LenderEvaluationLog
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\LenderEvaluation")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_lender_evaluation", referencedColumnName="id_lender_evaluation")
+     *   @ORM\JoinColumn(name="id_lender_evaluation", referencedColumnName="id_lender_evaluation", nullable=false)
      * })
      */
     private $idLenderEvaluation;

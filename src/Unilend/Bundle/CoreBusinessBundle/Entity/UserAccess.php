@@ -16,33 +16,33 @@ class UserAccess
     /**
      * @var string
      *
-     * @ORM\Column(name="controller", type="string", length=191, nullable=false)
+     * @ORM\Column(name="controller", type="string", length=191)
      */
     private $controller;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="action", type="string", length=191, nullable=false)
+     * @ORM\Column(name="action", type="string", length=191)
      */
     private $action;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="ip", type="string", length=15, nullable=false)
+     * @ORM\Column(name="ip", type="string", length=15)
      */
     private $ip;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id", type="integer")
      * @ORM\Id
@@ -55,7 +55,7 @@ class UserAccess
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Users")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_user", referencedColumnName="id_user")
+     *   @ORM\JoinColumn(name="id_user", referencedColumnName="id_user", nullable=false)
      * })
      */
     private $idUser;

@@ -9,7 +9,7 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * Product
  *
- * @ORM\Table(name="product", uniqueConstraints={@ORM\UniqueConstraint(name="unq_product_label", columns={"label"})}, indexes={@ORM\Index(name="idx_product_id_repayment_type", columns={"id_repayment_type"})})
+ * @ORM\Table(name="product")
  * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\ProductRepository")
  */
 class Product
@@ -23,47 +23,47 @@ class Product
     /**
      * @var string
      *
-     * @ORM\Column(name="label", type="string", length=191, nullable=false)
+     * @ORM\Column(name="label", type="string", length=191, nullable=false, unique=true)
      */
     private $label;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="status", type="integer", nullable=false)
+     * @ORM\Column(name="status", type="smallint")
      */
     private $status;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="proxy_template", type="string", length=191, nullable=false)
+     * @ORM\Column(name="proxy_template", type="string", length=191)
      */
     private $proxyTemplate;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="proxy_block_slug", type="string", length=191, nullable=false)
+     * @ORM\Column(name="proxy_block_slug", type="string", length=191)
      */
     private $proxyBlockSlug;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="updated", type="datetime", nullable=false)
+     * @ORM\Column(name="updated", type="datetime")
      */
     private $updated;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id_product", type="integer")
      * @ORM\Id
@@ -76,25 +76,17 @@ class Product
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\RepaymentType")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_repayment_type", referencedColumnName="id_repayment_type")
+     *   @ORM\JoinColumn(name="id_repayment_type", referencedColumnName="id_repayment_type", nullable=false)
      * })
      */
     private $idRepaymentType;
 
     /**
-     * @var UnderlyingContract[]
+     * @var ProductUnderlyingContract[]
      *
-     * @ORM\ManyToMany(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\UnderlyingContract", inversedBy="idProduct")
-     * @ORM\JoinTable(name="product_underlying_contract",
-     *   joinColumns={
-     *     @ORM\JoinColumn(name="id_product", referencedColumnName="id_product")
-     *   },
-     *   inverseJoinColumns={
-     *     @ORM\JoinColumn(name="id_contract", referencedColumnName="id_contract")
-     *   }
-     * )
+     * @ORM\OneToMany(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\ProductUnderlyingContract", mappedBy="idProduct", fetch="EXTRA_LAZY")
      */
-    private $idContract;
+    private $productContract;
 
     /**
      * @var ProductAttribute[]
@@ -111,7 +103,7 @@ class Product
      */
     public function __construct()
     {
-        $this->idContract        = new ArrayCollection();
+        $this->productContract   = new ArrayCollection();
         $this->productAttributes = new ArrayCollection();
     }
 
@@ -294,37 +286,11 @@ class Product
     }
 
     /**
-     * Add idContract
-     *
-     * @param UnderlyingContract $idContract
-     *
-     * @return Product
+     * @return ProductUnderlyingContract[]
      */
-    public function addIdContract(UnderlyingContract $idContract)
+    public function getProductContract(): iterable
     {
-        $this->idContract->add($idContract);
-
-        return $this;
-    }
-
-    /**
-     * Remove idContract
-     *
-     * @param UnderlyingContract $idContract
-     */
-    public function removeIdContract(UnderlyingContract $idContract)
-    {
-        $this->idContract->removeElement($idContract);
-    }
-
-    /**
-     * Get idContract
-     *
-     * @return UnderlyingContract[]
-     */
-    public function getIdContract()
-    {
-        return $this->idContract;
+        return $this->productContract;
     }
 
     /**

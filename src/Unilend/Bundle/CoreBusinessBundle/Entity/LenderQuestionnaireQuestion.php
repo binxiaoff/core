@@ -15,33 +15,33 @@ class LenderQuestionnaireQuestion
     /**
      * @var string
      *
-     * @ORM\Column(name="type", type="string", length=191, nullable=false)
+     * @ORM\Column(name="type", type="string", length=191)
      */
     private $type;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="order", type="integer", nullable=false)
+     * @ORM\Column(name="order", type="integer")
      */
     private $order;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="updated", type="datetime", nullable=false)
+     * @ORM\Column(name="updated", type="datetime")
      */
     private $updated;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id_lender_questionnaire_question", type="integer")
      * @ORM\Id

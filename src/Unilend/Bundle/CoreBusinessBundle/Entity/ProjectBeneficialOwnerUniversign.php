@@ -38,16 +38,16 @@ class ProjectBeneficialOwnerUniversign implements UniversignEntityInterface
     private $name;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="status", type="integer", nullable=false)
+     * @ORM\Column(name="status", type="smallint")
      */
     private $status;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
@@ -59,7 +59,7 @@ class ProjectBeneficialOwnerUniversign implements UniversignEntityInterface
     private $updated;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id", type="integer")
      * @ORM\Id
@@ -72,7 +72,7 @@ class ProjectBeneficialOwnerUniversign implements UniversignEntityInterface
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Projects")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_project", referencedColumnName="id_project")
+     *   @ORM\JoinColumn(name="id_project", referencedColumnName="id_project", nullable=false)
      * })
      */
     private $idProject;
@@ -82,7 +82,7 @@ class ProjectBeneficialOwnerUniversign implements UniversignEntityInterface
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\CompanyBeneficialOwnerDeclaration")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_declaration", referencedColumnName="id")
+     *   @ORM\JoinColumn(name="id_declaration", referencedColumnName="id", nullable=false)
      * })
      */
     private $idDeclaration;

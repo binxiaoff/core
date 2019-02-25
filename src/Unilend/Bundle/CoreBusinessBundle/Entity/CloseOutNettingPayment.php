@@ -18,7 +18,7 @@ class CloseOutNettingPayment
      *
      * @ORM\OneToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Projects")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_project", referencedColumnName="id_project")
+     *   @ORM\JoinColumn(name="id_project", referencedColumnName="id_project", nullable=false)
      * })
      */
     private $idProject;
@@ -26,56 +26,56 @@ class CloseOutNettingPayment
     /**
      * @var string
      *
-     * @ORM\Column(name="capital", type="decimal", precision=10, scale=2, nullable=false)
+     * @ORM\Column(name="capital", type="decimal", precision=10, scale=2)
      */
     private $capital;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="paid_capital", type="decimal", precision=10, scale=2, nullable=false)
+     * @ORM\Column(name="paid_capital", type="decimal", precision=10, scale=2)
      */
     private $paidCapital;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="interest", type="decimal", precision=10, scale=2, nullable=false)
+     * @ORM\Column(name="interest", type="decimal", precision=10, scale=2)
      */
     private $interest;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="paid_interest", type="decimal", precision=10, scale=2, nullable=false)
+     * @ORM\Column(name="paid_interest", type="decimal", precision=10, scale=2)
      */
     private $paidInterest;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="commission_tax_incl", type="decimal", precision=10, scale=2, nullable=false)
+     * @ORM\Column(name="commission_tax_incl", type="decimal", precision=10, scale=2)
      */
     private $commissionTaxIncl;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="paid_commission_tax_incl", type="decimal", precision=10, scale=2, nullable=false)
+     * @ORM\Column(name="paid_commission_tax_incl", type="decimal", precision=10, scale=2)
      */
     private $paidCommissionTaxIncl;
 
     /**
-     * @var boolean
+     * @var bool
      *
-     * @ORM\Column(name="lenders_notified", type="boolean", nullable=false)
+     * @ORM\Column(name="lenders_notified", type="boolean")
      */
     private $lendersNotified;
 
     /**
-     * @var boolean
+     * @var bool
      *
-     * @ORM\Column(name="borrower_notified", type="boolean", nullable=false)
+     * @ORM\Column(name="borrower_notified", type="boolean")
      */
     private $borrowerNotified;
 
@@ -92,7 +92,7 @@ class CloseOutNettingPayment
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
@@ -104,7 +104,7 @@ class CloseOutNettingPayment
     private $updated;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id", type="integer")
      * @ORM\Id

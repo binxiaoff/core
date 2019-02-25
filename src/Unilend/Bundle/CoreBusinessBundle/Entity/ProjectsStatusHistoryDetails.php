@@ -13,9 +13,9 @@ use Doctrine\ORM\Mapping as ORM;
 class ProjectsStatusHistoryDetails
 {
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="id_project_status_history", type="integer", nullable=false)
+     * @ORM\Column(name="id_project_status_history", type="integer")
      */
     private $idProjectStatusHistory;
 
@@ -29,40 +29,40 @@ class ProjectsStatusHistoryDetails
     /**
      * @var string
      *
-     * @ORM\Column(name="receiver", type="text", length=16777215, nullable=false)
+     * @ORM\Column(name="receiver", type="text", length=16777215)
      */
     private $receiver;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="mail_content", type="text", length=16777215, nullable=false)
+     * @ORM\Column(name="mail_content", type="text", length=16777215)
      */
     private $mailContent;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="site_content", type="text", length=16777215, nullable=false)
+     * @ORM\Column(name="site_content", type="text", length=16777215)
      */
     private $siteContent;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="updated", type="datetime", nullable=false)
+     * @ORM\Column(name="updated", type="datetime")
      */
     private $updated;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id_project_status_history_details", type="integer")
      * @ORM\Id

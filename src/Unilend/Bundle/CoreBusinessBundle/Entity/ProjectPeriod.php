@@ -16,42 +16,42 @@ class ProjectPeriod
     const STATUS_ACTIVE   = 1;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="min", type="smallint", nullable=false)
+     * @ORM\Column(name="min", type="smallint")
      */
     private $min;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="max", type="smallint", nullable=false)
+     * @ORM\Column(name="max", type="smallint")
      */
     private $max;
 
     /**
-     * @var integer
+     * @var bool
      *
-     * @ORM\Column(name="status", type="integer", nullable=false)
+     * @ORM\Column(name="status", type="boolean")
      */
     private $status;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="updated", type="datetime", nullable=false)
+     * @ORM\Column(name="updated", type="datetime")
      */
     private $updated;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id_period", type="integer")
      * @ORM\Id
@@ -112,7 +112,7 @@ class ProjectPeriod
     /**
      * Set status
      *
-     * @param integer $status
+     * @param boolean $status
      *
      * @return ProjectPeriod
      */
@@ -126,7 +126,7 @@ class ProjectPeriod
     /**
      * Get status
      *
-     * @return integer
+     * @return boolean
      */
     public function getStatus()
     {

@@ -43,9 +43,9 @@ class Backpayline
     private $date;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="amount", type="integer", nullable=false)
+     * @ORM\Column(name="amount", type="integer")
      */
     private $amount;
 
@@ -80,14 +80,14 @@ class Backpayline
     /**
      * @var string
      *
-     * @ORM\Column(name="card_number", type="string", length=16, nullable=true)
+     * @ORM\Column(name="card_number", type="string", length=19, nullable=true)
      */
     private $cardNumber;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
@@ -99,7 +99,7 @@ class Backpayline
     private $updated;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id_backpayline", type="integer")
      * @ORM\Id

@@ -7,7 +7,7 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * RepaymentType
  *
- * @ORM\Table(name="repayment_type", uniqueConstraints={@ORM\UniqueConstraint(name="unq_repayment_label", columns={"label"})})
+ * @ORM\Table(name="repayment_type")
  * @ORM\Entity
  */
 class RepaymentType
@@ -18,26 +18,26 @@ class RepaymentType
     /**
      * @var string
      *
-     * @ORM\Column(name="label", type="string", length=191, nullable=false)
+     * @ORM\Column(name="label", type="string", length=191, unique=true)
      */
     private $label;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="updated", type="datetime", nullable=false)
+     * @ORM\Column(name="updated", type="datetime")
      */
     private $updated;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id_repayment_type", type="smallint")
      * @ORM\Id

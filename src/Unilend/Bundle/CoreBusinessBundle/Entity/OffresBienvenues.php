@@ -13,21 +13,21 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class OffresBienvenues
 {
-    const STATUS_OFFLINE = 0;
-    const STATUS_ONLINE  = 1;
+    const STATUS_OFFLINE = false;
+    const STATUS_ONLINE  = true;
 
     const TYPE_HOME         = 'home_page';
     const TYPE_LANDING_PAGE = 'landing_page';
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="montant", type="integer", nullable=false)
+     * @ORM\Column(name="montant", type="integer")
      */
     private $montant;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="montant_limit", type="integer", nullable=true)
      */
@@ -36,14 +36,14 @@ class OffresBienvenues
     /**
      * @var string
      *
-     * @ORM\Column(name="type", type="string", length=45, nullable=false)
+     * @ORM\Column(name="type", type="string", length=45)
      */
     private $type;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="debut", type="date", nullable=false)
+     * @ORM\Column(name="debut", type="date")
      */
     private $debut;
 
@@ -55,23 +55,23 @@ class OffresBienvenues
     private $fin;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="id_user", type="integer", nullable=false)
+     * @ORM\Column(name="id_user", type="integer")
      */
     private $idUser;
 
     /**
-     * @var integer
+     * @var bool
      *
-     * @ORM\Column(name="status", type="integer", nullable=false)
+     * @ORM\Column(name="status", type="boolean")
      */
     private $status;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
@@ -83,7 +83,7 @@ class OffresBienvenues
     private $updated;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id_offre_bienvenue", type="integer")
      * @ORM\Id
@@ -240,7 +240,7 @@ class OffresBienvenues
     /**
      * Set status
      *
-     * @param integer $status
+     * @param bool $status
      *
      * @return OffresBienvenues
      */
@@ -254,7 +254,7 @@ class OffresBienvenues
     /**
      * Get status
      *
-     * @return integer
+     * @return bool
      */
     public function getStatus()
     {

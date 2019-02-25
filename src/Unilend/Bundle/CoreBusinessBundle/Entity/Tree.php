@@ -19,126 +19,126 @@ class Tree
     const VISIBILITY_PUBLIC  = 0;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="id_parent", type="integer", nullable=false)
+     * @ORM\Column(name="id_parent", type="integer")
      */
     private $idParent;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="id_template", type="integer", nullable=false)
+     * @ORM\Column(name="id_template", type="integer")
      */
     private $idTemplate;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="id_user", type="integer", nullable=false)
+     * @ORM\Column(name="id_user", type="integer")
      */
     private $idUser;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="title", type="string", length=191, nullable=false)
+     * @ORM\Column(name="title", type="string", length=191)
      */
     private $title;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="slug", type="string", length=191, nullable=false)
+     * @ORM\Column(name="slug", type="string", length=191)
      */
     private $slug;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="img_menu", type="string", length=191, nullable=false)
+     * @ORM\Column(name="img_menu", type="string", length=191)
      */
     private $imgMenu;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="menu_title", type="string", length=191, nullable=false)
+     * @ORM\Column(name="menu_title", type="string", length=191)
      */
     private $menuTitle;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="meta_title", type="string", length=191, nullable=false)
+     * @ORM\Column(name="meta_title", type="string", length=191)
      */
     private $metaTitle;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="meta_description", type="text", length=16777215, nullable=false)
+     * @ORM\Column(name="meta_description", type="text", length=16777215)
      */
     private $metaDescription;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="meta_keywords", type="text", length=16777215, nullable=false)
+     * @ORM\Column(name="meta_keywords", type="text", length=16777215)
      */
     private $metaKeywords;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="ordre", type="integer", nullable=false)
+     * @ORM\Column(name="ordre", type="integer")
      */
     private $ordre = '0';
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="status", type="integer", nullable=false)
+     * @ORM\Column(name="status", type="integer")
      */
     private $status = '0';
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="status_menu", type="integer", nullable=false)
+     * @ORM\Column(name="status_menu", type="integer")
      */
     private $statusMenu = '0';
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="prive", type="integer", nullable=false)
+     * @ORM\Column(name="prive", type="integer")
      */
     private $prive = '0';
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="indexation", type="integer", nullable=false)
+     * @ORM\Column(name="indexation", type="integer")
      */
     private $indexation = '1';
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="updated", type="datetime", nullable=false)
+     * @ORM\Column(name="updated", type="datetime")
      */
     private $updated;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id_tree", type="integer")
      * @ORM\Id

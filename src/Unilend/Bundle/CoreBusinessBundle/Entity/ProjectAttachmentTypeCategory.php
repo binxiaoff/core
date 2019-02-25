@@ -7,7 +7,7 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * ProjectAttachmentTypeCategory
  *
- * @ORM\Table(name="project_attachment_type_category", uniqueConstraints={@ORM\UniqueConstraint(name="unq_project_attachment_type_category_label", columns={"label"})})
+ * @ORM\Table(name="project_attachment_type_category")
  * @ORM\Entity
  */
 class ProjectAttachmentTypeCategory
@@ -15,7 +15,7 @@ class ProjectAttachmentTypeCategory
     /**
      * @var string
      *
-     * @ORM\Column(name="label", type="string", length=191, nullable=false)
+     * @ORM\Column(name="label", type="string", length=191, unique=true)
      */
     private $label;
 
@@ -29,7 +29,7 @@ class ProjectAttachmentTypeCategory
     /**
      * @var int
      *
-     * @ORM\Column(name="rank", type="smallint", nullable=false)
+     * @ORM\Column(name="rank", type="smallint")
      */
     private $rank;
 

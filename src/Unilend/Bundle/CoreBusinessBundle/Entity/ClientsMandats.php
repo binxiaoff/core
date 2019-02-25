@@ -20,7 +20,7 @@ class ClientsMandats implements UniversignEntityInterface
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Clients")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_client", referencedColumnName="id_client")
+     *   @ORM\JoinColumn(name="id_client", referencedColumnName="id_client", nullable=false)
      * })
      */
     private $idClient;
@@ -38,68 +38,70 @@ class ClientsMandats implements UniversignEntityInterface
     /**
      * @var string
      *
-     * @ORM\Column(name="name", type="string", length=191, nullable=false)
+     * @ORM\Column(name="name", type="string", length=191)
      */
     private $name;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="id_universign", type="string", length=191, nullable=false)
+     * @ORM\Column(name="id_universign", type="string", length=191)
      */
     private $idUniversign;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="url_universign", type="string", length=191, nullable=false)
+     * @ORM\Column(name="url_universign", type="string", length=191)
      */
     private $urlUniversign;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="url_pdf", type="string", length=191, nullable=false)
+     * @ORM\Column(name="url_pdf", type="string", length=191)
      */
     private $urlPdf;
 
     /**
-     * @var integer
+     * 0 : en cours | 1 : signé | 2 : annulé | 3 : fail
      *
-     * @ORM\Column(name="status", type="integer", nullable=false)
+     * @var int
+     *
+     * @ORM\Column(name="status", type="smallint")
      */
     private $status;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="iban", type="string", length=34, nullable=false)
+     * @ORM\Column(name="iban", type="string", length=34)
      */
     private $iban;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="bic", type="string", length=11, nullable=false)
+     * @ORM\Column(name="bic", type="string", length=11)
      */
     private $bic;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="updated", type="datetime", nullable=false)
+     * @ORM\Column(name="updated", type="datetime", nullable=true)
      */
     private $updated;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id_mandat", type="integer")
      * @ORM\Id

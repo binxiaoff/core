@@ -7,11 +7,7 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * ProjectAttachmentType
  *
- * @ORM\Table(
- *     name="project_attachment_type",
- *     indexes={@ORM\Index(name="fk_project_attachment_type_id_type", columns={"id_type"}), @ORM\Index(name="fk_project_attachment_type_id_category", columns={"id_category"})},
- *     uniqueConstraints={@ORM\UniqueConstraint(name="unq_project_attachment_type_id_type", columns={"id_type"})}
- * )
+ * @ORM\Table(name="project_attachment_type")
  * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\ProjectAttachmentTypeRepository")
  */
 class ProjectAttachmentType
@@ -19,14 +15,14 @@ class ProjectAttachmentType
     /**
      * @var int
      *
-     * @ORM\Column(name="rank", type="integer", nullable=false)
+     * @ORM\Column(name="rank", type="smallint")
      */
     private $rank;
 
     /**
      * @var int
      *
-     * @ORM\Column(name="max_items", type="smallint", nullable=false)
+     * @ORM\Column(name="max_items", type="smallint", nullable=false, options={"default" : 1})
      */
     private $maxItems = 1;
 
@@ -51,7 +47,7 @@ class ProjectAttachmentType
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\ProjectAttachmentTypeCategory")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_category", referencedColumnName="id", nullable=true)
+     *   @ORM\JoinColumn(name="id_category", referencedColumnName="id")
      * })
      */
     private $idCategory;
@@ -61,7 +57,7 @@ class ProjectAttachmentType
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_type", referencedColumnName="id", nullable=false)
+     *   @ORM\JoinColumn(name="id_type", referencedColumnName="id", nullable=false, unique=true)
      * })
      */
     private $idType;
@@ -70,7 +66,7 @@ class ProjectAttachmentType
      * Column only used to index results, no getter/setter necessary
      * @var int
      *
-     * @ORM\Column(name="id_type", type="integer", nullable=false)
+     * @ORM\Column(name="id_type", type="integer")
      */
     private $type;
 

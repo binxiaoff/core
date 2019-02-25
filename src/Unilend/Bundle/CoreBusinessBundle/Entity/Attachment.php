@@ -16,14 +16,14 @@ class Attachment
     /**
      * @var string
      *
-     * @ORM\Column(name="path", type="string", length=191, nullable=false)
+     * @ORM\Column(name="path", type="string", length=191)
      */
     private $path;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
@@ -42,7 +42,7 @@ class Attachment
     private $archived;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id", type="integer")
      * @ORM\Id
@@ -55,7 +55,7 @@ class Attachment
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_type", referencedColumnName="id")
+     *   @ORM\JoinColumn(name="id_type", referencedColumnName="id", nullable=false)
      * })
      */
     private $idType;
@@ -65,7 +65,7 @@ class Attachment
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Clients", inversedBy="attachments")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_client", referencedColumnName="id_client")
+     *   @ORM\JoinColumn(name="id_client", referencedColumnName="id_client", nullable=false)
      * })
      */
     private $idClient;

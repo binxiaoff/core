@@ -43,42 +43,42 @@ class Receptions
     /**
      * @var string
      *
-     * @ORM\Column(name="motif", type="string", length=191, nullable=false)
+     * @ORM\Column(name="motif", type="string", length=191)
      */
     private $motif;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="montant", type="integer", nullable=false)
+     * @ORM\Column(name="montant", type="integer")
      */
     private $montant;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="type", type="integer", nullable=false)
+     * @ORM\Column(name="type", type="smallint")
      */
     private $type;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="type_remb", type="integer", nullable=false)
+     * @ORM\Column(name="type_remb", type="smallint")
      */
     private $typeRemb;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="status_virement", type="integer", nullable=false)
+     * @ORM\Column(name="status_virement", type="smallint")
      */
     private $statusVirement;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="status_prelevement", type="integer", nullable=false)
+     * @ORM\Column(name="status_prelevement", type="smallint")
      */
     private $statusPrelevement;
 
@@ -93,9 +93,9 @@ class Receptions
     private $rejectionIsoCode;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="status_bo", type="integer", nullable=false)
+     * @ORM\Column(name="status_bo", type="smallint")
      */
     private $statusBo;
 
@@ -122,7 +122,7 @@ class Receptions
     /**
      * @var string
      *
-     * @ORM\Column(name="ligne", type="text", length=16777215, nullable=false)
+     * @ORM\Column(name="ligne", type="text", length=16777215)
      */
     private $ligne;
 
@@ -139,7 +139,7 @@ class Receptions
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="assignment_date", type="datetime", nullable=false)
+     * @ORM\Column(name="assignment_date", type="datetime")
      */
     private $assignmentDate;
 
@@ -153,7 +153,7 @@ class Receptions
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
@@ -165,7 +165,7 @@ class Receptions
     private $updated;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id_reception", type="integer")
      * @ORM\Id

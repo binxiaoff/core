@@ -15,40 +15,40 @@ class Blocs
     /**
      * @var string
      *
-     * @ORM\Column(name="name", type="string", length=191, nullable=false)
+     * @ORM\Column(name="name", type="string", length=191)
      */
     private $name;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="slug", type="string", length=191, nullable=false)
+     * @ORM\Column(name="slug", type="string", length=191)
      */
     private $slug;
 
     /**
-     * @var integer
+     * @var bool
      *
-     * @ORM\Column(name="status", type="integer", nullable=false)
+     * @ORM\Column(name="status", type="boolean")
      */
     private $status;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="updated", type="datetime", nullable=false)
+     * @ORM\Column(name="updated", type="datetime", nullable=true)
      */
     private $updated;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id_bloc", type="integer")
      * @ORM\Id
@@ -109,7 +109,7 @@ class Blocs
     /**
      * Set status
      *
-     * @param integer $status
+     * @param bool $status
      *
      * @return Blocs
      */
@@ -123,7 +123,7 @@ class Blocs
     /**
      * Get status
      *
-     * @return integer
+     * @return bool
      */
     public function getStatus()
     {

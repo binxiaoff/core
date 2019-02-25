@@ -43,37 +43,37 @@ class Bids
     private $idAutobid;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="amount", type="integer", nullable=false)
+     * @ORM\Column(name="amount", type="integer")
      */
     private $amount;
 
     /**
      * @var float
      *
-     * @ORM\Column(name="rate", type="float", precision=3, scale=1, nullable=false)
+     * @ORM\Column(name="rate", type="decimal", precision=3, scale=1)
      */
     private $rate;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="ordre", type="integer", nullable=true)
      */
     private $ordre;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="status", type="integer", nullable=false)
+     * @ORM\Column(name="status", type="smallint")
      */
     private $status;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
@@ -85,7 +85,7 @@ class Bids
     private $updated;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id_bid", type="integer")
      * @ORM\Id

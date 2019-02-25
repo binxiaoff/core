@@ -7,7 +7,7 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * UnderlyingContractAttributeType
  *
- * @ORM\Table(name="underlying_contract_attribute_type", uniqueConstraints={@ORM\UniqueConstraint(name="unq_underlying_contract_attribute_type_label", columns={"label"})})
+ * @ORM\Table(name="underlying_contract_attribute_type")
  * @ORM\Entity
  */
 class UnderlyingContractAttributeType
@@ -23,19 +23,19 @@ class UnderlyingContractAttributeType
     /**
      * @var string
      *
-     * @ORM\Column(name="label", type="string", length=191, nullable=false)
+     * @ORM\Column(name="label", type="string", length=191, unique=true)
      */
     private $label;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id_type", type="smallint")
      * @ORM\Id

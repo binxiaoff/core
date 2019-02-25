@@ -82,7 +82,7 @@ doctrine:
                     enum: string
                 options:
                     x_reconnect_attempts: 3
-
+                schema_filter: ~^(?!(project_search|xerfi))~
             # connection dedicated to Doctrine Migration bundle
             migration:
                 driver:        "%database_driver%"
@@ -101,30 +101,19 @@ doctrine:
                     enum: string
                 options:
                     x_reconnect_attempts: 3
+                schema_filter: ~^(?!(project_search|xerfi))~
         types:
           datetime: Unilend\Bridge\Doctrine\DBAL\NotNullDateTimeType
     orm:
         auto_generate_proxy_classes: "%kernel.debug%"
         auto_mapping: true
-        result_cache_driver:
-            type: memcache
-            host: "%server1.memcache_host%"
-            port: "%server1.memcache_port%"
-            instance_class: Memcache
-        query_cache_driver:
-            type: memcache
-            host: "%server1.memcache_host%"
-            port: "%server1.memcache_port%"
-            instance_class: Memcache
-        metadata_cache_driver:
-            type: memcache
-            host: "%server1.memcache_host%"
-            port: "%server1.memcache_port%"
-            instance_class: Memcache
 
 doctrine_migrations:
-    name: Unilend Application Migrations
-    organize_migrations: BY_YEAR_AND_MONTH
+    name: Database Migrations
+    dir_name: '%kernel.project_dir%/src/Migrations'
+    namespace: DoctrineMigrations
+    organize_migrations: BY_YEAR
+    column_length: 30
 
 doctrine_mongodb:
     connections:

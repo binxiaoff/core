@@ -7,7 +7,7 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * GreenpointKyc
  *
- * @ORM\Table(name="greenpoint_kyc", uniqueConstraints={@ORM\UniqueConstraint(name="id_client", columns={"id_client"})}, indexes={@ORM\Index(name="index_gp_kyc_id_client", columns={"id_client"})})
+ * @ORM\Table(name="greenpoint_kyc")
  * @ORM\Entity
 * @ORM\HasLifecycleCallbacks
  */
@@ -16,28 +16,28 @@ class GreenpointKyc
     /**
      * @var string
      *
-     * @ORM\Column(name="status", type="string", length=3, nullable=false)
+     * @ORM\Column(name="status", type="string", length=3)
      */
     private $status;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="creation_date", type="datetime", nullable=false)
+     * @ORM\Column(name="creation_date", type="datetime")
      */
     private $creationDate;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="last_update", type="datetime", nullable=false)
+     * @ORM\Column(name="last_update", type="datetime")
      */
     private $lastUpdate;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
@@ -53,7 +53,7 @@ class GreenpointKyc
      *
      * @ORM\OneToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Clients")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_client", referencedColumnName="id_client")
+     *   @ORM\JoinColumn(name="id_client", referencedColumnName="id_client", nullable=false, unique=true)
      * })
      */
     private $idClient;

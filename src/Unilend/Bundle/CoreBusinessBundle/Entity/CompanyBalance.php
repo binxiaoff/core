@@ -7,41 +7,41 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * CompanyBalance
  *
- * @ORM\Table(name="company_balance", indexes={@ORM\Index(name="id_bilan", columns={"id_bilan"}), @ORM\Index(name="id_balance_type", columns={"id_balance_type"})})
+ * @ORM\Table(name="company_balance", indexes={@ORM\Index(name="idx_company_balance_id_bilan_balance_type", columns={"id_bilan", "id_balance_type"}), @ORM\Index(name="id_balance_type", columns={"id_balance_type"})})
  * @ORM\Entity
  */
 class CompanyBalance
 {
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="id_bilan", type="integer", nullable=false)
+     * @ORM\Column(name="id_bilan", type="integer")
      */
     private $idBilan;
 
     /**
      * @var float
      *
-     * @ORM\Column(name="value", type="float", precision=10, scale=0, nullable=false)
+     * @ORM\Column(name="value", type="float", precision=10, scale=0)
      */
     private $value = '0';
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="updated", type="datetime", nullable=false)
+     * @ORM\Column(name="updated", type="datetime")
      */
     private $updated;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id_balance", type="integer")
      * @ORM\Id

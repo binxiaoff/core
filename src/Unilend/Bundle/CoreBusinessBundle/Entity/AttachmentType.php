@@ -64,19 +64,19 @@ class AttachmentType
     /**
      * @var string
      *
-     * @ORM\Column(name="label", type="string", length=100, nullable=false)
+     * @ORM\Column(name="label", type="string", length=100)
      */
     private $label;
 
     /**
      * @var bool
      *
-     * @ORM\Column(name="downloadable", type="boolean", nullable=false)
+     * @ORM\Column(name="downloadable", type="boolean")
      */
     private $downloadable;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id", type="integer")
      * @ORM\Id
