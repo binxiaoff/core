@@ -183,9 +183,9 @@ footer > .disclaimer {
   @include devices('md', 'lg') {
     padding-bottom: 30px;
 
-    .row {
-      margin-bottom: 50px;
-    }
+    //.row {
+    //  margin-bottom: 50px;
+    //}
 
     .list-site-admin {
       @include clearfix;

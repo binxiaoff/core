@@ -62,7 +62,7 @@
 {% block modals %}
     {% if abandonReasons is defined %}
         <div id="modal-demo-prospect-abandon" data-modal>
-            <form action="{{ path('demo_project_request_abandon') }}" method="post" data-formvalidation>
+            <form action="{{ path('demo_project_abandon') }}" method="post" data-formvalidation>
                 <input type="hidden" name="hash" value="{{ project.hash }}">
                 <div class="modal-body text-align-center">
                     <p><label for="prospect-abandon-motif">{% trans %} demo-project-request_popup-abandon-message {% endtrans %}</label></p>

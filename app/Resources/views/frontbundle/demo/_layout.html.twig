@@ -20,14 +20,38 @@
                                 </li>
                                 <li role="presentation" class="dashboard-nav-projects{% if app.request.get('_route') == 'demo_projects' %} active{% endif %}">
                                     <a href="{{ path('demo_projects') }}">
-                                        <span class="icon fa-project-u"></span>
-                                        <span class="label">Opportunités</span>
+                                        <span class="icon fa-exchange-u"></span>
+                                        <span class="label">Place de marché</span>
                                     </a>
                                 </li>
                                 <li role="presentation" class="dashboard-nav-statistics{% if app.request.get('_route') == 'demo_statistics' %} active{% endif %}">
                                     <a href="{{ path('demo_statistics') }}">
                                         <span class="icon fa-linechart-u"></span>
                                         <span class="label">Reporting</span>
+                                    </a>
+                                </li>
+                                <li role="presentation" class="dashboard-nav-statistics{% if app.request.get('_route') == 'demo_statistics' %} active{% endif %}">
+                                    <a href="{{ path('demo_statistics') }}">
+                                        <span class="icon fa-check-u"></span>
+                                        <span class="label">KYC</span>
+                                    </a>
+                                </li>
+                                <li role="presentation" class="dashboard-nav-statistics{% if app.request.get('_route') == 'demo_statistics' %} active{% endif %}">
+                                    <a href="{{ path('demo_statistics') }}">
+                                        <span class="icon fa-euro-u"></span>
+                                        <span class="label">Gestion de la facturation</span>
+                                    </a>
+                                </li>
+                                <li role="presentation" class="dashboard-nav-statistics{% if app.request.get('_route') == 'demo_statistics' %} active{% endif %}">
+                                    <a href="{{ path('demo_statistics') }}">
+                                        <span class="icon fa-project-u"></span>
+                                        <span class="label">Gestion documentaire</span>
+                                    </a>
+                                </li>
+                                <li role="presentation" class="dashboard-nav-statistics{% if app.request.get('_route') == 'demo_statistics' %} active{% endif %}">
+                                    <a href="{{ path('demo_statistics') }}">
+                                        <span class="icon fa-bell-u"></span>
+                                        <span class="label">Notifications</span>
                                     </a>
                                 </li>
                                 <li role="presentation" class="dashboard-nav-profile{% if app.request.get('_route') == 'demo_profile' %} active{% endif %}">

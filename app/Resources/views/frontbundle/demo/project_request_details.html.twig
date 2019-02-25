@@ -6,8 +6,35 @@
 } %}
 
 {% block dashboardContent %}
+
     <section class="dashboard-tabs tabs">
-        <h3>{{ project.title }}</h3>
+        <h3>
+            {{ project.title }} <small>({{ ('project-status_' ~ project.status)|trans }})</small>
+            <div class="pull-right">
+                {% if project.status <= constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_FUNDED') %}
+                    <a href="{{ path('demo_project_abandon', {'hash': project.hash}) }}" class="btn-shape-xs">Abandonner le dossier</a>
+                {% endif %}
+                {% if project.status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_REQUEST') %}
+                    <a href="{{ path('demo_project_review', {'hash': project.hash}) }}" class="btn-primary btn-shape-xs">Passer à l‘analyse</a>
+                {% endif %}
+                {% if project.status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_REVIEW') %}
+                    <a href="{{ path('demo_project_publish', {'hash': project.hash}) }}" class="btn-primary btn-shape-xs">Proposer au financement</a>
+                {% endif %}
+                {% if project.status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_ONLINE') %}
+                    <a href="{{ path('demo_project_fund', {'hash': project.hash}) }}" class="btn-primary btn-shape-xs">Arrêter le financement</a>
+                {% endif %}
+                {% if project.status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_FUNDED') %}
+                    <a href="{{ path('demo_project_sign', {'hash': project.hash}) }}" class="btn-primary btn-shape-xs">Signer les contrats</a>
+                {% endif %}
+                {% if project.status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_SIGNED') %}
+                    <a href="{{ path('demo_project_repay', {'hash': project.hash}) }}" class="btn-primary btn-shape-xs">Commencer le remboursement</a>
+                {% endif %}
+                {% if project.status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_REPAYMENT') %}
+                    <a href="{{ path('demo_project_repaid', {'hash': project.hash}) }}" class="btn-primary btn-shape-xs">Finir le remboursement</a>
+                    <a href="{{ path('demo_project_loss', {'hash': project.hash}) }}" class="btn-primary btn-shape-xs">Passer en perte</a>
+                {% endif %}
+            </div>
+        </h3>
         <div class="dashboard-tabs-content tab-content">
             <div class="row columns-with-space">
                 <div class="col-md-6">
@@ -18,7 +45,7 @@
                                 <div class="row columns-with-space">
                                     <dl class="col-sm-4 col-md-6 col-lg-6">
                                         <dt>Montant</dt>
-                                        <dd><strong>{{ project.amount|localizednumber }}&nbsp;€</strong></dd>
+                                        <dd><strong>{#<a href="#" id="amount" class="editable" data-type="text" data-pk="{{ project.idProject }}" data-inputclass="input-field">{{ project.amount|localizednumber }}</a>#}{{ project.amount|localizednumber }}&nbsp;€</strong></dd>
                                     </dl>
                                     <dl class="col-sm-4 col-md-6 col-lg-6">
                                         <dt>Maturité</dt>
@@ -46,13 +73,13 @@
                     </article><!-- /.dashboard-tab-pane -->
                     <article class="dashboard-tab-pane margin-20-t">
                         <div class="panel">
-                            <form action="{{ path('demo_project_request_details_form', {'hash': project.hash}) }}" method="post" enctype="multipart/form-data" data-formvalidation data-formvalidation-shownotifications="false">
+                            <form action="{{ path('demo_project_details_form', {'hash': project.hash}) }}" method="post" enctype="multipart/form-data" data-formvalidation data-formvalidation-shownotifications="false">
                                 <fieldset>
                                     <h4 class="h4">Documents</h4>
                                     {% for projectAttachment in projectAttachments %}
                                         <div class="row">
                                             <span class="icon fa-file-u"></span>
-                                            <a href="{{ path('demo_project_request_document', {'hash': project.hash, 'idProjectAttachment': projectAttachment.id}) }}">
+                                            <a href="{{ path('demo_project_document', {'hash': project.hash, 'idProjectAttachment': projectAttachment.id}) }}">
                                                 {{ projectAttachment.attachment.type.label }}
                                             </a>
                                             <small>({{ projectAttachment.attachment.added|localizeddate('short', 'short') }})</small>
@@ -110,16 +137,16 @@
                             <h4 class="h4">Discussions</h4>
                             <div class="row">
                                 <div style="display: inline-block; position: relative; width: 100%;">
-                                    <textarea class="input-field" placeholder="Nouveau message ..." rows="1"
-                                              onchange="this.style.height = 'auto'; this.style.height = this.scrollHeight + 'px'"
-                                              onkeyup="this.style.height = 'auto'; this.style.height = this.scrollHeight + 'px'"
-                                              onkeydown="this.style.height = 'auto'; this.style.height = this.scrollHeight + 'px'"
-                                              style="overflow: hidden; resize: none;"></textarea>
-                                    <button type="button" class="btn-primary btn-shape-xxs ui-spinnerbutton"
-                                            onclick="sendChatMessage(this)"
-                                            style="position: absolute; bottom: 4px; right: 4px;">
-                                        <span class="icon fa-pen-u32"></span>
-                                    </button>
+                                    <form id="chat-form" action="{{ path('demo_project_chat', {'hash': project.hash}) }}" method="post">
+                                        <textarea name="content" class="input-field" placeholder="Nouveau message ..." rows="1"
+                                                  onchange="this.style.height = 'auto'; this.style.height = this.scrollHeight + 'px'"
+                                                  onkeyup="this.style.height = 'auto'; this.style.height = this.scrollHeight + 'px'"
+                                                  onkeydown="this.style.height = 'auto'; this.style.height = this.scrollHeight + 'px'"
+                                                  style="overflow: hidden; resize: none;"></textarea>
+                                        <button type="submit" class="btn-primary btn-shape-xxs ui-spinnerbutton" style="position: absolute; bottom: 4px; right: 4px;">
+                                            <span class="icon fa-pen-u32"></span>
+                                        </button>
+                                    </form>
                                 </div>
                             </div>
                             <div id="chat-content">
@@ -133,24 +160,56 @@
     </section><!-- /.dashboard-tabs -->
 {% endblock %}
 
-{% block pageScripts %}
-<script>
-    function sendChatMessage(button) {
-        var $button = $(button)
-        var $textarea = $button.siblings('textarea')
-        var $chatContainer = $('#chat-content')
+{% block pageHeadScripts %}
+    <link href="//cdnjs.cloudflare.com/ajax/libs/x-editable/1.5.0/jquery-editable/css/jquery-editable.css" rel="stylesheet"/>
+    <style>
+        a.editable {
+            color: #302a32 !important;
+        }
+    </style>
+{% endblock %}
 
-        $.ajax({
-            url: '{{ path('demo_project_chat', {'hash': project.hash}) }}',
-            method: 'POST',
-            data: {
-                content: $textarea.val()
-            },
-            success: function (response) {
-                $chatContainer.html(response)
-                $textarea.val('')
-            }
+{% block pageScripts %}
+    <script src="{{ asset('js/vendor/jquery.poshytip.min.js', 'gulp') }}"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/x-editable/1.5.0/jquery-editable/js/jquery-editable-poshytip.js"></script>
+    <script>
+        $(function () {
+            $.fn.editable.defaults.mode = 'inline'
+
+            $('.editable').editable({
+                url: '{{ path('demo_project_update', {'hash': project.hash}) }}',
+                showbuttons: false,
+                success: function(response) {
+                    if (response.newValue)
+                        return {
+                            newValue: response.newValue
+                        }
+                }
+            })
+
+            var $chatForm = $('#chat-form')
+            var $textarea = $chatForm.find('textarea')
+            var $chatContainer = $('#chat-content')
+
+            $chatForm.on('submit', function (event) {
+                event.preventDefault()
+
+                $.ajax({
+                    url: $chatForm.attr('action'),
+                    method: $chatForm.attr('method'),
+                    data: $chatForm.serialize(),
+                    success: function (response) {
+                        $chatContainer.html(response)
+                        $textarea.val('')
+                    }
+                })
+            })
+
+            $chatForm.on('keydown', function (event) {
+                if (event.keyCode === 13 && event.metaKey) {
+                    $chatForm.submit()
+                }
+            })
         })
-    }
-</script>
+    </script>
 {% endblock %}

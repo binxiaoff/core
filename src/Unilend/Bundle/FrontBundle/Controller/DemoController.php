@@ -69,9 +69,13 @@ class DemoController extends Controller
 
             $loanRepository                = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Loans');
             $loans                         = $loanRepository->findBy(['idLender' => $user->getWalletByType(WalletType::LENDER), 'status' => Loans::STATUS_ACCEPTED]);
-            $template['projects']['loans'] = $this->groupByStatusAndSort(array_map(function (Loans $loan) {
-                return $loan->getProject();
-            }, $loans));
+            $template['projects']['loans'] = [];
+
+            foreach ($loans as $loan) {
+                $template['projects']['loans'][$loan->getProject()->getStatus()][] = $loan;
+            }
+
+            ksort($template['projects']['loans']);
         }
 
         return $this->render('/demo/loans.html.twig', $template);
@@ -181,7 +185,7 @@ class DemoController extends Controller
 
             $this->entityManager->commit();
 
-            return $this->redirectToRoute('demo_project_request_details', ['hash' => $project->getHash()]);
+            return $this->redirectToRoute('demo_project_details', ['hash' => $project->getHash()]);
         } catch (\Exception $exception) {
             $this->entityManager->getConnection()->rollBack();
 
@@ -197,13 +201,13 @@ class DemoController extends Controller
     }
 
     /**
-     * @Route("/projet/{hash}", name="demo_project_request_details", methods={"GET"}, requirements={"hash": "[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}"})
+     * @Route("/projet/{hash}", name="demo_project_details", methods={"GET"}, requirements={"hash": "[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}"})
      *
      * @param string $hash
      *
      * @return Response
      */
-    public function projectRequestDetails(string $hash): Response
+    public function projectDetails(string $hash): Response
     {
         $projectRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
         $project           = $projectRepository->findOneBy(['hash' => $hash]);
@@ -224,7 +228,7 @@ class DemoController extends Controller
     }
 
     /**
-     * @Route("/projet/{hash}", name="demo_project_request_details_form", methods={"POST"}, requirements={"hash": "[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}"})
+     * @Route("/projet/{hash}", name="demo_project_details_form", methods={"POST"}, requirements={"hash": "[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}"})
      *
      * @param string            $hash
      * @param Request           $request
@@ -233,7 +237,7 @@ class DemoController extends Controller
      * @return RedirectResponse
      * @throws \Doctrine\ORM\OptimisticLockException
      */
-    public function projectRequestDetailsForm(string $hash, Request $request, AttachmentManager $attachmentManager): RedirectResponse
+    public function projectDetailsForm(string $hash, Request $request, AttachmentManager $attachmentManager, ?UserInterface $user): RedirectResponse
     {
         $projectRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
         $project           = $projectRepository->findOneBy(['hash' => $hash]);
@@ -246,11 +250,11 @@ class DemoController extends Controller
 
         foreach ($request->files->all() as $field => $file) {
             $attachmentType = $attachmentTypeRepository->find($request->request->get('files')[$field]);
-            $attachment     = $attachmentManager->upload($project->getIdCompany()->getIdClientOwner(), $attachmentType, $file, false);
+            $attachment     = $attachmentManager->upload($user, $attachmentType, $file, false);
             $attachmentManager->attachToProject($attachment, $project);
         }
 
-        return $this->redirectToRoute('demo_project_request_details', ['hash' => $project->getHash()]);
+        return $this->redirectToRoute('demo_project_details', ['hash' => $project->getHash()]);
     }
 
     /**
@@ -295,7 +299,7 @@ class DemoController extends Controller
     }
 
     /**
-     * @Route("/document/{hash}/{idProjectAttachment}", name="demo_project_request_document", requirements={"hash": "[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}", "idAttachment": "\d+"})
+     * @Route("/document/{hash}/{idProjectAttachment}", name="demo_project_document", requirements={"hash": "[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}", "idAttachment": "\d+"})
      *
      * @param string            $hash
      * @param int               $idProjectAttachment
@@ -304,7 +308,7 @@ class DemoController extends Controller
      *
      * @return Response
      */
-    public function projectRequestDocument(string $hash, int $idProjectAttachment, AttachmentManager $attachmentManager, Filesystem $filesystem): Response
+    public function projectDocument(string $hash, int $idProjectAttachment, AttachmentManager $attachmentManager, Filesystem $filesystem): Response
     {
         $projectRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
         $project           = $projectRepository->findOneBy(['hash' => $hash]);
@@ -326,6 +330,70 @@ class DemoController extends Controller
         $fileName = $attachment->getOriginalName() ?? basename($attachment->getPath());
 
         return $this->file($path, $fileName);
+    }
+
+    /**
+     * @Route("/projet/abandon/{hash}", name="demo_project_abandon", requirements={"hash":"[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}"})
+     * @Route("/projet/revue/{hash}", name="demo_project_review", requirements={"hash":"[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}"})
+     * @Route("/projet/financement/{hash}", name="demo_project_publish", requirements={"hash":"[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}"})
+     * @Route("/projet/finance/{hash}", name="demo_project_fund", requirements={"hash":"[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}"})
+     * @Route("/projet/signature/{hash}", name="demo_project_sign", requirements={"hash":"[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}"})
+     * @Route("/projet/remboursement/{hash}", name="demo_project_repay", requirements={"hash":"[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}"})
+     * @Route("/projet/rembourse/{hash}", name="demo_project_repaid", requirements={"hash":"[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}"})
+     * @Route("/projet/perte/{hash}", name="demo_project_loss", requirements={"hash":"[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}"})
+     *
+     * @param Request              $request
+     * @param string               $hash
+     * @param ProjectStatusManager $projectStatusManager
+     *
+     * @return Response
+     * @throws \Doctrine\ORM\NonUniqueResultException
+     * @throws \Doctrine\ORM\OptimisticLockException
+     */
+    public function projectRequestSubmit(Request $request, string $hash, ProjectStatusManager $projectStatusManager): Response
+    {
+        $projectRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
+        $project           = $projectRepository->findOneBy(['hash' => $hash]);
+
+        if (false === $project instanceof Projects) {
+            return $this->redirect($request->headers->get('referer'));
+        }
+
+        $status = null;
+        $route  = $request->get('_route');
+
+        switch ($route) {
+            case 'demo_project_abandon':
+                $status = ProjectsStatus::STATUS_CANCELLED;
+                break;
+            case 'demo_project_review':
+                $status = ProjectsStatus::STATUS_REVIEW;
+                break;
+            case 'demo_project_publish':
+                $status = ProjectsStatus::STATUS_ONLINE;
+                break;
+            case 'demo_project_fund':
+                $status = ProjectsStatus::STATUS_FUNDED;
+                break;
+            case 'demo_project_sign':
+                $status = ProjectsStatus::STATUS_SIGNED;
+                break;
+            case 'demo_project_repay':
+                $status = ProjectsStatus::STATUS_REPAYMENT;
+                break;
+            case 'demo_project_repaid':
+                $status = ProjectsStatus::STATUS_REPAID;
+                break;
+            case 'demo_project_loss':
+                $status = ProjectsStatus::STATUS_LOSS;
+                break;
+        }
+
+        if ($status) {
+            $projectStatusManager->addProjectStatus(Users::USER_ID_FRONT, $status, $project);
+        }
+
+        return $this->redirectToRoute('demo_project_details', ['hash' => $project->getHash()]);
     }
 
     /**
@@ -387,20 +455,14 @@ class DemoController extends Controller
         ]);
     }
 
-
-
-
-
-
-
     /**
-     * @Route("/depot/{hash}", name="demo_project_request_summary", requirements={"hash":"[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}"})
+     * @Route("/projet/update/{hash}", name="demo_project_update", requirements={"hash":"[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}"})
      *
      * @param string $hash
      *
      * @return Response
      */
-    public function projectRequestSummary(string $hash): Response
+    public function projectUpdate(Request $request, string $hash): Response
     {
         $projectRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
         $project           = $projectRepository->findOneBy(['hash' => $hash]);
@@ -409,80 +471,22 @@ class DemoController extends Controller
             return $this->redirectToRoute('demo_loans');
         }
 
-        $template = [
-            'project'        => $project,
-            'product'        => $this->entityManager->getRepository('UnilendCoreBusinessBundle:Product')->find($project->getIdProduct()),
-            'abandonReasons' => $this->entityManager
-                ->getRepository('UnilendCoreBusinessBundle:ProjectAbandonReason')
-                ->findBy(['status' => ProjectAbandonReason::STATUS_ONLINE], ['reason' => 'ASC'])
-        ];
+        $field = $request->request->get('name');
+        $value = $request->request->get('value', '');
 
-        return $this->render('/demo/project_request_summary.html.twig', $template);
-    }
-
-    /**
-     * @Route("/depot/submit", name="demo_project_request_submit")
-     *
-     * @param Request              $request
-     * @param ProjectStatusManager $projectStatusManager
-     *
-     * @return Response
-     * @throws \Doctrine\ORM\NonUniqueResultException
-     * @throws \Doctrine\ORM\OptimisticLockException
-     */
-    public function projectRequestSubmit(Request $request, ProjectStatusManager $projectStatusManager): Response
-    {
-        $hash = $request->request->get('hash');
-
-        if (1 !== preg_match('/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/', $hash)) {
-            return $this->redirect($request->headers->get('referer'));
+        switch ($field) {
+            case 'amount':
+                $value = preg_replace('/[^0-9]/', '', $value);
+                $project->setAmount($value);
+                $value = '120 000';
+                break;
         }
 
-        $projectRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
-        $project           = $projectRepository->findOneBy(['hash' => $hash]);
+        $this->entityManager->flush($project);
 
-        if (false === $project instanceof Projects) {
-            return $this->redirect($request->headers->get('referer'));
-        }
-
-        $projectStatusManager->addProjectStatus(Users::USER_ID_FRONT, ProjectsStatus::STATUS_REVIEW, $project);
-
-        return $this->redirectToRoute('demo_loans');
-    }
-
-    /**
-     * @Route("/depot/abandon", name="demo_project_request_abandon")
-     *
-     * @param Request              $request
-     * @param ProjectStatusManager $projectStatusManager
-     *
-     * @return Response
-     */
-    public function projectRequestAbandon(Request $request, ProjectStatusManager $projectStatusManager): Response
-    {
-        $hash = $request->request->get('hash');
-
-        if (1 !== preg_match('/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/', $hash)) {
-            return $this->redirect($request->headers->get('referer'));
-        }
-
-        $projectRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
-        $project           = $projectRepository->findOneBy(['hash' => $hash]);
-
-        if (false === $project instanceof Projects) {
-            return $this->redirect($request->headers->get('referer'));
-        }
-
-        $abandonReasonRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectAbandonReason');
-
-        if (
-            $project->getStatus() !== ProjectsStatus::STATUS_CANCELLED
-            && $request->request->get('reason')
-            && ($abandonReason = $abandonReasonRepository->findBy(['idAbandon' => $request->request->get('reason')]))
-        ) {
-            $projectStatusManager->abandonProject($project, $abandonReason, Users::USER_ID_FRONT);
-        }
-
-        return $this->redirectToRoute('demo_loans');
+        return $this->json([
+            'success'  => true,
+            'newValue' => $value
+        ]);
     }
 }
