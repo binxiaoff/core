@@ -17,23 +17,23 @@
                         <table class="table table-projects" data-sortable style="table-layout: auto;">
                             <thead class="table-sortable-columns">
                             <tr>
-                                <th colspan="4" style="text-align: center;">Projet</th>
+                                <th colspan="4" style="text-align: center;">Dossier</th>
                                 <th colspan="2" style="text-align: center;">Offre</th>
                                 <th>&nbsp;</th>
                             </tr>
                             <tr>
                                 <th class="table-projects-item-partner table-sortable-column" data-sortable-by="partner">
-                                    <span class="label" title="Domaine de financement" data-toggle="tooltip">
-                                        Domaine
+                                    <span class="label" title="Canal de financement" data-toggle="tooltip">
+                                        Canal
                                     </span>
                                 </th>
                                 <th class="table-projects-item-title table-sortable-column" data-sortable-by="title">
-                                    <span class="label" title="Nom du projet" data-toggle="tooltip">
+                                    <span class="label" title="Nom du dossier" data-toggle="tooltip">
                                         Nom
                                     </span>
                                 </th>
                                 <th class="table-projects-item-amount table-sortable-column" data-sortable-by="project-amount">
-                                    <span class="label" title="Montant du projet" data-toggle="tooltip">
+                                    <span class="label" title="Montant du dossier" data-toggle="tooltip">
                                         Montant
                                     </span>
                                 </th>
@@ -85,7 +85,7 @@
                                     <td class="table-projects-item-bid-amount">{{ bid.amount|localizednumber }}&nbsp;€</td>
                                     <td class="table-projects-item-rate">{{ bid.rate|localizednumberwithprecision(2) }}&nbsp;%</td>
                                     <td class="table-actions">
-                                        <a href="{{ path('demo_project_details', {'hash': project.hash}) }}" role="button" class="btn-default" title="Voir le projet de financement" data-toggle="tooltip"><span class="icon fa-view-u16"></span></a>
+                                        <a href="{{ path('demo_project_details', {'hash': project.hash}) }}" role="button" class="btn-default" title="Voir le dossier de financement" data-toggle="tooltip"><span class="icon fa-view-u16"></span></a>
                                     </td>
                                 </tr>
                             {% endfor %}
@@ -127,12 +127,12 @@
                             {#<thead class="table-sortable-columns">#}
                             {#<tr>#}
                                 {#<th class="table-projects-item-partner table-sortable-column" data-sortable-by="partner">#}
-                                    {#<span class="label" title="Domaine de financement" data-toggle="tooltip">#}
-                                        {#Domaine#}
+                                    {#<span class="label" title="Canal de financement" data-toggle="tooltip">#}
+                                        {#Canal#}
                                     {#</span>#}
                                 {#</th>#}
                                 {#<th class="table-projects-item-title table-sortable-column" data-sortable-by="title">#}
-                                    {#<span class="label" title="Nom du projet" data-toggle="tooltip">#}
+                                    {#<span class="label" title="Nom du dossier" data-toggle="tooltip">#}
                                         {#Nom#}
                                     {#</span>#}
                                 {#</th>#}

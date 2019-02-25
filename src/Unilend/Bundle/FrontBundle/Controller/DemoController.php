@@ -15,6 +15,7 @@ use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{Attachment, Bids, Clients, Companies, Loans, ProjectAbandonReason, Projects, ProjectsComments, ProjectsStatus, Users, Wallet,
     WalletType};
 use Unilend\Bundle\CoreBusinessBundle\Service\{AttachmentManager, PartnerManager, ProjectManager, ProjectStatusManager};
+use Unilend\Bundle\FrontBundle\Service\ProjectDisplayManager;
 use Unilend\Bundle\WSClientBundle\Service\InseeManager;
 
 /**
@@ -458,7 +459,8 @@ class DemoController extends Controller
     /**
      * @Route("/projet/update/{hash}", name="demo_project_update", requirements={"hash":"[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}"})
      *
-     * @param string $hash
+     * @param Request $request
+     * @param string  $hash
      *
      * @return Response
      */
@@ -488,5 +490,69 @@ class DemoController extends Controller
             'success'  => true,
             'newValue' => $value
         ]);
+    }
+
+    /**
+     * @Route("/projets", name="demo_projects_list")
+     *
+     * @param ProjectDisplayManager $projectDisplayManager
+     *
+     * @return Response
+     */
+    public function projectsList(ProjectDisplayManager $projectDisplayManager): Response
+    {
+        $page          = 1;
+        $sortDirection = 'desc';
+        $sortType      = 'end';
+        $template      = [
+            'sortDirection'  => $sortDirection,
+            'sortType'       => $sortType,
+            'showSortable'   => true,
+            'showPagination' => true,
+            'currentPage'    => $page,
+            'pagination'     => $this->pagination(1, 20),
+            'projects'       => $projectDisplayManager->getProjectsList([], [$sortType => strtoupper($sortDirection)], 1, 20)
+        ];
+
+        return $this->render('/demo/projects_list.html.twig', $template);
+    }
+
+    /**
+     * @param int $page
+     * @param int $limit
+     *
+     * @return array
+     */
+    private function pagination($page, $limit)
+    {
+        $projectDisplayManager = $this->get('unilend.frontbundle.service.project_display_manager');
+        $totalNumberProjects   = $projectDisplayManager->getTotalNumberOfDisplayedProjects(null);
+        $totalPages            = $limit ? ceil($totalNumberProjects / $limit) : 1;
+
+        $paginationSettings = [
+            'itemsPerPage'      => $limit,
+            'totalItems'        => $totalNumberProjects,
+            'totalPages'        => $totalPages,
+            'currentIndex'      => $page,
+            'currentIndexItems' => min($page * $limit, $totalNumberProjects),
+            'remainingItems'    => $limit ? ceil($totalNumberProjects - ($totalNumberProjects / $limit)) : 0,
+            'pageUrl'           => 'projects'
+        ];
+
+        if ($totalPages > 1) {
+            $paginationSettings['indexPlan'] = [$page - 1, $page, $page + 1];
+
+            if ($page > $totalPages - 3) {
+                $paginationSettings['indexPlan'] = [$totalPages - 3, $totalPages - 2, $totalPages - 1];
+            } elseif ($page == $totalPages - 3) {
+                $paginationSettings['indexPlan'] = [$totalPages - 4, $totalPages - 3, $totalPages - 2, $totalPages - 1];
+            } elseif (4 == $page) {
+                $paginationSettings['indexPlan'] = [2, 3, 4, 5];
+            } elseif ($page < 4) {
+                $paginationSettings['indexPlan'] = [2, 3, 4];
+            }
+        }
+
+        return $paginationSettings;
     }
 }

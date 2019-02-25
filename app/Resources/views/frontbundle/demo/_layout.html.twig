@@ -18,8 +18,8 @@
                                         <span class="label">Portefeuille</span>
                                     </a>
                                 </li>
-                                <li role="presentation" class="dashboard-nav-projects{% if app.request.get('_route') == 'demo_projects' %} active{% endif %}">
-                                    <a href="{{ path('demo_projects') }}">
+                                <li role="presentation" class="dashboard-nav-projects{% if app.request.get('_route') == 'demo_projects_list' %} active{% endif %}">
+                                    <a href="{{ path('demo_projects_list') }}">
                                         <span class="icon fa-exchange-u"></span>
                                         <span class="label">Place de marché</span>
                                     </a>

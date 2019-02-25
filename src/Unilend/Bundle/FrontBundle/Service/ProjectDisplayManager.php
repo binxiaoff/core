@@ -98,12 +98,13 @@ class ProjectDisplayManager
         $products     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Product')->findAvailableProductsByClient($client);
 
         $projectSearchRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
-        $projects                = $projectSearchRepository->findByWithCustomSort(
-            ['status' => $projectStatus, 'idProduct' => $products],
-            $sort,
-            $limit,
-            $start
-        );
+//        $projects                = $projectSearchRepository->findByWithCustomSort(
+//            ['status' => $projectStatus, 'idProduct' => $products],
+//            $sort,
+//            $limit,
+//            $start
+//        );
+        $projects = $projectSearchRepository->findBy(['status' => self::$projectsStatus]);
 
         /** @var Projects $project */
         foreach ($projects as $project) {
@@ -140,7 +141,7 @@ class ProjectDisplayManager
             'slug'                 => $project->slug,
             'amount'               => $project->amount,
             'duration'             => $project->period,
-            'title'                => 'Projet ' . $project->id_project, //$project->title,
+            'title'                => $project->title,
             'picture'              => $project->photo_projet,
             'introduction'         => $project->nature_project,
             'projectDescription'   => $project->objectif_loan,
