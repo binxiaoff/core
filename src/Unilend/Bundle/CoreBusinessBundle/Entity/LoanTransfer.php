@@ -13,28 +13,28 @@ use Doctrine\ORM\Mapping as ORM;
 class LoanTransfer
 {
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="id_loan", type="integer", nullable=false)
+     * @ORM\Column(name="id_loan", type="integer")
      */
     private $idLoan;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="updated", type="datetime", nullable=false)
+     * @ORM\Column(name="updated", type="datetime")
      */
     private $updated;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id_loan_transfer", type="integer")
      * @ORM\Id
@@ -47,7 +47,7 @@ class LoanTransfer
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Transfer")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_transfer", referencedColumnName="id_transfer")
+     *   @ORM\JoinColumn(name="id_transfer", referencedColumnName="id_transfer", nullable=false)
      * })
      */
     private $idTransfer;

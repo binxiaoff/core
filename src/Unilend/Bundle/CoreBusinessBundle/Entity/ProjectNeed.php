@@ -13,42 +13,42 @@ use Doctrine\ORM\Mapping as ORM;
 class ProjectNeed
 {
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="id_parent", type="integer", nullable=false)
+     * @ORM\Column(name="id_parent", type="integer", nullable=false, options={"default": 0})
      */
     private $idParent = '0';
 
     /**
      * @var string
      *
-     * @ORM\Column(name="label", type="string", length=191, nullable=false)
+     * @ORM\Column(name="label", type="string", length=191)
      */
     private $label;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="rank", type="integer", nullable=false)
+     * @ORM\Column(name="rank", type="smallint")
      */
     private $rank;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="updated", type="datetime", nullable=false)
+     * @ORM\Column(name="updated", type="datetime")
      */
     private $updated;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id_project_need", type="integer")
      * @ORM\Id

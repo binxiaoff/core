@@ -18,16 +18,16 @@ class Sponsorship
     const STATUS_SPONSOR_PAID    = 2;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="status", type="integer", nullable=false)
+     * @ORM\Column(name="status", type="smallint")
      */
     private $status;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
@@ -39,7 +39,7 @@ class Sponsorship
     private $updated;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id", type="integer")
      * @ORM\Id
@@ -52,7 +52,7 @@ class Sponsorship
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\SponsorshipCampaign")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_campaign", referencedColumnName="id")
+     *   @ORM\JoinColumn(name="id_campaign", referencedColumnName="id", nullable=false)
      * })
      */
     private $idCampaign;
@@ -62,7 +62,7 @@ class Sponsorship
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Clients")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_client_sponsor", referencedColumnName="id_client")
+     *   @ORM\JoinColumn(name="id_client_sponsor", referencedColumnName="id_client", nullable=false)
      * })
      */
     private $idClientSponsor;
@@ -72,7 +72,7 @@ class Sponsorship
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Clients")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_client_sponsee", referencedColumnName="id_client")
+     *   @ORM\JoinColumn(name="id_client_sponsee", referencedColumnName="id_client", nullable=false)
      * })
      */
     private $idClientSponsee;

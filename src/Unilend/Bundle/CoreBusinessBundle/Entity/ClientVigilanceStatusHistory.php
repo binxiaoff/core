@@ -16,7 +16,7 @@ class ClientVigilanceStatusHistory
     /**
      * @var int
      *
-     * @ORM\Column(name="vigilance_status", type="integer", nullable=false)
+     * @ORM\Column(name="vigilance_status", type="smallint")
      */
     private $vigilanceStatus = '1';
 
@@ -30,7 +30,7 @@ class ClientVigilanceStatusHistory
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
@@ -46,13 +46,13 @@ class ClientVigilanceStatusHistory
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Users")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_user", referencedColumnName="id_user")
+     *   @ORM\JoinColumn(name="id_user", referencedColumnName="id_user", nullable=false)
      * })
      */
     private $idUser;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id", type="integer")
      * @ORM\Id
@@ -75,7 +75,7 @@ class ClientVigilanceStatusHistory
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Clients")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_client", referencedColumnName="id_client")
+     *   @ORM\JoinColumn(name="id_client", referencedColumnName="id_client", nullable=false)
      * })
      */
     private $client;

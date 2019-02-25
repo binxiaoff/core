@@ -18,41 +18,41 @@ class CompteurFactures
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Projects")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_project", referencedColumnName="id_project")
+     *   @ORM\JoinColumn(name="id_project", referencedColumnName="id_project", nullable=false)
      * })
      */
     private $idProject;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="ordre", type="integer", nullable=false)
+     * @ORM\Column(name="ordre", type="integer")
      */
     private $ordre;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="date", type="date", nullable=false)
+     * @ORM\Column(name="date", type="date")
      */
     private $date;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="updated", type="datetime", nullable=false)
+     * @ORM\Column(name="updated", type="datetime", nullable=true)
      */
     private $updated;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id_compteur_facture", type="integer")
      * @ORM\Id

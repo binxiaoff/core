@@ -20,6 +20,7 @@ parameters:
     mongodb_auth_source:              ws_call
     mongodb_ssl_connect:              false
     mongodb_replica_set_name:         ~
+    mongodb.log.enable:               false
 
     mailjet.api_key:                  ~
     mailjet.api_secret:               ~

@@ -22,7 +22,7 @@ class ProjectsPouvoir implements UniversignEntityInterface
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Projects")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_project", referencedColumnName="id_project")
+     *   @ORM\JoinColumn(name="id_project", referencedColumnName="id_project", nullable=false)
      * })
      */
     private $idProject;
@@ -30,61 +30,61 @@ class ProjectsPouvoir implements UniversignEntityInterface
     /**
      * @var string
      *
-     * @ORM\Column(name="name", type="string", length=191, nullable=false)
+     * @ORM\Column(name="name", type="string", length=191)
      */
     private $name;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="id_universign", type="string", length=191, nullable=false)
+     * @ORM\Column(name="id_universign", type="string", length=191)
      */
     private $idUniversign;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="url_universign", type="string", length=191, nullable=false)
+     * @ORM\Column(name="url_universign", type="string", length=191)
      */
     private $urlUniversign;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="url_pdf", type="string", length=191, nullable=false)
+     * @ORM\Column(name="url_pdf", type="string", length=191)
      */
     private $urlPdf;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="status", type="integer", nullable=false)
+     * @ORM\Column(name="status", type="smallint")
      */
     private $status;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="status_remb", type="integer", nullable=false)
+     * @ORM\Column(name="status_remb", type="smallint")
      */
     private $statusRemb;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="updated", type="datetime", nullable=false)
+     * @ORM\Column(name="updated", type="datetime")
      */
     private $updated;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id_pouvoir", type="integer")
      * @ORM\Id

@@ -16,35 +16,35 @@ class CloseOutNettingRepayment
     /**
      * @var string
      *
-     * @ORM\Column(name="capital", type="decimal", precision=10, scale=2, nullable=false)
+     * @ORM\Column(name="capital", type="decimal", precision=10, scale=2)
      */
     private $capital;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="repaid_capital", type="decimal", precision=10, scale=2, nullable=false)
+     * @ORM\Column(name="repaid_capital", type="decimal", precision=10, scale=2)
      */
     private $repaidCapital;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="interest", type="decimal", precision=10, scale=2, nullable=false)
+     * @ORM\Column(name="interest", type="decimal", precision=10, scale=2)
      */
     private $interest;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="repaid_interest", type="decimal", precision=10, scale=2, nullable=false)
+     * @ORM\Column(name="repaid_interest", type="decimal", precision=10, scale=2)
      */
     private $repaidInterest;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
@@ -56,7 +56,7 @@ class CloseOutNettingRepayment
     private $updated;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id", type="integer")
      * @ORM\Id
@@ -69,7 +69,7 @@ class CloseOutNettingRepayment
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Loans")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_loan", referencedColumnName="id_loan")
+     *   @ORM\JoinColumn(name="id_loan", referencedColumnName="id_loan", nullable=false)
      * })
      */
     private $idLoan;

@@ -24,26 +24,26 @@ class UsersTypes
     /**
      * @var string
      *
-     * @ORM\Column(name="label", type="string", length=191, nullable=false)
+     * @ORM\Column(name="label", type="string", length=191)
      */
     private $label;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="updated", type="datetime", nullable=false)
+     * @ORM\Column(name="updated", type="datetime")
      */
     private $updated;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id_user_type", type="integer")
      * @ORM\Id

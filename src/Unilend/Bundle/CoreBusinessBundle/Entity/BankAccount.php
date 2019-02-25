@@ -7,7 +7,11 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * BankAccount
  *
- * @ORM\Table(name="bank_account", uniqueConstraints={@ORM\UniqueConstraint(name="id_client_iban_UNIQUE", columns={"id_client", "iban"})}, indexes={@ORM\Index(name="fk_bank_account_id_client_idx", columns={"id_client"}), @ORM\Index(name="idx_id_attachment", columns={"id_attachment"})})
+ * @ORM\Table(name="bank_account", uniqueConstraints={@ORM\UniqueConstraint(name="id_client_iban_UNIQUE", columns={"id_client", "iban"})}, indexes={
+ *     @ORM\Index(name="fk_bank_account_id_client_idx", columns={"id_client"}),
+ *     @ORM\Index(name="idx_id_attachment", columns={"id_attachment"}),
+ *     @ORM\Index(name="idx_bank_account_date_pending", columns={"date_pending"})
+ * })
  * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\BankAccountRepository")
  * @ORM\HasLifecycleCallbacks
  */
@@ -19,20 +23,20 @@ class BankAccount
 
     /**
      * @var string
-     * @ORM\Column(name="bic", type="string", length=100, nullable=false)
+     * @ORM\Column(name="bic", type="string", length=100)
      */
     private $bic;
 
     /**
      * @var string
-     * @ORM\Column(name="iban", type="string", length=100, nullable=false)
+     * @ORM\Column(name="iban", type="string", length=100)
      */
     private $iban;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
@@ -44,7 +48,7 @@ class BankAccount
     private $updated;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id", type="integer")
      * @ORM\Id
@@ -57,7 +61,7 @@ class BankAccount
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Clients")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_client", referencedColumnName="id_client")
+     *   @ORM\JoinColumn(name="id_client", referencedColumnName="id_client", nullable=false)
      * })
      */
     private $idClient;
@@ -65,7 +69,7 @@ class BankAccount
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="date_pending", type="datetime", nullable=false)
+     * @ORM\Column(name="date_pending", type="datetime")
      */
     private $datePending;
 

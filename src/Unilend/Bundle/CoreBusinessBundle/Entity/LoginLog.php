@@ -7,7 +7,7 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * LoginLog
  *
- * @ORM\Table(name="login_log", indexes={@ORM\Index(name="pseudo", columns={"pseudo"})})
+ * @ORM\Table(name="login_log", indexes={@ORM\Index(name="pseudo", columns={"pseudo"}), @ORM\Index(name="idx_login_log_IP", columns={"IP"})})
  * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\LoginLogRepository")
  * @ORM\HasLifecycleCallbacks
  */
@@ -16,28 +16,28 @@ class LoginLog
     /**
      * @var string
      *
-     * @ORM\Column(name="pseudo", type="string", length=191, nullable=false)
+     * @ORM\Column(name="pseudo", type="string", length=191)
      */
     private $pseudo;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="IP", type="string", length=191, nullable=false)
+     * @ORM\Column(name="IP", type="string", length=191)
      */
     private $ip;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="retour", type="string", length=191, nullable=false)
+     * @ORM\Column(name="retour", type="string", length=191)
      */
     private $retour;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 

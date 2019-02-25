@@ -2,12 +2,13 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
  * UnderlyingContract
  *
- * @ORM\Table(name="underlying_contract", uniqueConstraints={@ORM\UniqueConstraint(name="unq_underlying_contract_label", columns={"label"})})
+ * @ORM\Table(name="underlying_contract")
  * @ORM\Entity
  */
 class UnderlyingContract
@@ -19,40 +20,40 @@ class UnderlyingContract
     /**
      * @var string
      *
-     * @ORM\Column(name="label", type="string", length=191, nullable=false)
+     * @ORM\Column(name="label", type="string", length=191, nullable=false, unique=true)
      */
     private $label;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="document_template", type="string", length=191, nullable=false)
+     * @ORM\Column(name="document_template", type="string", length=191)
      */
     private $documentTemplate;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="block_slug", type="string", length=191, nullable=false)
+     * @ORM\Column(name="block_slug", type="string", length=191)
      */
     private $blockSlug;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="updated", type="datetime", nullable=false)
+     * @ORM\Column(name="updated", type="datetime", nullable=true)
      */
     private $updated;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id_contract", type="integer")
      * @ORM\Id
@@ -68,11 +69,18 @@ class UnderlyingContract
     private $idProduct;
 
     /**
+     * @var ProductUnderlyingContract[]
+     *
+     * @ORM\OneToMany(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\ProductUnderlyingContract", mappedBy="idContract", fetch="EXTRA_LAZY")
+     */
+    private $productContract;
+
+    /**
      * Constructor
      */
     public function __construct()
     {
-        $this->idProduct = new \Doctrine\Common\Collections\ArrayCollection();
+        $this->productContract = new ArrayCollection();
     }
 
 
@@ -207,36 +215,10 @@ class UnderlyingContract
     }
 
     /**
-     * Add idProduct
-     *
-     * @param \Unilend\Bundle\CoreBusinessBundle\Entity\Product $idProduct
-     *
-     * @return UnderlyingContract
+     * @return ProductUnderlyingContract[]
      */
-    public function addIdProduct(\Unilend\Bundle\CoreBusinessBundle\Entity\Product $idProduct)
+    public function getProductContract(): array
     {
-        $this->idProduct[] = $idProduct;
-
-        return $this;
-    }
-
-    /**
-     * Remove idProduct
-     *
-     * @param \Unilend\Bundle\CoreBusinessBundle\Entity\Product $idProduct
-     */
-    public function removeIdProduct(\Unilend\Bundle\CoreBusinessBundle\Entity\Product $idProduct)
-    {
-        $this->idProduct->removeElement($idProduct);
-    }
-
-    /**
-     * Get idProduct
-     *
-     * @return \Doctrine\Common\Collections\Collection
-     */
-    public function getIdProduct()
-    {
-        return $this->idProduct;
+        return $this->productContract;
     }
 }

@@ -17,7 +17,7 @@ class WalletBalanceHistory
     /**
      * @var string
      *
-     * @ORM\Column(name="available_balance", type="decimal", precision=12, scale=2, nullable=false)
+     * @ORM\Column(name="available_balance", type="decimal", precision=12, scale=2)
      */
     private $availableBalance;
 
@@ -31,12 +31,12 @@ class WalletBalanceHistory
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id", type="integer")
      * @ORM\Id
@@ -49,7 +49,7 @@ class WalletBalanceHistory
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Wallet")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_wallet", referencedColumnName="id")
+     *   @ORM\JoinColumn(name="id_wallet", referencedColumnName="id", nullable=false)
      * })
      */
     private $idWallet;

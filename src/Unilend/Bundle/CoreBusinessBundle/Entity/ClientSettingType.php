@@ -21,33 +21,33 @@ class ClientSettingType
     /**
      * @var string
      *
-     * @ORM\Column(name="label", type="string", length=100, nullable=false)
+     * @ORM\Column(name="label", type="string", length=100, nullable=false, unique=true)
      */
     private $label;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="default_value", type="string", length=191, nullable=false)
+     * @ORM\Column(name="default_value", type="string", length=191)
      */
     private $defaultValue;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="updated", type="datetime", nullable=false)
+     * @ORM\Column(name="updated", type="datetime")
      */
     private $updated;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id_type", type="integer")
      * @ORM\Id

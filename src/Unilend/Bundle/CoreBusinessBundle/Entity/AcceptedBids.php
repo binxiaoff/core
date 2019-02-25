@@ -16,9 +16,9 @@ class AcceptedBids
     /**
      * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Bids
      *
-     * @ORM\OneToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Bids")
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Bids")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_bid", referencedColumnName="id_bid")
+     *   @ORM\JoinColumn(name="id_bid", referencedColumnName="id_bid", nullable=false)
      * })
      */
     private $idBid;
@@ -26,7 +26,7 @@ class AcceptedBids
     /**
      * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Loans
      *
-     * @ORM\OneToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Loans")
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Loans")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="id_loan", referencedColumnName="id_loan")
      * })
@@ -34,16 +34,16 @@ class AcceptedBids
     private $idLoan;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="amount", type="integer", nullable=false)
+     * @ORM\Column(name="amount", type="integer")
      */
     private $amount;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
@@ -55,7 +55,7 @@ class AcceptedBids
     private $updated;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id_accepted_bid", type="integer")
      * @ORM\Id

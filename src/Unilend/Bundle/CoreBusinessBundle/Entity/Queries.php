@@ -15,54 +15,54 @@ class Queries
     /**
      * @var string
      *
-     * @ORM\Column(name="name", type="string", length=191, nullable=false)
+     * @ORM\Column(name="name", type="string", length=191)
      */
     private $name;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="sql", type="text", length=16777215, nullable=false)
+     * @ORM\Column(name="sql", type="text", length=16777215)
      */
     private $sql;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="paging", type="integer", nullable=false)
+     * @ORM\Column(name="paging", type="integer")
      */
     private $paging;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="executions", type="integer", nullable=false)
+     * @ORM\Column(name="executions", type="integer")
      */
     private $executions;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="executed", type="datetime", nullable=false)
+     * @ORM\Column(name="executed", type="datetime")
      */
     private $executed;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="updated", type="datetime", nullable=false)
+     * @ORM\Column(name="updated", type="datetime")
      */
     private $updated;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id_query", type="integer")
      * @ORM\Id

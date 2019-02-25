@@ -16,42 +16,42 @@ class LendersImpositionHistory
      * A lender can live outside of France but with a resident of France for tax purposes. Vise versa.
      *
      *
-     * @var integer
+     * @var bool
      *
-     * @ORM\Column(name="resident_etranger", type="integer", nullable=false)
+     * @ORM\Column(name="resident_etranger", type="boolean")
      */
     private $residentEtranger;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="id_pays", type="integer", nullable=false)
+     * @ORM\Column(name="id_pays", type="integer")
      */
     private $idPays;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="id_user", type="integer", nullable=false)
+     * @ORM\Column(name="id_user", type="integer")
      */
     private $idUser;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="updated", type="datetime", nullable=false)
+     * @ORM\Column(name="updated", type="datetime")
      */
     private $updated;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id_lenders_imposition_history", type="integer")
      * @ORM\Id
@@ -64,7 +64,7 @@ class LendersImpositionHistory
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Wallet")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_lender", referencedColumnName="id")
+     *   @ORM\JoinColumn(name="id_lender", referencedColumnName="id", nullable=false)
      * })
      */
     private $idLender;
@@ -74,7 +74,7 @@ class LendersImpositionHistory
     /**
      * Set residentEtranger
      *
-     * @param integer $residentEtranger
+     * @param bool $residentEtranger
      *
      * @return LendersImpositionHistory
      */
@@ -88,7 +88,7 @@ class LendersImpositionHistory
     /**
      * Get residentEtranger
      *
-     * @return integer
+     * @return bool
      */
     public function getResidentEtranger()
     {

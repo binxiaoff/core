@@ -35,7 +35,7 @@ class Companies
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Clients")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_client_owner", referencedColumnName="id_client", nullable=true)
+     *   @ORM\JoinColumn(name="id_client_owner", referencedColumnName="id_client")
      * })
      */
     private $idClientOwner;
@@ -93,9 +93,9 @@ class Companies
     private $siret;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="execices_comptables", type="integer", nullable=true)
+     * @ORM\Column(name="execices_comptables", type="smallint", nullable=true)
      */
     private $execicesComptables;
 
@@ -163,7 +163,7 @@ class Companies
     private $city;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id_pays", type="integer", nullable=true)
      */
@@ -172,14 +172,14 @@ class Companies
     /**
      * @var float
      *
-     * @ORM\Column(name="latitude", type="float", precision=10, scale=0, nullable=true)
+     * @ORM\Column(name="latitude", type="decimal", precision=10, scale=8, nullable=true)
      */
     private $latitude;
 
     /**
      * @var float
      *
-     * @ORM\Column(name="longitude", type="float", precision=10, scale=0, nullable=true)
+     * @ORM\Column(name="longitude", type="decimal", precision=11, scale=8, nullable=true)
      */
     private $longitude;
 
@@ -191,23 +191,23 @@ class Companies
     private $phone;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="status_adresse_correspondance", type="integer", nullable=true)
+     * @ORM\Column(name="status_adresse_correspondance", type="smallint", nullable=true)
      */
     private $statusAdresseCorrespondance;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="status_client", type="integer", nullable=true)
+     * @ORM\Column(name="status_client", type="smallint", nullable=true)
      */
     private $statusClient;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="status_conseil_externe_entreprise", type="integer", nullable=true)
+     * @ORM\Column(name="status_conseil_externe_entreprise", type="smallint", nullable=true)
      */
     private $statusConseilExterneEntreprise;
 
@@ -261,7 +261,7 @@ class Companies
     private $phoneDirigeant;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="sector", type="integer", nullable=true)
      */
@@ -284,7 +284,7 @@ class Companies
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
@@ -296,7 +296,7 @@ class Companies
     private $updated;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id_company", type="integer")
      * @ORM\Id

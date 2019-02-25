@@ -7,48 +7,48 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * Parrainages
  *
- * @ORM\Table(name="parrainages", uniqueConstraints={@ORM\UniqueConstraint(name="email", columns={"email"})})
+ * @ORM\Table(name="parrainages")
  * @ORM\Entity
  */
 class Parrainages
 {
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="id_client", type="integer", nullable=false)
+     * @ORM\Column(name="id_client", type="integer")
      */
     private $idClient;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="email", type="string", length=191, nullable=false)
+     * @ORM\Column(name="email", type="string", length=191, unique=true)
      */
     private $email;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="status", type="integer", nullable=false)
+     * @ORM\Column(name="status", type="integer")
      */
     private $status;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="updated", type="datetime", nullable=false)
+     * @ORM\Column(name="updated", type="datetime")
      */
     private $updated;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id_parrainage", type="integer")
      * @ORM\Id

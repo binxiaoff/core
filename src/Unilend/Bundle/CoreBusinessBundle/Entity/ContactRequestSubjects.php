@@ -15,12 +15,12 @@ class ContactRequestSubjects
     /**
      * @var string
      *
-     * @ORM\Column(name="label_contact_request_subject", type="string", length=155, nullable=false)
+     * @ORM\Column(name="label_contact_request_subject", type="string", length=155)
      */
     private $labelContactRequestSubject;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id_contact_request_subject", type="integer")
      * @ORM\Id

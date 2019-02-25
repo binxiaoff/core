@@ -13,7 +13,11 @@ use Symfony\Component\Security\Core\User\{EquatableInterface, UserInterface};
 /**
  * Clients
  *
- * @ORM\Table(name="clients", indexes={@ORM\Index(name="hash", columns={"hash"}), @ORM\Index(name="email", columns={"email"}), @ORM\Index(name="idx_client_nom", columns={"nom"}), @ORM\Index(name="idx_clients_id_client_status_history", columns={"id_client_status_history"})})
+ * @ORM\Table(name="clients", indexes={
+ *     @ORM\Index(name="hash", columns={"hash"}),
+ *     @ORM\Index(name="email", columns={"email"}),
+ *     @ORM\Index(name="idx_client_nom", columns={"nom"}),
+ *     @ORM\Index(name="idx_clients_id_client_status_history", columns={"id_client_status_history"})})
  * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\ClientsRepository")
  * @ORM\HasLifecycleCallbacks
  */
@@ -52,14 +56,14 @@ class Clients implements UserInterface, EquatableInterface, EncoderAwareInterfac
     /**
      * @var string
      *
-     * @ORM\Column(name="hash", type="string", length=191, nullable=false)
+     * @ORM\Column(name="hash", type="string", length=191)
      */
     private $hash;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="id_langue", type="string", length=5, nullable=false)
+     * @ORM\Column(name="id_langue", type="string", length=5)
      */
     private $idLangue = 'fr';
 
@@ -113,7 +117,7 @@ class Clients implements UserInterface, EquatableInterface, EncoderAwareInterfac
     private $naissance;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id_pays_naissance", type="integer", nullable=true)
      */
@@ -134,14 +138,14 @@ class Clients implements UserInterface, EquatableInterface, EncoderAwareInterfac
     private $inseeBirth;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id_nationalite", type="integer", nullable=true)
      */
     private $idNationalite;
 
     /**
-     * @var boolean
+     * @var bool
      *
      * @ORM\Column(name="us_person", type="boolean", nullable=true)
      */
@@ -190,16 +194,16 @@ class Clients implements UserInterface, EquatableInterface, EncoderAwareInterfac
     private $secreteReponse;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="type", type="integer", nullable=true)
+     * @ORM\Column(name="type", type="smallint", nullable=true)
      */
     private $type;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="funds_origin", type="integer", nullable=true)
+     * @ORM\Column(name="funds_origin", type="smallint", nullable=true)
      */
     private $fundsOrigin;
 
@@ -211,16 +215,16 @@ class Clients implements UserInterface, EquatableInterface, EncoderAwareInterfac
     private $fundsOriginDetail;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="etape_inscription_preteur", type="integer", nullable=true)
+     * @ORM\Column(name="etape_inscription_preteur", type="smallint", nullable=true)
      */
     private $etapeInscriptionPreteur;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="status_inscription_preteur", type="integer", nullable=true)
+     * @ORM\Column(name="status_inscription_preteur", type="smallint", nullable=true)
      */
     private $statusInscriptionPreteur;
 
@@ -253,23 +257,23 @@ class Clients implements UserInterface, EquatableInterface, EncoderAwareInterfac
     private $slugOrigine;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="origine", type="integer", nullable=true)
+     * @ORM\Column(name="origine", type="smallint", nullable=true)
      */
     private $origine;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="optin1", type="integer", nullable=true)
+     * @ORM\Column(name="optin1", type="smallint", nullable=true)
      */
     private $optin1;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="optin2", type="integer", nullable=true)
+     * @ORM\Column(name="optin2", type="smallint", nullable=true)
      */
     private $optin2;
 
@@ -278,7 +282,7 @@ class Clients implements UserInterface, EquatableInterface, EncoderAwareInterfac
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatusHistory")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_client_status_history", referencedColumnName="id", nullable=true)
+     *   @ORM\JoinColumn(name="id_client_status_history", referencedColumnName="id")
      * })
      */
     private $idClientStatusHistory;
@@ -292,7 +296,7 @@ class Clients implements UserInterface, EquatableInterface, EncoderAwareInterfac
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
@@ -311,7 +315,7 @@ class Clients implements UserInterface, EquatableInterface, EncoderAwareInterfac
     private $lastlogin;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id_client", type="integer")
      * @ORM\Id
@@ -336,7 +340,7 @@ class Clients implements UserInterface, EquatableInterface, EncoderAwareInterfac
     /**
      * @var string
      *
-     * @ORM\Column(name="sponsor_code", type="string", nullable=true)
+     * @ORM\Column(name="sponsor_code", type="string", length=50, nullable=true)
      */
     private $sponsorCode;
 

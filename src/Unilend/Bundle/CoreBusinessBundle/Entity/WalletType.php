@@ -7,7 +7,7 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * WalletType
  *
- * @ORM\Table(name="wallet_type", uniqueConstraints={@ORM\UniqueConstraint(name="label_UNIQUE", columns={"label"})})
+ * @ORM\Table(name="wallet_type")
  * @ORM\Entity
  */
 class WalletType
@@ -39,12 +39,12 @@ class WalletType
     /**
      * @var string
      *
-     * @ORM\Column(name="label", type="string", length=191, nullable=false)
+     * @ORM\Column(name="label", type="string", length=191, unique=true)
      */
     private $label;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id", type="integer")
      * @ORM\Id

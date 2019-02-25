@@ -25,33 +25,33 @@ class BorrowingMotive
     /**
      * @var string
      *
-     * @ORM\Column(name="motive", type="string", length=100, nullable=false)
+     * @ORM\Column(name="motive", type="string", length=100)
      */
     private $motive;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="rank", type="integer", nullable=false)
+     * @ORM\Column(name="rank", type="integer")
      */
     private $rank;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="updated", type="datetime", nullable=false)
+     * @ORM\Column(name="updated", type="datetime")
      */
     private $updated;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id_motive", type="integer")
      * @ORM\Id

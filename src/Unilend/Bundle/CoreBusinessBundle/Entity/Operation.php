@@ -7,16 +7,32 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * Operation
  *
- * @ORM\Table(name="operation", indexes={@ORM\Index(name="fk_operation_id_type_idx", columns={"id_type"}), @ORM\Index(name="fk_id_project_idx", columns={"id_project"}), @ORM\Index(name="fk_id_loan_idx", columns={"id_loan"}), @ORM\Index(name="fk_id_payment_schedule_idx", columns={"id_payment_schedule"}), @ORM\Index(name="fk_id_repayment_schedule_idx", columns={"id_repayment_schedule"}), @ORM\Index(name="fk_id_backpayline_idx", columns={"id_backpayline"}), @ORM\Index(name="fk_id_welcome_offer_idx", columns={"id_welcome_offer"}), @ORM\Index(name="fk_id_wire_transfer_out_idx", columns={"id_wire_transfer_out"}), @ORM\Index(name="fk_id_wire_transfer_in_idx", columns={"id_wire_transfer_in"}), @ORM\Index(name="fk_id_transfer_idx", columns={"id_transfer"}), @ORM\Index(name="idx_id_wallet_debitor_type", columns={"id_wallet_debtor", "id_type"}), @ORM\Index(name="idx_id_wallet_creditor_type", columns={"id_wallet_creditor", "id_type"}), @ORM\Index(name="idx_operation_id_sub_type", columns={"id_sub_type"}), @ORM\Index(name="idx_operation_id_sponsorship", columns={"id_sponsorship"})})
+ * @ORM\Table(name="operation", indexes={
+ *     @ORM\Index(name="fk_operation_id_type_idx", columns={"id_type"}),
+ *     @ORM\Index(name="fk_id_project_idx", columns={"id_project"}),
+ *     @ORM\Index(name="fk_id_loan_idx", columns={"id_loan"}),
+ *     @ORM\Index(name="fk_id_payment_schedule_idx", columns={"id_payment_schedule"}),
+ *     @ORM\Index(name="fk_id_repayment_schedule_idx", columns={"id_repayment_schedule"}),
+ *     @ORM\Index(name="fk_id_backpayline_idx", columns={"id_backpayline"}),
+ *     @ORM\Index(name="fk_id_welcome_offer_idx", columns={"id_welcome_offer"}),
+ *     @ORM\Index(name="fk_id_wire_transfer_out_idx", columns={"id_wire_transfer_out"}),
+ *     @ORM\Index(name="fk_id_wire_transfer_in_idx", columns={"id_wire_transfer_in"}),
+ *     @ORM\Index(name="fk_id_transfer_idx", columns={"id_transfer"}),
+ *     @ORM\Index(name="idx_id_wallet_debitor_type", columns={"id_wallet_debtor", "id_type"}),
+ *     @ORM\Index(name="idx_id_wallet_creditor_type", columns={"id_wallet_creditor", "id_type"}),
+ *     @ORM\Index(name="idx_operation_id_sub_type", columns={"id_sub_type"}),
+ *     @ORM\Index(name="idx_operation_id_sponsorship", columns={"id_sponsorship"}),
+ *     @ORM\Index(name="idx_operation_added", columns={"added"}),
+ * })
  * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\OperationRepository")
  * @ORM\HasLifecycleCallbacks
  */
 class Operation
 {
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="id", type="integer", nullable=false)
+     * @ORM\Column(name="id", type="integer")
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="IDENTITY")
      */
@@ -25,14 +41,14 @@ class Operation
     /**
      * @var string
      *
-     * @ORM\Column(name="amount", type="decimal", precision=12, scale=2, nullable=false)
+     * @ORM\Column(name="amount", type="decimal", precision=12, scale=2)
      */
     private $amount;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
@@ -81,7 +97,7 @@ class Operation
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\OperationType")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_type", referencedColumnName="id")
+     *   @ORM\JoinColumn(name="id_type", referencedColumnName="id", nullable=false)
      * })
      */
     private $idType;

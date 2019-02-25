@@ -17,7 +17,7 @@ class ProjectEligibilityAssessment
     const STATUS_CHECK_OK = 1;
 
     /**
-     * @var boolean
+     * @var bool
      *
      * @ORM\Column(name="status", type="boolean", nullable=true)
      */
@@ -26,12 +26,12 @@ class ProjectEligibilityAssessment
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id", type="integer")
      * @ORM\Id
@@ -44,7 +44,7 @@ class ProjectEligibilityAssessment
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\ProjectEligibilityRule")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_rule", referencedColumnName="id")
+     *   @ORM\JoinColumn(name="id_rule", referencedColumnName="id", nullable=false)
      * })
      */
     private $idRule;
@@ -54,7 +54,7 @@ class ProjectEligibilityAssessment
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\ProjectEligibilityRuleSet")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_rule_set", referencedColumnName="id")
+     *   @ORM\JoinColumn(name="id_rule_set", referencedColumnName="id", nullable=false)
      * })
      */
     private $idRuleSet;
@@ -64,7 +64,7 @@ class ProjectEligibilityAssessment
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Projects")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_project", referencedColumnName="id_project")
+     *   @ORM\JoinColumn(name="id_project", referencedColumnName="id_project", nullable=false)
      * })
      */
     private $idProject;

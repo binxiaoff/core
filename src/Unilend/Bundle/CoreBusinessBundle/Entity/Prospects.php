@@ -15,75 +15,75 @@ class Prospects
     /**
      * @var string
      *
-     * @ORM\Column(name="nom", type="text", length=16777215, nullable=false)
+     * @ORM\Column(name="nom", type="text", length=16777215)
      */
     private $nom;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="prenom", type="text", length=16777215, nullable=false)
+     * @ORM\Column(name="prenom", type="text", length=16777215)
      */
     private $prenom;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="email", type="string", length=191, nullable=false)
+     * @ORM\Column(name="email", type="string", length=191)
      */
     private $email;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="id_langue", type="string", length=3, nullable=false)
+     * @ORM\Column(name="id_langue", type="string", length=3)
      */
     private $idLangue;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="source", type="string", length=191, nullable=false)
+     * @ORM\Column(name="source", type="string", length=191)
      */
     private $source;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="source2", type="string", length=191, nullable=false)
+     * @ORM\Column(name="source2", type="string", length=191)
      */
     private $source2;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="source3", type="string", length=191, nullable=false)
+     * @ORM\Column(name="source3", type="string", length=191)
      */
     private $source3;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="slug_origine", type="string", length=191, nullable=false)
+     * @ORM\Column(name="slug_origine", type="string", length=191)
      */
     private $slugOrigine;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="updated", type="datetime", nullable=false)
+     * @ORM\Column(name="updated", type="datetime")
      */
     private $updated;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id_prospect", type="integer")
      * @ORM\Id

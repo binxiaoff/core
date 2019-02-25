@@ -18,7 +18,7 @@ class ClientsStatusHistory
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Clients")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_client", referencedColumnName="id_client")
+     *   @ORM\JoinColumn(name="id_client", referencedColumnName="id_client", nullable=false)
      * })
      */
     private $idClient;
@@ -28,7 +28,7 @@ class ClientsStatusHistory
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatus")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_status", referencedColumnName="id")
+     *   @ORM\JoinColumn(name="id_status", referencedColumnName="id", nullable=false)
      * })
      */
     private $idStatus;
@@ -45,13 +45,13 @@ class ClientsStatusHistory
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Users")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_user", referencedColumnName="id_user")
+     *   @ORM\JoinColumn(name="id_user", referencedColumnName="id_user", nullable=false)
      * })
      */
     private $idUser;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="numero_relance", type="integer", nullable=true)
      */
@@ -60,12 +60,12 @@ class ClientsStatusHistory
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id", type="integer")
      * @ORM\Id

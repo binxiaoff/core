@@ -25,21 +25,21 @@ class UnilendStats
     /**
      * @var string
      *
-     * @ORM\Column(name="type_stat", type="string", length=191, nullable=false)
+     * @ORM\Column(name="type_stat", type="string", length=191)
      */
     private $typeStat;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="value", type="text", length=65535, nullable=false)
+     * @ORM\Column(name="value", type="text", length=65535)
      */
     private $value;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
@@ -51,7 +51,7 @@ class UnilendStats
     private $updated;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id_unilend_stat", type="integer")
      * @ORM\Id

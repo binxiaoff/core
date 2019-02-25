@@ -7,32 +7,32 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * WsExternalResource
  *
- * @ORM\Table(name="ws_external_resource", uniqueConstraints={@ORM\UniqueConstraint(name="label", columns={"label"}), @ORM\UniqueConstraint(name="provider_resource_method", columns={"provider_name", "resource_name", "label", "method"})})
+ * @ORM\Table(name="ws_external_resource", uniqueConstraints={@ORM\UniqueConstraint(name="provider_resource_method", columns={"provider_name", "resource_name", "label", "method"})})
  * @ORM\Entity
  */
 class WsExternalResource
 {
-    const STATUS_AVAILABLE   = 1;
-    const STATUS_UNAVAILABLE = 0;
+    const STATUS_AVAILABLE   = true;
+    const STATUS_UNAVAILABLE = false;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="provider_name", type="string", length=128, nullable=false)
+     * @ORM\Column(name="provider_name", type="string", length=128)
      */
     private $providerName;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="resource_name", type="string", length=128, nullable=false)
+     * @ORM\Column(name="resource_name", type="string", length=128)
      */
     private $resourceName;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="label", type="string", length=128, nullable=false)
+     * @ORM\Column(name="label", type="string", length=128, unique=true)
      */
     private $label;
 
@@ -44,9 +44,9 @@ class WsExternalResource
     private $method;
 
     /**
-     * @var boolean
+     * @var bool
      *
-     * @ORM\Column(name="is_available", type="integer", nullable=true)
+     * @ORM\Column(name="is_available", type="boolean")
      */
     private $isAvailable;
 
@@ -58,14 +58,14 @@ class WsExternalResource
     private $updated;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="validity_days", type="smallint", nullable=true)
+     * @ORM\Column(name="validity_days", type="smallint", nullable=false, options={"default" : -1})
      */
-    private $validityDays = '-1';
+    private $validityDays = -1;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id_resource", type="integer")
      * @ORM\Id
@@ -154,15 +154,15 @@ class WsExternalResource
     }
 
     /**
-     * @return int
+     * @return bool
      */
-    public function isIsAvailable()
+    public function isAvailable()
     {
         return $this->isAvailable;
     }
 
     /**
-     * @param int $isAvailable
+     * @param bool $isAvailable
      *
      * @return WsExternalResource
      */

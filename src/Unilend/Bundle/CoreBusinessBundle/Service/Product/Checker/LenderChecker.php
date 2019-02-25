@@ -73,7 +73,8 @@ trait LenderChecker
     {
         $maxAmountEligible = 0;
 
-        foreach ($product->getIdContract() as $contract) {
+        foreach ($product->getProductContract() as $productContract) {
+            $contract = $productContract->getIdContract();
             if (
                 $contractManager->isClientEligible($client, $contract)
                 && (false === $isAutobid || $contractManager->isAutobidSettingsEligible($contract))

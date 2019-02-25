@@ -38,21 +38,21 @@ class Pays
     /**
      * @var string
      *
-     * @ORM\Column(name="iso", type="string", length=2, nullable=false)
+     * @ORM\Column(name="iso", type="string", length=2)
      */
     private $iso;
 
     /**
      * @var int
      *
-     * @ORM\Column(name="ordre", type="integer", nullable=false)
+     * @ORM\Column(name="ordre", type="integer")
      */
     private $ordre;
 
     /**
      * @var int
      *
-     * @ORM\Column(name="vigilance_status", type="integer", nullable=false)
+     * @ORM\Column(name="vigilance_status", type="smallint")
      */
     private $vigilanceStatus;
 

@@ -15,14 +15,14 @@ class RiskDataMonitoringType
     /**
      * @var string
      *
-     * @ORM\Column(name="provider", type="string", length=191, nullable=false)
+     * @ORM\Column(name="provider", type="string", length=191)
      */
     private $provider;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="company_rating", type="string", length=191, nullable=true)
+     * @ORM\Column(name="company_rating", type="string", length=191, nullable=true, unique=true)
      */
     private $companyRating;
 
@@ -37,7 +37,7 @@ class RiskDataMonitoringType
     private $idProjectEligibilityRule;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id", type="integer")
      * @ORM\Id

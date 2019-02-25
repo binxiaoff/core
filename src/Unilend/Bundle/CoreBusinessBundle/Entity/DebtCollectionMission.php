@@ -19,16 +19,16 @@ class DebtCollectionMission
     const TYPE_PRE_LITIGATION = 3;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="type", type="integer", nullable=false)
+     * @ORM\Column(name="type", type="smallint")
      */
     private $type;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="fees_rate", type="decimal", precision=4, scale=4, nullable=false)
+     * @ORM\Column(name="fees_rate", type="decimal", precision=4, scale=4)
      */
     private $feesRate;
 
@@ -42,7 +42,7 @@ class DebtCollectionMission
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
@@ -54,7 +54,7 @@ class DebtCollectionMission
     private $updated;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id", type="integer")
      * @ORM\Id
@@ -67,7 +67,7 @@ class DebtCollectionMission
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Projects", inversedBy="debtCollectionMissions")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_project", referencedColumnName="id_project")
+     *   @ORM\JoinColumn(name="id_project", referencedColumnName="id_project", nullable=false)
      * })
      */
     private $idProject;
@@ -77,7 +77,7 @@ class DebtCollectionMission
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Clients")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_client_debt_collector", referencedColumnName="id_client")
+     *   @ORM\JoinColumn(name="id_client_debt_collector", referencedColumnName="id_client", nullable=false)
      * })
      */
     private $idClientDebtCollector;
@@ -120,21 +120,21 @@ class DebtCollectionMission
     /**
      * @var string
      *
-     * @ORM\Column(name="capital", type="decimal", precision=11, scale=2, nullable=false)
+     * @ORM\Column(name="capital", type="decimal", precision=11, scale=2)
      */
     private $capital;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="interest", type="decimal", precision=11, scale=2, nullable=false)
+     * @ORM\Column(name="interest", type="decimal", precision=11, scale=2)
      */
     private $interest;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="commission_vat_incl", type="decimal", precision=11, scale=2, nullable=false)
+     * @ORM\Column(name="commission_vat_incl", type="decimal", precision=11, scale=2)
      */
     private $commissionVatIncl;
 

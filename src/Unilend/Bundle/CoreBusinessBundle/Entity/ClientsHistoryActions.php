@@ -27,28 +27,28 @@ class ClientsHistoryActions
     /**
      * @var string
      *
-     * @ORM\Column(name="nom_form", type="string", length=191, nullable=false)
+     * @ORM\Column(name="nom_form", type="string", length=191)
      */
     private $nomForm;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="serialize", type="text", length=16777215, nullable=false)
+     * @ORM\Column(name="serialize", type="text", length=16777215)
      */
     private $serialize;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="updated", type="datetime", nullable=false)
+     * @ORM\Column(name="updated", type="datetime", nullable=true)
      */
     private $updated;
 
@@ -60,7 +60,7 @@ class ClientsHistoryActions
     private $ip;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id_client_history_action", type="integer")
      * @ORM\Id
@@ -73,7 +73,7 @@ class ClientsHistoryActions
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Clients")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_client", referencedColumnName="id_client")
+     *   @ORM\JoinColumn(name="id_client", referencedColumnName="id_client", nullable=false )
      * })
      */
     private $idClient;

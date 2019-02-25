@@ -19,56 +19,56 @@ class SponsorshipCampaign
     /**
      * @var string
      *
-     * @ORM\Column(name="amount_sponsor", type="decimal", precision=12, scale=2, nullable=false)
+     * @ORM\Column(name="amount_sponsor", type="decimal", precision=12, scale=2)
      */
     private $amountSponsor;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="amount_sponsee", type="decimal", precision=12, scale=2, nullable=false)
+     * @ORM\Column(name="amount_sponsee", type="decimal", precision=12, scale=2)
      */
     private $amountSponsee;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="start", type="datetime", nullable=false)
+     * @ORM\Column(name="start", type="date")
      */
     private $start;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="end", type="datetime", nullable=true)
+     * @ORM\Column(name="end", type="date", nullable=true)
      */
     private $end;
 
     /**
      * @var int
      *
-     * @ORM\Column(name="status", type="integer", nullable=false)
+     * @ORM\Column(name="status", type="smallint")
      */
     private $status;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="max_number_sponsee", type="integer", nullable=false)
+     * @ORM\Column(name="max_number_sponsee", type="integer")
      */
     private $maxNumberSponsee;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="validity_days", type="integer", nullable=false)
+     * @ORM\Column(name="validity_days", type="smallint")
      */
     private $validityDays;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
@@ -80,7 +80,7 @@ class SponsorshipCampaign
     private $updated;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id", type="integer")
      * @ORM\Id

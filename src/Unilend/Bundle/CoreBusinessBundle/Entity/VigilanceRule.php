@@ -7,7 +7,7 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * VigilanceRule
  *
- * @ORM\Table(name="vigilance_rule", uniqueConstraints={@ORM\UniqueConstraint(name="label", columns={"label"})})
+ * @ORM\Table(name="vigilance_rule")
  * @ORM\Entity
  */
 class VigilanceRule
@@ -20,28 +20,28 @@ class VigilanceRule
     /**
      * @var string
      *
-     * @ORM\Column(name="name", type="string", length=191, nullable=false)
+     * @ORM\Column(name="name", type="string", length=191)
      */
     private $name;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="label", type="string", length=191, nullable=false)
+     * @ORM\Column(name="label", type="string", length=191, unique=true)
      */
     private $label;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="vigilance_status", type="integer", nullable=false)
+     * @ORM\Column(name="vigilance_status", type="smallint")
      */
     private $vigilanceStatus;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
@@ -53,14 +53,14 @@ class VigilanceRule
     private $updated;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="id_user", type="integer", nullable=false)
+     * @ORM\Column(name="id_user", type="integer")
      */
     private $idUser;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id", type="integer")
      * @ORM\Id

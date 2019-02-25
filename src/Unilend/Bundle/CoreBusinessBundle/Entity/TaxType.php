@@ -25,26 +25,26 @@ class TaxType
     /**
      * @var string
      *
-     * @ORM\Column(name="name", type="string", length=191, nullable=false)
+     * @ORM\Column(name="name", type="string", length=191)
      */
     private $name;
 
     /**
      * @var float
      *
-     * @ORM\Column(name="rate", type="float", precision=10, scale=0, nullable=false)
+     * @ORM\Column(name="rate", type="decimal", precision=5, scale=2)
      */
     private $rate;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="country", type="string", length=2, nullable=false)
+     * @ORM\Column(name="country", type="string", length=2)
      */
     private $country;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id_tax_type", type="integer")
      * @ORM\Id

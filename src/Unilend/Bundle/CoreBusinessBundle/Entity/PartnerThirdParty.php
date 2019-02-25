@@ -7,7 +7,7 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * PartnerThirdParty
  *
- * @ORM\Table(name="partner_third_party", uniqueConstraints={@ORM\UniqueConstraint(name="unq_partner_third_party_company_partner", columns={"id_company", "id_partner"})}, indexes={@ORM\Index(name="idx_partner_third_party_id_company", columns={"id_company"}), @ORM\Index(name="idx_partner_third_party_id_partner", columns={"id_partner"}), @ORM\Index(name="idx_partner_third_party_id_type", columns={"id_type"})})
+ * @ORM\Table(name="partner_third_party", uniqueConstraints={@ORM\UniqueConstraint(name="unq_partner_third_party_company_partner", columns={"id_company", "id_partner"})})
  * @ORM\Entity
  * @ORM\HasLifecycleCallbacks
  */
@@ -16,7 +16,7 @@ class PartnerThirdParty
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
@@ -28,7 +28,7 @@ class PartnerThirdParty
     private $updated;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id", type="integer")
      * @ORM\Id
@@ -41,7 +41,7 @@ class PartnerThirdParty
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\PartnerThirdPartyType")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_type", referencedColumnName="id")
+     *   @ORM\JoinColumn(name="id_type", referencedColumnName="id", nullable=false)
      * })
      */
     private $idType;
@@ -51,7 +51,7 @@ class PartnerThirdParty
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Partner", inversedBy="partnerThirdParties")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_partner", referencedColumnName="id")
+     *   @ORM\JoinColumn(name="id_partner", referencedColumnName="id", nullable=false)
      * })
      */
     private $idPartner;
@@ -61,7 +61,7 @@ class PartnerThirdParty
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Companies")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_company", referencedColumnName="id_company")
+     *   @ORM\JoinColumn(name="id_company", referencedColumnName="id_company", nullable=false)
      * })
      */
     private $idCompany;

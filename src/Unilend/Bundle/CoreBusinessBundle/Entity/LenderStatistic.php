@@ -20,33 +20,33 @@ class LenderStatistic
     /**
      * @var string
      *
-     * @ORM\Column(name="type_stat", type="string", length=191, nullable=false)
+     * @ORM\Column(name="type_stat", type="string", length=191)
      */
     private $typeStat;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="value", type="string", length=50, nullable=false)
+     * @ORM\Column(name="value", type="string", length=50)
      */
     private $value;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="status", type="integer", nullable=false)
+     * @ORM\Column(name="status", type="smallint")
      */
     private $status;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id", type="integer")
      * @ORM\Id
@@ -59,7 +59,7 @@ class LenderStatistic
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Wallet")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_wallet", referencedColumnName="id")
+     *   @ORM\JoinColumn(name="id_wallet", referencedColumnName="id", nullable=false)
      * })
      */
     private $idWallet;

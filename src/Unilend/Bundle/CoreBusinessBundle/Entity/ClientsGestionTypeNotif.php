@@ -45,19 +45,19 @@ class ClientsGestionTypeNotif
     /**
      * @var string
      *
-     * @ORM\Column(name="nom", type="string", length=191, nullable=false)
+     * @ORM\Column(name="nom", type="string", length=191)
      */
     private $nom;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="ordre", type="integer", nullable=false)
+     * @ORM\Column(name="ordre", type="integer")
      */
     private $ordre;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id_client_gestion_type_notif", type="integer")
      * @ORM\Id

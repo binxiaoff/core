@@ -16,21 +16,21 @@ class TransmissionSequence
     /**
      * @var string
      *
-     * @ORM\Column(name="element_name", type="string", length=164, nullable=false)
+     * @ORM\Column(name="element_name", type="string", length=164)
      */
     private $elementName;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="sequence", type="integer", nullable=false)
+     * @ORM\Column(name="sequence", type="integer")
      */
     private $sequence;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
@@ -42,7 +42,7 @@ class TransmissionSequence
     private $updated;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id_transmission_sequence", type="integer")
      * @ORM\Id

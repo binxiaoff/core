@@ -16,14 +16,14 @@ class LenderTaxExemption
     /**
      * @var string
      *
-     * @ORM\Column(name="iso_country", type="string", length=2, nullable=false)
+     * @ORM\Column(name="iso_country", type="string", length=2)
      */
     private $isoCountry;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="year", type="integer", nullable=false)
+     * @ORM\Column(name="year", type="smallint")
      */
     private $year;
 
@@ -40,7 +40,7 @@ class LenderTaxExemption
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
@@ -52,7 +52,7 @@ class LenderTaxExemption
     private $updated;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id_lender_tax_exemption", type="integer")
      * @ORM\Id
@@ -65,7 +65,7 @@ class LenderTaxExemption
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Wallet")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_lender", referencedColumnName="id")
+     *   @ORM\JoinColumn(name="id_lender", referencedColumnName="id", nullable=false)
      * })
      */
     private $idLender;

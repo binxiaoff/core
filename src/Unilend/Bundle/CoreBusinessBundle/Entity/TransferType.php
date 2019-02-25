@@ -34,9 +34,9 @@ class TransferType
     private $updated;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="id_type", type="integer")
+     * @ORM\Column(name="id_type", type="smallint")
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="IDENTITY")
      */

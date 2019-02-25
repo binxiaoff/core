@@ -20,74 +20,74 @@ class EcheanciersEmprunteur
     const STATUS_EARLY_REPAYMENT_DONE = 1;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="ordre", type="integer", nullable=false)
+     * @ORM\Column(name="ordre", type="integer")
      */
     private $ordre;
 
     /**
-     * @var integer
+     * @var int
      *
      * @deprecated This column will be deleted. Use the summary of EcheanciersEmprunteur::$capital and EcheanciersEmprunteur::$interets instead
      *
-     * @ORM\Column(name="montant", type="integer", nullable=false)
+     * @ORM\Column(name="montant", type="integer")
      */
     private $montant;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="capital", type="integer", nullable=false)
+     * @ORM\Column(name="capital", type="integer")
      */
     private $capital;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="paid_capital", type="integer", nullable=false)
+     * @ORM\Column(name="paid_capital", type="integer")
      */
     private $paidCapital;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="interets", type="integer", nullable=false)
+     * @ORM\Column(name="interets", type="integer")
      */
     private $interets;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="paid_interest", type="integer", nullable=false)
+     * @ORM\Column(name="paid_interest", type="integer")
      */
     private $paidInterest;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="commission", type="integer", nullable=false)
+     * @ORM\Column(name="commission", type="integer")
      */
     private $commission;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="tva", type="integer", nullable=false)
+     * @ORM\Column(name="tva", type="integer")
      */
     private $tva;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="paid_commission_vat_incl", type="integer", nullable=false)
+     * @ORM\Column(name="paid_commission_vat_incl", type="integer")
      */
     private $paidCommissionVatIncl;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="date_echeance_emprunteur", type="datetime", nullable=false)
+     * @ORM\Column(name="date_echeance_emprunteur", type="datetime")
      */
     private $dateEcheanceEmprunteur;
 
@@ -99,35 +99,35 @@ class EcheanciersEmprunteur
     private $dateEcheanceEmprunteurReel;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="status_emprunteur", type="integer", nullable=false)
+     * @ORM\Column(name="status_emprunteur", type="smallint")
      */
     private $statusEmprunteur;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="status_ra", type="integer", nullable=false)
+     * @ORM\Column(name="status_ra", type="smallint")
      */
     private $statusRa;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="updated", type="datetime", nullable=false)
+     * @ORM\Column(name="updated", type="datetime")
      */
     private $updated;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id_echeancier_emprunteur", type="integer")
      * @ORM\Id
@@ -140,7 +140,7 @@ class EcheanciersEmprunteur
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Projects")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_project", referencedColumnName="id_project")
+     *   @ORM\JoinColumn(name="id_project", referencedColumnName="id_project", nullable=false)
      * })
      */
     private $idProject;

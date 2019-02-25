@@ -13,133 +13,133 @@ use Doctrine\ORM\Mapping as ORM;
 class CompaniesActifPassif
 {
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="id_bilan", type="integer", nullable=false)
+     * @ORM\Column(name="id_bilan", type="integer")
      */
     private $idBilan;
 
     /**
      * @var float
      *
-     * @ORM\Column(name="immobilisations_corporelles", type="float", precision=10, scale=0, nullable=false)
+     * @ORM\Column(name="immobilisations_corporelles", type="float", precision=10, scale=0)
      */
     private $immobilisationsCorporelles;
 
     /**
      * @var float
      *
-     * @ORM\Column(name="immobilisations_incorporelles", type="float", precision=10, scale=0, nullable=false)
+     * @ORM\Column(name="immobilisations_incorporelles", type="float", precision=10, scale=0)
      */
     private $immobilisationsIncorporelles;
 
     /**
      * @var float
      *
-     * @ORM\Column(name="immobilisations_financieres", type="float", precision=10, scale=0, nullable=false)
+     * @ORM\Column(name="immobilisations_financieres", type="float", precision=10, scale=0)
      */
     private $immobilisationsFinancieres;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="stocks", type="integer", nullable=false)
+     * @ORM\Column(name="stocks", type="integer")
      */
     private $stocks;
 
     /**
      * @var float
      *
-     * @ORM\Column(name="creances_clients", type="float", precision=10, scale=0, nullable=false)
+     * @ORM\Column(name="creances_clients", type="float", precision=10, scale=0)
      */
     private $creancesClients;
 
     /**
      * @var float
      *
-     * @ORM\Column(name="disponibilites", type="float", precision=10, scale=0, nullable=false)
+     * @ORM\Column(name="disponibilites", type="float", precision=10, scale=0)
      */
     private $disponibilites;
 
     /**
      * @var float
      *
-     * @ORM\Column(name="valeurs_mobilieres_de_placement", type="float", precision=10, scale=0, nullable=false)
+     * @ORM\Column(name="valeurs_mobilieres_de_placement", type="float", precision=10, scale=0)
      */
     private $valeursMobilieresDePlacement;
 
     /**
      * @var float
      *
-     * @ORM\Column(name="comptes_regularisation_actif", type="float", precision=10, scale=0, nullable=false)
+     * @ORM\Column(name="comptes_regularisation_actif", type="float", precision=10, scale=0)
      */
     private $comptesRegularisationActif;
 
     /**
      * @var float
      *
-     * @ORM\Column(name="comptes_regularisation_passif", type="float", precision=10, scale=0, nullable=false)
+     * @ORM\Column(name="comptes_regularisation_passif", type="float", precision=10, scale=0)
      */
     private $comptesRegularisationPassif;
 
     /**
      * @var float
      *
-     * @ORM\Column(name="capitaux_propres", type="float", precision=10, scale=0, nullable=false)
+     * @ORM\Column(name="capitaux_propres", type="float", precision=10, scale=0)
      */
     private $capitauxPropres;
 
     /**
      * @var float
      *
-     * @ORM\Column(name="provisions_pour_risques_et_charges", type="float", precision=10, scale=0, nullable=false)
+     * @ORM\Column(name="provisions_pour_risques_et_charges", type="float", precision=10, scale=0)
      */
     private $provisionsPourRisquesEtCharges;
 
     /**
      * @var float
      *
-     * @ORM\Column(name="amortissement_sur_immo", type="float", precision=10, scale=0, nullable=false)
+     * @ORM\Column(name="amortissement_sur_immo", type="float", precision=10, scale=0)
      */
     private $amortissementSurImmo;
 
     /**
      * @var float
      *
-     * @ORM\Column(name="dettes_financieres", type="float", precision=10, scale=0, nullable=false)
+     * @ORM\Column(name="dettes_financieres", type="float", precision=10, scale=0)
      */
     private $dettesFinancieres;
 
     /**
      * @var float
      *
-     * @ORM\Column(name="dettes_fournisseurs", type="float", precision=10, scale=0, nullable=false)
+     * @ORM\Column(name="dettes_fournisseurs", type="float", precision=10, scale=0)
      */
     private $dettesFournisseurs;
 
     /**
      * @var float
      *
-     * @ORM\Column(name="autres_dettes", type="float", precision=10, scale=0, nullable=false)
+     * @ORM\Column(name="autres_dettes", type="float", precision=10, scale=0)
      */
     private $autresDettes;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="updated", type="datetime", nullable=false)
+     * @ORM\Column(name="updated", type="datetime")
      */
     private $updated;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id_actif_passif", type="integer")
      * @ORM\Id

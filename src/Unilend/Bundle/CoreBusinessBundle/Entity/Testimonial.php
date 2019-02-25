@@ -15,21 +15,21 @@ class Testimonial
     /**
      * @var string
      *
-     * @ORM\Column(name="type", type="string", length=50, nullable=false)
+     * @ORM\Column(name="type", type="string", length=50)
      */
     private $type;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="slider_id", type="text", length=255, nullable=false)
+     * @ORM\Column(name="slider_id", type="text", length=255)
      */
     private $sliderId;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="id_client", type="integer", nullable=false)
+     * @ORM\Column(name="id_client", type="integer")
      */
     private $idClient;
 
@@ -43,42 +43,42 @@ class Testimonial
     /**
      * @var string
      *
-     * @ORM\Column(name="location", type="string", length=110, nullable=false)
+     * @ORM\Column(name="location", type="string", length=110)
      */
     private $location;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="projects", type="string", length=100, nullable=false)
+     * @ORM\Column(name="projects", type="string", length=100)
      */
     private $projects;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="quote", type="string", length=255, nullable=false)
+     * @ORM\Column(name="quote", type="string", length=255)
      */
     private $quote;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="info", type="string", length=255, nullable=false)
+     * @ORM\Column(name="info", type="string", length=255)
      */
     private $info;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="testimonial_page_title", type="string", length=120, nullable=false)
+     * @ORM\Column(name="testimonial_page_title", type="string", length=120)
      */
     private $testimonialPageTitle;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="long_testimonial", type="text", length=65535, nullable=false)
+     * @ORM\Column(name="long_testimonial", type="text", length=65535)
      */
     private $longTestimonial;
 
@@ -92,7 +92,7 @@ class Testimonial
     /**
      * @var string
      *
-     * @ORM\Column(name="video_caption", type="string", length=255, nullable=false)
+     * @ORM\Column(name="video_caption", type="string", length=255)
      */
     private $videoCaption;
 
@@ -111,28 +111,28 @@ class Testimonial
     private $battenbergImage;
 
     /**
-     * @var integer
+     * @var bool
      *
-     * @ORM\Column(name="status", type="integer", nullable=false)
+     * @ORM\Column(name="status", type="boolean")
      */
     private $status;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="updated", type="datetime", nullable=false)
+     * @ORM\Column(name="updated", type="datetime")
      */
     private $updated;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id_testimonial", type="integer")
      * @ORM\Id
@@ -481,7 +481,7 @@ class Testimonial
     /**
      * Set status
      *
-     * @param integer $status
+     * @param boolean $status
      *
      * @return Testimonial
      */
@@ -495,7 +495,7 @@ class Testimonial
     /**
      * Get status
      *
-     * @return integer
+     * @return boolean
      */
     public function getStatus()
     {

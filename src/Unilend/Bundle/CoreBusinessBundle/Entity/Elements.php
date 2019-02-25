@@ -15,70 +15,70 @@ class Elements
     const TYPE_PDF_TERMS_OF_SALE = 143;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="id_template", type="integer", nullable=false)
+     * @ORM\Column(name="id_template", type="integer")
      */
     private $idTemplate;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="id_bloc", type="integer", nullable=false)
+     * @ORM\Column(name="id_bloc", type="integer")
      */
     private $idBloc;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="name", type="string", length=191, nullable=false)
+     * @ORM\Column(name="name", type="string", length=191)
      */
     private $name;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="slug", type="string", length=191, nullable=false)
+     * @ORM\Column(name="slug", type="string", length=191)
      */
     private $slug;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="ordre", type="integer", nullable=false)
+     * @ORM\Column(name="ordre", type="integer", nullable=false, options={"default" : 0})
      */
-    private $ordre = '0';
+    private $ordre = 0;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="type_element", type="string", length=50, nullable=false)
+     * @ORM\Column(name="type_element", type="string", length=50)
      */
     private $typeElement;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="status", type="integer", nullable=false)
+     * @ORM\Column(name="status", type="smallint")
      */
     private $status;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="updated", type="datetime", nullable=false)
+     * @ORM\Column(name="updated", type="datetime")
      */
     private $updated;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id_element", type="integer")
      * @ORM\Id

@@ -13,58 +13,58 @@ use Doctrine\ORM\Mapping as ORM;
 class Insee
 {
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="CDC", type="integer", nullable=true)
+     * @ORM\Column(name="CDC", type="smallint", nullable=true)
      */
     private $cdc;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="CHEFLIEU", type="integer", nullable=true)
+     * @ORM\Column(name="CHEFLIEU", type="smallint", nullable=true)
      */
     private $cheflieu;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="REG", type="integer", nullable=true)
+     * @ORM\Column(name="REG", type="smallint", nullable=true)
      */
     private $reg;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="DEP", type="integer", nullable=true)
+     * @ORM\Column(name="DEP", type="smallint", nullable=true)
      */
     private $dep;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="COM", type="integer", nullable=true)
+     * @ORM\Column(name="COM", type="smallint", nullable=true)
      */
     private $com;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="AR", type="integer", nullable=true)
+     * @ORM\Column(name="AR", type="smallint", nullable=true)
      */
     private $ar;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="CT", type="integer", nullable=true)
+     * @ORM\Column(name="CT", type="smallint", nullable=true)
      */
     private $ct;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="TNCC", type="integer", nullable=true)
+     * @ORM\Column(name="TNCC", type="smallint", nullable=true)
      */
     private $tncc;
 
@@ -97,7 +97,7 @@ class Insee
     private $nccenr;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id_insee", type="integer")
      * @ORM\Id

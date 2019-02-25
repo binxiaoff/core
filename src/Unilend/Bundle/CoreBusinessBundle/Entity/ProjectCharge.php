@@ -19,35 +19,35 @@ class ProjectCharge
     /**
      * @var int
      *
-     * @ORM\Column(name="status", type="smallint", nullable=false)
+     * @ORM\Column(name="status", type="smallint")
      */
     private $status;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="amount_incl_vat", type="decimal", precision=12, scale=2, nullable=false)
+     * @ORM\Column(name="amount_incl_vat", type="decimal", precision=12, scale=2)
      */
     private $amountInclVat;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="amount_vat", type="decimal", precision=12, scale=2, nullable=false)
+     * @ORM\Column(name="amount_vat", type="decimal", precision=12, scale=2)
      */
     private $amountVat;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="invoice_date", type="datetime", nullable=true)
+     * @ORM\Column(name="invoice_date", type="date")
      */
     private $invoiceDate;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
@@ -59,7 +59,7 @@ class ProjectCharge
     private $updated;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id", type="integer")
      * @ORM\Id
@@ -72,7 +72,7 @@ class ProjectCharge
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\ProjectChargeType")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_type", referencedColumnName="id")
+     *   @ORM\JoinColumn(name="id_type", referencedColumnName="id", nullable=false)
      * })
      */
     private $idType;
@@ -82,7 +82,7 @@ class ProjectCharge
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Projects")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_project", referencedColumnName="id_project")
+     *   @ORM\JoinColumn(name="id_project", referencedColumnName="id_project", nullable=false)
      * })
      */
     private $idProject;

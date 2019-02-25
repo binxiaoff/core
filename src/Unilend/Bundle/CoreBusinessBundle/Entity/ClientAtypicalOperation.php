@@ -36,7 +36,7 @@ class ClientAtypicalOperation
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Users")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_user", referencedColumnName="id_user")
+     *   @ORM\JoinColumn(name="id_user", referencedColumnName="id_user", nullable=false)
      * })
      */
     private $idUser;
@@ -51,7 +51,7 @@ class ClientAtypicalOperation
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
@@ -63,7 +63,7 @@ class ClientAtypicalOperation
     private $updated;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id", type="integer")
      * @ORM\Id
@@ -76,7 +76,7 @@ class ClientAtypicalOperation
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\VigilanceRule")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_rule", referencedColumnName="id")
+     *   @ORM\JoinColumn(name="id_rule", referencedColumnName="id", nullable=false)
      * })
      */
     private $rule;
@@ -86,10 +86,17 @@ class ClientAtypicalOperation
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Clients")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_client", referencedColumnName="id_client")
+     *   @ORM\JoinColumn(name="id_client", referencedColumnName="id_client", nullable=false)
      * })
      */
     private $client;
+
+    /**
+     * @var int
+     *
+     * @ORM\Column(name="detection_status", type="smallint")
+     */
+    private $detectionStatus;
 
     /**
      * @return string
@@ -276,13 +283,6 @@ class ClientAtypicalOperation
     {
         $this->updated = new \DateTime();
     }
-
-    /**
-     * @var integer
-     *
-     * @ORM\Column(name="detection_status", type="integer", nullable=false)
-     */
-    private $detectionStatus;
 
     /**
      * Set detectionStatus
