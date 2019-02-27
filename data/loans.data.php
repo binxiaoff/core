@@ -253,7 +253,7 @@ class loans extends loans_crud
             FROM bids b
             INNER JOIN projects p ON b.id_project = p.id_project
             INNER JOIN projects_status ps ON p.status = ps.status
-            WHERE b.id_lender_account = :idLender
+            WHERE b.id_wallet = :idLender
                 AND p.status IN (:fundedStatus)
                 AND b.status = ' . Bids::STATUS_ACCEPTED . '
             GROUP BY p.id_project';

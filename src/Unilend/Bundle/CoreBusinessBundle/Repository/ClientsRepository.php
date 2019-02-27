@@ -328,7 +328,7 @@ class ClientsRepository extends EntityRepository
             LEFT JOIN pays ccountry ON c.id_pays_naissance = ccountry.id_pays
             LEFT JOIN pays acountry ON ca.id_country = acountry.id_pays
             LEFT JOIN nationalites_v2 nv2 ON c.id_nationalite = nv2.id_nationalite
-            LEFT JOIN loans l ON w.id = l.id_lender and l.status = " . Loans::STATUS_ACCEPTED . "
+            LEFT JOIN loans l ON w.id = l.id_wallet and l.status = " . Loans::STATUS_ACCEPTED . "
             LEFT JOIN clients_status cs ON csh.id_status = cs.id
             LEFT JOIN prospects p ON p.email = c.email
             WHERE csh.id_status IN (" . implode(',', ClientsStatus::GRANTED_LOGIN) . ")

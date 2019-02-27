@@ -68,7 +68,7 @@ class LenderDashboardController extends Controller
 
         /** @var Projects $project */
         foreach ($ongoingProjects as $project) {
-            if (0 < $bid->counter('id_project = ' . $project->getIdProject() . ' AND id_lender_account = ' . $wallet->getId())) {
+            if (0 < $bid->counter('id_project = ' . $project->getIdProject() . ' AND id_wallet = ' . $wallet->getId())) {
                 $ongoingBidsByProject[] = [
                     'title'            => $project->getTitle(),
                     'slug'             => $project->getSlug(),
@@ -167,7 +167,7 @@ class LenderDashboardController extends Controller
                     'upcoming_interests'      => round($upcomingGrossInterests - $problematicProjects['interests'], 2),
                     'interests_in_difficulty' => round($problematicProjects['interests'], 2)
                 ],
-                'ongoingBids'       => $bid->counter('id_lender_account = ' . $wallet->getId() . ' AND status = ' . Bids::STATUS_PENDING),
+                'ongoingBids'       => $bid->counter('id_wallet = ' . $wallet->getId() . ' AND status = ' . Bids::STATUS_PENDING),
                 'ongoingProjects'   => $ongoingBidsByProject,
                 'publishedProjects' => $publishedProjects,
                 'timeAxis'          => [

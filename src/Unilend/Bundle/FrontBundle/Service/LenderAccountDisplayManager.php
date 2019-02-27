@@ -71,7 +71,7 @@ class LenderAccountDisplayManager
 
         /** @var \bids $bids */
         $bids       = $this->entityManagerSimulator->getRepository('bids');
-        $lenderBids = $bids->select('id_lender_account = ' . $wallet->getId() . ' AND id_project = ' . $projectId);
+        $lenderBids = $bids->select('id_wallet = ' . $wallet->getId() . ' AND id_project = ' . $projectId);
 
         return [
             'inprogress' => array_filter($lenderBids, function ($bid) {

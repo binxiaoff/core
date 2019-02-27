@@ -188,14 +188,14 @@ class projects extends projects_crud
 
         $sql = '
             SELECT
-                l.id_lender,
+                l.id_wallet,
                 c.nom,
                 c.prenom,
                 com.name,
                 l.amount,
                 l.added as date
             FROM loans l
-            LEFT JOIN wallet w ON l.id_lender = w.id
+            LEFT JOIN wallet w ON l.id_wallet = w.id
             LEFT JOIN clients c ON w.id_client = c.id_client
             LEFT JOIN companies com ON com.id_client_owner = c.id_client
             WHERE id_project = ' . $iProjectId;
@@ -634,7 +634,7 @@ class projects extends projects_crud
             INNER JOIN projects ON projects.id_company = companies.id_company
             INNER JOIN projects_status_history ON projects.id_project = projects_status_history.id_project AND projects_status_history.id_project_status = 4
             INNER JOIN loans l ON l.id_project = projects.id_project
-            WHERE l.id_lender = :id_lender AND l.status = ' . Loans::STATUS_ACCEPTED . '
+            WHERE l.id_wallet = :id_lender AND l.status = ' . Loans::STATUS_ACCEPTED . '
             GROUP BY companies.sector';
 
         /** @var Statement $query */
@@ -836,32 +836,32 @@ class projects extends projects_crud
             WHERE id_sub_type in (SELECT id FROM operation_sub_type WHERE label IN (:opSubTypeRepaymentRegularization))
                   AND id_project = p.id_project
           ) AS debt_collection_repayment,
-          (SELECT IFNULL(COUNT(DISTINCT l.id_lender), 0) FROM loans l
-            INNER JOIN wallet w ON w.id = l.id_lender
+          (SELECT IFNULL(COUNT(DISTINCT l.id_wallet), 0) FROM loans l
+            INNER JOIN wallet w ON w.id = l.id_wallet
             INNER JOIN clients c ON c.id_client = w.id_client
             INNER JOIN underlying_contract contract ON l.id_type_contract = contract.id_contract
           WHERE l.id_project = p.id_project AND c.type IN (:clientTypePerson) AND contract.label IN (:contractType)) AS contributor_person_number,
           (SELECT ROUND(SUM(IFNULL(l.amount, 0)) / 100, 2) FROM loans l
-            INNER JOIN wallet w ON w.id = l.id_lender
+            INNER JOIN wallet w ON w.id = l.id_wallet
             INNER JOIN clients c ON c.id_client = w.id_client
             INNER JOIN underlying_contract contract ON l.id_type_contract = contract.id_contract
           WHERE l.id_project = p.id_project AND c.type IN (:clientTypePerson) AND contract.label IN (:contractType)) AS contributor_person_amount,
-          (SELECT IFNULL(COUNT(DISTINCT l.id_lender), 0) FROM loans l
-            INNER JOIN wallet w ON w.id = l.id_lender
+          (SELECT IFNULL(COUNT(DISTINCT l.id_wallet), 0) FROM loans l
+            INNER JOIN wallet w ON w.id = l.id_wallet
             INNER JOIN clients c ON c.id_client = w.id_client
             INNER JOIN underlying_contract contract ON l.id_type_contract = contract.id_contract
           WHERE l.id_project = p.id_project AND c.type IN (:clientTypeLegalEntity) AND c.id_client NOT IN (15112) AND contract.label IN (:contractType)) AS contributor_legal_entity_number,
           (SELECT ROUND(SUM(IFNULL(l.amount, 0)) / 100, 2) FROM loans l
-            INNER JOIN wallet w ON w.id = l.id_lender
+            INNER JOIN wallet w ON w.id = l.id_wallet
             INNER JOIN clients c ON c.id_client = w.id_client
             INNER JOIN underlying_contract contract ON l.id_type_contract = contract.id_contract
           WHERE l.id_project = p.id_project AND c.type IN (:clientTypeLegalEntity) AND c.id_client NOT IN (15112) AND contract.label IN (:contractType)) AS contributor_legal_entity_amount,
-          (SELECT IFNULL(COUNT(DISTINCT l.id_lender), 0) FROM loans l
+          (SELECT IFNULL(COUNT(DISTINCT l.id_wallet), 0) FROM loans l
             INNER JOIN underlying_contract contract ON l.id_type_contract = contract.id_contract
-          WHERE l.id_project = p.id_project AND l.id_lender = (SELECT w.id FROM wallet w WHERE w.id_client = 15112) AND contract.label IN (:contractType)) AS contributor_credit_institution_number,
+          WHERE l.id_project = p.id_project AND l.id_wallet = (SELECT w.id FROM wallet w WHERE w.id_client = 15112) AND contract.label IN (:contractType)) AS contributor_credit_institution_number,
           (SELECT ROUND(SUM(IFNULL(l.amount, 0)) / 100, 2) FROM loans l
             INNER JOIN underlying_contract contract ON l.id_type_contract = contract.id_contract
-          WHERE l.id_project = p.id_project AND l.id_lender = (SELECT w.id FROM wallet w WHERE w.id_client = 15112) AND contract.label IN (:contractType)) AS contributor_credit_institution_amount
+          WHERE l.id_project = p.id_project AND l.id_wallet = (SELECT w.id FROM wallet w WHERE w.id_client = 15112) AND contract.label IN (:contractType)) AS contributor_credit_institution_amount
         FROM projects p
           INNER JOIN companies com ON  com.id_company = p.id_company
           INNER JOIN loans l ON l.id_project = p.id_project AND l.status = :loanAccepted

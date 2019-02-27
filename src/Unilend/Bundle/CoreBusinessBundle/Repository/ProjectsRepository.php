@@ -34,7 +34,7 @@ class ProjectsRepository extends EntityRepository
             SELECT COUNT(DISTINCT p.id_company)
             FROM projects p
             INNER JOIN loans l ON p.id_project = l.id_project
-            WHERE p.status >= :status AND l.id_lender = :lenderId';
+            WHERE p.status >= :status AND l.id_wallet = :lenderId';
 
         $statement = $this->getEntityManager()->getConnection()->executeCacheQuery(
             $query,

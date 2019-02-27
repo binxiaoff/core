@@ -163,7 +163,7 @@ class statsController extends bootstrap
         $sql = 'SELECT 
                   id_project, 
                   id_bid, 
-                  (SELECT id_client FROM wallet w WHERE w.id = b.id_lender_account) AS id_client, 
+                  (SELECT id_client FROM wallet w WHERE w.id = b.id_wallet) AS id_client, 
                   added, 
                   (CASE status WHEN ' . Bids::STATUS_PENDING . ' THEN "En cours" WHEN ' . Bids::STATUS_ACCEPTED . ' THEN "OK" WHEN ' . Bids::STATUS_REJECTED . ' THEN "KO" END) AS Statut, 
                   ROUND((amount / 100), 0), REPLACE(rate, ".", ",") AS rate 

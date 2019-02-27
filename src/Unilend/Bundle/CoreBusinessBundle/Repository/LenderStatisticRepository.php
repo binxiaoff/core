@@ -29,7 +29,7 @@ class LenderStatisticRepository extends EntityRepository
               INNER JOIN operation_type ot ON o.id_type = ot.id
               INNER JOIN loans l ON o.id_loan = l.id_loan
             WHERE ot.label = "' . OperationType::LENDER_LOAN . '"
-              AND l.id_lender = :idWallet
+              AND l.id_wallet = :idWallet
 
         UNION ALL
 
@@ -40,7 +40,7 @@ class LenderStatisticRepository extends EntityRepository
               echeanciers e
               INNER JOIN loans l ON e.id_loan = l.id_loan
             WHERE
-              l.id_lender = :idWallet
+              l.id_wallet = :idWallet
               AND e.status = ' . Echeanciers::STATUS_REPAID . '
 
         UNION ALL
@@ -52,7 +52,7 @@ class LenderStatisticRepository extends EntityRepository
               INNER JOIN projects p ON e.id_project = p.id_project
               INNER JOIN loans l ON e.id_loan = l.id_loan
             WHERE
-                l.id_lender = :idWallet
+                l.id_wallet = :idWallet
                 AND e.status = ' . Echeanciers::STATUS_PENDING . '
                 AND p.status = ' . ProjectsStatus::REMBOURSEMENT . '
 
@@ -67,7 +67,7 @@ class LenderStatisticRepository extends EntityRepository
               INNER JOIN companies com ON com.id_company = p.id_company
               INNER JOIN company_status cs ON cs.id = com.id_status
             WHERE
-              l.id_lender = :idWallet
+              l.id_wallet = :idWallet
               AND e.status = ' . Echeanciers::STATUS_PENDING . '
               AND p.status = ' . ProjectsStatus::PROBLEME . '
               AND (p.close_out_netting_date IS NULL OR p.close_out_netting_date = \'0000-00-00\')
@@ -97,7 +97,7 @@ class LenderStatisticRepository extends EntityRepository
               INNER JOIN companies com ON p.id_company = com.id_company
               INNER JOIN company_status cs ON cs.id = com.id_status
             WHERE
-                l.id_lender = :idWallet
+                l.id_wallet = :idWallet
                 AND e.status = ' . Echeanciers::STATUS_PENDING . '
                 AND p.status = ' . ProjectsStatus::PROBLEME . '
                 AND (p.close_out_netting_date IS NOT NULL AND p.close_out_netting_date != \'0000-00-00\')
@@ -114,7 +114,7 @@ class LenderStatisticRepository extends EntityRepository
               INNER JOIN companies com ON com.id_company = p.id_company
               INNER JOIN company_status cs ON cs.id = com.id_status
             WHERE
-                l.id_lender = :idWallet
+                l.id_wallet = :idWallet
                 AND e.status = ' . Echeanciers::STATUS_PENDING . '
                 AND p.status >= ' . ProjectsStatus::REMBOURSEMENT . '
                 AND cs.label IN (:companyStatusInProceeding)
@@ -154,7 +154,7 @@ class LenderStatisticRepository extends EntityRepository
                     LEFT JOIN loan_transfer lt ON l.id_transfer = lt.id_loan_transfer
                     LEFT JOIN transfer ON lt.id_transfer = transfer.id_transfer
                     INNER JOIN wallet ON transfer.id_client_origin = wallet.id_client
-                  WHERE l.id_lender = :idWallet
+                  WHERE l.id_wallet = :idWallet
                 )
                 OR o_collection_capital.id_wallet_creditor = :idWallet
               )

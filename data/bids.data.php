@@ -51,7 +51,7 @@ class bids extends bids_crud
             $status = ' AND status IN(' . $status . ')';
         }
 
-        $sql = 'SELECT AVG(' . $champ . ') as avg FROM bids WHERE id_lender_account = ' . $id_lender . $status;
+        $sql = 'SELECT AVG(' . $champ . ') as avg FROM bids WHERE id_wallet = ' . $id_lender . $status;
 
         $result = $this->bdd->query($sql);
         $avg    = $this->bdd->result($result);
@@ -65,7 +65,7 @@ class bids extends bids_crud
 
     public function sumBidsEncours($id_lender)
     {
-        $sql = 'SELECT SUM(amount) FROM `bids` WHERE id_lender_account = ' . $id_lender . ' AND status = ' . BidsEntity::STATUS_PENDING;
+        $sql = 'SELECT SUM(amount) FROM `bids` WHERE id_wallet = ' . $id_lender . ' AND status = ' . BidsEntity::STATUS_PENDING;
 
         $result  = $this->bdd->query($sql);
         $montant = (int)($this->bdd->result($result, 0, 0));
@@ -89,7 +89,7 @@ class bids extends bids_crud
     public function getNbPreteurs($id_project)
     {
         $sql = '
-            SELECT COUNT(DISTINCT id_lender_account) 
+            SELECT COUNT(DISTINCT id_wallet) 
             FROM bids 
             WHERE id_project = ' . $id_project . ' AND status = ' . BidsEntity::STATUS_PENDING;
 
@@ -106,7 +106,7 @@ class bids extends bids_crud
             $sStatus = $this->bdd->escape_string($sStatus);
         }
         $sQuery = '
-            SELECT id_lender_account,
+            SELECT id_wallet,
                 COUNT(*) AS bid_nb,
                 SUM(amount) AS amount_sum
             FROM  bids
@@ -117,7 +117,7 @@ class bids extends bids_crud
         }
 
         $sQuery .= '
-            GROUP BY id_lender_account';
+            GROUP BY id_wallet';
 
         $rQuery   = $this->bdd->query($sQuery);
         $aLenders = array();
@@ -186,8 +186,8 @@ class bids extends bids_crud
         // This only works with MySQL as long as non-agregated columns could not be use on other DB systems
         $query = $this->bdd->query('
             SELECT bids.*, MIN(status) AS min_status
-            FROM (SELECT * FROM bids WHERE id_project = ' . $projectId . ' ORDER BY id_lender_account ASC, added ASC, id_bid ASC) bids
-            GROUP BY id_lender_account
+            FROM (SELECT * FROM bids WHERE id_project = ' . $projectId . ' ORDER BY id_wallet ASC, added ASC, id_bid ASC) bids
+            GROUP BY id_wallet
             LIMIT ' . $limit . ' OFFSET ' . $offset
         );
 
@@ -208,7 +208,7 @@ class bids extends bids_crud
     public function countLendersOnProject(int $projectId): int
     {
         $query = '
-            SELECT COUNT(DISTINCT id_lender_account) 
+            SELECT COUNT(DISTINCT id_wallet) 
             FROM bids 
             WHERE status IN (:status) AND id_project = :projectId';
 
@@ -233,7 +233,7 @@ class bids extends bids_crud
         $sql = '
             SELECT
                 id_bid,
-                id_lender_account,
+                id_wallet,
                 id_project,
                 id_autobid,
                 amount,
@@ -253,9 +253,9 @@ class bids extends bids_crud
         }
 
         if (false === empty($lenderId)) {
-            $sql .= ' AND id_lender_account = :id_lender';
-            $bind['id_lender'] = $lenderId;
-            $type['id_lender'] = \PDO::PARAM_INT;
+            $sql .= ' AND id_wallet = :id_wallet';
+            $bind['id_wallet'] = $lenderId;
+            $type['id_wallet'] = \PDO::PARAM_INT;
         }
 
         $sql .= ' ORDER BY id_bid DESC';
@@ -289,8 +289,8 @@ class bids extends bids_crud
                 ROUND(b.amount / 100) AS amount, 
                 b.rate AS rate
             FROM bids b
-              INNER JOIN wallet w ON w.id = b.id_lender_account
-            WHERE b.id_lender_account = :idLenderAccount';
+              INNER JOIN wallet w ON w.id = b.id_wallet
+            WHERE b.id_wallet = :idWallet';
 
         if ($dateTimeStart && $dateTimeEnd) {
             $dateTimeStart->setTime(0, 0, 0);
@@ -298,8 +298,8 @@ class bids extends bids_crud
             $sql .= ' AND (b.added BETWEEN :dateStart AND :dateEnd)';
         }
 
-        $paramValues = ['idLenderAccount' => $wallet->getId(), 'dateStart' => $dateTimeStart, 'dateEnd' => $dateTimeEnd];
-        $paramTypes  = ['idLenderAccount' => \PDO::PARAM_INT, 'dateStart' => 'datetime', 'dateEnd' => 'datetime'];
+        $paramValues = ['idWallet' => $wallet->getId(), 'dateStart' => $dateTimeStart, 'dateEnd' => $dateTimeEnd];
+        $paramTypes  = ['idWallet' => \PDO::PARAM_INT, 'dateStart' => 'datetime', 'dateEnd' => 'datetime'];
 
         $statement = $this->bdd->executeQuery($sql, $paramValues, $paramTypes);
         $result    = $statement->fetchAll(PDO::FETCH_ASSOC);

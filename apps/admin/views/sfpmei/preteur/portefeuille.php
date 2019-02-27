@@ -149,7 +149,7 @@
                         <?php endif; ?>
                     </tr>
                     <?php if ($loan['nb_loan'] > 1) : ?>
-                        <?php foreach ($this->loans->select('id_lender = ' . $this->wallet->getId() . ' AND id_project = ' . $loan['id_project']) as $subLoan) : ?>
+                        <?php foreach ($this->loans->select('id_wallet = ' . $this->wallet->getId() . ' AND id_project = ' . $loan['id_project']) as $subLoan) : ?>
                             <tr class="sub_loan">
                                 <td class="text-nowrap text-right"><?= $this->ficelle->formatNumber($subLoan['amount'] / 100, 0) ?> €</td>
                                 <td class="text-nowrap"><?= $this->ficelle->formatNumber($subLoan['rate'], 1) ?> %</td>

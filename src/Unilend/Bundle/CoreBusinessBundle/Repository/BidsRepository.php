@@ -47,7 +47,7 @@ class BidsRepository extends EntityRepository
     {
         $qb = $this->createQueryBuilder('b')
             ->select('COUNT(b.idBid) AS bidNumber')
-            ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'w.id = b.idLenderAccount')
+            ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'w.id = b.wallet')
             ->where('b.added BETWEEN :fromDate AND :toDate')
             ->andWhere('w.idClient = :idClient')
             ->setParameters(['fromDate' => $from, 'toDate' => $to, 'idClient' => $clientId]);
@@ -67,7 +67,7 @@ class BidsRepository extends EntityRepository
     {
         $queryBuilder = $this->createQueryBuilder('b');
         $queryBuilder->select('COUNT(b.idBid)')
-            ->where('b.idLenderAccount = :walletId')
+            ->where('b.wallet = :walletId')
             ->andWhere('b.idAutobid IS NULL')
             ->andWhere('b.added > :date')
             ->setParameter('walletId', $wallet)
@@ -89,8 +89,8 @@ class BidsRepository extends EntityRepository
     {
         $qb = $this->createQueryBuilder('b');
         $qb->select('SUM(b.amount) / 100')
-            ->where('b.idProject = :project')
-            ->andWhere('b.idLenderAccount = :wallet')
+            ->where('b.project = :project')
+            ->andWhere('b.wallet = :wallet')
             ->andWhere('b.status IN (:status)')
             ->setParameter('wallet', $wallet)
             ->setParameter('project', $project)
@@ -111,7 +111,7 @@ class BidsRepository extends EntityRepository
     {
         $qb = $this->createQueryBuilder('b');
         $qb->select('ROUND(SUM(b.amount) / 100, 2)')
-            ->where('b.idLenderAccount = :wallet')
+            ->where('b.wallet = :wallet')
             ->andWhere('b.status = :status')
             ->setParameter('wallet', $wallet)
             ->setParameter('status', $status);
@@ -129,8 +129,8 @@ class BidsRepository extends EntityRepository
     public function findFirstAutoBidByLenderAndProject($lenderWallet, $project)
     {
         $queryBuilder = $this->createQueryBuilder('b');
-        $queryBuilder->where('b.idLenderAccount = :wallet')
-            ->andWhere('b.idProject = :project')
+        $queryBuilder->where('b.wallet = :wallet')
+            ->andWhere('b.project = :project')
             ->andWhere('b.idAutobid IS NOT NULL')
             ->setParameter('wallet', $lenderWallet)
             ->setParameter('project', $project)
@@ -154,7 +154,7 @@ class BidsRepository extends EntityRepository
     {
         $queryBuilder = $this->createQueryBuilder('b');
         $queryBuilder
-            ->where('b.idProject = :project')
+            ->where('b.project = :project')
             ->andWhere('b.status = :status')
             ->andWhere('b.idAutobid IS NOT NULL')
             ->setMaxResults($limit)
@@ -176,7 +176,7 @@ class BidsRepository extends EntityRepository
         $queryBuilder = $this->createQueryBuilder('b');
         $queryBuilder
             ->select('MAX(b.rate)')
-            ->where('b.idProject = :project')
+            ->where('b.project = :project')
             ->andWhere('b.status = :status')
             ->setParameter('project', $project)
             ->setParameter('status', Bids::STATUS_PENDING);
@@ -198,7 +198,7 @@ class BidsRepository extends EntityRepository
         $queryBuilder = $this->createQueryBuilder('b');
         $queryBuilder
             ->select('IFNULL(SUM(b.amount) / 100, 0)')
-            ->where('b.idProject = :project')
+            ->where('b.project = :project')
             ->setParameter('project', $project);
 
         if (false === empty($rate)) {

@@ -866,7 +866,7 @@ class transfertsController extends bootstrap
             /** @var \bids $bids */
             $bids           = $this->loadData('bids');
             $originalWallet = $walletRepository->getWalletByType($originalClient->id_client, WalletType::LENDER);
-            if ($bids->exist($originalWallet->getId(), 'status = ' . Bids::STATUS_PENDING . ' AND id_lender_account ')) {
+            if ($bids->exist($originalWallet->getId(), 'status = ' . Bids::STATUS_PENDING . ' AND id_wallet ')) {
                 $this->addErrorMessageAndRedirect('Le défunt a des bids en cours.');
             }
 
