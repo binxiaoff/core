@@ -45,7 +45,7 @@ class EmailLenderAutomaticRepaymentCommand extends ContainerAwareCommand
                 $tax            = $operationRepository->getTaxAmountByLoanAndRepaymentTaskLog($repaymentDetail->getIdLoan(), $repaymentDetail->getIdTaskLog());
                 $netRepayment   = round(bcsub($grossRepayment, $tax, 4), 2);
 
-                $wallet = $repaymentDetail->getIdLoan()->getIdLender();
+                $wallet = $repaymentDetail->getIdLoan()->getWallet();
 
                 if (null !== $wallet && $wallet->getIdClient()->isGrantedLogin()) {
                     $notifications->type       = Notifications::TYPE_REPAYMENT;

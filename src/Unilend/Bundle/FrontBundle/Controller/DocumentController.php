@@ -41,15 +41,15 @@ class DocumentController extends Controller
             return $this->getLoanErrorResponse(self::ERROR_CANNOT_FIND_LOAN, $idLoan);
         }
 
-        if (null === $loan->getIdLender() || null === $loan->getIdLender()->getIdClient()) {
+        if (null === $loan->getWallet() || null === $loan->getWallet()->getIdClient()) {
             return $this->getLoanErrorResponse(self::ERROR_CANNOT_FIND_CLIENT, $loan);
         }
 
-        if ($clientHash !== $loan->getIdLender()->getIdClient()->getHash()) {
+        if ($clientHash !== $loan->getWallet()->getIdClient()->getHash()) {
             return $this->getLoanErrorResponse(self::ERROR_WRONG_CLIENT_HASH, $loan);
         }
 
-        if (null === $client || $client->getIdClient() !== $loan->getIdLender()->getIdClient()->getIdClient()) {
+        if (null === $client || $client->getIdClient() !== $loan->getWallet()->getIdClient()->getIdClient()) {
             return $this->getLoanErrorResponse(self::ERROR_ACCESS_DENIED, $loan);
         }
 
@@ -96,21 +96,21 @@ class DocumentController extends Controller
                 $message = 'Loan contract ' . $loan->getIdLoan() . ' could not be displayed: URL does not match client hash';
                 $context = [
                     'id_loan'   => $loan->getIdLoan(),
-                    'id_client' => $loan->getIdLender()->getIdClient()->getIdClient()
+                    'id_client' => $loan->getWallet()->getIdClient()->getIdClient()
                 ];
                 break;
             case self::ERROR_ACCESS_DENIED:
                 $message = 'Loan contract ' . $loan->getIdLoan() . ' could not be displayed: access denied';
                 $context = [
                     'id_loan'   => $loan->getIdLoan(),
-                    'id_client' => $loan->getIdLender()->getIdClient()->getIdClient()
+                    'id_client' => $loan->getWallet()->getIdClient()->getIdClient()
                 ];
                 break;
             case self::ERROR_EXCEPTION_OCCURRED:
                 $message = 'Loan contract could not be displayed: exception occurend - Message: ' . $exception->getMessage();
                 $context = [
                     'id_loan'   => $loan->getIdLoan(),
-                    'id_client' => $loan->getIdLender()->getIdClient()->getIdClient(),
+                    'id_client' => $loan->getWallet()->getIdClient()->getIdClient(),
                     'file'      => $exception->getFile(),
                     'line'      => $exception->getLine()
                 ];

@@ -296,7 +296,7 @@ class AcceptedBidAndLoanNotificationSender
         /** @var Loans $loan */
         foreach ($lenderLoans as $loan) {
             if (null !== $loan->getProject() && null !== $loan->getIdTypeContract()) {
-                $firstRepayment = $repaymentRepository->findOneBy(['ordre' => 1, 'idProject' => $loan->getProject(), 'idLender' => $loan->getIdLender()]);
+                $firstRepayment = $repaymentRepository->findOneBy(['ordre' => 1, 'idProject' => $loan->getProject(), 'idLender' => $loan->getWallet()]);
                 $amount         = round(bcdiv(bcadd($firstRepayment->getCapital(), $firstRepayment->getInterets(), 2), 100, 3), 2);
                 $loanDetails    .= '<tr>
                                     <td class="td text-center">' . $this->currencyFormatter->formatCurrency($loan->getAmount() / 100, 'EUR') . '</td>
@@ -319,7 +319,7 @@ class AcceptedBidAndLoanNotificationSender
         foreach ($lenderLoans as $loan) {
             try {
                 $clientMailNotifications   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ClientsGestionMailsNotif');
-                $immediateLoanNotification = $clientMailNotifications->findOneBy(['idLoan' => $loan->getIdLoan(), 'idClient' => $loan->getIdLender()->getIdClient()->getIdClient()]);
+                $immediateLoanNotification = $clientMailNotifications->findOneBy(['idLoan' => $loan->getIdLoan(), 'idClient' => $loan->getWallet()->getIdClient()->getIdClient()]);
 
                 if (null !== $immediateLoanNotification) {
                     $immediateLoanNotification->setImmediatement(1);

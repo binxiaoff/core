@@ -67,7 +67,7 @@ class LoanManager
             }
 
             if (bccomp(round(bcdiv($loanAmount, 100, 4), 2), $IfpLoanAmountMax, 2) > 0) {
-                throw new \InvalidArgumentException('Sum of bids for client ' . $acceptedBids[0]->getIdBid()->getIdLenderAccount()->getIdClient()->getIdClient() . ' exceeds maximum IFP amount.');
+                throw new \InvalidArgumentException('Sum of bids for client ' . $acceptedBids[0]->getIdBid()->getWallet()->getIdClient()->getIdClient() . ' exceeds maximum IFP amount.');
             }
 
             //todo: check also if this is the only one loan to build for IFP (We can only have one IFP loan per project)
@@ -75,13 +75,13 @@ class LoanManager
 
         $currentAcceptedTermsOfSale = $this->entityManager
             ->getRepository('UnilendCoreBusinessBundle:AcceptationsLegalDocs')
-            ->findOneBy(['idClient' => $acceptedBids[0]->getIdBid()->getIdLenderAccount()->getIdClient()], ['added' => 'DESC']);
+            ->findOneBy(['idClient' => $acceptedBids[0]->getIdBid()->getWallet()->getIdClient()], ['added' => 'DESC']);
 
         $rate = round(bcdiv($interests, $loanAmount, 4), 1);
 
         $loan = new Loans();
         $loan
-            ->setIdLender($acceptedBids[0]->getIdBid()->getIdLenderAccount())
+            ->setWallet($acceptedBids[0]->getIdBid()->getWallet())
             ->setProject($acceptedBids[0]->getIdBid()->getProject())
             ->setAmount($loanAmount)
             ->setRate($rate)

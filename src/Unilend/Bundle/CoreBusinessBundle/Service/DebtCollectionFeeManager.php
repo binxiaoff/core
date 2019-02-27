@@ -179,7 +179,7 @@ class DebtCollectionFeeManager
         if ($isDebtCollectionFeeDueToBorrower) {
             $debtCollectionFeeDetail->setIdWalletDebtor($borrowerWallet);
         } else {
-            $debtCollectionFeeDetail->setIdWalletDebtor($loan->getIdLender());
+            $debtCollectionFeeDetail->setIdWalletDebtor($loan->getWallet());
         }
 
         $debtCollectionFeeDetail->setIdWalletCreditor($debtCollectorWallet)

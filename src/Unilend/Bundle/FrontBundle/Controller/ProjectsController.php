@@ -967,7 +967,7 @@ class ProjectsController extends Controller
         $bid = new Bids();
         $bid
             ->setProject($entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($project->id_project))
-            ->setIdLenderAccount($wallet)
+            ->setWallet($wallet)
             ->setAmount($amount * 100)
             ->setRate($rate);
 

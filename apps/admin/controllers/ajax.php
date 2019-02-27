@@ -565,7 +565,7 @@ class ajaxController extends bootstrap
             $bid = $entityManager->getRepository('UnilendCoreBusinessBundle:Bids')->find($_POST['id_bid']);
             $bidManager->reject($bid, false);
 
-            $this->lBids = $bids->select('id_lender_account = ' . $bid->getIdLenderAccount()->getId() . ' AND status = ' . Bids::STATUS_PENDING, 'added DESC');
+            $this->lBids = $bids->select('id_lender_account = ' . $bid->getWallet()->getId() . ' AND status = ' . Bids::STATUS_PENDING, 'added DESC');
         }
     }
 
