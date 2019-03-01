@@ -431,6 +431,16 @@ class Projects
     private $debtCollectionMissions;
 
     /**
+     * @ORM\OneToMany(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\ProjectCompanyWhiteList", mappedBy="project", cascade={"persist"}, orphanRemoval=true)
+     */
+    private $companyWhiteList;
+
+    /**
+     * @ORM\OneToMany(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\ProjectCompanyBlackList", mappedBy="project", cascade={"persist"}, orphanRemoval=true)
+     */
+    private $companyBlackList;
+
+    /**
      * Projects constructor.
      */
     public function __construct()
@@ -441,6 +451,8 @@ class Projects
         $this->wireTransferOuts       = new ArrayCollection();
         $this->invoices               = new ArrayCollection();
         $this->debtCollectionMissions = new ArrayCollection();
+        $this->companyWhiteList       = new ArrayCollection();
+        $this->companyBlackList       = new ArrayCollection();
     }
 
     /**
@@ -1647,5 +1659,69 @@ class Projects
                 $this->hash = md5(uniqid());
             }
         }
+    }
+
+    /**
+     * @param Companies $companies
+     *
+     * @return Projects
+     */
+    public function addCompanyToWhiteList(Companies $companies): Projects
+    {
+        $projectCompanyWhiteList = new ProjectCompanyWhiteList();
+        $projectCompanyWhiteList->setCompany($companies)
+            ->setProject($this);
+
+        if (!$this->companyWhiteList->contains($projectCompanyWhiteList)) {
+            $this->companyWhiteList->add($projectCompanyWhiteList);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @param ProjectCompanyWhiteList $projectCompanyWhiteList
+     *
+     * @return Projects
+     */
+    public function removeProjectCompanyWhiteList(ProjectCompanyWhiteList $projectCompanyWhiteList): Projects
+    {
+        if ($this->companyWhiteList->contains($projectCompanyWhiteList)) {
+            $this->companyWhiteList->removeElement($projectCompanyWhiteList);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @param Companies $companies
+     *
+     * @return Projects
+     */
+    public function addCompanyToBlackList(Companies $companies): Projects
+    {
+        $projectCompanyBlackList = new ProjectCompanyBlackList();
+        $projectCompanyBlackList->setCompany($companies)
+            ->setProject($this);
+
+        if (!$this->companyBlackList->contains($projectCompanyBlackList)) {
+            $this->companyBlackList->add($projectCompanyBlackList);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @param ProjectCompanyBlackList $projectCompanyBlackList
+     *
+     * @return Projects
+     */
+    public function removeProjectCompanyBlackList(ProjectCompanyBlackList $projectCompanyBlackList): Projects
+    {
+        if ($this->companyBlackList->contains($projectCompanyBlackList)) {
+            $this->companyBlackList->removeElement($projectCompanyBlackList);
+        }
+
+        return $this;
     }
 }
