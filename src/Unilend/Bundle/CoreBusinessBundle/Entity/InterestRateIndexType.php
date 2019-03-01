@@ -6,12 +6,12 @@ use Doctrine\ORM\Mapping as ORM;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Traits\TimestampableAddedOnly;
 
 /**
- * @ORM\Table
  * @ORM\Entity
  */
 class InterestRateIndexType
 {
     use TimestampableAddedOnly;
+
     /**
      * @var int
      *
@@ -24,9 +24,9 @@ class InterestRateIndexType
     /**
      * @var string
      *
-     * @ORM\Column(type="string", length=30)
+     * @ORM\Column(length=30, unique=true)
      */
-    private $name;
+    private $label;
 
     /**
      * @return int
@@ -37,33 +37,21 @@ class InterestRateIndexType
     }
 
     /**
-     * @param int $id
-     *
-     * @return InterestRateIndexType
-     */
-    public function setId(int $id): InterestRateIndexType
-    {
-        $this->id = $id;
-
-        return $this;
-    }
-
-    /**
      * @return string
      */
-    public function getName(): string
+    public function getLabel(): string
     {
-        return $this->name;
+        return $this->label;
     }
 
     /**
-     * @param string $name
+     * @param string $label
      *
      * @return InterestRateIndexType
      */
-    public function setName(string $name): InterestRateIndexType
+    public function setLabel(string $label): InterestRateIndexType
     {
-        $this->name = $name;
+        $this->label = $label;
 
         return $this;
     }

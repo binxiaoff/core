@@ -9,8 +9,6 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
 
 trait Lendable
 {
-    use Timestampable;
-
     /**
      * @var int
      *
@@ -52,10 +50,10 @@ trait Lendable
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\InterestRateIndexType")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="rate_index_type", referencedColumnName="id")
+     *   @ORM\JoinColumn(name="id_interest_rate_index_type", referencedColumnName="id")
      * })
      */
-    protected $rateIndexType;
+    protected $interestRateIndexType;
 
     /**
      * The margin to be added on the indexed rate.
@@ -65,33 +63,6 @@ trait Lendable
      * @ORM\Column(type="decimal", precision=4, scale=2)
      */
     protected $rate;
-
-    /**
-     * The recurring management fee for each repayment schedule (Frais de gestion running) in percentage of the amount in the context
-     *
-     * @var float
-     *
-     * @ORM\Column(type="decimal", precision=4, scale=2)
-     */
-    protected $preciput;
-
-    /**
-     * The one-shoot administration fee (Frais de dossier) in percentage of the amount in the context
-     *
-     * @var float
-     *
-     * @ORM\Column(type="decimal", precision=4, scale=2)
-     */
-    protected $administrationFee;
-
-    /**
-     * The one-shoot setup fee (Commission de mise en place) in percentage of the project amount
-     *
-     * @var float
-     *
-     * @ORM\Column(type="decimal", precision=4, scale=2)
-     */
-    protected $setUpFee;
 
     /**
      * @return int
@@ -176,19 +147,19 @@ trait Lendable
     /**
      * @return InterestRateIndexType|null
      */
-    public function getRateIndexType(): ?InterestRateIndexType
+    public function getInterestRateIndexType(): ?InterestRateIndexType
     {
-        return $this->rateIndexType;
+        return $this->interestRateIndexType;
     }
 
     /**
-     * @param InterestRateIndexType|null $rateIndexType
+     * @param InterestRateIndexType|null $interestRateIndexType
      *
      * @return self
      */
-    public function setRateIndexType(?InterestRateIndexType $rateIndexType): self
+    public function setInterestRateIndexType(?InterestRateIndexType $interestRateIndexType): self
     {
-        $this->rateIndexType = $rateIndexType;
+        $this->interestRateIndexType = $interestRateIndexType;
 
         return $this;
     }
@@ -209,66 +180,6 @@ trait Lendable
     public function setRate(float $rate): self
     {
         $this->rate = $rate;
-
-        return $this;
-    }
-
-    /**
-     * @return float
-     */
-    public function getPreciput(): float
-    {
-        return $this->preciput;
-    }
-
-    /**
-     * @param float $preciput
-     *
-     * @return self
-     */
-    public function setPreciput(float $preciput): self
-    {
-        $this->preciput = $preciput;
-
-        return $this;
-    }
-
-    /**
-     * @return float
-     */
-    public function getAdministrationFee(): float
-    {
-        return $this->administrationFee;
-    }
-
-    /**
-     * @param float $administrationFee
-     *
-     * @return self
-     */
-    public function setAdministrationFee(float $administrationFee): self
-    {
-        $this->administrationFee = $administrationFee;
-
-        return $this;
-    }
-
-    /**
-     * @return float
-     */
-    public function getSetUpFee(): float
-    {
-        return $this->setUpFee;
-    }
-
-    /**
-     * @param float $setUpFee
-     *
-     * @return self
-     */
-    public function setSetUpFee(float $setUpFee): self
-    {
-        $this->setUpFee = $setUpFee;
 
         return $this;
     }

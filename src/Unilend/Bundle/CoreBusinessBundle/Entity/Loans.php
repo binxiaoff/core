@@ -2,9 +2,10 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityNotFoundException;
 use Doctrine\ORM\Mapping as ORM;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Traits\Lendable;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Traits\{Lendable, Timestampable};
 
 /**
  * Loans
@@ -19,6 +20,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Traits\Lendable;
 class Loans
 {
     use Lendable;
+    use Timestampable;
 
     const STATUS_ACCEPTED = 0;
     const STATUS_REJECTED = 1;
@@ -69,6 +71,17 @@ class Loans
      */
     private $idAcceptationLegalDoc;
 
+    /**
+     * @var LoanFee[]|ArrayCollection
+     *
+     * @ORM\OneToMany(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\LoanFee", mappedBy="loan", cascade={"persist"}, orphanRemoval=true)
+     */
+    private $loanFees;
+
+    public function __construct()
+    {
+        $this->loanFees = new ArrayCollection();
+    }
 
     /**
      * @param LoanTransfer|null $idTransfer
@@ -165,5 +178,34 @@ class Loans
     public function getIdAcceptationLegalDoc(): ?AcceptationsLegalDocs
     {
         return $this->idAcceptationLegalDoc;
+    }
+
+    /**
+     * @param LoanFee $loanFee
+     *
+     * @return Loans
+     */
+    public function addLoanFee(LoanFee $loanFee): Loans
+    {
+        if (!$this->loanFees->contains($loanFee)) {
+            $this->loanFees->add($loanFee);
+            $loanFee->setLoan($this);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @param LoanFee $loanFee
+     *
+     * @return Loans
+     */
+    public function removeLoanFee(LoanFee $loanFee): Loans
+    {
+        if ($this->loanFees->contains($loanFee)) {
+            $this->loanFees->removeElement($loanFee);
+        }
+
+        return $this;
     }
 }

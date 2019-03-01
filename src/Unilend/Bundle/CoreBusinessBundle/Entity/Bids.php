@@ -2,8 +2,9 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Traits\Lendable;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Traits\{Lendable, Timestampable};
 
 /**
  * Bids
@@ -15,6 +16,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Traits\Lendable;
 class Bids
 {
     use Lendable;
+    use Timestampable;
 
     const STATUS_PENDING                      = 0;
     const STATUS_ACCEPTED                     = 1;
@@ -46,6 +48,18 @@ class Bids
      * @ORM\GeneratedValue(strategy="IDENTITY")
      */
     private $idBid;
+
+    /**
+     * @var BidFee[]|ArrayCollection
+     *
+     * @ORM\OneToMany(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\BidFee", mappedBy="bid", cascade={"persist"}, orphanRemoval=true)
+     */
+    private $bidFees;
+
+    public function __construct()
+    {
+        $this->bidFees = new ArrayCollection();
+    }
 
     /**
      * Set Autobid
@@ -103,5 +117,34 @@ class Bids
     public function getIdBid(): int
     {
         return $this->idBid;
+    }
+
+    /**
+     * @param BidFee $bidFee
+     *
+     * @return Bids
+     */
+    public function addBidFee(BidFee $bidFee): Bids
+    {
+        if (!$this->bidFees->contains($bidFee)) {
+            $this->bidFees->add($bidFee);
+            $bidFee->setBid($this);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @param BidFee $bidFee
+     *
+     * @return Bids
+     */
+    public function removeBidFee(BidFee $bidFee): Bids
+    {
+        if ($this->bidFees->contains($bidFee)) {
+            $this->bidFees->removeElement($bidFee);
+        }
+
+        return $this;
     }
 }
