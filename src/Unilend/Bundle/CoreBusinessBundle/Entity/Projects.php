@@ -1620,7 +1620,7 @@ class Projects
      */
     public function setAddedValue(): void
     {
-        if (!$this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
+        if (! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
             $this->added = new \DateTime();
         }
     }
