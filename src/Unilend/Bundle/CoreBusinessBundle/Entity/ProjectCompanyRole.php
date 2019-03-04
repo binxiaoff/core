@@ -17,13 +17,13 @@ class ProjectCompanyRole
 
     // use FUNCTION_ to distinguish it from Symfony user's roles
     const FUNCTION_ARRANGER = 'FUNCTION_ARRANGER';
-    const FUNCTION_BROKER   = 'FUNCTION_BROKER';
+    const FUNCTION_AGENT    = 'FUNCTION_AGENT';
     const FUNCTION_LENDER   = 'FUNCTION_LENDER';
-    const FUNCTION_RUNNER   = 'FUNCTION_RUNNER';
+    const FUNCTION_RUN      = 'FUNCTION_RUN'; //Responsable Unique de Notation
 
     const ROLE_DEFAULT = self::FUNCTION_LENDER;
 
-    const ALL_ROLES = [self::FUNCTION_ARRANGER, self::FUNCTION_BROKER, self::FUNCTION_LENDER, self::FUNCTION_RUNNER];
+    const ALL_ROLES = [self::FUNCTION_ARRANGER, self::FUNCTION_AGENT, self::FUNCTION_LENDER, self::FUNCTION_RUN];
 
     /**
      * @var int

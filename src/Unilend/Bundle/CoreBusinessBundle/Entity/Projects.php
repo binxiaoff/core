@@ -1694,7 +1694,7 @@ class Projects
      */
     public function addBroker(Companies $company): Projects
     {
-        $this->addCompanyRole($company, ProjectCompanyRole::FUNCTION_BROKER);
+        $this->addCompanyRole($company, ProjectCompanyRole::FUNCTION_AGENT);
 
         return $this;
     }
@@ -1706,7 +1706,7 @@ class Projects
      */
     public function addRunner(Companies $company): Projects
     {
-        $this->addCompanyRole($company, ProjectCompanyRole::FUNCTION_RUNNER);
+        $this->addCompanyRole($company, ProjectCompanyRole::FUNCTION_RUN);
 
         return $this;
     }
