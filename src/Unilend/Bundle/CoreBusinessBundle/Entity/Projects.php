@@ -3,6 +3,7 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\Criteria;
 use Doctrine\ORM\Mapping as ORM;
 use Ramsey\Uuid\Exception\UnsatisfiedDependencyException;
@@ -431,28 +432,22 @@ class Projects
     private $debtCollectionMissions;
 
     /**
-     * @ORM\OneToMany(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\ProjectCompanyWhiteList", mappedBy="project", cascade={"persist"}, orphanRemoval=true)
+     * @ORM\OneToMany(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\ProjectCompanyAccessControl", mappedBy="project", cascade={"persist"}, orphanRemoval=true)
      */
-    private $companyWhiteList;
-
-    /**
-     * @ORM\OneToMany(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\ProjectCompanyBlackList", mappedBy="project", cascade={"persist"}, orphanRemoval=true)
-     */
-    private $companyBlackList;
+    private $projectCompanyAccessControlList;
 
     /**
      * Projects constructor.
      */
     public function __construct()
     {
-        $this->attachments            = new ArrayCollection();
-        $this->mandates               = new ArrayCollection();
-        $this->memos                  = new ArrayCollection();
-        $this->wireTransferOuts       = new ArrayCollection();
-        $this->invoices               = new ArrayCollection();
-        $this->debtCollectionMissions = new ArrayCollection();
-        $this->companyWhiteList       = new ArrayCollection();
-        $this->companyBlackList       = new ArrayCollection();
+        $this->attachments                     = new ArrayCollection();
+        $this->mandates                        = new ArrayCollection();
+        $this->memos                           = new ArrayCollection();
+        $this->wireTransferOuts                = new ArrayCollection();
+        $this->invoices                        = new ArrayCollection();
+        $this->debtCollectionMissions          = new ArrayCollection();
+        $this->projectCompanyAccessControlList = new ArrayCollection();
     }
 
     /**
@@ -1662,66 +1657,60 @@ class Projects
     }
 
     /**
+     * @param ProjectCompanyAccessControl $projectCompanyAccessControl
+     */
+    private function addToCompanyAccessControlList(ProjectCompanyAccessControl $projectCompanyAccessControl)
+    {
+        $this->projectCompanyAccessControlList->add($projectCompanyAccessControl);
+    }
+
+    /**
      * @param Companies $companies
      *
      * @return Projects
      */
     public function addCompanyToWhiteList(Companies $companies): Projects
     {
-        $projectCompanyWhiteList = new ProjectCompanyWhiteList();
-        $projectCompanyWhiteList->setCompany($companies)
-            ->setProject($this);
+        $projectCompanyAccessControl = new ProjectCompanyAccessControl();
+        $projectCompanyAccessControl
+            ->setCompany($companies)
+            ->setProject($this)
+            ->setType(ProjectCompanyAccessControl::TYPE_WHITE_LIST);
 
-        if (!$this->companyWhiteList->contains($projectCompanyWhiteList)) {
-            $this->companyWhiteList->add($projectCompanyWhiteList);
-        }
-
-        return $this;
-    }
-
-    /**
-     * @param ProjectCompanyWhiteList $projectCompanyWhiteList
-     *
-     * @return Projects
-     */
-    public function removeProjectCompanyWhiteList(ProjectCompanyWhiteList $projectCompanyWhiteList): Projects
-    {
-        if ($this->companyWhiteList->contains($projectCompanyWhiteList)) {
-            $this->companyWhiteList->removeElement($projectCompanyWhiteList);
-        }
+        /*
+         * Because of additional column (added), we cannot check here if the list contains already the company.
+         * Need to work with UniqueConstraintViolationException
+         */
+        $this->addToCompanyAccessControlList($projectCompanyAccessControl);
 
         return $this;
     }
 
     /**
-     * @param Companies $companies
+     * @param ProjectCompanyAccessControl $projectCompanyAccessControl
      *
      * @return Projects
      */
-    public function addCompanyToBlackList(Companies $companies): Projects
+    public function removeFromProjectCompanyAccessControlList(ProjectCompanyAccessControl $projectCompanyAccessControl): Projects
     {
-        $projectCompanyBlackList = new ProjectCompanyBlackList();
-        $projectCompanyBlackList->setCompany($companies)
-            ->setProject($this);
-
-        if (!$this->companyBlackList->contains($projectCompanyBlackList)) {
-            $this->companyBlackList->add($projectCompanyBlackList);
-        }
+        $this->projectCompanyAccessControlList->removeElement($projectCompanyAccessControl);
 
         return $this;
     }
 
     /**
-     * @param ProjectCompanyBlackList $projectCompanyBlackList
-     *
-     * @return Projects
+     * @return ProjectCompanyAccessControl[]|Collection
      */
-    public function removeProjectCompanyBlackList(ProjectCompanyBlackList $projectCompanyBlackList): Projects
+    public function getProjectCompanyAccessControl(): Collection
     {
-        if ($this->companyBlackList->contains($projectCompanyBlackList)) {
-            $this->companyBlackList->removeElement($projectCompanyBlackList);
-        }
+        return $this->projectCompanyAccessControlList;
+    }
 
-        return $this;
+    /**
+     * @return bool
+     */
+    public function hasAccessControl()
+    {
+        return false === $this->projectCompanyAccessControlList->isEmpty();
     }
 }
