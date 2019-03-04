@@ -4,17 +4,26 @@ declare(strict_types=1);
 namespace Unilend\Bundle\CoreBusinessBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Traits\Roleable;
 
 /**
  * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(columns={"id_project", "id_company"})})
  * @ORM\Entity
  * @ORM\HasLifecycleCallbacks
  */
-class ProjectCompanyAccessControl
+class ProjectCompanyRole
 {
-    const TYPE_WHITE_LIST = 1;
+    use Roleable;
 
-    const ALL_TYPES = [self::TYPE_WHITE_LIST];
+    // use FUNCTION_ to distinguish it from Symfony user's roles
+    const FUNCTION_ARRANGER = 'FUNCTION_ARRANGER';
+    const FUNCTION_BROKER   = 'FUNCTION_BROKER';
+    const FUNCTION_LENDER   = 'FUNCTION_LENDER';
+    const FUNCTION_RUNNER   = 'FUNCTION_RUNNER';
+
+    const ROLE_DEFAULT = self::FUNCTION_LENDER;
+
+    const ALL_ROLES = [self::FUNCTION_ARRANGER, self::FUNCTION_BROKER, self::FUNCTION_LENDER, self::FUNCTION_RUNNER];
 
     /**
      * @var int
@@ -28,7 +37,7 @@ class ProjectCompanyAccessControl
     /**
      * @var Projects
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Projects", inversedBy="projectCompanyAccessControlList")
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Projects", inversedBy="ProjectCompanyRoles")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="id_project", referencedColumnName="id_project", nullable=false)
      * })
@@ -46,18 +55,18 @@ class ProjectCompanyAccessControl
     private $company;
 
     /**
-     * @var boolean
-     *
-     * @ORM\Column(type="smallint")
-     */
-    private $type;
-
-    /**
      * @var \DateTime
      *
      * @ORM\Column(type="datetime")
      */
     private $added;
+
+    /**
+     * @var \DateTime
+     *
+     * @ORM\Column(type="datetime", nullable=true)
+     */
+    private $updated;
 
     /**
      * @return int
@@ -78,9 +87,9 @@ class ProjectCompanyAccessControl
     /**
      * @param Projects $project
      *
-     * @return ProjectCompanyAccessControl
+     * @return ProjectCompanyRole
      */
-    public function setProject(Projects $project): ProjectCompanyAccessControl
+    public function setProject(Projects $project): ProjectCompanyRole
     {
         $this->project = $project;
 
@@ -98,31 +107,11 @@ class ProjectCompanyAccessControl
     /**
      * @param Companies $company
      *
-     * @return ProjectCompanyAccessControl
+     * @return ProjectCompanyRole
      */
-    public function setCompany(Companies $company): ProjectCompanyAccessControl
+    public function setCompany(Companies $company): ProjectCompanyRole
     {
         $this->company = $company;
-
-        return $this;
-    }
-
-    /**
-     * @return bool
-     */
-    public function isType(): bool
-    {
-        return $this->type;
-    }
-
-    /**
-     * @param bool $type
-     *
-     * @return ProjectCompanyAccessControl
-     */
-    public function setType(bool $type): ProjectCompanyAccessControl
-    {
-        $this->type = $type;
 
         return $this;
     }
@@ -138,11 +127,31 @@ class ProjectCompanyAccessControl
     /**
      * @param \DateTime $added
      *
-     * @return ProjectCompanyAccessControl
+     * @return ProjectCompanyRole
      */
-    public function setAdded(\DateTime $added): ProjectCompanyAccessControl
+    public function setAdded(\DateTime $added): ProjectCompanyRole
     {
         $this->added = $added;
+
+        return $this;
+    }
+
+    /**
+     * @return \DateTime
+     */
+    public function getUpdated(): \DateTime
+    {
+        return $this->updated;
+    }
+
+    /**
+     * @param \DateTime $updated
+     *
+     * @return ProjectCompanyRole
+     */
+    public function setUpdated(\DateTime $updated): ProjectCompanyRole
+    {
+        $this->updated = $updated;
 
         return $this;
     }
@@ -152,8 +161,16 @@ class ProjectCompanyAccessControl
      */
     public function setAddedValue(): void
     {
-        if (! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
+        if (!$this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
             $this->added = new \DateTime();
         }
+    }
+
+    /**
+     * @ORM\PreUpdate
+     */
+    public function setUpdatedValue(): void
+    {
+        $this->updated = new \DateTime();
     }
 }

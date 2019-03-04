@@ -432,22 +432,22 @@ class Projects
     private $debtCollectionMissions;
 
     /**
-     * @ORM\OneToMany(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\ProjectCompanyAccessControl", mappedBy="project", cascade={"persist"}, orphanRemoval=true)
+     * @ORM\OneToMany(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\ProjectCompanyRole", mappedBy="project", cascade={"persist"}, orphanRemoval=true)
      */
-    private $projectCompanyAccessControlList;
+    private $projectCompanyRoles;
 
     /**
      * Projects constructor.
      */
     public function __construct()
     {
-        $this->attachments                     = new ArrayCollection();
-        $this->mandates                        = new ArrayCollection();
-        $this->memos                           = new ArrayCollection();
-        $this->wireTransferOuts                = new ArrayCollection();
-        $this->invoices                        = new ArrayCollection();
-        $this->debtCollectionMissions          = new ArrayCollection();
-        $this->projectCompanyAccessControlList = new ArrayCollection();
+        $this->attachments            = new ArrayCollection();
+        $this->mandates               = new ArrayCollection();
+        $this->memos                  = new ArrayCollection();
+        $this->wireTransferOuts       = new ArrayCollection();
+        $this->invoices               = new ArrayCollection();
+        $this->debtCollectionMissions = new ArrayCollection();
+        $this->projectCompanyRoles    = new ArrayCollection();
     }
 
     /**
@@ -1620,7 +1620,7 @@ class Projects
      */
     public function setAddedValue(): void
     {
-        if (! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
+        if (!$this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
             $this->added = new \DateTime();
         }
     }
@@ -1639,6 +1639,7 @@ class Projects
     private function generateHash()
     {
         $uuid4 = Uuid::uuid4();
+
         return $uuid4->toString();
     }
 
@@ -1657,60 +1658,90 @@ class Projects
     }
 
     /**
-     * @param ProjectCompanyAccessControl $projectCompanyAccessControl
+     * @param Companies $company
+     * @param string    $role
      */
-    private function addToCompanyAccessControlList(ProjectCompanyAccessControl $projectCompanyAccessControl)
+    private function addCompanyRole(Companies $company, string $role)
     {
-        $this->projectCompanyAccessControlList->add($projectCompanyAccessControl);
-    }
-
-    /**
-     * @param Companies $companies
-     *
-     * @return Projects
-     */
-    public function addCompanyToWhiteList(Companies $companies): Projects
-    {
-        $projectCompanyAccessControl = new ProjectCompanyAccessControl();
+        $projectCompanyAccessControl = new ProjectCompanyRole();
         $projectCompanyAccessControl
-            ->setCompany($companies)
+            ->setCompany($company)
             ->setProject($this)
-            ->setType(ProjectCompanyAccessControl::TYPE_WHITE_LIST);
-
+            ->setRoles([$role]);
         /*
-         * Because of additional column (added), we cannot check here if the list contains already the company.
+         * Because of additional column (added, updated), we cannot check here if the list contains already the company role.
          * Need to work with UniqueConstraintViolationException
          */
-        $this->addToCompanyAccessControlList($projectCompanyAccessControl);
-
-        return $this;
+        $this->projectCompanyRoles->add($projectCompanyAccessControl);
     }
 
     /**
-     * @param ProjectCompanyAccessControl $projectCompanyAccessControl
+     * @param Companies $company
      *
      * @return Projects
      */
-    public function removeFromProjectCompanyAccessControlList(ProjectCompanyAccessControl $projectCompanyAccessControl): Projects
+    public function addArranger(Companies $company): Projects
     {
-        $this->projectCompanyAccessControlList->removeElement($projectCompanyAccessControl);
+        $this->addCompanyRole($company, ProjectCompanyRole::FUNCTION_ARRANGER);
 
         return $this;
     }
 
     /**
-     * @return ProjectCompanyAccessControl[]|Collection
+     * @param Companies $company
+     *
+     * @return Projects
      */
-    public function getProjectCompanyAccessControl(): Collection
+    public function addBroker(Companies $company): Projects
     {
-        return $this->projectCompanyAccessControlList;
+        $this->addCompanyRole($company, ProjectCompanyRole::FUNCTION_BROKER);
+
+        return $this;
     }
 
     /**
-     * @return bool
+     * @param Companies $company
+     *
+     * @return Projects
      */
-    public function hasAccessControl()
+    public function addRunner(Companies $company): Projects
     {
-        return false === $this->projectCompanyAccessControlList->isEmpty();
+        $this->addCompanyRole($company, ProjectCompanyRole::FUNCTION_RUNNER);
+
+        return $this;
+    }
+
+    /**
+     * @param Companies[] $companies
+     *
+     * @return Projects
+     */
+    public function addLenders(array $companies): Projects
+    {
+        foreach ($companies as $company) {
+            $this->addCompanyRole($company, ProjectCompanyRole::FUNCTION_LENDER);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @param ProjectCompanyRole $ProjectCompanyRole
+     *
+     * @return Projects
+     */
+    public function removeProjectCompanyRoles(ProjectCompanyRole $ProjectCompanyRole): Projects
+    {
+        $this->projectCompanyRoles->removeElement($ProjectCompanyRole);
+
+        return $this;
+    }
+
+    /**
+     * @return ProjectCompanyRole[]|Collection
+     */
+    public function getProjectCompanyRoles(): Collection
+    {
+        return $this->projectCompanyRoles;
     }
 }
