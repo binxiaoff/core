@@ -1,0 +1,14 @@
+{# Error page #}
+{% extends '@Twig/Exception/error.html.twig' %}
+
+{% block errorPageTitle %}
+    {% trans %} error-page_404-page-title {% endtrans %}
+{% endblock %}
+
+{% block errorTitle %}
+    {% trans %} error-page_404-title {% endtrans %}
+{% endblock %}
+
+{% block errorDetails %}
+    {{ 'error-page_404-details'|trans|raw }}
+{% endblock %}
