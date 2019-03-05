@@ -15,15 +15,15 @@ class ProjectCompanyRole
 {
     use Roleable;
 
-    // use FUNCTION_ to distinguish it from Symfony user's roles
-    const FUNCTION_ARRANGER = 'FUNCTION_ARRANGER';
-    const FUNCTION_AGENT    = 'FUNCTION_AGENT';
-    const FUNCTION_LENDER   = 'FUNCTION_LENDER';
-    const FUNCTION_RUN      = 'FUNCTION_RUN'; //Responsable Unique de Notation
+    // Use COMPANY_ prefix to distinguish it from Symfony user's roles
+    const COMPANY_ROLE_ARRANGER = 'COMPANY_ROLE_ARRANGER'; // The company who arranges a loan syndication.
+    const COMPANY_ROLE_AGENT    = 'COMPANY_ROLE_AGENT'; // The company who ensures the smooth running of repayment process after the project is funded.
+    const COMPANY_ROLE_RUN      = 'COMPANY_ROLE_RUN'; // The abbreviation of Responsable Unique de Notation, who gives a note on the borrower.
+    const COMPANY_ROLE_LENDER   = 'COMPANY_ROLE_LENDER';
 
-    const ROLE_DEFAULT = self::FUNCTION_LENDER;
+    const ROLE_DEFAULT = self::COMPANY_ROLE_LENDER;
 
-    const ALL_ROLES = [self::FUNCTION_ARRANGER, self::FUNCTION_AGENT, self::FUNCTION_LENDER, self::FUNCTION_RUN];
+    const ALL_ROLES = [self::COMPANY_ROLE_ARRANGER, self::COMPANY_ROLE_AGENT, self::COMPANY_ROLE_RUN, self::COMPANY_ROLE_LENDER];
 
     /**
      * @var int

@@ -1682,7 +1682,7 @@ class Projects
      */
     public function addArranger(Companies $company): Projects
     {
-        $this->addCompanyRole($company, ProjectCompanyRole::FUNCTION_ARRANGER);
+        $this->addCompanyRole($company, ProjectCompanyRole::COMPANY_ROLE_ARRANGER);
 
         return $this;
     }
@@ -1694,7 +1694,7 @@ class Projects
      */
     public function addBroker(Companies $company): Projects
     {
-        $this->addCompanyRole($company, ProjectCompanyRole::FUNCTION_AGENT);
+        $this->addCompanyRole($company, ProjectCompanyRole::COMPANY_ROLE_AGENT);
 
         return $this;
     }
@@ -1706,7 +1706,7 @@ class Projects
      */
     public function addRunner(Companies $company): Projects
     {
-        $this->addCompanyRole($company, ProjectCompanyRole::FUNCTION_RUN);
+        $this->addCompanyRole($company, ProjectCompanyRole::COMPANY_ROLE_RUN);
 
         return $this;
     }
@@ -1719,7 +1719,7 @@ class Projects
     public function addLenders(array $companies): Projects
     {
         foreach ($companies as $company) {
-            $this->addCompanyRole($company, ProjectCompanyRole::FUNCTION_LENDER);
+            $this->addCompanyRole($company, ProjectCompanyRole::COMPANY_ROLE_LENDER);
         }
 
         return $this;
