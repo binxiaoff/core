@@ -31,12 +31,12 @@ class LoansRepository extends EntityRepository
             INNER JOIN projects p ON l.id_project = p.id_project
             WHERE l.status = :loanStatus
                 AND p.status >= :projectStatus
-                AND l.id_wallet = :lenderId';
+                AND l.id_wallet = :walletId';
 
         $statement = $this->getEntityManager()->getConnection()->executeCacheQuery(
             $query,
-            ['lenderId' => $wallet->getId(), 'loanStatus' => Loans::STATUS_ACCEPTED, 'projectStatus' => ProjectsStatus::REMBOURSEMENT],
-            ['lenderId' => \PDO::PARAM_INT, 'loanStatus' => \PDO::PARAM_INT, 'projectStatus' => \PDO::PARAM_INT],
+            ['walletId' => $wallet->getId(), 'loanStatus' => Loans::STATUS_ACCEPTED, 'projectStatus' => ProjectsStatus::REMBOURSEMENT],
+            ['walletId' => \PDO::PARAM_INT, 'loanStatus' => \PDO::PARAM_INT, 'projectStatus' => \PDO::PARAM_INT],
             new QueryCacheProfile(CacheKeys::SHORT_TIME, __FUNCTION__)
         );
         $result    = $statement->fetchAll(\PDO::FETCH_ASSOC);
@@ -46,14 +46,14 @@ class LoansRepository extends EntityRepository
     }
 
     /**
-     * @param int $lenderId
+     * @param int $walletId
      *
      * @return array
      * @throws \Doctrine\DBAL\DBALException
      */
-    public function countProjectsForLenderByRegion(int $lenderId): array
+    public function countProjectsForLenderByRegion(int $walletId): array
     {
-        $bind = ['lenderId' => $lenderId, 'mainAddress' => AddressType::TYPE_MAIN_ADDRESS];
+        $bind = ['walletId' => $walletId, 'mainAddress' => AddressType::TYPE_MAIN_ADDRESS];
 
         $query = 'SELECT
                       CASE
@@ -107,7 +107,7 @@ class LoansRepository extends EntityRepository
                               INNER JOIN projects p ON l.id_project = p.id_project
                               INNER JOIN company_address ca ON p.id_company = ca.id_company AND ca.date_archived IS NULL
                               INNER JOIN address_type at ON ca.id_type = at.id AND at.label = :mainAddress
-                          WHERE w.id = :lenderId) AS client_base
+                          WHERE w.id = :walletId) AS client_base
                     GROUP BY insee_region_code';
 
         $statement    = $this->getEntityManager()
@@ -180,8 +180,8 @@ class LoansRepository extends EntityRepository
         $queryBuilder = $this->createQueryBuilder('l')
             ->select('COUNT(DISTINCT l.idLoan)')
             ->innerJoin('UnilendCoreBusinessBundle:Projects', 'p', Join::WITH, 'p.idProject = l.project')
-            ->where('l.wallet = :lenderId')
-            ->setParameter('lenderId', $wallet->getId())
+            ->where('l.wallet = :wallet')
+            ->setParameter('wallet', $wallet->getId())
             ->andWhere('l.status = :accepted')
             ->setParameter('accepted', Loans::STATUS_ACCEPTED)
             ->andWhere('p.status >= :repayment')

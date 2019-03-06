@@ -130,7 +130,7 @@ class Bids
             ->setBid($this)
             ->setPercentFee($percentFee);
 
-        if (!$this->bidPercentFees->contains($bidPercentFee)) {
+        if (false === $this->bidPercentFees->contains($bidPercentFee)) {
             $this->bidPercentFees->add($bidPercentFee);
         }
 

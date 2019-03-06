@@ -6,12 +6,7 @@ use Doctrine\ORM\Mapping as ORM;
 
 trait Timestampable
 {
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="added", type="datetime")
-     */
-    protected $added;
+    use TimestampableAddedOnly;
 
     /**
      * @var \DateTime|null
@@ -19,30 +14,6 @@ trait Timestampable
      * @ORM\Column(name="updated", type="datetime", nullable=true)
      */
     protected $updated;
-
-    /**
-     * Set added
-     *
-     * @param \DateTime $added
-     *
-     * @return self
-     */
-    public function setAdded(\DateTime $added): self
-    {
-        $this->added = $added;
-
-        return $this;
-    }
-
-    /**
-     * Get added
-     *
-     * @return \DateTime
-     */
-    public function getAdded(): \DateTime
-    {
-        return $this->added;
-    }
 
     /**
      * Set updated
@@ -66,16 +37,6 @@ trait Timestampable
     public function getUpdated(): ?\DateTime
     {
         return $this->updated;
-    }
-
-    /**
-     * @ORM\PrePersist
-     */
-    public function setAddedValue(): void
-    {
-        if (! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
-            $this->added = new \DateTime();
-        }
     }
 
     /**

@@ -67,10 +67,10 @@ class BidsRepository extends EntityRepository
     {
         $queryBuilder = $this->createQueryBuilder('b');
         $queryBuilder->select('COUNT(b.idBid)')
-            ->where('b.wallet = :walletId')
+            ->where('b.wallet = :wallet')
             ->andWhere('b.idAutobid IS NULL')
             ->andWhere('b.added > :date')
-            ->setParameter('walletId', $wallet)
+            ->setParameter('wallet', $wallet)
             ->setParameter('date', $date);
 
         return $queryBuilder->getQuery()->getSingleScalarResult();

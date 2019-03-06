@@ -42,7 +42,7 @@ trait TimestampableAddedOnly
      */
     public function setAddedValue(): void
     {
-        if (! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
+        if (null === $this->added) {
             $this->added = new \DateTime();
         }
     }

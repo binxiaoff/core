@@ -424,8 +424,8 @@ class loans extends loans_crud
 
     public function getFirstLoanYear($lenderId)
     {
-        $sql = 'SELECT MIN(YEAR(added)) AS first_loan_year FROM loans WHERE id_wallet = :lenderId';
-        return $this->bdd->executeQuery($sql, ['lenderId' => $lenderId], ['lenderId' => \PDO::PARAM_INT] )->fetchColumn(0);
+        $sql = 'SELECT MIN(YEAR(added)) AS first_loan_year FROM loans WHERE id_wallet = :walletId';
+        return $this->bdd->executeQuery($sql, ['walletId' => $lenderId], ['walletId' => \PDO::PARAM_INT] )->fetchColumn(0);
     }
 
     /**
