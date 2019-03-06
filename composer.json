@@ -14,22 +14,12 @@
       "app/AppCache.php"
     ]
   },
-  "repositories": [
-    {
-      "type": "vcs",
-      "url": "https://github.com/ipecador/KnpMailjetBundle.git"
-    },
-    {
-      "type": "vcs",
-      "url": "https://github.com/ipecador/mailjet-api-php.git"
-    }
-  ],
   "require": {
     "php": ">=7.1.11",
     "ext-openssl": "^7.1",
     "alcaeus/mongo-php-adapter": "^1.1",
     "azuyalabs/yasumi": "^1.8",
-    "beberlei/DoctrineExtensions": "^1.0",
+    "beberlei/doctrineextensions": "^1.0",
     "box/spout": "^2.7",
     "cache/adapter-bundle": "^1.1",
     "cache/memcache-adapter": "^1.0",
@@ -44,7 +34,6 @@
     "jbroadway/urlify": "^1.0",
     "jms/serializer-bundle": "^2.2",
     "knplabs/knp-snappy-bundle": "^1.5",
-    "knplabs/mailjet-api-php": "v2.x-dev",
     "mailjet/mailjet-apiv3-php": "^1.1",
     "monext/payline-sdk": "^4.53",
     "mpdf/mpdf": "^7.1",
@@ -77,11 +66,8 @@
     ],
     "symfony-scripts": [
       "Incenteev\\ParameterHandler\\ScriptHandler::buildParameters",
-      "Sensio\\Bundle\\DistributionBundle\\Composer\\ScriptHandler::buildBootstrap",
-      "Sensio\\Bundle\\DistributionBundle\\Composer\\ScriptHandler::clearCache",
-      "Sensio\\Bundle\\DistributionBundle\\Composer\\ScriptHandler::installAssets",
-      "Sensio\\Bundle\\DistributionBundle\\Composer\\ScriptHandler::installRequirementsFile",
-      "Sensio\\Bundle\\DistributionBundle\\Composer\\ScriptHandler::prepareDeploymentTarget"
+      "Unilend\\Bridge\\Composer\\ScriptHandler::clearCache",
+      "Unilend\\Bridge\\Composer\\ScriptHandler::installAssets"
     ],
     "post-install-cmd": [
       "@symfony-scripts",
