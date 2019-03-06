@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "f736e62824ced13b39f78f9cdc4cad9d",
+    "content-hash": "5ddbbd1b811d0454bd1f8b268945491a",
     "packages": [
         {
             "name": "alcaeus/mongo-php-adapter",
@@ -798,17 +798,17 @@
         },
         {
             "name": "cravler/maxmind-geoip-bundle",
-            "version": "v1.2.1",
+            "version": "v1.3.0",
             "target-dir": "Cravler/MaxMindGeoIpBundle",
             "source": {
                 "type": "git",
                 "url": "https://github.com/cravler/CravlerMaxMindGeoIpBundle.git",
-                "reference": "8810659b00fb2f73cccc536e7feb8d68c39395fd"
+                "reference": "e70031610574396320e6715fdfb889ea13b29e6d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/cravler/CravlerMaxMindGeoIpBundle/zipball/8810659b00fb2f73cccc536e7feb8d68c39395fd",
-                "reference": "8810659b00fb2f73cccc536e7feb8d68c39395fd",
+                "url": "https://api.github.com/repos/cravler/CravlerMaxMindGeoIpBundle/zipball/e70031610574396320e6715fdfb889ea13b29e6d",
+                "reference": "e70031610574396320e6715fdfb889ea13b29e6d",
                 "shasum": ""
             },
             "require": {
@@ -855,7 +855,7 @@
                 "maxmind",
                 "symfony"
             ],
-            "time": "2018-05-02T10:26:43+00:00"
+            "time": "2019-02-27T11:48:36+00:00"
         },
         {
             "name": "doctrine/annotations",
@@ -2379,16 +2379,16 @@
         },
         {
             "name": "eightpoints/guzzle-bundle",
-            "version": "v7.4.1",
+            "version": "v7.5.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/8p/EightPointsGuzzleBundle.git",
-                "reference": "f7254530a0d171cd931fd8fc0e28e9950b567c05"
+                "reference": "bfb387774313ee2bccc5dad4e81047334f50ea86"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/8p/EightPointsGuzzleBundle/zipball/f7254530a0d171cd931fd8fc0e28e9950b567c05",
-                "reference": "f7254530a0d171cd931fd8fc0e28e9950b567c05",
+                "url": "https://api.github.com/repos/8p/EightPointsGuzzleBundle/zipball/bfb387774313ee2bccc5dad4e81047334f50ea86",
+                "reference": "bfb387774313ee2bccc5dad4e81047334f50ea86",
                 "shasum": ""
             },
             "require": {
@@ -2402,7 +2402,8 @@
             "require-dev": {
                 "symfony/phpunit-bridge": "~2.7|~3.0|~4.0",
                 "symfony/twig-bundle": "~2.7|~3.0|~4.0",
-                "symfony/var-dumper": "~2.7|~3.0|~4.0"
+                "symfony/var-dumper": "~2.7|~3.0|~4.0",
+                "symfony/yaml": "~2.7|~3.0|~4.0"
             },
             "type": "symfony-bundle",
             "autoload": {
@@ -2437,7 +2438,7 @@
                 "symfony",
                 "web service"
             ],
-            "time": "2018-11-07T15:48:42+00:00"
+            "time": "2019-02-27T16:04:00+00:00"
         },
         {
             "name": "ekino/newrelic-bundle",
@@ -2721,208 +2722,6 @@
                 "symfony"
             ],
             "time": "2018-01-14T12:37:39+00:00"
-        },
-        {
-            "name": "guzzle/common",
-            "version": "v3.9.2",
-            "target-dir": "Guzzle/Common",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/Guzzle3/common.git",
-                "reference": "2e36af7cf2ce3ea1f2d7c2831843b883a8e7b7dc"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/Guzzle3/common/zipball/2e36af7cf2ce3ea1f2d7c2831843b883a8e7b7dc",
-                "reference": "2e36af7cf2ce3ea1f2d7c2831843b883a8e7b7dc",
-                "shasum": ""
-            },
-            "require": {
-                "php": ">=5.3.2",
-                "symfony/event-dispatcher": ">=2.1"
-            },
-            "type": "library",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "3.7-dev"
-                }
-            },
-            "autoload": {
-                "psr-0": {
-                    "Guzzle\\Common": ""
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "description": "Common libraries used by Guzzle",
-            "homepage": "http://guzzlephp.org/",
-            "keywords": [
-                "collection",
-                "common",
-                "event",
-                "exception"
-            ],
-            "abandoned": "guzzle/guzzle",
-            "time": "2014-08-11T04:32:36+00:00"
-        },
-        {
-            "name": "guzzle/http",
-            "version": "v3.9.2",
-            "target-dir": "Guzzle/Http",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/Guzzle3/http.git",
-                "reference": "1e8dd1e2ba9dc42332396f39fbfab950b2301dc5"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/Guzzle3/http/zipball/1e8dd1e2ba9dc42332396f39fbfab950b2301dc5",
-                "reference": "1e8dd1e2ba9dc42332396f39fbfab950b2301dc5",
-                "shasum": ""
-            },
-            "require": {
-                "guzzle/common": "self.version",
-                "guzzle/parser": "self.version",
-                "guzzle/stream": "self.version",
-                "php": ">=5.3.2"
-            },
-            "suggest": {
-                "ext-curl": "*"
-            },
-            "type": "library",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "3.7-dev"
-                }
-            },
-            "autoload": {
-                "psr-0": {
-                    "Guzzle\\Http": ""
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Michael Dowling",
-                    "email": "mtdowling@gmail.com",
-                    "homepage": "https://github.com/mtdowling"
-                }
-            ],
-            "description": "HTTP libraries used by Guzzle",
-            "homepage": "http://guzzlephp.org/",
-            "keywords": [
-                "Guzzle",
-                "client",
-                "curl",
-                "http",
-                "http client"
-            ],
-            "abandoned": "guzzle/guzzle",
-            "time": "2014-08-11T04:32:36+00:00"
-        },
-        {
-            "name": "guzzle/parser",
-            "version": "v3.9.2",
-            "target-dir": "Guzzle/Parser",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/Guzzle3/parser.git",
-                "reference": "6874d171318a8e93eb6d224cf85e4678490b625c"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/Guzzle3/parser/zipball/6874d171318a8e93eb6d224cf85e4678490b625c",
-                "reference": "6874d171318a8e93eb6d224cf85e4678490b625c",
-                "shasum": ""
-            },
-            "require": {
-                "php": ">=5.3.2"
-            },
-            "type": "library",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "3.7-dev"
-                }
-            },
-            "autoload": {
-                "psr-0": {
-                    "Guzzle\\Parser": ""
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "description": "Interchangeable parsers used by Guzzle",
-            "homepage": "http://guzzlephp.org/",
-            "keywords": [
-                "URI Template",
-                "cookie",
-                "http",
-                "message",
-                "url"
-            ],
-            "abandoned": "guzzle/guzzle",
-            "time": "2014-02-05T18:29:46+00:00"
-        },
-        {
-            "name": "guzzle/stream",
-            "version": "v3.9.2",
-            "target-dir": "Guzzle/Stream",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/Guzzle3/stream.git",
-                "reference": "60c7fed02e98d2c518dae8f97874c8f4622100f0"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/Guzzle3/stream/zipball/60c7fed02e98d2c518dae8f97874c8f4622100f0",
-                "reference": "60c7fed02e98d2c518dae8f97874c8f4622100f0",
-                "shasum": ""
-            },
-            "require": {
-                "guzzle/common": "self.version",
-                "php": ">=5.3.2"
-            },
-            "suggest": {
-                "guzzle/http": "To convert Guzzle request objects to PHP streams"
-            },
-            "type": "library",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "3.7-dev"
-                }
-            },
-            "autoload": {
-                "psr-0": {
-                    "Guzzle\\Stream": ""
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Michael Dowling",
-                    "email": "mtdowling@gmail.com",
-                    "homepage": "https://github.com/mtdowling"
-                }
-            ],
-            "description": "Guzzle stream wrapper component",
-            "homepage": "http://guzzlephp.org/",
-            "keywords": [
-                "Guzzle",
-                "component",
-                "stream"
-            ],
-            "abandoned": "guzzle/guzzle",
-            "time": "2014-05-01T21:36:02+00:00"
         },
         {
             "name": "guzzlehttp/guzzle",
@@ -3711,58 +3510,6 @@
             "time": "2018-12-13T12:14:08+00:00"
         },
         {
-            "name": "knplabs/mailjet-api-php",
-            "version": "v2.x-dev",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/ipecador/mailjet-api-php.git",
-                "reference": "59f30d4971fbde7e0f097c594e3d3a1ccc1f69ed"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/ipecador/mailjet-api-php/zipball/59f30d4971fbde7e0f097c594e3d3a1ccc1f69ed",
-                "reference": "59f30d4971fbde7e0f097c594e3d3a1ccc1f69ed",
-                "shasum": ""
-            },
-            "require": {
-                "guzzle/http": "~3.0",
-                "php": ">=5.3.8"
-            },
-            "require-dev": {
-                "symfony/debug": "~2.3"
-            },
-            "type": "library",
-            "extra": {
-                "branch-alias": {
-                    "dev-v2": "2.x-dev"
-                }
-            },
-            "autoload": {
-                "psr-0": {
-                    "Mailjet\\": "src/"
-                }
-            },
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "KnpLabs Team",
-                    "homepage": "http://knplabs.com"
-                }
-            ],
-            "description": "Mailjet PHP API client",
-            "homepage": "https://github.com/KnpLabs/mailjet-api-php",
-            "keywords": [
-                "api",
-                "mailjet"
-            ],
-            "support": {
-                "source": "https://github.com/ipecador/mailjet-api-php/tree/v2"
-            },
-            "time": "2018-01-15T14:06:37+00:00"
-        },
-        {
             "name": "mailjet/mailjet-apiv3-php",
             "version": "v1.4.1",
             "source": {
@@ -4436,16 +4183,16 @@
         },
         {
             "name": "nexylan/slack",
-            "version": "v2.1.0",
+            "version": "v2.2.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/nexylan/slack.git",
-                "reference": "fd85024a78fbec21fce0723afb14e50b4e75ca7a"
+                "reference": "ba417382d0c54cc7c7e0ca2719e39a4f659236dc"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/nexylan/slack/zipball/fd85024a78fbec21fce0723afb14e50b4e75ca7a",
-                "reference": "fd85024a78fbec21fce0723afb14e50b4e75ca7a",
+                "url": "https://api.github.com/repos/nexylan/slack/zipball/ba417382d0c54cc7c7e0ca2719e39a4f659236dc",
+                "reference": "ba417382d0c54cc7c7e0ca2719e39a4f659236dc",
                 "shasum": ""
             },
             "require": {
@@ -4495,24 +4242,24 @@
                 "slack",
                 "webhook"
             ],
-            "time": "2019-02-01T15:41:19+00:00"
+            "time": "2019-02-20T13:57:59+00:00"
         },
         {
             "name": "nexylan/slack-bundle",
-            "version": "v2.0.1",
+            "version": "v2.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/nexylan/slack-bundle.git",
-                "reference": "693a21a6b5e87a4cc4862fe96523f9cde4177ffe"
+                "reference": "4e55be5f6931047e99a97a0907b444b57a26397f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/nexylan/slack-bundle/zipball/693a21a6b5e87a4cc4862fe96523f9cde4177ffe",
-                "reference": "693a21a6b5e87a4cc4862fe96523f9cde4177ffe",
+                "url": "https://api.github.com/repos/nexylan/slack-bundle/zipball/4e55be5f6931047e99a97a0907b444b57a26397f",
+                "reference": "4e55be5f6931047e99a97a0907b444b57a26397f",
                 "shasum": ""
             },
             "require": {
-                "nexylan/slack": "^2.0",
+                "nexylan/slack": "^2.2",
                 "php": "^7.1",
                 "php-http/httplug-bundle": "^1.8",
                 "symfony/http-kernel": "^3.4 || ^4.0"
@@ -4547,20 +4294,20 @@
                 }
             ],
             "description": "Symfony bundle integration of nexylan/slack library",
-            "time": "2018-12-03T09:30:15+00:00"
+            "time": "2019-02-20T14:12:45+00:00"
         },
         {
             "name": "ocramius/package-versions",
-            "version": "1.3.0",
+            "version": "1.4.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Ocramius/PackageVersions.git",
-                "reference": "4489d5002c49d55576fa0ba786f42dbb009be46f"
+                "reference": "a4d4b60d0e60da2487bd21a2c6ac089f85570dbb"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Ocramius/PackageVersions/zipball/4489d5002c49d55576fa0ba786f42dbb009be46f",
-                "reference": "4489d5002c49d55576fa0ba786f42dbb009be46f",
+                "url": "https://api.github.com/repos/Ocramius/PackageVersions/zipball/a4d4b60d0e60da2487bd21a2c6ac089f85570dbb",
+                "reference": "a4d4b60d0e60da2487bd21a2c6ac089f85570dbb",
                 "shasum": ""
             },
             "require": {
@@ -4569,6 +4316,7 @@
             },
             "require-dev": {
                 "composer/composer": "^1.6.3",
+                "doctrine/coding-standard": "^5.0.1",
                 "ext-zip": "*",
                 "infection/infection": "^0.7.1",
                 "phpunit/phpunit": "^7.0.0"
@@ -4596,7 +4344,7 @@
                 }
             ],
             "description": "Composer plugin that provides efficient querying for installed package versions (no runtime IO)",
-            "time": "2018-02-05T13:05:30+00:00"
+            "time": "2019-02-21T12:16:21+00:00"
         },
         {
             "name": "ocramius/proxy-manager",
@@ -4831,16 +4579,16 @@
         },
         {
             "name": "php-http/discovery",
-            "version": "1.6.0",
+            "version": "1.6.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/php-http/discovery.git",
-                "reference": "02b7ea21eafa0757af04140890a67d8ed45f83b2"
+                "reference": "684855f2c2e9d0a61868b8f8d6bd0295c8a4b651"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/php-http/discovery/zipball/02b7ea21eafa0757af04140890a67d8ed45f83b2",
-                "reference": "02b7ea21eafa0757af04140890a67d8ed45f83b2",
+                "url": "https://api.github.com/repos/php-http/discovery/zipball/684855f2c2e9d0a61868b8f8d6bd0295c8a4b651",
+                "reference": "684855f2c2e9d0a61868b8f8d6bd0295c8a4b651",
                 "shasum": ""
             },
             "require": {
@@ -4891,7 +4639,7 @@
                 "message",
                 "psr7"
             ],
-            "time": "2019-01-23T12:41:22+00:00"
+            "time": "2019-02-23T07:42:53+00:00"
         },
         {
             "name": "php-http/guzzle6-adapter",
@@ -7975,9 +7723,7 @@
     "packages-dev": [],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {
-        "knplabs/mailjet-api-php": 20
-    },
+    "stability-flags": [],
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
