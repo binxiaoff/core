@@ -50,15 +50,15 @@ class Bids
     private $idBid;
 
     /**
-     * @var BidFee[]|ArrayCollection
+     * @var BidPercentFee[]|ArrayCollection
      *
-     * @ORM\OneToMany(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\BidFee", mappedBy="bid", cascade={"persist"}, orphanRemoval=true)
+     * @ORM\OneToMany(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\BidPercentFee", mappedBy="bid", cascade={"persist"}, orphanRemoval=true)
      */
-    private $bidFees;
+    private $bidPercentFees;
 
     public function __construct()
     {
-        $this->bidFees = new ArrayCollection();
+        $this->bidPercentFees = new ArrayCollection();
     }
 
     /**
@@ -120,29 +120,32 @@ class Bids
     }
 
     /**
-     * @param BidFee $bidFee
+     * @param PercentFee $percentFee
      *
      * @return Bids
      */
-    public function addBidFee(BidFee $bidFee): Bids
+    public function addPercentFee(PercentFee $percentFee): Bids
     {
-        if (!$this->bidFees->contains($bidFee)) {
-            $this->bidFees->add($bidFee);
-            $bidFee->setBid($this);
+        $bidPercentFee = (new BidPercentFee())
+            ->setBid($this)
+            ->setPercentFee($percentFee);
+
+        if (!$this->bidPercentFees->contains($bidPercentFee)) {
+            $this->bidPercentFees->add($bidPercentFee);
         }
 
         return $this;
     }
 
     /**
-     * @param BidFee $bidFee
+     * @param BidPercentFee $bidPercentFee
      *
      * @return Bids
      */
-    public function removeBidFee(BidFee $bidFee): Bids
+    public function removeBidFee(BidPercentFee $bidPercentFee): Bids
     {
-        if ($this->bidFees->contains($bidFee)) {
-            $this->bidFees->removeElement($bidFee);
+        if ($this->bidPercentFees->contains($bidPercentFee)) {
+            $this->bidPercentFees->removeElement($bidPercentFee);
         }
 
         return $this;

@@ -8,14 +8,14 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Traits\Timestampable;
 /**
  * @ORM\Entity
  */
-class LendingFeeType
+class FeeType
 {
     use Timestampable;
 
     /**
      * @var int
      *
-     * @ORM\Column(type="integer")
+     * @ORM\Column(type="smallint")
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="IDENTITY")
      */
@@ -54,9 +54,9 @@ class LendingFeeType
     /**
      * @param string $label
      *
-     * @return LendingFeeType
+     * @return FeeType
      */
-    public function setLabel(string $label): LendingFeeType
+    public function setLabel(string $label): FeeType
     {
         $this->label = $label;
 
@@ -74,9 +74,9 @@ class LendingFeeType
     /**
      * @param bool $isRecurring
      *
-     * @return LendingFeeType
+     * @return FeeType
      */
-    public function setIsRecurring(bool $isRecurring): LendingFeeType
+    public function setIsRecurring(bool $isRecurring): FeeType
     {
         $this->isRecurring = $isRecurring;
 

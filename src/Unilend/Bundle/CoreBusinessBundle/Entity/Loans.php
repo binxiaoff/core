@@ -72,15 +72,15 @@ class Loans
     private $idAcceptationLegalDoc;
 
     /**
-     * @var LoanFee[]|ArrayCollection
+     * @var LoanPercentFee[]|ArrayCollection
      *
-     * @ORM\OneToMany(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\LoanFee", mappedBy="loan", cascade={"persist"}, orphanRemoval=true)
+     * @ORM\OneToMany(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\LoanPercentFee", mappedBy="loan", cascade={"persist"}, orphanRemoval=true)
      */
-    private $loanFees;
+    private $loanPercentFees;
 
     public function __construct()
     {
-        $this->loanFees = new ArrayCollection();
+        $this->loanPercentFees = new ArrayCollection();
     }
 
     /**
@@ -181,29 +181,32 @@ class Loans
     }
 
     /**
-     * @param LoanFee $loanFee
+     * @param PercentFee $percentFee
      *
      * @return Loans
      */
-    public function addLoanFee(LoanFee $loanFee): Loans
+    public function addPercentFee(PercentFee $percentFee): Loans
     {
-        if (!$this->loanFees->contains($loanFee)) {
-            $this->loanFees->add($loanFee);
-            $loanFee->setLoan($this);
+        $loanPercentFee = (new LoanPercentFee())
+            ->setLoan($this)
+            ->setPercentFee($percentFee);
+
+        if (!$this->loanPercentFees->contains($loanPercentFee)) {
+            $this->loanPercentFees->add($loanPercentFee);
         }
 
         return $this;
     }
 
     /**
-     * @param LoanFee $loanFee
+     * @param LoanPercentFee $loanPercentFee
      *
      * @return Loans
      */
-    public function removeLoanFee(LoanFee $loanFee): Loans
+    public function removeLoanFee(LoanPercentFee $loanPercentFee): Loans
     {
-        if ($this->loanFees->contains($loanFee)) {
-            $this->loanFees->removeElement($loanFee);
+        if ($this->loanPercentFees->contains($loanPercentFee)) {
+            $this->loanPercentFees->removeElement($loanPercentFee);
         }
 
         return $this;
