@@ -7,7 +7,7 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * WsCallHistory
  *
- * @ORM\Table(name="ws_call_history", indexes={@ORM\Index(name="id_resource", columns={"id_resource"})})
+ * @ORM\Table(name="ws_call_history", indexes={@ORM\Index(name="idx_ws_call_history_added", columns={"added"})})
  * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\WsCallHistoryRepository")
  * @ORM\HasLifecycleCallbacks
  */
@@ -42,7 +42,7 @@ class WsCallHistory
     private $added;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id_call_history", type="integer")
      * @ORM\Id
@@ -55,7 +55,7 @@ class WsCallHistory
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\WsExternalResource")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_resource", referencedColumnName="id_resource")
+     *   @ORM\JoinColumn(name="id_resource", referencedColumnName="id_resource", nullable=false)
      * })
      */
     private $idResource;

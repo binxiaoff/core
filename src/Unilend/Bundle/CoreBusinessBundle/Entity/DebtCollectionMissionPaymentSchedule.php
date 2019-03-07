@@ -13,7 +13,7 @@ use Doctrine\ORM\Mapping as ORM;
 class DebtCollectionMissionPaymentSchedule
 {
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id", type="integer")
      * @ORM\Id
@@ -26,7 +26,7 @@ class DebtCollectionMissionPaymentSchedule
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\EcheanciersEmprunteur")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_payment_schedule", referencedColumnName="id_echeancier_emprunteur")
+     *   @ORM\JoinColumn(name="id_payment_schedule", referencedColumnName="id_echeancier_emprunteur", nullable=false)
      * })
      */
     private $idPaymentSchedule;
@@ -36,7 +36,7 @@ class DebtCollectionMissionPaymentSchedule
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\DebtCollectionMission", inversedBy="debtCollectionMissionPaymentSchedules")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_mission", referencedColumnName="id")
+     *   @ORM\JoinColumn(name="id_mission", referencedColumnName="id", nullable=false)
      * })
      */
     private $idMission;
@@ -44,21 +44,21 @@ class DebtCollectionMissionPaymentSchedule
     /**
      * @var string
      *
-     * @ORM\Column(name="capital", type="decimal", precision=11, scale=2, nullable=false)
+     * @ORM\Column(name="capital", type="decimal", precision=11, scale=2)
      */
     private $capital;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="interest", type="decimal", precision=11, scale=2, nullable=false)
+     * @ORM\Column(name="interest", type="decimal", precision=11, scale=2)
      */
     private $interest;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="commission_vat_incl", type="decimal", precision=11, scale=2, nullable=false)
+     * @ORM\Column(name="commission_vat_incl", type="decimal", precision=11, scale=2)
      */
     private $commissionVatIncl;
 

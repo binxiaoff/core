@@ -7,7 +7,7 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * ProjectEligibilityRuleSet
  *
- * @ORM\Table(name="project_eligibility_rule_set", uniqueConstraints={@ORM\UniqueConstraint(name="unq_project_eligibility_rule_set_label", columns={"label"})}, indexes={@ORM\Index(name="idx_project_eligibility_rule_set_status", columns={"status"})})
+ * @ORM\Table(name="project_eligibility_rule_set", indexes={@ORM\Index(name="idx_project_eligibility_rule_set_status", columns={"status"})})
  * @ORM\Entity
  */
 class ProjectEligibilityRuleSet
@@ -19,26 +19,26 @@ class ProjectEligibilityRuleSet
     /**
      * @var string
      *
-     * @ORM\Column(name="label", type="string", length=100, nullable=false)
+     * @ORM\Column(name="label", type="string", length=100, unique=true)
      */
     private $label;
 
     /**
      * @var int
      *
-     * @ORM\Column(name="status", type="integer", length=4, nullable=false)
+     * @ORM\Column(name="status", type="smallint", length=4)
      */
     private $status;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id", type="integer")
      * @ORM\Id

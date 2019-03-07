@@ -32,7 +32,7 @@ class Prelevements
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Clients")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_client", referencedColumnName="id_client")
+     *   @ORM\JoinColumn(name="id_client", referencedColumnName="id_client", nullable=false)
      * })
      */
     private $idClient;
@@ -42,7 +42,7 @@ class Prelevements
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Projects")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_project", referencedColumnName="id_project")
+     *   @ORM\JoinColumn(name="id_project", referencedColumnName="id_project", nullable=false)
      * })
      */
     private $idProject;
@@ -50,70 +50,70 @@ class Prelevements
     /**
      * @var string
      *
-     * @ORM\Column(name="motif", type="string", length=50, nullable=false)
+     * @ORM\Column(name="motif", type="string", length=50)
      */
     private $motif;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="montant", type="integer", nullable=false)
+     * @ORM\Column(name="montant", type="integer")
      */
     private $montant;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="bic", type="string", length=100, nullable=false)
+     * @ORM\Column(name="bic", type="string", length=100)
      */
     private $bic;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="iban", type="string", length=28, nullable=false)
+     * @ORM\Column(name="iban", type="string", length=28)
      */
     private $iban;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="type_prelevement", type="integer", nullable=false)
+     * @ORM\Column(name="type_prelevement", type="smallint")
      */
     private $typePrelevement;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="type", type="integer", nullable=false)
+     * @ORM\Column(name="type", type="smallint")
      */
     private $type;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="num_prelevement", type="integer", nullable=false)
+     * @ORM\Column(name="num_prelevement", type="smallint")
      */
     private $numPrelevement;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="status", type="integer", nullable=false)
+     * @ORM\Column(name="status", type="smallint")
      */
     private $status;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="date_execution_demande_prelevement", type="date", nullable=false)
+     * @ORM\Column(name="date_execution_demande_prelevement", type="date")
      */
     private $dateExecutionDemandePrelevement;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="date_echeance_emprunteur", type="date", nullable=false)
+     * @ORM\Column(name="date_echeance_emprunteur", type="date")
      */
     private $dateEcheanceEmprunteur;
 
@@ -127,7 +127,7 @@ class Prelevements
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
@@ -139,7 +139,7 @@ class Prelevements
     private $updated;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id_prelevement", type="integer")
      * @ORM\Id

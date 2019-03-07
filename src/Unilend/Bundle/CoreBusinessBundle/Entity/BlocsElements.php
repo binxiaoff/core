@@ -13,63 +13,63 @@ use Doctrine\ORM\Mapping as ORM;
 class BlocsElements
 {
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="id_bloc", type="integer", nullable=false)
+     * @ORM\Column(name="id_bloc", type="integer")
      */
     private $idBloc;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="id_element", type="integer", nullable=false)
+     * @ORM\Column(name="id_element", type="integer")
      */
     private $idElement;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="id_langue", type="string", length=2, nullable=false)
+     * @ORM\Column(name="id_langue", type="string", length=2)
      */
     private $idLangue;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="value", type="text", length=16777215, nullable=false)
+     * @ORM\Column(name="value", type="text", length=16777215)
      */
     private $value;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="complement", type="text", length=16777215, nullable=false)
+     * @ORM\Column(name="complement", type="text", length=16777215)
      */
     private $complement;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="status", type="integer", nullable=false)
+     * @ORM\Column(name="status", type="integer")
      */
     private $status;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="updated", type="datetime", nullable=false)
+     * @ORM\Column(name="updated", type="datetime", nullable=true)
      */
     private $updated;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id", type="integer")
      * @ORM\Id

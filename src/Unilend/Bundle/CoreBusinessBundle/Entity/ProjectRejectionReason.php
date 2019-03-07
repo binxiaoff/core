@@ -107,13 +107,13 @@ class ProjectRejectionReason
     /**
      * @var string
      *
-     * @ORM\Column(name="label", type="string", length=191, nullable=false)
+     * @ORM\Column(name="label", type="string", length=191, nullable=false, unique=true)
      */
     private $label;
 
     /**
      * @var string
-     * @ORM\Column(name="reason", type="string", length=191, nullable=false)
+     * @ORM\Column(name="reason", type="string", length=191)
      */
     private $reason;
 
@@ -125,14 +125,14 @@ class ProjectRejectionReason
     private $description;
 
     /**
-     * @var boolean
+     * @var bool
      *
-     * @ORM\Column(name="status", type="boolean", nullable=false)
+     * @ORM\Column(name="status", type="boolean")
      */
     private $status;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id_rejection", type="integer")
      * @ORM\Id

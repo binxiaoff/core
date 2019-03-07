@@ -7,7 +7,7 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * CompanyStatus
  *
- * @ORM\Table(name="company_status", uniqueConstraints={@ORM\UniqueConstraint(name="label_UNIQUE", columns={"label"})})
+ * @ORM\Table(name="company_status")
  * @ORM\Entity
  */
 class CompanyStatus
@@ -18,7 +18,7 @@ class CompanyStatus
     const STATUS_COMPULSORY_LIQUIDATION = 'compulsory_liquidation';
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id", type="smallint")
      * @ORM\Id
@@ -29,7 +29,7 @@ class CompanyStatus
     /**
      * @var string
      *
-     * @ORM\Column(name="label", type="string", length=191, nullable=false)
+     * @ORM\Column(name="label", type="string", length=191, unique=true)
      */
     private $label;
 

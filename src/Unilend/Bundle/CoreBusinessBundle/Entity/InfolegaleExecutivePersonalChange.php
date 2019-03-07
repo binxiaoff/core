@@ -14,37 +14,37 @@ use Doctrine\ORM\Mapping as ORM;
 class InfolegaleExecutivePersonalChange
 {
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="id_executive", type="integer", nullable=false)
+     * @ORM\Column(name="id_executive", type="integer")
      */
     private $idExecutive;
 
     /**
-     * @var ?string
+     * @var string|null
      *
      * @ORM\Column(name="title", type="string", length=10, nullable=true)
      */
     private $title;
 
     /**
-     * @var string
+     * @var string|null
      *
-     * @ORM\Column(name="first_name", type="string", length=50, nullable=false)
+     * @ORM\Column(name="first_name", type="string", length=50, nullable=true)
      */
     private $firstName;
 
     /**
-     * @var string
+     * @var string|null
      *
-     * @ORM\Column(name="last_name", type="string", length=50, nullable=false)
+     * @ORM\Column(name="last_name", type="string", length=50, nullable=true)
      */
     private $lastName;
 
     /**
-     * @var string
+     * @var string|null
      *
-     * @ORM\Column(name="siren", type="string", length=9, nullable=false)
+     * @ORM\Column(name="siren", type="string", length=9, nullable=true)
      */
     private $siren;
 
@@ -55,9 +55,9 @@ class InfolegaleExecutivePersonalChange
     private $sirenIfCompany;
 
     /**
-     * @var string
+     * @var string|null
      *
-     * @ORM\Column(name="code_position", type="string", length=5, nullable=false)
+     * @ORM\Column(name="code_position", type="string", length=5, nullable=true)
      */
     private $codePosition;
 
@@ -85,7 +85,7 @@ class InfolegaleExecutivePersonalChange
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
@@ -97,7 +97,7 @@ class InfolegaleExecutivePersonalChange
     private $updated;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id", type="integer")
      * @ORM\Id
@@ -132,11 +132,11 @@ class InfolegaleExecutivePersonalChange
     /**
      * Set firstName
      *
-     * @param string $firstName
+     * @param string|null $firstName
      *
      * @return InfolegaleExecutivePersonalChange
      */
-    public function setFirstName($firstName)
+    public function setFirstName(?string $firstName)
     {
         $this->firstName = $firstName;
 
@@ -146,9 +146,9 @@ class InfolegaleExecutivePersonalChange
     /**
      * Get firstName
      *
-     * @return string
+     * @return string|null
      */
-    public function getFirstName()
+    public function getFirstName(): ?string
     {
         return $this->firstName;
     }
@@ -156,11 +156,11 @@ class InfolegaleExecutivePersonalChange
     /**
      * Set lastName
      *
-     * @param string $lastName
+     * @param string|null $lastName
      *
      * @return InfolegaleExecutivePersonalChange
      */
-    public function setLastName($lastName)
+    public function setLastName(?string $lastName)
     {
         $this->lastName = $lastName;
 
@@ -170,9 +170,9 @@ class InfolegaleExecutivePersonalChange
     /**
      * Get lastName
      *
-     * @return string
+     * @return string|null
      */
-    public function getLastName()
+    public function getLastName(): ?string
     {
         return $this->lastName;
     }
@@ -180,7 +180,7 @@ class InfolegaleExecutivePersonalChange
     /**
      * Set siren
      *
-     * @param string $siren
+     * @param string|null $siren
      *
      * @return InfolegaleExecutivePersonalChange
      */
@@ -194,7 +194,7 @@ class InfolegaleExecutivePersonalChange
     /**
      * Get siren
      *
-     * @return string
+     * @return string|null
      */
     public function getSiren()
     {
@@ -226,7 +226,7 @@ class InfolegaleExecutivePersonalChange
     /**
      * Set codePosition
      *
-     * @param string $codePosition
+     * @param string|null $codePosition
      *
      * @return InfolegaleExecutivePersonalChange
      */
@@ -240,7 +240,7 @@ class InfolegaleExecutivePersonalChange
     /**
      * Get codePosition
      *
-     * @return string
+     * @return string|null
      */
     public function getCodePosition()
     {

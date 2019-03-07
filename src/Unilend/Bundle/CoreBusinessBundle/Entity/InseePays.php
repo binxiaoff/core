@@ -15,7 +15,7 @@ class InseePays
     /**
      * @var string
      *
-     * @ORM\Column(name="CODEISO2", type="string", length=2, nullable=false)
+     * @ORM\Column(name="CODEISO2", type="string", length=2)
      */
     private $codeiso2;
 
@@ -27,7 +27,7 @@ class InseePays
     private $cog;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="ACTUAL", type="integer", nullable=true)
      */
@@ -41,14 +41,14 @@ class InseePays
     private $capay;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="CRPAY", type="integer", nullable=true)
      */
     private $crpay;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="ANI", type="integer", nullable=true)
      */
@@ -76,7 +76,7 @@ class InseePays
     private $ancnom;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id_insee_pays", type="integer")
      * @ORM\Id

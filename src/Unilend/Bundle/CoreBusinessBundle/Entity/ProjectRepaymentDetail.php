@@ -26,46 +26,46 @@ class ProjectRepaymentDetail
     /**
      * @var string
      *
-     * @ORM\Column(name="capital", type="decimal", precision=10, scale=2, nullable=false)
+     * @ORM\Column(name="capital", type="decimal", precision=10, scale=2)
      */
     private $capital;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="interest", type="decimal", precision=10, scale=2, nullable=false)
+     * @ORM\Column(name="interest", type="decimal", precision=10, scale=2)
      */
     private $interest;
 
     /**
      * If the repayment schedule will be completed after the repayment
      *
-     * @var boolean
+     * @var bool
      *
-     * @ORM\Column(name="capital_completed", type="boolean", nullable=false)
+     * @ORM\Column(name="capital_completed", type="boolean")
      */
     private $capitalCompleted;
 
     /**
      * If the repayment schedule will be completed after the repayment
      *
-     * @var boolean
+     * @var bool
      *
-     * @ORM\Column(name="interest_completed", type="boolean", nullable=false)
+     * @ORM\Column(name="interest_completed", type="boolean")
      */
     private $interestCompleted;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="status", type="integer", nullable=false)
+     * @ORM\Column(name="status", type="smallint")
      */
     private $status;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
@@ -77,7 +77,7 @@ class ProjectRepaymentDetail
     private $updated;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id", type="integer")
      * @ORM\Id
@@ -90,7 +90,7 @@ class ProjectRepaymentDetail
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Loans")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_loan", referencedColumnName="id_loan")
+     *   @ORM\JoinColumn(name="id_loan", referencedColumnName="id_loan", nullable=false)
      * })
      */
     private $idLoan;
@@ -110,7 +110,7 @@ class ProjectRepaymentDetail
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRepaymentTask")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_task", referencedColumnName="id")
+     *   @ORM\JoinColumn(name="id_task", referencedColumnName="id", nullable=false)
      * })
      */
     private $idTask;

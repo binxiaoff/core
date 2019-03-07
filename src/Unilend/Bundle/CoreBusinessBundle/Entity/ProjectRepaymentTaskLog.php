@@ -15,21 +15,21 @@ class ProjectRepaymentTaskLog
     /**
      * @var string
      *
-     * @ORM\Column(name="repaid_amount", type="decimal", precision=12, scale=2, nullable=false)
+     * @ORM\Column(name="repaid_amount", type="decimal", precision=12, scale=2)
      */
     private $repaidAmount;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="repayment_nb", type="integer", nullable=false)
+     * @ORM\Column(name="repayment_nb", type="integer")
      */
     private $repaymentNb;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="started", type="datetime", nullable=false)
+     * @ORM\Column(name="started", type="datetime")
      */
     private $started;
 
@@ -41,7 +41,7 @@ class ProjectRepaymentTaskLog
     private $ended;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id", type="integer")
      * @ORM\Id
@@ -54,7 +54,7 @@ class ProjectRepaymentTaskLog
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRepaymentTask", inversedBy="taskLogs")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_task", referencedColumnName="id")
+     *   @ORM\JoinColumn(name="id_task", referencedColumnName="id", nullable=false)
      * })
      */
     private $idTask;

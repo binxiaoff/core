@@ -15,7 +15,7 @@ class Villes
     /**
      * @var string
      *
-     * @ORM\Column(name="ville", type="string", length=191, nullable=false)
+     * @ORM\Column(name="ville", type="string", length=191)
      */
     private $ville;
 
@@ -41,28 +41,28 @@ class Villes
     private $numDepartement;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="active", type="integer", nullable=false)
+     * @ORM\Column(name="active", type="boolean", nullable=false, options={"default": 1})
      */
-    private $active = '1';
+    private $active = 1;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="updated", type="datetime", nullable=false)
+     * @ORM\Column(name="updated", type="datetime")
      */
     private $updated;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id_ville", type="integer")
      * @ORM\Id

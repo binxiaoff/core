@@ -14,9 +14,9 @@ use Doctrine\ORM\Mapping as ORM;
 class LoginConnectionAdmin
 {
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="id_user", type="integer", nullable=false)
+     * @ORM\Column(name="id_user", type="integer")
      */
     private $idUser;
 
@@ -30,21 +30,21 @@ class LoginConnectionAdmin
     /**
      * @var string
      *
-     * @ORM\Column(name="email", type="string", length=191, nullable=false)
+     * @ORM\Column(name="email", type="string", length=191)
      */
     private $email;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="date_connexion", type="datetime", nullable=false)
+     * @ORM\Column(name="date_connexion", type="datetime")
      */
     private $dateConnexion;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="ip", type="string", length=50, nullable=false)
+     * @ORM\Column(name="ip", type="string", length=50)
      */
     private $ip;
 
@@ -58,12 +58,12 @@ class LoginConnectionAdmin
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id_login_connection_admin", type="integer")
      * @ORM\Id

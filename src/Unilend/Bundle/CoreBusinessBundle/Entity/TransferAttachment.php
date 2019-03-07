@@ -16,7 +16,7 @@ class TransferAttachment
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
@@ -28,7 +28,7 @@ class TransferAttachment
     private $updated;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id", type="integer")
      * @ORM\Id
@@ -41,7 +41,7 @@ class TransferAttachment
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Transfer", inversedBy="attachments")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_transfer", referencedColumnName="id_transfer")
+     *   @ORM\JoinColumn(name="id_transfer", referencedColumnName="id_transfer", nullable=false)
      * })
      */
     private $idTransfer;
@@ -51,7 +51,7 @@ class TransferAttachment
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Attachment")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_attachment", referencedColumnName="id")
+     *   @ORM\JoinColumn(name="id_attachment", referencedColumnName="id", nullable=false)
      * })
      */
     private $idAttachment;

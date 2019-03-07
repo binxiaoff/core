@@ -7,7 +7,7 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * Wallet
  *
- * @ORM\Table(name="wallet", indexes={@ORM\Index(name="fk_id_type_idx", columns={"id_type"}), @ORM\Index(name="idx_id_client", columns={"id_client"})})
+ * @ORM\Table(name="wallet")
  * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\WalletRepository")
  * @ORM\HasLifecycleCallbacks
  */
@@ -16,21 +16,21 @@ class Wallet
     /**
      * @var string
      *
-     * @ORM\Column(name="available_balance", type="decimal", precision=12, scale=2, nullable=false)
+     * @ORM\Column(name="available_balance", type="decimal", precision=12, scale=2)
      */
     private $availableBalance;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="committed_balance", type="decimal", precision=12, scale=2, nullable=false)
+     * @ORM\Column(name="committed_balance", type="decimal", precision=12, scale=2)
      */
     private $committedBalance;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
@@ -42,7 +42,7 @@ class Wallet
     private $updated;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id", type="integer")
      * @ORM\Id
@@ -55,7 +55,7 @@ class Wallet
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\WalletType")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_type", referencedColumnName="id")
+     *   @ORM\JoinColumn(name="id_type", referencedColumnName="id", nullable=false)
      * })
      */
     private $idType;
@@ -73,7 +73,7 @@ class Wallet
     /**
      * @var string
      *
-     * @ORM\Column(name="wire_transfer_pattern", type="string", length=32, nullable=true)
+     * @ORM\Column(name="wire_transfer_pattern", type="string", length=32, nullable=true, unique=true)
      */
     private $wireTransferPattern;
 

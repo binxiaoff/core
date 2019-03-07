@@ -28,7 +28,7 @@ class ProjectSearch
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\CompanySector")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="sector", referencedColumnName="id_company_sector", nullable=true)
+     *   @ORM\JoinColumn(name="sector", referencedColumnName="id_company_sector")
      * })
      */
     private $sector;
@@ -43,7 +43,7 @@ class ProjectSearch
     /**
      * @var float
      *
-     * @ORM\Column(name="avgRate", type="decimal", precision=39, scale=5, nullable=false)
+     * @ORM\Column(name="avgRate", type="decimal", precision=39, scale=5)
      */
     private $avgRate;
 

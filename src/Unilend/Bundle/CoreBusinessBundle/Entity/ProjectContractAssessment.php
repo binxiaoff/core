@@ -18,21 +18,21 @@ class ProjectContractAssessment
     const STATUS_CHECK_SKIPPED = null;
 
     /**
-     * @var boolean
+     * @var bool
      *
-     * @ORM\Column(name="status", type="boolean", nullable=false)
+     * @ORM\Column(name="status", type="boolean", nullable=true)
      */
     private $status;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id", type="integer")
      * @ORM\Id
@@ -45,7 +45,7 @@ class ProjectContractAssessment
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Projects")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_project", referencedColumnName="id_project")
+     *   @ORM\JoinColumn(name="id_project", referencedColumnName="id_project", nullable=false)
      * })
      */
     private $idProject;
@@ -55,7 +55,7 @@ class ProjectContractAssessment
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\UnderlyingContract")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_contract", referencedColumnName="id_contract")
+     *   @ORM\JoinColumn(name="id_contract", referencedColumnName="id_contract", nullable=false)
      * })
      */
     private $idContract;
@@ -65,7 +65,7 @@ class ProjectContractAssessment
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\UnderlyingContractAttributeType")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_contract_attribute_type", referencedColumnName="id_type")
+     *   @ORM\JoinColumn(name="id_contract_attribute_type", referencedColumnName="id_type", nullable=false)
      * })
      */
     private $idContractAttributeType;

@@ -20,16 +20,16 @@ class Autobid
     const REGULAR_SETTINGS_COUNT = 30;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="status", type="integer", nullable=false)
+     * @ORM\Column(name="status", type="smallint")
      */
     private $status;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="evaluation", type="string", length=2, nullable=false)
+     * @ORM\Column(name="evaluation", type="string", length=2)
      */
     private $evaluation;
 
@@ -38,7 +38,7 @@ class Autobid
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\ProjectPeriod")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_period", referencedColumnName="id_period")
+     *   @ORM\JoinColumn(name="id_period", referencedColumnName="id_period", nullable=false)
      * })
      */
     private $idPeriod;
@@ -46,21 +46,21 @@ class Autobid
     /**
      * @var string
      *
-     * @ORM\Column(name="rate_min", type="decimal", precision=3, scale=1, nullable=false)
+     * @ORM\Column(name="rate_min", type="decimal", precision=3, scale=1)
      */
     private $rateMin;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="amount", type="integer", nullable=false)
+     * @ORM\Column(name="amount", type="integer")
      */
     private $amount;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
@@ -72,7 +72,7 @@ class Autobid
     private $updated;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id_autobid", type="integer")
      * @ORM\Id
@@ -85,7 +85,7 @@ class Autobid
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Wallet")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_lender", referencedColumnName="id")
+     *   @ORM\JoinColumn(name="id_lender", referencedColumnName="id", nullable=false)
      * })
      */
     private $idLender;

@@ -7,7 +7,7 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * GreenpointAttachment
  *
- * @ORM\Table(name="greenpoint_attachment", uniqueConstraints={@ORM\UniqueConstraint(name="id_attachment", columns={"id_attachment"})})
+ * @ORM\Table(name="greenpoint_attachment")
  * @ORM\Entity
  * @ORM\HasLifecycleCallbacks
  */
@@ -39,7 +39,7 @@ class GreenpointAttachment
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
@@ -64,7 +64,7 @@ class GreenpointAttachment
      *
      * @ORM\OneToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Attachment", inversedBy="greenpointAttachment")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_attachment", referencedColumnName="id")
+     *   @ORM\JoinColumn(name="id_attachment", referencedColumnName="id", nullable=false, unique=true)
      * })
      */
     private $idAttachment;

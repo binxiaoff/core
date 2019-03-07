@@ -15,33 +15,33 @@ class PreScoring
     /**
      * @var string
      *
-     * @ORM\Column(name="altares", type="string", length=2, nullable=false)
+     * @ORM\Column(name="altares", type="string", length=2)
      */
     private $altares;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="infolegale", type="string", length=2, nullable=false)
+     * @ORM\Column(name="infolegale", type="string", length=2)
      */
     private $infolegale;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="euler_hermes_grade", type="string", length=2, nullable=false)
+     * @ORM\Column(name="euler_hermes_grade", type="string", length=2)
      */
     private $eulerHermesGrade;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="note", type="integer", nullable=false)
+     * @ORM\Column(name="note", type="integer")
      */
     private $note;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id", type="integer")
      * @ORM\Id

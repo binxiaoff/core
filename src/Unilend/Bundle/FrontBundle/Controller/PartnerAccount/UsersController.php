@@ -197,7 +197,8 @@ class UsersController extends Controller
             ->setPrenom($request->request->get('firstname'))
             ->setEmail($request->request->get('email'))
             ->setTelephone($request->request->get('phone'))
-            ->setIdLangue('fr');
+            ->setIdLangue('fr')
+            ->setRoles([Clients::ROLE_PARTNER]);
 
         $companyClient = new CompanyClient();
         $companyClient

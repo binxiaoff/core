@@ -23,14 +23,14 @@ class NationalitesV2
     private $frF;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="ordre", type="integer", nullable=false)
+     * @ORM\Column(name="ordre", type="integer")
      */
     private $ordre;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id_nationalite", type="integer")
      * @ORM\Id

@@ -1,4 +1,5 @@
 <?php
+
 namespace Unilend\Bundle\CommandBundle\Bridge;
 
 use Symfony\Bundle\FrameworkBundle\Console\Application as FrameworkBundleApplication;
@@ -9,8 +10,8 @@ use Symfony\Component\Lock\{Factory, Lock, Store\SemaphoreStore};
 class Application extends FrameworkBundleApplication
 {
     /**
-    * @inheritDoc
-    */
+     * @inheritDoc
+     */
     public function __construct(KernelInterface $kernel)
     {
         parent::__construct($kernel);
@@ -28,13 +29,17 @@ class Application extends FrameworkBundleApplication
         if (false === $input->hasParameterOption(['--multi-process', '-m'], false)) {
             $semaphoreStore = new SemaphoreStore();
             $factory        = new Factory($semaphoreStore);
-            $lock           = $factory->createLock($this->getCommandName($input));
+            $commandName    = $this->getCommandName($input);
 
-            if (false === $lock->acquire()) {
-                $this->getKernel()->getContainer()->get('monolog.logger.console')->warning('The command ' . $this->getCommandName($input) . ' is already running in another process.');
-                $output->writeln('The command ' . $this->getCommandName($input) . ' is already running in another process.');
+            if ($commandName) {
+                $lock = $factory->createLock($commandName);
 
-                return 0;
+                if (false === $lock->acquire()) {
+                    $this->getKernel()->getContainer()->get('monolog.logger.console')->warning('The command ' . $this->getCommandName($input) . ' is already running in another process.');
+                    $output->writeln('The command ' . $this->getCommandName($input) . ' is already running in another process.');
+
+                    return 0;
+                }
             }
         }
 

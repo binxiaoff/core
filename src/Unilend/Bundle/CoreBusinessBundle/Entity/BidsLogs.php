@@ -25,49 +25,49 @@ class BidsLogs
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="debut", type="datetime", nullable=false)
+     * @ORM\Column(name="debut", type="datetime")
      */
     private $debut;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="fin", type="datetime", nullable=false)
+     * @ORM\Column(name="fin", type="datetime")
      */
     private $fin;
 
     /**
      * @var int
      *
-     * @ORM\Column(name="nb_bids_encours", type="integer", nullable=false)
+     * @ORM\Column(name="nb_bids_encours", type="integer")
      */
     private $nbBidsEncours;
 
     /**
      * @var int
      *
-     * @ORM\Column(name="nb_bids_ko", type="integer", nullable=false)
+     * @ORM\Column(name="nb_bids_ko", type="integer")
      */
     private $nbBidsKo;
 
     /**
      * @var int
      *
-     * @ORM\Column(name="total_bids_ko", type="integer", nullable=false)
+     * @ORM\Column(name="total_bids_ko", type="integer")
      */
     private $totalBidsKo;
 
     /**
      * @var int
      *
-     * @ORM\Column(name="total_bids", type="integer", nullable=false)
+     * @ORM\Column(name="total_bids", type="integer")
      */
     private $totalBids;
 
     /**
      * @var float
      *
-     * @ORM\Column(name="rate_max", type="float", precision=2, scale=1, nullable=false)
+     * @ORM\Column(name="rate_max", type="decimal", precision=2, scale=1)
      */
     private $rateMax;
 

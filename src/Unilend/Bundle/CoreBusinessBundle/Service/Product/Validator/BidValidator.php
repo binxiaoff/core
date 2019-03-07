@@ -3,7 +3,7 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Service\Product\Validator;
 
 use Doctrine\ORM\EntityManagerInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{Bids, ProductAttributeType, UnderlyingContractAttributeType};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{Bids, ProductAttributeType, ProductUnderlyingContract, UnderlyingContractAttributeType};
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\Checker\BidChecker;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\ContractManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductAttributeManager;
@@ -58,8 +58,9 @@ class BidValidator
 
         $hasEligibleContract = false;
         $violationsContract  = [];
-        foreach ($product->getIdContract() as $contract) {
-            $contractCheckResult = $this->contractManager->checkBidEligibility($bid, $contract);
+        /** @var ProductUnderlyingContract $productContract */
+        foreach ($product->getProductContract() as $productContract) {
+            $contractCheckResult = $this->contractManager->checkBidEligibility($bid, $productContract->getIdContract());
             if (0 < count($contractCheckResult)) {
                 $violationsContract = array_merge($violationsContract, $contractCheckResult);
             } else {

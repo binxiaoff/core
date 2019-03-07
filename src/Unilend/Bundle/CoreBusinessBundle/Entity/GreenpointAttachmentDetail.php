@@ -163,7 +163,7 @@ class GreenpointAttachmentDetail
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
@@ -188,7 +188,7 @@ class GreenpointAttachmentDetail
      *
      * @ORM\OneToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\GreenpointAttachment", inversedBy="greenpointAttachmentDetail")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_greenpoint_attachment", referencedColumnName="id_greenpoint_attachment")
+     *   @ORM\JoinColumn(name="id_greenpoint_attachment", referencedColumnName="id_greenpoint_attachment", nullable=false)
      * })
      */
     private $idGreenpointAttachment;

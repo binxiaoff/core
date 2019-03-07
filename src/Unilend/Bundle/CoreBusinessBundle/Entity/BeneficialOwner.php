@@ -7,7 +7,7 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * BeneficialOwner
  *
- * @ORM\Table(name="beneficial_owner", indexes={@ORM\Index(name="idx_beneficial_owner_id_client", columns={"id_client"}), @ORM\Index(name="idx_beneficial_owner_id_declaration", columns={"id_declaration"})})
+ * @ORM\Table(name="beneficial_owner", uniqueConstraints={@ORM\UniqueConstraint(name="id_client_id_declaration", columns={"id_client", "id_declaration"})})
  * @ORM\HasLifecycleCallbacks
  * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\BeneficialOwnerRepository")
  */
@@ -23,7 +23,7 @@ class BeneficialOwner
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
@@ -35,7 +35,7 @@ class BeneficialOwner
     private $updated;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id", type="integer")
      * @ORM\Id
@@ -48,7 +48,7 @@ class BeneficialOwner
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\CompanyBeneficialOwnerDeclaration", inversedBy="beneficialOwners")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_declaration", referencedColumnName="id")
+     *   @ORM\JoinColumn(name="id_declaration", referencedColumnName="id", nullable=false)
      * })
      */
     private $idDeclaration;
@@ -58,7 +58,7 @@ class BeneficialOwner
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Clients")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_client", referencedColumnName="id_client")
+     *   @ORM\JoinColumn(name="id_client", referencedColumnName="id_client", nullable=false)
      * })
      */
     private $idClient;

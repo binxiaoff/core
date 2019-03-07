@@ -16,7 +16,7 @@ class ClientDataHistory
     /**
      * @var string
      *
-     * @ORM\Column(name="field", type="string", length=191, nullable=false)
+     * @ORM\Column(name="field", type="string", length=191)
      */
     private $field;
 
@@ -37,7 +37,7 @@ class ClientDataHistory
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="date_pending", type="datetime", nullable=false)
+     * @ORM\Column(name="date_pending", type="datetime")
      */
     private $datePending;
 

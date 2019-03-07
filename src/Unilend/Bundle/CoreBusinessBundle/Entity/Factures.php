@@ -19,23 +19,23 @@ class Factures
     /**
      * @var string
      *
-     * @ORM\Column(name="num_facture", type="string", length=191, nullable=false)
+     * @ORM\Column(name="num_facture", type="string", length=191)
      */
     private $numFacture;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="date", type="date", nullable=false)
+     * @ORM\Column(name="date", type="date")
      */
     private $date;
 
     /**
-     * @var integer
+     * @var int
      *
      * @deprecated use idProject
      *
-     * @ORM\Column(name="id_company", type="integer", nullable=false)
+     * @ORM\Column(name="id_company", type="integer")
      */
     private $idCompany;
 
@@ -44,69 +44,69 @@ class Factures
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Projects", inversedBy="invoices")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_project", referencedColumnName="id_project")
+     *   @ORM\JoinColumn(name="id_project", referencedColumnName="id_project", nullable=false)
      * })
      */
     private $idProject;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="ordre", type="integer", nullable=false)
+     * @ORM\Column(name="ordre", type="integer")
      */
     private $ordre;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="type_commission", type="integer", nullable=false)
+     * @ORM\Column(name="type_commission", type="smallint")
      */
     private $typeCommission;
 
     /**
      * @var float
      *
-     * @ORM\Column(name="commission", type="float", nullable=false)
+     * @ORM\Column(name="commission", type="decimal", precision=3, scale=1)
      */
     private $commission;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="montant_ht", type="integer", nullable=false)
+     * @ORM\Column(name="montant_ht", type="integer")
      */
     private $montantHt;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="tva", type="integer", nullable=false)
+     * @ORM\Column(name="tva", type="integer")
      */
     private $tva;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="montant_ttc", type="integer", nullable=false)
+     * @ORM\Column(name="montant_ttc", type="integer")
      */
     private $montantTtc;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="updated", type="datetime", nullable=false)
+     * @ORM\Column(name="updated", type="datetime", nullable=true)
      */
     private $updated;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id_facture", type="integer")
      * @ORM\Id

@@ -7,14 +7,19 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * CompanyStatusHistory
  *
- * @ORM\Table(name="company_status_history", indexes={@ORM\Index(name="idx_company_status_history_id_company", columns={"id_company"}), @ORM\Index(name="idx_company_status_history_id_status", columns={"id_status"}), @ORM\Index(name="idx_company_status_history_id_user", columns={"id_user"})})
+ * @ORM\Table(name="company_status_history", indexes={
+ *     @ORM\Index(name="idx_company_status_history_id_company", columns={"id_company"}),
+ *     @ORM\Index(name="idx_company_status_history_id_status", columns={"id_status"}),
+ *     @ORM\Index(name="idx_company_status_history_id_user", columns={"id_user"}),
+ *     @ORM\Index(name="idx_company_status_history_changed_on", columns={"changed_on"})
+ * })
  * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\CompanyStatusHistoryRepository")
  * @ORM\HasLifecycleCallbacks
  */
 class CompanyStatusHistory
 {
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id", type="integer")
      * @ORM\Id
@@ -27,7 +32,7 @@ class CompanyStatusHistory
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Companies")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_company", referencedColumnName="id_company")
+     *   @ORM\JoinColumn(name="id_company", referencedColumnName="id_company", nullable=false)
      * })
      */
     private $idCompany;
@@ -37,7 +42,7 @@ class CompanyStatusHistory
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_status", referencedColumnName="id")
+     *   @ORM\JoinColumn(name="id_status", referencedColumnName="id", nullable=false)
      * })
      */
     private $idStatus;
@@ -47,7 +52,7 @@ class CompanyStatusHistory
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Users")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_user", referencedColumnName="id_user")
+     *   @ORM\JoinColumn(name="id_user", referencedColumnName="id_user", nullable=false)
      * })
      */
     private $idUser;
@@ -83,7 +88,7 @@ class CompanyStatusHistory
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 

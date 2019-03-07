@@ -13,42 +13,42 @@ use Doctrine\ORM\Mapping as ORM;
 class ClientSettings
 {
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="id_client", type="integer", nullable=false)
+     * @ORM\Column(name="id_client", type="integer")
      */
     private $idClient;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="id_type", type="integer", nullable=false)
+     * @ORM\Column(name="id_type", type="integer")
      */
     private $idType;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="value", type="string", length=191, nullable=false)
+     * @ORM\Column(name="value", type="string", length=191)
      */
     private $value;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="updated", type="datetime", nullable=false)
+     * @ORM\Column(name="updated", type="datetime")
      */
     private $updated;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id_setting", type="integer")
      * @ORM\Id

@@ -16,7 +16,7 @@ class SepaRejectionReason
     /**
      * @var string
      *
-     * @ORM\Column(name="iso_code", type="string", length=4, nullable=false)
+     * @ORM\Column(name="iso_code", type="string", length=4)
      * @ORM\Id
      */
     var $isoCode;
@@ -24,7 +24,7 @@ class SepaRejectionReason
     /**
      * @var string
      *
-     * @ORM\Column(name="label", type="string", length=191, nullable=false)
+     * @ORM\Column(name="label", type="string", length=191)
      */
     var $label;
 

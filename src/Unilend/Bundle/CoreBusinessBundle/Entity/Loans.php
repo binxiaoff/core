@@ -28,23 +28,23 @@ class Loans
     private $idTransfer;
 
     /**
-     * @var float
+     * @var int
      *
-     * @ORM\Column(name="amount", type="float", precision=10, scale=0, nullable=false)
+     * @ORM\Column(name="amount", type="integer")
      */
     private $amount;
 
     /**
      * @var float
      *
-     * @ORM\Column(name="rate", type="float", precision=10, scale=0, nullable=false)
+     * @ORM\Column(name="rate", type="decimal", precision=3, scale=1)
      */
     private $rate;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="status", type="integer", nullable=false)
+     * @ORM\Column(name="status", type="smallint")
      */
     private $status;
 
@@ -58,19 +58,19 @@ class Loans
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="updated", type="datetime", nullable=false)
+     * @ORM\Column(name="updated", type="datetime", nullable=true)
      */
     private $updated;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id_loan", type="integer")
      * @ORM\Id
@@ -83,7 +83,7 @@ class Loans
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Wallet")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_lender", referencedColumnName="id")
+     *   @ORM\JoinColumn(name="id_lender", referencedColumnName="id", nullable=false)
      * })
      */
     private $idLender;
@@ -93,7 +93,7 @@ class Loans
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Projects")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_project", referencedColumnName="id_project")
+     *   @ORM\JoinColumn(name="id_project", referencedColumnName="id_project", nullable=false)
      * })
      */
     private $idProject;
@@ -103,7 +103,7 @@ class Loans
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\UnderlyingContract")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_type_contract", referencedColumnName="id_contract")
+     *   @ORM\JoinColumn(name="id_type_contract", referencedColumnName="id_contract", nullable=false)
      * })
      */
     private $idTypeContract;

@@ -15,19 +15,19 @@ class PartnerProduct
     /**
      * @var string
      *
-     * @ORM\Column(name="commission_rate_funds", type="decimal", precision=4, scale=2, nullable=false)
+     * @ORM\Column(name="commission_rate_funds", type="decimal", precision=4, scale=2)
      */
     private $commissionRateFunds;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="commission_rate_repayment", type="decimal", precision=4, scale=2, nullable=false)
+     * @ORM\Column(name="commission_rate_repayment", type="decimal", precision=4, scale=2)
      */
     private $commissionRateRepayment;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id", type="integer")
      * @ORM\Id
@@ -40,7 +40,7 @@ class PartnerProduct
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Product")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_product", referencedColumnName="id_product")
+     *   @ORM\JoinColumn(name="id_product", referencedColumnName="id_product", nullable=false)
      * })
      */
     private $idProduct;
@@ -50,7 +50,7 @@ class PartnerProduct
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Partner", inversedBy="productAssociations")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_partner", referencedColumnName="id")
+     *   @ORM\JoinColumn(name="id_partner", referencedColumnName="id", nullable=false)
      * })
      */
     private $idPartner;

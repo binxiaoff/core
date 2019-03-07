@@ -7,7 +7,7 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * ProductAttributeType
  *
- * @ORM\Table(name="product_attribute_type", uniqueConstraints={@ORM\UniqueConstraint(name="unq_attribute_type_label", columns={"label"})})
+ * @ORM\Table(name="product_attribute_type")
  * @ORM\Entity
  */
 class ProductAttributeType
@@ -33,26 +33,26 @@ class ProductAttributeType
     /**
      * @var string
      *
-     * @ORM\Column(name="label", type="string", length=191, nullable=false)
+     * @ORM\Column(name="label", type="string", length=191, unique=true)
      */
     private $label;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="updated", type="datetime", nullable=false)
+     * @ORM\Column(name="updated", type="datetime")
      */
     private $updated;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id_type", type="smallint")
      * @ORM\Id

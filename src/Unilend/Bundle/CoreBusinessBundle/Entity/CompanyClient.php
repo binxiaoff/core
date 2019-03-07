@@ -7,7 +7,7 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * CompanyClient
  *
- * @ORM\Table(name="company_client", indexes={@ORM\Index(name="fk_company_client_id_company", columns={"id_company"}), @ORM\Index(name="fk_company_client_id_client", columns={"id_client"})})
+ * @ORM\Table(name="company_client")
  * @ORM\Entity
  * @ORM\HasLifecycleCallbacks
  */
@@ -16,14 +16,14 @@ class CompanyClient
     /**
      * @var string
      *
-     * @ORM\Column(name="role", type="string", length=191, nullable=false)
+     * @ORM\Column(name="role", type="string", length=191)
      */
     private $role;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
@@ -35,7 +35,7 @@ class CompanyClient
     private $updated;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id", type="integer")
      * @ORM\Id
@@ -48,7 +48,7 @@ class CompanyClient
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Companies")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_company", referencedColumnName="id_company")
+     *   @ORM\JoinColumn(name="id_company", referencedColumnName="id_company", nullable=false)
      * })
      */
     private $idCompany;
@@ -58,12 +58,10 @@ class CompanyClient
      *
      * @ORM\OneToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Clients", inversedBy="companyClient")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_client", referencedColumnName="id_client")
+     *   @ORM\JoinColumn(name="id_client", referencedColumnName="id_client", nullable=false)
      * })
      */
     private $idClient;
-
-
 
     /**
      * Set role

@@ -16,28 +16,28 @@ class ProjectNotification
     /**
      * @var string
      *
-     * @ORM\Column(name="subject", type="string", length=191, nullable=false)
+     * @ORM\Column(name="subject", type="string", length=191)
      */
     private $subject;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="content", type="text", length=16777215, nullable=false)
+     * @ORM\Column(name="content", type="text", length=16777215)
      */
     private $content;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="notification_date", type="datetime", nullable=false)
+     * @ORM\Column(name="notification_date", type="datetime")
      */
     private $notificationDate;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
@@ -49,7 +49,7 @@ class ProjectNotification
     private $updated;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id", type="integer")
      * @ORM\Id
@@ -62,7 +62,7 @@ class ProjectNotification
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Users")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_user", referencedColumnName="id_user")
+     *   @ORM\JoinColumn(name="id_user", referencedColumnName="id_user", nullable=false)
      * })
      */
     private $idUser;
@@ -72,7 +72,7 @@ class ProjectNotification
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Projects")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_project", referencedColumnName="id_project")
+     *   @ORM\JoinColumn(name="id_project", referencedColumnName="id_project", nullable=false)
      * })
      */
     private $idProject;

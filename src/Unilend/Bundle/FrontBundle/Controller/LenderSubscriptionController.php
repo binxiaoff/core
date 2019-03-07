@@ -35,18 +35,20 @@ class LenderSubscriptionController extends Controller
             return $response;
         }
 
-        $client        = new Clients();
-        $company       = new Companies();
-        $sponsorCode   = $this->get('session')->get('sponsorCode');
+        $client      = new Clients();
+        $company     = new Companies();
+        $sponsorCode = $this->get('session')->get('sponsorCode');
 
         $this->addClientSources($client);
 
         if (false === empty($this->get('session')->get('landingPageData'))) {
             $landingPageData = $this->get('session')->get('landingPageData');
             $this->get('session')->remove('landingPageData');
-            $client->setNom($landingPageData['prospect_name']);
-            $client->setPrenom($landingPageData['prospect_first_name']);
-            $client->setEmail($landingPageData['prospect_email']);
+            $client
+                ->setNom($landingPageData['prospect_name'])
+                ->setPrenom($landingPageData['prospect_first_name'])
+                ->setEmail($landingPageData['prospect_email'])
+                ->setRoles([Clients::ROLE_LENDER]);
 
             if (isset($landingPageData['sponsor_code']) && null !== $this->get('unilend.service.sponsorship_manager')->getCurrentSponsorshipCampaign()) {
                 $this->get('session')->set('sponsorCode', $landingPageData['sponsor_code']);
@@ -127,9 +129,9 @@ class LenderSubscriptionController extends Controller
     }
 
     /**
-     * @param Clients         $client
-     * @param FormInterface   $form
-     * @param Request         $request
+     * @param Clients       $client
+     * @param FormInterface $form
+     * @param Request       $request
      *
      * @return bool
      * @throws \Doctrine\DBAL\ConnectionException
@@ -278,10 +280,10 @@ class LenderSubscriptionController extends Controller
     }
 
     /**
-     * @param Clients        $client
-     * @param Companies      $company
-     * @param FormInterface  $form
-     * @param Request        $request
+     * @param Clients       $client
+     * @param Companies     $company
+     * @param FormInterface $form
+     * @param Request       $request
      *
      * @return bool
      * @throws \Doctrine\DBAL\ConnectionException
@@ -536,7 +538,7 @@ class LenderSubscriptionController extends Controller
     }
 
     /**
-     * @param FormInterface   $form
+     * @param FormInterface $form
      */
     private function checkPostalAddressSection(FormInterface $form): void
     {
@@ -578,8 +580,8 @@ class LenderSubscriptionController extends Controller
         $client        = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->findOneBy(['hash' => $clientHash]);
 
         if ($client->isNaturalPerson()) {
-            $clientAddress  = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientAddress')->findLastModifiedNotArchivedAddressByType($client, AddressType::TYPE_MAIN_ADDRESS);
-            $countryId      = $clientAddress->getIdCountry()->getIdPays();
+            $clientAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientAddress')->findLastModifiedNotArchivedAddressByType($client, AddressType::TYPE_MAIN_ADDRESS);
+            $countryId     = $clientAddress->getIdCountry()->getIdPays();
         } else {
             $company        = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $client]);
             $companyAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')->findLastModifiedNotArchivedAddressByType($company, AddressType::TYPE_MAIN_ADDRESS);
@@ -628,7 +630,7 @@ class LenderSubscriptionController extends Controller
      */
     private function handleDocumentsForm(FormInterface $form, FileBag $fileBag, int $countryId): bool
     {
-        $translator  = $this->get('translator');
+        $translator = $this->get('translator');
         /** @var Clients $client */
         $client              = $form->get('client')->getData();
         $iban                = $form->get('bankAccount')->get('iban')->getData();
@@ -708,7 +710,7 @@ class LenderSubscriptionController extends Controller
         foreach ($files as $attachmentTypeId => $file) {
             if ($file instanceof UploadedFile) {
                 try {
-                    $attachment = $this->upload($client,  $attachmentTypeId, $file);
+                    $attachment = $this->upload($client, $attachmentTypeId, $file);
 
                     if ($attachmentTypeId == AttachmentType::JUSTIFICATIF_DOMICILE && $attachment instanceof Attachment) {
                         $address = $entityManager
@@ -784,7 +786,7 @@ class LenderSubscriptionController extends Controller
         foreach ($files as $attachmentTypeId => $file) {
             if ($file instanceof UploadedFile) {
                 try {
-                    $this->upload($client,  $attachmentTypeId, $file);
+                    $this->upload($client, $attachmentTypeId, $file);
                 } catch (\Exception $exception) {
                     $form->addError(new FormError($uploadErrorMessage));
                     $this->get('logger')->error('Lender attachment could not be uploaded. Message : ' . $exception->getMessage(), [
@@ -1029,7 +1031,7 @@ class LenderSubscriptionController extends Controller
     {
         /** @var \prospects $prospect */
         $prospect    = $this->get('unilend.service.entity_manager')->getRepository('prospects');
-        $translator  = $this->get('translator');;
+        $translator  = $this->get('translator');
         $formManager = $this->get('unilend.frontbundle.service.form_manager');
         $post        = $formManager->cleanPostData($request->request->all());
 
@@ -1094,7 +1096,7 @@ class LenderSubscriptionController extends Controller
                 return $this->redirectToRoute('projects_list');
             }
 
-            if ($authorizationChecker->isGranted(Clients::ROLE_PARTNER_DEFAULT)) {
+            if ($authorizationChecker->isGranted(Clients::ROLE_PARTNER)) {
                 return $this->redirectToRoute('partner_home');
             }
         } elseif (null !== $clientHash) {
@@ -1274,9 +1276,9 @@ class LenderSubscriptionController extends Controller
     public function checkAgeAction(Request $request): Response
     {
         if ($request->isXmlHttpRequest()) {
-            $translator = $this->get('translator');
+            $translator              = $this->get('translator');
             $lenderValidationManager = $this->get('unilend.service.lender_validation_manager');
-            $birthday = \DateTime::createFromFormat('Y-m-d', $request->request->get('year_of_birth') . '-' . $request->request->get('month_of_birth') . '-' . $request->request->get('day_of_birth'));
+            $birthday                = \DateTime::createFromFormat('Y-m-d', $request->request->get('year_of_birth') . '-' . $request->request->get('month_of_birth') . '-' . $request->request->get('day_of_birth'));
 
             if ($lenderValidationManager->validateAge($birthday)) {
                 return new JsonResponse([
@@ -1356,7 +1358,7 @@ class LenderSubscriptionController extends Controller
     public function checkCityInseeCodeAction(Request $request): Response
     {
         if ($request->isXmlHttpRequest()) {
-            $country = $request->query->get('country');
+            $country   = $request->query->get('country');
             $inseeCode = $request->query->get('insee');
 
             if (false === empty($country) && Pays::COUNTRY_FRANCE != $country) {

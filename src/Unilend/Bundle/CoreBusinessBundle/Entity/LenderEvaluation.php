@@ -15,21 +15,21 @@ class LenderEvaluation
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="expiry_date", type="datetime", nullable=false)
+     * @ORM\Column(name="expiry_date", type="datetime", nullable=true)
      */
     private $expiryDate;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="updated", type="datetime", nullable=false)
+     * @ORM\Column(name="updated", type="datetime")
      */
     private $updated;
 
@@ -41,7 +41,7 @@ class LenderEvaluation
     private $validated;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id_lender_evaluation", type="integer")
      * @ORM\Id
@@ -54,7 +54,7 @@ class LenderEvaluation
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\LenderQuestionnaire")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_lender_questionnaire", referencedColumnName="id_lender_questionnaire")
+     *   @ORM\JoinColumn(name="id_lender_questionnaire", referencedColumnName="id_lender_questionnaire", nullable=false)
      * })
      */
     private $idLenderQuestionnaire;
@@ -64,7 +64,7 @@ class LenderEvaluation
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Wallet")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_lender", referencedColumnName="id")
+     *   @ORM\JoinColumn(name="id_lender", referencedColumnName="id", nullable=false)
      * })
      */
     private $idLender;

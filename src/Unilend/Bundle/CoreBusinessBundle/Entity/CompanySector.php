@@ -15,26 +15,26 @@ class CompanySector
     /**
      * @var string
      *
-     * @ORM\Column(name="sector", type="string", length=100, nullable=false)
+     * @ORM\Column(name="sector", type="string", length=100)
      */
     private $sector;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="updated", type="datetime", nullable=false)
+     * @ORM\Column(name="updated", type="datetime")
      */
     private $updated;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id_company_sector", type="integer")
      * @ORM\Id
