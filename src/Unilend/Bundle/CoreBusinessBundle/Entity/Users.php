@@ -7,7 +7,7 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * Users
  *
- * @ORM\Table(name="users", uniqueConstraints={@ORM\UniqueConstraint(name="email", columns={"email"})})
+ * @ORM\Table(name="users")
  * @ORM\Entity
  * @ORM\HasLifecycleCallbacks
  */
@@ -33,35 +33,35 @@ class Users
     /**
      * @var string
      *
-     * @ORM\Column(name="email", type="string", length=191, nullable=false)
+     * @ORM\Column(name="email", type="string", length=191, unique=true)
      */
     private $email;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="firstname", type="string", length=191, nullable=false)
+     * @ORM\Column(name="firstname", type="string", length=191)
      */
     private $firstname;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="name", type="string", length=191, nullable=false)
+     * @ORM\Column(name="name", type="string", length=191)
      */
     private $name;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="phone", type="string", length=50, nullable=true)
+     * @ORM\Column(name="phone", type="string", length=50)
      */
     private $phone;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="mobile", type="string", length=50, nullable=true)
+     * @ORM\Column(name="mobile", type="string", length=50)
      */
     private $mobile;
 
@@ -82,47 +82,47 @@ class Users
     /**
      * @var string
      *
-     * @ORM\Column(name="password", type="string", length=191, nullable=false)
+     * @ORM\Column(name="password", type="string", length=191)
      */
     private $password;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="password_edited", type="datetime", nullable=true)
+     * @ORM\Column(name="password_edited", type="datetime")
      */
     private $passwordEdited;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="status", type="integer", nullable=false)
+     * @ORM\Column(name="status", type="integer")
      */
     private $status;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="updated", type="datetime", nullable=true)
+     * @ORM\Column(name="updated", type="datetime")
      */
     private $updated;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="lastlogin", type="datetime", nullable=true)
+     * @ORM\Column(name="lastlogin", type="datetime")
      */
     private $lastlogin;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id_user", type="integer")
      * @ORM\Id

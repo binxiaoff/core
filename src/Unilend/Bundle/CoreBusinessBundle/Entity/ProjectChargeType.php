@@ -7,7 +7,7 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * ProjectChargeType
  *
- * @ORM\Table(name="project_charge_type", uniqueConstraints={@ORM\UniqueConstraint(name="label_UNIQUE", columns={"label"})})
+ * @ORM\Table(name="project_charge_type")
  * @ORM\Entity
  */
 class ProjectChargeType
@@ -24,7 +24,7 @@ class ProjectChargeType
     const TYPE_DECLARATIONS_CREANCE             = 'declarations_creance';
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id", type="smallint")
      * @ORM\Id
@@ -35,7 +35,7 @@ class ProjectChargeType
     /**
      * @var string
      *
-     * @ORM\Column(name="label", type="string", length=191, nullable=false)
+     * @ORM\Column(name="label", type="string", length=191, unique=true)
      */
     private $label;
 

@@ -53,8 +53,8 @@ class ProjectValidator
             }
         }
 
-        foreach ($product->getIdContract() as $contract) {
-            $contractCheckResult = $this->contractManager->checkProjectEligibility($project, $contract);
+        foreach ($product->getProductContract() as $productContract) {
+            $contractCheckResult = $this->contractManager->checkProjectEligibility($project, $productContract->getIdContract());
             if (0 < count($contractCheckResult)) {
                 return [$contractCheckResult];
             }

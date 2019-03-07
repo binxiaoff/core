@@ -23,33 +23,33 @@ class Settings
     /**
      * @var string
      *
-     * @ORM\Column(name="type", type="string", length=191, nullable=false)
+     * @ORM\Column(name="type", type="string", length=191, unique=true)
      */
     private $type;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="value", type="text", length=16777215, nullable=false)
+     * @ORM\Column(name="value", type="text", length=16777215)
      */
     private $value;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="updated", type="datetime", nullable=false)
+     * @ORM\Column(name="updated", type="datetime", nullable=true)
      */
     private $updated;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id_setting", type="integer")
      * @ORM\Id

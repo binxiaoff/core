@@ -2,7 +2,7 @@ imports:
     - { resource: parameters.yml }
     - { resource: security.yml }
     - { resource: parameters_extended.yml, ignore_errors: true }
-    - { resource: dql_mysql_functions.yml, ignore_errors: true }
+    - { resource: dql_mysql_functions.yml }
 
 framework:
     secret: "%secret%"
@@ -55,7 +55,6 @@ cmf_routing:
 
 twig:
     strict_variables: "%kernel.debug%"
-    exception_controller:  UnilendFrontBundle:Exception:show
     paths:
         - "%kernel.root_dir%/Resources/views/frontbundle/"
     form_themes:
@@ -82,7 +81,7 @@ doctrine:
                     enum: string
                 options:
                     x_reconnect_attempts: 3
-
+                schema_filter: ~^(?!(project_search|xerfi))~
             # connection dedicated to Doctrine Migration bundle
             migration:
                 driver:        "%database_driver%"
@@ -101,30 +100,19 @@ doctrine:
                     enum: string
                 options:
                     x_reconnect_attempts: 3
+                schema_filter: ~^(?!(project_search|xerfi))~
         types:
           datetime: Unilend\Bridge\Doctrine\DBAL\NotNullDateTimeType
     orm:
         auto_generate_proxy_classes: "%kernel.debug%"
         auto_mapping: true
-        result_cache_driver:
-            type: memcache
-            host: "%server1.memcache_host%"
-            port: "%server1.memcache_port%"
-            instance_class: Memcache
-        query_cache_driver:
-            type: memcache
-            host: "%server1.memcache_host%"
-            port: "%server1.memcache_port%"
-            instance_class: Memcache
-        metadata_cache_driver:
-            type: memcache
-            host: "%server1.memcache_host%"
-            port: "%server1.memcache_port%"
-            instance_class: Memcache
 
 doctrine_migrations:
-    name: Unilend Application Migrations
-    organize_migrations: BY_YEAR_AND_MONTH
+    name: Database Migrations
+    dir_name: '%kernel.project_dir%/src/Migrations'
+    namespace: DoctrineMigrations
+    organize_migrations: BY_YEAR
+    column_length: 30
 
 doctrine_mongodb:
     connections:
@@ -307,11 +295,6 @@ sonata_cache:
             php_cache_enabled: true
             types: [translations]
             servers: "%sonata_cache.servers%"
-
-knp_mailjet:
-    api_key:    "%mailjet.api_key%"
-    secret_key: "%mailjet.api_secret%"
-    event_endpoint_token: yclrcchxk0p3lujy82
 
 eight_points_guzzle:
     clients:

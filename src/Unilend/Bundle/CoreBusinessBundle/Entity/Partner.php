@@ -8,7 +8,7 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * Partner
  *
- * @ORM\Table(name="partner", uniqueConstraints={@ORM\UniqueConstraint(name="label", columns={"label"})}, indexes={@ORM\Index(name="fk_partner_partner_type_type", columns={"type"})})
+ * @ORM\Table(name="partner")
  * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\PartnerRepository")
  */
 class Partner
@@ -32,7 +32,7 @@ class Partner
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Companies")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_company", referencedColumnName="id_company")
+     *   @ORM\JoinColumn(name="id_company", referencedColumnName="id_company", nullable=false)
      * })
      */
     private $idCompany;
@@ -40,7 +40,7 @@ class Partner
     /**
      * @var string
      *
-     * @ORM\Column(name="label", type="string", length=191, nullable=false)
+     * @ORM\Column(name="label", type="string", length=191, unique=true)
      */
     private $label;
 
@@ -52,16 +52,16 @@ class Partner
     private $logo;
 
     /**
-     * @var boolean
+     * @var bool
      *
-     * @ORM\Column(name="prospect", type="boolean", nullable=false)
+     * @ORM\Column(name="prospect", type="boolean", nullable=false, options={"default": true})
      */
     private $prospect;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="status", type="integer", nullable=false)
+     * @ORM\Column(name="status", type="smallint")
      */
     private $status;
 
@@ -78,7 +78,7 @@ class Partner
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
@@ -90,7 +90,7 @@ class Partner
     private $updated;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id", type="integer")
      * @ORM\Id
@@ -103,7 +103,7 @@ class Partner
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\PartnerType")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="type", referencedColumnName="id")
+     *   @ORM\JoinColumn(name="type", referencedColumnName="id", nullable=false)
      * })
      */
     private $type;
@@ -215,7 +215,7 @@ class Partner
     /**
      * Set prospect
      *
-     * @param boolean $prospect
+     * @param bool $prospect
      *
      * @return Partner
      */
@@ -229,7 +229,7 @@ class Partner
     /**
      * Get prospect
      *
-     * @return boolean
+     * @return bool
      */
     public function getProspect()
     {

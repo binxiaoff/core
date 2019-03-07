@@ -20,12 +20,12 @@ class ProjectStatusHistoryReason
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id", type="integer")
      * @ORM\Id
@@ -48,7 +48,7 @@ class ProjectStatusHistoryReason
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatusHistory")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_project_status_history", referencedColumnName="id_project_status_history")
+     *   @ORM\JoinColumn(name="id_project_status_history", referencedColumnName="id_project_status_history", nullable=false)
      * })
      */
     private $idProjectStatusHistory;

@@ -7,7 +7,7 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * PartnerThirdPartyType
  *
- * @ORM\Table(name="partner_third_party_type", uniqueConstraints={@ORM\UniqueConstraint(name="unq_partner_third_party_type_label", columns={"label"})})
+ * @ORM\Table(name="partner_third_party_type")
  * @ORM\Entity
  */
 class PartnerThirdPartyType
@@ -15,12 +15,12 @@ class PartnerThirdPartyType
     /**
      * @var string
      *
-     * @ORM\Column(name="label", type="string", length=191, nullable=false)
+     * @ORM\Column(name="label", type="string", length=191, unique=true)
      */
     private $label;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id", type="integer")
      * @ORM\Id

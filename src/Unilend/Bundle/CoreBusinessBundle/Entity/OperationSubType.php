@@ -7,7 +7,7 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * OperationSubType
  *
- * @ORM\Table(name="operation_sub_type", uniqueConstraints={@ORM\UniqueConstraint(name="unq_operation_sub_type_label", columns={"label"})}, indexes={@ORM\Index(name="idx_operation_sub_type_id_parent", columns={"id_parent"})})
+ * @ORM\Table(name="operation_sub_type", indexes={@ORM\Index(name="idx_operation_sub_type_id_parent", columns={"id_parent"})})
  * @ORM\Entity
  */
 class OperationSubType
@@ -39,12 +39,12 @@ class OperationSubType
     /**
      * @var string
      *
-     * @ORM\Column(name="label", type="string", length=191, nullable=false)
+     * @ORM\Column(name="label", type="string", length=191, unique=true)
      */
     private $label;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id", type="integer")
      * @ORM\Id
@@ -57,7 +57,7 @@ class OperationSubType
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\OperationType")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_parent", referencedColumnName="id")
+     *   @ORM\JoinColumn(name="id_parent", referencedColumnName="id", nullable=false)
      * })
      */
     private $idParent;

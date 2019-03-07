@@ -17,7 +17,7 @@ class UsersTypesZones
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\UsersTypes")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_user_type", referencedColumnName="id_user_type")
+     *   @ORM\JoinColumn(name="id_user_type", referencedColumnName="id_user_type", nullable=false)
      * })
      */
     private $idUserType;
@@ -27,7 +27,7 @@ class UsersTypesZones
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Zones")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_zone", referencedColumnName="id_zone")
+     *   @ORM\JoinColumn(name="id_zone", referencedColumnName="id_zone", nullable=false)
      * })
      */
     private $idZone;
@@ -35,19 +35,19 @@ class UsersTypesZones
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="updated", type="datetime", nullable=false)
+     * @ORM\Column(name="updated", type="datetime")
      */
     private $updated;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id_user_type_zone", type="integer")
      * @ORM\Id

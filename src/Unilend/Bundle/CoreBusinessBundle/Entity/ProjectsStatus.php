@@ -7,7 +7,7 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * ProjectsStatus
  *
- * @ORM\Table(name="projects_status", uniqueConstraints={@ORM\UniqueConstraint(name="status", columns={"status"})})
+ * @ORM\Table(name="projects_status")
  * @ORM\Entity
  */
 class ProjectsStatus
@@ -59,19 +59,19 @@ class ProjectsStatus
     /**
      * @var string
      *
-     * @ORM\Column(name="label", type="string", length=191, nullable=false)
+     * @ORM\Column(name="label", type="string", length=191)
      */
     private $label;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="status", type="integer", nullable=false)
+     * @ORM\Column(name="status", type="integer", unique=true)
      */
     private $status;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id_project_status", type="integer")
      * @ORM\Id

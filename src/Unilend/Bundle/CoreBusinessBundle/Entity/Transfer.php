@@ -17,26 +17,26 @@ class Transfer
     /**
      * @var string
      *
-     * @ORM\Column(name="comment", type="string", length=110, nullable=false)
+     * @ORM\Column(name="comment", type="string", length=110)
      */
     private $comment;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="updated", type="datetime", nullable=false)
+     * @ORM\Column(name="updated", type="datetime")
      */
     private $updated;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id_transfer", type="integer")
      * @ORM\Id
@@ -49,7 +49,7 @@ class Transfer
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\TransferType")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_transfer_type", referencedColumnName="id_type")
+     *   @ORM\JoinColumn(name="id_transfer_type", referencedColumnName="id_type", nullable=false)
      * })
      */
     private $idTransferType;
@@ -59,7 +59,7 @@ class Transfer
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Clients")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_client_receiver", referencedColumnName="id_client")
+     *   @ORM\JoinColumn(name="id_client_receiver", referencedColumnName="id_client", nullable=false)
      * })
      */
     private $idClientReceiver;
@@ -69,7 +69,7 @@ class Transfer
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Clients")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_client_origin", referencedColumnName="id_client")
+     *   @ORM\JoinColumn(name="id_client_origin", referencedColumnName="id_client", nullable=false)
      * })
      */
     private $idClientOrigin;

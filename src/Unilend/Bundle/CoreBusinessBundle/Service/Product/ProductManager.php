@@ -156,8 +156,8 @@ abstract class ProductManager
 
         $durationContractMax = null;
 
-        foreach ($product->getIdContract() as $contract) {
-            $durationContract = $this->contractManager->getMaxEligibleDuration($contract);
+        foreach ($product->getProductContract() as $productContract) {
+            $durationContract = $this->contractManager->getMaxEligibleDuration($productContract->getIdContract());
             if (null === $durationContractMax) {
                 $durationContractMax = $durationContract;
             } else {
@@ -264,7 +264,8 @@ abstract class ProductManager
         $product          = $this->convertProduct($product);
         $autobidContracts = [];
 
-        foreach ($product->getIdContract() as $contract) {
+        foreach ($product->getProductContract() as $productContract) {
+            $contract = $productContract->getIdContract();
             if ($this->contractManager->isAutobidSettingsEligible($contract)) {
                 $autobidContract    = clone $contract;
                 $autobidContracts[] = $autobidContract;

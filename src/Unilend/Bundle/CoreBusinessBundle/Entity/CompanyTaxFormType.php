@@ -7,7 +7,7 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * CompanyTaxFormType
  *
- * @ORM\Table(name="company_tax_form_type", uniqueConstraints={@ORM\UniqueConstraint(name="unq_company_tax_form_type_label", columns={"label"})})
+ * @ORM\Table(name="company_tax_form_type")
  * @ORM\Entity
  */
 class CompanyTaxFormType
@@ -15,12 +15,12 @@ class CompanyTaxFormType
     /**
      * @var string
      *
-     * @ORM\Column(name="label", type="string", length=100, nullable=false)
+     * @ORM\Column(name="label", type="string", length=100, unique=true)
      */
     private $label;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id_type", type="integer")
      * @ORM\Id

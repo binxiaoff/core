@@ -20,6 +20,7 @@ parameters:
     mongodb_auth_source:              ws_call
     mongodb_ssl_connect:              false
     mongodb_replica_set_name:         ~
+    mongodb.log.enable:               false
 
     mailjet.api_key:                  ~
     mailjet.api_secret:               ~
@@ -107,12 +108,12 @@ parameters:
 
     path.static:                      /data/sites/unilend/public/default/
     path.shared:                      /data/medias/nfs/
-    path.shared_tmp:                  %path.shared%tmp/
-    path.user:                        %path.shared%var/
-    path.sftp:                        %path.shared%sftp/
-    path.protected:                   %path.shared%protected/
+    path.shared_tmp:                  "%path.shared%tmp/"
+    path.user:                        "%path.shared%var/"
+    path.sftp:                        "%path.shared%sftp/"
+    path.protected:                   "%path.shared%protected/"
     path.logs:                        /data/log
-    path.payline:                     %path.logs%/payline
+    path.payline:                     "%path.logs%/payline"
 
     mapbox.token:                     ''
 

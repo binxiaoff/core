@@ -13,28 +13,28 @@ use Doctrine\ORM\Mapping as ORM;
 class PreviousPasswords
 {
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="id_user", type="integer", nullable=false)
+     * @ORM\Column(name="id_user", type="integer")
      */
     private $idUser;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="password", type="string", length=64, nullable=false)
+     * @ORM\Column(name="password", type="string", length=64)
      */
     private $password;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="archived", type="datetime", nullable=false)
+     * @ORM\Column(name="archived", type="datetime")
      */
     private $archived;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id", type="integer")
      * @ORM\Id

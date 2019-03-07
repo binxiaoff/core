@@ -25,8 +25,8 @@ class LenderValidator extends ClientValidator
 
         $hasEligibleContract = false;
         $violationsContract  = [];
-        foreach ($product->getIdContract() as $contract) {
-            $contractCheckResult = $this->contractManager->checkClientEligibility($client, $contract);
+        foreach ($product->getProductContract() as $productContract) {
+            $contractCheckResult = $this->contractManager->checkClientEligibility($client, $productContract->getIdContract());
             if (0 < count($contractCheckResult)) {
                 $violationsContract = array_merge($violationsContract, $contractCheckResult);
             } else {

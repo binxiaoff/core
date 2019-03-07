@@ -16,7 +16,7 @@ class RiskDataMonitoringAssessment
     /**
      * @var string
      *
-     * @ORM\Column(name="value", type="string", length=191, nullable=false)
+     * @ORM\Column(name="value", type="string", length=191)
      */
     private $value;
 
@@ -33,12 +33,12 @@ class RiskDataMonitoringAssessment
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id", type="integer")
      * @ORM\Id
@@ -51,7 +51,7 @@ class RiskDataMonitoringAssessment
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\RiskDataMonitoringCallLog")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_risk_data_monitoring_call_log", referencedColumnName="id")
+     *   @ORM\JoinColumn(name="id_risk_data_monitoring_call_log", referencedColumnName="id", nullable=false)
      * })
      */
     private $idRiskDataMonitoringCallLog;
@@ -61,7 +61,7 @@ class RiskDataMonitoringAssessment
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\RiskDataMonitoringType")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_risk_data_monitoring_type", referencedColumnName="id")
+     *   @ORM\JoinColumn(name="id_risk_data_monitoring_type", referencedColumnName="id", nullable=false)
      * })
      */
     private $idRiskDataMonitoringType;

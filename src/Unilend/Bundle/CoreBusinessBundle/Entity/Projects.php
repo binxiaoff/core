@@ -15,7 +15,6 @@ use Ramsey\Uuid\Uuid;
  *     @ORM\Index(name="id_company", columns={"id_company"}),
  *     @ORM\Index(name="slug", columns={"slug"}),
  *     @ORM\Index(name="display", columns={"display"}),
- *     @ORM\Index(name="date_retrait", columns={"date_retrait"}),
  *     @ORM\Index(name="hash", columns={"hash"}),
  *     @ORM\Index(name="id_commercial", columns={"id_commercial"}),
  *     @ORM\Index(name="id_dernier_bilan", columns={"id_dernier_bilan"}),
@@ -54,7 +53,7 @@ class Projects
     /**
      * @var string
      *
-     * @ORM\Column(name="hash", type="string", length=191, nullable=false)
+     * @ORM\Column(name="hash", type="string", length=191)
      */
     private $hash;
 
@@ -70,7 +69,7 @@ class Projects
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Companies")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_company", referencedColumnName="id_company")
+     *   @ORM\JoinColumn(name="id_company", referencedColumnName="id_company", nullable=false)
      * })
      */
     private $idCompany;
@@ -88,14 +87,14 @@ class Projects
     /**
      * @var float
      *
-     * @ORM\Column(name="amount", type="float", precision=10, scale=0, nullable=true)
+     * @ORM\Column(name="amount", type="integer", nullable=true)
      */
     private $amount;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="period", type="integer", nullable=true)
+     * @ORM\Column(name="period", type="smallint", nullable=true)
      */
     private $period;
 
@@ -107,9 +106,9 @@ class Projects
     private $title;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="id_borrowing_motive", type="integer", nullable=true)
+     * @ORM\Column(name="id_borrowing_motive", type="smallint", nullable=true)
      */
     private $idBorrowingMotive;
 
@@ -204,28 +203,28 @@ class Projects
     private $dateFin;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id_dernier_bilan", type="integer", nullable=true)
      */
     private $idDernierBilan;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="balance_count", type="integer", nullable=true)
      */
     private $balanceCount;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id_company_rating_history", type="integer", nullable=true)
      */
     private $idCompanyRatingHistory;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id_project_need", type="integer", nullable=true)
      */
@@ -234,7 +233,7 @@ class Projects
     /**
      * @var bool
      *
-     * @ORM\Column(name="create_bo", type="boolean", nullable=false)
+     * @ORM\Column(name="create_bo", type="boolean")
      */
     private $createBo;
 
@@ -267,21 +266,21 @@ class Projects
     private $caDeclaraClient;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="remb_auto", type="integer", nullable=true)
+     * @ORM\Column(name="remb_auto", type="smallint", nullable=true)
      */
     private $rembAuto;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="display", type="integer", nullable=true)
+     * @ORM\Column(name="display", type="smallint", nullable=true)
      */
     private $display;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id_rate", type="integer", nullable=true)
      */
@@ -292,7 +291,7 @@ class Projects
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Partner")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_partner", referencedColumnName="id")
+     *   @ORM\JoinColumn(name="id_partner", referencedColumnName="id", nullable=false)
      * })
      */
     private $idPartner;
@@ -332,7 +331,7 @@ class Projects
     private $commissionRateRepayment;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id_product", type="integer", nullable=true)
      */
@@ -341,7 +340,7 @@ class Projects
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
@@ -353,7 +352,7 @@ class Projects
     private $updated;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id_project", type="integer")
      * @ORM\Id
@@ -362,9 +361,9 @@ class Projects
     private $idProject;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="status", type="integer", nullable=false)
+     * @ORM\Column(name="status", type="smallint")
      */
     private $status;
 

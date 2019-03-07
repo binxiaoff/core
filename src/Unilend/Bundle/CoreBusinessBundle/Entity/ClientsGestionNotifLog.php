@@ -13,49 +13,49 @@ use Doctrine\ORM\Mapping as ORM;
 class ClientsGestionNotifLog
 {
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="id_notif", type="integer", nullable=false)
+     * @ORM\Column(name="id_notif", type="integer")
      */
     private $idNotif;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="type", type="string", length=50, nullable=false)
+     * @ORM\Column(name="type", type="string", length=50)
      */
     private $type;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="debut", type="datetime", nullable=false)
+     * @ORM\Column(name="debut", type="datetime")
      */
     private $debut;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="fin", type="datetime", nullable=false)
+     * @ORM\Column(name="fin", type="datetime")
      */
     private $fin;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="updated", type="datetime", nullable=false)
+     * @ORM\Column(name="updated", type="datetime")
      */
     private $updated;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id_client_gestion_notif_log", type="integer")
      * @ORM\Id

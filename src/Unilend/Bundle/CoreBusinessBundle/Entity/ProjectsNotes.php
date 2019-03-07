@@ -7,7 +7,7 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * ProjectsNotes
  *
- * @ORM\Table(name="projects_notes", uniqueConstraints={@ORM\UniqueConstraint(name="id_project", columns={"id_project"})})
+ * @ORM\Table(name="projects_notes")
  * @ORM\Entity
  * @ORM\HasLifecycleCallbacks
  */
@@ -18,78 +18,78 @@ class ProjectsNotes
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Projects")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_project", referencedColumnName="id_project")
+     *   @ORM\JoinColumn(name="id_project", referencedColumnName="id_project", nullable=false, unique=true)
      * })
      */
     private $idProject;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="pre_scoring", type="integer", nullable=true)
+     * @ORM\Column(name="pre_scoring", type="smallint", nullable=true)
      */
     private $preScoring;
 
     /**
      * @var float
      *
-     * @ORM\Column(name="performance_financiere", type="float", precision=10, scale=0, nullable=true)
+     * @ORM\Column(name="performance_financiere", type="decimal", precision=3, scale=1, nullable=true)
      */
     private $performanceFinanciere;
 
     /**
      * @var float
      *
-     * @ORM\Column(name="structure", type="float", precision=10, scale=0, nullable=true)
+     * @ORM\Column(name="structure", type="decimal", precision=3, scale=1, nullable=true)
      */
     private $structure;
 
     /**
      * @var float
      *
-     * @ORM\Column(name="rentabilite", type="float", precision=10, scale=0, nullable=true)
+     * @ORM\Column(name="rentabilite", type="decimal", precision=3, scale=1, nullable=true)
      */
     private $rentabilite;
 
     /**
      * @var float
      *
-     * @ORM\Column(name="tresorerie", type="float", precision=10, scale=0, nullable=true)
+     * @ORM\Column(name="tresorerie", type="decimal", precision=3, scale=1, nullable=true)
      */
     private $tresorerie;
 
     /**
      * @var float
      *
-     * @ORM\Column(name="marche_opere", type="float", precision=10, scale=0, nullable=true)
+     * @ORM\Column(name="marche_opere", type="decimal", precision=3, scale=1, nullable=true)
      */
     private $marcheOpere;
 
     /**
      * @var float
      *
-     * @ORM\Column(name="global", type="float", precision=10, scale=0, nullable=true)
+     * @ORM\Column(name="global", type="decimal", precision=3, scale=1, nullable=true)
      */
     private $global;
 
     /**
      * @var float
      *
-     * @ORM\Column(name="individuel", type="float", precision=10, scale=0, nullable=true)
+     * @ORM\Column(name="individuel", type="decimal", precision=3, scale=1, nullable=true)
      */
     private $individuel;
 
     /**
      * @var float
      *
-     * @ORM\Column(name="dirigeance", type="float", precision=10, scale=0, nullable=true)
+     * @ORM\Column(name="dirigeance", type="decimal", precision=3, scale=1, nullable=true)
      */
     private $dirigeance;
 
     /**
      * @var float
      *
-     * @ORM\Column(name="indicateur_risque_dynamique", type="float", precision=10, scale=0, nullable=true)
+     * @ORM\Column(name="indicateur_risque_dynamique", type="decimal", precision=3, scale=1, nullable=true)
      */
     private $indicateurRisqueDynamique;
 
@@ -103,77 +103,77 @@ class ProjectsNotes
     /**
      * @var float
      *
-     * @ORM\Column(name="note", type="float", precision=10, scale=0, nullable=true)
+     * @ORM\Column(name="note", type="decimal", precision=3, scale=1, nullable=true)
      */
     private $note;
 
     /**
      * @var float
      *
-     * @ORM\Column(name="performance_financiere_comite", type="float", precision=10, scale=0, nullable=true)
+     * @ORM\Column(name="performance_financiere_comite", type="decimal", precision=3, scale=1, nullable=true)
      */
     private $performanceFinanciereComite;
 
     /**
      * @var float
      *
-     * @ORM\Column(name="structure_comite", type="float", precision=10, scale=0, nullable=true)
+     * @ORM\Column(name="structure_comite", type="decimal", precision=3, scale=1, nullable=true)
      */
     private $structureComite;
 
     /**
      * @var float
      *
-     * @ORM\Column(name="rentabilite_comite", type="float", precision=10, scale=0, nullable=true)
+     * @ORM\Column(name="rentabilite_comite", type="decimal", precision=3, scale=1, nullable=true)
      */
     private $rentabiliteComite;
 
     /**
      * @var float
      *
-     * @ORM\Column(name="tresorerie_comite", type="float", precision=10, scale=0, nullable=true)
+     * @ORM\Column(name="tresorerie_comite", type="decimal", precision=3, scale=1, nullable=true)
      */
     private $tresorerieComite;
 
     /**
      * @var float
      *
-     * @ORM\Column(name="marche_opere_comite", type="float", precision=10, scale=0, nullable=true)
+     * @ORM\Column(name="marche_opere_comite", type="decimal", precision=3, scale=1, nullable=true)
      */
     private $marcheOpereComite;
 
     /**
      * @var float
      *
-     * @ORM\Column(name="global_comite", type="float", precision=10, scale=0, nullable=true)
+     * @ORM\Column(name="global_comite", type="decimal", precision=3, scale=1, nullable=true)
      */
     private $globalComite;
 
     /**
      * @var float
      *
-     * @ORM\Column(name="individuel_comite", type="float", precision=10, scale=0, nullable=true)
+     * @ORM\Column(name="individuel_comite", type="decimal", precision=3, scale=1, nullable=true)
      */
     private $individuelComite;
 
     /**
      * @var float
      *
-     * @ORM\Column(name="dirigeance_comite", type="float", precision=10, scale=0, nullable=true)
+     * @ORM\Column(name="dirigeance_comite", type="decimal", precision=3, scale=1, nullable=true)
      */
     private $dirigeanceComite;
 
     /**
      * @var float
      *
-     * @ORM\Column(name="indicateur_risque_dynamique_comite", type="float", precision=10, scale=0, nullable=true)
+     * @ORM\Column(name="indicateur_risque_dynamique_comite", type="decimal", precision=3, scale=1, nullable=true)
      */
     private $indicateurRisqueDynamiqueComite;
 
     /**
      * @var float
      *
-     * @ORM\Column(name="note_comite", type="float", precision=10, scale=0, nullable=true)
+     * @ORM\Column(name="note_comite", type="decimal", precision=3, scale=1, nullable=true)
      */
     private $noteComite;
 
@@ -199,7 +199,7 @@ class ProjectsNotes
     private $updated;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id_project_notes", type="integer")
      * @ORM\Id

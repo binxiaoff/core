@@ -7,16 +7,16 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * CompanyAddress
  *
- * @ORM\Table(name="company_address", indexes={@ORM\Index(name="idx_company_address_id_company", columns={"id_company"}), @ORM\Index(name="idx_company_address_pays_id_country", columns={"id_country"})})
+ * @ORM\Table(name="company_address", indexes={@ORM\Index(name="idx_company_address_updated", columns={"updated"})})
  * @ORM\HasLifecycleCallbacks
  * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\CompanyAddressRepository")
  */
 class CompanyAddress
 {
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="id", type="integer", nullable=false)
+     * @ORM\Column(name="id", type="integer")
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="IDENTITY")
      */
@@ -25,21 +25,21 @@ class CompanyAddress
     /**
      * @var string
      *
-     * @ORM\Column(name="address", type="string", length=191, nullable=false)
+     * @ORM\Column(name="address", type="string", length=191)
      */
     private $address;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="zip", type="string", length=191, nullable=false)
+     * @ORM\Column(name="zip", type="string", length=191)
      */
     private $zip;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="city", type="string", length=191, nullable=false)
+     * @ORM\Column(name="city", type="string", length=191)
      */
     private $city;
 
@@ -67,7 +67,7 @@ class CompanyAddress
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="date_pending", type="datetime", nullable=false)
+     * @ORM\Column(name="date_pending", type="datetime")
      */
     private $datePending;
 
@@ -88,7 +88,7 @@ class CompanyAddress
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
@@ -104,7 +104,7 @@ class CompanyAddress
      *
      * @ORM\ManyToOne(targetEntity="Companies")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_company", referencedColumnName="id_company")
+     *   @ORM\JoinColumn(name="id_company", referencedColumnName="id_company", nullable=false)
      * })
      */
     private $idCompany;
@@ -114,7 +114,7 @@ class CompanyAddress
      *
      * @ORM\ManyToOne(targetEntity="Pays")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_country", referencedColumnName="id_pays")
+     *   @ORM\JoinColumn(name="id_country", referencedColumnName="id_pays", nullable=false)
      * })
      */
     private $idCountry;
@@ -124,7 +124,7 @@ class CompanyAddress
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\AddressType")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_type", referencedColumnName="id")
+     *   @ORM\JoinColumn(name="id_type", referencedColumnName="id", nullable=false)
      * })
      */
     private $idType;

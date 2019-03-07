@@ -15,12 +15,12 @@ class ProjectEligibilityRuleSetMember
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id", type="integer")
      * @ORM\Id
@@ -33,7 +33,7 @@ class ProjectEligibilityRuleSetMember
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\ProjectEligibilityRuleSet")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_rule_set", referencedColumnName="id")
+     *   @ORM\JoinColumn(name="id_rule_set", referencedColumnName="id", nullable=false)
      * })
      */
     private $idRuleSet;
@@ -43,7 +43,7 @@ class ProjectEligibilityRuleSetMember
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\ProjectEligibilityRule")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_rule", referencedColumnName="id")
+     *   @ORM\JoinColumn(name="id_rule", referencedColumnName="id", nullable=false)
      * })
      */
     private $idRule;

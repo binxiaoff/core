@@ -18,24 +18,24 @@ class ClientsAdresses
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Clients", inversedBy="clientsAddresses")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_client", referencedColumnName="id_client")
+     *   @ORM\JoinColumn(name="id_client", referencedColumnName="id_client", nullable=false)
      * })
      */
     private $idClient;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="defaut", type="integer", nullable=false)
+     * @ORM\Column(name="defaut", type="integer")
      */
-    private $defaut = '0';
+    private $defaut = 0;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="type", type="integer", nullable=false)
+     * @ORM\Column(name="type", type="integer")
      */
-    private $type = '0';
+    private $type = 0;
 
     /**
      * @var string
@@ -108,7 +108,7 @@ class ClientsAdresses
     private $ville;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id_pays", type="integer", nullable=true)
      */
@@ -166,14 +166,14 @@ class ClientsAdresses
     private $cpFiscal;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id_pays_fiscal", type="integer", nullable=true)
      */
     private $idPaysFiscal;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="status", type="integer", nullable=true)
      */
@@ -182,7 +182,7 @@ class ClientsAdresses
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
@@ -194,7 +194,7 @@ class ClientsAdresses
     private $updated;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id_adresse", type="integer")
      * @ORM\Id

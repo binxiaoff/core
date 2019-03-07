@@ -18,7 +18,7 @@ class WireTransferOutUniversign implements UniversignEntityInterface
     /**
      * @var string
      *
-     * @ORM\Column(name="name", type="string", length=191, nullable=false)
+     * @ORM\Column(name="name", type="string", length=191)
      */
     private $name;
 
@@ -37,16 +37,16 @@ class WireTransferOutUniversign implements UniversignEntityInterface
     private $idUniversign;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="status", type="integer", nullable=false)
+     * @ORM\Column(name="status", type="smallint")
      */
     private $status;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
@@ -58,7 +58,7 @@ class WireTransferOutUniversign implements UniversignEntityInterface
     private $updated;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id", type="integer")
      * @ORM\Id
@@ -71,7 +71,7 @@ class WireTransferOutUniversign implements UniversignEntityInterface
      *
      * @ORM\OneToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Virements", inversedBy="universign")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_wire_transfer_out", referencedColumnName="id_virement")
+     *   @ORM\JoinColumn(name="id_wire_transfer_out", referencedColumnName="id_virement", nullable=false)
      * })
      */
     private $idWireTransferOut;

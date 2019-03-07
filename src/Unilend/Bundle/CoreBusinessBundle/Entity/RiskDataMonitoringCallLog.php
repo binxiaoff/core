@@ -16,7 +16,7 @@ class RiskDataMonitoringCallLog
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
@@ -28,7 +28,7 @@ class RiskDataMonitoringCallLog
     private $updated;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id", type="integer")
      * @ORM\Id
@@ -41,7 +41,7 @@ class RiskDataMonitoringCallLog
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\RiskDataMonitoring")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_risk_data_monitoring", referencedColumnName="id")
+     *   @ORM\JoinColumn(name="id_risk_data_monitoring", referencedColumnName="id", nullable=false)
      * })
      */
     private $idRiskDataMonitoring;

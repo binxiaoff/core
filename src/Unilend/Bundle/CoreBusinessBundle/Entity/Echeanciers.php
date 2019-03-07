@@ -7,7 +7,19 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * Echeanciers
  *
- * @ORM\Table(name="echeanciers", indexes={@ORM\Index(name="id_lender", columns={"id_lender"}), @ORM\Index(name="id_project", columns={"id_project"}), @ORM\Index(name="id_loan", columns={"id_loan"}), @ORM\Index(name="date_echeance_reel", columns={"date_echeance_reel"}), @ORM\Index(name="date_echeance_emprunteur_reel", columns={"date_echeance_emprunteur_reel"}), @ORM\Index(name="ordre", columns={"ordre"}), @ORM\Index(name="status", columns={"status"}), @ORM\Index(name="status_emprunteur", columns={"status_emprunteur"}), @ORM\Index(name="date_echeance_emprunteur", columns={"date_echeance_emprunteur"}), @ORM\Index(name="status_ra", columns={"status_ra"}), @ORM\Index(name="added", columns={"added"}), @ORM\Index(name="date_echeance", columns={"date_echeance"}), @ORM\Index(name="id_project_ordre", columns={"id_project", "ordre"})})
+ * @ORM\Table(name="echeanciers", indexes={
+ *     @ORM\Index(name="idx_echeanciers_id_project", columns={"id_project"}),
+ *     @ORM\Index(name="idx_echeanciers_date_echeance_reel", columns={"date_echeance_reel"}),
+ *     @ORM\Index(name="idx_echeanciers_date_echeance_emprunteur_reel", columns={"date_echeance_emprunteur_reel"}),
+ *     @ORM\Index(name="idx_echeanciers_ordre", columns={"ordre"}),
+ *     @ORM\Index(name="idx_echeanciers_status", columns={"status"}),
+ *     @ORM\Index(name="idx_echeanciers_status_emprunteur", columns={"status_emprunteur"}),
+ *     @ORM\Index(name="idx_echeanciers_date_echeance_emprunteur", columns={"date_echeance_emprunteur"}),
+ *     @ORM\Index(name="idx_echeanciers_status_ra", columns={"status_ra"}),
+ *     @ORM\Index(name="idx_echeanciers_added", columns={"added"}),
+ *     @ORM\Index(name="idx_echeanciers_date_echeance", columns={"date_echeance"}),
+ *     @ORM\Index(name="idx_echeanciers_id_project_ordre", columns={"id_project", "ordre"})
+ * })
  * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\EcheanciersRepository")
  * @ORM\HasLifecycleCallbacks
  */
@@ -24,76 +36,76 @@ class Echeanciers
     const STATUS_REPAYMENT_EMAIL_SENT     = 1;
 
     /**
-     * @var integer
+     * @var int
      *
      * @deprecated This column will be deleted. Use $idLoan instead
      *
-     * @ORM\Column(name="id_project", type="integer", nullable=false)
+     * @ORM\Column(name="id_project", type="integer")
      */
     private $idProject;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="ordre", type="integer", nullable=false)
+     * @ORM\Column(name="ordre", type="integer")
      */
     private $ordre;
 
     /**
-     * @var integer
+     * @var int
      *
      * @deprecated This column will be deleted. Use the summary of Echeanciers::$capital and Echeanciers::$interets instead
      *
-     * @ORM\Column(name="montant", type="integer", nullable=false)
+     * @ORM\Column(name="montant", type="integer")
      */
     private $montant;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="capital", type="integer", nullable=false)
+     * @ORM\Column(name="capital", type="integer")
      */
     private $capital;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="interets", type="integer", nullable=false)
+     * @ORM\Column(name="interets", type="integer")
      */
     private $interets;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="capital_rembourse", type="integer", nullable=false)
+     * @ORM\Column(name="capital_rembourse", type="integer")
      */
     private $capitalRembourse;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="interets_rembourses", type="integer", nullable=false)
+     * @ORM\Column(name="interets_rembourses", type="integer")
      */
     private $interetsRembourses;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="date_echeance", type="datetime", nullable=false)
+     * @ORM\Column(name="date_echeance", type="datetime")
      */
     private $dateEcheance;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="date_echeance_reel", type="datetime", nullable=false)
+     * @ORM\Column(name="date_echeance_reel", type="datetime")
      */
     private $dateEcheanceReel;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="status", type="integer", nullable=false)
+     * @ORM\Column(name="status", type="smallint")
      */
     private $status;
 
@@ -102,7 +114,7 @@ class Echeanciers
      *
      * @deprecated This column will be deleted. Use EcheanciersEmprunteur::$dateEcheanceEmprunteur instead
      *
-     * @ORM\Column(name="date_echeance_emprunteur", type="datetime", nullable=false)
+     * @ORM\Column(name="date_echeance_emprunteur", type="datetime")
      */
     private $dateEcheanceEmprunteur;
 
@@ -111,29 +123,29 @@ class Echeanciers
      *
      * @deprecated This column will be deleted. Use EcheanciersEmprunteur::$dateEcheanceEmprunteurReel instead
      *
-     * @ORM\Column(name="date_echeance_emprunteur_reel", type="datetime", nullable=false)
+     * @ORM\Column(name="date_echeance_emprunteur_reel", type="datetime")
      */
     private $dateEcheanceEmprunteurReel;
 
     /**
-     * @var integer
+     * @var int
      * @deprecated This column will be deleted. Use EcheanciersEmprunteur::$status instead
      *
-     * @ORM\Column(name="status_emprunteur", type="integer", nullable=false)
+     * @ORM\Column(name="status_emprunteur", type="smallint")
      */
     private $statusEmprunteur;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="status_ra", type="integer", nullable=false)
+     * @ORM\Column(name="status_ra", type="smallint")
      */
     private $statusRa;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
@@ -145,7 +157,7 @@ class Echeanciers
     private $updated;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id_echeancier", type="integer")
      * @ORM\Id
@@ -158,7 +170,7 @@ class Echeanciers
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Loans")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_loan", referencedColumnName="id_loan")
+     *   @ORM\JoinColumn(name="id_loan", referencedColumnName="id_loan", nullable=false)
      * })
      */
     private $idLoan;
@@ -170,7 +182,7 @@ class Echeanciers
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Wallet")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_lender", referencedColumnName="id")
+     *   @ORM\JoinColumn(name="id_lender", referencedColumnName="id", nullable=false)
      * })
      */
     private $idLender;

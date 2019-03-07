@@ -18,21 +18,21 @@ class ProjectProductAssessment
     const STATUS_CHECK_SKIPPED = null;
 
     /**
-     * @var boolean
+     * @var bool
      *
-     * @ORM\Column(name="status", type="boolean", nullable=false)
+     * @ORM\Column(name="status", type="boolean", nullable=true)
      */
     private $status;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id", type="integer")
      * @ORM\Id
@@ -45,7 +45,7 @@ class ProjectProductAssessment
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Projects")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_project", referencedColumnName="id_project")
+     *   @ORM\JoinColumn(name="id_project", referencedColumnName="id_project", nullable=false)
      * })
      */
     private $idProject;
@@ -55,7 +55,7 @@ class ProjectProductAssessment
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Product")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_product", referencedColumnName="id_product")
+     *   @ORM\JoinColumn(name="id_product", referencedColumnName="id_product", nullable=false)
      * })
      */
     private $idProduct;
@@ -65,7 +65,7 @@ class ProjectProductAssessment
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\ProductAttributeType")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_product_attribute_type", referencedColumnName="id_type")
+     *   @ORM\JoinColumn(name="id_product_attribute_type", referencedColumnName="id_type", nullable=false)
      * })
      */
     private $idProductAttributeType;

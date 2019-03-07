@@ -34,6 +34,8 @@ class CallHistoryManager
     private $managerRegistry;
     /** @var LoggerInterface */
     private $mongoDBLogger;
+    /** @var bool */
+    private $mongoLogEnabled;
 
     /**
      * @param EntityManagerInterface $entityManager
@@ -45,6 +47,7 @@ class CallHistoryManager
      * @param LoggerInterface        $logger
      * @param ManagerRegistry        $managerRegistry
      * @param LoggerInterface        $mongoDBLogger
+     * @param bool                   $mongoLogEnabled
      */
     public function __construct(
         EntityManagerInterface $entityManager,
@@ -55,7 +58,8 @@ class CallHistoryManager
         Packages $assetPackage,
         LoggerInterface $logger,
         ManagerRegistry $managerRegistry,
-        LoggerInterface $mongoDBLogger
+        LoggerInterface $mongoDBLogger,
+        bool $mongoLogEnabled
     )
     {
         $this->entityManager   = $entityManager;
@@ -67,6 +71,7 @@ class CallHistoryManager
         $this->logger          = $logger;
         $this->managerRegistry = $managerRegistry;
         $this->mongoDBLogger   = $mongoDBLogger;
+        $this->mongoLogEnabled = $mongoLogEnabled;
     }
 
     /**
@@ -141,7 +146,7 @@ class CallHistoryManager
     {
         switch ($alertType) {
             case 'down':
-                if (false == $wsResource->isIsAvailable()) {
+                if (false == $wsResource->isAvailable()) {
                     return;
                 }
                 $wsResource
@@ -154,7 +159,7 @@ class CallHistoryManager
                 }
                 break;
             case 'up':
-                if ($wsResource->isIsAvailable()) {
+                if ($wsResource->isAvailable()) {
                     return;
                 }
                 $wsResource
@@ -323,9 +328,7 @@ class CallHistoryManager
      */
     public function handleMongoDBLogging()
     {
-        $setting = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'mongo_log']);
-
-        if (null !== $setting && 'on' === $setting->getValue()) {
+        if (true === $this->mongoLogEnabled) {
             \MongoLog::setModule(\MongoLog::ALL);
             \MongoLog::setLevel(\MongoLog::ALL);
             \MongoLog::setCallback([$this, 'callback']);

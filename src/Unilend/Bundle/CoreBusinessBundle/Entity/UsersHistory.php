@@ -7,7 +7,10 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * UsersHistory
  *
- * @ORM\Table(name="users_history")
+ * @ORM\Table(name="users_history", indexes={
+ *     @ORM\Index(name="idx_users_history_id_user", columns={"id_user"}),
+ *     @ORM\Index(name="idx_users_history_id_form_nom_form", columns={"id_form", "nom_form"})
+ * })
  * @ORM\Entity
  */
 class UsersHistory
@@ -22,49 +25,49 @@ class UsersHistory
     const FROM_NAME_BULK_PROJECT_CREATION = 'depot_dossier_en_masse';
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="id_form", type="integer", nullable=false)
+     * @ORM\Column(name="id_form", type="integer")
      */
     private $idForm;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="nom_form", type="string", length=191, nullable=false)
+     * @ORM\Column(name="nom_form", type="string", length=191)
      */
     private $nomForm;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="id_user", type="integer", nullable=false)
+     * @ORM\Column(name="id_user", type="integer")
      */
     private $idUser;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="serialize", type="text", length=16777215, nullable=false)
+     * @ORM\Column(name="serialize", type="text", length=16777215)
      */
     private $serialize;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="updated", type="datetime", nullable=false)
+     * @ORM\Column(name="updated", type="datetime")
      */
     private $updated;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id_user_history", type="integer")
      * @ORM\Id

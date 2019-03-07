@@ -20,14 +20,14 @@ class TemporaryLinksLogin
     /**
      * @var string
      *
-     * @ORM\Column(name="token", type="string", length=150, nullable=false)
+     * @ORM\Column(name="token", type="string", length=150)
      */
     private $token;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="expires", type="datetime", nullable=false)
+     * @ORM\Column(name="expires", type="datetime")
      */
     private $expires;
 
@@ -41,7 +41,7 @@ class TemporaryLinksLogin
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
@@ -53,7 +53,7 @@ class TemporaryLinksLogin
     private $updated;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id_link", type="integer")
      * @ORM\Id
@@ -66,7 +66,7 @@ class TemporaryLinksLogin
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Clients")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_client", referencedColumnName="id_client")
+     *   @ORM\JoinColumn(name="id_client", referencedColumnName="id_client", nullable=false)
      * })
      */
     private $idClient;

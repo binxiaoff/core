@@ -16,14 +16,14 @@ class ProjectsComments
     /**
      * @var string
      *
-     * @ORM\Column(name="content", type="text", length=16777215, nullable=false)
+     * @ORM\Column(name="content", type="text", length=16777215)
      */
     private $content;
 
     /**
      * @var bool
      *
-     * @ORM\Column(name="public", type="boolean", nullable=false)
+     * @ORM\Column(name="public", type="boolean", nullable=false, options={"default" : 0})
      */
     private $public = false;
 
@@ -32,7 +32,7 @@ class ProjectsComments
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Projects", inversedBy="memos")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_project", referencedColumnName="id_project")
+     *   @ORM\JoinColumn(name="id_project", referencedColumnName="id_project", nullable=false)
      * })
      */
     private $idProject;
@@ -60,7 +60,7 @@ class ProjectsComments
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 

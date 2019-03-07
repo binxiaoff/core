@@ -764,6 +764,7 @@ class partenairesController extends bootstrap
             if (null === $companyClient->getIdClient()) {
                 $client = new Clients();
                 $client->setIdLangue('fr');
+                $client->setRoles([Clients::ROLE_PARTNER]);
 
                 $companyClient->setIdClient($client);
             }

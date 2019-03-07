@@ -1,9 +1,11 @@
 {# Error page #}
-{% extends 'layouts/_page_simple.html.twig' %}
+{% extends ':frontbundle/layouts:_page_simple.html.twig' %}
 
 {% block pageTitle %}
     <h1 class="page-title">
-        {{ errorPageTitle|default('error-page_general-page-title'|trans) }}
+        {% block errorPageTitle %}
+            {% trans %} error-page_general-page-title {% endtrans %}
+        {% endblock %}
     </h1>
 {% endblock %}
 
@@ -15,12 +17,14 @@
 
 {% block pageContentBody %}
     <section class="page-section">
-        {% if errorTitle is defined %}
-            <h2>{{ errorTitle }}</h2>
-        {% endif %}
-        {% if errorDetails is defined %}
-            {{ errorDetails|raw }}
-        {% endif %}
+        <h2>
+            {% block errorTitle %}
+                {% trans %} error-page_general-title {% endtrans %}
+            {% endblock %}
+        </h2>
+        {% block errorDetails %}
+            {{ 'error-page_general-details'|trans|raw }}
+        {% endblock %}
         <br>
         <div class="btn-toolbar text-align-left">
             <a href="{{ path('home') }}" class="btn-primary">{% trans %} error-page_button-home-page {% endtrans %}</a>

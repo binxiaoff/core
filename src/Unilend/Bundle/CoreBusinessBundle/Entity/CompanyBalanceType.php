@@ -15,19 +15,19 @@ class CompanyBalanceType
     /**
      * @var string
      *
-     * @ORM\Column(name="code", type="string", length=3, nullable=false)
+     * @ORM\Column(name="code", type="string", length=3)
      */
     private $code;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="label", type="string", length=191, nullable=false)
+     * @ORM\Column(name="label", type="string", length=191)
      */
     private $label;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id_balance_type", type="integer")
      * @ORM\Id
@@ -40,7 +40,7 @@ class CompanyBalanceType
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\CompanyTaxFormType")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_company_tax_form_type", referencedColumnName="id_type")
+     *   @ORM\JoinColumn(name="id_company_tax_form_type", referencedColumnName="id_type", nullable=false)
      * })
      */
     private $idCompanyTaxFormType;

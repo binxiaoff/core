@@ -16,21 +16,21 @@ class RiskDataMonitoring
     /**
      * @var string
      *
-     * @ORM\Column(name="siren", type="string", length=14, nullable=false)
+     * @ORM\Column(name="siren", type="string", length=14)
      */
     private $siren;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="provider", type="string", length=191, nullable=false)
+     * @ORM\Column(name="provider", type="string", length=191)
      */
     private $provider;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="start", type="datetime", nullable=false)
+     * @ORM\Column(name="start", type="datetime")
      */
     private $start;
 
@@ -42,7 +42,7 @@ class RiskDataMonitoring
     private $end;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id", type="integer")
      * @ORM\Id

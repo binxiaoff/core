@@ -59,14 +59,14 @@ class UserAgent
     /**
      * @var string|null
      *
-     * @ORM\Column(name="user_agent_string", type="string", length=256, nullable=false)
+     * @ORM\Column(name="user_agent_string", type="string", length=256)
      */
     private $userAgentString;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 

@@ -15,56 +15,56 @@ class Ifu
     const STATUS_ACTIVE = 1;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="id_client", type="integer", nullable=false)
+     * @ORM\Column(name="id_client", type="integer")
      */
     private $idClient;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="annee", type="integer", nullable=false)
+     * @ORM\Column(name="annee", type="integer")
      */
     private $annee;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="nom", type="string", length=191, nullable=false)
+     * @ORM\Column(name="nom", type="string", length=191)
      */
     private $nom;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="chemin", type="string", length=191, nullable=false)
+     * @ORM\Column(name="chemin", type="string", length=191)
      */
     private $chemin;
 
     /**
-     * @var integer
+     * @var bool
      *
-     * @ORM\Column(name="statut", type="integer", nullable=false)
+     * @ORM\Column(name="statut", type="boolean")
      */
     private $statut;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="updated", type="datetime", nullable=false)
+     * @ORM\Column(name="updated", type="datetime")
      */
     private $updated;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id_ifu", type="integer")
      * @ORM\Id
@@ -173,7 +173,7 @@ class Ifu
     /**
      * Set statut
      *
-     * @param integer $statut
+     * @param bool $statut
      *
      * @return Ifu
      */
@@ -187,7 +187,7 @@ class Ifu
     /**
      * Get statut
      *
-     * @return integer
+     * @return bool
      */
     public function getStatut()
     {

@@ -7,7 +7,7 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * LenderStatisticQueue
  *
- * @ORM\Table(name="lender_statistic_queue", uniqueConstraints={@ORM\UniqueConstraint(name="id_wallet", columns={"id_wallet"})})
+ * @ORM\Table(name="lender_statistic_queue")
  * @ORM\Entity
  * @ORM\HasLifecycleCallbacks()
  */
@@ -16,12 +16,12 @@ class LenderStatisticQueue
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id", type="integer")
      * @ORM\Id
@@ -32,9 +32,9 @@ class LenderStatisticQueue
     /**
      * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Wallet
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Wallet")
+     * @ORM\OneToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Wallet")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_wallet", referencedColumnName="id")
+     *   @ORM\JoinColumn(name="id_wallet", referencedColumnName="id", nullable=false)
      * })
      */
     private $idWallet;

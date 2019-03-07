@@ -15,26 +15,26 @@ class UnderlyingContractAttribute
     /**
      * @var string
      *
-     * @ORM\Column(name="attribute_value", type="string", length=191, nullable=false)
+     * @ORM\Column(name="attribute_value", type="string", length=191)
      */
     private $attributeValue;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="updated", type="datetime", nullable=false)
+     * @ORM\Column(name="updated", type="datetime")
      */
     private $updated;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id_attribute", type="integer")
      * @ORM\Id
@@ -47,7 +47,7 @@ class UnderlyingContractAttribute
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\UnderlyingContractAttributeType")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_type", referencedColumnName="id_type")
+     *   @ORM\JoinColumn(name="id_type", referencedColumnName="id_type", nullable=false)
      * })
      */
     private $idType;
@@ -57,7 +57,7 @@ class UnderlyingContractAttribute
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\UnderlyingContract")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_contract", referencedColumnName="id_contract")
+     *   @ORM\JoinColumn(name="id_contract", referencedColumnName="id_contract", nullable=false)
      * })
      */
     private $idContract;

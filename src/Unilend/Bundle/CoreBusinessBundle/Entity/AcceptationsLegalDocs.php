@@ -14,9 +14,9 @@ use Doctrine\ORM\Mapping as ORM;
 class AcceptationsLegalDocs
 {
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="id_legal_doc", type="integer", nullable=false)
+     * @ORM\Column(name="id_legal_doc", type="integer")
      */
     private $idLegalDoc;
 
@@ -30,7 +30,7 @@ class AcceptationsLegalDocs
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
@@ -46,13 +46,13 @@ class AcceptationsLegalDocs
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Clients")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_client", referencedColumnName="id_client")
+     *   @ORM\JoinColumn(name="id_client", referencedColumnName="id_client", nullable=false)
      * })
      */
     private $idClient;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id_acceptation", type="integer")
      * @ORM\Id

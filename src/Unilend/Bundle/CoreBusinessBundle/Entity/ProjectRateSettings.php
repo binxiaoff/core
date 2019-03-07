@@ -18,47 +18,47 @@ class ProjectRateSettings
     /**
      * @var string
      *
-     * @ORM\Column(name="evaluation", type="string", length=2, nullable=false)
+     * @ORM\Column(name="evaluation", type="string", length=2)
      */
     private $evaluation;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="status", type="integer", nullable=false)
+     * @ORM\Column(name="status", type="smallint")
      */
     private $status;
 
     /**
      * @var float
      *
-     * @ORM\Column(name="rate_min", type="float", precision=3, scale=1, nullable=false)
+     * @ORM\Column(name="rate_min", type="decimal", precision=3, scale=1)
      */
     private $rateMin;
 
     /**
      * @var float
      *
-     * @ORM\Column(name="rate_max", type="float", precision=3, scale=1, nullable=false)
+     * @ORM\Column(name="rate_max", type="decimal", precision=3, scale=1)
      */
     private $rateMax;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="updated", type="datetime", nullable=false)
+     * @ORM\Column(name="updated", type="datetime")
      */
     private $updated;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id_rate", type="integer")
      * @ORM\Id
@@ -71,7 +71,7 @@ class ProjectRateSettings
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\ProjectPeriod")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_period", referencedColumnName="id_period")
+     *   @ORM\JoinColumn(name="id_period", referencedColumnName="id_period", nullable=false)
      * })
      */
     private $idPeriod;

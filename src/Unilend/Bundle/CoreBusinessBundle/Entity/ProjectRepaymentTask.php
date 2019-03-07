@@ -45,56 +45,56 @@ class ProjectRepaymentTask
     /**
      * @var string
      *
-     * @ORM\Column(name="capital", type="decimal", precision=12, scale=2, nullable=false)
+     * @ORM\Column(name="capital", type="decimal", precision=12, scale=2)
      */
     private $capital;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="interest", type="decimal", precision=12, scale=2, nullable=false)
+     * @ORM\Column(name="interest", type="decimal", precision=12, scale=2)
      */
     private $interest;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="commission_unilend", type="decimal", precision=10, scale=2, nullable=false)
+     * @ORM\Column(name="commission_unilend", type="decimal", precision=10, scale=2)
      */
     private $commissionUnilend;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="sequence", type="integer", nullable=true)
      */
     private $sequence;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="type", type="integer", nullable=false)
+     * @ORM\Column(name="type", type="smallint")
      */
     private $type;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="status", type="integer", nullable=false)
+     * @ORM\Column(name="status", type="smallint")
      */
     private $status;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="repay_at", type="date", nullable=false)
+     * @ORM\Column(name="repay_at", type="date")
      */
     private $repayAt;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
@@ -106,7 +106,7 @@ class ProjectRepaymentTask
     private $updated;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id", type="integer")
      * @ORM\Id
@@ -169,7 +169,7 @@ class ProjectRepaymentTask
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Projects")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_project", referencedColumnName="id_project")
+     *   @ORM\JoinColumn(name="id_project", referencedColumnName="id_project", nullable=false)
      * })
      */
     private $idProject;

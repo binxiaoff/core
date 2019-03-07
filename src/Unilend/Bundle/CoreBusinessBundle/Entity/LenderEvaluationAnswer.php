@@ -15,40 +15,40 @@ class LenderEvaluationAnswer
     /**
      * @var string
      *
-     * @ORM\Column(name="first_answer", type="string", length=191, nullable=false)
+     * @ORM\Column(name="first_answer", type="string", length=191)
      */
     private $firstAnswer;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="second_answer", type="string", length=191, nullable=false)
+     * @ORM\Column(name="second_answer", type="string", length=191)
      */
     private $secondAnswer;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="status", type="integer", nullable=false)
+     * @ORM\Column(name="status", type="smallint")
      */
     private $status;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="updated", type="datetime", nullable=false)
+     * @ORM\Column(name="updated", type="datetime")
      */
     private $updated;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id_lender_evaluation_answer", type="integer")
      * @ORM\Id
@@ -61,7 +61,7 @@ class LenderEvaluationAnswer
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\LenderEvaluation")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_lender_evaluation", referencedColumnName="id_lender_evaluation")
+     *   @ORM\JoinColumn(name="id_lender_evaluation", referencedColumnName="id_lender_evaluation", nullable=false)
      * })
      */
     private $idLenderEvaluation;
@@ -71,7 +71,7 @@ class LenderEvaluationAnswer
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\LenderQuestionnaireQuestion")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_lender_questionnaire_question", referencedColumnName="id_lender_questionnaire_question")
+     *   @ORM\JoinColumn(name="id_lender_questionnaire_question", referencedColumnName="id_lender_questionnaire_question", nullable=false)
      * })
      */
     private $idLenderQuestionnaireQuestion;

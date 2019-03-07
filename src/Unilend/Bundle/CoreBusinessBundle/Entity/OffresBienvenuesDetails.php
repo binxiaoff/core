@@ -22,58 +22,58 @@ class OffresBienvenuesDetails
     const TYPE_PAYBACK = 2;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="id_offre_bienvenue", type="integer", nullable=false)
+     * @ORM\Column(name="id_offre_bienvenue", type="integer")
      */
     private $idOffreBienvenue;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="id_client", type="integer", nullable=false)
+     * @ORM\Column(name="id_client", type="integer")
      */
     private $idClient;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id_bid", type="integer", nullable=true)
      */
     private $idBid;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id_bid_remb", type="integer", nullable=true)
      */
     private $idBidRemb;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="montant", type="integer", nullable=false)
+     * @ORM\Column(name="montant", type="integer")
      */
     private $montant;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="status", type="integer", nullable=false)
+     * @ORM\Column(name="status", type="smallint")
      */
     private $status;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="type", type="integer", nullable=false)
+     * @ORM\Column(name="type", type="smallint")
      */
     private $type;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
@@ -85,7 +85,7 @@ class OffresBienvenuesDetails
     private $updated;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id_offre_bienvenue_detail", type="integer")
      * @ORM\Id

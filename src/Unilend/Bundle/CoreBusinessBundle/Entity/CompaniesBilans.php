@@ -13,105 +13,105 @@ use Doctrine\ORM\Mapping as ORM;
 class CompaniesBilans
 {
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="id_company", type="integer", nullable=false)
+     * @ORM\Column(name="id_company", type="integer")
      */
     private $idCompany;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="cloture_exercice_fiscal", type="date", nullable=false)
+     * @ORM\Column(name="cloture_exercice_fiscal", type="date")
      */
     private $clotureExerciceFiscal;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="duree_exercice_fiscal", type="integer", nullable=false)
+     * @ORM\Column(name="duree_exercice_fiscal", type="smallint")
      */
     private $dureeExerciceFiscal;
 
     /**
      * @var float
      *
-     * @ORM\Column(name="ca", type="float", precision=10, scale=0, nullable=false)
+     * @ORM\Column(name="ca", type="float", precision=10, scale=0)
      */
     private $ca;
 
     /**
      * @var float
      *
-     * @ORM\Column(name="resultat_brute_exploitation", type="float", precision=10, scale=0, nullable=false)
+     * @ORM\Column(name="resultat_brute_exploitation", type="float", precision=10, scale=0)
      */
     private $resultatBruteExploitation;
 
     /**
      * @var float
      *
-     * @ORM\Column(name="resultat_exploitation", type="float", precision=10, scale=0, nullable=false)
+     * @ORM\Column(name="resultat_exploitation", type="float", precision=10, scale=0)
      */
     private $resultatExploitation;
 
     /**
      * @var float
      *
-     * @ORM\Column(name="resultat_financier", type="float", precision=10, scale=0, nullable=false)
+     * @ORM\Column(name="resultat_financier", type="float", precision=10, scale=0)
      */
     private $resultatFinancier;
 
     /**
      * @var float
      *
-     * @ORM\Column(name="produit_exceptionnel", type="float", precision=10, scale=0, nullable=false)
+     * @ORM\Column(name="produit_exceptionnel", type="float", precision=10, scale=0)
      */
     private $produitExceptionnel;
 
     /**
      * @var float
      *
-     * @ORM\Column(name="charges_exceptionnelles", type="float", precision=10, scale=0, nullable=false)
+     * @ORM\Column(name="charges_exceptionnelles", type="float", precision=10, scale=0)
      */
     private $chargesExceptionnelles;
 
     /**
      * @var float
      *
-     * @ORM\Column(name="resultat_exceptionnel", type="float", precision=10, scale=0, nullable=false)
+     * @ORM\Column(name="resultat_exceptionnel", type="float", precision=10, scale=0)
      */
     private $resultatExceptionnel;
 
     /**
      * @var float
      *
-     * @ORM\Column(name="resultat_net", type="float", precision=10, scale=0, nullable=false)
+     * @ORM\Column(name="resultat_net", type="float", precision=10, scale=0)
      */
     private $resultatNet;
 
     /**
      * @var float
      *
-     * @ORM\Column(name="investissements", type="float", precision=10, scale=0, nullable=false)
+     * @ORM\Column(name="investissements", type="float", precision=10, scale=0)
      */
     private $investissements;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="updated", type="datetime", nullable=false)
+     * @ORM\Column(name="updated", type="datetime")
      */
     private $updated;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id_bilan", type="integer")
      * @ORM\Id
@@ -124,7 +124,7 @@ class CompaniesBilans
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\CompanyTaxFormType")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_company_tax_form_type", referencedColumnName="id_type")
+     *   @ORM\JoinColumn(name="id_company_tax_form_type", referencedColumnName="id_type", nullable=false)
      * })
      */
     private $idCompanyTaxFormType;

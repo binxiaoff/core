@@ -27,44 +27,44 @@ class DebtCollectionFeeDetail
     const STATUS_TREATED = 1;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="id_type", type="integer", nullable=false)
+     * @ORM\Column(name="id_type", type="smallint")
      */
     private $idType;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="amount_tax_incl", type="decimal", precision=10, scale=2, nullable=false)
+     * @ORM\Column(name="amount_tax_incl", type="decimal", precision=10, scale=2)
      */
     private $amountTaxIncl;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="vat", type="decimal", precision=10, scale=2, nullable=false)
+     * @ORM\Column(name="vat", type="decimal", precision=10, scale=2)
      */
     private $vat;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="applied_fee_rate", type="decimal", precision=4, scale=4, nullable=false)
+     * @ORM\Column(name="applied_fee_rate", type="decimal", precision=4, scale=4)
      */
     private $appliedFeeRate;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="status", type="integer", nullable=false)
+     * @ORM\Column(name="status", type="smallint")
      */
     private $status;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
@@ -76,7 +76,7 @@ class DebtCollectionFeeDetail
     private $updated;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id", type="integer")
      * @ORM\Id
@@ -89,7 +89,7 @@ class DebtCollectionFeeDetail
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Receptions")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_wire_transfer_in", referencedColumnName="id_reception")
+     *   @ORM\JoinColumn(name="id_wire_transfer_in", referencedColumnName="id_reception", nullable=false)
      * })
      */
     private $idWireTransferIn;
@@ -99,7 +99,7 @@ class DebtCollectionFeeDetail
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Wallet")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_wallet_debtor", referencedColumnName="id")
+     *   @ORM\JoinColumn(name="id_wallet_debtor", referencedColumnName="id", nullable=false)
      * })
      */
     private $idWalletDebtor;
@@ -109,7 +109,7 @@ class DebtCollectionFeeDetail
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Wallet")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_wallet_creditor", referencedColumnName="id")
+     *   @ORM\JoinColumn(name="id_wallet_creditor", referencedColumnName="id", nullable=false)
      * })
      */
     private $idWalletCreditor;
@@ -129,7 +129,7 @@ class DebtCollectionFeeDetail
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\DebtCollectionMission")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_debt_collection_mission", referencedColumnName="id")
+     *   @ORM\JoinColumn(name="id_debt_collection_mission", referencedColumnName="id", nullable=false)
      * })
      */
     private $idDebtCollectionMission;

@@ -29,7 +29,7 @@ class MailQueue
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\MailTemplates")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_mail_template", referencedColumnName="id_mail_template")
+     *   @ORM\JoinColumn(name="id_mail_template", referencedColumnName="id_mail_template", nullable=false)
      * })
      */
     private $idMailTemplate;
@@ -42,28 +42,30 @@ class MailQueue
     private $serializedVariables;
 
     /**
+     * Attachments path separated by ;
+     *
      * @var string
      *
-     * @ORM\Column(name="attachments", type="text", length=65535, nullable=false)
+     * @ORM\Column(name="attachments", type="text", length=65535)
      */
     private $attachments;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="recipient", type="string", length=191, nullable=false)
+     * @ORM\Column(name="recipient", type="string", length=191)
      */
     private $recipient;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="reply_to", type="string", length=191, nullable=false)
+     * @ORM\Column(name="reply_to", type="string", length=191)
      */
     private $replyTo;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id_client", type="integer", nullable=true)
      */
@@ -72,7 +74,7 @@ class MailQueue
     /**
      * @var string
      *
-     * @ORM\Column(name="id_message_mailjet", type="integer", nullable=true)
+     * @ORM\Column(name="id_message_mailjet", type="bigint", nullable=true)
      */
     private $idMessageMailjet;
 
@@ -84,9 +86,9 @@ class MailQueue
     private $errorMailjet;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="status", type="integer", nullable=false)
+     * @ORM\Column(name="status", type="smallint")
      */
     private $status;
 
@@ -107,27 +109,25 @@ class MailQueue
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="updated", type="datetime", nullable=false)
+     * @ORM\Column(name="updated", type="datetime", nullable=true)
      */
     private $updated;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id_queue", type="integer")
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="IDENTITY")
      */
     private $idQueue;
-
-
 
     /**
      * Set idMailTemplate
