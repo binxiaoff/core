@@ -7,13 +7,17 @@ namespace DoctrineMigrations;
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\Migrations\AbstractMigration;
 
-final class Version20190307111400 extends AbstractMigration
+/**
+ * Auto-generated Migration: Please modify to your needs!
+ */
+final class Version20190307104957 extends AbstractMigration
 {
+    public function getDescription() : string
+    {
+        return 'Remove prospects table';
+    }
     /**
      * @param Schema $schema
-     *
-     * @throws \Doctrine\DBAL\DBALException
-     * @throws \Doctrine\DBAL\Migrations\AbortMigrationException
      */
     public function up(Schema $schema): void
     {
@@ -24,9 +28,6 @@ final class Version20190307111400 extends AbstractMigration
 
     /**
      * @param Schema $schema
-     *
-     * @throws \Doctrine\DBAL\DBALException
-     * @throws \Doctrine\DBAL\Migrations\AbortMigrationException
      */
     public function down(Schema $schema): void
     {
