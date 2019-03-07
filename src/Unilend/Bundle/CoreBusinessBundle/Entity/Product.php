@@ -92,9 +92,6 @@ class Product
      * @var ProductAttribute[]
      *
      * @ORM\OneToMany(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\ProductAttribute", mappedBy="idProduct")
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_product", referencedColumnName="id_product")
-     * })
      */
     private $productAttributes;
 
