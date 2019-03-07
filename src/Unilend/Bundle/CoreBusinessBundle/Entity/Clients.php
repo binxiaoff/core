@@ -44,12 +44,21 @@ class Clients implements UserInterface, EquatableInterface, EncoderAwareInterfac
     const ORIGIN_WELCOME_OFFER_HOME = 2;
     const ORIGIN_WELCOME_OFFER_LP   = 3;
 
-    const ROLE_USER            = 'ROLE_USER';
-    const ROLE_LENDER          = 'ROLE_LENDER';
-    const ROLE_BORROWER        = 'ROLE_BORROWER';
-    const ROLE_PARTNER_DEFAULT = 'ROLE_PARTNER';
-    const ROLE_PARTNER_ADMIN   = 'ROLE_PARTNER_ADMIN';
-    const ROLE_PARTNER_USER    = 'ROLE_PARTNER_USER';
+    const ROLE_USER           = 'ROLE_USER';
+    const ROLE_LENDER         = 'ROLE_LENDER';
+    const ROLE_BORROWER       = 'ROLE_BORROWER';
+    const ROLE_PARTNER        = 'ROLE_PARTNER';
+    const ROLE_PARTNER_ADMIN  = 'ROLE_PARTNER_ADMIN';
+    const ROLE_PARTNER_USER   = 'ROLE_PARTNER_USER';
+    const ROLE_DEBT_COLLECTOR = 'ROLE_DEBT_COLLECTOR';
+
+    const ROLES = [
+        self::ROLE_USER,
+        self::ROLE_LENDER,
+        self::ROLE_BORROWER,
+        self::ROLE_PARTNER,
+        self::ROLE_DEBT_COLLECTOR
+    ];
 
     const PASSWORD_ENCODER_MD5 = 'md5';
 
@@ -378,6 +387,13 @@ class Clients implements UserInterface, EquatableInterface, EncoderAwareInterfac
      * @var bool
      */
     private $userOnlyDefaultEncoder;
+
+    /**
+     * @var array
+     *
+     * @ORM\Column(type="json")
+     */
+    private $roles = [];
 
     /**
      * Clients constructor.
@@ -1378,7 +1394,7 @@ class Clients implements UserInterface, EquatableInterface, EncoderAwareInterfac
      */
     public function isBorrower(): bool
     {
-        return null !== $this->getWalletByType(WalletType::BORROWER);
+        return $this->hasRole(self::ROLE_BORROWER);
     }
 
     /**
@@ -1388,7 +1404,7 @@ class Clients implements UserInterface, EquatableInterface, EncoderAwareInterfac
      */
     public function isLender(): bool
     {
-        return null !== $this->getWalletByType(WalletType::LENDER);
+        return $this->hasRole(self::ROLE_LENDER);
     }
 
     /**
@@ -1398,7 +1414,7 @@ class Clients implements UserInterface, EquatableInterface, EncoderAwareInterfac
      */
     public function isPartner(): bool
     {
-        return null !== $this->getWalletByType(WalletType::PARTNER);
+        return $this->hasRole(self::ROLE_PARTNER);
     }
 
     /**
@@ -1408,23 +1424,7 @@ class Clients implements UserInterface, EquatableInterface, EncoderAwareInterfac
      */
     public function isDebtCollector(): bool
     {
-        return null !== $this->getWalletByType(WalletType::DEBT_COLLECTOR);
-    }
-
-    /**
-     * @param string $walletType
-     *
-     * @return Wallet|null
-     */
-    public function getWalletByType(string $walletType): ?Wallet
-    {
-        foreach ($this->wallets as $wallet) {
-            if ($walletType === $wallet->getIdType()->getLabel()) {
-                return $wallet;
-            }
-        }
-
-        return null;
+        return $this->hasRole(self::ROLE_DEBT_COLLECTOR);
     }
 
     /**
@@ -1709,25 +1709,54 @@ class Clients implements UserInterface, EquatableInterface, EncoderAwareInterfac
      */
     public function getRoles(): array
     {
-        $roles = [self::ROLE_USER];
+        $roles = $this->roles;
+        // guarantee every user at least has ROLE_USER
+        $roles[] = 'ROLE_USER';
 
-        if ($this->isLender()) {
-            $roles[] = self::ROLE_LENDER;
-        }
+        return array_unique($roles);
+    }
 
-        if ($this->isBorrower()) {
-            $roles[] = self::ROLE_BORROWER;
-        }
+    /**
+     * @param array $roles
+     *
+     * @return Clients
+     */
+    public function setRoles(array $roles): Clients
+    {
+        $this->roles = $this->filterRoles($roles);
 
-        if ($this->isPartner()) {
-            $roles[] = self::ROLE_PARTNER_DEFAULT;
+        return $this;
+    }
 
-            if (null !== $this->getCompanyClient()) {
-                $roles[] = $this->getCompanyClient()->getRole();
+    /**
+     * @param array $roles
+     *
+     * @return array
+     */
+    private function filterRoles(array $roles): array
+    {
+        foreach ($roles as $index => $role) {
+            if (false === in_array($role, self::ROLES)) {
+                unset($roles[$index]);
             }
         }
 
         return $roles;
+    }
+
+    /**
+     * @param string $role
+     *
+     * @return bool
+     */
+    public function hasRole(string $role): bool
+    {
+        return in_array($role, $this->getRoles());
+    }
+
+    public function resetRoles(): void
+    {
+        $this->roles = [];
     }
 
     /**
