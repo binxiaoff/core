@@ -4,13 +4,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
 use Doctrine\ORM\EntityRepository;
 use Unilend\Bridge\Doctrine\DBAL\Connection;
-use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Echeanciers;
-use Unilend\Bundle\CoreBusinessBundle\Entity\EcheanciersEmprunteur;
-use Unilend\Bundle\CoreBusinessBundle\Entity\OperationSubType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
-use Unilend\Bundle\CoreBusinessBundle\Entity\UnilendStats;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{CompanyStatus, Echeanciers, EcheanciersEmprunteur, OperationSubType, OperationType, ProjectsStatus, UnilendStats};
 
 class UnilendStatsRepository extends EntityRepository
 {
@@ -65,7 +59,7 @@ class UnilendStatsRepository extends EntityRepository
                     WHERE e2.ordre = ee.ordre AND ee.id_project = e2.id_project
                     LIMIT 1
                 ) = ' . Echeanciers::STATUS_PENDING . '
-                AND p.status = ' . ProjectsStatus::REMBOURSEMENT . '
+                AND p.status = ' . ProjectsStatus::STATUS_REPAYMENT . '
                 AND ee.id_project > 0
 
         UNION ALL
@@ -88,7 +82,7 @@ class UnilendStatsRepository extends EntityRepository
                   WHERE e2.ordre = ee.ordre AND ee.id_project = e2.id_project
                   LIMIT 1
                 ) = ' . Echeanciers::STATUS_PENDING . '
-                AND p.status = ' . ProjectsStatus::PROBLEME . '
+                AND p.status = ' . ProjectsStatus::STATUS_LOSS . '
                 AND (p.close_out_netting_date IS NULL OR p.close_out_netting_date = "0000-00-00")
                 AND cs.label = :inBonis
                 AND ee.id_project > 0
@@ -102,7 +96,7 @@ class UnilendStatsRepository extends EntityRepository
                         SELECT psh2.added
                         FROM projects_status_history psh2
                         INNER JOIN projects_status ps2 ON psh2.id_project_status = ps2.id_project_status
-                        WHERE ps2.status = ' . ProjectsStatus::PROBLEME . ' AND psh2.id_project = ee.id_project
+                        WHERE ps2.status = ' . ProjectsStatus::STATUS_LOSS . ' AND psh2.id_project = ee.id_project
                         ORDER BY psh2.added DESC
                         LIMIT 1
                     )
@@ -123,7 +117,7 @@ class UnilendStatsRepository extends EntityRepository
                     WHERE e2.ordre = ee.ordre AND ee.id_project = e2.id_project
                     LIMIT 1
                 ) = ' . Echeanciers::STATUS_PENDING . '
-                AND p.status >= ' . ProjectsStatus::REMBOURSEMENT . '
+                AND p.status >= ' . ProjectsStatus::STATUS_REPAYMENT . '
                 AND (p.close_out_netting_date IS NOT NULL AND p.close_out_netting_date != "0000-00-00")
                 AND ee.id_project > 0
                 AND cs.label = :inBonis
@@ -149,7 +143,7 @@ class UnilendStatsRepository extends EntityRepository
                     WHERE e2.ordre = ee.ordre AND ee.id_project = e2.id_project
                     LIMIT 1
                 ) = ' . Echeanciers::STATUS_PENDING . '
-                AND p.status >= ' . ProjectsStatus::REMBOURSEMENT . '
+                AND p.status >= ' . ProjectsStatus::STATUS_REPAYMENT . '
                 AND cs.label IN (:companyStatusInProceeding)
                 AND ee.id_project > 0
 
@@ -202,7 +196,7 @@ class UnilendStatsRepository extends EntityRepository
                 AND (
                     SELECT DATE(psh.added) 
                     FROM projects_status_history psh 
-                    INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status AND ps.status = ' . ProjectsStatus::REMBOURSEMENT . '
+                    INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status AND ps.status = ' . ProjectsStatus::STATUS_REPAYMENT . '
                     WHERE psh.id_project = o_withdraw.id_project
                     ORDER BY psh.id_project_status ASC 
                     LIMIT 1
@@ -229,7 +223,7 @@ class UnilendStatsRepository extends EntityRepository
                 AND (
                     SELECT DATE(psh.added) 
                     FROM projects_status_history psh 
-                    INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status AND ps.status = ' . ProjectsStatus::REMBOURSEMENT . ' 
+                    INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status AND ps.status = ' . ProjectsStatus::STATUS_REPAYMENT . ' 
                     WHERE psh.id_project = ee.id_project
                     ORDER BY psh.id_project_status ASC 
                     LIMIT 1
@@ -253,12 +247,12 @@ class UnilendStatsRepository extends EntityRepository
                     WHERE e2.ordre = ee.ordre AND ee.id_project = e2.id_project
                     LIMIT 1
                 ) = ' . Echeanciers::STATUS_PENDING . '
-                AND p.status = ' . ProjectsStatus::REMBOURSEMENT . '
+                AND p.status = ' . ProjectsStatus::STATUS_REPAYMENT . '
                 AND ee.id_project > 0
                 AND (
                     SELECT DATE(psh.added) 
                     FROM projects_status_history psh 
-                    INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status AND ps.status = ' . ProjectsStatus::REMBOURSEMENT . '
+                    INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status AND ps.status = ' . ProjectsStatus::STATUS_REPAYMENT . '
                     WHERE psh.id_project = ee.id_project
                     ORDER BY psh.id_project_status ASC
                     LIMIT 1
@@ -284,14 +278,14 @@ class UnilendStatsRepository extends EntityRepository
                     WHERE e2.ordre = ee.ordre AND ee.id_project = e2.id_project
                     LIMIT 1
                 ) = ' . Echeanciers::STATUS_PENDING . '
-                AND p.status = ' . ProjectsStatus::PROBLEME . '
+                AND p.status = ' . ProjectsStatus::STATUS_LOSS . '
                 AND (p.close_out_netting_date IS NULL OR p.close_out_netting_date = "0000-00-00")
                 AND cs.label = :inBonis
                 AND ee.id_project > 0
                 AND (
                     SELECT DATE(psh.added)
                     FROM projects_status_history psh 
-                    INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status AND ps.status = ' . ProjectsStatus::REMBOURSEMENT . '
+                    INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status AND ps.status = ' . ProjectsStatus::STATUS_REPAYMENT . '
                     WHERE psh.id_project = ee.id_project
                     ORDER BY psh.id_project_status ASC 
                     LIMIT 1
@@ -306,7 +300,7 @@ class UnilendStatsRepository extends EntityRepository
                         SELECT psh2.added
                         FROM projects_status_history psh2
                         INNER JOIN projects_status ps2 ON psh2.id_project_status = ps2.id_project_status
-                        WHERE ps2.status = ' . ProjectsStatus::PROBLEME . ' AND psh2.id_project = ee.id_project
+                        WHERE ps2.status = ' . ProjectsStatus::STATUS_LOSS . ' AND psh2.id_project = ee.id_project
                         ORDER BY psh2.added DESC
                         LIMIT 1
                     )
@@ -327,14 +321,14 @@ class UnilendStatsRepository extends EntityRepository
                     WHERE e2.ordre = ee.ordre AND ee.id_project = e2.id_project
                     LIMIT 1
                 ) = ' . Echeanciers::STATUS_PENDING . '
-                AND p.status = ' . ProjectsStatus::PROBLEME . '
+                AND p.status = ' . ProjectsStatus::STATUS_LOSS . '
                 AND (p.close_out_netting_date IS NOT NULL AND p.close_out_netting_date != "0000-00-00")
                 AND cs.label = :inBonis
                 AND ee.id_project > 0
                 AND (
                     SELECT DATE(psh.added) 
                     FROM projects_status_history psh 
-                    INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status AND ps.status = ' . ProjectsStatus::REMBOURSEMENT . '
+                    INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status AND ps.status = ' . ProjectsStatus::STATUS_REPAYMENT . '
                     WHERE psh.id_project = ee.id_project
                     ORDER BY psh.id_project_status ASC 
                     LIMIT 1
@@ -360,13 +354,13 @@ class UnilendStatsRepository extends EntityRepository
                     WHERE e2.ordre = ee.ordre AND ee.id_project = e2.id_project
                     LIMIT 1
                 ) = ' . Echeanciers::STATUS_PENDING . '
-                AND p.status >= ' . ProjectsStatus::REMBOURSEMENT . ' 
+                AND p.status >= ' . ProjectsStatus::STATUS_REPAYMENT . ' 
                 AND cs.label IN (:companyStatusInProceeding)
                 AND ee.id_project > 0
                 AND (
                     SELECT DATE(psh.added) 
                     FROM projects_status_history psh 
-                    INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status AND ps.status = ' . ProjectsStatus::REMBOURSEMENT . '
+                    INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status AND ps.status = ' . ProjectsStatus::STATUS_REPAYMENT . '
                     WHERE psh.id_project = ee.id_project
                     ORDER BY psh.id_project_status ASC 
                     LIMIT 1
@@ -384,7 +378,7 @@ class UnilendStatsRepository extends EntityRepository
             WHERE (
                     SELECT DATE(psh.added) 
                     FROM projects_status_history psh 
-                    INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status AND ps.status = ' . ProjectsStatus::REMBOURSEMENT . '
+                    INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status AND ps.status = ' . ProjectsStatus::STATUS_REPAYMENT . '
                     WHERE psh.id_project = o_recovery.id_project
                     ORDER BY psh.id_project_status ASC 
                     LIMIT 1
@@ -453,7 +447,7 @@ class UnilendStatsRepository extends EntityRepository
                 AND (
                      SELECT psh.added
                      FROM projects_status_history psh
-                       INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status AND ps.status = ' . ProjectsStatus::REMBOURSEMENT . '
+                       INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status AND ps.status = ' . ProjectsStatus::STATUS_REPAYMENT . '
                      WHERE psh.id_project = o_withdraw.id_project
                      ORDER BY psh.id_project_status ASC
                      LIMIT 1
@@ -489,7 +483,7 @@ class UnilendStatsRepository extends EntityRepository
                  AND (
                         SELECT DATE(psh.added) 
                         FROM projects_status_history psh 
-                            INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status AND ps.status = ' . ProjectsStatus::REMBOURSEMENT . '
+                            INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status AND ps.status = ' . ProjectsStatus::STATUS_REPAYMENT . '
                         WHERE psh.id_project = ee.id_project
                         ORDER BY psh.id_project_status ASC LIMIT 1
                       ) BETWEEN :startDate AND :endDate
@@ -553,7 +547,7 @@ class UnilendStatsRepository extends EntityRepository
                     SELECT added
                     FROM projects_status_history psh
                     INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
-                    WHERE ps.status = ' . ProjectsStatus::REMBOURSEMENT . '
+                    WHERE ps.status = ' . ProjectsStatus::STATUS_REPAYMENT . '
                         AND psh.id_project = o_withdraw.id_project
                     ORDER BY added ASC
                     LIMIT 1
@@ -588,7 +582,7 @@ class UnilendStatsRepository extends EntityRepository
                     SELECT added
                     FROM projects_status_history psh
                     INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
-                    WHERE ps.status = ' . ProjectsStatus::REMBOURSEMENT . ' AND psh.id_project = ee.id_project
+                    WHERE ps.status = ' . ProjectsStatus::STATUS_REPAYMENT . ' AND psh.id_project = ee.id_project
                     ORDER BY added ASC
                     LIMIT 1
                 ) <= :end
@@ -618,7 +612,7 @@ class UnilendStatsRepository extends EntityRepository
                     SELECT added
                     FROM projects_status_history psh
                     INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
-                    WHERE ps.status = ' . ProjectsStatus::REMBOURSEMENT . ' AND psh.id_project = ee.id_project
+                    WHERE ps.status = ' . ProjectsStatus::STATUS_REPAYMENT . ' AND psh.id_project = ee.id_project
                     ORDER BY added ASC
                     LIMIT 1
                 ) <= :end';

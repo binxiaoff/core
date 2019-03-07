@@ -181,7 +181,7 @@ class ProjectLifecycleManager
 
         $this->insertNewProjectEmails($project);
 
-        $this->projectStatusManager->addProjectStatus(Users::USER_ID_CRON, ProjectsStatus::AUTO_BID_PLACED, $project);
+        $this->projectStatusManager->addProjectStatus(Users::USER_ID_CRON, ProjectsStatus::STATUS_ONLINE, $project);
     }
 
     /**
@@ -191,7 +191,7 @@ class ProjectLifecycleManager
      */
     public function publish(Projects $project): void
     {
-        $this->projectStatusManager->addProjectStatus(Users::USER_ID_CRON, ProjectsStatus::EN_FUNDING, $project);
+        $this->projectStatusManager->addProjectStatus(Users::USER_ID_CRON, ProjectsStatus::STATUS_ONLINE, $project);
 
         $this->insertNewProjectNotification($project);
 
@@ -285,10 +285,10 @@ class ProjectLifecycleManager
     public function autoBid(Projects $project): void
     {
         switch ($project->getStatus()) {
-            case ProjectsStatus::A_FUNDER:
+            case ProjectsStatus::STATUS_REVIEW:
                 $this->bidAllAutoBid($project);
                 break;
-            case ProjectsStatus::EN_FUNDING:
+            case ProjectsStatus::STATUS_ONLINE:
                 $this->reBidAutoBid($project, true);
                 break;
         }
@@ -344,7 +344,7 @@ class ProjectLifecycleManager
         $bidOrder           = null;
         $preCalculatedOrder = false;
 
-        if (ProjectsStatus::A_FUNDER === $project->getStatus()) {
+        if (ProjectsStatus::STATUS_REVIEW === $project->getStatus()) {
             $preCalculatedOrder = true;
             $bidOrder           = $bidRepository->countBy(['idProject' => $project]);
             $bidOrder++;
@@ -389,9 +389,9 @@ class ProjectLifecycleManager
      */
     public function buildLoans(Projects $project): void
     {
-        $this->projectStatusManager->addProjectStatus(Users::USER_ID_CRON, ProjectsStatus::BID_TERMINATED, $project);
+        $this->projectStatusManager->addProjectStatus(Users::USER_ID_CRON, ProjectsStatus::STATUS_ONLINE, $project);
         $this->reBidAutoBidDeeply($project, true);
-        $this->projectStatusManager->addProjectStatus(Users::USER_ID_CRON, ProjectsStatus::FUNDE, $project);
+        $this->projectStatusManager->addProjectStatus(Users::USER_ID_CRON, ProjectsStatus::STATUS_FUNDED, $project);
         $this->acceptBids($project);
 
         $contractTypes = array_column($this->productManager->getAvailableContracts($project->getIdProduct()), 'label');
@@ -616,7 +616,7 @@ class ProjectLifecycleManager
     {
         $bidRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Bids');
 
-        $this->projectStatusManager->addProjectStatus(Users::USER_ID_CRON, ProjectsStatus::FUNDING_KO, $project);
+        $this->projectStatusManager->addProjectStatus(Users::USER_ID_CRON, ProjectsStatus::STATUS_CANCELLED, $project);
 
         $bids         = $bidRepository->findBy(['idProject' => $project], ['rate' => 'ASC', 'ordre' => 'ASC']);
         $iBidNbTotal  = $bidRepository->countBy(['idProject' => $project]);
@@ -684,7 +684,7 @@ class ProjectLifecycleManager
         /** @var \echeanciers $oRepaymentSchedule */
         $oRepaymentSchedule = $this->entityManagerSimulator->getRepository('echeanciers');
 
-        if ($project->getStatus() === ProjectsStatus::FUNDE) {
+        if ($project->getStatus() === ProjectsStatus::STATUS_FUNDED) {
             $lLoans = $oLoan->select('id_project = ' . $project->getIdProject());
 
             $iLoanNbTotal   = count($lLoans);
@@ -745,7 +745,7 @@ class ProjectLifecycleManager
         /** @var \echeanciers $repaymentScheduleEntity */
         $repaymentScheduleEntity = $this->entityManagerSimulator->getRepository('echeanciers');
 
-        if ($project->getStatus() === ProjectsStatus::FUNDE) {
+        if ($project->getStatus() === ProjectsStatus::STATUS_FUNDED) {
             $loans               = $loanEntity->select('id_project = ' . $project->getIdProject());
             $loansCount          = count($loans);
             $processedLoansCount = 0;

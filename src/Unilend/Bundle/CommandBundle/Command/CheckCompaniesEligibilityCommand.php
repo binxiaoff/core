@@ -6,13 +6,8 @@ use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\PreScoring;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectEligibilityRuleSet;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectEligibilityRuleSetMember;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
-use Unilend\Bundle\CoreBusinessBundle\Service\Eligibility\Validator\CompanyValidator;
-use Unilend\Bundle\CoreBusinessBundle\Service\ExternalDataManager;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{PreScoring, ProjectEligibilityRuleSet, ProjectEligibilityRuleSetMember, ProjectsStatus, Users};
+use Unilend\Bundle\CoreBusinessBundle\Service\{Eligibility\Validator\CompanyValidator, ExternalDataManager};
 use Unilend\Bundle\WSClientBundle\Entity\Euler\CompanyRating as EulerHermesCompanyRating;
 use Unilend\Bundle\WSClientBundle\Service\AltaresManager;
 

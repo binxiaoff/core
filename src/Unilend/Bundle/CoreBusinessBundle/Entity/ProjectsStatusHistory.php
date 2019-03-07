@@ -41,14 +41,14 @@ class ProjectsStatusHistory
     /**
      * @var string
      *
-     * @ORM\Column(name="content", type="text", length=16777215)
+     * @ORM\Column(name="content", type="text", length=16777215, nullable=true)
      */
     private $content;
 
     /**
      * @var int
      *
-     * @ORM\Column(name="numero_relance", type="integer")
+     * @ORM\Column(name="numero_relance", type="integer", nullable=true)
      */
     private $numeroRelance;
 

@@ -142,7 +142,7 @@ class pdfController extends bootstrap
             && $this->pdfClient->get($this->params[0], 'hash')
             && $this->companies->get($this->pdfClient->id_client, 'id_client_owner')
             && $this->projects->get($this->params[1], 'id_company = ' . $this->companies->id_company . ' AND id_project')
-            && $this->projects->status != ProjectsStatus::PRET_REFUSE
+            && $this->projects->status != ProjectsStatus::STATUS_CANCELLED
         ) {
             $proxy   = $this->commonProxy();
             $mandate = $this->commonMandate();
@@ -189,7 +189,7 @@ class pdfController extends bootstrap
             && $this->pdfClient->get($this->params[0], 'hash')
             && $this->companies->get($this->pdfClient->id_client, 'id_client_owner')
             && $this->projects->get($this->params[1], 'id_company = ' . $this->companies->id_company . ' AND id_project')
-            && $this->projects->status != ProjectsStatus::PRET_REFUSE
+            && $this->projects->status != ProjectsStatus::STATUS_CANCELLED
         ) {
             $return = $this->commonMandate();
 

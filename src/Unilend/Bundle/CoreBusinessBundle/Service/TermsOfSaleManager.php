@@ -62,6 +62,8 @@ class TermsOfSaleManager
      */
     public function checkCurrentVersionAccepted(): void
     {
+        return;
+
         $session = $this->requestStack->getCurrentRequest()->getSession();
 
         if ($session->has(self::SESSION_KEY_TOS_ACCEPTED)) {

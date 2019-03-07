@@ -4,16 +4,10 @@ namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
 use Doctrine\ORM\EntityRepository;
 use Unilend\Bridge\Doctrine\DBAL\Connection;
-use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Echeanciers;
-use Unilend\Bundle\CoreBusinessBundle\Entity\OperationSubType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
-use Unilend\Bundle\CoreBusinessBundle\Entity\UnilendStats;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{CompanyStatus, Echeanciers, OperationSubType, OperationType, ProjectsStatus, UnilendStats};
 
 class LenderStatisticRepository extends EntityRepository
 {
-
     /**
      * @param int $idWallet
      *
@@ -54,7 +48,7 @@ class LenderStatisticRepository extends EntityRepository
             WHERE
                 l.id_wallet = :idWallet
                 AND e.status = ' . Echeanciers::STATUS_PENDING . '
-                AND p.status = ' . ProjectsStatus::REMBOURSEMENT . '
+                AND p.status = ' . ProjectsStatus::STATUS_REPAYMENT . '
 
         UNION ALL
 
@@ -69,7 +63,7 @@ class LenderStatisticRepository extends EntityRepository
             WHERE
               l.id_wallet = :idWallet
               AND e.status = ' . Echeanciers::STATUS_PENDING . '
-              AND p.status = ' . ProjectsStatus::PROBLEME . '
+              AND p.status = ' . ProjectsStatus::STATUS_LOSS . '
               AND (p.close_out_netting_date IS NULL OR p.close_out_netting_date = \'0000-00-00\')
               AND cs.label = :inBonis
         
@@ -84,7 +78,7 @@ class LenderStatisticRepository extends EntityRepository
                         FROM projects_status_history psh2
                         INNER JOIN projects_status ps2 ON psh2.id_project_status = ps2.id_project_status
                         WHERE
-                            ps2.status = ' . ProjectsStatus::PROBLEME . '
+                            ps2.status = ' . ProjectsStatus::STATUS_LOSS . '
                             AND psh2.id_project = e.id_project
                         ORDER BY psh2.added DESC, psh2.id_project_status_history DESC
                         LIMIT 1
@@ -99,7 +93,7 @@ class LenderStatisticRepository extends EntityRepository
             WHERE
                 l.id_wallet = :idWallet
                 AND e.status = ' . Echeanciers::STATUS_PENDING . '
-                AND p.status = ' . ProjectsStatus::PROBLEME . '
+                AND p.status = ' . ProjectsStatus::STATUS_LOSS . '
                 AND (p.close_out_netting_date IS NOT NULL AND p.close_out_netting_date != \'0000-00-00\')
                 AND cs.label = :inBonis
 
@@ -116,7 +110,7 @@ class LenderStatisticRepository extends EntityRepository
             WHERE
                 l.id_wallet = :idWallet
                 AND e.status = ' . Echeanciers::STATUS_PENDING . '
-                AND p.status >= ' . ProjectsStatus::REMBOURSEMENT . '
+                AND p.status >= ' . ProjectsStatus::STATUS_REPAYMENT . '
                 AND cs.label IN (:companyStatusInProceeding)
 
         UNION ALL

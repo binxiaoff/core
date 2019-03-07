@@ -1209,7 +1209,7 @@ class partenairesController extends bootstrap
         }
 
         try {
-            $projects = $projectRepository->findSubmitterProjectsByStatus($submitter, ProjectsStatus::COMMERCIAL_REVIEW);
+            $projects = $projectRepository->findSubmitterProjectsByStatus($submitter, ProjectsStatus::STATUS_REQUEST);
         } catch (\Exception $exception) {
             $projects = [];
         }

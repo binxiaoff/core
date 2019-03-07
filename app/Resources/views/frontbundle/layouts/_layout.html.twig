@@ -1,27 +1,11 @@
-{# Basic Page Layout #}
-
 <!DOCTYPE html>
 <!--[if lt IE 9]><html lang="{{ app.request.locale }}" class="lt-ie9 no-js"><![endif]-->
 <!--[if IE 9]><html lang="{{ app.request.locale }}" class="ie9 no-js"><![endif]-->
 <!--[if gt IE 9]><!--><html lang="{{ app.request.locale }}" class="no-js"><!--<![endif]-->
     <head>
-    {#<head {{ sonata_seo_head_attributes() }}>#}
-        {#{{ google_tag_manager_head() }}#}
-        {#{% block metaTags %}#}
-            {#{{ sonata_seo_title() }}#}
-            {#{{ sonata_seo_metadatas() }}#}
-        {#{% endblock %}#}
-
         {% block cssFiles %}
             {% include 'partials/fonts_inline.html.twig' %}
             <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Cabin:400,700,400" media="all">
-
-            {% if app.request.attributes.get('_route') in ['project_detail', 'projects_list', 'lender_projects'] %}
-                {# Mapbox #}
-                <link href="https://api.mapbox.com/mapbox.js/v2.4.0/mapbox.css" rel="stylesheet" />
-                <link href="https://api.mapbox.com/mapbox.js/plugins/leaflet-markercluster/v0.4.0/MarkerCluster.css" rel="stylesheet" />
-                <link href="https://api.mapbox.com/mapbox.js/plugins/leaflet-markercluster/v0.4.0/MarkerCluster.Default.css" rel="stylesheet" />
-            {% endif %}
 
             <link rel="stylesheet" href="{{ asset('css/screen.css', 'gulp') }}" />
             <!--[if lte IE 10]>
@@ -44,20 +28,15 @@
         {{ google_tag_manager_body() }}
         <div id="top" class="site">
             {% block siteHeader %}
-                {% if app.user is defined and is_granted('ROLE_LENDER') %}
-                    {% include 'lender_account/connected_header.html.twig' %}
-                {% elseif app.user is defined and is_granted('ROLE_BORROWER') %}
-                    {% include 'borrower_account/connected_header.html.twig' %}
-                {% elseif app.user is defined and is_granted('ROLE_PARTNER') %}
-                    {% include 'partner_account/_connected_header.html.twig' %}
+                {% if app.user is defined and is_granted(['ROLE_LENDER', 'ROLE_BORROWER', 'ROLE_PARTNER']) %}
+                    {% include 'demo/_connected_header.html.twig' %}
                 {% else %}
                     {% include 'partials/header.html.twig' %}
                 {%  endif %}
             {% endblock %}
 
             <div class="site-content">
-                {% block siteContent %}
-                {% endblock %}
+                {% block siteContent %} {% endblock %}
             </div>
 
             {% block siteFooter %}
@@ -66,9 +45,9 @@
         </div>
 
         {# As long as lender menu is rendered using LenderAccount:lenderMenu, we need this trick before refactoring menu here and there #}
-        {% if app.user is defined and app.user is not empty %}
-            {% include 'partials/user_mobile_menu.html.twig' %}
-        {% endif %}
+        {#{% if app.user is defined and app.user is not empty %}#}
+            {#{% include 'partials/user_mobile_menu.html.twig' %}#}
+        {#{% endif %}#}
 
         <div class="modal-spinner">
             <div id="floatingCirclesG">
@@ -142,21 +121,10 @@
                 var onExpireRecaptchaCallback = function () {}
             </script>
 
-            {% if app.request.attributes.get('_route') in ['project_detail', 'projects_list', 'lender_projects'] %}
-                <script type="text/javascript" src="https://api.mapbox.com/mapbox.js/v2.4.0/mapbox.js"></script>
-                <script type="text/javascript" src="https://api.mapbox.com/mapbox.js/plugins/leaflet-markercluster/v0.4.0/leaflet.markercluster.js"></script>
-            {% endif %}
-
             <script type="text/javascript" src="{{ asset('js/dependencies.js', 'gulp') }}"></script>
             <script type="text/javascript" src="{{ asset('js/main.js', 'gulp') }}"></script>
-
-            {% if recaptchaKey is defined and recaptchaKey is not empty %}
-                <script src="https://www.google.com/recaptcha/api.js?onload=onloadRecaptchaCallback&render=explicit" async defer></script>
-            {% endif %}
         {% endblock %}
 
         {% block pageScripts %}{% endblock %}
-
-        {{ google_tag_manager_body_end() }}
     </body>
 </html>

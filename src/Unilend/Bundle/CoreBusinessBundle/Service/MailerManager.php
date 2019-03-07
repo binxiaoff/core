@@ -7,7 +7,7 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\{Asset\Packages, DependencyInjection\ContainerInterface, Routing\RouterInterface,
     Translation\TranslatorInterface};
 use Unilend\Bundle\CoreBusinessBundle\Entity\{Bids, Clients, ClientSettingType, ClientsGestionTypeNotif, ClientsMandats, Companies, Operation, OperationSubType, ProjectCgv,
-    Projects, ProjectsPouvoir, Settings, TemporaryLinksLogin, UniversignEntityInterface, Wallet, WalletType};
+    Projects, ProjectsPouvoir, ProjectsStatus, Settings, TemporaryLinksLogin, UniversignEntityInterface, Users, Wallet, WalletType};
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\{TemplateMessage, TemplateMessageProvider};
 use Unilend\core\Loader;
@@ -798,7 +798,7 @@ class MailerManager
 
                         $oProject->get($aMailNotification['id_project']);
 
-                        if (\projects_status::EN_FUNDING == $oProject->status) {
+                        if (ProjectsStatus::STATUS_ONLINE == $oProject->status) {
                             $sProjectsListHTML .= '
                                 <tr>
                                     <td class="td">
@@ -1551,15 +1551,19 @@ class MailerManager
     }
 
     /**
-     * @param \users $user
-     * @param string $newPassword
+     * @param \users|Users $user
+     * @param string       $newPassword
      */
-    public function sendNewPasswordEmail(\users $user, $newPassword)
+    public function sendNewPasswordEmail($user, string $newPassword)
     {
+        if ($user instanceof \users) {
+            $user = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find($user->id_user);
+        }
+
         $replacements = [
             'surl'    => $this->sSUrl,
             'url'     => $this->sFUrl,
-            'email'   => trim($user->email),
+            'email'   => trim($user->getEmail()),
             'lien_fb' => $this->settingsRepository->findOneBy(['type' => 'Facebook'])->getValue(),
             'lien_tw' => $this->settingsRepository->findOneBy(['type' => 'Twitter'])->getValue(),
             'annee'   => date('Y'),
@@ -1569,13 +1573,15 @@ class MailerManager
         /** @var TemplateMessage $message */
         $message = $this->messageProvider->newMessage('user-nouveau-mot-de-passe', $replacements);
         try {
-            $message->setTo(trim($user->email));
+            $message->setTo(trim($user->getEmail()));
             $this->mailer->send($message);
         } catch (\Exception $exception) {
-            $this->oLogger->warning(
-                'Could not send email: user-nouveau-mot-de-passe - Exception: ' . $exception->getMessage(),
-                ['id_mail_template' => $message->getTemplateId(), 'id_user' => $user->id_user, 'class' => __CLASS__, 'function' => __FUNCTION__]
-            );
+            $this->oLogger->warning('Could not send email: user-nouveau-mot-de-passe - Exception: ' . $exception->getMessage(), [
+                'id_mail_template' => $message->getTemplateId(),
+                'id_user'          => $user->getIdUser(),
+                'class'            => __CLASS__,
+                'function'         => __FUNCTION__
+            ]);
         }
     }
 

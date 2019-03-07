@@ -35,11 +35,9 @@ EOF
         $entityManager = $this->getContainer()->get('doctrine.orm.entity_manager');
         $projects      = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->findBy([
             'status' => [
-                ProjectsStatus::REMBOURSEMENT,
-                ProjectsStatus::REMBOURSE,
-                ProjectsStatus::REMBOURSEMENT_ANTICIPE,
-                ProjectsStatus::PROBLEME,
-                ProjectsStatus::LOSS
+                ProjectsStatus::STATUS_REPAYMENT,
+                ProjectsStatus::STATUS_REPAID,
+                ProjectsStatus::STATUS_LOSS
             ]
         ]);
 

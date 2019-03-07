@@ -1,0 +1,90 @@
+{% extends 'demo/_layout.html.twig' %}
+
+{% set page = {
+    id: 'demo-project-request-summary',
+    classNames: ''
+} %}
+
+{% block dashboardContent %}
+    <section class="dashboard-tabs tabs">
+        <div class="dashboard-tabs-content tab-content">
+            <article class="dashboard-tab-pane">
+                <div class="panel">
+                    <header class="panel-header">
+                        <h3>{{ project.title }}</h3>
+                    </header>
+                    <form action="{{ path('demo_project_request_submit') }}" method="post" id="demo-simulator" class="simulator">
+                        <input type="hidden" name="hash" value="{{ project.hash }}">
+                        <fieldset class="simulator-pane-inner recap">
+                            <div class="row columns-with-space">
+                                <dl class="col-sm-4 col-md-6 col-lg-6">
+                                    <dt>{% trans %} demo-project-request_simulator-summary-buyer-field-label {% endtrans %}</dt>
+                                    <dd><strong class="ui-simulator-output-cost">{{ project.idCompany.name }}</strong></dd>
+                                </dl>
+                                <dl class="col-sm-4 col-md-6 col-lg-6">
+                                    <dt>{% trans %} demo-project-request_simulator-summary-amount-field-label {% endtrans %}</dt>
+                                    <dd><strong class="ui-simulator-output-cost">{{ project.amount|localizednumber }}&nbsp;€</strong></dd>
+                                </dl>
+                                <dl class="col-sm-4 col-md-6 col-lg-6">
+                                    <dt>{% trans %} demo-project-request_simulator-summary-product-field-label {% endtrans %}</dt>
+                                    <dd><strong class="ui-simulator-output-cost">{{ product.label }}</strong></dd>
+                                </dl>
+                                <dl class="col-sm-4 col-md-6 col-lg-6">
+                                    <dt>{% trans %} demo-project-request_simulator-summary-duration-field-label {% endtrans %}</dt>
+                                    <dd>
+                                        <strong class="ui-simulator-output-duration">{% trans with {'%numberMonth%': project.period} %} demo-project-request_simulator-summary-duration-value {% endtrans %}</strong>
+                                    </dd>
+                                </dl>
+                                <dl class="col-sm-12 col-md-12 col-lg-12">
+                                    <dt>{% trans %} demo-project-request_simulator-summary-description-field-label {% endtrans %}</dt>
+                                    <dd><em>{{ project.comments|nl2br }}</em></dd>
+                                </dl>
+                            </div>
+                        </fieldset><!-- /.simulator-pane-inner -->
+                        <footer class="simulator-pane-inner actions bg-p1 c-bg5 text-align-center">
+                            <button type="button" class="btn-abandon btn-alternate" data-equal-width data-modal-toggle="#modal-demo-prospect-abandon">
+                                {% trans %} demo-project-request_simulator-footer-abandon-button {% endtrans %}
+                            </button>
+                            <a href="{{ path('demo_loans') }}" class="btn-prospect btn-alternate" data-equal-width>
+                                {% trans %} demo-project-request_simulator-footer-pause-button {% endtrans %}
+                            </a>
+                            <button type="submit" class="btn-submit btn-alternate" data-equal-width data-spinnerbutton>
+                                {% trans %} demo-project-request_simulator-footer-submit-button {% endtrans %}
+                            </button>
+                        </footer><!-- /.simulator-pane-inner -->
+                    </form><!-- /.simulator -->
+                </div>
+            </article><!-- /.dashboard-tab-pane -->
+        </div><!-- /.dashboard-tabs-content -->
+    </section><!-- /.dashboard-tabs -->
+{% endblock %}
+
+{% block modals %}
+    {% if abandonReasons is defined %}
+        <div id="modal-demo-prospect-abandon" data-modal>
+            <form action="{{ path('demo_project_abandon') }}" method="post" data-formvalidation>
+                <input type="hidden" name="hash" value="{{ project.hash }}">
+                <div class="modal-body text-align-center">
+                    <p><label for="prospect-abandon-motif">{% trans %} demo-project-request_popup-abandon-message {% endtrans %}</label></p>
+                    <div class="form-field">
+                        <select multiple name="reason[]" id="prospect-abandon-motif" class="input-field select2" data-formvalidation-input data-formvalidation-required="true">
+                            {% for abandonReason in abandonReasons %}
+                                <option value="{{ abandonReason.idAbandon }}">{{ abandonReason.reason|capitalize }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <footer class="modal-footer">
+                    <div class="btn-controls">
+                        <a href="javascript:;" class="btn-default" data-modal-doactioncancel>
+                            {% trans %} demo-project-request_popup-abandon-button-cancel {% endtrans %}
+                        </a>
+                        <button type="submit" class="btn-primary" data-spinnerbutton>
+                            {% trans %} demo-project-request_popup-abandon-button-submit {% endtrans %}
+                        </button>
+                    </div>
+                </footer>
+            </form>
+        </div><!-- /#modal-demo-prospect-cancel -->
+    {% endif %}
+{% endblock %}

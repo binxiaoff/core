@@ -5,13 +5,8 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service\Repayment;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Echeanciers;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRepaymentTask;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRepaymentTaskLog;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
-use Unilend\Bundle\CoreBusinessBundle\Service\OperationManager;
-use Unilend\Bundle\CoreBusinessBundle\Service\ProjectStatusManager;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{Echeanciers, ProjectRepaymentTask, ProjectRepaymentTaskLog, ProjectsStatus, Users};
+use Unilend\Bundle\CoreBusinessBundle\Service\{OperationManager, ProjectStatusManager};
 
 class ProjectEarlyRepaymentManager
 {
@@ -89,7 +84,7 @@ class ProjectEarlyRepaymentManager
             $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur')->earlyPayAllPendingSchedules($projectRepaymentTask->getIdWireTransferIn());
             $this->projectRepaymentNotificationSender->createEarlyRepaymentEmail($projectRepaymentTask->getIdWireTransferIn());
 
-            $this->projectStatusManager->addProjectStatus($idUser, ProjectsStatus::REMBOURSEMENT_ANTICIPE, $project);
+            $this->projectStatusManager->addProjectStatus($idUser, ProjectsStatus::STATUS_REPAID, $project);
 
             $loans = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Loans')->findBy(['idProject' => $project]);
 

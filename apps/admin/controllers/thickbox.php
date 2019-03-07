@@ -1,6 +1,7 @@
 <?php
 
 use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
 
 class thickboxController extends bootstrap
@@ -91,7 +92,7 @@ class thickboxController extends bootstrap
         $this->projectId = $this->params[0];
 
         switch ($this->params[1]) {
-            case \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus::PROBLEME:
+            case ProjectsStatus::STATUS_LOSS:
                 /** @var \Symfony\Component\Translation\TranslatorInterface $translator */
                 $translator                 = $this->get('translator');
                 $this->sInfoStatusChange    = trim($translator->trans('projet_info-passage-statut-probleme'));

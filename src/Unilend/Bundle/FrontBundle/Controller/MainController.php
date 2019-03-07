@@ -15,7 +15,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{Clients, OffresBienvenues, Project
 use Unilend\Bundle\CoreBusinessBundle\Repository\ProjectsRepository;
 use Unilend\Bundle\CoreBusinessBundle\Service\{ProjectRequestManager, StatisticsManager, WelcomeOfferManager};
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
-use Unilend\Bundle\FrontBundle\Service\{ContentManager, ProjectDisplayManager, /*SeoManager,*/ SourceManager, TestimonialManager};
+use Unilend\Bundle\FrontBundle\Service\{ContentManager, ProjectDisplayManager, SourceManager};
 use Unilend\core\Loader;
 
 class MainController extends Controller
@@ -33,10 +33,18 @@ class MainController extends Controller
     /**
      * @Route("/", name="home")
      *
+     * @param UserInterface|Clients|null $client
+     *
      * @return Response
      */
-    public function homeAction(): Response
+    public function homeAction(?UserInterface $client): Response
     {
+        if ($client instanceof Clients) {
+            return $this->redirectToRoute('demo_loans');
+        }
+
+        return $this->redirectToRoute('login');
+
         /** @var AuthorizationChecker $authorizationChecker */
         $authorizationChecker = $this->get('security.authorization_checker');
         /** @var WelcomeOfferManager $welcomeOfferManager */
@@ -67,12 +75,10 @@ class MainController extends Controller
     {
         $projectDisplayManager = $this->get('unilend.frontbundle.service.project_display_manager');
         $welcomeOfferManager   = $this->get('unilend.service.welcome_offer_manager');
-        $testimonialService    = $this->get('unilend.frontbundle.service.testimonial_manager');
 
         $template = [
             'showWelcomeOffer'   => $welcomeOfferManager->displayOfferOnHome(),
             'amountWelcomeOffer' => $welcomeOfferManager->getWelcomeOfferAmount(OffresBienvenues::TYPE_HOME),
-            'featureLender'      => $testimonialService->getFeaturedTestimonialLender(),
             'showPagination'     => false,
             'showSortable'       => false,
             'sortType'           => ProjectsRepository::SORT_FIELD_END,
@@ -109,7 +115,7 @@ class MainController extends Controller
         $template['projectAmountMin']  = $projectManager->getMinProjectAmount();
         $template['borrowingMotives']  = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:BorrowingMotive')->findBy([], ['rank' => 'ASC']);
         $template['projects'] = $projectDisplayManager->getProjectsList(
-            [ProjectsStatus::EN_FUNDING],
+            [ProjectsStatus::STATUS_ONLINE],
             [ProjectsRepository::SORT_FIELD_END => 'DESC']
         );
 
@@ -221,7 +227,7 @@ class MainController extends Controller
         $partner = $this->get('unilend.service.partner_manager')->getDefaultPartner();
 
         try {
-            $project = $projectRequestManager->newProject($user, $partner, ProjectsStatus::INCOMPLETE_REQUEST, $amount, $siren, $siret, $companyName, $email, $period, $borrowingMotive);
+            $project = $projectRequestManager->newProject($user, $partner, ProjectsStatus::STATUS_REQUEST, $amount, $siren, $siret, $companyName, $email, $period, $borrowingMotive);
 
             return $this->json([
                 'success' => true,
@@ -446,7 +452,7 @@ class MainController extends Controller
     {
         return $this->render('partials/footer.html.twig', [
             'menus'             => $contentManager->getFooterMenu(),
-            'displayDisclaimer' => $route !== 'project_detail'
+            'displayDisclaimer' => false//$route !== 'project_detail'
         ]);
     }
 
@@ -692,29 +698,6 @@ class MainController extends Controller
         $template['sections'] =  $pagesBySections;
 
         return $this->render('static_pages/sitemap.html.twig', $template);
-    }
-
-    /**
-     * @Route("/temoignages", name="testimonials")
-     *
-     * @return Response
-     */
-    public function testimonialAction(TestimonialManager $testimonialService, EntityManagerSimulator $entityManagerSimulator/*, SeoManager $seoManager*/): Response
-    {
-        /** @var \tree $tree */
-        $tree = $entityManagerSimulator->getRepository('tree');
-        $tree->get(['slug' => 'temoignages']);
-//        $seoManager->setCmsSeoData($tree);
-
-        $template['testimonialPeople'] = $testimonialService->getBorrowerBattenbergTestimonials(false);
-        $response                      = $this->render('static_pages/testimonials.html.twig', $template);
-        $finalElements                 = [
-            'contenu'      => $response->getContent(),
-            'complement'   => '',
-            'image-header' => ''
-        ];
-
-        return $this->renderCmsNav($tree, $finalElements, $entityManagerSimulator, 'apropos-statistiques');
     }
 
     /**

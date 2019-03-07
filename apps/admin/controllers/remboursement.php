@@ -5,7 +5,8 @@ use Box\Spout\Writer\WriterFactory;
 use Doctrine\ORM\EntityManager;
 use Symfony\Component\HttpFoundation\Request;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{Clients, DebtCollectionFeeDetail, EcheanciersEmprunteur, ProjectRepaymentTask, Projects, ProjectsStatus, Receptions, Zones};
-use Unilend\Bundle\CoreBusinessBundle\Service\{BackOfficeUserManager, ProjectCloseOutNettingManager, Repayment\ProjectCloseOutNettingPaymentManager, Repayment\ProjectPaymentManager};
+use Unilend\Bundle\CoreBusinessBundle\Service\{BackOfficeUserManager, DebtCollectionMissionManager, ProjectCloseOutNettingManager, Repayment\ProjectCloseOutNettingPaymentManager,
+    Repayment\ProjectPaymentManager};
 
 class remboursementController extends bootstrap
 {
@@ -174,7 +175,7 @@ class remboursementController extends bootstrap
                         $projectRepaymentTaskManager->enableAutomaticRepayment($project, $this->userEntity);
                         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectStatusManager $projectStatusManager */
                         $projectStatusManager = $this->get('unilend.service.project_status_manager');
-                        $projectStatusManager->addProjectStatus($this->userEntity, ProjectsStatus::REMBOURSEMENT, $project);
+                        $projectStatusManager->addProjectStatus($this->userEntity, ProjectsStatus::STATUS_REPAYMENT, $project);
                     }
 
                 } catch (Exception $exception) {
@@ -216,7 +217,7 @@ class remboursementController extends bootstrap
         $projectCharges = $projectChargeRepository->findBy(['idProject' => $reception->getIdProject(), 'idWireTransferIn' => null]);
         $projectStatus  = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatus')->findOneBy(['status' => $reception->getIdProject()->getStatus()]);
 
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\DebtCollectionMissionManager $debtCollectionMissionManager */
+        /** @var DebtCollectionMissionManager $debtCollectionMissionManager */
         $debtCollectionMissionManager = $this->get('unilend.service.debt_collection_mission_manager');
 
         $this->render(null, [
@@ -314,7 +315,7 @@ class remboursementController extends bootstrap
 
         /** @var \Symfony\Component\HttpFoundation\Session\Session $session */
         $session = $this->get('session');
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\DebtCollectionMissionManager $debtCollectionMissionManager */
+        /** @var DebtCollectionMissionManager $debtCollectionMissionManager */
         $debtCollectionMissionManager = $this->get('unilend.service.debt_collection_mission_manager');
 
         $debtCollectionFeeDetailRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:DebtCollectionFeeDetail');
@@ -390,7 +391,7 @@ class remboursementController extends bootstrap
             $latePaymentData = [];
             $project         = $projectRepository->find($projectId);
 
-            if (null !== $project && $project->getStatus() >= ProjectsStatus::REMBOURSEMENT) {
+            if (null !== $project && $project->getStatus() >= ProjectsStatus::STATUS_REPAYMENT) {
                 /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $projectManager */
                 $projectManager = $this->get('unilend.service.project_manager');
                 /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectCloseOutNettingManager $projectCloseOutNettingManager */
@@ -461,7 +462,7 @@ class remboursementController extends bootstrap
                     'canBeDeclined'              => $projectCloseOutNettingManager->canBeDeclined($project),
                     'latePaymentsData'           => $latePaymentData,
                     'debtCollector'              => $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')
-                        ->findOneBy(['hash' => \Unilend\Bundle\CoreBusinessBundle\Service\DebtCollectionMissionManager::CLIENT_HASH_PROGERIS]),
+                        ->findOneBy(['hash' => DebtCollectionMissionManager::CLIENT_HASH_PROGERIS]),
                     'debtCollectionMissionsData' => $debtCollectionMissions,
                     'pendingWireTransferIn'      => $pendingWireTransferIn,
                     'projectCharges'             => $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectCharge')->findBy(['idProject' => $project]),
@@ -474,7 +475,7 @@ class remboursementController extends bootstrap
                     'plannedRepaymentTasks'      => $plannedRepaymentTasks,
                     'lenderCount'                => $entityManager->getRepository('UnilendCoreBusinessBundle:Loans')->getLenderNumber($project),
                     'paymentSchedules'           => $paymentSchedules,
-                    'repaymentProjectStatus'     => ProjectsStatus::FUNDE . ',' . ProjectsStatus::REMBOURSEMENT . ',' . ProjectsStatus::REMBOURSE . ',' . ProjectsStatus::REMBOURSEMENT_ANTICIPE
+                    'repaymentProjectStatus'     => ProjectsStatus::STATUS_FUNDED . ',' . ProjectsStatus::STATUS_REPAYMENT . ',' . ProjectsStatus::STATUS_REPAID
                 ];
 
                 $this->render(null, $templateData);
@@ -512,7 +513,7 @@ class remboursementController extends bootstrap
                 $this->sendAjaxResponse(false, null, ['paramètres invalides.']);
             }
 
-            if (ProjectsStatus::PROBLEME == $project->getStatus()) {
+            if (ProjectsStatus::STATUS_LOSS == $project->getStatus()) {
                 $this->sendAjaxResponse(false, null, ['Un projet en statut problème ne peut pas être mis en remboursement automatique']);
             }
 

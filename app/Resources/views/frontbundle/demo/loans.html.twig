@@ -1,0 +1,45 @@
+{% extends 'demo/_layout.html.twig' %}
+
+{% set page = {
+    id: 'demo-loans',
+    classNames: ''
+} %}
+
+{% block dashboardContent %}
+    <section class="dashboard-tabs tabs">
+        {% if projects|length > 1 %}
+            <div class="dashboard-tabs-nav">
+                <ul class="nav nav-dashboard-tabs">
+                    <li data-equal-width role="presentation" class="active">
+                        <a href="#tab-borrower" role="tab" data-toggle="tab">Dossiers déposés</a>
+                    </li>
+                    <li data-equal-width role="presentation">
+                        <a href="#tab-broker" role="tab" data-toggle="tab">Arrangements</a>
+                    </li>
+                    <li data-equal-width role="presentation">
+                        <a href="#tab-lender" role="tab" data-toggle="tab">Syndications souscrites</a>
+                    </li>
+                </ul>
+            </div><!-- /.dashboard-tabs-nav -->
+        {% endif %}
+
+        <div class="dashboard-tabs-content tab-content">
+            {% include 'demo/loans/borrower.html.twig' %}
+            {% include 'demo/loans/broker.html.twig' %}
+            {% include 'demo/loans/lender.html.twig' %}
+        </div><!-- /.dashboard-tabs-content -->
+    </section><!-- /.dashboard-tabs -->
+{% endblock %}
+
+{% block pageHeadScripts %}
+    <style>
+        .bubble {
+            display: inline-block;
+            border-radius: 12px;
+            padding: 0 10px;
+            line-height: 18px;
+            color: #fbf9fb;
+            font-weight: 900;
+        }
+    </style>
+{% endblock %}

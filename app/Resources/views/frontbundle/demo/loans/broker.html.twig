@@ -1,0 +1,98 @@
+<article role="tabpanel" class="dashboard-tab-pane tab-pane" id="tab-broker">
+    <div class="panel">
+        <div class="panel-content">
+            {% if projects.broker|length > 0 %}
+                {% for status, statusProjects in projects.broker %}
+                    <div class="row">
+                        <a href="#broker-projects-{{ status }}" role="button" data-toggle="collapse" class="margin-20-b" style="display: block; text-decoration: none; color: #787679; background-color: #eceaed; padding: 10px 20px;">
+                            {% if status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_REQUEST') %}
+                                À compléter
+                            {% elseif status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_REVIEW') %}
+                                Revue
+                            {% elseif status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_ONLINE') %}
+                                En cours de financement
+                            {% elseif status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_FUNDED') %}
+                                En attente de signature
+                            {% elseif status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_SIGNED') %}
+                                Signé
+                            {% elseif status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_REPAYMENT') %}
+                                En cours de remboursement
+                            {% elseif status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_REPAID') %}
+                                Remboursé
+                            {% elseif status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_LOSS') %}
+                                Perte
+                            {% elseif status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_CANCELLED') %}
+                                Annulé
+                            {% endif %}
+                            ({{ statusProjects|length }})
+                            <div class="pull-right">
+                                <span class="icon fa-angle-d-u"></span>
+                            </div>
+                        </a>
+                    </div>
+                    <div id="broker-projects-{{ status }}" class="table-scroll collapse">
+                        <table class="table table-projects" data-sortable style="table-layout: auto;">
+                            <thead class="table-sortable-columns">
+                            <tr>
+                                <th class="table-projects-item-partner table-sortable-column" data-sortable-by="partner">
+                                    <span class="label" title="Canal de financement" data-toggle="tooltip">
+                                        Canal
+                                    </span>
+                                </th>
+                                <th class="table-projects-item-title table-sortable-column" data-sortable-by="title">
+                                    <span class="label" title="Nom du dossier" data-toggle="tooltip">
+                                        Nom
+                                    </span>
+                                </th>
+                                <th class="table-projects-item-amount table-sortable-column" data-sortable-by="amount">
+                                    <span class="label" title="Montant" data-toggle="tooltip">
+                                        Montant
+                                    </span>
+                                </th>
+                                <th class="table-projects-item-duration table-sortable-column" data-sortable-by="duration">
+                                    <span class="label" title="Maturité" data-toggle="tooltip">
+                                        Maturité
+                                    </span>
+                                </th>
+                                <th>&nbsp;</th>
+                            </tr>
+                            </thead>
+                            <tbody data-sortable-content>
+                            {% for project in statusProjects %}
+                                <tr id="broker-{{ project.idProject }}" class="table-projects-item {% if loop.index is divisible by(2) %}even{% else %}odd{% endif %}"
+                                    data-hash="{{ project.hash }}"
+                                    data-sortable-partner="{{ ('partner-name_bubble-' ~ project.idPartner.label)|trans }}"
+                                    data-sortable-title="{{ project.title|e('html_attr') }}"
+                                    data-sortable-amount="{{ project.amount }}"
+                                    data-sortable-duration="{{ project.period }}">
+                                    <td class="table-projects-item-partner">
+                                        {% set backgroundColor = '#787679' %}
+                                        {% if project.idPartner.label == 'cals' %}
+                                            {% set backgroundColor = '#5fc5d1' %}
+                                        {% elseif project.idPartner.label == 'cacib' %}
+                                            {% set backgroundColor = '#1b88db' %}
+                                        {% elseif project.idPartner.label == 'calf' %}
+                                            {% set backgroundColor = '#ffca2c' %}
+                                        {% elseif project.idPartner.label == 'unifergie' %}
+                                            {% set backgroundColor = '#f76965' %}
+                                        {% endif %}
+                                        <span class="bubble" style="background-color: {{ backgroundColor }};">{{ ('partner-name_bubble-' ~ project.idPartner.label)|trans }}</span>
+                                    </td>
+                                    <td class="table-projects-item-title">{{ project.title }}</td>
+                                    <td class="table-projects-item-amount">{{ project.amount|localizednumber }}&nbsp;€</td>
+                                    <td class="table-projects-item-duration">{{ project.period }} ans</td>
+                                    <td class="table-actions">
+                                        <a href="{{ path('demo_project_details', {'hash': project.hash}) }}" role="button" class="btn-default" title="Voir le détail" data-toggle="tooltip"><span class="icon fa-view-u16"></span></a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table><!-- /.table-projects -->
+                    </div><!-- /.table-scroll -->
+                {% endfor %}
+            {% else %}
+                <div class="message-info">{{ 'demo-loans_broker-not-found-message'|trans }}</div>
+            {% endif %}
+        </div><!-- /.panel-content -->
+    </div><!-- /.panel -->
+</article><!-- /.dashboard-tab-pane -->

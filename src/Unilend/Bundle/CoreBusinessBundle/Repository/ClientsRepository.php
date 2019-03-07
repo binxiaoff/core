@@ -154,9 +154,9 @@ class ClientsRepository extends EntityRepository
     public function getClientsByFiscalCountryStatus($vigilanceStatus, \DateTime $date)
     {
         $qb = $this->createQueryBuilder('c');
-        $qb->select('c.idClient, ca.idPaysFiscal, p.fr as countryLabel')
-           ->innerJoin('UnilendCoreBusinessBundle:ClientsAdresses', 'ca', Join::WITH, 'c.idClient = ca.idClient')
-           ->innerJoin('UnilendCoreBusinessBundle:Pays', 'p', Join::WITH, 'p.idPays= ca.idPaysFiscal')
+        $qb->select('c.idClient, p.fr AS countryLabel')
+           ->innerJoin('UnilendCoreBusinessBundle:ClientAddress', 'ca', Join::WITH, 'c.idAddress = ca.id')
+           ->innerJoin('UnilendCoreBusinessBundle:Pays', 'p', Join::WITH, 'p.idPays= ca.idCountry')
            ->where('p.vigilanceStatus = :vigilance_status')
            ->setParameter('vigilance_status', $vigilanceStatus)
            ->andWhere('c.added >= :added_date OR ca.updated >= :updated_date')

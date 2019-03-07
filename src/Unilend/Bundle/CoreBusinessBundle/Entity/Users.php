@@ -9,6 +9,7 @@ use Doctrine\ORM\Mapping as ORM;
  *
  * @ORM\Table(name="users")
  * @ORM\Entity
+ * @ORM\HasLifecycleCallbacks
  */
 class Users
 {
@@ -28,6 +29,13 @@ class Users
      * })
      */
     private $idUserType;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="email", type="string", length=191, unique=true)
+     */
+    private $email;
 
     /**
      * @var string
@@ -60,14 +68,7 @@ class Users
     /**
      * @var string
      *
-     * @ORM\Column(name="email", type="string", length=191, unique=true)
-     */
-    private $email;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="slack", type="string", length=191)
+     * @ORM\Column(name="slack", type="string", length=191, nullable=true)
      */
     private $slack;
 
@@ -138,7 +139,7 @@ class Users
      *
      * @return Users
      */
-    public function setIdUserType(UsersTypes $idUserType)
+    public function setIdUserType(UsersTypes $idUserType): Users
     {
         $this->idUserType = $idUserType;
 
@@ -150,7 +151,7 @@ class Users
      *
      * @return UsersTypes
      */
-    public function getIdUserType()
+    public function getIdUserType(): UsersTypes
     {
         return $this->idUserType;
     }
@@ -162,7 +163,7 @@ class Users
      *
      * @return Users
      */
-    public function setFirstname($firstname)
+    public function setFirstname(string $firstname): Users
     {
         $this->firstname = $firstname;
 
@@ -174,7 +175,7 @@ class Users
      *
      * @return string
      */
-    public function getFirstname()
+    public function getFirstname(): string
     {
         return $this->firstname;
     }
@@ -186,7 +187,7 @@ class Users
      *
      * @return Users
      */
-    public function setName($name)
+    public function setName(string $name): Users
     {
         $this->name = $name;
 
@@ -198,7 +199,7 @@ class Users
      *
      * @return string
      */
-    public function getName()
+    public function getName(): string
     {
         return $this->name;
     }
@@ -206,11 +207,11 @@ class Users
     /**
      * Set phone
      *
-     * @param string $phone
+     * @param string|null $phone
      *
      * @return Users
      */
-    public function setPhone($phone)
+    public function setPhone(?string $phone): Users
     {
         $this->phone = $phone;
 
@@ -220,9 +221,9 @@ class Users
     /**
      * Get phone
      *
-     * @return string
+     * @return string|null
      */
-    public function getPhone()
+    public function getPhone(): ?string
     {
         return $this->phone;
     }
@@ -230,11 +231,11 @@ class Users
     /**
      * Set mobile
      *
-     * @param string $mobile
+     * @param string|null $mobile
      *
      * @return Users
      */
-    public function setMobile($mobile)
+    public function setMobile(?string $mobile): Users
     {
         $this->mobile = $mobile;
 
@@ -244,9 +245,9 @@ class Users
     /**
      * Get mobile
      *
-     * @return string
+     * @return string|null
      */
-    public function getMobile()
+    public function getMobile(): ?string
     {
         return $this->mobile;
     }
@@ -258,7 +259,7 @@ class Users
      *
      * @return Users
      */
-    public function setEmail($email)
+    public function setEmail(string $email): Users
     {
         $this->email = $email;
 
@@ -270,7 +271,7 @@ class Users
      *
      * @return string
      */
-    public function getEmail()
+    public function getEmail(): string
     {
         return $this->email;
     }
@@ -278,11 +279,11 @@ class Users
     /**
      * Set slack
      *
-     * @param string $slack
+     * @param string|null $slack
      *
      * @return Users
      */
-    public function setSlack($slack)
+    public function setSlack(?string $slack): Users
     {
         $this->slack = $slack;
 
@@ -292,9 +293,9 @@ class Users
     /**
      * Get slack
      *
-     * @return string
+     * @return string|null
      */
-    public function getSlack()
+    public function getSlack(): ?string
     {
         return $this->slack;
     }
@@ -302,11 +303,11 @@ class Users
     /**
      * Set IP range
      *
-     * @param string $ip
+     * @param string|null $ip
      *
      * @return Users
      */
-    public function setIp($ip)
+    public function setIp(?string $ip): Users
     {
         $this->ip = $ip;
 
@@ -316,9 +317,9 @@ class Users
     /**
      * Get ip
      *
-     * @return string
+     * @return string|null
      */
-    public function getIp()
+    public function getIp(): ?string
     {
         return $this->ip;
     }
@@ -330,7 +331,7 @@ class Users
      *
      * @return Users
      */
-    public function setPassword($password)
+    public function setPassword(string $password): Users
     {
         $this->password = $password;
 
@@ -342,7 +343,7 @@ class Users
      *
      * @return string
      */
-    public function getPassword()
+    public function getPassword(): string
     {
         return $this->password;
     }
@@ -350,11 +351,11 @@ class Users
     /**
      * Set passwordEdited
      *
-     * @param \DateTime $passwordEdited
+     * @param \DateTime|null $passwordEdited
      *
      * @return Users
      */
-    public function setPasswordEdited($passwordEdited)
+    public function setPasswordEdited(?\DateTime $passwordEdited): Users
     {
         $this->passwordEdited = $passwordEdited;
 
@@ -364,9 +365,9 @@ class Users
     /**
      * Get passwordEdited
      *
-     * @return \DateTime
+     * @return \DateTime|null
      */
-    public function getPasswordEdited()
+    public function getPasswordEdited(): ?\DateTime
     {
         return $this->passwordEdited;
     }
@@ -374,11 +375,11 @@ class Users
     /**
      * Set status
      *
-     * @param integer $status
+     * @param int $status
      *
      * @return Users
      */
-    public function setStatus($status)
+    public function setStatus(int $status): Users
     {
         $this->status = $status;
 
@@ -388,9 +389,9 @@ class Users
     /**
      * Get status
      *
-     * @return integer
+     * @return int
      */
-    public function getStatus()
+    public function getStatus(): int
     {
         return $this->status;
     }
@@ -402,7 +403,7 @@ class Users
      *
      * @return Users
      */
-    public function setAdded($added)
+    public function setAdded(\DateTime $added): Users
     {
         $this->added = $added;
 
@@ -414,7 +415,7 @@ class Users
      *
      * @return \DateTime
      */
-    public function getAdded()
+    public function getAdded(): \DateTime
     {
         return $this->added;
     }
@@ -422,11 +423,11 @@ class Users
     /**
      * Set updated
      *
-     * @param \DateTime $updated
+     * @param \DateTime|null $updated
      *
      * @return Users
      */
-    public function setUpdated($updated)
+    public function setUpdated(?\DateTime $updated): Users
     {
         $this->updated = $updated;
 
@@ -436,9 +437,9 @@ class Users
     /**
      * Get updated
      *
-     * @return \DateTime
+     * @return \DateTime|null
      */
-    public function getUpdated()
+    public function getUpdated(): ?\DateTime
     {
         return $this->updated;
     }
@@ -446,11 +447,11 @@ class Users
     /**
      * Set lastlogin
      *
-     * @param \DateTime $lastlogin
+     * @param \DateTime|null $lastlogin
      *
      * @return Users
      */
-    public function setLastlogin($lastlogin)
+    public function setLastlogin(?\DateTime $lastlogin): Users
     {
         $this->lastlogin = $lastlogin;
 
@@ -460,9 +461,9 @@ class Users
     /**
      * Get lastlogin
      *
-     * @return \DateTime
+     * @return \DateTime|null
      */
-    public function getLastlogin()
+    public function getLastlogin(): ?\DateTime
     {
         return $this->lastlogin;
     }
@@ -470,10 +471,28 @@ class Users
     /**
      * Get idUser
      *
-     * @return integer
+     * @return int
      */
-    public function getIdUser()
+    public function getIdUser(): int
     {
         return $this->idUser;
+    }
+
+    /**
+     * @ORM\PrePersist
+     */
+    public function setAddedValue(): void
+    {
+        if (! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
+            $this->added = new \DateTime();
+        }
+    }
+
+    /**
+     * @ORM\PreUpdate
+     */
+    public function setUpdatedValue(): void
+    {
+        $this->updated = new \DateTime();
     }
 }

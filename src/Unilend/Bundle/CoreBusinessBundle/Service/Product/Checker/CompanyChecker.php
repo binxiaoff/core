@@ -144,9 +144,6 @@ trait CompanyChecker
         $projectStatusHistoryRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatusHistory');
         $projects                       = $projectRepository->findBySiren($company->getSiren());
 
-        $acceptableStatus        = [ProjectsStatus::REMBOURSE, ProjectsStatus::REMBOURSEMENT_ANTICIPE];
-        $partialAcceptableStatus = [ProjectsStatus::ANALYSIS_REJECTION, ProjectsStatus::COMITY_REJECTION, ProjectsStatus::ABANDONED];
-
         foreach ($projects as $project) {
             $usedProduct = null;
             if ($project->getIdProduct()) {
@@ -155,9 +152,9 @@ trait CompanyChecker
             if (null === $usedProduct || Product::PRODUCT_BLEND !== $usedProduct->getLabel()) {
                 continue;
             }
-            if (in_array($project->getStatus(), $acceptableStatus)) {
+            if ($project->getStatus() === ProjectsStatus::STATUS_REPAID) {
                 continue;
-            } elseif (in_array($project->getStatus(), $partialAcceptableStatus)) {
+            } elseif ($project->getStatus() === ProjectsStatus::STATUS_CANCELLED) {
                 $lastStatus = $projectStatusHistoryRepository->findStatusFirstOccurrence($project, $project->getStatus());
                 if ($lastStatus && $lastStatus->getAdded()->diff(new \DateTime())->days <= $noInProgressBlendSince[0]) {
                     return false;
@@ -199,7 +196,7 @@ trait CompanyChecker
             if (null === $usedProduct || Product::PRODUCT_BLEND === $usedProduct->getLabel()) {
                 continue;
             }
-            $lastIncidentStatus = $projectStatusHistoryRepository->findStatusLastOccurrence($project, [ProjectsStatus::PROBLEME]);
+            $lastIncidentStatus = $projectStatusHistoryRepository->findStatusLastOccurrence($project, [ProjectsStatus::STATUS_LOSS]);
 
             if ($lastIncidentStatus && $lastIncidentStatus->getAdded()->diff(new \DateTime())->days <= $noUnilendIncidentSince[0]) {
                 return false;
@@ -238,7 +235,7 @@ trait CompanyChecker
             if (null === $usedProduct || Product::PRODUCT_BLEND !== $usedProduct->getLabel()) {
                 continue;
             }
-            $lastIncidentStatus = $projectStatusHistoryRepository->findStatusLastOccurrence($project, [ProjectsStatus::PROBLEME]);
+            $lastIncidentStatus = $projectStatusHistoryRepository->findStatusLastOccurrence($project, [ProjectsStatus::STATUS_LOSS]);
 
             if ($lastIncidentStatus && $lastIncidentStatus->getAdded()->diff(new \DateTime())->days <= $noBlendIncidentSince[0]) {
                 return false;

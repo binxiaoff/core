@@ -88,7 +88,7 @@ class ProjectExtension extends \Twig_Extension
         $scheduledAmount           = 0;
         $paymentScheduleRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur');
 
-        if (false === in_array($project->getStatus(), [ProjectsStatus::REMBOURSEMENT_ANTICIPE, ProjectsStatus::REMBOURSE])) {
+        if ($project->getStatus() !== ProjectsStatus::STATUS_REPAID) {
             $schedule = $paymentScheduleRepository->findOneBy(['idProject' => $project]);
 
             if ($schedule) {
@@ -109,7 +109,7 @@ class ProjectExtension extends \Twig_Extension
         $paymentScheduleRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur');
         $nextScheduledDate         = new \DateTime();
 
-        if (false === in_array($project->getStatus(), [ProjectsStatus::REMBOURSEMENT_ANTICIPE, ProjectsStatus::REMBOURSE])) {
+        if ($project->getStatus() !== ProjectsStatus::STATUS_REPAID) {
             $nextRepayment = $paymentScheduleRepository->findOneBy(
                 ['idProject' => $project, 'statusEmprunteur' => EcheanciersEmprunteur::STATUS_PENDING],
                 ['dateEcheanceEmprunteur' => 'ASC']

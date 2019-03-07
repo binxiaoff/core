@@ -6,11 +6,7 @@ use DateTime;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Echeanciers;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Loans;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatusHistory;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{Projects, ProjectsStatus, ProjectsStatusHistory};
 
 class ProjectsStatusHistoryRepository extends EntityRepository
 {
@@ -113,7 +109,7 @@ class ProjectsStatusHistoryRepository extends EntityRepository
                                     MAX(id_project_status_history) AS max_id_project_status_history
                                   FROM projects_status_history psh_max
                                     INNER JOIN projects_status ps_max ON psh_max.id_project_status = ps_max.id_project_status
-                                  WHERE ps_max.status >= ' . ProjectsStatus::COMITY_REVIEW . ' AND ps_max.status <=  ' . ProjectsStatus::A_FUNDER . '
+                                  WHERE ps_max.status >= ' . ProjectsStatus::STATUS_REQUEST . ' AND ps_max.status <=  ' . ProjectsStatus::STATUS_REVIEW . '
                                   GROUP BY id_project) t ON t.max_id_project_status_history = psh.id_project_status_history
                       INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
                     WHERE psh.added BETWEEN :start AND :end';

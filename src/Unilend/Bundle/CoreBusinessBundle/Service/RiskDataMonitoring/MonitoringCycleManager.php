@@ -9,15 +9,8 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{Companies, CompanyStatus, Projects
 class MonitoringCycleManager
 {
     const LONG_TERM_MONITORING_EXCLUDED_PROJECTS_STATUS = [
-        ProjectsStatus::NOT_ELIGIBLE,
-        ProjectsStatus::ABANDONED,
-        ProjectsStatus::COMMERCIAL_REJECTION,
-        ProjectsStatus::ANALYSIS_REJECTION,
-        ProjectsStatus::COMITY_REJECTION,
-        ProjectsStatus::PRET_REFUSE,
-        ProjectsStatus::FUNDING_KO,
-        ProjectsStatus::REMBOURSE,
-        ProjectsStatus::REMBOURSEMENT_ANTICIPE
+        ProjectsStatus::STATUS_CANCELLED,
+        ProjectsStatus::STATUS_REPAID
     ];
 
     const LONG_TERM_MONITORING_EXCLUDED_COMPANY_STATUS = [

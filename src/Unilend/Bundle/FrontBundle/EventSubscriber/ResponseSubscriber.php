@@ -8,7 +8,10 @@ use Symfony\Component\HttpKernel\KernelEvents;
 
 class ResponseSubscriber implements EventSubscriberInterface
 {
-    public static function getSubscribedEvents()
+    /**
+     * @return array
+     */
+    public static function getSubscribedEvents(): array
     {
         return [KernelEvents::RESPONSE => 'onKernelResponse'];
     }
@@ -16,13 +19,10 @@ class ResponseSubscriber implements EventSubscriberInterface
     /**
      * @param FilterResponseEvent $event
      */
-    public function onKernelResponse(FilterResponseEvent $event)
+    public function onKernelResponse(FilterResponseEvent $event): void
     {
         $responseHeaders = $event->getResponse()->headers;
         $responseHeaders->set('X-Server', exec('hostname'));
-
-        if ('lender_landing_page_form_only' !== $event->getRequest()->attributes->get('_route')) {
-            $responseHeaders->set('X-Frame-Options', 'DENY');
-        }
+        $responseHeaders->set('X-Frame-Options', 'DENY');
     }
 }

@@ -17,13 +17,13 @@ var defaults = {
   secondsAsUnits: [{
     min: 0,
     max: 5,
-    single: __.__('now', 'timeUnitNow'),
-    plural: __.__('now', 'timeUnitNow')
+    single: __.__('maintenant', 'timeUnitNow'),
+    plural: __.__('maintenant', 'timeUnitNow')
   }, {
     min: 1,
     max: 60,
-    single: '%d ' + __.__('second', 'timeUnitSecond'),
-    plural: '%d ' + __.__('seconds', 'timeUnitSeconds')
+    single: '%d ' + __.__('seconde', 'timeUnitSecond'),
+    plural: '%d ' + __.__('secondes', 'timeUnitSeconds')
   }, {
     min: 60,
     max: 3600,
@@ -32,28 +32,28 @@ var defaults = {
   }, {
     min: 3600,
     max: 86400,
-    single: '%d ' + __.__('hour', 'timeUnitHour'),
-    plural: '%d ' + __.__('hours', 'timeUnitHours')
+    single: '%d ' + __.__('heure', 'timeUnitHour'),
+    plural: '%d ' + __.__('heures', 'timeUnitHours')
   }, {
     min: 86400,
     max: 604800,
-    single: '%d ' + __.__('day', 'timeUnitDay'),
-    plural: '%d ' + __.__('days', 'timeUnitDays')
+    single: '%d ' + __.__('jour', 'timeUnitDay'),
+    plural: '%d ' + __.__('jours', 'timeUnitDays')
   }, {
     min: 604800,
     max: 2419200,
-    single: '%d ' + __.__('week', 'timeUnitWeek'),
-    plural: '%d ' + __.__('weeks', 'timeUnitWeeks')
+    single: '%d ' + __.__('semaine', 'timeUnitWeek'),
+    plural: '%d ' + __.__('semaines', 'timeUnitWeeks')
   }, {
     min: 2628000,
     max: 31536000,
-    single: '%d ' + __.__('month', 'timeUnitMonth'),
-    plural: '%d ' + __.__('months', 'timeUnitMonths')
+    single: '%d ' + __.__('mois', 'timeUnitMonth'),
+    plural: '%d ' + __.__('mois', 'timeUnitMonths')
   }, {
     min: 31536000,
     max: -1,
-    single: '%d ' + __.__('year', 'timeUnitYear'),
-    plural: '%d ' + __.__('years', 'timeUnitYears')
+    single: '%d ' + __.__('année', 'timeUnitYear'),
+    plural: '%d ' + __.__('années', 'timeUnitYears')
   }]
 }
 

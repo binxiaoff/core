@@ -1,11 +1,7 @@
 <?php
 
 use Doctrine\ORM\EntityManager;
-use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyRating;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatusHistory;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{CompanyRating, Projects, ProjectsStatus, ProjectsStatusHistory, Zones};
 use Unilend\Bundle\WSClientBundle\Entity\Euler\CompanyRating as EulerCompanyRating;
 
 class societeController extends bootstrap
@@ -59,15 +55,10 @@ class societeController extends bootstrap
         $this->render(null, [
             'company'                   => $company,
             'numberOngoingProjects'     => $projectsRepository->getCountProjectsByStatusAndSiren(array_merge(ProjectsStatus::SALES_TEAM, ProjectsStatus::RISK_TEAM), $company->getSiren()),
-            'numberRepaidProjects'      => $projectsRepository->getCountProjectsByStatusAndSiren([ProjectsStatus::REMBOURSE, ProjectsStatus::REMBOURSEMENT_ANTICIPE], $company->getSiren()),
-            'numberProjectsInRepayment' => $projectsRepository->getCountProjectsByStatusAndSiren([ProjectsStatus::REMBOURSEMENT], $company->getSiren()),
-            'numberAbandonedProjects'   => $projectsRepository->getCountProjectsByStatusAndSiren([ProjectsStatus::ABANDONED], $company->getSiren()),
-            'numberRejectedProjects'    => $projectsRepository->getCountProjectsByStatusAndSiren([
-                ProjectsStatus::NOT_ELIGIBLE,
-                ProjectsStatus::COMITY_REJECTION,
-                ProjectsStatus::ANALYSIS_REJECTION,
-                ProjectsStatus::COMMERCIAL_REJECTION
-            ], $company->getSiren()),
+            'numberRepaidProjects'      => $projectsRepository->getCountProjectsByStatusAndSiren([ProjectsStatus::STATUS_REPAID], $company->getSiren()),
+            'numberProjectsInRepayment' => $projectsRepository->getCountProjectsByStatusAndSiren([ProjectsStatus::STATUS_REPAYMENT], $company->getSiren()),
+            'numberAbandonedProjects'   => $projectsRepository->getCountProjectsByStatusAndSiren([ProjectsStatus::STATUS_CANCELLED], $company->getSiren()),
+            'numberRejectedProjects'    => $projectsRepository->getCountProjectsByStatusAndSiren([ProjectsStatus::STATUS_CANCELLED], $company->getSiren()),
             'ratings'                   => $formattedRatings,
             'dates'                     => $dates,
             'projects'                  => $formattedProjects,
@@ -222,16 +213,9 @@ class societeController extends bootstrap
         $entityManager = $this->get('doctrine.orm.entity_manager');
 
         $finalProjectStatus = [
-            ProjectsStatus::NOT_ELIGIBLE,
-            ProjectsStatus::ABANDONED,
-            ProjectsStatus::COMMERCIAL_REJECTION,
-            ProjectsStatus::ANALYSIS_REJECTION,
-            ProjectsStatus::COMITY_REJECTION,
-            ProjectsStatus::FUNDING_KO,
-            ProjectsStatus::PRET_REFUSE,
-            ProjectsStatus::REMBOURSE,
-            ProjectsStatus::REMBOURSEMENT_ANTICIPE,
-            ProjectsStatus::LOSS
+            ProjectsStatus::STATUS_CANCELLED,
+            ProjectsStatus::STATUS_REPAID,
+            ProjectsStatus::STATUS_LOSS
         ];
 
         /** @var Projects $project */
@@ -275,46 +259,21 @@ class societeController extends bootstrap
     private function getColorForProjectStatus($projectStatus)
     {
         switch ($projectStatus) {
-            case ProjectsStatus::COMMERCIAL_REJECTION:
-            case ProjectsStatus::ANALYSIS_REJECTION:
-            case ProjectsStatus::COMITY_REJECTION:
-            case ProjectsStatus::NOT_ELIGIBLE:
+            case ProjectsStatus::STATUS_CANCELLED:
                 return '#b6babe';
-            case ProjectsStatus::INCOMPLETE_REQUEST:
+            case ProjectsStatus::STATUS_REQUEST:
                 return '#d0f5d0';
-            case ProjectsStatus::COMPLETE_REQUEST:
+            case ProjectsStatus::STATUS_REVIEW:
                 return '#aae3c9';
-            case ProjectsStatus::ABANDONED:
-            case ProjectsStatus::POSTPONED:
-                return '#eccd81';
-            case ProjectsStatus::COMMERCIAL_REVIEW:
-                return '#98d9d4';
-            case ProjectsStatus::PENDING_ANALYSIS:
-            case ProjectsStatus::ANALYSIS_REVIEW:
-                return '#91c8d9';
-            case ProjectsStatus::COMITY_REVIEW:
-                return '#80b5d9';
-            case ProjectsStatus::SUSPENSIVE_CONDITIONS:
-                return '#b995c7';
-            case ProjectsStatus::PREP_FUNDING:
-            case ProjectsStatus::A_FUNDER:
-            case ProjectsStatus::AUTO_BID_PLACED:
-            case ProjectsStatus::EN_FUNDING:
-            case ProjectsStatus::BID_TERMINATED:
-            case ProjectsStatus::FUNDE:
+            case ProjectsStatus::STATUS_ONLINE:
+            case ProjectsStatus::STATUS_FUNDED:
                 return '#6ea8dc';
-            case ProjectsStatus::FUNDING_KO:
-            case ProjectsStatus::PRET_REFUSE:
-                return '#f2980c';
-            case ProjectsStatus::REMBOURSEMENT:
+            case ProjectsStatus::STATUS_REPAYMENT:
                 return '#1b88db';
-            case ProjectsStatus::REMBOURSE:
-            case ProjectsStatus::REMBOURSEMENT_ANTICIPE:
+            case ProjectsStatus::STATUS_REPAID:
                 return '#4fa8b0';
-            case ProjectsStatus::PROBLEME:
+            case ProjectsStatus::STATUS_LOSS:
                 break;
-            case ProjectsStatus::LOSS:
-                return '#787679';
             default:
                 break;
         }

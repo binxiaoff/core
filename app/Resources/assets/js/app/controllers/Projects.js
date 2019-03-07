@@ -19,13 +19,13 @@ var watchWindow = new WatchScroll.Watcher(window)
 var secondsAsUnits = [{
     min: 0,
     max: 1,
-    single: __.__('Project expired', 'projectPeriodExpired'),
-    plural: __.__('Project expired', 'projectPeriodExpired')
+    single: __.__('Projet terminé', 'projectPeriodExpired'),
+    plural: __.__('Projet terminé', 'projectPeriodExpired')
   },{
     min: 1,
     max: 60,
-    single: '%d ' + __.__('second', 'timeUnitSecond'),
-    plural: '%d ' + __.__('seconds', 'timeUnitSeconds')
+    single: '%d ' + __.__('seconde', 'timeUnitSecond'),
+    plural: '%d ' + __.__('secondes', 'timeUnitSeconds')
   },{
     min: 60,
     max: 3600,
@@ -34,14 +34,14 @@ var secondsAsUnits = [{
   },{
     min: 3600,
     max: 172800,
-    single: '%d ' + __.__('hour', 'timeUnitHour'),
-    plural: '%d ' + __.__('hours', 'timeUnitHours')
+    single: '%d ' + __.__('heure', 'timeUnitHour'),
+    plural: '%d ' + __.__('heures', 'timeUnitHours')
   },{
     min: 172800,
     mod: 86400,
     max: -1,
-    single: '%d ' + __.__('day', 'timeUnitDay'),
-    plural: '%d ' + __.__('days', 'timeUnitDays')
+    single: '%d ' + __.__('jour', 'timeUnitDay'),
+    plural: '%d ' + __.__('jours', 'timeUnitDays')
   }]
 
 $doc.on('ready', function () {
@@ -79,7 +79,7 @@ $doc.on('ready', function () {
       if (timeDiff.total > 0) {
         outputTime = elemTimeCount.getRelativeTime(elemTimeCount.settings.startDate, elemTimeCount.settings.endDate, secondsAsUnits)
       } else {
-        outputTime = __.__('Project expired', 'projectPeriodExpired')
+        outputTime = __.__('Projet terminé', 'projectPeriodExpired')
       }
 
       // @debug
@@ -107,7 +107,7 @@ $doc.on('ready', function () {
       }
 
       // Set text to say expired/finished/terminé
-      elemTimeCount.$elem.text(__.__('Project expired', 'projectPeriodExpired'))
+      elemTimeCount.$elem.text(__.__('Projet terminé', 'projectPeriodExpired'))
     }
   })
 

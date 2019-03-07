@@ -42,14 +42,9 @@
                                     </thead>
                                         <tbody>
                                         {% for project in pre_funding_projects %}
-                                            {% if project.getStatus() in [constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::COMPLETE_REQUEST'), constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::COMMERCIAL_REVIEW')] %}
+                                            {% if project.getStatus() == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_REQUEST') %}
                                                 {% set project_status_label = 'waiting-for-documents' %}
-                                            {% elseif project.getStatus() in [constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::ANALYSIS_REVIEW'), constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::COMITY_REVIEW')] %}
-                                                {% set project_status_label = 'analyzing' %}
-                                            {% elseif project.getStatus() in [constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::COMMERCIAL_REJECTION'), constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::ANALYSIS_REJECTION'), constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::COMITY_REJECTION')] %}
-                                                {% set project_status_label = 'refused' %}
                                             {% else %}
-                                                {# PREP_FUNDING and A_FUNDER #}
                                                 {% set project_status_label = 'waiting-for-being-on-line' %}
                                             {% endif %}
                                             <tr>

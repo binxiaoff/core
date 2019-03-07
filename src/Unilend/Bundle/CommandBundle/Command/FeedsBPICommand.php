@@ -5,7 +5,7 @@ namespace Unilend\Bundle\CommandBundle\Command;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\{InputArgument, InputInterface};
 use Symfony\Component\Console\Output\OutputInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{Bids, Projects, ProjectsStatus};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{Bids, ProjectsStatus};
 
 /**
  * https://unilend.atlassian.net/browse/RUN-1065
@@ -43,14 +43,12 @@ class FeedsBPICommand extends ContainerAwareCommand
         $loans = $entityManagerSimulator->getRepository('loans');
 
         $projectStatus = [
-            ProjectsStatus::EN_FUNDING,
-            ProjectsStatus::FUNDE,
-            ProjectsStatus::FUNDING_KO,
-            ProjectsStatus::REMBOURSEMENT,
-            ProjectsStatus::REMBOURSE,
-            ProjectsStatus::REMBOURSEMENT_ANTICIPE,
-            ProjectsStatus::PROBLEME,
-            ProjectsStatus::LOSS
+            ProjectsStatus::STATUS_ONLINE,
+            ProjectsStatus::STATUS_FUNDED,
+            ProjectsStatus::STATUS_CANCELLED,
+            ProjectsStatus::STATUS_REPAYMENT,
+            ProjectsStatus::STATUS_REPAID,
+            ProjectsStatus::STATUS_LOSS
         ];
 
         $hostUrl  = $this->getContainer()->getParameter('router.request_context.scheme') . '://' . $this->getContainer()->getParameter('url.host_default');
@@ -61,7 +59,6 @@ class FeedsBPICommand extends ContainerAwareCommand
         $projectsToSerialise = [];
         $projects            = $projectRepository->findBy([
             'status'    => $projectStatus,
-            'display'   => Projects::DISPLAY_YES,
             'idProduct' => $products
         ]);
 
@@ -75,7 +72,7 @@ class FeedsBPICommand extends ContainerAwareCommand
                 continue;
             }
 
-            if ($project->getStatus() === ProjectsStatus::EN_FUNDING) {
+            if ($project->getStatus() === ProjectsStatus::STATUS_ONLINE) {
                 $totalBids = $bids->sum('id_project = ' . $project->getIdProject() . ' AND status = ' . Bids::STATUS_PENDING, 'amount') / 100;
             } else {
                 $totalBids = $bids->sum('id_project = ' . $project->getIdProject() . ' AND status = ' . Bids::STATUS_ACCEPTED, 'amount') / 100;
@@ -201,15 +198,13 @@ class FeedsBPICommand extends ContainerAwareCommand
     private function getBPISuccess(int $status): string
     {
         switch ($status) {
-            case ProjectsStatus::EN_FUNDING:
-            case ProjectsStatus::PROBLEME:
-            case ProjectsStatus::REMBOURSEMENT:
-            case ProjectsStatus::REMBOURSE:
-            case ProjectsStatus::REMBOURSEMENT_ANTICIPE:
-            case ProjectsStatus::FUNDE:
-            case ProjectsStatus::LOSS:
+            case ProjectsStatus::STATUS_ONLINE:
+            case ProjectsStatus::STATUS_LOSS:
+            case ProjectsStatus::STATUS_REPAYMENT:
+            case ProjectsStatus::STATUS_REPAID:
+            case ProjectsStatus::STATUS_FUNDED:
                 return 'OUI';
-            case ProjectsStatus::FUNDING_KO:
+            case ProjectsStatus::STATUS_CANCELLED:
                 return 'NON';
             default:
                 return '';

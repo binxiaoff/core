@@ -160,7 +160,7 @@ class ProjectStatusNotificationSender
 
         /** @var \projects_status_history $projectStatusHistory */
         $projectStatusHistory = $this->entityManagerSimulator->getRepository('projects_status_history');
-        $fundingDate          = $projectStatusHistory->select('id_project = ' . $project->getIdProject() . ' AND id_project_status = (SELECT id_project_status FROM projects_status WHERE status = ' . ProjectsStatus::REMBOURSEMENT . ')', 'added ASC, id_project_status_history ASC', 0, 1);
+        $fundingDate          = $projectStatusHistory->select('id_project = ' . $project->getIdProject() . ' AND id_project_status = (SELECT id_project_status FROM projects_status WHERE status = ' . ProjectsStatus::STATUS_REPAYMENT . ')', 'added ASC, id_project_status_history ASC', 0, 1);
         $fundingDate          = strtotime($fundingDate[0]['added']);
 
         $settingsRepository  = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings');
@@ -216,10 +216,7 @@ class ProjectStatusNotificationSender
         ];
 
         switch ($project->getStatus()) {
-            case ProjectsStatus::PROBLEME:
-                $this->sendLenderNotifications($project, Notifications::TYPE_PROJECT_PROBLEM, 'preteur-projet-statut-probleme', 'preteur-projet-statut-probleme', $keywords);
-                break;
-            case ProjectsStatus::LOSS:
+            case ProjectsStatus::STATUS_LOSS:
                 $this->sendProjectLossNotificationToLenders($project, $keywords);
                 break;
         }

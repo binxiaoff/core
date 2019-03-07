@@ -340,10 +340,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{AttachmentType, Companies, Project
         $('#status').change(function () {
             var status = $(this).val();
 
-            if (
-                status == <?= ProjectsStatus::PROBLEME ?>
-                || status == <?= ProjectsStatus::LOSS ?>
-            ) {
+            if (status == <?= ProjectsStatus::STATUS_LOSS ?>) {
                 $.colorbox({href: "<?= $this->lurl ?>/thickbox/project_status_update/<?= $this->projects->id_project ?>/" + status});
             }
         });
@@ -380,7 +377,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{AttachmentType, Companies, Project
             }
         });
 
-        <?php if (ProjectsStatus::NOT_ELIGIBLE != $this->projects->status) : ?>
+        <?php if (ProjectsStatus::STATUS_CANCELLED != $this->projects->status) : ?>
         $('#commercial').change(function () {
             if ($(this).val() > 0 && $('#current_commercial').val() == 0) {
                 $(this).parents('form').submit()
@@ -541,7 +538,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{AttachmentType, Companies, Project
                 <td class="left-column">
                     <h2>Identité</h2>
                     <table class="form project-identity">
-                        <?php if ($this->projects->status >= ProjectsStatus::A_FUNDER) : ?>
+                        <?php if ($this->projects->status >= ProjectsStatus::STATUS_REVIEW) : ?>
                             <tr>
                                 <th>Lien projet</th>
                                 <td>
@@ -581,7 +578,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{AttachmentType, Companies, Project
                             <tr>
                                 <th style="position: relative;">
                                     <label for="target_siren" class="tooltip" title="SIREN de la société reprise/rachetée">SIREN cible</label>
-                                    <?php if ($this->projects->status < ProjectsStatus::A_FUNDER) : ?>
+                                    <?php if ($this->projects->status < ProjectsStatus::STATUS_REVIEW) : ?>
                                         <a href="<?= $this->lurl ?>/dossiers/takeover/<?= $this->projects->id_project ?>/swap" style="position: absolute; top: -15px; left: 100px;">
                                             <img src="<?= $this->surl ?>/images/admin/swap.png" alt="Inverser" height="19">
                                         </a>
@@ -659,13 +656,13 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{AttachmentType, Companies, Project
                         <tr>
                             <th><label for="montant">Montant du prêt&nbsp;*</label></th>
                             <td>
-                                <input type="text" name="montant" id="montant" class="input_moy"<?php if ($this->projects->status >= ProjectsStatus::PREP_FUNDING) : ?> disabled<?php endif; ?> value="<?= empty($this->projects->amount) ? '' : $this->ficelle->formatNumber($this->projects->amount, 0) ?>"> €
+                                <input type="text" name="montant" id="montant" class="input_moy"<?php if ($this->projects->status >= ProjectsStatus::STATUS_REVIEW) : ?> disabled<?php endif; ?> value="<?= empty($this->projects->amount) ? '' : $this->ficelle->formatNumber($this->projects->amount, 0) ?>"> €
                             </td>
                         </tr>
                         <tr>
                             <th><label for="duree">Durée du prêt&nbsp;*</label></th>
                             <td>
-                                <select name="duree" id="duree" class="select"<?php if ($this->projects->status >= ProjectsStatus::PREP_FUNDING) : ?> disabled<?php endif; ?>>
+                                <select name="duree" id="duree" class="select"<?php if ($this->projects->status >= ProjectsStatus::STATUS_REVIEW) : ?> disabled<?php endif; ?>>
                                     <option<?= empty($this->projects->period) ? ' selected' : '' ?> value=""></option>
                                     <?php foreach ($this->dureePossible as $duree) : ?>
                                         <option<?= ($this->projects->period == $duree ? ' selected' : '') ?> value="<?= $duree ?>"><?= $duree ?> mois</option>
@@ -687,7 +684,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{AttachmentType, Companies, Project
                         <tr>
                             <th><label for="need">Type de besoin</label></th>
                             <td>
-                                <select name="need" id="need" class="select"<?php if ($this->projects->status >= ProjectsStatus::PREP_FUNDING) : ?> disabled<?php endif; ?>>
+                                <select name="need" id="need" class="select"<?php if ($this->projects->status >= ProjectsStatus::STATUS_REVIEW) : ?> disabled<?php endif; ?>>
                                     <option value="0"></option>
                                     <?php foreach ($this->needs as $need) : ?>
                                         <optgroup label="<?= $need['label'] ?>">
@@ -709,12 +706,12 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{AttachmentType, Companies, Project
                                 <?php endif; ?>
                             </td>
                         </tr>
-                        <?php if ($this->projects->status >= ProjectsStatus::PREP_FUNDING) : ?>
+                        <?php if ($this->projects->status >= ProjectsStatus::STATUS_REVIEW) : ?>
                             <tr class="content_risk">
                                 <th><label for="risk">Niveau de risque</label></th>
                                 <td>
                                     <?php $stars = ['A' => '5', 'B' => '4,5', 'C' => '4', 'D' => '3,5', 'E' => '3', 'F' => '2,5', 'G' => '2', 'H' => '1,5']; ?>
-                                    <?= $stars[$this->projects->risk] ?> étoiles
+                                    <?= $stars[$this->projects->risk] ?? '?' ?> étoiles
                                 </td>
                             </tr>
                         <?php endif; ?>
@@ -734,7 +731,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{AttachmentType, Companies, Project
                             <td>
                                 <div class="messages"></div>
                                 <?php if (null === $this->projectEntity->getIdPartner() || $this->isUnilendPartner) : ?>
-                                    <select name="partner" id="partner-select" class="select"<?php if ($this->projects->status >= ProjectsStatus::PREP_FUNDING) : ?> disabled<?php endif; ?>>
+                                    <select name="partner" id="partner-select" class="select"<?php if ($this->projects->status >= ProjectsStatus::STATUS_REVIEW) : ?> disabled<?php endif; ?>>
                                         <?php if (null === $this->projectEntity->getIdPartner()->getId()) : ?>
                                             <option value="0"></option>
                                         <?php endif; ?>
@@ -776,7 +773,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{AttachmentType, Companies, Project
                         <tr>
                             <th><label for="product">Produit associé&nbsp;*</label></th>
                             <td>
-                                <select name="product" id="product" class="select"<?php if ($this->projects->status > ProjectsStatus::PREP_FUNDING) : ?> disabled<?php endif; ?>>
+                                <select name="product" id="product" class="select"<?php if ($this->projects->status > ProjectsStatus::STATUS_REVIEW) : ?> disabled<?php endif; ?>>
                                     <?php if (empty($this->selectedProduct->id_product)) : ?>
                                         <option value="" selected></option>
                                     <?php endif; ?>
@@ -820,7 +817,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{AttachmentType, Companies, Project
                                     <a href="<?= $this->furl ?>/var/dirs/<?= $this->projects->slug ?>.pdf">
                                         <img src="<?= $this->surl ?>/images/admin/pdf.png" alt="PDF">
                                     </a>
-                                    <?php if ($this->projects->status >= ProjectsStatus::EN_FUNDING) : ?>
+                                    <?php if ($this->projects->status >= ProjectsStatus::STATUS_ONLINE) : ?>
                                         <a href="<?= $this->url ?>/dossiers/regenerate_dirs/<?= $this->projects->id_project ?>" class="regenerate-dirs thickbox">
                                             <img src="<?= $this->surl ?>/images/admin/reload.png" alt="Regenerate" title="Régénérer le DIRS">
                                         </a>
@@ -830,7 +827,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{AttachmentType, Companies, Project
                         <?php endif; ?>
                     </table>
                     <br><br>
-                    <?php if ($this->projects->status == ProjectsStatus::REMBOURSEMENT) : ?>
+                    <?php if ($this->projects->status == ProjectsStatus::STATUS_REPAYMENT) : ?>
                         <?php $this->fireView('early_repayment'); ?>
                         <br><br>
                     <?php endif; ?>
@@ -861,7 +858,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{AttachmentType, Companies, Project
                             <th>Nom</th>
                             <td><?= $this->clients->nom ?></td>
                         </tr>
-                        <?php if (false === empty($this->projects->id_commercial) || false === in_array($this->projects->status, [ProjectsStatus::IMPOSSIBLE_AUTO_EVALUATION, ProjectsStatus::ABANDONED])) : ?>
+                        <?php if (false === empty($this->projects->id_commercial) || $this->projects->status !== ProjectsStatus::STATUS_CANCELLED) : ?>
                             <tr>
                                 <th><label for="commercial">Commercial</label></th>
                                 <td>
@@ -878,7 +875,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{AttachmentType, Companies, Project
                                 </td>
                             </tr>
                         <?php endif; ?>
-                        <?php if ($this->projects->status >= ProjectsStatus::PENDING_ANALYSIS || false === empty($this->projects->id_analyste)) : ?>
+                        <?php if ($this->projects->status >= ProjectsStatus::STATUS_REQUEST || false === empty($this->projects->id_analyste)) : ?>
                             <tr>
                                 <th><label for="analyste">Analyste</label></th>
                                 <td>
@@ -899,10 +896,10 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{AttachmentType, Companies, Project
                             <th><label for="status">Statut</label></th>
                             <td id="current_statut">
                                 <input type="hidden" name="current_status" value="<?= $this->projects->status ?>">
-                                <?php if ($this->projects->status <= ProjectsStatus::EN_FUNDING || 0 === count($this->possibleProjectStatus)) : // All statuses should be handled this way, i.e. by only using buttons to transition status ?>
+                                <?php if ($this->projects->status <= ProjectsStatus::STATUS_ONLINE || 0 === count($this->possibleProjectStatus)) : // All statuses should be handled this way, i.e. by only using buttons to transition status ?>
                                     <!-- Useful for backward compatibility purpose. Should not be useful -->
                                     <input type="hidden" name="status" value="<?= $this->projects->status ?>">
-                                    <?= $this->projects_status->label ?>
+                                    <?= $this->projectStatus->getLabel() ?>
                                 <?php else : ?>
                                     <a href="<?= $this->lurl ?>/thickbox/popup_confirmation_send_email/<?= $this->projects->id_project ?>" class="thickbox confirmation_send_email"></a>
                                     <input type="hidden" name="check_confirmation_send_email" id="check_confirmation_send_email" value="0">
@@ -938,7 +935,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{AttachmentType, Companies, Project
                                 </td>
                             </tr>
                         <?php endif; ?>
-                        <?php if ($this->projects->status == ProjectsStatus::PREP_FUNDING) : ?>
+                        <?php if ($this->projects->status == ProjectsStatus::STATUS_REVIEW) : ?>
                             <?php
                             $blockingPublishingError = [];
 
@@ -979,11 +976,11 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{AttachmentType, Companies, Project
                                 <?php endif; ?>
                             <?php endif; ?>
                         <?php endif; ?>
-                        <?php if ($this->projects->status >= ProjectsStatus::A_FUNDER) : ?>
+                        <?php if ($this->projects->status >= ProjectsStatus::STATUS_REVIEW) : ?>
                             <tr>
                                 <th><label for="date_publication">Date de publication&nbsp;*</label></th>
                                 <td>
-                                    <?php if ($this->projects->status == ProjectsStatus::A_FUNDER) : ?>
+                                    <?php if ($this->projects->status == ProjectsStatus::STATUS_REVIEW) : ?>
                                         <input type="text" name="date_publication" id="date_publication" class="input_dp" value="<?= ($this->projects->date_publication != '0000-00-00 00:00:00' ? $this->formatDate($this->projects->date_publication, 'd/m/Y') : '') ?>">
                                         <select name="date_publication_heure" class="selectMini" title="Heure">
                                             <?php for ($hour = 0; $hour < 24; $hour++) : ?>
@@ -1003,7 +1000,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{AttachmentType, Companies, Project
                             <tr>
                                 <th><label for="date_retrait">Date de retrait&nbsp;*</label></th>
                                 <td>
-                                    <?php if ($this->projects->status == ProjectsStatus::A_FUNDER) : ?>
+                                    <?php if ($this->projects->status == ProjectsStatus::STATUS_REVIEW) : ?>
                                         <input type="text" name="date_retrait" id="date_retrait" class="input_dp" value="<?= ($this->projects->date_retrait != '0000-00-00 00:00:00' ? $this->formatDate($this->projects->date_retrait, 'd/m/Y') : '') ?>">
                                         <select name="date_retrait_heure" class="selectMini" title="Heure">
                                             <?php for ($hour = 0; $hour < 24; $hour++) : ?>
@@ -1017,7 +1014,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{AttachmentType, Companies, Project
                                         </select>&nbsp;m
                                     <?php else : ?>
                                         <?= $this->formatDate($this->projects->date_retrait, 'd/m/Y H:i') ?>
-                                        <?php if ($this->projects->status < ProjectsStatus::FUNDE) : ?>
+                                        <?php if ($this->projects->status < ProjectsStatus::STATUS_FUNDED) : ?>
                                             &nbsp;&nbsp;&nbsp;<a href="<?= $this->lurl ?>/thickbox/pop_up_edit_date_retrait/<?= $this->projects->id_project ?>" class="thickbox btn_link ">Modifier</a>
                                         <?php endif; ?>
                                     <?php endif; ?>
@@ -1046,13 +1043,13 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{AttachmentType, Companies, Project
                                     </div>
                                 </td>
                             </tr>
-                        <?php elseif ($this->projects->status == ProjectsStatus::FUNDE) : ?>
+                        <?php elseif ($this->projects->status == ProjectsStatus::STATUS_FUNDED) : ?>
                             <tr>
                                 <th><label for="upload_pouvoir">Pouvoir</label></th>
                                 <td><input type="file" name="upload_pouvoir" id="upload_pouvoir"></td>
                             </tr>
                         <?php endif; ?>
-                        <?php if ($this->projects->status == ProjectsStatus::FUNDE) : ?>
+                        <?php if ($this->projects->status == ProjectsStatus::STATUS_FUNDED) : ?>
                             <tr>
                                 <th><label for="pret_refuse">Prêt refusé</label></th>
                                 <td>
@@ -1098,7 +1095,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{AttachmentType, Companies, Project
                         <tr>
                             <td colspan="2">
                                 <?php switch ($this->projects->status) :
-                                    case ProjectsStatus::COMMERCIAL_REVIEW: ?>
+                                    case ProjectsStatus::STATUS_REQUEST: ?>
                                         <div style="text-align: right">
                                             <a role="button" data-memo="#postpone-project-memo" data-memo-onsubmit="/dossiers/postpone/<?= $this->projects->id_project ?>" data-memo-project-id="<?= $this->projects->id_project ?>" class="btn btn-small btnDisabled btn_link">Reporter</a>
                                             <a role="button" data-memo="#abandon-project-memo" data-memo-optional data-memo-onsubmit="/dossiers/abandon/<?= $this->projects->id_project ?>" data-memo-project-id="<?= $this->projects->id_project ?>" class="btn btn-small btnDisabled btn_link">Abandonner</a>
@@ -1106,11 +1103,11 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{AttachmentType, Companies, Project
                                             <?php if (empty($this->projects->id_product)) : ?>
                                                 <br><br>Pour passer le projet à l'étude risque, vous devez sélectionner un produit.
                                             <?php else : ?>
-                                                <input type="button" id="status_dosier_valider" class="btn btn-small btn-validate" onclick="check_status_dossier(<?= ProjectsStatus::PENDING_ANALYSIS ?>, <?= $this->projects->id_project ?>);" value="Passer à l'étude risque">
+                                                <input type="button" id="status_dosier_valider" class="btn btn-small btn-validate" onclick="check_status_dossier(<?= ProjectsStatus::STATUS_REQUEST ?>, <?= $this->projects->id_project ?>);" value="Passer à l'étude risque">
                                             <?php endif; ?>
                                         </div>
                                         <?php break;
-                                    case ProjectsStatus::POSTPONED: ?>
+                                    case ProjectsStatus::STATUS_REVIEW: ?>
                                         <div style="text-align: right">
                                             <a href="<?= $this->lurl ?>/dossiers/postpone/<?= $this->projects->id_project ?>/resume" class="btn btn-small btnDisabled btn_link">Reprendre</a>
                                             <a role="button" data-memo="#abandon-project-memo" data-memo-optional data-memo-onsubmit="/dossiers/abandon/<?= $this->projects->id_project ?>" data-memo-project-id="<?= $this->projects->id_project ?>" class="btn btn-small btnDisabled btn_link">Abandonner</a>
@@ -1118,28 +1115,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{AttachmentType, Companies, Project
                                             <?php if (empty($this->projects->id_product)) : ?>
                                                 <br><br>Pour passer le projet à l'étude risque, vous devez sélectionner un produit.
                                             <?php else : ?>
-                                                <input type="button" id="status_dosier_valider" class="btn btn-small btn-validate" onclick="check_status_dossier(<?= ProjectsStatus::PENDING_ANALYSIS ?>, <?= $this->projects->id_project ?>);" value="Passer à l'étude risque">
-                                            <?php endif; ?>
-                                        </div>
-                                        <?php break;
-                                    case ProjectsStatus::ANALYSIS_REVIEW:
-                                    case ProjectsStatus::COMITY_REVIEW: ?>
-                                        <div style="text-align: right">
-                                            <a role="button" data-memo="#abandon-project-memo" data-memo-optional data-memo-onsubmit="/dossiers/abandon/<?= $this->projects->id_project ?>" data-memo-project-id="<?= $this->projects->id_project ?>" class="btn btn-small btnDisabled btn_link">Abandonner</a>
-                                        </div>
-                                        <?php break;
-                                    case ProjectsStatus::SUSPENSIVE_CONDITIONS: ?>
-                                        <div style="text-align: right">
-                                            <a href="<?= $this->lurl ?>/dossiers/reject_suspensive_conditions/<?= $this->projects->id_project ?>" class="btn btn-small btn-reject btn_link">Rejeter</a>
-                                            <a role="button" data-memo="#abandon-project-memo" data-memo-optional data-memo-onsubmit="/dossiers/abandon/<?= $this->projects->id_project ?>" data-memo-project-id="<?= $this->projects->id_project ?>" class="btn btn-small btnDisabled btn_link">Abandonner</a>
-                                            <a href="<?= $this->lurl ?>/dossiers/remove_suspensive_conditions/<?= $this->projects->id_project ?>" class="btn btn-small btn_link">Lever les conditions suspensives</a>
-                                        </div>
-                                        <?php break;
-                                    case ProjectsStatus::PREP_FUNDING: ?>
-                                        <div style="text-align: right">
-                                            <a role="button" data-memo="#abandon-project-memo" data-memo-optional data-memo-onsubmit="/dossiers/abandon/<?= $this->projects->id_project ?>" data-memo-project-id="<?= $this->projects->id_project ?>" class="btn btn-small btnDisabled btn_link">Abandonner</a>
-                                            <?php if (empty($blockingPublishingError)) : ?>
-                                                <a href="<?= $this->lurl ?>/dossiers/publish/<?= $this->projects->id_project ?>" class="btn btn-small btn_link thickbox">Programmer la mise en ligne</a>
+                                                <input type="button" id="status_dosier_valider" class="btn btn-small btn-validate" onclick="check_status_dossier(<?= ProjectsStatus::STATUS_REQUEST ?>, <?= $this->projects->id_project ?>);" value="Passer à l'étude risque">
                                             <?php endif; ?>
                                         </div>
                                         <?php break; ?>
@@ -1161,7 +1137,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{AttachmentType, Companies, Project
                             </td>
                         </tr>
                     </table>
-                    <?php if ($this->projects->status >= ProjectsStatus::REMBOURSEMENT) : ?>
+                    <?php if ($this->projects->status >= ProjectsStatus::STATUS_REPAYMENT) : ?>
                         <h2>
                             Transfert
                             <?php if ($this->restFunds > 0) : ?>
@@ -1175,7 +1151,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{AttachmentType, Companies, Project
                     <?php endif; ?>
                 </td>
             </tr>
-            <tr<?php if (empty($this->projects->id_commercial) && ProjectsStatus::NOT_ELIGIBLE != $this->projects->status) : ?> style="display: none"<?php endif; ?>>
+            <tr<?php if (empty($this->projects->id_commercial) && ProjectsStatus::STATUS_CANCELLED != $this->projects->status) : ?> style="display: none"<?php endif; ?>>
                 <td colspan="2" class="center">
                     <input type="hidden" name="statut_encours" id="statut_encours" value="0">
                     <input type="hidden" name="send_form_dossier_resume">

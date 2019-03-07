@@ -4,10 +4,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
-use Unilend\Bundle\CoreBusinessBundle\Entity\EcheanciersEmprunteur;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Prelevements;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{EcheanciersEmprunteur, Prelevements, Projects, ProjectsStatus};
 
 class PrelevementsRepository extends EntityRepository
 {
@@ -120,7 +117,7 @@ class PrelevementsRepository extends EntityRepository
             ->andWhere('pre.type = :borrower')
             ->andWhere('DATE(ee.dateEcheanceEmprunteur) = :date')
             ->setParameters([
-                'repayment' => ProjectsStatus::REMBOURSEMENT,
+                'repayment' => ProjectsStatus::STATUS_REPAYMENT,
                 'pending'   => EcheanciersEmprunteur::STATUS_PENDING,
                 'borrower'  => Prelevements::CLIENT_TYPE_BORROWER,
                 'date'      => (new \DateTime('+' . $daysInterval . ' days'))->format('Y-m-d')

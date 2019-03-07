@@ -103,8 +103,8 @@ class CompanyManager
                 $companyProjects = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->findFundedButNotRepaidProjectsByCompany($company);
 
                 foreach ($companyProjects as $project) {
-                    if (ProjectsStatus::PROBLEME !== $project->getStatus()) {
-                        $this->projectStatusManager->addProjectStatus($user, ProjectsStatus::PROBLEME, $project);
+                    if (ProjectsStatus::STATUS_LOSS !== $project->getStatus()) {
+                        $this->projectStatusManager->addProjectStatus($user, ProjectsStatus::STATUS_LOSS, $project);
                     }
 
                     $directDebitEntity = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Prelevements');
@@ -159,7 +159,8 @@ class CompanyManager
                 ->setStatusAdresseCorrespondance(1)
                 ->setEmailDirigeant($email)
                 ->setEmailFacture($email)
-                ->setIdClientOwner($client);
+                ->setIdClientOwner($client)
+                ->setSector(rand(1, 14));
 
             $this->entityManager->persist($company);
             $this->entityManager->flush($company);

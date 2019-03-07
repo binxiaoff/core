@@ -39,9 +39,11 @@
 {% endif %}
 
 {% block pageScripts %}
-    <script>
-        var projectMapViewSettings = '{{ mapview|json_encode|escape('js') }}'
-    </script>
+    {% if mapview is defined %}
+        <script>
+            var projectMapViewSettings = '{{ mapview|json_encode|escape('js') }}'
+        </script>
+    {% endif %}
 {% endblock %}
 
 {% block siteContent %}
@@ -72,16 +74,18 @@
                                 <div class="project-single-details">
                                     <h1 class="project-single-title">{{ project.title }}</h1>
                                     <div class="project-single-meta">
-                                        <h4 class="project-single-location">
-                                            <span class="icon fa-map-marker-u16"></span>
-                                            <span class="label">{{ project.company.city }}, {{ project.company.zip }}</span>
-                                            {% if mapview is defined %}
-                                                <a href="javascript:;" class="link ui-project-single-map-toggle ui-project-single-map-hidden">
-                                                    <span class="ui-project-single-map-show-label label">{% trans %} project-detail_show-map-label {% endtrans %}</span>
-                                                    <span class="ui-project-single-map-hide-label label">{% trans %} project-detail_hide-map-label {% endtrans %}</span>
-                                                </a>
-                                            {% endif %}
-                                        </h4>
+                                        {% if project.company.city is not empty and project.company.zip is not empty %}
+                                            <h4 class="project-single-location">
+                                                <span class="icon fa-map-marker-u16"></span>
+                                                <span class="label">{{ project.company.city }}, {{ project.company.zip }}</span>
+                                                {% if mapview is defined %}
+                                                    <a href="javascript:;" class="link ui-project-single-map-toggle ui-project-single-map-hidden">
+                                                        <span class="ui-project-single-map-show-label label">{% trans %} project-detail_show-map-label {% endtrans %}</span>
+                                                        <span class="ui-project-single-map-hide-label label">{% trans %} project-detail_hide-map-label {% endtrans %}</span>
+                                                    </a>
+                                                {% endif %}
+                                            </h4>
+                                        {% endif %}
                                     </div><!-- /.project-single-meta -->
                                 </div><!-- /.project-single-details -->
                             </div>

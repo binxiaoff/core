@@ -8,18 +8,8 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Routing\RouterInterface;
 use Twig_Environment;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Attachment;
-use Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\BeneficialOwner;
-use Unilend\Bundle\CoreBusinessBundle\Entity\BeneficialOwnerType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
-use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyBeneficialOwnerDeclaration;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectBeneficialOwnerUniversign;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
-use Unilend\Bundle\CoreBusinessBundle\Entity\UniversignEntityInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{Attachment, AttachmentType, BeneficialOwner, BeneficialOwnerType, Clients, ClientsAdresses, Companies,
+    CompanyBeneficialOwnerDeclaration, ProjectBeneficialOwnerUniversign, Projects, ProjectsStatus, UniversignEntityInterface};
 use Unilend\Bundle\FrontBundle\Service\UniversignManager;
 
 class BeneficialOwnerManager
@@ -472,7 +462,7 @@ class BeneficialOwnerManager
                         $this->createProjectBeneficialOwnerDeclaration($universign->getIdProject(), $universign->getIdProject()->getIdCompany()->getIdClientOwner());
                         break;
                     case UniversignEntityInterface::STATUS_SIGNED:
-                        if (ProjectsStatus::REMBOURSEMENT > $universign->getIdProject()->getStatus()) {
+                        if (ProjectsStatus::STATUS_REPAYMENT > $universign->getIdProject()->getStatus()) {
                             $universign->setStatus(UniversignEntityInterface::STATUS_ARCHIVED);
                             $this->entityManager->flush($universign);
                             $this->createProjectBeneficialOwnerDeclaration($universign->getIdProject(), $universign->getIdProject()->getIdCompany()->getIdClientOwner());

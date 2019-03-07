@@ -19,16 +19,6 @@
                             <div class="form-validation-notifications"></div>
                             <div class="row columns-with-space">
                                 <dl class="col-sm-4 col-md-6 col-lg-6">
-                                    <dt>{% trans %} partner-project-request_simulator-eligibility-company-field-label {% endtrans %}</dt>
-                                    <dd><strong class="ui-simulator-output-company">{{ company }}</strong></dd>
-                                </dl>
-                                {% if siren is not empty %}
-                                    <dl class="col-sm-4 col-md-6 col-lg-6">
-                                        <dt>{% trans %} partner-project-request_simulator-eligibility-siren-field-label {% endtrans %}</dt>
-                                        <dd><strong class="ui-simulator-output-siren">{{ siren }}</strong></dd>
-                                    </dl>
-                                {% endif %}
-                                <dl class="col-sm-4 col-md-6 col-lg-6">
                                     <dt>{% trans %} partner-project-request_simulator-eligibility-amount-field-label {% endtrans %}</dt>
                                     <dd><strong class="ui-simulator-output-cost">{{ amount|localizednumber }}&nbsp;€</strong></dd>
                                 </dl>
@@ -55,16 +45,6 @@
                                         <dd id="simulator-output-amount">{{ amount|localizednumber }}&nbsp;€</dd>
                                         <dt id="simulator-label-duration">{% trans %} partner-project-request_simulator-eligibility-estimated-funding-time-label {% endtrans %}</dt>
                                         <dd id="simulator-output-duration">{% transchoice averageFundingDuration with {'%numberDays%': averageFundingDuration} %} partner-project-request_simulator-eligibility-estimated-funding-time-value {% endtranschoice %}</dd>
-                                        <dt id="simulator-label-monthly-payment">{% trans %} partner-project-request_simulator-eligibility-monthly-payment-label {% endtrans %}</dt>
-                                        <dd id="simulator-output-monthly-payment">{% trans with {
-                                                '%minimumMonthlyPayment%': payment.monthly.min|localizednumberwithprecision(0),
-                                                '%maximumMonthlyPayment%': payment.monthly.max|localizednumberwithprecision(0)
-                                                } %} partner-project-request_simulator-eligibility-monthly-payment-value {% endtrans %}</dd>
-                                        <dt id="simulator-label-interests">{% trans %} partner-project-request_simulator-eligibility-interests-label {% endtrans %}</dt>
-                                        <dd id="simulator-output-interests">{% trans with {
-                                                '%minimumInterests%': payment.interests.min|localizednumberwithprecision(0),
-                                                '%maximumInterests%': payment.interests.max|localizednumberwithprecision(0)
-                                                } %} partner-project-request_simulator-eligibility-interests-value {% endtrans %}</dd>
                                     </dl>
                                 </div>
                             {% endif %}

@@ -6,9 +6,7 @@ use Doctrine\DBAL\Connection;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Echeanciers, Loans, ProjectsStatus, UnderlyingContract, UnilendStats
-};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{Echeanciers, Loans, ProjectsStatus, UnderlyingContract, UnilendStats};
 use Unilend\Bundle\CoreBusinessBundle\Service\StatisticsManager;
 
 class DevUnilendIncidenceRateCommand extends ContainerAwareCommand
@@ -253,16 +251,17 @@ class DevUnilendIncidenceRateCommand extends ContainerAwareCommand
             WHERE id_type_contract = (SELECT id_contract FROM underlying_contract WHERE label = :contractType) 
               AND l.status = :accepted 
               AND ps.status >= :repayment 
-              AND ps.status NOT IN (:repaid)
+              AND ps.status != :repaid
             GROUP BY l.id_project';
 
         $result = $this->getContainer()->get('doctrine.orm.entity_manager')
             ->getConnection()
-            ->executeQuery($query, ['repayment'    => ProjectsStatus::REMBOURSEMENT,
-                                    'repaid'       => [ProjectsStatus::REMBOURSE, ProjectsStatus::REMBOURSEMENT_ANTICIPE],
-                                    'contractType' => $contractType,
-                                    'date'         => $date->format('Y-m-d H:i:s'),
-                                    'accepted'     => Loans::STATUS_ACCEPTED
+            ->executeQuery($query, [
+                'repayment'    => ProjectsStatus::STATUS_REPAYMENT,
+                'repaid'       => ProjectsStatus::STATUS_REPAID,
+                'contractType' => $contractType,
+                'date'         => $date->format('Y-m-d H:i:s'),
+                'accepted'     => Loans::STATUS_ACCEPTED
             ], ['repayment'    => \PDO::PARAM_INT,
                 'repaid'       => Connection::PARAM_INT_ARRAY,
                 'contractType' => \PDO::PARAM_STR,

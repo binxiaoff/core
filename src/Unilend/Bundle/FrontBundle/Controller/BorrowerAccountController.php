@@ -29,14 +29,10 @@ class BorrowerAccountController extends Controller
      */
     public function projectsAction(Request $request, ?UserInterface $client): array
     {
-        $projectsPreFunding  = $this->getProjectsPreFunding($client);
-        $projectsFunding     = $this->getProjectsFunding($client);
-        $projectsPostFunding = $this->getProjectsPostFunding($client);
-
         return [
-            'pre_funding_projects'  => $projectsPreFunding,
-            'funding_projects'      => $projectsFunding,
-            'post_funding_projects' => $projectsPostFunding
+            'pre_funding_projects'  => $this->getProjectsPreFunding($client),
+            'funding_projects'      => $this->getProjectsFunding($client),
+            'post_funding_projects' => $this->getProjectsPostFunding($client)
         ];
     }
 
@@ -119,7 +115,7 @@ class BorrowerAccountController extends Controller
                 $frontUser = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find(Users::USER_ID_FRONT);
 
                 try {
-                    $project = $projectRequestManager->createProjectByCompany($frontUser, $company, $partnerManager->getDefaultPartner(), ProjectsStatus::COMPLETE_REQUEST, $amount,
+                    $project = $projectRequestManager->createProjectByCompany($frontUser, $company, $partnerManager->getDefaultPartner(), ProjectsStatus::STATUS_REVIEW, $amount,
                         $formData['duration'], null, $formData['message']);
                 } catch (\Exception $exception) {
                     $this->addFlash('error', $translator->trans('borrower-demand_error'));
@@ -136,7 +132,7 @@ class BorrowerAccountController extends Controller
 
                 /** @var ProjectStatusManager $projectStatusManager */
                 $projectStatusManager = $this->get('unilend.service.project_status_manager');
-                $projectStatusManager->addProjectStatus(Users::USER_ID_FRONT, ProjectsStatus::COMPLETE_REQUEST, $project);
+                $projectStatusManager->addProjectStatus(Users::USER_ID_FRONT, ProjectsStatus::STATUS_REVIEW, $project);
 
                 $this->addFlash('success', $translator->trans('borrower-demand_success'));
 
@@ -665,20 +661,9 @@ class BorrowerAccountController extends Controller
      */
     private function getProjectsPreFunding(Clients $client): array
     {
-        $entityManager = $this->get('doctrine.orm.entity_manager');
-
+        $entityManager      = $this->get('doctrine.orm.entity_manager');
         $company            = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $client]);
-        $statusPreFunding   = [
-            ProjectsStatus::COMPLETE_REQUEST,
-            ProjectsStatus::COMMERCIAL_REVIEW,
-            ProjectsStatus::COMMERCIAL_REJECTION,
-            ProjectsStatus::ANALYSIS_REVIEW,
-            ProjectsStatus::COMITY_REVIEW,
-            ProjectsStatus::ANALYSIS_REJECTION,
-            ProjectsStatus::COMITY_REJECTION,
-            ProjectsStatus::PREP_FUNDING,
-            ProjectsStatus::A_FUNDER
-        ];
+        $statusPreFunding   = [ProjectsStatus::STATUS_REQUEST, ProjectsStatus::STATUS_REVIEW];
         $projectsPreFunding = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->findByCompany($company, $statusPreFunding);
 
         return $projectsPreFunding;
@@ -691,10 +676,9 @@ class BorrowerAccountController extends Controller
      */
     private function getProjectsFunding(Clients $client): array
     {
-        $entityManager = $this->get('doctrine.orm.entity_manager');
-
+        $entityManager   = $this->get('doctrine.orm.entity_manager');
         $company         = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $client]);
-        $projectsFunding = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->findByCompany($company, [ProjectsStatus::EN_FUNDING]);
+        $projectsFunding = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->findByCompany($company, [ProjectsStatus::STATUS_ONLINE]);
 
         return $projectsFunding;
     }
@@ -709,7 +693,7 @@ class BorrowerAccountController extends Controller
         $entityManager = $this->get('doctrine.orm.entity_manager');
 
         $company             = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $client]);
-        $statusPostFunding   = array_merge([ProjectsStatus::FUNDE, ProjectsStatus::FUNDING_KO, ProjectsStatus::PRET_REFUSE], ProjectsStatus::AFTER_REPAYMENT);
+        $statusPostFunding   = array_merge([ProjectsStatus::STATUS_FUNDED], ProjectsStatus::AFTER_REPAYMENT);
         $projectsPostFunding = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->findByCompany($company, $statusPostFunding);
 
         return $projectsPostFunding;

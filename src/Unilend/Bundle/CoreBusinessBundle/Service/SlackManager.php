@@ -2,7 +2,6 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
-use Doctrine\ORM\EntityManager;
 use Http\Client\Exception;
 use Nexy\Slack\Client;
 use Doctrine\ORM\EntityManagerInterface;
@@ -63,6 +62,8 @@ class SlackManager
      */
     public function sendMessage(string $message, ?string $channel = null): bool
     {
+        return true;
+
         try {
             $payload = $this->apiClient->createMessage();
 
@@ -104,7 +105,7 @@ class SlackManager
             $title = $company->getSiren();
         }
 
-        if ($project->getStatus() >= ProjectsStatus::EN_FUNDING) {
+        if ($project->getStatus() >= ProjectsStatus::STATUS_ONLINE) {
             return '*<' . $this->frontUrl . '/projects/detail/' . $project->getSlug() . '|' . $title . '>* (<' . $backUrl . '|' . $project->getIdProject() . '>)';
         }
 

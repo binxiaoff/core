@@ -44,7 +44,7 @@
                     </div>
                     <div class="project-interest">{{ project.averageRate|localizednumberwithprecision(1) }}&nbsp;%</div>
                     <div class="project-period">
-                        {% if project.status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::FUNDING_KO') %}
+                        {% if project.status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_CANCELLED') %}
                             {% trans with {'%date%': project.endDate|localizeddate('medium', 'none', app.request.locale)} %} project-list_project-finished-ko {% endtrans %}
                         {% elseif project.finished %}
                             {% trans with {

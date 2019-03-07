@@ -8,7 +8,7 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{AttachmentType, BorrowingMotive, Clients, Companies, Product, ProjectAbandonReason, ProjectRejectionReason, Projects, ProjectsStatus, Users};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{AttachmentType, BorrowingMotive, Clients, Companies, ProjectAbandonReason, ProjectRejectionReason, Projects, ProjectsStatus, Users};
 use Unilend\Bundle\CoreBusinessBundle\Service\{ProjectRequestManager, ProjectStatusManager};
 use Unilend\Bundle\FrontBundle\Service\{DataLayerCollector};
 use Unilend\core\Loader;
@@ -99,7 +99,7 @@ class ProjectRequestController extends Controller
             }
             $user = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find(Users::USER_ID_FRONT);
 
-            $project = $projectRequestManager->newProject($user, $partner, ProjectsStatus::INCOMPLETE_REQUEST, $amount, $siren, $siret, $companyName, $email, $duration, $reason);
+            $project = $projectRequestManager->newProject($user, $partner, ProjectsStatus::STATUS_REQUEST, $amount, $siren, $siret, $companyName, $email, $duration, $reason);
 
             $client = $project->getIdCompany()->getIdClientOwner();
             $request->getSession()->set(DataLayerCollector::SESSION_KEY_CLIENT_EMAIL, $client->getEmail());
@@ -168,22 +168,22 @@ class ProjectRequestController extends Controller
     private function start(Projects $project): RedirectResponse
     {
         $projectRequestManager = $this->get('unilend.service.project_request_manager');
-        if ($project->getIdCompany()->getSiren()) {
-            $projectRequestManager->checkProjectRisk($project, Users::USER_ID_FRONT);
-        } elseif (BorrowingMotive::ID_MOTIVE_FRANCHISER_CREATION === $project->getIdBorrowingMotive()) {
-            return $this->redirectStatus($project, self::PAGE_ROUTE_CONTACT, ProjectsStatus::IMPOSSIBLE_AUTO_EVALUATION);
-        } else {
-            return $this->redirectStatus($project, self::PAGE_ROUTE_PROSPECT, ProjectsStatus::NOT_ELIGIBLE, ProjectsStatus::NON_ELIGIBLE_REASON_UNKNOWN_SIREN);
-        }
-
-        if (ProjectsStatus::NOT_ELIGIBLE == $project->getStatus()) {
-            return $this->redirectToRoute(self::PAGE_ROUTE_PROSPECT, ['hash' => $project->getHash()]);
-        }
+//        if ($project->getIdCompany()->getSiren()) {
+//            $projectRequestManager->checkProjectRisk($project, Users::USER_ID_FRONT);
+//        } elseif (BorrowingMotive::ID_MOTIVE_FRANCHISER_CREATION === $project->getIdBorrowingMotive()) {
+//            return $this->redirectStatus($project, self::PAGE_ROUTE_CONTACT, ProjectsStatus::IMPOSSIBLE_AUTO_EVALUATION);
+//        } else {
+//            return $this->redirectStatus($project, self::PAGE_ROUTE_PROSPECT, ProjectsStatus::STATUS_CANCELLED, ProjectsStatus::NON_ELIGIBLE_REASON_UNKNOWN_SIREN);
+//        }
+//
+//        if (ProjectsStatus::STATUS_CANCELLED == $project->getStatus()) {
+//            return $this->redirectToRoute(self::PAGE_ROUTE_PROSPECT, ['hash' => $project->getHash()]);
+//        }
 
         $numberOfProductsFound = $projectRequestManager->assignEligiblePartnerProduct($project, Users::USER_ID_FRONT, false);
 
         if (0 === $numberOfProductsFound) {
-            return $this->redirectStatus($project, self::PAGE_ROUTE_END, ProjectsStatus::NOT_ELIGIBLE, ProjectRejectionReason::PRODUCT_NOT_FOUND);
+            return $this->redirectStatus($project, self::PAGE_ROUTE_END, ProjectsStatus::STATUS_CANCELLED, ProjectRejectionReason::PRODUCT_NOT_FOUND);
         }
 
         return $this->redirectToRoute(self::PAGE_ROUTE_CONTACT, ['hash' => $project->getHash()]);
@@ -398,11 +398,11 @@ class ProjectRequestController extends Controller
 
         $entityManager->flush($project);
 
-        if (ProjectsStatus::IMPOSSIBLE_AUTO_EVALUATION == $project->getStatus()) {
+        if (ProjectsStatus::STATUS_CANCELLED == $project->getStatus()) {
             return $this->redirectToRoute(self::PAGE_ROUTE_FINANCE, ['hash' => $project->getHash()]);
         }
 
-        return $this->redirectStatus($project, self::PAGE_ROUTE_FINANCE, ProjectsStatus::COMPLETE_REQUEST);
+        return $this->redirectStatus($project, self::PAGE_ROUTE_FINANCE, ProjectsStatus::STATUS_REVIEW);
     }
 
     /**
@@ -424,7 +424,7 @@ class ProjectRequestController extends Controller
         }
 
         if (BorrowingMotive::ID_MOTIVE_FRANCHISER_CREATION === $project->getIdBorrowingMotive()) {
-            return $this->redirectStatus($project, self::PAGE_ROUTE_END, ProjectsStatus::COMPLETE_REQUEST);
+            return $this->redirectStatus($project, self::PAGE_ROUTE_END, ProjectsStatus::STATUS_REVIEW);
         }
 
         $entityManagerSimulator = $this->get('unilend.service.entity_manager');
@@ -651,19 +651,19 @@ class ProjectRequestController extends Controller
         }
 
         if (isset($values['dl']) && $values['dl'] < 0) {
-            return $this->redirectStatus($project, self::PAGE_ROUTE_END, ProjectsStatus::NOT_ELIGIBLE, ProjectRejectionReason::NEGATIVE_EQUITY_CAPITAL);
+            return $this->redirectStatus($project, self::PAGE_ROUTE_END, ProjectsStatus::STATUS_CANCELLED, ProjectRejectionReason::NEGATIVE_EQUITY_CAPITAL);
         }
 
         if (isset($values['fl']) && $values['fl'] < ProjectRequestManager::MINIMUM_REVENUE) {
-            return $this->redirectStatus($project, self::PAGE_ROUTE_END, ProjectsStatus::NOT_ELIGIBLE, ProjectRejectionReason::LOW_TURNOVER);
+            return $this->redirectStatus($project, self::PAGE_ROUTE_END, ProjectsStatus::STATUS_CANCELLED, ProjectRejectionReason::LOW_TURNOVER);
         }
 
         if (isset($values['gg']) && $values['gg'] < 0) {
-            return $this->redirectStatus($project, self::PAGE_ROUTE_END, ProjectsStatus::NOT_ELIGIBLE, ProjectRejectionReason::NEGATIVE_RAW_OPERATING_INCOMES);
+            return $this->redirectStatus($project, self::PAGE_ROUTE_END, ProjectsStatus::STATUS_CANCELLED, ProjectRejectionReason::NEGATIVE_RAW_OPERATING_INCOMES);
         }
 
         if (isset($values['ag_2035']) && $values['ag_2035'] < ProjectRequestManager::MINIMUM_REVENUE) {
-            return $this->redirectStatus($project, self::PAGE_ROUTE_END, ProjectsStatus::NOT_ELIGIBLE, ProjectRejectionReason::LOW_TURNOVER);
+            return $this->redirectStatus($project, self::PAGE_ROUTE_END, ProjectsStatus::STATUS_CANCELLED, ProjectRejectionReason::LOW_TURNOVER);
         }
 
         if ('true' === $request->request->get('extra_files')) {
@@ -866,7 +866,7 @@ class ProjectRequestController extends Controller
 
         $this->sendSubscriptionConfirmationEmail($project);
 
-        return $this->redirectStatus($project, self::PAGE_ROUTE_END, ProjectsStatus::COMPLETE_REQUEST);
+        return $this->redirectStatus($project, self::PAGE_ROUTE_END, ProjectsStatus::STATUS_REVIEW);
     }
 
     /**
@@ -1114,34 +1114,16 @@ class ProjectRequestController extends Controller
         $addMoreFiles = false;
 
         switch ($project->getStatus()) {
-            case ProjectsStatus::ABANDONED:
+            case ProjectsStatus::STATUS_CANCELLED:
                 $title    = $translator->trans('project-request_end-page-aborted-title');
                 $subtitle = $translator->trans('project-request_end-page-aborted-subtitle');
                 $message  = $translator->trans('project-request_end-page-aborted-message');
                 break;
-            case ProjectsStatus::ANALYSIS_REVIEW:
-            case ProjectsStatus::COMITY_REVIEW:
-            case ProjectsStatus::PREP_FUNDING:
+            case ProjectsStatus::STATUS_REVIEW:
                 $title    = $translator->trans('project-request_end-page-processing-title');
                 $subtitle = $translator->trans('project-request_end-page-processing-subtitle');
                 $message  = $translator->trans('project-request_end-page-analysis-in-progress-message');
                 break;
-            case ProjectsStatus::IMPOSSIBLE_AUTO_EVALUATION:
-                $addMoreFiles = true;
-                $title        = $translator->trans('project-request_end-page-impossible-auto-evaluation-title');
-                $subtitle     = $translator->trans('project-request_end-page-impossible-auto-evaluation-subtitle');
-                $message      = $translator->trans('project-request_end-page-impossible-auto-evaluation-message');
-                break;
-            case ProjectsStatus::COMPLETE_REQUEST:
-            case ProjectsStatus::POSTPONED:
-            case ProjectsStatus::COMMERCIAL_REVIEW:
-            case ProjectsStatus::PENDING_ANALYSIS:
-                $addMoreFiles = true;
-                $title        = $translator->trans('project-request_end-page-success-title');
-                $subtitle     = $translator->trans('project-request_end-page-success-subtitle');
-                $message      = $translator->trans('project-request_end-page-main-content');
-                break;
-            case ProjectsStatus::NOT_ELIGIBLE:
             default:
                 $title    = $translator->trans('project-request_end-page-rejection-title');
                 $subtitle = $translator->trans('project-request_end-page-rejection-subtitle');
@@ -1278,36 +1260,23 @@ class ProjectRequestController extends Controller
         }
 
         switch ($project->getStatus()) {
-            case ProjectsStatus::NOT_ELIGIBLE:
+            case ProjectsStatus::STATUS_CANCELLED:
                 if (false === in_array($route, [self::PAGE_ROUTE_END, self::PAGE_ROUTE_PROSPECT])) {
                     return $this->redirectToRoute(self::PAGE_ROUTE_END, ['hash' => $hash]);
                 }
                 break;
-            case ProjectsStatus::INCOMPLETE_REQUEST:
+            case ProjectsStatus::STATUS_REQUEST:
                 if ($route !== self::PAGE_ROUTE_CONTACT && empty($request->getSession()->get('partnerProjectRequest'))) {
                     return $this->redirectToRoute(self::PAGE_ROUTE_CONTACT, ['hash' => $hash]);
                 } elseif ($route !== self::PAGE_ROUTE_PARTNER && false === empty($request->getSession()->get('partnerProjectRequest'))) {
                     return $this->redirectToRoute(self::PAGE_ROUTE_PARTNER, ['hash' => $hash]);
                 }
                 break;
-            case ProjectsStatus::COMPLETE_REQUEST:
+            case ProjectsStatus::STATUS_REVIEW:
                 if (false === in_array($route, [self::PAGE_ROUTE_FINANCE, self::PAGE_ROUTE_END, self::PAGE_ROUTE_FILES])) {
                     return $this->redirectToRoute(self::PAGE_ROUTE_FINANCE, ['hash' => $hash]);
                 }
                 break;
-            case ProjectsStatus::IMPOSSIBLE_AUTO_EVALUATION:
-                if (false === in_array($route, [self::PAGE_ROUTE_CONTACT, self::PAGE_ROUTE_FINANCE, self::PAGE_ROUTE_END, self::PAGE_ROUTE_FILES])) {
-                    return $this->redirectToRoute(self::PAGE_ROUTE_CONTACT, ['hash' => $hash]);
-                }
-                break;
-            case ProjectsStatus::POSTPONED:
-            case ProjectsStatus::COMMERCIAL_REVIEW:
-            case ProjectsStatus::PENDING_ANALYSIS:
-                if (false === in_array($route, [self::PAGE_ROUTE_END, self::PAGE_ROUTE_FILES])) {
-                    return $this->redirectToRoute(self::PAGE_ROUTE_FILES, ['hash' => $hash]);
-                }
-                break;
-            case ProjectsStatus::ABANDONED:
             default: // Should correspond to "Revue analyste" and above
                 if ($route !== self::PAGE_ROUTE_END) {
                     return $this->redirectToRoute(self::PAGE_ROUTE_END, ['hash' => $hash]);
@@ -1335,7 +1304,7 @@ class ProjectRequestController extends Controller
 
         if ($project->getStatus() !== $projectStatus) {
             switch ($projectStatus) {
-                case ProjectsStatus::NOT_ELIGIBLE:
+                case ProjectsStatus::STATUS_CANCELLED:
                     $rejectionReason = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:ProjectRejectionReason')
                         ->findBy(['label' => $message]);
                     try {

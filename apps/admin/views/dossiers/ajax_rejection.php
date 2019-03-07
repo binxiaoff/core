@@ -1,3 +1,8 @@
+<?php
+
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
+
+?>
 <link rel="stylesheet" href="<?= $this->lurl ?>/oneui/js/plugins/select2/select2.min.css">
 <script src="<?= $this->lurl ?>/oneui/js/plugins/select2/select2.min.js"></script>
 
@@ -122,7 +127,7 @@
                 return
             }
 
-            check_status_dossier(<?= \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus::COMMERCIAL_REJECTION ?>, <?= $this->projectId ?>)
+            check_status_dossier(<?= ProjectsStatus::STATUS_CANCELLED ?>, <?= $this->projectId ?>)
         <?php elseif (0 < $this->step) : ?>
             valid_rejete_etape<?= $this->step ?>(2, <?= $this->projectId ?>)
         <?php endif; ?>

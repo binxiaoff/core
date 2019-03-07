@@ -489,7 +489,7 @@ class DebtCollectionMissionManager
     {
         $statusHistory = $this->entityManager
             ->getRepository('UnilendCoreBusinessBundle:ProjectsStatusHistory')
-            ->findStatusFirstOccurrence($project, ProjectsStatus::EN_FUNDING);
+            ->findStatusFirstOccurrence($project, ProjectsStatus::STATUS_ONLINE);
         $putOnlineDate = $statusHistory->getAdded();
         $putOnlineDate->setTime(0, 0, 0);
         $dateOfChange = new \DateTime(self::DEBT_COLLECTION_CONDITION_CHANGE_DATE);

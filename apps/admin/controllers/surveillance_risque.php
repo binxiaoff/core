@@ -65,8 +65,8 @@ class surveillance_risqueController extends bootstrap
             ProjectsStatus::SALES_TEAM_UPCOMING_STATUS,
             ProjectsStatus::SALES_TEAM,
             ProjectsStatus::RISK_TEAM,
-            ProjectsStatus::REMBOURSEMENT,
-            ProjectsStatus::PROBLEME
+            ProjectsStatus::STATUS_REPAYMENT,
+            ProjectsStatus::STATUS_LOSS
         ];
         $formattedEvents                  = [];
 
@@ -75,7 +75,7 @@ class surveillance_risqueController extends bootstrap
                 continue;
             }
 
-            if (false === in_array($event['status'], [ProjectsStatus::ABANDONED, ProjectsStatus::COMMERCIAL_REJECTION, ProjectsStatus::ANALYSIS_REJECTION, ProjectsStatus::COMITY_REJECTION])) {
+            if (false === in_array($event['status'], [ProjectsStatus::STATUS_CANCELLED, ProjectsStatus::STATUS_CANCELLED, ProjectsStatus::STATUS_CANCELLED, ProjectsStatus::STATUS_CANCELLED])) {
                 if (false === isset($formattedEvents[$event['siren']])) {
                     $formattedEvents[$event['siren']] = [
                         'label'       => $event['name'],
@@ -84,7 +84,7 @@ class surveillance_risqueController extends bootstrap
                     ];
                 }
 
-                if ($event['status'] >= ProjectsStatus::REMBOURSEMENT) {
+                if ($event['status'] >= ProjectsStatus::STATUS_REPAYMENT) {
                     $event['remainingDueCapital'] = $operationRepository->getRemainingDueCapitalForProjects(new \DateTime('NOW'), [$event['id_project']]);
                 }
 

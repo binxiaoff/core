@@ -36,14 +36,11 @@ class ProjectDisplayManager
     private $cachePool;
     /** @var array */
     private static $projectsStatus = [
-        ProjectsStatus::EN_FUNDING,
-        ProjectsStatus::FUNDE,
-        ProjectsStatus::FUNDING_KO,
-        ProjectsStatus::REMBOURSEMENT,
-        ProjectsStatus::REMBOURSE,
-        ProjectsStatus::PROBLEME,
-        ProjectsStatus::LOSS,
-        ProjectsStatus::REMBOURSEMENT_ANTICIPE
+        ProjectsStatus::STATUS_ONLINE,
+        ProjectsStatus::STATUS_FUNDED,
+        ProjectsStatus::STATUS_REPAYMENT,
+        ProjectsStatus::STATUS_REPAID,
+        ProjectsStatus::STATUS_LOSS
     ];
 
     /**
@@ -101,12 +98,13 @@ class ProjectDisplayManager
         $products     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Product')->findAvailableProductsByClient($client);
 
         $projectSearchRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
-        $projects                = $projectSearchRepository->findByWithCustomSort(
-            ['status' => $projectStatus, 'display' => Projects::DISPLAY_YES, 'idProduct' => $products],
-            $sort,
-            $limit,
-            $start
-        );
+//        $projects                = $projectSearchRepository->findByWithCustomSort(
+//            ['status' => $projectStatus, 'idProduct' => $products],
+//            $sort,
+//            $limit,
+//            $start
+//        );
+        $projects = $projectSearchRepository->findBy(['status' => self::$projectsStatus]);
 
         /** @var Projects $project */
         foreach ($projects as $project) {
@@ -155,16 +153,16 @@ class ProjectDisplayManager
             'projectNeed'          => $project->id_project_need,
             'risk'                 => $project->risk,
             'company'              => [
-                'city'      => $company->getIdAddress()->getCity(),
-                'zip'       => $company->getIdAddress()->getZip(),
-                'sectorId'  => $company->getIdAddress()->getIdCompany()->getSector(),
-                'latitude'  => (float) $company->getIdAddress()->getLatitude(),
-                'longitude' => (float) $company->getIdAddress()->getLongitude()
+                'city'      => $company->getIdAddress() ? $company->getIdAddress()->getCity() : '',
+                'zip'       => $company->getIdAddress() ? $company->getIdAddress()->getZip() : '',
+                'sectorId'  => $company->getSector(),
+                'latitude'  => $company->getIdAddress() ? (float) $company->getIdAddress()->getLatitude() : '',
+                'longitude' => $company->getIdAddress() ? (float) $company->getIdAddress()->getLongitude() : ''
             ],
             'status'               => $project->status,
-            'finished'             => ($project->status > ProjectsStatus::EN_FUNDING || $end < $now),
+            'finished'             => ($project->status > ProjectsStatus::STATUS_ONLINE || $end < $now),
             'averageRate'          => round($project->getAverageInterestRate(), 1),
-            'fundingDuration'      => (ProjectsStatus::EN_FUNDING > $project->status) ? '' : $this->getFundingDurationTranslation($project),
+            'fundingDuration'      => (ProjectsStatus::STATUS_ONLINE > $project->status) ? '' : $this->getFundingDurationTranslation($project),
             'daysLeft'             => $daysLeft
         ];
 
@@ -193,7 +191,7 @@ class ProjectDisplayManager
 
         $projectData['minRate']      = (float) $projectRateSettings['rate_min'];
         $projectData['maxRate']      = (float) $projectRateSettings['rate_min'];
-        $projectData['totalLenders'] = (ProjectsStatus::EN_FUNDING >= $project->status) ? $bids->countLendersOnProject($project->id_project) : $loans->getNbPreteurs($project->id_project);
+        $projectData['totalLenders'] = (ProjectsStatus::STATUS_ONLINE >= $project->status) ? $bids->countLendersOnProject($project->id_project) : $loans->getNbPreteurs($project->id_project);
 
         if ($alreadyFunded >= $project->amount) {
             $projectData['costFunded']    = $project->amount;
@@ -208,14 +206,14 @@ class ProjectDisplayManager
         $products  = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Product')->findAvailableProductsByClient($client);
         $neighbors = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->findNeighbors(
             $project->id_project,
-            ['status' => self::$projectsStatus, 'display' => Projects::DISPLAY_YES, 'idProduct' => $products],
+            ['status' => self::$projectsStatus, 'idProduct' => $products],
             [ProjectsRepository::SORT_FIELD_END => 'DESC']
         );
 
         // Not clean but will be once migration of Projects to Doctrine is over
         $projectData['navigation'] = [];
 
-        if ($neighbors['previous']) {
+        if (false === empty($neighbors['previous'])) {
             $projectData['navigation']['previous'] = [
                 'project' => $neighbors['previous'],
                 'slug'    => $neighbors['previous']->getSlug(),
@@ -223,7 +221,7 @@ class ProjectDisplayManager
             ];
         }
 
-        if ($neighbors['next']) {
+        if (false === empty($neighbors['next'])) {
             $projectData['navigation']['next'] = [
                 'project' => $neighbors['next'],
                 'slug'    => $neighbors['next']->getSlug(),
@@ -232,17 +230,17 @@ class ProjectDisplayManager
         }
 
         $now = new \DateTime('NOW');
-        if ($projectData['endDate'] <= $now && $projectData['status'] == ProjectsStatus::EN_FUNDING) {
+        if ($projectData['endDate'] <= $now && $projectData['status'] == ProjectsStatus::STATUS_ONLINE) {
             $projectData['projectPending'] = true;
         }
 
-        if (in_array($projectData['status'], [ProjectsStatus::REMBOURSE, ProjectsStatus::REMBOURSEMENT_ANTICIPE, ProjectsStatus::LOSS])) {
+        if (in_array($projectData['status'], [ProjectsStatus::STATUS_REPAID, ProjectsStatus::STATUS_LOSS])) {
             $lastStatusHistory             = $projectStatusHistory->select('id_project = ' . $project->id_project, 'added DESC, id_project_status_history DESC', 0, 1);
             $lastStatusHistory             = array_shift($lastStatusHistory);
             $projectData['dateLastStatus'] = date('d/m/Y', strtotime($lastStatusHistory['added']));
         }
 
-        if (ProjectsStatus::EN_FUNDING <= $projectData['status']) {
+        if (ProjectsStatus::STATUS_ONLINE <= $projectData['status']) {
             $rateSummary     = [];
             $bidsSummary     = $this->projectManager->getBidsSummary($project);
             $bidsCount       = array_sum(array_column($bidsSummary, 'bidsCount'));
@@ -433,7 +431,7 @@ class ProjectDisplayManager
         $products          = $productRepository->findAvailableProductsByClient($client);
 
         $projectRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
-        $projects          = $projectRepository->findBy(['status' => self::$projectsStatus, 'display' => Projects::DISPLAY_YES, 'idProduct' => $products]);
+        $projects          = $projectRepository->findBy(['status' => self::$projectsStatus, 'idProduct' => $products]);
 
         return count($projects);
     }
@@ -446,7 +444,7 @@ class ProjectDisplayManager
      */
     public function getVisibility(Projects $project, ?Clients $client = null): string
     {
-        if ($project->getStatus() < ProjectsStatus::EN_FUNDING) {
+        if ($project->getStatus() < ProjectsStatus::STATUS_ONLINE) {
             return self::VISIBILITY_NONE;
         }
 

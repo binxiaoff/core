@@ -26,29 +26,6 @@
                                 <fieldset class="form-project-details-fieldset first">
                                     <div class="row columns-with-space">
                                         <dl class="col-sm-4 col-md-6 col-lg-6">
-                                            <dt>
-                                                {% if project.idBorrowingMotive == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\BorrowingMotive::ID_MOTIVE_FRANCHISER_CREATION') %}
-                                                    {% trans %} partner-project-details_summary-franchiser-company-field-label {% endtrans %}
-                                                {% else %}
-                                                    {% trans %} partner-project-details_summary-company-field-label {% endtrans %}
-                                                {% endif %}
-                                            </dt>
-                                            <dd><strong class="ui-simulator-output-company">{{ project.idCompany.name }}</strong></dd>
-                                        </dl>
-                                        {% if project.idCompany.siren is not empty %}
-                                            <dl class="col-sm-4 col-md-6 col-lg-6">
-                                                <dt>
-
-                                                    {% if project.idBorrowingMotive == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\BorrowingMotive::ID_MOTIVE_FRANCHISER_CREATION') %}
-                                                        {% trans %} partner-project-details_summary-franchiser-siren-field-label {% endtrans %}
-                                                    {% else %}
-                                                        {% trans %} partner-project-details_summary-siren-field-label {% endtrans %}
-                                                    {% endif %}
-                                                </dt>
-                                                <dd><strong class="ui-simulator-output-siren">{{ project.idCompany.siren }}</strong></dd>
-                                            </dl>
-                                        {% endif %}
-                                        <dl class="col-sm-4 col-md-6 col-lg-6">
                                             <dt>{% trans %} partner-project-details_summary-amount-field-label {% endtrans %}</dt>
                                             <dd><strong class="ui-simulator-output-cost">{{ project.amount|localizednumber }}&nbsp;€</strong></dd>
                                         </dl>
@@ -259,8 +236,6 @@
                                                 <dd id="simulator-output-amount"><strong>{{ project.amount|localizednumber }}&nbsp;€</strong></dd>
                                                 <dt id="simulator-label-duration">{% trans %} partner-project-details_simulator-panel-estimated-funding-time-label {% endtrans %}</dt>
                                                 <dd id="simulator-output-duration"><strong>{% transchoice averageFundingDuration with {'%averageFundingDuration%': averageFundingDuration} %} partner-project-details_simulator-panel-estimated-funding-time-value {% endtranschoice %}</strong></dd>
-                                                <dt id="simulator-label-monthly">{% trans %} partner-project-details_simulator-panel-estimated-monthly-repayment-label {% endtrans %}</dt>
-                                                <dd id="simulator-output-monthly"><strong>{{ monthlyPaymentBoundaries.minimum|localizednumber }} / {{ monthlyPaymentBoundaries.maximum|localizednumber }}&nbsp;€</strong></dd>
                                             </dl>
                                         </div>
                                     </div><!-- /.simulator -->

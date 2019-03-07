@@ -1,6 +1,6 @@
 <?php
 
-use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, Clients, ClientsStatus, Wallet};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, Clients, Wallet};
 
 class rootController extends bootstrap
 {
@@ -38,7 +38,7 @@ class rootController extends bootstrap
             exit;
         }
 
-        $listeAccept = $this->acceptations_legal_docs->select('id_client = ' . $client->getIdClient(), 'added DESC', 0, 1);
+        $listeAccept = $this->loadData('acceptations_legal_docs')->select('id_client = ' . $client->getIdClient(), 'added DESC', 0, 1);
         $listeAccept = array_shift($listeAccept);
 
         $id_tree_cgu = $listeAccept['id_legal_doc'];
@@ -84,9 +84,6 @@ class rootController extends bootstrap
     {
         $this->params = (false === is_null($aParams)) ? $aParams : $this->params;
 
-        $this->acceptations_legal_docs = $this->loadData('acceptations_legal_docs');
-        $this->companies               = $this->loadData('companies');
-
         $this->settings->get('Lien conditions generales inscription preteur particulier', 'type');
         $id_tree_cgu = $this->settings->value;
 
@@ -106,7 +103,7 @@ class rootController extends bootstrap
             if (isset($this->params[0]) && $this->params[0] == 'nosign') {
                 $dateAccept = '';
             } else {
-                $listeAccept = $this->acceptations_legal_docs->select('id_client = ' . $this->clients->id_client, 'added DESC', 0, 1);
+                $listeAccept = $this->loadData('acceptations_legal_docs')->select('id_client = ' . $this->clients->id_client, 'added DESC', 0, 1);
                 $listeAccept = array_shift($listeAccept);
 
                 $dateAccept  = 'Sign&eacute; &eacute;lectroniquement le ' . date('d/m/Y', strtotime($listeAccept['added']));
@@ -144,13 +141,13 @@ class rootController extends bootstrap
                 $this->mandat_de_recouvrement           = str_replace(array_keys($aReplacements), $aReplacements, $this->content['mandat-de-recouvrement']);
                 $this->mandat_de_recouvrement_avec_pret = $iLoansCount > 0 ? str_replace(array_keys($aReplacements), $aReplacements, $this->content['mandat-de-recouvrement-avec-pret']) : '';
             } else {
-                $this->companies->get($this->clients->id_client, 'id_client_owner');
-                $companyEntity  = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->find($this->companies->id_company);
-                $companyAddress = $companyEntity->getIdAddress();
+                $company        = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $this->clients->id_client]);
+                $companyAddress = $company->getIdAddress();
 
                 if (null === $companyAddress) {
-                    $companyAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')
-                        ->findLastModifiedNotArchivedAddressByType($companyEntity, AddressType::TYPE_MAIN_ADDRESS);
+                    $companyAddress = $entityManager
+                        ->getRepository('UnilendCoreBusinessBundle:CompanyAddress')
+                        ->findLastModifiedNotArchivedAddressByType($company, AddressType::TYPE_MAIN_ADDRESS);
                 }
 
                 $aReplacements = [
@@ -158,8 +155,8 @@ class rootController extends bootstrap
                     '[Prenom]'              => $this->clients->prenom,
                     '[Nom]'                 => $this->clients->nom,
                     '[Fonction]'            => $this->clients->fonction,
-                    '[Raison_sociale]'      => $this->companies->name,
-                    '[SIREN]'               => $this->companies->siren,
+                    '[Raison_sociale]'      => $company->getName(),
+                    '[SIREN]'               => $company->getSiren(),
                     '[adresse_fiscale]'     => $companyAddress->getAddress() . ', ' . $companyAddress->getZip() . ', ' . $companyAddress->getCity() . ', ' . $companyAddress->getIdCountry()->getFr(),
                     '[date_validation_cgv]' => $dateAccept
                 ];

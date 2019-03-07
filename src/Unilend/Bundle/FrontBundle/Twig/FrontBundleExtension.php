@@ -54,8 +54,7 @@ class FrontBundleExtension extends \Twig_Extension
             new \Twig_SimpleFunction('uploadedImage', [$this, 'uploadedImageFunction']),
             new \Twig_SimpleFunction('photo', [$this, 'photo']),
             new \Twig_SimpleFunction('dictionary', [$this, 'dictionary']),
-            new \Twig_SimpleFunction('getStatistic', [$this, 'getStatisticFunction']),
-            new \Twig_SimpleFunction('completeTestimonialUrl', [$this, 'completeTestimonialPath'])
+            new \Twig_SimpleFunction('getStatistic', [$this, 'getStatisticFunction'])
         );
     }
 
@@ -208,10 +207,5 @@ class FrontBundleExtension extends \Twig_Extension
     public function dictionary($section)
     {
         return $this->translationManager->getAllTranslationsForSection($section);
-    }
-
-    public function completeTestimonialPath($name, $type)
-    {
-        return $this->packages->getUrl('/var/testimonials/' . $type . '/' . $name);
     }
 }

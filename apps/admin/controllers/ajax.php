@@ -358,7 +358,7 @@ class ajaxController extends bootstrap
                 ]);
                 return;
 
-            } elseif ($_POST['etape'] == 4.1 && $project->status <= ProjectsStatus::COMITY_REVIEW) {
+            } elseif ($_POST['etape'] == 4.1 && $project->status <= ProjectsStatus::STATUS_REQUEST) {
                 if (false === empty($_POST['target_ratings']) && false === empty($project->id_target_company)) {
                     /** @var \company_rating_history $targetCompanyRatingHistory */
                     $targetCompanyRatingHistory   = $this->loadData('company_rating_history');
@@ -609,7 +609,7 @@ class ajaxController extends bootstrap
 
         if (
             false === isset($requestParams['status'], $requestParams['id_project'])
-            || ProjectsStatus::COMMERCIAL_REJECTION == $requestParams['status'] && false === isset($requestParams['comment'], $requestParams['public'])
+            || ProjectsStatus::STATUS_CANCELLED == $requestParams['status'] && false === isset($requestParams['comment'], $requestParams['public'])
             || false === $project->get($requestParams['id_project'], 'id_project')
             || false === $company->get($project->id_company, 'id_company')
             || false === $client->get($company->id_client_owner, 'id_client')
@@ -622,14 +622,14 @@ class ajaxController extends bootstrap
 
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectStatusManager $projectStatusManager */
         $projectStatusManager = $this->get('unilend.service.project_status_manager');
-        if ($requestParams['status'] == ProjectsStatus::COMMERCIAL_REJECTION && isset($requestParams['rejection_reason']) && is_array($requestParams['rejection_reason'])) {
+        if ($requestParams['status'] == ProjectsStatus::STATUS_CANCELLED && isset($requestParams['rejection_reason']) && is_array($requestParams['rejection_reason'])) {
             /** @var EntityManager $entityManager */
             $entityManager = $this->get('doctrine.orm.entity_manager');
             /** @var ProjectRejectionReason[] $rejectionReasons */
             $rejectionReasons = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRejectionReason')
                 ->findBy(['idRejection' => $requestParams['rejection_reason']]);
             if (empty($rejectionReasons) || count($rejectionReasons) !== count($requestParams['rejection_reason'])) {
-                $this->get('logger')->error('Could not update the project status to : ' . ProjectsStatus::COMMERCIAL_REJECTION . '. At least one of the submitted rejection reasons is unknown.', [
+                $this->get('logger')->error('Could not update the project status to : ' . ProjectsStatus::STATUS_CANCELLED . '. At least one of the submitted rejection reasons is unknown.', [
                     'id_project'        => $project->id_project,
                     'rejection_reasons' => $requestParams['rejection_reason'],
                     'class'             => __CLASS__,
@@ -642,7 +642,7 @@ class ajaxController extends bootstrap
             $isCommentPublic = empty($requestParams['public']) ? false : true;
             $sendEmail       = '1' === $requestParams['send_email'];
             $comment         = $requestParams['comment'];
-            $result          = $this->rejectProject($project, ProjectsStatus::COMMERCIAL_REJECTION, $rejectionReasons, $sendEmail, $comment, $isCommentPublic);
+            $result          = $this->rejectProject($project, ProjectsStatus::STATUS_CANCELLED, $rejectionReasons, $sendEmail, $comment, $isCommentPublic);
 
             if ($result['success']) {
                 echo 'ok';
@@ -689,7 +689,7 @@ class ajaxController extends bootstrap
         }
 
         if (
-            $project->getStatus() !== ProjectsStatus::ANALYSIS_REVIEW
+            $project->getStatus() !== ProjectsStatus::STATUS_REQUEST
             || $this->userEntity !== $project->getIdAnalyste()
         ) {
             echo json_encode([
@@ -737,19 +737,19 @@ class ajaxController extends bootstrap
         $projectStatusManager = $this->get('unilend.service.project_status_manager');
 
         if ($_POST['status'] == 1) {
-            $projectStatusManager->addProjectStatus($this->userEntity, ProjectsStatus::COMITY_REVIEW, $project);
+            $projectStatusManager->addProjectStatus($this->userEntity, ProjectsStatus::STATUS_REQUEST, $project);
         } elseif ($_POST['status'] == 2) {
             $rejectionReasons = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRejectionReason')
                 ->findBy(['idRejection' => $_POST['rejection_reason']]);
 
             if (false === empty($rejectionReasons) && count($rejectionReasons) === count($_POST['rejection_reason'])) {
                 $sendEmail = '1' === $_POST['send_email'];
-                $result    = $this->rejectProject($project, ProjectsStatus::ANALYSIS_REJECTION, $rejectionReasons, $sendEmail);
+                $result    = $this->rejectProject($project, ProjectsStatus::STATUS_CANCELLED, $rejectionReasons, $sendEmail);
 
                 echo json_encode($result);
                 return;
             } else {
-                $this->get('logger')->error('Could not update the project status to ' . ProjectsStatus::ANALYSIS_REJECTION . ': At least one of the rejection reasons is unknown.', [
+                $this->get('logger')->error('Could not update the project status to ' . ProjectsStatus::STATUS_CANCELLED . ': At least one of the rejection reasons is unknown.', [
                     'id_project'       => $project->getIdProject(),
                     'rejection_reason' => $_POST['rejection_reason'],
                     'class'            => __CLASS__,
@@ -798,7 +798,7 @@ class ajaxController extends bootstrap
         }
 
         if (
-            $project->getStatus() !== ProjectsStatus::COMITY_REVIEW
+            $project->getStatus() !== ProjectsStatus::STATUS_REQUEST
             || false === $userManager->isGrantedManagement($this->userEntity)
         ) {
             echo json_encode([
@@ -860,7 +860,7 @@ class ajaxController extends bootstrap
                     $existingStatus[] = $status['status'];
                 }
             }
-            $projectStatusManager->addProjectStatus($this->userEntity, ProjectsStatus::PREP_FUNDING, $project);
+            $projectStatusManager->addProjectStatus($this->userEntity, ProjectsStatus::STATUS_REVIEW, $project);
         } elseif ($_POST['status'] == 2) {
             /** @var ProjectRejectionReason[] $rejectionReasons */
             $rejectionReasons = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRejectionReason')
@@ -868,12 +868,12 @@ class ajaxController extends bootstrap
 
             if (false === empty($rejectionReasons) && count($rejectionReasons) === count($_POST['rejection_reason'])) {
                 $sendEmail = '1' === $_POST['send_email'];
-                $result    = $this->rejectProject($project, ProjectsStatus::COMITY_REJECTION, $rejectionReasons, $sendEmail);
+                $result    = $this->rejectProject($project, ProjectsStatus::STATUS_CANCELLED, $rejectionReasons, $sendEmail);
 
                 echo json_encode($result);
                 return;
             } else {
-                $this->get('logger')->error('Could not update the project status to ' . ProjectsStatus::COMITY_REJECTION . ': At least one of the submitted rejection reasons is unknown.', [
+                $this->get('logger')->error('Could not update the project status to ' . ProjectsStatus::STATUS_CANCELLED . ': At least one of the submitted rejection reasons is unknown.', [
                     'id_project'       => $project->getIdProject(),
                     'rejection_reason' => $_POST['rejection_reason'],
                     'class'            => __CLASS__,
@@ -893,12 +893,12 @@ class ajaxController extends bootstrap
             $entityManager->persist($projectCommentEntity);
             $entityManager->flush($projectCommentEntity);
 
-            $projectStatusManager->addProjectStatus($this->userEntity, ProjectsStatus::SUSPENSIVE_CONDITIONS, $project);
+            $projectStatusManager->addProjectStatus($this->userEntity, ProjectsStatus::STATUS_REQUEST, $project);
         }
 
         if (
             false === empty($project->getRisk()) && false === empty($project->getPeriod())
-            && false === in_array($project->getStatus(), [ProjectsStatus::COMMERCIAL_REJECTION, ProjectsStatus::ANALYSIS_REJECTION, ProjectsStatus::COMITY_REJECTION])
+            && $project->getStatus() !== ProjectsStatus::STATUS_CANCELLED
         ) {
             try {
                 $idRate = $projectManager->getProjectRateRangeId($project);
@@ -1121,27 +1121,11 @@ class ajaxController extends bootstrap
             }
 
             if (false === empty($comment)) {
-                switch ($rejectionStatus) {
-                    case ProjectsStatus::COMMERCIAL_REJECTION:
-                        $commentTitle = 'Rejet commercial';
-                        break;
-                    case ProjectsStatus::ANALYSIS_REJECTION:
-                        $commentTitle = 'Rejet analyst';
-                        break;
-                    case ProjectsStatus::COMITY_REJECTION:
-                        $commentTitle = 'Rejet Comité';
-                        break;
-                    default:
-                        $commentTitle = 'Rejet';
-                        break;
-                }
-
                 $projectCommentEntity = new ProjectsComments();
-
                 $projectCommentEntity
                     ->setIdProject($project)
                     ->setIdUser($this->userEntity)
-                    ->setContent('<p><u>' . $commentTitle . '</u><p>' . $comment . '</p>')
+                    ->setContent('<p><u>Rejet</u><p>' . $comment . '</p>')
                     ->setPublic($isCommentPublic);
 
                 $entityManager->persist($projectCommentEntity);
