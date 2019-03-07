@@ -81,6 +81,7 @@ class Loans
     public function __construct()
     {
         $this->loanPercentFees = new ArrayCollection();
+        $this->traitInit();
     }
 
     /**

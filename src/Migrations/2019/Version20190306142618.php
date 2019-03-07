@@ -34,19 +34,15 @@ final class Version20190306142618 extends AbstractMigration
         $this->addSql('ALTER TABLE percent_fee ADD CONSTRAINT FK_3F1E89147FE4B2B FOREIGN KEY (id_type) REFERENCES fee_type (id)');
         $this->addSql('ALTER TABLE bids DROP FOREIGN KEY FK_3FF09E1EFD80A5F3');
         $this->addSql('DROP INDEX id_lender_account ON bids');
-        $this->addSql('ALTER TABLE bids ADD id_interest_rate_index_type SMALLINT DEFAULT NULL, CHANGE rate rate NUMERIC(4, 2) NOT NULL, CHANGE id_lender_account id_wallet INT NOT NULL');
+        $this->addSql('ALTER TABLE bids ADD rate_type VARCHAR(20) NOT NULL, ADD rate_margin NUMERIC(4, 2) NOT NULL, DROP rate, CHANGE id_lender_account id_wallet INT NOT NULL');
         $this->addSql('ALTER TABLE bids ADD CONSTRAINT FK_3FF09E1E5A5F27F2 FOREIGN KEY (id_wallet) REFERENCES wallet (id)');
-        $this->addSql('ALTER TABLE bids ADD CONSTRAINT FK_3FF09E1E88FAFD94 FOREIGN KEY (id_interest_rate_index_type) REFERENCES interest_rate_index_type (id)');
         $this->addSql('CREATE INDEX IDX_3FF09E1E5A5F27F2 ON bids (id_wallet)');
-        $this->addSql('CREATE INDEX IDX_3FF09E1E88FAFD94 ON bids (id_interest_rate_index_type)');
         $this->addSql('ALTER TABLE bids RENAME INDEX idx_id_autobid TO IDX_3FF09E1EEF7B6696');
         $this->addSql('ALTER TABLE loans DROP FOREIGN KEY FK_82C24DBC8BB74F6C');
         $this->addSql('DROP INDEX id_lender ON loans');
-        $this->addSql('ALTER TABLE loans ADD id_interest_rate_index_type SMALLINT DEFAULT NULL, CHANGE rate rate NUMERIC(4, 2) NOT NULL, CHANGE id_lender id_wallet INT NOT NULL');
+        $this->addSql('ALTER TABLE loans ADD rate_type VARCHAR(20) NOT NULL, ADD rate_margin NUMERIC(4, 2) NOT NULL, DROP rate, CHANGE id_lender id_wallet INT NOT NULL');
         $this->addSql('ALTER TABLE loans ADD CONSTRAINT FK_82C24DBC5A5F27F2 FOREIGN KEY (id_wallet) REFERENCES wallet (id)');
-        $this->addSql('ALTER TABLE loans ADD CONSTRAINT FK_82C24DBC88FAFD94 FOREIGN KEY (id_interest_rate_index_type) REFERENCES interest_rate_index_type (id)');
         $this->addSql('CREATE INDEX IDX_82C24DBC5A5F27F2 ON loans (id_wallet)');
-        $this->addSql('CREATE INDEX IDX_82C24DBC88FAFD94 ON loans (id_interest_rate_index_type)');
         $this->addSql('ALTER TABLE loans RENAME INDEX idx_loans_id_type_contract TO IDX_82C24DBC9A58DEC0');
         $this->addSql('ALTER TABLE loans RENAME INDEX id_project TO IDX_82C24DBCF12E799E');
     }
@@ -57,8 +53,6 @@ final class Version20190306142618 extends AbstractMigration
         $this->abortIf($this->connection->getDatabasePlatform()->getName() !== 'mysql', 'Migration can only be executed safely on \'mysql\'.');
 
         $this->addSql('ALTER TABLE percent_fee DROP FOREIGN KEY FK_3F1E89147FE4B2B');
-        $this->addSql('ALTER TABLE bids DROP FOREIGN KEY FK_3FF09E1E88FAFD94');
-        $this->addSql('ALTER TABLE loans DROP FOREIGN KEY FK_82C24DBC88FAFD94');
         $this->addSql('ALTER TABLE bid_percent_fee DROP FOREIGN KEY FK_CBDCCAB1270C44E3');
         $this->addSql('ALTER TABLE loan_percent_fee DROP FOREIGN KEY FK_9BDFD650270C44E3');
         $this->addSql('DROP TABLE bid_percent_fee');
@@ -68,15 +62,13 @@ final class Version20190306142618 extends AbstractMigration
         $this->addSql('DROP TABLE percent_fee');
         $this->addSql('ALTER TABLE bids DROP FOREIGN KEY FK_3FF09E1E5A5F27F2');
         $this->addSql('DROP INDEX IDX_3FF09E1E5A5F27F2 ON bids');
-        $this->addSql('DROP INDEX IDX_3FF09E1E88FAFD94 ON bids');
-        $this->addSql('ALTER TABLE bids DROP id_interest_rate_index_type, CHANGE rate rate NUMERIC(3, 1) NOT NULL, CHANGE id_wallet id_lender_account INT NOT NULL');
+        $this->addSql('ALTER TABLE bids ADD rate NUMERIC(3, 1) NOT NULL, DROP rate_type, DROP rate_margin, CHANGE id_wallet id_lender_account INT NOT NULL');
         $this->addSql('ALTER TABLE bids ADD CONSTRAINT FK_3FF09E1EFD80A5F3 FOREIGN KEY (id_lender_account) REFERENCES wallet (id) ON UPDATE NO ACTION ON DELETE NO ACTION');
         $this->addSql('CREATE INDEX id_lender_account ON bids (id_lender_account)');
         $this->addSql('ALTER TABLE bids RENAME INDEX idx_3ff09e1eef7b6696 TO idx_id_autobid');
         $this->addSql('ALTER TABLE loans DROP FOREIGN KEY FK_82C24DBC5A5F27F2');
         $this->addSql('DROP INDEX IDX_82C24DBC5A5F27F2 ON loans');
-        $this->addSql('DROP INDEX IDX_82C24DBC88FAFD94 ON loans');
-        $this->addSql('ALTER TABLE loans DROP id_interest_rate_index_type, CHANGE rate rate NUMERIC(3, 1) NOT NULL, CHANGE id_wallet id_lender INT NOT NULL');
+        $this->addSql('ALTER TABLE loans ADD rate NUMERIC(3, 1) NOT NULL, DROP rate_type, DROP rate_margin, CHANGE id_wallet id_lender INT NOT NULL');
         $this->addSql('ALTER TABLE loans ADD CONSTRAINT FK_82C24DBC8BB74F6C FOREIGN KEY (id_lender) REFERENCES wallet (id) ON UPDATE NO ACTION ON DELETE NO ACTION');
         $this->addSql('CREATE INDEX id_lender ON loans (id_lender)');
         $this->addSql('ALTER TABLE loans RENAME INDEX idx_82c24dbcf12e799e TO id_project');

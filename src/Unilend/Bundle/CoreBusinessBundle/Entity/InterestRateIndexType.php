@@ -12,6 +12,8 @@ class InterestRateIndexType
 {
     use TimestampableAddedOnly;
 
+    const TYPE_FIXED_RATE = 1;
+
     /**
      * @var int
      *

@@ -214,7 +214,7 @@ class LoanContractGenerator implements DocumentGeneratorInterface
             'id'                => $loan->getIdLoan(),
             'amount'            => $loanAmount,
             'formattedAmount'   => $this->numberFormatter->format($loanAmount),
-            'rate'              => $this->numberFormatter->format($loan->getRate()),
+            'rate'              => $this->numberFormatter->format($loan->getRate()->getMargin()),
             'interests'         => $this->currencyFormatter->formatCurrency($interests, 'EUR'),
             'repaymentAmount'   => $this->currencyFormatter->formatCurrency($repaymentAmount, 'EUR'),
             'creationDate'      => $repaymentStatusHistory ? $repaymentStatusHistory->getAdded()->format('d/m/Y') : date('d/m/Y'),

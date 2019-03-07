@@ -59,6 +59,7 @@ class Bids
     public function __construct()
     {
         $this->bidPercentFees = new ArrayCollection();
+        $this->traitInit();
     }
 
     /**

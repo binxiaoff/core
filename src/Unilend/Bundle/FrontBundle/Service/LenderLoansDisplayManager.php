@@ -176,7 +176,7 @@ class LenderLoansDisplayManager
                     (1 == $partialLoan->getIdTypeContract()->getIdContract()) ? $loanData['count']['bond']++ : $loanData['count']['contract']++;
 
                     $loans[] = [
-                        'rate'      => round($partialLoan->getRate(), 1),
+                        'rate'      => round($partialLoan->getRate()->getMargin(), 1),
                         'amount'    => bcdiv($partialLoan->getAmount(), 100, 0),
                         'documents' => $this->getDocumentDetail(
                             $projectLoans['project_status'],

@@ -3,7 +3,7 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Entity\Traits;
 
 use Doctrine\ORM\Mapping as ORM;
-use Unilend\Bundle\CoreBusinessBundle\Entity\InterestRateIndexType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Embeddable\LendingRate;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
 
@@ -44,25 +44,16 @@ trait Lendable
     protected $status;
 
     /**
-     * In case of fixed interest rate, the type will be null, thus the indexed rate is considered as zero.
+     * @var LendingRate
      *
-     * @var InterestRateIndexType|null
-     *
-     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\InterestRateIndexType")
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_interest_rate_index_type", referencedColumnName="id")
-     * })
-     */
-    protected $interestRateIndexType;
-
-    /**
-     * The margin to be added on the indexed rate.
-     *
-     * @var float
-     *
-     * @ORM\Column(type="decimal", precision=4, scale=2)
+     * @ORM\Embedded(class="Unilend\Bundle\CoreBusinessBundle\Entity\Embeddable\LendingRate")
      */
     protected $rate;
+
+    public function traitInit(): void
+    {
+        $this->rate = new LendingRate();
+    }
 
     /**
      * @return int
@@ -145,39 +136,19 @@ trait Lendable
     }
 
     /**
-     * @return InterestRateIndexType|null
+     * @return LendingRate
      */
-    public function getInterestRateIndexType(): ?InterestRateIndexType
-    {
-        return $this->interestRateIndexType;
-    }
-
-    /**
-     * @param InterestRateIndexType|null $interestRateIndexType
-     *
-     * @return self
-     */
-    public function setInterestRateIndexType(?InterestRateIndexType $interestRateIndexType): self
-    {
-        $this->interestRateIndexType = $interestRateIndexType;
-
-        return $this;
-    }
-
-    /**
-     * @return float
-     */
-    public function getRate(): float
+    public function getRate(): LendingRate
     {
         return $this->rate;
     }
 
     /**
-     * @param float $rate
+     * @param LendingRate $rate
      *
      * @return self
      */
-    public function setRate(float $rate): self
+    public function setRate(LendingRate $rate): self
     {
         $this->rate = $rate;
 

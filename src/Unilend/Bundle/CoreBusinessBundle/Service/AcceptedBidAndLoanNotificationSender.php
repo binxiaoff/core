@@ -300,7 +300,7 @@ class AcceptedBidAndLoanNotificationSender
                 $amount         = round(bcdiv(bcadd($firstRepayment->getCapital(), $firstRepayment->getInterets(), 2), 100, 3), 2);
                 $loanDetails    .= '<tr>
                                     <td class="td text-center">' . $this->currencyFormatter->formatCurrency($loan->getAmount() / 100, 'EUR') . '</td>
-                                    <td class="td text-center">' . $this->numberFormatter->format($loan->getRate()) . '&nbsp;%</td>
+                                    <td class="td text-center">' . $this->numberFormatter->format($loan->getRate()->getMargin()) . '&nbsp;%</td>
                                     <td class="td text-center">' . $loan->getProject()->getPeriod() . ' mois</td>
                                     <td class="td text-center">' . $this->currencyFormatter->formatCurrency($amount, 'EUR') . '</td>
                                     <td class="td text-center">' . $this->translator->trans('contract-type-label_' . $loan->getIdTypeContract()->getLabel()) . '</td></tr>';

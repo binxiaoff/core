@@ -116,7 +116,7 @@ class MailerManager
                 'companyName'   => $bid->getProject()->getIdCompany()->getName(),
                 'projectName'   => $bid->getProject()->getTitle(),
                 'bidAmount'     => $this->oFicelle->formatNumber($bid->getAmount() / 100, 0),
-                'bidRate'       => $this->oFicelle->formatNumber($bid->getRate(), 1),
+                'bidRate'       => $this->oFicelle->formatNumber($bid->getRate()->getMargin(), 1),
                 'bidDate'       => strftime('%d %B %G', $bid->getAdded()->getTimestamp()),
                 'bidTime'       => $bid->getAdded()->format('H:i:s'),
                 'lenderPattern' => $bid->getWallet()->getWireTransferPattern()
@@ -155,7 +155,7 @@ class MailerManager
                     'firstName'     => $wallet->getIdClient()->getPrenom(),
                     'bidDate'       => strftime('%d %B %G', $bid->getAdded()->getTimestamp()),
                     'bidAmount'     => $this->oFicelle->formatNumber($bid->getAmount() / 100, 0),
-                    'bidRate'       => $this->oFicelle->formatNumber($bid->getRate()),
+                    'bidRate'       => $this->oFicelle->formatNumber($bid->getRate()->getMargin()),
                     'balance'       => $this->oFicelle->formatNumber($wallet->getAvailableBalance()),
                     'lenderPattern' => $wallet->getWireTransferPattern()
                 ];
@@ -392,7 +392,7 @@ class MailerManager
                     'companyName'   => $bid->getProject()->getIdCompany()->getName(),
                 ];
 
-                if (0 === bccomp($bid->getRate(), $projectRates['rate_min'], 1)) {
+                if (0 === bccomp($bid->getRate()->getMargin(), $projectRates['rate_min'], 1)) {
                     $mailTemplate = 'preteur-autobid-ko-minimum-rate';
                     $keyWords     += [
                         'autolendLink' => $this->sFUrl . '/profile/autolend#parametrage',
@@ -415,7 +415,7 @@ class MailerManager
                     'firstName'     => $bid->getWallet()->getIdClient()->getPrenom(),
                     'companyName'   => $bid->getProject()->getIdCompany()->getName(),
                     'bidAmount'     => $this->oFicelle->formatNumber($bid->getAmount() / 100, 0),
-                    'bidRate'       => $this->oFicelle->formatNumber($bid->getRate(), 1)
+                    'bidRate'       => $this->oFicelle->formatNumber($bid->getRate()->getMargin(), 1)
                 ];
 
                 if ($endDate <= $now) {

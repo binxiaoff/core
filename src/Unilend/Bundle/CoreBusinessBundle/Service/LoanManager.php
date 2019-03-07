@@ -4,7 +4,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{AcceptedBids, Clients, Loans, UnderlyingContract, UnderlyingContractAttributeType};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{AcceptedBids, Clients, Embeddable\LendingRate, Loans, UnderlyingContract, UnderlyingContractAttributeType};
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\ContractAttributeManager;
 
 /**
@@ -52,9 +52,9 @@ class LoanManager
     {
         $loanAmount = 0;
         $interests  = 0;
-
+        /** @var AcceptedBids $acceptedBid */
         foreach ($acceptedBids as $acceptedBid) {
-            $interests  = round(bcadd($interests, bcmul($acceptedBid->getIdBid()->getRate(), $acceptedBid->getAmount(), 4), 4), 2);
+            $interests  = round(bcadd($interests, bcmul($acceptedBid->getIdBid()->getRate()->getMargin(), $acceptedBid->getAmount(), 4), 4), 2);
             $loanAmount += $acceptedBid->getAmount();
         }
 
@@ -77,14 +77,16 @@ class LoanManager
             ->getRepository('UnilendCoreBusinessBundle:AcceptationsLegalDocs')
             ->findOneBy(['idClient' => $acceptedBids[0]->getIdBid()->getWallet()->getIdClient()], ['added' => 'DESC']);
 
-        $rate = round(bcdiv($interests, $loanAmount, 4), 1);
+        $lendingRate = (new LendingRate())
+            ->setType(LendingRate::TYPE_FIXED)
+            ->setMargin(round(bcdiv($interests, $loanAmount, 4), 1));
 
         $loan = new Loans();
         $loan
             ->setWallet($acceptedBids[0]->getIdBid()->getWallet())
             ->setProject($acceptedBids[0]->getIdBid()->getProject())
             ->setAmount($loanAmount)
-            ->setRate($rate)
+            ->setRate($lendingRate)
             ->setStatus(Loans::STATUS_ACCEPTED)
             ->setIdTypeContract($contract)
             ->setIdAcceptationLegalDoc($currentAcceptedTermsOfSale);

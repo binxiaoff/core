@@ -6,8 +6,8 @@ use Doctrine\ORM\{EntityManagerInterface, NonUniqueResultException, NoResultExce
 use Psr\Cache\CacheException;
 use Psr\Cache\CacheItemPoolInterface;
 use Psr\Log\LoggerInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{AcceptedBids, Autobid, Bids, ClientsGestionTypeNotif, Notifications, OffresBienvenuesDetails, Projects, ProjectsStatus, Sponsorship, Wallet,
-    WalletBalanceHistory, WalletType};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{AcceptedBids, Autobid, Bids, ClientsGestionTypeNotif, Embeddable\LendingRate, Notifications, OffresBienvenuesDetails, Projects,
+    ProjectsStatus, Sponsorship, Wallet, WalletBalanceHistory, WalletType};
 use Unilend\Bundle\CoreBusinessBundle\Exception\BidException;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductManager;
 use Unilend\librairies\CacheKeys;
@@ -84,12 +84,12 @@ class BidManager
     }
 
     /**
-     * @param Wallet       $wallet
-     * @param Projects     $project
-     * @param float|int    $amount
-     * @param float        $rate
-     * @param Autobid|null $autoBidSetting
-     * @param bool         $sendNotification
+     * @param Wallet                $wallet
+     * @param Projects              $project
+     * @param float|int             $amount
+     * @param float                 $rate
+     * @param Autobid|null          $autoBidSetting
+     * @param bool                  $sendNotification
      *
      * @return Bids
      * @throws BidException
@@ -99,6 +99,10 @@ class BidManager
      */
     public function bid(Wallet $wallet, Projects $project, $amount, float $rate, ?Autobid $autoBidSetting = null, bool $sendNotification = true): Bids
     {
+        $rate = (new LendingRate())
+            ->setType(LendingRate::TYPE_FIXED)
+            ->setMargin($rate);
+
         $bid = new Bids();
         $bid
             ->setWallet($wallet)
@@ -197,7 +201,7 @@ class BidManager
                     'project_id' => $bid->getProject()->getIdProject(),
                     'lender_id'  => $bid->getWallet()->getId(),
                     'amount'     => $bidAmount,
-                    'rate'       => $bid->getRate()
+                    'rate'       => $bid->getRate()->getMargin()
                 ]);
             }
 
@@ -215,15 +219,15 @@ class BidManager
         $projectRates = $this->getProjectRateRange($bid->getProject());
 
         if (
-            bccomp($bid->getRate(), $projectRates['rate_max'], 1) > 0
-            || bccomp($bid->getRate(), $projectRates['rate_min'], 1) < 0
+            bccomp($bid->getRate()->getMargin(), $projectRates['rate_max'], 1) > 0
+            || bccomp($bid->getRate()->getMargin(), $projectRates['rate_min'], 1) < 0
         ) {
             if ($this->logger instanceof LoggerInterface) {
                 $this->logger->warning('The rate is less than the min rate for a bid', [
                     'project_id' => $bid->getProject()->getIdProject(),
                     'lender_id'  => $bid->getWallet()->getId(),
                     'amount'     => $bid->getAmount() / 100,
-                    'rate'       => $bid->getRate()
+                    'rate'       => $bid->getRate()->getMargin()
                 ]);
             }
 
@@ -244,7 +248,7 @@ class BidManager
                     'project_id'     => $bid->getProject()->getIdProject(),
                     'lender_id'      => $bid->getWallet()->getId(),
                     'amount'         => $bid->getAmount() / 100,
-                    'rate'           => $bid->getRate(),
+                    'rate'           => $bid->getRate()->getMargin(),
                     'project_status' => $bid->getProject()->getStatus()
                 ]);
             }
@@ -269,7 +273,7 @@ class BidManager
                     'project_id'    => $bid->getProject()->getIdProject(),
                     'lender_id'     => $bid->getWallet()->getId(),
                     'amount'        => $bid->getAmount() / 100,
-                    'rate'          => $bid->getRate(),
+                    'rate'          => $bid->getRate()->getMargin(),
                     'project_ended' => $endDate->format('c'),
                     'now'           => $currentDate->format('c')
                 ]);
@@ -292,7 +296,7 @@ class BidManager
                     'project_id' => $bid->getProject()->getIdProject(),
                     'lender_id'  => $bid->getWallet()->getId(),
                     'amount'     => $bid->getAmount() / 100,
-                    'rate'       => $bid->getRate()
+                    'rate'       => $bid->getRate()->getMargin()
                 ]);
             }
 
@@ -313,7 +317,7 @@ class BidManager
                     'project_id' => $bid->getProject()->getIdProject(),
                     'lender_id'  => $bid->getWallet()->getId(),
                     'amount'     => $bid->getAmount() / 100,
-                    'rate'       => $bid->getRate()
+                    'rate'       => $bid->getRate()->getMargin()
                 ]);
             }
 
@@ -337,7 +341,7 @@ class BidManager
                     'project_id' => $bid->getProject()->getIdProject(),
                     'lender_id'  => $bid->getWallet()->getId(),
                     'amount'     => $bidAmount,
-                    'rate'       => $bid->getRate(),
+                    'rate'       => $bid->getRate()->getMargin(),
                     'balance'    => $balance
                 ]);
             }
@@ -366,7 +370,7 @@ class BidManager
                     'project_id' => $bid->getProject()->getIdProject(),
                     'lender_id'  => $bid->getWallet()->getId(),
                     'amount'     => $bid->getAmount() / 100,
-                    'rate'       => $bid->getRate()
+                    'rate'       => $bid->getRate()->getMargin()
                 ]);
             }
 
@@ -422,8 +426,10 @@ class BidManager
             $bid->setStatus(Bids::STATUS_REJECTED);
 
             $newBid = clone $bid;
+            $rate   = clone $bid->getRate();
+            $rate->setMargin($currentRate);
             $newBid
-                ->setRate($currentRate)
+                ->setRate($rate)
                 ->setOrdre($bidOrder)
                 ->setStatus(Bids::STATUS_PENDING)
                 ->setAdded(new \DateTime('NOW'));
