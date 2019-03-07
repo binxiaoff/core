@@ -55,7 +55,6 @@ cmf_routing:
 
 twig:
     strict_variables: "%kernel.debug%"
-    exception_controller:  UnilendFrontBundle:Exception:show
     paths:
         - "%kernel.root_dir%/Resources/views/frontbundle/"
     form_themes:
