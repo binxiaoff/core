@@ -192,7 +192,7 @@ class bootstrap extends Controller
                 ],
                 [
                     'title' => 'Erreurs remboursements',
-                    'uri'   => 'dossiers/' . ProjectsStatus::STATUS_LOSS . ',' . ProjectsStatus::STATUS_LOSS
+                    'uri'   => 'dossiers/' . ProjectsStatus::STATUS_LOSS
                 ],
                 [
                     'title' => 'Suivi statuts projets',

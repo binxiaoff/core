@@ -37,8 +37,6 @@ EOF
             'status' => [
                 ProjectsStatus::STATUS_REPAYMENT,
                 ProjectsStatus::STATUS_REPAID,
-                ProjectsStatus::STATUS_REPAID,
-                ProjectsStatus::STATUS_LOSS,
                 ProjectsStatus::STATUS_LOSS
             ]
         ]);

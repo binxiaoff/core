@@ -9,8 +9,7 @@ use Symfony\Component\HttpFoundation\{RedirectResponse, Request, Response};
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\User\UserInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{BorrowingMotive, Clients, ClientsStatus, CompanyClient, PartnerProjectAttachment, ProjectAbandonReason, ProjectRejectionReason, Projects, ProjectsStatus,
-    Users};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{Clients, ClientsStatus, CompanyClient, PartnerProjectAttachment, ProjectAbandonReason, ProjectRejectionReason, Projects, ProjectsStatus, Users};
 use Unilend\Bundle\CoreBusinessBundle\Service\ProjectRequestManager;
 use Unilend\core\Loader;
 
@@ -574,7 +573,6 @@ class ProjectRequestController extends Controller
                     'message' => $translator->trans('partner-project-end_status-abandon-message'),
                 ];
                 break;
-            case ProjectsStatus::STATUS_CANCELLED:
             case ProjectsStatus::STATUS_REVIEW:
             default:
                 $template = [

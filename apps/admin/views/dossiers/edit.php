@@ -340,10 +340,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{AttachmentType, Companies, Project
         $('#status').change(function () {
             var status = $(this).val();
 
-            if (
-                status == <?= ProjectsStatus::STATUS_LOSS ?>
-                || status == <?= ProjectsStatus::STATUS_LOSS ?>
-            ) {
+            if (status == <?= ProjectsStatus::STATUS_LOSS ?>) {
                 $.colorbox({href: "<?= $this->lurl ?>/thickbox/project_status_update/<?= $this->projects->id_project ?>/" + status});
             }
         });
@@ -861,7 +858,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{AttachmentType, Companies, Project
                             <th>Nom</th>
                             <td><?= $this->clients->nom ?></td>
                         </tr>
-                        <?php if (false === empty($this->projects->id_commercial) || false === in_array($this->projects->status, [ProjectsStatus::STATUS_CANCELLED, ProjectsStatus::STATUS_CANCELLED])) : ?>
+                        <?php if (false === empty($this->projects->id_commercial) || $this->projects->status !== ProjectsStatus::STATUS_CANCELLED) : ?>
                             <tr>
                                 <th><label for="commercial">Commercial</label></th>
                                 <td>
@@ -1119,27 +1116,6 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{AttachmentType, Companies, Project
                                                 <br><br>Pour passer le projet à l'étude risque, vous devez sélectionner un produit.
                                             <?php else : ?>
                                                 <input type="button" id="status_dosier_valider" class="btn btn-small btn-validate" onclick="check_status_dossier(<?= ProjectsStatus::STATUS_REQUEST ?>, <?= $this->projects->id_project ?>);" value="Passer à l'étude risque">
-                                            <?php endif; ?>
-                                        </div>
-                                        <?php break;
-                                    case ProjectsStatus::STATUS_REQUEST:
-                                    case ProjectsStatus::STATUS_REQUEST: ?>
-                                        <div style="text-align: right">
-                                            <a role="button" data-memo="#abandon-project-memo" data-memo-optional data-memo-onsubmit="/dossiers/abandon/<?= $this->projects->id_project ?>" data-memo-project-id="<?= $this->projects->id_project ?>" class="btn btn-small btnDisabled btn_link">Abandonner</a>
-                                        </div>
-                                        <?php break;
-                                    case ProjectsStatus::STATUS_REQUEST: ?>
-                                        <div style="text-align: right">
-                                            <a href="<?= $this->lurl ?>/dossiers/reject_suspensive_conditions/<?= $this->projects->id_project ?>" class="btn btn-small btn-reject btn_link">Rejeter</a>
-                                            <a role="button" data-memo="#abandon-project-memo" data-memo-optional data-memo-onsubmit="/dossiers/abandon/<?= $this->projects->id_project ?>" data-memo-project-id="<?= $this->projects->id_project ?>" class="btn btn-small btnDisabled btn_link">Abandonner</a>
-                                            <a href="<?= $this->lurl ?>/dossiers/remove_suspensive_conditions/<?= $this->projects->id_project ?>" class="btn btn-small btn_link">Lever les conditions suspensives</a>
-                                        </div>
-                                        <?php break;
-                                    case ProjectsStatus::STATUS_REVIEW: ?>
-                                        <div style="text-align: right">
-                                            <a role="button" data-memo="#abandon-project-memo" data-memo-optional data-memo-onsubmit="/dossiers/abandon/<?= $this->projects->id_project ?>" data-memo-project-id="<?= $this->projects->id_project ?>" class="btn btn-small btnDisabled btn_link">Abandonner</a>
-                                            <?php if (empty($blockingPublishingError)) : ?>
-                                                <a href="<?= $this->lurl ?>/dossiers/publish/<?= $this->projects->id_project ?>" class="btn btn-small btn_link thickbox">Programmer la mise en ligne</a>
                                             <?php endif; ?>
                                         </div>
                                         <?php break; ?>

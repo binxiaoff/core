@@ -1,3 +1,8 @@
+<?php
+
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
+
+?>
 <link href="<?= $this->lurl ?>/oneui/js/plugins/datatables/jquery.dataTables.min.css" type="text/css" rel="stylesheet">
 <script src="<?= $this->lurl ?>/oneui/js/plugins/datatables/jquery.dataTables.min.js"></script>
 <style>
@@ -285,7 +290,7 @@
 
     <div id="team-projects" style="clear: both;">
         <?php $this->templateProjects = $this->teamProjects; ?>
-        <?php $this->collapsedStatus = \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus::SALES_TEAM; ?>
+        <?php $this->collapsedStatus = ProjectsStatus::SALES_TEAM; ?>
         <?php $this->fireView($this->template . 'Projects'); ?>
     </div>
 </div>

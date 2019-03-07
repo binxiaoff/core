@@ -5,7 +5,7 @@ namespace Unilend\Bundle\CommandBundle\Command;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\{InputArgument, InputInterface};
 use Symfony\Component\Console\Output\OutputInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{Bids, Projects, ProjectsStatus};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{Bids, ProjectsStatus};
 
 /**
  * https://unilend.atlassian.net/browse/RUN-1065
@@ -48,8 +48,6 @@ class FeedsBPICommand extends ContainerAwareCommand
             ProjectsStatus::STATUS_CANCELLED,
             ProjectsStatus::STATUS_REPAYMENT,
             ProjectsStatus::STATUS_REPAID,
-            ProjectsStatus::STATUS_REPAID,
-            ProjectsStatus::STATUS_LOSS,
             ProjectsStatus::STATUS_LOSS
         ];
 
@@ -204,9 +202,7 @@ class FeedsBPICommand extends ContainerAwareCommand
             case ProjectsStatus::STATUS_LOSS:
             case ProjectsStatus::STATUS_REPAYMENT:
             case ProjectsStatus::STATUS_REPAID:
-            case ProjectsStatus::STATUS_REPAID:
             case ProjectsStatus::STATUS_FUNDED:
-            case ProjectsStatus::STATUS_LOSS:
                 return 'OUI';
             case ProjectsStatus::STATUS_CANCELLED:
                 return 'NON';

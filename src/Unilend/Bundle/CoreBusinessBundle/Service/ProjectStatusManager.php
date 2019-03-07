@@ -73,14 +73,12 @@ class ProjectStatusManager
         switch ($project->getStatus()) {
             case ProjectsStatus::STATUS_LOSS:
                 if (0 < $paymentScheduleRepository->getOverdueScheduleCount($project)) {
-                    $possibleStatus = [ProjectsStatus::STATUS_LOSS, ProjectsStatus::STATUS_LOSS];
+                    $possibleStatus = [ProjectsStatus::STATUS_LOSS];
                     break;
                 }
                 $possibleStatus = [ProjectsStatus::STATUS_LOSS, ProjectsStatus::STATUS_REPAYMENT];
                 break;
             case ProjectsStatus::STATUS_REPAID:
-            case ProjectsStatus::STATUS_REPAID:
-            case ProjectsStatus::STATUS_LOSS:
                 return [];
             default:
                 if ($project->getStatus() < ProjectsStatus::STATUS_REPAYMENT) {
@@ -318,8 +316,6 @@ class ProjectStatusManager
 
         switch ($project->getStatus()) {
             case ProjectsStatus::STATUS_CANCELLED:
-            case ProjectsStatus::STATUS_CANCELLED:
-            case ProjectsStatus::STATUS_CANCELLED:
                 if (false === empty($project->getIdCompany()->getSiren())) {
                     $abandonReason    = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectAbandonReason')
                         ->findBy(['label' => ProjectAbandonReason::OTHER_PROJECT_OF_SAME_COMPANY_REJECTED]);
@@ -344,9 +340,6 @@ class ProjectStatusManager
                 }
                 $this->mailerManager->sendProjectOnlineToBorrower($project);
                 break;
-            case ProjectsStatus::STATUS_CANCELLED:
-                $this->universignManager->cancelProxyAndMandate($project);
-                break;
             case ProjectsStatus::STATUS_LOSS:
                 $this->projectRepaymentTaskManager->disableAutomaticRepayment($project, $user);
                 break;
@@ -364,12 +357,7 @@ class ProjectStatusManager
      */
     public function rejectProject($project, int $rejectionStatus, array $rejectionReasons, $user): bool
     {
-        $rejectionStatusList = [
-            ProjectsStatus::STATUS_CANCELLED,
-            ProjectsStatus::STATUS_CANCELLED,
-            ProjectsStatus::STATUS_CANCELLED,
-            ProjectsStatus::STATUS_CANCELLED
-        ];
+        $rejectionStatusList = [ProjectsStatus::STATUS_CANCELLED];
 
         if (false === in_array($rejectionStatus, $rejectionStatusList)) {
             throw new \Exception('Incorrect project status, expected values: ' . implode(', ', $rejectionStatusList));

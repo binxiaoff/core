@@ -1,6 +1,6 @@
 <?php
 
-use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, CompanyStatus, ProjectsStatus};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{CompanyStatus, ProjectsStatus};
 
 class companies extends companies_crud
 {
@@ -312,7 +312,7 @@ class companies extends companies_crud
             $query,
             [
                 'companyStatus' => [CompanyStatus::STATUS_PRECAUTIONARY_PROCESS, CompanyStatus::STATUS_RECEIVERSHIP, CompanyStatus::STATUS_COMPULSORY_LIQUIDATION],
-                'projectStatus' => [ProjectsStatus::STATUS_REPAYMENT, ProjectsStatus::STATUS_LOSS, ProjectsStatus::STATUS_LOSS]
+                'projectStatus' => [ProjectsStatus::STATUS_REPAYMENT, ProjectsStatus::STATUS_LOSS]
             ],
             [
                 'companyStatus' => \Unilend\Bridge\Doctrine\DBAL\Connection::PARAM_STR_ARRAY,
@@ -345,7 +345,7 @@ class companies extends companies_crud
                         SELECT ' . $cohortSelect . ' AS date_range
                         FROM projects_status_history
                         INNER JOIN projects_status ON projects_status_history.id_project_status = projects_status.id_project_status
-                        WHERE  projects_status.status = '. ProjectsStatus::STATUS_REPAYMENT .'
+                        WHERE  projects_status.status = ' . ProjectsStatus::STATUS_REPAYMENT . '
                           AND projects.id_project = projects_status_history.id_project
                         ORDER BY projects_status_history.added ASC, id_project_status_history ASC LIMIT 1
                       ) AS cohort

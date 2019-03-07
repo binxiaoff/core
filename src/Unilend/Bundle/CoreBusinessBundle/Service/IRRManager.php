@@ -4,11 +4,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
-use Unilend\Bundle\CoreBusinessBundle\Entity\LenderStatistic;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
-use Unilend\Bundle\CoreBusinessBundle\Entity\UnilendStats;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{CompanyStatus, LenderStatistic, ProjectsStatus, UnilendStats, Wallet};
 use Unilend\Bundle\CoreBusinessBundle\Repository\WalletRepository;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 
@@ -29,7 +25,6 @@ class IRRManager
 
     const PROJECT_STATUS_TRIGGERING_CHANGE = [
         ProjectsStatus::STATUS_REPAYMENT,
-        ProjectsStatus::STATUS_LOSS,
         ProjectsStatus::STATUS_LOSS
     ];
     const COMPANY_STATUS_TRIGGERING_CHANGE = [

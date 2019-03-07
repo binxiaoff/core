@@ -1,8 +1,11 @@
 <?php
 
+use Doctrine\DBAL\Cache\QueryCacheProfile;
+use Doctrine\DBAL\Driver\ResultStatement;
 use Doctrine\DBAL\Statement;
 use Unilend\Bridge\Doctrine\DBAL\Connection;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{Bids, Clients, CompanyStatus, EcheanciersEmprunteur, Loans, OperationSubType, Projects as ProjectsEntity, ProjectsStatus};
+use Unilend\librairies\CacheKeys;
 
 class projects extends projects_crud
 {
@@ -126,14 +129,9 @@ class projects extends projects_crud
             case ProjectsStatus::STATUS_REPAYMENT:
             case ProjectsStatus::STATUS_REPAID:
             case ProjectsStatus::STATUS_LOSS:
-            case ProjectsStatus::STATUS_REPAID:
-            case ProjectsStatus::STATUS_LOSS:
                 $queryBuilder
                     ->from('loans');
                 break;
-            case ProjectsStatus::STATUS_CANCELLED:
-            case ProjectsStatus::STATUS_ONLINE:
-            case ProjectsStatus::STATUS_ONLINE:
             case ProjectsStatus::STATUS_ONLINE:
             case ProjectsStatus::STATUS_REVIEW:
                 $queryBuilder
@@ -155,9 +153,9 @@ class projects extends projects_crud
         }
 
         if ($cache && $this->status != ProjectsStatus::STATUS_REVIEW) {
-            $cacheTime         = \Unilend\librairies\CacheKeys::VERY_SHORT_TIME;
+            $cacheTime         = CacheKeys::VERY_SHORT_TIME;
             $cacheKey          = md5(__METHOD__);
-            $queryCacheProfile = new \Doctrine\DBAL\Cache\QueryCacheProfile($cacheTime, $cacheKey);
+            $queryCacheProfile = new QueryCacheProfile($cacheTime, $cacheKey);
         }
 
         try {
@@ -168,7 +166,7 @@ class projects extends projects_crud
                 $queryCacheProfile
             );
 
-            if ($statement instanceof \Doctrine\DBAL\Driver\ResultStatement) {
+            if ($statement instanceof ResultStatement) {
                 $result = $statement->fetchAll(PDO::FETCH_COLUMN);
                 $statement->closeCursor();
 
@@ -318,7 +316,7 @@ class projects extends projects_crud
             ) t1';
 
         try {
-            $statement = $this->bdd->executeQuery($sQuery, $bind, $type, new \Doctrine\DBAL\Cache\QueryCacheProfile(1800, md5(__METHOD__)));
+            $statement = $this->bdd->executeQuery($sQuery, $bind, $type, new QueryCacheProfile(1800, md5(__METHOD__)));
             $result    = $statement->fetchAll(PDO::FETCH_COLUMN);
             $statement->closeCursor();
             if (empty($result)) {
@@ -689,8 +687,7 @@ class projects extends projects_crud
             ],
             'projectStatusList'                => [
                 ProjectsStatus::STATUS_REPAYMENT,
-                ProjectsStatus::STATUS_LOSS,
-                ProjectsStatus::STATUS_LOSS,
+                ProjectsStatus::STATUS_LOSS
             ],
             'clientTypePerson'                 => [
                 Clients::TYPE_PERSON,

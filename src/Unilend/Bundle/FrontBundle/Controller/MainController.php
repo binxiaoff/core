@@ -15,7 +15,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{Clients, OffresBienvenues, Project
 use Unilend\Bundle\CoreBusinessBundle\Repository\ProjectsRepository;
 use Unilend\Bundle\CoreBusinessBundle\Service\{ProjectRequestManager, StatisticsManager, WelcomeOfferManager};
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
-use Unilend\Bundle\FrontBundle\Service\{ContentManager, ProjectDisplayManager, /*SeoManager,*/ SourceManager};
+use Unilend\Bundle\FrontBundle\Service\{ContentManager, ProjectDisplayManager, SourceManager};
 use Unilend\core\Loader;
 
 class MainController extends Controller

@@ -35,7 +35,7 @@ class LenderLoansDisplayManager
     const LOAN_STATUS_FILTER = [
         'pending'        => [ProjectsStatus::STATUS_ONLINE, ProjectsStatus::STATUS_FUNDED],
         'repayment'      => [ProjectsStatus::STATUS_REPAYMENT],
-        'repaid'         => [ProjectsStatus::STATUS_REPAID, ProjectsStatus::STATUS_REPAID],
+        'repaid'         => [ProjectsStatus::STATUS_REPAID],
         'late-repayment' => [ProjectsStatus::STATUS_LOSS],
         'incidents'      => [ProjectsStatus::STATUS_LOSS],
         'loss'           => [ProjectsStatus::STATUS_LOSS]
@@ -305,10 +305,6 @@ class LenderLoansDisplayManager
                         break;
                 }
                 break;
-            case ProjectsStatus::STATUS_LOSS:
-                $statusToDisplay = self::LOAN_STATUS_DISPLAY_LOSS;
-                $loanStatusLabel = $this->translator->trans('lender-operations_detailed-loan-status-label-lost');
-                break;
             case ProjectsStatus::STATUS_REPAID:
                 $statusToDisplay = self::LOAN_STATUS_DISPLAY_COMPLETED;
                 if (null === $project->getCloseOutNettingDate()) {
@@ -316,10 +312,6 @@ class LenderLoansDisplayManager
                 } else {
                     $loanStatusLabel = $this->translator->trans('lender-operations_detailed-loan-status-label-collected');
                 }
-                break;
-            case ProjectsStatus::STATUS_REPAID:
-                $statusToDisplay = self::LOAN_STATUS_DISPLAY_COMPLETED;
-                $loanStatusLabel = $this->translator->trans('lender-operations_detailed-loan-status-label-early-r');
                 break;
             case ProjectsStatus::STATUS_ONLINE:
             case ProjectsStatus::STATUS_FUNDED:

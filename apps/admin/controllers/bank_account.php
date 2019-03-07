@@ -1,12 +1,7 @@
 <?php
 
 use Symfony\Component\HttpFoundation\File\File;
-use Unilend\Bundle\CoreBusinessBundle\Entity\BankAccount;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Prelevements;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
-use Unilend\Bundle\CoreBusinessBundle\Entity\UniversignEntityInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{BankAccount, Clients, Prelevements, ProjectsStatus, UniversignEntityInterface, Zones};
 
 class bank_accountController extends bootstrap
 {
@@ -125,7 +120,7 @@ class bank_accountController extends bootstrap
         foreach ($companies as $company) {
             $projects = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->findBy(['idCompany' => $company]);
             foreach ($projects as $project) {
-                if (in_array($project->getStatus(), [ProjectsStatus::STATUS_REPAID, ProjectsStatus::STATUS_REPAID])) {
+                if ($project->getStatus() === ProjectsStatus::STATUS_REPAID) {
                     continue;
                 }
                 $mandates = $project->getMandates();

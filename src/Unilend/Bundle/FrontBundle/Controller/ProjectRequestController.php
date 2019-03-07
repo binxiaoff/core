@@ -8,7 +8,7 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{AttachmentType, BorrowingMotive, Clients, Companies, Product, ProjectAbandonReason, ProjectRejectionReason, Projects, ProjectsStatus, Users};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{AttachmentType, BorrowingMotive, Clients, Companies, ProjectAbandonReason, ProjectRejectionReason, Projects, ProjectsStatus, Users};
 use Unilend\Bundle\CoreBusinessBundle\Service\{ProjectRequestManager, ProjectStatusManager};
 use Unilend\Bundle\FrontBundle\Service\{DataLayerCollector};
 use Unilend\core\Loader;

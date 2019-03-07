@@ -411,14 +411,14 @@ class ProjectsRepository extends EntityRepository
                       INNER JOIN company_status cs ON csh.id_status = cs.id
                       INNER JOIN projects p ON p.id_company = csh.id_company
                     WHERE
-                      p.status IN (:projectStatus)
+                      p.status = :projectStatus
                       AND cs.label IN (:collectiveProceeding)
                       AND csh.added BETWEEN :start AND :end';
 
         $result = $this->getEntityManager()->getConnection()
             ->executeQuery($query, [
                 'collectiveProceeding' => [CompanyStatus::STATUS_PRECAUTIONARY_PROCESS, CompanyStatus::STATUS_RECEIVERSHIP, CompanyStatus::STATUS_COMPULSORY_LIQUIDATION],
-                'projectStatus'        => [ProjectsStatus::STATUS_LOSS, ProjectsStatus::STATUS_LOSS],
+                'projectStatus'        => ProjectsStatus::STATUS_LOSS,
                 'start'                => $start->format('Y-m-d H:i:s'),
                 'end'                  => $end->format('Y-m-d H:i:s')
             ], [
@@ -457,7 +457,7 @@ class ProjectsRepository extends EntityRepository
                 $query,
                 [
                     'end'           => $end->format('Y-m-d H:i:s'),
-                    'projectStatus' => [ProjectsStatus::STATUS_REPAID, ProjectsStatus::STATUS_REPAID, ProjectsStatus::STATUS_LOSS]
+                    'projectStatus' => [ProjectsStatus::STATUS_REPAID, ProjectsStatus::STATUS_LOSS]
                 ], [
                     'end'           => PDO::PARAM_STR,
                     'projectStatus' => Connection::PARAM_INT_ARRAY
@@ -511,7 +511,7 @@ class ProjectsRepository extends EntityRepository
             ->where('p.idCompany = :companyId')
             ->setParameter('companyId', $companyId)
             ->andWhere('p.status IN (:projectStatus)')
-            ->setParameter('projectStatus', [ProjectsStatus::STATUS_REPAYMENT, ProjectsStatus::STATUS_LOSS, ProjectsStatus::STATUS_LOSS]);
+            ->setParameter('projectStatus', [ProjectsStatus::STATUS_REPAYMENT, ProjectsStatus::STATUS_LOSS]);
 
         return $queryBuilder->getQuery()->getResult();
     }
@@ -1091,12 +1091,12 @@ class ProjectsRepository extends EntityRepository
               IFNULL(SUM(IF(p.status >= :repaymentStatus, 1, 0)), 0) AS repaymentCount,
               IFNULL(SUM(IF(p.status >= :repaymentStatus, p.amount, 0)), 0) AS repaymentAmount,
               IFNULL(ROUND(SUM(IF(pb.id_project IS NULL, 0, 1)) / SUM(IF(p.status >= :repaymentStatus, 1, 0)) * 100), 0) AS problemRate,
-              IFNULL(ROUND(SUM(IF(p.status IN (:rejectionStatus), 1, 0)) / COUNT(p.id_project) * 100), 0) AS rejectionRate
+              IFNULL(ROUND(SUM(IF(p.status = :rejectionStatus, 1, 0)) / COUNT(p.id_project) * 100), 0) AS rejectionRate
             FROM projects p
               LEFT JOIN (
                 SELECT id_project
                 FROM projects_status_history psh
-                  INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status AND ps.status IN (:problemStatus)
+                  INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status AND ps.status = :problemStatus
                 GROUP BY psh.id_project
               ) pb ON p.id_project = pb.id_project';
 
@@ -1122,14 +1122,14 @@ class ProjectsRepository extends EntityRepository
                 $query, [
                 'sentStatus'      => ProjectsStatus::STATUS_REVIEW,
                 'repaymentStatus' => ProjectsStatus::STATUS_REPAYMENT,
-                'rejectionStatus' => [ProjectsStatus::STATUS_CANCELLED, ProjectsStatus::STATUS_CANCELLED, ProjectsStatus::STATUS_CANCELLED, ProjectsStatus::STATUS_CANCELLED],
-                'problemStatus'   => [ProjectsStatus::STATUS_LOSS, ProjectsStatus::STATUS_LOSS],
+                'rejectionStatus' => ProjectsStatus::STATUS_CANCELLED,
+                'problemStatus'   => ProjectsStatus::STATUS_LOSS,
                 'submitterId'     => $submitterId
             ], [
                 'sentStatus'      => PDO::PARAM_INT,
                 'repaymentStatus' => PDO::PARAM_INT,
-                'rejectionStatus' => Connection::PARAM_INT_ARRAY,
-                'problemStatus'   => Connection::PARAM_INT_ARRAY,
+                'rejectionStatus' => PDO::PARAM_INT,
+                'problemStatus'   => PDO::PARAM_INT,
                 'submitterId'     => PDO::PARAM_INT
             ])->fetch(PDO::FETCH_ASSOC);
     }
@@ -1508,14 +1508,9 @@ class ProjectsRepository extends EntityRepository
             case ProjectsStatus::STATUS_REPAYMENT:
             case ProjectsStatus::STATUS_REPAID:
             case ProjectsStatus::STATUS_LOSS:
-            case ProjectsStatus::STATUS_REPAID:
-            case ProjectsStatus::STATUS_LOSS:
                 $queryBuilder
                     ->from('loans', 't');
                 break;
-            case ProjectsStatus::STATUS_CANCELLED:
-            case ProjectsStatus::STATUS_ONLINE:
-            case ProjectsStatus::STATUS_ONLINE:
             case ProjectsStatus::STATUS_ONLINE:
             case ProjectsStatus::STATUS_REVIEW:
                 $queryBuilder

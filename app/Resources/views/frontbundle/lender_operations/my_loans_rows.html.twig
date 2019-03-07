@@ -4,10 +4,10 @@
     data-sortable-rating="{{ loan.risk|convertRisk }}"
     data-sortable-amount="{{ loan.amount }}"
     data-sortable-rate="{{ loan.rate }}"
-    data-sortable-monthly="{% if loan.project_status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_REPAID') or loan.project_status == constant('ProjectsStatus::STATUS_REPAID') %}0{% else %}{{ loan.monthly_repayment_amount }}{% endif %}"
-    data-sortable-remaining="{% if loan.project_status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_REPAID') or loan.project_status == constant('ProjectsStatus::STATUS_REPAID') %}0{% else %}{{ loan.remaining_capital_amount }}{% endif %}"
-    data-sortable-next="{% if loan.project_status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_REPAID') or loan.project_status == constant('ProjectsStatus::STATUS_REPAID') %}-{{ loan.final_repayment_date|date('U') }}{% else %}{{ loan.next_payment_date|date('U') }}{% endif %}"
-    data-sortable-duration="{% if loan.project_status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_REPAID') or loan.project_status == constant('ProjectsStatus::STATUS_REPAID') %}-{{ loan.final_repayment_date|date('U') }}{% else %}{{ loan.duration }}{% endif %}">
+    data-sortable-monthly="{% if loan.project_status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_REPAID') %}0{% else %}{{ loan.monthly_repayment_amount }}{% endif %}"
+    data-sortable-remaining="{% if loan.project_status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_REPAID') %}0{% else %}{{ loan.remaining_capital_amount }}{% endif %}"
+    data-sortable-next="{% if loan.project_status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_REPAID') %}-{{ loan.final_repayment_date|date('U') }}{% else %}{{ loan.next_payment_date|date('U') }}{% endif %}"
+    data-sortable-duration="{% if loan.project_status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_REPAID') %}-{{ loan.final_repayment_date|date('U') }}{% else %}{{ loan.duration }}{% endif %}">
     <td class="table-myloans-item-project"
         data-toggle="tooltip"
         data-html="true"

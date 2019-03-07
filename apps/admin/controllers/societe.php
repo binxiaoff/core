@@ -1,11 +1,7 @@
 <?php
 
 use Doctrine\ORM\EntityManager;
-use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyRating;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatusHistory;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{CompanyRating, Projects, ProjectsStatus, ProjectsStatusHistory, Zones};
 use Unilend\Bundle\WSClientBundle\Entity\Euler\CompanyRating as EulerCompanyRating;
 
 class societeController extends bootstrap
@@ -59,15 +55,10 @@ class societeController extends bootstrap
         $this->render(null, [
             'company'                   => $company,
             'numberOngoingProjects'     => $projectsRepository->getCountProjectsByStatusAndSiren(array_merge(ProjectsStatus::SALES_TEAM, ProjectsStatus::RISK_TEAM), $company->getSiren()),
-            'numberRepaidProjects'      => $projectsRepository->getCountProjectsByStatusAndSiren([ProjectsStatus::STATUS_REPAID, ProjectsStatus::STATUS_REPAID], $company->getSiren()),
+            'numberRepaidProjects'      => $projectsRepository->getCountProjectsByStatusAndSiren([ProjectsStatus::STATUS_REPAID], $company->getSiren()),
             'numberProjectsInRepayment' => $projectsRepository->getCountProjectsByStatusAndSiren([ProjectsStatus::STATUS_REPAYMENT], $company->getSiren()),
             'numberAbandonedProjects'   => $projectsRepository->getCountProjectsByStatusAndSiren([ProjectsStatus::STATUS_CANCELLED], $company->getSiren()),
-            'numberRejectedProjects'    => $projectsRepository->getCountProjectsByStatusAndSiren([
-                ProjectsStatus::STATUS_CANCELLED,
-                ProjectsStatus::STATUS_CANCELLED,
-                ProjectsStatus::STATUS_CANCELLED,
-                ProjectsStatus::STATUS_CANCELLED
-            ], $company->getSiren()),
+            'numberRejectedProjects'    => $projectsRepository->getCountProjectsByStatusAndSiren([ProjectsStatus::STATUS_CANCELLED], $company->getSiren()),
             'ratings'                   => $formattedRatings,
             'dates'                     => $dates,
             'projects'                  => $formattedProjects,
@@ -223,13 +214,6 @@ class societeController extends bootstrap
 
         $finalProjectStatus = [
             ProjectsStatus::STATUS_CANCELLED,
-            ProjectsStatus::STATUS_CANCELLED,
-            ProjectsStatus::STATUS_CANCELLED,
-            ProjectsStatus::STATUS_CANCELLED,
-            ProjectsStatus::STATUS_CANCELLED,
-            ProjectsStatus::STATUS_CANCELLED,
-            ProjectsStatus::STATUS_CANCELLED,
-            ProjectsStatus::STATUS_REPAID,
             ProjectsStatus::STATUS_REPAID,
             ProjectsStatus::STATUS_LOSS
         ];
@@ -276,45 +260,20 @@ class societeController extends bootstrap
     {
         switch ($projectStatus) {
             case ProjectsStatus::STATUS_CANCELLED:
-            case ProjectsStatus::STATUS_CANCELLED:
-            case ProjectsStatus::STATUS_CANCELLED:
-            case ProjectsStatus::STATUS_CANCELLED:
                 return '#b6babe';
             case ProjectsStatus::STATUS_REQUEST:
                 return '#d0f5d0';
             case ProjectsStatus::STATUS_REVIEW:
                 return '#aae3c9';
-            case ProjectsStatus::STATUS_CANCELLED:
-            case ProjectsStatus::STATUS_REVIEW:
-                return '#eccd81';
-            case ProjectsStatus::STATUS_REQUEST:
-                return '#98d9d4';
-            case ProjectsStatus::STATUS_REQUEST:
-            case ProjectsStatus::STATUS_REQUEST:
-                return '#91c8d9';
-            case ProjectsStatus::STATUS_REQUEST:
-                return '#80b5d9';
-            case ProjectsStatus::STATUS_REQUEST:
-                return '#b995c7';
-            case ProjectsStatus::STATUS_REVIEW:
-            case ProjectsStatus::STATUS_REVIEW:
-            case ProjectsStatus::STATUS_ONLINE:
-            case ProjectsStatus::STATUS_ONLINE:
             case ProjectsStatus::STATUS_ONLINE:
             case ProjectsStatus::STATUS_FUNDED:
                 return '#6ea8dc';
-            case ProjectsStatus::STATUS_CANCELLED:
-            case ProjectsStatus::STATUS_CANCELLED:
-                return '#f2980c';
             case ProjectsStatus::STATUS_REPAYMENT:
                 return '#1b88db';
-            case ProjectsStatus::STATUS_REPAID:
             case ProjectsStatus::STATUS_REPAID:
                 return '#4fa8b0';
             case ProjectsStatus::STATUS_LOSS:
                 break;
-            case ProjectsStatus::STATUS_LOSS:
-                return '#787679';
             default:
                 break;
         }

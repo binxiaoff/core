@@ -5,17 +5,9 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service\Repayment;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Echeanciers;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRepaymentDetail;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRepaymentTask;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRepaymentTaskLog;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
-use Unilend\Bundle\CoreBusinessBundle\Service\DebtCollectionFeeManager;
-use Unilend\Bundle\CoreBusinessBundle\Service\OperationManager;
-use Unilend\Bundle\CoreBusinessBundle\Service\ProjectChargeManager;
-use Unilend\Bundle\CoreBusinessBundle\Service\ProjectStatusManager;
-use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{Echeanciers, ProjectRepaymentDetail, ProjectRepaymentTask, ProjectRepaymentTaskLog, ProjectsStatus, Users};
+use Unilend\Bundle\CoreBusinessBundle\Service\{DebtCollectionFeeManager, OperationManager, ProjectChargeManager, ProjectStatusManager,
+    Simulator\EntityManager as EntityManagerSimulator};
 
 class ProjectRepaymentManager
 {

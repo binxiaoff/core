@@ -898,7 +898,7 @@ class ajaxController extends bootstrap
 
         if (
             false === empty($project->getRisk()) && false === empty($project->getPeriod())
-            && false === in_array($project->getStatus(), [ProjectsStatus::STATUS_CANCELLED, ProjectsStatus::STATUS_CANCELLED, ProjectsStatus::STATUS_CANCELLED])
+            && $project->getStatus() !== ProjectsStatus::STATUS_CANCELLED
         ) {
             try {
                 $idRate = $projectManager->getProjectRateRangeId($project);
@@ -1121,27 +1121,11 @@ class ajaxController extends bootstrap
             }
 
             if (false === empty($comment)) {
-                switch ($rejectionStatus) {
-                    case ProjectsStatus::STATUS_CANCELLED:
-                        $commentTitle = 'Rejet commercial';
-                        break;
-                    case ProjectsStatus::STATUS_CANCELLED:
-                        $commentTitle = 'Rejet analyst';
-                        break;
-                    case ProjectsStatus::STATUS_CANCELLED:
-                        $commentTitle = 'Rejet Comité';
-                        break;
-                    default:
-                        $commentTitle = 'Rejet';
-                        break;
-                }
-
                 $projectCommentEntity = new ProjectsComments();
-
                 $projectCommentEntity
                     ->setIdProject($project)
                     ->setIdUser($this->userEntity)
-                    ->setContent('<p><u>' . $commentTitle . '</u><p>' . $comment . '</p>')
+                    ->setContent('<p><u>Rejet</u><p>' . $comment . '</p>')
                     ->setPublic($isCommentPublic);
 
                 $entityManager->persist($projectCommentEntity);

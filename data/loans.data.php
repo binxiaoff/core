@@ -262,7 +262,7 @@ class loans extends loans_crud
         $query .= ' ORDER BY ' . (null === $order ? 'maxAdded DESC' : $order);
 
         $statement = $this->bdd->executeQuery($query, [
-                'repaidStatus'  => [ProjectsStatus::STATUS_REPAID, ProjectsStatus::STATUS_REPAID],
+                'repaidStatus'  => [ProjectsStatus::STATUS_REPAID],
                 'fundedStatus'  => [ProjectsStatus::STATUS_ONLINE, ProjectsStatus::STATUS_FUNDED],
                 'idLender'      => $idLender,
                 'year'          => $year
@@ -450,12 +450,12 @@ class loans extends loans_crud
                         SELECT ' . $cohortSelect . ' AS date_range
                         FROM projects_status_history
                         INNER JOIN projects_status ON projects_status_history.id_project_status = projects_status.id_project_status
-                        WHERE  projects_status.status = '. ProjectsStatus::STATUS_REPAYMENT . '
+                        WHERE  projects_status.status = ' . ProjectsStatus::STATUS_REPAYMENT . '
                           AND loans.id_project = projects_status_history.id_project
                         ORDER BY projects_status_history.added ASC, id_project_status_history ASC LIMIT 1
                       ) AS cohort
                     FROM loans
-                      INNER JOIN projects on loans.id_project = projects.id_project AND projects.status >= '. ProjectsStatus::STATUS_REPAYMENT . '
+                      INNER JOIN projects on loans.id_project = projects.id_project AND projects.status >= ' . ProjectsStatus::STATUS_REPAYMENT . '
                     GROUP BY cohort';
 
         $statement = $this->bdd->executeQuery($query);

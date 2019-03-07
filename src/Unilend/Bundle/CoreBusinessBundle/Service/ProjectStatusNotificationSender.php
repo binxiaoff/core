@@ -217,9 +217,6 @@ class ProjectStatusNotificationSender
 
         switch ($project->getStatus()) {
             case ProjectsStatus::STATUS_LOSS:
-                $this->sendLenderNotifications($project, Notifications::TYPE_PROJECT_PROBLEM, 'preteur-projet-statut-probleme', 'preteur-projet-statut-probleme', $keywords);
-                break;
-            case ProjectsStatus::STATUS_LOSS:
                 $this->sendProjectLossNotificationToLenders($project, $keywords);
                 break;
         }

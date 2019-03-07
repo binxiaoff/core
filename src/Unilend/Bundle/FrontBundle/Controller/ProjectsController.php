@@ -5,7 +5,6 @@ namespace Unilend\Bundle\FrontBundle\Controller;
 use Cache\Adapter\Memcache\MemcacheCachePool;
 use Knp\Snappy\GeneratorInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\{Security, Template};
-use Sonata\SeoBundle\Seo\SeoPage;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\{JsonResponse, RedirectResponse, Request, Response};
 use Symfony\Component\Routing\Annotation\Route;
@@ -372,8 +371,6 @@ class ProjectsController extends Controller
             'warningTaxDeduction'  => $template['project']['startDate'] >= '2016-01-01',
             'displayCipDisclaimer' => $displayCipDisclaimer
         ];
-
-//        $this->setProjectDetailsSeoData($template['project']['company']['sectorId'], $template['project']['company']['city'], $template['project']['amount']);
 
         return $this->render('projects/detail.html.twig', $template);
     }
@@ -860,39 +857,6 @@ class ProjectsController extends Controller
         $response->headers->addCacheControlDirective('must-revalidate', true);
 
         return $response;
-    }
-
-    /**
-     * Sets the values meta-title and meta-description
-     *
-     * @param $companySectorId
-     * @param $companyCity
-     * @param $projectAmount
-     */
-    private function setProjectDetailsSeoData($companySectorId, $companyCity, $projectAmount)
-    {
-        /** @var SeoPage $seoPage */
-        $seoPage = $this->get('sonata.seo.page');
-        /** @var TranslatorInterface $translator */
-        $translator = $this->get('translator');
-        /** @var \ficelle $ficelle */
-        $ficelle = Loader::loadLib('ficelle');
-
-        $translationParams = [
-            '%sector%' => $translator->trans('company-sector_sector-' . $companySectorId),
-            '%city%'   => $companyCity,
-            '%amount%' => $ficelle->formatNumber($projectAmount, 0)
-        ];
-
-        $pageTitle = $translator->trans('seo_project-detail-title', $translationParams);
-        if ($pageTitle !== 'seo_project-detail-title') {
-            $seoPage->setTitle($pageTitle);
-        }
-
-        $pageDescription = $translator->trans('seo_project-detail-description', $translationParams);
-        if ($pageDescription !== 'seo_project-detail-description') {
-            $seoPage->addMeta('name', 'description', $pageDescription);
-        }
     }
 
     /**

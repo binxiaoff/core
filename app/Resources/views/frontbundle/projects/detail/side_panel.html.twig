@@ -35,7 +35,7 @@
                 </div><!-- /.project-single-duration -->
             </div>
 
-            {% if project.status in [constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_REPAID'), constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_REPAID') ] %}
+            {% if project.status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_REPAID') %}
                 <p>
                     {% if project.isCloseOutNetting %}
                         {% trans with {'%dateLastRepayment%': project.dateLastStatus} %} project-detail_project-collected-message {% endtrans %}
@@ -63,9 +63,6 @@
                         '%fundingDuration%' : ('project-detail_funding-duration-' ~ project.fundingDuration.translation)|transchoice(project.fundingDuration.choice, project.fundingDuration.values)
                     } %} project-detail_project-funded-message-with-statistics {% endtrans %}
                 </p>
-                {% include 'projects/detail/login_form.html.twig' %}
-            {% elseif project.status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_CANCELLED') %}
-                <p>{% trans with {'%percentageFunded%' : project.percentFunded|localizednumberwithprecision(1)} %} project-detail_side-bar-funding-ko-message {% endtrans %}</p>
                 {% include 'projects/detail/login_form.html.twig' %}
             {% elseif project.status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_CANCELLED') %}
                 <p class="h4">{% trans %} project-detail_side-bar-loan-rejected-title {% endtrans %}</p>

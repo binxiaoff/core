@@ -56,7 +56,9 @@
     "twig/extensions": "^1.5",
     "welp/mailchimp-bundle": "^1.2",
     "whichbrowser/parser": "^2.0",
-    "xynnn/google-tag-manager-bundle": "^2.0"
+    "xynnn/google-tag-manager-bundle": "^2.0",
+    "ext-pdo": "*",
+    "ext-bcmath": "*"
   },
   "require-dev": {
   },

@@ -1,9 +1,6 @@
 <?php
 
-use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Echeanciers as EcheanciersEntity;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Loans;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{CompanyStatus, Echeanciers as EcheanciersEntity, Loans, ProjectsStatus};
 use Unilend\Bundle\CoreBusinessBundle\Service\StatisticsManager;
 
 class echeanciers extends echeanciers_crud

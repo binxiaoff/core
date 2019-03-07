@@ -8,18 +8,8 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Routing\RouterInterface;
 use Twig_Environment;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Attachment;
-use Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\BeneficialOwner;
-use Unilend\Bundle\CoreBusinessBundle\Entity\BeneficialOwnerType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
-use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyBeneficialOwnerDeclaration;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectBeneficialOwnerUniversign;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
-use Unilend\Bundle\CoreBusinessBundle\Entity\UniversignEntityInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{Attachment, AttachmentType, BeneficialOwner, BeneficialOwnerType, Clients, ClientsAdresses, Companies,
+    CompanyBeneficialOwnerDeclaration, ProjectBeneficialOwnerUniversign, Projects, ProjectsStatus, UniversignEntityInterface};
 use Unilend\Bundle\FrontBundle\Service\UniversignManager;
 
 class BeneficialOwnerManager

@@ -86,7 +86,7 @@ use Unilend\Bundle\WSClientBundle\Service\InfogreffeManager;
 </script>
 <?php $isRiskUser = $this->get('unilend.service.back_office_user_manager')->isUserGroupRisk($this->userEntity); ?>
 <a class="tab_title" id="section-external-ratings" href="#section-external-ratings">4.1. Notation externe</a>
-<div class="tab_content<?php if (in_array($this->projects->status, [ProjectsStatus::STATUS_REQUEST, ProjectsStatus::STATUS_REQUEST]) && $isRiskUser) : ?> expand<?php endif; ?>" id="etape4_1">
+<div class="tab_content<?php if ($this->projects->status == ProjectsStatus::STATUS_REQUEST && $isRiskUser) : ?> expand<?php endif; ?>" id="etape4_1">
     <form method="post" name="dossier_etape4_1" id="dossier_etape4_1" onsubmit="valid_etape4_1(<?= $this->projects->id_project ?>); return false;" enctype="multipart/form-data" action="<?= $this->lurl ?>/dossiers/edit/<?= $this->params[0] ?>" target="_parent">
         <div id="contenu_etape4_1">
             <?php if ($this->bIsProblematicCompany) : ?>

@@ -9,10 +9,7 @@ class dashboardController extends bootstrap
     const SALES_MY_PROJECTS_COLLAPSED_STATUS = [
         ProjectsStatus::STATUS_ONLINE,
         ProjectsStatus::STATUS_REQUEST,
-        ProjectsStatus::STATUS_REQUEST,
-        ProjectsStatus::STATUS_REQUEST,
-        ProjectsStatus::STATUS_REVIEW,
-        ProjectsStatus::STATUS_REQUEST
+        ProjectsStatus::STATUS_REVIEW
     ];
 
     public function initialize()
@@ -279,7 +276,7 @@ class dashboardController extends bootstrap
                 $status = ProjectsStatus::STATUS_REQUEST;
 
                 if ($project->getIdCompany() && $project->getIdCompany()->getIdClientOwner() && false === empty($project->getIdCompany()->getIdClientOwner()->getTelephone())) {
-                    $status = ProjectsStatus::STATUS_READY;
+                    $status = ProjectsStatus::STATUS_REVIEW;
                 }
 
                 try {
@@ -374,7 +371,6 @@ class dashboardController extends bootstrap
             $countableStatus        = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatus')->findBy([
                 'status' => [
                     ProjectsStatus::STATUS_REQUEST,
-                    ProjectsStatus::STATUS_REQUEST,
                     ProjectsStatus::STATUS_REVIEW,
                     ProjectsStatus::STATUS_ONLINE,
                     ProjectsStatus::STATUS_FUNDED
@@ -410,88 +406,55 @@ class dashboardController extends bootstrap
             ];
 
             $statusColor = [
-                ProjectsStatus::STATUS_FUNDED             => '#94EB86',
-                ProjectsStatus::STATUS_ONLINE        => '#26ABE6',
-                ProjectsStatus::STATUS_REVIEW      => '#163380',
-                ProjectsStatus::STATUS_REQUEST   => '#F15C5E',
-                ProjectsStatus::STATUS_REQUEST  => '#F5A263',
-                ProjectsStatus::STATUS_REQUEST => '#8088E6',
-                ProjectsStatus::STATUS_REVIEW  => '#555555',
+                ProjectsStatus::STATUS_FUNDED  => '#94EB86',
+                ProjectsStatus::STATUS_ONLINE  => '#26ABE6',
+                ProjectsStatus::STATUS_REVIEW  => '#163380',
+                ProjectsStatus::STATUS_REQUEST => '#F15C5E'
             ];
 
             $delays = [
                 [
-                    'label' => 'Fundé',
+                    'label' => 'Financé',
                     'color' => $statusColor[ProjectsStatus::STATUS_FUNDED],
                     'data'  => $this->getDelayByStatus(ProjectsStatus::STATUS_FUNDED, $borrowingMotives, $threeMonthsAgo, $today)
                 ],
                 [
-                    'label' => 'En funding',
+                    'label' => 'Financement en cours',
                     'color' => $statusColor[ProjectsStatus::STATUS_ONLINE],
                     'data'  => $this->getDelayByStatus(ProjectsStatus::STATUS_ONLINE, $borrowingMotives, $threeMonthsAgo, $today)
                 ],
                 [
-                    'label' => 'Prép funding',
+                    'label' => 'Revue',
                     'color' => $statusColor[ProjectsStatus::STATUS_REVIEW],
                     'data'  => $this->getDelayByStatus(ProjectsStatus::STATUS_REVIEW, $borrowingMotives, $threeMonthsAgo, $today)
                 ],
                 [
-                    'label' => 'Reveue analyste',
+                    'label' => 'Dépôt en cours',
                     'color' => $statusColor[ProjectsStatus::STATUS_REQUEST],
                     'data'  => $this->getDelayByStatus(ProjectsStatus::STATUS_REQUEST, $borrowingMotives, $threeMonthsAgo, $today)
-                ],
-                [
-                    'label' => 'Attent analyste',
-                    'color' => $statusColor[ProjectsStatus::STATUS_REQUEST],
-                    'data'  => $this->getDelayByStatus(ProjectsStatus::STATUS_REQUEST, $borrowingMotives, $threeMonthsAgo, $today)
-                ],
-                [
-                    'label' => 'Traitement commercial',
-                    'color' => $statusColor[ProjectsStatus::STATUS_REQUEST],
-                    'data'  => $this->getDelayByStatus(ProjectsStatus::STATUS_REQUEST, $borrowingMotives, $threeMonthsAgo, $today)
-                ],
-                [
-                    'label' => 'Demande complète',
-                    'color' => $statusColor[ProjectsStatus::STATUS_REVIEW],
-                    'data'  => $this->getDelayByStatus(ProjectsStatus::STATUS_REVIEW, $borrowingMotives, $threeMonthsAgo, $today)
                 ]
             ];
 
             $delaysOfAYearAgo = [
                 [
-                    'label' => 'Fundé (N-1)',
+                    'label' => 'Financé (N-1)',
                     'color' => $statusColor[ProjectsStatus::STATUS_FUNDED],
                     'data'  => $this->getDelayByStatus(ProjectsStatus::STATUS_FUNDED, $borrowingMotives, $oneYearThreeMonthsAgo, $oneYearAgo)
                 ],
                 [
-                    'label' => 'En funding (N-1)',
+                    'label' => 'Financement en cours (N-1)',
                     'color' => $statusColor[ProjectsStatus::STATUS_ONLINE],
                     'data'  => $this->getDelayByStatus(ProjectsStatus::STATUS_ONLINE, $borrowingMotives, $oneYearThreeMonthsAgo, $oneYearAgo)
                 ],
                 [
-                    'label' => 'Prép funding (N-1)',
+                    'label' => 'Revue (N-1)',
                     'color' => $statusColor[ProjectsStatus::STATUS_REVIEW],
                     'data'  => $this->getDelayByStatus(ProjectsStatus::STATUS_REVIEW, $borrowingMotives, $oneYearThreeMonthsAgo, $oneYearAgo)
                 ],
                 [
-                    'label' => 'Reveue analyste (N-1)',
+                    'label' => 'Dépôt en cours (N-1)',
                     'color' => $statusColor[ProjectsStatus::STATUS_REQUEST],
                     'data'  => $this->getDelayByStatus(ProjectsStatus::STATUS_REQUEST, $borrowingMotives, $oneYearThreeMonthsAgo, $oneYearAgo)
-                ],
-                [
-                    'label' => 'Attent analyste (N-1)',
-                    'color' => $statusColor[ProjectsStatus::STATUS_REQUEST],
-                    'data'  => $this->getDelayByStatus(ProjectsStatus::STATUS_REQUEST, $borrowingMotives, $oneYearThreeMonthsAgo, $oneYearAgo)
-                ],
-                [
-                    'label' => 'Traitement commercial (N-1)',
-                    'color' => $statusColor[ProjectsStatus::STATUS_REQUEST],
-                    'data'  => $this->getDelayByStatus(ProjectsStatus::STATUS_REQUEST, $borrowingMotives, $oneYearThreeMonthsAgo, $oneYearAgo)
-                ],
-                [
-                    'label' => 'Demande complète (N-1)',
-                    'color' => $statusColor[ProjectsStatus::STATUS_REVIEW],
-                    'data'  => $this->getDelayByStatus(ProjectsStatus::STATUS_REVIEW, $borrowingMotives, $oneYearThreeMonthsAgo, $oneYearAgo)
                 ]
             ];
 

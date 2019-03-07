@@ -2,7 +2,6 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
-use Doctrine\ORM\EntityManager;
 use Http\Client\Exception;
 use Nexy\Slack\Client;
 use Doctrine\ORM\EntityManagerInterface;

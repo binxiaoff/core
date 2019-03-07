@@ -5,7 +5,6 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, AttachmentType, Borro
     Prelevements, ProjectAbandonReason, ProjectNotification, ProjectRejectionReason, ProjectRepaymentTask, Projects, ProjectsComments, ProjectsPouvoir, ProjectsStatus, Users, UsersTypes, Virements,
     WalletType, Zones};
 use Unilend\Bundle\CoreBusinessBundle\Service\{BackOfficeUserManager, ProjectManager, ProjectRequestManager, TermsOfSaleManager, WireTransferOutManager, WorkingDaysManager};
-use Unilend\Bundle\WSClientBundle\Entity\Altares\EstablishmentIdentityDetail;
 
 class dossiersController extends bootstrap
 {

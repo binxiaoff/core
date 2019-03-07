@@ -1,3 +1,8 @@
+<?php
+
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
+
+?>
 <div id="popup" style="width: 433px;">
     <a onclick="parent.$.fn.colorbox.close();" class="closeBtn" title="Fermer"><img src="<?= $this->surl ?>/images/admin/delete.png" alt="Fermer"/></a>
     <h1>Passage en statut &laquo;&nbsp;<?= $this->projects_status->label ?>&nbsp;&raquo;</h1>
@@ -16,7 +21,7 @@
             <textarea id="site-content" name="site_content" class="form-control" style="height:100px;"><?= isset($this->sInfoStatusChange) ? $this->sInfoStatusChange : ''; ?></textarea>
         </div>
 
-        <?php if ($this->projects_status->status == \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus::STATUS_LOSS) : ?>
+        <?php if ($this->projects_status->status == ProjectsStatus::STATUS_LOSS) : ?>
             <div class="form-group">
                 <p><em>Envoyer un email d'information aux emprunteurs</em></p>
                 <label><input type="radio" name="send_email_borrower" value="1"> Oui</label>

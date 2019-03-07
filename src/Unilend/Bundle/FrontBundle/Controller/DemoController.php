@@ -12,8 +12,7 @@ use Symfony\Component\HttpFoundation\{JsonResponse, RedirectResponse, Request, R
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Translation\TranslatorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{Attachment, Bids, Clients, Companies, Loans, ProjectAbandonReason, Projects, ProjectsComments, ProjectsStatus, Users, Wallet,
-    WalletType};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{Attachment, Bids, Clients, Companies, Loans, Projects, ProjectsComments, ProjectsStatus, Users, WalletType};
 use Unilend\Bundle\CoreBusinessBundle\Service\{AttachmentManager, PartnerManager, ProjectManager, ProjectStatusManager};
 use Unilend\Bundle\FrontBundle\Service\ProjectDisplayManager;
 use Unilend\Bundle\WSClientBundle\Service\InseeManager;
