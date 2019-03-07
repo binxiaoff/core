@@ -3,6 +3,7 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\Criteria;
 use Doctrine\ORM\Mapping as ORM;
 use Ramsey\Uuid\Exception\UnsatisfiedDependencyException;
@@ -431,6 +432,11 @@ class Projects
     private $debtCollectionMissions;
 
     /**
+     * @ORM\OneToMany(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\ProjectCompanyRole", mappedBy="project", cascade={"persist"}, orphanRemoval=true)
+     */
+    private $projectCompanyRoles;
+
+    /**
      * Projects constructor.
      */
     public function __construct()
@@ -441,6 +447,7 @@ class Projects
         $this->wireTransferOuts       = new ArrayCollection();
         $this->invoices               = new ArrayCollection();
         $this->debtCollectionMissions = new ArrayCollection();
+        $this->projectCompanyRoles    = new ArrayCollection();
     }
 
     /**
@@ -1632,6 +1639,7 @@ class Projects
     private function generateHash()
     {
         $uuid4 = Uuid::uuid4();
+
         return $uuid4->toString();
     }
 
@@ -1647,5 +1655,115 @@ class Projects
                 $this->hash = md5(uniqid());
             }
         }
+    }
+
+    /**
+     * @param string $role
+     *
+     * @return bool
+     */
+    private function hasRole(string $role): bool
+    {
+        foreach ($this->getProjectCompanyRoles() as $projectCompanyRole) {
+            if ($projectCompanyRole->hasRole($role)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * @param Companies $company
+     * @param string    $role
+     */
+    private function addCompanyRole(Companies $company, string $role)
+    {
+        $projectCompanyAccessControl = new ProjectCompanyRole();
+        $projectCompanyAccessControl
+            ->setCompany($company)
+            ->setProject($this)
+            ->setRoles([$role]);
+        /*
+         * Because of additional column (added, updated), we cannot check here if the list contains already the company role.
+         * Need to work with UniqueConstraintViolationException
+         */
+        $this->projectCompanyRoles->add($projectCompanyAccessControl);
+    }
+
+    /**
+     * @param Companies $company
+     *
+     * @return Projects
+     */
+    public function addArranger(Companies $company): Projects
+    {
+        if (false === $this->hasRole(ProjectCompanyRole::COMPANY_ROLE_ARRANGER)) {
+            $this->addCompanyRole($company, ProjectCompanyRole::COMPANY_ROLE_ARRANGER);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @param Companies $company
+     *
+     * @return Projects
+     */
+    public function addBroker(Companies $company): Projects
+    {
+        if (false === $this->hasRole(ProjectCompanyRole::COMPANY_ROLE_AGENT)) {
+            $this->addCompanyRole($company, ProjectCompanyRole::COMPANY_ROLE_AGENT);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @param Companies $company
+     *
+     * @return Projects
+     */
+    public function addRun(Companies $company): Projects
+    {
+        if (false === $this->hasRole(ProjectCompanyRole::COMPANY_ROLE_RUN)) {
+            $this->addCompanyRole($company, ProjectCompanyRole::COMPANY_ROLE_RUN);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @param Companies[] $companies
+     *
+     * @return Projects
+     */
+    public function addLenders(array $companies): Projects
+    {
+        foreach ($companies as $company) {
+            $this->addCompanyRole($company, ProjectCompanyRole::COMPANY_ROLE_LENDER);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @param ProjectCompanyRole $ProjectCompanyRole
+     *
+     * @return Projects
+     */
+    public function removeProjectCompanyRoles(ProjectCompanyRole $ProjectCompanyRole): Projects
+    {
+        $this->projectCompanyRoles->removeElement($ProjectCompanyRole);
+
+        return $this;
+    }
+
+    /**
+     * @return ProjectCompanyRole[]|Collection
+     */
+    public function getProjectCompanyRoles(): Collection
+    {
+        return $this->projectCompanyRoles;
     }
 }
