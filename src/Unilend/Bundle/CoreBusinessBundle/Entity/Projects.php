@@ -1658,6 +1658,22 @@ class Projects
     }
 
     /**
+     * @param string $role
+     *
+     * @return bool
+     */
+    private function hasRole(string $role): bool
+    {
+        foreach ($this->getProjectCompanyRoles() as $projectCompanyRole) {
+            if ($projectCompanyRole->hasRole($role)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * @param Companies $company
      * @param string    $role
      */
@@ -1682,7 +1698,9 @@ class Projects
      */
     public function addArranger(Companies $company): Projects
     {
-        $this->addCompanyRole($company, ProjectCompanyRole::COMPANY_ROLE_ARRANGER);
+        if (false === $this->hasRole(ProjectCompanyRole::COMPANY_ROLE_ARRANGER)) {
+            $this->addCompanyRole($company, ProjectCompanyRole::COMPANY_ROLE_ARRANGER);
+        }
 
         return $this;
     }
@@ -1694,7 +1712,9 @@ class Projects
      */
     public function addBroker(Companies $company): Projects
     {
-        $this->addCompanyRole($company, ProjectCompanyRole::COMPANY_ROLE_AGENT);
+        if (false === $this->hasRole(ProjectCompanyRole::COMPANY_ROLE_AGENT)) {
+            $this->addCompanyRole($company, ProjectCompanyRole::COMPANY_ROLE_AGENT);
+        }
 
         return $this;
     }
@@ -1704,9 +1724,11 @@ class Projects
      *
      * @return Projects
      */
-    public function addRunner(Companies $company): Projects
+    public function addRun(Companies $company): Projects
     {
-        $this->addCompanyRole($company, ProjectCompanyRole::COMPANY_ROLE_RUN);
+        if (false === $this->hasRole(ProjectCompanyRole::COMPANY_ROLE_RUN)) {
+            $this->addCompanyRole($company, ProjectCompanyRole::COMPANY_ROLE_RUN);
+        }
 
         return $this;
     }
