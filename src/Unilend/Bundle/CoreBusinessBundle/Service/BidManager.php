@@ -290,7 +290,7 @@ class BidManager
      */
     private function checkLenderCanBid(Bids $bid): void
     {
-        if (false === $this->lenderManager->canBid($bid->getIdWallet()->getIdClient())) {
+        if (false === $this->lenderManager->canBid($bid->getWallet()->getIdClient())) {
             if ($this->logger instanceof LoggerInterface) {
                 $this->logger->warning('lender cannot bid', [
                     'project_id' => $bid->getProject()->getIdProject(),
