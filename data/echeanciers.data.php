@@ -409,7 +409,7 @@ class echeanciers extends echeanciers_crud
             FROM echeanciers e
             LEFT JOIN echeanciers unpaid ON unpaid.id_echeancier = e.id_echeancier AND unpaid.status = ' . EcheanciersEntity::STATUS_PENDING . ' 
               AND DATEDIFF(NOW(), unpaid.date_echeance) > ' . \Unilend\Bundle\CoreBusinessBundle\Entity\UnilendStats::DAYS_AFTER_LAST_PROBLEM_STATUS_FOR_STATISTIC_LOSS . '
-            INNER JOIN loans l ON l.id_lender = e.id_lender AND l.id_loan = e.id_loan
+            INNER JOIN loans l ON l.id_wallet = e.id_lender AND l.id_loan = e.id_loan
             INNER JOIN projects p ON p.id_project = e.id_project
             INNER JOIN companies c ON c.id_company = p.id_company
             INNER JOIN company_status cs ON cs.id = c.id_status

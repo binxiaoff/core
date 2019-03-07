@@ -11,7 +11,8 @@ use Symfony\Component\HttpFoundation\{JsonResponse, RedirectResponse, Request, R
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Translation\TranslatorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{AttachmentType, Bids, Clients, ClientsHistoryActions, Loans, Projects, ProjectsStatus, UnderlyingContract, UnderlyingContractAttributeType, WalletType};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{AttachmentType, Bids, Clients, ClientsHistoryActions, Embeddable\LendingRate, Loans, Projects, ProjectsStatus, UnderlyingContract,
+    UnderlyingContractAttributeType, WalletType};
 use Unilend\Bundle\CoreBusinessBundle\Exception\BidException;
 use Unilend\Bundle\CoreBusinessBundle\Repository\ProjectsRepository;
 use Unilend\Bundle\CoreBusinessBundle\Service\CIPManager;
@@ -600,7 +601,7 @@ class ProjectsController extends Controller
                     'rate'         => (float) $bid['rate'],
                     'amount'       => $bid['amount'] / 100,
                     'status'       => (int) $bid['status'],
-                    'lenderId'     => (int) $bid['id_lender_account'],
+                    'lenderId'     => (int) $bid['id_wallet'],
                     'userInvolved' => false,
                     'autobid'      => $bid['id_autobid'] > 0
                 ];
@@ -963,13 +964,16 @@ class ProjectsController extends Controller
             ]);
         }
 
+        $lendingRate = (new LendingRate())
+            ->setType(LendingRate::TYPE_FIXED)
+            ->setMargin($rate);
 
         $bid = new Bids();
         $bid
             ->setProject($entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($project->id_project))
-            ->setIdLenderAccount($wallet)
+            ->setWallet($wallet)
             ->setAmount($amount * 100)
-            ->setRate($rate);
+            ->setRate($lendingRate);
 
         $reasons = $productManager->checkBidEligibility($bid);
 
@@ -1020,13 +1024,13 @@ class ProjectsController extends Controller
                     /** @var \bids $bids */
                     $bids      = $entityManagerSimulator->getRepository('bids');
                     $totalBids = $bids->sum(
-                        'id_lender_account = ' . $wallet->getId() . ' AND status IN (' . Bids::STATUS_PENDING . ', ' . Bids::STATUS_TEMPORARILY_REJECTED_AUTOBID . ')',
+                        'id_wallet = ' . $wallet->getId() . ' AND status IN (' . Bids::STATUS_PENDING . ', ' . Bids::STATUS_TEMPORARILY_REJECTED_AUTOBID . ')',
                         'ROUND(amount / 100)'
                     );
                     /** @var \loans $loans */
                     $loans      = $entityManagerSimulator->getRepository('loans');
                     $totalLoans = $loans->sum(
-                        'id_lender = ' . $wallet->getId() . ' AND status = ' . Loans::STATUS_ACCEPTED,
+                        'id_wallet = ' . $wallet->getId() . ' AND status = ' . Loans::STATUS_ACCEPTED,
                         'ROUND(amount / 100)'
                     );
 
@@ -1041,12 +1045,12 @@ class ProjectsController extends Controller
                     /** @var \bids $bids */
                     $bids        = $entityManagerSimulator->getRepository('bids');
                     $totalBids = $bids->sum(
-                        'id_lender_account = ' . $wallet->getId() . ' AND added >= DATE_SUB(NOW(), INTERVAL 1 MONTH) AND status IN (' . Bids::STATUS_PENDING . ', ' . Bids::STATUS_TEMPORARILY_REJECTED_AUTOBID . ')',
+                        'id_wallet = ' . $wallet->getId() . ' AND added >= DATE_SUB(NOW(), INTERVAL 1 MONTH) AND status IN (' . Bids::STATUS_PENDING . ', ' . Bids::STATUS_TEMPORARILY_REJECTED_AUTOBID . ')',
                         'ROUND(amount / 100)');
                     /** @var \loans $loans */
                     $loans      = $entityManagerSimulator->getRepository('loans');
                     $totalLoans = $loans->sum(
-                        'id_lender = ' . $wallet->getId() . ' AND added >= DATE_SUB(NOW(), INTERVAL 1 MONTH) AND status = ' . Loans::STATUS_ACCEPTED,
+                        'id_wallet = ' . $wallet->getId() . ' AND added >= DATE_SUB(NOW(), INTERVAL 1 MONTH) AND status = ' . Loans::STATUS_ACCEPTED,
                         'ROUND(amount / 100)'
                     );
 

@@ -707,7 +707,7 @@ class ProjectLifecycleManager
                     $borrowerPaymentDate = $this->projectRepaymentScheduleManager->generateBorrowerMonthlyAmortizationDate($project->getDateFin(), $k);
 
                     $aRepaymentSchedule[] = [
-                        'id_lender'                => $l['id_lender'],
+                        'id_lender'                => $l['id_wallet'],
                         'id_project'               => $project->getIdProject(),
                         'id_loan'                  => $l['id_loan'],
                         'ordre'                    => $k,
@@ -768,7 +768,7 @@ class ProjectLifecycleManager
                     $borrowerPaymentDate = $this->projectRepaymentScheduleManager->generateBorrowerMonthlyAmortizationDate($project->getDateFin(), $order);
 
                     $repayments[] = [
-                        'id_lender'                => $loan['id_lender'],
+                        'id_lender'                => $loan['id_wallet'],
                         'id_project'               => $project->getIdProject(),
                         'id_loan'                  => $loan['id_loan'],
                         'ordre'                    => $order,
@@ -1259,7 +1259,7 @@ class ProjectLifecycleManager
 
         while ($bids = $bidData->getFirstProjectBidsByLender($project->getIdProject(), $limit, $offset)) {
             foreach ($bids as $bid) {
-                $wallet = $walletRepository->find($bid['id_lender_account']);
+                $wallet = $walletRepository->find($bid['id_wallet']);
 
                 if (null !== $wallet && WalletType::LENDER === $wallet->getIdType()->getLabel()) {
                     if ($bid['min_status'] == Bids::STATUS_PENDING) {

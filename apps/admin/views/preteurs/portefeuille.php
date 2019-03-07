@@ -183,7 +183,7 @@
                             <?php endif; ?>
                         </tr>
                         <?php if ($aProjectLoans['nb_loan'] > 1) : ?>
-                            <?php foreach ($this->loans->select('id_lender = ' . $this->wallet->getId() . ' AND id_project = ' . $aProjectLoans['id_project']) as $aLoan) : ?>
+                            <?php foreach ($this->loans->select('id_wallet = ' . $this->wallet->getId() . ' AND id_project = ' . $aProjectLoans['id_project']) as $aLoan) : ?>
                                 <tr class="sub_loan<?= $iLoanIndex % 2 ? '' : ' odd' ?>">
                                     <td style="white-space: nowrap;"><?= $this->ficelle->formatNumber($aLoan['amount']/100, 0) ?> €</td>
                                     <td style="white-space: nowrap;"><?= $this->ficelle->formatNumber($aLoan['rate'], 1) ?> %</td>

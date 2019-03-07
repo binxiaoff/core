@@ -6,8 +6,8 @@ use Doctrine\ORM\{EntityManagerInterface, NonUniqueResultException, NoResultExce
 use Psr\Cache\CacheException;
 use Psr\Cache\CacheItemPoolInterface;
 use Psr\Log\LoggerInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{AcceptedBids, Autobid, Bids, ClientsGestionTypeNotif, Notifications, OffresBienvenuesDetails, Projects, ProjectsStatus, Sponsorship, Wallet,
-    WalletBalanceHistory, WalletType};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{AcceptedBids, Autobid, Bids, ClientsGestionTypeNotif, Embeddable\LendingRate, Notifications, OffresBienvenuesDetails, Projects,
+    ProjectsStatus, Sponsorship, Wallet, WalletBalanceHistory, WalletType};
 use Unilend\Bundle\CoreBusinessBundle\Exception\BidException;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductManager;
 use Unilend\librairies\CacheKeys;
@@ -84,12 +84,12 @@ class BidManager
     }
 
     /**
-     * @param Wallet       $wallet
-     * @param Projects     $project
-     * @param float|int    $amount
-     * @param float        $rate
-     * @param Autobid|null $autoBidSetting
-     * @param bool         $sendNotification
+     * @param Wallet                $wallet
+     * @param Projects              $project
+     * @param float|int             $amount
+     * @param float                 $rate
+     * @param Autobid|null          $autoBidSetting
+     * @param bool                  $sendNotification
      *
      * @return Bids
      * @throws BidException
@@ -99,9 +99,13 @@ class BidManager
      */
     public function bid(Wallet $wallet, Projects $project, $amount, float $rate, ?Autobid $autoBidSetting = null, bool $sendNotification = true): Bids
     {
+        $rate = (new LendingRate())
+            ->setType(LendingRate::TYPE_FIXED)
+            ->setMargin($rate);
+
         $bid = new Bids();
         $bid
-            ->setIdLenderAccount($wallet)
+            ->setWallet($wallet)
             ->setProject($project)
             ->setAmount(bcmul($amount, 100))
             ->setRate($rate)
@@ -195,9 +199,9 @@ class BidManager
             if ($this->logger instanceof LoggerInterface) {
                 $this->logger->warning('Amount is less than the min amount for a bid', [
                     'project_id' => $bid->getProject()->getIdProject(),
-                    'lender_id'  => $bid->getIdLenderAccount()->getId(),
+                    'lender_id'  => $bid->getWallet()->getId(),
                     'amount'     => $bidAmount,
-                    'rate'       => $bid->getRate()
+                    'rate'       => $bid->getRate()->getMargin()
                 ]);
             }
 
@@ -215,15 +219,15 @@ class BidManager
         $projectRates = $this->getProjectRateRange($bid->getProject());
 
         if (
-            bccomp($bid->getRate(), $projectRates['rate_max'], 1) > 0
-            || bccomp($bid->getRate(), $projectRates['rate_min'], 1) < 0
+            bccomp($bid->getRate()->getMargin(), $projectRates['rate_max'], 1) > 0
+            || bccomp($bid->getRate()->getMargin(), $projectRates['rate_min'], 1) < 0
         ) {
             if ($this->logger instanceof LoggerInterface) {
                 $this->logger->warning('The rate is less than the min rate for a bid', [
                     'project_id' => $bid->getProject()->getIdProject(),
-                    'lender_id'  => $bid->getIdLenderAccount()->getId(),
+                    'lender_id'  => $bid->getWallet()->getId(),
                     'amount'     => $bid->getAmount() / 100,
-                    'rate'       => $bid->getRate()
+                    'rate'       => $bid->getRate()->getMargin()
                 ]);
             }
 
@@ -242,9 +246,9 @@ class BidManager
             if ($this->logger instanceof LoggerInterface) {
                 $this->logger->warning('Project status is not valid for bidding', [
                     'project_id'     => $bid->getProject()->getIdProject(),
-                    'lender_id'      => $bid->getIdLenderAccount()->getId(),
+                    'lender_id'      => $bid->getWallet()->getId(),
                     'amount'         => $bid->getAmount() / 100,
-                    'rate'           => $bid->getRate(),
+                    'rate'           => $bid->getRate()->getMargin(),
                     'project_status' => $bid->getProject()->getStatus()
                 ]);
             }
@@ -267,9 +271,9 @@ class BidManager
             if ($this->logger instanceof LoggerInterface) {
                 $this->logger->warning('Project end date is passed for bidding', [
                     'project_id'    => $bid->getProject()->getIdProject(),
-                    'lender_id'     => $bid->getIdLenderAccount()->getId(),
+                    'lender_id'     => $bid->getWallet()->getId(),
                     'amount'        => $bid->getAmount() / 100,
-                    'rate'          => $bid->getRate(),
+                    'rate'          => $bid->getRate()->getMargin(),
                     'project_ended' => $endDate->format('c'),
                     'now'           => $currentDate->format('c')
                 ]);
@@ -286,13 +290,13 @@ class BidManager
      */
     private function checkLenderCanBid(Bids $bid): void
     {
-        if (false === $this->lenderManager->canBid($bid->getIdLenderAccount()->getIdClient())) {
+        if (false === $this->lenderManager->canBid($bid->getWallet()->getIdClient())) {
             if ($this->logger instanceof LoggerInterface) {
                 $this->logger->warning('lender cannot bid', [
                     'project_id' => $bid->getProject()->getIdProject(),
-                    'lender_id'  => $bid->getIdLenderAccount()->getId(),
+                    'lender_id'  => $bid->getWallet()->getId(),
                     'amount'     => $bid->getAmount() / 100,
-                    'rate'       => $bid->getRate()
+                    'rate'       => $bid->getRate()->getMargin()
                 ]);
             }
 
@@ -311,9 +315,9 @@ class BidManager
             if ($this->logger instanceof LoggerInterface) {
                 $this->logger->warning('The Bid is not eligible for the project', [
                     'project_id' => $bid->getProject()->getIdProject(),
-                    'lender_id'  => $bid->getIdLenderAccount()->getId(),
+                    'lender_id'  => $bid->getWallet()->getId(),
                     'amount'     => $bid->getAmount() / 100,
-                    'rate'       => $bid->getRate()
+                    'rate'       => $bid->getRate()->getMargin()
                 ]);
             }
 
@@ -328,16 +332,16 @@ class BidManager
      */
     private function checkLenderBalance(Bids $bid): void
     {
-        $balance   = $bid->getIdLenderAccount()->getAvailableBalance();
+        $balance   = $bid->getWallet()->getAvailableBalance();
         $bidAmount = bcdiv($bid->getAmount(), 100);
 
         if (bccomp($balance, $bidAmount, 2) < 0) {
             if ($this->logger instanceof LoggerInterface) {
                 $this->logger->warning('Lender\'s balance not enough for a bid', [
                     'project_id' => $bid->getProject()->getIdProject(),
-                    'lender_id'  => $bid->getIdLenderAccount()->getId(),
+                    'lender_id'  => $bid->getWallet()->getId(),
                     'amount'     => $bidAmount,
-                    'rate'       => $bid->getRate(),
+                    'rate'       => $bid->getRate()->getMargin(),
                     'balance'    => $balance
                 ]);
             }
@@ -358,15 +362,15 @@ class BidManager
     {
         if (
             $this->cipManager->isCIPValidationNeeded($bid)
-            && false === $this->cipManager->hasValidEvaluation($bid->getIdLenderAccount()->getIdClient())
+            && false === $this->cipManager->hasValidEvaluation($bid->getWallet()->getIdClient())
         ) {
             // Do not log when placing initial autobids
             if (empty($bid->getAutobid())) {
                 $this->logger->warning('CIP validation is needed for a bid', [
                     'project_id' => $bid->getProject()->getIdProject(),
-                    'lender_id'  => $bid->getIdLenderAccount()->getId(),
+                    'lender_id'  => $bid->getWallet()->getId(),
                     'amount'     => $bid->getAmount() / 100,
-                    'rate'       => $bid->getRate()
+                    'rate'       => $bid->getRate()->getMargin()
                 ]);
             }
 
@@ -422,8 +426,10 @@ class BidManager
             $bid->setStatus(Bids::STATUS_REJECTED);
 
             $newBid = clone $bid;
+            $rate   = clone $bid->getRate();
+            $rate->setMargin($currentRate);
             $newBid
-                ->setRate($currentRate)
+                ->setRate($rate)
                 ->setOrdre($bidOrder)
                 ->setStatus(Bids::STATUS_PENDING)
                 ->setAdded(new \DateTime('NOW'));
@@ -449,11 +455,11 @@ class BidManager
      */
     private function creditRejectedBid(Bids $bid, float $amount): WalletBalanceHistory
     {
-        $walletBalanceHistory = $this->walletManager->releaseBalance($bid->getIdLenderAccount(), $amount, $bid);
+        $walletBalanceHistory = $this->walletManager->releaseBalance($bid->getWallet(), $amount, $bid);
         $amountX100           = $amount * 100;
         $welcomeOffer         = new OffresBienvenuesDetails();
 
-        $welcomeOfferTotal = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OffresBienvenuesDetails')->getSumOfferByBid($bid->getIdLenderAccount()->getIdClient()->getIdClient(), $bid->getIdBid());
+        $welcomeOfferTotal = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OffresBienvenuesDetails')->getSumOfferByBid($bid->getWallet()->getIdClient()->getIdClient(), $bid->getIdBid());
         if ($welcomeOfferTotal > 0) {
             if ($bid->getAmount() === $amountX100) { //Totally credit
                 $welcomeOffer->setMontant(min($welcomeOfferTotal, $amountX100));
@@ -464,7 +470,7 @@ class BidManager
             if (false === empty($welcomeOffer->getMontant())) {
                 $welcomeOffer
                     ->setIdOffreBienvenue(0)
-                    ->setIdClient($bid->getIdLenderAccount()->getIdClient()->getIdClient())
+                    ->setIdClient($bid->getWallet()->getIdClient()->getIdClient())
                     ->setIdBid(0)
                     ->setIdBidRemb($bid->getIdBid())
                     ->setStatus(OffresBienvenuesDetails::STATUS_NEW)
@@ -487,11 +493,11 @@ class BidManager
      */
     private function notificationRejection(Bids $bid, WalletBalanceHistory $walletBalanceHistory): void
     {
-        if (WalletType::LENDER === $bid->getIdLenderAccount()->getIdType()->getLabel()) {
+        if (WalletType::LENDER === $bid->getWallet()->getIdType()->getLabel()) {
             $this->notificationManager->create(
                 Notifications::TYPE_BID_REJECTED,
                 $bid->getAutobid() !== null ? ClientsGestionTypeNotif::TYPE_AUTOBID_ACCEPTED_REJECTED_BID : ClientsGestionTypeNotif::TYPE_BID_REJECTED,
-                $bid->getIdLenderAccount()->getIdClient()->getIdClient(),
+                $bid->getWallet()->getIdClient()->getIdClient(),
                 'sendBidRejected',
                 $bid->getProject()->getIdProject(),
                 $bid->getAmount() / 100,
@@ -574,9 +580,9 @@ class BidManager
             $this->notificationRejection($bid, $walletBalanceHistory);
         }
 
-        if (null !== $this->entityManager->getRepository('UnilendCoreBusinessBundle:Sponsorship')->findOneBy(['idClientSponsee' => $bid->getIdLenderAccount()->getIdClient(), 'status' => Sponsorship::STATUS_SPONSEE_PAID])) {
+        if (null !== $this->entityManager->getRepository('UnilendCoreBusinessBundle:Sponsorship')->findOneBy(['idClientSponsee' => $bid->getWallet()->getIdClient(), 'status' => Sponsorship::STATUS_SPONSEE_PAID])) {
             try {
-                $this->sponsorshipManager->attributeSponsorReward($bid->getIdLenderAccount()->getIdClient());
+                $this->sponsorshipManager->attributeSponsorReward($bid->getWallet()->getIdClient());
             } catch (\Exception $exception) {
                 $this->logger->info('Sponsor reward could not be attributed for bid ' . $bid->getIdBid() . '. Reason: ' . $exception->getMessage(), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $bid->getProject()->getIdProject()]);
             }

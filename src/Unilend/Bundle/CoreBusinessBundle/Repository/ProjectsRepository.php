@@ -34,12 +34,12 @@ class ProjectsRepository extends EntityRepository
             SELECT COUNT(DISTINCT p.id_company)
             FROM projects p
             INNER JOIN loans l ON p.id_project = l.id_project
-            WHERE p.status >= :status AND l.id_lender = :lenderId';
+            WHERE p.status >= :status AND l.id_wallet = :walletId';
 
         $statement = $this->getEntityManager()->getConnection()->executeCacheQuery(
             $query,
-            ['lenderId' => $lenderId, 'status' => ProjectsStatus::REMBOURSEMENT],
-            ['lenderId' => PDO::PARAM_INT, 'status' => PDO::PARAM_INT],
+            ['walletId' => $lenderId, 'status' => ProjectsStatus::REMBOURSEMENT],
+            ['walletId' => PDO::PARAM_INT, 'status' => PDO::PARAM_INT],
             new QueryCacheProfile(CacheKeys::SHORT_TIME, md5(__METHOD__))
         );
         $result    = $statement->fetchAll(PDO::FETCH_ASSOC);

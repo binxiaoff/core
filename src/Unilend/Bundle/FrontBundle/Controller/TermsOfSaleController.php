@@ -243,7 +243,7 @@ class TermsOfSaleController extends Controller
                     /** @var \loans $loans */
                     $loans = $entityManagerSimulator->getRepository('loans');
 
-                    if (0 < $loans->counter('id_lender = ' . $wallet->getId() . ' AND added < "' . $newTermsOfServiceDate->format('Y-m-d H:i:s') . '"')) {
+                    if (0 < $loans->counter('id_wallet = ' . $wallet->getId() . ' AND added < "' . $newTermsOfServiceDate->format('Y-m-d H:i:s') . '"')) {
                         $elementSlug = 'tos-update-lended';
                     } else {
                         $elementSlug = 'tos-update';

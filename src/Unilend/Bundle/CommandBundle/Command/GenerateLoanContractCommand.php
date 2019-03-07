@@ -58,7 +58,7 @@ EOF
             foreach ($loans as $loan) {
                 $project         = $loan->getProject();
                 $borrowerCompany = $project->getIdCompany();
-                $lender          = $loan->getIdLender()->getIdClient();
+                $lender          = $loan->getWallet()->getIdClient();
 
                 if (null === $borrowerCompany->getIdAddress()) {
                     throw new \Exception('Borrower of loan ' . $loan->getIdLoan() . ' has no main address');

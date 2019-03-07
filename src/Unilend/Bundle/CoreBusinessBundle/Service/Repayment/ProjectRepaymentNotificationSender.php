@@ -83,7 +83,7 @@ class ProjectRepaymentNotificationSender
      */
     public function sendRegularisationRepaymentMailToLender(Echeanciers $repaymentSchedule)
     {
-        $lenderWallet   = $repaymentSchedule->getIdLoan()->getIdLender();
+        $lenderWallet   = $repaymentSchedule->getIdLoan()->getWallet();
         $lender         = $lenderWallet->getIdClient();
         $netRepayment   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Operation')->getNetAmountByRepaymentScheduleId($repaymentSchedule);
 
@@ -177,7 +177,7 @@ class ProjectRepaymentNotificationSender
     public function sendRepaymentMailToLender(Echeanciers $repaymentSchedule)
     {
         $operationRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
-        $lenderWallet        = $repaymentSchedule->getIdLoan()->getIdLender();
+        $lenderWallet        = $repaymentSchedule->getIdLoan()->getWallet();
         $netRepayment        = $operationRepository->getNetAmountByRepaymentScheduleId($repaymentSchedule);
 
         $keywords = [

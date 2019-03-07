@@ -695,7 +695,7 @@ class LenderOperationsController extends Controller
                 $acceptedBidAmount += $acceptedBid->getAmount();
             }
             $content = $translator->trans('lender-notifications_accepted-loan-content', [
-                '%rate%'       => $ficelle->formatNumber($bid->getRate(), 1),
+                '%rate%'       => $ficelle->formatNumber($bid->getRate()->getMargin(), 1),
                 '%amount%'     => $ficelle->formatNumber(bcdiv($acceptedBidAmount, 100), 0),
                 '%projectUrl%' => $this->generateUrl('project_detail', ['projectSlug' => $project->getSlug()]),
                 '%company%'    => $project->getIdCompany()->getName()

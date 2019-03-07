@@ -399,7 +399,7 @@ class dossiersController extends bootstrap
 
                             $this->get('unilend.service.operation_manager')->refuseLoan($loan);
                             /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Wallet $wallet */
-                            $wallet   = $loan->getIdLender();
+                            $wallet   = $loan->getWallet();
                             $keywords = [
                                 'firstName'         => $wallet->getIdClient()->getPrenom(),
                                 'loanAmount'        => $this->ficelle->formatNumber($loan->getAmount() / 100, 0),
@@ -1470,7 +1470,7 @@ class dossiersController extends bootstrap
         $owedCapital                 = round(bcdiv($loan->getAmount(), 100, 5), 2);
         $projectStatus               = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatus')->findOneBy(['status' => $loan->getProject()->getStatus()]);
         $companyStatus               = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyStatusHistory')->findOneBy(['idCompany' => $loan->getProject()->getIdCompany()], ['added' => 'DESC'])->getIdStatus();
-        $lenderCompany               = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $loan->getIdLender()->getIdClient()]);
+        $lenderCompany               = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $loan->getWallet()->getIdClient()]);
         $repaymentScheduleRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers');
         $repaymentEntities           = $repaymentScheduleRepository->findBy(['idLoan' => $loan, 'statusRa' => Echeanciers::IS_NOT_EARLY_REPAID]);
         $operationRepository         = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation');

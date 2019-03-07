@@ -19,7 +19,7 @@ class CloseOutNettingRepaymentRepository extends EntityRepository
     {
         $queryBuilder = $this->createQueryBuilder('c');
         $queryBuilder->innerJoin('UnilendCoreBusinessBundle:Loans', 'l', Join::WITH, 'c.idLoan = l.idLoan')
-            ->where('l.idProject = :project')
+            ->where('l.project = :project')
             ->setParameter('project', $project);
 
         return $queryBuilder->getQuery()->getResult();
@@ -35,7 +35,7 @@ class CloseOutNettingRepaymentRepository extends EntityRepository
         $queryBuilder = $this->createQueryBuilder('c');
         $queryBuilder->select('SUM(c.capital - c.repaidCapital) as capital, SUM(c.interest - c.repaidInterest) as interest')
             ->innerJoin('UnilendCoreBusinessBundle:Loans', 'l', Join::WITH, 'c.idLoan = l.idLoan')
-            ->where('l.idProject = :project')
+            ->where('l.project = :project')
             ->setParameter('project', $project);
 
         return $queryBuilder->getQuery()->getSingleResult();

@@ -701,7 +701,7 @@ class transfertsController extends bootstrap
                     /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Bids $bidEntity */
                     $bidEntity    = $entityManager->getRepository('UnilendCoreBusinessBundle:Bids')->find($bid['id_bid']);
                     $bidAmount    = round(bcdiv($bid['amount'], 100, 4), 2);
-                    $notification = $notificationManager->createNotification(Notifications::TYPE_LOAN_ACCEPTED, $bidEntity->getIdLenderAccount()->getIdClient()->getIdClient(),
+                    $notification = $notificationManager->createNotification(Notifications::TYPE_LOAN_ACCEPTED, $bidEntity->getWallet()->getIdClient()->getIdClient(),
                         $project->getIdProject(), $bidAmount, $bid['id_bid']);
 
                     $loansForBid = $acceptedBids->select('id_bid = ' . $bid['id_bid']);
@@ -710,7 +710,7 @@ class transfertsController extends bootstrap
                         if (in_array($loan['id_loan'], $lastLoans) === false) {
                             $notificationManager->createEmailNotification(
                                 ClientsGestionTypeNotif::TYPE_LOAN_ACCEPTED,
-                                $bidEntity->getIdLenderAccount()->getIdClient()->getIdClient(),
+                                $bidEntity->getWallet()->getIdClient()->getIdClient(),
                                 $notification->id_notification,
                                 null,
                                 null,
@@ -866,7 +866,7 @@ class transfertsController extends bootstrap
             /** @var \bids $bids */
             $bids           = $this->loadData('bids');
             $originalWallet = $walletRepository->getWalletByType($originalClient->id_client, WalletType::LENDER);
-            if ($bids->exist($originalWallet->getId(), 'status = ' . Bids::STATUS_PENDING . ' AND id_lender_account ')) {
+            if ($bids->exist($originalWallet->getId(), 'status = ' . Bids::STATUS_PENDING . ' AND id_wallet ')) {
                 $this->addErrorMessageAndRedirect('Le défunt a des bids en cours.');
             }
 
@@ -1005,7 +1005,7 @@ class transfertsController extends bootstrap
         $loanTransfer->create();
 
         $loans->id_transfer = $loanTransfer->id_loan_transfer;
-        $loans->id_lender   = $newLender->getId();
+        $loans->id_wallet   = $newLender->getId();
         $loans->update();
 
         $loanTransfer->unsetData();

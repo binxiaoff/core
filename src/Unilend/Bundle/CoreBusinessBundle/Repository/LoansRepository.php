@@ -31,12 +31,12 @@ class LoansRepository extends EntityRepository
             INNER JOIN projects p ON l.id_project = p.id_project
             WHERE l.status = :loanStatus
                 AND p.status >= :projectStatus
-                AND l.id_lender = :lenderId';
+                AND l.id_wallet = :walletId';
 
         $statement = $this->getEntityManager()->getConnection()->executeCacheQuery(
             $query,
-            ['lenderId' => $wallet->getId(), 'loanStatus' => Loans::STATUS_ACCEPTED, 'projectStatus' => ProjectsStatus::REMBOURSEMENT],
-            ['lenderId' => \PDO::PARAM_INT, 'loanStatus' => \PDO::PARAM_INT, 'projectStatus' => \PDO::PARAM_INT],
+            ['walletId' => $wallet->getId(), 'loanStatus' => Loans::STATUS_ACCEPTED, 'projectStatus' => ProjectsStatus::REMBOURSEMENT],
+            ['walletId' => \PDO::PARAM_INT, 'loanStatus' => \PDO::PARAM_INT, 'projectStatus' => \PDO::PARAM_INT],
             new QueryCacheProfile(CacheKeys::SHORT_TIME, __FUNCTION__)
         );
         $result    = $statement->fetchAll(\PDO::FETCH_ASSOC);
@@ -46,14 +46,14 @@ class LoansRepository extends EntityRepository
     }
 
     /**
-     * @param int $lenderId
+     * @param int $walletId
      *
      * @return array
      * @throws \Doctrine\DBAL\DBALException
      */
-    public function countProjectsForLenderByRegion(int $lenderId): array
+    public function countProjectsForLenderByRegion(int $walletId): array
     {
-        $bind = ['lenderId' => $lenderId, 'mainAddress' => AddressType::TYPE_MAIN_ADDRESS];
+        $bind = ['walletId' => $walletId, 'mainAddress' => AddressType::TYPE_MAIN_ADDRESS];
 
         $query = 'SELECT
                       CASE
@@ -103,11 +103,11 @@ class LoansRepository extends EntityRepository
                             l.amount,
                             l.rate
                           FROM loans l
-                              INNER JOIN wallet w ON l.id_lender = w.id
+                              INNER JOIN wallet w ON l.id_wallet = w.id
                               INNER JOIN projects p ON l.id_project = p.id_project
                               INNER JOIN company_address ca ON p.id_company = ca.id_company AND ca.date_archived IS NULL
                               INNER JOIN address_type at ON ca.id_type = at.id AND at.label = :mainAddress
-                          WHERE w.id = :lenderId) AS client_base
+                          WHERE w.id = :walletId) AS client_base
                     GROUP BY insee_region_code';
 
         $statement    = $this->getEntityManager()
@@ -127,8 +127,8 @@ class LoansRepository extends EntityRepository
     public function findLoansByClients($project, array $clients)
     {
         $queryBuilder = $this->createQueryBuilder('l');
-        $queryBuilder->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'w.id = l.idLender')
-            ->where('l.idProject = :project')
+        $queryBuilder->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'w.id = l.wallet')
+            ->where('l.project = :project')
             ->andWhere('w.idClient IN (:clients)')
             ->setParameter('project', $project)
             ->setParameter('clients', $clients);
@@ -146,8 +146,8 @@ class LoansRepository extends EntityRepository
     {
         $queryBuilder = $this->createQueryBuilder('l');
         $queryBuilder->select('SUM(ROUND(l.amount/100, 2))')
-            ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'w.id = l.idLender')
-            ->where('l.idProject = :project')
+            ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'w.id = l.wallet')
+            ->where('l.project = :project')
             ->andWhere('w.idClient IN (:clients)')
             ->setParameter('project', $project)
             ->setParameter('clients', $clients);
@@ -163,8 +163,8 @@ class LoansRepository extends EntityRepository
     public function getLenderNumber($project)
     {
         $queryBuilder = $this->createQueryBuilder('l');
-        $queryBuilder->select('COUNT(DISTINCT l.idLender) ')
-            ->where('l.idProject = :project')
+        $queryBuilder->select('COUNT(DISTINCT l.wallet) ')
+            ->where('l.project = :project')
             ->setParameter('project', $project);
 
         return $queryBuilder->getQuery()->getSingleScalarResult();
@@ -179,9 +179,9 @@ class LoansRepository extends EntityRepository
     {
         $queryBuilder = $this->createQueryBuilder('l')
             ->select('COUNT(DISTINCT l.idLoan)')
-            ->innerJoin('UnilendCoreBusinessBundle:Projects', 'p', Join::WITH, 'p.idProject = l.idProject')
-            ->where('l.idLender = :lenderId')
-            ->setParameter('lenderId', $wallet->getId())
+            ->innerJoin('UnilendCoreBusinessBundle:Projects', 'p', Join::WITH, 'p.idProject = l.project')
+            ->where('l.wallet = :wallet')
+            ->setParameter('wallet', $wallet->getId())
             ->andWhere('l.status = :accepted')
             ->setParameter('accepted', Loans::STATUS_ACCEPTED)
             ->andWhere('p.status >= :repayment')
@@ -203,11 +203,11 @@ class LoansRepository extends EntityRepository
             c.telephone, c.mobile, TRIM(CONCAT(ca.adresse1, \' \', ca.adresse2, \' \', ca.adresse3)) as address, ca.cp AS postal_code,
             ca.ville AS city, ROUND(l.amount / 100, 2) as amount
         ')
-            ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'l.idLender = w.id')
+            ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'l.wallet = w.id')
             ->innerJoin('UnilendCoreBusinessBundle:Clients', 'c', Join::WITH, 'c.idClient = w.idClient')
             ->leftJoin('UnilendCoreBusinessBundle:Companies', 'com', Join::WITH, 'com.idClientOwner = w.idClient')
             ->leftJoin('UnilendCoreBusinessBundle:ClientsAdresses', 'ca', Join::WITH, 'ca.idClient = w.idClient')
-            ->where('l.idProject = :project')
+            ->where('l.project = :project')
             ->setParameter('project', $project);
 
         $loans                 = $queryBuilder->getQuery()->getArrayResult();
@@ -244,12 +244,12 @@ class LoansRepository extends EntityRepository
             )
             ->innerJoin('UnilendCoreBusinessBundle:UnderlyingContract', 'uc', Join::WITH, 'l.idTypeContract = uc.idContract')
             ->innerJoin('UnilendCoreBusinessBundle:Echeanciers', 'e', Join::WITH, 'l.idLoan = e.idLoan AND e.ordre = 1')
-            ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'l.idLender = w.id')
+            ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'l.wallet = w.id')
             ->innerJoin('UnilendCoreBusinessBundle:Clients', 'c', Join::WITH, 'c.idClient = w.idClient')
             ->leftJoin('UnilendCoreBusinessBundle:Companies', 'co', Join::WITH, 'co.idClientOwner = w.idClient')
             ->leftJoin('UnilendCoreBusinessBundle:LoanTransfer', 'lt', Join::WITH, 'l.idLoan = lt.idLoan')
             ->leftJoin('UnilendCoreBusinessBundle:Transfer', 't', Join::WITH, 'lt.idTransfer = t.idTransfer')
-            ->where('l.idProject = :project')
+            ->where('l.project = :project')
             ->setParameter('project', $project);
 
         return $queryBuilder->getQuery()->getArrayResult();
@@ -265,13 +265,13 @@ class LoansRepository extends EntityRepository
         $queryBuilder = $this->createQueryBuilder('l');
         $queryBuilder
             ->select('
-                IDENTITY(l.idLender) AS idLender,
+                IDENTITY(l.wallet) AS idLender,
                 SUM(l.amount) AS amount,
                 GROUP_CONCAT(l.idLoan) AS loans'
             )
-            ->where('l.idProject = :idProject')
+            ->where('l.project = :idProject')
             ->andWhere('l.status = :statusAccepted')
-            ->groupBy('l.idLender')
+            ->groupBy('l.wallet')
             ->setParameter('idProject', $project)
             ->setParameter('statusAccepted', Loans::STATUS_ACCEPTED);
 
@@ -290,7 +290,7 @@ class LoansRepository extends EntityRepository
         $queryBuilder = $this->createQueryBuilder('l');
         $queryBuilder
             ->select('COUNT(l.idLoan)')
-            ->where('l.idLender = :wallet')
+            ->where('l.wallet = :wallet')
             ->andWhere('l.added < :date')
             ->setParameter('wallet', $wallet)
             ->setParameter('date', $date);
