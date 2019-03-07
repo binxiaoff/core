@@ -1,11 +1,13 @@
-<?php declare(strict_types=1);
+<?php
 
-namespace Application\Migrations;
+declare(strict_types=1);
+
+namespace DoctrineMigrations;
 
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\Migrations\AbstractMigration;
 
-final class VersionDropProspects extends AbstractMigration
+final class Version20190307111400 extends AbstractMigration
 {
     /**
      * @param Schema $schema
