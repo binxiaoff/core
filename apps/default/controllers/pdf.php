@@ -538,7 +538,7 @@ class pdfController extends bootstrap
 
         /** @var Loans $loan */
         foreach ($loans as $loan) {
-            $wallet        = $loan->getIdLender();
+            $wallet        = $loan->getWallet();
             $client        = $wallet->getIdClient();
             $lenderAddress = null;
 
@@ -707,7 +707,7 @@ class pdfController extends bootstrap
 
         if (isset($iIdLoan) && $this->oLoans->get($iIdLoan, 'status = "' . Loans::STATUS_ACCEPTED . '" AND id_loan')) {
             /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Wallet $wallet */
-            $wallet        = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->find($this->oLoans->id_lender);
+            $wallet        = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->find($this->oLoans->id_wallet);
             $lenderAddress = null;
             $client        = $wallet->getIdClient();
 
@@ -799,7 +799,7 @@ class pdfController extends bootstrap
         }
 
         /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Wallet $wallet */
-        $wallet = $loan->getIdLender();
+        $wallet = $loan->getWallet();
 
         if (false === $wallet->getIdClient()->isLender()) {
             header('Location: ' . $this->lurl);
@@ -851,7 +851,7 @@ class pdfController extends bootstrap
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
         /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Wallet $wallet */
-        $wallet = $loan->getIdLender();
+        $wallet = $loan->getWallet();
         /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Companies borrowerCompany */
         $this->borrowerCompany        = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->find($this->projects->id_company);
         $this->borrowerCompanyAddress = $this->borrowerCompany->getIdAddress();

@@ -20,8 +20,8 @@ class AcceptedBidsRepository extends EntityRepository
         $queryBuilder = $this->createQueryBuilder('ab');
         $queryBuilder
             ->innerJoin('UnilendCoreBusinessBundle:Bids', 'b', Join::WITH, 'ab.idBid = b.idBid')
-            ->where('b.idLenderAccount = :wallet')
-            ->andWhere('b.idProject = :project')
+            ->where('b.wallet = :wallet')
+            ->andWhere('b.project = :project')
             ->orderBy('b.rate', 'DESC')
             ->setParameter('wallet', $wallet)
             ->setParameter('project', $project);
@@ -59,8 +59,8 @@ class AcceptedBidsRepository extends EntityRepository
         $queryBuilder
             ->select('COUNT(ab.idBid)')
             ->innerJoin('UnilendCoreBusinessBundle:Loans', 'l', Join::WITH, 'ab.idLoan = l.idLoan')
-            ->where('l.idLender = :lender')
-            ->andWhere('l.idProject = :project')
+            ->where('l.wallet = :lender')
+            ->andWhere('l.project = :project')
             ->setParameter('lender', $wallet)
             ->setParameter('project', $project);
 

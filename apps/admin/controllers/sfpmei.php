@@ -237,7 +237,7 @@ class sfpmeiController extends bootstrap
                 $this->projectsCount            = $this->loans->getProjectsCount($this->wallet->getId());
                 $this->problematicProjectsCount = $this->projects->countProjectsByStatusAndLender($this->wallet->getId(), $statusKO);
                 $this->publishedProjectsCount   = $this->projects->countProjectsSinceLendersubscription($this->clients->id_client, array_merge($statusOK, $statusKO));
-                $this->runningBids              = $this->bids->select('id_lender_account = ' . $this->wallet->getId() . ' AND status = ' . Bids::STATUS_PENDING, 'added DESC');
+                $this->runningBids              = $this->bids->select('id_wallet = ' . $this->wallet->getId() . ' AND status = ' . Bids::STATUS_PENDING, 'added DESC');
                 $this->hasTransferredLoans      = $this->get('unilend.service.lender_manager')->hasTransferredLoans($this->wallet->getIdClient());
                 $this->lenderLoans              = $this->loans->getSumLoansByProject($this->wallet->getId());
                 $this->projectsInDebt           = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->getProjectsInDebt();
@@ -299,8 +299,8 @@ class sfpmeiController extends bootstrap
                 $this->totalGrowthInterestsAmount     = $this->echeanciers->getRepaidInterests(['id_lender' => $this->wallet->getId()]);
                 $this->totalRepaymentsNextMonthAmount = $this->echeanciers->getNextRepaymentAmountInDateRange($this->wallet->getId(), (new \DateTime('first day of next month'))->format('Y-m-d 00:00:00'), (new \DateTime('last day of next month'))->format('Y-m-d 23:59:59'));
                 $this->totalLoansAmount               = $this->loans->sumPrets($this->wallet->getId());
-                $this->totalLoansCount                = $this->loans->counter('id_lender = ' . $this->wallet->getId() . ' AND status = ' . Loans::STATUS_ACCEPTED);
-                $this->runningBids                    = $this->bids->select('id_lender_account = ' . $this->wallet->getId() . ' AND status = ' . Bids::STATUS_PENDING, 'added DESC');
+                $this->totalLoansCount                = $this->loans->counter('id_wallet = ' . $this->wallet->getId() . ' AND status = ' . Loans::STATUS_ACCEPTED);
+                $this->runningBids                    = $this->bids->select('id_wallet = ' . $this->wallet->getId() . ' AND status = ' . Bids::STATUS_PENDING, 'added DESC');
                 $this->totalRunningBidsAmount         = round(array_sum(array_column($this->runningBids, 'amount')) / 100);
                 $this->totalRunningBidsCount          = count($this->runningBids);
                 $this->averageBidAmount               = $this->bids->getAvgPreteur($this->wallet->getId(), 'amount', implode(', ', [Bids::STATUS_ACCEPTED, Bids::STATUS_REJECTED]));

@@ -246,6 +246,99 @@ class ClientsRepository extends EntityRepository
     }
 
     /**
+     * @return Statement
+     * @throws DBALException
+     */
+    public function getLendersSalesForce(): Statement
+    {
+        $query = "
+            SELECT
+              c.id_client AS 'IDClient',
+              c.id_client AS 'IDPreteur',
+              c.id_langue AS 'Langue',
+              REPLACE(c.source, ',', '') AS 'Source1',
+              REPLACE(c.source2, ',', '') AS 'Source2',
+              REPLACE(c.source3, ',', '') AS 'Source3',
+              REPLACE(c.civilite, ',', '') AS 'Civilite',
+              REPLACE(c.nom, ',', '') AS 'Nom',
+              REPLACE(c.nom_usage, ',', '') AS 'NomUsage',
+              REPLACE(c.prenom, ',', '') AS 'Prenom',
+              REPLACE(c.fonction, ',', '') AS 'Fonction',
+              CASE c.naissance
+                WHEN '0000-00-00' THEN '2001-01-01'
+                ELSE
+                  CASE SUBSTRING(c.naissance, 1, 1)
+                    WHEN '0' THEN '2001-01-01'
+                    ELSE c.naissance
+                  END
+              END AS 'Datenaissance',
+              REPLACE(ville_naissance, ',', '') AS 'Villenaissance',
+              ccountry.fr AS 'PaysNaissance',
+              nv2.fr_f AS 'Nationalite',
+              REPLACE(c.telephone, '\t', '') AS 'Telephone',
+              REPLACE(c.mobile, ',', '') AS 'Mobile',
+              REPLACE(c.email, ',', '') AS 'Email',
+              c.etape_inscription_preteur AS 'EtapeInscriptionPreteur',
+              CASE c.type
+                WHEN 1 THEN 'Physique'
+                WHEN 2 THEN 'Morale'
+                WHEN 3 THEN 'Physique'
+                ELSE 'Morale'
+              END AS 'TypeContact',
+              CASE csh.id_status
+                WHEN " . ClientsStatus::STATUS_VALIDATED . " THEN 'oui'
+                ELSE 'non'
+              END AS 'Valide',
+              cs.label AS 'StatusCompletude',
+              CASE c.added
+                WHEN '0000-00-00 00:00:00' THEN ''
+                ELSE c.added
+              END AS 'DateInscription',
+              CASE c.updated
+                WHEN '0000-00-00 00:00:00' THEN ''
+                ELSE c.updated
+              END AS 'DateDerniereMiseaJour',
+              CASE c.lastlogin
+                WHEN '0000-00-00 00:00:00' THEN ''
+                ELSE c.lastlogin
+              END AS 'DateDernierLogin',
+              CASE csh.id_status
+                WHEN " . ClientsStatus::STATUS_VALIDATED . " THEN 1
+                ELSE 0
+              END AS 'StatutValidation',
+              status_inscription_preteur AS 'StatusInscription',
+              COUNT(DISTINCT l.id_project) AS 'NbPretsValides',
+              REPLACE(ca.address, ',', '') AS 'Adresse1',
+              '' AS 'Adresse2',
+              '' AS 'Adresse3',
+              REPLACE(ca.zip, ',', '') AS 'CP',
+              REPLACE(ca.city, ',', '') AS 'Ville',
+              acountry.fr AS 'Pays',
+              SUM(l.amount) / 100 AS 'TotalPretEur',
+              CASE p.id_prospect 
+                WHEN NULL THEN '' 
+                ELSE CONCAT('P', p.id_prospect)
+              END AS 'DeletingProspect',
+              '0012400000K0Bxw' AS 'Sfcompte'
+            FROM clients c
+            INNER JOIN clients_status_history csh ON c.id_client_status_history = csh.id
+            INNER JOIN wallet w FORCE INDEX (idx_id_client) ON w.id_client = c.id_client
+            INNER JOIN wallet_type wt ON w.id_type = wt.id
+            LEFT JOIN client_address ca ON c.id_address = ca.id
+            LEFT JOIN pays ccountry ON c.id_pays_naissance = ccountry.id_pays
+            LEFT JOIN pays acountry ON ca.id_country = acountry.id_pays
+            LEFT JOIN nationalites_v2 nv2 ON c.id_nationalite = nv2.id_nationalite
+            LEFT JOIN loans l ON w.id = l.id_wallet and l.status = " . Loans::STATUS_ACCEPTED . "
+            LEFT JOIN clients_status cs ON csh.id_status = cs.id
+            LEFT JOIN prospects p ON p.email = c.email
+            WHERE csh.id_status IN (" . implode(',', ClientsStatus::GRANTED_LOGIN) . ")
+              AND wt.label = '" . WalletType::LENDER . "' 
+            GROUP BY c.id_client";
+
+        return $this->getEntityManager()->getConnection()->executeQuery($query);
+    }
+
+    /**
      * @param array $status
      *
      * @return array

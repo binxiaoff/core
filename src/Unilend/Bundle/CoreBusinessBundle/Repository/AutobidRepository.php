@@ -153,7 +153,7 @@ class AutobidRepository extends EntityRepository
             ->innerJoin('UnilendCoreBusinessBundle:ClientsStatusHistory', 'csh', Join::WITH, 'c.idClientStatusHistory = csh.id')
             ->innerJoin('UnilendCoreBusinessBundle:ClientSettings', 'cs', Join::WITH, 'w.idClient = cs.idClient')
             ->innerJoin('UnilendCoreBusinessBundle:ClientSettingType', 'cst', Join::WITH, 'cs.idType = cst.idType AND cst.label = :settingType')
-            ->leftJoin('UnilendCoreBusinessBundle:Bids', 'b', Join::WITH, 'a.idAutobid = b.idAutobid AND b.idProject = :project')
+            ->leftJoin('UnilendCoreBusinessBundle:Bids', 'b', Join::WITH, 'a.idAutobid = b.idAutobid AND b.project = :project')
             ->where('a.status = :bidStatus')
             ->andWhere('p.status = :periodStatus')
             ->andWhere('p.min <= :projectDuration')

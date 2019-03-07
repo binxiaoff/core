@@ -178,7 +178,7 @@ class ProjectRepaymentManager
                 $repaymentSchedule = $projectRepaymentDetail->getIdRepaymentSchedule();
                 if (null === $repaymentSchedule) {
                     throw new \Exception('Cannot found repayment schedule for project (id: ' . $project->getIdProject() . '), sequence ' . $repaymentSequence
-                        . ' and client (id: ' . $projectRepaymentDetail->getIdLoan()->getIdLender()->getIdClient() . ')');
+                        . ' and client (id: ' . $projectRepaymentDetail->getIdLoan()->getWallet()->getIdClient() . ')');
                 }
 
                 $this->operationManager->repayment($projectRepaymentDetail->getCapital(), $projectRepaymentDetail->getInterest(), $repaymentSchedule, $projectRepaymentTaskLog);

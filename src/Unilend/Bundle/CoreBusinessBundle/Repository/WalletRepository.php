@@ -246,7 +246,7 @@ class WalletRepository extends EntityRepository
             ->innerJoin('UnilendCoreBusinessBundle:OperationType', 'ot', Join::WITH, 'o.idType = ot.id')
             ->innerJoin('UnilendCoreBusinessBundle:Clients', 'c', Join::WITH, 'c.idClient = w.idClient')
             ->where('ot.label = :lenderProvision')
-            ->andwhere('w.id NOT IN (SELECT IDENTITY(b.idLenderAccount) FROM Unilend\Bundle\CoreBusinessBundle\Entity\Bids b WHERE b.status = :accepted AND b.added BETWEEN :start AND :end)')
+            ->andwhere('w.id NOT IN (SELECT IDENTITY(b.wallet) FROM Unilend\Bundle\CoreBusinessBundle\Entity\Bids b WHERE b.status = :accepted AND b.added BETWEEN :start AND :end)')
             ->groupBy('w.id')
             ->setParameter('lenderProvision', OperationType::LENDER_PROVISION)
             ->setParameter('accepted', Bids::STATUS_ACCEPTED)
@@ -265,9 +265,9 @@ class WalletRepository extends EntityRepository
     {
         $queryBuilder = $this->createQueryBuilder('w');
         $queryBuilder
-            ->innerJoin('UnilendCoreBusinessBundle:Bids', 'b', Join::WITH, 'w.id = b.idLenderAccount')
+            ->innerJoin('UnilendCoreBusinessBundle:Bids', 'b', Join::WITH, 'w.id = b.wallet')
             ->innerJoin('UnilendCoreBusinessBundle:AcceptedBids', 'ab', Join::WITH, 'b.idBid = ab.idBid')
-            ->where('b.idProject = :project')
+            ->where('b.project = :project')
             ->groupBy('w.id')
             ->setParameter('project', $project);
 
@@ -284,8 +284,8 @@ class WalletRepository extends EntityRepository
         $queryBuilder = $this->createQueryBuilder('w');
         $queryBuilder
             ->distinct()
-            ->innerJoin('UnilendCoreBusinessBundle:Loans', 'l', Join::WITH, 'l.idLender = w.id')
-            ->where('l.idProject in (:projects)')
+            ->innerJoin('UnilendCoreBusinessBundle:Loans', 'l', Join::WITH, 'l.wallet = w.id')
+            ->where('l.project in (:projects)')
             ->setParameter('projects', $projects);
 
         return $queryBuilder->getQuery()->getResult();

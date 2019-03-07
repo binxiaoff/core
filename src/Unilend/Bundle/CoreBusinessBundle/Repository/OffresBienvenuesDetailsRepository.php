@@ -50,7 +50,7 @@ class OffresBienvenuesDetailsRepository extends EntityRepository
         $queryBuilder->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'obd.idClient = w.idClient')
             ->where('obd.status = :unused')
             ->andWhere('obd.added <= :dateLimit')
-            ->andwhere('0 = (SELECT COUNT(b.idBid) FROM Unilend\Bundle\CoreBusinessBundle\Entity\Bids b WHERE b.idLenderAccount = w.id AND b.status = :rejected)')
+            ->andwhere('0 = (SELECT COUNT(b.idBid) FROM Unilend\Bundle\CoreBusinessBundle\Entity\Bids b WHERE b.wallet = w.id AND b.status = :rejected)')
             ->setParameter('dateLimit', $date)
             ->setParameter('unused', OffresBienvenuesDetails::STATUS_NEW)
             ->setParameter('rejected', Bids::STATUS_REJECTED);

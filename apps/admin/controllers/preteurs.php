@@ -174,14 +174,14 @@ class preteursController extends bootstrap
                 ]);
             }
 
-            $this->nb_pret  = $loans->counter('id_lender = ' . $wallet->getId() . ' AND status = ' . Loans::STATUS_ACCEPTED);
+            $this->nb_pret  = $loans->counter('id_wallet = ' . $wallet->getId() . ' AND status = ' . Loans::STATUS_ACCEPTED);
             $this->txMoyen  = $loans->getAvgPrets($wallet->getId());
             $this->sumPrets = $loans->sumPrets($wallet->getId());
 
             if (isset($this->params[1])) {
-                $this->lEncheres = $loans->select('id_lender = ' . $wallet->getId() . ' AND YEAR(added) = ' . $this->params[1] . ' AND status = ' . Loans::STATUS_ACCEPTED);
+                $this->lEncheres = $loans->select('id_wallet = ' . $wallet->getId() . ' AND YEAR(added) = ' . $this->params[1] . ' AND status = ' . Loans::STATUS_ACCEPTED);
             } else {
-                $this->lEncheres = $loans->select('id_lender = ' . $wallet->getId() . ' AND YEAR(added) = YEAR(CURDATE()) AND status = ' . Loans::STATUS_ACCEPTED);
+                $this->lEncheres = $loans->select('id_wallet = ' . $wallet->getId() . ' AND YEAR(added) = YEAR(CURDATE()) AND status = ' . Loans::STATUS_ACCEPTED);
             }
 
             $this->SumDepot = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation')->sumCreditOperationsByTypeAndYear($wallet, [OperationType::LENDER_PROVISION]);
@@ -203,7 +203,7 @@ class preteursController extends bootstrap
                     'line'      => $exception->getLine(),
                     'class'     => __CLASS__,
                     'function'  => __FUNCTION__,
-                    'id_lender' => $wallet->getId()
+                    'id_wallet' => $wallet->getId()
                 ]);
                 $this->nextRemb = 0;
             }
@@ -211,7 +211,7 @@ class preteursController extends bootstrap
             $this->sumRembMontant = $this->echeanciers->getRepaidAmount(['id_lender' => $wallet->getId()]);
             $this->avgPreteur     = $bids->getAvgPreteur($wallet->getId(), 'amount', implode(', ', [Bids::STATUS_ACCEPTED, Bids::STATUS_REJECTED]));
             $this->sumBidsEncours = $bids->sumBidsEncours($wallet->getId());
-            $this->lBids          = $bids->select('id_lender_account = ' . $wallet->getId() . ' AND status = ' . Bids::STATUS_PENDING, 'added DESC');
+            $this->lBids          = $bids->select('id_wallet = ' . $wallet->getId() . ' AND status = ' . Bids::STATUS_PENDING, 'added DESC');
             $this->NbBids         = count($this->lBids);
 
             /** @var AttachmentManager $attachmentManager */

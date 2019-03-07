@@ -41,7 +41,7 @@ class BidValidator
         $violations = [];
 
         $product = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Product')->find($bid->getProject()->getIdProduct());
-        $client  = $bid->getIdLenderAccount()->getIdClient();
+        $client  = $bid->getWallet()->getIdClient();
 
         if (false === $this->isEligibleForClientId($client, $product, $this->productAttributeManager)) {
             $violations[] = ProductAttributeType::ELIGIBLE_CLIENT_ID;

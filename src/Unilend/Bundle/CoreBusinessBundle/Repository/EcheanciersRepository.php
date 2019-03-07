@@ -96,9 +96,9 @@ class EcheanciersRepository extends EntityRepository
     {
         $qb = $this->createQueryBuilder('e');
         $qb->innerJoin('UnilendCoreBusinessBundle:Loans', 'l', Join::WITH, 'e.idLoan = l.idLoan')
-            ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'w.id = l.idLender')
-            ->innerJoin('UnilendCoreBusinessBundle:EcheanciersEmprunteur', 'ee', Join::WITH, 'ee.idProject = l.idProject AND ee.ordre = e.ordre')
-            ->where('l.idProject = :project')
+            ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'w.id = l.wallet')
+            ->innerJoin('UnilendCoreBusinessBundle:EcheanciersEmprunteur', 'ee', Join::WITH, 'ee.idProject = l.project AND ee.ordre = e.ordre')
+            ->where('l.project = :project')
             ->setParameter('project', $project);
 
         if (null !== $repaymentSequence) {
@@ -506,7 +506,7 @@ class EcheanciersRepository extends EntityRepository
         $queryBuilder = $this->createQueryBuilder('e');
         $queryBuilder->select('IFNULL(ROUND(SUM(e.capital  - e.capitalRembourse) / 100, 2), 0) AS capital, IFNULL(ROUND(SUM(e.interets  - e.interetsRembourses) / 100, 2), 0) AS interest')
             ->innerJoin('UnilendCoreBusinessBundle:Loans', 'l', Join::WITH, 'e.idLoan = l.idLoan')
-            ->innerJoin('UnilendCoreBusinessBundle:EcheanciersEmprunteur', 'ee', Join::WITH, 'ee.idProject = l.idProject AND ee.ordre = e.ordre')
+            ->innerJoin('UnilendCoreBusinessBundle:EcheanciersEmprunteur', 'ee', Join::WITH, 'ee.idProject = l.project AND ee.ordre = e.ordre')
             ->where('e.idLoan = :loan')
             ->setParameter('loan', $loan)
             ->andWhere('ee.dateEcheanceEmprunteur < :today')
@@ -564,7 +564,7 @@ class EcheanciersRepository extends EntityRepository
         $queryBuilder = $this->createQueryBuilder('e');
         $queryBuilder->select('IDENTITY(e.idLoan) as idLoan, e.ordre, ROUND(SUM(e.capital  - e.capitalRembourse) / 100, 2) AS capital, ROUND(SUM(e.interets  - e.interetsRembourses) / 100, 2) AS interest')
             ->innerJoin('UnilendCoreBusinessBundle:Loans', 'l', Join::WITH, 'e.idLoan = l.idLoan')
-            ->where('l.idProject = :project')
+            ->where('l.project = :project')
             ->setParameter('project', $project)
             ->groupBy('e.idLoan')
             ->addGroupBy('e.ordre');

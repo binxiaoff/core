@@ -88,7 +88,7 @@ class accepted_bids extends accepted_bids_crud
         $sql = 'SELECT
                     SUM(ab.amount) AS amount,
                     ab.id_bid,
-                    l.id_lender
+                    l.id_wallet
                 FROM
                     accepted_bids ab
                     INNER JOIN loans l ON l.id_loan = ab.id_loan

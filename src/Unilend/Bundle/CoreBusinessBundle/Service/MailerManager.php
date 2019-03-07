@@ -112,26 +112,26 @@ class MailerManager
 
         if (null !== $bid) {
             $keywords = [
-                'firstName'     => $bid->getIdLenderAccount()->getIdClient()->getPrenom(),
+                'firstName'     => $bid->getWallet()->getIdClient()->getPrenom(),
                 'companyName'   => $bid->getProject()->getIdCompany()->getName(),
                 'projectName'   => $bid->getProject()->getTitle(),
                 'bidAmount'     => $this->oFicelle->formatNumber($bid->getAmount() / 100, 0),
-                'bidRate'       => $this->oFicelle->formatNumber($bid->getRate(), 1),
+                'bidRate'       => $this->oFicelle->formatNumber($bid->getRate()->getMargin(), 1),
                 'bidDate'       => strftime('%d %B %G', $bid->getAdded()->getTimestamp()),
                 'bidTime'       => $bid->getAdded()->format('H:i:s'),
-                'lenderPattern' => $bid->getIdLenderAccount()->getWireTransferPattern()
+                'lenderPattern' => $bid->getWallet()->getWireTransferPattern()
             ];
 
             /** @var TemplateMessage $message */
             $message = $this->messageProvider->newMessage('confirmation-bid', $keywords);
 
             try {
-                $message->setTo($bid->getIdLenderAccount()->getIdClient()->getEmail());
+                $message->setTo($bid->getWallet()->getIdClient()->getEmail());
                 $this->mailer->send($message);
             } catch (\Exception $exception) {
                 $this->oLogger->warning(
                     'Could not send email: "confirmation-bid" - Exception: ' . $exception->getMessage(),
-                    ['method' => __METHOD__, 'id_mail_template' => $message->getTemplateId(), 'id_client' => $bid->getIdLenderAccount()->getIdClient()->getIdClient(), 'file' => $exception->getFile(), 'line' => $exception->getLine()]
+                    ['method' => __METHOD__, 'id_mail_template' => $message->getTemplateId(), 'id_client' => $bid->getWallet()->getIdClient()->getIdClient(), 'file' => $exception->getFile(), 'line' => $exception->getLine()]
                 );
             }
         }
@@ -147,7 +147,7 @@ class MailerManager
             ->findBy(['idProject' => $project], ['rate' => 'ASC', 'added' => 'ASC']);
 
         foreach ($bids as $bid) {
-            $wallet = $bid->getIdLenderAccount();
+            $wallet = $bid->getWallet();
 
             if ($wallet->getIdClient()->isGrantedLogin()) {
                 $keywords = [
@@ -155,7 +155,7 @@ class MailerManager
                     'firstName'     => $wallet->getIdClient()->getPrenom(),
                     'bidDate'       => strftime('%d %B %G', $bid->getAdded()->getTimestamp()),
                     'bidAmount'     => $this->oFicelle->formatNumber($bid->getAmount() / 100, 0),
-                    'bidRate'       => $this->oFicelle->formatNumber($bid->getRate()),
+                    'bidRate'       => $this->oFicelle->formatNumber($bid->getRate()->getMargin()),
                     'balance'       => $this->oFicelle->formatNumber($wallet->getAvailableBalance()),
                     'lenderPattern' => $wallet->getWireTransferPattern()
                 ];
@@ -357,7 +357,7 @@ class MailerManager
         $bidRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Bids');
         $bid           = $bidRepository->find($notification->id_bid);
 
-        if ($bid->getIdLenderAccount()->getIdClient()->isGrantedLogin()) {
+        if ($bid->getWallet()->getIdClient()->isGrantedLogin()) {
             /**
              * Using the projects.data object is a workaround while projects has not been completely migrated on Doctrine Entity
              * and date_fin cannot be NULL
@@ -375,7 +375,7 @@ class MailerManager
                 $datesUsed = ['endDate' => $endDate, 'date_fin' => $project->date_fin, 'getDateRetrait' => $bid->getProject()->getDateRetrait()];
                 $this->oLogger->warning(
                     'Could not determine the project end date using following values: ' . json_encode($datesUsed) .
-                    ' No mail will be sent to the client ' . $bid->getIdLenderAccount()->getIdClient()->getIdClient(),
+                    ' No mail will be sent to the client ' . $bid->getWallet()->getIdClient()->getIdClient(),
                     ['method' => __METHOD__, 'id_project' => $project->id_project, 'id_notification' => $notification->id_notification]
                 );
 
@@ -387,12 +387,12 @@ class MailerManager
 
             if ($bid->getAutobid()) {
                 $keyWords = [
-                    'lenderPattern' => $bid->getIdLenderAccount()->getWireTransferPattern(),
-                    'firstName'     => $bid->getIdLenderAccount()->getIdClient()->getPrenom(),
+                    'lenderPattern' => $bid->getWallet()->getWireTransferPattern(),
+                    'firstName'     => $bid->getWallet()->getIdClient()->getPrenom(),
                     'companyName'   => $bid->getProject()->getIdCompany()->getName(),
                 ];
 
-                if (0 === bccomp($bid->getRate(), $projectRates['rate_min'], 1)) {
+                if (0 === bccomp($bid->getRate()->getMargin(), $projectRates['rate_min'], 1)) {
                     $mailTemplate = 'preteur-autobid-ko-minimum-rate';
                     $keyWords     += [
                         'autolendLink' => $this->sFUrl . '/profile/autolend#parametrage',
@@ -411,11 +411,11 @@ class MailerManager
                 }
             } else {
                 $keyWords = [
-                    'lenderPattern' => $bid->getIdLenderAccount()->getWireTransferPattern(),
-                    'firstName'     => $bid->getIdLenderAccount()->getIdClient()->getPrenom(),
+                    'lenderPattern' => $bid->getWallet()->getWireTransferPattern(),
+                    'firstName'     => $bid->getWallet()->getIdClient()->getPrenom(),
                     'companyName'   => $bid->getProject()->getIdCompany()->getName(),
                     'bidAmount'     => $this->oFicelle->formatNumber($bid->getAmount() / 100, 0),
-                    'bidRate'       => $this->oFicelle->formatNumber($bid->getRate(), 1)
+                    'bidRate'       => $this->oFicelle->formatNumber($bid->getRate()->getMargin(), 1)
                 ];
 
                 if ($endDate <= $now) {
@@ -443,12 +443,12 @@ class MailerManager
             $message = $this->messageProvider->newMessage($mailTemplate, $keyWords);
 
             try {
-                $message->setTo($bid->getIdLenderAccount()->getIdClient()->getEmail());
+                $message->setTo($bid->getWallet()->getIdClient()->getEmail());
                 $this->mailer->send($message);
             } catch (\Exception $exception) {
                 $this->oLogger->warning(
                     'Could not send email: ' . $mailTemplate . ' - Exception: ' . $exception->getMessage(),
-                    ['id_mail_template' => $message->getTemplateId(), 'id_client' => $bid->getIdLenderAccount()->getIdClient()->getIdClient(), 'class' => __CLASS__, 'function' => __FUNCTION__]
+                    ['id_mail_template' => $message->getTemplateId(), 'id_client' => $bid->getWallet()->getIdClient()->getIdClient(), 'class' => __CLASS__, 'function' => __FUNCTION__]
                 );
             }
         }

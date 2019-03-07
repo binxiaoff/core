@@ -119,7 +119,7 @@ class rootController extends bootstrap
 
             /** @var \loans $oLoans */
             $oLoans      = $this->loadData('loans');
-            $iLoansCount = $oLoans->counter('id_lender = ' . $wallet->getId() . ' AND added < "' . $sNewTermsOfServiceDate . '"');
+            $iLoansCount = $oLoans->counter('id_wallet = ' . $wallet->getId() . ' AND added < "' . $sNewTermsOfServiceDate . '"');
 
             if (in_array($this->clients->type, [Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER])) {
                 $clientAddress = $wallet->getIdClient()->getIdAddress();

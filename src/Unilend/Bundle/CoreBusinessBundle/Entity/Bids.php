@@ -2,38 +2,29 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Traits\{Lendable, Timestampable};
 
 /**
  * Bids
  *
- * @ORM\Table(name="bids", indexes={
- *     @ORM\Index(name="id_lender_account", columns={"id_lender_account"}),
- *     @ORM\Index(name="idprojectstatus", columns={"id_project", "status"}),
- *     @ORM\Index(name="idx_id_autobid", columns={"id_autobid"})
- * })
+ * @ORM\Table(name="bids", indexes={@ORM\Index(name="idprojectstatus", columns={"id_project", "status"})})
  * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\BidsRepository")
  * @ORM\HasLifecycleCallbacks
  */
 class Bids
 {
+    use Lendable;
+    use Timestampable;
+
     const STATUS_PENDING                      = 0;
     const STATUS_ACCEPTED                     = 1;
     const STATUS_REJECTED                     = 2;
     const STATUS_TEMPORARILY_REJECTED_AUTOBID = 3;
 
     /**
-     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Projects
-     *
-     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Projects")
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_project", referencedColumnName="id_project", nullable=false)
-     * })
-     */
-    private $idProject;
-
-    /**
-     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Autobid
+     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Autobid|null
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Autobid")
      * @ORM\JoinColumns({
@@ -43,46 +34,11 @@ class Bids
     private $idAutobid;
 
     /**
-     * @var int
-     *
-     * @ORM\Column(name="amount", type="integer")
-     */
-    private $amount;
-
-    /**
-     * @var float
-     *
-     * @ORM\Column(name="rate", type="decimal", precision=3, scale=1)
-     */
-    private $rate;
-
-    /**
-     * @var int
+     * @var int|null
      *
      * @ORM\Column(name="ordre", type="integer", nullable=true)
      */
     private $ordre;
-
-    /**
-     * @var int
-     *
-     * @ORM\Column(name="status", type="smallint")
-     */
-    private $status;
-
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="added", type="datetime")
-     */
-    private $added;
-
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="updated", type="datetime", nullable=true)
-     */
-    private $updated;
 
     /**
      * @var int
@@ -94,37 +50,16 @@ class Bids
     private $idBid;
 
     /**
-     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Wallet
+     * @var BidPercentFee[]|ArrayCollection
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Wallet")
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_lender_account", referencedColumnName="id", nullable=false)
-     * })
+     * @ORM\OneToMany(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\BidPercentFee", mappedBy="bid", cascade={"persist"}, orphanRemoval=true)
      */
-    private $idLenderAccount;
+    private $bidPercentFees;
 
-    /**
-     * Set Project
-     *
-     * @param Projects $project
-     *
-     * @return Bids
-     */
-    public function setProject(Projects $project): Bids
+    public function __construct()
     {
-        $this->idProject = $project;
-
-        return $this;
-    }
-
-    /**
-     * Get Project
-     *
-     * @return Projects
-     */
-    public function getProject(): Projects
-    {
-        return $this->idProject;
+        $this->bidPercentFees = new ArrayCollection();
+        $this->traitInit();
     }
 
     /**
@@ -152,78 +87,6 @@ class Bids
     }
 
     /**
-     * Set idLenderAccount
-     *
-     * @param Wallet $idLenderAccount
-     *
-     * @return Bids
-     */
-    public function setIdLenderAccount(Wallet $idLenderAccount): Bids
-    {
-        $this->idLenderAccount = $idLenderAccount;
-
-        return $this;
-    }
-
-    /**
-     * Get idLenderAccount
-     *
-     * @return Wallet
-     */
-    public function getIdLenderAccount(): Wallet
-    {
-        return $this->idLenderAccount;
-    }
-
-    /**
-     * Set amount
-     *
-     * @param int $amount
-     *
-     * @return Bids
-     */
-    public function setAmount(int $amount): Bids
-    {
-        $this->amount = $amount;
-
-        return $this;
-    }
-
-    /**
-     * Get amount
-     *
-     * @return int
-     */
-    public function getAmount(): int
-    {
-        return $this->amount;
-    }
-
-    /**
-     * Set rate
-     *
-     * @param float $rate
-     *
-     * @return Bids
-     */
-    public function setRate(float $rate): Bids
-    {
-        $this->rate = $rate;
-
-        return $this;
-    }
-
-    /**
-     * Get rate
-     *
-     * @return float
-     */
-    public function getRate(): float
-    {
-        return $this->rate;
-    }
-
-    /**
      * Set ordre
      *
      * @param int|null $ordre
@@ -248,78 +111,6 @@ class Bids
     }
 
     /**
-     * Set status
-     *
-     * @param int $status
-     *
-     * @return Bids
-     */
-    public function setStatus(int $status): Bids
-    {
-        $this->status = $status;
-
-        return $this;
-    }
-
-    /**
-     * Get status
-     *
-     * @return int
-     */
-    public function getStatus(): int
-    {
-        return $this->status;
-    }
-
-    /**
-     * Set added
-     *
-     * @param \DateTime $added
-     *
-     * @return Bids
-     */
-    public function setAdded(\DateTime $added): Bids
-    {
-        $this->added = $added;
-
-        return $this;
-    }
-
-    /**
-     * Get added
-     *
-     * @return \DateTime
-     */
-    public function getAdded(): \DateTime
-    {
-        return $this->added;
-    }
-
-    /**
-     * Set updated
-     *
-     * @param \DateTime|null $updated
-     *
-     * @return Bids
-     */
-    public function setUpdated(?\DateTime $updated): Bids
-    {
-        $this->updated = $updated;
-
-        return $this;
-    }
-
-    /**
-     * Get updated
-     *
-     * @return \DateTime|null
-     */
-    public function getUpdated(): ?\DateTime
-    {
-        return $this->updated;
-    }
-
-    /**
      * Get idBid
      *
      * @return int
@@ -330,20 +121,34 @@ class Bids
     }
 
     /**
-     * @ORM\PrePersist
+     * @param PercentFee $percentFee
+     *
+     * @return Bids
      */
-    public function setAddedValue(): void
+    public function addPercentFee(PercentFee $percentFee): Bids
     {
-        if (! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
-            $this->added = new \DateTime();
+        $bidPercentFee = (new BidPercentFee())
+            ->setBid($this)
+            ->setPercentFee($percentFee);
+
+        if (false === $this->bidPercentFees->contains($bidPercentFee)) {
+            $this->bidPercentFees->add($bidPercentFee);
         }
+
+        return $this;
     }
 
     /**
-     * @ORM\PreUpdate
+     * @param BidPercentFee $bidPercentFee
+     *
+     * @return Bids
      */
-    public function setUpdatedValue(): void
+    public function removeBidFee(BidPercentFee $bidPercentFee): Bids
     {
-        $this->updated = new \DateTime();
+        if ($this->bidPercentFees->contains($bidPercentFee)) {
+            $this->bidPercentFees->removeElement($bidPercentFee);
+        }
+
+        return $this;
     }
 }

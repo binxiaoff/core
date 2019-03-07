@@ -662,7 +662,7 @@ class CIPManager
             return false;
         }
 
-        $wallet = $bid->getIdLenderAccount();
+        $wallet = $bid->getWallet();
 
         if (false === $wallet->getIdClient()->isNaturalPerson()) {
             return true;

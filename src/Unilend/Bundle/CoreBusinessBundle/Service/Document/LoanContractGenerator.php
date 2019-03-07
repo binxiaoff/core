@@ -103,11 +103,11 @@ class LoanContractGenerator implements DocumentGeneratorInterface
             throw new \InvalidArgumentException('Loan entity expected, got "' . $parameterType . '"');
         }
 
-        if (null === $loan->getIdLender() || null === $loan->getIdLender()->getIdClient()) {
+        if (null === $loan->getWallet() || null === $loan->getWallet()->getIdClient()) {
             throw new \Exception('No lender defined for loan ' . $loan->getIdLoan());
         }
 
-        return $this->protectedPath . self::PATH . DIRECTORY_SEPARATOR . 'contrat-' . $loan->getIdLender()->getIdClient()->getHash() . '-' . $loan->getIdLoan() . '.pdf';
+        return $this->protectedPath . self::PATH . DIRECTORY_SEPARATOR . 'contrat-' . $loan->getWallet()->getIdClient()->getHash() . '-' . $loan->getIdLoan() . '.pdf';
     }
 
     /**
@@ -214,7 +214,7 @@ class LoanContractGenerator implements DocumentGeneratorInterface
             'id'                => $loan->getIdLoan(),
             'amount'            => $loanAmount,
             'formattedAmount'   => $this->numberFormatter->format($loanAmount),
-            'rate'              => $this->numberFormatter->format($loan->getRate()),
+            'rate'              => $this->numberFormatter->format($loan->getRate()->getMargin()),
             'interests'         => $this->currencyFormatter->formatCurrency($interests, 'EUR'),
             'repaymentAmount'   => $this->currencyFormatter->formatCurrency($repaymentAmount, 'EUR'),
             'creationDate'      => $repaymentStatusHistory ? $repaymentStatusHistory->getAdded()->format('d/m/Y') : date('d/m/Y'),
@@ -288,7 +288,7 @@ class LoanContractGenerator implements DocumentGeneratorInterface
      */
     private function getLenderData(Loans $loan): array
     {
-        $client = $loan->getIdLender()->getIdClient();
+        $client = $loan->getWallet()->getIdClient();
 
         if ($loan->getIdTransfer()) {
             $client = $this->loanManager->getFirstOwner($loan);
