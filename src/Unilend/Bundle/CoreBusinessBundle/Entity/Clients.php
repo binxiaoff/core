@@ -1428,22 +1428,6 @@ class Clients implements UserInterface, EquatableInterface, EncoderAwareInterfac
     }
 
     /**
-     * @param string $walletType
-     *
-     * @return Wallet|null
-     */
-    public function getWalletByType(string $walletType): ?Wallet
-    {
-        foreach ($this->wallets as $wallet) {
-            if ($walletType === $wallet->getIdType()->getLabel()) {
-                return $wallet;
-            }
-        }
-
-        return null;
-    }
-
-    /**
      * @return bool
      */
     public function isNaturalPerson()

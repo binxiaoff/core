@@ -64,11 +64,12 @@ class DemoController extends Controller
         }
 
         if ($user->isLender()) {
+            $wallet                       = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($user, WalletType::LENDER);
             $bidRepository                = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Bids');
-            $template['projects']['bids'] = $bidRepository->findBy(['idLenderAccount' => $user->getWalletByType(WalletType::LENDER), 'status' => Bids::STATUS_PENDING], ['added' => 'ASC']);
+            $template['projects']['bids'] = $bidRepository->findBy(['idLenderAccount' => $wallet, 'status' => Bids::STATUS_PENDING], ['added' => 'ASC']);
 
             $loanRepository                = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Loans');
-            $loans                         = $loanRepository->findBy(['idLender' => $user->getWalletByType(WalletType::LENDER), 'status' => Loans::STATUS_ACCEPTED]);
+            $loans                         = $loanRepository->findBy(['idLender' => $wallet, 'status' => Loans::STATUS_ACCEPTED]);
             $template['projects']['loans'] = [];
 
             foreach ($loans as $loan) {
