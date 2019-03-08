@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "5ddbbd1b811d0454bd1f8b268945491a",
+    "content-hash": "f7a7a75b86b90ca997618bf8120b04fc",
     "packages": [
         {
             "name": "alcaeus/mongo-php-adapter",
@@ -5909,6 +5909,64 @@
             "time": "2018-07-19T23:38:55+00:00"
         },
         {
+            "name": "scienta/doctrine-json-functions",
+            "version": "4.0.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/ScientaNL/DoctrineJsonFunctions.git",
+                "reference": "94277c78e266f9c410d6193fb61f501247d3b2da"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/ScientaNL/DoctrineJsonFunctions/zipball/94277c78e266f9c410d6193fb61f501247d3b2da",
+                "reference": "94277c78e266f9c410d6193fb61f501247d3b2da",
+                "shasum": ""
+            },
+            "require": {
+                "ext-pdo": "*",
+                "php": "^7.1"
+            },
+            "require-dev": {
+                "doctrine/coding-standard": "^5.0",
+                "doctrine/orm": "~2.6",
+                "phpunit/phpunit": "^6.5"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "4.0-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Scienta\\DoctrineJsonFunctions\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Doctrine Json Functions Contributors",
+                    "homepage": "https://github.com/ScientaNL/DoctrineJsonFunctions/contributors"
+                }
+            ],
+            "description": "A set of extensions to Doctrine 2 that add support for json query functions.",
+            "keywords": [
+                "database",
+                "doctrine",
+                "dql",
+                "json",
+                "mariadb",
+                "mysql",
+                "orm",
+                "postgres",
+                "postgresql"
+            ],
+            "time": "2019-02-15T15:07:48+00:00"
+        },
+        {
             "name": "sensio/framework-extra-bundle",
             "version": "v5.2.4",
             "source": {
@@ -7728,7 +7786,9 @@
     "prefer-lowest": false,
     "platform": {
         "php": ">=7.1.11",
-        "ext-openssl": "^7.1"
+        "ext-bcmath": "*",
+        "ext-openssl": "^7.1",
+        "ext-pdo": "*"
     },
     "platform-dev": []
 }
