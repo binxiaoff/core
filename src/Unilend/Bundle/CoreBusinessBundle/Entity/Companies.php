@@ -2,18 +2,21 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Entity;
 
+use Doctrine\Common\Collections\{ArrayCollection, Collection, Criteria};
 use Doctrine\ORM\Mapping as ORM;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Traits\Timestampable;
 
 
 /**
  * Companies
  *
- * @ORM\Table(name="companies", indexes={@ORM\Index(name="id_client_owner", columns={"id_client_owner"}), @ORM\Index(name="fk_companies_id_parent_company", columns={"id_parent_company"}), @ORM\Index(name="idx_companies_id_status", columns={"id_status"})})
  * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\CompaniesRepository")
  * @ORM\HasLifecycleCallbacks
  */
 class Companies
 {
+    use Timestampable;
+
     const INVALID_SIREN_EMPTY  = '000000000';
     const NAF_CODE_NO_ACTIVITY = '0000Z';
 
@@ -29,16 +32,6 @@ class Companies
     const CLIENT_STATUS_EXTERNAL_COUNSEL_CREDIT_BROKER = 2;
     const CLIENT_STATUS_EXTERNAL_COUNSEL_OTHER         = 3;
     const CLIENT_STATUS_EXTERNAL_COUNSEL_BANKER        = 4;
-
-    /**
-     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Clients
-     *
-     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Clients")
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_client_owner", referencedColumnName="id_client")
-     * })
-     */
-    private $idClientOwner;
 
     /**
      * @var \Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus
@@ -282,20 +275,6 @@ class Companies
     private $codeNaf;
 
     /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="added", type="datetime")
-     */
-    private $added;
-
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="updated", type="datetime", nullable=true)
-     */
-    private $updated;
-
-    /**
      * @var int
      *
      * @ORM\Column(name="id_company", type="integer")
@@ -305,7 +284,7 @@ class Companies
     private $idCompany;
 
     /**
-     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Companies
+     * @var Companies|null
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Companies")
      * @ORM\JoinColumns({
@@ -331,27 +310,51 @@ class Companies
     private $idPostalAddress;
 
     /**
+     * @var Staff[]
+     *
+     * @ORM\OneToMany(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Staff", mappedBy="company", cascade={"persist"}, orphanRemoval=true)
+     */
+    private $staff;
+
+    public function __construct()
+    {
+        $this->staff = new ArrayCollection();
+    }
+
+    /**
+     * @deprecated use $this->addStaff() instead
+     *
      * Set idClientOwner
      *
-     * @param Clients|null $idClientOwner
+     * @param Clients|null $client
      *
      * @return Companies
      */
-    public function setIdClientOwner(Clients $idClientOwner = null)
+    public function setIdClientOwner(Clients $client = null)
     {
-        $this->idClientOwner = $idClientOwner;
+        if ($client) {
+            $this->addStaff($client, Staff::STAFF_ROLE_OWNER);
+        }
 
         return $this;
     }
 
     /**
+     * @deprecated use $this->getStaff() instead
+     *
      * Get idClientOwner
      *
      * @return Clients|null
      */
     public function getIdClientOwner()
     {
-        return $this->idClientOwner;
+        foreach ($this->getStaff() as $staff) {
+            if ($staff->hasRole(Staff::STAFF_ROLE_OWNER)) {
+                return $staff->getClient();
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -619,6 +622,7 @@ class Companies
         if (null !== $this->dateCreation && $this->dateCreation->getTimestamp() < 0) {
             return null;
         }
+
         return $this->dateCreation;
     }
 
@@ -1127,54 +1131,6 @@ class Companies
     }
 
     /**
-     * Set added
-     *
-     * @param \DateTime $added
-     *
-     * @return Companies
-     */
-    public function setAdded($added)
-    {
-        $this->added = $added;
-
-        return $this;
-    }
-
-    /**
-     * Get added
-     *
-     * @return \DateTime
-     */
-    public function getAdded()
-    {
-        return $this->added;
-    }
-
-    /**
-     * Set updated
-     *
-     * @param \DateTime $updated
-     *
-     * @return Companies
-     */
-    public function setUpdated($updated)
-    {
-        $this->updated = $updated;
-
-        return $this;
-    }
-
-    /**
-     * Get updated
-     *
-     * @return \DateTime
-     */
-    public function getUpdated()
-    {
-        return $this->updated;
-    }
-
-    /**
      * Get idCompany
      *
      * @return integer
@@ -1187,11 +1143,11 @@ class Companies
     /**
      * Set idParentCompany
      *
-     * @param \Unilend\Bundle\CoreBusinessBundle\Entity\Companies $idParentCompany
+     * @param Companies $idParentCompany
      *
      * @return Companies
      */
-    public function setIdParentCompany(\Unilend\Bundle\CoreBusinessBundle\Entity\Companies $idParentCompany = null)
+    public function setIdParentCompany(Companies $idParentCompany = null)
     {
         $this->idParentCompany = $idParentCompany;
 
@@ -1201,7 +1157,7 @@ class Companies
     /**
      * Get idParentCompany
      *
-     * @return \Unilend\Bundle\CoreBusinessBundle\Entity\Companies
+     * @return Companies
      */
     public function getIdParentCompany()
     {
@@ -1222,24 +1178,6 @@ class Companies
     public function setLegalFormCode($legalFormCode = null)
     {
         $this->legalFormCode = $legalFormCode;
-    }
-
-    /**
-     * @ORM\PrePersist
-     */
-    public function setAddedValue()
-    {
-        if (! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
-            $this->added = new \DateTime();
-        }
-    }
-
-    /**
-     * @ORM\PreUpdate
-     */
-    public function setUpdatedValue()
-    {
-        $this->updated = new \DateTime();
     }
 
     /**
@@ -1277,11 +1215,12 @@ class Companies
         } else {
             $tabName = explode('-', $name);
             $newName = '';
-            $i      = 0;
+            $i       = 0;
             foreach ($tabName as $name) {
                 $newName .= ($i == 0 ? '' : '-') . ucwords($name);
                 $i++;
             }
+
             return $newName;
         }
     }
@@ -1421,6 +1360,56 @@ class Companies
     public function setIdPostalAddress(?CompanyAddress $idPostalAddress): Companies
     {
         $this->idPostalAddress = $idPostalAddress;
+
+        return $this;
+    }
+
+    /**
+     * @param Clients|null $client
+     *
+     * @return Staff[]|Collection
+     */
+    public function getStaff(?Clients $client = null): iterable
+    {
+        $criteria = new Criteria();
+
+        if ($client) {
+            $criteria->where(Criteria::expr()->eq('client', $client));
+        }
+
+        return $this->staff->matching($criteria);
+    }
+
+    /**
+     * @param Clients $client
+     * @param string  $role
+     *
+     * @return Staff
+     */
+    public function addStaff(Clients $client, string $role): Staff
+    {
+        $staff = $this->getStaff($client);
+
+        if ($staff->count()) {
+            $theStaff = $staff->first();
+        } else {
+            $theStaff = (new Staff())->setClient($client)->setCompany($this);
+        }
+
+        $theStaff->addRoles([$role]);
+        $this->staff->add($theStaff);
+
+        return $theStaff;
+    }
+
+    /**
+     * @param Staff $staff
+     *
+     * @return Companies
+     */
+    public function removeStaff(Staff $staff): Companies
+    {
+        $this->staff->removeElement($staff);
 
         return $this;
     }

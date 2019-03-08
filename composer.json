@@ -16,7 +16,9 @@
   },
   "require": {
     "php": ">=7.1.11",
+    "ext-bcmath": "*",
     "ext-openssl": "^7.1",
+    "ext-pdo": "*",
     "alcaeus/mongo-php-adapter": "^1.1",
     "azuyalabs/yasumi": "^1.8",
     "beberlei/doctrineextensions": "^1.0",
@@ -44,6 +46,7 @@
     "phpxmlrpc/phpxmlrpc": "^4.3",
     "piwik/device-detector": "^3.11",
     "ramsey/uuid": "^3.7",
+    "scienta/doctrine-json-functions": "^4.0",
     "sensio/framework-extra-bundle": "^5.2",
     "sonata-project/cache-bundle": "^2.4",
     "sonata-project/seo-bundle": "^2.0",
@@ -56,9 +59,7 @@
     "twig/extensions": "^1.5",
     "welp/mailchimp-bundle": "^1.2",
     "whichbrowser/parser": "^2.0",
-    "xynnn/google-tag-manager-bundle": "^2.0",
-    "ext-pdo": "*",
-    "ext-bcmath": "*"
+    "xynnn/google-tag-manager-bundle": "^2.0"
   },
   "require-dev": {
   },
