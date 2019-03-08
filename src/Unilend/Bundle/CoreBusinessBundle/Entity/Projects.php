@@ -8,6 +8,7 @@ use Doctrine\Common\Collections\Criteria;
 use Doctrine\ORM\Mapping as ORM;
 use Ramsey\Uuid\Exception\UnsatisfiedDependencyException;
 use Ramsey\Uuid\Uuid;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Traits\Timestampable;
 
 /**
  * Projects
@@ -28,6 +29,8 @@ use Ramsey\Uuid\Uuid;
  */
 class Projects
 {
+    use Timestampable;
+
     const AUTO_REPAYMENT_ON  = 0;
     const AUTO_REPAYMENT_OFF = 1;
 
@@ -339,20 +342,6 @@ class Projects
     private $idProduct;
 
     /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="added", type="datetime")
-     */
-    private $added;
-
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="updated", type="datetime", nullable=true)
-     */
-    private $updated;
-
-    /**
      * @var int
      *
      * @ORM\Column(name="id_project", type="integer")
@@ -432,9 +421,11 @@ class Projects
     private $debtCollectionMissions;
 
     /**
-     * @ORM\OneToMany(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\ProjectCompanyRole", mappedBy="project", cascade={"persist"}, orphanRemoval=true)
+     * @var ProjectParticipant[]
+     *
+     * @ORM\OneToMany(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\ProjectParticipant", mappedBy="project", cascade={"persist"}, orphanRemoval=true)
      */
-    private $projectCompanyRoles;
+    private $projectParticipants;
 
     /**
      * Projects constructor.
@@ -447,7 +438,7 @@ class Projects
         $this->wireTransferOuts       = new ArrayCollection();
         $this->invoices               = new ArrayCollection();
         $this->debtCollectionMissions = new ArrayCollection();
-        $this->projectCompanyRoles    = new ArrayCollection();
+        $this->projectParticipants    = new ArrayCollection();
     }
 
     /**
@@ -1363,54 +1354,6 @@ class Projects
     }
 
     /**
-     * Set added
-     *
-     * @param \DateTime $added
-     *
-     * @return Projects
-     */
-    public function setAdded($added)
-    {
-        $this->added = $added;
-
-        return $this;
-    }
-
-    /**
-     * Get added
-     *
-     * @return \DateTime
-     */
-    public function getAdded()
-    {
-        return $this->added;
-    }
-
-    /**
-     * Set updated
-     *
-     * @param \DateTime $updated
-     *
-     * @return Projects
-     */
-    public function setUpdated($updated)
-    {
-        $this->updated = $updated;
-
-        return $this;
-    }
-
-    /**
-     * Get updated
-     *
-     * @return \DateTime
-     */
-    public function getUpdated()
-    {
-        return $this->updated;
-    }
-
-    /**
      * Get idProject
      *
      * @return integer
@@ -1616,24 +1559,6 @@ class Projects
     }
 
     /**
-     * @ORM\PrePersist
-     */
-    public function setAddedValue(): void
-    {
-        if (! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
-            $this->added = new \DateTime();
-        }
-    }
-
-    /**
-     * @ORM\PreUpdate
-     */
-    public function setUpdatedValue(): void
-    {
-        $this->updated = new \DateTime();
-    }
-
-    /**
      * @return string
      */
     private function generateHash()
@@ -1664,8 +1589,8 @@ class Projects
      */
     private function hasRole(string $role): bool
     {
-        foreach ($this->getProjectCompanyRoles() as $projectCompanyRole) {
-            if ($projectCompanyRole->hasRole($role)) {
+        foreach ($this->getProjectParticipants() as $projectParticipant) {
+            if ($projectParticipant->hasRole($role)) {
                 return true;
             }
         }
@@ -1677,18 +1602,30 @@ class Projects
      * @param Companies $company
      * @param string    $role
      */
-    private function addCompanyRole(Companies $company, string $role)
+    private function addProjectParticipant(Companies $company, string $role): void
     {
-        $projectCompanyAccessControl = new ProjectCompanyRole();
-        $projectCompanyAccessControl
-            ->setCompany($company)
-            ->setProject($this)
-            ->setRoles([$role]);
-        /*
-         * Because of additional column (added, updated), we cannot check here if the list contains already the company role.
-         * Need to work with UniqueConstraintViolationException
-         */
-        $this->projectCompanyRoles->add($projectCompanyAccessControl);
+        if (false === $this->isUniqueRole($role) || false === $this->hasRole($role)) {
+            $projectParticipants = $this->getProjectParticipants($company);
+
+            if ($projectParticipants->count()) {
+                $projectParticipant = $projectParticipants->first();
+            } else {
+                $projectParticipant = (new ProjectParticipant())->setCompany($company)->setProject($this);
+            }
+
+            $projectParticipant->addRoles([$role]);
+            $this->projectParticipants->add($projectParticipant);
+        }
+    }
+
+    /**
+     * @param string $role
+     *
+     * @return bool
+     */
+    private function isUniqueRole(string $role): bool
+    {
+        return in_array($role, [ProjectParticipant::COMPANY_ROLE_ARRANGER, ProjectParticipant::COMPANY_ROLE_AGENT, ProjectParticipant::COMPANY_ROLE_RUN]);
     }
 
     /**
@@ -1698,9 +1635,7 @@ class Projects
      */
     public function addArranger(Companies $company): Projects
     {
-        if (false === $this->hasRole(ProjectCompanyRole::COMPANY_ROLE_ARRANGER)) {
-            $this->addCompanyRole($company, ProjectCompanyRole::COMPANY_ROLE_ARRANGER);
-        }
+        $this->addProjectParticipant($company, ProjectParticipant::COMPANY_ROLE_ARRANGER);
 
         return $this;
     }
@@ -1710,11 +1645,9 @@ class Projects
      *
      * @return Projects
      */
-    public function addBroker(Companies $company): Projects
+    public function addAgent(Companies $company): Projects
     {
-        if (false === $this->hasRole(ProjectCompanyRole::COMPANY_ROLE_AGENT)) {
-            $this->addCompanyRole($company, ProjectCompanyRole::COMPANY_ROLE_AGENT);
-        }
+        $this->addProjectParticipant($company, ProjectParticipant::COMPANY_ROLE_AGENT);
 
         return $this;
     }
@@ -1726,9 +1659,7 @@ class Projects
      */
     public function addRun(Companies $company): Projects
     {
-        if (false === $this->hasRole(ProjectCompanyRole::COMPANY_ROLE_RUN)) {
-            $this->addCompanyRole($company, ProjectCompanyRole::COMPANY_ROLE_RUN);
-        }
+        $this->addProjectParticipant($company, ProjectParticipant::COMPANY_ROLE_RUN);
 
         return $this;
     }
@@ -1741,29 +1672,37 @@ class Projects
     public function addLenders(array $companies): Projects
     {
         foreach ($companies as $company) {
-            $this->addCompanyRole($company, ProjectCompanyRole::COMPANY_ROLE_LENDER);
+            $this->addProjectParticipant($company, ProjectParticipant::COMPANY_ROLE_LENDER);
         }
 
         return $this;
     }
 
     /**
-     * @param ProjectCompanyRole $ProjectCompanyRole
+     * @param ProjectParticipant $projectParticipant
      *
      * @return Projects
      */
-    public function removeProjectCompanyRoles(ProjectCompanyRole $ProjectCompanyRole): Projects
+    public function removeProjectParticipants(ProjectParticipant $projectParticipant): Projects
     {
-        $this->projectCompanyRoles->removeElement($ProjectCompanyRole);
+        $this->projectParticipants->removeElement($projectParticipant);
 
         return $this;
     }
 
     /**
-     * @return ProjectCompanyRole[]|Collection
+     * @param Companies|null $companies
+     *
+     * @return ProjectParticipant[]|Collection
      */
-    public function getProjectCompanyRoles(): Collection
+    public function getProjectParticipants(?Companies $companies = null): iterable
     {
-        return $this->projectCompanyRoles;
+        $criteria = new Criteria();
+
+        if ($companies) {
+            $criteria->where(Criteria::expr()->eq('company', $companies));
+        }
+
+        return $this->projectParticipants->matching($criteria);
     }
 }
