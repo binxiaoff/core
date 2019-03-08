@@ -18,12 +18,12 @@
             </h1>
 
             {% block siteHeaderNav %}
-                {% include 'partials/header_nav.html.twig' %}
+                {% include ':frontbundle/partials:header_nav.html.twig' %}
             {% endblock siteHeaderNav %}
 
             <div class="site-controls">
                 {% block siteHeaderControls %}
-                    {% include 'partials/site_search.html.twig' %}
+                    {#{% include 'partials/site_search.html.twig' %}#}
 
                     <div class="site-user">
                         <a href="{{ path('login') }}" class="btn-site-login" tabindex="3">

@@ -1,4 +1,4 @@
-{% extends 'demo/_layout.html.twig' %}
+{% extends ':frontbundle/demo:_layout.html.twig' %}
 
 {% set page = {
     id: 'demo-loans',
@@ -24,9 +24,9 @@
         {% endif %}
 
         <div class="dashboard-tabs-content tab-content">
-            {% include 'demo/loans/borrower.html.twig' %}
-            {% include 'demo/loans/broker.html.twig' %}
-            {% include 'demo/loans/lender.html.twig' %}
+            {% include ':frontbundle/demo/loans:projects.html.twig' with {'projectsType': 'borrower'} %}
+            {% include ':frontbundle/demo/loans:projects.html.twig' with {'projectsType': 'broker'} %}
+            {% include ':frontbundle/demo/loans:lender.html.twig' %}
         </div><!-- /.dashboard-tabs-content -->
     </section><!-- /.dashboard-tabs -->
 {% endblock %}

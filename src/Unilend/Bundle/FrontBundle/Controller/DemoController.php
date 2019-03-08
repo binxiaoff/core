@@ -66,10 +66,10 @@ class DemoController extends Controller
         if ($user->isLender()) {
             $wallet                       = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($user, WalletType::LENDER);
             $bidRepository                = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Bids');
-            $template['projects']['bids'] = $bidRepository->findBy(['idLenderAccount' => $wallet, 'status' => Bids::STATUS_PENDING], ['added' => 'ASC']);
+            $template['projects']['bids'] = $bidRepository->findBy(['wallet' => $wallet, 'status' => Bids::STATUS_PENDING], ['added' => 'ASC']);
 
             $loanRepository                = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Loans');
-            $loans                         = $loanRepository->findBy(['idLender' => $wallet, 'status' => Loans::STATUS_ACCEPTED]);
+            $loans                         = $loanRepository->findBy(['wallet' => $wallet, 'status' => Loans::STATUS_ACCEPTED]);
             $template['projects']['loans'] = [];
 
             foreach ($loans as $loan) {
@@ -90,6 +90,11 @@ class DemoController extends Controller
     private function groupByStatusAndSort(array $projects)
     {
         $groupedProjects = [];
+        $statuses        = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatus')->findBy([], ['status' => 'ASC']);
+
+        foreach ($statuses as $status) {
+            $groupedProjects[$status->getStatus()] = [];
+        }
 
         foreach ($projects as $project) {
             $groupedProjects[$project->getStatus()][] = $project;
