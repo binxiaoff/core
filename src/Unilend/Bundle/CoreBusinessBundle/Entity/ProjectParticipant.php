@@ -5,15 +5,17 @@ namespace Unilend\Bundle\CoreBusinessBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Traits\Roleable;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Traits\Timestampable;
 
 /**
  * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(columns={"id_project", "id_company"})})
  * @ORM\Entity
  * @ORM\HasLifecycleCallbacks
  */
-class ProjectCompanyRole
+class ProjectParticipant
 {
     use Roleable;
+    use Timestampable;
 
     // Use COMPANY_ prefix to distinguish it from Symfony user's roles
     const COMPANY_ROLE_ARRANGER = 'COMPANY_ROLE_ARRANGER'; // The company who arranges a loan syndication.
@@ -37,7 +39,7 @@ class ProjectCompanyRole
     /**
      * @var Projects
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Projects", inversedBy="ProjectCompanyRoles")
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Projects", inversedBy="projectParticipants")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="id_project", referencedColumnName="id_project", nullable=false)
      * })
@@ -53,20 +55,6 @@ class ProjectCompanyRole
      * })
      */
     private $company;
-
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(type="datetime")
-     */
-    private $added;
-
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(type="datetime", nullable=true)
-     */
-    private $updated;
 
     /**
      * @return int
@@ -87,9 +75,9 @@ class ProjectCompanyRole
     /**
      * @param Projects $project
      *
-     * @return ProjectCompanyRole
+     * @return ProjectParticipant
      */
-    public function setProject(Projects $project): ProjectCompanyRole
+    public function setProject(Projects $project): ProjectParticipant
     {
         $this->project = $project;
 
@@ -107,70 +95,12 @@ class ProjectCompanyRole
     /**
      * @param Companies $company
      *
-     * @return ProjectCompanyRole
+     * @return ProjectParticipant
      */
-    public function setCompany(Companies $company): ProjectCompanyRole
+    public function setCompany(Companies $company): ProjectParticipant
     {
         $this->company = $company;
 
         return $this;
-    }
-
-    /**
-     * @return \DateTime
-     */
-    public function getAdded(): \DateTime
-    {
-        return $this->added;
-    }
-
-    /**
-     * @param \DateTime $added
-     *
-     * @return ProjectCompanyRole
-     */
-    public function setAdded(\DateTime $added): ProjectCompanyRole
-    {
-        $this->added = $added;
-
-        return $this;
-    }
-
-    /**
-     * @return \DateTime
-     */
-    public function getUpdated(): \DateTime
-    {
-        return $this->updated;
-    }
-
-    /**
-     * @param \DateTime $updated
-     *
-     * @return ProjectCompanyRole
-     */
-    public function setUpdated(\DateTime $updated): ProjectCompanyRole
-    {
-        $this->updated = $updated;
-
-        return $this;
-    }
-
-    /**
-     * @ORM\PrePersist
-     */
-    public function setAddedValue(): void
-    {
-        if (! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
-            $this->added = new \DateTime();
-        }
-    }
-
-    /**
-     * @ORM\PreUpdate
-     */
-    public function setUpdatedValue(): void
-    {
-        $this->updated = new \DateTime();
     }
 }

@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace Unilend\Bundle\CoreBusinessBundle\Entity;
 
@@ -7,6 +8,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Traits\Timestampable;
 
 /**
  * @ORM\Entity
+ * @ORM\HasLifecycleCallbacks
  */
 class PercentFee
 {
