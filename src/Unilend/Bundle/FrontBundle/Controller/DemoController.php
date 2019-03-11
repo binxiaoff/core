@@ -52,31 +52,33 @@ class DemoController extends Controller
         $projectRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
 
         if ($user->isBorrower()) {
-            $companyRepository                = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Companies');
-            $borrowerCompany                  = $companyRepository->findOneBy(['idClientOwner' => $user]);
-            $template['projects']['borrower'] = $this->groupByStatusAndSort($projectRepository->findBy(['idCompany' => $borrowerCompany]));
+            // @todo define criteria for recovering projects
+            $template['projects']['borrower'] = $this->groupByStatusAndSort($projectRepository->findBy(['idCompanySubmitter' => $user->getCompany()]));
         }
 
         if ($user->isPartner()) {
+            // @todo define criteria for recovering projects
             $companies                      = $partnerManager->getUserCompanies($user);
             $submitter                      = $user->getIdClient();
             $template['projects']['broker'] = $this->groupByStatusAndSort($projectRepository->getPartnerProjects($companies, null, $submitter));
         }
 
         if ($user->isLender()) {
-            $wallet                       = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($user, WalletType::LENDER);
-            $bidRepository                = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Bids');
-            $template['projects']['bids'] = $bidRepository->findBy(['wallet' => $wallet, 'status' => Bids::STATUS_PENDING], ['added' => 'ASC']);
+            $wallet           = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($user, WalletType::LENDER);
+            $bidRepository    = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Bids');
+            $projects['bids'] = $bidRepository->findBy(['wallet' => $wallet, 'status' => Bids::STATUS_PENDING], ['added' => 'ASC']);
 
-            $loanRepository                = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Loans');
-            $loans                         = $loanRepository->findBy(['wallet' => $wallet, 'status' => Loans::STATUS_ACCEPTED]);
-            $template['projects']['loans'] = [];
+            $loanRepository    = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Loans');
+            $loans             = $loanRepository->findBy(['wallet' => $wallet, 'status' => Loans::STATUS_ACCEPTED]);
+            $projects['loans'] = [];
 
             foreach ($loans as $loan) {
-                $template['projects']['loans'][$loan->getProject()->getStatus()][] = $loan;
+                $projects['loans'][$loan->getProject()->getStatus()][] = $loan;
             }
 
-            ksort($template['projects']['loans']);
+            ksort($projects['loans']);
+
+            $template['projects']['lender'] = $projects;
         }
 
         return $this->render('/demo/loans.html.twig', $template);

@@ -10,23 +10,44 @@
         {% if projects|length > 1 %}
             <div class="dashboard-tabs-nav">
                 <ul class="nav nav-dashboard-tabs">
-                    <li data-equal-width role="presentation" class="active">
-                        <a href="#tab-borrower" role="tab" data-toggle="tab">Dossiers déposés</a>
-                    </li>
-                    <li data-equal-width role="presentation">
-                        <a href="#tab-broker" role="tab" data-toggle="tab">Arrangements</a>
-                    </li>
-                    <li data-equal-width role="presentation">
-                        <a href="#tab-lender" role="tab" data-toggle="tab">Syndications souscrites</a>
-                    </li>
+                    {% if projects.borrower is defined %}
+                        {% if active is not defined %}
+                            {% set active = 'borrower' %}
+                        {% endif %}
+                        <li data-equal-width role="presentation"{% if active == 'borrower' %} class="active"{% endif %}>
+                            <a href="#tab-borrower" role="tab" data-toggle="tab">Dossiers déposés</a>
+                        </li>
+                    {% endif %}
+                    {% if projects.broker is defined %}
+                        {% if active is not defined %}
+                            {% set active = 'broker' %}
+                        {% endif %}
+                        <li data-equal-width role="presentation"{% if active == 'broker' %} class="active"{% endif %}>
+                            <a href="#tab-broker" role="tab" data-toggle="tab">Arrangements et notation</a>
+                        </li>
+                    {% endif %}
+                    {% if projects.lender is defined %}
+                        {% if active is not defined %}
+                            {% set active = 'lender' %}
+                        {% endif %}
+                        <li data-equal-width role="presentation"{% if active == 'lender' %} class="active"{% endif %}>
+                            <a href="#tab-lender" role="tab" data-toggle="tab">Syndications souscrites</a>
+                        </li>
+                    {% endif %}
                 </ul>
             </div><!-- /.dashboard-tabs-nav -->
         {% endif %}
 
         <div class="dashboard-tabs-content tab-content">
-            {% include ':frontbundle/demo/loans:projects.html.twig' with {'projectsType': 'borrower'} %}
-            {% include ':frontbundle/demo/loans:projects.html.twig' with {'projectsType': 'broker'} %}
-            {% include ':frontbundle/demo/loans:lender.html.twig' %}
+            {% if projects.borrower is defined %}
+                {% include ':frontbundle/demo/loans:projects.html.twig' with {'projectsType': 'borrower', 'active': active|default('borrower')} %}
+            {% endif %}
+            {% if projects.broker is defined %}
+                {% include ':frontbundle/demo/loans:projects.html.twig' with {'projectsType': 'broker', 'active': active|default('broker')} %}
+            {% endif %}
+            {% if projects.lender is defined %}
+                {% include ':frontbundle/demo/loans:lender.html.twig' with {'active': active|default('lender')} %}
+            {% endif %}
         </div><!-- /.dashboard-tabs-content -->
     </section><!-- /.dashboard-tabs -->
 {% endblock %}
