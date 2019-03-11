@@ -377,11 +377,11 @@ class Clients implements UserInterface, EquatableInterface, EncoderAwareInterfac
     private $idPostalAddress;
 
     /**
-     * @var CompanyClient|null
+     * @var Staff|null
      *
-     * @ORM\OneToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\CompanyClient", mappedBy="idClient")
+     * @ORM\OneToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Staff", mappedBy="client")
      */
-    private $companyClient;
+    private $staff;
 
     /**
      * @var bool
@@ -1579,11 +1579,11 @@ class Clients implements UserInterface, EquatableInterface, EncoderAwareInterfac
     }
 
     /**
-     * @return CompanyClient|null
+     * @return Staff|null
      */
-    public function getCompanyClient(): ?CompanyClient
+    public function getStaff(): ?Staff
     {
-        return $this->companyClient;
+        return $this->staff;
     }
 
     /**

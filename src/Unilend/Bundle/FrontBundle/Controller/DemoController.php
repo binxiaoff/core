@@ -180,7 +180,7 @@ class DemoController extends Controller
                 ->setStatus(ProjectsStatus::STATUS_REQUEST)
                 ->setIdPartner($partner)
                 ->setIdProduct($product)
-                ->setIdCompanySubmitter($user->getCompanyClient() ? $user->getCompanyClient()->getIdCompany() : null)
+                ->setIdCompanySubmitter($user->getStaff() ? $user->getStaff()->getCompany() : null)
                 ->setIdClientSubmitter($user)
                 ->setMeansRepayment($rate);
 

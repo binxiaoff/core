@@ -55,11 +55,11 @@ class PartnerManager
      */
     public function getPartner(Clients $client): ?Partner
     {
-        if (false === $client->isPartner() || empty($client->getCompanyClient())) {
+        if (false === $client->isPartner() || empty($client->getStaff())) {
             return null;
         }
 
-        $rootCompany = $client->getCompanyClient()->getIdCompany();
+        $rootCompany = $client->getStaff()->getCompany();
 
         while ($rootCompany->getIdParentCompany() && $rootCompany->getIdParentCompany()->getIdCompany()) {
             $rootCompany = $rootCompany->getIdParentCompany();
