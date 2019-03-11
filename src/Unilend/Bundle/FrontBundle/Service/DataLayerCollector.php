@@ -60,7 +60,7 @@ class DataLayerCollector
                 } elseif ($partner = $this->partnerManager->getPartner($client)) {
                     $data['ID_Partenaire'] = $partner->getId();
                     $data['ID_Client']     = $client->getIdClient();
-                    $data['Organisation']  = $client->getStaff()->getCompany()->getName();
+                    $data['Organisation']  = $client->getCompany()->getName();
                     $data['Role']          = in_array(Clients::ROLE_PARTNER_ADMIN, $client->getRoles()) ? 'Administrateur' : 'Collaborateur';
                 } else {
                     $data['ID_Emprunteur'] = $client->getIdClient();

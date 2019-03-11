@@ -1587,6 +1587,20 @@ class Clients implements UserInterface, EquatableInterface, EncoderAwareInterfac
     }
 
     /**
+     * @return Companies|null
+     */
+    public function getCompany(): ?Companies
+    {
+        $company = null;
+
+        if ($this->getStaff()) {
+            $company = $this->getStaff()->getCompany();
+        }
+
+        return $company;
+    }
+
+    /**
      * @return string
      */
     public function getInitials(): string
