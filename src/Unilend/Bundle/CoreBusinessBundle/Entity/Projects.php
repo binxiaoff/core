@@ -1705,4 +1705,12 @@ class Projects
 
         return $this->projectParticipants->matching($criteria);
     }
+
+    /**
+     * @return \DateTime|null
+     */
+    public function getEndDate(): ?\DateTime
+    {
+        return $this->getDateFin() ?? $this->getDateRetrait();
+    }
 }

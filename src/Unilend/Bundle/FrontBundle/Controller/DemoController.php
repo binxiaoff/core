@@ -5,7 +5,7 @@ namespace Unilend\Bundle\FrontBundle\Controller;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
-use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Filesystem\Exception\FileNotFoundException;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\{JsonResponse, RedirectResponse, Request, Response};
@@ -20,7 +20,7 @@ use Unilend\Bundle\WSClientBundle\Service\InseeManager;
 /**
  * @Security("has_role('ROLE_USER')")
  */
-class DemoController extends Controller
+class DemoController extends AbstractController
 {
     /** @var EntityManagerInterface */
     private $entityManager;
@@ -48,7 +48,13 @@ class DemoController extends Controller
      */
     public function loans(?UserInterface $user, PartnerManager $partnerManager): Response
     {
-        $template          = ['projects' => []];
+        $template = ['projects' => [
+            'borrower' => [],
+            'broker'   => [],
+            'bids'     => [],
+            'loans'    => [],
+        ]];
+
         $projectRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
 
         if ($user->isBorrower()) {
@@ -178,11 +184,11 @@ class DemoController extends Controller
                 ->setPeriod($duration)
                 ->setComments($description)
                 ->setCreateBo(false)
-                ->setRisk(['A', 'B', 'C', 'D', 'E'][rand(0,4)])
+                ->setRisk(['A', 'B', 'C', 'D', 'E'][rand(0, 4)])
                 ->setStatus(ProjectsStatus::STATUS_REQUEST)
                 ->setIdPartner($partner)
                 ->setIdProduct($product)
-                ->setIdCompanySubmitter($user->getStaff() ? $user->getStaff()->getCompany() : null)
+                ->setIdCompanySubmitter($user->getCompany())
                 ->setIdClientSubmitter($user)
                 ->setMeansRepayment($rate);
 
@@ -318,10 +324,10 @@ class DemoController extends Controller
      */
     public function projectDocument(string $hash, int $idProjectAttachment, AttachmentManager $attachmentManager, Filesystem $filesystem): Response
     {
-        $projectRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
-        $project           = $projectRepository->findOneBy(['hash' => $hash]);
+        $projectRepository           = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
+        $project                     = $projectRepository->findOneBy(['hash' => $hash]);
         $projectAttachmentRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectAttachment');
-        $projectAttachment = $projectAttachmentRepository->find($idProjectAttachment);
+        $projectAttachment           = $projectAttachmentRepository->find($idProjectAttachment);
 
         if (null === $project || null === $projectAttachment || $project !== $projectAttachment->getProject()) {
             return $this->redirectToRoute('demo_loans');
@@ -503,38 +509,44 @@ class DemoController extends Controller
      * @Route("/projets", name="demo_projects_list")
      *
      * @param ProjectDisplayManager $projectDisplayManager
+     * @param Request               $request
      *
      * @return Response
      */
-    public function projectsList(ProjectDisplayManager $projectDisplayManager): Response
+    public function projectsList(ProjectDisplayManager $projectDisplayManager, Request $request): Response
     {
-        $page          = 1;
-        $sortDirection = 'desc';
-        $sortType      = 'end';
-        $template      = [
+        $page          = $request->query->get('page', 1);
+        $sortDirection = $request->query->get('sortDirection', 'DESC');
+        $sortType      = $request->query->get('sortType', 'dateFin');
+        $projectStatus = [ProjectsStatus::STATUS_ONLINE, ProjectsStatus::STATUS_FUNDED, ProjectsStatus::STATUS_SIGNED, ProjectsStatus::STATUS_REPAYMENT, ProjectsStatus::STATUS_REPAID, ProjectsStatus::STATUS_LOSS];
+        $sort          = ['status' => 'ASC', $sortType => $sortDirection];
+        /** @var Projects[] $projects */
+        $projects      = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->findBy(['status' => $projectStatus], $sort);
+
+        $template = [
             'sortDirection'  => $sortDirection,
             'sortType'       => $sortType,
             'showSortable'   => true,
             'showPagination' => true,
             'currentPage'    => $page,
-            'pagination'     => $this->pagination(1, 20),
-            'projects'       => $projectDisplayManager->getProjectsList([], [$sortType => strtoupper($sortDirection)], 1, 20)
+            'pagination'     => $this->pagination($projectDisplayManager, $page, 20),
+            'projects'       => $projects
         ];
 
-        return $this->render('/demo/projects_list.html.twig', $template);
+        return $this->render(':frontbundle/demo:projects_list.html.twig', $template);
     }
 
     /**
-     * @param int $page
-     * @param int $limit
+     * @param ProjectDisplayManager $projectDisplayManager
+     * @param int                   $page
+     * @param int                   $limit
      *
      * @return array
      */
-    private function pagination($page, $limit)
+    private function pagination(ProjectDisplayManager $projectDisplayManager, int $page, int $limit)
     {
-        $projectDisplayManager = $this->get('unilend.frontbundle.service.project_display_manager');
-        $totalNumberProjects   = $projectDisplayManager->getTotalNumberOfDisplayedProjects(null);
-        $totalPages            = $limit ? ceil($totalNumberProjects / $limit) : 1;
+        $totalNumberProjects = $projectDisplayManager->getTotalNumberOfDisplayedProjects(null);
+        $totalPages          = $limit ? ceil($totalNumberProjects / $limit) : 1;
 
         $paginationSettings = [
             'itemsPerPage'      => $limit,
