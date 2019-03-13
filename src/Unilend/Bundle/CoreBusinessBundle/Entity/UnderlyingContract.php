@@ -62,13 +62,6 @@ class UnderlyingContract
     private $idContract;
 
     /**
-     * @var \Doctrine\Common\Collections\Collection
-     *
-     * @ORM\ManyToMany(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Product", mappedBy="idContract")
-     */
-    private $idProduct;
-
-    /**
      * @var ProductUnderlyingContract[]
      *
      * @ORM\OneToMany(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\ProductUnderlyingContract", mappedBy="idContract", fetch="EXTRA_LAZY")

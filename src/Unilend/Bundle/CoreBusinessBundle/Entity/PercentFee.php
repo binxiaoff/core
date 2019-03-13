@@ -41,7 +41,7 @@ class PercentFee
     private $customisedName;
 
     /**
-     * @var float
+     * @var string
      *
      * @ORM\Column(type="decimal", precision=4, scale=2)
      */
@@ -55,19 +55,19 @@ class PercentFee
     private $isRecurring;
 
     /**
-     * @return float
+     * @return string
      */
-    public function getRate(): float
+    public function getRate(): string
     {
         return $this->rate;
     }
 
     /**
-     * @param float $rate
+     * @param string $rate
      *
      * @return PercentFee
      */
-    public function setRate(float $rate): PercentFee
+    public function setRate(string $rate): PercentFee
     {
         $this->rate = $rate;
 

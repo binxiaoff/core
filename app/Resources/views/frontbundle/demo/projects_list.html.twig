@@ -56,8 +56,7 @@
 
                                 <div class="project-list-items">
                                     {% for project in projects %}
-                                        <article
-                                                class="project-list-item{% if project.status > constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_ONLINE') or "now"|date('Y-m-d H:i:s') > project.endDate|date('Y-m-d H:i:s') %} ui-project-expired{% endif %}">
+                                        <article class="project-list-item{% if false == project.isOnline %} ui-project-expired{% endif %}">
                                             <div class="project-list-item-category">
                                                 {% set backgroundColor = '#787679' %}
                                                 {% if project.idPartner.label == 'cals' %}
@@ -70,10 +69,9 @@
                                                     {% set backgroundColor = '#f76965' %}
                                                 {% endif %}
                                                 <span class="bubble" style="background-color: {{ backgroundColor }};">{{ ('partner-name_bubble-' ~ project.idPartner.label)|trans }}</span>
-
                                             </div>
                                             <div class="project-list-item-info">
-                                                <h3 class="project-list-item-title"><a href="{{ path('project_detail', {'projectSlug': project.slug }) }}">{{ project.idCompany.name }}</a></h3>
+                                                <h3 class="project-list-item-title"><a href="{{ path('demo_lender_project_details', {'slug': project.slug }) }}">{{ project.idCompany.name }}</a></h3>
                                                 <div class="project-list-item-description">
                                                     <p>{{ project.title|striptags|raw|truncate(100) }}</p>
                                                 </div>
@@ -92,7 +90,7 @@
                                                 {% endif %}
                                             </div>
                                             <div class="project-list-item-view">
-                                                <a href="{{ path('project_detail', {'projectSlug': project.slug}) }}">
+                                                <a href="{{ path('demo_lender_project_details', {'slug': project.slug}) }}">
                                                     <span class="icon fa-angle-right"></span><span class="sr-only">{% trans %} project-list_view-project-label {% endtrans %}</span>
                                                 </a>
                                             </div>
@@ -117,10 +115,11 @@
         .bubble {
             display: inline-block;
             border-radius: 12px;
-            padding: 0 10px;
+            padding: 2px 10px;
             line-height: 18px;
             color: #fbf9fb;
             font-weight: 900;
+            font-size: small;
         }
     </style>
 {% endblock %}

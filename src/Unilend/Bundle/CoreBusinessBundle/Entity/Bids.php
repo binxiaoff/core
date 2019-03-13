@@ -143,12 +143,52 @@ class Bids
      *
      * @return Bids
      */
-    public function removeBidFee(BidPercentFee $bidPercentFee): Bids
+    public function removePercentFee(BidPercentFee $bidPercentFee): Bids
     {
         if ($this->bidPercentFees->contains($bidPercentFee)) {
             $this->bidPercentFees->removeElement($bidPercentFee);
         }
 
         return $this;
+    }
+
+    /**
+     * @return iterable|BidPercentFee[]
+     */
+    public function getPercentFee(): iterable
+    {
+        return $this->bidPercentFees;
+    }
+
+    /**
+     * @return float
+     */
+    public function getOneTimeFeeTotalRate(): float
+    {
+        $totalFeeRate = 0.00;
+
+        foreach ($this->bidPercentFees as $bidPercentFee) {
+            if (false === $bidPercentFee->getPercentFee()->isRecurring()) {
+                $totalFeeRate = round(bcadd($bidPercentFee->getPercentFee()->getRate(), $totalFeeRate, 3), 2);
+            }
+        }
+
+        return $totalFeeRate;
+    }
+
+    /**
+     * @return float
+     */
+    public function getRecurringFeeTotalRate(): float
+    {
+        $totalFeeRate = 0.00;
+
+        foreach ($this->bidPercentFees as $bidPercentFee) {
+            if ($bidPercentFee->getPercentFee()->isRecurring()) {
+                $totalFeeRate = round(bcadd($bidPercentFee->getPercentFee()->getRate(), $totalFeeRate, 3), 2);
+            }
+        }
+
+        return $totalFeeRate;
     }
 }

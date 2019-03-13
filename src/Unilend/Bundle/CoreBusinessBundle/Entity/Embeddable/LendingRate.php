@@ -9,7 +9,14 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class LendingRate
 {
-    const TYPE_FIXED = 'FIXED';
+    const TYPE_FIXED   = 'FIXED';
+    const TYPE_EURIBOR = 'EURIBOR';
+    const TYPE_EONIA   = 'EONIA';
+    const TYPE_SONIA   = 'SONIA';
+    const TYPE_LIBOR   = 'LIBOR';
+    const TYPE_CHFTOIS = 'CHFTOIS';
+    const TYPE_FFER    = 'FFER';
+
     /**
      * @var string
      *

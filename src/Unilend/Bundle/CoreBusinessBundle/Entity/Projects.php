@@ -1713,4 +1713,9 @@ class Projects
     {
         return $this->getDateFin() ?? $this->getDateRetrait();
     }
+
+    public function isOnline(): bool
+    {
+        return $this->getStatus() === ProjectsStatus::STATUS_ONLINE && (null === $this->getEndDate() || new \DateTime() < $this->getEndDate());
+    }
 }

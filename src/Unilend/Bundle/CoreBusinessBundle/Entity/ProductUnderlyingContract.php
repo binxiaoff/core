@@ -16,7 +16,7 @@ class ProductUnderlyingContract
      * @var Product
      *
      * @ORM\Id
-     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Product")
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Product", inversedBy="productContract")
      * @ORM\JoinColumn(name="id_product", referencedColumnName="id_product", nullable=false)
      */
     private $idProduct;
@@ -25,7 +25,7 @@ class ProductUnderlyingContract
      * @var UnderlyingContract
      *
      * @ORM\Id
-     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\UnderlyingContract")
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\UnderlyingContract", inversedBy="productContract")
      * @ORM\JoinColumn(name="id_contract", referencedColumnName="id_contract", nullable=false)
      */
     private $idContract;

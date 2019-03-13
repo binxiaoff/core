@@ -588,10 +588,9 @@ class DemoController extends AbstractController
         $page          = $request->query->get('page', 1);
         $sortDirection = $request->query->get('sortDirection', 'DESC');
         $sortType      = $request->query->get('sortType', 'dateFin');
-        $projectStatus = [ProjectsStatus::STATUS_ONLINE, ProjectsStatus::STATUS_FUNDED, ProjectsStatus::STATUS_SIGNED, ProjectsStatus::STATUS_REPAYMENT, ProjectsStatus::STATUS_REPAID, ProjectsStatus::STATUS_LOSS];
         $sort          = ['status' => 'ASC', $sortType => $sortDirection];
         /** @var Projects[] $projects */
-        $projects      = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->findBy(['status' => $projectStatus], $sort);
+        $projects = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->findBy(['status' => ProjectDisplayManager::STATUS_DISPLAYABLE], $sort);
 
         $template = [
             'sortDirection'  => $sortDirection,
@@ -604,6 +603,32 @@ class DemoController extends AbstractController
         ];
 
         return $this->render(':frontbundle/demo:projects_list.html.twig', $template);
+    }
+
+    /**
+     * @Route("/projets/detail/lender/{slug}", name="demo_lender_project_details")
+     *
+     * @param string                $slug
+     * @param UserInterface|Clients $client
+     *
+     * @return Response
+     */
+    public function projectDetail(string $slug, UserInterface $client): Response
+    {
+        $project = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->findOneBy(['slug' => $slug]);
+        $wallet  = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
+        $bid     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Bids')->findOneBy(['wallet' => $wallet, 'project' => $project]);
+        /** @var Bids[] $bids */
+        $bids    = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Bids')->findBy(['project' => $project]);
+        $product = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Product')->find($project->getIdProduct());
+
+        return $this->render(':frontbundle/demo:project.html.twig', [
+            'project' => $project,
+            'wallet' => $wallet,
+            'bid'     => $bid,
+            'bids'    => $bids,
+            'product' => $product
+        ]);
     }
 
     /**

@@ -1,0 +1,35 @@
+<section id="project-section-myoffers" class="page-section" style="padding-bottom:30px">
+    <div class="tabs">
+        <div class="section-tabs-nav">
+            <header>
+                <h3 id="project-myoffers" class="h3">Mon offre</h3>
+            </header>
+        </div><!-- /.section-tabs-nav -->
+        <div class="section-tabs-content tab-content">
+            <div id="myoffers-inprogress" role="tabpanel" class="tab-pane active" aria-labelledby="project-myoffers-inprogress project-myoffers">
+                <table class="table-myoffers">
+                    <tbody>
+                    <tr class="my-offers-bid-row">
+                        <td>Status</td>
+                        <td>Taux de référence</td>
+                        <td>Taux de référence</td>
+                        <td>Marge</td>
+                        <td>Commission ponctuelle</td>
+                        <td>Commission récurrente</td>
+                        <td>Je souhaite être agent</td>
+                    </tr>
+                    <tr>
+                        <td>{% if bid.status == 0 %} En cours {% elseif bid.status == 1 %} Accepté {% else %} Refusé {% endif %}</td>
+                        <td>{{ (bid.amount / 100)|localizednumber }}&nbsp;€</td>
+                        <td>{{ ('interest-rate-indice_' ~ bid.rate.type)|trans }}</td>
+                        <td>{{ bid.rate.margin|localizednumberwithprecision(2) }}&nbsp;%</td>
+                        <td>{{ bid.oneTimeFeeTotalRate|localizednumberwithprecision(2) }}&nbsp;%</td>
+                        <td>{{ bid.recurringFeeTotalRate|localizednumberwithprecision(2) }}&nbsp;%</td>
+                        <td>{% if bid.ordre is null %} Non {% elseif bid.status == 1 %} Accepté {% else %} Oui {% endif %}</td>
+                    </tr>
+                    </tbody>
+                </table><!-- /.table-myoffers -->
+            </div><!-- /.tab-pane -->
+        </div><!-- /.section-tabs-content -->
+    </div><!-- /tabs -->
+</section><!-- /.page-section -->
