@@ -43,7 +43,7 @@ class ProjectAttachmentType
     private $id;
 
     /**
-     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectAttachmentTypeCategory
+     * @var ProjectAttachmentTypeCategory
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\ProjectAttachmentTypeCategory")
      * @ORM\JoinColumns({
@@ -53,7 +53,7 @@ class ProjectAttachmentType
     private $idCategory;
 
     /**
-     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType
+     * @var AttachmentType
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType")
      * @ORM\JoinColumns({
@@ -63,7 +63,7 @@ class ProjectAttachmentType
     private $idType;
 
     /**
-     * Column only used to index results, no getter/setter necessary
+     * Column only used to index results in "getAttachmentTypes" method of repository, no getter/setter necessary
      * @var int
      *
      * @ORM\Column(name="id_type", type="integer")

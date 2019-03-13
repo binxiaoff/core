@@ -12,13 +12,13 @@ use Symfony\Component\HttpFoundation\{JsonResponse, RedirectResponse, Request, R
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Translation\TranslatorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{Attachment, Bids, Clients, Companies, Loans, Projects, ProjectsComments, ProjectsStatus, Users, WalletType};
-use Unilend\Bundle\CoreBusinessBundle\Service\{AttachmentManager, PartnerManager, ProjectManager, ProjectStatusManager};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{Attachment, Bids, Clients, Companies, Loans, ProjectParticipant, Projects, ProjectsComments, ProjectsStatus, Users, WalletType};
+use Unilend\Bundle\CoreBusinessBundle\Service\{AttachmentManager, ProjectManager, ProjectStatusManager};
 use Unilend\Bundle\FrontBundle\Service\ProjectDisplayManager;
 use Unilend\Bundle\WSClientBundle\Service\InseeManager;
 
 /**
- * @Security("has_role('ROLE_USER')")
+ * @Security("is_granted('ROLE_USER')")
  */
 class DemoController extends AbstractController
 {
@@ -42,11 +42,10 @@ class DemoController extends AbstractController
      * @Route("/portefeuille", name="demo_loans")
      *
      * @param UserInterface|Clients|null $user
-     * @param PartnerManager             $partnerManager
      *
      * @return Response
      */
-    public function loans(?UserInterface $user, PartnerManager $partnerManager): Response
+    public function loans(?UserInterface $user): Response
     {
         $template = ['projects' => [
             'borrower' => [],
@@ -59,14 +58,12 @@ class DemoController extends AbstractController
 
         if ($user->isBorrower()) {
             // @todo define criteria for recovering projects
-            $template['projects']['borrower'] = $this->groupByStatusAndSort($projectRepository->findBy(['idCompanySubmitter' => $user->getCompany()]));
+            $template['projects']['borrower'] = $this->groupByStatusAndSort($projectRepository->findBy(['idCompany' => $user->getCompany()]));
         }
 
         if ($user->isPartner()) {
             // @todo define criteria for recovering projects
-            $companies                      = $partnerManager->getUserCompanies($user);
-            $submitter                      = $user->getIdClient();
-            $template['projects']['broker'] = $this->groupByStatusAndSort($projectRepository->getPartnerProjects($companies, null, $submitter));
+            $template['projects']['broker'] = $this->groupByStatusAndSort($projectRepository->findBy(['idCompanySubmitter' => $user->getCompany()]));
         }
 
         if ($user->isLender()) {
@@ -87,7 +84,7 @@ class DemoController extends AbstractController
             $template['projects']['lender'] = $projects;
         }
 
-        return $this->render('/demo/loans.html.twig', $template);
+        return $this->render(':frontbundle/demo:loans.html.twig', $template);
     }
 
     /**
@@ -123,9 +120,11 @@ class DemoController extends AbstractController
      */
     public function projectRequest(ProjectManager $projectManager, TranslatorInterface $translator): Response
     {
-        $products        = [];
-        $partners        = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Partner')->findAll();
-        $partnerProducts = $this->entityManager->getRepository('UnilendCoreBusinessBundle:PartnerProduct')->findBy(['idPartner' => $partners]);
+        $products            = [];
+        $arrangers           = [];
+        $partners            = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Partner')->findAll();
+        $partnerProducts     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:PartnerProduct')->findBy(['idPartner' => $partners]);
+        $companiesRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Companies');
 
         foreach ($partnerProducts as $partnerProduct) {
             $productId = $partnerProduct->getIdProduct()->getIdProduct();
@@ -137,14 +136,26 @@ class DemoController extends AbstractController
 
         asort($products);
 
+        foreach ($partners as $partner) {
+            $company = $partner->getIdCompany();
+
+            if (false === isset($arrangers[$company->getIdCompany()])) {
+                $arrangers[$company->getIdCompany()] = $company->getName();
+            }
+        }
+
+        asort($arrangers);
+
         $template = [
-            'loanPeriods' => $projectManager->getPossibleProjectPeriods(),
-            'borrowers'   => $this->entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findBy([], ['name' => 'ASC']),
-            'partners'    => $partners,
-            'products'    => $products
+            'loanPeriods'     => $projectManager->getPossibleProjectPeriods(),
+            'partners'        => $partners,
+            'products'        => $products,
+            'arrangers'       => $arrangers,
+            'runs'            => $companiesRepository->findBy(['idCompany' => range(6, 44)], ['name' => 'ASC']),
+            'attachmentTypes' => $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectAttachmentType')->getAttachmentTypes()
         ];
 
-        return $this->render('/demo/project_request.html.twig', $template);
+        return $this->render(':frontbundle/demo:project_request.html.twig', $template);
     }
 
     /**
@@ -153,27 +164,37 @@ class DemoController extends AbstractController
      * @param Request                    $request
      * @param UserInterface|Clients|null $user
      * @param ProjectStatusManager       $projectStatusManager
+     * @param AttachmentManager          $attachmentManager
      *
      * @return RedirectResponse
      * @throws \Doctrine\DBAL\ConnectionException
      */
-    public function projectRequestFormAction(Request $request, ?UserInterface $user, ProjectStatusManager $projectStatusManager): RedirectResponse
+    public function projectRequestFormAction(
+        Request $request,
+        ?UserInterface $user,
+        ProjectStatusManager $projectStatusManager,
+        AttachmentManager $attachmentManager
+    ): RedirectResponse
     {
-        $formData    = $request->request->get('simulator');
-        $title       = $formData['title'] ?? null;
-        $partner     = $formData['partner'] ?? null;
-        $amount      = $formData['amount'] ?? null;
-        $duration    = $formData['duration'] ?? null;
-        $product     = empty($formData['product']) ? null : $formData['product'];
-        $borrower    = $formData['borrower'] ?? null;
-        $rate        = $formData['rate'] ?? null;
-        $description = $formData['description'] ?? null;
+        $borrowerId  = $request->request->get('borrower');
+        $title       = $request->request->get('title');
+        $description = $request->request->get('description');
+        $amount      = $request->request->get('amount');
+        $duration    = $request->request->get('duration');
+        $date        = $request->request->get('date');
+        $date        = $date ? \DateTime::createFromFormat('d/m/Y', $date) : null;
+        $partnerId   = $request->request->get('partner');
+        $productId   = $request->request->get('product') ?: null;
+        $rate        = $request->request->get('rate') ?: null;
+        $arrangerId  = $request->request->get('arranger');
+        $runId       = $request->request->get('run');
 
         try {
             $this->entityManager->beginTransaction();
 
-            $partner  = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Partner')->find($partner);
-            $borrower = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->find($borrower);
+            $partner             = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Partner')->find($partnerId);
+            $companiesRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Companies');
+            $borrower            = $companiesRepository->find($borrowerId);
 
             $project = new Projects();
             $project
@@ -184,18 +205,55 @@ class DemoController extends AbstractController
                 ->setPeriod($duration)
                 ->setComments($description)
                 ->setCreateBo(false)
-                ->setRisk(['A', 'B', 'C', 'D', 'E'][rand(0, 4)])
                 ->setStatus(ProjectsStatus::STATUS_REQUEST)
                 ->setIdPartner($partner)
-                ->setIdProduct($product)
+                ->setIdProduct($productId)
                 ->setIdCompanySubmitter($user->getCompany())
                 ->setIdClientSubmitter($user)
-                ->setMeansRepayment($rate);
+                ->setMeansRepayment($rate)
+                ->setDateRetrait($date);
 
             $this->entityManager->persist($project);
             $this->entityManager->flush($project);
 
             $projectStatusManager->addProjectStatus(Users::USER_ID_FRONT, $project->getStatus(), $project);
+
+            if ($arrangerId && $arranger = $companiesRepository->find($arrangerId)) {
+                $arrangerParticipant = new ProjectParticipant();
+                $arrangerParticipant
+                    ->setProject($project)
+                    ->setCompany($arranger)
+                    ->setRoles([ProjectParticipant::COMPANY_ROLE_ARRANGER]);
+
+                $this->entityManager->persist($arrangerParticipant);
+                $this->entityManager->flush($arrangerParticipant);
+            }
+
+            if ($runId && $run = $companiesRepository->find($runId)) {
+                $runParticipant = new ProjectParticipant();
+                $runParticipant
+                    ->setProject($project)
+                    ->setCompany($run)
+                    ->setRoles([ProjectParticipant::COMPANY_ROLE_RUN]);
+
+                $this->entityManager->persist($runParticipant);
+                $this->entityManager->flush($runParticipant);
+            }
+
+            $attachmentTypeRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:AttachmentType');
+
+            foreach ($request->files->all() as $field => $file) {
+                $attachmentType = $attachmentTypeRepository->find($request->request->get('filetype')[$field]);
+                $attachment     = $attachmentManager->upload($user, $attachmentType, $file, false);
+                $filename       = $request->request->get('filename')[$field];
+
+                if (false === empty($filename)) {
+                    $attachment->setOriginalName($filename);
+                    $this->entityManager->flush($attachment);
+                }
+
+                $attachmentManager->attachToProject($attachment, $project);
+            }
 
             $this->entityManager->commit();
 
@@ -238,7 +296,7 @@ class DemoController extends AbstractController
             'projectAttachments' => $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectAttachment')->findBy(['idProject' => $project], ['added' => 'DESC'])
         ];
 
-        return $this->render('/demo/project_request_details.html.twig', $template);
+        return $this->render(':frontbundle/demo:project_request_details.html.twig', $template);
     }
 
     /**
@@ -309,7 +367,7 @@ class DemoController extends AbstractController
             'messages' => $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsComments')->findBy(['idProject' => $project, 'public' => true], ['added' => 'DESC'])
         ];
 
-        return $this->render('/demo/project_chat.html.twig', $template);
+        return $this->render(':frontbundle/demo:project_chat.html.twig', $template);
     }
 
     /**
@@ -411,18 +469,18 @@ class DemoController extends AbstractController
     }
 
     /**
-     * @Route("/emprunteur", name="demo_borrower_creation_form", methods={"POST"})
+     * @Route("/emprunteur", name="demo_borrower_search_form", methods={"POST"})
      *
-     * @param Request $request
+     * @param Request      $request
+     * @param InseeManager $inseeManager
      *
      * @return JsonResponse
      */
-    public function borrowerCreationForm(Request $request): JsonResponse
+    public function borrowerSearchForm(Request $request, InseeManager $inseeManager): JsonResponse
     {
-        $siren = $request->request->get('siren');
-        $name  = $request->request->get('name');
+        $siren = $request->request->get('term');
 
-        if (1 !== preg_match('/^[0-9]{9}$/', $siren) || empty($name)) {
+        if (1 !== preg_match('/^[0-9]{9}$/', $siren)) {
             return $this->json([
                 'success' => false,
                 'error'   => 'Invalid parameters'
@@ -433,6 +491,15 @@ class DemoController extends AbstractController
         $company           = $companyRepository->findOneBy(['siren' => $siren]);
 
         if (null === $company) {
+            $name = $inseeManager->searchSiren($siren);
+
+            if (empty($name)) {
+                return $this->json([
+                    'success' => false,
+                    'error'   => 'Unknown SIREN'
+                ]);
+            }
+
             $company = new Companies();
             $company
                 ->setSiren($siren)

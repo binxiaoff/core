@@ -1,4 +1,4 @@
-<article role="tabpanel" class="dashboard-tab-pane tab-pane{% if active %} active{% endif %}" id="tab-{{ projectsType }}">
+<article role="tabpanel" class="dashboard-tab-pane tab-pane{% if active == projectsType %} active{% endif %}" id="tab-{{ projectsType }}">
     <div class="panel">
         <div class="panel-content">
             {% if projects[projectsType]|length > 0 %}

@@ -1,0 +1,15 @@
+<select name="filetype[{{ name|default('file') }}]" class="input-field">
+    <option value="">Sélectionner le type de fichier</option>
+    {% set attachmentCategory = 0 %}
+    {% for attachmentType in attachmentTypes %}
+        {% if attachmentCategory != attachmentType.idCategory.id %}
+            {% if attachmentCategory != 0 %}
+                </optgroup>
+            {% endif %}
+            {% set attachmentCategory = attachmentType.idCategory.id %}
+            <optgroup label="{{ attachmentType.idCategory.name }}">
+        {% endif %}
+        <option value="{{ attachmentType.idType.id }}">{{ attachmentType.name }}</option>
+    {% endfor %}
+    </optgroup>
+</select>

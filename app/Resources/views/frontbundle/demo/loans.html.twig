@@ -39,14 +39,14 @@
         {% endif %}
 
         <div class="dashboard-tabs-content tab-content">
-            {% if projects.borrower is defined %}
-                {% include ':frontbundle/demo/loans:projects.html.twig' with {'projectsType': 'borrower', 'active': active|default('borrower')} %}
+            {% if projects.borrower is defined and projects.borrower|length %}
+                {% include ':frontbundle/demo/partials:projects.html.twig' with {'projectsType': 'borrower', 'active': active|default('borrower')} %}
             {% endif %}
-            {% if projects.broker is defined %}
-                {% include ':frontbundle/demo/loans:projects.html.twig' with {'projectsType': 'broker', 'active': active|default('broker')} %}
+            {% if projects.broker is defined and projects.broker|length %}
+                {% include ':frontbundle/demo/partials:projects.html.twig' with {'projectsType': 'broker', 'active': active|default('broker')} %}
             {% endif %}
-            {% if projects.lender is defined %}
-                {% include ':frontbundle/demo/loans:lender.html.twig' with {'active': active|default('lender')} %}
+            {% if projects.lender is defined and projects.lender|length %}
+                {% include ':frontbundle/demo/partials:lender.html.twig' with {'active': active|default('lender')} %}
             {% endif %}
         </div><!-- /.dashboard-tabs-content -->
     </section><!-- /.dashboard-tabs -->

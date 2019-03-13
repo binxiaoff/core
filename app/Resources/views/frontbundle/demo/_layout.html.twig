@@ -1,4 +1,4 @@
-{% extends 'layouts/_layout.html.twig' %}
+{% extends ':frontbundle/layouts:_layout.html.twig' %}
 
 {% block siteContent %}
     <article{% if page.id is not empty %} id="{{ page.id }}"{% endif %} class="dashboard{% if page.classNames is not empty %} {{ page.classNames }}{% endif %}">
@@ -45,7 +45,7 @@
                                 <li role="presentation" class="dashboard-nav-statistics{% if app.request.get('_route') == 'demo_statistics' %} active{% endif %}">
                                     <a href="{{ path('demo_statistics') }}">
                                         <span class="icon fa-project-u"></span>
-                                        <span class="label">Gestion documentaire</span>
+                                        <span class="label">Base documentaire</span>
                                     </a>
                                 </li>
                                 <li role="presentation" class="dashboard-nav-statistics{% if app.request.get('_route') == 'demo_statistics' %} active{% endif %}">
