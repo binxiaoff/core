@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Unilend\Bundle\WSClientBundle\Service;
 
 use GuzzleHttp\Client;

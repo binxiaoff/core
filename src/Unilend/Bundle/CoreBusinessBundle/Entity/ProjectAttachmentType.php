@@ -22,9 +22,9 @@ class ProjectAttachmentType
     /**
      * @var int
      *
-     * @ORM\Column(name="max_items", type="smallint", nullable=false, options={"default" : 1})
+     * @ORM\Column(name="max_items", type="smallint", nullable=true)
      */
-    private $maxItems = 1;
+    private $maxItems;
 
     /**
      * @var string
@@ -99,11 +99,11 @@ class ProjectAttachmentType
     /**
      * Set maxItems
      *
-     * @param int $maxItems
+     * @param int|null $maxItems
      *
      * @return ProjectAttachmentType
      */
-    public function setMaxItems(int $maxItems): ProjectAttachmentType
+    public function setMaxItems(?int $maxItems): ProjectAttachmentType
     {
         $this->maxItems = $maxItems;
 
@@ -113,9 +113,9 @@ class ProjectAttachmentType
     /**
      * Get maxItems
      *
-     * @return int
+     * @return int|null
      */
-    public function getMaxItems(): int
+    public function getMaxItems(): ?int
     {
         return $this->maxItems;
     }

@@ -186,6 +186,8 @@ class DemoController extends AbstractController
         $partnerId   = $request->request->get('partner');
         $productId   = $request->request->get('product') ?: null;
         $rate        = $request->request->get('rate') ?: null;
+        $rate        = $rate ? floatval(str_replace(',', '.', $rate)) : null;
+        $guarantee   = $request->request->get('guarantee') ? 1 : 0;
         $arrangerId  = $request->request->get('arranger');
         $runId       = $request->request->get('run');
 
@@ -210,8 +212,9 @@ class DemoController extends AbstractController
                 ->setIdProduct($productId)
                 ->setIdCompanySubmitter($user->getCompany())
                 ->setIdClientSubmitter($user)
-                ->setMeansRepayment($rate)
-                ->setDateRetrait($date);
+                ->setDateRetrait($date)
+                ->setInterestRate($rate)
+                ->setMeansRepayment($guarantee);
 
             $this->entityManager->persist($project);
             $this->entityManager->flush($project);
@@ -248,7 +251,7 @@ class DemoController extends AbstractController
                 $filename       = $request->request->get('filename')[$field];
 
                 // @todo "original name" should be used for saving file name, not a label
-                $attachment->setOriginalName($filename ?? $attachmentType->getLabel());
+                $attachment->setOriginalName($filename ?: $attachmentType->getLabel());
                 $this->entityManager->flush($attachment);
 
                 $attachmentManager->attachToProject($attachment, $project);

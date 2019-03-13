@@ -213,7 +213,7 @@ class AttachmentManager
         ]);
 
         foreach ($attached as $index => $attachmentToDetach) {
-            if ($index < $projectAttachmentType->getMaxItems() - 1) {
+            if (null === $projectAttachmentType->getMaxItems() || $index < $projectAttachmentType->getMaxItems() - 1) {
                 continue;
             }
 
