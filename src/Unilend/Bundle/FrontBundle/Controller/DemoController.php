@@ -47,12 +47,13 @@ class DemoController extends AbstractController
      */
     public function loans(?UserInterface $user): Response
     {
-        $template = ['projects' => [
-            'borrower' => [],
-            'broker'   => [],
-            'bids'     => [],
-            'loans'    => [],
-        ]];
+        $template = [
+            'projects' => [
+                'borrower'  => [],
+                'submitter' => [],
+                'lender'    => []
+            ]
+        ];
 
         $projectRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
 
@@ -63,7 +64,7 @@ class DemoController extends AbstractController
 
         if ($user->isPartner()) {
             // @todo define criteria for recovering projects
-            $template['projects']['broker'] = $this->groupByStatusAndSort($projectRepository->findBy(['idCompanySubmitter' => $user->getCompany()]));
+            $template['projects']['submitter'] = $this->groupByStatusAndSort($projectRepository->findBy(['idCompanySubmitter' => $user->getCompany()]));
         }
 
         if ($user->isLender()) {

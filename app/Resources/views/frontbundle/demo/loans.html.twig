@@ -18,12 +18,12 @@
                             <a href="#tab-borrower" role="tab" data-toggle="tab">Dossiers déposés</a>
                         </li>
                     {% endif %}
-                    {% if projects.broker is defined %}
+                    {% if projects.submitter is defined %}
                         {% if active is not defined %}
-                            {% set active = 'broker' %}
+                            {% set active = 'submitter' %}
                         {% endif %}
-                        <li data-equal-width role="presentation"{% if active == 'broker' %} class="active"{% endif %}>
-                            <a href="#tab-broker" role="tab" data-toggle="tab">Arrangements et notation</a>
+                        <li data-equal-width role="presentation"{% if active == 'submitter' %} class="active"{% endif %}>
+                            <a href="#tab-submitter" role="tab" data-toggle="tab">Arrangements et notation</a>
                         </li>
                     {% endif %}
                     {% if projects.lender is defined %}
@@ -42,8 +42,8 @@
             {% if projects.borrower is defined and projects.borrower|length %}
                 {% include ':frontbundle/demo/partials:projects.html.twig' with {'projectsType': 'borrower', 'active': active|default('borrower')} %}
             {% endif %}
-            {% if projects.broker is defined and projects.broker|length %}
-                {% include ':frontbundle/demo/partials:projects.html.twig' with {'projectsType': 'broker', 'active': active|default('broker')} %}
+            {% if projects.submitter is defined and projects.submitter|length %}
+                {% include ':frontbundle/demo/partials:projects.html.twig' with {'projectsType': 'submitter', 'active': active|default('submitter')} %}
             {% endif %}
             {% if projects.lender is defined and projects.lender|length %}
                 {% include ':frontbundle/demo/partials:lender.html.twig' with {'active': active|default('lender')} %}
