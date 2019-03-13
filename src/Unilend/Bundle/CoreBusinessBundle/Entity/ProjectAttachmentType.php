@@ -22,9 +22,9 @@ class ProjectAttachmentType
     /**
      * @var int
      *
-     * @ORM\Column(name="max_items", type="smallint", nullable=false, options={"default" : 1})
+     * @ORM\Column(name="max_items", type="smallint", nullable=true)
      */
-    private $maxItems = 1;
+    private $maxItems;
 
     /**
      * @var string
@@ -43,7 +43,7 @@ class ProjectAttachmentType
     private $id;
 
     /**
-     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectAttachmentTypeCategory
+     * @var ProjectAttachmentTypeCategory
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\ProjectAttachmentTypeCategory")
      * @ORM\JoinColumns({
@@ -53,7 +53,7 @@ class ProjectAttachmentType
     private $idCategory;
 
     /**
-     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType
+     * @var AttachmentType
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType")
      * @ORM\JoinColumns({
@@ -63,7 +63,7 @@ class ProjectAttachmentType
     private $idType;
 
     /**
-     * Column only used to index results, no getter/setter necessary
+     * Column only used to index results in "getAttachmentTypes" method of repository, no getter/setter necessary
      * @var int
      *
      * @ORM\Column(name="id_type", type="integer")
@@ -99,11 +99,11 @@ class ProjectAttachmentType
     /**
      * Set maxItems
      *
-     * @param int $maxItems
+     * @param int|null $maxItems
      *
      * @return ProjectAttachmentType
      */
-    public function setMaxItems(int $maxItems): ProjectAttachmentType
+    public function setMaxItems(?int $maxItems): ProjectAttachmentType
     {
         $this->maxItems = $maxItems;
 
@@ -113,9 +113,9 @@ class ProjectAttachmentType
     /**
      * Get maxItems
      *
-     * @return int
+     * @return int|null
      */
-    public function getMaxItems(): int
+    public function getMaxItems(): ?int
     {
         return $this->maxItems;
     }

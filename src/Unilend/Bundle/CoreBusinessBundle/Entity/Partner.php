@@ -17,15 +17,15 @@ class Partner
     const STATUS_VALIDATED = 2;
     const STATUS_DISABLED  = 3;
 
-    const PARTNER_CALS_ID      = 1;
-    const PARTNER_CACIB_ID     = 2;
-    const PARTNER_CALF_ID      = 3;
-    const PARTNER_UNIFERGIE_ID = 4;
+    const PARTNER_CALS_ID            = 1;
+    const PARTNER_CACIB_COLLPUB_ID   = 2;
+    const PARTNER_CACIB_CORPORATE_ID = 3;
+    const PARTNER_UNIFERGIE_ID       = 4;
 
-    const PARTNER_CALS_LABEL      = 'cals';
-    const PARTNER_CACIB_LABEL     = 'cacib';
-    const PARTNER_CALF_LABEL      = 'calf';
-    const PARTNER_UNIFERGIE_LABEL = 'unifergie';
+    const PARTNER_CALS_LABEL            = 'cals';
+    const PARTNER_CACIB_COLLPUB_LABEL   = 'cacib_collpub';
+    const PARTNER_CACIB_CORPORATE_LABEL = 'cacib_corporate';
+    const PARTNER_UNIFERGIE_LABEL       = 'unifergie';
 
     /**
      * @var Companies

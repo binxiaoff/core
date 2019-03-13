@@ -27,7 +27,8 @@
         "./app/Resources/assets/js/vendor/videojs/Youtube.js",
         "./app/Resources/assets/js/vendor/jquery.caret.js",
         "./app/Resources/assets/js/vendor/jquery.datatables.js",
-        "./node_modules/select2/dist/js/select2.js"
+        "./node_modules/select2/dist/js/select2.js",
+        "./node_modules/select2/dist/js/i18n/fr.js"
       ],
       "extractSharedJs": false
     },

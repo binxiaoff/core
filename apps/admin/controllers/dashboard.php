@@ -380,8 +380,8 @@ class dashboardController extends bootstrap
             $statusCashFlowCount    = $this->countByStatus($countableStatus, [BorrowingMotive::ID_MOTIVE_CASH_FLOW]);
             $statusAcquisitionCount = $this->countByStatus($countableStatus, [BorrowingMotive::ID_MOTIVE_ACQUISITION_MERGER]);
             $statusPartnerCount     = $this->countByStatus($countableStatus, null, [
-                Partner::PARTNER_CACIB_ID,
-                Partner::PARTNER_CALF_ID,
+                Partner::PARTNER_CACIB_COLLPUB_ID,
+                Partner::PARTNER_CACIB_CORPORATE_ID,
                 Partner::PARTNER_UNIFERGIE_ID
             ]);
 
@@ -575,10 +575,10 @@ class dashboardController extends bootstrap
         $countInStatus = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->getStatisticsByStatusByMonth($status, true, $start, $end);
 
         $partnerColor = [
-            Partner::PARTNER_CACIB_ID     => '#FCA234',
-            Partner::PARTNER_CALF_ID      => '#15AAE8',
-            Partner::PARTNER_UNIFERGIE_ID => '#133082',
-            Partner::PARTNER_CALS_ID      => '#2bc9af'
+            Partner::PARTNER_CACIB_COLLPUB_ID   => '#FCA234',
+            Partner::PARTNER_CACIB_CORPORATE_ID => '#15AAE8',
+            Partner::PARTNER_UNIFERGIE_ID       => '#133082',
+            Partner::PARTNER_CALS_ID            => '#2bc9af'
         ];
 
         $countInStatusHighcharts = [];

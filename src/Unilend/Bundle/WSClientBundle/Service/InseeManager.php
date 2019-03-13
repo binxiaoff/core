@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Unilend\Bundle\WSClientBundle\Service;
 
 use GuzzleHttp\Client;
@@ -34,10 +36,23 @@ class InseeManager
 
         $content = json_decode($response->getBody()->getContents(), true);
 
-        if (null === $content || empty($content['uniteLegale']['periodesUniteLegale'][0]['denominationUniteLegale'])) {
+        if (null === $content || empty($content['uniteLegale'])) {
             return null;
         }
 
-        return $content['uniteLegale']['periodesUniteLegale'][0]['denominationUniteLegale'];
+        $legalEntity = $content['uniteLegale'];
+
+        if (false === empty($legalEntity['periodesUniteLegale'][0]['denominationUniteLegale'])) {
+            return $legalEntity['periodesUniteLegale'][0]['denominationUniteLegale'];
+        }
+
+        if (
+            false === empty($legalEntity['prenom1UniteLegale'])
+            && false === empty($legalEntity['periodesUniteLegale'][0]['nomUniteLegale'])
+        ) {
+            return trim($legalEntity['prenom1UniteLegale'] . ' ' . $legalEntity['periodesUniteLegale'][0]['nomUniteLegale']);
+        }
+
+        return null;
     }
 }

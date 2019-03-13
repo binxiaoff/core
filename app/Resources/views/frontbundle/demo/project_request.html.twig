@@ -1,4 +1,4 @@
-{% extends 'demo/_layout.html.twig' %}
+{% extends ':frontbundle/demo:_layout.html.twig' %}
 
 {% set page = {
     id: 'demo-project-request',
@@ -13,94 +13,111 @@
                     <header class="panel-header">
                         <h3>{% trans %} demo-project-request_title {% endtrans %}</h3>
                     </header>
-                    <form action="{{ path('demo_project_request_form') }}" method="post" class="simulator">
-                        <fieldset class="simulator-pane-inner"
-                                  data-formvalidation
-                                  data-formvalidation-notificationselem=".form-validation-notifications">
-                            <div class="form-validation-notifications"></div>
+                    <form action="{{ path('demo_project_request_form') }}" method="post" enctype="multipart/form-data" {#data-formvalidation data-formvalidation-notificationselem=".form-validation-notifications"#}>
+                        <fieldset class="simulator-pane-inner">
+                            <legend>Identification</legend>
                             <div class="row row-multi-col-computer">
-                                <div class="form-field col-lg-8 col-md-8">
-                                    <label for="simulator-input-title">
-                                        {% trans %} demo-project-request_simulator-title-field-label {% endtrans %}
-                                        <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span>
-                                    </label>
-                                    <input id="simulator-input-title" type="text" step="any" name="simulator[title]" class="input-field"
-                                           data-formvalidation-input
-                                           data-formvalidation-type="string"
-                                           data-formvalidation-required="true">
-                                </div>
-                                <div class="form-field col-lg-4 col-md-4">
-                                    <label for="simulator-input-partner">
-                                        {% trans %} demo-project-request_simulator-partner-field-label {% endtrans %}
-                                        <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span>
-                                    </label>
-                                    <select id="simulator-input-partner" name="simulator[partner]" class="input-field"
-                                            onchange="$('#borrower-container').toggle(this.value !== '')"
-                                            data-formvalidation-input
-                                            data-formvalidation-required="true">
-                                        <option value=""></option>
-                                        {% for partner in partners %}
-                                            <option value="{{ partner.id }}">{{ ('partner-name_list-' ~ partner.label)|trans }}</option>
-                                        {% endfor %}
-                                    </select>
-                                </div>
-                            </div>
-                            <div id="borrower-container" class="row row-multi-col-computer" style="display: none;">
-                                <div class="form-field col-lg-8 col-md-8">
-                                    <label for="simulator-input-borrower">
+                                <div class="form-field col-lg-6 col-md-6">
+                                    <label for="input-borrower">
                                         {% trans %} demo-project-request_simulator-borrower-field-label {% endtrans %}
                                         <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span>
                                     </label>
-                                    <select id="simulator-input-borrower" name="simulator[borrower]" class="input-field select2"
-                                            onchange="$('.base-specs-container').toggle(this.value !== ''); $('footer.simulator-pane-inner').toggle(this.value !== '')"
-                                            data-formvalidation-input
-                                            data-formvalidation-required="true">
+                                    <select id="input-borrower" name="borrower" class="input-field">
                                         <option value=""></option>
-                                        {% for borrower in borrowers %}
-                                            <option value="{{ borrower.idCompany }}">{{ borrower.name }} ({{ borrower.siren }})</option>
-                                        {% endfor %}
                                     </select>
-                                </div>
-                                <div class="text-align-right col-lg-4 col-md-4">
-                                    <a href="#dialog-borrower-creation-content" class="btn-default btn-shape-md fancybox-html">
-                                        <span class="icon fa-plus"></span>
-                                        {% trans %} demo-project-request_add-borrower-button {% endtrans %}
-                                    </a>
-                                </div>
+                                </div><!-- /.form-field -->
+                                <div class="form-field col-lg-6 col-md-6">
+                                    <label for="input-title">
+                                        {% trans %} demo-project-request_simulator-title-field-label {% endtrans %}
+                                        <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span>
+                                    </label>
+                                    <input id="input-title" type="text" step="any" name="title" class="input-field"
+                                           data-formvalidation-input
+                                           data-formvalidation-type="string"
+                                           data-formvalidation-required="true">
+                                </div><!-- /.form-field -->
                             </div>
-                            <div class="row row-multi-col-computer base-specs-container" style="display: none;">
+                            <div class="row">
+                                <div class="form-field">
+                                    <label for="input-description">
+                                        {% trans %} demo-project-request_simulator-description-label {% endtrans %}
+                                        <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span>
+                                    </label>
+                                    {% spaceless %}
+                                        <textarea id="input-description" name="description" class="input-field" rows="10"
+                                                  data-formvalidation-input
+                                                  data-formvalidation-required="true"
+                                                  data-formvalidation-type="string">
+                                        </textarea>
+                                    {% endspaceless %}
+                                </div><!-- /.form-field -->
+                            </div>
+                        </fieldset>
+                        <fieldset class="simulator-pane-inner" style="margin-top: 20px;">
+                            <legend>Besoin de financement</legend>
+                            <div class="row row-multi-col-computer">
                                 <div class="form-field col-lg-4 col-md-4">
-                                    <label for="simulator-input-amount">
+                                    <label for="input-amount">
                                         {% trans %} demo-project-request_simulator-amount-field-label {% endtrans %}
                                         <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span>
                                     </label>
-                                    <input id="simulator-input-amount" type="text" step="any" name="simulator[amount]" class="input-field"
+                                    <input id="input-amount" type="text" step="any" name="amount" class="input-field"
                                            data-formvalidation-input
                                            data-formvalidation-type="integer"
                                            data-formvalidation-required="true">
-                                </div>
+                                </div><!-- /.form-field -->
                                 <div class="form-field col-lg-4 col-md-4">
-                                    <label for="simulator-input-duration">
+                                    <label for="input-duration">
                                         {% trans %} demo-project-request_simulator-duration-field-label {% endtrans %}
                                         <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span>
                                     </label>
-                                    <select id="simulator-input-duration" name="simulator[duration]" class="input-field"
-                                         data-formvalidation-input
-                                         data-formvalidation-type="integer"
-                                         data-formvalidation-required="true">
+                                    <select id="input-duration" name="duration" class="input-field"
+                                            data-formvalidation-input
+                                            data-formvalidation-type="integer"
+                                            data-formvalidation-required="true">
                                         <option value=""></option>
                                         {% for period in loanPeriods %}
-                                            <option value="{{ period }}">{{ period }} ans</option>
+                                            <option value="{{ period }}">{% transchoice(period) with {'%duration%': period} %} demo-project-request_simulator-duration-select-option {% endtranschoice %}</option>
                                         {% endfor %}
                                     </select>
                                 </div><!-- /.form-field -->
                                 <div class="form-field col-lg-4 col-md-4">
-                                    <label for="simulator-input-product">
-                                        {% trans %} demo-project-request_simulator-product-field-label {% endtrans %}
+                                    <label for="input-date">
+                                        Date de mise à disposition
+                                    </label>
+                                    <div class="input-group set-right">
+                                        <input id="input-date" type="text" name="date" class="input-field ui-has-datepicker" autocomplete="off">
+                                        <div class="btn-group">
+                                            <label for="filter-start"><span class="icon fa-calendar-u32 c-p1"> <span class="sr-only">{{ 'borrower-operation_select-start-date'|trans }}</span></span></label>
+                                        </div><!-- /.btn-group -->
+                                    </div><!-- /.input-group -->
+                                </div><!-- /.form-field -->
+                            </div>
+                            <div class="row row-multi-col-computer">
+                                <div class="form-field col-lg-4 col-md-4">
+                                    <label for="input-partner">
+                                        {% trans %} demo-project-request_simulator-partner-field-label {% endtrans %}
                                         <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span>
                                     </label>
-                                    <select id="simulator-input-product" name="simulator[product]" class="input-field"
-                                            onchange="$('.additional-specs-container').toggle(this.value === '105' || this.value === '106' || this.value === '107' || this.value === '108')"
+                                    <select id="input-partner" name="partner" class="input-field"
+                                            data-formvalidation-input
+                                            data-formvalidation-required="true">
+                                        <option value="" data-partner-company=""></option>
+                                        {% for partner in partners %}
+                                            {% set idArranger = partner.idCompany.idCompany %}
+                                            {% if partner.idCompany.idCompany == 1 %}
+                                                {% set idArranger = app.user.company.idCompany %}
+                                            {% endif %}
+                                            <option value="{{ partner.id }}" data-partner-company="{{ idArranger }}">{{ ('partner-name_list-' ~ partner.label)|trans }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div><!-- /.form-field -->
+                                <div class="form-field col-lg-4 col-md-4">
+                                    <label for="input-product">
+                                        {% trans %} demo-project-request_simulator-product-field-label {% endtrans %}
+                                    </label>
+                                    <select id="input-product" name="product" class="input-field"
+                                            onchange="$('#rate-container').toggle(this.value === '105' || this.value === '106' || this.value === '107' || this.value === '108')"
                                             data-formvalidation-input
                                             data-formvalidation-type="integer">
                                         <option value=""></option>
@@ -108,34 +125,84 @@
                                             <option value="{{ productId }}">{{ productLabel }}</option>
                                         {% endfor %}
                                     </select>
-                                </div>
-                            </div>
-                            <div class="row row-multi-col-computer additional-specs-container" style="display: none;">
-                                <div class="form-field col-lg-4 col-md-4">
-                                    <label for="simulator-input-rate">
+                                </div><!-- /.form-field -->
+                                <div id="rate-container" class="form-field col-lg-4 col-md-4" style="display: none;">
+                                    <label for="input-rate">
                                         Taux de progressivité
                                     </label>
-                                    <input id="simulator-input-rate" type="text" name="simulator[rate]" class="input-field"
+                                    <input id="input-rate" type="text" name="rate" class="input-field"
                                            data-formvalidation-input
                                            data-formvalidation-type="float">
-                                </div>
+                                </div><!-- /.form-field -->
                             </div>
-                            <div class="row base-specs-container" style="display: none;">
+                            <div class="row row-multi-col-computer">
                                 <div class="form-field">
-                                    <label for="simulator-input-description">
-                                        {% trans %} demo-project-request_simulator-description-label {% endtrans %}
+                                    <label>
+                                        <input type="checkbox" name="guarantee" value="true">
+                                        Ce dossier fait l‘objet d‘une garantie collatérale
                                     </label>
-                                    {% spaceless %}
-                                        <textarea id="simulator-input-description" name="simulator[description]" class="input-field" rows="5"
-                                             data-formvalidation-input
-                                             data-formvalidation-required="true"
-                                             data-formvalidation-type="string">
-                                        </textarea>
-                                    {% endspaceless %}
                                 </div>
                             </div>
                         </fieldset><!-- /.simulator-pane-inner -->
-                        <footer class="simulator-pane-inner actions bg-p1 c-bg5 text-align-right" style="display: none;">
+                        <fieldset class="simulator-pane-inner" style="margin-top: 20px;">
+                            <legend>Participants</legend>
+                            <div class="row row-multi-col-computer">
+                                <div class="form-field col-lg-6 col-md-6">
+                                    <label for="input-arranger">Arrangeur</label>
+                                    <select id="input-arranger" name="arranger" class="input-field">
+                                        <option value=""></option>
+                                        <option value="{{ app.user.company.idCompany }}">{{ app.user.company.name }}</option>
+                                        {% for idArranger, arranger in arrangers %}
+                                            {% if idArranger != 1 %}
+                                                <option value="{{ idArranger }}">{{ arranger }}</option>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="form-field col-lg-6 col-md-6">
+                                    <label for="input-run">RUN</label>
+                                    <select id="input-run" name="run" class="input-field">
+                                        <option value=""></option>
+                                        {% for run in runs %}
+                                            <option value="{{ run.idCompany }}">{{ run.name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                        </fieldset><!-- /.simulator-pane-inner -->
+                        <fieldset class="simulator-pane-inner" style="margin-top: 20px;">
+                            <legend>Documents</legend>
+                            <div class="form-extrafiles-list">
+                                <div class="form-field row row-multi-col-computer">
+                                    <div class="col-lg-4 col-md-4">
+                                        Type de document
+                                    </div>
+                                    <div class="col-lg-4 col-md-4">
+                                        Nom du document
+                                    </div>
+                                </div>
+                                <div class="form-field-multi file-upload-extra row row-multi-col-computer">
+                                    <div class="col-lg-4 col-md-4">
+                                        {% include ':frontbundle/demo/partials:project_attachment_select.html.twig' with {'name': 'file'} %}
+                                    </div>
+                                    <div class="form-field col-lg-4 col-md-4">
+                                        <input type="text" name="filename[file]" class="input-field">
+                                    </div>
+                                    <div class="col-lg-4 col-md-4">
+                                        <div id="form-file" class="custom-input-file"
+                                             data-fileattach data-fileattach-inputname="file"
+                                             data-fileattach-maxfiles="1"
+                                             data-fileattach-filetypes="pdf jpg jpeg png doc docx xls xlsx"></div><!-- /.ui-fileattach -->
+                                    </div>
+                                </div>
+                            </div><!-- /.form-extrafiles-list -->
+                            <a href="javascript:;" class="btn-default btn-shape-sq-md ui-form-extrafiles-add">
+                                <span class="icon fa-plus-u16 c-t2"></span>
+                                <span class="sr-only">Ajouter un document</span>
+                            </a>
+                        </fieldset><!-- /.simulator-pane-inner -->
+                        <div class="form-validation-notifications"></div>
+                        <footer class="simulator-pane-inner actions bg-p1 c-bg5 text-align-right">
                             <button type="submit" class="btn-continue btn-alternate" data-spinnerbutton>
                                 {% trans %} demo-project-request_simulator-footer-continue-button {% endtrans %}
                             </button>
@@ -145,111 +212,82 @@
             </article><!-- /.dashboard-tab-pane -->
         </div><!-- /.dashboard-tabs-content -->
     </section><!-- /.dashboard-tabs -->
+
+    <div id="form-extrafiles-template" class="ui-template-definition" style="display: none" disabled="disabled" aria-hidden="true">
+        <div class="form-field-multi file-upload-extra row row-multi-col-computer">
+            <div class="col-lg-4 col-md-4">
+                {% include ':frontbundle/demo/partials:project_attachment_select.html.twig' with {'name': '__NUM__'} %}
+            </div>
+            <div class="form-field col-lg-4 col-md-4">
+                <input type="text" name="filename[__NUM__]" class="input-field">
+            </div>
+            <div class="col-lg-4 col-md-4">
+                <div id="form-extrafile" class="custom-input-file"
+                     data-fileattach data-fileattach-inputname="__NUM__"
+                     data-fileattach-maxfiles="1"
+                     data-fileattach-filetypes="pdf jpg jpeg png doc docx xls xlsx"></div><!-- /.ui-fileattach -->
+            </div>
+        </div><!-- /.file-upload-extra -->
+    </div><!-- /.ui-template-definition -->
 {% endblock %}
 
-
-{% block modals %}
-    <div id="dialog-borrower-creation-content" class="dialog-content readable-wrap text-align-center">
-        <h3> {% trans %} demo-project-request_borrower-creation-pop-up-title {% endtrans %} </h3>
-        <div id="borrower-creation-form-container">
-            <form id="borrower-creation-form" class="secure-form" action="{{ path('demo_borrower_creation_form') }}" method="post">
-                <div class="panel panel-connect">
-                    <div class="panel-inner">
-                        <div class="row row-multi-col-computer">
-                            <div class="form-field col-lg-6 col-md-6">
-                                <label for="input-siren">
-                                    {% trans %} demo-borrower-creation_siren-field-label {% endtrans %}
-                                    <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span>
-                                </label>
-                                <div class="input-group set-right">
-                                    <input id="input-siren" type="text" name="siren" autocomplete="off" class="input-field" maxlength="9"
-                                           data-formvalidation-input
-                                           data-formvalidation-type="siren"
-                                           data-formvalidation-required="true"
-                                           data-has-spinner="#siren-autocomplete-spinner">
-                                    <div class="btn-group">
-                                        <span id="siren-autocomplete-spinner" class="ui-is-spinner"></span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="form-field col-lg-6 col-md-6">
-                                <label for="input-name">
-                                    {% trans %} demo-borrower-creation_name-field-label {% endtrans %}
-                                    <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span>
-                                </label>
-                                <input id="input-name" type="text" name="name" class="input-field"
-                                       data-formvalidation-input
-                                       data-formvalidation-type="string"
-                                       data-formvalidation-required="true">
-                            </div>
-                        </div>
-                        <div class="btn-controls">
-                            <button type="submit" class="btn-primary" data-spinnerbutton>
-                                {% trans %} demo-project-request_borrower-creation-pop-up-submit-button {% endtrans %}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </form>
-        </div>
-    </div><!-- /#dialog-borrower-creation-content -->
+{% block pageHeadScripts %}
+    <style>
+        fieldset {
+            border: 1px solid #eceaed;
+        }
+        legend {
+            color: #2bc9af;
+            font-size: 20px;
+            font-weight: 400;
+            padding: 0 5px;
+        }
+        .form-field .select2-container--default .select2-selection--single,
+        .form-field .select2-container--default .select2-selection--single .select2-selection__rendered,
+        .form-field .select2-container--default .select2-selection--single .select2-selection__arrow {
+            height: 40px;
+        }
+        .form-field .select2-container--default .select2-selection--single .select2-selection__rendered {
+            line-height: 40px;
+        }
+    </style>
 {% endblock %}
 
 {% block pageScripts %}
     <script>
         $(function() {
-            var siren
-            $('#input-siren').on('change keyup keydown', function () {
-                var field = $(this).val()
-
-                if (siren !== field && field.match(/^[0-9]{9}$/g)) {
-                    siren = field
-                    $('#siren-autocomplete-spinner').addClass('ui-is-loading')
-                    $.ajax({
-                        url: '{{ path('demo_siren_search') }}',
-                        method: 'POST',
-                        data: {
-                            siren: siren
-                        },
-                        success: function (response) {
-                            $('#siren-autocomplete-spinner').removeClass('ui-is-loading')
-                            if (response.success && response.name) {
-                                $('#input-name').val(response.name)
+            $('#input-borrower').select2({
+                ajax: {
+                    url: '{{ path('demo_borrower_search_form') }}',
+                    dataType: 'json',
+                    type: 'POST',
+                    cache: true,
+                    processResults: function (response) {
+                        if (response.success) {
+                            return {
+                                results: [{
+                                    id: response.id,
+                                    text: response.name
+                                }]
                             }
                         }
-                    })
-                }
-            })
 
-            $('#borrower-creation-form').on('submit', function (e) {
-                e.preventDefault();
-
-                $.ajax({
-                    type: $(this).attr('method'),
-                    url: $(this).attr('action'),
-                    data: $(this).serialize(),
-                    success: function (response) {
-                        $.fancybox.close()
-
-                        if (response.success && response.id) {
-                            var exist = false
-
-                            $('#simulator-input-borrower option').each(function () {
-                                if ($(this).val() === response.id + '') {
-                                    $('#simulator-input-borrower').val(response.id).trigger('change')
-                                    exist = true
-                                    return false
-                                }
-                            })
-
-                            if (false === exist) {
-                                var name = response.name + ' (' + response.siren + ')'
-                                var newOption = new Option(name, response.id, true, true)
-                                $('#simulator-input-borrower').append(newOption).trigger('change')
-                            }
+                        return {
+                            results: []
                         }
                     }
-                })
+                },
+                language: 'fr',
+                minimumInputLength: 9,
+                maximumInputLength: 9,
+                placeholder: 'Veuillez saisir un numéro de SIREN'
+            })
+
+            $('#input-partner').on('change', function () {
+                var $dropdown = $(this)
+                var $selected = $dropdown.find(':selected')
+                var arranger = $selected.attr('data-partner-company')
+                $('#input-arranger option[value="' + arranger + '"]').prop('selected', true)
             })
         })
     </script>
