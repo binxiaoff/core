@@ -247,10 +247,9 @@ class DemoController extends AbstractController
                 $attachment     = $attachmentManager->upload($user, $attachmentType, $file, false);
                 $filename       = $request->request->get('filename')[$field];
 
-                if (false === empty($filename)) {
-                    $attachment->setOriginalName($filename);
-                    $this->entityManager->flush($attachment);
-                }
+                // @todo "original name" should be used for saving file name, not a label
+                $attachment->setOriginalName($filename ?? $attachmentType->getLabel());
+                $this->entityManager->flush($attachment);
 
                 $attachmentManager->attachToProject($attachment, $project);
             }
