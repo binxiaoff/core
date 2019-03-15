@@ -12,8 +12,9 @@ use Symfony\Component\HttpFoundation\{JsonResponse, RedirectResponse, Request, R
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Translation\TranslatorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{Attachment, Bids, Clients, Companies, Loans, ProjectParticipant, Projects, ProjectsComments, ProjectsStatus, Users, WalletType};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{Attachment, Bids, Clients, Companies, Loans, PercentFee, ProjectParticipant, Projects, ProjectsComments, ProjectsStatus, Users, WalletType};
 use Unilend\Bundle\CoreBusinessBundle\Service\{AttachmentManager, ProjectManager, ProjectStatusManager};
+use Unilend\Bundle\FrontBundle\Form\Lending\BidType;
 use Unilend\Bundle\FrontBundle\Service\ProjectDisplayManager;
 use Unilend\Bundle\WSClientBundle\Service\InseeManager;
 
@@ -608,12 +609,13 @@ class DemoController extends AbstractController
     /**
      * @Route("/projets/detail/lender/{slug}", name="demo_lender_project_details")
      *
-     * @param string                $slug
-     * @param UserInterface|Clients $client
+     * @param string                     $slug
+     * @param UserInterface|Clients|null $client
+     * @param Request                    $request
      *
      * @return Response
      */
-    public function projectDetail(string $slug, UserInterface $client): Response
+    public function projectDetail(string $slug, ?UserInterface $client, Request $request): Response
     {
         $project = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->findOneBy(['slug' => $slug]);
         $wallet  = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
@@ -621,13 +623,38 @@ class DemoController extends AbstractController
         /** @var Bids[] $bids */
         $bids    = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Bids')->findBy(['project' => $project]);
         $product = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Product')->find($project->getIdProduct());
+        $form    = null;
+
+        if (null === $bid) {
+            $bid      = new Bids();
+            $bid->setProject($project)
+                ->setWallet($wallet)
+                ->setStatus(Bids::STATUS_PENDING);
+            /*$fee1Type = $this->entityManager->getRepository('UnilendCoreBusinessBundle:FeeType')->find(1);
+            $fee2Type = $this->entityManager->getRepository('UnilendCoreBusinessBundle:FeeType')->find(2);
+            $fee1     = (new PercentFee())->setType($fee1Type)->setRate(0.01)->setIsRecurring($fee1Type->isRecurring());
+            $fee2     = (new PercentFee())->setType($fee2Type)->setRate(0.02)->setIsRecurring($fee2Type->isRecurring());
+
+            $bid->addPercentFee($fee1);
+            $bid->addPercentFee($fee2);*/
+        }
+
+        $form = $this->createForm(BidType::class, $bid);
+        //$form->remove('bidPercentFees')->remove('ordre');
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $this->entityManager->persist($bid);
+            $this->entityManager->flush();
+        }
 
         return $this->render(':frontbundle/demo:project.html.twig', [
             'project' => $project,
-            'wallet' => $wallet,
+            'wallet'  => $wallet,
             'bid'     => $bid,
             'bids'    => $bids,
-            'product' => $product
+            'product' => $product,
+            'form'    => $form->createView(),
         ]);
     }
 

@@ -1,75 +1,103 @@
 <?php
+declare(strict_types=1);
 
 namespace Unilend\Bundle\CoreBusinessBundle\Entity\Embeddable;
 
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * @ORM\Embeddable
  */
 class LendingRate
 {
-    const TYPE_FIXED   = 'FIXED';
-    const TYPE_EURIBOR = 'EURIBOR';
-    const TYPE_EONIA   = 'EONIA';
-    const TYPE_SONIA   = 'SONIA';
-    const TYPE_LIBOR   = 'LIBOR';
-    const TYPE_CHFTOIS = 'CHFTOIS';
-    const TYPE_FFER    = 'FFER';
+    const INDICE_FIXED   = 'FIXED';
+    const INDICE_EURIBOR = 'EURIBOR';
+    const INDICE_EONIA   = 'EONIA';
+    const INDICE_SONIA   = 'SONIA';
+    const INDICE_LIBOR   = 'LIBOR';
+    const INDICE_CHFTOIS = 'CHFTOIS';
+    const INDICE_FFER    = 'FFER';
 
     /**
      * @var string
      *
      * @ORM\Column(length=20)
+     *
+     * @Assert\NotBlank()
      */
-    private $type;
+    private $indice;
 
     /**
      * The margin to be added on the indexed rate.
      *
-     * @var float
+     * @var string
      *
      * @ORM\Column(type="decimal", precision=4, scale=2)
+     *
+     * @Assert\NotBlank()
+     * @Assert\Range(min="0.01", max="99.99")
+     *
      */
     private $margin;
 
     /**
-     * @return string
+     * @return string|null
      */
-    public function getType(): string
+    public function getIndice(): ?string
     {
-        return $this->type;
+        return $this->indice;
     }
 
     /**
-     * @param string $type
+     * @param string $indice
      *
      * @return self
      */
-    public function setType(string $type): self
+    public function setIndice(string $indice): self
     {
-        $this->type = $type;
+        $this->indice = $indice;
 
         return $this;
     }
 
     /**
-     * @return float
+     * @return string|null
      */
-    public function getMargin(): float
+    public function getMargin(): ?string
     {
         return $this->margin;
     }
 
     /**
-     * @param float $margin
+     * @param string $margin
      *
      * @return self
      */
-    public function setMargin(float $margin): self
+    public function setMargin(string $margin): self
     {
         $this->margin = $margin;
 
         return $this;
+    }
+
+    static function getIndices()
+    {
+        try {
+            $self      = new \ReflectionClass(__CLASS__);
+            $constants = $self->getConstants();
+        } catch (\ReflectionException $exception) {
+            return [];
+        }
+        $indicePrefix = 'INDICE_';
+        $indices      = array_filter(
+            $constants,
+            function($key) use ($indicePrefix) {
+                return $indicePrefix === substr($key, 0, strlen($indicePrefix));
+            },
+            ARRAY_FILTER_USE_KEY
+        );
+
+        return $indices;
     }
 }

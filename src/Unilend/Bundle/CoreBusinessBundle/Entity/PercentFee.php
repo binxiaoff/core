@@ -55,9 +55,9 @@ class PercentFee
     private $isRecurring;
 
     /**
-     * @return string
+     * @return string|null
      */
-    public function getRate(): string
+    public function getRate(): ?string
     {
         return $this->rate;
     }
@@ -103,9 +103,9 @@ class PercentFee
     }
 
     /**
-     * @return FeeType
+     * @return FeeType|null
      */
-    public function getType(): FeeType
+    public function getType(): ?FeeType
     {
         return $this->type;
     }
@@ -123,9 +123,9 @@ class PercentFee
     }
 
     /**
-     * @return bool
+     * @return bool|null
      */
-    public function isRecurring(): bool
+    public function isRecurring(): ?bool
     {
         return $this->isRecurring;
     }

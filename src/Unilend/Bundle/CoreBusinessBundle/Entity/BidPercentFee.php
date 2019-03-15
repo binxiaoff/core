@@ -13,7 +13,7 @@ class BidPercentFee
      * @var PercentFee
      *
      * @ORM\Id
-     * @ORM\OneToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\PercentFee")
+     * @ORM\OneToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\PercentFee", cascade={"persist"})
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="id_percent_fee", referencedColumnName="id", nullable=false)
      * })
@@ -52,9 +52,9 @@ class BidPercentFee
     }
 
     /**
-     * @return PercentFee
+     * @return PercentFee|null
      */
-    public function getPercentFee(): PercentFee
+    public function getPercentFee(): ?PercentFee
     {
         return $this->percentFee;
     }

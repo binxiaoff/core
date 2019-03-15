@@ -113,23 +113,21 @@ class Bids
     /**
      * Get idBid
      *
-     * @return int
+     * @return int|null
      */
-    public function getIdBid(): int
+    public function getIdBid(): ?int
     {
         return $this->idBid;
     }
 
     /**
-     * @param PercentFee $percentFee
+     * @param BidPercentFee $bidPercentFee
      *
      * @return Bids
      */
-    public function addPercentFee(PercentFee $percentFee): Bids
+    public function addBidPercentFee(BidPercentFee $bidPercentFee): Bids
     {
-        $bidPercentFee = (new BidPercentFee())
-            ->setBid($this)
-            ->setPercentFee($percentFee);
+        $bidPercentFee->setBid($this);
 
         if (false === $this->bidPercentFees->contains($bidPercentFee)) {
             $this->bidPercentFees->add($bidPercentFee);
@@ -143,7 +141,7 @@ class Bids
      *
      * @return Bids
      */
-    public function removePercentFee(BidPercentFee $bidPercentFee): Bids
+    public function removeBidPercentFee(BidPercentFee $bidPercentFee): Bids
     {
         if ($this->bidPercentFees->contains($bidPercentFee)) {
             $this->bidPercentFees->removeElement($bidPercentFee);
@@ -155,7 +153,7 @@ class Bids
     /**
      * @return iterable|BidPercentFee[]
      */
-    public function getPercentFee(): iterable
+    public function getBidPercentFees(): iterable
     {
         return $this->bidPercentFees;
     }
@@ -167,7 +165,7 @@ class Bids
     {
         $totalFeeRate = 0.00;
 
-        foreach ($this->bidPercentFees as $bidPercentFee) {
+        foreach ($this->getBidPercentFees() as $bidPercentFee) {
             if (false === $bidPercentFee->getPercentFee()->isRecurring()) {
                 $totalFeeRate = round(bcadd($bidPercentFee->getPercentFee()->getRate(), $totalFeeRate, 3), 2);
             }
@@ -183,7 +181,7 @@ class Bids
     {
         $totalFeeRate = 0.00;
 
-        foreach ($this->bidPercentFees as $bidPercentFee) {
+        foreach ($this->getBidPercentFees() as $bidPercentFee) {
             if ($bidPercentFee->getPercentFee()->isRecurring()) {
                 $totalFeeRate = round(bcadd($bidPercentFee->getPercentFee()->getRate(), $totalFeeRate, 3), 2);
             }
@@ -191,4 +189,5 @@ class Bids
 
         return $totalFeeRate;
     }
+    
 }

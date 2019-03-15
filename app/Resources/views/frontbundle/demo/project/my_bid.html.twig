@@ -7,28 +7,72 @@
         </div><!-- /.section-tabs-nav -->
         <div class="section-tabs-content tab-content">
             <div id="myoffers-inprogress" role="tabpanel" class="tab-pane active" aria-labelledby="project-myoffers-inprogress project-myoffers">
-                <table class="table-myoffers">
-                    <tbody>
-                    <tr class="my-offers-bid-row">
-                        <td>Status</td>
-                        <td>Taux de référence</td>
-                        <td>Taux de référence</td>
-                        <td>Marge</td>
-                        <td>Commission ponctuelle</td>
-                        <td>Commission récurrente</td>
-                        <td>Je souhaite être agent</td>
-                    </tr>
-                    <tr>
-                        <td>{% if bid.status == 0 %} En cours {% elseif bid.status == 1 %} Accepté {% else %} Refusé {% endif %}</td>
-                        <td>{{ (bid.amount / 100)|localizednumber }}&nbsp;€</td>
-                        <td>{{ ('interest-rate-indice_' ~ bid.rate.type)|trans }}</td>
-                        <td>{{ bid.rate.margin|localizednumberwithprecision(2) }}&nbsp;%</td>
-                        <td>{{ bid.oneTimeFeeTotalRate|localizednumberwithprecision(2) }}&nbsp;%</td>
-                        <td>{{ bid.recurringFeeTotalRate|localizednumberwithprecision(2) }}&nbsp;%</td>
-                        <td>{% if bid.ordre is null %} Non {% elseif bid.status == 1 %} Accepté {% else %} Oui {% endif %}</td>
-                    </tr>
-                    </tbody>
-                </table><!-- /.table-myoffers -->
+                {% if bid.idBid %}
+                    <table class="table-myoffers">
+                        <tbody>
+                        <tr class="my-offers-bid-row">
+                            <td>Status</td>
+                            <td>Montant</td>
+                            <td>Taux de référence</td>
+                            <td>Marge</td>
+                            <td>Commission ponctuelle</td>
+                            <td>Commission récurrente</td>
+                            <td>Je souhaite être agent</td>
+                        </tr>
+                        <tr>
+                            <td>{% if bid.status == 0 %} En cours {% elseif bid.status == 1 %} Accepté {% else %} Refusé {% endif %}</td>
+                            <td>{{ (bid.amount / 100)|localizednumber }}&nbsp;€</td>
+                            <td>{{ ('interest-rate-indice_' ~ bid.rate.indice)|trans }}</td>
+                            <td>{{ bid.rate.margin|localizednumberwithprecision(2) }}&nbsp;%</td>
+                            <td>{{ bid.oneTimeFeeTotalRate|localizednumberwithprecision(2) }}&nbsp;%</td>
+                            <td>{{ bid.recurringFeeTotalRate|localizednumberwithprecision(2) }}&nbsp;%</td>
+                            <td>{% if bid.isAgent %} Oui {% else %} Non {% endif %}</td>
+                        </tr>
+                        </tbody>
+                    </table><!-- /.table-myoffers -->
+                {% elseif project.isOnline %}
+                    {{ form_start(form) }}
+                    <fieldset class="simulator-pane-inner">
+                        <div class="row row-multi-col-computer">
+                            <div class="col-lg-4 col-md-4 col-sm-4">
+                                {{ form_row(form.amount) }}
+                            </div>
+                            <div class="col-lg-4 col-md-4 col-sm-4">
+                                {{ form_row(form.rate.indice) }}
+                            </div>
+                            <div class="col-lg-4 col-md-4 col-sm-4">
+                                {{ form_row(form.rate.margin) }}
+                            </div>
+                        </div>
+                        <div class="row">
+                            {{ form_widget(form.agent) }} {{ form_label(form.agent) }}
+                        </div>
+                        <div class="row fees" data-prototype="{{ form_widget(form.bidPercentFees.vars.prototype)|e('html_attr') }}">
+                            <h4>Frais / commission</h4>
+                            {% for bidPercentFee in form.bidPercentFees %}
+                                <div class="row row-multi-col-computer">
+                                    <div class="col-lg-4 col-md-4 col-sm-4">
+                                        {{ form_row(bidPercentFee.percentFee.type) }}
+                                    </div>
+                                    <div class="col-lg-4 col-md-4 col-sm-4">
+                                        {{ form_row(bidPercentFee.percentFee.rate) }}
+                                    </div>
+                                    <div class="col-lg-4 col-md-4 col-sm-4">
+                                        {{ form_row(bidPercentFee.percentFee.isRecurring) }}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </fieldset>
+                    <footer class="simulator-pane-inner actions bg-p1 c-bg5 text-align-right">
+                        <button type="submit" class="btn-continue btn-alternate" data-spinnerbutton>
+                            {% trans %} Valider {% endtrans %}
+                        </button>
+                    </footer>
+                    {{ form_end(form) }}
+                {% else %}
+                    Vous ne pouvez plus proposer une offre.
+                {% endif %}
             </div><!-- /.tab-pane -->
         </div><!-- /.section-tabs-content -->
     </div><!-- /tabs -->
