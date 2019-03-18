@@ -15,11 +15,13 @@
             font-weight: 900;
             font-size: small;
         }
+
         .input-field {
             width: 80%;
             display: inline;
         }
-        .form-field>label {
+
+        .form-field > label {
             display: inline;
             margin-bottom: 20px;
         }
@@ -28,16 +30,15 @@
 {% block pageScripts %}
     <script>
         var $collectionHolder;
-
         // setup an "add a fee" link
-        var $addFeeButton = $('<button type="button" class="add_fee_link">Ajouter un frais</button>');
+        var $addFeeButton = $(`[data-action='ui-form-lending-fee-add']`);
         var $newLink = $('<div class="row row-multi-col-computer"></div>').append($addFeeButton);
 
-        jQuery(document).ready(function() {
+        jQuery(document).ready(function () {
             // Get the ul that holds the collection of fees
             $collectionHolder = $('div.fees');
 
-            $collectionHolder.find('div').each(function() {
+            $collectionHolder.find('div').each(function () {
                 addTagFormDeleteLink($(this));
             });
 
@@ -48,7 +49,7 @@
             // index when inserting a new item (e.g. 2)
             $collectionHolder.data('index', $collectionHolder.find(':input').length);
 
-            $addFeeButton.on('click', function(e) {
+            $addFeeButton.on('click', function () {
                 // add a new fee form (see next code block)
                 addFeeForm($collectionHolder, $newLink);
             });
@@ -82,10 +83,10 @@
         }
 
         function addTagFormDeleteLink($newFormDiv) {
-            var $removeFormButton = $('<button type="button">Supprimer</button>');
+            var $removeFormButton = $('<button type="button" class="btn-default btn-shape-xxs">Supprimer</button>');
             $newFormDiv.append($removeFormButton);
 
-            $removeFormButton.on('click', function(e) {
+            $removeFormButton.on('click', function () {
                 // remove the li for the fee form
                 $newFormDiv.remove();
             });
@@ -194,7 +195,7 @@
 
                         <div class="row">
                             <div class="col-lg-10 col-md-10 col-sm-10">
-                               Dernier rapport CAC
+                                Dernier rapport CAC
                             </div>
                             <div class="col-lg-2 col-md-2 col-sm-2">
                                 <a href="#"><span class="icon fa-file-image-o"></span></a>
@@ -212,7 +213,7 @@
 
                         <div class="row">
                             <div class="col-lg-10 col-md-10 col-sm-10">
-                               Relevé de compte bancaire
+                                Relevé de compte bancaire
                             </div>
                             <div class="col-lg-2 col-md-2 col-sm-2">
                                 <a href="#"><span class="icon fa-file-pdf-o"></span></a>

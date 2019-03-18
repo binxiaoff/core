@@ -10,14 +10,19 @@ class LendingRateType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
+        $choices = [];
+        foreach (LendingRate::getIndexes() as $key => $value) {
+            $choices['interest-rate-index_' . $value] = $value;
+        }
+
         $builder
-            ->add('indice', ChoiceType::class, [
-                'label' => 'lending-form_indice',
-                'choices' => LendingRate::getIndices()
+            ->add('indexType', ChoiceType::class, [
+                'label'   => 'lending-form_index-type',
+                'choices' => $choices,
             ])
             ->add('margin', NumberType::class, [
                 'label' => 'lending-form_margin',
-                'scale' => 2,
+                'scale' => LendingRate::MARGIN_SCALE,
             ]);
     }
 

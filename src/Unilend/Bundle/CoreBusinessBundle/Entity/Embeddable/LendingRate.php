@@ -11,13 +11,15 @@ use Symfony\Component\Validator\Constraints as Assert;
  */
 class LendingRate
 {
-    const INDICE_FIXED   = 'FIXED';
-    const INDICE_EURIBOR = 'EURIBOR';
-    const INDICE_EONIA   = 'EONIA';
-    const INDICE_SONIA   = 'SONIA';
-    const INDICE_LIBOR   = 'LIBOR';
-    const INDICE_CHFTOIS = 'CHFTOIS';
-    const INDICE_FFER    = 'FFER';
+    const INDEX_FIXED   = 'FIXED';
+    const INDEX_EURIBOR = 'EURIBOR';
+    const INDEX_EONIA   = 'EONIA';
+    const INDEX_SONIA   = 'SONIA';
+    const INDEX_LIBOR   = 'LIBOR';
+    const INDEX_CHFTOIS = 'CHFTOIS';
+    const INDEX_FFER    = 'FFER';
+
+    const MARGIN_SCALE = 2;
 
     /**
      * @var string
@@ -26,7 +28,7 @@ class LendingRate
      *
      * @Assert\NotBlank()
      */
-    private $indice;
+    private $indexType;
 
     /**
      * The margin to be added on the indexed rate.
@@ -44,19 +46,19 @@ class LendingRate
     /**
      * @return string|null
      */
-    public function getIndice(): ?string
+    public function getIndexType(): ?string
     {
-        return $this->indice;
+        return $this->indexType;
     }
 
     /**
-     * @param string $indice
+     * @param string $indexType
      *
      * @return self
      */
-    public function setIndice(string $indice): self
+    public function setIndexType(string $indexType): self
     {
-        $this->indice = $indice;
+        $this->indexType = $indexType;
 
         return $this;
     }
@@ -81,7 +83,7 @@ class LendingRate
         return $this;
     }
 
-    static function getIndices()
+    static function getIndexes()
     {
         try {
             $self      = new \ReflectionClass(__CLASS__);
@@ -89,15 +91,15 @@ class LendingRate
         } catch (\ReflectionException $exception) {
             return [];
         }
-        $indicePrefix = 'INDICE_';
-        $indices      = array_filter(
+        $indexPrefix = 'INDEX_';
+        $indexes     = array_filter(
             $constants,
-            function($key) use ($indicePrefix) {
-                return $indicePrefix === substr($key, 0, strlen($indicePrefix));
+            function($key) use ($indexPrefix) {
+                return $indexPrefix === substr($key, 0, strlen($indexPrefix));
             },
             ARRAY_FILTER_USE_KEY
         );
 
-        return $indices;
+        return $indexes;
     }
 }

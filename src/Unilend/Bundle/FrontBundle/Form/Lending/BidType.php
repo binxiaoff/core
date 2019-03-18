@@ -16,6 +16,7 @@ class BidType extends AbstractType
         ])
             ->add('rate', LendingRateType::class)
             ->add('bidPercentFees', CollectionType::class, [
+                'label'         => false,
                 'entry_type'    => BidPercentFeeType::class,
                 'entry_options' => ['label' => false],
                 'allow_add'     => true,

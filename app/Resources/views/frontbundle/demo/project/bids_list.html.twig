@@ -25,7 +25,7 @@
                                 <td>{% if offer.status == 0 %} En cours {% elseif offer.status == 1 %} Accepté {% else %} Refusé {% endif %}</td>
                                 <td>{{ bid.wallet.idClient.company.name }}</td>
                                 <td>{{ (offer.amount / 100)|localizednumber }}&nbsp;€</td>
-                                <td>{{ ('interest-rate-indice_' ~ offer.rate.indice)|trans }}</td>
+                                <td>{{ ('interest-rate-index_' ~ offer.rate.indexType)|trans }}</td>
                                 <td>{{ offer.rate.margin|localizednumberwithprecision(2) }}&nbsp;%</td>
                                 <td>{{ offer.oneTimeFeeTotalRate|localizednumberwithprecision(2) }}&nbsp;%</td>
                                 <td>{{ offer.recurringFeeTotalRate|localizednumberwithprecision(2) }}&nbsp;%</td>

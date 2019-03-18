@@ -22,7 +22,7 @@
                         <tr>
                             <td>{% if bid.status == 0 %} En cours {% elseif bid.status == 1 %} Accepté {% else %} Refusé {% endif %}</td>
                             <td>{{ (bid.amount / 100)|localizednumber }}&nbsp;€</td>
-                            <td>{{ ('interest-rate-indice_' ~ bid.rate.indice)|trans }}</td>
+                            <td>{{ ('interest-rate-index_' ~ bid.rate.indexType)|trans }}</td>
                             <td>{{ bid.rate.margin|localizednumberwithprecision(2) }}&nbsp;%</td>
                             <td>{{ bid.oneTimeFeeTotalRate|localizednumberwithprecision(2) }}&nbsp;%</td>
                             <td>{{ bid.recurringFeeTotalRate|localizednumberwithprecision(2) }}&nbsp;%</td>
@@ -38,7 +38,7 @@
                                 {{ form_row(form.amount) }}
                             </div>
                             <div class="col-lg-4 col-md-4 col-sm-4">
-                                {{ form_row(form.rate.indice) }}
+                                {{ form_row(form.rate.indexType) }}
                             </div>
                             <div class="col-lg-4 col-md-4 col-sm-4">
                                 {{ form_row(form.rate.margin) }}
@@ -62,6 +62,10 @@
                                     </div>
                                 </div>
                             {% endfor %}
+                            <a href="javascript:;" class="btn-default btn-shape-sq-md" data-action="ui-form-lending-fee-add">
+                                <span class="icon fa-plus-u16 c-t2"></span>
+                                <span class="sr-only">Ajouter un frais</span>
+                            </a>
                         </div>
                     </fieldset>
                     <footer class="simulator-pane-inner actions bg-p1 c-bg5 text-align-right">
