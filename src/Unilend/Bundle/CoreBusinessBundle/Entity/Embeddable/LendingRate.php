@@ -83,7 +83,7 @@ class LendingRate
         return $this;
     }
 
-    static function getIndexes()
+    public static function getIndexes()
     {
         try {
             $self      = new \ReflectionClass(__CLASS__);
