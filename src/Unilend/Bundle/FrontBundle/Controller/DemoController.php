@@ -12,7 +12,8 @@ use Symfony\Component\HttpFoundation\{JsonResponse, RedirectResponse, Request, R
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Translation\TranslatorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{Attachment, Bids, Clients, Companies, Loans, PercentFee, ProjectParticipant, Projects, ProjectsComments, ProjectsStatus, Users, WalletType};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{Attachment, Bids, Clients, Companies, Loans, ProjectParticipant, Projects, ProjectsComments, ProjectsStatus, Users, WalletType};
+use Unilend\Bundle\CoreBusinessBundle\Repository\ProjectParticipantRepository;
 use Unilend\Bundle\CoreBusinessBundle\Service\{AttachmentManager, ProjectManager, ProjectStatusManager};
 use Unilend\Bundle\FrontBundle\Form\Lending\BidType;
 use Unilend\Bundle\FrontBundle\Service\ProjectDisplayManager;
@@ -609,38 +610,35 @@ class DemoController extends AbstractController
     /**
      * @Route("/projets/detail/lender/{slug}", name="demo_lender_project_details")
      *
-     * @param string                     $slug
-     * @param UserInterface|Clients|null $client
-     * @param Request                    $request
+     * @param string                       $slug
+     * @param UserInterface|Clients|null   $client
+     * @param Request                      $request
+     * @param ProjectParticipantRepository $projectParticipantRepository
      *
      * @return Response
      */
-    public function projectDetail(string $slug, ?UserInterface $client, Request $request): Response
+    public function projectDetail(string $slug, ?UserInterface $client, Request $request, ProjectParticipantRepository $projectParticipantRepository): Response
     {
+
         $project = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->findOneBy(['slug' => $slug]);
         $wallet  = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
-        $bid     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Bids')->findOneBy(['wallet' => $wallet, 'project' => $project]);
+        $bid     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Bids')->findOneBy(['wallet' => $wallet, 'project' => $project, 'status' => [Bids::STATUS_PENDING, Bids::STATUS_ACCEPTED]]);
         /** @var Bids[] $bids */
-        $bids    = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Bids')->findBy(['project' => $project]);
-        $product = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Product')->find($project->getIdProduct());
-        $form    = null;
+        $bids     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Bids')->findBy(['project' => $project, 'status' => [Bids::STATUS_PENDING, Bids::STATUS_ACCEPTED]]);
+        $product  = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Product')->find($project->getIdProduct());
+        $form     = null;
+        $arranger = $projectParticipantRepository->findByProjectAndRole($project, ProjectParticipant::COMPANY_ROLE_ARRANGER);
+        $run      = $projectParticipantRepository->findByProjectAndRole($project, ProjectParticipant::COMPANY_ROLE_RUN);
 
         if (null === $bid) {
-            $bid      = new Bids();
+            $bid = new Bids();
             $bid->setProject($project)
                 ->setWallet($wallet)
                 ->setStatus(Bids::STATUS_PENDING);
-            /*$fee1Type = $this->entityManager->getRepository('UnilendCoreBusinessBundle:FeeType')->find(1);
-            $fee2Type = $this->entityManager->getRepository('UnilendCoreBusinessBundle:FeeType')->find(2);
-            $fee1     = (new PercentFee())->setType($fee1Type)->setRate(0.01)->setIsRecurring($fee1Type->isRecurring());
-            $fee2     = (new PercentFee())->setType($fee2Type)->setRate(0.02)->setIsRecurring($fee2Type->isRecurring());
-
-            $bid->addPercentFee($fee1);
-            $bid->addPercentFee($fee2);*/
         }
 
         $form = $this->createForm(BidType::class, $bid);
-        //$form->remove('bidPercentFees')->remove('ordre');
+
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
@@ -649,13 +647,30 @@ class DemoController extends AbstractController
         }
 
         return $this->render(':frontbundle/demo:project.html.twig', [
-            'project' => $project,
-            'wallet'  => $wallet,
-            'bid'     => $bid,
-            'bids'    => $bids,
-            'product' => $product,
-            'form'    => $form->createView(),
+            'project'  => $project,
+            'wallet'   => $wallet,
+            'bid'      => $bid,
+            'bids'     => $bids,
+            'product'  => $product,
+            'arranger' => $arranger,
+            'run'      => $run,
+            'form'     => $form->createView(),
         ]);
+    }
+
+    /**
+     * @Route("/projets/detail/lender/bid/cancel/{bid}", name="demo_project_details_bid_cancellation")
+     *
+     * @param Bids $bid
+     *
+     * @return RedirectResponse
+     */
+    public function cancelBid(Bids $bid): RedirectResponse
+    {
+        $bid->setStatus(Bids::STATUS_REJECTED);
+        $this->entityManager->flush();
+
+        return $this->redirectToRoute('demo_lender_project_details', ['slug' => $bid->getProject()->getSlug()]);
     }
 
     /**
