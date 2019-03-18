@@ -182,6 +182,14 @@ class Loans
     }
 
     /**
+     * @return iterable|LoanPercentFee[]
+     */
+    public function getLoanPercentFees(): iterable
+    {
+        return $this->loanPercentFees;
+    }
+
+    /**
      * @param PercentFee $percentFee
      *
      * @return Loans

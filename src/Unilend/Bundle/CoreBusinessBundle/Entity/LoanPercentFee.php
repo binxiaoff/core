@@ -13,7 +13,7 @@ class LoanPercentFee
      * @var PercentFee
      *
      * @ORM\Id
-     * @ORM\OneToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\PercentFee")
+     * @ORM\OneToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\PercentFee", cascade={"persist"})
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="id_percent_fee", referencedColumnName="id", nullable=false)
      * })

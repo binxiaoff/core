@@ -1,0 +1,43 @@
+<section id="project-section-myoffers" class="page-section">
+    <div class="tabs">
+        <div class="section-tabs-nav">
+            <header>
+                <h3 id="project-myoffers" class="h3">Toutes les offres</h3>
+            </header>
+        </div><!-- /.section-tabs-nav -->
+        <div class="section-tabs-content tab-content">
+            <div id="myoffers-inprogress" role="tabpanel" class="tab-pane active" aria-labelledby="project-myoffers-inprogress project-myoffers">
+                {% if bids|length > 0 %}
+                    <table class="table-myoffers">
+                        <tbody>
+                        <tr class="my-offers-bid-row">
+                            <td>Statut</td>
+                            <td>Prêteur</td>
+                            <td>Taux de référence</td>
+                            <td>Taux de référence</td>
+                            <td>Marge</td>
+                            <td>Commission ponctuelle</td>
+                            <td>Commission récurrente</td>
+                            <td>Je souhaite être agent</td>
+                        </tr>
+                        {% for offer in bids %}
+                            <tr>
+                                <td>{% if offer.status == 0 %} En cours {% elseif offer.status == 1 %} Accepté {% else %} Refusé {% endif %}</td>
+                                <td>{{ bid.wallet.idClient.company.name }}</td>
+                                <td>{{ (offer.amount / 100)|localizednumber }}&nbsp;€</td>
+                                <td>{{ ('interest-rate-index_' ~ offer.rate.indexType)|trans }}</td>
+                                <td>{{ offer.rate.margin|localizednumberwithprecision(2) }}&nbsp;%</td>
+                                <td>{{ offer.oneTimeFeeTotalRate|localizednumberwithprecision(2) }}&nbsp;%</td>
+                                <td>{{ offer.recurringFeeTotalRate|localizednumberwithprecision(2) }}&nbsp;%</td>
+                                <td>{% if offer.isAgent %} Oui {% else %} Non {% endif %}</td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table><!-- /.table-myoffers -->
+                {% else %}
+                    Les autres establishments n'ont pas encore proposé des offres.
+                {% endif %}
+            </div><!-- /.tab-pane -->
+        </div><!-- /.section-tabs-content -->
+    </div><!-- /tabs -->
+</section><!-- /.page-section -->

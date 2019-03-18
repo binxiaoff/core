@@ -35,7 +35,7 @@ class ProjectDisplayManager
     /** @var CacheItemPoolInterface */
     private $cachePool;
     /** @var array */
-    private static $projectsStatus = [
+    const STATUS_DISPLAYABLE = [
         ProjectsStatus::STATUS_ONLINE,
         ProjectsStatus::STATUS_FUNDED,
         ProjectsStatus::STATUS_REPAYMENT,
@@ -91,7 +91,7 @@ class ProjectDisplayManager
         $projectData = $this->entityManagerSimulator->getRepository('projects');
 
         if (empty($projectStatus)) {
-            $projectStatus = self::$projectsStatus;
+            $projectStatus = self::STATUS_DISPLAYABLE;
         }
 
         $projectsData = [];
@@ -104,7 +104,7 @@ class ProjectDisplayManager
 //            $limit,
 //            $start
 //        );
-        $projects = $projectSearchRepository->findBy(['status' => self::$projectsStatus]);
+        $projects = $projectSearchRepository->findBy(['status' => self::STATUS_DISPLAYABLE]);
 
         /** @var Projects $project */
         foreach ($projects as $project) {
@@ -206,7 +206,7 @@ class ProjectDisplayManager
         $products  = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Product')->findAvailableProductsByClient($client);
         $neighbors = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->findNeighbors(
             $project->id_project,
-            ['status' => self::$projectsStatus, 'idProduct' => $products],
+            ['status' => self::STATUS_DISPLAYABLE, 'idProduct' => $products],
             [ProjectsRepository::SORT_FIELD_END => 'DESC']
         );
 
@@ -431,7 +431,7 @@ class ProjectDisplayManager
         $products          = $productRepository->findAvailableProductsByClient($client);
 
         $projectRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
-        $projects          = $projectRepository->findBy(['status' => self::$projectsStatus, 'idProduct' => $products]);
+        $projects          = $projectRepository->findBy(['status' => self::STATUS_DISPLAYABLE, 'idProduct' => $products]);
 
         return count($projects);
     }

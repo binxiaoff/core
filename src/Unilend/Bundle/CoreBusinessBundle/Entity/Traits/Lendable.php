@@ -3,6 +3,7 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Entity\Traits;
 
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Embeddable\LendingRate;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
@@ -13,6 +14,8 @@ trait Lendable
      * @var int
      *
      * @ORM\Column(type="integer")
+     *
+     * @Assert\NotBlank()
      */
     protected $amount;
 
@@ -50,15 +53,22 @@ trait Lendable
      */
     protected $rate;
 
+    /**
+     * @var bool
+     *
+     * @ORM\Column(type="boolean")
+     */
+    protected $agent;
+
     public function traitInit(): void
     {
         $this->rate = new LendingRate();
     }
 
     /**
-     * @return int
+     * @return int|null
      */
-    public function getAmount(): int
+    public function getAmount(): ?int
     {
         return $this->amount;
     }
@@ -151,6 +161,26 @@ trait Lendable
     public function setRate(LendingRate $rate): self
     {
         $this->rate = $rate;
+
+        return $this;
+    }
+
+    /**
+     * @return bool|null
+     */
+    public function isAgent(): ?bool
+    {
+        return $this->agent;
+    }
+
+    /**
+     * @param bool $agent
+     *
+     * @return Lendable
+     */
+    public function setAgent(bool $agent): self
+    {
+        $this->agent = $agent;
 
         return $this;
     }

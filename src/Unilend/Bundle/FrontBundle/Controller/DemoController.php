@@ -13,7 +13,9 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{Attachment, Bids, Clients, Companies, Loans, ProjectParticipant, Projects, ProjectsComments, ProjectsStatus, Users, WalletType};
+use Unilend\Bundle\CoreBusinessBundle\Repository\ProjectParticipantRepository;
 use Unilend\Bundle\CoreBusinessBundle\Service\{AttachmentManager, ProjectManager, ProjectStatusManager};
+use Unilend\Bundle\FrontBundle\Form\Lending\BidType;
 use Unilend\Bundle\FrontBundle\Service\ProjectDisplayManager;
 use Unilend\Bundle\WSClientBundle\Service\InseeManager;
 
@@ -588,10 +590,9 @@ class DemoController extends AbstractController
         $page          = $request->query->get('page', 1);
         $sortDirection = $request->query->get('sortDirection', 'DESC');
         $sortType      = $request->query->get('sortType', 'dateFin');
-        $projectStatus = [ProjectsStatus::STATUS_ONLINE, ProjectsStatus::STATUS_FUNDED, ProjectsStatus::STATUS_SIGNED, ProjectsStatus::STATUS_REPAYMENT, ProjectsStatus::STATUS_REPAID, ProjectsStatus::STATUS_LOSS];
         $sort          = ['status' => 'ASC', $sortType => $sortDirection];
         /** @var Projects[] $projects */
-        $projects      = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->findBy(['status' => $projectStatus], $sort);
+        $projects = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->findBy(['status' => ProjectDisplayManager::STATUS_DISPLAYABLE], $sort);
 
         $template = [
             'sortDirection'  => $sortDirection,
@@ -604,6 +605,72 @@ class DemoController extends AbstractController
         ];
 
         return $this->render(':frontbundle/demo:projects_list.html.twig', $template);
+    }
+
+    /**
+     * @Route("/projets/detail/lender/{slug}", name="demo_lender_project_details")
+     *
+     * @param string                       $slug
+     * @param UserInterface|Clients|null   $client
+     * @param Request                      $request
+     * @param ProjectParticipantRepository $projectParticipantRepository
+     *
+     * @return Response
+     */
+    public function projectDetail(string $slug, ?UserInterface $client, Request $request, ProjectParticipantRepository $projectParticipantRepository): Response
+    {
+
+        $project = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->findOneBy(['slug' => $slug]);
+        $wallet  = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
+        $bid     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Bids')->findOneBy(['wallet' => $wallet, 'project' => $project, 'status' => [Bids::STATUS_PENDING, Bids::STATUS_ACCEPTED]]);
+        /** @var Bids[] $bids */
+        $bids     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Bids')->findBy(['project' => $project, 'status' => [Bids::STATUS_PENDING, Bids::STATUS_ACCEPTED]]);
+        $product  = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Product')->find($project->getIdProduct());
+        $form     = null;
+        $arranger = $projectParticipantRepository->findByProjectAndRole($project, ProjectParticipant::COMPANY_ROLE_ARRANGER);
+        $run      = $projectParticipantRepository->findByProjectAndRole($project, ProjectParticipant::COMPANY_ROLE_RUN);
+
+        if (null === $bid) {
+            $bid = new Bids();
+            $bid->setProject($project)
+                ->setWallet($wallet)
+                ->setStatus(Bids::STATUS_PENDING);
+        }
+
+        $form = $this->createForm(BidType::class, $bid);
+
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $this->entityManager->persist($bid);
+            $this->entityManager->flush();
+        }
+
+        return $this->render(':frontbundle/demo:project.html.twig', [
+            'project'  => $project,
+            'wallet'   => $wallet,
+            'bid'      => $bid,
+            'bids'     => $bids,
+            'product'  => $product,
+            'arranger' => $arranger,
+            'run'      => $run,
+            'form'     => $form->createView(),
+        ]);
+    }
+
+    /**
+     * @Route("/projets/detail/lender/bid/cancel/{bid}", name="demo_project_details_bid_cancellation")
+     *
+     * @param Bids $bid
+     *
+     * @return RedirectResponse
+     */
+    public function cancelBid(Bids $bid): RedirectResponse
+    {
+        $bid->setStatus(Bids::STATUS_REJECTED);
+        $this->entityManager->flush();
+
+        return $this->redirectToRoute('demo_lender_project_details', ['slug' => $bid->getProject()->getSlug()]);
     }
 
     /**
