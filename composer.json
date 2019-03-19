@@ -65,7 +65,6 @@
   },
   "scripts": {
     "unilend-scripts": [
-      "Cravler\\MaxMindGeoIpBundle\\Composer\\ScriptHandler::maxMindGeoIpUpdate"
     ],
     "symfony-scripts": [
       "Incenteev\\ParameterHandler\\ScriptHandler::buildParameters",
