@@ -16,12 +16,14 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Traits\{Lendable, Timestampable};
  * })
  * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\LoansRepository")
  * @ORM\HasLifecycleCallbacks
+ * @ORM\AssociationOverrides({@ORM\AssociationOverride(name="project", inversedBy="loans")})
  */
 class Loans
 {
     use Lendable;
     use Timestampable;
 
+    const STATUS_PENDING  = 2;
     const STATUS_ACCEPTED = 0;
     const STATUS_REJECTED = 1;
 
