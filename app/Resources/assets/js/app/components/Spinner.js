@@ -105,7 +105,8 @@ $doc
     }
 
     // Show spinner
-    $spinnerTarget.addClass('ui-is-loading')
+    if (!$spinnerTarget.is('body'))
+      $spinnerTarget.addClass('ui-is-loading')
 
     // @trigger target `Spinner:loading:started` [jQueryEvent]
     $spinnerTarget.trigger('Spinner:loading:started', [event])
@@ -116,15 +117,15 @@ $doc
 
 
     // Position the main body spinner
-    if ($spinnerTarget.is('body') || $spinnerTarget.is('.modal-spinner')) {
-      $('#floatingCirclesG').css({
-        top: posY + '%',
-        left: posX + '%'
-      })
-      if ($('.ui-is-spinner').length) {
-        $('.ui-is-spinner').attr('style', 'display: none!important');
-      }
-    }
+    // if ($spinnerTarget.is('body') || $spinnerTarget.is('.modal-spinner')) {
+    //   $('#floatingCirclesG').css({
+    //     top: posY + '%',
+    //     left: posX + '%'
+    //   })
+    //   if ($('.ui-is-spinner').length) {
+    //     $('.ui-is-spinner').attr('style', 'display: none!important');
+    //   }
+    // }
   })
 
   // Hide the spinner when global AJAX event has stopped
