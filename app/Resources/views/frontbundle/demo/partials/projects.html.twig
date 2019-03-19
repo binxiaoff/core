@@ -76,17 +76,7 @@
                                         data-sortable-amount="{{ project.amount }}"
                                         data-sortable-duration="{{ project.period }}">
                                         <td class="table-projects-item-partner">
-                                            {% set backgroundColor = '#787679' %}
-                                            {% if project.idPartner.label == 'cals' %}
-                                                {% set backgroundColor = '#5fc5d1' %}
-                                            {% elseif project.idPartner.label == 'cacib' %}
-                                                {% set backgroundColor = '#1b88db' %}
-                                            {% elseif project.idPartner.label == 'calf' %}
-                                                {% set backgroundColor = '#ffca2c' %}
-                                            {% elseif project.idPartner.label == 'unifergie' %}
-                                                {% set backgroundColor = '#f76965' %}
-                                            {% endif %}
-                                            <span class="bubble" style="background-color: {{ backgroundColor }};">{{ ('partner-name_bubble-' ~ project.idPartner.label)|trans }}</span>
+                                            {% include ':frontbundle/demo/partials:bubble.html.twig' with {'partner': project.idPartner.label} %}
                                         </td>
                                         <td class="table-projects-item-title">{{ project.idCompany.name }}<br>{{ project.title }}</td>
                                         <td class="table-projects-item-amount">{{ project.amount|localizednumber }}&nbsp;€</td>

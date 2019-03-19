@@ -12,7 +12,8 @@ use Symfony\Component\HttpFoundation\{JsonResponse, RedirectResponse, Request, R
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Translation\TranslatorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{Attachment, Bids, Clients, Companies, Loans, ProjectParticipant, Projects, ProjectsComments, ProjectsStatus, Users, WalletType};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{Attachment, Bids, Clients, Companies, Loans, Partner, ProjectParticipant, Projects, ProjectsComments, ProjectsStatus, Users,
+    WalletType};
 use Unilend\Bundle\CoreBusinessBundle\Repository\ProjectParticipantRepository;
 use Unilend\Bundle\CoreBusinessBundle\Service\{AttachmentManager, ProjectManager, ProjectStatusManager};
 use Unilend\Bundle\FrontBundle\Form\Lending\BidType;
@@ -123,21 +124,9 @@ class DemoController extends AbstractController
      */
     public function projectRequest(ProjectManager $projectManager, TranslatorInterface $translator): Response
     {
-        $products            = [];
         $arrangers           = [];
         $partners            = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Partner')->findAll();
-        $partnerProducts     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:PartnerProduct')->findBy(['idPartner' => $partners]);
         $companiesRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Companies');
-
-        foreach ($partnerProducts as $partnerProduct) {
-            $productId = $partnerProduct->getIdProduct()->getIdProduct();
-
-            if (false === isset($products[$productId])) {
-                $products[$productId] = $translator->trans('product-name_' . $partnerProduct->getIdProduct()->getLabel());
-            }
-        }
-
-        asort($products);
 
         foreach ($partners as $partner) {
             $company = $partner->getIdCompany();
@@ -152,7 +141,7 @@ class DemoController extends AbstractController
         $template = [
             'loanPeriods'     => $projectManager->getPossibleProjectPeriods(),
             'partners'        => $partners,
-            'products'        => $products,
+            'products'        => $this->getProductsList($partners, $translator),
             'arrangers'       => $arrangers,
             'runs'            => $companiesRepository->findBy(['idCompany' => range(6, 44)], ['name' => 'ASC']),
             'attachmentTypes' => $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectAttachmentType')->getAttachmentTypes()
@@ -185,7 +174,7 @@ class DemoController extends AbstractController
         $amount      = $request->request->get('amount');
         $duration    = $request->request->get('duration');
         $date        = $request->request->get('date');
-        $date        = $date ? \DateTime::createFromFormat('d/m/Y', $date) : null;
+        $date        = $date ? \DateTime::createFromFormat('d/m/Y', $date)->setTime(0, 0, 0) : null;
         $partnerId   = $request->request->get('partner');
         $productId   = $request->request->get('product') ?: null;
         $rate        = $request->request->get('rate') ?: null;
@@ -207,7 +196,7 @@ class DemoController extends AbstractController
                 ->setTitle($title)
                 ->setSlug($this->entityManager->getConnection()->generateSlug($title))
                 ->setAmount($amount)
-                ->setPeriod($duration)
+                ->setPeriod($duration * 12)
                 ->setComments($description)
                 ->setCreateBo(false)
                 ->setStatus(ProjectsStatus::STATUS_REQUEST)
@@ -219,45 +208,33 @@ class DemoController extends AbstractController
                 ->setInterestRate($rate)
                 ->setMeansRepayment($guarantee);
 
+            if ($arrangerId && $arranger = $companiesRepository->find($arrangerId)) {
+                $project->addArranger($arranger);
+            }
+
+            if ($runId && $run = $companiesRepository->find($runId)) {
+                $project->addRun($run);
+            }
+
             $this->entityManager->persist($project);
             $this->entityManager->flush($project);
 
             $projectStatusManager->addProjectStatus(Users::USER_ID_FRONT, $project->getStatus(), $project);
 
-            if ($arrangerId && $arranger = $companiesRepository->find($arrangerId)) {
-                $arrangerParticipant = new ProjectParticipant();
-                $arrangerParticipant
-                    ->setProject($project)
-                    ->setCompany($arranger)
-                    ->setRoles([ProjectParticipant::COMPANY_ROLE_ARRANGER]);
-
-                $this->entityManager->persist($arrangerParticipant);
-                $this->entityManager->flush($arrangerParticipant);
-            }
-
-            if ($runId && $run = $companiesRepository->find($runId)) {
-                $runParticipant = new ProjectParticipant();
-                $runParticipant
-                    ->setProject($project)
-                    ->setCompany($run)
-                    ->setRoles([ProjectParticipant::COMPANY_ROLE_RUN]);
-
-                $this->entityManager->persist($runParticipant);
-                $this->entityManager->flush($runParticipant);
-            }
-
             $attachmentTypeRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:AttachmentType');
 
             foreach ($request->files->all() as $field => $file) {
-                $attachmentType = $attachmentTypeRepository->find($request->request->get('filetype')[$field]);
-                $attachment     = $attachmentManager->upload($user, $attachmentType, $file, false);
-                $filename       = $request->request->get('filename')[$field];
+                if (false === empty($file)) {
+                    $attachmentType = $attachmentTypeRepository->find($request->request->get('filetype')[$field]);
+                    $attachment     = $attachmentManager->upload($user, $attachmentType, $file, false);
+                    $filename       = $request->request->get('filename')[$field];
 
-                // @todo "original name" should be used for saving file name, not a label
-                $attachment->setOriginalName($filename ?: $attachmentType->getLabel());
-                $this->entityManager->flush($attachment);
+                    // @todo "original name" should be used for saving file name, not a label
+                    $attachment->setOriginalName($filename ?: $attachmentType->getLabel());
+                    $this->entityManager->flush($attachment);
 
-                $attachmentManager->attachToProject($attachment, $project);
+                    $attachmentManager->attachToProject($attachment, $project);
+                }
             }
 
             $this->entityManager->commit();
@@ -280,25 +257,64 @@ class DemoController extends AbstractController
     /**
      * @Route("/projet/{hash}", name="demo_project_details", methods={"GET"}, requirements={"hash": "[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}"})
      *
-     * @param string $hash
+     * @param string                       $hash
+     * @param ProjectManager               $projectManager
+     * @param ProjectParticipantRepository $projectParticipantRepository
+     * @param TranslatorInterface          $translator
+     * @param UserInterface|Clients|null   $user
      *
      * @return Response
      */
-    public function projectDetails(string $hash): Response
+    public function projectDetails(
+        string $hash,
+        ProjectManager $projectManager,
+        ProjectParticipantRepository $projectParticipantRepository,
+        TranslatorInterface $translator,
+        ?UserInterface $user
+    ): Response
     {
         $projectRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
         $project           = $projectRepository->findOneBy(['hash' => $hash]);
 
         if (null === $project) {
-            return $this->redirectToRoute('collpub_loans');
+            return $this->redirectToRoute('demo_loans');
         }
 
-        $template = [
+        /** @var Partner $partner */
+        $partner           = $project->getIdPartner();
+        $arrangers         = [];
+        $arranger          = $projectParticipantRepository->findByProjectAndRole($project, ProjectParticipant::COMPANY_ROLE_ARRANGER);
+        $arranger          = empty($arranger) ? null : $arranger[0]->getCompany();
+        $run               = $projectParticipantRepository->findByProjectAndRole($project, ProjectParticipant::COMPANY_ROLE_RUN);
+        $run               = empty($run) ? null : $run[0]->getCompany();
+
+        $arrangers[$partner->getIdCompany()->getIdCompany()] = $partner->getIdCompany()->getName();
+        $arrangers[$user->getCompany()->getIdCompany()] = $user->getCompany()->getName();
+
+        if ($arranger) {
+            $arrangers[$arranger->getIdCompany()] = $arranger->getName();
+        }
+
+        asort($arrangers);
+
+        $companyRepository               = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Companies');
+        $projectAttachmentRepository     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectAttachment');
+        $projectAttachmentTypeRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectAttachmentType');
+        $projectCommentRepository        = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsComments');
+        $productRepository               = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Product');
+        $template                        = [
+            'loanPeriods'        => $projectManager->getPossibleProjectPeriods(),
+            'products'           => $this->getProductsList([$project->getIdPartner()], $translator),
+            'arranger'           => $arranger,
+            'arrangers'          => $arrangers,
+            'run'                => $run,
+            'runs'               => $companyRepository->findBy(['idCompany' => range(6, 44)], ['name' => 'ASC']),
+            'projectStatus'      => [ProjectsStatus::STATUS_REQUEST, ProjectsStatus::STATUS_REVIEW, ProjectsStatus::STATUS_ONLINE, ProjectsStatus::STATUS_FUNDED, ProjectsStatus::STATUS_SIGNED, ProjectsStatus::STATUS_REPAYMENT, ProjectsStatus::STATUS_REPAID],
             'project'            => $project,
-            'product'            => $this->entityManager->getRepository('UnilendCoreBusinessBundle:Product')->find($project->getIdProduct()),
-            'messages'           => $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsComments')->findBy(['idProject' => $project, 'public' => true], ['added' => 'DESC']),
-            'attachmentTypes'    => $this->entityManager->getRepository('UnilendCoreBusinessBundle:AttachmentType')->findAll(),
-            'projectAttachments' => $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectAttachment')->findBy(['idProject' => $project], ['added' => 'DESC'])
+            'product'            => $project->getIdProduct() ? $productRepository->find($project->getIdProduct()) : null,
+            'messages'           => $projectCommentRepository->findBy(['idProject' => $project, 'public' => true], ['added' => 'DESC']),
+            'attachmentTypes'    => $projectAttachmentTypeRepository->getAttachmentTypes(),
+            'projectAttachments' => $projectAttachmentRepository->findBy(['idProject' => $project], ['added' => 'DESC'])
         ];
 
         return $this->render(':frontbundle/demo:project_request_details.html.twig', $template);
@@ -307,9 +323,10 @@ class DemoController extends AbstractController
     /**
      * @Route("/projet/{hash}", name="demo_project_details_form", methods={"POST"}, requirements={"hash": "[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}"})
      *
-     * @param string            $hash
-     * @param Request           $request
-     * @param AttachmentManager $attachmentManager
+     * @param string             $hash
+     * @param Request            $request
+     * @param AttachmentManager  $attachmentManager
+     * @param UserInterface|null $user
      *
      * @return RedirectResponse
      * @throws \Doctrine\ORM\OptimisticLockException
@@ -349,7 +366,7 @@ class DemoController extends AbstractController
         $project           = $projectRepository->findOneBy(['hash' => $hash]);
 
         if (null === $project) {
-            return $this->redirectToRoute('collpub_loans');
+            return $this->redirectToRoute('demo_loans');
         }
 
         $content   = $request->request->filter('content', null, FILTER_SANITIZE_STRING);
@@ -558,22 +575,109 @@ class DemoController extends AbstractController
             return $this->redirectToRoute('demo_loans');
         }
 
-        $field = $request->request->get('name');
-        $value = $request->request->get('value', '');
+        $field       = $request->request->get('name');
+        $value       = $request->request->get('value', '');
+        $outputValue = null;
 
         switch ($field) {
             case 'amount':
                 $value = preg_replace('/[^0-9]/', '', $value);
                 $project->setAmount($value);
-                $value = '120 000';
+                $this->entityManager->flush($project);
+
+                $formatter   = new \NumberFormatter('fr_FR', \NumberFormatter::DEFAULT_STYLE);
+                $outputValue = $formatter->format($project->getAmount());
+                break;
+            case 'duration':
+                $value = (int) $value;
+                $project->setPeriod($value * 12);
+                $this->entityManager->flush($project);
+
+                $outputValue = $project->getPeriod() / 12;
+                break;
+            case 'product':
+                $project->setIdProduct($value);
+                $this->entityManager->flush($project);
+
+                $outputValue = $project->getIdProduct();
+                break;
+            case 'rate':
+                if ('' === $value) {
+                    $value = null;
+                } else {
+                    $value = str_replace(',', '.', $value);
+                    $value = (float) preg_replace('/[^0-9.]/', '', $value);
+                }
+                $project->setInterestRate($value);
+                $this->entityManager->flush($project);
+
+                $formatter   = new \NumberFormatter('fr_FR', \NumberFormatter::DEFAULT_STYLE);
+                $outputValue = $formatter->format($project->getInterestRate());
+                break;
+            case 'date':
+                if ($value && 1 === preg_match('#^[0-9]{2}/[0-9]{2}/[0-9]{4}$#', $value)) {
+                    $value = \DateTime::createFromFormat('d/m/Y', $value)->setTime(0, 0, 0);
+                } else {
+                    $value = null;
+                }
+                $project->setDateRetrait($value);
+                $this->entityManager->flush($project);
+
+                if ($value) {
+                    $outputValue = $value->format('d/m/Y');
+                }
+                break;
+            case 'guarantee':
+                $project->setMeansRepayment(empty($value) ? 0 : 1);
+                $this->entityManager->flush($project);
+
+                $outputValue = $project->getMeansRepayment();
+                break;
+            case 'description':
+                $project->setComments($value);
+                $this->entityManager->flush($project);
+
+                $outputValue = nl2br($project->getComments());
+                break;
+            case 'arranger':
+                $companyRepository          = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Companies');
+                $arrangerCompany            = $companyRepository->find($value);
+                $currentArrangerParticipant = $project->getArrangerParticipant();
+
+                if ($currentArrangerParticipant && $arrangerCompany !== $currentArrangerParticipant->getCompany()) {
+                    $project->removeProjectParticipants($currentArrangerParticipant);
+                }
+
+                if ($arrangerCompany && (empty($currentArrangerParticipant) || $arrangerCompany !== $currentArrangerParticipant->getCompany())) {
+                    $project->addArranger($arrangerCompany);
+                }
+
+                $this->entityManager->flush($project);
+
+                $outputValue = $arrangerCompany ? $arrangerCompany->getIdCompany() : null;
+                break;
+            case 'run':
+                $companyRepository     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Companies');
+                $runCompany            = $companyRepository->find($value);
+                $currentRunParticipant = $project->getRunParticipant();
+
+                if ($currentRunParticipant && (empty($currentRunParticipant) || $runCompany !== $currentRunParticipant->getCompany())) {
+                    $project->removeProjectParticipants($currentRunParticipant);
+                }
+
+                if ($runCompany && $runCompany !== $currentRunParticipant->getCompany()) {
+                    $project->addRun($runCompany);
+                }
+
+                $this->entityManager->flush($project);
+
+                $outputValue = $runCompany ? $runCompany->getIdCompany() : null;
                 break;
         }
 
-        $this->entityManager->flush($project);
-
         return $this->json([
             'success'  => true,
-            'newValue' => $value
+            'newValue' => $outputValue
         ]);
     }
 
@@ -710,5 +814,27 @@ class DemoController extends AbstractController
         }
 
         return $paginationSettings;
+    }
+
+    /**
+     * @param array               $partners
+     * @param TranslatorInterface $translator
+     * @return array
+     */
+    private function getProductsList(array $partners, TranslatorInterface $translator): array
+    {
+        $partnerProducts = $this->entityManager->getRepository('UnilendCoreBusinessBundle:PartnerProduct')->findBy(['idPartner' => $partners]);
+
+        foreach ($partnerProducts as $partnerProduct) {
+            $productId = $partnerProduct->getIdProduct()->getIdProduct();
+
+            if (false === isset($products[$productId])) {
+                $products[$productId] = $translator->trans('product-name_' . $partnerProduct->getIdProduct()->getLabel());
+            }
+        }
+
+        asort($products);
+
+        return $products;
     }
 }

@@ -1,4 +1,4 @@
-{% extends 'demo/_layout.html.twig' %}
+{% extends ':frontbundle/demo:_layout.html.twig' %}
 
 {% set page = {
     id: 'demo-project-request-details',
@@ -6,69 +6,172 @@
 } %}
 
 {% block dashboardContent %}
-
     <section class="dashboard-tabs tabs">
-        <h3>
-            {{ project.title }} <small>({{ ('project-status_' ~ project.status)|trans }})</small>
-            <div class="pull-right">
-                {% if project.status <= constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_FUNDED') %}
-                    <a href="{{ path('demo_project_abandon', {'hash': project.hash}) }}" class="btn-shape-xs">Abandonner le dossier</a>
-                {% endif %}
-                {% if project.status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_REQUEST') %}
-                    <a href="{{ path('demo_project_review', {'hash': project.hash}) }}" class="btn-primary btn-shape-xs">Passer à l‘analyse</a>
-                {% endif %}
-                {% if project.status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_REVIEW') %}
-                    <a href="{{ path('demo_project_publish', {'hash': project.hash}) }}" class="btn-primary btn-shape-xs">Proposer au financement</a>
-                {% endif %}
-                {% if project.status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_ONLINE') %}
-                    <a href="{{ path('demo_project_fund', {'hash': project.hash}) }}" class="btn-primary btn-shape-xs">Arrêter le financement</a>
-                {% endif %}
-                {% if project.status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_FUNDED') %}
-                    <a href="{{ path('demo_project_sign', {'hash': project.hash}) }}" class="btn-primary btn-shape-xs">Signer les contrats</a>
-                {% endif %}
-                {% if project.status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_SIGNED') %}
-                    <a href="{{ path('demo_project_repay', {'hash': project.hash}) }}" class="btn-primary btn-shape-xs">Commencer le remboursement</a>
-                {% endif %}
-                {% if project.status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_REPAYMENT') %}
-                    <a href="{{ path('demo_project_repaid', {'hash': project.hash}) }}" class="btn-primary btn-shape-xs">Finir le remboursement</a>
-                    <a href="{{ path('demo_project_loss', {'hash': project.hash}) }}" class="btn-primary btn-shape-xs">Passer en perte</a>
-                {% endif %}
+        <h4>
+            {{ project.idCompany.name }}
+            <small><a href="#" id="title" class="editable" data-type="text" data-inputclass="input-field">{{ project.title }}</a></small>
+            <div class="bubble pull-right">
+                {% include ':frontbundle/demo/partials:bubble.html.twig' with {'partner': project.idPartner.label} %}
             </div>
-        </h3>
+        </h4>
+        <div class="row dashboard-tab-pane">
+            <div class="form-project-create-nav tab-nav">
+                <ul class="nav nav-progress text-align-center">
+                    <li role="presentation" class="{% if project.status > constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_REQUEST') %}complete{% else %}active{% endif %}" data-equal-width>
+                        <span>
+                            <span class="progress-point">1.</span>
+                            <span class="label">Dépôt</span>
+                        </span>
+                    </li>
+                    <li role="presentation" class="{% if project.status > constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_REVIEW') %}complete{% elseif project.status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_REVIEW') %}active{% endif %}" data-equal-width>
+                        <span>
+                            <span class="progress-point">2.</span>
+                            <span class="label">Analyse</span>
+                        </span>
+                    </li>
+                    <li role="presentation" class="{% if project.status > constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_ONLINE') %}complete{% elseif project.status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_ONLINE') %}active{% endif %}" data-equal-width>
+                        <span>
+                            <span class="progress-point">3.</span>
+                            <span class="label">Financement</span>
+                        </span>
+                    </li>
+                    <li role="presentation" class="{% if project.status > constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_FUNDED') %}complete{% elseif project.status in [constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_FUNDED'), constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_SIGNED')] %}active{% endif %}" data-equal-width>
+                        <span>
+                            <span class="progress-point">4.</span>
+                            <span class="label">Signature</span>
+                        </span>
+                    </li>
+                    <li role="presentation" class="{% if project.status > constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_REPAYMENT') %}complete{% elseif project.status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_REPAYMENT') %}active{% endif %}" data-equal-width>
+                        <span>
+                            <span class="progress-point">5.</span>
+                            <span class="label">Remboursement</span>
+                        </span>
+                    </li>
+                    <li role="presentation" class="{% if project.status in [constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_REPAID'), constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_LOSS')] %}complete{% endif %}" data-equal-width>
+                        <span>
+                            <span class="progress-point">6.</span>
+                            <span class="label">Terminé</span>
+                        </span>
+                    </li>
+                </ul><!-- /.nav-progress -->
+            </div><!-- /.form-project-create-nav -->
+        </div>
         <div class="dashboard-tabs-content tab-content">
             <div class="row columns-with-space">
-                <div class="col-md-6">
+                <div class="col-md-12">
                     <article class="dashboard-tab-pane">
                         <div class="panel">
                             <div class="panel-content">
-                                <h4 class="h4">Récapitulatif</h4>
                                 <div class="row columns-with-space">
-                                    <dl class="col-sm-4 col-md-6 col-lg-6">
+                                    <dl class="col-md-4 col-lg-4">
                                         <dt>Montant</dt>
-                                        <dd><strong>{#<a href="#" id="amount" class="editable" data-type="text" data-pk="{{ project.idProject }}" data-inputclass="input-field">{{ project.amount|localizednumber }}</a>#}{{ project.amount|localizednumber }}&nbsp;€</strong></dd>
+                                        <dd>
+                                            <strong>
+                                                <a href="#" id="amount" class="editable" data-type="text" data-inputclass="input-field">{{ project.amount|localizednumber }}</a>&nbsp;€
+                                            </strong>
+                                        </dd>
                                     </dl>
-                                    <dl class="col-sm-4 col-md-6 col-lg-6">
+                                    <dl class="col-md-4 col-lg-4">
                                         <dt>Maturité</dt>
-                                        <dd><strong>{{ project.period }} ans</strong></dd>
+                                        <dd>
+                                            <strong>
+                                                <a href="#" id="duration" data-type="select">
+                                                    {% transchoice(project.period / 12) with {'%duration%': project.period / 12} %} demo-project-request_simulator-duration-select-option {% endtranschoice %}
+                                                </a>
+                                            </strong>
+                                        </dd>
+                                    </dl>
+                                    <dl class="col-md-4 col-lg-4">
+                                        <dt>Date de dépôt</dt>
+                                        <dd><strong>{{ project.added|localizeddate('short', 'short') }}</strong></dd>
                                     </dl>
                                 </div>
-                                <div class="row margin-10-t">
-                                    <dl>
+                                <div class="row columns-with-space margin-10-t">
+                                    <dl class="col-md-4 col-lg-4">
                                         <dt>Type de financement</dt>
-                                        <dd><strong>{{ ('product-name_' ~ product.label)|trans }}</strong></dd>
+                                        <dd>
+                                            <strong>
+                                                <a href="#" id="product" data-type="select">
+                                                    {% if product %}
+                                                        {{ ('product-name_' ~ product.label)|trans }}
+                                                    {% endif %}
+                                                </a>
+                                            </strong>
+                                        </dd>
+                                    </dl>
+                                    <dl class="col-md-4 col-lg-4">
+                                        <dt>Taux de progressivité <small>(%)</small></dt>
+                                        <dd>
+                                            <strong>
+                                                <a href="#" id="rate" class="editable" data-type="text" data-inputclass="input-field">
+                                                    {% if project.interestRate %}
+                                                        {{ project.interestRate|localizednumber }}
+                                                    {% endif %}
+                                                </a>
+                                            </strong>
+                                        </dd>
+                                    </dl>
+                                    <dl class="col-md-4 col-lg-4">
+                                        <dt>Date de mise à disposition</dt>
+                                        <dd>
+                                            <strong>
+                                                <a href="#" id="date" class="editable" data-type="text" data-pk="{{ project.idProject }}" data-inputclass="input-field">
+                                                    {% if project.dateRetrait %}
+                                                        {{ project.dateRetrait|localizeddate('short', 'none') }}
+                                                    {% endif %}
+                                                </a>
+                                            </strong>
+                                        </dd>
                                     </dl>
                                 </div>
                                 <div class="row margin-10-t">
-                                    <dl>
-                                        <dt>Fin de période de tirage</dt>
-                                        <dd><strong>{{ project.dateFin|localizeddate('short', 'none') }}</strong></dd>
-                                    </dl>
+                                    Ce dossier fait l‘objet d‘une garantie collatérale
+                                    <strong>
+                                        <a href="#" id="guarantee" data-type="checklist" data-value="{{ project.meansRepayment ? '1' : '' }}"></a>
+                                    </strong>
                                 </div>
-                                <h4 class="h4 margin-20-t">Description</h4>
-                                <div class="row">
-                                    <em>{{ project.comments|nl2br }}</em>
+                                <h4 class="h4 margin-20-t">Description <a href="#" id="edit-description"><span class="icon fa-edit-u32"></span></a></h4>
+                                <div class="row description-container">
+                                    <em>
+                                        <span href="#" id="description" class="editable" data-type="textarea" data-toggle="manual" data-inputclass="input-field">{{ project.comments|nl2br }}</span>
+                                    </em>
                                 </div>
                             </div><!-- /.panel-content -->
+                        </div>
+                    </article><!-- /.dashboard-tab-pane -->
+                    <article class="dashboard-tab-pane margin-20-t">
+                        <div class="panel">
+                            <form action="{{ path('demo_project_details_form', {'hash': project.hash}) }}" method="post" enctype="multipart/form-data" data-formvalidation data-formvalidation-shownotifications="false">
+                                <fieldset>
+                                    <h4 class="h4">Notations</h4>
+                                    <div class="row">
+                                        <dl class="col-md-6 col-lg-6">
+                                            <dt>Arrangeur</dt>
+                                            <dd>
+                                                <strong>
+                                                    <a href="#" id="arranger" data-type="select">
+                                                        {% if arranger %}
+                                                            {{ arranger.name }}
+                                                        {% endif %}
+                                                    </a>
+                                                </strong>
+                                            </dd>
+                                        </dl>
+                                        <dl class="col-md-6 col-lg-6">
+                                            <dt>RUN</dt>
+                                            <dd>
+                                                <strong>
+                                                    <a href="#" id="run" data-type="select">
+                                                        {% if run %}
+                                                            {{ run.name }}
+                                                        {% endif %}
+                                                    </a>
+                                                </strong>
+                                            </dd>
+                                        </dl>
+                                    </div>
+                                </fieldset>
+                            </form>
                         </div>
                     </article><!-- /.dashboard-tab-pane -->
                     <article class="dashboard-tab-pane margin-20-t">
@@ -90,15 +193,10 @@
                                     <h5 class="h4 margin-20-t">Ajouter des documents</h5>
                                     <div class="form-extrafiles-list">
                                         <div class="form-field form-field-multi file-upload-extra row row-multi-col-computer" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="typedFile">
-                                            <div>
-                                                <select name="files[file]" class="input-field" aria-labelledby="form-extrafiles-document-type-label">
-                                                    <option value="">Sélectionner le type de fichier</option>
-                                                    {% for attachment in attachmentTypes %}
-                                                        <option value="{{ attachment.id }}">{{ attachment.label }}</option>
-                                                    {% endfor %}
-                                                </select>
+                                            <div class="col-lg-6 col-md-6">
+                                                {% include ':frontbundle/demo/partials:project_attachment_select.html.twig' with {'name': 'file'} %}
                                             </div>
-                                            <div>
+                                            <div class="col-lg-6 col-md-6">
                                                 <div class="custom-input-file" id="form-file" data-fileattach data-fileattach-inputname="file" data-fileattach-maxfiles="1" data-fileattach-filetypes="pdf jpg jpeg png doc docx" data-formvalidation-required='input[type="file"][name="file[0]"]' aria-labelledby="form-extrafiles-document-file-label"></div><!-- /.ui-fileattach -->
                                             </div>
                                         </div>
@@ -115,15 +213,10 @@
 
                             <div id="form-extrafiles-template" class="ui-template-definition" style="display: none" disabled="disabled" aria-hidden="true">
                                 <div class="form-field form-field-multi file-upload-extra row row-multi-col-computer" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="typedFile">
-                                    <div>
-                                        <select name="files[extra__NUM__]" class="input-field" aria-labelledby="form-extrafiles-document-type-label">
-                                            <option value="">{% trans %} project-request_files-select-label {% endtrans %}</option>
-                                            {% for attachment in attachmentTypes %}
-                                                <option value="{{ attachment.id }}">{{ attachment.label }}</option>
-                                            {% endfor %}
-                                        </select>
+                                    <div class="col-lg-6 col-md-6">
+                                        {% include ':frontbundle/demo/partials:project_attachment_select.html.twig' with {'name': '__NUM__'} %}
                                     </div>
-                                    <div>
+                                    <div class="col-lg-6 col-md-6">
                                         <div class="custom-input-file" id="form-extrafile" data-fileattach data-fileattach-inputname="extra__NUM__" data-fileattach-maxfiles="1" data-fileattach-filetypes="pdf jpg jpeg png doc docx xls xlsx" data-formvalidation-required='input[type="file"][name="file[__NUM__]"]' aria-labelledby="form-extrafiles-document-file-label"></div><!-- /.ui-fileattach -->
                                     </div>
                                 </div><!-- /.file-upload-extra -->
@@ -150,11 +243,35 @@
                                 </div>
                             </div>
                             <div id="chat-content">
-                                {% include 'demo/project_chat.html.twig' %}
+                                {% include ':frontbundle/demo:project_chat.html.twig' %}
                             </div>
                         </div>
                     </article>
                 </div>
+            </div>
+            <div class="row">
+                {% if project.status <= constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_FUNDED') %}
+                    <a href="{{ path('demo_project_abandon', {'hash': project.hash}) }}" class="btn-shape-xs">Abandonner le dossier</a>
+                {% endif %}
+                {% if project.status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_REQUEST') %}
+                    <a href="{{ path('demo_project_review', {'hash': project.hash}) }}" class="btn-primary btn-shape-xs">Passer à l‘analyse</a>
+                {% endif %}
+                {% if project.status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_REVIEW') %}
+                    <a href="{{ path('demo_project_publish', {'hash': project.hash}) }}" class="btn-primary btn-shape-xs">Proposer au financement</a>
+                {% endif %}
+                {% if project.status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_ONLINE') %}
+                    <a href="{{ path('demo_project_fund', {'hash': project.hash}) }}" class="btn-primary btn-shape-xs">Arrêter le financement</a>
+                {% endif %}
+                {% if project.status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_FUNDED') %}
+                    <a href="{{ path('demo_project_sign', {'hash': project.hash}) }}" class="btn-primary btn-shape-xs">Signer les contrats</a>
+                {% endif %}
+                {% if project.status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_SIGNED') %}
+                    <a href="{{ path('demo_project_repay', {'hash': project.hash}) }}" class="btn-primary btn-shape-xs">Commencer le remboursement</a>
+                {% endif %}
+                {% if project.status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_REPAYMENT') %}
+                    <a href="{{ path('demo_project_repaid', {'hash': project.hash}) }}" class="btn-primary btn-shape-xs">Finir le remboursement</a>
+                    <a href="{{ path('demo_project_loss', {'hash': project.hash}) }}" class="btn-primary btn-shape-xs">Passer en perte</a>
+                {% endif %}
             </div>
         </div><!-- /.dashboard-tabs-content -->
     </section><!-- /.dashboard-tabs -->
@@ -162,9 +279,37 @@
 
 {% block pageHeadScripts %}
     <link href="//cdnjs.cloudflare.com/ajax/libs/x-editable/1.5.0/jquery-editable/css/jquery-editable.css" rel="stylesheet"/>
+    <link href="//cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.8.0/css/bootstrap-datepicker.min.css" rel="stylesheet"/>
     <style>
-        a.editable {
+        a.editable-click {
             color: #302a32 !important;
+            border-bottom: dashed 1px #302a32;
+        }
+        a.editable-click:hover {
+            border-bottom: dashed 1px #2bc9af;
+        }
+        h4 a.editable-click {
+            color: #2bc9af !important;
+            border-bottom: dashed 1px #2bc9af;
+        }
+        h4 a.editable-click:hover {
+            border-bottom: dashed 1px #302a32;
+        }
+        .description-container {
+            line-height: 18px;
+        }
+        .description-container .editable-container.editable-inline,
+        .description-container .editable-input {
+            width: 100%;
+        }
+        .bubble {
+            display: inline-block;
+            border-radius: 12px;
+            padding: 3px 10px;
+            line-height: 18px;
+            color: #fbf9fb;
+            font-size: 13px;
+            font-weight: 900;
         }
     </style>
 {% endblock %}
@@ -176,16 +321,73 @@
         $(function () {
             $.fn.editable.defaults.mode = 'inline'
 
-            $('.editable').editable({
+            var editableConfig = {
+                pk: {{ project.idProject }},
                 url: '{{ path('demo_project_update', {'hash': project.hash}) }}',
-                showbuttons: false,
                 success: function(response) {
                     if (response.newValue)
                         return {
                             newValue: response.newValue
                         }
-                }
+                },
+                onblur: 'submit',
+                showbuttons: false,
+                emptytext: 'Non défini'
+            }
+
+            $('.editable').editable(editableConfig)
+
+            $('#duration').editable(Object.assign(editableConfig, {
+                value: {{ project.period }},
+                source: [
+                    {% for duration in loanPeriods %}
+                        {value: {{ duration }}, text: '{% transchoice(duration) with {"%duration%": duration} %} demo-project-request_simulator-duration-select-option {% endtranschoice %}'},
+                    {% endfor %}
+                ]
+            }))
+
+            $('#product').editable(Object.assign(editableConfig, {
+                value: {{ project.idProduct }},
+                source: [
+                    {% for productId, productLabel in products %}
+                        {value: {{ productId }}, text: '{{ productLabel|e('js') }}'},
+                    {% endfor %}
+                ]
+            }))
+
+            $('#guarantee').editable(Object.assign(editableConfig, {
+                placement: 'right',
+                source: [
+                    {value: 1, text: 'Oui'}
+                ],
+                emptytext: 'Non'
+            }))
+
+            $('#edit-description').on('click', function (event) {
+                event.stopPropagation()
+                event.preventDefault()
+                $('#description').editable('toggle')
             })
+
+            $('#arranger').editable(Object.assign(editableConfig, {
+                value: '{% if arranger %}{{ arranger.idCompany }}{% endif %}',
+                source: [
+                    {% for arrangerId, arrangerName in arrangers %}
+                        {value: {{ arrangerId }}, text: '{{ arrangerName|e('js') }}'},
+                    {% endfor %}
+                ],
+                emptytext: 'Aucun'
+            }))
+
+            $('#run').editable(Object.assign(editableConfig, {
+                value: '{% if run %}{{ run.idCompany }}{% endif %}',
+                source: [
+                    {% for runCompany in runs %}
+                        {value: {{ runCompany.idCompany }}, text: '{{ runCompany.name|e('js') }}'},
+                    {% endfor %}
+                ],
+                emptytext: 'Aucun'
+            }))
 
             var $chatForm = $('#chat-form')
             var $textarea = $chatForm.find('textarea')
