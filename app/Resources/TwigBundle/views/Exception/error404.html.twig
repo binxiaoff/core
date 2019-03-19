@@ -2,13 +2,19 @@
 {% extends '@Twig/Exception/error.html.twig' %}
 
 {% block errorPageTitle %}
-    {% trans %} error-page_404-page-title {% endtrans %}
+    Fonctionnalité à venir
 {% endblock %}
 
 {% block errorTitle %}
-    {% trans %} error-page_404-title {% endtrans %}
+    {% trans %} Bientôt en ligne {% endtrans %}
 {% endblock %}
 
 {% block errorDetails %}
-    {{ 'error-page_404-details'|trans|raw }}
+    Presque prêt
+{% endblock %}
+
+{% block pageAsideBody %}
+    <div class="page-aside-body hide-xs hide-sm c-p1" style="text-align: center">
+        {{ svgimage('#category-3', 'Error', 500, 500)|raw }}
+    </div><!-- /.page-aside-body -->
 {% endblock %}
