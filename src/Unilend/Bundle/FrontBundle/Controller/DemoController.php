@@ -361,18 +361,20 @@ class DemoController extends AbstractController
         $projectCommentRepository        = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsComments');
         $productRepository               = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Product');
         $template                        = [
-            'loanPeriods'        => $projectManager->getPossibleProjectPeriods(),
-            'products'           => $this->getProductsList([$project->getIdPartner()], $translator),
-            'arranger'           => $arranger,
-            'arrangers'          => $arrangers,
-            'run'                => $run,
-            'runs'               => $companyRepository->findBy(['idCompany' => range(6, 44)], ['name' => 'ASC']),
-            'projectStatus'      => [ProjectsStatus::STATUS_REQUEST, ProjectsStatus::STATUS_REVIEW, ProjectsStatus::STATUS_ONLINE, ProjectsStatus::STATUS_FUNDED, ProjectsStatus::STATUS_SIGNED, ProjectsStatus::STATUS_REPAYMENT, ProjectsStatus::STATUS_REPAID],
-            'project'            => $project,
-            'product'            => $project->getIdProduct() ? $productRepository->find($project->getIdProduct()) : null,
-            'messages'           => $projectCommentRepository->findBy(['idProject' => $project, 'public' => true], ['added' => 'DESC']),
-            'attachmentTypes'    => $projectAttachmentTypeRepository->getAttachmentTypes(),
-            'projectAttachments' => $projectAttachmentRepository->findBy(['idProject' => $project], ['added' => 'DESC'])
+            'loanPeriods'               => $projectManager->getPossibleProjectPeriods(),
+            'products'                  => $this->getProductsList([$project->getIdPartner()], $translator),
+            'arranger'                  => $arranger,
+            'arrangers'                 => $arrangers,
+            'run'                       => $run,
+            'runs'                      => $companyRepository->findBy(['idCompany' => range(6, 44)], ['name' => 'ASC']),
+            'projectStatus'             => [ProjectsStatus::STATUS_REQUEST, ProjectsStatus::STATUS_REVIEW, ProjectsStatus::STATUS_ONLINE, ProjectsStatus::STATUS_FUNDED, ProjectsStatus::STATUS_SIGNED, ProjectsStatus::STATUS_REPAYMENT, ProjectsStatus::STATUS_REPAID],
+            'project'                   => $project,
+            'product'                   => $project->getIdProduct() ? $productRepository->find($project->getIdProduct()) : null,
+            'messages'                  => $projectCommentRepository->findBy(['idProject' => $project, 'public' => true], ['added' => 'DESC']),
+            'attachmentTypes'           => $projectAttachmentTypeRepository->getAttachmentTypes(),
+            'projectAttachments'        => $projectAttachmentRepository->findBy(['idProject' => $project], ['added' => 'DESC']),
+            'isProjectScoringEditable'  => $projectManager->isProjectScoringEditable($project, $user),
+            'isBorrowerScoringEditable' => $projectManager->isBorrowerScoringEditable($project, $user)
         ];
 
         return $this->render(':frontbundle/demo:project_request_details.html.twig', $template);
@@ -654,7 +656,9 @@ class DemoController extends AbstractController
                 $outputValue = $project->getPeriod() / 12;
                 break;
             case 'product':
-                $project->setIdProduct($value);
+                $product = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Product')->find($value);
+                $product = $product ? $product->getIdProduct() : null;
+                $project->setIdProduct($product);
                 $this->entityManager->flush($project);
 
                 $outputValue = $project->getIdProduct();
@@ -730,6 +734,20 @@ class DemoController extends AbstractController
                 $this->entityManager->flush($project);
 
                 $outputValue = $runCompany ? $runCompany->getIdCompany() : null;
+                break;
+            case 'arranger-scoring':
+                $value = $value ?: null;
+                $project->setNatureProject($value);
+                $this->entityManager->flush($project);
+
+                $outputValue = $value;
+                break;
+            case 'run-scoring':
+                $value = $value ?: null;
+                $project->setObjectifLoan($value);
+                $this->entityManager->flush($project);
+
+                $outputValue = $value;
                 break;
         }
 

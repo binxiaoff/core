@@ -8,12 +8,12 @@
     <style>
         .bubble {
             display: inline-block;
-            border-radius: 12px;
-            padding: 2px 10px;
+            border-radius: 14px;
+            padding: 5px 10px;
             line-height: 18px;
             color: #fbf9fb;
             font-weight: 900;
-            font-size: small;
+            font-size: 16px;
         }
 
         .input-field {
@@ -27,6 +27,7 @@
         }
     </style>
 {% endblock %}
+
 {% block pageScripts %}
     <script>
         var $collectionHolder;
@@ -79,132 +80,143 @@
 {% endblock %}
 
 {% block dashboardContent %}
-    <article id="project-single" class="page project-single{% if false == project.isOnline %} ui-project-expired{% endif %}">
-        <div class="panel" style="background-color: #fff; padding: 30px 30px 30px 30px">
-            <div class="panel-header">
-                <div class="row">
-                    <div class="project-single-details">
-                        <h1 class="project-single-title">{{ project.idCompany.name }}</h1>
-                        <span style="font-weight: 400; margin-top: 1em; margin-bottom: 1em; font-size: xx-large; color: #787679;">{{ project.title }}</span>
-                        {% include ':frontbundle/demo/partials:bubble.html.twig' with {'partner': project.idPartner.label} %}
-                    </div><!-- /.project-single-details -->
-                </div>
-                <div class="row margin-20-t">
-                    <div class="col-lg-8 col-md-8 col-sm-8">
-
-                        <div class="row">
-                            <div class="col-lg-6 col-md-6 col-sm-6">
-                                <h5>Date de dépôt</h5>
-                                {{ project.added|date('d/m/Y') }}
+    <div class="dashboard-tabs-content tab-content">
+        <article id="project-single" class="project-single dashboard-tab-pane{% if false == project.isOnline %} ui-project-expired{% endif %}">
+            <div class="panel">
+                <div class="panel-header">
+                    <div class="row">
+                        <div class="project-single-details">
+                            <div class="pull-right">
+                                {% include ':frontbundle/demo/partials:bubble.html.twig' with {'partner': project.idPartner.label} %}
                             </div>
-
-                            <div class="col-lg-6 col-md-6 col-sm-6">
-                                <h5>Montant</h5>
-                                {{ project.amount|localizednumber }}&nbsp;€
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-lg-6 col-md-6 col-sm-6">
-                                <h5>Maturité</h5>
-                                {{ (project.period / 12)|round(0)|localizednumber }} ans
-                            </div>
-
-                            <div class="col-lg-6 col-md-6 col-sm-6">
-                                <h5>Type de financement</h5>
-                                {{ ('product-name_' ~ product.idRepaymentType.label)|trans }}
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-lg-6 col-md-6 col-sm-6">
-                                <h5>Participants</h5>
-                                <div>Arrangeur : {% if arranger.0 is defined %} {{ arranger.0.company.name }} {% else %} pas défini {% endif %}</div>
-                                <div>RUN :  {% if run.0 is defined %} {{ run.0.company.name }}  {% else %} pas défini {% endif %}</div>
-                            </div>
-
-                            <div class="col-lg-6 col-md-6 col-sm-6">
-                                <h5>Notations</h5>
-                                <div>Projet : AAA</div>
-                                <div>Emprunteur : AAA</div>
-                            </div>
-                        </div>
+                            <h1 class="project-single-title">{{ project.idCompany.name }}</h1>
+                            <span style="font-weight: 400; margin-top: 1em; margin-bottom: 1em; font-size: xx-large; color: #787679;">{{ project.title }}</span>
+                        </div><!-- /.project-single-details -->
                     </div>
-                    <div class="col-lg-4 col-md-4">
-                        <h5>Documents</h5>
-                        <div class="row">
-                            <div class="col-lg-10 col-md-10 col-sm-10">
-                                <strong>Télécharger tous</strong>
+                </div>
+                <div class="panel-content">
+                    <div class="row margin-20-t">
+                        <div class="col-lg-8 col-md-8 col-sm-8">
+                            <div class="row">
+                                <div class="col-lg-6 col-md-6 col-sm-6">
+                                    <h5>Date de dépôt</h5>
+                                    {{ project.added|date('d/m/Y') }}
+                                </div>
+
+                                <div class="col-lg-6 col-md-6 col-sm-6">
+                                    <h5>Montant</h5>
+                                    {{ project.amount|localizednumber }}&nbsp;€
+                                </div>
                             </div>
-                            <div class="col-lg-2 col-md-2 col-sm-2">
-                                <a href="#"><span class="icon fa-file-zip-o"></span></a>
+
+                            <div class="row">
+                                <div class="col-lg-6 col-md-6 col-sm-6">
+                                    <h5>Maturité</h5>
+                                    {{ (project.period / 12)|round(0)|localizednumber }} ans
+                                </div>
+
+                                <div class="col-lg-6 col-md-6 col-sm-6">
+                                    <h5>Type de financement</h5>
+                                    {{ ('product-name_' ~ product.idRepaymentType.label)|trans }}
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-lg-6 col-md-6 col-sm-6">
+                                    <h5>Participants</h5>
+                                    <div>Arrangeur : {% if arranger.0 is defined %} {{ arranger.0.company.name }} {% else %} pas défini {% endif %}</div>
+                                    <div>RUN : {% if run.0 is defined %} {{ run.0.company.name }} {% else %} pas défini {% endif %}</div>
+                                </div>
+
+                                <div class="col-lg-6 col-md-6 col-sm-6">
+                                    <h5>Notations</h5>
+                                    <div>Projet : {% if project.natureProject %}{{ project.natureProject }}{% else %}N/A{% endif %}</div>
+                                    <div>Emprunteur : {% if project.objectifLoan %}{{ project.objectifLoan }}{% else %}N/A{% endif %}</div>
+                                </div>
                             </div>
                         </div>
+                        <div class="col-lg-4 col-md-4">
+                            <h5>Documents</h5>
+                            <div class="row">
+                                <div class="col-lg-10 col-md-10 col-sm-10">
+                                    <strong>Tout télécharger</strong>
+                                </div>
+                                <div class="col-lg-2 col-md-2 col-sm-2">
+                                    <a href="#"><span class="icon fa-file-zip-o"></span></a>
+                                </div>
+                            </div>
 
-                        <div class="row">
-                            <div class="col-lg-10 col-md-10 col-sm-10">
-                                KBIS
+                            <div class="row">
+                                <div class="col-lg-10 col-md-10 col-sm-10">
+                                    KBIS
+                                </div>
+                                <div class="col-lg-2 col-md-2 col-sm-2">
+                                    <a href="#"><span class="icon fa-file-pdf-o"></span></a>
+                                </div>
                             </div>
-                            <div class="col-lg-2 col-md-2 col-sm-2">
-                                <a href="#"><span class="icon fa-file-pdf-o"></span></a>
-                            </div>
-                        </div>
 
-                        <div class="row">
-                            <div class="col-lg-10 col-md-10 col-sm-10">
-                                RIB
+                            <div class="row">
+                                <div class="col-lg-10 col-md-10 col-sm-10">
+                                    RIB
+                                </div>
+                                <div class="col-lg-2 col-md-2 col-sm-2">
+                                    <a href="#"><span class="icon fa-file-excel-o"></span></a>
+                                </div>
                             </div>
-                            <div class="col-lg-2 col-md-2 col-sm-2">
-                                <a href="#"><span class="icon fa-file-excel-o"></span></a>
-                            </div>
-                        </div>
 
-                        <div class="row">
-                            <div class="col-lg-10 col-md-10 col-sm-10">
-                                CNI
+                            <div class="row">
+                                <div class="col-lg-10 col-md-10 col-sm-10">
+                                    CNI
+                                </div>
+                                <div class="col-lg-2 col-md-2 col-sm-2">
+                                    <a href="#"><span class="icon fa-file-word-o"></span></a>
+                                </div>
                             </div>
-                            <div class="col-lg-2 col-md-2 col-sm-2">
-                                <a href="#"><span class="icon fa-file-word-o"></span></a>
-                            </div>
-                        </div>
 
-                        <div class="row">
-                            <div class="col-lg-10 col-md-10 col-sm-10">
-                                Dernier rapport CAC
+                            <div class="row">
+                                <div class="col-lg-10 col-md-10 col-sm-10">
+                                    Dernier rapport CAC
+                                </div>
+                                <div class="col-lg-2 col-md-2 col-sm-2">
+                                    <a href="#"><span class="icon fa-file-image-o"></span></a>
+                                </div>
                             </div>
-                            <div class="col-lg-2 col-md-2 col-sm-2">
-                                <a href="#"><span class="icon fa-file-image-o"></span></a>
-                            </div>
-                        </div>
 
-                        <div class="row">
-                            <div class="col-lg-10 col-md-10 col-sm-10">
-                                Liasse fiscale
+                            <div class="row">
+                                <div class="col-lg-10 col-md-10 col-sm-10">
+                                    Liasse fiscale
+                                </div>
+                                <div class="col-lg-2 col-md-2 col-sm-2">
+                                    <a href="#"><span class="icon fa-file-pdf-o"></span></a>
+                                </div>
                             </div>
-                            <div class="col-lg-2 col-md-2 col-sm-2">
-                                <a href="#"><span class="icon fa-file-pdf-o"></span></a>
-                            </div>
-                        </div>
 
-                        <div class="row">
-                            <div class="col-lg-10 col-md-10 col-sm-10">
-                                Relevé de compte bancaire
-                            </div>
-                            <div class="col-lg-2 col-md-2 col-sm-2">
-                                <a href="#"><span class="icon fa-file-pdf-o"></span></a>
+                            <div class="row">
+                                <div class="col-lg-10 col-md-10 col-sm-10">
+                                    Relevé de compte bancaire
+                                </div>
+                                <div class="col-lg-2 col-md-2 col-sm-2">
+                                    <a href="#"><span class="icon fa-file-pdf-o"></span></a>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-
-            <div class="panel-content">
-                <div id="offers" data-watchscroll-nav>
+        </article>
+        <article id="project-single" class="project-single dashboard-tab-pane{% if false == project.isOnline %} ui-project-expired{% endif %}">
+            <div class="panel">
+                <div class="panel-content">
                     {% include ':frontbundle/demo/project:my_bid.html.twig' %}
-
-                    {% include ':frontbundle/demo/project:bids_list.html.twig' %}
-                </div>
+                </div><!-- /.project-single-content -->
             </div><!-- /.project-single-content -->
-        </div><!-- /.project-single-content -->
-    </article>
+        </article>
+        <article id="project-single" class="project-single dashboard-tab-pane{% if false == project.isOnline %} ui-project-expired{% endif %}">
+            <div class="panel">
+                <div class="panel-content">
+                    {% include ':frontbundle/demo/project:bids_list.html.twig' %}
+                </div><!-- /.project-single-content -->
+            </div><!-- /.project-single-content -->
+        </article>
+    </div>
 {% endblock %}
