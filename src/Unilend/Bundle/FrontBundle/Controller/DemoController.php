@@ -281,17 +281,17 @@ class DemoController extends AbstractController
         }
 
         /** @var Partner $partner */
-        $partner           = $project->getIdPartner();
-        $arrangers         = [];
-        $arranger          = $projectParticipantRepository->findByProjectAndRole($project, ProjectParticipant::COMPANY_ROLE_ARRANGER);
-        $arranger          = empty($arranger) ? null : $arranger[0]->getCompany();
-        $run               = $projectParticipantRepository->findByProjectAndRole($project, ProjectParticipant::COMPANY_ROLE_RUN);
-        $run               = empty($run) ? null : $run[0]->getCompany();
+        $partner   = $project->getIdPartner();
+        $arrangers = [];
+        $arranger  = $project->getArrangerParticipant();
+        $arranger  = $arranger instanceof ProjectParticipant ? $arranger->getCompany() : null;
+        $run       = $project->getRunParticipant();
+        $run       = $run instanceof ProjectParticipant ? $run->getCompany() : null;
 
         $arrangers[$partner->getIdCompany()->getIdCompany()] = $partner->getIdCompany()->getName();
         $arrangers[$user->getCompany()->getIdCompany()] = $user->getCompany()->getName();
 
-        if ($arranger) {
+        if ($arranger instanceof Companies) {
             $arrangers[$arranger->getIdCompany()] = $arranger->getName();
         }
 
@@ -637,7 +637,7 @@ class DemoController extends AbstractController
                 $project->setComments($value);
                 $this->entityManager->flush($project);
 
-                $outputValue = nl2br($project->getComments());
+                $outputValue = $project->getComments();
                 break;
             case 'arranger':
                 $companyRepository          = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Companies');
@@ -661,11 +661,11 @@ class DemoController extends AbstractController
                 $runCompany            = $companyRepository->find($value);
                 $currentRunParticipant = $project->getRunParticipant();
 
-                if ($currentRunParticipant && (empty($currentRunParticipant) || $runCompany !== $currentRunParticipant->getCompany())) {
+                if ($currentRunParticipant && $runCompany !== $currentRunParticipant->getCompany()) {
                     $project->removeProjectParticipants($currentRunParticipant);
                 }
 
-                if ($runCompany && $runCompany !== $currentRunParticipant->getCompany()) {
+                if ($runCompany && (empty($currentRunParticipant) || $runCompany !== $currentRunParticipant->getCompany())) {
                     $project->addRun($runCompany);
                 }
 

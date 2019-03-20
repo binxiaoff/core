@@ -1711,13 +1711,7 @@ class Projects
      */
     public function getArrangerParticipant(): ?ProjectParticipant
     {
-        foreach ($this->getProjectParticipants() as $projectParticipant) {
-            if ($projectParticipant->hasRole(ProjectParticipant::COMPANY_ROLE_ARRANGER)) {
-                return $projectParticipant;
-            }
-        }
-
-        return null;
+        return $this->getParticipant(ProjectParticipant::COMPANY_ROLE_ARRANGER);
     }
 
     /**
@@ -1725,13 +1719,7 @@ class Projects
      */
     public function getAgentParticipant(): ?ProjectParticipant
     {
-        foreach ($this->getProjectParticipants() as $projectParticipant) {
-            if ($projectParticipant->hasRole(ProjectParticipant::COMPANY_ROLE_AGENT)) {
-                return $projectParticipant;
-            }
-        }
-
-        return null;
+        return $this->getParticipant(ProjectParticipant::COMPANY_ROLE_AGENT);
     }
 
     /**
@@ -1739,8 +1727,17 @@ class Projects
      */
     public function getRunParticipant(): ?ProjectParticipant
     {
+        return $this->getParticipant(ProjectParticipant::COMPANY_ROLE_RUN);
+    }
+
+    /**
+     * @param string $role
+     * @return ProjectParticipant|null
+     */
+    private function getParticipant(string $role): ?ProjectParticipant
+    {
         foreach ($this->getProjectParticipants() as $projectParticipant) {
-            if ($projectParticipant->hasRole(ProjectParticipant::COMPANY_ROLE_RUN)) {
+            if ($projectParticipant->hasRole($role)) {
                 return $projectParticipant;
             }
         }
