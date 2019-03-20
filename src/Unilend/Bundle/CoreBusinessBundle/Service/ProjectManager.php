@@ -387,13 +387,22 @@ class ProjectManager
 
     /**
      * @param Projects $project
+     * @return bool
+     */
+    public function isEditable(Projects $project): bool
+    {
+        return $project->getStatus() < ProjectsStatus::STATUS_ONLINE;
+    }
+
+    /**
+     * @param Projects $project
      * @param Clients  $user
      * @return bool
      */
     public function isProjectScoringEditable(Projects $project, Clients $user): bool
     {
         return (
-            $project->getStatus() < ProjectsStatus::STATUS_ONLINE
+            $this->isEditable($project)
             && $project->getArrangerParticipant()
             && $project->getArrangerParticipant()->getCompany() === $user->getCompany()
         );
@@ -407,7 +416,7 @@ class ProjectManager
     public function isBorrowerScoringEditable(Projects $project, Clients $user): bool
     {
         return (
-            $project->getStatus() < ProjectsStatus::STATUS_ONLINE
+            $this->isEditable($project)
             && $project->getRunParticipant()
             && $project->getRunParticipant()->getCompany() === $user->getCompany()
         );
