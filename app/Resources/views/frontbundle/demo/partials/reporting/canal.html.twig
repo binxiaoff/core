@@ -1,0 +1,88 @@
+{% set lendindgData = [
+    {name: 'Direct', y: 12000000, color: '#5fc5d1'},
+    {name: 'CACIB -- collectoon pubulique', y: 9600000, color: '#1b88db'},
+    {name: 'CACIB -- entreprises', y: 6300000, color: '#ffca2c'},
+    {name: 'Unifergie', y: 1250000, color: '#f76965'}
+] %}
+
+{% set walletAllocationChartData = {
+    type: 'preterProjectsAccount',
+    background: 'none',
+    highcharts: {
+        chart: {
+            type: 'pie',
+            marginTop: 0,
+            marginBottom: 0,
+            marginLeft: 0,
+            marginRight: 0,
+            spacingTop: 0,
+            spacingBottom: 0,
+            spacingLeft: 0,
+            spacingRight: 0
+        },
+        title: {
+            text: ''
+        },
+        legend: {
+            enabled: false
+        },
+        plotOptions: {
+            pie: {
+                innerSize: '50%',
+                showInLegend: true,
+                dataLabels: {
+                    enabled: false
+                }
+            }
+        },
+        series: [{
+            name: 'lender-dashboard-wallet_money-tab-grap-title',
+            data: lendindgData
+        }],
+        tooltip: {
+            valueSuffix: ' €'
+        }
+    }
+} %}
+
+<article class="dashboard-panel dashboard-mywallet ui-draggable ui-dashboard-panel col-lg-12 col-md-12 col-sm-8 col-xs-4">
+    <header class="dashboard-panel-header">
+        <h3 class="dashboard-panel-title">Répartition des canaux</h3>
+        <div class="dashboard-panel-controls">
+            <span class="ui-draggable-handle"></span>
+            <a href="javascript:;" class="btn-close"><span class="sr-only">Masquer le message</span></a>
+        </div>
+    </header>
+    <div class="dashboard-panel-content">
+        <div class="row tabs">
+            <div class="dashboard-mywallet-content tab-content">
+                <div id="mywallet-sectors" role="tabpanel" class="tab-pane active">
+                    <div class="row">
+                        <div class="col-info col-lg-4 col-md-5 col-sm-8 col-xs-4">
+                            <h2>Montant Total Financé</h2>
+                            <h2 style="text-align: right">29 150 000,00 €</h2>
+                            <dl>
+                                {% for i, data in walletAllocationChartData.highcharts.series[0].data %}
+                                    <div class="dl-group dl-group-full">
+                                        <dt>
+                                            {% if data.color %}
+                                            <span class="chart-key-icon" style="background: {{ data.color }}"></span>
+                                            {% endif %}
+                                            <span class="label">{{ data.name }}</span>
+                                        </dt>
+                                        <dd style="text-align: right">{{ data.y|localizedcurrency('EUR') }}</dd>
+                                    </div>
+                                {% endfor %}
+                            </dl>
+                        </div><!-- /.col-info -->
+                        <div class="col-graph col-lg-8 col-md-7 col-sm-8 col-xs-4">
+                            <div class="chart" data-chartview='{{ walletAllocationChartData|json_encode|escape('html_attr') }}'></div>
+                        </div><!-- /.col-graph -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <footer class="dashboard-panel-footer">
+    </footer>
+</article>

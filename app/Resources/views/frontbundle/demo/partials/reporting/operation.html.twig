@@ -1,0 +1,94 @@
+{% set months = ['01/2019', '02/2019', '03/2019', '04/2019', '05/2019', '06/2019', '07/2019', '08/2019', '09/2019', '10/2019', '11/2019', '12/2019'] %}
+{% set borrowingAmounts = [0,     0,     -60000, -100000, 0,     -60000, 0,    -80000, -20000, 0, -70000,  0] %}
+{% set lendingAmounts =   [60000, 80000,  0,      200000, 350000, 0,     20000, 0,      90000, 0,  300000, 120000] %}
+{% set diffAmounts = [60000, 80000, -60000, 100000, 350000, -60000, 20000, -80000, 70000, 0, 230000, 120000] %}
+
+{% set operationChartData = {
+    type: 'monthlyOperation',
+    background: 'none',
+    highcharts: {
+        title: {
+            text: ''
+        },
+        xAxis: [{
+            categories: months,
+            crosshair: true,
+            reversed: false,
+            labels: {
+                step: 1,
+                style: {
+                    color: '#fff'
+                }
+            },
+        }, {
+            opposite: true,
+            reversed: false,
+            crosshair: true,
+            categories: months,
+            linkedTo: 0,
+            labels: {
+                step: 1,
+                style: {
+                    color: '#fff'
+                }
+            }
+        }],
+        yAxis: [{
+            title: {
+                text: null
+            },
+            labels: {
+                style: {
+                    color: '#fff'
+                }
+            }
+        }, {
+            title: {
+                text: null
+            },
+        }],
+        series: [{
+            name: 'Emprunts',
+            type: 'column',
+            data: borrowingAmounts
+        }, {
+            name: 'Prêts',
+            type: 'column',
+            data: lendingAmounts
+        }, {
+            name: 'Difference Emprunts / Prêts',
+            type: 'spline',
+            data: diffAmounts
+        }],
+        plotOptions: {
+            series: {
+                stacking: 'normal'
+            }
+        }
+    }
+} %}
+
+<article class="dashboard-panel dashboard-mywallet ui-draggable ui-dashboard-panel col-lg-12 col-md-12 col-sm-8 col-xs-4">
+    <header class="dashboard-panel-header">
+        <h3 class="dashboard-panel-title">Les opérations sur 12 mois coulissants </h3>
+        <div class="dashboard-panel-controls">
+            <span class="ui-draggable-handle"></span>
+            <a href="javascript:;" class="btn-close"><span class="sr-only">Masquer le message</span></a>
+        </div>
+    </header>
+    <div class="dashboard-panel-content">
+        <div class="row tabs">
+            <div class="dashboard-mywallet-content tab-content">
+                <div id="mywallet-sectors" role="tabpanel" class="tab-pane active">
+                    <div class="row">
+                        <div class="col-graph">
+                            <div class="chart" data-chartview='{{ operationChartData|json_encode|escape('html_attr') }}'></div>
+                        </div><!-- /.col-graph -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <footer class="dashboard-panel-footer">
+    </footer>
+</article>

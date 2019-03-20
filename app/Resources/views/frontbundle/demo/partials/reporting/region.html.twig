@@ -1,0 +1,84 @@
+{% set regionData = [
+    {insee: '44', name: 'Grand Est', value: 8},
+    {insee: '75', name: 'Nouvelle-Aquitaine', value: 14},
+    {insee: '84', name: 'Auvergne-Rhône-Alpes', value: 6},
+    {insee: '53', name: 'Bretagne', value: 7},
+    {insee: '24', name: 'Centre-Val de Loire', value: 4},
+    {insee: '94', name: 'Corse', value: 1},
+    {insee: '03', name: 'Guyane', value: 4},
+    {insee: '11', name: 'Île-de-France', value: 20},
+    {insee: '76', name: 'Occitanie', value: 4},
+    {insee: '02', name: 'Martinique', value: 1},
+    {insee: '06', name: 'Mayotte', value: 1},
+    {insee: '32', name: 'Hauts-de-France', value: 17},
+    {insee: '28', name: 'Normandie', value: 24},
+    {insee: '52', name: 'Pays de la Loire', value: 7},
+    {insee: '93', name: 'Provence-Alpes-Côte d\'Azur', value: 15}
+] %}
+{% set walletRegionChartData = {
+    type: 'preterProjectsCategoriesMap',
+    loadFirst: {
+        mapData: '/assets/js/vendor/geojson/fr-regions-all.json'
+    },
+    background: 'none',
+    highcharts: {
+        chart: {
+            type: 'map',
+            marginTop: 0,
+            marginBottom: 0,
+            marginLeft: 0,
+            marginRight: 0,
+            spacingTop: 0,
+            spacingBottom: 0,
+            spacingLeft: 0,
+            spacingRight: 0
+        },
+        title: {
+            text: ''
+        },
+        colorAxis: {
+            minColor: 'rgba(255,255,255,.2)',
+            maxColor: 'rgba(255,255,255,.6)'
+        },
+        series: [{
+            data: regionData,
+            joinBy: 'insee',
+            borderColor: 'rgba(0,0,0,.2)',
+            borderWidth: 2,
+            dataLabels: {
+                color: '#ffffff'
+            },
+            nullColor: 'rgba(0,0,0,.1)',
+            states: {
+                hover: {
+                    color: 'rgba(255,255,255,.8)'
+                }
+            }
+        }]
+    }
+} %}
+
+<article class="dashboard-panel dashboard-mywallet ui-draggable ui-dashboard-panel col-lg-12 col-md-12 col-sm-8 col-xs-4">
+    <header class="dashboard-panel-header">
+        <h3 class="dashboard-panel-title">Répartition régional</h3>
+        <div class="dashboard-panel-controls">
+            <span class="ui-draggable-handle"></span>
+            <a href="javascript:;" class="btn-close"><span class="sr-only">Masquer le message</span></a>
+        </div>
+    </header>
+    <div class="dashboard-panel-content">
+        <div class="row tabs">
+            <div class="dashboard-mywallet-content tab-content">
+                <div id="mywallet-sectors" role="tabpanel" class="tab-pane active">
+                    <div class="row">
+                        <div class="col-graph">
+                            <div class="chart" data-chartview="{{ walletRegionChartData|json_encode|escape('html_attr') }}"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <footer class="dashboard-panel-footer">
+    </footer>
+</article>
