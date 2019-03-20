@@ -372,7 +372,8 @@ class DemoController extends AbstractController
             'product'            => $project->getIdProduct() ? $productRepository->find($project->getIdProduct()) : null,
             'messages'           => $projectCommentRepository->findBy(['idProject' => $project, 'public' => true], ['added' => 'DESC']),
             'attachmentTypes'    => $projectAttachmentTypeRepository->getAttachmentTypes(),
-            'projectAttachments' => $projectAttachmentRepository->findBy(['idProject' => $project], ['added' => 'DESC'])
+            'projectAttachments' => $projectAttachmentRepository->findBy(['idProject' => $project], ['added' => 'DESC']),
+            'isEditable'         => $projectManager->isEditable($project)
         ];
 
         return $this->render(':frontbundle/demo:project_request_details.html.twig', $template);
@@ -619,18 +620,25 @@ class DemoController extends AbstractController
     /**
      * @Route("/projet/update/{hash}", name="demo_project_update", requirements={"hash":"[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}"})
      *
-     * @param Request $request
-     * @param string  $hash
+     * @param Request        $request
+     * @param string         $hash
+     * @param ProjectManager $projectManager
      *
      * @return Response
      */
-    public function projectUpdate(Request $request, string $hash): Response
+    public function projectUpdate(Request $request, string $hash, ProjectManager $projectManager): Response
     {
         $projectRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
         $project           = $projectRepository->findOneBy(['hash' => $hash]);
 
         if (false === $project instanceof Projects) {
             return $this->redirectToRoute('demo_loans');
+        }
+
+        if (false === $projectManager->isEditable($project)) {
+            return (new Response())
+                ->setContent('Le projet a déjà été publié, il ne peut plus être modifié')
+                ->setStatusCode(Response::HTTP_FORBIDDEN);
         }
 
         $field       = $request->request->get('name');

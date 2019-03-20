@@ -3,7 +3,7 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\ORM\{EntityManagerInterface, NonUniqueResultException, NoResultException};
-use Unilend\Bundle\CoreBusinessBundle\Entity\{Bids, CompanyStatus, Factures, Loans, Projects, TaxType, Virements};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{Bids, CompanyStatus, Factures, Loans, Projects, ProjectsStatus, TaxType, Virements};
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 
 class ProjectManager
@@ -383,5 +383,14 @@ class ProjectManager
         }
 
         return ['expired' => $expired, 'to_expired' => $toExpire];
+    }
+
+    /**
+     * @param Projects $project
+     * @return bool
+     */
+    public function isEditable(Projects $project): bool
+    {
+        return $project->getStatus() < ProjectsStatus::STATUS_ONLINE;
     }
 }
