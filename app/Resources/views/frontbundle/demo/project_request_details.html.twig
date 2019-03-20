@@ -276,7 +276,7 @@
                                     <div class="row">
                                         <span class="icon fa-file-u"></span>
                                         <a href="{{ path('demo_project_document', {'hash': project.hash, 'idProjectAttachment': projectAttachment.id}) }}">
-                                            {{ projectAttachment.attachment.type.label }}
+                                            {{ projectAttachment.attachment.originalName }}
                                         </a>
                                         <small>({{ projectAttachment.attachment.added|localizeddate('short', 'short') }})</small>
                                     </div>
@@ -286,10 +286,13 @@
                                 <h5 class="h4 margin-20-t">Ajouter des documents</h5>
                                 <div class="form-extrafiles-list">
                                     <div class="form-field form-field-multi file-upload-extra row row-multi-col-computer" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="typedFile">
-                                        <div class="col-lg-6 col-md-6">
+                                        <div class="col-lg-4 col-md-4">
                                             {% include ':frontbundle/demo/partials:project_attachment_select.html.twig' with {'name': 'file'} %}
                                         </div>
-                                        <div class="col-lg-6 col-md-6">
+                                        <div class="col-lg-4 col-md-4">
+                                            <input type="text" name="filename[file]" placeholder="Nom du fichier" class="input-field">
+                                        </div>
+                                        <div class="col-lg-4 col-md-4">
                                             <div class="custom-input-file" id="form-file" data-fileattach data-fileattach-inputname="file" data-fileattach-maxfiles="1" data-fileattach-filetypes="pdf jpg jpeg png doc docx" data-formvalidation-required='input[type="file"][name="file[0]"]' aria-labelledby="form-extrafiles-document-file-label"></div><!-- /.ui-fileattach -->
                                         </div>
                                     </div>
