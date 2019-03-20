@@ -428,6 +428,21 @@ class Projects
     private $projectParticipants;
 
     /**
+     * @var Bids[]|ArrayCollection
+     *
+     * @ORM\OneToMany(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Bids", mappedBy="project")
+     * @ORM\OrderBy({"added" = "DESC"})
+     */
+    private $bids;
+
+    /**
+     * @var Loans[]|ArrayCollection
+     *
+     * @ORM\OneToMany(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Loans", mappedBy="project")
+     */
+    private $loans;
+
+    /**
      * Projects constructor.
      */
     public function __construct()
@@ -1760,5 +1775,23 @@ class Projects
     public function isOnline(): bool
     {
         return $this->getStatus() === ProjectsStatus::STATUS_ONLINE && (null === $this->getEndDate() || new \DateTime() < $this->getEndDate());
+    }
+
+    /**
+     *
+     * @return Bids[]|ArrayCollection
+     */
+    public function getBids(): iterable
+    {
+        return $this->bids;
+    }
+
+    /**
+     *
+     * @return Loans[]|ArrayCollection
+     */
+    public function getLoans(): iterable
+    {
+        return $this->loans;
     }
 }
