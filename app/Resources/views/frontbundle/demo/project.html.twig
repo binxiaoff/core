@@ -77,6 +77,7 @@
         }
     </script>
 {% endblock %}
+
 {% block dashboardContent %}
     <article id="project-single" class="page project-single{% if false == project.isOnline %} ui-project-expired{% endif %}">
         <div class="panel" style="background-color: #fff; padding: 30px 30px 30px 30px">
@@ -84,18 +85,8 @@
                 <div class="row">
                     <div class="project-single-details">
                         <h1 class="project-single-title">{{ project.idCompany.name }}</h1>
-                        <span style="font-weight: 400;margin-top: 1em; margin-bottom: 1em;font-size:xx-large;color:#787679">{{ project.title }}</span>
-                        {% set backgroundColor = '#787679' %}
-                        {% if project.idPartner.label == 'cals' %}
-                            {% set backgroundColor = '#5fc5d1' %}
-                        {% elseif project.idPartner.label == 'cacib' %}
-                            {% set backgroundColor = '#1b88db' %}
-                        {% elseif project.idPartner.label == 'calf' %}
-                            {% set backgroundColor = '#ffca2c' %}
-                        {% elseif project.idPartner.label == 'unifergie' %}
-                            {% set backgroundColor = '#f76965' %}
-                        {% endif %}
-                        <span class="bubble" style="background-color: {{ backgroundColor }}; margin-left: 30px">{{ ('partner-name_bubble-' ~ project.idPartner.label)|trans }}</span>
+                        <span style="font-weight: 400; margin-top: 1em; margin-bottom: 1em; font-size: xx-large; color: #787679;">{{ project.title }}</span>
+                        {% include ':frontbundle/demo/partials:bubble.html.twig' with {'partner': project.idPartner.label} %}
                     </div><!-- /.project-single-details -->
                 </div>
                 <div class="row margin-20-t">
