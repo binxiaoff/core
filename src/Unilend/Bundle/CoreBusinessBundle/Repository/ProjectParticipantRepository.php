@@ -19,9 +19,9 @@ class ProjectParticipantRepository extends ServiceEntityRepository
      * @param Projects $project
      * @param string   $role
      *
-     * @return mixed
+     * @return ProjectParticipant[]
      */
-    public function findByProjectAndRole(Projects $project, string $role)
+    public function findByProjectAndRole(Projects $project, string $role): array
     {
         $queryBuilder = $this->createQueryBuilder('pp');
 

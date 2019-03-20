@@ -12,7 +12,7 @@
                     <nav class="dashboard-nav margin-10-t">
                         {% block dashboardNav %}
                             <ul>
-                                <li role="presentation" class="dashboard-nav-loans{% if app.request.get('_route') == 'demo_loans' %} active{% endif %}">
+                                <li role="presentation" class="dashboard-nav-loans{% if app.request.get('_route') in ['demo_loans', 'demo_project_details'] %} active{% endif %}">
                                     <a href="{{ path('demo_loans') }}">
                                         <span class="icon fa-list-u"></span>
                                         <span class="label">Portefeuille</span>

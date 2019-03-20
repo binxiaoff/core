@@ -1707,6 +1707,45 @@ class Projects
     }
 
     /**
+     * @return ProjectParticipant|null
+     */
+    public function getArrangerParticipant(): ?ProjectParticipant
+    {
+        return $this->getParticipant(ProjectParticipant::COMPANY_ROLE_ARRANGER);
+    }
+
+    /**
+     * @return ProjectParticipant|null
+     */
+    public function getAgentParticipant(): ?ProjectParticipant
+    {
+        return $this->getParticipant(ProjectParticipant::COMPANY_ROLE_AGENT);
+    }
+
+    /**
+     * @return ProjectParticipant|null
+     */
+    public function getRunParticipant(): ?ProjectParticipant
+    {
+        return $this->getParticipant(ProjectParticipant::COMPANY_ROLE_RUN);
+    }
+
+    /**
+     * @param string $role
+     * @return ProjectParticipant|null
+     */
+    private function getParticipant(string $role): ?ProjectParticipant
+    {
+        foreach ($this->getProjectParticipants() as $projectParticipant) {
+            if ($projectParticipant->hasRole($role)) {
+                return $projectParticipant;
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * @return \DateTime|null
      */
     public function getEndDate(): ?\DateTime
@@ -1714,6 +1753,10 @@ class Projects
         return $this->getDateFin() ?? $this->getDateRetrait();
     }
 
+    /**
+     * @return bool
+     * @throws \Exception
+     */
     public function isOnline(): bool
     {
         return $this->getStatus() === ProjectsStatus::STATUS_ONLINE && (null === $this->getEndDate() || new \DateTime() < $this->getEndDate());
