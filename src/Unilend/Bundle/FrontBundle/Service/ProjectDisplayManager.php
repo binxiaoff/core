@@ -448,6 +448,22 @@ class ProjectDisplayManager
             return self::VISIBILITY_NONE;
         }
 
+        if (null === $client) {
+            return self::VISIBILITY_NONE;
+        }
+
+        if (in_array($client->getCompany(), [$project->getIdCompany(), $project->getIdCompanySubmitter()])) {
+            return self::VISIBILITY_FULL;
+        }
+
+        $projectParticipant = $project->getProjectParticipants($client->getCompany());
+
+        if ($projectParticipant->count()) {
+            return self::VISIBILITY_FULL;
+        }
+
+        return self::VISIBILITY_NONE;
+
         $violations = $this->productManager->checkClientEligibility($client, $project);
 
         if (0 < count($violations)) {

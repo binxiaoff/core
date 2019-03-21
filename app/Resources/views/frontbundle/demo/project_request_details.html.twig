@@ -63,313 +63,379 @@
             </div><!-- /.form-project-create-nav -->
         </div>
         <div class="dashboard-tabs-content tab-content">
-            <form action="{{ path('demo_project_details_form', {'hash': project.hash}) }}" method="post" enctype="multipart/form-data" data-formvalidation data-formvalidation-shownotifications="false">
-                <div class="row columns-with-space">
-                    <article class="dashboard-tab-pane col-lg-8 col-md-8">
-                        <div class="panel" data-equal-height>
-                            <div class="panel-content">
-                                <div class="row columns-with-space">
-                                    <dl class="col-md-6 col-lg-6">
-                                        <dt>Montant</dt>
-                                        <dd>
-                                            {% if isEditable %}
-                                                <a href="#" id="amount" class="editable" data-type="text" data-inputclass="input-field">{{ project.amount|localizednumber }}</a>&nbsp;€
-                                            {% else %}
-                                                {{ project.amount|localizednumber }}&nbsp;€
-                                            {% endif %}
-                                        </dd>
-                                    </dl>
-                                    <dl class="col-md-6 col-lg-6">
-                                        <dt>Maturité</dt>
-                                        <dd>
-                                            {% if isEditable %}
-                                                <a href="#" id="duration" data-type="select">
-                                                    {% transchoice(project.period / 12) with {'%duration%': project.period / 12} %} demo-project-request_simulator-duration-select-option {% endtranschoice %}
-                                                </a>
-                                            {% else %}
-                                                {% transchoice(project.period / 12) with {'%duration%': project.period / 12} %} demo-project-request_simulator-duration-select-option {% endtranschoice %}
-                                            {% endif %}
-                                        </dd>
-                                    </dl>
-                                </div>
-                                <div class="row columns-with-space margin-10-t">
-                                    <dl class="col-md-6 col-lg-6">
-                                        <dt>Date de dépôt</dt>
-                                        <dd>{{ project.added|localizeddate('short', 'short') }}</dd>
-                                    </dl>
-                                    <dl class="col-md-6 col-lg-6">
-                                        <dt>Date de mise à disposition</dt>
-                                        <dd>
-                                            {% if isEditable %}
-                                                <a href="#" id="date" class="editable" data-type="text" data-pk="{{ project.idProject }}" data-inputclass="input-field">
-                                                    {% if project.dateRetrait %}{{ project.dateRetrait|localizeddate('short', 'none') }}{% endif %}
-                                                </a>
-                                            {% elseif project.dateRetrait %}
-                                                {{ project.dateRetrait|localizeddate('short', 'none') }}
-                                            {% else %}
-                                                N/A
-                                            {% endif %}
-                                        </dd>
-                                    </dl>
-                                </div>
-                                <div class="row columns-with-space margin-10-t">
-                                    <dl class="col-md-6 col-lg-6">
-                                        <dt>Type de financement</dt>
-                                        <dd>
-                                            {% if isEditable %}
-                                                <a href="#" id="product" data-type="select">
-                                                    {% if product %}{{ ('product-name_' ~ product.label)|trans }}{% endif %}
-                                                </a>
-                                            {% elseif product %}
-                                                {{ ('product-name_' ~ product.label)|trans }}
-                                            {% else %}
-                                                N/A
-                                            {% endif %}
-                                        </dd>
-                                    </dl>
-                                    <dl class="col-md-6 col-lg-6">
-                                        <dt>Taux de progressivité <small>(%)</small></dt>
-                                        <dd>
-                                            {% if isEditable %}
-                                                <a href="#" id="rate" class="editable" data-type="text" data-inputclass="input-field">
-                                                    {% if project.interestRate %}{{ project.interestRate|localizednumber }}{% endif %}
-                                                </a>
-                                            {% elseif project.interestRate %}
-                                                {{ project.interestRate|localizednumber }}
-                                            {% else %}
-                                                N/A
-                                            {% endif %}
-                                        </dd>
-                                    </dl>
-                                </div>
-                                <div class="row margin-10-t">
-                                    <dt>Ce dossier fait l‘objet d‘une garantie collatérale</dt>
+            <div class="row columns-with-space">
+                <article class="dashboard-tab-pane col-lg-8 col-md-8">
+                    <div class="panel" data-equal-height>
+                        <div class="panel-content">
+                            <div class="row columns-with-space">
+                                <dl class="col-md-6 col-lg-6">
+                                    <dt>Montant</dt>
                                     <dd>
                                         {% if isEditable %}
-                                            <a href="#" id="guarantee" data-type="checklist" data-value="{{ project.meansRepayment ? '1' : '' }}"></a>
-                                        {% elseif project.meansRepayment %}
-                                            Oui
+                                            <a href="#" id="amount" class="editable" data-type="text" data-inputclass="input-field">{{ project.amount|localizednumber }}</a>&nbsp;€
                                         {% else %}
-                                            Non
+                                            {{ project.amount|localizednumber }}&nbsp;€
                                         {% endif %}
                                     </dd>
-                                </div>
-                                <h4 class="h4 margin-20-t">
-                                    Description
-                                    {% if isEditable %}
-                                        <a href="#" id="edit-description"><span class="icon fa-edit-u32"></span></a>
-                                    {% endif %}
-                                </h4>
-                                <div class="row description-container">
-                                    <em>
-                                        {% if isEditable %}
-                                            <span href="#" id="description" class="editable" data-type="textarea" data-toggle="manual" data-inputclass="input-field">{{ project.comments|nl2br }}</span>
-                                        {% else %}
-                                            {{ project.comments|nl2br }}
-                                        {% endif %}
-                                    </em>
-                                </div>
-                            </div><!-- /.panel-content -->
-                        </div><!-- /.panel -->
-                    </article><!-- /.dashboard-tab-pane -->
-                    <article class="dashboard-tab-pane col-lg-4 col-md-4">
-                        <div class="panel" style="position: relative;" data-equal-height>
-                            <h4 class="h4">Actions</h4>
-                            <div class="panel-content">
-                                <ul>
-                                    <li><a href="#article-scoring">Notations</a></li>
-                                    <li><a href="#article-fees">Commissions</a></li>
-                                    <li><a href="#article-visibility">Visibilité</a></li>
-                                    <li><a href="#article-documents">Documents</a></li>
-                                    <li><a href="#article-discussions">Discussions</a></li>
-                                </ul>
-                                <div class="row" style="position: absolute; bottom: 30px; left: 30px; right: 30px;">
-                                    {% if project.status <= constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_FUNDED') %}
-                                        <a href="{{ path('demo_project_abandon', {'hash': project.hash}) }}" class="btn-default btn-shape-xs margin-10-t" style="width: 100%;">Abandonner le dossier</a>
-                                    {% endif %}
-                                    {% if project.status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_REQUEST') %}
-                                        <a href="{{ path('demo_project_review', {'hash': project.hash}) }}" class="btn-primary btn-shape-xs margin-10-t" style="width: 100%;">Passer à l‘analyse</a>
-                                    {% endif %}
-                                    {% if project.status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_REVIEW') %}
-                                        <a href="{{ path('demo_project_publish', {'hash': project.hash}) }}" class="btn-primary btn-shape-xs margin-10-t" style="width: 100%;">Proposer au financement</a>
-                                    {% endif %}
-                                    {% if project.status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_ONLINE') %}
-                                        <a href="{{ path('demo_project_fund', {'hash': project.hash}) }}" class="btn-primary btn-shape-xs margin-10-t" style="width: 100%;">Mettre fin à la période de financement</a>
-                                    {% endif %}
-                                    {% if project.status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_FUNDED') %}
-                                        <a href="{{ path('demo_project_sign', {'hash': project.hash}) }}" class="btn-primary btn-shape-xs margin-10-t" style="width: 100%;">Signer les contrats</a>
-                                    {% endif %}
-                                    {% if project.status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_SIGNED') %}
-                                        <a href="{{ path('demo_project_repay', {'hash': project.hash}) }}" class="btn-primary btn-shape-xs margin-10-t" style="width: 100%;">Commencer le remboursement</a>
-                                    {% endif %}
-                                    {% if project.status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_REPAYMENT') %}
-                                        <a href="{{ path('demo_project_repaid', {'hash': project.hash}) }}" class="btn-primary btn-shape-xs margin-10-t" style="width: 100%;">Mettre fin au remboursement</a>
-                                        <a href="{{ path('demo_project_loss', {'hash': project.hash}) }}" class="btn-primary btn-shape-xs margin-10-t" style="width: 100%;">Passer en perte</a>
-                                    {% endif %}
-                                </div>
-                            </div><!-- /.panel-content -->
-                        </div><!-- /.panel -->
-                    </article><!-- /.dashboard-tab-pane -->
-                </div><!-- /.row -->
-                <article class="dashboard-tab-pane margin-20-t" id="article-scoring">
-                    <div class="panel">
-                        <fieldset>
-                            <h4 class="h4">Notations</h4>
-                            <div class="row">
-                                <dl class="col-md-2 col-lg-2">
-                                    <dt>&nbsp;</dt>
-                                    <dd>Responsable</dd>
-                                    <dd>Notation</dd>
                                 </dl>
-                                <dl class="col-md-5 col-lg-5">
-                                    <dt>Arrangeur</dt>
+                                <dl class="col-md-6 col-lg-6">
+                                    <dt>Maturité</dt>
                                     <dd>
                                         {% if isEditable %}
-                                            <a href="#" id="arranger" data-type="select">
-                                                {% if arranger %}{{ arranger.name }}{% endif %}
+                                            <a href="#" id="duration" data-type="select">
+                                                {% transchoice(project.period / 12) with {'%duration%': project.period / 12} %} demo-project-request_simulator-duration-select-option {% endtranschoice %}
                                             </a>
-                                        {% elseif arranger %}
-                                            {{ arranger.name }}
+                                        {% else %}
+                                            {% transchoice(project.period / 12) with {'%duration%': project.period / 12} %} demo-project-request_simulator-duration-select-option {% endtranschoice %}
+                                        {% endif %}
+                                    </dd>
+                                </dl>
+                            </div>
+                            <div class="row columns-with-space margin-10-t">
+                                <dl class="col-md-6 col-lg-6">
+                                    <dt>Date de dépôt</dt>
+                                    <dd>{{ project.added|localizeddate('short', 'short') }}</dd>
+                                </dl>
+                                <dl class="col-md-6 col-lg-6">
+                                    <dt>Date de mise à disposition</dt>
+                                    <dd>
+                                        {% if isEditable %}
+                                            <a href="#" id="date" class="editable" data-type="text" data-pk="{{ project.idProject }}" data-inputclass="input-field">
+                                                {% if project.dateRetrait %}{{ project.dateRetrait|localizeddate('short', 'none') }}{% endif %}
+                                            </a>
+                                        {% elseif project.dateRetrait %}
+                                            {{ project.dateRetrait|localizeddate('short', 'none') }}
                                         {% else %}
                                             N/A
                                         {% endif %}
                                     </dd>
+                                </dl>
+                            </div>
+                            <div class="row columns-with-space margin-10-t">
+                                <dl class="col-md-6 col-lg-6">
+                                    <dt>Type de financement</dt>
                                     <dd>
-                                        {% if isProjectScoringEditable %}
-                                            <a href="#" class="editable" id="arranger-scoring" data-type="text" data-inputclass="input-field">
-                                                {% if project.natureProject %}
-                                                    {{ project.natureProject }}
-                                                {% endif %}
+                                        {% if isEditable %}
+                                            <a href="#" id="product" data-type="select">
+                                                {% if product %}{{ ('product-name_' ~ product.label)|trans }}{% endif %}
                                             </a>
+                                        {% elseif product %}
+                                            {{ ('product-name_' ~ product.label)|trans }}
                                         {% else %}
+                                            N/A
+                                        {% endif %}
+                                    </dd>
+                                </dl>
+                                <dl class="col-md-6 col-lg-6">
+                                    <dt>Taux de progressivité <small>(%)</small></dt>
+                                    <dd>
+                                        {% if isEditable %}
+                                            <a href="#" id="rate" class="editable" data-type="text" data-inputclass="input-field">
+                                                {% if project.interestRate %}{{ project.interestRate|localizednumber }}{% endif %}
+                                            </a>
+                                        {% elseif project.interestRate %}
+                                            {{ project.interestRate|localizednumber }}
+                                        {% else %}
+                                            N/A
+                                        {% endif %}
+                                    </dd>
+                                </dl>
+                            </div>
+                            <div class="row margin-10-t">
+                                <dt>Ce dossier fait l‘objet d‘une garantie collatérale</dt>
+                                <dd>
+                                    {% if isEditable %}
+                                        <a href="#" id="guarantee" data-type="checklist" data-value="{{ project.meansRepayment ? '1' : '' }}"></a>
+                                    {% elseif project.meansRepayment %}
+                                        Oui
+                                    {% else %}
+                                        Non
+                                    {% endif %}
+                                </dd>
+                            </div>
+                            <h4 class="h4 margin-20-t">
+                                Description
+                                {% if isEditable %}
+                                    <a href="#" id="edit-description"><span class="icon fa-edit-u32"></span></a>
+                                {% endif %}
+                            </h4>
+                            <div class="row description-container">
+                                <em>
+                                    {% if isEditable %}
+                                        <span href="#" id="description" class="editable" data-type="textarea" data-toggle="manual" data-inputclass="input-field">{{ project.comments|nl2br }}</span>
+                                    {% else %}
+                                        {{ project.comments|nl2br }}
+                                    {% endif %}
+                                </em>
+                            </div>
+                        </div><!-- /.panel-content -->
+                    </div><!-- /.panel -->
+                </article><!-- /.dashboard-tab-pane -->
+                <article class="dashboard-tab-pane col-lg-4 col-md-4">
+                    <div class="panel" style="position: relative;" data-equal-height>
+                        <h4 class="h4">Actions</h4>
+                        <div class="panel-content">
+                            <ul>
+                                <li><a href="#article-scoring">Notations</a></li>
+                                <li><a href="#article-fees">Commissions</a></li>
+                                <li><a href="#article-visibility">Visibilité</a></li>
+                                <li><a href="#article-documents">Documents</a></li>
+                                <li><a href="#article-discussions">Discussions</a></li>
+                            </ul>
+                            <div class="row" style="position: absolute; bottom: 30px; left: 30px; right: 30px;">
+                                {% if project.status <= constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_FUNDED') %}
+                                    <a href="{{ path('demo_project_abandon', {'hash': project.hash}) }}" class="btn-default btn-shape-xs margin-10-t" style="width: 100%;">Abandonner le dossier</a>
+                                {% endif %}
+                                {% if project.status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_REQUEST') %}
+                                    <a href="{{ path('demo_project_review', {'hash': project.hash}) }}" class="btn-primary btn-shape-xs margin-10-t" style="width: 100%;">Passer à l‘analyse</a>
+                                {% endif %}
+                                {% if project.status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_REVIEW') %}
+                                    <a href="{{ path('demo_project_publish', {'hash': project.hash}) }}" class="btn-primary btn-shape-xs margin-10-t" style="width: 100%;">Proposer au financement</a>
+                                {% endif %}
+                                {% if project.status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_ONLINE') %}
+                                    <a href="{{ path('demo_project_fund', {'hash': project.hash}) }}" class="btn-primary btn-shape-xs margin-10-t" style="width: 100%;">Mettre fin à la période de financement</a>
+                                {% endif %}
+                                {% if project.status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_FUNDED') %}
+                                    <a href="{{ path('demo_project_sign', {'hash': project.hash}) }}" class="btn-primary btn-shape-xs margin-10-t" style="width: 100%;">Signer les contrats</a>
+                                {% endif %}
+                                {% if project.status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_SIGNED') %}
+                                    <a href="{{ path('demo_project_repay', {'hash': project.hash}) }}" class="btn-primary btn-shape-xs margin-10-t" style="width: 100%;">Commencer le remboursement</a>
+                                {% endif %}
+                                {% if project.status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_REPAYMENT') %}
+                                    <a href="{{ path('demo_project_repaid', {'hash': project.hash}) }}" class="btn-primary btn-shape-xs margin-10-t" style="width: 100%;">Mettre fin au remboursement</a>
+                                    <a href="{{ path('demo_project_loss', {'hash': project.hash}) }}" class="btn-primary btn-shape-xs margin-10-t" style="width: 100%;">Passer en perte</a>
+                                {% endif %}
+                            </div>
+                        </div><!-- /.panel-content -->
+                    </div><!-- /.panel -->
+                </article><!-- /.dashboard-tab-pane -->
+            </div><!-- /.row -->
+            <article class="dashboard-tab-pane margin-20-t" id="article-scoring">
+                <div class="panel">
+                    <fieldset>
+                        <h4 class="h4">Notations</h4>
+                        <div class="row">
+                            <dl class="col-md-2 col-lg-2">
+                                <dt>&nbsp;</dt>
+                                <dd>Responsable</dd>
+                                <dd>Notation</dd>
+                            </dl>
+                            <dl class="col-md-5 col-lg-5">
+                                <dt>Arrangeur</dt>
+                                <dd>
+                                    {% if isEditable %}
+                                        <a href="#" id="arranger" data-type="select">
+                                            {% if arranger %}{{ arranger.name }}{% endif %}
+                                        </a>
+                                    {% elseif arranger %}
+                                        {{ arranger.name }}
+                                    {% else %}
+                                        N/A
+                                    {% endif %}
+                                </dd>
+                                <dd>
+                                    {% if isProjectScoringEditable %}
+                                        <a href="#" class="editable" id="arranger-scoring" data-type="text" data-inputclass="input-field">
                                             {% if project.natureProject %}
                                                 {{ project.natureProject }}
-                                            {% else %}
-                                                N/A
                                             {% endif %}
-                                        {% endif %}
-                                    </dd>
-                                </dl>
-                                <dl class="col-md-5 col-lg-5">
-                                    <dt>RUN</dt>
-                                    <dd>
-                                        {% if isEditable %}
-                                            <a href="#" id="run" data-type="select">
-                                                {% if run %}
-                                                    {{ run.name }}
-                                                {% endif %}
-                                            </a>
-                                        {% elseif run %}
-                                            {{ run.name }}
+                                        </a>
+                                    {% else %}
+                                        {% if project.natureProject %}
+                                            {{ project.natureProject }}
                                         {% else %}
                                             N/A
                                         {% endif %}
-                                    </dd>
-                                    <dd>
-                                        {% if isBorrowerScoringEditable %}
-                                            <a href="#" class="editable" id="run-scoring" data-type="text" data-inputclass="input-field">
-                                                {% if project.objectifLoan %}
-                                                    {{ project.objectifLoan }}
-                                                {% endif %}
-                                            </a>
-                                        {% else %}
+                                    {% endif %}
+                                </dd>
+                            </dl>
+                            <dl class="col-md-5 col-lg-5">
+                                <dt>RUN</dt>
+                                <dd>
+                                    {% if isEditable %}
+                                        <a href="#" id="run" data-type="select">
+                                            {% if run %}
+                                                {{ run.name }}
+                                            {% endif %}
+                                        </a>
+                                    {% elseif run %}
+                                        {{ run.name }}
+                                    {% else %}
+                                        N/A
+                                    {% endif %}
+                                </dd>
+                                <dd>
+                                    {% if isBorrowerScoringEditable %}
+                                        <a href="#" class="editable" id="run-scoring" data-type="text" data-inputclass="input-field">
                                             {% if project.objectifLoan %}
                                                 {{ project.objectifLoan }}
-                                            {% else %}
-                                                N/A
                                             {% endif %}
-                                        {% endif %}
-                                    </dd>
-                                </dl>
-                            </div>
-                        </fieldset>
-                    </div>
-                </article><!-- /.dashboard-tab-pane -->
-                <article class="dashboard-tab-pane margin-20-t" id="article-fees">
-                    <div class="panel">
-                        <h4 class="h4">Commissions</h4>
-                    </div>
-                </article><!-- /.dashboard-tab-pane -->
-                <article class="dashboard-tab-pane margin-20-t" id="article-visibility">
-                    <div class="panel">
-                        <h4 class="h4">Visibilité</h4>
-                    </div>
-                </article><!-- /.dashboard-tab-pane -->
-                <article class="dashboard-tab-pane margin-20-t" id="article-documents">
-                    <div class="panel">
-                        <form action="{{ path('demo_project_details_form', {'hash': project.hash}) }}" method="post" enctype="multipart/form-data" data-formvalidation data-formvalidation-shownotifications="false">
-                            <fieldset>
-                                <h4 class="h4">Documents</h4>
-                                {% for projectAttachment in projectAttachments %}
-                                    <div class="row">
-                                        <span class="icon fa-file-u"></span>
-                                        <a href="{{ path('demo_project_document', {'hash': project.hash, 'idProjectAttachment': projectAttachment.id}) }}">
-                                            {{ projectAttachment.attachment.originalName }}
                                         </a>
-                                        <small>({{ projectAttachment.attachment.added|localizeddate('short', 'short') }})</small>
-                                    </div>
-                                {% else %}
-                                    <div class="message-info">Vous n‘avez aucun document associé à votre dossier.</div>
-                                {% endfor %}
-                                <h5 class="h4 margin-20-t">Ajouter des documents</h5>
-                                <div class="form-extrafiles-list">
-                                    <div class="form-field form-field-multi file-upload-extra row row-multi-col-computer" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="typedFile">
-                                        <div class="col-lg-4 col-md-4">
-                                            {% include ':frontbundle/demo/partials:project_attachment_select.html.twig' with {'name': 'file'} %}
-                                        </div>
-                                        <div class="col-lg-4 col-md-4">
-                                            <input type="text" name="filename[file]" placeholder="Nom du fichier" class="input-field">
-                                        </div>
-                                        <div class="col-lg-4 col-md-4">
-                                            <div class="custom-input-file" id="form-file" data-fileattach data-fileattach-inputname="file" data-fileattach-maxfiles="1" data-fileattach-filetypes="pdf jpg jpeg png doc docx" data-formvalidation-required='input[type="file"][name="file[0]"]' aria-labelledby="form-extrafiles-document-file-label"></div><!-- /.ui-fileattach -->
-                                        </div>
-                                    </div>
-                                </div><!-- /.form-extrafiles-list -->
-                                <a href="javascript:;" class="btn-default btn-shape-sq-md ui-form-extrafiles-add">
-                                    <span class="icon fa-plus-u16 c-t2"></span>
-                                    <span class="sr-only">Ajouter un document</span>
-                                </a>
-                            </fieldset><!-- /.form-project-details-fieldset -->
-                            <div class="text-align-right">
-                                <button type="submit" class="btn-primary btn-shape-xs" data-spinnerbutton>Charger</button>
-                            </div>
-                        </form>
-
-                        <div id="form-extrafiles-template" class="ui-template-definition" style="display: none" disabled="disabled" aria-hidden="true">
-                            <div class="form-field form-field-multi file-upload-extra row row-multi-col-computer" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="typedFile">
-                                <div class="col-lg-6 col-md-6">
-                                    {% include ':frontbundle/demo/partials:project_attachment_select.html.twig' with {'name': '__NUM__'} %}
-                                </div>
-                                <div class="col-lg-6 col-md-6">
-                                    <div class="custom-input-file" id="form-extrafile" data-fileattach data-fileattach-inputname="extra__NUM__" data-fileattach-maxfiles="1" data-fileattach-filetypes="pdf jpg jpeg png doc docx xls xlsx" data-formvalidation-required='input[type="file"][name="file[__NUM__]"]' aria-labelledby="form-extrafiles-document-file-label"></div><!-- /.ui-fileattach -->
-                                </div>
-                            </div><!-- /.file-upload-extra -->
-                        </div><!-- /.ui-template-definition -->
-                    </div>
-                </article><!-- /.dashboard-tab-pane -->
-                <article class="dashboard-tab-pane margin-20-t" id="article-discussions">
-                    <div class="panel" style="font-size: 16px;">
-                        <h4 class="h4">Discussions</h4>
+                                    {% else %}
+                                        {% if project.objectifLoan %}
+                                            {{ project.objectifLoan }}
+                                        {% else %}
+                                            N/A
+                                        {% endif %}
+                                    {% endif %}
+                                </dd>
+                            </dl>
+                        </div>
+                    </fieldset>
+                </div>
+            </article><!-- /.dashboard-tab-pane -->
+            <article class="dashboard-tab-pane margin-20-t" id="article-fees">
+                <div class="panel">
+                    <h4 class="h4">Commissions</h4>
+                </div>
+            </article><!-- /.dashboard-tab-pane -->
+            <article class="dashboard-tab-pane margin-20-t" id="article-visibility">
+                <div class="panel">
+                    <form action="{{ path('demo_project_visibility', {'hash': project.hash}) }}" method="post">
+                        <h4 class="h4">Visibilité</h4>
                         <div class="row">
-                            <div style="display: inline-block; position: relative; width: 100%;">
-                                <form id="chat-form" action="{{ path('demo_project_chat', {'hash': project.hash}) }}" method="post">
-                                    <textarea name="content" class="input-field" placeholder="Nouveau message ..." rows="1"
-                                              onchange="this.style.height = 'auto'; this.style.height = this.scrollHeight + 'px'"
-                                              onkeyup="this.style.height = 'auto'; this.style.height = this.scrollHeight + 'px'"
-                                              onkeydown="this.style.height = 'auto'; this.style.height = this.scrollHeight + 'px'"
-                                              style="overflow: hidden; resize: none;"></textarea>
-                                    <button type="submit" class="btn-primary btn-shape-xxs ui-spinnerbutton" style="position: absolute; bottom: 4px; right: 4px;">
-                                        <span class="icon fa-pen-u32"></span>
-                                    </button>
-                                </form>
+                            <div class="message-info">Sélectionnez les entités qui auront la possibilité de se positionner pour le financement du projet. Une fois le projet en cours de financement, vous ne pourrez plus retirer d‘entité de la liste.</div>
+                        </div>
+                        <div class="row">
+                            {% set lendersByColumn = (potentialLenders|length / 3)|round(0, 'ceil') %}
+                            <div class="col-lg-4 col-md-4">
+                                {% for lender in runs %}
+                                    {% if loop.index <= lendersByColumn %}
+                                        <div>
+                                            <label>
+                                                <input type="checkbox" name="visibility[]" value="{{ lender.idCompany }}"
+                                                    {% if lender.idCompany in visibility %} checked{% endif %}
+                                                    {% if
+                                                        false == isEditable
+                                                        or arranger is not empty and arranger.idCompany == lender.idCompany
+                                                        or run is not empty and run.idCompany == lender.idCompany
+                                                    %} disabled{% endif %}>
+                                                {{ lender.name }}
+                                            </label>
+                                        </div>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                            <div class="col-lg-4 col-md-4">
+                                {% for lender in runs %}
+                                    {% if loop.index > lendersByColumn and loop.index <= 2 * lendersByColumn %}
+                                        <div>
+                                            <label>
+                                                <input type="checkbox" name="visibility[]" value="{{ lender.idCompany }}"
+                                                    {% if lender.idCompany in visibility %} checked{% endif %}
+                                                    {% if
+                                                        false == isEditable
+                                                        or arranger is not empty and arranger.idCompany == lender.idCompany
+                                                        or run is not empty and run.idCompany == lender.idCompany
+                                                    %} disabled{% endif %}>
+                                                {{ lender.name }}
+                                            </label>
+                                        </div>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                            <div class="col-lg-4 col-md-4">
+                                {% for lender in runs %}
+                                    {% if loop.index > 2 * lendersByColumn %}
+                                        <div>
+                                            <label>
+                                                <input type="checkbox" name="visibility[]" value="{{ lender.idCompany }}"
+                                                    {% if lender.idCompany in visibility %} checked{% endif %}
+                                                    {% if
+                                                        false == isEditable
+                                                        or arranger is not empty and arranger.idCompany == lender.idCompany
+                                                        or run is not empty and run.idCompany == lender.idCompany
+                                                    %} disabled{% endif %}>
+                                                {{ lender.name }}
+                                            </label>
+                                        </div>
+                                    {% endif %}
+                                {% endfor %}
                             </div>
                         </div>
-                        <div id="chat-content">
-                            {% include ':frontbundle/demo:project_chat.html.twig' %}
+                        <div class="text-align-right">
+                            <button type="submit" class="btn-primary btn-shape-xs" data-spinnerbutton>Modifier la visibilité</button>
+                        </div>
+                    </form>
+                </div>
+            </article><!-- /.dashboard-tab-pane -->
+            <article class="dashboard-tab-pane margin-20-t" id="article-documents">
+                <div class="panel">
+                    <form action="{{ path('demo_project_details_upload', {'hash': project.hash}) }}" method="post" enctype="multipart/form-data" data-formvalidation data-formvalidation-shownotifications="false">
+                        <fieldset>
+                            <h4 class="h4">Documents</h4>
+                            {% for projectAttachment in projectAttachments %}
+                                <div class="row">
+                                    <span class="icon fa-file-u"></span>
+                                    <a href="{{ path('demo_project_document', {'hash': project.hash, 'idProjectAttachment': projectAttachment.id}) }}">
+                                        {{ projectAttachment.attachment.originalName }}
+                                    </a>
+                                    <small>({{ projectAttachment.attachment.added|localizeddate('short', 'short') }})</small>
+                                </div>
+                            {% else %}
+                                <div class="message-info">Vous n‘avez aucun document associé à votre dossier.</div>
+                            {% endfor %}
+                            <h5 class="h4 margin-20-t">Ajouter des documents</h5>
+                            <div class="form-extrafiles-list">
+                                <div class="form-field form-field-multi file-upload-extra row row-multi-col-computer" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="typedFile">
+                                    <div class="col-lg-4 col-md-4">
+                                        {% include ':frontbundle/demo/partials:project_attachment_select.html.twig' with {'name': 'file'} %}
+                                    </div>
+                                    <div class="col-lg-4 col-md-4">
+                                        <input type="text" name="filename[file]" placeholder="Nom du fichier" class="input-field">
+                                    </div>
+                                    <div class="col-lg-4 col-md-4">
+                                        <div class="custom-input-file" id="form-file" data-fileattach data-fileattach-inputname="file" data-fileattach-maxfiles="1" data-fileattach-filetypes="pdf jpg jpeg png doc docx" data-formvalidation-required='input[type="file"][name="file[0]"]' aria-labelledby="form-extrafiles-document-file-label"></div><!-- /.ui-fileattach -->
+                                    </div>
+                                </div>
+                            </div><!-- /.form-extrafiles-list -->
+                            <a href="javascript:;" class="btn-default btn-shape-sq-md ui-form-extrafiles-add">
+                                <span class="icon fa-plus-u16 c-t2"></span>
+                                <span class="sr-only">Ajouter un document</span>
+                            </a>
+                        </fieldset><!-- /.form-project-details-fieldset -->
+                        <div class="text-align-right">
+                            <button type="submit" class="btn-primary btn-shape-xs" data-spinnerbutton>Charger</button>
+                        </div>
+                    </form>
+
+                    <div id="form-extrafiles-template" class="ui-template-definition" style="display: none" disabled="disabled" aria-hidden="true">
+                        <div class="form-field form-field-multi file-upload-extra row row-multi-col-computer" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="typedFile">
+                            <div class="col-lg-4 col-md-4">
+                                {% include ':frontbundle/demo/partials:project_attachment_select.html.twig' with {'name': '__NUM__'} %}
+                            </div>
+                            <div class="col-lg-4 col-md-4">
+                                <input type="text" name="filename[extra__NUM__]" placeholder="Nom du fichier" class="input-field">
+                            </div>
+                            <div class="col-lg-4 col-md-4">
+                                <div class="custom-input-file" id="form-file" data-fileattach data-fileattach-inputname="extra__NUM__" data-fileattach-maxfiles="1" data-fileattach-filetypes="pdf jpg jpeg png doc docx" data-formvalidation-required='input[type="file"][name="file[0]"]' aria-labelledby="form-extrafiles-document-file-label"></div><!-- /.ui-fileattach -->
+                            </div>
+                        </div>
+                    </div><!-- /.ui-template-definition -->
+                </div>
+            </article><!-- /.dashboard-tab-pane -->
+            <article class="dashboard-tab-pane margin-20-t" id="article-discussions">
+                <div class="panel" style="font-size: 16px;">
+                    <h4 class="h4">Discussions</h4>
+                    <div class="row">
+                        <div style="display: inline-block; position: relative; width: 100%;">
+                            <form id="chat-form" action="{{ path('demo_project_chat', {'hash': project.hash}) }}" method="post">
+                                <textarea name="content" class="input-field" placeholder="Nouveau message ..." rows="1"
+                                          onchange="this.style.height = 'auto'; this.style.height = this.scrollHeight + 'px'"
+                                          onkeyup="this.style.height = 'auto'; this.style.height = this.scrollHeight + 'px'"
+                                          onkeydown="this.style.height = 'auto'; this.style.height = this.scrollHeight + 'px'"
+                                          style="overflow: hidden; resize: none;"></textarea>
+                                <button type="submit" class="btn-primary btn-shape-xxs ui-spinnerbutton" style="position: absolute; bottom: 4px; right: 4px;">
+                                    <span class="icon fa-pen-u32"></span>
+                                </button>
+                            </form>
                         </div>
                     </div>
-                </article>
-            </form>
+                    <div id="chat-content">
+                        {% include ':frontbundle/demo:project_chat.html.twig' %}
+                    </div>
+                </div>
+            </article>
         </div><!-- /.dashboard-tabs-content -->
     </section><!-- /.dashboard-tabs -->
 {% endblock %}

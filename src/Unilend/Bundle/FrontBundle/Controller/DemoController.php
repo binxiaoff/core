@@ -201,7 +201,7 @@ class DemoController extends AbstractController
             'partners'        => $partners,
             'products'        => $this->getProductsList($partners, $translator),
             'arrangers'       => $arrangers,
-            'runs'            => $companiesRepository->findBy(['idCompany' => range(6, 44)], ['name' => 'ASC']),
+            'runs'            => $companiesRepository->findBy(['idCompany' => range(6, 45)], ['name' => 'ASC']),
             'attachmentTypes' => $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectAttachmentType')->getAttachmentTypes()
         ];
 
@@ -339,7 +339,17 @@ class DemoController extends AbstractController
 
         asort($arrangers);
 
-        $companyRepository               = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Companies');
+        $companyRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Companies');
+        $regionalBanks     = $companyRepository->findBy(['idCompany' => range(6, 45)], ['name' => 'ASC']);
+
+        $visibility = [];
+        /** @var ProjectParticipant $projectParticipant */
+        foreach ($project->getProjectParticipants() as $projectParticipant) {
+            if ($projectParticipant->hasRole(ProjectParticipant::COMPANY_ROLE_LENDER)) {
+                $visibility[] = $projectParticipant->getCompany()->getIdCompany();
+            }
+        }
+
         $projectAttachmentRepository     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectAttachment');
         $projectAttachmentTypeRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectAttachmentType');
         $projectCommentRepository        = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsComments');
@@ -350,7 +360,9 @@ class DemoController extends AbstractController
             'arranger'                  => $arranger,
             'arrangers'                 => $arrangers,
             'run'                       => $run,
-            'runs'                      => $companyRepository->findBy(['idCompany' => range(6, 44)], ['name' => 'ASC']),
+            'runs'                      => $regionalBanks,
+            'potentialLenders'          => $regionalBanks,
+            'visibility'                => $visibility,
             'projectStatus'             => [ProjectsStatus::STATUS_REQUEST, ProjectsStatus::STATUS_REVIEW, ProjectsStatus::STATUS_ONLINE, ProjectsStatus::STATUS_FUNDED, ProjectsStatus::STATUS_SIGNED, ProjectsStatus::STATUS_REPAYMENT, ProjectsStatus::STATUS_REPAID],
             'project'                   => $project,
             'product'                   => $project->getIdProduct() ? $productRepository->find($project->getIdProduct()) : null,
@@ -366,7 +378,7 @@ class DemoController extends AbstractController
     }
 
     /**
-     * @Route("/projet/{hash}", name="demo_project_details_form", methods={"POST"}, requirements={"hash": "[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}"})
+     * @Route("/projet/documents/{hash}", name="demo_project_details_upload", methods={"POST"}, requirements={"hash": "[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}"})
      *
      * @param string                     $hash
      * @param Request                    $request
@@ -376,7 +388,7 @@ class DemoController extends AbstractController
      * @return RedirectResponse
      * @throws \Doctrine\ORM\OptimisticLockException
      */
-    public function projectDetailsForm(string $hash, Request $request, AttachmentManager $attachmentManager, ?UserInterface $user): RedirectResponse
+    public function projectDetailsUpload(string $hash, Request $request, AttachmentManager $attachmentManager, ?UserInterface $user): RedirectResponse
     {
         $projectRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
         $project           = $projectRepository->findOneBy(['hash' => $hash]);
@@ -414,6 +426,67 @@ class DemoController extends AbstractController
                 $attachmentManager->attachToProject($attachment, $project);
             }
         }
+    }
+
+    /**
+     * @Route("/projet/visibilite/{hash}", name="demo_project_visibility", requirements={"hash":"[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}"})
+     *
+     * @param string  $hash
+     * @param Request $request
+     *
+     * @return Response
+     */
+    public function projectVisibility(string $hash, Request $request): Response
+    {
+        $projectRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
+        $project           = $projectRepository->findOneBy(['hash' => $hash]);
+
+        if (null === $project) {
+            return $this->redirectToRoute('demo_loans');
+        }
+
+        $visibility = $request->request->get('visibility');
+
+        /** @var ProjectParticipant $projectParticipant */
+        foreach ($project->getProjectParticipants() as $projectParticipant) {
+            if (
+                $projectParticipant->hasRole(ProjectParticipant::COMPANY_ROLE_LENDER)
+                && false === in_array($projectParticipant->getCompany()->getIdCompany(), $visibility)
+            ) {
+                $roles = $projectParticipant->getRoles();
+
+                unset($roles[array_search(ProjectParticipant::COMPANY_ROLE_LENDER, $roles)]);
+                unset($visibility[$projectParticipant->getCompany()->getIdCompany()]);
+
+                if (empty($roles)) {
+                    $project->removeProjectParticipants($projectParticipant);
+                    $this->entityManager->flush($project);
+                } else {
+                    $projectParticipant->setRoles($roles);
+                    $this->entityManager->flush($projectParticipant);
+                }
+            } elseif (
+                false === $projectParticipant->hasRole(ProjectParticipant::COMPANY_ROLE_LENDER)
+                && in_array($projectParticipant->getCompany()->getIdCompany(), $visibility)
+            ) {
+                $roles   = $projectParticipant->getRoles();
+                $roles[] = ProjectParticipant::COMPANY_ROLE_LENDER;
+
+                $projectParticipant->setRoles($roles);
+                $this->entityManager->flush($projectParticipant);
+
+                unset($visibility[$projectParticipant->getCompany()->getIdCompany()]);
+            }
+        }
+
+        $companyRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Companies');
+        $lenders           = $companyRepository->findBy(['idCompany' => $visibility]);
+
+        $project->addLenders($lenders);
+
+        $this->entityManager->flush($project);
+
+        return $this->redirectToRoute('demo_project_details', ['hash' => $project->getHash()]);
     }
 
     /**
@@ -772,12 +845,13 @@ class DemoController extends AbstractController
     /**
      * @Route("/projets", name="demo_projects_list")
      *
-     * @param ProjectDisplayManager $projectDisplayManager
-     * @param Request               $request
+     * @param ProjectDisplayManager      $projectDisplayManager
+     * @param Request                    $request
+     * @param UserInterface|Clients|null $user
      *
      * @return Response
      */
-    public function projectsList(ProjectDisplayManager $projectDisplayManager, Request $request): Response
+    public function projectsList(ProjectDisplayManager $projectDisplayManager, Request $request, ?UserInterface $user): Response
     {
         $page          = $request->query->get('page', 1);
         $sortDirection = $request->query->get('sortDirection', 'DESC');
@@ -785,6 +859,12 @@ class DemoController extends AbstractController
         $sort          = ['status' => 'ASC', $sortType => $sortDirection];
         /** @var Projects[] $projects */
         $projects = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->findBy(['status' => ProjectDisplayManager::STATUS_DISPLAYABLE], $sort);
+
+        foreach ($projects as $index => $project) {
+            if (ProjectDisplayManager::VISIBILITY_FULL !== $projectDisplayManager->getVisibility($project, $user)) {
+                unset($projects[$index]);
+            }
+        }
 
         $template = [
             'sortDirection'  => $sortDirection,
@@ -806,13 +886,24 @@ class DemoController extends AbstractController
      * @param UserInterface|Clients|null   $client
      * @param Request                      $request
      * @param ProjectParticipantRepository $projectParticipantRepository
+     * @param ProjectDisplayManager        $projectDisplayManager
      *
      * @return Response
      */
-    public function projectDetail(string $slug, ?UserInterface $client, Request $request, ProjectParticipantRepository $projectParticipantRepository): Response
+    public function projectDetail(
+        string $slug,
+        ?UserInterface $client,
+        Request $request,
+        ProjectParticipantRepository $projectParticipantRepository,
+        ProjectDisplayManager $projectDisplayManager
+    ): Response
     {
+        $project = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->findOneBy(['slug' => $slug, 'status' => ProjectDisplayManager::STATUS_DISPLAYABLE]);
 
-        $project = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->findOneBy(['slug' => $slug]);
+        if (ProjectDisplayManager::VISIBILITY_FULL !== $projectDisplayManager->getVisibility($project, $client)) {
+            return $this->redirectToRoute('demo_projects_list');
+        }
+
         $wallet  = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
         $bid     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Bids')->findOneBy(['wallet' => $wallet, 'project' => $project, 'status' => [Bids::STATUS_PENDING, Bids::STATUS_ACCEPTED]]);
         /** @var Bids[] $bids */
