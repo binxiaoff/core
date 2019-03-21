@@ -3,7 +3,7 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\ORM\{EntityManagerInterface, NonUniqueResultException, NoResultException};
-use Unilend\Bundle\CoreBusinessBundle\Entity\{Bids, CompanyStatus, Factures, Loans, Projects, ProjectsStatus, TaxType, Virements};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{Bids, Clients, CompanyStatus, Factures, Loans, Projects, ProjectsStatus, TaxType, Virements};
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 
 class ProjectManager
@@ -392,5 +392,33 @@ class ProjectManager
     public function isEditable(Projects $project): bool
     {
         return $project->getStatus() < ProjectsStatus::STATUS_ONLINE;
+    }
+
+    /**
+     * @param Projects $project
+     * @param Clients  $user
+     * @return bool
+     */
+    public function isProjectScoringEditable(Projects $project, Clients $user): bool
+    {
+        return (
+            $this->isEditable($project)
+            && $project->getArrangerParticipant()
+            && $project->getArrangerParticipant()->getCompany() === $user->getCompany()
+        );
+    }
+
+    /**
+     * @param Projects $project
+     * @param Clients  $user
+     * @return bool
+     */
+    public function isBorrowerScoringEditable(Projects $project, Clients $user): bool
+    {
+        return (
+            $this->isEditable($project)
+            && $project->getRunParticipant()
+            && $project->getRunParticipant()->getCompany() === $user->getCompany()
+        );
     }
 }

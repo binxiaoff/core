@@ -234,7 +234,21 @@
                                             N/A
                                         {% endif %}
                                     </dd>
-                                    <dd>0,5</dd>
+                                    <dd>
+                                        {% if isProjectScoringEditable %}
+                                            <a href="#" class="editable" id="arranger-scoring" data-type="text" data-inputclass="input-field">
+                                                {% if project.natureProject %}
+                                                    {{ project.natureProject }}
+                                                {% endif %}
+                                            </a>
+                                        {% else %}
+                                            {% if project.natureProject %}
+                                                {{ project.natureProject }}
+                                            {% else %}
+                                                N/A
+                                            {% endif %}
+                                        {% endif %}
+                                    </dd>
                                 </dl>
                                 <dl class="col-md-5 col-lg-5">
                                     <dt>RUN</dt>
@@ -251,7 +265,21 @@
                                             N/A
                                         {% endif %}
                                     </dd>
-                                    <dd>1,2</dd>
+                                    <dd>
+                                        {% if isBorrowerScoringEditable %}
+                                            <a href="#" class="editable" id="run-scoring" data-type="text" data-inputclass="input-field">
+                                                {% if project.objectifLoan %}
+                                                    {{ project.objectifLoan }}
+                                                {% endif %}
+                                            </a>
+                                        {% else %}
+                                            {% if project.objectifLoan %}
+                                                {{ project.objectifLoan }}
+                                            {% else %}
+                                                N/A
+                                            {% endif %}
+                                        {% endif %}
+                                    </dd>
                                 </dl>
                             </div>
                         </fieldset>
@@ -410,29 +438,23 @@
             $('.editable').editable(editableConfig)
 
             $('#duration').editable(Object.assign(editableConfig, {
-                value: {{ project.period }},
+                value: '{{ project.period / 12 }}',
                 source: [
+                    {value: '', text: ''},
                     {% for duration in loanPeriods %}
-                        {value: {{ duration }}, text: '{% transchoice(duration) with {"%duration%": duration} %} demo-project-request_simulator-duration-select-option {% endtranschoice %}'},
+                        {value: '{{ duration }}', text: '{% transchoice(duration) with {"%duration%": duration} %} demo-project-request_simulator-duration-select-option {% endtranschoice %}'},
                     {% endfor %}
                 ]
             }))
 
             $('#product').editable(Object.assign(editableConfig, {
-                value: {{ project.idProduct }},
+                value: '{{ project.idProduct }}',
                 source: [
+                    {value: '', text: ''},
                     {% for productId, productLabel in products %}
-                        {value: {{ productId }}, text: '{{ productLabel|e('js') }}'},
+                        {value: '{{ productId }}', text: '{{ productLabel|e('js') }}'},
                     {% endfor %}
                 ]
-            }))
-
-            $('#guarantee').editable(Object.assign(editableConfig, {
-                placement: 'right',
-                source: [
-                    {value: 1, text: 'Oui'}
-                ],
-                emptytext: 'Non'
             }))
 
             $('#edit-description').on('click', function (event) {
@@ -444,21 +466,29 @@
             $('#arranger').editable(Object.assign(editableConfig, {
                 value: '{% if arranger %}{{ arranger.idCompany }}{% endif %}',
                 source: [
+                    {value: '', text: ''},
                     {% for arrangerId, arrangerName in arrangers %}
                         {value: {{ arrangerId }}, text: '{{ arrangerName|e('js') }}'},
                     {% endfor %}
-                ],
-                emptytext: 'Aucun'
+                ]
             }))
 
             $('#run').editable(Object.assign(editableConfig, {
                 value: '{% if run %}{{ run.idCompany }}{% endif %}',
                 source: [
+                    {value: '', text: ''},
                     {% for runCompany in runs %}
                         {value: {{ runCompany.idCompany }}, text: '{{ runCompany.name|e('js') }}'},
                     {% endfor %}
+                ]
+            }))
+
+            $('#guarantee').editable(Object.assign(editableConfig, {
+                placement: 'right',
+                source: [
+                    {value: 1, text: 'Oui'}
                 ],
-                emptytext: 'Aucun'
+                emptytext: 'Non'
             }))
 
             var $chatForm = $('#chat-form')

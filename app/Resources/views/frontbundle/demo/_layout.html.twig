@@ -18,7 +18,7 @@
                                         <span class="label">Portefeuille</span>
                                     </a>
                                 </li>
-                                <li role="presentation" class="dashboard-nav-projects{% if app.request.get('_route') == 'demo_projects_list' %} active{% endif %}">
+                                <li role="presentation" class="dashboard-nav-projects{% if app.request.get('_route') in ['demo_projects_list', 'demo_lender_project_details'] %} active{% endif %}">
                                     <a href="{{ path('demo_projects_list') }}">
                                         <span class="icon fa-exchange-u"></span>
                                         <span class="label">Place de marché</span>
@@ -30,31 +30,31 @@
                                         <span class="label">Reporting</span>
                                     </a>
                                 </li>
-                                <li role="presentation" class="dashboard-nav-statistics{% if app.request.get('_route') == 'demo_statistics' %} active{% endif %}">
-                                    <a href="{{ path('demo_statistics') }}">
+                                <li role="presentation" class="dashboard-nav-statistics{% if app.request.get('_route') == 'demo_kyc' %} active{% endif %}">
+                                    <a href="{{ path('demo_kyc') }}">
                                         <span class="icon fa-check-u"></span>
                                         <span class="label">KYC</span>
                                     </a>
                                 </li>
-                                <li role="presentation" class="dashboard-nav-statistics{% if app.request.get('_route') == 'demo_statistics' %} active{% endif %}">
-                                    <a href="{{ path('demo_statistics') }}">
+                                <li role="presentation" class="dashboard-nav-statistics{% if app.request.get('_route') == 'demo_invoices' %} active{% endif %}">
+                                    <a href="{{ path('demo_invoices') }}">
                                         <span class="icon fa-euro-u"></span>
                                         <span class="label">Gestion de la facturation</span>
                                     </a>
                                 </li>
-                                <li role="presentation" class="dashboard-nav-statistics{% if app.request.get('_route') == 'demo_statistics' %} active{% endif %}">
-                                    <a href="{{ path('demo_statistics') }}">
+                                <li role="presentation" class="dashboard-nav-statistics{% if app.request.get('_route') == 'demo_documents' %} active{% endif %}">
+                                    <a href="{{ path('demo_documents') }}">
                                         <span class="icon fa-project-u"></span>
                                         <span class="label">Base documentaire</span>
                                     </a>
                                 </li>
-                                <li role="presentation" class="dashboard-nav-statistics{% if app.request.get('_route') == 'demo_statistics' %} active{% endif %}">
-                                    <a href="{{ path('demo_statistics') }}">
+                                <li role="presentation" class="dashboard-nav-statistics{% if app.request.get('_route') == 'demo_notifications' %} active{% endif %}">
+                                    <a href="{{ path('demo_notifications') }}">
                                         <span class="icon fa-bell-u"></span>
                                         <span class="label">Notifications</span>
                                     </a>
                                 </li>
-                                <li role="presentation" class="dashboard-nav-profile{% if app.request.get('_route') == 'demo_profile' %} active{% endif %}">
+                                <li role="presentation" class="dashboard-nav-profile{% if app.request.get('_route') == 'demo_help' %} active{% endif %}">
                                     <a href="{{ path('demo_help') }}">
                                         <span class="icon fa-question-circle-o"></span>
                                         <span class="label">Aide</span>
