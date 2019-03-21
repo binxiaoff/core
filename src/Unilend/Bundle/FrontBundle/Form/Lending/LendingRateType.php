@@ -33,6 +33,6 @@ class LendingRateType extends AbstractType
 
     public function getBlockPrefix()
     {
-        return 'unilend_front_bundle_lending_rate';
+        return 'lending_rate';
     }
 }

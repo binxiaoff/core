@@ -11,9 +11,9 @@ use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\{JsonResponse, RedirectResponse, Request, Response};
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\User\UserInterface;
-use Symfony\Component\Translation\TranslatorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{Attachment, Bids, Clients, Companies, Loans, Partner, ProjectParticipant, Projects, ProjectsComments, ProjectsStatus, Users,
-    WalletType};
+use Symfony\Contracts\Translation\TranslatorInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{Attachment, Bids, Clients, Companies, FeeType, Loans, Partner, PercentFee, ProjectParticipant, ProjectPercentFee, Projects, ProjectsComments,
+    ProjectsStatus, Users, WalletType};
 use Unilend\Bundle\CoreBusinessBundle\Repository\ProjectParticipantRepository;
 use Unilend\Bundle\CoreBusinessBundle\Service\{AttachmentManager, ProjectManager, ProjectStatusManager};
 use Unilend\Bundle\FrontBundle\Form\Lending\BidType;
@@ -226,20 +226,22 @@ class DemoController extends AbstractController
         AttachmentManager $attachmentManager
     ): RedirectResponse
     {
-        $borrowerId  = $request->request->get('borrower');
-        $title       = $request->request->get('title');
-        $description = $request->request->get('description');
-        $amount      = $request->request->get('amount');
-        $duration    = $request->request->get('duration');
-        $date        = $request->request->get('date');
-        $date        = $date ? \DateTime::createFromFormat('d/m/Y', $date)->setTime(0, 0, 0) : null;
-        $partnerId   = $request->request->get('partner');
-        $productId   = $request->request->get('product') ?: null;
-        $rate        = $request->request->get('rate') ?: null;
-        $rate        = $rate ? floatval(str_replace(',', '.', $rate)) : null;
-        $guarantee   = $request->request->get('guarantee') ? 1 : 0;
-        $arrangerId  = $request->request->get('arranger');
-        $runId       = $request->request->get('run');
+        $borrowerId         = $request->request->get('borrower');
+        $title              = $request->request->get('title');
+        $description        = $request->request->get('description');
+        $amount             = $request->request->get('amount');
+        $duration           = $request->request->get('duration');
+        $date               = $request->request->get('date');
+        $date               = $date ? \DateTime::createFromFormat('d/m/Y', $date)->setTime(0, 0, 0) : null;
+        $partnerId          = $request->request->get('partner');
+        $productId          = $request->request->get('product');
+        $rate               = $request->request->get('rate');
+        $rate               = $rate ? floatval(str_replace(',', '.', $rate)) : null;
+        $guarantee          = $request->request->get('guarantee') ? 1 : 0;
+        $arrangerId         = $request->request->get('arranger');
+        $runId              = $request->request->get('run');
+        $projectForm        = $request->request->get('project_type');
+        $projectPercentFees = empty($projectForm['projectPercentFees']) ? [] : $projectForm['projectPercentFees'];
 
         try {
             $this->entityManager->beginTransaction();
@@ -273,6 +275,19 @@ class DemoController extends AbstractController
             if ($runId && $run = $companiesRepository->find($runId)) {
                 $project->addRun($run);
             }
+
+           foreach ($projectPercentFees as $fee) {
+               $percentFee = new PercentFee();
+               $type = $this->entityManager->getRepository(FeeType::class)->find($fee['percentFee']['type']);
+               $percentFee->setType($type)
+                   ->setRate(str_replace(',', '.', $fee['percentFee']['rate']))
+                   ->setIsRecurring((bool) empty($fee['percentFee']['isRecurring']) ? false : $fee['percentFee']['isRecurring']);
+
+               $projectPercentFee = new ProjectPercentFee();
+               $projectPercentFee->setPercentFee($percentFee);
+
+               $project->addProjectPercentFee($projectPercentFee);
+           }
 
             $this->entityManager->persist($project);
             $this->entityManager->flush($project);
@@ -331,7 +346,7 @@ class DemoController extends AbstractController
         $run       = $run instanceof ProjectParticipant ? $run->getCompany() : null;
 
         $arrangers[$partner->getIdCompany()->getIdCompany()] = $partner->getIdCompany()->getName();
-        $arrangers[$user->getCompany()->getIdCompany()] = $user->getCompany()->getName();
+        $arrangers[$user->getCompany()->getIdCompany()]      = $user->getCompany()->getName();
 
         if ($arranger instanceof Companies) {
             $arrangers[$arranger->getIdCompany()] = $arranger->getName();
@@ -395,6 +410,7 @@ class DemoController extends AbstractController
      * @param Projects          $project
      * @param Clients           $user
      * @param AttachmentManager $attachmentManager
+     *
      * @throws \Doctrine\ORM\OptimisticLockException
      */
     private function uploadDocuments(Request $request, Projects $project, Clients $user, AttachmentManager $attachmentManager): void
@@ -917,6 +933,7 @@ class DemoController extends AbstractController
     /**
      * @param array               $partners
      * @param TranslatorInterface $translator
+     *
      * @return array
      */
     private function getProductsList(array $partners, TranslatorInterface $translator): array

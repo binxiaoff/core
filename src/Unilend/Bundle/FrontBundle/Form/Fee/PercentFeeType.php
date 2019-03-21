@@ -1,6 +1,6 @@
 <?php
 
-namespace Unilend\Bundle\FrontBundle\Form\Lending;
+namespace Unilend\Bundle\FrontBundle\Form\Fee;
 
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\{AbstractType, Extension\Core\Type\CheckboxType, Extension\Core\Type\NumberType, FormBuilderInterface};
@@ -33,6 +33,6 @@ class PercentFeeType extends AbstractType
 
     public function getBlockPrefix()
     {
-        return 'unilend_front_bundle_percent_fee';
+        return 'percent_fee';
     }
 }

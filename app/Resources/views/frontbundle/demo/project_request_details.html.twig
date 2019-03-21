@@ -23,37 +23,48 @@
         <div class="row dashboard-tab-pane">
             <div class="form-project-create-nav tab-nav">
                 <ul class="nav nav-progress text-align-center">
-                    <li role="presentation" class="{% if project.status > constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_REQUEST') %}complete{% else %}active{% endif %}" data-equal-width>
+                    <li role="presentation"
+                        class="{% if project.status > constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_REQUEST') %}complete{% else %}active{% endif %}" data-equal-width>
                         <span>
                             <span class="progress-point">1.</span>
                             <span class="label">Dépôt</span>
                         </span>
                     </li>
-                    <li role="presentation" class="{% if project.status > constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_REVIEW') %}complete{% elseif project.status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_REVIEW') %}active{% endif %}" data-equal-width>
+                    <li role="presentation"
+                        class="{% if project.status > constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_REVIEW') %}complete{% elseif project.status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_REVIEW') %}active{% endif %}"
+                        data-equal-width>
                         <span>
                             <span class="progress-point">2.</span>
                             <span class="label">Analyse</span>
                         </span>
                     </li>
-                    <li role="presentation" class="{% if project.status > constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_ONLINE') %}complete{% elseif project.status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_ONLINE') %}active{% endif %}" data-equal-width>
+                    <li role="presentation"
+                        class="{% if project.status > constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_ONLINE') %}complete{% elseif project.status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_ONLINE') %}active{% endif %}"
+                        data-equal-width>
                         <span>
                             <span class="progress-point">3.</span>
                             <span class="label">Financement</span>
                         </span>
                     </li>
-                    <li role="presentation" class="{% if project.status > constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_FUNDED') %}complete{% elseif project.status in [constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_FUNDED'), constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_SIGNED')] %}active{% endif %}" data-equal-width>
+                    <li role="presentation"
+                        class="{% if project.status > constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_FUNDED') %}complete{% elseif project.status in [constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_FUNDED'), constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_SIGNED')] %}active{% endif %}"
+                        data-equal-width>
                         <span>
                             <span class="progress-point">4.</span>
                             <span class="label">Signature</span>
                         </span>
                     </li>
-                    <li role="presentation" class="{% if project.status > constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_REPAYMENT') %}complete{% elseif project.status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_REPAYMENT') %}active{% endif %}" data-equal-width>
+                    <li role="presentation"
+                        class="{% if project.status > constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_REPAYMENT') %}complete{% elseif project.status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_REPAYMENT') %}active{% endif %}"
+                        data-equal-width>
                         <span>
                             <span class="progress-point">5.</span>
                             <span class="label">Remboursement</span>
                         </span>
                     </li>
-                    <li role="presentation" class="{% if project.status in [constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_REPAID'), constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_LOSS')] %}complete{% endif %}" data-equal-width>
+                    <li role="presentation"
+                        class="{% if project.status in [constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_REPAID'), constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_LOSS')] %}complete{% endif %}"
+                        data-equal-width>
                         <span>
                             <span class="progress-point">6.</span>
                             <span class="label">Terminé</span>
@@ -63,7 +74,8 @@
             </div><!-- /.form-project-create-nav -->
         </div>
         <div class="dashboard-tabs-content tab-content">
-            <form action="{{ path('demo_project_details_form', {'hash': project.hash}) }}" method="post" enctype="multipart/form-data" data-formvalidation data-formvalidation-shownotifications="false">
+            <form action="{{ path('demo_project_details_form', {'hash': project.hash}) }}" method="post" enctype="multipart/form-data" data-formvalidation
+                  data-formvalidation-shownotifications="false">
                 <div class="row columns-with-space">
                     <article class="dashboard-tab-pane col-lg-8 col-md-8">
                         <div class="panel" data-equal-height>
@@ -128,7 +140,9 @@
                                         </dd>
                                     </dl>
                                     <dl class="col-md-6 col-lg-6">
-                                        <dt>Taux de progressivité <small>(%)</small></dt>
+                                        <dt>Taux de progressivité
+                                            <small>(%)</small>
+                                        </dt>
                                         <dd>
                                             {% if isEditable %}
                                                 <a href="#" id="rate" class="editable" data-type="text" data-inputclass="input-field">
@@ -191,19 +205,23 @@
                                         <a href="{{ path('demo_project_review', {'hash': project.hash}) }}" class="btn-primary btn-shape-xs margin-10-t" style="width: 100%;">Passer à l‘analyse</a>
                                     {% endif %}
                                     {% if project.status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_REVIEW') %}
-                                        <a href="{{ path('demo_project_publish', {'hash': project.hash}) }}" class="btn-primary btn-shape-xs margin-10-t" style="width: 100%;">Proposer au financement</a>
+                                        <a href="{{ path('demo_project_publish', {'hash': project.hash}) }}" class="btn-primary btn-shape-xs margin-10-t" style="width: 100%;">Proposer au
+                                            financement</a>
                                     {% endif %}
                                     {% if project.status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_ONLINE') %}
-                                        <a href="{{ path('demo_project_fund', {'hash': project.hash}) }}" class="btn-primary btn-shape-xs margin-10-t" style="width: 100%;">Mettre fin à la période de financement</a>
+                                        <a href="{{ path('demo_project_fund', {'hash': project.hash}) }}" class="btn-primary btn-shape-xs margin-10-t" style="width: 100%;">Mettre fin à la période de
+                                            financement</a>
                                     {% endif %}
                                     {% if project.status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_FUNDED') %}
                                         <a href="{{ path('demo_project_sign', {'hash': project.hash}) }}" class="btn-primary btn-shape-xs margin-10-t" style="width: 100%;">Signer les contrats</a>
                                     {% endif %}
                                     {% if project.status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_SIGNED') %}
-                                        <a href="{{ path('demo_project_repay', {'hash': project.hash}) }}" class="btn-primary btn-shape-xs margin-10-t" style="width: 100%;">Commencer le remboursement</a>
+                                        <a href="{{ path('demo_project_repay', {'hash': project.hash}) }}" class="btn-primary btn-shape-xs margin-10-t" style="width: 100%;">Commencer le
+                                            remboursement</a>
                                     {% endif %}
                                     {% if project.status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_REPAYMENT') %}
-                                        <a href="{{ path('demo_project_repaid', {'hash': project.hash}) }}" class="btn-primary btn-shape-xs margin-10-t" style="width: 100%;">Mettre fin au remboursement</a>
+                                        <a href="{{ path('demo_project_repaid', {'hash': project.hash}) }}" class="btn-primary btn-shape-xs margin-10-t" style="width: 100%;">Mettre fin au
+                                            remboursement</a>
                                         <a href="{{ path('demo_project_loss', {'hash': project.hash}) }}" class="btn-primary btn-shape-xs margin-10-t" style="width: 100%;">Passer en perte</a>
                                     {% endif %}
                                 </div>
@@ -286,8 +304,34 @@
                     </div>
                 </article><!-- /.dashboard-tab-pane -->
                 <article class="dashboard-tab-pane margin-20-t" id="article-fees">
-                    <div class="panel">
-                        <h4 class="h4">Commissions</h4>
+                    <div class="panel fees">
+                        <h4 class="h4">Frais / Commissions</h4>
+                        {% if project.projectPercentFees is not empty %}
+                            <table class="table-myoffers">
+                                <tbody>
+                                <tr class="my-offers-bid-row">
+                                    <td>Type</td>
+                                    <td>Taux</td>
+                                    <td>Récurrent</td>
+                                </tr>
+                                {% for projectPercentFee in project.projectPercentFees %}
+                                    <tr>
+                                        <td>{{ ('fee-type_' ~ projectPercentFee.percentFee.type.label)|trans }}</td>
+                                        <td>{{ projectPercentFee.percentFee.rate|localizednumberwithprecision(2) }}
+                                            &nbsp;%{% if projectPercentFee.percentFee.isRecurring == false %}&nbsp;(soit {{ (projectPercentFee.percentFee.rate * project.amount / 100)|localizedcurrency('EUR') }}){% endif %}</td>
+                                        <td>{% if projectPercentFee.percentFee.isRecurring %} Oui {% else %} Non {% endif %}</td>
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table><!-- /.table-myoffers -->
+                        {% else %}
+                            <div class="message-info">Vous n‘avez aucun frais associé à votre dossier.</div>
+                        {% endif %}
+                        <h5 class="h4 margin-20-t">Ajouter des frais ou commissions</h5>
+                        <a href="javascript:;" class="btn-default btn-shape-sq-md margin-10-t" data-action="ui-form-lending-fee-add">
+                            <span class="icon fa-plus-u16 c-t2"></span>
+                            <span class="sr-only">Ajouter un frais</span>
+                        </a>
                     </div>
                 </article><!-- /.dashboard-tab-pane -->
                 <article class="dashboard-tab-pane margin-20-t" id="article-visibility">
@@ -297,7 +341,8 @@
                 </article><!-- /.dashboard-tab-pane -->
                 <article class="dashboard-tab-pane margin-20-t" id="article-documents">
                     <div class="panel">
-                        <form action="{{ path('demo_project_details_form', {'hash': project.hash}) }}" method="post" enctype="multipart/form-data" data-formvalidation data-formvalidation-shownotifications="false">
+                        <form action="{{ path('demo_project_details_form', {'hash': project.hash}) }}" method="post" enctype="multipart/form-data" data-formvalidation
+                              data-formvalidation-shownotifications="false">
                             <fieldset>
                                 <h4 class="h4">Documents</h4>
                                 {% for projectAttachment in projectAttachments %}
@@ -313,7 +358,8 @@
                                 {% endfor %}
                                 <h5 class="h4 margin-20-t">Ajouter des documents</h5>
                                 <div class="form-extrafiles-list">
-                                    <div class="form-field form-field-multi file-upload-extra row row-multi-col-computer" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="typedFile">
+                                    <div class="form-field form-field-multi file-upload-extra row row-multi-col-computer" data-formvalidation-input data-formvalidation-required="true"
+                                         data-formvalidation-type="typedFile">
                                         <div class="col-lg-4 col-md-4">
                                             {% include ':frontbundle/demo/partials:project_attachment_select.html.twig' with {'name': 'file'} %}
                                         </div>
@@ -321,7 +367,9 @@
                                             <input type="text" name="filename[file]" placeholder="Nom du fichier" class="input-field">
                                         </div>
                                         <div class="col-lg-4 col-md-4">
-                                            <div class="custom-input-file" id="form-file" data-fileattach data-fileattach-inputname="file" data-fileattach-maxfiles="1" data-fileattach-filetypes="pdf jpg jpeg png doc docx" data-formvalidation-required='input[type="file"][name="file[0]"]' aria-labelledby="form-extrafiles-document-file-label"></div><!-- /.ui-fileattach -->
+                                            <div class="custom-input-file" id="form-file" data-fileattach data-fileattach-inputname="file" data-fileattach-maxfiles="1"
+                                                 data-fileattach-filetypes="pdf jpg jpeg png doc docx" data-formvalidation-required='input[type="file"][name="file[0]"]'
+                                                 aria-labelledby="form-extrafiles-document-file-label"></div><!-- /.ui-fileattach -->
                                         </div>
                                     </div>
                                 </div><!-- /.form-extrafiles-list -->
@@ -336,12 +384,15 @@
                         </form>
 
                         <div id="form-extrafiles-template" class="ui-template-definition" style="display: none" disabled="disabled" aria-hidden="true">
-                            <div class="form-field form-field-multi file-upload-extra row row-multi-col-computer" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="typedFile">
+                            <div class="form-field form-field-multi file-upload-extra row row-multi-col-computer" data-formvalidation-input data-formvalidation-required="true"
+                                 data-formvalidation-type="typedFile">
                                 <div class="col-lg-6 col-md-6">
                                     {% include ':frontbundle/demo/partials:project_attachment_select.html.twig' with {'name': '__NUM__'} %}
                                 </div>
                                 <div class="col-lg-6 col-md-6">
-                                    <div class="custom-input-file" id="form-extrafile" data-fileattach data-fileattach-inputname="extra__NUM__" data-fileattach-maxfiles="1" data-fileattach-filetypes="pdf jpg jpeg png doc docx xls xlsx" data-formvalidation-required='input[type="file"][name="file[__NUM__]"]' aria-labelledby="form-extrafiles-document-file-label"></div><!-- /.ui-fileattach -->
+                                    <div class="custom-input-file" id="form-extrafile" data-fileattach data-fileattach-inputname="extra__NUM__" data-fileattach-maxfiles="1"
+                                         data-fileattach-filetypes="pdf jpg jpeg png doc docx xls xlsx" data-formvalidation-required='input[type="file"][name="file[__NUM__]"]'
+                                         aria-labelledby="form-extrafiles-document-file-label"></div><!-- /.ui-fileattach -->
                                 </div>
                             </div><!-- /.file-upload-extra -->
                         </div><!-- /.ui-template-definition -->
@@ -382,23 +433,29 @@
             color: #302a32 !important;
             border-bottom: dashed 1px #302a32;
         }
+
         a.editable-click:hover {
             border-bottom: dashed 1px #2bc9af;
         }
+
         h4 a.editable-click {
             color: #2bc9af !important;
             border-bottom: dashed 1px #2bc9af;
         }
+
         h4 a.editable-click:hover {
             border-bottom: dashed 1px #302a32;
         }
+
         .description-container {
             line-height: 18px;
         }
+
         .description-container .editable-container.editable-inline,
         .description-container .editable-input {
             width: 100%;
         }
+
         .bubble {
             display: inline-block;
             border-radius: 12px;
@@ -408,9 +465,11 @@
             font-size: 13px;
             font-weight: 900;
         }
+
         dt {
             font-weight: 700;
         }
+
         dd {
             font-size: 16px;
         }
@@ -427,7 +486,7 @@
             var editableConfig = {
                 pk: {{ project.idProject }},
                 url: '{{ path('demo_project_update', {'hash': project.hash}) }}',
-                success: function(response) {
+                success: function (response) {
                     if (response.newValue)
                         return {
                             newValue: response.newValue
@@ -445,7 +504,7 @@
                 source: [
                     {value: '', text: ''},
                     {% for duration in loanPeriods %}
-                        {value: '{{ duration }}', text: '{% transchoice(duration) with {"%duration%": duration} %} demo-project-request_simulator-duration-select-option {% endtranschoice %}'},
+                    {value: '{{ duration }}', text: '{% transchoice(duration) with {"%duration%": duration} %} demo-project-request_simulator-duration-select-option {% endtranschoice %}'},
                     {% endfor %}
                 ]
             }))
@@ -455,7 +514,7 @@
                 source: [
                     {value: '', text: ''},
                     {% for productId, productLabel in products %}
-                        {value: '{{ productId }}', text: '{{ productLabel|e('js') }}'},
+                    {value: '{{ productId }}', text: '{{ productLabel|e('js') }}'},
                     {% endfor %}
                 ]
             }))
@@ -471,7 +530,7 @@
                 source: [
                     {value: '', text: ''},
                     {% for arrangerId, arrangerName in arrangers %}
-                        {value: {{ arrangerId }}, text: '{{ arrangerName|e('js') }}'},
+                    {value: {{ arrangerId }}, text: '{{ arrangerName|e('js') }}'},
                     {% endfor %}
                 ]
             }))
@@ -481,7 +540,7 @@
                 source: [
                     {value: '', text: ''},
                     {% for runCompany in runs %}
-                        {value: {{ runCompany.idCompany }}, text: '{{ runCompany.name|e('js') }}'},
+                    {value: {{ runCompany.idCompany }}, text: '{{ runCompany.name|e('js') }}'},
                     {% endfor %}
                 ]
             }))
