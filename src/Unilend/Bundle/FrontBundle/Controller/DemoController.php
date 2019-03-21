@@ -279,21 +279,7 @@ class DemoController extends AbstractController
 
             $projectStatusManager->addProjectStatus(Users::USER_ID_FRONT, $project->getStatus(), $project);
 
-            $attachmentTypeRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:AttachmentType');
-
-            foreach ($request->files->all() as $field => $file) {
-                if (false === empty($file)) {
-                    $attachmentType = $attachmentTypeRepository->find($request->request->get('filetype')[$field]);
-                    $attachment     = $attachmentManager->upload($user, $attachmentType, $file, false);
-                    $filename       = $request->request->get('filename')[$field];
-
-                    // @todo "original name" should be used for saving file name, not a label
-                    $attachment->setOriginalName($filename ?: $attachmentType->getLabel());
-                    $this->entityManager->flush($attachment);
-
-                    $attachmentManager->attachToProject($attachment, $project);
-                }
-            }
+            $this->uploadDocuments($request, $project, $user, $attachmentManager);
 
             $this->entityManager->commit();
 
@@ -315,18 +301,16 @@ class DemoController extends AbstractController
     /**
      * @Route("/projet/{hash}", name="demo_project_details", methods={"GET"}, requirements={"hash": "[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}"})
      *
-     * @param string                       $hash
-     * @param ProjectManager               $projectManager
-     * @param ProjectParticipantRepository $projectParticipantRepository
-     * @param TranslatorInterface          $translator
-     * @param UserInterface|Clients|null   $user
+     * @param string                     $hash
+     * @param ProjectManager             $projectManager
+     * @param TranslatorInterface        $translator
+     * @param UserInterface|Clients|null $user
      *
      * @return Response
      */
     public function projectDetails(
         string $hash,
         ProjectManager $projectManager,
-        ProjectParticipantRepository $projectParticipantRepository,
         TranslatorInterface $translator,
         ?UserInterface $user
     ): Response
@@ -384,10 +368,10 @@ class DemoController extends AbstractController
     /**
      * @Route("/projet/{hash}", name="demo_project_details_form", methods={"POST"}, requirements={"hash": "[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}"})
      *
-     * @param string             $hash
-     * @param Request            $request
-     * @param AttachmentManager  $attachmentManager
-     * @param UserInterface|null $user
+     * @param string                     $hash
+     * @param Request                    $request
+     * @param AttachmentManager          $attachmentManager
+     * @param UserInterface|Clients|null $user
      *
      * @return RedirectResponse
      * @throws \Doctrine\ORM\OptimisticLockException
@@ -401,15 +385,35 @@ class DemoController extends AbstractController
             return $this->redirectToRoute('demo_loans');
         }
 
+        $this->uploadDocuments($request, $project, $user, $attachmentManager);
+
+        return $this->redirectToRoute('demo_project_details', ['hash' => $project->getHash()]);
+    }
+
+    /**
+     * @param Request           $request
+     * @param Projects          $project
+     * @param Clients           $user
+     * @param AttachmentManager $attachmentManager
+     * @throws \Doctrine\ORM\OptimisticLockException
+     */
+    private function uploadDocuments(Request $request, Projects $project, Clients $user, AttachmentManager $attachmentManager): void
+    {
         $attachmentTypeRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:AttachmentType');
 
         foreach ($request->files->all() as $field => $file) {
-            $attachmentType = $attachmentTypeRepository->find($request->request->get('files')[$field]);
-            $attachment     = $attachmentManager->upload($user, $attachmentType, $file, false);
-            $attachmentManager->attachToProject($attachment, $project);
-        }
+            if (false === empty($file)) {
+                $attachmentType = $attachmentTypeRepository->find($request->request->get('filetype')[$field]);
+                $attachment     = $attachmentManager->upload($user, $attachmentType, $file, false);
+                $filename       = $request->request->get('filename')[$field];
 
-        return $this->redirectToRoute('demo_project_details', ['hash' => $project->getHash()]);
+                // @todo "original name" should be used for saving file name, not a label
+                $attachment->setOriginalName($filename ?: $attachmentType->getLabel());
+                $this->entityManager->flush($attachment);
+
+                $attachmentManager->attachToProject($attachment, $project);
+            }
+        }
     }
 
     /**
