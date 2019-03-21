@@ -777,7 +777,36 @@ ChartView.prototype.render = function (data, schema) {
                     $filter.val('').change()
                 }
             })
-        break
+            break
+        case 'monthlyOperation':
+            Utility.extendObjProp(self.settings.highcharts, 'yAxis.0.labels.formatter', function () {
+                return Highcharts.numberFormat(Math.abs(this.value), 0) + ' €';
+            })
+        case 'borrowByRisk':
+            Utility.extendObjProp(self.settings.highcharts, 'yAxis.labels.formatter', function () {
+                return Highcharts.numberFormat(Math.abs(this.value), 0) + ' €';
+            })
+            Utility.extendObjProp(self.settings.highcharts, 'tooltip.formatter', function () {
+                return '<b>' + this.series.name + ': ' + this.point.category + '</b><br/>' +
+                    'Montant : ' + Highcharts.numberFormat(Math.abs(this.point.y), 0) + ' €';
+            })
+
+            /*self.chart = new Highcharts.setOptions({
+                yAxis: {
+                    labels: {
+                        formatter: function () {
+                            return Highcharts.numberFormat(Math.abs(this.value), 0) + ' €';
+                        }
+                    }
+                },
+                tooltip: {
+                    formatter: function () {
+                        return '<b>' + this.series.name + ': ' + this.point.category + '</b><br/>' +
+                            'Montant : ' + Highcharts.numberFormat(Math.abs(this.point.y), 0) + ' €';
+                    }
+                }
+            });*/
+            break
       }
     }
 

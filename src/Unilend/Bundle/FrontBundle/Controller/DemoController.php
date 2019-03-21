@@ -844,6 +844,16 @@ class DemoController extends AbstractController
     }
 
     /**
+     * @Route("/reporting", name="demo_statistics")
+     *
+     * @return Response
+     */
+    public function reporting(): Response
+    {
+        return $this->render(':frontbundle/demo:reporting.html.twig');
+    }
+
+    /**
      * @param ProjectDisplayManager $projectDisplayManager
      * @param int                   $page
      * @param int                   $limit
