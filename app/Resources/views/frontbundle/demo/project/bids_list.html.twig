@@ -2,7 +2,7 @@
     <div class="tabs">
         <div class="section-tabs-nav">
             <header>
-                <h3 id="project-myoffers" class="h3">Toutes les offres</h3>
+                <h3 id="project-myoffers" class="h3">Offres de participation</h3>
             </header>
         </div><!-- /.section-tabs-nav -->
         <div class="section-tabs-content tab-content">
@@ -27,7 +27,7 @@
                                 <td>{{ (offer.amount / 100)|localizednumber }}&nbsp;€</td>
                                 <td>{{ ('interest-rate-index_' ~ offer.rate.indexType)|trans }}</td>
                                 <td>{{ offer.rate.margin|localizednumberwithprecision(2) }}&nbsp;%</td>
-                                <td>{{ offer.oneTimeFeeTotalRate|localizednumberwithprecision(2) }}&nbsp;%</td>
+                                <td>{{ offer.oneTimeFeeTotalRate|localizednumberwithprecision(2) }}&nbsp;%{% if offer.recurringFeeTotalRate > 0%}&nbsp;(soit {{ (offer.recurringFeeTotalRate * (offer.amount / 100) / 100)|localizedcurrency('EUR') }}){% endif %}</td>
                                 <td>{{ offer.recurringFeeTotalRate|localizednumberwithprecision(2) }}&nbsp;%</td>
                                 <td>{% if offer.isAgent %} Oui {% else %} Non {% endif %}</td>
                             </tr>

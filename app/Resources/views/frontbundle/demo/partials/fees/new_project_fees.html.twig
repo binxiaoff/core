@@ -1,0 +1,30 @@
+<div class="row row-multi-col-computer">
+    <div class="form-field col-lg-6 col-md-6">
+        <label for="project_type_projectPercentFees___name___percentFee_type" class="required">
+            Type de frais / commission
+            <span class="field-required">*</span>
+        </label>
+        <select class="input-field" id="project_type_projectPercentFees___name___percentFee_type" name="project_type[projectPercentFees][__name__][percentFee][type]" data-field="ui-form-fee-type">
+            <option value="1">Commission de mise en place</option>
+            <option value="2">Frais de gestion running</option>
+        </select>
+    </div>
+    <div class="form-field col-lg-6 col-md-6">
+        <label for="project_type_projectPercentFees___name___percentFee_rate" class="required">
+            Taux de frais / commission en %
+            <span class="field-required">*</span>
+        </label>
+        <input class="input-field" type="text" id="project_type_projectPercentFees___name___percentFee_rate" name="project_type[projectPercentFees][__name__][percentFee][rate]" required="required"/>
+    </div>
+</div>
+<div class="row row-multi-col-computer">
+    <div class="form-field col-lg-6 col-md-6">
+        <label for="project_type_projectPercentFees___name___percentFee_isRecurring">
+            <input type="checkbox" id="project_type_projectPercentFees___name___percentFee_isRecurring" name="project_type[projectPercentFees][__name__][percentFee][isRecurring]" value="1"/>
+            Récurrent
+        </label>
+    </div>
+    <div class="form-field col-lg-6 col-md-6">
+        <button type="button" class="btn-default btn-shape-xxs" data-action="ui-form-lending-fee-remove">Supprimer</button>
+    </div>
+</div>

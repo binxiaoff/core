@@ -64,7 +64,8 @@
                                     <input id="input-amount" type="text" step="any" name="amount" class="input-field"
                                            data-formvalidation-input
                                            data-formvalidation-type="integer"
-                                           data-formvalidation-required="true">
+                                           data-formvalidation-required="true"
+                                           data-fee-reference-amount>
                                 </div><!-- /.form-field -->
                                 <div class="form-field col-lg-4 col-md-4">
                                     <label for="input-duration">
@@ -168,6 +169,16 @@
                                         {% endfor %}
                                     </select>
                                 </div>
+                            </div>
+                        </fieldset><!-- /.simulator-pane-inner -->
+                        <fieldset class="simulator-pane-inner" style="margin-top: 20px;">
+                            <legend>Frais / Commission</legend>
+                            {% set feesTemplate = include(':frontbundle/demo/partials/fees:new_project_fees.html.twig') %}
+                            <div class="row row-multi-col-computer fees" data-prototype="{{ feesTemplate|e('html_attr') }}">
+                                <a href="javascript:;" class="btn-default btn-shape-sq-md margin-10-t" data-action="ui-form-lending-fee-add">
+                                    <span class="icon fa-plus-u16 c-t2"></span>
+                                    <span class="sr-only">Ajouter un frais</span>
+                                </a>
                             </div>
                         </fieldset><!-- /.simulator-pane-inner -->
                         <fieldset class="simulator-pane-inner" style="margin-top: 20px;">
@@ -290,5 +301,7 @@
                 $('#input-arranger option[value="' + arranger + '"]').prop('selected', true)
             })
         })
+
+        {% include ':frontbundle/demo/partials/fees:fees.js.twig' %}
     </script>
 {% endblock %}

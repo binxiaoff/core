@@ -1,14 +1,14 @@
 <?php
 
-namespace Unilend\Bundle\FrontBundle\Form\Lending;
+namespace Unilend\Bundle\FrontBundle\Form\Project;
 
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Unilend\Bundle\CoreBusinessBundle\Entity\BidPercentFee;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectPercentFee;
 use Unilend\Bundle\FrontBundle\Form\Fee\PercentFeeType;
 
-class BidPercentFeeType extends AbstractType
+class ProjectPercentFeeType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
@@ -17,11 +17,11 @@ class BidPercentFeeType extends AbstractType
 
     public function configureOptions(OptionsResolver $resolver)
     {
-        $resolver->setDefault('data_class', BidPercentFee::class);
+        $resolver->setDefault('data_class', ProjectPercentFee::class);
     }
 
     public function getBlockPrefix()
     {
-        return 'bid_percent_fee_type';
+        return 'project_percent_fee_type';
     }
 }

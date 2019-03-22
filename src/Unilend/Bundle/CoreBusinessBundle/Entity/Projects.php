@@ -443,6 +443,13 @@ class Projects
     private $loans;
 
     /**
+     * @var ProjectPercentFee[]|ArrayCollection
+     *
+     * @ORM\OneToMany(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\ProjectPercentFee", mappedBy="project", cascade={"persist"}, orphanRemoval=true)
+     */
+    private $projectPercentFees;
+
+    /**
      * Projects constructor.
      */
     public function __construct()
@@ -454,6 +461,7 @@ class Projects
         $this->invoices               = new ArrayCollection();
         $this->debtCollectionMissions = new ArrayCollection();
         $this->projectParticipants    = new ArrayCollection();
+        $this->projectPercentFees     = new ArrayCollection();
     }
 
     /**
@@ -1763,6 +1771,7 @@ class Projects
 
     /**
      * @param string $role
+     *
      * @return ProjectParticipant|null
      */
     private function getParticipant(string $role): ?ProjectParticipant
@@ -1809,5 +1818,43 @@ class Projects
     public function getLoans(): iterable
     {
         return $this->loans;
+    }
+
+    /**
+     * @param ProjectPercentFee $projectPercentFee
+     *
+     * @return Projects
+     */
+    public function addProjectPercentFee(ProjectPercentFee $projectPercentFee): Projects
+    {
+        $projectPercentFee->setProject($this);
+
+        if (false === $this->projectPercentFees->contains($projectPercentFee)) {
+            $this->projectPercentFees->add($projectPercentFee);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @param ProjectPercentFee $projectPercentFee
+     *
+     * @return Projects
+     */
+    public function removeProjectPercentFee(ProjectPercentFee $projectPercentFee): Projects
+    {
+        if ($this->projectPercentFees->contains($projectPercentFee)) {
+            $this->projectPercentFees->removeElement($projectPercentFee);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return iterable|ProjectPercentFee[]
+     */
+    public function getProjectPercentFees(): iterable
+    {
+        return $this->projectPercentFees;
     }
 }

@@ -36,6 +36,6 @@ class BidType extends AbstractType
 
     public function getBlockPrefix()
     {
-        return 'unilend_front_bundle_bid_type';
+        return 'bid_type';
     }
 }
