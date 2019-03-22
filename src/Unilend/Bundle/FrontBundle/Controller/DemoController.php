@@ -880,7 +880,7 @@ class DemoController extends AbstractController
     }
 
     /**
-     * @Route("/projets/detail/lender/{slug}", name="demo_lender_project_details")
+     * @Route("/projets/detail/{slug}", name="demo_lender_project_details")
      *
      * @param string                       $slug
      * @param UserInterface|Clients|null   $client
@@ -930,19 +930,20 @@ class DemoController extends AbstractController
         }
 
         return $this->render(':frontbundle/demo:project.html.twig', [
-            'project'  => $project,
-            'wallet'   => $wallet,
-            'bid'      => $bid,
-            'bids'     => $bids,
-            'product'  => $product,
-            'arranger' => $arranger,
-            'run'      => $run,
-            'form'     => $form->createView(),
+            'project'            => $project,
+            'wallet'             => $wallet,
+            'bid'                => $bid,
+            'bids'               => $bids,
+            'product'            => $product,
+            'arranger'           => $arranger,
+            'run'                => $run,
+            'form'               => $form->createView(),
+            'projectAttachments' => $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectAttachment')->findBy(['idProject' => $project], ['added' => 'DESC']),
         ]);
     }
 
     /**
-     * @Route("/projets/detail/lender/bid/cancel/{bid}", name="demo_project_details_bid_cancellation")
+     * @Route("/projets/detail/bid/cancel/{bid}", name="demo_project_details_bid_cancellation")
      *
      * @param Bids $bid
      *

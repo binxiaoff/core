@@ -297,13 +297,24 @@
                             <div class="message-info">Sélectionnez les entités qui auront la possibilité de se positionner pour le financement du projet. Une fois le projet en cours de financement, vous ne pourrez plus retirer d‘entité de la liste.</div>
                         </div>
                         <div class="row">
+                            <label>
+                                <input id="visibility-all" type="checkbox">
+                                Tout sélectionner
+                            </label>
+                            <label>
+                                <input id="visibility-crca" type="checkbox">
+                                Caisses régionales Crédit Agricole
+                            </label>
+                        </div>
+                        <hr>
+                        <div class="row">
                             {% set lendersByColumn = (potentialLenders|length / 3)|round(0, 'ceil') %}
                             <div class="col-lg-4 col-md-4">
                                 {% for lender in runs %}
                                     {% if loop.index <= lendersByColumn %}
                                         <div>
                                             <label>
-                                                <input type="checkbox" name="visibility[]" value="{{ lender.idCompany }}"
+                                                <input type="checkbox" name="visibility[]" value="{{ lender.idCompany }}" class="visibility-bank{% if 'CA ' == lender.name|slice(0, 3) %} visibility-bank-crca{% endif %}"
                                                     {% if lender.idCompany in visibility %} checked{% endif %}
                                                     {% if
                                                         false == isEditable
@@ -321,7 +332,7 @@
                                     {% if loop.index > lendersByColumn and loop.index <= 2 * lendersByColumn %}
                                         <div>
                                             <label>
-                                                <input type="checkbox" name="visibility[]" value="{{ lender.idCompany }}"
+                                                <input type="checkbox" name="visibility[]" value="{{ lender.idCompany }}" class="visibility-bank{% if 'CA ' == lender.name|slice(0, 3) %} visibility-bank-crca{% endif %}"
                                                     {% if lender.idCompany in visibility %} checked{% endif %}
                                                     {% if
                                                         false == isEditable
@@ -339,7 +350,7 @@
                                     {% if loop.index > 2 * lendersByColumn %}
                                         <div>
                                             <label>
-                                                <input type="checkbox" name="visibility[]" value="{{ lender.idCompany }}"
+                                                <input type="checkbox" name="visibility[]" value="{{ lender.idCompany }}" class="visibility-bank{% if 'CA ' == lender.name|slice(0, 3) %} visibility-bank-crca{% endif %}"
                                                     {% if lender.idCompany in visibility %} checked{% endif %}
                                                     {% if
                                                         false == isEditable
@@ -559,6 +570,14 @@
                 ],
                 emptytext: 'Non'
             }))
+
+            $('#visibility-all').on('change', function () {
+                $('.visibility-bank').not(':disabled').prop('checked', $(this).is(':checked'))
+            })
+
+            $('#visibility-crca').on('change', function () {
+                $('.visibility-bank-crca').not(':disabled').prop('checked', $(this).is(':checked'))
+            })
 
             var $chatForm = $('#chat-form')
             var $textarea = $chatForm.find('textarea')

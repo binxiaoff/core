@@ -96,7 +96,7 @@
                 </div>
                 <div class="panel-content">
                     <div class="row margin-20-t">
-                        <div class="col-lg-8 col-md-8 col-sm-8">
+                        <div class="{% if projectAttachments|length %}col-lg-8 col-md-8 col-sm-8{% endif %}">
                             <div class="row">
                                 <div class="col-lg-6 col-md-6 col-sm-6">
                                     <h5>Date de dépôt</h5>
@@ -108,7 +108,6 @@
                                     {{ project.amount|localizednumber }}&nbsp;€
                                 </div>
                             </div>
-
                             <div class="row">
                                 <div class="col-lg-6 col-md-6 col-sm-6">
                                     <h5>Maturité</h5>
@@ -120,7 +119,6 @@
                                     {{ ('product-name_' ~ product.idRepaymentType.label)|trans }}
                                 </div>
                             </div>
-
                             <div class="row">
                                 <div class="col-lg-6 col-md-6 col-sm-6">
                                     <h5>Participants</h5>
@@ -135,71 +133,22 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col-lg-4 col-md-4">
-                            <h5>Documents</h5>
-                            <div class="row">
-                                <div class="col-lg-10 col-md-10 col-sm-10">
-                                    <strong>Tout télécharger</strong>
+                        {% if projectAttachments|length %}
+                            <div class="col-lg-4 col-md-4">
+                                <h5>Documents</h5>
+                                <div class="row">
+                                    <strong><a href="#">Tout télécharger</a></strong>
                                 </div>
-                                <div class="col-lg-2 col-md-2 col-sm-2">
-                                    <a href="#"><span class="icon fa-file-zip-o"></span></a>
-                                </div>
+                                {% for projectAttachment in projectAttachments %}
+                                    <div class="row">
+                                        <span class="icon fa-file-u"></span>
+                                        <a href="{{ path('demo_project_document', {'hash': project.hash, 'idProjectAttachment': projectAttachment.id}) }}">
+                                            {{ projectAttachment.attachment.originalName }}
+                                        </a>
+                                    </div>
+                                {% endfor %}
                             </div>
-
-                            <div class="row">
-                                <div class="col-lg-10 col-md-10 col-sm-10">
-                                    KBIS
-                                </div>
-                                <div class="col-lg-2 col-md-2 col-sm-2">
-                                    <a href="#"><span class="icon fa-file-pdf-o"></span></a>
-                                </div>
-                            </div>
-
-                            <div class="row">
-                                <div class="col-lg-10 col-md-10 col-sm-10">
-                                    RIB
-                                </div>
-                                <div class="col-lg-2 col-md-2 col-sm-2">
-                                    <a href="#"><span class="icon fa-file-excel-o"></span></a>
-                                </div>
-                            </div>
-
-                            <div class="row">
-                                <div class="col-lg-10 col-md-10 col-sm-10">
-                                    CNI
-                                </div>
-                                <div class="col-lg-2 col-md-2 col-sm-2">
-                                    <a href="#"><span class="icon fa-file-word-o"></span></a>
-                                </div>
-                            </div>
-
-                            <div class="row">
-                                <div class="col-lg-10 col-md-10 col-sm-10">
-                                    Dernier rapport CAC
-                                </div>
-                                <div class="col-lg-2 col-md-2 col-sm-2">
-                                    <a href="#"><span class="icon fa-file-image-o"></span></a>
-                                </div>
-                            </div>
-
-                            <div class="row">
-                                <div class="col-lg-10 col-md-10 col-sm-10">
-                                    Liasse fiscale
-                                </div>
-                                <div class="col-lg-2 col-md-2 col-sm-2">
-                                    <a href="#"><span class="icon fa-file-pdf-o"></span></a>
-                                </div>
-                            </div>
-
-                            <div class="row">
-                                <div class="col-lg-10 col-md-10 col-sm-10">
-                                    Relevé de compte bancaire
-                                </div>
-                                <div class="col-lg-2 col-md-2 col-sm-2">
-                                    <a href="#"><span class="icon fa-file-pdf-o"></span></a>
-                                </div>
-                            </div>
-                        </div>
+                        {% endif %}
                     </div>
                 </div>
             </div>
