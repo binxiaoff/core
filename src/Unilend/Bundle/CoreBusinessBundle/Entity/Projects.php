@@ -1754,6 +1754,22 @@ class Projects
     }
 
     /**
+     * @return array
+     */
+    public function getLenders(): array
+    {
+        $lenders = [];
+
+        foreach ($this->getProjectParticipants() as $projectParticipant) {
+            if ($projectParticipant->hasRole(ProjectParticipant::COMPANY_ROLE_LENDER)) {
+                $lenders[] = $projectParticipant->getCompany();
+            }
+        }
+
+        return $lenders;
+    }
+
+    /**
      * @param string $role
      *
      * @return ProjectParticipant|null

@@ -17,7 +17,15 @@
                                 <a href="{{ path('demo_loans') }}">{{ app.user.initials }}</a>
                             </div><!-- /.profile-avatar -->
 
+                            <a href="javascript:;" class="profile-notifications" data-usernotificationsdrop>
+                                <span data-usernotifications-unreadcount></span>
+                            </a><!-- /.profile-notifications -->
+
                             <div class="profile-name">Bonjour {{ app.user.getPrenom() }}</div>
+
+                            <div class="profile-balance">
+                                {{ app.user.company.name }}
+                            </div><!-- /.profile-balance -->
 
                             <a href="{{ path('logout') }}" class="profile-logout link"><span class="label">Se déconnecter</span></a>
 

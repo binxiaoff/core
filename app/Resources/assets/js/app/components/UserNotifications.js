@@ -529,7 +529,7 @@ var UserNotifications = window.UserNotifications = {
 
     // String/number match on the ID
     for (var i = 0; i < UserNotifications.collection.length; i++) {
-      if (UserNotifications.collection[i].id === id) {
+      if (UserNotifications.collection[i].id == id) {
         return UserNotifications.collection[i]
       }
     }
