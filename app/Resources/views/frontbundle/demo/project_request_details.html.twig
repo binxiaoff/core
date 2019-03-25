@@ -462,6 +462,13 @@
                     </div><!-- /.ui-template-definition -->
                 </div>
             </article><!-- /.dashboard-tab-pane -->
+            <article class="dashboard-tab-pane margin-20-t" id="article-bid">
+                <div class="panel">
+                    <div class="panel-content">
+                        {% include ':frontbundle/demo/partials/bids:bids_list.html.twig' with {bids: project.bids} %}
+                    </div><!-- /.project-single-content -->
+                </div>
+            </article><!-- /.dashboard-tab-pane -->
             <article class="dashboard-tab-pane margin-20-t" id="article-discussions">
                 <div class="panel" style="font-size: 16px;">
                     <h4 class="h4">Discussions</h4>
@@ -542,6 +549,7 @@
 {% block pageScripts %}
     <script src="{{ asset('js/vendor/jquery.poshytip.min.js', 'gulp') }}"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/x-editable/1.5.0/jquery-editable/js/jquery-editable-poshytip.js"></script>
+    <script>{% include ':frontbundle/demo/partials/bids:actions.js.twig' %}</script>
     <script>
         $(function () {
             $.fn.editable.defaults.mode = 'inline'

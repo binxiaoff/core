@@ -35,6 +35,7 @@
 {% block pageScripts %}
     <script>
         {% include ':frontbundle/demo/partials/fees:fees.js.twig' %}
+        {% include ':frontbundle/demo/partials/bids:actions.js.twig' %}
     </script>
 {% endblock %}
 
@@ -115,14 +116,14 @@
         <article id="project-single" class="project-single dashboard-tab-pane{% if false == project.isOnline %} ui-project-expired{% endif %}">
             <div class="panel">
                 <div class="panel-content">
-                    {% include ':frontbundle/demo/project:my_bid.html.twig' %}
+                    {% include ':frontbundle/demo/partials/bids:my_bid.html.twig' %}
                 </div><!-- /.project-single-content -->
             </div><!-- /.project-single-content -->
         </article>
         <article id="project-single" class="project-single dashboard-tab-pane{% if false == project.isOnline %} ui-project-expired{% endif %}">
             <div class="panel">
                 <div class="panel-content">
-                    {% include ':frontbundle/demo/project:bids_list.html.twig' %}
+                    {% include ':frontbundle/demo/partials/bids:bids_list.html.twig' %}
                 </div><!-- /.project-single-content -->
             </div><!-- /.project-single-content -->
         </article>

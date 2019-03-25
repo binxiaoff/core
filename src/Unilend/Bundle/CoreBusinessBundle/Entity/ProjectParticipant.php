@@ -49,7 +49,7 @@ class ProjectParticipant
     /**
      * @var Companies
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Companies")
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Companies", inversedBy="projectParticipants")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="id_company", referencedColumnName="id_company", nullable=false)
      * })
@@ -102,5 +102,10 @@ class ProjectParticipant
         $this->company = $company;
 
         return $this;
+    }
+
+    public function isArranger(): bool
+    {
+        return in_array(self::COMPANY_ROLE_ARRANGER, $this->getRoles());
     }
 }

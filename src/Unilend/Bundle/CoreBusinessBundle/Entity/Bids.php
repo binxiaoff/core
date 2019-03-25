@@ -4,7 +4,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Traits\{Lendable, Timestampable};
+use Unilend\Bundle\CoreBusinessBundle\Entity\Traits\{ConstantsAware, Lendable, Timestampable};
 
 /**
  * Bids
@@ -18,6 +18,7 @@ class Bids
 {
     use Lendable;
     use Timestampable;
+    use ConstantsAware;
 
     const STATUS_PENDING                      = 0;
     const STATUS_ACCEPTED                     = 1;
@@ -190,5 +191,12 @@ class Bids
 
         return $totalFeeRate;
     }
-    
+
+    /**
+     * @return array
+     */
+    public function getAllStatus(): array
+    {
+        return self::getConstants('STATUS_');
+    }
 }

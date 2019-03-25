@@ -1,0 +1,34 @@
+<table class="table-myoffers">
+    <tbody>
+    <tr class="my-offers-bid-row">
+        <td>Prêteur</td>
+        <td>Taux de référence</td>
+        <td>Taux de référence</td>
+        <td>Marge</td>
+        <td>Commission ponctuelle</td>
+        <td>Commission récurrente</td>
+        <td>Je souhaite être agent</td>
+        {% if isArranger is defined and isArranger == true and displayAction == true %}
+            <td></td>
+        {% endif %}
+    </tr>
+    {% for offer in bids %}
+        <tr>
+            <td>{{ offer.wallet.idClient.company.name }}</td>
+            <td>{{ (offer.amount / 100)|localizednumber }}&nbsp;€</td>
+            <td>{{ ('interest-rate-index_' ~ offer.rate.indexType)|trans }}</td>
+            <td>{{ offer.rate.margin|localizednumberwithprecision(2) }}&nbsp;%</td>
+            <td>{{ offer.oneTimeFeeTotalRate|localizednumberwithprecision(2) }}
+                &nbsp;%{% if offer.recurringFeeTotalRate > 0 %}&nbsp;(soit {{ (offer.recurringFeeTotalRate * (offer.amount / 100) / 100)|localizedcurrency('EUR') }}){% endif %}</td>
+            <td>{{ offer.recurringFeeTotalRate|localizednumberwithprecision(2) }}&nbsp;%</td>
+            <td>{% if offer.isAgent %} Oui {% else %} Non {% endif %}</td>
+            {% if isArranger is defined and isArranger == true and displayAction == true %}
+                <td>
+                    <button class="btn-default btn-shape-xxs ui-spinnerbutton" data-action="refuse-bid" data-bid-id="{{ offer.idBid }}">Refuser</button>
+                    <button class="btn-primary btn-shape-xxs ui-spinnerbutton margin-10-t" data-action="accept-bid" data-bid-id="{{ offer.idBid }}">Accepter</button>
+                </td>
+            {% endif %}
+        </tr>
+    {% endfor %}
+    </tbody>
+</table><!-- /.table-myoffers -->
