@@ -4,6 +4,7 @@
     id: 'demo-project-details',
     classNames: ''
 } %}
+
 {% block pageHeadScripts %}
     <style>
         .bubble {
@@ -76,14 +77,14 @@
 
                                 <div class="col-lg-6 col-md-6 col-sm-6">
                                     <h5>Type de financement</h5>
-                                    {{ ('product-name_' ~ product.idRepaymentType.label)|trans }}
+                                    {{ ('product-name_' ~ product.label)|trans }}
                                 </div>
                             </div>
                             <div class="row">
                                 <div class="col-lg-6 col-md-6 col-sm-6">
                                     <h5>Participants</h5>
-                                    <div>Arrangeur : {% if arranger.0 is defined %} {{ arranger.0.company.name }} {% else %} pas défini {% endif %}</div>
-                                    <div>RUN : {% if run.0 is defined %} {{ run.0.company.name }} {% else %} pas défini {% endif %}</div>
+                                    <div>Arrangeur : {% if arranger.0 is defined %} {{ arranger.0.company.name }} {% else %} non défini {% endif %}</div>
+                                    <div>RUN : {% if run.0 is defined %} {{ run.0.company.name }} {% else %} non défini {% endif %}</div>
                                 </div>
 
                                 <div class="col-lg-6 col-md-6 col-sm-6">
