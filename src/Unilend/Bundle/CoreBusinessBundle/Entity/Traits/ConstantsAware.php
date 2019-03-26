@@ -2,10 +2,14 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Entity\Traits;
 
-
 trait ConstantsAware
 {
-    private static function getConstants($prefix = null)
+    /**
+     * @param string|null $prefix
+     *
+     * @return array
+     */
+    private static function getConstants(?string $prefix = null): array
     {
         try {
             $self      = new \ReflectionClass(__CLASS__);
@@ -14,7 +18,7 @@ trait ConstantsAware
             return [];
         }
 
-        if ($constants && $prefix) {
+        if ($constants && null !== $prefix) {
             $constants = array_filter(
                 $constants,
                 function($key) use ($prefix) {

@@ -387,7 +387,7 @@ class DemoController extends AbstractController
             'isEditable'                => $projectManager->isEditable($project),
             'isProjectScoringEditable'  => $projectManager->isProjectScoringEditable($project, $user),
             'isBorrowerScoringEditable' => $projectManager->isBorrowerScoringEditable($project, $user),
-            'isArranger'                => $user->getCompany()->isArranger($project)
+            'canChangeBidStatus'        => true
         ];
 
         return $this->render(':frontbundle/demo:project_request_details.html.twig', $template);

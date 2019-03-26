@@ -2,13 +2,13 @@
     <tbody>
     <tr class="my-offers-bid-row">
         <td>Prêteur</td>
-        <td>Taux de référence</td>
+        <td>Montant</td>
         <td>Taux de référence</td>
         <td>Marge</td>
         <td>Commission ponctuelle</td>
         <td>Commission récurrente</td>
         <td>Je souhaite être agent</td>
-        {% if isArranger is defined and isArranger == true and displayAction == true %}
+        {% if canChangeBidStatus is defined and canChangeBidStatus == true and displayAction == true %}
             <td></td>
         {% endif %}
     </tr>
@@ -22,7 +22,7 @@
                 &nbsp;%{% if offer.recurringFeeTotalRate > 0 %}&nbsp;(soit {{ (offer.recurringFeeTotalRate * (offer.amount / 100) / 100)|localizedcurrency('EUR') }}){% endif %}</td>
             <td>{{ offer.recurringFeeTotalRate|localizednumberwithprecision(2) }}&nbsp;%</td>
             <td>{% if offer.isAgent %} Oui {% else %} Non {% endif %}</td>
-            {% if isArranger is defined and isArranger == true and displayAction == true %}
+            {% if canChangeBidStatus is defined and canChangeBidStatus == true and displayAction == true %}
                 <td>
                     <button class="btn-default btn-shape-xxs ui-spinnerbutton" data-action="refuse-bid" data-bid-id="{{ offer.idBid }}">Refuser</button>
                     <button class="btn-primary btn-shape-xxs ui-spinnerbutton margin-10-t" data-action="accept-bid" data-bid-id="{{ offer.idBid }}">Accepter</button>

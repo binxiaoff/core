@@ -1803,7 +1803,7 @@ class Projects
     }
 
     /**
-     * @param int $status
+     * @param int|null $status
      *
      * @return Bids[]|ArrayCollection
      */
@@ -1814,6 +1814,7 @@ class Projects
         if (null !== $status) {
             $criteria->where(Criteria::expr()->eq('status', $status));
         }
+
         return $this->bids->matching($criteria);
     }
 
