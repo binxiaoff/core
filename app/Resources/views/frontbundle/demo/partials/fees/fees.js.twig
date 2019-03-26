@@ -27,12 +27,12 @@ $collectionHolder.append($buttons);
 
 $collectionHolder.data('index', $collectionHolder.find(':input').length);
 
-$addFeeButton.on('click', function () {
+$addFeeButton.find('a').on('click', function () {
     addFeeForm($collectionHolder, $buttons, $validFeeButton);
 });
 
 {% if project is defined %}
-$validFeeButton.on('click', function () {
+$validFeeButton.find('button').on('click', function () {
     console.log($collectionHolder.find(':input').serialize());
     $.ajax({
         url: '{{ path('demo_add_project_fees', {hash: project.hash}) }}',
