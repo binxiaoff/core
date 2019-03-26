@@ -7,7 +7,7 @@
         </div><!-- /.section-tabs-nav -->
         <div class="section-tabs-content tab-content">
             <div id="myoffers-inprogress" role="tabpanel" class="tab-pane active" aria-labelledby="project-myoffers-inprogress project-myoffers">
-                {% if bid.idBid %}
+                {% if bid is not empty and bid.idBid %}
                     <table class="table-myoffers">
                         <tbody>
                         <tr class="my-offers-bid-row">

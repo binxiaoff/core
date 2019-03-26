@@ -15,6 +15,7 @@
     {insee: '52', name: 'Pays de la Loire', value: 7},
     {insee: '93', name: 'Provence-Alpes-Côte d\'Azur', value: 15}
 ] %}
+
 {% set walletRegionChartData = {
     type: 'preterProjectsCategoriesMap',
     loadFirst: {
@@ -46,7 +47,7 @@
             borderColor: 'rgba(0,0,0,.2)',
             borderWidth: 2,
             dataLabels: {
-                color: '#ffffff'
+                color: '#787679'
             },
             nullColor: 'rgba(0,0,0,.1)',
             states: {
@@ -58,17 +59,13 @@
     }
 } %}
 
-<article class="dashboard-panel dashboard-mywallet ui-draggable ui-dashboard-panel col-lg-12 col-md-12 col-sm-8 col-xs-4">
+<article class="dashboard-panel ui-draggable ui-dashboard-panel col-lg-6 col-md-6 col-sm-6 col-xs-4">
     <header class="dashboard-panel-header">
-        <h3 class="dashboard-panel-title">Répartition régional</h3>
-        <div class="dashboard-panel-controls">
-            <span class="ui-draggable-handle"></span>
-            <a href="javascript:;" class="btn-close"><span class="sr-only">Masquer le message</span></a>
-        </div>
+        <h3 class="dashboard-panel-title">Répartition régionale</h3>
     </header>
-    <div class="dashboard-panel-content">
+    <div class="dashboard-panel-content" style="height: 440px;">
         <div class="row tabs">
-            <div class="dashboard-mywallet-content tab-content">
+            <div class="tab-content">
                 <div id="mywallet-sectors" role="tabpanel" class="tab-pane active">
                     <div class="row">
                         <div class="col-graph">
@@ -79,6 +76,4 @@
             </div>
         </div>
     </div>
-    <footer class="dashboard-panel-footer">
-    </footer>
 </article>

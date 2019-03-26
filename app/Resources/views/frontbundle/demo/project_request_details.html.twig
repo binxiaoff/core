@@ -188,7 +188,7 @@
                         <div class="panel-content">
                             <ul>
                                 <li><a href="#article-scoring">Notations</a></li>
-                                <li><a href="#article-fees">Commissions</a></li>
+                                <li><a href="#article-fees">Frais / commissions</a></li>
                                 <li><a href="#article-visibility">Visibilité</a></li>
                                 <li><a href="#article-documents">Documents</a></li>
                                 <li><a href="#article-discussions">Discussions</a></li>
@@ -297,7 +297,7 @@
             </article><!-- /.dashboard-tab-pane -->
             <article class="dashboard-tab-pane margin-20-t" id="article-fees">
                 <div class="panel fees">
-                    <h4 class="h4">Frais / Commissions</h4>
+                    <h4 class="h4">Frais / commissions</h4>
                     {% if project.projectPercentFees is not empty %}
                         <table class="table-myoffers">
                             <tbody>
@@ -401,9 +401,11 @@
                                 {% endfor %}
                             </div>
                         </div>
-                        <div class="text-align-right">
-                            <button type="submit" class="btn-primary btn-shape-xs" data-spinnerbutton>Modifier la visibilité</button>
-                        </div>
+                        {% if isEditable %}
+                            <div class="text-align-right">
+                                <button type="submit" class="btn-primary btn-shape-xs" data-spinnerbutton>Modifier la visibilité</button>
+                            </div>
+                       {% endif %}
                     </form>
                 </div>
             </article><!-- /.dashboard-tab-pane -->

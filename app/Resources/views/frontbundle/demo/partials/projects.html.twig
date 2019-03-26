@@ -74,7 +74,8 @@
                                         data-sortable-partner="{{ ('partner-name_bubble-' ~ project.idPartner.label)|trans }}"
                                         data-sortable-title="{{ project.idCompany.name|e('html_attr') }}"
                                         data-sortable-amount="{{ project.amount }}"
-                                        data-sortable-duration="{{ project.period / 12 }}">
+                                        data-sortable-duration="{{ project.period / 12 }}"
+                                        data-row-url="{{ path('demo_project_details', {'hash': project.hash}) }}">
                                         <td class="table-projects-item-partner">
                                             {% include ':frontbundle/demo/partials:bubble.html.twig' with {'partner': project.idPartner.label} %}
                                         </td>

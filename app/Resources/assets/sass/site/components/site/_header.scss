@@ -100,7 +100,7 @@
   background-color: transparent;
   background-image: url('../images/logo/logo-and-type-209x44.png');
   background-repeat: no-repeat;
-  background-position: left top;
+  background-position: left 10px;
   line-height: $height;
   text-align: left;
   text-indent: -9999em;
@@ -130,21 +130,23 @@
 @mixin site-logo-fixed {
   $width: 65px;
   $height: 65px;
+  $width: 209px;
+  $height: 44px;
 
   display: inline-block;
   width: $width;
   height: $height;
 
   background-color: transparent;
-  background-image: url('../images/logo/logo-65x65-white.png');
+  background-image: url('../images/logo/logo-and-type-209x44.png');
   background-repeat: no-repeat;
-  background-position: left top;
+  background-position: left 10px;
   text-align: left;
   text-indent: -9999em;
   vertical-align: top;
 
   @include retina {
-    background-image: url('../images/logo/logo-65x65-white@2x.png');
+    background-image: url('../images/logo/logo-and-type-209x44@2x.png');
     background-size: contain;
   }
 }

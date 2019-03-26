@@ -51,23 +51,33 @@ class DemoController extends AbstractController
     public function loans(?UserInterface $user): Response
     {
         $template = [
-            'projects' => [
-                'borrower'  => [],
-                'submitter' => [],
-                'lender'    => []
-            ]
+            'projects' => []
         ];
 
         $projectRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
 
-        if ($user->isBorrower()) {
-            // @todo define criteria for recovering projects
-            $template['projects']['borrower'] = $this->groupByStatusAndSort($projectRepository->findBy(['idCompany' => $user->getCompany()]));
+        if ($user->isBorrower() || $user->isPartner()) {
+            $template['projects']['borrower'] = $this->groupByStatusAndSort($projectRepository->createQueryBuilder('p')
+                ->distinct()
+                ->where('p.idCompany = :userCompany')
+                ->orWhere('p.idCompanySubmitter = :userCompany')
+                ->setParameter('userCompany', $user->getCompany())
+                ->getQuery()
+                ->getResult()
+            );
         }
 
-        if ($user->isPartner()) {
-            // @todo define criteria for recovering projects
-            $template['projects']['submitter'] = $this->groupByStatusAndSort($projectRepository->findBy(['idCompanySubmitter' => $user->getCompany()]));
+        if ($user->isBorrower() || $user->isPartner()) {
+            $template['projects']['submitter'] = $this->groupByStatusAndSort($projectRepository->createQueryBuilder('p')
+                ->distinct()
+                ->innerJoin('p.projectParticipants', 'pp')
+                ->where('pp.company = :userCompany')
+                ->andWhere('JSON_CONTAINS(pp.roles, :roleArranger) = 1 OR JSON_CONTAINS(pp.roles, :roleRun) = 1')
+                ->setParameter('userCompany', $user->getCompany())
+                ->setParameter('roleArranger', json_encode([ProjectParticipant::COMPANY_ROLE_ARRANGER]))
+                ->setParameter('roleRun', json_encode([ProjectParticipant::COMPANY_ROLE_RUN]))
+                ->getQuery()
+                ->getResult());
         }
 
         if ($user->isLender()) {
@@ -928,7 +938,7 @@ class DemoController extends AbstractController
         $arranger = $projectParticipantRepository->findByProjectAndRole($project, ProjectParticipant::COMPANY_ROLE_ARRANGER);
         $run      = $projectParticipantRepository->findByProjectAndRole($project, ProjectParticipant::COMPANY_ROLE_RUN);
 
-        if (null === $bid) {
+        if (null === $bid && $wallet) {
             $bid = new Bids();
             $bid->setProject($project)
                 ->setWallet($wallet)
