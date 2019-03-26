@@ -276,18 +276,18 @@ class DemoController extends AbstractController
                 $project->addRun($run);
             }
 
-           foreach ($projectPercentFees as $fee) {
-               $percentFee = new PercentFee();
-               $type = $this->entityManager->getRepository(FeeType::class)->find($fee['percentFee']['type']);
-               $percentFee->setType($type)
-                   ->setRate(str_replace(',', '.', $fee['percentFee']['rate']))
-                   ->setIsRecurring((bool) empty($fee['percentFee']['isRecurring']) ? false : $fee['percentFee']['isRecurring']);
+            foreach ($projectPercentFees as $fee) {
+                $percentFee = new PercentFee();
+                $type       = $this->entityManager->getRepository(FeeType::class)->find($fee['percentFee']['type']);
+                $percentFee->setType($type)
+                    ->setRate(str_replace(',', '.', $fee['percentFee']['rate']))
+                    ->setIsRecurring((bool) empty($fee['percentFee']['isRecurring']) ? false : $fee['percentFee']['isRecurring']);
 
-               $projectPercentFee = new ProjectPercentFee();
-               $projectPercentFee->setPercentFee($percentFee);
+                $projectPercentFee = new ProjectPercentFee();
+                $projectPercentFee->setPercentFee($percentFee);
 
-               $project->addProjectPercentFee($projectPercentFee);
-           }
+                $project->addProjectPercentFee($projectPercentFee);
+            }
 
             $this->entityManager->persist($project);
             $this->entityManager->flush($project);
@@ -386,7 +386,8 @@ class DemoController extends AbstractController
             'projectAttachments'        => $projectAttachmentRepository->findBy(['idProject' => $project], ['added' => 'DESC']),
             'isEditable'                => $projectManager->isEditable($project),
             'isProjectScoringEditable'  => $projectManager->isProjectScoringEditable($project, $user),
-            'isBorrowerScoringEditable' => $projectManager->isBorrowerScoringEditable($project, $user)
+            'isBorrowerScoringEditable' => $projectManager->isBorrowerScoringEditable($project, $user),
+            'canChangeBidStatus'        => true
         ];
 
         return $this->render(':frontbundle/demo:project_request_details.html.twig', $template);
@@ -896,7 +897,7 @@ class DemoController extends AbstractController
     }
 
     /**
-     * @Route("/projets/detail/{slug}", name="demo_lender_project_details")
+     * @Route("/projets/details/lender/{slug}", name="demo_lender_project_details")
      *
      * @param string                       $slug
      * @param UserInterface|Clients|null   $client
@@ -906,7 +907,7 @@ class DemoController extends AbstractController
      *
      * @return Response
      */
-    public function projectDetail(
+    public function projectDetailsForLender(
         string $slug,
         ?UserInterface $client,
         Request $request,
@@ -920,10 +921,8 @@ class DemoController extends AbstractController
             return $this->redirectToRoute('demo_projects_list');
         }
 
-        $wallet  = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
-        $bid     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Bids')->findOneBy(['wallet' => $wallet, 'project' => $project, 'status' => [Bids::STATUS_PENDING, Bids::STATUS_ACCEPTED]]);
-        /** @var Bids[] $bids */
-        $bids     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Bids')->findBy(['project' => $project, 'status' => [Bids::STATUS_PENDING, Bids::STATUS_ACCEPTED]]);
+        $wallet   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
+        $bid      = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Bids')->findOneBy(['wallet' => $wallet, 'project' => $project, 'status' => [Bids::STATUS_PENDING, Bids::STATUS_ACCEPTED]]);
         $product  = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Product')->find($project->getIdProduct());
         $form     = null;
         $arranger = $projectParticipantRepository->findByProjectAndRole($project, ProjectParticipant::COMPANY_ROLE_ARRANGER);
@@ -949,7 +948,6 @@ class DemoController extends AbstractController
             'project'            => $project,
             'wallet'             => $wallet,
             'bid'                => $bid,
-            'bids'               => $bids,
             'product'            => $product,
             'arranger'           => $arranger,
             'run'                => $run,
@@ -959,18 +957,24 @@ class DemoController extends AbstractController
     }
 
     /**
-     * @Route("/projets/detail/bid/cancel/{bid}", name="demo_project_details_bid_cancellation")
+     * @Route("/bid/change/status", name="demo_change_bid_status")
      *
-     * @param Bids $bid
+     * @param Request $request
      *
-     * @return RedirectResponse
+     * @return JsonResponse
      */
-    public function cancelBid(Bids $bid): RedirectResponse
+    public function changeBidStatus(Request $request): JsonResponse
     {
-        $bid->setStatus(Bids::STATUS_REJECTED);
-        $this->entityManager->flush();
+        $bidId  = $request->request->get('bid');
+        $status = $request->request->get('status');
+        $bid    = $this->entityManager->getRepository(Bids::class)->find($bidId);
 
-        return $this->redirectToRoute('demo_lender_project_details', ['slug' => $bid->getProject()->getSlug()]);
+        if ($bid && in_array($status, $bid->getAllStatus())) {
+            $bid->setStatus($status);
+            $this->entityManager->flush();
+        }
+
+        return $this->json('OK');
     }
 
     /**

@@ -18,7 +18,9 @@
                             <td>Commission ponctuelle</td>
                             <td>Commission récurrente</td>
                             <td>Je souhaite être agent</td>
-                            <td></td>
+                            {% if bid.status == constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Bids::STATUS_PENDING') %}
+                                <td></td>
+                            {% endif %}
                         </tr>
                         <tr>
                             <td>{% if bid.status == 0 %} En cours {% elseif bid.status == 1 %} Accepté {% else %} Refusé {% endif %}</td>
@@ -26,9 +28,16 @@
                             <td>{{ ('interest-rate-index_' ~ bid.rate.indexType)|trans }}</td>
                             <td>{{ bid.rate.margin|localizednumberwithprecision(2) }}&nbsp;%</td>
                             <td>{{ bid.oneTimeFeeTotalRate|localizednumberwithprecision(2) }}&nbsp;%</td>
-                            <td>{{ bid.recurringFeeTotalRate|localizednumberwithprecision(2) }}&nbsp;%{% if bid.recurringFeeTotalRate > 0%}&nbsp;(soit {{ (bid.recurringFeeTotalRate * (bid.amount / 100) / 100)|localizedcurrency('EUR') }}){% endif %}</td>
+                            <td>{{ bid.recurringFeeTotalRate|localizednumberwithprecision(2) }}
+                                &nbsp;%{% if bid.recurringFeeTotalRate > 0 %}&nbsp;(soit {{ (bid.recurringFeeTotalRate * (bid.amount / 100) / 100)|localizedcurrency('EUR') }}){% endif %}</td>
                             <td>{% if bid.isAgent %} Oui {% else %} Non {% endif %}</td>
-                            <td><a href="{{ path('demo_project_details_bid_cancellation', {'bid': bid.idBid}) }}">Annuler</a></td>
+                            <td>
+                                {% if bid.status == constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Bids::STATUS_PENDING') %}
+                                    <button class="btn-default btn-shape-xxs ui-spinnerbutton" data-action="refuse-bid" data-bid-id="{{ bid.idBid }}">
+                                        Annuler
+                                    </button>
+                                {% endif %}
+                            </td>
                         </tr>
                         </tbody>
                     </table><!-- /.table-myoffers -->

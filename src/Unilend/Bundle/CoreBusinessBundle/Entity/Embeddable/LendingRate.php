@@ -5,12 +5,15 @@ namespace Unilend\Bundle\CoreBusinessBundle\Entity\Embeddable;
 
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Traits\ConstantsAware;
 
 /**
  * @ORM\Embeddable
  */
 class LendingRate
 {
+    use ConstantsAware;
+
     const INDEX_FIXED   = 'FIXED';
     const INDEX_EURIBOR = 'EURIBOR';
     const INDEX_EONIA   = 'EONIA';
@@ -83,23 +86,11 @@ class LendingRate
         return $this;
     }
 
-    public static function getIndexes()
+    /**
+     * @return array
+     */
+    public static function getIndexes(): array
     {
-        try {
-            $self      = new \ReflectionClass(__CLASS__);
-            $constants = $self->getConstants();
-        } catch (\ReflectionException $exception) {
-            return [];
-        }
-        $indexPrefix = 'INDEX_';
-        $indexes     = array_filter(
-            $constants,
-            function($key) use ($indexPrefix) {
-                return $indexPrefix === substr($key, 0, strlen($indexPrefix));
-            },
-            ARRAY_FILTER_USE_KEY
-        );
-
-        return $indexes;
+        return self::getConstants('INDEX_');
     }
 }

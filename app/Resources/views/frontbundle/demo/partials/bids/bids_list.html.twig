@@ -1,0 +1,33 @@
+{% set pendingBids = project.bids(constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Bids::STATUS_PENDING')) %}
+{% set acceptedBids = project.bids(constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Bids::STATUS_ACCEPTED')) %}
+{% set refusedBids = project.bids(constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Bids::STATUS_REJECTED')) %}
+
+<section id="project-section-myoffers">
+    <div class="tabs">
+        <div class="section-tabs-nav">
+            <header>
+                <h3 id="project-myoffers" class="h3">Offres de participation</h3>
+            </header>
+        </div><!-- /.section-tabs-nav -->
+        <div class="section-tabs-content tab-content">
+            <div id="myoffers-inprogress" role="tabpanel" class="tab-pane active" aria-labelledby="project-myoffers-inprogress project-myoffers">
+                {% if pendingBids|length > 0 %}
+                    <h4 class="h4">En cours</h4>
+                    {% include ':frontbundle/demo/partials/bids:bids_table.html.twig' with {bids: pendingBids, displayAction: true} %}
+                {% else %}
+                    Aucune offre n‘est en cours pour le moment
+                {% endif %}
+
+                {% if acceptedBids|length > 0 %}
+                    <h4 class="h4 margin-20-t">Acceptés</h4>
+                    {% include ':frontbundle/demo/partials/bids:bids_table.html.twig' with {bids: acceptedBids, displayAction: false} %}
+                {% endif %}
+
+                {% if refusedBids|length > 0 %}
+                    <h4 class="h4 margin-20-t">Refusés</h4>
+                    {% include ':frontbundle/demo/partials/bids:bids_table.html.twig' with {bids: refusedBids, displayAction: false} %}
+                {% endif %}
+            </div><!-- /.tab-pane -->
+        </div><!-- /.section-tabs-content -->
+    </div><!-- /tabs -->
+</section><!-- /.page-section -->

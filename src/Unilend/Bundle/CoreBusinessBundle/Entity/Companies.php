@@ -316,9 +316,17 @@ class Companies
      */
     private $staff;
 
+    /**
+     * @var ProjectParticipant[]
+     *
+     * @ORM\OneToMany(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\ProjectParticipant", mappedBy="company", cascade={"persist"}, orphanRemoval=true)
+     */
+    private $projectParticipants;
+
     public function __construct()
     {
-        $this->staff = new ArrayCollection();
+        $this->staff               = new ArrayCollection();
+        $this->projectParticipants = new ArrayCollection();
     }
 
     /**
@@ -1412,5 +1420,35 @@ class Companies
         $this->staff->removeElement($staff);
 
         return $this;
+    }
+
+    /**
+     * @param Projects|null $project
+     *
+     * @return ArrayCollection|ProjectParticipant[]
+     */
+    public function getProjectParticipants(?Projects $project = null): iterable
+    {
+        $criteria = new Criteria();
+        if ($project) {
+            $criteria->where(Criteria::expr()->eq('project', $project));
+        }
+
+        return $this->projectParticipants->matching($criteria);
+    }
+
+    /**
+     * @param Projects $project
+     *
+     * @return bool
+     */
+    public function isArranger(Projects $project)
+    {
+        $projectParticipant = $this->getProjectParticipants($project)->first();
+        if ($projectParticipant instanceof ProjectParticipant) {
+            return $projectParticipant->isArranger();
+        }
+
+        return false;
     }
 }

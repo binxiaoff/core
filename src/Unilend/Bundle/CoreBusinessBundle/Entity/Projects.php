@@ -1803,12 +1803,19 @@ class Projects
     }
 
     /**
+     * @param int|null $status
      *
      * @return Bids[]|ArrayCollection
      */
-    public function getBids(): iterable
+    public function getBids(?int $status = null): iterable
     {
-        return $this->bids;
+        $criteria = new Criteria();
+
+        if (null !== $status) {
+            $criteria->where(Criteria::expr()->eq('status', $status));
+        }
+
+        return $this->bids->matching($criteria);
     }
 
     /**
