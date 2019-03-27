@@ -81,7 +81,7 @@
                             <div class="row columns-with-space">
                                 <dl class="col-md-6 col-lg-6">
                                     <dt>Montant</dt>
-                                    <dd>
+                                    <dd data-fee-reference-amount>
                                         {% if isEditable %}
                                             <a href="#" id="amount" class="editable" data-type="text" data-inputclass="input-field">{{ project.amount|localizednumber }}</a>&nbsp;€
                                         {% else %}
@@ -296,7 +296,7 @@
                 </div>
             </article><!-- /.dashboard-tab-pane -->
             <article class="dashboard-tab-pane margin-20-t" id="article-fees">
-                <div class="panel fees">
+                <div class="panel">
                     <h4 class="h4">Frais / commissions</h4>
                     {% if project.projectPercentFees is not empty %}
                         <table class="table-myoffers">
@@ -305,6 +305,7 @@
                                 <td>Type</td>
                                 <td>Taux</td>
                                 <td>Récurrent</td>
+                                <td></td>
                             </tr>
                             {% for projectPercentFee in project.projectPercentFees %}
                                 <tr>
@@ -312,6 +313,7 @@
                                     <td>{{ projectPercentFee.percentFee.rate|localizednumberwithprecision(2) }}
                                         &nbsp;%{% if projectPercentFee.percentFee.isRecurring == false %}&nbsp;(soit {{ (projectPercentFee.percentFee.rate * project.amount / 100)|localizedcurrency('EUR') }}){% endif %}</td>
                                     <td>{% if projectPercentFee.percentFee.isRecurring %} Oui {% else %} Non {% endif %}</td>
+                                    <td><a href="{{ path('demo_remove_project_fees', {hash: project.hash, projectPercentFee: projectPercentFee.id}) }}">Annuler</a></td>
                                 </tr>
                             {% endfor %}
                             </tbody>
@@ -320,10 +322,8 @@
                         <div class="message-info">Vous n‘avez aucun frais associé à votre dossier.</div>
                     {% endif %}
                     <h5 class="h4 margin-20-t">Ajouter des frais ou commissions</h5>
-                    <a href="javascript:;" class="btn-default btn-shape-sq-md margin-10-t" data-action="ui-form-lending-fee-add">
-                        <span class="icon fa-plus-u16 c-t2"></span>
-                        <span class="sr-only">Ajouter un frais</span>
-                    </a>
+                    {% set feesTemplate = include(':frontbundle/demo/partials/fees:new_project_fees.html.twig') %}
+                    <div class="row row-multi-col-computer fees" data-prototype="{{ feesTemplate|e('html_attr') }}"></div>
                 </div>
             </article><!-- /.dashboard-tab-pane -->
             <article class="dashboard-tab-pane margin-20-t" id="article-visibility">
@@ -552,6 +552,7 @@
     <script src="{{ asset('js/vendor/jquery.poshytip.min.js', 'gulp') }}"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/x-editable/1.5.0/jquery-editable/js/jquery-editable-poshytip.js"></script>
     <script>{% include ':frontbundle/demo/partials/bids:actions.js.twig' %}</script>
+    <script>{% include ':frontbundle/demo/partials/fees:fees.js.twig' %}</script>
     <script>
         $(function () {
             $.fn.editable.defaults.mode = 'inline'

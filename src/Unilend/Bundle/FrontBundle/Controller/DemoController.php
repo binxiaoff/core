@@ -1058,4 +1058,56 @@ class DemoController extends AbstractController
 
         return $products;
     }
+
+    /**
+     * @param Request $request
+     * @param string  $hash
+     *
+     * @return JsonResponse
+     * @Route("/project/{hash}/fees/add", name="demo_add_project_fees", methods={"POST"}, requirements={"hash":"[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}"})
+     */
+    public function addProjectFees(Request $request, string $hash): JsonResponse
+    {
+        $projectForm        = $request->request->get('project_type');
+        $projectPercentFees = empty($projectForm['projectPercentFees']) ? [] : $projectForm['projectPercentFees'];
+
+        $project = $this->entityManager->getRepository(Projects::class)->findOneBy(['hash' => $hash]);
+
+        if ($project && is_iterable($projectPercentFees)) {
+            foreach ($projectPercentFees as $fee) {
+                $percentFee = new PercentFee();
+                $type       = $this->entityManager->getRepository(FeeType::class)->find($fee['percentFee']['type']);
+                $percentFee->setType($type)
+                    ->setRate(str_replace(',', '.', $fee['percentFee']['rate']))
+                    ->setIsRecurring((bool) empty($fee['percentFee']['isRecurring']) ? false : $fee['percentFee']['isRecurring']);
+
+                $projectPercentFee = new ProjectPercentFee();
+                $projectPercentFee->setPercentFee($percentFee);
+
+                $project->addProjectPercentFee($projectPercentFee);
+            }
+            $this->entityManager->flush();
+        }
+
+        return $this->json('OK');
+    }
+
+    /**
+     * @param string            $hash
+     * @param ProjectPercentFee $projectPercentFee
+     *
+     * @return RedirectResponse
+     * @Route("/project/{hash}/fees/remove/{projectPercentFee}", name="demo_remove_project_fees", requirements={"hash":"[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}"})
+     */
+    public function removeProjectFees(string $hash, ProjectPercentFee $projectPercentFee): RedirectResponse
+    {
+        /** @var Projects $project */
+        $project = $this->entityManager->getRepository(Projects::class)->findOneBy(['hash' => $hash]);
+        if ($project) {
+            $project->removeProjectPercentFee($projectPercentFee);
+            $this->entityManager->flush();
+        }
+
+        return $this->redirectToRoute('demo_project_details', ['hash' => $project->getHash()]);
+    }
 }

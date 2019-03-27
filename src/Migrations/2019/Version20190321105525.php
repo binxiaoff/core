@@ -14,7 +14,7 @@ final class Version20190321105525 extends AbstractMigration
 {
     public function getDescription() : string
     {
-        return '';
+        return 'CALS-64 commission';
     }
 
     public function up(Schema $schema) : void
