@@ -20,7 +20,7 @@
     "ext-openssl": "^7.1",
     "ext-pdo": "*",
     "alcaeus/mongo-php-adapter": "^1.1",
-    "azuyalabs/yasumi": "^1.8",
+    "azuyalabs/yasumi": "^2.0",
     "beberlei/doctrineextensions": "^1.0",
     "box/spout": "^2.7",
     "cache/adapter-bundle": "^1.1",
@@ -31,16 +31,16 @@
     "ekino/newrelic-bundle": "^2.0",
     "facile-it/doctrine-mysql-come-back": "^1.6",
     "gushphp/to-inline-style-email-bundle": "^1.4",
-    "hashids/hashids": "^2.0",
+    "hashids/hashids": "^3.0",
     "incenteev/composer-parameter-handler": "^2.0",
     "jbroadway/urlify": "^1.0",
     "jms/serializer-bundle": "^2.2",
     "knplabs/knp-snappy-bundle": "^1.5",
     "mailjet/mailjet-apiv3-php": "^1.1",
     "monext/payline-sdk": "^4.53",
-    "mpdf/mpdf": "^7.1",
+    "mpdf/mpdf": "^8.0",
     "nexylan/slack-bundle": "^2.0",
-    "php-http/guzzle6-adapter": "^1.1",
+    "php-http/guzzle6-adapter": "^2.0",
     "phpoffice/phpexcel": "1.8.*",
     "phpoffice/phpspreadsheet": "^1.3",
     "phpxmlrpc/phpxmlrpc": "^4.3",
@@ -48,7 +48,7 @@
     "ramsey/uuid": "^3.7",
     "scienta/doctrine-json-functions": "^4.0",
     "sensio/framework-extra-bundle": "^5.2",
-    "sonata-project/cache-bundle": "^2.4",
+    "sonata-project/cache-bundle": "^3.0",
     "sonata-project/seo-bundle": "^2.0",
     "symfony-cmf/routing-bundle": "^2.0",
     "symfony/monolog-bundle": "^3.1",
@@ -64,20 +64,16 @@
   "require-dev": {
   },
   "scripts": {
-    "unilend-scripts": [
-    ],
     "symfony-scripts": [
       "Incenteev\\ParameterHandler\\ScriptHandler::buildParameters",
       "Unilend\\Bridge\\Composer\\ScriptHandler::clearCache",
       "Unilend\\Bridge\\Composer\\ScriptHandler::installAssets"
     ],
     "post-install-cmd": [
-      "@symfony-scripts",
-      "@unilend-scripts"
+      "@symfony-scripts"
     ],
     "post-update-cmd": [
-      "@symfony-scripts",
-      "@unilend-scripts"
+      "@symfony-scripts"
     ]
   },
   "extra": {
