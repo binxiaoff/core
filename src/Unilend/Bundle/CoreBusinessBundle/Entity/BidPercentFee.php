@@ -10,9 +10,17 @@ use Doctrine\ORM\Mapping as ORM;
 class BidPercentFee
 {
     /**
-     * @var PercentFee
+     * @var int
      *
      * @ORM\Id
+     * @ORM\GeneratedValue(strategy="IDENTITY")
+     * @ORM\Column(type="integer")
+     */
+    private $id;
+
+    /**
+     * @var PercentFee
+     *
      * @ORM\OneToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\PercentFee", cascade={"persist"})
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="id_percent_fee", referencedColumnName="id", nullable=false)
@@ -23,13 +31,20 @@ class BidPercentFee
     /**
      * @var Bids
      *
-     * @ORM\Id
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Bids", inversedBy="bidPercentFees")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="id_bid", referencedColumnName="id_bid", nullable=false)
      * })
      */
     private $bid;
+
+    /**
+     * @return int
+     */
+    public function getId()
+    {
+        return $this->id;
+    }
 
     /**
      * @return Bids

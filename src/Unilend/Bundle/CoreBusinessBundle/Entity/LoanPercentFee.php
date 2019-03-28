@@ -10,9 +10,17 @@ use Doctrine\ORM\Mapping as ORM;
 class LoanPercentFee
 {
     /**
-     * @var PercentFee
+     * @var int
      *
      * @ORM\Id
+     * @ORM\GeneratedValue(strategy="IDENTITY")
+     * @ORM\Column(type="integer")
+     */
+    private $id;
+
+    /**
+     * @var PercentFee
+     *
      * @ORM\OneToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\PercentFee", cascade={"persist"})
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="id_percent_fee", referencedColumnName="id", nullable=false)
@@ -23,13 +31,20 @@ class LoanPercentFee
     /**
      * @var Loans
      *
-     * @ORM\Id
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Loans", inversedBy="loanPercentFees")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="id_loan", referencedColumnName="id_loan", nullable=false)
      * })
      */
     private $loan;
+
+    /**
+     * @return int
+     */
+    public function getId()
+    {
+        return $this->id;
+    }
 
     /**
      * @return Loans

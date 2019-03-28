@@ -1,29 +1,51 @@
-var $collectionHolder;
-// setup an "add a fee" link
-var $addFeeButton = $(`[data-action='ui-form-lending-fee-add']`);
-var $newLink = $('<div class="row row-multi-col-computer"></div>').append($addFeeButton);
+var $buttonHolder = $('<div class="row" data-fee-buttons></div>');
 
-jQuery(document).ready(function () {
-    $collectionHolder = $('div.fees');
+var $addFeeButton = $(
+    '<div class="col-lg-6 col-md-6">' +
+    '    <a href="javascript:;" class="btn-default btn-shape-sq-md margin-10-t" data-action="ui-form-lending-fee-add">' +
+    '        <span class="icon fa-plus-u16 c-t2"></span>' +
+    '    </a>' +
+    '</div>'
+);
 
-    $collectionHolder.find('div').each(function () {
-        addTagFormDeleteLink($(this));
-    });
+var $buttons = $buttonHolder.append($addFeeButton);
 
-    $collectionHolder.append($newLink);
+var $validFeeButton = $(
+    '<div class="col-lg-6 col-md-6" style="display: none">' +
+    '    <button class="btn-primary btn-shape-xs ui-spinnerbutton" data-action="ui-form-lending-fee-valid">Valider</button>' +
+    '</div>'
+)
+{% if project is defined %}
+if (window.location.pathname === '{{ path('demo_project_details', {hash: project.hash})|raw }}') {
+    $buttonHolder.append($validFeeButton);
+}
+{% endif %}
 
-    $collectionHolder.data('index', $collectionHolder.find(':input').length);
+var $collectionHolder = $('div.fees');
 
-    $addFeeButton.on('click', function () {
-        addFeeForm($collectionHolder, $newLink);
-    });
+$collectionHolder.append($buttons);
+
+$collectionHolder.data('index', $collectionHolder.find(':input').length);
+
+$addFeeButton.find('a').on('click', function () {
+    addFeeForm($collectionHolder, $buttons, $validFeeButton);
 });
 
-function addFeeForm($collectionHolder, $newLink) {
+{% if project is defined %}
+$validFeeButton.find('button').on('click', function () {
+    console.log($collectionHolder.find(':input').serialize());
+    $.ajax({
+        url: '{{ path('demo_add_project_fees', {hash: project.hash}) }}',
+        method: 'POST',
+        data: $collectionHolder.find(':input').serialize()
+    }).done(function () {
+        window.location.reload(false);
+    })
+})
+{% endif %}
+function addFeeForm($collectionHolder, $buttons, $validFeeButton) {
     var prototype = $collectionHolder.data('prototype');
-
     var index = $collectionHolder.data('index');
-
     var newForm = prototype;
 
     newForm = newForm.replace(/__name__/g, index);
@@ -31,15 +53,20 @@ function addFeeForm($collectionHolder, $newLink) {
     $collectionHolder.data('index', index + 1);
 
     var $newFormDiv = $('<div class="row row-multi-col-computer"></div>').append(newForm);
-    $newLink.before($newFormDiv);
+    $buttons.before($newFormDiv);
+
+    $validFeeButton.show();
 
     var $removeFormButton = $newFormDiv.find(`[data-action='ui-form-lending-fee-remove']`);
 
     $removeFormButton.on('click', function () {
         $newFormDiv.remove();
+        if ($collectionHolder.find(':input').length === 1) {
+            $validFeeButton.hide();
+        }
     });
 
-    var $feeTypeSelector =  $newFormDiv.find(`[data-field="ui-form-fee-type"]`);
+    var $feeTypeSelector = $newFormDiv.find(`[data-field="ui-form-fee-type"]`);
 
     $feeTypeSelector.on('change', function () {
         var selectedType = $(this).children("option:selected").val();
@@ -52,14 +79,19 @@ function addFeeForm($collectionHolder, $newLink) {
 
     var $feeRateInput = $newFormDiv.find("input[id$='_percentFee_rate']");
 
-    $feeRateInput.on('focusout', function() {
+    $feeRateInput.on('focusout', function () {
         $(this).parent().find('p.rate-amount').remove();
-        if (false === $newFormDiv.find('input[type=checkbox]').prop( "checked") && $feeRateInput.val()) {
+        if (false === $newFormDiv.find('input[type=checkbox]').prop("checked") && $feeRateInput.val()) {
             var referenceAmount = $(`[data-fee-reference-amount]`).val()
-            var rate = $feeRateInput.val().replace(',','.')
+            debugger
+            if (referenceAmount === "") {
+                referenceAmount = $(`[data-fee-reference-amount]`).text().replace(/[\n\r\s€]/g, '').replace(',', '.')
+                referenceAmount = parseFloat(referenceAmount);
+            }
+            var rate = $feeRateInput.val().replace(',', '.')
             var rateAmount = rate * referenceAmount / 100
-            if (rateAmount > 0 ) {
-                $feeRateInput.after('<p class="help-text rate-amount">soit ' + rateAmount.toFixed(2).replace('.',',') + ' €</p>');
+            if (rateAmount > 0) {
+                $feeRateInput.after('<p class="help-text rate-amount">soit ' + rateAmount.toFixed(2).replace('.', ',') + ' €</p>');
             }
         }
     })
