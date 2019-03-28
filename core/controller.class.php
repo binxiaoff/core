@@ -64,7 +64,8 @@ abstract class Controller implements ContainerAwareInterface
         $this->staticPath = $this->get('kernel')->getRootDir() . '/../public/default/';
         $this->logPath    = $this->get('kernel')->getLogDir();
 
-        $this->surl = $this->get('assets.packages')->getUrl('');
+        //$this->surl = $this->get('assets.packages')->getUrl('');
+        $this->surl = $this->getParameter('router.request_context.scheme') . '://' . $this->getParameter('url.host_default');
         $this->url  = $this->getParameter('router.request_context.scheme') . '://' . $this->getParameter('url.host_' . $this->App);
         $this->aurl = $this->getParameter('router.request_context.scheme') . '://' . $this->getParameter('url.host_admin');
         $this->furl = $this->getParameter('router.request_context.scheme') . '://' . $this->getParameter('url.host_default');
@@ -204,7 +205,8 @@ abstract class Controller implements ContainerAwareInterface
             'environment' => $this->getParameter('kernel.environment'),
             'adminUrl'    => $this->getParameter('router.request_context.scheme') . '://' . $this->getParameter('url.host_admin'),
             'frontUrl'    => $this->getParameter('router.request_context.scheme') . '://' . $this->getParameter('url.host_default'),
-            'staticUrl'   => $this->get('assets.packages')->getUrl(''),
+            //'staticUrl'   => $this->get('assets.packages')->getUrl(''),
+            'staticUrl'   => $this->getParameter('router.request_context.scheme') . '://' . $this->getParameter('url.host_default'),
             'parameters'  => $this->Command->getParameters()
         ];
 

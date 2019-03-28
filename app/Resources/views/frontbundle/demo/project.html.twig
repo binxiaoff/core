@@ -42,7 +42,7 @@
 
 {% block dashboardContent %}
     <div class="dashboard-tabs-content tab-content">
-        <article id="project-single" class="project-single dashboard-tab-pane{% if false == project.isOnline %} ui-project-expired{% endif %}">
+        <article class="project-single dashboard-tab-pane{% if false == project.isOnline %} ui-project-expired{% endif %}">
             <div class="panel">
                 <div class="panel-header">
                     <div class="row">
@@ -72,7 +72,7 @@
                             <div class="row">
                                 <div class="col-lg-6 col-md-6 col-sm-6">
                                     <h5>Maturité</h5>
-                                    {{ (project.period / 12)|round(0)|localizednumber }} ans
+                                    {% transchoice(project.period / 12) with {'%duration%': project.period / 12} %} demo-project-request_simulator-duration-select-option {% endtranschoice %}
                                 </div>
 
                                 <div class="col-lg-6 col-md-6 col-sm-6">
@@ -114,19 +114,29 @@
                 </div>
             </div>
         </article>
-        <article id="project-single" class="project-single dashboard-tab-pane{% if false == project.isOnline %} ui-project-expired{% endif %}">
+        <article class="dashboard-tab-pane{% if false == project.isOnline %} ui-project-expired{% endif %}">
             <div class="panel">
-                <div class="panel-content">
+                <div class="section-tabs-nav">
+                    <header>
+                        <h3 class="h3">Mon offre</h3>
+                    </header>
+                </div><!-- /.section-tabs-nav -->
+                <div class="section-tabs-content tab-content">
                     {% include ':frontbundle/demo/partials/bids:my_bid.html.twig' %}
-                </div><!-- /.project-single-content -->
-            </div><!-- /.project-single-content -->
+                </div><!-- /.section-tabs-content -->
+            </div><!-- /.panel -->
         </article>
-        <article id="project-single" class="project-single dashboard-tab-pane{% if false == project.isOnline %} ui-project-expired{% endif %}">
+        <article class="dashboard-tab-pane{% if false == project.isOnline %} ui-project-expired{% endif %}">
             <div class="panel">
-                <div class="panel-content">
+                <div class="section-tabs-nav">
+                    <header>
+                        <h3 class="h3">Offres de participation</h3>
+                    </header>
+                </div><!-- /.section-tabs-nav -->
+                <div class="section-tabs-content tab-content">
                     {% include ':frontbundle/demo/partials/bids:bids_list.html.twig' %}
-                </div><!-- /.project-single-content -->
-            </div><!-- /.project-single-content -->
-        </article>
+                </div><!-- /.section-tabs-content -->
+            </div><!-- /.panel -->
+        </article><!-- /.dashboard-tab-pane -->
     </div>
 {% endblock %}

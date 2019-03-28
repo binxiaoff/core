@@ -191,6 +191,7 @@
                                 <li><a href="#article-fees">Frais / commissions</a></li>
                                 <li><a href="#article-visibility">Visibilité</a></li>
                                 <li><a href="#article-documents">Documents</a></li>
+                                <li><a href="#article-bids">Offres de participation</a></li>
                                 <li><a href="#article-discussions">Discussions</a></li>
                             </ul>
                             <div class="row" style="position: absolute; bottom: 30px; left: 30px; right: 30px;">
@@ -464,9 +465,10 @@
                     </div><!-- /.ui-template-definition -->
                 </div>
             </article><!-- /.dashboard-tab-pane -->
-            <article class="dashboard-tab-pane margin-20-t" id="article-bid">
+            <article class="dashboard-tab-pane margin-20-t" id="article-bids">
                 <div class="panel">
                     <div class="panel-content">
+                        <h4 class="h4">Offres de participation</h4>
                         {% include ':frontbundle/demo/partials/bids:bids_list.html.twig' with {bids: project.bids} %}
                     </div><!-- /.project-single-content -->
                 </div>

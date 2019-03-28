@@ -70,7 +70,7 @@
                                                 {{ project.amount|localizednumber }}&nbsp;€
                                             </div>
                                             <div class="project-list-item-period">
-                                                {{ (project.period / 12)|round(0)|localizednumber }} ans
+                                                {% transchoice(project.period / 12) with {'%duration%': project.period / 12} %} demo-project-request_simulator-duration-select-option {% endtranschoice %}
                                             </div>
                                             <div class="project-list-item-stats">
                                                 {% if project.status <= constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_ONLINE') %}

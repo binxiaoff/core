@@ -1754,7 +1754,7 @@ class Projects
     }
 
     /**
-     * @return array
+     * @return Companies[]
      */
     public function getLenders(): array
     {
