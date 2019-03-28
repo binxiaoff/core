@@ -5,7 +5,6 @@ services:
         public: false
         bind:
             $logger: '@monolog.logger.console'
-            $protectedPath: '%path.protected%'
 
     Unilend\Bundle\CommandBundle\:
         resource: '%kernel.project_dir%/src/Unilend/Bundle/CommandBundle/*'
