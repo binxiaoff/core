@@ -1,86 +1,73 @@
-<section id="project-section-myoffers">
-    <div class="tabs">
-        <div class="section-tabs-nav">
-            <header>
-                <h3 id="project-myoffers" class="h3">Mon offre</h3>
-            </header>
-        </div><!-- /.section-tabs-nav -->
-        <div class="section-tabs-content tab-content">
-            <div id="myoffers-inprogress" role="tabpanel" class="tab-pane active" aria-labelledby="project-myoffers-inprogress project-myoffers">
-                {% if bid is not empty and bid.idBid %}
-                    <table class="table-myoffers">
-                        <tbody>
-                        <tr class="my-offers-bid-row">
-                            <td>Statut</td>
-                            <td>Montant</td>
-                            <td>Taux de référence</td>
-                            <td>Marge</td>
-                            <td>Commission ponctuelle</td>
-                            <td>Commission récurrente</td>
-                            <td>Je souhaite être agent</td>
-                            {% if bid.status == constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Bids::STATUS_PENDING') %}
-                                <td></td>
-                            {% endif %}
-                        </tr>
-                        <tr>
-                            <td>{% if bid.status == 0 %} En cours {% elseif bid.status == 1 %} Accepté {% else %} Refusé {% endif %}</td>
-                            <td>{{ (bid.amount / 100)|localizednumber }}&nbsp;€</td>
-                            <td>{{ ('interest-rate-index_' ~ bid.rate.indexType)|trans }}</td>
-                            <td>{{ bid.rate.margin|localizednumberwithprecision(2) }}&nbsp;%</td>
-                            <td>{{ bid.oneTimeFeeTotalRate|localizednumberwithprecision(2) }}&nbsp;%</td>
-                            <td>{{ bid.recurringFeeTotalRate|localizednumberwithprecision(2) }}
-                                &nbsp;%{% if bid.recurringFeeTotalRate > 0 %}&nbsp;(soit {{ (bid.recurringFeeTotalRate * (bid.amount / 100) / 100)|localizedcurrency('EUR') }}){% endif %}</td>
-                            <td>{% if bid.isAgent %} Oui {% else %} Non {% endif %}</td>
-                            <td>
-                                {% if bid.status == constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Bids::STATUS_PENDING') %}
-                                    <button class="btn-default btn-shape-xxs ui-spinnerbutton" data-action="refuse-bid" data-bid-id="{{ bid.idBid }}">
-                                        Annuler
-                                    </button>
-                                {% endif %}
-                            </td>
-                        </tr>
-                        </tbody>
-                    </table><!-- /.table-myoffers -->
-                {% elseif project.isOnline %}
-                    {{ form_start(form) }}
-                    <fieldset class="simulator-pane-inner" style="margin-top: 20px;">
-                        <div class="row row-multi-col-computer">
-                            <div class="col-lg-4 col-md-4 col-sm-4">
-                                {{ form_row(form.amount, {attr: {'data-fee-reference-amount': ''}}) }}
-                            </div>
-                            <div class="col-lg-4 col-md-4 col-sm-4">
-                                {{ form_row(form.rate.indexType) }}
-                            </div>
-                            <div class="col-lg-4 col-md-4 col-sm-4">
-                                {{ form_row(form.rate.margin) }}
-                            </div>
-                        </div>
-                    </fieldset>
-                    <fieldset class="simulator-pane-inner" style="margin-top: 20px;">
-                        <div class="row">
-                            {{ form_widget(form.agent) }} {{ form_label(form.agent) }}
-                        </div>
-                    </fieldset>
-                    <fieldset class="simulator-pane-inner" style="margin-top: 20px;">
-                        <legend>Frais / Commission</legend>
-                        {% set feesTemplate = include(':frontbundle/demo/partials/fees:new_bid_fees.html.twig') %}
-                        <div class="row fees" data-prototype="{{ feesTemplate|e('html_attr') }}">
-                            <a href="javascript:;" class="btn-default btn-shape-sq-md margin-10-t" data-action="ui-form-lending-fee-add">
-                                <span class="icon fa-plus-u16 c-t2"></span>
-                                <span class="sr-only">Ajouter un frais</span>
-                            </a>
-                        </div>
-                    </fieldset>
-                    <footer class="simulator-pane-inner actions bg-p1 c-bg5 text-align-right">
-                        <button type="submit" class="btn-continue btn-alternate" data-spinnerbutton>
-                            {% trans %} Valider {% endtrans %}
-                        </button>
-                    </footer>
-                    {{ form_end(form) }}
-                {% else %}
-                    Vous ne pouvez plus proposer une offre.
+{% if bid is not empty and bid.idBid %}
+    <table class="table-myoffers">
+        <tbody>
+        <tr class="my-offers-bid-row">
+            <td>Statut</td>
+            <td>Montant</td>
+            <td>Taux de référence</td>
+            <td>Marge</td>
+            <td>Commission ponctuelle</td>
+            <td>Commission récurrente</td>
+            <td>Je souhaite être agent</td>
+            {% if bid.status == constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Bids::STATUS_PENDING') %}
+                <td></td>
+            {% endif %}
+        </tr>
+        <tr>
+            <td>{% if bid.status == 0 %} En cours {% elseif bid.status == 1 %} Accepté {% else %} Refusé {% endif %}</td>
+            <td>{{ (bid.amount / 100)|localizednumber }}&nbsp;€</td>
+            <td>{{ ('interest-rate-index_' ~ bid.rate.indexType)|trans }}</td>
+            <td>{{ bid.rate.margin|localizednumberwithprecision(2) }}&nbsp;%</td>
+            <td>{{ bid.oneTimeFeeTotalRate|localizednumberwithprecision(2) }}&nbsp;%</td>
+            <td>{{ bid.recurringFeeTotalRate|localizednumberwithprecision(2) }}
+                &nbsp;%{% if bid.recurringFeeTotalRate > 0 %}&nbsp;(soit {{ (bid.recurringFeeTotalRate * (bid.amount / 100) / 100)|localizedcurrency('EUR') }}){% endif %}</td>
+            <td>{% if bid.isAgent %} Oui {% else %} Non {% endif %}</td>
+            <td>
+                {% if bid.status == constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Bids::STATUS_PENDING') %}
+                    <button class="btn-default btn-shape-xxs ui-spinnerbutton" data-action="refuse-bid" data-bid-id="{{ bid.idBid }}">
+                        Annuler
+                    </button>
                 {% endif %}
-            </div><!-- /.tab-pane -->
-        </div><!-- /.section-tabs-content -->
-    </div><!-- /tabs -->
-</section><!-- /.page-section -->
+            </td>
+        </tr>
+        </tbody>
+    </table><!-- /.table-myoffers -->
+{% elseif project.isOnline %}
+    {{ form_start(form) }}
+    <fieldset class="simulator-pane-inner" style="margin-top: 20px;">
+        <div class="row row-multi-col-computer">
+            <div class="col-lg-4 col-md-4 col-sm-4">
+                {{ form_row(form.amount, {attr: {'data-fee-reference-amount': ''}}) }}
+            </div>
+            <div class="col-lg-4 col-md-4 col-sm-4">
+                {{ form_row(form.rate.indexType) }}
+            </div>
+            <div class="col-lg-4 col-md-4 col-sm-4">
+                {{ form_row(form.rate.margin) }}
+            </div>
+        </div>
+    </fieldset>
+    <fieldset class="simulator-pane-inner" style="margin-top: 20px;">
+        <div class="row">
+            {{ form_widget(form.agent) }} {{ form_label(form.agent) }}
+        </div>
+    </fieldset>
+    <fieldset class="simulator-pane-inner" style="margin-top: 20px;">
+        <legend>Frais / Commission</legend>
+        {% set feesTemplate = include(':frontbundle/demo/partials/fees:new_bid_fees.html.twig') %}
+        <div class="row fees" data-prototype="{{ feesTemplate|e('html_attr') }}">
+            <a href="javascript:;" class="btn-default btn-shape-sq-md margin-10-t" data-action="ui-form-lending-fee-add">
+                <span class="icon fa-plus-u16 c-t2"></span>
+                <span class="sr-only">Ajouter un frais</span>
+            </a>
+        </div>
+    </fieldset>
+    <footer class="simulator-pane-inner actions bg-p1 c-bg5 text-align-right">
+        <button type="submit" class="btn-continue btn-alternate" data-spinnerbutton>
+            {% trans %} Valider {% endtrans %}
+        </button>
+    </footer>
+    {{ form_end(form) }}
+{% else %}
+    Vous ne pouvez plus proposer d‘offre.
+{% endif %}
