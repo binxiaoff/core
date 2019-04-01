@@ -18,7 +18,7 @@
   "require": {
     "php": ">=7.1.11",
     "ext-bcmath": "*",
-    "ext-curl": "*"
+    "ext-curl": "*",
     "ext-openssl": "^7.1",
     "ext-pdo": "*",
     "alcaeus/mongo-php-adapter": "^1.1",
