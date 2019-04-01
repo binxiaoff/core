@@ -17,8 +17,7 @@ class Configuration implements ConfigurationInterface
      */
     public function getConfigTreeBuilder()
     {
-        $treeBuilder = new TreeBuilder();
-        $rootNode = $treeBuilder->root('unilend_front');
+        $treeBuilder = new TreeBuilder('unilend_front');
 
         // Here you should define the parameters that are allowed to
         // configure your bundle. See the documentation linked above for

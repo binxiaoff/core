@@ -17,8 +17,8 @@ class Configuration implements ConfigurationInterface
      */
     public function getConfigTreeBuilder()
     {
-        $treeBuilder = new TreeBuilder();
-        $treeBuilder->root('unilend_ws_client');
+        $treeBuilder = new TreeBuilder('unilend_ws_client');
+
         return $treeBuilder;
     }
 }
