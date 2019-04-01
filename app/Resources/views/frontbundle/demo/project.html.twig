@@ -30,6 +30,11 @@
         fieldset {
             border: 1px solid #eceaed;
         }
+
+        dt {
+            font-weight: 700;
+            color: #2bc9af;
+        }
     </style>
 {% endblock %}
 
@@ -57,49 +62,44 @@
                 </div>
                 <div class="panel-content">
                     <div class="row margin-20-t">
-                        <div class="{% if projectAttachments|length %}col-lg-8 col-md-8 col-sm-8{% endif %}">
-                            <div class="row">
-                                <div class="col-lg-6 col-md-6 col-sm-6">
-                                    <h5>Date de dépôt</h5>
-                                    {{ project.added|date('d/m/Y') }}
-                                </div>
-
-                                <div class="col-lg-6 col-md-6 col-sm-6">
-                                    <h5>Montant</h5>
-                                    {{ project.amount|localizednumber }}&nbsp;€
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-lg-6 col-md-6 col-sm-6">
-                                    <h5>Maturité</h5>
-                                    {% transchoice(project.period / 12) with {'%duration%': project.period / 12} %} demo-project-request_simulator-duration-select-option {% endtranschoice %}
-                                </div>
-
-                                <div class="col-lg-6 col-md-6 col-sm-6">
-                                    <h5>Type de financement</h5>
-                                    {{ ('product-name_' ~ product.label)|trans }}
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-lg-6 col-md-6 col-sm-6">
-                                    <h5>Participants</h5>
+                        <div class="row{% if projectAttachments|length %} col-lg-9 col-md-9 col-sm-9{% endif %}">
+                            <dl class="col-lg-6 col-md-6">
+                                <dt>Date de dépôt</dt>
+                                <dd>{{ project.added|date('d/m/Y') }}</dd>
+                            </dl>
+                            <dl class="col-lg-6 col-md-6">
+                                <dt>Montant</dt>
+                                <dd>{{ project.amount|localizednumber }}&nbsp;€</dd>
+                            </dl>
+                            <dl class="col-lg-6 col-md-6">
+                                <dt>Maturité</dt>
+                                <dd>{% transchoice(project.period / 12) with {'%duration%': project.period / 12} %} demo-project-request_simulator-duration-select-option {% endtranschoice %}</dd>
+                            </dl>
+                            <dl class="col-lg-6 col-md-6">
+                                <dt>Type de financement</dt>
+                                <dd>{{ ('product-name_' ~ product.label)|trans }}</dd>
+                            </dl>
+                            <dl class="col-lg-6 col-md-6">
+                                <dt>Participants</dt>
+                                <dd>
                                     <div>Arrangeur : {% if arranger.0 is defined %} {{ arranger.0.company.name }} {% else %} non défini {% endif %}</div>
                                     <div>RUN : {% if run.0 is defined %} {{ run.0.company.name }} {% else %} non défini {% endif %}</div>
-                                </div>
-
-                                <div class="col-lg-6 col-md-6 col-sm-6">
-                                    <h5>Notations</h5>
+                                </dd>
+                            </dl>
+                            <dl class="col-lg-6 col-md-6">
+                                <dt>Notations</dt>
+                                <dd>
                                     <div>Projet : {% if project.natureProject %}{{ project.natureProject }}{% else %}N/A{% endif %}</div>
                                     <div>Emprunteur : {% if project.objectifLoan %}{{ project.objectifLoan }}{% else %}N/A{% endif %}</div>
-                                </div>
-                            </div>
+                                </dd>
+                            </dl>
                         </div>
                         {% if projectAttachments|length %}
-                            <div class="col-lg-4 col-md-4">
-                                <h5>Documents</h5>
-                                <div class="row">
-                                    <strong><a href="#">Tout télécharger</a></strong>
-                                </div>
+                            <div class="col-lg-3 col-md-3">
+                                <span class="pull-right">
+                                    <a href="#" data-toggle="tooltip" title="Tout télécharger"><span class="icon fa-file-zip-o"></span></a>
+                                </span>
+                                <strong style="color: #2bc9af;">Documents</strong>
                                 {% for projectAttachment in projectAttachments %}
                                     <div class="row">
                                         <span class="icon fa-file-u"></span>

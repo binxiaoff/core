@@ -1,7 +1,9 @@
 <article role="tabpanel" class="dashboard-tab-pane tab-pane{% if active == projectsType %} active{% endif %}" id="tab-{{ projectsType }}">
     <div class="panel">
         <div class="panel-content">
-            {% if projects[projectsType]|length > 0 %}
+            {% if projects[projectsType]|length == 0 %}
+                <div class="message-info">Vous n‘avez aucun dossier pour le moment.</div>
+            {% else %}
                 {% for status, statusProjects in projects[projectsType] %}
                     <div class="row margin-20-b">
                         <div class="row">

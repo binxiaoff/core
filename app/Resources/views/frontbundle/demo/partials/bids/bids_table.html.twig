@@ -1,34 +1,49 @@
-<table class="table-myoffers">
-    <tbody>
-    <tr class="my-offers-bid-row">
-        <td>Prêteur</td>
-        <td>Montant</td>
-        <td>Taux de référence</td>
-        <td>Marge</td>
-        <td>Commission ponctuelle</td>
-        <td>Commission récurrente</td>
-        <td>Je souhaite être agent</td>
-        {% if canChangeBidStatus is defined and canChangeBidStatus == true and displayAction == true %}
-            <td></td>
-        {% endif %}
-    </tr>
-    {% for offer in bids %}
-        <tr>
-            <td>{{ offer.wallet.idClient.company.name }}</td>
-            <td>{{ (offer.amount / 100)|localizednumber }}&nbsp;€</td>
-            <td>{{ ('interest-rate-index_' ~ offer.rate.indexType)|trans }}</td>
-            <td>{{ offer.rate.margin|localizednumberwithprecision(2) }}&nbsp;%</td>
-            <td>{{ offer.oneTimeFeeTotalRate|localizednumberwithprecision(2) }}
-                &nbsp;%{% if offer.recurringFeeTotalRate > 0 %}&nbsp;(soit {{ (offer.recurringFeeTotalRate * (offer.amount / 100) / 100)|localizedcurrency('EUR') }}){% endif %}</td>
-            <td>{{ offer.recurringFeeTotalRate|localizednumberwithprecision(2) }}&nbsp;%</td>
-            <td>{% if offer.isAgent %} Oui {% else %} Non {% endif %}</td>
+<form action="#">
+    <table class="table table-projects table-finance table-balance">
+        <thead>
+        <tr class="my-offers-bid-row">
+            <th>Prêteur</th>
+            <th>Montant</th>
+            <th>Taux de référence</th>
+            <th>Marge</th>
+            <th>Commission ponctuelle</th>
+            <th>Commission récurrente</th>
+            <th>Souhaite être agent</th>
             {% if canChangeBidStatus is defined and canChangeBidStatus == true and displayAction == true %}
-                <td>
-                    <button class="btn-default btn-shape-xxs ui-spinnerbutton" data-action="refuse-bid" data-bid-id="{{ offer.idBid }}">Refuser</button>
-                    <button class="btn-primary btn-shape-xxs ui-spinnerbutton margin-10-t" data-action="accept-bid" data-bid-id="{{ offer.idBid }}">Accepter</button>
-                </td>
+                <th style="width: 60px;">&nbsp;</th>
             {% endif %}
         </tr>
-    {% endfor %}
-    </tbody>
-</table><!-- /.table-myoffers -->
+        </thead>
+        <tbody>
+        {% for offer in bids %}
+            <tr>
+                <td>{{ offer.wallet.idClient.company.name }}</td>
+                <td>{{ (offer.amount / 100)|localizednumber }}&nbsp;€</td>
+                <td>{{ ('interest-rate-index_' ~ offer.rate.indexType)|trans }}</td>
+                <td>{{ offer.rate.margin|localizednumberwithprecision(2) }}&nbsp;%</td>
+                <td>{{ offer.oneTimeFeeTotalRate|localizednumberwithprecision(2) }}&nbsp;%</td>
+                <td data-toggle="tooltip" title="{% if offer.recurringFeeTotalRate > 0 %}soit {{ (offer.recurringFeeTotalRate * (offer.amount / 100) / 100)|localizednumber }}&nbsp;€{% endif %}">
+                    {{ offer.recurringFeeTotalRate|localizednumberwithprecision(2) }}&nbsp;%
+                </td>
+                <td>{% if offer.isAgent %} Oui {% else %} Non {% endif %}</td>
+                {% if canChangeBidStatus is defined and canChangeBidStatus == true and displayAction == true %}
+                    <td>
+                        <button type="button" class="btn-default btn-shape-xxs"
+                                data-toggle="tooltip" title="Rejeter l‘offre"
+                                data-action="refuse-bid" data-bid-id="{{ offer.idBid }}"
+                                data-spinnerbutton>
+                            <span class="icon fa-rejected-u16"></span>
+                        </button>
+                        <button type="button" class="btn-primary btn-shape-xxs"
+                                data-toggle="tooltip" title="Valider l‘offre"
+                                data-action="accept-bid" data-bid-id="{{ offer.idBid }}"
+                                data-spinnerbutton>
+                            <span class="icon fa-check-u16"></span>
+                        </button>
+                    </td>
+                {% endif %}
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table><!-- /.table-myoffers -->
+</form>

@@ -1,9 +1,8 @@
-<article role="tabpanel" class="dashboard-tab-pane tab-pane{% if active == 'lender' %} active{% endif %}"
-         id="tab-lender">
+<article role="tabpanel" class="dashboard-tab-pane tab-pane{% if active == 'lender' %} active{% endif %}" id="tab-lender">
     <div class="panel">
         <div class="panel-content">
-            {% if projects.lender|length == 0 %}
-                <div class="message-info">{{ 'demo-loans_lender-not-found-message'|trans }}</div>
+            {% if projects.lender.inProgress|length == 0 and projects.lender.active|length == 0 and projects.lender.finished|length == 0 and projects.lender.masked|length == 0 %}
+                <div class="message-info">Vous n‘avez fait aucune offre de participation pour le moment.</div>
             {% else %}
                 {% if projects.lender.inProgress is defined and projects.lender.inProgress is not empty %}
                     <div class="row margin-20-b">
@@ -102,9 +101,11 @@
                                             {% if offer.status == 0 %} En cours {% elseif offer.status == 1 %} Accepté {% else %} Refusé {% endif %}
                                         </td>
                                         <td class="table-actions">
-                                            <a href="{{ path('demo_project_details', {'hash': project.hash}) }}"
+                                            <a href="{{ path('demo_lender_project_details', {'slug': project.slug}) }}"
                                                role="button" class="btn-default" title="Voir le dossier de financement"
-                                               data-toggle="tooltip"><span class="icon fa-view-u16"></span></a>
+                                               data-toggle="tooltip">
+                                                <span class="icon fa-view-u16"></span>
+                                            </a>
                                         </td>
                                     </tr>
                                 {% endfor %}
@@ -199,18 +200,7 @@
                                         data-sortable-loan-amount="{{ loan.amount }}"
                                         data-sortable-rate="{{ loan.rate.margin }}">
                                         <td class="table-projects-item-partner">
-                                            {% set backgroundColor = '#787679' %}
-                                            {% if project.idPartner.label == 'cals' %}
-                                                {% set backgroundColor = '#5fc5d1' %}
-                                            {% elseif project.idPartner.label == 'cacib' %}
-                                                {% set backgroundColor = '#1b88db' %}
-                                            {% elseif project.idPartner.label == 'calf' %}
-                                                {% set backgroundColor = '#ffca2c' %}
-                                            {% elseif project.idPartner.label == 'unifergie' %}
-                                                {% set backgroundColor = '#f76965' %}
-                                            {% endif %}
-                                            <span class="bubble"
-                                                  style="background-color: {{ backgroundColor }};">{{ ('partner-name_bubble-' ~ project.idPartner.label)|trans }}</span>
+                                            {% include ':frontbundle/demo/partials:bubble.html.twig' %}
                                         </td>
                                         <td class="table-projects-item-title">{{ project.title }}</td>
                                         <td class="table-projects-item-project-amount">{{ project.amount|localizednumber }}&nbsp;€</td>
@@ -246,8 +236,9 @@
                                             <a href="{{ path('demo_lender_project_details', {'slug': project.slug}) }}"
                                                role="button"
                                                class="btn-default" title="Voir le dossier de financement"
-                                               data-toggle="tooltip"><span
-                                                        class="icon fa-view-u16"></span></a>
+                                               data-toggle="tooltip">
+                                                <span class="icon fa-view-u16"></span>
+                                            </a>
                                         </td>
                                     </tr>
                                 {% endfor %}
@@ -336,18 +327,7 @@
                                         data-sortable-loan-amount="{{ loan.amount }}"
                                         data-sortable-rate="{{ loan.rate.margin }}">
                                         <td class="table-projects-item-partner">
-                                            {% set backgroundColor = '#787679' %}
-                                            {% if project.idPartner.label == 'cals' %}
-                                                {% set backgroundColor = '#5fc5d1' %}
-                                            {% elseif project.idPartner.label == 'cacib' %}
-                                                {% set backgroundColor = '#1b88db' %}
-                                            {% elseif project.idPartner.label == 'calf' %}
-                                                {% set backgroundColor = '#ffca2c' %}
-                                            {% elseif project.idPartner.label == 'unifergie' %}
-                                                {% set backgroundColor = '#f76965' %}
-                                            {% endif %}
-                                            <span class="bubble"
-                                                  style="background-color: {{ backgroundColor }};">{{ ('partner-name_bubble-' ~ project.idPartner.label)|trans }}</span>
+                                            {% include ':frontbundle/demo/partials:bubble.html.twig' %}
                                         </td>
                                         <td class="table-projects-item-title">{{ project.title }}</td>
                                         <td class="table-projects-item-project-amount">{{ project.amount|localizednumber }}&nbsp;€</td>
@@ -379,11 +359,12 @@
                                             {{ statusLabel }}
                                         </td>
                                         <td class="table-actions">
-                                            <a href="{{ path('demo_project_details', {'hash': project.hash}) }}"
+                                            <a href="{{ path('demo_lender_project_details', {'slug': project.slug}) }}"
                                                role="button"
                                                class="btn-default" title="Voir le dossier de financement"
-                                               data-toggle="tooltip"><span
-                                                        class="icon fa-view-u16"></span></a>
+                                               data-toggle="tooltip">
+                                                <span class="icon fa-view-u16"></span>
+                                            </a>
                                         </td>
                                     </tr>
                                 {% endfor %}
@@ -399,18 +380,7 @@
                                         data-sortable-loan-amount="{{ loan.amount }}"
                                         data-sortable-rate="{{ loan.rate.margin }}">
                                         <td class="table-projects-item-partner">
-                                            {% set backgroundColor = '#787679' %}
-                                            {% if project.idPartner.label == 'cals' %}
-                                                {% set backgroundColor = '#5fc5d1' %}
-                                            {% elseif project.idPartner.label == 'cacib' %}
-                                                {% set backgroundColor = '#1b88db' %}
-                                            {% elseif project.idPartner.label == 'calf' %}
-                                                {% set backgroundColor = '#ffca2c' %}
-                                            {% elseif project.idPartner.label == 'unifergie' %}
-                                                {% set backgroundColor = '#f76965' %}
-                                            {% endif %}
-                                            <span class="bubble"
-                                                  style="background-color: {{ backgroundColor }};">{{ ('partner-name_bubble-' ~ project.idPartner.label)|trans }}</span>
+                                            {% include ':frontbundle/demo/partials:bubble.html.twig' %}
                                         </td>
                                         <td class="table-projects-item-title">{{ project.title }}</td>
                                         <td class="table-projects-item-project-amount">{{ project.amount|localizednumber }}&nbsp;€</td>
@@ -419,11 +389,12 @@
                                         <td class="table-projects-item-rate">{{ loan.rate.margin|localizednumberwithprecision(2) }}&nbsp;%</td>
                                         <td class="table-projects-item-status">Prêt refusé</td>
                                         <td class="table-actions">
-                                            <a href="{{ path('demo_project_details', {'hash': project.hash}) }}"
+                                            <a href="{{ path('demo_lender_project_details', {'slug': project.slug}) }}"
                                                role="button"
                                                class="btn-default" title="Voir le dossier de financement"
-                                               data-toggle="tooltip"><span
-                                                        class="icon fa-view-u16"></span></a>
+                                               data-toggle="tooltip">
+                                                <span class="icon fa-view-u16"></span>
+                                            </a>
                                         </td>
                                     </tr>
                                 {% endfor %}

@@ -9,7 +9,7 @@
 
             <div class="site-controls">
                 {% block siteHeaderControls %}
-                    {% include 'partials/site_search.html.twig' %}
+                    {#{% include 'partials/site_search.html.twig' %}#}
 
                     <div class="site-user">
                         <div class="site-user-profile">
@@ -21,7 +21,7 @@
                                 <span data-usernotifications-unreadcount></span>
                             </a><!-- /.profile-notifications -->
 
-                            <div class="profile-name">Bonjour {{ app.user.getPrenom() }}</div>
+                            <div class="profile-name">Bonjour {{ app.user.prenom }}</div>
 
                             <div class="profile-balance">
                                 {{ app.user.company.name }}
@@ -29,7 +29,7 @@
 
                             <a href="{{ path('logout') }}" class="profile-logout link"><span class="label">Se déconnecter</span></a>
 
-                            <a href="{{ path('partner_project_request') }}" class="site-user-mobile-menu-toggle">
+                            <a href="{{ path('demo_loans') }}" class="site-user-mobile-menu-toggle">
                                 <span class="icon fa-ellipsis-v"></span>
                                 <span class="sr-only">Menu</span>
                             </a>

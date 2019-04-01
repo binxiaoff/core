@@ -21,56 +21,13 @@
             </div>
         </h4>
         <div class="row dashboard-tab-pane">
-            <div class="form-project-create-nav tab-nav">
-                <ul class="nav nav-progress text-align-center">
-                    <li role="presentation"
-                        class="{% if project.status > constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_REQUEST') %}complete{% else %}active{% endif %}" data-equal-width>
-                        <span>
-                            <span class="progress-point">1.</span>
-                            <span class="label">Dépôt</span>
-                        </span>
-                    </li>
-                    <li role="presentation"
-                        class="{% if project.status > constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_REVIEW') %}complete{% elseif project.status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_REVIEW') %}active{% endif %}"
-                        data-equal-width>
-                        <span>
-                            <span class="progress-point">2.</span>
-                            <span class="label">Analyse</span>
-                        </span>
-                    </li>
-                    <li role="presentation"
-                        class="{% if project.status > constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_ONLINE') %}complete{% elseif project.status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_ONLINE') %}active{% endif %}"
-                        data-equal-width>
-                        <span>
-                            <span class="progress-point">3.</span>
-                            <span class="label">Financement</span>
-                        </span>
-                    </li>
-                    <li role="presentation"
-                        class="{% if project.status > constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_FUNDED') %}complete{% elseif project.status in [constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_FUNDED'), constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_SIGNED')] %}active{% endif %}"
-                        data-equal-width>
-                        <span>
-                            <span class="progress-point">4.</span>
-                            <span class="label">Signature</span>
-                        </span>
-                    </li>
-                    <li role="presentation"
-                        class="{% if project.status > constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_REPAYMENT') %}complete{% elseif project.status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_REPAYMENT') %}active{% endif %}"
-                        data-equal-width>
-                        <span>
-                            <span class="progress-point">5.</span>
-                            <span class="label">Remboursement</span>
-                        </span>
-                    </li>
-                    <li role="presentation"
-                        class="{% if project.status in [constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_REPAID'), constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_LOSS')] %}complete{% endif %}"
-                        data-equal-width>
-                        <span>
-                            <span class="progress-point">6.</span>
-                            <span class="label">Terminé</span>
-                        </span>
-                    </li>
-                </ul><!-- /.nav-progress -->
+            <div id="project-breadcrumb" class="form-project-create-nav tab-nav">
+                <div class="{% if project.status > constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_REQUEST') %}complete{% else %}active{% endif %}">Dépôt</div>
+                <div class="{% if project.status > constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_REVIEW') %}complete{% elseif project.status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_REVIEW') %}active{% endif %}">Analyse</div>
+                <div class="{% if project.status > constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_ONLINE') %}complete{% elseif project.status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_ONLINE') %}active{% endif %}">Financement</div>
+                <div class="{% if project.status > constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_FUNDED') %}complete{% elseif project.status in [constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_FUNDED'), constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_SIGNED')] %}active{% endif %}">Signature</div>
+                <div class="{% if project.status > constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_REPAYMENT') %}complete{% elseif project.status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_REPAYMENT') %}active{% endif %}">Remboursement</div>
+                <div class="{% if project.status in [constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_REPAID'), constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_LOSS')] %}complete{% endif %}">Terminé</div>
             </div><!-- /.form-project-create-nav -->
         </div>
         <div class="dashboard-tabs-content tab-content">
@@ -190,8 +147,8 @@
                                 <li><a href="#article-scoring">Notations</a></li>
                                 <li><a href="#article-fees">Frais / commissions</a></li>
                                 <li><a href="#article-visibility">Visibilité</a></li>
-                                <li><a href="#article-documents">Documents</a></li>
                                 <li><a href="#article-bids">Offres de participation</a></li>
+                                <li><a href="#article-documents">Documents</a></li>
                                 <li><a href="#article-discussions">Discussions</a></li>
                             </ul>
                             <div class="row" style="position: absolute; bottom: 30px; left: 30px; right: 30px;">
@@ -331,20 +288,22 @@
                 <div class="panel">
                     <form action="{{ path('demo_project_visibility', {'hash': project.hash}) }}" method="post">
                         <h4 class="h4">Visibilité</h4>
-                        <div class="row">
-                            <div class="message-info">Sélectionnez les entités qui auront la possibilité de se positionner pour le financement du projet. Une fois le projet en cours de financement, vous ne pourrez plus retirer d‘entité de la liste.</div>
-                        </div>
-                        <div class="row">
-                            <label>
-                                <input id="visibility-all" type="checkbox">
-                                Tout sélectionner
-                            </label>
-                            <label>
-                                <input id="visibility-crca" type="checkbox">
-                                Caisses régionales Crédit Agricole
-                            </label>
-                        </div>
-                        <hr>
+                        {% if isEditable %}
+                            <div class="row">
+                                <div class="message-info">Sélectionnez les entités qui auront la possibilité de se positionner pour le financement du projet. Une fois le projet en cours de financement, vous ne pourrez plus retirer d‘entité de la liste.</div>
+                            </div>
+                            <div class="row">
+                                <label>
+                                    <input id="visibility-all" type="checkbox">
+                                    Tout sélectionner
+                                </label>
+                                <label>
+                                    <input id="visibility-crca" type="checkbox">
+                                    Caisses régionales Crédit Agricole
+                                </label>
+                            </div>
+                            <hr>
+                        {% endif %}
                         <div class="row">
                             {% set lendersByColumn = (potentialLenders|length / 3)|round(0, 'ceil') %}
                             <div class="col-lg-4 col-md-4">
@@ -410,6 +369,14 @@
                     </form>
                 </div>
             </article><!-- /.dashboard-tab-pane -->
+            <article class="dashboard-tab-pane margin-20-t" id="article-bids">
+                <div class="panel">
+                    <div class="panel-content">
+                        <h4 class="h4">Offres de participation</h4>
+                        {% include ':frontbundle/demo/partials/bids:bids_list.html.twig' with {bids: project.bids} %}
+                    </div><!-- /.project-single-content -->
+                </div>
+            </article><!-- /.dashboard-tab-pane -->
             <article class="dashboard-tab-pane margin-20-t" id="article-documents">
                 <div class="panel">
                     <form action="{{ path('demo_project_details_upload', {'hash': project.hash}) }}" method="post" enctype="multipart/form-data" data-formvalidation data-formvalidation-shownotifications="false">
@@ -463,14 +430,6 @@
                             </div>
                         </div>
                     </div><!-- /.ui-template-definition -->
-                </div>
-            </article><!-- /.dashboard-tab-pane -->
-            <article class="dashboard-tab-pane margin-20-t" id="article-bids">
-                <div class="panel">
-                    <div class="panel-content">
-                        <h4 class="h4">Offres de participation</h4>
-                        {% include ':frontbundle/demo/partials/bids:bids_list.html.twig' with {bids: project.bids} %}
-                    </div><!-- /.project-single-content -->
                 </div>
             </article><!-- /.dashboard-tab-pane -->
             <article class="dashboard-tab-pane margin-20-t" id="article-discussions">
@@ -546,6 +505,81 @@
 
         dd {
             font-size: 16px;
+        }
+
+        #project-breadcrumb {
+            text-align: center;
+            display: flex;
+            margin: 0 0 22px 0;
+        }
+
+        #project-breadcrumb div {
+            display: block;
+            flex: 1;
+            float: left;
+            height: 40px;
+            background: #c5eee4;
+            text-align: center;
+            padding: 10px 0 0 40px;
+            position: relative;
+            margin: 0 10px 0 0;
+            font-size: 16px;
+            text-decoration: none;
+            color: #fff;
+        }
+
+        #project-breadcrumb div:after {
+            content: "";
+            border-top: 25px solid transparent;
+            border-bottom: 25px solid transparent;
+            border-left: 25px solid #c5eee4;
+            position: absolute;
+            right: -25px;
+            top: 0;
+            z-index: 1;
+        }
+
+        #project-breadcrumb div:before {
+            content: "";
+            border-top: 25px solid transparent;
+            border-bottom: 25px solid transparent;
+            border-left: 25px solid #eceaed;
+            position: absolute;
+            left: 0;
+            top: 0;
+        }
+
+        #project-breadcrumb div:first-child {
+            padding-left: 22px;
+        }
+
+        #project-breadcrumb div:first-child:before {
+            display: none;
+        }
+
+        #project-breadcrumb div:last-child {
+            margin-right: 0;
+            padding-right: 26px;
+        }
+
+        #project-breadcrumb div:last-child:after {
+            display: none;
+        }
+
+        #project-breadcrumb div.active {
+            background: #2bc9af;
+        }
+
+        #project-breadcrumb div.active:after {
+            border-left-color: #2bc9af;
+        }
+
+        #project-breadcrumb div.complete {
+            background: #2ba48f;
+        }
+
+        #project-breadcrumb div.complete:after {
+            border-left-color: #2ba48f;
         }
     </style>
 {% endblock %}
