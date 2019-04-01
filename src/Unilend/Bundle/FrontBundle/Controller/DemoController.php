@@ -4,6 +4,7 @@ namespace Unilend\Bundle\FrontBundle\Controller;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
+use Ramsey\Uuid\Uuid;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Filesystem\Exception\FileNotFoundException;
@@ -245,6 +246,7 @@ class DemoController extends AbstractController
         $date               = $date ? \DateTime::createFromFormat('d/m/Y', $date)->setTime(0, 0, 0) : null;
         $partnerId          = $request->request->get('partner');
         $productId          = $request->request->get('product');
+        $productId          = $productId ?: null;
         $rate               = $request->request->get('rate');
         $rate               = $rate ? floatval(str_replace(',', '.', $rate)) : null;
         $guarantee          = $request->request->get('guarantee') ? 1 : 0;
@@ -264,7 +266,7 @@ class DemoController extends AbstractController
             $project
                 ->setIdCompany($borrower)
                 ->setTitle($title)
-                ->setSlug($this->entityManager->getConnection()->generateSlug($title))
+                ->setSlug($this->entityManager->getConnection()->generateSlug($title) . '-' . substr(Uuid::uuid4(), 0, 8))
                 ->setAmount($amount)
                 ->setPeriod($duration * 12)
                 ->setComments($description)
@@ -289,7 +291,8 @@ class DemoController extends AbstractController
             foreach ($projectPercentFees as $fee) {
                 $percentFee = new PercentFee();
                 $type       = $this->entityManager->getRepository(FeeType::class)->find($fee['percentFee']['type']);
-                $percentFee->setType($type)
+                $percentFee
+                    ->setType($type)
                     ->setRate(str_replace(',', '.', $fee['percentFee']['rate']))
                     ->setIsRecurring((bool) empty($fee['percentFee']['isRecurring']) ? false : $fee['percentFee']['isRecurring']);
 
@@ -609,7 +612,7 @@ class DemoController extends AbstractController
      * @throws \Doctrine\ORM\NonUniqueResultException
      * @throws \Doctrine\ORM\OptimisticLockException
      */
-    public function projectRequestSubmit(Request $request, string $hash, ProjectStatusManager $projectStatusManager): Response
+    public function projectStatusUpdate(Request $request, string $hash, ProjectStatusManager $projectStatusManager): Response
     {
         $projectRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
         $project           = $projectRepository->findOneBy(['hash' => $hash]);
@@ -752,6 +755,14 @@ class DemoController extends AbstractController
         $outputValue = null;
 
         switch ($field) {
+            case 'title':
+                $project
+                    ->setTitle($value)
+                    ->setSlug($this->entityManager->getConnection()->generateSlug($value) . '-' . substr(Uuid::uuid4(), 0, 8));
+                $this->entityManager->flush($project);
+
+                $outputValue = $project->getTitle();
+                break;
             case 'amount':
                 $value = preg_replace('/[^0-9]/', '', $value);
                 $project->setAmount($value);
