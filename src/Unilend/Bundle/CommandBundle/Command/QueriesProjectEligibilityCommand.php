@@ -6,12 +6,8 @@ use Box\Spout\{
     Common\Type, Writer\WriterFactory
 };
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
-use Symfony\Component\Console\{
-    Input\InputInterface, Output\OutputInterface
-};
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    CompanyRating, Projects
-};
+use Symfony\Component\Console\{Input\InputInterface, Output\OutputInterface};
+use Unilend\Entity\{BorrowingMotive, CompanyRating, ProjectEligibilityAssessment, Projects, ProjectsNotes};
 
 class QueriesProjectEligibilityCommand extends ContainerAwareCommand
 {
@@ -75,10 +71,10 @@ class QueriesProjectEligibilityCommand extends ContainerAwareCommand
     private function getProjectEligibilityData(): array
     {
         $entityManager             = $this->getContainer()->get('doctrine.orm.entity_manager');
-        $assessmentRepository      = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectEligibilityAssessment');
-        $companyRatingRepository   = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyRating');
-        $borrowingMotiveRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:BorrowingMotive');
-        $projectNotesRepository    = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsNotes');
+        $assessmentRepository      = $entityManager->getRepository(ProjectEligibilityAssessment::class);
+        $companyRatingRepository   = $entityManager->getRepository(CompanyRating::class);
+        $borrowingMotiveRepository = $entityManager->getRepository(BorrowingMotive::class);
+        $projectNotesRepository    = $entityManager->getRepository(ProjectsNotes::class);
         $indexedProjectStatus      = $this->getContainer()->get('unilend.service.project_status_manager')->getIndexedProjectStatus();
         $ratingTypes               = [
             CompanyRating::TYPE_ALTARES_SCORE_20,
@@ -92,10 +88,10 @@ class QueriesProjectEligibilityCommand extends ContainerAwareCommand
 
         /** @var Projects $project */
         foreach ($evaluatedProjects as $project) {
-            $company              = $project->getIdCompany();
-            $motivation           = $project->getIdBorrowingMotive() ? $borrowingMotiveRepository->find($project->getIdBorrowingMotive()) : null;
-            $projectNote          = $projectNotesRepository->findOneBy(['idProject' => $project]);
-            $ratings              = $companyRatingRepository->getRatingsByTypeAndHistory($project->getIdCompanyRatingHistory(), $ratingTypes);
+            $company     = $project->getIdCompany();
+            $motivation  = $project->getIdBorrowingMotive() ? $borrowingMotiveRepository->find($project->getIdBorrowingMotive()) : null;
+            $projectNote = $projectNotesRepository->findOneBy(['idProject' => $project]);
+            $ratings     = $companyRatingRepository->getRatingsByTypeAndHistory($project->getIdCompanyRatingHistory(), $ratingTypes);
 
             $source = '';
             if ($company->getIdClientOwner() && false === $project->getCreateBo() && false === empty($company->getIdClientOwner()->getSource())) {

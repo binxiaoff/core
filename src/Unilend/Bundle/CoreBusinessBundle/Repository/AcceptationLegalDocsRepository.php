@@ -4,7 +4,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{AcceptationsLegalDocs, WalletType};
+use Unilend\Entity\{AcceptationsLegalDocs, Wallet, WalletType};
 use Unilend\Bundle\CoreBusinessBundle\Service\TermsOfSaleManager;
 
 class AcceptationLegalDocsRepository extends EntityRepository
@@ -39,8 +39,8 @@ class AcceptationLegalDocsRepository extends EntityRepository
     {
         $queryBuilder = $this->createQueryBuilder('ald');
         $queryBuilder
-            ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'w.idClient = ald.idClient')
-            ->innerJoin('UnilendCoreBusinessBundle:WalletType', 'wt', Join::WITH, 'wt.id = w.idType')
+            ->innerJoin(Wallet::class, 'w', Join::WITH, 'w.idClient = ald.idClient')
+            ->innerJoin(WalletType::class, 'wt', Join::WITH, 'wt.id = w.idType')
             ->andWhere('ald.pdfName IS NULL')
             ->andWhere('wt.label = :walletLabel')
             ->andWhere('ald.idLegalDoc != :rootFolderIdTree')

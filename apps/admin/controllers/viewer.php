@@ -25,7 +25,7 @@ class viewerController extends bootstrap
 
         switch ($this->params[0]) {
             case 'project':
-                $project = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($entityId);
+                $project = $entityManager->getRepository(Projects::class)->find($entityId);
 
                 if (null === $project) {
                     header('Location: ' . $this->lurl);
@@ -33,12 +33,12 @@ class viewerController extends bootstrap
                 }
 
                 $hasCategories = true;
-                $attachments   = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectAttachment')->getAttachedAttachmentsWithCategories($project);
+                $attachments   = $entityManager->getRepository(ProjectAttachment::class)->getAttachedAttachmentsWithCategories($project);
                 break;
             case 'client':
                 $hasCategories      = false;
                 $attachments        = [];
-                $attachmentEntities = $entityManager->getRepository('UnilendCoreBusinessBundle:Attachment')->findBy([
+                $attachmentEntities = $entityManager->getRepository(Attachment::class)->findBy([
                     'idClient' => $entityId,
                     'archived' => null
                 ]);

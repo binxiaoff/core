@@ -139,7 +139,7 @@
                     <td class="item-balance">
                         {% spaceless %}
                         {{ op.available_balance|localizedcurrency('EUR') }}&nbsp
-                        {% if op.label == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\OperationType::LENDER_LOAN') %}
+                        {% if op.label == constant('\\Unilend\\Entity\\OperationType::LENDER_LOAN') %}
                             {% set hasAcceptedOffers = true %}
                             *
                         {% endif %}

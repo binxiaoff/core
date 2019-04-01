@@ -3,12 +3,8 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
 use Doctrine\DBAL\Connection;
-use Doctrine\ORM\{
-    EntityRepository, NonUniqueResultException, NoResultException, Query\Expr\Join
-};
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Bids, Clients, Projects, Wallet
-};
+use Doctrine\ORM\{EntityRepository, NonUniqueResultException, NoResultException, Query\Expr\Join};
+use Unilend\Entity\{Bids, Clients, Projects, Wallet};
 
 class BidsRepository extends EntityRepository
 {
@@ -47,7 +43,7 @@ class BidsRepository extends EntityRepository
     {
         $qb = $this->createQueryBuilder('b')
             ->select('COUNT(b.idBid) AS bidNumber')
-            ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'w.id = b.wallet')
+            ->innerJoin(Wallet::class, 'w', Join::WITH, 'w.id = b.wallet')
             ->where('b.added BETWEEN :fromDate AND :toDate')
             ->andWhere('w.idClient = :idClient')
             ->setParameters(['fromDate' => $from, 'toDate' => $to, 'idClient' => $clientId]);

@@ -5,7 +5,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 use Doctrine\DBAL\ConnectionException;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{Clients, ClientsStatus, WalletType};
+use Unilend\Entity\{Clients, ClientsStatus, WalletType};
 
 class ClientCreationManager
 {

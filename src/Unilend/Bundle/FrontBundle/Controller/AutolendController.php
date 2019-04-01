@@ -7,7 +7,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\{Request, Response};
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\User\UserInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{Autobid, Clients, ClientSettingType, ClientsHistoryActions, ProjectPeriod, ProjectRateSettings, Projects, WalletType};
+use Unilend\Entity\{Autobid, Clients, ClientSettingType, ClientsHistoryActions, ProjectPeriod, ProjectRateSettings, Projects, Wallet, WalletType};
 use Unilend\Bundle\CoreBusinessBundle\Service\AutoBidSettingsManager;
 use Unilend\core\Loader;
 
@@ -31,7 +31,7 @@ class AutolendController extends Controller
 
         $autoBidSettingsManager = $this->get('unilend.service.autobid_settings_manager');
         $entityManager          = $this->get('doctrine.orm.entity_manager');
-        $wallet                 = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
+        $wallet                 = $entityManager->getRepository(Wallet::class)->getWalletByType($client, WalletType::LENDER);
 
         if (false === $autoBidSettingsManager->isQualified($client)) {
             return $this->redirectToRoute('lender_profile');
@@ -96,7 +96,7 @@ class AutolendController extends Controller
 
         $template['projectRatesGlobal'] = $autoBidSettingsManager->getRateRange();
 
-        $autobidRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Autobid');
+        $autobidRepository = $entityManager->getRepository(Autobid::class);
         $autoBidSettings   = $autobidRepository->getSettings($wallet, null, null, [Autobid::STATUS_ACTIVE, Autobid::STATUS_INACTIVE]);
         $autoBidSettings   = $this->fillMissingAutolendSettings($autoBidSettings, $projectPeriods, $project, $projectRateSettings);
 
@@ -200,7 +200,7 @@ class AutolendController extends Controller
 
         try {
             $wallet = $this->get('doctrine.orm.entity_manager')
-                ->getRepository('UnilendCoreBusinessBundle:Wallet')
+                ->getRepository(Wallet::class)
                 ->getWalletByType($client, WalletType::LENDER);
 
             $firstActivation = $autoBidSettingsManager->isFirstAutobidActivation($wallet);
@@ -247,7 +247,7 @@ class AutolendController extends Controller
         $entityManagerSimulator  = $this->get('unilend.service.entity_manager');
         $entityManager           = $this->get('doctrine.orm.entity_manager');
         $translator              = $this->get('translator');
-        $projectPeriodRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectPeriod');
+        $projectPeriodRepository = $entityManager->getRepository(ProjectPeriod::class);
         /** @var \projects $project */
         $project = $entityManagerSimulator->getRepository('projects');
         /** @var \ficelle $ficelle */
@@ -344,7 +344,7 @@ class AutolendController extends Controller
 
         try {
             $wallet = $entityManager
-                ->getRepository('UnilendCoreBusinessBundle:Wallet')
+                ->getRepository(Wallet::class)
                 ->getWalletByType($client, WalletType::LENDER);
 
             $firstActivation = $autoBidSettingsManager->isFirstAutobidActivation($wallet);

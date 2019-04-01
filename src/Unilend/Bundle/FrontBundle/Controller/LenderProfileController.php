@@ -10,7 +10,8 @@ use Symfony\Component\Form\{Extension\Core\Type\CheckboxType, FormError, FormInt
 use Symfony\Component\HttpFoundation\{File\UploadedFile, JsonResponse, RedirectResponse, Request, Response};
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\User\UserInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, Attachment, AttachmentType, Clients, ClientsGestionNotifications, ClientsGestionTypeNotif, ClientsHistoryActions, ClientsStatus, Ifu, LenderTaxExemption, Pays, TaxType, Wallet, WalletBalanceHistory, WalletType};
+use Unilend\Entity\{AcceptationsLegalDocs, AddressType, Attachment, AttachmentType, BankAccount, ClientAddress, Clients, ClientsGestionNotifications, ClientsGestionTypeNotif, ClientsHistoryActions,
+    ClientsStatus, ClientsStatusHistory, Companies, CompanyAddress, Ifu, LendersImpositionHistory, LenderTaxExemption, Operation, Pays, Settings, TaxType, Wallet, WalletBalanceHistory, WalletType};
 use Unilend\Bundle\CoreBusinessBundle\Service\{ClientDataHistoryManager, LocationManager, NewsletterManager, UserActivity\UserActivityDisplayManager};
 use Unilend\Bundle\FrontBundle\Form\ClientPasswordType;
 use Unilend\Bundle\FrontBundle\Form\LenderPersonContactType;
@@ -39,8 +40,8 @@ class LenderProfileController extends Controller
 
         $entityManager            = $this->get('doctrine.orm.entity_manager');
         $formManager              = $this->get('unilend.frontbundle.service.form_manager');
-        $companyAddressRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress');
-        $clientAddressRepository  = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientAddress');
+        $companyAddressRepository = $entityManager->getRepository(CompanyAddress::class);
+        $clientAddressRepository  = $entityManager->getRepository(ClientAddress::class);
         $unattachedClient         = clone $client;
 
         if ($client->isNaturalPerson()) {
@@ -57,7 +58,7 @@ class LenderProfileController extends Controller
             $hasPostalAddress  = null === $postalAddress;
             $postalAddressForm->add('samePostalAddress', CheckboxType::class, ['data' => $hasPostalAddress, 'required' => false]);
         } else {
-            $company                 = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $client]);
+            $company                 = $entityManager->getRepository(Companies::class)->findOneBy(['idClientOwner' => $client]);
             $unattachedCompany       = clone $company;
             $lastModifiedMainAddress = $companyAddressRepository->findLastModifiedNotArchivedAddressByType($company, AddressType::TYPE_MAIN_ADDRESS);
             $postalAddress           = $company->getIdPostalAddress();
@@ -151,15 +152,15 @@ class LenderProfileController extends Controller
                 'postalAddress' => $postalAddressForm->createView()
             ],
             'isLivingAbroad'       => $lastModifiedMainAddress ? ($lastModifiedMainAddress->getIdCountry()->getIdPays() !== Pays::COUNTRY_FRANCE) : false,
-            'acceptedTermsOfSale'  => $entityManager->getRepository('UnilendCoreBusinessBundle:AcceptationsLegalDocs')->findBy(['idClient' => $client], ['added' => 'ASC'])
+            'acceptedTermsOfSale'  => $entityManager->getRepository(AcceptationsLegalDocs::class)->findBy(['idClient' => $client], ['added' => 'ASC'])
         ];
         if (isset($contactForm) && $contactForm instanceof FormInterface) {
             $templateData['forms']['contact'] = $contactForm->createView();
         }
 
-        $setting                             = $entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Liste deroulante conseil externe de l\'entreprise']);
+        $setting                             = $entityManager->getRepository(Settings::class)->findOneBy(['type' => 'Liste deroulante conseil externe de l\'entreprise']);
         $templateData['externalCounselList'] = json_decode($setting->getValue(), true);
-        $attachmentRepository                = $entityManager->getRepository('UnilendCoreBusinessBundle:Attachment');
+        $attachmentRepository                = $entityManager->getRepository(Attachment::class);
         if (false === empty($company)) {
             $templateData['companyIdAttachments'][AttachmentType::CNI_PASSPORTE_DIRIGEANT] = $attachmentRepository->findOneClientAttachmentByType($client, AttachmentType::CNI_PASSPORTE_DIRIGEANT);
             $templateData['companyIdAttachments'][AttachmentType::CNI_PASSPORTE_VERSO]     = $attachmentRepository->findOneClientAttachmentByType($client, AttachmentType::CNI_PASSPORTE_VERSO);
@@ -194,10 +195,10 @@ class LenderProfileController extends Controller
         }
 
         $entityManager           = $this->get('doctrine.orm.entity_manager');
-        $clientAddressRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientAddress');
+        $clientAddressRepository = $entityManager->getRepository(ClientAddress::class);
         $unattachedClient        = clone $client;
-        $bankAccount             = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getLastModifiedBankAccount($client);
-        $wallet                  = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
+        $bankAccount             = $entityManager->getRepository(BankAccount::class)->getLastModifiedBankAccount($client);
+        $wallet                  = $entityManager->getRepository(Wallet::class)->getWalletByType($client, WalletType::LENDER);
 
         $form = $this->createFormBuilder()
             ->add('client', OriginOfFundsType::class, ['data' => $client])
@@ -221,8 +222,8 @@ class LenderProfileController extends Controller
             return $this->redirectToRoute('lender_profile_fiscal_information');
         }
 
-        $ifuRepository         = $entityManager->getRepository('UnilendCoreBusinessBundle:Ifu');
-        $taxType               = $entityManager->getRepository('UnilendCoreBusinessBundle:TaxType')->find(TaxType::TYPE_STATUTORY_CONTRIBUTIONS);
+        $ifuRepository         = $entityManager->getRepository(Ifu::class);
+        $taxType               = $entityManager->getRepository(TaxType::class)->find(TaxType::TYPE_STATUTORY_CONTRIBUTIONS);
         $taxExemptionDateRange = $this->getTaxExemptionDateRange();
         $taxExemptionHistory   = $this->getExemptionHistory($wallet);
         $isEligible            = $this->getTaxExemptionEligibility($wallet);
@@ -515,8 +516,8 @@ class LenderProfileController extends Controller
 
         try {
             $entityManager                  = $this->get('doctrine.orm.entity_manager');
-            $notificationSettingsRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsGestionNotifications');
-            $settingType                    = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsGestionTypeNotif')->find($typeId);
+            $notificationSettingsRepository = $entityManager->getRepository(ClientsGestionNotifications::class);
+            $settingType                    = $entityManager->getRepository(ClientsGestionTypeNotif::class)->find($typeId);
             $notificationSetting            = $notificationSettingsRepository->findOneBy([
                 'idClient' => $client->getIdClient(),
                 'idNotif'  => $settingType->getIdClientGestionTypeNotif()
@@ -582,7 +583,7 @@ class LenderProfileController extends Controller
         $entityManager   = $this->get('doctrine.orm.entity_manager');
 
         try {
-            $bankAccount = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getLastModifiedBankAccount($client);
+            $bankAccount = $entityManager->getRepository(BankAccount::class)->getLastModifiedBankAccount($client);
         } catch (NonUniqueResultException $exception) {
             $this->get('logger')->error('Client has more than one last modified bank account', [
                 'class'     => __CLASS__,
@@ -617,7 +618,7 @@ class LenderProfileController extends Controller
         $formManager   = $this->get('unilend.frontbundle.service.form_manager');
 
         try {
-            $lastModifiedMainAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientAddress')
+            $lastModifiedMainAddress = $entityManager->getRepository(ClientAddress::class)
                 ->findLastModifiedNotArchivedAddressByType($client, AddressType::TYPE_MAIN_ADDRESS);
         } catch (NonUniqueResultException $exception) {
             $this->get('logger')->error('Client has more than one last modified main address', [
@@ -653,7 +654,7 @@ class LenderProfileController extends Controller
     {
         $attachmentsList     = '';
         $entityManager       = $this->get('doctrine.orm.entity_manager');
-        $completenessRequest = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsStatusHistory')->findOneBy(
+        $completenessRequest = $entityManager->getRepository(ClientsStatusHistory::class)->findOneBy(
             ['idClient' => $client->getIdClient(), 'idStatus' => ClientsStatus::STATUS_COMPLETENESS],
             ['added' => 'DESC', 'id' => 'DESC']
         );
@@ -728,7 +729,7 @@ class LenderProfileController extends Controller
 
         if ($isFileUploaded && empty($this->get('session')->getFlashBag()->peek('completenessError'))) {
             if (false === $client->isNaturalPerson()) {
-                $company           = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $client]);
+                $company           = $entityManager->getRepository(Companies::class)->findOneBy(['idClientOwner' => $client]);
                 $unattachedCompany = clone $company;
             }
 
@@ -809,7 +810,7 @@ class LenderProfileController extends Controller
         $addressManager->saveClientAddress($address, $zip, $city, $countryId, $client, AddressType::TYPE_MAIN_ADDRESS);
 
         $lastModifiedAddress = $entityManager
-            ->getRepository('UnilendCoreBusinessBundle:ClientAddress')
+            ->getRepository(ClientAddress::class)
             ->findLastModifiedNotArchivedAddressByType($client, AddressType::TYPE_MAIN_ADDRESS);
 
         if (null === $lastModifiedAddress) {
@@ -836,7 +837,7 @@ class LenderProfileController extends Controller
     {
         $attachmentManager = $this->get('unilend.service.attachment_manager');
         $entityManager     = $this->get('doctrine.orm.entity_manager');
-        $attachmentType    = $entityManager->getRepository('UnilendCoreBusinessBundle:AttachmentType')->find($attachmentTypeId);
+        $attachmentType    = $entityManager->getRepository(AttachmentType::class)->find($attachmentTypeId);
         $attachment        = $attachmentManager->upload($client, $attachmentType, $file);
 
         if (false === $attachment instanceof Attachment) {
@@ -939,9 +940,9 @@ class LenderProfileController extends Controller
     private function getFiscalBalanceAndOwedCapital(Clients $client): array
     {
         $entityManager                  = $this->get('doctrine.orm.entity_manager');
-        $walletRepository               = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet');
-        $walletBalanceHistoryRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:WalletBalanceHistory');
-        $operationRepository            = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
+        $walletRepository               = $entityManager->getRepository(Wallet::class);
+        $walletBalanceHistoryRepository = $entityManager->getRepository(WalletBalanceHistory::class);
+        $operationRepository            = $entityManager->getRepository(Operation::class);
 
         $lastYear = new \DateTime('Last day of december last year');
         $wallet   = $walletRepository->getWalletByType($client->getIdClient(), WalletType::LENDER);
@@ -1000,7 +1001,7 @@ class LenderProfileController extends Controller
             'firstName'     => $client->getPrenom(),
             'password'      => '',
             'lenderPattern' => $this->get('doctrine.orm.entity_manager')
-                ->getRepository('UnilendCoreBusinessBundle:Wallet')
+                ->getRepository(Wallet::class)
                 ->getWalletByType($client->getIdClient(), WalletType::LENDER)
                 ->getWireTransferPattern()
         ];
@@ -1032,7 +1033,7 @@ class LenderProfileController extends Controller
     {
         /** @var \lender_evaluation_log $evaluationLog */
         $evaluationLog = $this->get('unilend.service.entity_manager')->getRepository('lender_evaluation_log');
-        $wallet        = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
+        $wallet        = $this->get('doctrine.orm.entity_manager')->getRepository(Wallet::class)->getWalletByType($client, WalletType::LENDER);
 
         return $evaluationLog->hasLenderLog($wallet->getId());
     }
@@ -1055,8 +1056,8 @@ class LenderProfileController extends Controller
         $entityManager                = $this->get('doctrine.orm.entity_manager');
         $translator                   = $this->get('translator');
         $logger                       = $this->get('logger');
-        $lenderTaxExemptionRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:LenderTaxExemption');
-        $wallet                       = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
+        $lenderTaxExemptionRepository = $entityManager->getRepository(LenderTaxExemption::class);
+        $wallet                       = $entityManager->getRepository(Wallet::class)->getWalletByType($client, WalletType::LENDER);
         $year                         = date('Y') + 1;
 
         $post = $request->request->all();
@@ -1130,7 +1131,7 @@ class LenderProfileController extends Controller
      */
     private function getTaxExemptionEligibility(Wallet $wallet): bool
     {
-        $lenderImpositionHistoryRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:LendersImpositionHistory');
+        $lenderImpositionHistoryRepository = $this->get('doctrine.orm.entity_manager')->getRepository(LendersImpositionHistory::class);
         try {
             $lenderInfo = $lenderImpositionHistoryRepository->getLenderTypeAndFiscalResidence($wallet->getId());
             if (false === empty($lenderInfo)) {
@@ -1158,7 +1159,7 @@ class LenderProfileController extends Controller
     {
         $result                       = [];
         $lenderTaxExemptionRepository = $this->get('doctrine.orm.entity_manager')
-            ->getRepository('UnilendCoreBusinessBundle:LenderTaxExemption');
+            ->getRepository(LenderTaxExemption::class);
         /** @var LenderTaxExemption $exemptionYear */
         foreach ($lenderTaxExemptionRepository->findBy(['idLender' => $wallet]) as $exemptionYear) {
             $result[] = $exemptionYear->getYear();

@@ -140,8 +140,8 @@
                          data-fileattach-maxfiles="1"
                          data-fileattach-emptyfilelabel="{% trans %} lender-profile_information-tab-identity-section-ID-recto {% endtrans %}"
                          data-fileattach-fileremove="false">
-                        {% if identityAttachments[constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\AttachmentType::CNI_PASSPORTE')].path is defined %}
-                            <input type="file" name="id_recto" value="{{ identityAttachments[constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\AttachmentType::CNI_PASSPORTE')].path }}" />
+                        {% if identityAttachments[constant('\\Unilend\\Entity\\AttachmentType::CNI_PASSPORTE')].path is defined %}
+                            <input type="file" name="id_recto" value="{{ identityAttachments[constant('\\Unilend\\Entity\\AttachmentType::CNI_PASSPORTE')].path }}" />
                         {% endif %}
                     </div><!-- /.ui-fileattach -->
                 </div>
@@ -152,8 +152,8 @@
                          data-fileattach-inputname="id_verso"
                          data-fileattach-maxfiles="1"
                          data-fileattach-emptyfilelabel="{% trans %} lender-profile_information-tab-identity-section-ID-verso {% endtrans %}">
-                        {% if identityAttachments[constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\AttachmentType::CNI_PASSPORTE_VERSO')].path is defined %}
-                            <input type="file" name="id_verso" value="{{ identityAttachments[constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\AttachmentType::CNI_PASSPORTE_VERSO')].path }}" />
+                        {% if identityAttachments[constant('\\Unilend\\Entity\\AttachmentType::CNI_PASSPORTE_VERSO')].path is defined %}
+                            <input type="file" name="id_verso" value="{{ identityAttachments[constant('\\Unilend\\Entity\\AttachmentType::CNI_PASSPORTE_VERSO')].path }}" />
                         {% endif %}
                     </div><!-- /.ui-fileattach -->
                 </div>

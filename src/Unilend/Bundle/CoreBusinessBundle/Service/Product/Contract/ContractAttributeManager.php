@@ -3,7 +3,7 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract;
 
 use Psr\Cache\CacheItemPoolInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\UnderlyingContract;
+use Unilend\Entity\UnderlyingContract;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 use Unilend\librairies\CacheKeys;
 

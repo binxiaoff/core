@@ -20,7 +20,7 @@
                         <ul class="list-block">
                             <li>
                                 <label class="custom-input-switch" id="label-newsletter">
-                                    <input type="checkbox" value="true" name="newsletter" id="input-newsletter"{% if newsletterConsent == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::NEWSLETTER_OPT_IN_ENROLLED') %} checked{% endif %}>
+                                    <input type="checkbox" value="true" name="newsletter" id="input-newsletter"{% if newsletterConsent == constant('\\Unilend\\Entity\\Clients::NEWSLETTER_OPT_IN_ENROLLED') %} checked{% endif %}>
                                     <span class="label">
                                         <span class="sr-only">{% trans %} common_switch-button-screen-reader {% endtrans %}</span>
                                     </span>

@@ -1,6 +1,6 @@
 <?php
 
-use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatus;
+use Unilend\Entity\ClientsStatus;
 
 ?>
 <script type="text/javascript">
@@ -53,7 +53,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatus;
                         }
 
                         if ($this->companies->get($client['id_client'], 'id_client_owner')) {
-                            if (\Unilend\Bundle\CoreBusinessBundle\Entity\Companies::CLIENT_STATUS_MANAGER != $this->companies->status_client) {
+                            if (\Unilend\Entity\Companies::CLIENT_STATUS_MANAGER != $this->companies->status_client) {
                                 $prenom = $this->companies->prenom_dirigeant . ' ' . $this->companies->nom_dirigeant;
                             } else {
                                 $prenom = $client['prenom'] . ' ' . $client['nom'];

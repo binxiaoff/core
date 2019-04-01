@@ -10,7 +10,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\{BinaryFileResponse, JsonResponse, Request, Response};
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Translation\TranslatorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{AcceptationsLegalDocs, Clients, WalletType};
+use Unilend\Entity\{AcceptationsLegalDocs, Clients, Tree, Wallet, WalletType};
 use Unilend\Bundle\CoreBusinessBundle\Service\Document\LenderTermsOfSaleGenerator;
 use Unilend\Bundle\CoreBusinessBundle\Service\{NewsletterManager, TermsOfSaleManager};
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
@@ -75,14 +75,14 @@ class TermsOfSaleController extends Controller
             $this->redirectToRoute('lender_subscription_personal_information');
         }
 
-        $termsOfSalesRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Tree');
+        $termsOfSalesRepository = $this->entityManager->getRepository(Tree::class);
         $termsOfSalesTree       = $termsOfSalesRepository->findBy(['idTree' => $idTree]);
 
         if (null === $termsOfSalesTree) {
             return $this->getTermsOfSaleErrorResponse($translator, self::ERROR_CANNOT_FIND_TOS, $idTree);
         }
 
-        $acceptedTosRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:AcceptationsLegalDocs');
+        $acceptedTosRepository = $this->entityManager->getRepository(AcceptationsLegalDocs::class);
         $acceptedTos           = $acceptedTosRepository->findOneBy(['idClient' => $client, 'idLegalDoc' => $idTree]);
 
         if (null === $acceptedTos) {
@@ -125,7 +125,7 @@ class TermsOfSaleController extends Controller
 
         if ($client instanceof Clients) {
             $accepted = $this->entityManager
-                ->getRepository('UnilendCoreBusinessBundle:AcceptationsLegalDocs')
+                ->getRepository(AcceptationsLegalDocs::class)
                 ->findOneBy(['idClient' => $client], ['added' => 'DESC']);
 
             if ($accepted->getIdLegalDoc() === $idTree) {
@@ -134,7 +134,7 @@ class TermsOfSaleController extends Controller
         }
 
         $tree = $this->entityManager
-            ->getRepository('UnilendCoreBusinessBundle:Tree')
+            ->getRepository(Tree::class)
             ->findOneBy(['idTree' => $idTree]);
 
 //        $seoManager->setCmsSeoData($tree);
@@ -238,7 +238,7 @@ class TermsOfSaleController extends Controller
                 $acceptationsTos = $entityManagerSimulator->getRepository('acceptations_legal_docs');
 
                 if ($acceptationsTos->exist($client->getIdClient(), 'id_client')) {
-                    $wallet                = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client->getIdClient(), WalletType::LENDER);
+                    $wallet                = $this->entityManager->getRepository(Wallet::class)->getWalletByType($client->getIdClient(), WalletType::LENDER);
                     $newTermsOfServiceDate = $this->termsOfSaleManager->getDateOfNewTermsOfSaleWithTwoMandates();
                     /** @var \loans $loans */
                     $loans = $entityManagerSimulator->getRepository('loans');

@@ -65,11 +65,11 @@
                                         {% endif %}
                                     </td>
                                     <td>
-                                        {% if mission.type == constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\DebtCollectionMission::TYPE_AMICABLE') %}
+                                        {% if mission.type == constant('Unilend\\Entity\\DebtCollectionMission::TYPE_AMICABLE') %}
                                             Amiable
-                                        {% elseif mission.type == constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\DebtCollectionMission::TYPE_LITIGATION') %}
+                                        {% elseif mission.type == constant('Unilend\\Entity\\DebtCollectionMission::TYPE_LITIGATION') %}
                                             Contentieux
-                                        {% elseif mission.type == constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\DebtCollectionMission::TYPE_PRE_LITIGATION') %}
+                                        {% elseif mission.type == constant('Unilend\\Entity\\DebtCollectionMission::TYPE_PRE_LITIGATION') %}
                                             Pré-contentieux
                                         {% else %}
                                             Inconnu

@@ -8,7 +8,8 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{AttachmentType, BorrowingMotive, Clients, Companies, ProjectAbandonReason, ProjectRejectionReason, Projects, ProjectsStatus, Users};
+use Unilend\Entity\{AttachmentType, BorrowingMotive, Clients, Companies, CompaniesBilans, Partner, ProjectAbandonReason, ProjectAttachmentType, ProjectRejectionReason, Projects, ProjectsStatus,
+    Settings, Tree, Users};
 use Unilend\Bundle\CoreBusinessBundle\Service\{ProjectRequestManager, ProjectStatusManager};
 use Unilend\Bundle\FrontBundle\Service\{DataLayerCollector};
 use Unilend\core\Loader;
@@ -74,7 +75,7 @@ class ProjectRequestController extends Controller
         $partnerId   = $request->request->getInt('partner');
         $companyName = $request->request->get('company_name');
 
-        if (empty($partnerId) || null === $partner = $entityManager->getRepository('UnilendCoreBusinessBundle:Partner')->find($partnerId)) {
+        if (empty($partnerId) || null === $partner = $entityManager->getRepository(Partner::class)->find($partnerId)) {
             $partnerManager = $this->get('unilend.service.partner_manager');
             $partner        = $partnerManager->getDefaultPartner();
         }
@@ -97,7 +98,7 @@ class ProjectRequestController extends Controller
                 $siren = null;
                 $siret = null;
             }
-            $user = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find(Users::USER_ID_FRONT);
+            $user = $entityManager->getRepository(Users::class)->find(Users::USER_ID_FRONT);
 
             $project = $projectRequestManager->newProject($user, $partner, ProjectsStatus::STATUS_REQUEST, $amount, $siren, $siret, $companyName, $email, $duration, $reason);
 
@@ -209,9 +210,9 @@ class ProjectRequestController extends Controller
 
         $entityManager = $this->get('doctrine.orm.entity_manager');
 
-        $settingsRepository             = $entityManager->getRepository('UnilendCoreBusinessBundle:Settings');
+        $settingsRepository             = $entityManager->getRepository(Settings::class);
         $treeId                         = $settingsRepository->findOneBy(['type' => 'Lien conditions generales depot dossier']);
-        $tree                           = $entityManager->getRepository('UnilendCoreBusinessBundle:Tree')->findOneBy(['idTree' => $treeId->getValue()]);
+        $tree                           = $entityManager->getRepository(Tree::class)->findOneBy(['idTree' => $treeId->getValue()]);
         $template['terms_of_sale_link'] = $this->generateUrl($tree->getSlug());
 
         $availablePeriods         = $settingsRepository->findOneBy(['type' => 'Durée des prêts autorisées']);
@@ -301,7 +302,7 @@ class ProjectRequestController extends Controller
 
         $lastBalanceSheet = null;
         if ($project->getIdDernierBilan()) {
-            $lastBalanceSheet = $entityManager->getRepository('UnilendCoreBusinessBundle:CompaniesBilans')->find($project->getIdDernierBilan());
+            $lastBalanceSheet = $entityManager->getRepository(CompaniesBilans::class)->find($project->getIdDernierBilan());
         }
         $template['lastBalanceSheet'] = $lastBalanceSheet;
 
@@ -330,7 +331,7 @@ class ProjectRequestController extends Controller
         $entityManager          = $this->get('doctrine.orm.entity_manager');
         $entityManagerSimulator = $this->get('unilend.service.entity_manager');
 
-        $settingsRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Settings');
+        $settingsRepository = $entityManager->getRepository(Settings::class);
 
         $availablePeriods = $settingsRepository->findOneBy(['type' => 'Durée des prêts autorisées']);
 
@@ -569,7 +570,7 @@ class ProjectRequestController extends Controller
         $taxReturnFile = $request->files->get('accounts');
         if ($taxReturnFile instanceof UploadedFile && $project->getIdCompany()->getIdClientOwner() instanceof Clients) {
             try {
-                $attachmentType = $entityManager->getRepository('UnilendCoreBusinessBundle:AttachmentType')->find(AttachmentType::DERNIERE_LIASSE_FISCAL);
+                $attachmentType = $entityManager->getRepository(AttachmentType::class)->find(AttachmentType::DERNIERE_LIASSE_FISCAL);
                 $attachment     = $attachmentManager->upload($project->getIdCompany()->getIdClientOwner(), $attachmentType, $taxReturnFile, false);
                 $attachmentManager->attachToProject($attachment, $project);
             } catch (\Exception $exception) {
@@ -596,7 +597,7 @@ class ProjectRequestController extends Controller
                 if ('accounts' !== $inputName && $file instanceof UploadedFile && false === empty($fileTypes[$inputName])) {
                     $attachmentTypeId = $fileTypes[$inputName];
                     try {
-                        $attachmentType = $entityManager->getRepository('UnilendCoreBusinessBundle:AttachmentType')->find($attachmentTypeId);
+                        $attachmentType = $entityManager->getRepository(AttachmentType::class)->find($attachmentTypeId);
                         $attachment     = $attachmentManager->upload($project->getIdCompany()->getIdClientOwner(), $attachmentType, $file, false);
                         $attachmentManager->attachToProject($attachment, $project);
                     } catch (\Exception $exception) {
@@ -854,7 +855,7 @@ class ProjectRequestController extends Controller
             if ($file instanceof UploadedFile && false === empty($fileTypes[$inputName])) {
                 $attachmentTypeId = $fileTypes[$inputName];
                 try {
-                    $attachmentType = $entityManager->getRepository('UnilendCoreBusinessBundle:AttachmentType')->find($attachmentTypeId);
+                    $attachmentType = $entityManager->getRepository(AttachmentType::class)->find($attachmentTypeId);
                     $attachment     = $attachmentManager->upload($project->getIdCompany()->getIdClientOwner(), $attachmentType, $file, false);
                     $attachmentManager->attachToProject($attachment, $project);
                 } catch (\Exception $exception) {
@@ -1006,7 +1007,7 @@ class ProjectRequestController extends Controller
 
         $maxItemsByAttachmentType = [];
         $entityManager            = $this->get('doctrine.orm.entity_manager');
-        $projectAttachmentTypes   = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectAttachmentType')->findBy([
+        $projectAttachmentTypes   = $entityManager->getRepository(ProjectAttachmentType::class)->findBy([
             'idType' => $attachmentTypes
         ]);
         foreach ($projectAttachmentTypes as $projectAttachmentType) {
@@ -1078,7 +1079,7 @@ class ProjectRequestController extends Controller
             if ($file instanceof UploadedFile && false === empty($fileTypes[$inputName])) {
                 $attachmentTypeId = $fileTypes[$inputName];
                 try {
-                    $attachmentType = $entityManager->getRepository('UnilendCoreBusinessBundle:AttachmentType')->find($attachmentTypeId);
+                    $attachmentType = $entityManager->getRepository(AttachmentType::class)->find($attachmentTypeId);
                     $attachment     = $attachmentManager->upload($project->getIdCompany()->getIdClientOwner(), $attachmentType, $file, false);
                     $attachmentManager->attachToProject($attachment, $project);
                 } catch (\Exception $exception) {
@@ -1165,7 +1166,7 @@ class ProjectRequestController extends Controller
 
         /** @var ProjectStatusManager $projectStatusManager */
         $projectStatusManager = $this->get('unilend.service.project_status_manager');
-        $abandonReason        = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:ProjectAbandonReason')
+        $abandonReason        = $this->get('doctrine.orm.entity_manager')->getRepository(ProjectAbandonReason::class)
             ->findBy(['label' => ProjectAbandonReason::UNSUBSCRIBE_FROM_EMAIL_REMINDER]);
 
         $projectStatusManager->abandonProject($project, $abandonReason, Users::USER_ID_FRONT);
@@ -1249,7 +1250,7 @@ class ProjectRequestController extends Controller
         }
 
         /** @var Response|Projects $project */
-        $project = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Projects')->findOneBy(['hash' => $hash]);
+        $project = $this->get('doctrine.orm.entity_manager')->getRepository(Projects::class)->findOneBy(['hash' => $hash]);
 
         if (null === $project) {
             return $this->redirectToRoute('home_borrower');
@@ -1305,7 +1306,7 @@ class ProjectRequestController extends Controller
         if ($project->getStatus() !== $projectStatus) {
             switch ($projectStatus) {
                 case ProjectsStatus::STATUS_CANCELLED:
-                    $rejectionReason = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:ProjectRejectionReason')
+                    $rejectionReason = $this->get('doctrine.orm.entity_manager')->getRepository(ProjectRejectionReason::class)
                         ->findBy(['label' => $message]);
                     try {
                         $projectStatusManager->rejectProject($project, $projectStatus, $rejectionReason, Users::USER_ID_FRONT);
@@ -1352,7 +1353,7 @@ class ProjectRequestController extends Controller
         /** @var \ficelle $ficelle */
         $ficelle          = Loader::loadLib('ficelle');
         $entityManager    = $this->get('doctrine.orm.entity_manager');
-        $clientRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
+        $clientRepository = $entityManager->getRepository(Clients::class);
 
         if ($this->removeEmailSuffix($company->getIdClientOwner()->getEmail()) !== $email) {
             if ($clientRepository->existEmail($email)) {

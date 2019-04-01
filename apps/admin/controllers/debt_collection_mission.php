@@ -1,9 +1,9 @@
 <?php
 
 use Symfony\Component\HttpFoundation\Request;
-use Unilend\Bundle\CoreBusinessBundle\Entity\DebtCollectionMission;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectCharge;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
+use Unilend\Entity\DebtCollectionMission;
+use Unilend\Entity\ProjectCharge;
+use Unilend\Entity\Zones;
 use Unilend\Bundle\CoreBusinessBundle\Service\DebtCollectionMissionManager;
 
 class debt_collection_missionController extends bootstrap
@@ -29,7 +29,7 @@ class debt_collection_missionController extends bootstrap
         if ($userManager->isGrantedRisk($this->userEntity) || $userManager->isUserGroupIT($this->userEntity)) {
             if (false === empty($this->params[0])) {
                 $missionId = filter_var($this->params[0], FILTER_VALIDATE_INT);
-                if (null !== ($debtCollectionMission = $entityManager->getRepository('UnilendCoreBusinessBundle:DebtCollectionMission')->find($missionId))) {
+                if (null !== ($debtCollectionMission = $entityManager->getRepository(DebtCollectionMission::class)->find($missionId))) {
                     try {
                         if (is_dir($this->getParameter('path.protected') . $debtCollectionMission->getAttachment())
                             || false === file_exists($this->getParameter('path.protected') . $debtCollectionMission->getAttachment())) {
@@ -73,11 +73,11 @@ class debt_collection_missionController extends bootstrap
             $feesRate           = -1;
             $errors             = [];
 
-            if (null === ($project = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($projectId))) {
+            if (null === ($project = $entityManager->getRepository(Projects::class)->find($projectId))) {
                 $errors[] = 'Le projet n\'existe pas.';
             }
             if (false === empty($this->request->request->get('debt-collector-hash'))) {
-                $debtCollector = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->findOneBy(['hash' => $this->request->request->get('debt-collector-hash')]);
+                $debtCollector = $entityManager->getRepository(Clients::class)->findOneBy(['hash' => $this->request->request->get('debt-collector-hash')]);
             }
             if (null === $debtCollector) {
                 $errors[] = 'Le recouvreur n\'existe pas.';
@@ -140,7 +140,7 @@ class debt_collection_missionController extends bootstrap
             $debtCollectionMissionId = filter_var($this->params[0], FILTER_VALIDATE_INT);
             $errors                  = [];
 
-            if (null === ($debtCollectionMission = $entityManager->getRepository('UnilendCoreBusinessBundle:DebtCollectionMission')->find($debtCollectionMissionId))) {
+            if (null === ($debtCollectionMission = $entityManager->getRepository(DebtCollectionMission::class)->find($debtCollectionMissionId))) {
                 $errors[] = 'La mission de recouvrement n\'existe pas.';
             }
 
@@ -177,12 +177,12 @@ class debt_collection_missionController extends bootstrap
 
             $errors = [];
 
-            if (null === ($project = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($projectId))) {
+            if (null === ($project = $entityManager->getRepository(Projects::class)->find($projectId))) {
                 $errors[] = 'Le projet n\'existe pas.';
             }
             if (empty($_POST['fee-type'])
                 || false === ($projectChargeType = filter_var($_POST['fee-type'], FILTER_VALIDATE_INT))
-                || null === ($projectChargeType = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectChargeType')->find($projectChargeType))
+                || null === ($projectChargeType = $entityManager->getRepository(ProjectChargeType::class)->find($projectChargeType))
             ) {
                 $errors[] = 'Le type de frais est incorrect';
             }

@@ -1,6 +1,6 @@
 <?php
 
-use Unilend\Bundle\CoreBusinessBundle\Entity\Partner;
+use Unilend\Entity\Partner;
 
 class tree extends tree_crud
 {

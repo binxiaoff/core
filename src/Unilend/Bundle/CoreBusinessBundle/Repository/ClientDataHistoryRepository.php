@@ -4,9 +4,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    ClientDataHistory, Clients
-};
+use Unilend\Entity\{ClientDataHistory, Clients};
 
 class ClientDataHistoryRepository extends EntityRepository
 {
@@ -19,7 +17,7 @@ class ClientDataHistoryRepository extends EntityRepository
     {
         $queryBuilder = $this->createQueryBuilder('cdh');
         $queryBuilder
-            ->leftJoin('UnilendCoreBusinessBundle:ClientDataHistory', 'cdh2', Join::WITH, 'cdh.field = cdh2.field AND cdh.datePending < cdh2.datePending')
+            ->leftJoin(ClientDataHistory::class, 'cdh2', Join::WITH, 'cdh.field = cdh2.field AND cdh.datePending < cdh2.datePending')
             ->where('cdh.idClient = :client')
             ->andWhere('cdh.dateValidated IS NULL')
             ->andWhere('cdh2.id IS NULL')

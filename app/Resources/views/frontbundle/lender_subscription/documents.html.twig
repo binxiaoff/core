@@ -3,8 +3,8 @@
 {% form_theme form '/frontbundle/forms/fields.html.twig' %}
 {# Set input ID namespace to "person" #}
  {% if client.type in [
- constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::TYPE_PERSON'),
- constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::TYPE_PERSON_FOREIGNER')] %}
+ constant('\\Unilend\\Entity\\Clients::TYPE_PERSON'),
+ constant('\\Unilend\\Entity\\Clients::TYPE_PERSON_FOREIGNER')] %}
     {% set idClientType = 'person' %}
 
 {# Otherwise set input ID namespace to "legal-entity" #}

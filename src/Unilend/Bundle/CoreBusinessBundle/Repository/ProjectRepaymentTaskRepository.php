@@ -3,8 +3,7 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
 use Doctrine\ORM\EntityRepository;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRepaymentTask;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Receptions;
+use Unilend\Entity\{ProjectRepaymentTask, Receptions};
 
 class ProjectRepaymentTaskRepository extends EntityRepository
 {

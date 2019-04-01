@@ -3,7 +3,7 @@
 use Box\Spout\{
     Common\Type, Writer\Style\StyleBuilder, Writer\WriterFactory
 };
-use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
+use Unilend\Entity\Zones;
 
 class queriesController extends bootstrap
 {

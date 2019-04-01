@@ -10,7 +10,7 @@
                 </thead>
                 <tbody>
                 <?php
-                /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectAttachment $projectAttachment */
+                /** @var \Unilend\Entity\ProjectAttachment $projectAttachment */
                 foreach ($this->attachments as $projectAttachment) : ?>
                     <?php $attachment = $projectAttachment->getAttachment(); ?>
                     <tr>

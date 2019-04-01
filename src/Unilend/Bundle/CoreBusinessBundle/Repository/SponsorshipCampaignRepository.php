@@ -3,7 +3,7 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
 use Doctrine\ORM\EntityRepository;
-use Unilend\Bundle\CoreBusinessBundle\Entity\SponsorshipCampaign;
+use Unilend\Entity\SponsorshipCampaign;
 
 class SponsorshipCampaignRepository extends EntityRepository
 {

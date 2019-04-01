@@ -72,9 +72,9 @@
 {% block pageHeadScripts %}
     <script type="text/javascript">
       var borrowerEsim = {
-        idMotiveAcquisitionMerger: {{ constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\BorrowingMotive::ID_MOTIVE_ACQUISITION_MERGER') }},
-        idMotiveFranchiserCreation: {{ constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\BorrowingMotive::ID_MOTIVE_FRANCHISER_CREATION') }},
-        idMotiveShareBuyBack: {{ constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\BorrowingMotive::ID_MOTIVE_SHARE_BUYBACK') }}
+        idMotiveAcquisitionMerger: {{ constant('\\Unilend\\Entity\\BorrowingMotive::ID_MOTIVE_ACQUISITION_MERGER') }},
+        idMotiveFranchiserCreation: {{ constant('\\Unilend\\Entity\\BorrowingMotive::ID_MOTIVE_FRANCHISER_CREATION') }},
+        idMotiveShareBuyBack: {{ constant('\\Unilend\\Entity\\BorrowingMotive::ID_MOTIVE_SHARE_BUYBACK') }}
       }
     </script>
 {% endblock %}

@@ -4,7 +4,7 @@ namespace Unilend\Bundle\FrontBundle\Service;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Cache\CacheItemPoolInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{Clients, ClientsStatus, Projects, ProjectsStatus};
+use Unilend\Entity\{Bids, Clients, ClientsStatus, Companies, Product, Projects, ProjectsStatus};
 use Unilend\Bundle\CoreBusinessBundle\Repository\ProjectsRepository;
 use Unilend\Bundle\CoreBusinessBundle\Service\{BidManager, CompanyBalanceSheetManager, ProjectManager};
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductManager;
@@ -95,9 +95,9 @@ class ProjectDisplayManager
         }
 
         $projectsData = [];
-        $products     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Product')->findAvailableProductsByClient($client);
+        $products     = $this->entityManager->getRepository(Product::class)->findAvailableProductsByClient($client);
 
-        $projectSearchRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
+        $projectSearchRepository = $this->entityManager->getRepository(Projects::class);
 //        $projects                = $projectSearchRepository->findByWithCustomSort(
 //            ['status' => $projectStatus, 'idProduct' => $products],
 //            $sort,
@@ -128,7 +128,7 @@ class ProjectDisplayManager
      */
     public function getBaseData(\projects $project): array
     {
-        $company = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->find($project->id_company);
+        $company = $this->entityManager->getRepository(Companies::class)->find($project->id_company);
 
         $now      = new \DateTime('NOW');
         $end      = $this->projectManager->getProjectEndDate($project);
@@ -183,7 +183,7 @@ class ProjectDisplayManager
         $projectStatusHistory = $this->entityManagerSimulator->getRepository('projects_status_history');
         /** @var \bids $bids */
         $bids          = $this->entityManagerSimulator->getRepository('bids');
-        $bidRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Bids');
+        $bidRepository = $this->entityManager->getRepository(Bids::class);
 
         $projectData         = $this->getBaseData($project);
         $alreadyFunded       = $bidRepository->getProjectTotalAmount($project->id_project);
@@ -203,8 +203,8 @@ class ProjectDisplayManager
             $projectData['maxValidRate']  = $projectRateSettings['rate_max'];
         }
 
-        $products  = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Product')->findAvailableProductsByClient($client);
-        $neighbors = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->findNeighbors(
+        $products  = $this->entityManager->getRepository(Product::class)->findAvailableProductsByClient($client);
+        $neighbors = $this->entityManager->getRepository(Projects::class)->findNeighbors(
             $project->id_project,
             ['status' => self::STATUS_DISPLAYABLE, 'idProduct' => $products],
             [ProjectsRepository::SORT_FIELD_END => 'DESC']
@@ -427,10 +427,10 @@ class ProjectDisplayManager
      */
     public function getTotalNumberOfDisplayedProjects(?Clients $client): int
     {
-        $productRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Product');
+        $productRepository = $this->entityManager->getRepository(Product::class);
         $products          = $productRepository->findAvailableProductsByClient($client);
 
-        $projectRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
+        $projectRepository = $this->entityManager->getRepository(Projects::class);
         $projects          = $projectRepository->findBy(['status' => self::STATUS_DISPLAYABLE, 'idProduct' => $products]);
 
         return count($projects);

@@ -1,6 +1,6 @@
 <?php
 
-use Unilend\Bundle\CoreBusinessBundle\Entity\{CompanyStatus, Echeanciers, EcheanciersEmprunteur as EcheanciersEmprunteurEntity, ProjectsStatus, UnilendStats};
+use Unilend\Entity\{CompanyStatus, Echeanciers, EcheanciersEmprunteur as EcheanciersEmprunteurEntity, ProjectsStatus, UnilendStats};
 
 class echeanciers_emprunteur extends echeanciers_emprunteur_crud
 {

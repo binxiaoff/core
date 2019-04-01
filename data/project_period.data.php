@@ -1,6 +1,6 @@
 <?php
 
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectPeriod;
+use Unilend\Entity\ProjectPeriod;
 
 class project_period extends project_period_crud
 {

@@ -6,7 +6,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Security\Core\Exception\{UnsupportedUserException, UsernameNotFoundException};
 use Symfony\Component\Security\Core\User\{UserInterface, UserProviderInterface};
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+use Unilend\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Service\{ClientManager, LenderManager, SlackManager, TermsOfSaleManager};
 use Unilend\Bundle\FrontBundle\Service\NotificationDisplayManager;
 
@@ -61,7 +61,7 @@ class UserProvider implements UserProviderInterface
     public function loadUserByUsername($username): UserInterface
     {
         if (false !== filter_var($username, FILTER_VALIDATE_EMAIL)) {
-            $users      = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->findGrantedLoginAccountsByEmail($username);
+            $users      = $this->entityManager->getRepository(Clients::class)->findGrantedLoginAccountsByEmail($username);
             $usersCount = count($users);
 
             if ($usersCount > 0) {
@@ -107,7 +107,7 @@ class UserProvider implements UserProviderInterface
             );
         }
 
-        $refreshedUser = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($id);
+        $refreshedUser = $this->entityManager->getRepository(Clients::class)->find($id);
         if (null === $refreshedUser) {
             throw new UsernameNotFoundException(sprintf('User with id %s not found', json_encode($id)));
         }

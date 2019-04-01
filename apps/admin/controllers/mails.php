@@ -1,9 +1,9 @@
 <?php
 
 use Symfony\Component\HttpFoundation\Request;
-use Unilend\Bundle\CoreBusinessBundle\Entity\MailTemplates;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Translations;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
+use Unilend\Entity\MailTemplates;
+use Unilend\Entity\Translations;
+use Unilend\Entity\Zones;
 use Unilend\Bundle\MessagingBundle\Service\MailQueueManager;
 use Unilend\Bundle\MessagingBundle\Service\MailTemplateManager;
 
@@ -34,7 +34,7 @@ class mailsController extends bootstrap
         if (isset($this->params[0]) && $this->params[0] == 'delete') {
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager          = $this->get('doctrine.orm.entity_manager');
-            $mailTemplateRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:MailTemplates');
+            $mailTemplateRepository = $entityManager->getRepository(MailTemplates::class);
             $mailTemplate           = $mailTemplateRepository->findOneBy([
                 'type'   => $this->params[1],
                 'locale' => $this->getParameter('locale'),
@@ -93,7 +93,7 @@ class mailsController extends bootstrap
 
             /** @var \Doctrine\ORM\EntityManager $entityManager */
             $entityManager          = $this->get('doctrine.orm.entity_manager');
-            $mailTemplateRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:MailTemplates');
+            $mailTemplateRepository = $entityManager->getRepository(MailTemplates::class);
             $mailTemplate           = $mailTemplateRepository->findOneBy([
                 'type'   => $type,
                 'locale' => $this->getParameter('locale'),
@@ -147,7 +147,7 @@ class mailsController extends bootstrap
 
             /** @var \Doctrine\ORM\EntityManager $entityManager */
             $entityManager          = $this->get('doctrine.orm.entity_manager');
-            $mailTemplateRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:MailTemplates');
+            $mailTemplateRepository = $entityManager->getRepository(MailTemplates::class);
             $this->mailTemplate     = $mailTemplateRepository->findOneBy([
                 'type'   => $this->params[0],
                 'locale' => $this->getParameter('locale'),
@@ -217,7 +217,7 @@ class mailsController extends bootstrap
         if ($header || $footer) {
             /** @var \Doctrine\ORM\EntityManager $entityManager */
             $entityManager          = $this->get('doctrine.orm.entity_manager');
-            $mailTemplateRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:MailTemplates');
+            $mailTemplateRepository = $entityManager->getRepository(MailTemplates::class);
 
             if ($header && $header = $mailTemplateRepository->find($header)) {
                 $content = $header->getContent() . $content;
@@ -282,9 +282,9 @@ class mailsController extends bootstrap
 
         try {
             $mailQueueId = filter_var($this->params[0], FILTER_SANITIZE_NUMBER_INT);
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\MailQueue $mailQueue */
+            /** @var \Unilend\Entity\MailQueue $mailQueue */
             $mailQueue = $this->get('doctrine.orm.entity_manager')
-                ->getRepository('UnilendCoreBusinessBundle:MailQueue')->find($mailQueueId);
+                ->getRepository(MailQueue::class)->find($mailQueueId);
             if (null === $mailQueue) {
                 $this->errorMessage = 'L\'email que vous avez demandé n\'existe pas.';
                 return;

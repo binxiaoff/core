@@ -1,6 +1,6 @@
 <?php
 
-use Unilend\Bundle\CoreBusinessBundle\Entity\UnderlyingContract;
+use Unilend\Entity\UnderlyingContract;
 
 ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -14,7 +14,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\UnderlyingContract;
 <body style="text-align:center;">
 <div class="img">
     <div class="creancier">
-        <?php if (in_array($this->clients->type, [\Unilend\Bundle\CoreBusinessBundle\Entity\Clients::TYPE_PERSON, \Unilend\Bundle\CoreBusinessBundle\Entity\Clients::TYPE_PERSON_FOREIGNER])) : ?>
+        <?php if (in_array($this->clients->type, [\Unilend\Entity\Clients::TYPE_PERSON, \Unilend\Entity\Clients::TYPE_PERSON_FOREIGNER])) : ?>
             <?= $this->clients->prenom ?> <?= $this->clients->nom ?><br/>
         <?php else :  ?>
             <?= $this->lenderCompany->getName() ?><br/>
@@ -76,10 +76,10 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\UnderlyingContract;
     </div>
     <div style="clear:both;"></div>
     <div class="signataire">
-        <?php if (in_array($this->clients->type, [\Unilend\Bundle\CoreBusinessBundle\Entity\Clients::TYPE_PERSON, \Unilend\Bundle\CoreBusinessBundle\Entity\Clients::TYPE_PERSON_FOREIGNER])) : ?>
+        <?php if (in_array($this->clients->type, [\Unilend\Entity\Clients::TYPE_PERSON, \Unilend\Entity\Clients::TYPE_PERSON_FOREIGNER])) : ?>
             <?= $this->clients->prenom ?> <?= $this->clients->nom ?>
         <?php else : ?>
-            <?php if ($this->lenderCompany->getStatusClient() != \Unilend\Bundle\CoreBusinessBundle\Entity\Companies::CLIENT_STATUS_MANAGER) : ?>
+            <?php if ($this->lenderCompany->getStatusClient() != \Unilend\Entity\Companies::CLIENT_STATUS_MANAGER) : ?>
                 <?= $this->lenderCompany->getPrenomDirigeant() ?> <?= $this->lenderCompany->getNomDirigeant() ?><br> Fonction : <?= $this->lenderCompany->getFonctionDirigeant() ?>
             <?php else : ?>
                 <?= $this->clients->prenom ?> <?= $this->clients->nom ?><br> Fonction : <?= $this->clients->fonction ?>

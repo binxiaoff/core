@@ -3,7 +3,7 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Service\Product;
 
 use Doctrine\ORM\EntityManagerInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{Bids, Clients, Product, ProductAttributeType, Projects, UnderlyingContract};
+use Unilend\Entity\{Bids, Clients, Product, ProductAttributeType, Projects, UnderlyingContract};
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\ContractManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\Validator\{BidValidator, ClientValidator, LenderValidator, ProjectValidator};
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
@@ -293,7 +293,7 @@ abstract class ProductManager
     private function convertProduct($product)
     {
         if ($product instanceof \product) {
-            return $this->entityManager->getRepository('UnilendCoreBusinessBundle:Product')->find($product->id_product);
+            return $this->entityManager->getRepository(Product::class)->find($product->id_product);
         }
 
         return $product;
@@ -302,7 +302,7 @@ abstract class ProductManager
     protected function convertProject($project)
     {
         if ($project instanceof \projects) {
-            return $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($project->id_project);
+            return $this->entityManager->getRepository(Projects::class)->find($project->id_project);
         }
 
         return $project;

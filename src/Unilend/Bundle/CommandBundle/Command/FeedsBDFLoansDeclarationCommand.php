@@ -7,9 +7,7 @@ use Symfony\Component\Console\Input\{
     InputArgument, InputInterface, InputOption
 };
 use Symfony\Component\Console\Output\OutputInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    CompanyStatus, Echeanciers, UnderlyingContract
-};
+use Unilend\Entity\{CompanyStatus, Echeanciers, TransmissionSequence, UnderlyingContract};
 use Unilend\Bundle\CoreBusinessBundle\Repository\TransmissionSequenceRepository;
 use Unilend\Bundle\CoreBusinessBundle\Service\BdfLoansDeclarationManager;
 use Unilend\core\Loader;
@@ -189,7 +187,7 @@ class FeedsBDFLoansDeclarationCommand extends ContainerAwareCommand
         $absoluteFilePath = implode(DIRECTORY_SEPARATOR, [$filePath, $fileName]);
         $entityManager    = $this->getContainer()->get('doctrine.orm.entity_manager');
         /** @var TransmissionSequenceRepository $transmissionSequenceRepository */
-        $transmissionSequenceRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:TransmissionSequence');
+        $transmissionSequenceRepository = $entityManager->getRepository(TransmissionSequence::class);
         $sequence                       = $transmissionSequenceRepository->findOneBy(['elementName' => $fileName]);
 
         if (null !== $sequence && $fileManager->exists($absoluteFilePath)) {
@@ -268,7 +266,7 @@ class FeedsBDFLoansDeclarationCommand extends ContainerAwareCommand
     {
         /** @var TransmissionSequenceRepository $transmissionSequenceRepository */
         $transmissionSequenceRepository = $this->getContainer()->get('doctrine.orm.entity_manager')
-            ->getRepository('UnilendCoreBusinessBundle:TransmissionSequence');
+            ->getRepository(TransmissionSequence::class);
         $sequence                       = $transmissionSequenceRepository->getNextSequence($fileName);
 
         return str_pad($this->getStartingRecord('01', $declarerId) . str_pad($sequence->getSequence(), 2, self::PADDING_NUMBER, STR_PAD_LEFT), self::PAD_LENGTH_RECORD, self::PADDING_CHAR, STR_PAD_RIGHT) . PHP_EOL;
@@ -529,7 +527,7 @@ class FeedsBDFLoansDeclarationCommand extends ContainerAwareCommand
             try {
                 /** @var Echeanciers $repayment */
                 $repayment = $this->getContainer()->get('doctrine.orm.entity_manager')
-                    ->getRepository('UnilendCoreBusinessBundle:Echeanciers')->findFirstOverdueScheduleByProject($projectId);
+                    ->getRepository(Echeanciers::class)->findFirstOverdueScheduleByProject($projectId);
 
                 if (null !== $repayment) {
                     return $repayment->getDateEcheance()->format('Ymd');

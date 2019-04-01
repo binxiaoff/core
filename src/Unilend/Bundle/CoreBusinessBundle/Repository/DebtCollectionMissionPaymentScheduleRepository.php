@@ -6,7 +6,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
+use Unilend\Entity\{DebtCollectionMission, Projects};
 
 class DebtCollectionMissionPaymentScheduleRepository extends EntityRepository
 {
@@ -19,7 +19,7 @@ class DebtCollectionMissionPaymentScheduleRepository extends EntityRepository
     {
         $queryBuilder = $this->createQueryBuilder('dcmps')
             ->select('SUM(dcmps.capital + dcmps.interest + dcmps.commissionVatIncl) AS entrustedAmount')
-            ->innerJoin('UnilendCoreBusinessBundle:DebtCollectionMission', 'dcm', Join::WITH, 'dcmps.idMission = dcm.id')
+            ->innerJoin(DebtCollectionMission::class, 'dcm', Join::WITH, 'dcmps.idMission = dcm.id')
             ->where('dcm.idProject = :project')
             ->setParameter('project', $project)
             ->andWhere('dcm.archived IS NULL');

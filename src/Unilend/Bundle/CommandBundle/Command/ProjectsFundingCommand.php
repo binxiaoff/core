@@ -4,7 +4,7 @@ namespace Unilend\Bundle\CommandBundle\Command;
 
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\{Input\InputInterface, Output\OutputInterface};
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
+use Unilend\Entity\{Projects, ProjectsStatus};
 use Unilend\Bundle\CoreBusinessBundle\Service\AcceptedBidAndLoanNotificationSender;
 use Unilend\librairies\CacheKeys;
 
@@ -34,7 +34,7 @@ class ProjectsFundingCommand extends ContainerAwareCommand
         $projectManager                 = $this->getContainer()->get('unilend.service.project_manager');
         $projectLifecycleManager        = $this->getContainer()->get('unilend.service.project_lifecycle_manager');
         $entityManager                  = $this->getContainer()->get('doctrine.orm.entity_manager');
-        $projectRepository              = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
+        $projectRepository              = $entityManager->getRepository(Projects::class);
 
         /** @var \loans $loan */
         $loan = $entityManagerSimulator->getRepository('loans');

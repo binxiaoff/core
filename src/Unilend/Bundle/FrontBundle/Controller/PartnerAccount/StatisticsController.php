@@ -7,7 +7,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\User\UserInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{Clients, ProjectsStatus};
+use Unilend\Entity\{Clients, Projects, ProjectsStatus};
 
 class StatisticsController extends Controller
 {
@@ -23,7 +23,7 @@ class StatisticsController extends Controller
     {
         $entityManager      = $this->get('doctrine.orm.entity_manager');
         $partnerManager     = $this->get('unilend.service.partner_manager');
-        $projectsRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
+        $projectsRepository = $entityManager->getRepository(Projects::class);
         $statusList         = [ProjectsStatus::STATUS_REVIEW, ProjectsStatus::STATUS_REPAYMENT];
         $template           = [
             'timeAxis' => [],

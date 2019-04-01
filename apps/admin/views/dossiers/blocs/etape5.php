@@ -100,7 +100,7 @@
                     <td>
                         CGV envoyées le <?= \DateTime::createFromFormat('Y-m-d H:i:s', $this->project_cgv->added)->format('d/m/Y à H:i:s') ?>
                         (<a href="<?= $this->furl . $this->project_cgv->getUrlPath() ?>" target="_blank">PDF</a>)
-                        <?php if (\Unilend\Bundle\CoreBusinessBundle\Entity\UniversignEntityInterface::STATUS_SIGNED == $this->project_cgv->status && false === empty($this->project_cgv->updated)) : ?>
+                        <?php if (\Unilend\Entity\UniversignEntityInterface::STATUS_SIGNED == $this->project_cgv->status && false === empty($this->project_cgv->updated)) : ?>
                             <strong>signées</strong> le <?= \DateTime::createFromFormat('Y-m-d H:i:s', $this->project_cgv->updated)->format('d/m/Y à H:i:s') ?>
                         <?php endif; ?>
                     </td>
@@ -119,7 +119,7 @@
         </colgroup>
         <tbody>
             <?php $currentCategory = null; ?>
-            <?php /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectAttachmentType $attachmentType */ ?>
+            <?php /** @var \Unilend\Entity\ProjectAttachmentType $attachmentType */ ?>
             <?php foreach ($this->attachmentTypes as $attachmentType) : ?>
                 <?php if ($attachmentType->getIdCategory()->getId() !== $currentCategory) : ?>
                     <?php $currentCategory = $attachmentType->getIdCategory()->getId(); ?>
@@ -142,7 +142,7 @@
                     </td>
                     <td>
                         <?php if (isset($this->projectAttachmentsByType[$attachmentType->getIdType()->getId()])) : ?>
-                            <?php /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectAttachment $projectAttachment */ ?>
+                            <?php /** @var \Unilend\Entity\ProjectAttachment $projectAttachment */ ?>
                             <?php foreach ($this->projectAttachmentsByType[$attachmentType->getIdType()->getId()] as $projectAttachment) : ?>
                                 <div class="attachment-file">
                                     <a class="attachment-remove" href="<?= $this->lurl ?>/attachment/remove_project/<?= $projectAttachment->getId() ?>">
@@ -171,7 +171,7 @@
                 <tr class="attachment-category">
                     <th colspan="3">Legacy (<?= count($this->projectAttachmentsByType) ?>)</th>
                 </tr>
-                <?php /** \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectAttachment[] @var $projectAttachments */ ?>
+                <?php /** \Unilend\Entity\ProjectAttachment[] @var $projectAttachments */ ?>
                 <?php foreach ($this->projectAttachmentsByType as $attachmentTypeId => $projectAttachments) : ?>
                     <tr>
                         <td><?= $projectAttachments[0]->getAttachment()->getType()->getLabel() ?></td>

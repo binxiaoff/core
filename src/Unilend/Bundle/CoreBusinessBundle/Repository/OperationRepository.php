@@ -7,8 +7,8 @@ use Doctrine\DBAL\Cache\QueryCacheProfile;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{Clients, ClientsStatus, CompanyStatus, Echeanciers, Loans, Operation, OperationSubType, OperationType, Pays, ProjectRepaymentTaskLog, Projects,
-    ProjectsStatus, Receptions, SponsorshipCampaign, UnilendStats, Wallet};
+use Unilend\Entity\{Clients, ClientsStatus, ClientsStatusHistory, CompanyStatus, Echeanciers, Loans, Operation, OperationSubType, OperationType, Pays, ProjectRepaymentTask, ProjectRepaymentTaskLog,
+    Projects, ProjectsStatus, Receptions, Sponsorship, SponsorshipCampaign, UnilendStats, Wallet};
 use Unilend\librairies\CacheKeys;
 
 class OperationRepository extends EntityRepository
@@ -16,7 +16,7 @@ class OperationRepository extends EntityRepository
     public function getOperationByTypeAndAmount($typeLabel, $amount)
     {
         $criteria = [
-            'idType' => $this->getEntityManager()->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => $typeLabel]),
+            'idType' => $this->getEntityManager()->getRepository(OperationType::class)->findOneBy(['label' => $typeLabel]),
             'amount' => $amount
         ];
         $operator = [
@@ -37,7 +37,7 @@ class OperationRepository extends EntityRepository
     public function getWithdrawOperationByWallet(Wallet $wallet, $amount, \DateTime $added)
     {
         $criteria = [
-            'idType'         => $this->getEntityManager()->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::LENDER_WITHDRAW]),
+            'idType'         => $this->getEntityManager()->getRepository(OperationType::class)->findOneBy(['label' => OperationType::LENDER_WITHDRAW]),
             'idWalletDebtor' => $wallet,
             'amount'         => $amount,
             'added'          => $added
@@ -64,8 +64,8 @@ class OperationRepository extends EntityRepository
             ->select('COUNT(o.id)')
             ->where('o.idType IN (:walletType)')
             ->setParameter('walletType', [
-                $this->getEntityManager()->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::LENDER_WITHDRAW])->getId(),
-                $this->getEntityManager()->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::LENDER_PROVISION])->getId(),
+                $this->getEntityManager()->getRepository(OperationType::class)->findOneBy(['label' => OperationType::LENDER_WITHDRAW])->getId(),
+                $this->getEntityManager()->getRepository(OperationType::class)->findOneBy(['label' => OperationType::LENDER_PROVISION])->getId(),
             ])
             ->andWhere('o.idWalletCreditor = :idWallet OR o.idWalletDebtor = :idWallet')
             ->setParameter('idWallet', $wallet)
@@ -156,14 +156,14 @@ class OperationRepository extends EntityRepository
     {
         $qb = $this->createQueryBuilder('o');
         $qb->select('SUM(o.amount)')
-            ->innerJoin('UnilendCoreBusinessBundle:OperationType', 'ot', Join::WITH, 'o.idType = ot.id')
+            ->innerJoin(OperationType::class, 'ot', Join::WITH, 'o.idType = ot.id')
             ->where('ot.label IN (:operationTypes)')
             ->andWhere('o.idWalletCreditor = :idWallet')
             ->setParameter('operationTypes', $operationTypes, Connection::PARAM_STR_ARRAY)
             ->setParameter('idWallet', $creditorWallet->getId());
 
         if (null !== $operationSubTypes) {
-            $qb->innerJoin('UnilendCoreBusinessBundle:OperationSubType', 'ost', Join::WITH, 'o.idSubType = ost.id')
+            $qb->innerJoin(OperationSubType::class, 'ost', Join::WITH, 'o.idSubType = ost.id')
                 ->andWhere('ost.label IN (:operationSubTypes)')
                 ->setParameter('operationSubTypes', $operationSubTypes, Connection::PARAM_STR_ARRAY);
         }
@@ -189,14 +189,14 @@ class OperationRepository extends EntityRepository
     {
         $qb = $this->createQueryBuilder('o');
         $qb->select('SUM(o.amount)')
-            ->innerJoin('UnilendCoreBusinessBundle:OperationType', 'ot', Join::WITH, 'o.idType = ot.id')
+            ->innerJoin(OperationType::class, 'ot', Join::WITH, 'o.idType = ot.id')
             ->where('ot.label IN (:operationTypes)')
             ->andWhere('o.idWalletDebtor = :idWallet')
             ->setParameter('operationTypes', $operationTypes, Connection::PARAM_STR_ARRAY)
             ->setParameter('idWallet', $debtorWallet->getId());
 
         if (null !== $operationSubTypes) {
-            $qb->innerJoin('UnilendCoreBusinessBundle:OperationSubType', 'ost', Join::WITH, 'o.idSubType = ost.id')
+            $qb->innerJoin(OperationSubType::class, 'ost', Join::WITH, 'o.idSubType = ost.id')
                 ->andWhere('ost.label IN (:operationSubTypes)')
                 ->setParameter('operationSubTypes', $operationSubTypes, Connection::PARAM_STR_ARRAY);
         }
@@ -462,7 +462,7 @@ class OperationRepository extends EntityRepository
     {
         $qbRegularization = $this->createQueryBuilder('o_r');
         $qbRegularization->select('IFNULL(SUM(o_r.amount), 0)')
-            ->innerJoin('UnilendCoreBusinessBundle:OperationType', 'ot_r', Join::WITH, 'o_r.idType = ot_r.id')
+            ->innerJoin(OperationType::class, 'ot_r', Join::WITH, 'o_r.idType = ot_r.id')
             ->where('ot_r.label IN (:taxRegularizationTypes)')
             ->andWhere('o_r.idRepaymentSchedule = :idRepaymentSchedule');
         $regularization = $qbRegularization->getDQL();
@@ -470,7 +470,7 @@ class OperationRepository extends EntityRepository
         $qb = $this->createQueryBuilder('o');
         $qb->select('IFNULL(SUM(o.amount), 0) as amount')
             ->addSelect('(' . $regularization . ') as regularized_amount')
-            ->innerJoin('UnilendCoreBusinessBundle:OperationType', 'ot', Join::WITH, 'o.idType = ot.id')
+            ->innerJoin(OperationType::class, 'ot', Join::WITH, 'o.idType = ot.id')
             ->where('ot.label IN (:taxTypes)')
             ->andWhere('o.idRepaymentSchedule = :idRepaymentSchedule')
             ->setParameter('taxTypes', OperationType::TAX_TYPES_FR, Connection::PARAM_STR_ARRAY)
@@ -492,7 +492,7 @@ class OperationRepository extends EntityRepository
     {
         $qbRegularization = $this->createQueryBuilder('o_r');
         $qbRegularization->select('IFNULL(SUM(o_r.amount), 0)')
-            ->innerJoin('UnilendCoreBusinessBundle:OperationType', 'ot_r', Join::WITH, 'o_r.idType = ot_r.id')
+            ->innerJoin(OperationType::class, 'ot_r', Join::WITH, 'o_r.idType = ot_r.id')
             ->where('ot_r.label IN (:repaymentRegularizationTypes)')
             ->andWhere('o_r.idRepaymentSchedule = :idRepaymentSchedule');
         $regularization = $qbRegularization->getDQL();
@@ -500,7 +500,7 @@ class OperationRepository extends EntityRepository
         $qb = $this->createQueryBuilder('o');
         $qb->select('IFNULL(SUM(o.amount), 0) as amount')
             ->addSelect('(' . $regularization . ') as regularized_amount')
-            ->innerJoin('UnilendCoreBusinessBundle:OperationType', 'ot', Join::WITH, 'o.idType = ot.id')
+            ->innerJoin(OperationType::class, 'ot', Join::WITH, 'o.idType = ot.id')
             ->where('ot.label IN (:repaymentTypes)')
             ->andWhere('o.idRepaymentSchedule = :idRepaymentSchedule')
             ->setParameter('repaymentTypes', [OperationType::CAPITAL_REPAYMENT, OperationType::GROSS_INTEREST_REPAYMENT], Connection::PARAM_STR_ARRAY)
@@ -671,8 +671,8 @@ class OperationRepository extends EntityRepository
             CASE WHEN ost.label in (:normalDebtCollectionRepayment) THEN IFNULL(o.amount, 0)
             ELSE IFNULL(- o.amount, 0) END
         ) as amount')
-            ->innerJoin('UnilendCoreBusinessBundle:OperationSubType', 'ost', Join::WITH, 'o.idSubType = ost.id')
-            ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'w.id = o.idWalletCreditor OR w.id = o.idWalletDebtor')
+            ->innerJoin(OperationSubType::class, 'ost', Join::WITH, 'o.idSubType = ost.id')
+            ->innerJoin(Wallet::class, 'w', Join::WITH, 'w.id = o.idWalletCreditor OR w.id = o.idWalletDebtor')
             ->where('ost.label IN (:allDebtCollectionRepayment)')
             ->andWhere('w.idClient IN (:clients)')
             ->andWhere('o.idProject = :project')
@@ -1001,7 +1001,7 @@ class OperationRepository extends EntityRepository
     {
         $queryBuilder = $this->createQueryBuilder('o');
         $queryBuilder->select('SUM(o.amount)')
-            ->innerJoin('UnilendCoreBusinessBundle:OperationSubType', 'ost', Join::WITH, 'o.idSubType = ost.id')
+            ->innerJoin(OperationSubType::class, 'ost', Join::WITH, 'o.idSubType = ost.id')
             ->where('ost.label = :earlyRepayment')
             ->andWhere('o.idLoan = :loan')
             ->setParameter('earlyRepayment', OperationSubType::CAPITAL_REPAYMENT_EARLY)
@@ -1065,14 +1065,14 @@ class OperationRepository extends EntityRepository
     {
         $qb = $this->createQueryBuilder('o');
         $qb->select('SUM(o.amount)')
-            ->innerJoin('UnilendCoreBusinessBundle:OperationType', 'ot', Join::WITH, 'o.idType = ot.id')
+            ->innerJoin(OperationType::class, 'ot', Join::WITH, 'o.idType = ot.id')
             ->where('ot.label IN (:operationTypes)')
             ->andWhere('o.idWalletCreditor = :idWallet')
             ->setParameter('operationTypes', $operationTypes, Connection::PARAM_STR_ARRAY)
             ->setParameter('idWallet', $creditorWallet->getId());
 
         if (null !== $operationSubTypes) {
-            $qb->innerJoin('UnilendCoreBusinessBundle:OperationSubType', 'ost', Join::WITH, 'o.idSubType = ost.id')
+            $qb->innerJoin(OperationSubType::class, 'ost', Join::WITH, 'o.idSubType = ost.id')
                 ->andWhere('ost.label IN (:operationSubTypes)')
                 ->setParameter('operationSubTypes', $operationSubTypes, Connection::PARAM_STR_ARRAY);
         }
@@ -1097,14 +1097,14 @@ class OperationRepository extends EntityRepository
     {
         $qb = $this->createQueryBuilder('o');
         $qb->select('SUM(o.amount)')
-            ->innerJoin('UnilendCoreBusinessBundle:OperationType', 'ot', Join::WITH, 'o.idType = ot.id')
+            ->innerJoin(OperationType::class, 'ot', Join::WITH, 'o.idType = ot.id')
             ->where('ot.label IN (:operationTypes)')
             ->andWhere('o.idWalletDebtor = :idWallet')
             ->setParameter('operationTypes', $operationTypes, Connection::PARAM_STR_ARRAY)
             ->setParameter('idWallet', $debtorWallet->getId());
 
         if (null !== $operationSubTypes) {
-            $qb->innerJoin('UnilendCoreBusinessBundle:OperationSubType', 'ost', Join::WITH, 'o.idSubType = ost.id')
+            $qb->innerJoin(OperationSubType::class, 'ost', Join::WITH, 'o.idSubType = ost.id')
                 ->andWhere('ost.label IN (:operationSubTypes)')
                 ->setParameter('operationSubTypes', $operationSubTypes, Connection::PARAM_STR_ARRAY);
         }
@@ -1135,7 +1135,7 @@ class OperationRepository extends EntityRepository
             ->addSelect('COUNT(DISTINCT o.idWalletCreditor) AS numberLenders')
             ->addSelect('ROUND(AVG(o.amount), 2) AS averageAmount')
             ->addSelect('COUNT(o.id) AS numberProvisions')
-            ->innerJoin('UnilendCoreBusinessBundle:OperationType', 'ot', Join::WITH, 'o.idType = ot.id')
+            ->innerJoin(OperationType::class, 'ot', Join::WITH, 'o.idType = ot.id')
             ->where('ot.label = :lenderProvision')
             ->andWhere('o.added BETWEEN :start AND :end')
             ->setParameter('lenderProvision', OperationType::LENDER_PROVISION)
@@ -1150,9 +1150,9 @@ class OperationRepository extends EntityRepository
 
         if ($onlineLenders) {
             $queryBuilder
-                ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'o.idWalletCreditor = w.id')
-                ->innerJoin('UnilendCoreBusinessBundle:Clients', 'c', Join::WITH, 'c.idClient = w.idClient')
-                ->innerJoin('UnilendCoreBusinessBundle:ClientsStatusHistory', 'csh', Join::WITH, 'c.idClientStatusHistory = csh.id')
+                ->innerJoin(Wallet::class, 'w', Join::WITH, 'o.idWalletCreditor = w.id')
+                ->innerJoin(Clients::class, 'c', Join::WITH, 'c.idClient = w.idClient')
+                ->innerJoin(ClientsStatusHistory::class, 'csh', Join::WITH, 'c.idClientStatusHistory = csh.id')
                 ->andWhere('csh.idStatus IN (:onlineStatus)')
                 ->setParameter('onlineStatus', ClientsStatus::GRANTED_LOGIN, Connection::PARAM_INT_ARRAY);
         }
@@ -1175,7 +1175,7 @@ class OperationRepository extends EntityRepository
         $queryBuilder->select('SUM(o.amount) AS totalAmount')
             ->addSelect('AVG(o.amount) AS averageAmount')
             ->addSelect('COUNT(o.id) AS numberWithdraw')
-            ->innerJoin('UnilendCoreBusinessBundle:OperationType', 'ot', Join::WITH, 'o.idType = ot.id')
+            ->innerJoin(OperationType::class, 'ot', Join::WITH, 'o.idType = ot.id')
             ->where('ot.label = :lenderWithdraw')
             ->andWhere('o.added BETWEEN :start AND :end')
             ->setParameter('lenderWithdraw', OperationType::LENDER_WITHDRAW)
@@ -1227,7 +1227,7 @@ class OperationRepository extends EntityRepository
     {
         $qb = $this->createQueryBuilder('o');
         $qb->select('SUM(CASE WHEN ot.label IN (:taxTypes) THEN o.amount ELSE -o.amount END) as amount')
-            ->innerJoin('UnilendCoreBusinessBundle:OperationType', 'ot', Join::WITH, 'o.idType = ot.id')
+            ->innerJoin(OperationType::class, 'ot', Join::WITH, 'o.idType = ot.id')
             ->where('ot.label IN (:allTaxTypes)')
             ->andWhere('o.idLoan = :loan')
             ->andWhere('o.idRepaymentTaskLog = :repaymentTaskLog')
@@ -1250,8 +1250,8 @@ class OperationRepository extends EntityRepository
     {
         $queryBuilder = $this->createQueryBuilder('o');
         $queryBuilder->select('SUM(o.amount)')
-            ->innerJoin('UnilendCoreBusinessBundle:OperationSubType', 'ost', Join::WITH, 'ost.id = o.idSubType')
-            ->innerJoin('UnilendCoreBusinessBundle:Sponsorship', 'ss', Join::WITH, 'ss.id = o.idSponsorship')
+            ->innerJoin(OperationSubType::class, 'ost', Join::WITH, 'ost.id = o.idSubType')
+            ->innerJoin(Sponsorship::class, 'ss', Join::WITH, 'ss.id = o.idSponsorship')
             ->where('ost.label = :subTypeLabel')
             ->andWhere('ss.idCampaign = :idCampaign')
             ->setParameter('subTypeLabel', $subTypeLabel)
@@ -1277,14 +1277,14 @@ class OperationRepository extends EntityRepository
     {
         $qb = $this->createQueryBuilder('o');
         $qb->select('SUM(o.amount)')
-            ->innerJoin('UnilendCoreBusinessBundle:OperationType', 'ot', Join::WITH, 'o.idType = ot.id')
+            ->innerJoin(OperationType::class, 'ot', Join::WITH, 'o.idType = ot.id')
             ->where('ot.label IN (:operationTypes)')
             ->andWhere('o.idWalletDebtor = :idWallet')
             ->setParameter('operationTypes', $operationTypes, Connection::PARAM_STR_ARRAY)
             ->setParameter('idWallet', $debtorWallet->getId());
 
         if (null !== $operationSubTypes) {
-            $qb->innerJoin('UnilendCoreBusinessBundle:OperationSubType', 'ost', Join::WITH, 'o.idSubType = ost.id')
+            $qb->innerJoin(OperationSubType::class, 'ost', Join::WITH, 'o.idSubType = ost.id')
                 ->andWhere('ost.label IN (:operationSubTypes)')
                 ->setParameter('operationSubTypes', $operationSubTypes, Connection::PARAM_STR_ARRAY);
         }
@@ -1318,9 +1318,9 @@ class OperationRepository extends EntityRepository
                 ELSE 0
             END) as interest
         ')
-            ->innerJoin('UnilendCoreBusinessBundle:OperationType', 'ot', Join::WITH, 'o.idType = ot.id')
-            ->innerJoin('UnilendCoreBusinessBundle:ProjectRepaymentTaskLog', 'prtl', Join::WITH, 'o.idRepaymentTaskLog = prtl.id')
-            ->innerJoin('UnilendCoreBusinessBundle:ProjectRepaymentTask', 'prt', Join::WITH, 'prtl.idTask = prt.id')
+            ->innerJoin(OperationType::class, 'ot', Join::WITH, 'o.idType = ot.id')
+            ->innerJoin(ProjectRepaymentTaskLog::class, 'prtl', Join::WITH, 'o.idRepaymentTaskLog = prtl.id')
+            ->innerJoin(ProjectRepaymentTask::class, 'prt', Join::WITH, 'prtl.idTask = prt.id')
             ->where('o.idLoan = :loan')
             ->andWhere('ot.label in (:repaymentTypes)')
             ->andWhere('prt.idWireTransferIn = :wireTransferIn')
@@ -1349,7 +1349,7 @@ class OperationRepository extends EntityRepository
     {
         $queryBuilder = $this->createQueryBuilder('o');
         $queryBuilder->select('SUM(o.amount) AS amount, DATE(o.added) AS added, IDENTITY(o.idWireTransferIn) AS idWireTransferIn, IDENTITY(o.idProject) AS idProject')
-            ->innerJoin('UnilendCoreBusinessBundle:OperationType', 'ot', Join::WITH, 'o.idType = ot.id')
+            ->innerJoin(OperationType::class, 'ot', Join::WITH, 'o.idType = ot.id')
             ->where('o.idWalletCreditor = :wallet')
             ->andWhere('ot.label IN (:feePayment)')
             ->groupBy('o.idWireTransferIn')
@@ -1377,9 +1377,9 @@ class OperationRepository extends EntityRepository
     {
         $queryBuilder = $this->createQueryBuilder('o');
         $queryBuilder->select('o.id AS id, IDENTITY(o.idLoan) AS idLoan, IDENTITY(o.idRepaymentTaskLog) AS idRepaymentTaskLog')
-            ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'w.id = o.idWalletDebtor')
-            ->innerJoin('UnilendCoreBusinessBundle:Clients', 'c', Join::WITH, 'c.idClient = w.idClient')
-            ->innerJoin('UnilendCoreBusinessBundle:OperationType', 'ot', Join::WITH, 'ot.id = o.idType')
+            ->innerJoin(Wallet::class, 'w', Join::WITH, 'w.id = o.idWalletDebtor')
+            ->innerJoin(Clients::class, 'c', Join::WITH, 'c.idClient = w.idClient')
+            ->innerJoin(OperationType::class, 'ot', Join::WITH, 'ot.id = o.idType')
             ->where('c.type in (:person)')
             ->andWhere('ot.label = :taxOperationType')
             ->andWhere('YEAR(o.added) = :year')

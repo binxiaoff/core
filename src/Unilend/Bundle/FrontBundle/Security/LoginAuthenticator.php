@@ -15,7 +15,7 @@ use Symfony\Component\Security\Csrf\{CsrfToken, CsrfTokenManagerInterface};
 use Symfony\Component\Security\Guard\Authenticator\AbstractFormLoginAuthenticator;
 use Symfony\Component\Security\Http\Session\SessionAuthenticationStrategyInterface;
 use Symfony\Component\Security\Http\Util\TargetPathTrait;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{Clients, ClientsStatus};
+use Unilend\Entity\{Clients, ClientsStatus, LoginLog, Settings};
 use Unilend\Bundle\CoreBusinessBundle\Service\{CIPManager, GoogleRecaptchaManager, LenderManager};
 use Unilend\Bundle\FrontBundle\Service\LoginHistoryLogger;
 
@@ -278,10 +278,10 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
             && in_array($exception->getMessage(), ['wrong-password', 'login-unknown', 'wrong-captcha', 'wrong-security-token'])
         ) {
             $failuresBeforeCaptcha = $this->entityManager
-                ->getRepository('UnilendCoreBusinessBundle:Settings')
+                ->getRepository(Settings::class)
                 ->findOneBy(['type' => 'Echecs login avant affichage captcha'])
                 ->getValue();
-            $loginLogRepository    = $this->entityManager->getRepository('UnilendCoreBusinessBundle:LoginLog');
+            $loginLogRepository    = $this->entityManager->getRepository(LoginLog::class);
             $previousFailures      = $loginLogRepository->countLastFailuresByIp($request->server->get('REMOTE_ADDR'), new \DateInterval('PT10M'));
             $displayCaptcha        = $previousFailures + 1 >= $failuresBeforeCaptcha;
 

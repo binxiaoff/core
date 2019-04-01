@@ -4,7 +4,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{ClientAtypicalOperation, Clients, Operation, OperationType, Pays, Users, VigilanceRule};
+use Unilend\Entity\{Backpayline, Bids, ClientAtypicalOperation, Clients, ClientVigilanceStatusHistory, Companies, Operation, OperationType, Pays, Users, VigilanceRule, Wallet};
 
 class VigilanceRuleManager
 {
@@ -48,7 +48,7 @@ class VigilanceRuleManager
      */
     public function checkRule(VigilanceRule $vigilanceRule)
     {
-        $clientRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
+        $clientRepository = $this->entityManager->getRepository(Clients::class);
 
         switch ($vigilanceRule->getLabel()) {
             case 'max_client_age':
@@ -64,22 +64,22 @@ class VigilanceRuleManager
                 $this->processDepositDetection($clientRepository->getClientsByDepositAmountAndDate(new \DateTime('4 weeks ago 00:00:00'), self::VIGILANCE_CUMULATIVE_DEPOSIT_AMOUNT_4_W, true), $vigilanceRule, true);
                 break;
             case 'max_sold_without_operation_on_period':
-                $walletRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet');
+                $walletRepository = $this->entityManager->getRepository(Wallet::class);
                 $this->processInactiveWalletDetection($walletRepository->getInactiveLenderWalletOnPeriod(new \DateTime('90 days ago 00:00:00'), self::VIGILANCE_INACTIVE_WALLET_AMOUNT), $vigilanceRule);
                 break;
             case 'max_deposit_withdraw_without_operation':
-                $operationRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
+                $operationRepository = $this->entityManager->getRepository(Operation::class);
                 $this->processDepositFollowedByWithdrawDetection($operationRepository->getOperationByTypeAndAmount(OperationType::LENDER_PROVISION, self::VIGILANCE_DEPOSIT_FOLLOWED_BY_WITHDRAW_AMOUNT), $vigilanceRule);
                 break;
             case 'frequent_rib_modification_on_period':
                 $this->processRibModificationDetection($clientRepository->getClientsWithMultipleBankAccountsOnPeriod(new \DateTime('1 year ago 00:00:00'), self::VIGILANCE_RIB_CHANGE_FREQUENCY), $vigilanceRule);
                 break;
             case 'frequent_deposit_fails':
-                $backPaylineRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Backpayline');
+                $backPaylineRepository = $this->entityManager->getRepository(Backpayline::class);
                 $this->processDepositFailsDetection($backPaylineRepository->getTransactionsToVerify(new \DateTime('yesterday midnight')), $vigilanceRule);
                 break;
             case 'legal_entity_max_sum_deposit_amount':
-                $companyRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Companies');
+                $companyRepository = $this->entityManager->getRepository(Companies::class);
                 $this->processDepositDetection($companyRepository->getLegalEntitiesByCumulativeDepositAmount(self::VIGILANCE_CUMULATIVE_DEPOSIT_AMOUNT_LEGAL_ENTITY), $vigilanceRule, true);
                 break;
             case 'fiscal_country_risk':
@@ -120,7 +120,7 @@ class VigilanceRuleManager
     {
         foreach ($clientOperations as $operation) {
             try {
-                $client            = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($operation['idClient']);
+                $client            = $this->entityManager->getRepository(Clients::class)->find($operation['idClient']);
                 $comment           = 'Le client a déposé une somme de ' . number_format($operation['depositAmount'], 2, ',', ' ') . ' €';
                 $atypicalOperation = $this->clientVigilanceStatusManager->addClientAtypicalOperation($vigilanceRule, $client, $operation['depositAmount'], $operation['operation'], $comment, $checkPendingDuplicate);
                 $this->clientVigilanceStatusManager->upgradeClientVigilanceStatusHistory($client, $vigilanceRule->getVigilanceStatus(), Users::USER_ID_CRON, $atypicalOperation, $comment);
@@ -139,9 +139,9 @@ class VigilanceRuleManager
      */
     private function processDepositFollowedByWithdrawDetection(array $depositOperations, VigilanceRule $vigilanceRule)
     {
-        $operationRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
-        $bidRepository       = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Bids');
-        $walletRepository    = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet');
+        $operationRepository = $this->entityManager->getRepository(Operation::class);
+        $bidRepository       = $this->entityManager->getRepository(Bids::class);
+        $walletRepository    = $this->entityManager->getRepository(Wallet::class);
 
         foreach ($depositOperations as $depositOperation) {
             $wallet             = $walletRepository->findOneBy(['id' => $depositOperation->getWalletCreditor()->getId()]);
@@ -184,11 +184,11 @@ class VigilanceRuleManager
      */
     private function processInactiveWalletDetection(array $inactiveWallets, VigilanceRule $vigilanceRule)
     {
-        $walletRepository                       = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet');
-        $bidsRepository                         = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Bids');
-        $operationRepository                    = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
-        $clientAtypicalOperationRepository      = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ClientAtypicalOperation');
-        $clientVigilanceStatusHistoryRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ClientVigilanceStatusHistory');
+        $walletRepository                       = $this->entityManager->getRepository(Wallet::class);
+        $bidsRepository                         = $this->entityManager->getRepository(Bids::class);
+        $operationRepository                    = $this->entityManager->getRepository(Operation::class);
+        $clientAtypicalOperationRepository      = $this->entityManager->getRepository(ClientAtypicalOperation::class);
+        $clientVigilanceStatusHistoryRepository = $this->entityManager->getRepository(ClientVigilanceStatusHistory::class);
 
         foreach ($inactiveWallets as $wallet) {
             try {
@@ -232,7 +232,7 @@ class VigilanceRuleManager
     {
         foreach ($clients as $clientRow) {
             try {
-                $client            = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($clientRow['idClient']);
+                $client            = $this->entityManager->getRepository(Clients::class)->find($clientRow['idClient']);
                 $comment           = 'Le client a modifié son RIB ' . $clientRow['nbRibChange'] . ' fois sur une année';
                 $atypicalOperation = $this->clientVigilanceStatusManager->addClientAtypicalOperation($vigilanceRule, $client, $clientRow['nbRibChange'], null, $comment, true);
                 $this->clientVigilanceStatusManager->upgradeClientVigilanceStatusHistory($client, $vigilanceRule->getVigilanceStatus(), Users::USER_ID_CRON, $atypicalOperation, $comment);
@@ -249,7 +249,7 @@ class VigilanceRuleManager
     {
         foreach ($clientDeposit as $deposit) {
             try {
-                $client            = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($deposit['id_client']);
+                $client            = $this->entityManager->getRepository(Clients::class)->find($deposit['id_client']);
                 $comment           = 'Le client a effectué ' . $deposit['nb_transactions'] . ' alimentations échouées avec ' . $deposit['nb_cards'] . ' CB différentes';
                 $atypicalOperation = $this->clientVigilanceStatusManager->addClientAtypicalOperation($vigilanceRule, $client, 'nombre d\'opérations: ' . $deposit['nb_transactions'] . ' | nombre de CB: ' . $deposit['nb_cards'], $deposit['idTransactionList'], $comment);
                 $this->clientVigilanceStatusManager->upgradeClientVigilanceStatusHistory($client, $vigilanceRule->getVigilanceStatus(), Users::USER_ID_CRON, $atypicalOperation, $comment);
@@ -266,7 +266,7 @@ class VigilanceRuleManager
     {
         foreach ($clients as $clientRow) {
             try {
-                $client            = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($clientRow['idClient']);
+                $client            = $this->entityManager->getRepository(Clients::class)->find($clientRow['idClient']);
                 $comment           = 'Le client a indiqué ' . trim($clientRow['countryLabel']) . ' comme pays fiscal';
                 $atypicalOperation = $this->clientVigilanceStatusManager->addClientAtypicalOperation($vigilanceRule, $client, $clientRow['countryLabel'], null, $comment);
                 $this->clientVigilanceStatusManager->upgradeClientVigilanceStatusHistory($client, $vigilanceRule->getVigilanceStatus(), Users::USER_ID_CRON, $atypicalOperation, $comment);

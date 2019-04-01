@@ -1,8 +1,7 @@
 <?php
 
 use Doctrine\ORM\EntityManager;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
+use Unilend\Entity\{Users, Zones};
 
 class usersController extends bootstrap
 {
@@ -43,7 +42,7 @@ class usersController extends bootstrap
                 die;
             }
 
-            $userType = $entityManager->getRepository('UnilendCoreBusinessBundle:UsersTypes')->find($_POST['id_user_type']);
+            $userType = $entityManager->getRepository(UsersTypes::class)->find($_POST['id_user_type']);
 
             if (null === $userType) {
                 $_SESSION['freeow']['title']   = 'Ajout d\'un utilisateur';
@@ -91,7 +90,7 @@ class usersController extends bootstrap
         }
 
         if (isset($_POST['form_mod_users'])) {
-            $user = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find($this->params[0]);
+            $user = $entityManager->getRepository(Users::class)->find($this->params[0]);
 
             if (null === $user) {
                 $_SESSION['freeow']['title']   = 'Modification d\'un utilisateur';
@@ -122,7 +121,7 @@ class usersController extends bootstrap
         }
 
         if (isset($this->params[0]) && $this->params[0] == 'status') {
-            $user = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find($this->params[1]);
+            $user = $entityManager->getRepository(Users::class)->find($this->params[1]);
             $user->setStatus($this->params[2] == Users::STATUS_ONLINE ? Users::STATUS_OFFLINE : Users::STATUS_ONLINE);
 
             $entityManager->flush($user);
@@ -151,7 +150,7 @@ class usersController extends bootstrap
 
         /** @var EntityManager $entityManager */
         $entityManager   = $this->get('doctrine.orm.entity_manager');
-        $this->userTypes = $entityManager->getRepository('UnilendCoreBusinessBundle:UsersTypes')->findAll();
+        $this->userTypes = $entityManager->getRepository(UsersTypes::class)->findAll();
     }
 
     public function _edit_perso()
@@ -173,7 +172,7 @@ class usersController extends bootstrap
 
         /** @var EntityManager $entityManager */
         $entityManager   = $this->get('doctrine.orm.entity_manager');
-        $this->userTypes = $entityManager->getRepository('UnilendCoreBusinessBundle:UsersTypes')->findAll();
+        $this->userTypes = $entityManager->getRepository(UsersTypes::class)->findAll();
     }
 
     public function _edit_password()
@@ -233,7 +232,7 @@ class usersController extends bootstrap
 
         /** @var EntityManager $entityManager */
         $entityManager   = $this->get('doctrine.orm.entity_manager');
-        $this->loginLogs = $entityManager->getRepository('UnilendCoreBusinessBundle:LoginConnectionAdmin')->findBy([], ['added' => 'DESC'], 500);
+        $this->loginLogs = $entityManager->getRepository(LoginConnectionAdmin::class)->findBy([], ['added' => 'DESC'], 500);
     }
 
     public function _generate_new_password()

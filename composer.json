@@ -6,6 +6,7 @@
   "autoload": {
     "psr-4": {
       "Unilend\\": "",
+      "Unilend\\Entity\\": "src/Entity",
       "Unilend\\Bridge\\": "src/Unilend/Bridge",
       "Unilend\\Bundle\\": "src/Unilend/Bundle"
     },
@@ -17,6 +18,7 @@
   "require": {
     "php": ">=7.1.11",
     "ext-bcmath": "*",
+    "ext-curl": "*"
     "ext-openssl": "^7.1",
     "ext-pdo": "*",
     "alcaeus/mongo-php-adapter": "^1.1",
@@ -48,6 +50,7 @@
     "ramsey/uuid": "^3.7",
     "scienta/doctrine-json-functions": "^4.0",
     "sensio/framework-extra-bundle": "^5.2",
+    "sensiolabs/security-checker": "^5.0",
     "sonata-project/cache-bundle": "^3.0",
     "sonata-project/seo-bundle": "^2.0",
     "symfony-cmf/routing-bundle": "^2.0",
@@ -62,6 +65,8 @@
     "xynnn/google-tag-manager-bundle": "^2.0"
   },
   "require-dev": {
+    "phpstan/phpstan-symfony": "^0.11.3",
+    "phpstan/phpstan-doctrine": "^0.11.2"
   },
   "scripts": {
     "symfony-scripts": [

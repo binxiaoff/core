@@ -5,7 +5,7 @@ namespace Unilend\Bundle\FrontBundle\Controller\Endpoint;
 use GuzzleHttp\Client;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\{HttpFoundation\JsonResponse, HttpFoundation\Request, HttpKernel\Exception\NotFoundHttpException, Routing\Annotation\Route};
-use Unilend\Bundle\CoreBusinessBundle\Entity\{ProjectRejectionReason, ProjectsStatus, Users};
+use Unilend\Entity\{ProjectRejectionReason, ProjectsStatus, Users};
 
 class SlackController extends Controller
 {
@@ -62,7 +62,7 @@ class SlackController extends Controller
         $userManager = $this->get('unilend.service.back_office_user_manager');
 
         $entityManager  = $this->get('doctrine.orm.entity_manager');
-        $userRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Users');
+        $userRepository = $entityManager->getRepository(Users::class);
         $user           = $userRepository->findOneBy([
             'slack'  => $request->request->get('user_name'),
             'status' => Users::STATUS_ONLINE

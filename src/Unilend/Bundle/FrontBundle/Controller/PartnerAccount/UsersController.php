@@ -8,7 +8,7 @@ use Symfony\Component\HttpFoundation\{Request, Response};
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{Clients, ClientsStatus, CompanyClient, TemporaryLinksLogin, Users, WalletType};
+use Unilend\Entity\{Clients, ClientsStatus, Companies, CompanyClient, TemporaryLinksLogin, Users, WalletType};
 
 class UsersController extends Controller
 {
@@ -25,7 +25,7 @@ class UsersController extends Controller
         $template                = ['users' => []];
         $entityManager           = $this->get('doctrine.orm.entity_manager');
         $partnerManager          = $this->get('unilend.service.partner_manager');
-        $companyClientRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyClient');
+        $companyClientRepository = $entityManager->getRepository(CompanyClient::class);
         $users                   = $companyClientRepository->findBy(['idCompany' => $partnerManager->getUserCompanies($partnerUser)]);
 
         foreach ($users as $user) {
@@ -59,7 +59,7 @@ class UsersController extends Controller
     public function userFormAction(Request $request): Response
     {
         $entityManager    = $this->get('doctrine.orm.entity_manager');
-        $clientRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
+        $clientRepository = $entityManager->getRepository(Clients::class);
         $clientHash       = $request->request->get('user');
         $action           = $request->request->get('action');
 
@@ -67,7 +67,7 @@ class UsersController extends Controller
             switch ($action) {
                 case 'password':
                     $token = $entityManager
-                        ->getRepository('UnilendCoreBusinessBundle:TemporaryLinksLogin')
+                        ->getRepository(TemporaryLinksLogin::class)
                         ->generateTemporaryLink($client, TemporaryLinksLogin::PASSWORD_TOKEN_LIFETIME_MEDIUM);
 
                     $keywords = [
@@ -156,8 +156,8 @@ class UsersController extends Controller
     {
         $errors            = [];
         $entityManager     = $this->get('doctrine.orm.entity_manager');
-        $clientRepository  = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
-        $companyRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies');
+        $clientRepository  = $entityManager->getRepository(Clients::class);
+        $companyRepository = $entityManager->getRepository(Companies::class);
 
         if (empty($request->request->get('lastname'))) {
             $errors['lastname'] = true;
@@ -246,7 +246,7 @@ class UsersController extends Controller
         $isLinkExpired = false;
         $entityManager = $this->get('doctrine.orm.entity_manager');
         /** @var TemporaryLinksLogin $temporaryLinks */
-        $temporaryLinks = $entityManager->getRepository('UnilendCoreBusinessBundle:TemporaryLinksLogin')->findOneBy(['token' => $securityToken]);
+        $temporaryLinks = $entityManager->getRepository(TemporaryLinksLogin::class)->findOneBy(['token' => $securityToken]);
 
         if (null === $temporaryLinks) {
             return $this->redirectToRoute('home');

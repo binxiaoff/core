@@ -4,15 +4,8 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Entity\OffresBienvenues;
-use Unilend\Bundle\CoreBusinessBundle\Entity\OffresBienvenuesDetails;
-use Unilend\Bundle\CoreBusinessBundle\Entity\OperationSubType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
-use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
-use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage;
-use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessageProvider;
+use Unilend\Entity\{Clients, ClientsStatusHistory, OffresBienvenues, OffresBienvenuesDetails, Operation, OperationSubType, OperationType, Settings, Wallet, WalletType};
+use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\{TemplateMessage, TemplateMessageProvider};
 
 class WelcomeOfferManager
 {
@@ -59,7 +52,7 @@ class WelcomeOfferManager
      */
     public function displayOfferOnHome()
     {
-        $welcomeOfferHomepage = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OffresBienvenues')->findOneBy([
+        $welcomeOfferHomepage = $this->entityManager->getRepository(OffresBienvenues::class)->findOneBy([
             'status' => OffresBienvenues::STATUS_ONLINE,
             'type'   => OffresBienvenues::TYPE_HOME
         ]);
@@ -78,7 +71,7 @@ class WelcomeOfferManager
      */
     public function getWelcomeOfferAmount($type)
     {
-        $welcomeOffer = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OffresBienvenues')->findOneBy([
+        $welcomeOffer = $this->entityManager->getRepository(OffresBienvenues::class)->findOneBy([
             'status' => OffresBienvenues::STATUS_ONLINE,
             'type'   => $type
         ]);
@@ -91,7 +84,7 @@ class WelcomeOfferManager
      */
     public function displayOfferOnLandingPage()
     {
-        $welcomeOfferLandingPage = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OffresBienvenues')->findOneBy([
+        $welcomeOfferLandingPage = $this->entityManager->getRepository(OffresBienvenues::class)->findOneBy([
             'status' => OffresBienvenues::STATUS_ONLINE,
             'type'   => OffresBienvenues::TYPE_LANDING_PAGE
         ]);
@@ -113,13 +106,13 @@ class WelcomeOfferManager
     {
         if ($client instanceof \clients) {
             /** @var Wallet $wallet */
-            $wallet = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client->id_client, WalletType::LENDER);
+            $wallet = $this->entityManager->getRepository(Wallet::class)->getWalletByType($client->id_client, WalletType::LENDER);
             $client = $wallet->getIdClient();
         }
 
         if ($client instanceof Clients) {
             /** @var Wallet $wallet */
-            $wallet = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
+            $wallet = $this->entityManager->getRepository(Wallet::class)->getWalletByType($client, WalletType::LENDER);
         }
 
         if (false === $client->isLender()) {
@@ -127,16 +120,16 @@ class WelcomeOfferManager
         }
 
         $offerType                = $this->getWelcomeOfferTypeForClient($client);
-        $welcomeOffer             = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OffresBienvenues')->getWelcomeOfferForClient($client, $offerType);
+        $welcomeOffer             = $this->entityManager->getRepository(OffresBienvenues::class)->getWelcomeOfferForClient($client, $offerType);
         $isOfferValid             = null !== $welcomeOffer;
         $hasEnoughMoneyLeft       = false;
-        $alreadyReceivedPromotion = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Operation')->sumCreditOperationsByTypeUntil($wallet, [OperationType::UNILEND_PROMOTIONAL_OPERATION]);
+        $alreadyReceivedPromotion = $this->entityManager->getRepository(Operation::class)->sumCreditOperationsByTypeUntil($wallet, [OperationType::UNILEND_PROMOTIONAL_OPERATION]);
 
         if ($isOfferValid && 0 == $alreadyReceivedPromotion) {
-            $unilendPromotionalWalletType = $this->entityManager->getRepository('UnilendCoreBusinessBundle:WalletType')->findOneBy(['label' => WalletType::UNILEND_PROMOTIONAL_OPERATION]);
-            $unilendPromotionalWallet     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->findOneBy(['idType' => $unilendPromotionalWalletType]);
+            $unilendPromotionalWalletType = $this->entityManager->getRepository(WalletType::class)->findOneBy(['label' => WalletType::UNILEND_PROMOTIONAL_OPERATION]);
+            $unilendPromotionalWallet     = $this->entityManager->getRepository(Wallet::class)->findOneBy(['idType' => $unilendPromotionalWalletType]);
 
-            $alreadyPaidOutOffer = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OffresBienvenuesDetails')->getSumPaidOutForOffer($welcomeOffer);
+            $alreadyPaidOutOffer = $this->entityManager->getRepository(OffresBienvenuesDetails::class)->getSumPaidOutForOffer($welcomeOffer);
             $hasEnoughMoneyLeft  = bcadd($alreadyPaidOutOffer, bcdiv($welcomeOffer->getMontant(),100, 2), 2) <= bcdiv($welcomeOffer->getMontantLimit(), 100, 2)
                 && $unilendPromotionalWallet->getAvailableBalance() >= bcdiv($welcomeOffer->getMontant(), 100, 2);
 
@@ -184,11 +177,11 @@ class WelcomeOfferManager
     public function isClientEligibleForWelcomeOffer($client)
     {
         if ($client instanceof \clients) {
-            $client = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($client->id_client);
+            $client = $this->entityManager->getRepository(Clients::class)->find($client->id_client);
         }
 
         $hasOrigin            = in_array($client->getOrigine(), [Clients::ORIGIN_WELCOME_OFFER_HOME, Clients::ORIGIN_WELCOME_OFFER_LP, Clients::ORIGIN_WELCOME_OFFER]);
-        $noPreviousValidation = (null === $this->entityManager->getRepository('UnilendCoreBusinessBundle:ClientsStatusHistory')->getFirstClientValidation($client));
+        $noPreviousValidation = (null === $this->entityManager->getRepository(ClientsStatusHistory::class)->getFirstClientValidation($client));
 
         return ($hasOrigin && $noPreviousValidation);
     }
@@ -208,7 +201,7 @@ class WelcomeOfferManager
             case Clients::ORIGIN_WELCOME_OFFER_LP:
                 return OffresBienvenues::TYPE_LANDING_PAGE;
             default:
-                $legacyWelcomeOffer = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OffresBienvenues')->findOneBy(['type' => 'Offre de bienvenue']);
+                $legacyWelcomeOffer = $this->entityManager->getRepository(OffresBienvenues::class)->findOneBy(['type' => 'Offre de bienvenue']);
                 if ($client->getAdded() < $legacyWelcomeOffer->getFin()) {
                     return 'Offre de bienvenue';
                 }
@@ -222,7 +215,7 @@ class WelcomeOfferManager
      */
     public function sendWelcomeOfferEmail(Clients $client, OffresBienvenues $welcomeOffer)
     {
-        $wallet   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
+        $wallet   = $this->entityManager->getRepository(Wallet::class)->getWalletByType($client, WalletType::LENDER);
         $keyWords = [
             'firstName'          => $client->getPrenom(),
             'welcomeOfferAmount' => $this->numberFormatter->format($welcomeOffer->getMontant() / 100),
@@ -253,12 +246,12 @@ class WelcomeOfferManager
      */
     public function clientHasReceivedWelcomeOffer(Clients $client)
     {
-        $wallet = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
+        $wallet = $this->entityManager->getRepository(Wallet::class)->getWalletByType($client, WalletType::LENDER);
         if (null === $wallet) {
             throw new \Exception('Client has no lender wallet');
         }
 
-        $receivedWelcomeOffer = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Operation')
+        $receivedWelcomeOffer = $this->entityManager->getRepository(Operation::class)
             ->sumCreditOperationsByTypeUntil($wallet, [OperationType::UNILEND_PROMOTIONAL_OPERATION], [OperationSubType::UNILEND_PROMOTIONAL_OPERATION_WELCOME_OFFER]);
 
         if (null === $receivedWelcomeOffer) {
@@ -277,12 +270,12 @@ class WelcomeOfferManager
      */
     public function getUnusedWelcomeOfferAmount(Clients $client)
     {
-        $wallet = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
+        $wallet = $this->entityManager->getRepository(Wallet::class)->getWalletByType($client, WalletType::LENDER);
         if (null === $wallet) {
             throw new \Exception('Client has no lender wallet');
         }
 
-        $operationRepository   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
+        $operationRepository   = $this->entityManager->getRepository(Operation::class);
         $welcomeOffer          = $operationRepository->sumCreditOperationsByTypeUntil($wallet, [OperationType::UNILEND_PROMOTIONAL_OPERATION], [OperationSubType::UNILEND_PROMOTIONAL_OPERATION_WELCOME_OFFER]);
         $cancelledWelcomeOffer = $operationRepository->sumDebitOperationsByTypeUntil($wallet, [OperationType::UNILEND_PROMOTIONAL_OPERATION_CANCEL], [OperationSubType::UNILEND_PROMOTIONAL_OPERATION_CANCEL_WELCOME_OFFER]);
         $totalWelcomeOffer     = bcsub($welcomeOffer, $cancelledWelcomeOffer, 4);
@@ -301,7 +294,7 @@ class WelcomeOfferManager
      */
     private function getWelcomeOfferValidityInMonth()
     {
-        $validitySetting = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Durée validité Offre de bienvenue']);
+        $validitySetting = $this->entityManager->getRepository(Settings::class)->findOneBy(['type' => 'Durée validité Offre de bienvenue']);
 
         return round($validitySetting->getValue() / 30, PHP_ROUND_HALF_DOWN);
     }

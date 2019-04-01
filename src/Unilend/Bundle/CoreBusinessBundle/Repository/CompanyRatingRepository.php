@@ -4,9 +4,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
 use Doctrine\ORM\EntityRepository;
 use Unilend\Bridge\Doctrine\DBAL\Connection;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    CompanyRating, CompanyRatingHistory
-};
+use Unilend\Entity\{CompanyRating, CompanyRatingHistory};
 
 class CompanyRatingRepository extends EntityRepository
 {

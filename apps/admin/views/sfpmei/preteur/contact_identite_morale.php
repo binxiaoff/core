@@ -28,7 +28,7 @@
         <?php if ('Mme' === $this->clients->civilite) : ?>Madame<?php elseif ('M.' === $this->clients->civilite) : ?>Monsieur<?php endif; ?> <?= $this->clients->prenom ?> <?= $this->clients->nom ?>
     </td>
 </tr>
-<?php if (\Unilend\Bundle\CoreBusinessBundle\Entity\Companies::CLIENT_STATUS_MANAGER != $this->companies->status_client) : ?>
+<?php if (\Unilend\Entity\Companies::CLIENT_STATUS_MANAGER != $this->companies->status_client) : ?>
     <tr>
         <th>Dirigeant (<?= $this->companies->fonction_dirigeant ?>)</th>
         <td>

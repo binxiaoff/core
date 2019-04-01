@@ -3,7 +3,7 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
 use Doctrine\ORM\EntityRepository;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{Clients, TemporaryLinksLogin};
+use Unilend\Entity\{Clients, TemporaryLinksLogin};
 
 class TemporaryLinksLoginRepository extends EntityRepository
 {
@@ -37,7 +37,7 @@ class TemporaryLinksLoginRepository extends EntityRepository
     {
         $queryBuilder = $this->createQueryBuilder('t');
         $queryBuilder
-            ->update('UnilendCoreBusinessBundle:TemporaryLinksLogin', 't')
+            ->update(TemporaryLinksLogin::class, 't')
             ->set('t.expires', ':now')
             ->where('t.idClient = :client')
             ->andWhere($queryBuilder->expr()->gt('t.expires', ':now'))

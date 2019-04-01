@@ -1,7 +1,6 @@
 <?php
 
-use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
+use Unilend\Entity\{Users, Zones};
 
 class zonesController extends bootstrap
 {

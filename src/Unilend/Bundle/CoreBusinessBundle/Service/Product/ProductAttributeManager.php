@@ -4,7 +4,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service\Product;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Cache\CacheItemPoolInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Product;
+use Unilend\Entity\{Product, ProductAttributeType};
 use Unilend\librairies\CacheKeys;
 
 class ProductAttributeManager
@@ -34,7 +34,7 @@ class ProductAttributeManager
     {
         $cachedItem = $this->cachePool->getItem(CacheKeys::PRODUCT_ATTRIBUTE_BY_TYPE . '_' . $product->getIdProduct() . '_' . $productAttributeTypeLabel);
         if (false === $cachedItem->isHit()) {
-            $productAttributeType = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProductAttributeType')->findOneBy(['label' => $productAttributeTypeLabel]);
+            $productAttributeType = $this->entityManager->getRepository(ProductAttributeType::class)->findOneBy(['label' => $productAttributeTypeLabel]);
 
             if ($productAttributeType) {
                 $attrVars          = $product->getProductAttributes($productAttributeType);

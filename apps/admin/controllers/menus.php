@@ -1,6 +1,6 @@
 <?php
 
-use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
+use Unilend\Entity\Zones;
 
 class menusController extends bootstrap
 {

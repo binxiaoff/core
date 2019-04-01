@@ -6,6 +6,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\{JsonResponse, Request};
 use Symfony\Component\Routing\Annotation\Route;
 use Unilend\Bundle\CoreBusinessBundle\Service\RiskDataMonitoring\EulerHermesManager;
+use Unilend\Entity\{Companies, Settings};
 
 class RiskDataMonitoringController extends Controller
 {
@@ -122,7 +123,7 @@ class RiskDataMonitoringController extends Controller
     private function authenticateEulerHermes(Request $request)
     {
         $entityManager      = $this->get('doctrine.orm.entity_manager');
-        $settingsRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Settings');
+        $settingsRepository = $entityManager->getRepository(Settings::class);
 
         if ($this->getParameter('kernel.environment') === 'prod') {
             $authorizedIpsSetting = $settingsRepository->findOneBy(['type' => 'Euler Hermes Monitoring production ips']);
@@ -167,7 +168,7 @@ class RiskDataMonitoringController extends Controller
             return $this->endpointFeedback(self::VALIDATION_ERROR, 'Siren format is not valid', 404);
         }
 
-        if (null === $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['siren' => $siren])) {
+        if (null === $this->get('doctrine.orm.entity_manager')->getRepository(Companies::class)->findOneBy(['siren' => $siren])) {
             return $this->endpointFeedback(self::VALIDATION_ERROR, 'Siren ' . $siren . ' is unknown to database', 404);
         }
 

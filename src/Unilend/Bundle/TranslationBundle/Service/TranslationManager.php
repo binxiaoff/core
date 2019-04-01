@@ -5,7 +5,7 @@ namespace Unilend\Bundle\TranslationBundle\Service;
 use Doctrine\ORM\EntityManagerInterface;
 use Sonata\CacheBundle\Adapter\SymfonyCache;
 use Symfony\Component\Translation\TranslatorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Translations;
+use Unilend\Entity\Translations;
 
 class TranslationManager
 {
@@ -39,7 +39,7 @@ class TranslationManager
      */
     public function selectSections(string $locale): array
     {
-        return $this->entityManager->getRepository('UnilendCoreBusinessBundle:Translations')->getSections($locale);
+        return $this->entityManager->getRepository(Translations::class)->getSections($locale);
     }
 
     /**
@@ -49,7 +49,7 @@ class TranslationManager
      */
     public function selectNamesForSection(string $section): array
     {
-        return $this->entityManager->getRepository('UnilendCoreBusinessBundle:Translations')->getNamesForSection($section);
+        return $this->entityManager->getRepository(Translations::class)->getNamesForSection($section);
     }
 
     /**
@@ -60,7 +60,7 @@ class TranslationManager
      */
     public function noCacheTrans(string $section, string $name): string
     {
-        $translation = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Translations')->findOneBy(['section' => $section, 'name' => $name]);
+        $translation = $this->entityManager->getRepository(Translations::class)->findOneBy(['section' => $section, 'name' => $name]);
 
         if (null === $translation) {
             throw new \InvalidArgumentException('There is not translation for section ' . $section . ' and name ' . $name);
@@ -101,7 +101,7 @@ class TranslationManager
      */
     public function deleteTranslation(string $section, string $name)
     {
-        $translation = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Translations')->findOneBy(['section' => $section, 'name' => $name]);
+        $translation = $this->entityManager->getRepository(Translations::class)->findOneBy(['section' => $section, 'name' => $name]);
 
         if (null !== $translation) {
             $this->entityManager->remove($translation);
@@ -120,7 +120,7 @@ class TranslationManager
      */
     public function modifyTranslation(string $section, string $name, string $text): void
     {
-        $translation = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Translations')->findOneBy(['section' => $section, 'name' => $name]);
+        $translation = $this->entityManager->getRepository(Translations::class)->findOneBy(['section' => $section, 'name' => $name]);
 
         if (null === $translation) {
             throw new \InvalidArgumentException('There is not translation for section ' . $section . ' and name ' . $name);

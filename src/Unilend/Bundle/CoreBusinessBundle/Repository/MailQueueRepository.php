@@ -2,11 +2,9 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
-use Doctrine\DBAL\Cache\QueryCacheProfile;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
-use Unilend\Bundle\CoreBusinessBundle\Entity\MailQueue;
-use Unilend\librairies\CacheKeys;
+use Unilend\Entity\{MailQueue, MailTemplates};
 
 class MailQueueRepository extends EntityRepository
 {
@@ -44,7 +42,7 @@ class MailQueueRepository extends EntityRepository
         $queryBuilder = $this->createQueryBuilder('mq');
         $queryBuilder
             ->select('COUNT(mq.idQueue)')
-            ->innerJoin('UnilendCoreBusinessBundle:MailTemplates', 'mt', Join::WITH, 'mq.idMailTemplate = mt.idMailTemplate')
+            ->innerJoin(MailTemplates::class, 'mt', Join::WITH, 'mq.idMailTemplate = mt.idMailTemplate')
             ->where('mt.idMailTemplate = :templateId')
             ->orWhere('mt.idHeader = :templateId')
             ->orWhere('mt.idFooter = :templateId')
@@ -75,7 +73,7 @@ class MailQueueRepository extends EntityRepository
                 mt.senderEmail,
                 mt.subject'
             )
-            ->innerJoin('UnilendCoreBusinessBundle:MailTemplates', 'mt', Join::WITH, 'mq.idMailTemplate = mt.idMailTemplate')
+            ->innerJoin(MailTemplates::class, 'mt', Join::WITH, 'mq.idMailTemplate = mt.idMailTemplate')
             ->where('mq.status = :sentStatus')
             ->setParameter('sentStatus', MailQueue::STATUS_SENT)
             ->orderBy('mq.sentAt', 'DESC');

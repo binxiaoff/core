@@ -5,7 +5,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service\UserActivity;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Translation\TranslatorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+use Unilend\Entity\{Clients, ClientsHistory, UserAgent};
 
 class UserActivityDisplayManager
 {
@@ -38,11 +38,11 @@ class UserActivityDisplayManager
     {
         $result = [];
         try {
-            $loginHistory = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ClientsHistory')
+            $loginHistory = $this->entityManager->getRepository(ClientsHistory::class)
                 ->getRecentLoginHistoryAndDevices($client);
 
             foreach ($loginHistory as $login) {
-                $historyUserAgent   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:UserAgent')->find($login['id_user_agent']);
+                $historyUserAgent   = $this->entityManager->getRepository(UserAgent::class)->find($login['id_user_agent']);
                 $isCurrentUserAgent = 0 === strcmp($historyUserAgent->getUserAgentString(), $currentRequestUserAgent);
 
                 $result[] = [

@@ -3,7 +3,7 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Service\Product\Checker;
 
 use Doctrine\ORM\EntityManagerInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Bids;
+use Unilend\Entity\Bids;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\ContractManager;
 
 trait BidChecker

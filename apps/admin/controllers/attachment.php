@@ -3,7 +3,7 @@
 use Doctrine\ORM\{EntityManager, OptimisticLockException};
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Filesystem\Exception\FileNotFoundException;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{Attachment, UsersHistory, Zones};
+use Unilend\Entity\{Attachment, UsersHistory, Zones};
 use Unilend\Bundle\CoreBusinessBundle\Service\AttachmentManager;
 
 class attachmentController extends bootstrap
@@ -26,7 +26,7 @@ class attachmentController extends bootstrap
             $path         = filter_var($this->params[3], FILTER_SANITIZE_STRING);
             $convert      = isset($this->params[2]) && 'view' === $this->params[2];
             /** @var Attachment $attachment */
-            $attachment = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Attachment')->find($attachmentId);
+            $attachment = $this->get('doctrine.orm.entity_manager')->getRepository(Attachment::class)->find($attachmentId);
 
             if ($attachment && urldecode($path) === $attachment->getPath()) {
                 /** @var AttachmentManager $attachmentManager */
@@ -59,7 +59,7 @@ class attachmentController extends bootstrap
 
         /** @var EntityManager $entityManager */
         $entityManager     = $this->get('doctrine.orm.entity_manager');
-        $projectAttachment = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectAttachment')->find($this->params[0]);
+        $projectAttachment = $entityManager->getRepository(ProjectAttachment::class)->find($this->params[0]);
 
         if (null === $projectAttachment) {
             $this->sendAjaxResponse(false, null, ['Unable to load project attachment']);
@@ -100,13 +100,13 @@ class attachmentController extends bootstrap
 
         /** @var EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
-        $project       = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($projectId);
+        $project       = $entityManager->getRepository(Projects::class)->find($projectId);
 
         if (null === $project) {
             $this->sendAjaxResponse(false, null, ['Projet inconnu']);
         }
 
-        $attachmentType = $entityManager->getRepository('UnilendCoreBusinessBundle:AttachmentType')->find($attachmentTypeId);
+        $attachmentType = $entityManager->getRepository(AttachmentType::class)->find($attachmentTypeId);
 
         if (null === $attachmentType) {
             $this->sendAjaxResponse(false, null, ['Type de document inconnu']);
@@ -125,8 +125,8 @@ class attachmentController extends bootstrap
             $this->sendAjaxResponse(false, null, ['Mauvais formatage des paramètres']);
         }
 
-        $projectAttachmentType = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectAttachmentType')->findOneBy(['idType' => $attachmentType]);
-        $projectAttachments    = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectAttachment')->getAttachedAttachmentsByType($project, $attachmentType);
+        $projectAttachmentType = $entityManager->getRepository(ProjectAttachmentType::class)->findOneBy(['idType' => $attachmentType]);
+        $projectAttachments    = $entityManager->getRepository(ProjectAttachment::class)->getAttachedAttachmentsByType($project, $attachmentType);
 
         if (count($projectAttachments) >= $projectAttachmentType->getMaxItems()) {
             $this->sendAjaxResponse(false, null, ['Vous ne pouvez pas charger de document supplémentaire de ce type. Veuillez d‘abord supprimer un des documents existants.']);

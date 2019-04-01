@@ -5,7 +5,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 use Doctrine\DBAL\Cache\QueryCacheProfile;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, Clients, Loans, Projects, ProjectsStatus, Wallet, WalletType};
+use Unilend\Entity\{AddressType, ClientAddress, Clients, Companies, Echeanciers, Loans, LoanTransfer, Projects, ProjectsStatus, Transfer, UnderlyingContract, Wallet, WalletType};
 use Unilend\librairies\CacheKeys;
 
 class LoansRepository extends EntityRepository
@@ -125,7 +125,7 @@ class LoansRepository extends EntityRepository
     public function findLoansByClients($project, array $clients)
     {
         $queryBuilder = $this->createQueryBuilder('l');
-        $queryBuilder->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'w.id = l.wallet')
+        $queryBuilder->innerJoin(Wallet::class, 'w', Join::WITH, 'w.id = l.wallet')
             ->where('l.project = :project')
             ->andWhere('w.idClient IN (:clients)')
             ->setParameter('project', $project)
@@ -144,7 +144,7 @@ class LoansRepository extends EntityRepository
     {
         $queryBuilder = $this->createQueryBuilder('l');
         $queryBuilder->select('SUM(ROUND(l.amount/100, 2))')
-            ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'w.id = l.wallet')
+            ->innerJoin(Wallet::class, 'w', Join::WITH, 'w.id = l.wallet')
             ->where('l.project = :project')
             ->andWhere('w.idClient IN (:clients)')
             ->setParameter('project', $project)
@@ -177,7 +177,7 @@ class LoansRepository extends EntityRepository
     {
         $queryBuilder = $this->createQueryBuilder('l')
             ->select('COUNT(DISTINCT l.idLoan)')
-            ->innerJoin('UnilendCoreBusinessBundle:Projects', 'p', Join::WITH, 'p.idProject = l.project')
+            ->innerJoin(Projects::class, 'p', Join::WITH, 'p.idProject = l.project')
             ->where('l.wallet = :wallet')
             ->setParameter('wallet', $wallet->getId())
             ->andWhere('l.status = :accepted')
@@ -204,10 +204,10 @@ class LoansRepository extends EntityRepository
                 ca.address, ca.zip AS postal_code, ca.city,
                 ROUND(l.amount / 100, 2) AS amount
             ')
-            ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'l.wallet = w.id')
-            ->innerJoin('UnilendCoreBusinessBundle:Clients', 'c', Join::WITH, 'c.idClient = w.idClient')
-            ->leftJoin('UnilendCoreBusinessBundle:Companies', 'com', Join::WITH, 'com.idClientOwner = w.idClient')
-            ->leftJoin('UnilendCoreBusinessBundle:ClientAddress', 'ca', Join::WITH, 'ca.id = com.idAddress')
+            ->innerJoin(Wallet::class, 'w', Join::WITH, 'l.wallet = w.id')
+            ->innerJoin(Clients::class, 'c', Join::WITH, 'c.idClient = w.idClient')
+            ->leftJoin(Companies::class, 'com', Join::WITH, 'com.idClientOwner = w.idClient')
+            ->leftJoin(ClientAddress::class, 'ca', Join::WITH, 'ca.id = com.idAddress')
             ->where('l.project = :project')
             ->setParameter('project', $project);
 
@@ -243,13 +243,13 @@ class LoansRepository extends EntityRepository
                 co.name AS companyName,
                 IDENTITY(t.idClientOrigin) AS idClientOrigin'
             )
-            ->innerJoin('UnilendCoreBusinessBundle:UnderlyingContract', 'uc', Join::WITH, 'l.idTypeContract = uc.idContract')
-            ->innerJoin('UnilendCoreBusinessBundle:Echeanciers', 'e', Join::WITH, 'l.idLoan = e.idLoan AND e.ordre = 1')
-            ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'l.wallet = w.id')
-            ->innerJoin('UnilendCoreBusinessBundle:Clients', 'c', Join::WITH, 'c.idClient = w.idClient')
-            ->leftJoin('UnilendCoreBusinessBundle:Companies', 'co', Join::WITH, 'co.idClientOwner = w.idClient')
-            ->leftJoin('UnilendCoreBusinessBundle:LoanTransfer', 'lt', Join::WITH, 'l.idLoan = lt.idLoan')
-            ->leftJoin('UnilendCoreBusinessBundle:Transfer', 't', Join::WITH, 'lt.idTransfer = t.idTransfer')
+            ->innerJoin(UnderlyingContract::class, 'uc', Join::WITH, 'l.idTypeContract = uc.idContract')
+            ->innerJoin(Echeanciers::class, 'e', Join::WITH, 'l.idLoan = e.idLoan AND e.ordre = 1')
+            ->innerJoin(Wallet::class, 'w', Join::WITH, 'l.wallet = w.id')
+            ->innerJoin(Clients::class, 'c', Join::WITH, 'c.idClient = w.idClient')
+            ->leftJoin(Companies::class, 'co', Join::WITH, 'co.idClientOwner = w.idClient')
+            ->leftJoin(LoanTransfer::class, 'lt', Join::WITH, 'l.idLoan = lt.idLoan')
+            ->leftJoin(Transfer::class, 't', Join::WITH, 'lt.idTransfer = t.idTransfer')
             ->where('l.project = :project')
             ->setParameter('project', $project);
 

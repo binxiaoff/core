@@ -132,7 +132,7 @@
                                 <span class="rating rating-{{ project.risk|convertRisk|split('.')|join('-') }}"><span class="sr-only">{% trans with {'%risk%': project.risk|convertRisk} %} project-detail_unilend-rating-wording-label {% endtrans %}</span></span>
                             </div>
                             <div class="project-list-item-period">
-                                {% if project.status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_CANCELLED') %}
+                                {% if project.status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_CANCELLED') %}
                                     {% trans with {'%date%': project.endDate|localizeddate('medium', 'none', app.request.locale)} %} project-list_project-finished-ko {% endtrans %}
                                 {% elseif project.finished %}
                                     {% trans with {

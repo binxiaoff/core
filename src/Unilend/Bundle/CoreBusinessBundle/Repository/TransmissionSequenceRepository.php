@@ -3,7 +3,7 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
 use Doctrine\ORM\EntityRepository;
-use Unilend\Bundle\CoreBusinessBundle\Entity\TransmissionSequence;
+use Unilend\Entity\TransmissionSequence;
 
 class TransmissionSequenceRepository extends EntityRepository
 {

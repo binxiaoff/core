@@ -3,7 +3,7 @@
 use Box\Spout\{Common\Type, Writer\Style\StyleBuilder, Writer\WriterFactory};
 use Doctrine\ORM\EntityManager;
 use Symfony\Component\Translation\TranslatorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, BankAccount, Bids, ClientsStatus, LenderStatistic, Loans, OperationType, ProjectsStatus, Receptions, VigilanceRule, Wallet, WalletType,
+use Unilend\Entity\{AddressType, BankAccount, Bids, ClientsStatus, LenderStatistic, Loans, OperationType, ProjectsStatus, Receptions, VigilanceRule, Wallet, WalletType,
     Zones};
 use Unilend\Bundle\CoreBusinessBundle\Service\{ClientDataHistoryManager, LenderOperationsManager};
 
@@ -66,7 +66,7 @@ class sfpmeiController extends bootstrap
             }
 
             /** @var \Unilend\Bundle\CoreBusinessBundle\Repository\ClientsRepository $clientRepository */
-            $clientRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients');
+            $clientRepository = $this->get('doctrine.orm.entity_manager')->getRepository(Clients::class);
             $this->lenders    = $clientRepository->findLenders($clientId, $email, $lastName, null, $companyName);
 
             if (false === empty($this->lenders) && 1 === count($this->lenders)) {
@@ -134,7 +134,7 @@ class sfpmeiController extends bootstrap
         if (false === empty($_POST)) {
             /** @var EntityManager $entityManager */
             $entityManager     = $this->get('doctrine.orm.entity_manager');
-            $projectRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
+            $projectRepository = $entityManager->getRepository(Projects::class);
 
             if (empty($_POST['id']) && empty($_POST['siren']) && empty($_POST['company'])) {
                 $_SESSION['error_search'][] = 'Veuillez remplir au moins un champ';
@@ -168,7 +168,7 @@ class sfpmeiController extends bootstrap
                 exit;
             }
 
-            $this->projectStatusRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatus');
+            $this->projectStatusRepository = $entityManager->getRepository(ProjectsStatus::class);
             $this->projects                = $projectRepository->search(null, $siren, $companyName);
 
             if (false === empty($this->projects) && 1 === count($this->projects)) {
@@ -207,7 +207,7 @@ class sfpmeiController extends bootstrap
         }
 
         $action       = isset($this->params[1]) ? $this->params[1] : 'default';
-        $this->wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($this->params[0], WalletType::LENDER);
+        $this->wallet = $entityManager->getRepository(Wallet::class)->getWalletByType($this->params[0], WalletType::LENDER);
 
         switch ($action) {
             case 'mouvements':
@@ -233,14 +233,14 @@ class sfpmeiController extends bootstrap
                 $statusOK = [ProjectsStatus::STATUS_ONLINE, ProjectsStatus::STATUS_FUNDED, ProjectsStatus::STATUS_REPAYMENT, ProjectsStatus::STATUS_REPAID];
                 $statusKO = [ProjectsStatus::STATUS_LOSS, ProjectsStatus::STATUS_CANCELLED];
 
-                $this->lenderIRR                = $entityManager->getRepository('UnilendCoreBusinessBundle:LenderStatistic')->findOneBy(['idWallet' => $this->wallet, 'typeStat' => LenderStatistic::TYPE_STAT_IRR], ['added' => 'DESC']);
+                $this->lenderIRR                = $entityManager->getRepository(LenderStatistic::class)->findOneBy(['idWallet' => $this->wallet, 'typeStat' => LenderStatistic::TYPE_STAT_IRR], ['added' => 'DESC']);
                 $this->projectsCount            = $this->loans->getProjectsCount($this->wallet->getId());
                 $this->problematicProjectsCount = $this->projects->countProjectsByStatusAndLender($this->wallet->getId(), $statusKO);
                 $this->publishedProjectsCount   = $this->projects->countProjectsSinceLendersubscription($this->clients->id_client, array_merge($statusOK, $statusKO));
                 $this->runningBids              = $this->bids->select('id_wallet = ' . $this->wallet->getId() . ' AND status = ' . Bids::STATUS_PENDING, 'added DESC');
                 $this->hasTransferredLoans      = $this->get('unilend.service.lender_manager')->hasTransferredLoans($this->wallet->getIdClient());
                 $this->lenderLoans              = $this->loans->getSumLoansByProject($this->wallet->getId());
-                $this->projectsInDebt           = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->getProjectsInDebt();
+                $this->projectsInDebt           = $entityManager->getRepository(Projects::class)->getProjectsInDebt();
                 break;
             case 'bids_csv':
                 $this->hideDecoration();
@@ -273,20 +273,20 @@ class sfpmeiController extends bootstrap
                 break;
             default:
                 $this->dataHistory   = $this->get(ClientDataHistoryManager::class)->getDataHistory($this->wallet->getIdClient());
-                $this->statusHistory = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsStatusHistory')->findBy(
+                $this->statusHistory = $entityManager->getRepository(ClientsStatusHistory::class)->findBy(
                     ['idClient' => $this->wallet->getIdClient()],
                     ['added' => 'DESC', 'id' => 'DESC']
                 );
 
-                /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Operation $firstProvision */
-                $provisionType  = $entityManager->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneByLabel(OperationType::LENDER_PROVISION);
-                $firstProvision = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation')->findOneBy(['idWalletCreditor' => $this->wallet, 'idType' => $provisionType], ['id' => 'ASC']);
-                $paysRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Pays');
+                /** @var \Unilend\Entity\Operation $firstProvision */
+                $provisionType  = $entityManager->getRepository(OperationType::class)->findOneByLabel(OperationType::LENDER_PROVISION);
+                $firstProvision = $entityManager->getRepository(Operation::class)->findOneBy(['idWalletCreditor' => $this->wallet, 'idType' => $provisionType], ['id' => 'ASC']);
+                $paysRepository = $entityManager->getRepository(Pays::class);
 
                 $this->lenderStatusMessage    = $this->getLenderStatusMessage();
                 $this->cipEnabled             = $this->get('unilend.service.cip_manager')->hasValidEvaluation($this->wallet->getIdClient());
                 $this->birthCountry           = empty($this->clients->id_pays_naissance) ? '' : $paysRepository->find($this->clients->id_pays_naissance)->getFr();
-                $lenderTaxExemptionRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:LenderTaxExemption');
+                $lenderTaxExemptionRepository = $entityManager->getRepository(LenderTaxExemption::class);
                 $this->exemptionYears         = [];
                 foreach ($lenderTaxExemptionRepository->findBy(['idLender' => $this->wallet], ['year' => 'DESC']) as $taxExemption) {
                     $this->exemptionYears[] = $taxExemption->getYear();
@@ -305,15 +305,15 @@ class sfpmeiController extends bootstrap
                 $this->totalRunningBidsCount          = count($this->runningBids);
                 $this->averageBidAmount               = $this->bids->getAvgPreteur($this->wallet->getId(), 'amount', implode(', ', [Bids::STATUS_ACCEPTED, Bids::STATUS_REJECTED]));
                 $this->averageLoanRate                = $this->loans->getAvgPrets($this->wallet->getId());
-                $this->currentBankAccount             = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getLastModifiedBankAccount($this->clients->id_client);
+                $this->currentBankAccount             = $entityManager->getRepository(BankAccount::class)->getLastModifiedBankAccount($this->clients->id_client);
                 $this->isPhysicalPerson               = $this->wallet->getIdClient()->isNaturalPerson();
                 $this->attachments                    = $this->wallet->getIdClient()->getAttachments();
                 $this->attachmentTypes                = $this->get('unilend.service.attachment_manager')->getAllTypesForLender();
-                $this->transfers                      = $entityManager->getRepository('UnilendCoreBusinessBundle:Transfer')->findTransferByClient($this->wallet->getIdClient());
+                $this->transfers                      = $entityManager->getRepository(Transfer::class)->findTransferByClient($this->wallet->getIdClient());
                 $this->taxationCountryHistory         = $this->getTaxationHistory($this->wallet->getId());
                 $this->taxExemptionHistory            = $this->getTaxExemptionHistory($this->users_history->getTaxExemptionHistoryAction($this->clients->id_client));
-                $this->termsOfSalesAcceptation        = $entityManager->getRepository('UnilendCoreBusinessBundle:AcceptationsLegalDocs')->findBy(['idClient' => $this->clients->id_client], ['added' => 'DESC']);
-                $this->treeRepository                 = $entityManager->getRepository('UnilendCoreBusinessBundle:Tree');
+                $this->termsOfSalesAcceptation        = $entityManager->getRepository(AcceptationsLegalDocs::class)->findBy(['idClient' => $this->clients->id_client], ['added' => 'DESC']);
+                $this->treeRepository                 = $entityManager->getRepository(Tree::class);
 
                 if (null === $this->currentBankAccount) {
                     $this->currentBankAccount = new BankAccount();
@@ -330,8 +330,8 @@ class sfpmeiController extends bootstrap
                 } else {
                     $this->companies = $this->loadData('companies');
                     $this->companies->get($this->clients->id_client, 'id_client_owner');
-                    /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Companies $company */
-                    $company       = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $this->clients->id_client]);
+                    /** @var \Unilend\Entity\Companies $company */
+                    $company       = $entityManager->getRepository(Companies::class)->findOneBy(['idClientOwner' => $this->clients->id_client]);
                     $mainAddress   = $company->getIdAddress();
                     $postalAddress = $company->getIdPostalAddress();
                 }
@@ -339,10 +339,10 @@ class sfpmeiController extends bootstrap
                 try {
                     if (null === $mainAddress) {
                         if ($this->wallet->getIdClient()->isNaturalPerson()) {
-                            $mainAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientAddress')
+                            $mainAddress = $entityManager->getRepository(ClientAddress::class)
                                 ->findLastModifiedNotArchivedAddressByType($this->wallet->getIdClient(), AddressType::TYPE_MAIN_ADDRESS);
                         } else {
-                            $mainAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')
+                            $mainAddress = $entityManager->getRepository(CompanyAddress::class)
                                 ->findLastModifiedNotArchivedAddressByType($company, AddressType::TYPE_MAIN_ADDRESS);
                         }
                     }
@@ -410,10 +410,10 @@ class sfpmeiController extends bootstrap
                     }
                     break;
                 default:
-                    $client = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($this->params[0]);
+                    $client = $entityManager->getRepository(Clients::class)->find($this->params[0]);
                     $this->companies->get($this->clients->id_client, 'id_client_owner');
 
-                    $companyEntity       = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $this->clients->id_client]);
+                    $companyEntity       = $entityManager->getRepository(Companies::class)->findOneBy(['idClientOwner' => $this->clients->id_client]);
                     $this->clientAddress = '';
                     if (null !==  $companyEntity->getIdAddress()) {
                         $this->clientAddress .= $companyEntity->getIdAddress()->getAddress() . '<br>' . $companyEntity->getIdAddress()->getZip() . ' ' . $companyEntity->getIdAddress()->getCity() . '<br>' . $companyEntity->getIdAddress()->getIdCountry()->getFr();
@@ -425,10 +425,10 @@ class sfpmeiController extends bootstrap
 
                     $this->projects = $this->projects->select('id_company = "' . $this->companies->id_company . '"');
 
-                    $this->currentBankAccount   = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($client);
-                    $this->bankAccountDocuments = $entityManager->getRepository('UnilendCoreBusinessBundle:Attachment')->findBy([
+                    $this->currentBankAccount   = $entityManager->getRepository(BankAccount::class)->getClientValidatedBankAccount($client);
+                    $this->bankAccountDocuments = $entityManager->getRepository(Attachment::class)->findBy([
                         'idClient' => $client,
-                        'idType'   => \Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType::RIB
+                        'idType'   => \Unilend\Entity\AttachmentType::RIB
                     ]);
                     $this->aMoneyOrders         = $this->clients_mandats->getMoneyOrderHistory($this->companies->id_company);
                     break;
@@ -448,7 +448,7 @@ class sfpmeiController extends bootstrap
 
         /** @var EntityManager $entityManager */
         $entityManager        = $this->get('doctrine.orm.entity_manager');
-        $receptionsRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Receptions');
+        $receptionsRepository = $entityManager->getRepository(Receptions::class);
 
         switch ($this->params[0]) {
             case 'preteurs':
@@ -520,7 +520,7 @@ class sfpmeiController extends bootstrap
             isset($this->params[0]) &&
             $this->projects->get($this->params[0], 'id_project')
         ) {
-            $this->projectEntity = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->projects->id_project);
+            $this->projectEntity = $entityManager->getRepository(Projects::class)->find($this->projects->id_project);
 
             $this->companies->get($this->projects->id_company, 'id_company');
             $this->companyMainAddress   = $this->projectEntity->getIdCompany()->getIdAddress();
@@ -575,12 +575,12 @@ class sfpmeiController extends bootstrap
             $this->xerfi = $this->loadData('xerfi');
 
             $this->attachments      = $this->projectEntity->getAttachments();
-            $this->lastBalanceSheet = $entityManager->getRepository('UnilendCoreBusinessBundle:Attachment')->findOneBy([
+            $this->lastBalanceSheet = $entityManager->getRepository(Attachment::class)->findOneBy([
                 'idClient' => $this->projectEntity->getIdCompany()->getIdClientOwner(),
-                'idType'   => \Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType::DERNIERE_LIASSE_FISCAL
+                'idType'   => \Unilend\Entity\AttachmentType::DERNIERE_LIASSE_FISCAL
             ]);
 
-            $this->treeRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Tree');
+            $this->treeRepository = $this->get('doctrine.orm.entity_manager')->getRepository(Tree::class);
 
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectRatingManager $projectRatingManager */
             $projectRatingManager = $this->get('unilend.service.project_rating_manager');
@@ -643,9 +643,9 @@ class sfpmeiController extends bootstrap
         $this->hideDecoration();
         /** @var EntityManager $entityManager */
         $entityManager     = $this->get('doctrine.orm.entity_manager');
-        $projectRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
-        $invoiceRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Factures');
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Projects $project */
+        $projectRepository = $entityManager->getRepository(Projects::class);
+        $invoiceRepository = $entityManager->getRepository(Factures::class);
+        /** @var \Unilend\Entity\Projects $project */
         $project = $projectRepository->find($projectId);
 
         $this->projectInvoices = [];
@@ -662,10 +662,10 @@ class sfpmeiController extends bootstrap
                 $projectInvoice['type_commission'] = $invoice->getTypeCommission();
 
                 switch ($invoice->getTypeCommission()) {
-                    case \Unilend\Bundle\CoreBusinessBundle\Entity\Factures::TYPE_COMMISSION_FUNDS:
+                    case \Unilend\Entity\Factures::TYPE_COMMISSION_FUNDS:
                         $projectInvoice['url'] = $this->furl . '/pdf/facture_EF/' . $client->getHash() . '/' . $invoice->getIdProject()->getIdProject();
                         break;
-                    case \Unilend\Bundle\CoreBusinessBundle\Entity\Factures::TYPE_COMMISSION_REPAYMENT:
+                    case \Unilend\Entity\Factures::TYPE_COMMISSION_REPAYMENT:
                         $projectInvoice['url'] = $this->furl . '/pdf/facture_ER/' . $client->getHash() . '/' . $invoice->getIdProject()->getIdProject() . '/' . $invoice->getOrdre();
                         break;
                     default :
@@ -740,7 +740,7 @@ class sfpmeiController extends bootstrap
     {
         /** @var EntityManager $entityManager */
         $entityManager                = $this->get('doctrine.orm.entity_manager');
-        $this->vigilanceStatusHistory = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientVigilanceStatusHistory')->findBy(['client' => $this->clients->id_client], ['id' => 'DESC']);
+        $this->vigilanceStatusHistory = $entityManager->getRepository(ClientVigilanceStatusHistory::class)->findBy(['client' => $this->clients->id_client], ['id' => 'DESC']);
 
         if (empty($this->vigilanceStatusHistory)) {
             $this->vigilanceStatus = [
@@ -751,7 +751,7 @@ class sfpmeiController extends bootstrap
             return;
         }
 
-        $this->clientAtypicalOperations = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientAtypicalOperation')->findBy(['client' => $this->clients->id_client], ['added' => 'DESC']);
+        $this->clientAtypicalOperations = $entityManager->getRepository(ClientAtypicalOperation::class)->findBy(['client' => $this->clients->id_client], ['added' => 'DESC']);
 
         switch ($this->vigilanceStatusHistory[0]->getVigilanceStatus()) {
             case VigilanceRule::VIGILANCE_STATUS_LOW:
@@ -782,7 +782,7 @@ class sfpmeiController extends bootstrap
                 trigger_error('Unknown vigilance status :' . $this->vigilanceStatusHistory[0]->getVigilanceStatus(), E_USER_NOTICE);
         }
 
-        $this->clientVigilanceStatusHistory = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientVigilanceStatusHistory');
+        $this->clientVigilanceStatusHistory = $entityManager->getRepository(ClientVigilanceStatusHistory::class);
         $this->hideEditLink                 = true;
     }
 
@@ -854,7 +854,7 @@ class sfpmeiController extends bootstrap
     {
         /** @var EntityManager $entityManager */
         $entityManager  = $this->get('doctrine.orm.entity_manager');
-        $settingsEntity = $entityManager->getRepository('UnilendCoreBusinessBundle:Settings')
+        $settingsEntity = $entityManager->getRepository(Settings::class)
             ->findOneBy([
                 'type' => 'Requetes acessibles a SFPMEI'
             ]);

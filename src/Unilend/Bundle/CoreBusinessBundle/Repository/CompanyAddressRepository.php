@@ -4,7 +4,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, Companies, CompanyAddress, WalletType};
+use Unilend\Entity\{AddressType, Companies, CompanyAddress, Wallet, WalletType};
 
 class CompanyAddressRepository extends EntityRepository
 {
@@ -22,7 +22,7 @@ class CompanyAddressRepository extends EntityRepository
         $queryBuilder = $this->createQueryBuilder('ca');
         $queryBuilder
             ->select('ca', 'COALESCE(ca.updated, ca.datePending) AS HIDDEN dateOrder')
-            ->innerJoin('UnilendCoreBusinessBundle:AddressType', 'at', Join::WITH, 'ca.idType = at.id')
+            ->innerJoin(AddressType::class, 'at', Join::WITH, 'ca.idType = at.id')
             ->where('ca.idCompany = :idCompany')
             ->andWhere('at.label = :type')
             ->andWhere('ca.dateArchived IS NULL')
@@ -44,7 +44,7 @@ class CompanyAddressRepository extends EntityRepository
     {
         $queryBuilder = $this->createQueryBuilder('ca');
         $queryBuilder
-            ->innerJoin('UnilendCoreBusinessBundle:AddressType', 'at', Join::WITH, 'ca.idType = at.id')
+            ->innerJoin(AddressType::class, 'at', Join::WITH, 'ca.idType = at.id')
             ->where('ca.idCompany = :idCompany')
             ->andWhere('at.label = :type')
             ->andWhere('ca.dateValidated IS NOT NULL')
@@ -66,9 +66,9 @@ class CompanyAddressRepository extends EntityRepository
     {
         $queryBuilder = $this->createQueryBuilder('ca');
         $queryBuilder
-            ->innerJoin('UnilendCoreBusinessBundle:Companies', 'co', Join::WITH, 'ca.idCompany = co.idCompany')
-            ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'w.idClient = co.idClientOwner')
-            ->innerJoin('UnilendCoreBusinessBundle:WalletType', 'wt', Join::WITH, 'w.idType = wt.id')
+            ->innerJoin(Companies::class, 'co', Join::WITH, 'ca.idCompany = co.idCompany')
+            ->innerJoin(Wallet::class, 'w', Join::WITH, 'w.idClient = co.idClientOwner')
+            ->innerJoin(WalletType::class, 'wt', Join::WITH, 'w.idType = wt.id')
             ->where('ca.cog IS NULL')
             ->andWhere('wt.label = :lender')
             ->setMaxResults($limit)
@@ -87,7 +87,7 @@ class CompanyAddressRepository extends EntityRepository
     {
         $queryBuilder = $this->createQueryBuilder('ca');
         $queryBuilder
-            ->innerJoin('UnilendCoreBusinessBundle:AddressType', 'at', Join::WITH, 'ca.idType = at.id')
+            ->innerJoin(AddressType::class, 'at', Join::WITH, 'ca.idType = at.id')
             ->where('ca.idCompany = :idCompany')
             ->andWhere('at.label = :type')
             ->andWhere('ca.added <= :date')

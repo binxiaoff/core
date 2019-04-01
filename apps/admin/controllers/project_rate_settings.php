@@ -1,7 +1,7 @@
 <?php
 
 use Doctrine\ORM\EntityManager;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
+use Unilend\Entity\{
     ClientSettingType, Wallet, WalletType, Zones
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\{
@@ -77,11 +77,11 @@ class project_rate_settingsController extends bootstrap
         $autoBidSettingsManager = $this->get('unilend.service.autobid_settings_manager');
         /** @var EntityManager $entityManager */
         $entityManager    = $this->get('doctrine.orm.entity_manager');
-        $walletRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet');
+        $walletRepository = $entityManager->getRepository(Wallet::class);
 
         $offset            = 0;
         $limit             = 100;
-        $clientSettingType = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientSettingType')->findOneBy(['label' => ClientSettingType::LABEL_AUTOBID_SWICTH]);
+        $clientSettingType = $entityManager->getRepository(ClientSettingType::class)->findOneBy(['label' => ClientSettingType::LABEL_AUTOBID_SWICTH]);
 
         while ($autoLendActiveClients = $clientSettings->select('id_type=' . $clientSettingType->getIdType() . ' AND value = ' . client_settings::AUTO_BID_ON, '', $offset, $limit)) {
             $offset += $limit;

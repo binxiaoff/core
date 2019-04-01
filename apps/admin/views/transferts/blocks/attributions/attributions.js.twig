@@ -8,7 +8,7 @@ $(function () {
             {orderable: false, targets: [3, 8]},
             {searchable: false, targets: [6, 7, 8, 9, 10, 11]},
             {visible: false, targets: [9, 10, 11]},
-            {% if walletType == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\WalletType::LENDER') %}
+            {% if walletType == constant('\\Unilend\\Entity\\WalletType::LENDER') %}
             {visible: false, targets: [2]},
             {% endif %}
             {name: "r.idReception", "targets": 0},
@@ -46,7 +46,7 @@ $(function () {
             var amountColumn = $row.find('td:eq(4)')
 
             {% if false == readOnly %}
-                {% if walletType == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\WalletType::LENDER') %}
+                {% if walletType == constant('\\Unilend\\Entity\\WalletType::LENDER') %}
                     clientIdColum.html('<a href="{{ app.adminUrl }}/preteurs/edit/' + clientId + '" target="_blank">' + clientId + '</a>')
                 {% else %}
                     clientIdColum.html('<a href="{{ app.adminUrl }}/emprunteurs/edit/' + clientId + '" target="_blank">' + clientId + '</a>')

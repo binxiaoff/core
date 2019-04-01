@@ -3,9 +3,7 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\ORM\EntityManagerInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectCharge;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Receptions;
-use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
+use Unilend\Entity\{ProjectCharge, Receptions, Wallet, WalletType};
 
 class ProjectChargeManager
 {
@@ -66,7 +64,7 @@ class ProjectChargeManager
 
     public function cancelProjectCharge(Receptions $wireTransferIn)
     {
-        $appliedProjectCharges = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectCharge')->findBy(['idWireTransferIn' => $wireTransferIn]);
+        $appliedProjectCharges = $this->entityManager->getRepository(ProjectCharge::class)->findBy(['idWireTransferIn' => $wireTransferIn]);
         foreach ($appliedProjectCharges as $projectCharge) {
             $projectCharge->setIdWireTransferIn(null)
                 ->setRepaymentDate(null);
@@ -87,7 +85,7 @@ class ProjectChargeManager
         if ($isDebtCollectionFeeDueToBorrower) {
             $totalAppliedCharges = 0;
 
-            $projectCharges = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectCharge')->findBy([
+            $projectCharges = $this->entityManager->getRepository(ProjectCharge::class)->findBy([
                 'idWireTransferIn' => $wireTransferIn,
                 'status'           => ProjectCharge::STATUS_PAID_BY_UNILEND
             ]);
@@ -101,7 +99,7 @@ class ProjectChargeManager
                     $this->entityManager->flush($projectCharge);
                 }
                 $borrowerWallet = $this->entityManager
-                    ->getRepository('UnilendCoreBusinessBundle:Wallet')
+                    ->getRepository(Wallet::class)
                     ->getWalletByType($project->getIdCompany()->getIdClientOwner(), WalletType::BORROWER);
 
                 $this->operationManager->repayProjectChargeByBorrower($borrowerWallet, $totalAppliedCharges, [$project, $wireTransferIn]);

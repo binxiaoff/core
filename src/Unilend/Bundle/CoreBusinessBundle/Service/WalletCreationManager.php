@@ -4,7 +4,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{Clients, Wallet, WalletType};
+use Unilend\Entity\{Clients, Wallet, WalletType};
 
 class WalletCreationManager
 {
@@ -31,7 +31,7 @@ class WalletCreationManager
      */
     public function createWallet(Clients $client, string $walletType)
     {
-        $walletTypeRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:WalletType');
+        $walletTypeRepository = $this->entityManager->getRepository(WalletType::class);
         $walletTypeEntity     = $walletTypeRepository->findOneBy(['label' => $walletType]);
 
         switch ($walletTypeEntity->getLabel()) {

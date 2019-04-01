@@ -2,26 +2,25 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
+use DateTime;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
-use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRepaymentTask;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Receptions;
-use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
+use Exception;
+use Unilend\Entity\{Operation, OperationType, ProjectRepaymentTask, Projects, Receptions, Wallet, WalletType};
 
 class ReceptionsRepository extends EntityRepository
 {
     /**
-     * @param \DateTime $date
+     * @param DateTime $date
      *
      * @return array
+     * @throws Exception
      */
-    public function getByDate(\DateTime $date)
+    public function getByDate(DateTime $date)
     {
-        $from = new \DateTime($date->format("Y-m-d") . " 00:00:00");
-        $to   = new \DateTime($date->format("Y-m-d") . " 23:59:59");
+        $from = new DateTime($date->format("Y-m-d") . " 00:00:00");
+        $to   = new DateTime($date->format("Y-m-d") . " 23:59:59");
 
         $queryBuilder = $this->createQueryBuilder("r");
         $queryBuilder->andWhere('r.added BETWEEN :from AND :to')
@@ -37,8 +36,8 @@ class ReceptionsRepository extends EntityRepository
      * @param int|null       $offset
      * @param array          $sorts
      * @param array          $search
-     * @param \DateTime|null $from
-     * @param \DateTime|null $to
+     * @param DateTime|null $from
+     * @param DateTime|null $to
      *
      * @return array
      */
@@ -48,8 +47,8 @@ class ReceptionsRepository extends EntityRepository
         ?int $offset = null,
         array $sorts = [],
         array $search = [],
-        ?\DateTime $from = null,
-        \DateTime $to = null
+        ?DateTime $from = null,
+        DateTime $to = null
     ): array
     {
         $queryBuilder = $this->createQueryBuilder('r');
@@ -70,9 +69,9 @@ class ReceptionsRepository extends EntityRepository
                 r.added,
                 o.added AS assigned
             ')
-            ->innerJoin('UnilendCoreBusinessBundle:Operation', 'o', Join::WITH, 'o.idWireTransferIn = r.idReception')
-            ->innerJoin('UnilendCoreBusinessBundle:OperationType', 'ot', Join::WITH, 'ot.id = o.idType')
-            ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'w.idClient = r.idClient')
+            ->innerJoin(Operation::class, 'o', Join::WITH, 'o.idWireTransferIn = r.idReception')
+            ->innerJoin(OperationType::class, 'ot', Join::WITH, 'ot.id = o.idType')
+            ->innerJoin(Wallet::class, 'w', Join::WITH, 'w.idClient = r.idClient')
             ->where('r.idClient IS NOT NULL')
             ->andWhere('ot.label IN (:provisionOrReject)')
             ->andWhere('w.idType = :walletType')
@@ -126,21 +125,21 @@ class ReceptionsRepository extends EntityRepository
     /**
      * @param WalletType     $walletType
      * @param array          $search
-     * @param \DateTime|null $from
-     * @param \DateTime|null $to
+     * @param DateTime|null $from
+     * @param DateTime|null $to
      *
      * @return int
      * @throws \Doctrine\ORM\NoResultException
      * @throws \Doctrine\ORM\NonUniqueResultException
      */
-    public function getAttributionsCount(WalletType $walletType, array $search = [], ?\DateTime $from = null, \DateTime $to = null): int
+    public function getAttributionsCount(WalletType $walletType, array $search = [], ?DateTime $from = null, DateTime $to = null): int
     {
         $queryBuilder = $this->createQueryBuilder('r');
         $queryBuilder
             ->select('COUNT(r)')
-            ->innerJoin('UnilendCoreBusinessBundle:Operation', 'o', Join::WITH, 'o.idWireTransferIn = r.idReception')
-            ->innerJoin('UnilendCoreBusinessBundle:OperationType', 'ot', Join::WITH, 'ot.id = o.idType')
-            ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'w.idClient = r.idClient')
+            ->innerJoin(Operation::class, 'o', Join::WITH, 'o.idWireTransferIn = r.idReception')
+            ->innerJoin(OperationType::class, 'ot', Join::WITH, 'ot.id = o.idType')
+            ->innerJoin(Wallet::class, 'w', Join::WITH, 'w.idClient = r.idClient')
             ->where('r.idClient IS NOT NULL')
             ->andWhere('ot.label IN (:provisionOrReject)')
             ->andWhere('w.idType = :walletType')
@@ -262,12 +261,12 @@ class ReceptionsRepository extends EntityRepository
     }
 
     /**
-     * @param \DateTime $start
-     * @param \DateTime $end
+     * @param DateTime $start
+     * @param DateTime $end
      *
      * @return array
      */
-    public function getRejectedDirectDebitIndicatorsBetweenDates(\DateTime $start, \DateTime $end)
+    public function getRejectedDirectDebitIndicatorsBetweenDates(DateTime $start, DateTime $end)
     {
         $queryBuilder = $this->createQueryBuilder('r');
         $queryBuilder->select('COUNT(r.idReception) AS number')
@@ -284,12 +283,12 @@ class ReceptionsRepository extends EntityRepository
     }
 
     /**
-     * @param \DateTime $start
-     * @param \DateTime $end
+     * @param DateTime $start
+     * @param DateTime $end
      *
      * @return mixed
      */
-    public function getBorrowerProvisionRegularizationIndicatorsBetweenDates(\DateTime $start, \DateTime $end)
+    public function getBorrowerProvisionRegularizationIndicatorsBetweenDates(DateTime $start, DateTime $end)
     {
         $queryBuilder = $this->createQueryBuilder('r');
         $queryBuilder->select('COUNT(r.idReception) AS number')
@@ -307,11 +306,11 @@ class ReceptionsRepository extends EntityRepository
 
     /**
      * @param Projects|int $project
-     * @param \DateTime    $from
+     * @param DateTime    $from
      *
      * @return mixed
      */
-    public function findOriginalDirectDebitByRejectedOne($project, \DateTime $from)
+    public function findOriginalDirectDebitByRejectedOne($project, DateTime $from)
     {
         $queryBuilder = $this->createQueryBuilder('r');
         $queryBuilder->where('r.idProject = :project')
@@ -367,7 +366,7 @@ class ReceptionsRepository extends EntityRepository
 
         $qbTreatedReception = $this->createQueryBuilder('r_treated')
             ->select('IDENTITY(prt.idWireTransferIn)')
-            ->from('UnilendCoreBusinessBundle:ProjectRepaymentTask', 'prt')
+            ->leftJoin(ProjectRepaymentTask::class, 'prt')
             ->where('prt.idProject = :projectId')
             ->andWhere('prt.status != :cancelled')
             ->andWhere('prt.idWireTransferIn = r.idReception');
@@ -398,7 +397,7 @@ class ReceptionsRepository extends EntityRepository
             ->where('r_rejected.idReceptionRejected = r.idReception');
 
         $queryBuilder = $this->createQueryBuilder('r')
-            ->innerJoin('UnilendCoreBusinessBundle:ProjectRepaymentTask', 'prt', Join::WITH, 'prt.idWireTransferIn = r.idReception')
+            ->innerJoin(ProjectRepaymentTask::class, 'prt', Join::WITH, 'prt.idWireTransferIn = r.idReception')
             ->where('prt.status = :pendingTask')
             ->setParameter('pendingTask', ProjectRepaymentTask::STATUS_PENDING)
             ->andWhere('NOT EXISTS (' . $qbRejected->getDQL() . ')')

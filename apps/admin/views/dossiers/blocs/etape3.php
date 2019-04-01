@@ -1,6 +1,6 @@
 <?php
 
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
+use Unilend\Entity\ProjectsStatus;
 
 ?>
 <?php $isSalesUser = $this->get('unilend.service.back_office_user_manager')->isUserGroupSales($this->userEntity) ?>

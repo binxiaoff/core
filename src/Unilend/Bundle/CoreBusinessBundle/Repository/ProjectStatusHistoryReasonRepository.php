@@ -4,9 +4,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Projects, ProjectStatusHistoryReason
-};
+use Unilend\Entity\{ProjectAbandonReason, ProjectRejectionReason, Projects, ProjectsStatusHistory, ProjectStatusHistoryReason};
 
 class ProjectStatusHistoryReasonRepository extends EntityRepository
 {
@@ -21,8 +19,8 @@ class ProjectStatusHistoryReasonRepository extends EntityRepository
     {
         $queryBuilder = $this->createQueryBuilder('pshr');
         $queryBuilder
-            ->innerJoin('UnilendCoreBusinessBundle:ProjectRejectionReason', 'reason', Join::WITH, 'reason.idRejection = pshr.idRejectionReason')
-            ->innerJoin('UnilendCoreBusinessBundle:ProjectsStatusHistory', 'psh', Join::WITH, 'psh.idProjectStatusHistory = pshr.idProjectStatusHistory')
+            ->innerJoin(ProjectRejectionReason::class, 'reason', Join::WITH, 'reason.idRejection = pshr.idRejectionReason')
+            ->innerJoin(ProjectsStatusHistory::class, 'psh', Join::WITH, 'psh.idProjectStatusHistory = pshr.idProjectStatusHistory')
             ->where('psh.idProject = :idProject')
             ->setParameter('idProject', $project)
             ->andWhere('reason.label = :rejectionReasonLabel')
@@ -44,8 +42,8 @@ class ProjectStatusHistoryReasonRepository extends EntityRepository
     {
         $queryBuilder = $this->createQueryBuilder('pshr');
         $queryBuilder
-            ->innerJoin('UnilendCoreBusinessBundle:ProjectAbandonReason', 'reason', Join::WITH, 'reason.idAbandon = pshr.idAbandonReason')
-            ->innerJoin('UnilendCoreBusinessBundle:ProjectsStatusHistory', 'psh', Join::WITH, 'psh.idProjectStatusHistory = pshr.idProjectStatusHistory')
+            ->innerJoin(ProjectAbandonReason::class, 'reason', Join::WITH, 'reason.idAbandon = pshr.idAbandonReason')
+            ->innerJoin(ProjectsStatusHistory::class, 'psh', Join::WITH, 'psh.idProjectStatusHistory = pshr.idProjectStatusHistory')
             ->where('psh.idProject = :idProject')
             ->setParameter('idProject', $project)
             ->andWhere('reason.label = :abandonReasonLabel')

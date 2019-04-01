@@ -1,6 +1,6 @@
 <?php
 
-use Unilend\Bundle\CoreBusinessBundle\Entity\UsersHistory as UsersHistoryEntity;
+use Unilend\Entity\UsersHistory as UsersHistoryEntity;
 
 class users_history extends users_history_crud
 {

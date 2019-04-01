@@ -22,7 +22,7 @@ use Doctrine\ORM\EntityManager;
     $entityManager = $this->get('doctrine.orm.entity_manager');
     ?>
     <?php foreach ($this->users as $userStatus => $users) : ?>
-        <?php if ($userStatus == \Unilend\Bundle\CoreBusinessBundle\Entity\Users::STATUS_ONLINE) : ?>
+        <?php if ($userStatus == \Unilend\Entity\Users::STATUS_ONLINE) : ?>
             <h2>Utilisateurs en ligne</h2>
         <?php else : ?>
             <h2>Utilisateurs hors ligne</h2>
@@ -48,13 +48,13 @@ use Doctrine\ORM\EntityManager;
                             <td><?= $user['name'] ?></td>
                             <td><?= $user['firstname'] ?></td>
                             <td><?= $user['email'] ?></td>
-                            <td><?= $entityManager->getRepository('UnilendCoreBusinessBundle:UsersTypes')->find($user['id_user_type'])->getLabel() ?></td>
+                            <td><?= $entityManager->getRepository(UsersTypes::class)->find($user['id_user_type'])->getLabel() ?></td>
                             <td><?= $this->formatDate($user['added'], 'd/m/Y') ?></td>
                             <td><?= $this->formatDate($user['updated'], 'd/m/Y') ?></td>
                             <td><?= $this->formatDate($user['lastlogin'], 'd/m/Y') ?></td>
                             <td align="center">
-                                <a href="<?= $this->lurl ?>/users/status/<?= $user['id_user'] ?>/<?= $user['status'] ?>" title="<?= ($user['status'] == \Unilend\Bundle\CoreBusinessBundle\Entity\Users::STATUS_ONLINE ? 'Passer hors ligne' : 'Passer en ligne') ?>">
-                                    <img src="<?= $this->surl ?>/images/admin/<?= ($user['status'] == \Unilend\Bundle\CoreBusinessBundle\Entity\Users::STATUS_ONLINE ? 'offline' : 'online') ?>.png" alt="<?= ($user['status'] == \Unilend\Bundle\CoreBusinessBundle\Entity\Users::STATUS_ONLINE ? 'Passer hors ligne' : 'Passer en ligne') ?>">
+                                <a href="<?= $this->lurl ?>/users/status/<?= $user['id_user'] ?>/<?= $user['status'] ?>" title="<?= ($user['status'] == \Unilend\Entity\Users::STATUS_ONLINE ? 'Passer hors ligne' : 'Passer en ligne') ?>">
+                                    <img src="<?= $this->surl ?>/images/admin/<?= ($user['status'] == \Unilend\Entity\Users::STATUS_ONLINE ? 'offline' : 'online') ?>.png" alt="<?= ($user['status'] == \Unilend\Entity\Users::STATUS_ONLINE ? 'Passer hors ligne' : 'Passer en ligne') ?>">
                                 </a>
                                 <a href="<?= $this->lurl ?>/users/edit/<?= $user['id_user'] ?>" class="thickbox">
                                     <img src="<?= $this->surl ?>/images/admin/edit.png" alt="Modifier <?= $user['firstname'] ?> <?= $user['name'] ?>">

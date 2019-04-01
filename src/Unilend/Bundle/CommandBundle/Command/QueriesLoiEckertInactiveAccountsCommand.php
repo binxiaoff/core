@@ -3,12 +3,8 @@
 namespace Unilend\Bundle\CommandBundle\Command;
 
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
-use Symfony\Component\Console\{
-    Input\InputInterface, Output\OutputInterface
-};
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Clients, ClientsStatus
-};
+use Symfony\Component\Console\{Input\InputInterface, Output\OutputInterface};
+use Unilend\Entity\{Clients, ClientsStatus};
 
 class QueriesLoiEckertInactiveAccountsCommand extends ContainerAwareCommand
 {
@@ -49,7 +45,7 @@ class QueriesLoiEckertInactiveAccountsCommand extends ContainerAwareCommand
         $activeSheet->setCellValue('L' . $row, 'Date de validation');
         $row++;
 
-        foreach ($entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->findAllClientsForLoiEckert() as $client) {
+        foreach ($entityManager->getRepository(Clients::class)->findAllClientsForLoiEckert() as $client) {
             $activeSheet->setCellValue('A' . $row, $client['id_client']);
             $activeSheet->setCellValue('B' . $row, in_array($client['type'], [Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER]) ? 'Personne physique' : 'Personne morale');
             $activeSheet->setCellValue('C' . $row, Clients::TITLE_MISTER == $client['civilite'] ? 'H' : 'F');

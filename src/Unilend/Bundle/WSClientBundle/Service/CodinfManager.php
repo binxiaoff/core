@@ -7,7 +7,7 @@ use GuzzleHttp\ClientInterface;
 use JMS\Serializer\SerializerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Log\LoggerInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\WsExternalResource;
+use Unilend\Entity\WsExternalResource;
 use Unilend\Bundle\WSClientBundle\Entity\Codinf\IncidentList;
 
 class CodinfManager

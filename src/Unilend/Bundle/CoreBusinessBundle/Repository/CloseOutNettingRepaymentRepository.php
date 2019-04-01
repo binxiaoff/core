@@ -4,9 +4,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
-use Unilend\Bundle\CoreBusinessBundle\Entity\CloseOutNettingRepayment;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Loans;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
+use Unilend\Entity\{CloseOutNettingRepayment, Loans, Projects};
 
 class CloseOutNettingRepaymentRepository extends EntityRepository
 {
@@ -18,7 +16,7 @@ class CloseOutNettingRepaymentRepository extends EntityRepository
     public function findByProject($project)
     {
         $queryBuilder = $this->createQueryBuilder('c');
-        $queryBuilder->innerJoin('UnilendCoreBusinessBundle:Loans', 'l', Join::WITH, 'c.idLoan = l.idLoan')
+        $queryBuilder->innerJoin(Loans::class, 'l', Join::WITH, 'c.idLoan = l.idLoan')
             ->where('l.project = :project')
             ->setParameter('project', $project);
 
@@ -34,7 +32,7 @@ class CloseOutNettingRepaymentRepository extends EntityRepository
     {
         $queryBuilder = $this->createQueryBuilder('c');
         $queryBuilder->select('SUM(c.capital - c.repaidCapital) as capital, SUM(c.interest - c.repaidInterest) as interest')
-            ->innerJoin('UnilendCoreBusinessBundle:Loans', 'l', Join::WITH, 'c.idLoan = l.idLoan')
+            ->innerJoin(Loans::class, 'l', Join::WITH, 'c.idLoan = l.idLoan')
             ->where('l.project = :project')
             ->setParameter('project', $project);
 

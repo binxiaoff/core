@@ -6,7 +6,7 @@ use DateTime;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{Projects, ProjectsStatus, ProjectsStatusHistory};
+use Unilend\Entity\{Projects, ProjectsStatus, ProjectsStatusHistory};
 
 class ProjectsStatusHistoryRepository extends EntityRepository
 {
@@ -25,7 +25,7 @@ class ProjectsStatusHistoryRepository extends EntityRepository
             $status = $status->getStatus();
         }
         $qb = $this->createQueryBuilder('psh');
-        $qb->innerJoin('UnilendCoreBusinessBundle:ProjectsStatus', 'ps', Join::WITH, 'ps.idProjectStatus = psh.idProjectStatus')
+        $qb->innerJoin(ProjectsStatus::class, 'ps', Join::WITH, 'ps.idProjectStatus = psh.idProjectStatus')
             ->andWhere('psh.idProject = :project')
             ->andWhere('ps.status = :status')
             ->setParameter('project', $project)
@@ -53,7 +53,7 @@ class ProjectsStatusHistoryRepository extends EntityRepository
         }
 
         $qb = $this->createQueryBuilder('psh');
-        $qb->innerJoin('UnilendCoreBusinessBundle:ProjectsStatus', 'ps', Join::WITH, 'ps.idProjectStatus = psh.idProjectStatus')
+        $qb->innerJoin(ProjectsStatus::class, 'ps', Join::WITH, 'ps.idProjectStatus = psh.idProjectStatus')
             ->andWhere('psh.idProject = :project')
             ->andWhere('ps.status in  (:status)')
             ->setParameter('project', $project)
@@ -82,7 +82,7 @@ class ProjectsStatusHistoryRepository extends EntityRepository
         }
 
         $qb = $this->createQueryBuilder('psh');
-        $qb->innerJoin('UnilendCoreBusinessBundle:ProjectsStatus', 'ps', Join::WITH, 'ps.idProjectStatus = psh.idProjectStatus')
+        $qb->innerJoin(ProjectsStatus::class, 'ps', Join::WITH, 'ps.idProjectStatus = psh.idProjectStatus')
             ->andWhere('DATE(psh.added) = :date')
             ->andWhere('ps.status IN (:status)')
             ->setParameter(':date', $dateAdded->format('Y-m-d'))
@@ -132,7 +132,7 @@ class ProjectsStatusHistoryRepository extends EntityRepository
     public function getStatusByDates(int $status, \DateTime $started, \DateTime $ended): array
     {
         $queryBuilder = $this->createQueryBuilder('psh');
-        $queryBuilder->innerJoin('UnilendCoreBusinessBundle:ProjectsStatus', 'ps', Join::WITH, 'ps.idProjectStatus = psh.idProjectStatus')
+        $queryBuilder->innerJoin(ProjectsStatus::class, 'ps', Join::WITH, 'ps.idProjectStatus = psh.idProjectStatus')
             ->where('ps.status = :status')
             ->andWhere('psh.added >= :started')
             ->andWhere('psh.added <= :ended')

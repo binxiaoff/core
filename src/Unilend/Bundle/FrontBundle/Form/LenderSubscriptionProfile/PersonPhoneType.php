@@ -29,7 +29,7 @@ class PersonPhoneType extends AbstractType
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefaults(array(
-            'data_class' => 'Unilend\Bundle\CoreBusinessBundle\Entity\Clients'
+            'data_class' => 'Unilend\Entity\Clients'
         ));
     }
 }

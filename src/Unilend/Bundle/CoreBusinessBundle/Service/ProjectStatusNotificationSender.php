@@ -5,7 +5,8 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\{Asset\Packages, Routing\RouterInterface, Translation\TranslatorInterface};
-use Unilend\Bundle\CoreBusinessBundle\Entity\{ClientsGestionTypeNotif, CompanyStatus, Notifications, Projects, ProjectsStatus, Wallet};
+use Unilend\Entity\{ClientsGestionTypeNotif, CloseOutNettingPayment, CloseOutNettingRepayment, CompanyStatus, CompanyStatusHistory, Echeanciers, EcheanciersEmprunteur, Loans, Notifications, Operation,
+    Projects, ProjectsStatus, Settings, Wallet};
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessageProvider;
 
@@ -82,8 +83,8 @@ class ProjectStatusNotificationSender
     public function sendCloseOutNettingEmailToBorrower(Projects $project)
     {
         $keywords               = [];
-        $paymentSchedule        = $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur');
-        $closeOutNettingPayment = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CloseOutNettingPayment')->findOneBy(['idProject' => $project]);
+        $paymentSchedule        = $this->entityManager->getRepository(EcheanciersEmprunteur::class);
+        $closeOutNettingPayment = $this->entityManager->getRepository(CloseOutNettingPayment::class)->findOneBy(['idProject' => $project]);
 
         if (null === $closeOutNettingPayment) {
             throw new \Exception('Could not send close out netting borrower email for project: ' . $project->getIdProject() . ': No close out netting payment found.');
@@ -130,7 +131,7 @@ class ProjectStatusNotificationSender
      */
     public function sendProblemStatusEmailToBorrower(Projects $project)
     {
-        $paymentRepository  = $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur');
+        $paymentRepository  = $this->entityManager->getRepository(EcheanciersEmprunteur::class);
         $pendingPayments    = $paymentRepository->getTotalOverdueAmounts($project, new \DateTime('yesterday'));
         $totalOverdueAmount = round(bcadd(bcadd($pendingPayments['capital'], $pendingPayments['interest'], 4), $pendingPayments['commission'], 4), 2);
         $keywords           = [
@@ -163,7 +164,7 @@ class ProjectStatusNotificationSender
         $fundingDate          = $projectStatusHistory->select('id_project = ' . $project->getIdProject() . ' AND id_project_status = (SELECT id_project_status FROM projects_status WHERE status = ' . ProjectsStatus::STATUS_REPAYMENT . ')', 'added ASC, id_project_status_history ASC', 0, 1);
         $fundingDate          = strtotime($fundingDate[0]['added']);
 
-        $settingsRepository  = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings');
+        $settingsRepository  = $this->entityManager->getRepository(Settings::class);
         $bic                 = $settingsRepository->findOneBy(['type' => 'Virement - BIC'])->getValue();
         $iban                = $settingsRepository->findOneBy(['type' => 'Virement - IBAN'])->getValue();
         $borrowerPhoneNumber = $settingsRepository->findOneBy(['type' => 'Téléphone emprunteur'])->getValue();
@@ -230,8 +231,8 @@ class ProjectStatusNotificationSender
      */
     private function sendProjectLossNotificationToLenders(Projects $project, array $keywords = [])
     {
-        $companyStatusHistoryRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CompanyStatusHistory');
-        $companyStatusRepository        = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CompanyStatus');
+        $companyStatusHistoryRepository = $this->entityManager->getRepository(CompanyStatusHistory::class);
+        $companyStatusRepository        = $this->entityManager->getRepository(CompanyStatus::class);
 
         $compulsoryLiquidation = $companyStatusHistoryRepository->findOneBy([
             'idCompany' => $project->getIdCompany(),
@@ -252,8 +253,8 @@ class ProjectStatusNotificationSender
     public function sendCloseOutNettingNotificationsToLenders(Projects $project)
     {
         $keywords               = [];
-        $repaymentSchedule      = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers');
-        $closeOutNettingPayment = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CloseOutNettingPayment')->findOneBy(['idProject' => $project]);
+        $repaymentSchedule      = $this->entityManager->getRepository(Echeanciers::class);
+        $closeOutNettingPayment = $this->entityManager->getRepository(CloseOutNettingPayment::class)->findOneBy(['idProject' => $project]);
 
         if (null === $closeOutNettingPayment) {
             throw new \Exception('Could not send close out netting lenders email for project: ' . $project->getIdProject() . ': No close out netting payment found.');
@@ -290,7 +291,7 @@ class ProjectStatusNotificationSender
      */
     public function sendCollectiveProceedingStatusNotificationsToLenders(Projects $project)
     {
-        $companyStatusHistoryRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CompanyStatusHistory');
+        $companyStatusHistoryRepository = $this->entityManager->getRepository(CompanyStatusHistory::class);
         $keywords                       = [
             'mailContent' => '',
             'receiver'    => ''
@@ -342,11 +343,11 @@ class ProjectStatusNotificationSender
         bool $forceNotification = false
     ): void
     {
-        $walletRepository                   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet');
-        $operationRepository                = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
-        $lenderRepaymentRepository          = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers');
-        $closeOutNettingRepaymentRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CloseOutNettingRepayment');
-        $loansRepository                    = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Loans');
+        $walletRepository                   = $this->entityManager->getRepository(Wallet::class);
+        $operationRepository                = $this->entityManager->getRepository(Operation::class);
+        $lenderRepaymentRepository          = $this->entityManager->getRepository(Echeanciers::class);
+        $closeOutNettingRepaymentRepository = $this->entityManager->getRepository(CloseOutNettingRepayment::class);
+        $loansRepository                    = $this->entityManager->getRepository(Loans::class);
 
         /** @var \notifications $notificationsData */
         $notificationsData = $this->entityManagerSimulator->getRepository('notifications');

@@ -1,6 +1,6 @@
 security:
     encoders:
-        Unilend\Bundle\CoreBusinessBundle\Entity\Clients:
+        Unilend\Entity\Clients:
             id: Unilend\Bundle\FrontBundle\Security\BCryptPasswordEncoder
         md5:
             algorithm: md5

@@ -4,8 +4,8 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service\Repayment;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{Companies, DebtCollectionMission, Echeanciers, EcheanciersEmprunteur, Loans, ProjectRepaymentDetail, ProjectRepaymentTask, ProjectRepaymentTaskLog,
-    Projects, ProjectsStatus, Receptions, Users};
+use Unilend\Entity\{CloseOutNettingPayment, CloseOutNettingRepayment, Companies, DebtCollectionMission, Echeanciers, EcheanciersEmprunteur, Loans, ProjectRepaymentDetail, ProjectRepaymentTask,
+    ProjectRepaymentTaskLog, Projects, ProjectsStatus, Receptions, Users};
 use Unilend\Bundle\CoreBusinessBundle\Service\WorkingDaysManager;
 
 class ProjectRepaymentTaskManager
@@ -70,7 +70,7 @@ class ProjectRepaymentTaskManager
         }
 
         // a repaid task or a already launched task
-        $repaidProjectRepaymentTask = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRepaymentTask')->findOneBy([
+        $repaidProjectRepaymentTask = $this->entityManager->getRepository(ProjectRepaymentTask::class)->findOneBy([
             'idProject' => $project,
             'sequence'  => $sequence,
             'status'    => [ProjectRepaymentTask::STATUS_IN_PROGRESS, ProjectRepaymentTask::STATUS_ERROR, ProjectRepaymentTask::STATUS_REPAID]
@@ -79,7 +79,7 @@ class ProjectRepaymentTaskManager
         if ($repaidProjectRepaymentTask) {
             /** @var Receptions $wireTransferIn */
             $wireTransferIn = $repaidProjectRepaymentTask->getIdWireTransferIn();
-            if ($this->entityManager->getRepository('UnilendCoreBusinessBundle:Receptions')->findOneBy(['idReceptionRejected' => $wireTransferIn])
+            if ($this->entityManager->getRepository(Receptions::class)->findOneBy(['idReceptionRejected' => $wireTransferIn])
                 || $wireTransferIn->getStatusPrelevement() === Receptions::DIRECT_DEBIT_STATUS_REJECTED // for legacy compatibility
                 || $wireTransferIn->getStatusVirement() === Receptions::WIRE_TRANSFER_STATUS_REJECTED // for legacy compatibility
             ) {
@@ -120,7 +120,7 @@ class ProjectRepaymentTaskManager
             ->setIdDebtCollectionMission($debtCollectionMission)
             ->setIdWireTransferIn($reception);
 
-        $paymentSchedule   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur')->findOneBy(['idProject' => $project, 'ordre' => $sequence]);
+        $paymentSchedule   = $this->entityManager->getRepository(EcheanciersEmprunteur::class)->findOneBy(['idProject' => $project, 'ordre' => $sequence]);
         $totalCapital      = round(bcdiv($paymentSchedule->getCapital(), 100, 4), 2);
         $totalInterest     = round(bcdiv($paymentSchedule->getInterets(), 100, 4), 2);
         $monthlyCommission = round(bcdiv($paymentSchedule->getCommission() + $paymentSchedule->getTva(), 100, 4), 2);
@@ -179,15 +179,15 @@ class ProjectRepaymentTaskManager
     {
         if (null === $repayOn) {
             $limitDate     = $this->workingDaysManager->getNextWorkingDay(new \DateTime(), 5);
-            $nextRepayment = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers')->findNextPendingScheduleAfter($limitDate, $project);
+            $nextRepayment = $this->entityManager->getRepository(Echeanciers::class)->findNextPendingScheduleAfter($limitDate, $project);
             $repayOn       = $nextRepayment->getDateEcheance();
         }
 
         $receivedAmount   = round(bcdiv($reception->getMontant(), 100, 4), 2);
-        $nextRepayment    = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers')->findNextPendingScheduleAfter($repayOn, $project);
+        $nextRepayment    = $this->entityManager->getRepository(Echeanciers::class)->findNextPendingScheduleAfter($repayOn, $project);
         $remainingCapital = 0;
         if ($nextRepayment) {
-            $remainingCapital = $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur')->getRemainingCapitalFrom($project, $nextRepayment->getOrdre());
+            $remainingCapital = $this->entityManager->getRepository(EcheanciersEmprunteur::class)->getRemainingCapitalFrom($project, $nextRepayment->getOrdre());
         }
 
         if (0 <= bccomp($receivedAmount, $remainingCapital, 2)) {
@@ -281,7 +281,7 @@ class ProjectRepaymentTaskManager
     public function disableAutomaticRepayment(Projects $project, Users $user): void
     {
         /** @var ProjectRepaymentTask[] $readyRepaymentTask */
-        $readyRepaymentTask = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRepaymentTask')->findBy([
+        $readyRepaymentTask = $this->entityManager->getRepository(ProjectRepaymentTask::class)->findBy([
             'idProject' => $project,
             'status'    => ProjectRepaymentTask::STATUS_READY
         ]);
@@ -305,7 +305,7 @@ class ProjectRepaymentTaskManager
      */
     public function enableAutomaticRepayment(Projects $project, Users $user): void
     {
-        $pendingRepaymentTask = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRepaymentTask')->findBy([
+        $pendingRepaymentTask = $this->entityManager->getRepository(ProjectRepaymentTask::class)->findBy([
             'idProject' => $project,
             'status'    => ProjectRepaymentTask::STATUS_PENDING
         ]);
@@ -386,7 +386,7 @@ class ProjectRepaymentTaskManager
         }
 
         if ($projectRepaymentTask->getSequence()) {
-            $repaymentSchedules = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers')
+            $repaymentSchedules = $this->entityManager->getRepository(Echeanciers::class)
                 ->findByProject($projectRepaymentTask->getIdProject(), $projectRepaymentTask->getSequence(), null, [Echeanciers::STATUS_PENDING, Echeanciers::STATUS_PARTIALLY_REPAID]);
             if (0 === count($repaymentSchedules)) {
                 $projectRepaymentTask->setStatus(ProjectRepaymentTask::STATUS_ERROR);
@@ -424,7 +424,7 @@ class ProjectRepaymentTaskManager
         }
 
         if (ProjectRepaymentTask::TYPE_EARLY === $projectRepaymentTask->getType()) {
-            $paymentScheduleRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur');
+            $paymentScheduleRepository = $this->entityManager->getRepository(EcheanciersEmprunteur::class);
 
             $nextPayment = $paymentScheduleRepository->findOneBy(
                 ['idProject' => $projectRepaymentTask->getIdProject(), 'statusEmprunteur' => EcheanciersEmprunteur::STATUS_PENDING],
@@ -574,7 +574,7 @@ class ProjectRepaymentTaskManager
      */
     public function isCompleteRepayment(ProjectRepaymentTask $projectRepaymentTask)
     {
-        $paymentSchedule = $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur')->findOneBy([
+        $paymentSchedule = $this->entityManager->getRepository(EcheanciersEmprunteur::class)->findOneBy([
             'idProject' => $projectRepaymentTask->getIdProject(),
             'ordre'     => $projectRepaymentTask->getSequence()
         ]);
@@ -608,7 +608,7 @@ class ProjectRepaymentTaskManager
     private function checkPlannedRegularRepaymentTaskAmount(Projects $project, $sequence)
     {
         $repaymentTasks = $this->entityManager
-            ->getRepository('UnilendCoreBusinessBundle:ProjectRepaymentTask')
+            ->getRepository(ProjectRepaymentTask::class)
             ->findBy([
                 'idProject' => $project,
                 'type'      => [
@@ -634,7 +634,7 @@ class ProjectRepaymentTaskManager
             $plannedCommission = round(bcadd($plannedCommission, $task->getCommissionUnilend(), 4), 2);
         }
 
-        $paymentSchedule   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur')->findOneBy(['idProject' => $project, 'ordre' => $sequence]);
+        $paymentSchedule   = $this->entityManager->getRepository(EcheanciersEmprunteur::class)->findOneBy(['idProject' => $project, 'ordre' => $sequence]);
         $totalCapital      = round(bcdiv($paymentSchedule->getCapital(), 100, 4), 2);
         $totalInterest     = round(bcdiv($paymentSchedule->getInterets(), 100, 4), 2);
         $monthlyCommission = round(bcdiv($paymentSchedule->getCommission() + $paymentSchedule->getTva(), 100, 4), 2);
@@ -658,7 +658,7 @@ class ProjectRepaymentTaskManager
     private function checkPlannedCloseOutNettingRepaymentTaskAmount(Projects $project)
     {
         $repaymentTasks = $this->entityManager
-            ->getRepository('UnilendCoreBusinessBundle:ProjectRepaymentTask')
+            ->getRepository(ProjectRepaymentTask::class)
             ->findBy([
                 'idProject' => $project,
                 'type'      => [
@@ -682,7 +682,7 @@ class ProjectRepaymentTaskManager
             $plannedCommission = round(bcadd($plannedCommission, $task->getCommissionUnilend(), 4), 2);
         }
 
-        $closeOutNettingPayment = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CloseOutNettingPayment')->findOneBy(['idProject' => $project]);
+        $closeOutNettingPayment = $this->entityManager->getRepository(CloseOutNettingPayment::class)->findOneBy(['idProject' => $project]);
 
         $compareCapital = bccomp($plannedCapital, $closeOutNettingPayment->getCapital(), 2);
         if (1 === $compareCapital) {
@@ -706,7 +706,7 @@ class ProjectRepaymentTaskManager
      */
     public function prepare(ProjectRepaymentTask $projectRepaymentTask)
     {
-        if (0 < count($this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRepaymentDetail')->findBy(['idTask' => $projectRepaymentTask]))) {
+        if (0 < count($this->entityManager->getRepository(ProjectRepaymentDetail::class)->findBy(['idTask' => $projectRepaymentTask]))) {
             return;
         }
 
@@ -722,7 +722,7 @@ class ProjectRepaymentTaskManager
      */
     public function prepareNonFinishedTask(Projects $project): void
     {
-        $repaymentTasks = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRepaymentTask')->findBy([
+        $repaymentTasks = $this->entityManager->getRepository(ProjectRepaymentTask::class)->findBy([
             'idProject' => $project,
             'status'    => [
                 ProjectRepaymentTask::STATUS_ERROR,
@@ -733,7 +733,7 @@ class ProjectRepaymentTaskManager
         ]);
 
         foreach ($repaymentTasks as $projectRepaymentTask) {
-            $this->projectRepaymentTaskManager->prepare($projectRepaymentTask);
+            $this->prepare($projectRepaymentTask);
         }
     }
 
@@ -744,7 +744,7 @@ class ProjectRepaymentTaskManager
         $coverageOnNotRepaidCapital  = $this->getCoverageOnNotRepaidCapital($projectRepaymentTask);
         $coverageOnNotRepaidInterest = $this->getCoverageOnNotRepaidInterest($projectRepaymentTask);
 
-        $repaymentSchedules = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers')
+        $repaymentSchedules = $this->entityManager->getRepository(Echeanciers::class)
             ->findByProject($projectRepaymentTask->getIdProject(), $projectRepaymentTask->getSequence(), null, [Echeanciers::STATUS_PENDING, Echeanciers::STATUS_PARTIALLY_REPAID]);
 
         foreach ($repaymentSchedules as $repaymentSchedule) {
@@ -770,7 +770,7 @@ class ProjectRepaymentTaskManager
         $coverageOnNotRepaidCapital  = $this->getCoverageOnNotRepaidCapital($projectRepaymentTask);
         $coverageOnNotRepaidInterest = $this->getCoverageOnNotRepaidInterest($projectRepaymentTask);
 
-        $closeOutNettingRepayments = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CloseOutNettingRepayment')->findByProject($projectRepaymentTask->getIdProject());
+        $closeOutNettingRepayments = $this->entityManager->getRepository(CloseOutNettingRepayment::class)->findByProject($projectRepaymentTask->getIdProject());
 
         foreach ($closeOutNettingRepayments as $closeOutNettingRepayment) {
             $unRepaidCapital  = round(bcsub($closeOutNettingRepayment->getCapital(), $closeOutNettingRepayment->getRepaidCapital(), 4), 2);
@@ -854,8 +854,8 @@ class ProjectRepaymentTaskManager
         $interestCompareResult = bccomp($projectRepaymentTask->getInterest(), $repaidInterest, 2);
 
         if (0 !== $capitalCompareResult || 0 !== $interestCompareResult) {
-            $projectRepaymentDetailRepository   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRepaymentDetail');
-            $closeOutNettingRepaymentRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CloseOutNettingRepayment');
+            $projectRepaymentDetailRepository   = $this->entityManager->getRepository(ProjectRepaymentDetail::class);
+            $closeOutNettingRepaymentRepository = $this->entityManager->getRepository(CloseOutNettingRepayment::class);
 
             $capitalNumberOfCents = abs(round(bcdiv(round(bcsub($projectRepaymentTask->getCapital(), $repaidCapital, 4), 2), 0.01, 4)));
             if ($capitalNumberOfCents > 0) {
@@ -936,10 +936,10 @@ class ProjectRepaymentTaskManager
     {
         $unpaidCapital = 0;
         if ($projectRepaymentTask->getSequence()) {
-            $unpaidCapital = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers')
+            $unpaidCapital = $this->entityManager->getRepository(Echeanciers::class)
                 ->getNotRepaidCapitalByProjectAndSequence($projectRepaymentTask->getIdProject(), $projectRepaymentTask->getSequence());
         } elseif (ProjectRepaymentTask::TYPE_CLOSE_OUT_NETTING === $projectRepaymentTask->getType()) {
-            $unpaidCapital = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CloseOutNettingRepayment')
+            $unpaidCapital = $this->entityManager->getRepository(CloseOutNettingRepayment::class)
                 ->getNotRepaidCapitalByProject($projectRepaymentTask->getIdProject());
         }
 
@@ -960,10 +960,10 @@ class ProjectRepaymentTaskManager
         $unpaidInterest = 0;
         if ($projectRepaymentTask->getSequence()) {
 
-            $unpaidInterest = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers')
+            $unpaidInterest = $this->entityManager->getRepository(Echeanciers::class)
                 ->getNotRepaidInterestByProjectAndSequence($projectRepaymentTask->getIdProject(), $projectRepaymentTask->getSequence());
         } elseif (ProjectRepaymentTask::TYPE_CLOSE_OUT_NETTING === $projectRepaymentTask->getType()) {
-            $unpaidInterest = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CloseOutNettingRepayment')
+            $unpaidInterest = $this->entityManager->getRepository(CloseOutNettingRepayment::class)
                 ->getNotRepaidInterestByProject($projectRepaymentTask->getIdProject());
         }
 
@@ -981,7 +981,7 @@ class ProjectRepaymentTaskManager
      */
     public function checkPreparedRepayments(ProjectRepaymentTask $projectRepaymentTask)
     {
-        $projectRepaymentDetailRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRepaymentDetail');
+        $projectRepaymentDetailRepository = $this->entityManager->getRepository(ProjectRepaymentDetail::class);
 
         $totalCapitalToRepay = $projectRepaymentDetailRepository->getTotalCapitalToRepay($projectRepaymentTask);
         if (0 !== bccomp($projectRepaymentTask->getCapital(), $totalCapitalToRepay, 2)) {
@@ -995,10 +995,10 @@ class ProjectRepaymentTaskManager
 
     public function getPlannedRepaymentTaskAmountByCompany(Companies $company): float
     {
-        $projects = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->findBy(['idCompany' => $company]);
+        $projects = $this->entityManager->getRepository(Projects::class)->findBy(['idCompany' => $company]);
 
         $amount                = 0;
-        $plannedRepaymentTasks = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRepaymentTask')->findBy([
+        $plannedRepaymentTasks = $this->entityManager->getRepository(ProjectRepaymentTask::class)->findBy([
             'idProject' => $projects,
             'status'    => ProjectRepaymentTask::STATUS_PLANNED
         ]);

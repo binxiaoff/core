@@ -1,7 +1,7 @@
 <?php
 
 use Symfony\Component\HttpFoundation\File\File;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{BankAccount, Clients, Prelevements, ProjectsStatus, UniversignEntityInterface, Zones};
+use Unilend\Entity\{BankAccount, Clients, Prelevements, ProjectsStatus, UniversignEntityInterface, Zones};
 
 class bank_accountController extends bootstrap
 {
@@ -15,7 +15,7 @@ class bank_accountController extends bootstrap
         if (false === empty($this->params[0])) {
             /** @var \Doctrine\ORM\EntityManager $entityManager */
             $entityManager    = $this->get('doctrine.orm.entity_manager');
-            $this->attachment = $entityManager->getRepository('UnilendCoreBusinessBundle:Attachment')->find($this->params[0]);
+            $this->attachment = $entityManager->getRepository(Attachment::class)->find($this->params[0]);
 
             if ($this->attachment) {
                 /** @var \Unilend\Bundle\CoreBusinessBundle\Service\AttachmentManager $attachmentManager */
@@ -62,7 +62,7 @@ class bank_accountController extends bootstrap
         if (false === empty($this->params[0])) {
             $entityManager     = $this->get('doctrine.orm.entity_manager');
             $bankAccountId     = filter_var($this->params[0], FILTER_VALIDATE_INT);
-            $this->bankAccount = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->find($bankAccountId);
+            $this->bankAccount = $entityManager->getRepository(BankAccount::class)->find($bankAccountId);
         }
     }
 
@@ -77,9 +77,9 @@ class bank_accountController extends bootstrap
             /** @var BankAccount $bankAccount */
             $entityManager->beginTransaction();
             try {
-                $bankAccount = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->find($this->request->request->get('id_bank_account'));
+                $bankAccount = $entityManager->getRepository(BankAccount::class)->find($this->request->request->get('id_bank_account'));
                 if ($bankAccount) {
-                    $currentBankAccount = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($bankAccount->getIdClient());
+                    $currentBankAccount = $entityManager->getRepository(BankAccount::class)->getClientValidatedBankAccount($bankAccount->getIdClient());
                     $currentIban        = '';
                     if ($currentBankAccount) {
                         $currentIban = $currentBankAccount->getIban();
@@ -115,10 +115,10 @@ class bank_accountController extends bootstrap
     {
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
-        $companies     = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findBy(['idClientOwner' => $client]);
+        $companies     = $entityManager->getRepository(Companies::class)->findBy(['idClientOwner' => $client]);
 
         foreach ($companies as $company) {
-            $projects = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->findBy(['idCompany' => $company]);
+            $projects = $entityManager->getRepository(Projects::class)->findBy(['idCompany' => $company]);
             foreach ($projects as $project) {
                 if ($project->getStatus() === ProjectsStatus::STATUS_REPAID) {
                     continue;
@@ -143,13 +143,13 @@ class bank_accountController extends bootstrap
                     }
                     // No need to create the new mandat, it will be created in pdf::_mandat()
 
-                    $paymentSchedule = $entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur')->findOneBy(['idProject' => $project]);
+                    $paymentSchedule = $entityManager->getRepository(EcheanciersEmprunteur::class)->findOneBy(['idProject' => $project]);
                     if (null === $paymentSchedule) {
                         continue;
                     }
 
                     $monthlyPayment  = round(bcdiv($paymentSchedule->getMontant() + $paymentSchedule->getCommission() + $paymentSchedule->getTva(), 100, 4), 2);
-                    $nextDirectDebit = $entityManager->getRepository('UnilendCoreBusinessBundle:Prelevements')->findOneBy(
+                    $nextDirectDebit = $entityManager->getRepository(Prelevements::class)->findOneBy(
                         ['idProject' => $project, 'status' => Prelevements::STATUS_PENDING],
                         ['dateEcheanceEmprunteur' => 'ASC']
                     );

@@ -3,9 +3,7 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\ORM\EntityManagerInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Users, UsersTypes, Zones
-};
+use Unilend\Entity\{Users, UsersTypes, UsersZones, Zones};
 
 class BackOfficeUserManager
 {
@@ -155,11 +153,11 @@ class BackOfficeUserManager
     public function isGrantedZone(Users $user, $zone): bool
     {
         if (is_string($zone)) {
-            $zone = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Zones')->findOneBy(['slug' => $zone]);
+            $zone = $this->entityManager->getRepository(Zones::class)->findOneBy(['slug' => $zone]);
         }
 
         if ($zone) {
-            if ($this->entityManager->getRepository('UnilendCoreBusinessBundle:UsersZones')->findOneBy(['idUser' => $user, 'idZone' => $zone])) {
+            if ($this->entityManager->getRepository(UsersZones::class)->findOneBy(['idUser' => $user, 'idZone' => $zone])) {
                 return true;
             }
         }
@@ -172,7 +170,7 @@ class BackOfficeUserManager
      */
     public function getSalesPersons(): array
     {
-        $userRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Users');
+        $userRepository = $this->entityManager->getRepository(Users::class);
         $salesPersons   = $userRepository->findBy(['status' => Users::STATUS_ONLINE, 'idUserType' => UsersTypes::TYPE_COMMERCIAL]);
 
         return $salesPersons;
@@ -183,6 +181,6 @@ class BackOfficeUserManager
      */
     public function getAnalysts(): array
     {
-        return $this->entityManager->getRepository('UnilendCoreBusinessBundle:Users')->findBy(['status' => Users::STATUS_ONLINE, 'idUserType' => UsersTypes::TYPE_RISK]);
+        return $this->entityManager->getRepository(Users::class)->findBy(['status' => Users::STATUS_ONLINE, 'idUserType' => UsersTypes::TYPE_RISK]);
     }
 }

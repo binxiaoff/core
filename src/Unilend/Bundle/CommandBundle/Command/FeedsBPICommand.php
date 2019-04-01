@@ -5,7 +5,7 @@ namespace Unilend\Bundle\CommandBundle\Command;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\{InputArgument, InputInterface};
 use Symfony\Component\Console\Output\OutputInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{Bids, ProjectsStatus};
+use Unilend\Entity\{Bids, Product, Projects, ProjectsStatus};
 
 /**
  * https://unilend.atlassian.net/browse/RUN-1065
@@ -35,7 +35,7 @@ class FeedsBPICommand extends ContainerAwareCommand
         $router                 = $this->getContainer()->get('router');
         $serializer             = $this->getContainer()->get('serializer');
         $logger                 = $this->getContainer()->get('monolog.logger.console');
-        $projectRepository      = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
+        $projectRepository      = $entityManager->getRepository(Projects::class);
 
         /** @var \bids $bids */
         $bids = $entityManagerSimulator->getRepository('bids');
@@ -54,7 +54,7 @@ class FeedsBPICommand extends ContainerAwareCommand
         $hostUrl  = $this->getContainer()->getParameter('router.request_context.scheme') . '://' . $this->getContainer()->getParameter('url.host_default');
         $userPath = $this->getContainer()->getParameter('path.user');
         $partner  = strtolower($input->getArgument('partner'));
-        $products = $entityManager->getRepository('UnilendCoreBusinessBundle:Product')->findAvailableProductsByClient();
+        $products = $entityManager->getRepository(Product::class)->findAvailableProductsByClient();
 
         $projectsToSerialise = [];
         $projects            = $projectRepository->findBy([

@@ -1,8 +1,8 @@
 <?php
 
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProductAttributeType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\UnderlyingContractAttributeType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
+use Unilend\Entity\ProductAttributeType;
+use Unilend\Entity\UnderlyingContractAttributeType;
+use Unilend\Entity\Zones;
 
 class productController extends bootstrap
 {
@@ -35,7 +35,7 @@ class productController extends bootstrap
         /** @var product_underlying_contract $productContract */
         $productContract     = $this->loadData('product_underlying_contract');
         $this->contracts     = $productContract->getUnderlyingContractsByProduct($this->product->id_product);
-        $this->repaymentType = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:RepaymentType')->find($this->product->id_repayment_type);
+        $this->repaymentType = $this->get('doctrine.orm.entity_manager')->getRepository(RepaymentType::class)->find($this->product->id_repayment_type);
 
         // max / min duration
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductManager $productManager */

@@ -17,7 +17,7 @@
             {% for attachment in residenceAttachments %}
                 {% if attachment is not null %}
                     {% set attachmentDate = attachment.updated|default(attachment.added)|localizeddate('short', 'none', app.request.locale) %}
-                    {% if attachment.type.id == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\AttachmentType::CNI_PASSPORT_TIERS_HEBERGEANT') %}
+                    {% if attachment.type.id == constant('\\Unilend\\Entity\\AttachmentType::CNI_PASSPORT_TIERS_HEBERGEANT') %}
                         {% set isHousedByThirdPerson = true %}
                         <span id="form-profile-info-file-identite-cni-1-output" class="file-justificatif file-identity-side-a"
                               title="{{ "lender-profile_lender-attachment-provided-label-type-#{ attachment.type.id }"|trans({'%date%' : attachmentDate}) }}"
@@ -137,7 +137,7 @@
     </div>
 
     {# Show if country changes from France #}
-    <div id="tax-certificate" class="row collapse {% if mainAddress.getIdCountry().getIdPays() != constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Pays::COUNTRY_FRANCE') %}in{% endif %}">
+    <div id="tax-certificate" class="row collapse {% if mainAddress.getIdCountry().getIdPays() != constant('\\Unilend\\Entity\\Pays::COUNTRY_FRANCE') %}in{% endif %}">
         <div class="form-field">
             <label>{% trans %} lender-profile_information-tab-fiscal-address-tax-certificate-label {% endtrans %}
                 <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span>

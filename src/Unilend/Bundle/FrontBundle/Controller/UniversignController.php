@@ -8,16 +8,16 @@ use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsMandats;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectBeneficialOwnerUniversign;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectCgv;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsPouvoir;
-use Unilend\Bundle\CoreBusinessBundle\Entity\UniversignEntityInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
-use Unilend\Bundle\CoreBusinessBundle\Entity\WireTransferOutUniversign;
+use Unilend\Entity\Clients;
+use Unilend\Entity\ClientsMandats;
+use Unilend\Entity\Companies;
+use Unilend\Entity\ProjectBeneficialOwnerUniversign;
+use Unilend\Entity\ProjectCgv;
+use Unilend\Entity\Projects;
+use Unilend\Entity\ProjectsPouvoir;
+use Unilend\Entity\UniversignEntityInterface;
+use Unilend\Entity\Virements;
+use Unilend\Entity\WireTransferOutUniversign;
 
 class UniversignController extends Controller
 {
@@ -43,7 +43,7 @@ class UniversignController extends Controller
     {
         $documents     = [];
         $entityManager = $this->get('doctrine.orm.entity_manager');
-        $client        = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->findOneBy(['hash' => $clientHash]);
+        $client        = $entityManager->getRepository(Clients::class)->findOneBy(['hash' => $clientHash]);
 
         if (null === $client) {
             return $this->redirectToRoute('home');
@@ -52,9 +52,9 @@ class UniversignController extends Controller
         switch ($signatureType) {
             case self::SIGNATURE_TYPE_PROJECT:
                 $status                     = [UniversignEntityInterface::STATUS_PENDING, UniversignEntityInterface::STATUS_SIGNED];
-                $mandate                    = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsMandats')
+                $mandate                    = $entityManager->getRepository(ClientsMandats::class)
                     ->findOneBy(['idProject' => $signatureId, 'status' => $status], ['added' => 'DESC']);
-                $proxy                      = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsPouvoir')
+                $proxy                      = $entityManager->getRepository(ProjectsPouvoir::class)
                     ->findOneBy(['idProject' => $signatureId, 'status' => $status], ['added' => 'DESC']);
 
                 if (null === $mandate || null === $proxy) {
@@ -62,7 +62,7 @@ class UniversignController extends Controller
                 }
 
                 if ($this->get('unilend.service.beneficial_owner_manager')->projectNeedsBeneficialOwnerDeclaration($proxy->getIdProject())) {
-                    $beneficialOwnerDeclaration = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectBeneficialOwnerUniversign')
+                    $beneficialOwnerDeclaration = $entityManager->getRepository(ProjectBeneficialOwnerUniversign::class)
                         ->findOneBy(['idProject' => $signatureId, 'status' => $status], ['added' => 'DESC']);
 
                     if (null === $beneficialOwnerDeclaration) {
@@ -76,19 +76,19 @@ class UniversignController extends Controller
                 $documents[] = $mandate;
                 break;
             case ProjectsPouvoir::DOCUMENT_TYPE:
-                $documents[] = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsPouvoir')->find($signatureId);
+                $documents[] = $entityManager->getRepository(ProjectsPouvoir::class)->find($signatureId);
                 break;
             case ClientsMandats::DOCUMENT_TYPE:
-                $documents[] = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsMandats')->find($signatureId);
+                $documents[] = $entityManager->getRepository(ClientsMandats::class)->find($signatureId);
                 break;
             case ProjectCgv::DOCUMENT_TYPE:
-                $documents[] = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectCgv')->find($signatureId);
+                $documents[] = $entityManager->getRepository(ProjectCgv::class)->find($signatureId);
                 break;
             case WireTransferOutUniversign::DOCUMENT_TYPE:
-                $documents[] = $entityManager->getRepository('UnilendCoreBusinessBundle:WireTransferOutUniversign')->find($signatureId);
+                $documents[] = $entityManager->getRepository(WireTransferOutUniversign::class)->find($signatureId);
                 break;
             case ProjectBeneficialOwnerUniversign::DOCUMENT_TYPE:
-                $documents[] = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectBeneficialOwnerUniversign')->find($signatureId);
+                $documents[] = $entityManager->getRepository(ProjectBeneficialOwnerUniversign::class)->find($signatureId);
                 break;
             default:
                 return $this->redirectToRoute('home');
@@ -191,7 +191,7 @@ class UniversignController extends Controller
     {
         $entityManager     = $this->get('doctrine.orm.entity_manager');
         $universignManager = $this->get('unilend.frontbundle.service.universign_manager');
-        $proxy             = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsPouvoir')->find($proxyId);
+        $proxy             = $entityManager->getRepository(ProjectsPouvoir::class)->find($proxyId);
 
         if (
             $proxy
@@ -215,7 +215,7 @@ class UniversignController extends Controller
     {
         $entityManager     = $this->get('doctrine.orm.entity_manager');
         $universignManager = $this->get('unilend.frontbundle.service.universign_manager');
-        $mandate           = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsMandats')->find($mandateId);
+        $mandate           = $entityManager->getRepository(ClientsMandats::class)->find($mandateId);
 
         if (
             $mandate
@@ -240,10 +240,10 @@ class UniversignController extends Controller
         $entityManager              = $this->get('doctrine.orm.entity_manager');
         $universignManager          = $this->get('unilend.frontbundle.service.universign_manager');
         $beneficialOwnerManager     = $this->get('unilend.service.beneficial_owner_manager');
-        $project                    = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($projectId);
-        $mandate                    = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsMandats')
+        $project                    = $entityManager->getRepository(Projects::class)->find($projectId);
+        $mandate                    = $entityManager->getRepository(ClientsMandats::class)
             ->findOneBy(['idProject' => $projectId, 'status' => UniversignEntityInterface::STATUS_PENDING], ['added' => 'DESC']);
-        $proxy                      = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsPouvoir')
+        $proxy                      = $entityManager->getRepository(ProjectsPouvoir::class)
             ->findOneBy(['idProject' => $projectId, 'status' => UniversignEntityInterface::STATUS_PENDING], ['added' => 'DESC']);
 
         if (null === $project || null === $mandate || null === $proxy) {
@@ -251,7 +251,7 @@ class UniversignController extends Controller
         }
 
         if ($beneficialOwnerManager->projectNeedsBeneficialOwnerDeclaration($project)) {
-            $beneficialOwnerDeclaration = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectBeneficialOwnerUniversign')
+            $beneficialOwnerDeclaration = $entityManager->getRepository(ProjectBeneficialOwnerUniversign::class)
                 ->findOneBy(['idProject' => $projectId, 'status' => UniversignEntityInterface::STATUS_PENDING], ['added' => 'DESC']);
 
             if (
@@ -291,7 +291,7 @@ class UniversignController extends Controller
     {
         $entityManager     = $this->get('doctrine.orm.entity_manager');
         $universignManager = $this->get('unilend.frontbundle.service.universign_manager');
-        $tos               = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectCgv')->find($tosId);
+        $tos               = $entityManager->getRepository(ProjectCgv::class)->find($tosId);
 
         if ($tos && $tos->getStatus() == UniversignEntityInterface::STATUS_PENDING && $tosName === $tos->getName()) {
             $tosLastUpdateDate = $tos->getLastUpdated();
@@ -314,15 +314,15 @@ class UniversignController extends Controller
     public function createWireTransferOutRequestAction($clientHash, $wireTransferOutId)
     {
         $entityManager   = $this->get('doctrine.orm.entity_manager');
-        $client          = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->findOneBy(['hash' => $clientHash]);
-        $wireTransferOut = $entityManager->getRepository('UnilendCoreBusinessBundle:Virements')->find($wireTransferOutId);
+        $client          = $entityManager->getRepository(Clients::class)->findOneBy(['hash' => $clientHash]);
+        $wireTransferOut = $entityManager->getRepository(Virements::class)->find($wireTransferOutId);
 
         if (null === $wireTransferOut || null === $client) {
             return $this->redirectToRoute('home');
         }
 
         $company        = $wireTransferOut->getProject()->getIdCompany();
-        $companyManager = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($company->getIdClientOwner());
+        $companyManager = $entityManager->getRepository(Clients::class)->find($company->getIdClientOwner());
         if ($companyManager !== $client) {
             return $this->redirectToRoute('home');
         }
@@ -349,9 +349,9 @@ class UniversignController extends Controller
 
         if (false === file_exists($wireTransferOutPdfRoot . DIRECTORY_SEPARATOR . $universign->getName())) {
             $company            = $wireTransferOut->getProject()->getIdCompany();
-            $companyManager     = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($company->getIdClientOwner());
+            $companyManager     = $entityManager->getRepository(Clients::class)->find($company->getIdClientOwner());
             $bankAccount        = $wireTransferOut->getBankAccount();
-            $destinationCompany = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $bankAccount->getIdClient()->getIdClient()]);
+            $destinationCompany = $entityManager->getRepository(Companies::class)->findOneBy(['idClientOwner' => $bankAccount->getIdClient()->getIdClient()]);
             $pdfContent         = $this->renderView('/pdf/wire_transfer_out/borrower_request_third_party.html.twig', [
                 'companyManagerName'      => $companyManager->getNom(),
                 'companyManagerFirstName' => $companyManager->getPrenom(),
@@ -405,8 +405,8 @@ class UniversignController extends Controller
     {
         /** @var EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
-        $client        = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->findOneBy(['hash' => $clientHash]);
-        $project       = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($idProject);
+        $client        = $entityManager->getRepository(Clients::class)->findOneBy(['hash' => $clientHash]);
+        $project       = $entityManager->getRepository(Projects::class)->find($idProject);
 
         $beneficialOwnerManager = $this->get('unilend.service.beneficial_owner_manager');
         $return                 = $beneficialOwnerManager->createProjectBeneficialOwnerDeclaration($project, $client);

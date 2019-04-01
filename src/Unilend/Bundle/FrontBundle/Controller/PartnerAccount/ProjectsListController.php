@@ -7,7 +7,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\{JsonResponse, Request, Response};
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\User\UserInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{Clients, ProjectAbandonReason, Projects, ProjectsComments, ProjectsStatus};
+use Unilend\Entity\{Clients, ProjectAbandonReason, ProjectCgv, Projects, ProjectsComments, ProjectsStatus, ProjectsStatusHistory};
 use Unilend\Bundle\CoreBusinessBundle\Repository\ProjectsRepository;
 use Unilend\Bundle\CoreBusinessBundle\Service\TermsOfSaleManager;
 
@@ -34,7 +34,7 @@ class ProjectsListController extends Controller
         }
 
         /** @var ProjectsRepository $projectRepository */
-        $projectRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
+        $projectRepository = $entityManager->getRepository(Projects::class);
         $pending           = $projectRepository->getPartnerProjects($companies, [ProjectsStatus::STATUS_REQUEST], $submitter);
         $ready             = $projectRepository->getPartnerProjects($companies, [ProjectsStatus::STATUS_REVIEW], $submitter);
         $online            = $projectRepository->getPartnerProjects($companies, [ProjectsStatus::STATUS_ONLINE], $submitter);
@@ -48,7 +48,7 @@ class ProjectsListController extends Controller
             'funded'         => $this->formatProject($partnerUser, $funded, true),
             'cancelled'      => $this->formatProject($partnerUser, $cancelled, false),
             'abandonReasons' => $entityManager
-                ->getRepository('UnilendCoreBusinessBundle:ProjectAbandonReason')
+                ->getRepository(ProjectAbandonReason::class)
                 ->findBy(['status' => ProjectAbandonReason::STATUS_ONLINE], ['reason' => 'ASC'])
         ]);
     }
@@ -74,7 +74,7 @@ class ProjectsListController extends Controller
         $entityManager     = $this->get('doctrine.orm.entity_manager');
         $partnerManager    = $this->get('unilend.service.partner_manager');
 
-        $projectRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
+        $projectRepository = $entityManager->getRepository(Projects::class);
         $project           = $projectRepository->findOneBy(['hash' => $hash]);
         $userCompanies     = $partnerManager->getUserCompanies($partnerUser);
 
@@ -132,8 +132,8 @@ class ProjectsListController extends Controller
         $display                        = [];
         $translator                     = $this->get('translator');
         $entityManager                  = $this->get('doctrine.orm.entity_manager');
-        $projectStatusHistoryRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatusHistory');
-        $termsOfSaleRepository          = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectCgv');
+        $projectStatusHistoryRepository = $entityManager->getRepository(ProjectsStatusHistory::class);
+        $termsOfSaleRepository          = $entityManager->getRepository(ProjectCgv::class);
 
         foreach ($projects as $project) {
             $display[$project->getIdProject()] = [
@@ -164,7 +164,7 @@ class ProjectsListController extends Controller
 
             if ($abandoned) {
                 if (false === isset($abandonProjectStatus)) {
-                    $abandonProjectStatus = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatus')->findOneBy(['status' => ProjectsStatus::STATUS_CANCELLED]);
+                    $abandonProjectStatus = $entityManager->getRepository(ProjectsStatus::class)->findOneBy(['status' => ProjectsStatus::STATUS_CANCELLED]);
                 }
 
                 $history = $projectStatusHistoryRepository->findOneBy([
@@ -207,7 +207,7 @@ class ProjectsListController extends Controller
     private function hasProjectChanged(Projects $project, Clients $client): bool
     {
         $entityManager                  = $this->get('doctrine.orm.entity_manager');
-        $projectStatusRepositoryHistory = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatusHistory');
+        $projectStatusRepositoryHistory = $entityManager->getRepository(ProjectsStatusHistory::class);
         $lastLoginDate                  = $client->getLastlogin();
         $notes                          = $project->getPublicMemos();
 

@@ -1,4 +1,4 @@
-<?php use Unilend\Bundle\CoreBusinessBundle\Entity\Receptions; ?>
+<?php use Unilend\Entity\Receptions; ?>
 <?php if (count($this->receptions) > 0) : ?>
     <table class="tablesorter table table-hover table-striped operations-attribution">
         <thead>

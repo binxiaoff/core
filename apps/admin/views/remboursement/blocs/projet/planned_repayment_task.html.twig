@@ -69,13 +69,13 @@
                                     {% endif %}
                                 </td>
                                 <td>
-                                    {% if constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectRepaymentTask::TYPE_REGULAR') == repaymentTask.type %}
+                                    {% if constant('\\Unilend\\Entity\\ProjectRepaymentTask::TYPE_REGULAR') == repaymentTask.type %}
                                         Normal
-                                    {% elseif constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectRepaymentTask::TYPE_LATE') == repaymentTask.type %}
+                                    {% elseif constant('\\Unilend\\Entity\\ProjectRepaymentTask::TYPE_LATE') == repaymentTask.type %}
                                         Régularisation
-                                    {% elseif constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectRepaymentTask::TYPE_EARLY') == repaymentTask.type %}
+                                    {% elseif constant('\\Unilend\\Entity\\ProjectRepaymentTask::TYPE_EARLY') == repaymentTask.type %}
                                         Anticipé
-                                    {% elseif constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectRepaymentTask::TYPE_CLOSE_OUT_NETTING') == repaymentTask.type %}
+                                    {% elseif constant('\\Unilend\\Entity\\ProjectRepaymentTask::TYPE_CLOSE_OUT_NETTING') == repaymentTask.type %}
                                         Déchéance du terme
                                     {% endif %}
                                 </td>
@@ -92,13 +92,13 @@
                                     {{ repaymentTask.added|localizeddate('short', 'none') }}
                                 </td>
                                 <td>
-                                    {% if constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectRepaymentTask::STATUS_PENDING') == repaymentTask.status %}
+                                    {% if constant('\\Unilend\\Entity\\ProjectRepaymentTask::STATUS_PENDING') == repaymentTask.status %}
                                         En attente de validation
-                                    {% elseif constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectRepaymentTask::STATUS_READY') == repaymentTask.status %}
+                                    {% elseif constant('\\Unilend\\Entity\\ProjectRepaymentTask::STATUS_READY') == repaymentTask.status %}
                                         Validé
-                                    {% elseif constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectRepaymentTask::STATUS_IN_PROGRESS') == repaymentTask.status %}
+                                    {% elseif constant('\\Unilend\\Entity\\ProjectRepaymentTask::STATUS_IN_PROGRESS') == repaymentTask.status %}
                                         En cours
-                                    {% elseif constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectRepaymentTask::STATUS_ERROR') == repaymentTask.status %}
+                                    {% elseif constant('\\Unilend\\Entity\\ProjectRepaymentTask::STATUS_ERROR') == repaymentTask.status %}
                                         Erreur (contactez IT)
                                     {% endif %}
                                 </td>

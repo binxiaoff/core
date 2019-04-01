@@ -1,6 +1,6 @@
 <?php
 
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
+use Unilend\Entity\ProjectsStatus;
 
 ?>
 <?php if ($this->projects->status >= ProjectsStatus::STATUS_REQUEST || $this->projects_status_history->projectHasHadStatus($this->projects->id_project, ProjectsStatus::STATUS_REQUEST)) : ?>

@@ -175,13 +175,13 @@
                                                                                 {% set translationLabel = 'projet_document-type-' ~ attachmentType.getId() %}
                                                                                 <option value="{{ attachmentType.getId() }}">
                                                                                     {% set year = 'now'|date('Y') %}
-                                                                                    {% if attachmentType.getId() == constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\AttachmentType::DERNIERE_LIASSE_FISCAL') %}
+                                                                                    {% if attachmentType.getId() == constant('Unilend\\Entity\\AttachmentType::DERNIERE_LIASSE_FISCAL') %}
                                                                                         {% set year = year - 1 %}
                                                                                     {% endif %}
-                                                                                    {% if attachmentType.getId() == constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\AttachmentType::LIASSE_FISCAL_N_1') %}
+                                                                                    {% if attachmentType.getId() == constant('Unilend\\Entity\\AttachmentType::LIASSE_FISCAL_N_1') %}
                                                                                         {% set year = year - 2 %}
                                                                                     {% endif %}
-                                                                                    {% if attachmentType.getId() == constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\AttachmentType::LIASSE_FISCAL_N_2') %}
+                                                                                    {% if attachmentType.getId() == constant('Unilend\\Entity\\AttachmentType::LIASSE_FISCAL_N_2') %}
                                                                                         {% set year = year - 3 %}
                                                                                     {% endif %}
                                                                                     {{ translationLabel|trans({'%year%': year}) }}

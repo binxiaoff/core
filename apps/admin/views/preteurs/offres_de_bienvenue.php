@@ -1,4 +1,4 @@
-<?php use Unilend\Bundle\CoreBusinessBundle\Entity\OffresBienvenues; ?>
+<?php use Unilend\Entity\OffresBienvenues; ?>
 <script type="text/javascript">
     $(function() {
         $.tablesorter.addParser({
@@ -266,8 +266,8 @@
                     <label>Affichée sur</label><br>
                     <select id="type_offer" name="type_offer" class="form-control">
                         <option value=""></option>
-                        <option value="<?= \Unilend\Bundle\CoreBusinessBundle\Entity\OffresBienvenues::TYPE_HOME ?>">Home Page</option>
-                        <option value="<?= \Unilend\Bundle\CoreBusinessBundle\Entity\OffresBienvenues::TYPE_LANDING_PAGE ?>">Landing Page</option>
+                        <option value="<?= \Unilend\Entity\OffresBienvenues::TYPE_HOME ?>">Home Page</option>
+                        <option value="<?= \Unilend\Entity\OffresBienvenues::TYPE_LANDING_PAGE ?>">Landing Page</option>
                     </select>
                 </div>
                 <input type="hidden" name="form_send_new_offer">

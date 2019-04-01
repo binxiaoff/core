@@ -10,7 +10,8 @@ use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\ORM\Query\ResultSetMapping;
 use Doctrine\ORM\UnexpectedResultException;
 use PDO;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, AttachmentType, Clients, ClientsStatus, Companies, CompanyClient, Loans, OperationType, GreenpointAttachment, Pays, Users, VigilanceRule, WalletType};
+use Unilend\Entity\{AddressType, Attachment, AttachmentType, BankAccount, BeneficialOwner, ClientAddress, Clients, ClientsAdresses, ClientsStatus, ClientsStatusHistory, Companies, CompanyClient,
+    Loans, Operation, OperationType, GreenpointAttachment, Partner, Pays, Users, VigilanceRule, Wallet, WalletBalanceHistory, WalletType};
 use Unilend\Bundle\CoreBusinessBundle\Service\{GreenPointValidationManager, LenderValidationManager};
 
 class ClientsRepository extends EntityRepository
@@ -28,7 +29,7 @@ class ClientsRepository extends EntityRepository
 
         $qb = $this->createQueryBuilder('c');
         $qb->select('co')
-           ->innerJoin('UnilendCoreBusinessBundle:Companies', 'co', Join::WITH, 'c.idClient = co.idClientOwner')
+           ->innerJoin(Companies::class, 'co', Join::WITH, 'c.idClient = co.idClientOwner')
            ->where('c.idClient = :idClient')
            ->setParameter('idClient', $idClient);
         $query  = $qb->getQuery();
@@ -74,8 +75,8 @@ class ClientsRepository extends EntityRepository
     public function getClientByAgeAndSubscriptionDate(\DateTime $birthDate, \DateTime $subscriptionDate)
     {
         $qb = $this->createQueryBuilder('c')
-            ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'c.idClient = w.idClient')
-            ->innerJoin('UnilendCoreBusinessBundle:WalletType', 'wt', Join::WITH, 'wt.id = w.idType AND wt.label = :lender')
+            ->innerJoin(Wallet::class, 'w', Join::WITH, 'c.idClient = w.idClient')
+            ->innerJoin(WalletType::class, 'wt', Join::WITH, 'wt.id = w.idType AND wt.label = :lender')
             ->where('c.naissance <= :birthDate')
             ->andWhere('c.added >= :added')
             ->andWhere('c.type IN (:physicalPerson)')
@@ -101,12 +102,12 @@ class ClientsRepository extends EntityRepository
         } else {
             $select = 'c.idClient, o.id as operation, o.amount as depositAmount';
         }
-        $operationType = $this->getEntityManager()->getRepository('UnilendCoreBusinessBundle:OperationType');
+        $operationType = $this->getEntityManager()->getRepository(OperationType::class);
 
         $qb = $this->createQueryBuilder('c')
                    ->select($select)
-                   ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'w.idClient = c.idClient')
-                   ->innerJoin('UnilendCoreBusinessBundle:Operation', 'o', Join::WITH, 'o.idWalletCreditor = w.id')
+                   ->innerJoin(Wallet::class, 'w', Join::WITH, 'w.idClient = c.idClient')
+                   ->innerJoin(Operation::class, 'o', Join::WITH, 'o.idWalletCreditor = w.id')
                    ->where('o.idType = :operation_type')
                    ->setParameter('operation_type', $operationType->findOneBy(['label' => OperationType::LENDER_PROVISION]))
                    ->andWhere('o.added >= :operation_date')
@@ -131,9 +132,9 @@ class ClientsRepository extends EntityRepository
     {
         $qb = $this->createQueryBuilder('c')
             ->select('c.idClient, COUNT(ba.id) AS nbRibChange')
-            ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'w.idClient = c.idClient')
-            ->innerJoin('UnilendCoreBusinessBundle:WalletType', 'wt', Join::WITH, 'wt.id = w.idType')
-            ->innerJoin('UnilendCoreBusinessBundle:BankAccount', 'ba', Join::WITH, 'ba.idClient = w.idClient')
+            ->innerJoin(Wallet::class, 'w', Join::WITH, 'w.idClient = c.idClient')
+            ->innerJoin(WalletType::class, 'wt', Join::WITH, 'wt.id = w.idType')
+            ->innerJoin(BankAccount::class, 'ba', Join::WITH, 'ba.idClient = w.idClient')
             ->where('wt.label = :lender')
             ->setParameter('lender', WalletType::LENDER)
             ->andWhere('ba.dateValidated >= :fromDate')
@@ -155,8 +156,8 @@ class ClientsRepository extends EntityRepository
     {
         $qb = $this->createQueryBuilder('c');
         $qb->select('c.idClient, p.fr AS countryLabel')
-           ->innerJoin('UnilendCoreBusinessBundle:ClientAddress', 'ca', Join::WITH, 'c.idAddress = ca.id')
-           ->innerJoin('UnilendCoreBusinessBundle:Pays', 'p', Join::WITH, 'p.idPays= ca.idCountry')
+           ->innerJoin(ClientAddress::class, 'ca', Join::WITH, 'c.idAddress = ca.id')
+           ->innerJoin(Pays::class, 'p', Join::WITH, 'p.idPays= ca.idCountry')
            ->where('p.vigilanceStatus = :vigilance_status')
            ->setParameter('vigilance_status', $vigilanceStatus)
            ->andWhere('c.added >= :added_date OR ca.updated >= :updated_date')
@@ -173,9 +174,9 @@ class ClientsRepository extends EntityRepository
     {
         $queryBuilder = $this->createQueryBuilder('c');
         $queryBuilder
-            ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'c.idClient = w.idClient')
-            ->innerJoin('UnilendCoreBusinessBundle:WalletType', 'wt', Join::WITH, 'w.idType = wt.id')
-            ->innerJoin('UnilendCoreBusinessBundle:ClientsStatusHistory', 'csh', Join::WITH, 'c.idClientStatusHistory = csh.id')
+            ->innerJoin(Wallet::class, 'w', Join::WITH, 'c.idClient = w.idClient')
+            ->innerJoin(WalletType::class, 'wt', Join::WITH, 'w.idType = wt.id')
+            ->innerJoin(ClientsStatusHistory::class, 'csh', Join::WITH, 'c.idClientStatusHistory = csh.id')
             ->where('csh.idStatus IN (:status)')
             ->andWhere('wt.label = :lender')
             ->andWhere('c.usPerson IS NULL OR c.usPerson = 0')
@@ -200,16 +201,16 @@ class ClientsRepository extends EntityRepository
         $queryBuilder = $this->createQueryBuilder('c');
         $queryBuilder
             ->select('COUNT(DISTINCT(c.idClient))')
-            ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'c.idClient = w.idClient')
-            ->innerJoin('UnilendCoreBusinessBundle:WalletType', 'wt', Join::WITH, 'w.idType = wt.id')
-            ->innerJoin('UnilendCoreBusinessBundle:ClientsStatusHistory', 'csh', Join::WITH, 'c.idClientStatusHistory = csh.id')
+            ->innerJoin(Wallet::class, 'w', Join::WITH, 'c.idClient = w.idClient')
+            ->innerJoin(WalletType::class, 'wt', Join::WITH, 'w.idType = wt.id')
+            ->innerJoin(ClientsStatusHistory::class, 'csh', Join::WITH, 'c.idClientStatusHistory = csh.id')
             ->where('wt.label = :lender')
             ->andWhere('csh.idStatus IN (:statusOnline)')
             ->setParameter('lender', WalletType::LENDER)
             ->setParameter('statusOnline', ClientsStatus::GRANTED_LOGIN, Connection::PARAM_INT_ARRAY);
 
         if ($onlyActive) {
-            $queryBuilder->innerJoin('UnilendCoreBusinessBundle:ClientsStatusHistory', 'valid', Join::WITH, 'valid.idClient = c.idClient AND valid.idStatus = ' . ClientsStatus::STATUS_VALIDATED);
+            $queryBuilder->innerJoin(ClientsStatusHistory::class, 'valid', Join::WITH, 'valid.idClient = c.idClient AND valid.idStatus = ' . ClientsStatus::STATUS_VALIDATED);
         }
 
         return $queryBuilder->getQuery()->getSingleScalarResult();
@@ -228,9 +229,9 @@ class ClientsRepository extends EntityRepository
         $queryBuilder = $this->createQueryBuilder('c');
         $queryBuilder
             ->select('COUNT(DISTINCT(c.idClient))')
-            ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'c.idClient = w.idClient')
-            ->innerJoin('UnilendCoreBusinessBundle:WalletType', 'wt', Join::WITH, 'w.idType = wt.id')
-            ->innerJoin('UnilendCoreBusinessBundle:ClientsStatusHistory', 'csh', Join::WITH, 'c.idClientStatusHistory = csh.id')
+            ->innerJoin(Wallet::class, 'w', Join::WITH, 'c.idClient = w.idClient')
+            ->innerJoin(WalletType::class, 'wt', Join::WITH, 'w.idType = wt.id')
+            ->innerJoin(ClientsStatusHistory::class, 'csh', Join::WITH, 'c.idClientStatusHistory = csh.id')
             ->where('wt.label = :lender')
             ->andWhere('csh.idStatus IN (:statusOnline)')
             ->andWhere('c.type IN (:types)')
@@ -239,7 +240,7 @@ class ClientsRepository extends EntityRepository
             ->setParameter('types', $clientType, Connection::PARAM_INT_ARRAY);
 
         if ($onlyActive) {
-            $queryBuilder->innerJoin('UnilendCoreBusinessBundle:ClientsStatusHistory', 'valid', Join::WITH, 'valid.idClient = c.idClient AND valid.idStatus = ' . ClientsStatus::STATUS_VALIDATED);
+            $queryBuilder->innerJoin(ClientsStatusHistory::class, 'valid', Join::WITH, 'valid.idClient = c.idClient AND valid.idStatus = ' . ClientsStatus::STATUS_VALIDATED);
         }
 
         return $queryBuilder->getQuery()->getSingleScalarResult();
@@ -384,9 +385,9 @@ class ClientsRepository extends EntityRepository
         $queryBuilder = $this->createQueryBuilder('c');
         $queryBuilder
             ->select('COUNT(DISTINCT(c.idClient))')
-            ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'c.idClient = w.idClient')
-            ->innerJoin('UnilendCoreBusinessBundle:WalletType', 'wt', Join::WITH, 'w.idType = wt.id')
-            ->innerJoin('UnilendCoreBusinessBundle:ClientsStatusHistory', 'csh', Join::WITH, 'c.idClientStatusHistory = csh.id')
+            ->innerJoin(Wallet::class, 'w', Join::WITH, 'c.idClient = w.idClient')
+            ->innerJoin(WalletType::class, 'wt', Join::WITH, 'w.idType = wt.id')
+            ->innerJoin(ClientsStatusHistory::class, 'csh', Join::WITH, 'c.idClientStatusHistory = csh.id')
             ->where('wt.label = :lender')
             ->andWhere('csh.idStatus IN (:statusOnline)')
             ->andWhere('c.type IN (:types)')
@@ -398,7 +399,7 @@ class ClientsRepository extends EntityRepository
             ->setParameter('end', $end->format('Y-m-d H:i:s'));
 
         if ($onlyActive) {
-            $queryBuilder->innerJoin('UnilendCoreBusinessBundle:ClientsStatusHistory', 'valid', Join::WITH, 'valid.idClient = c.idClient AND valid.idStatus = ' . ClientsStatus::STATUS_VALIDATED);
+            $queryBuilder->innerJoin(ClientsStatusHistory::class, 'valid', Join::WITH, 'valid.idClient = c.idClient AND valid.idStatus = ' . ClientsStatus::STATUS_VALIDATED);
         }
 
         return $queryBuilder->getQuery()->getSingleScalarResult();
@@ -421,9 +422,9 @@ class ClientsRepository extends EntityRepository
         $queryBuilder = $this->createQueryBuilder('c');
         $queryBuilder
             ->select('COUNT(DISTINCT(c.idClient))')
-            ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'c.idClient = w.idClient')
-            ->innerJoin('UnilendCoreBusinessBundle:WalletType', 'wt', Join::WITH, 'w.idType = wt.id')
-            ->innerJoin('UnilendCoreBusinessBundle:ClientsStatusHistory', 'csh', Join::WITH, 'c.idClientStatusHistory = csh.id')
+            ->innerJoin(Wallet::class, 'w', Join::WITH, 'c.idClient = w.idClient')
+            ->innerJoin(WalletType::class, 'wt', Join::WITH, 'w.idType = wt.id')
+            ->innerJoin(ClientsStatusHistory::class, 'csh', Join::WITH, 'c.idClientStatusHistory = csh.id')
             ->where('wt.label = :lender')
             ->andWhere('csh.idStatus IN (:statusOnline)')
             ->andWhere('c.added BETWEEN :start AND :end')
@@ -433,7 +434,7 @@ class ClientsRepository extends EntityRepository
             ->setParameter('end', $end->format('Y-m-d H:i:s'));
 
         if ($onlyActive) {
-            $queryBuilder->innerJoin('UnilendCoreBusinessBundle:ClientsStatusHistory', 'valid', Join::WITH, 'valid.idClient = c.idClient AND valid.idStatus = ' . ClientsStatus::STATUS_VALIDATED);
+            $queryBuilder->innerJoin(ClientsStatusHistory::class, 'valid', Join::WITH, 'valid.idClient = c.idClient AND valid.idStatus = ' . ClientsStatus::STATUS_VALIDATED);
         }
 
         return $queryBuilder->getQuery()->getSingleScalarResult();
@@ -448,10 +449,10 @@ class ClientsRepository extends EntityRepository
     {
         $queryBuilder = $this->createQueryBuilder('c');
         $queryBuilder
-            ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'c.idClient = w.idClient')
-            ->innerJoin('UnilendCoreBusinessBundle:WalletType', 'wt', Join::WITH, 'w.idType = wt.id')
-            ->innerJoin('UnilendCoreBusinessBundle:ClientsStatusHistory', 'csh', Join::WITH, 'c.idClientStatusHistory = csh.id')
-            ->innerJoin('UnilendCoreBusinessBundle:ClientsStatusHistory', 'valid', Join::WITH, 'c.idClient = valid.idClient')
+            ->innerJoin(Wallet::class, 'w', Join::WITH, 'c.idClient = w.idClient')
+            ->innerJoin(WalletType::class, 'wt', Join::WITH, 'w.idType = wt.id')
+            ->innerJoin(ClientsStatusHistory::class, 'csh', Join::WITH, 'c.idClientStatusHistory = csh.id')
+            ->innerJoin(ClientsStatusHistory::class, 'valid', Join::WITH, 'c.idClient = valid.idClient')
             ->where('wt.label = :lender')
             ->andWhere('csh.idStatus IN (:onlineStatus)')
             ->andWhere('valid.idStatus = :validatedStatus')
@@ -555,9 +556,9 @@ class ClientsRepository extends EntityRepository
             ->select('c.idClient')
             ->addSelect('c.type')
             ->addSelect('IFNULL (CASE WHEN c.type IN (:companyType) THEN co.name ELSE CONCAT(c.nom, \', \', c.prenom) END, \' \') AS name')
-            ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'c.idClient = w.idClient')
-            ->innerJoin('UnilendCoreBusinessBundle:WalletType', 'wt', Join::WITH, 'w.idType= wt.id AND wt.label = :lenderWalletType')
-            ->leftJoin('UnilendCoreBusinessBundle:Companies', 'co', Join::WITH, 'c.idClient = co.idClientOwner AND c.type IN (:companyType)')
+            ->innerJoin(Wallet::class, 'w', Join::WITH, 'c.idClient = w.idClient')
+            ->innerJoin(WalletType::class, 'wt', Join::WITH, 'w.idType= wt.id AND wt.label = :lenderWalletType')
+            ->leftJoin(Companies::class, 'co', Join::WITH, 'c.idClient = co.idClientOwner AND c.type IN (:companyType)')
             ->setParameter('lenderWalletType', WalletType::LENDER)
             ->setParameter('companyType', [Clients::TYPE_LEGAL_ENTITY, Clients::TYPE_LEGAL_ENTITY_FOREIGNER], Connection::PARAM_INT_ARRAY)
             ->orderBy('c.added', 'DESC');
@@ -700,7 +701,7 @@ class ClientsRepository extends EntityRepository
     public function findClientsWithSponsorCodeToRepair($limit)
     {
         $resultSetMapping = new ResultSetMapping();
-        $resultSetMapping->addEntityResult('UnilendCoreBusinessBundle:Clients', 'c')
+        $resultSetMapping->addEntityResult(Clients::class, 'c')
             ->addFieldResult('c', 'id_client', 'idClient')
             ->addFieldResult('c', 'sponsor_code', 'sponsorCode')
             ->addFieldResult('c', 'nom', 'nom');
@@ -731,8 +732,8 @@ class ClientsRepository extends EntityRepository
                 a.originalName AS attachmentOriginalName,
                 a.path AS attachmentPath'
             )
-            ->leftJoin('UnilendCoreBusinessBundle:Attachment', 'a', Join::WITH, 'a.idClient = c.idClient AND a.idType = ' . AttachmentType::CNI_PASSPORTE)
-            ->leftJoin('UnilendCoreBusinessBundle:ClientsAdresses', 'ca', Join::WITH, 'c.idClient = ca.idClient')
+            ->leftJoin(Attachment::class, 'a', Join::WITH, 'a.idClient = c.idClient AND a.idType = ' . AttachmentType::CNI_PASSPORTE)
+            ->leftJoin(ClientsAdresses::class, 'ca', Join::WITH, 'c.idClient = ca.idClient')
             ->where('c.nom LIKE :name')
             ->andWhere('c.type NOT IN (:lenderTypes)')
             ->setParameter('name', '%' . $name . '%')
@@ -752,7 +753,7 @@ class ClientsRepository extends EntityRepository
     {
         return $this->createQueryBuilder('c')
             ->select('COUNT(c.idClient)')
-            ->innerJoin('UnilendCoreBusinessBundle:CompanyClient', 'cc', Join::WITH, 'c.idClient = cc.idClient')
+            ->innerJoin(CompanyClient::class, 'cc', Join::WITH, 'c.idClient = cc.idClient')
             ->where('LOWER(c.nom) LIKE LOWER(:lastname)')
             ->andWhere('LOWER(c.prenom) LIKE LOWER(:firstname)')
             ->andWhere('cc.idCompany = :company')
@@ -788,17 +789,17 @@ class ClientsRepository extends EntityRepository
                 cp.name AS partnerName,
                 COUNT(DISTINCT bo.id) AS beneficialOwner'
             )
-            ->leftJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'c.idClient = w.idClient')
-            ->leftJoin('UnilendCoreBusinessBundle:WalletType', 'wt', Join::WITH, 'w.idType = wt.id')
-            ->leftJoin('UnilendCoreBusinessBundle:WalletBalanceHistory', 'wbh', Join::WITH, 'w.id = wbh.idWallet')
-            ->leftJoin('UnilendCoreBusinessBundle:ClientsStatusHistory', 'csh', Join::WITH, 'c.idClientStatusHistory = csh.id')
-            ->leftJoin('UnilendCoreBusinessBundle:ClientsStatus', 'cs', Join::WITH, 'csh.idStatus = cs.id')
-            ->leftJoin('UnilendCoreBusinessBundle:Companies', 'co', Join::WITH, 'c.idClient = co.idClientOwner')
-            ->leftJoin('UnilendCoreBusinessBundle:BeneficialOwner', 'bo', Join::WITH, 'c.idClient = bo.idClient')
-            ->leftJoin('UnilendCoreBusinessBundle:CompanyClient', 'cc', Join::WITH, 'c.idClient = cc.idClient')
-            ->leftJoin('UnilendCoreBusinessBundle:Companies', 'coc', Join::WITH, 'cc.idCompany = coc.idCompany')
-            ->leftJoin('UnilendCoreBusinessBundle:Companies', 'cp', Join::WITH, 'coc.idParentCompany = cp.idCompany')
-            ->leftJoin('UnilendCoreBusinessBundle:Partner', 'pa', Join::WITH, 'cp.idCompany = pa.idCompany')
+            ->leftJoin(Wallet::class, 'w', Join::WITH, 'c.idClient = w.idClient')
+            ->leftJoin(WalletType::class, 'wt', Join::WITH, 'w.idType = wt.id')
+            ->leftJoin(WalletBalanceHistory::class, 'wbh', Join::WITH, 'w.id = wbh.idWallet')
+            ->leftJoin(ClientsStatusHistory::class, 'csh', Join::WITH, 'c.idClientStatusHistory = csh.id')
+            ->leftJoin(ClientsStatus::class, 'cs', Join::WITH, 'csh.idStatus = cs.id')
+            ->leftJoin(Companies::class, 'co', Join::WITH, 'c.idClient = co.idClientOwner')
+            ->leftJoin(BeneficialOwner::class, 'bo', Join::WITH, 'c.idClient = bo.idClient')
+            ->leftJoin(CompanyClient::class, 'cc', Join::WITH, 'c.idClient = cc.idClient')
+            ->leftJoin(Companies::class, 'coc', Join::WITH, 'cc.idCompany = coc.idCompany')
+            ->leftJoin(Companies::class, 'cp', Join::WITH, 'coc.idParentCompany = cp.idCompany')
+            ->leftJoin(Partner::class, 'pa', Join::WITH, 'cp.idCompany = pa.idCompany')
             ->where('c.email LIKE :email')
             ->setParameter('email', $email . '%', \PDO::PARAM_STR)
             ->groupBy('c.idClient');
@@ -815,7 +816,7 @@ class ClientsRepository extends EntityRepository
     {
         $queryBuilder = $this->createQueryBuilder('c');
         $queryBuilder
-            ->innerJoin('UnilendCoreBusinessBundle:ClientsStatusHistory', 'csh', Join::WITH, 'c.idClientStatusHistory = csh.id')
+            ->innerJoin(ClientsStatusHistory::class, 'csh', Join::WITH, 'c.idClientStatusHistory = csh.id')
             ->where('c.email = :email')
             ->andWhere('csh.idStatus IN (:status)')
             ->setParameter('email', $email, \PDO::PARAM_STR)
@@ -834,7 +835,7 @@ class ClientsRepository extends EntityRepository
     {
         $queryBuilder = $this->createQueryBuilder('c');
         $queryBuilder
-            ->innerJoin('UnilendCoreBusinessBundle:ClientsStatusHistory', 'csh', Join::WITH, 'c.idClientStatusHistory = csh.id')
+            ->innerJoin(ClientsStatusHistory::class, 'csh', Join::WITH, 'c.idClientStatusHistory = csh.id')
             ->where('c.hash = :hash')
             ->andWhere('csh.idStatus IN (:status)')
             ->setParameter('hash', $hash, \PDO::PARAM_STR)

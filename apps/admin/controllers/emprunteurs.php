@@ -1,6 +1,6 @@
 <?php
 
-use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, AttachmentType, ClientsStatus, Companies, CompanyStatus, Pays, WalletType, Zones};
+use Unilend\Entity\{AddressType, AttachmentType, ClientsStatus, Companies, CompanyStatus, Pays, WalletType, Zones};
 
 class emprunteursController extends bootstrap
 {
@@ -104,8 +104,8 @@ class emprunteursController extends bootstrap
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BorrowerManager $borrowerManager */
             $borrowerManager = $this->get('unilend.service.borrower_manager');
 
-            $walletType       = $entityManager->getRepository('UnilendCoreBusinessBundle:WalletType')->findOneBy(['label' => WalletType::BORROWER]);
-            $borrowerWallet   = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->findOneBy(['idClient' => $this->clients->id_client, 'idType' => $walletType]);
+            $walletType       = $entityManager->getRepository(WalletType::class)->findOneBy(['label' => WalletType::BORROWER]);
+            $borrowerWallet   = $entityManager->getRepository(Wallet::class)->findOneBy(['idClient' => $this->clients->id_client, 'idType' => $walletType]);
 
             if ($borrowerWallet) {
                 $this->availableBalance = $borrowerWallet->getAvailableBalance();
@@ -120,21 +120,21 @@ class emprunteursController extends bootstrap
             }
 
             $this->lprojects             = $this->projects->select('id_company = ' . $this->companies->id_company);
-            $this->wireTransferOuts      = $entityManager->getRepository('UnilendCoreBusinessBundle:Virements')->findBy(['idClient' => $this->clients->id_client]);
-            $this->bankAccountRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount');
-            $this->companyRepository     = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies'); // used in included template
+            $this->wireTransferOuts      = $entityManager->getRepository(Virements::class)->findBy(['idClient' => $this->clients->id_client]);
+            $this->bankAccountRepository = $entityManager->getRepository(BankAccount::class);
+            $this->companyRepository     = $entityManager->getRepository(Companies::class); // used in included template
             $this->clientEntity          = $borrowerWallet->getIdClient();
             $this->companyEntity         = $this->companyRepository->find($this->companies->id_company);
             $this->companyAddress        = $this->companyEntity->getIdAddress();
             $this->bankAccount           = $this->bankAccountRepository->getClientValidatedBankAccount($this->clientEntity);
-            $this->bankAccountDocuments  = $entityManager->getRepository('UnilendCoreBusinessBundle:Attachment')->findBy([
+            $this->bankAccountDocuments  = $entityManager->getRepository(Attachment::class)->findBy([
                 'idClient' => $this->clientEntity,
                 'idType'   => AttachmentType::RIB
             ]);
 
             if (isset($_POST['form_edit_emprunteur'])) {
                 $emailRegex = $entityManager
-                    ->getRepository('UnilendCoreBusinessBundle:Settings')
+                    ->getRepository(Settings::class)
                     ->findOneBy(['type' => 'Regex validation email'])
                     ->getValue();
 
@@ -142,7 +142,7 @@ class emprunteursController extends bootstrap
                 if (false === empty($email) && 1 !== preg_match($emailRegex, $email)) {
                     $_SESSION['error_email_exist'] = 'Le format de l\'adresse email est invalide';
                 } elseif (false === empty($email) && $email !== $this->clients->email) {
-                    $clientRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
+                    $clientRepository = $entityManager->getRepository(Clients::class);
                     $duplicates       = $clientRepository->findGrantedLoginAccountsByEmail($email);
 
                     if (false === empty($duplicates)) {
@@ -209,7 +209,7 @@ class emprunteursController extends bootstrap
             $this->operations          = $borrowerOperationsManager->getBorrowerOperations($borrowerWallet, $start, $end);
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\CompanyManager companyManager */
             $this->companyManager        = $this->get('unilend.service.company_manager');
-            $companyStatusRepository     = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyStatus');
+            $companyStatusRepository     = $entityManager->getRepository(CompanyStatus::class);
             $this->possibleCompanyStatus = $this->companyManager->getPossibleStatus($this->companyEntity);
             $this->companyStatusInBonis  = $companyStatusRepository->findOneBy(['label' => CompanyStatus::STATUS_IN_BONIS]);
 
@@ -239,10 +239,10 @@ class emprunteursController extends bootstrap
 
         foreach ($aProjectInvoices as $iKey => $aInvoice) {
             switch ($aInvoice['type_commission']) {
-                case \Unilend\Bundle\CoreBusinessBundle\Entity\Factures::TYPE_COMMISSION_FUNDS:
+                case \Unilend\Entity\Factures::TYPE_COMMISSION_FUNDS:
                     $aProjectInvoices[$iKey]['url'] = $this->furl . '/pdf/facture_EF/' . $oClient->hash . '/' . $aInvoice['id_project'];
                     break;
-                case \Unilend\Bundle\CoreBusinessBundle\Entity\Factures::TYPE_COMMISSION_REPAYMENT:
+                case \Unilend\Entity\Factures::TYPE_COMMISSION_REPAYMENT:
                     $aProjectInvoices[$iKey]['url'] = $this->furl . '/pdf/facture_ER/' . $oClient->hash . '/' . $aInvoice['id_project'] . '/' . $aInvoice['ordre'];
                     break;
                 default :
@@ -261,7 +261,7 @@ class emprunteursController extends bootstrap
             /** @var \Doctrine\ORM\EntityManager $entityManager */
             $entityManager = $this->get('doctrine.orm.entity_manager');
             $projectId     = filter_var($this->params[1], FILTER_VALIDATE_INT);
-            $project       = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($projectId);
+            $project       = $entityManager->getRepository(Projects::class)->find($projectId);
 
             if ($project) {
                 $client = $project->getIdCompany()->getIdClientOwner();
@@ -295,7 +295,7 @@ class emprunteursController extends bootstrap
 
             $year     = filter_var($_POST['year'], FILTER_VALIDATE_INT);
             $idClient = filter_var($_POST['id_client'], FILTER_VALIDATE_INT);
-            $borrowerWallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($idClient, WalletType::BORROWER);
+            $borrowerWallet = $entityManager->getRepository(Wallet::class)->getWalletByType($idClient, WalletType::BORROWER);
             $start = new \DateTime();
             $start->setDate($year, 1, 1);
             $end = new \DateTime();
@@ -313,18 +313,18 @@ class emprunteursController extends bootstrap
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
 
-        $user        = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find($_SESSION['user']['id_user']);
+        $user        = $entityManager->getRepository(Users::class)->find($_SESSION['user']['id_user']);
         $changedOn   = isset($_POST['decision_date']) ? \DateTime::createFromFormat('d/m/Y', $_POST['decision_date']) : null;
         $receiver    = isset($_POST['receiver']) ? $_POST['receiver'] : null;
         $siteContent = isset($_POST['site_content']) ? $_POST['site_content'] : null;
         $mailContent = isset($_POST['mail_content']) ? $_POST['mail_content'] : null;
-        $status      = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyStatus')->find($_POST['problematic_status']);
+        $status      = $entityManager->getRepository(CompanyStatus::class)->find($_POST['problematic_status']);
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\CompanyManager $companyManager */
         $companyManager = $this->get('unilend.service.company_manager');
         $companyManager->addCompanyStatus($company, $status, $user, $changedOn, $receiver, $siteContent, $mailContent);
 
         if (in_array($company->getIdStatus()->getLabel(), [CompanyStatus::STATUS_PRECAUTIONARY_PROCESS, CompanyStatus::STATUS_RECEIVERSHIP, CompanyStatus::STATUS_COMPULSORY_LIQUIDATION])) {
-            $projectsRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
+            $projectsRepository = $entityManager->getRepository(Projects::class);
             $companyProjects    = $projectsRepository->findFundedButNotRepaidProjectsByCompany($company);
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectStatusNotificationSender $projectStatusNotificationSender */
             $projectStatusNotificationSender = $this->get('unilend.service.project_status_notification_sender');

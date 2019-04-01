@@ -122,12 +122,12 @@
                 <th>Date de retrait</th>
                 <td><?= ($this->projects->date_retrait != '0000-00-00 00:00:00' ? $this->formatDate($this->projects->date_retrait, 'd/m/Y H:i') : '') ?></td>
             </tr>
-            <?php if ($this->projects_pouvoir->get($this->projects->id_project, 'id_project') && $this->projects_pouvoir->status == \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsPouvoir::STATUS_SIGNED) : ?>
+            <?php if ($this->projects_pouvoir->get($this->projects->id_project, 'id_project') && $this->projects_pouvoir->status == \Unilend\Entity\ProjectsPouvoir::STATUS_SIGNED) : ?>
                 <tr>
                     <th>Pouvoir</th>
                     <td>
                         <a href="<?= $this->lurl ?>/protected/pouvoir_project/<?= $this->projects_pouvoir->name ?>"><?= $this->projects_pouvoir->name ?></a>
-                        <?php if ($this->projects_pouvoir->status_remb == \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsPouvoir::STATUS_REPAYMENT_VALIDATED) : ?>
+                        <?php if ($this->projects_pouvoir->status_remb == \Unilend\Entity\ProjectsPouvoir::STATUS_REPAYMENT_VALIDATED) : ?>
                             <span style="color:green;">&nbsp;Validé</span>
                         <?php endif; ?>
                     </td>
@@ -150,7 +150,7 @@
                     <td>
                         CGV envoyées le <?= \DateTime::createFromFormat('Y-m-d H:i:s', $this->project_cgv->added)->format('d/m/Y à H:i:s') ?>
                         (<a href="<?= $this->furl . $this->project_cgv->getUrlPath() ?>" target="_blank">PDF</a>)
-                        <?php if (\Unilend\Bundle\CoreBusinessBundle\Entity\ProjectCgv::STATUS_SIGNED == $this->project_cgv->status && false === empty($this->project_cgv->updated)) : ?>
+                        <?php if (\Unilend\Entity\ProjectCgv::STATUS_SIGNED == $this->project_cgv->status && false === empty($this->project_cgv->updated)) : ?>
                             <strong>signées</strong> le <?= \DateTime::createFromFormat('Y-m-d H:i:s', $this->project_cgv->updated)->format('d/m/Y à H:i:s') ?>
                         <?php endif; ?>
                     </td>

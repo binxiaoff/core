@@ -6,7 +6,7 @@ use Doctrine\DBAL\DBALException;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Asset\Packages;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{BankAccount, ClientAddress, Clients, ClientsStatus, CompanyAddress, Users, WalletType};
+use Unilend\Entity\{BankAccount, ClientAddress, ClientDataHistory, Clients, ClientsStatus, CompanyAddress, Users, Wallet, WalletType};
 use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessageProvider;
 
 /**
@@ -104,7 +104,7 @@ class LenderValidationManager
     {
         if (null !== $idBankAccount) {
             /** @var BankAccount $currentBankAccount */
-            $bankAccount = $this->entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->find($idBankAccount);
+            $bankAccount = $this->entityManager->getRepository(BankAccount::class)->find($idBankAccount);
             if (null === $bankAccount) {
                 throw new \InvalidArgumentException('BankAccount could not be found with id: ' . $idBankAccount);
             }
@@ -112,13 +112,13 @@ class LenderValidationManager
 
         if (null !== $idAddress) {
             if ($client->isNaturalPerson()) {
-                $address = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ClientAddress')->find($idAddress);
+                $address = $this->entityManager->getRepository(ClientAddress::class)->find($idAddress);
                 if (null === $address) {
                     throw new \InvalidArgumentException('ClientAddress could not be found with id: ' . $idAddress);
                 }
 
             } else {
-                $address = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')->find($idAddress);
+                $address = $this->entityManager->getRepository(CompanyAddress::class)->find($idAddress);
                 if (null === $address) {
                     throw new \InvalidArgumentException('CompanyAddress could not be found with id: ' . $idAddress);
                 }
@@ -194,7 +194,7 @@ class LenderValidationManager
      */
     private function getDuplicatedAccounts(Clients $client): array
     {
-        $existingClient = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')
+        $existingClient = $this->entityManager->getRepository(Clients::class)
             ->getDuplicatesByName($client->getNom(), $client->getPrenom(), $client->getNaissance());
         $existingClient = array_column($existingClient, 'id_client', 'id_client');
 
@@ -212,7 +212,7 @@ class LenderValidationManager
      */
     private function closeDuplicatedAccounts(Clients $client, Users $user, array $duplicates): void
     {
-        $clientRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
+        $clientRepository = $this->entityManager->getRepository(Clients::class);
 
         foreach ($duplicates as $idClient) {
             $clientToClose = $clientRepository->find($idClient);
@@ -250,7 +250,7 @@ class LenderValidationManager
      */
     private function sendClientValidationEmail(Clients $client, string $mailType): void
     {
-        $wallet   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
+        $wallet   = $this->entityManager->getRepository(Wallet::class)->getWalletByType($client, WalletType::LENDER);
         $keywords = [
             'firstName'     => $client->getPrenom(),
             'lenderPattern' => $wallet->getWireTransferPattern()
@@ -279,7 +279,7 @@ class LenderValidationManager
     private function validateClientDataHistory(Clients $client): void
     {
         $clientDataHistory = $this->entityManager
-            ->getRepository('UnilendCoreBusinessBundle:ClientDataHistory')
+            ->getRepository(ClientDataHistory::class)
             ->findLastModifiedDataToValidate($client);
 
         foreach ($clientDataHistory as $history) {

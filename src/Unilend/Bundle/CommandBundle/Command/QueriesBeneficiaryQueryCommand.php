@@ -5,7 +5,7 @@ namespace Unilend\Bundle\CommandBundle\Command;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\{InputInterface, InputOption};
 use Symfony\Component\Console\Output\OutputInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, ClientAddress, Clients, Companies, CompanyAddress, Pays, TaxType, Wallet};
+use Unilend\Entity\{AddressType, ClientAddress, Clients, Companies, CompanyAddress, InseePays, Pays, TaxType, Wallet};
 use Unilend\Bundle\CoreBusinessBundle\Service\IfuManager;
 
 class QueriesBeneficiaryQueryCommand extends ContainerAwareCommand
@@ -50,9 +50,9 @@ EOF
         $entityManager            = $this->getContainer()->get('doctrine.orm.entity_manager');
         $numberFormatter          = $this->getContainer()->get('number_formatter');
         $logger                   = $this->getContainer()->get('logger');
-        $clientAddressRepository  = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientAddress');
-        $companyAddressRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress');
-        $countryRepository        = $entityManager->getRepository('UnilendCoreBusinessBundle:Pays');
+        $clientAddressRepository  = $entityManager->getRepository(ClientAddress::class);
+        $companyAddressRepository = $entityManager->getRepository(CompanyAddress::class);
+        $countryRepository        = $entityManager->getRepository(Pays::class);
 
         $walletsWithMovements = $ifuManager->getWallets($year);
 
@@ -134,12 +134,12 @@ EOF
                         $fiscalAndLocationData['location']    = $fiscalAndLocationData['city'];
 
                         $fiscalAndLocationData['city'] = $mostRecentAddress->getIdCountry()->getFr();
-                        $inseeCountry                  = $entityManager->getRepository('UnilendCoreBusinessBundle:InseePays')->findCountryWithCodeIsoLike($mostRecentAddress->getIdCountry()->getIso());
+                        $inseeCountry                  = $entityManager->getRepository(InseePays::class)->findCountryWithCodeIsoLike($mostRecentAddress->getIdCountry()->getIso());
                         $fiscalAndLocationData['zip']  = null !== $inseeCountry ? $inseeCountry->getCog() : '';
 
                         // The tax rate is change in 2018. We need to use TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE_PERSON instead.
                         // But as we don't have the history of tax rate, we leave it unchanged till March 2018.
-                        $taxType                                   = $entityManager->getRepository('UnilendCoreBusinessBundle:TaxType')->find(TaxType::TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE);
+                        $taxType                                   = $entityManager->getRepository(TaxType::class)->find(TaxType::TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE);
                         $fiscalAndLocationData['deductedAtSource'] = $numberFormatter->format($taxType->getRate()) . '%';
                     }
                 }
@@ -154,7 +154,7 @@ EOF
                 ) {
                     $fiscalAndLocationData['birthPlace'] = $birthCountry->getFr();
                     if (empty($client->getInseeBirth()) && $fiscalAndLocationData['isoBirth']) {
-                        $inseeBirthCountry                   = $entityManager->getRepository('UnilendCoreBusinessBundle:InseePays')->findCountryWithCodeIsoLike($fiscalAndLocationData['isoBirth']);
+                        $inseeBirthCountry                   = $entityManager->getRepository(InseePays::class)->findCountryWithCodeIsoLike($fiscalAndLocationData['isoBirth']);
                         $fiscalAndLocationData['inseeBirth'] = $inseeBirthCountry ? $inseeBirthCountry->getCog() : '00000';
                     } else {
                         $fiscalAndLocationData['inseeBirth'] = '00000';
@@ -178,7 +178,7 @@ EOF
 
             if (
                 false === $client->isNaturalPerson()
-                && null !== $company = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $client])
+                && null !== $company = $entityManager->getRepository(Companies::class)->findOneBy(['idClientOwner' => $client])
             ) {
                 /** @var CompanyAddress $mostRecentAddress */
                 $mostRecentAddress = $companyAddressRepository->findLastModifiedNotArchivedAddressByType($company, AddressType::TYPE_MAIN_ADDRESS);

@@ -1,6 +1,6 @@
 <?php
 
-use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
+use Unilend\Entity\Zones;
 
 class settingsController extends bootstrap
 {
@@ -17,7 +17,7 @@ class settingsController extends bootstrap
     {
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager      = $this->get('doctrine.orm.entity_manager');
-        $settingsRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Settings');
+        $settingsRepository = $entityManager->getRepository(Settings::class);
 
         if (
             isset($_POST['form_edit_settings'], $this->params[0], $_POST['value'])
@@ -61,7 +61,7 @@ class settingsController extends bootstrap
         if (isset($this->params[0]) && false !== filter_var($this->params[0], FILTER_VALIDATE_INT)) {
             /** @var \Doctrine\ORM\EntityManager $entityManager */
             $entityManager      = $this->get('doctrine.orm.entity_manager');
-            $settingsRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Settings');
+            $settingsRepository = $entityManager->getRepository(Settings::class);
             $this->setting      = $settingsRepository->find($this->params[0]);
         }
     }

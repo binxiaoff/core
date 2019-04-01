@@ -3,7 +3,8 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\ORM\EntityManagerInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{CloseOutNettingEmailExtraContent, CloseOutNettingPayment, CloseOutNettingRepayment, CompanyStatus, Loans, ProjectRepaymentTask, Projects, ProjectsStatus};
+use Unilend\Entity\{CloseOutNettingEmailExtraContent, CloseOutNettingPayment, CloseOutNettingRepayment, CompanyStatus, Echeanciers, EcheanciersEmprunteur, Loans, ProjectRepaymentDetail,
+    ProjectRepaymentTask, Projects, ProjectsStatus};
 use Unilend\Bundle\CoreBusinessBundle\Service\Repayment\ProjectRepaymentTaskManager;
 
 class ProjectCloseOutNettingManager
@@ -61,7 +62,7 @@ class ProjectCloseOutNettingManager
             throw new \Exception('The project (id: ' . $project->getIdProject() . ') has status ' . $project->getStatus() . '. You cannot decline the repayment schedules.');
         }
 
-        $projectRepaymentTask = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRepaymentTask')->findOneBy([
+        $projectRepaymentTask = $this->entityManager->getRepository(ProjectRepaymentTask::class)->findOneBy([
             'idProject' => $project,
             'status'    => ProjectRepaymentTask::STATUS_PLANNED
         ]);
@@ -90,7 +91,7 @@ class ProjectCloseOutNettingManager
      */
     public function canBeDeclined(Projects $project)
     {
-        $projectRepaymentTask = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRepaymentTask')->findOneBy([
+        $projectRepaymentTask = $this->entityManager->getRepository(ProjectRepaymentTask::class)->findOneBy([
             'idProject' => $project,
             'status'    => ProjectRepaymentTask::STATUS_PLANNED
         ]);
@@ -108,9 +109,9 @@ class ProjectCloseOutNettingManager
         if (null === $project->getCloseOutNettingDate()) {
             throw new \Exception('The project (id:' . $project->getIdProject() . ' has not the close out netting date');
         }
-        $repaymentScheduleRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers');
+        $repaymentScheduleRepository = $this->entityManager->getRepository(Echeanciers::class);
 
-        $loans = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Loans')->findBy(['idProject' => $project]);
+        $loans = $this->entityManager->getRepository(Loans::class)->findBy(['idProject' => $project]);
 
         foreach ($loans as $loan) {
             $capital  = $repaymentScheduleRepository->getRemainingCapitalByLoan($loan);
@@ -151,7 +152,7 @@ class ProjectCloseOutNettingManager
         if (null === $project->getCloseOutNettingDate()) {
             throw new \Exception('The project (id:' . $project->getIdProject() . ' has not the close out netting date');
         }
-        $paymentScheduleRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur');
+        $paymentScheduleRepository = $this->entityManager->getRepository(EcheanciersEmprunteur::class);
 
         $overdueAmounts = $paymentScheduleRepository->getTotalOverdueAmounts($project, $project->getCloseOutNettingDate());
         $capital        = $paymentScheduleRepository->getRemainingCapitalByProject($project);
@@ -236,7 +237,7 @@ class ProjectCloseOutNettingManager
     {
         $this->projectRepaymentTaskManager->prepareNonFinishedTask($project);
 
-        $loanDetails = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Loans')->getBasicInformation($project); // for resolve the memory issue. 30 MB reduced.
+        $loanDetails = $this->entityManager->getRepository(Loans::class)->getBasicInformation($project); // for resolve the memory issue. 30 MB reduced.
 
         foreach ($loanDetails as $loanId => $loanDetail) {
             $loanDetails[$loanId]          = array_merge($loanDetails[$loanId], $this->getRemainingAmountByLoan($loanId));
@@ -253,14 +254,14 @@ class ProjectCloseOutNettingManager
      */
     public function getRemainingAmountByLoan($loan): array
     {
-        $closeOutNettingRepayment = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CloseOutNettingRepayment')->findOneBy(['idLoan' => $loan]);
+        $closeOutNettingRepayment = $this->entityManager->getRepository(CloseOutNettingRepayment::class)->findOneBy(['idLoan' => $loan]);
         $remainingCapital         = round(bcsub($closeOutNettingRepayment->getCapital(), $closeOutNettingRepayment->getRepaidCapital(), 4), 2);
         $remainingInterest        = round(bcsub($closeOutNettingRepayment->getInterest(), $closeOutNettingRepayment->getRepaidInterest(), 4), 2);
 
         $pendingCapital  = 0;
         $pendingInterest = 0;
 
-        $pendingAmount = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRepaymentDetail')->getPendingAmountToRepay($loan);
+        $pendingAmount = $this->entityManager->getRepository(ProjectRepaymentDetail::class)->getPendingAmountToRepay($loan);
         if ($pendingAmount) {
             $pendingCapital  = $pendingAmount['capital'];
             $pendingInterest = $pendingAmount['interest'];

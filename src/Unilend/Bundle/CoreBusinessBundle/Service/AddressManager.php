@@ -3,7 +3,7 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\ORM\EntityManagerInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, Attachment, ClientAddress, ClientAddressAttachment, Clients, Companies, CompanyAddress, Pays};
+use Unilend\Entity\{AddressType, Attachment, ClientAddress, ClientAddressAttachment, Clients, Companies, CompanyAddress, Pays};
 
 class AddressManager
 {
@@ -34,12 +34,12 @@ class AddressManager
      */
     public function saveCompanyAddress(string $address, string $zip, string $city, int $idCountry, Companies $company, string $type): void
     {
-        $addressType = $this->entityManager->getRepository('UnilendCoreBusinessBundle:AddressType')->findOneBy(['label' => $type]);
+        $addressType = $this->entityManager->getRepository(AddressType::class)->findOneBy(['label' => $type]);
         if (null === $addressType) {
             throw new \InvalidArgumentException('The address ' . $type . ' does not exist');
         }
 
-        $country = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Pays')->find($idCountry);
+        $country = $this->entityManager->getRepository(Pays::class)->find($idCountry);
         if (null === $country) {
             throw new \InvalidArgumentException('The country id ' . $idCountry . ' does not exist');
         }
@@ -81,7 +81,7 @@ class AddressManager
      */
     private function saveNonLenderCompanyAddress(Companies $company, string $address, string $zip, string $city, Pays $country, AddressType $type): ?CompanyAddress
     {
-        $lastModifiedAddress = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')->findLastModifiedNotArchivedAddressByType($company, $type);
+        $lastModifiedAddress = $this->entityManager->getRepository(CompanyAddress::class)->findLastModifiedNotArchivedAddressByType($company, $type);
         $companyAddress      = AddressType::TYPE_MAIN_ADDRESS === $type->getLabel() ? $company->getIdAddress() : $company->getIdPostalAddress();
 
         if (
@@ -109,7 +109,7 @@ class AddressManager
     private function saveLenderCompanyAddress(Companies $company, string $address, string $zip, string $city, Pays $country, AddressType $type)
     {
         $companyAddress      = AddressType::TYPE_MAIN_ADDRESS === $type->getLabel() ? $company->getIdAddress() : $company->getIdPostalAddress();
-        $lastModifiedAddress = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')->findLastModifiedNotArchivedAddressByType($company, $type);
+        $lastModifiedAddress = $this->entityManager->getRepository(CompanyAddress::class)->findLastModifiedNotArchivedAddressByType($company, $type);
 
         if (
             null === $companyAddress && null === $lastModifiedAddress
@@ -248,7 +248,7 @@ class AddressManager
      */
     private function archivePreviousCompanyAddress(Companies $company, AddressType $type): void
     {
-        $previousAddress = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')->findBy(['idCompany' => $company, 'idType' => $type, 'dateArchived' => null]);
+        $previousAddress = $this->entityManager->getRepository(CompanyAddress::class)->findBy(['idCompany' => $company, 'idType' => $type, 'dateArchived' => null]);
         foreach ($previousAddress as $addressToArchive) {
             if ($addressToArchive === $company->getIdAddress() || $addressToArchive === $company->getIdPostalAddress()) {
                 continue;
@@ -299,7 +299,7 @@ class AddressManager
      */
     public function deleteCompanyAddresses(Companies $company)
     {
-        foreach ($this->entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')->findBy(['idCompany' => $company]) as $address) {
+        foreach ($this->entityManager->getRepository(CompanyAddress::class)->findBy(['idCompany' => $company]) as $address) {
             $this->entityManager->remove($address);
             $this->entityManager->flush($address);
         }
@@ -316,7 +316,7 @@ class AddressManager
         $postalAddress = $company->getIdPostalAddress();
 
         if (null === $postalAddress) {
-            $postalAddress = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')
+            $postalAddress = $this->entityManager->getRepository(CompanyAddress::class)
                 ->findLastModifiedNotArchivedAddressByType($company, AddressType::TYPE_POSTAL_ADDRESS);
         }
 
@@ -351,12 +351,12 @@ class AddressManager
      */
     public function saveClientAddress(string $address, string $zip, string $city, int $idCountry, Clients $client, string $type): void
     {
-        $addressType = $this->entityManager->getRepository('UnilendCoreBusinessBundle:AddressType')->findOneBy(['label' => $type]);
+        $addressType = $this->entityManager->getRepository(AddressType::class)->findOneBy(['label' => $type]);
         if (null === $type) {
             throw new \InvalidArgumentException('The address ' . $type . ' does not exist');
         }
 
-        $country = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Pays')->find($idCountry);
+        $country = $this->entityManager->getRepository(Pays::class)->find($idCountry);
         if (null === $country) {
             throw new \InvalidArgumentException('The country id ' . $idCountry . ' does not exist');
         }
@@ -391,7 +391,7 @@ class AddressManager
     private function saveLenderClientAddress(Clients $client, string $address, string $zip, string $city, Pays $country, AddressType $type)
     {
         $clientAddress       = AddressType::TYPE_MAIN_ADDRESS === $type->getLabel() ? $client->getIdAddress() : $client->getIdPostalAddress();
-        $lastModifiedAddress = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ClientAddress')->findLastModifiedNotArchivedAddressByType($client, $type);
+        $lastModifiedAddress = $this->entityManager->getRepository(ClientAddress::class)->findLastModifiedNotArchivedAddressByType($client, $type);
 
         if (
             null === $clientAddress && null === $lastModifiedAddress
@@ -468,7 +468,7 @@ class AddressManager
      */
     private function archivePreviousClientAddress(Clients $client, AddressType $type): void
     {
-        $previousAddress = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ClientAddress')->findBy(['idClient' => $client, 'idType' => $type, 'dateArchived' => null]);
+        $previousAddress = $this->entityManager->getRepository(ClientAddress::class)->findBy(['idClient' => $client, 'idType' => $type, 'dateArchived' => null]);
         foreach ($previousAddress as $addressToArchive) {
             if ($addressToArchive === $client->getIdAddress() || $addressToArchive === $client->getIdPostalAddress()) {
                 continue;
@@ -511,7 +511,7 @@ class AddressManager
         $postalAddress = $client->getIdPostalAddress();
 
         if (null === $postalAddress) {
-            $postalAddress = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ClientAddress')
+            $postalAddress = $this->entityManager->getRepository(ClientAddress::class)
                 ->findLastModifiedNotArchivedAddressByType($client, AddressType::TYPE_POSTAL_ADDRESS);
         }
 

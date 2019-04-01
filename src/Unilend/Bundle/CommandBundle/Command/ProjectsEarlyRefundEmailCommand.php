@@ -3,12 +3,8 @@
 namespace Unilend\Bundle\CommandBundle\Command;
 
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
-use Symfony\Component\Console\{
-    Input\InputInterface, Input\InputOption, Output\OutputInterface
-};
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Clients, ClientsGestionTypeNotif, ClientsStatus, Notifications, OperationSubType, OperationType
-};
+use Symfony\Component\Console\{Input\InputInterface, Input\InputOption, Output\OutputInterface};
+use Unilend\Entity\{Clients, ClientsGestionTypeNotif, ClientsStatus, Notifications, Operation, OperationSubType, OperationType, Settings, Wallet, WalletBalanceHistory};
 
 class ProjectsEarlyRefundEmailCommand extends ContainerAwareCommand
 {
@@ -50,9 +46,9 @@ class ProjectsEarlyRefundEmailCommand extends ContainerAwareCommand
         $mailer = $this->getContainer()->get('mailer');
         $logger = $this->getContainer()->get('monolog.logger.console');
 
-        $operationRepository         = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
-        $loanOperationType           = $entityManager->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::LENDER_LOAN]);
-        $earlyRepaymentOperationType = $entityManager->getRepository('UnilendCoreBusinessBundle:OperationSubType')->findOneBy(['label' => OperationSubType::CAPITAL_REPAYMENT_EARLY]);
+        $operationRepository         = $entityManager->getRepository(Operation::class);
+        $loanOperationType           = $entityManager->getRepository(OperationType::class)->findOneBy(['label' => OperationType::LENDER_LOAN]);
+        $earlyRepaymentOperationType = $entityManager->getRepository(OperationSubType::class)->findOneBy(['label' => OperationSubType::CAPITAL_REPAYMENT_EARLY]);
 
         $limit = $input->getOption('limit-project');
         $limit = $limit ? $limit : 1;
@@ -75,7 +71,7 @@ class ProjectsEarlyRefundEmailCommand extends ContainerAwareCommand
                 'fundingDuration'      => (new \DateTime($project->date_publication))->diff(new \DateTime($project->date_retrait))->d,
                 'lendersCount'         => count($projectLenders),
                 'earlyPaymentDate'     => \DateTime::createFromFormat('Y-m-d H:i:s', $sfpmeiFeedIncoming->added)->format('d/m/Y'),
-                'borrowerServiceEmail' => $entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Adresse emprunteur'])->getValue()
+                'borrowerServiceEmail' => $entityManager->getRepository(Settings::class)->findOneBy(['type' => 'Adresse emprunteur'])->getValue()
             ];
 
             $message = $this->getContainer()->get('unilend.swiftmailer.message_provider')->newMessage('emprunteur-remboursement-anticipe', $keywords);
@@ -91,7 +87,7 @@ class ProjectsEarlyRefundEmailCommand extends ContainerAwareCommand
             }
 
             foreach ($projectLenders as $projectLender) {
-                $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->find($projectLender['id_lender']);
+                $wallet = $entityManager->getRepository(Wallet::class)->find($projectLender['id_lender']);
                 /** @var Clients $client */
                 $client = $wallet->getIdClient();
 
@@ -105,7 +101,7 @@ class ProjectsEarlyRefundEmailCommand extends ContainerAwareCommand
                     $notification->create();
 
                     $earlyRepaymentOperation = $operationRepository->findOneBy(['idLoan' => $projectLender['id_loan'], 'idSubType' => $earlyRepaymentOperationType]);
-                    $walletBalanceHistory    = $entityManager->getRepository('UnilendCoreBusinessBundle:WalletBalanceHistory')->findOneBy([
+                    $walletBalanceHistory    = $entityManager->getRepository(WalletBalanceHistory::class)->findOneBy([
                         'idWallet'    => $wallet,
                         'idOperation' => $earlyRepaymentOperation
                     ]);

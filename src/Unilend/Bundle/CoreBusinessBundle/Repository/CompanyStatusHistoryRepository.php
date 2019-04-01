@@ -5,9 +5,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
 use Unilend\Bridge\Doctrine\DBAL\Connection;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
-use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
-use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatusHistory;
+use Unilend\Entity\{Companies, CompanyStatus, CompanyStatusHistory};
 
 class CompanyStatusHistoryRepository extends EntityRepository
 {
@@ -24,7 +22,7 @@ class CompanyStatusHistoryRepository extends EntityRepository
 
         $queryBuilder = $this->createQueryBuilder('csh');
         $queryBuilder->select('cs.label, csh.siteContent, csh.added')
-            ->innerJoin('UnilendCoreBusinessBundle:CompanyStatus', 'cs', Join::WITH, 'cs.id = csh.idStatus')
+            ->innerJoin(CompanyStatus::class, 'cs', Join::WITH, 'cs.id = csh.idStatus')
             ->where('csh.idCompany = :companyId')
             ->andWhere('cs.label != :inBonis')
             ->setParameters(['companyId' => $company, 'inBonis' => CompanyStatus::STATUS_IN_BONIS])
@@ -42,7 +40,7 @@ class CompanyStatusHistoryRepository extends EntityRepository
     public function findFirstHistoryByCompanyAndStatus($company, array $companyStatusLabel)
     {
         $queryBuilder = $this->createQueryBuilder('csh')
-            ->innerJoin('UnilendCoreBusinessBundle:CompanyStatus', 'cs', Join::WITH, 'cs.id = csh.idStatus')
+            ->innerJoin(CompanyStatus::class, 'cs', Join::WITH, 'cs.id = csh.idStatus')
             ->where('csh.idCompany = :companyId')
             ->setParameter('companyId', $company)
             ->andWhere('cs.label IN (:companyStatusLabel)')
@@ -63,7 +61,7 @@ class CompanyStatusHistoryRepository extends EntityRepository
     public function getCompanyStatusChangesOnDate(\DateTime $dateAdded, array $companyStatusLabel)
     {
         $queryBuilder = $this->createQueryBuilder('csh')
-            ->innerJoin('UnilendCoreBusinessBundle:CompanyStatus', 'cs', Join::WITH, 'cs.id = csh.idStatus')
+            ->innerJoin(CompanyStatus::class, 'cs', Join::WITH, 'cs.id = csh.idStatus')
             ->andWhere('DATE(csh.added) = :date')
             ->andWhere('cs.label IN (:status)')
             ->setParameter(':date', $dateAdded->format('Y-m-d'))

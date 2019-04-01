@@ -2,9 +2,9 @@
     <dl class="list-2col">
         <dt>{% trans %} common_title {% endtrans %}</dt>
         <dd id="data-update-info-title-output">
-            {% if client.civilite == constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::TITLE_MISTER') %}
+            {% if client.civilite == constant('Unilend\\Entity\\Clients::TITLE_MISTER') %}
                 {% trans %} common_title-male {% endtrans %}
-            {% elseif client.civilite == constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::TITLE_MISS') %}
+            {% elseif client.civilite == constant('Unilend\\Entity\\Clients::TITLE_MISS') %}
                 {% trans %} common_title-female {% endtrans %}
             {% endif %}
         </dd>

@@ -4,7 +4,7 @@ namespace Unilend\Bundle\CommandBundle\Command;
 
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\{Input\InputInterface, Output\OutputInterface};
-use Unilend\Bundle\CoreBusinessBundle\Entity\Backpayline;
+use Unilend\Entity\Backpayline;
 
 class CheckPaylineMoneyTransfersCommand extends ContainerAwareCommand
 {
@@ -27,7 +27,7 @@ class CheckPaylineMoneyTransfersCommand extends ContainerAwareCommand
         $entityManager  = $this->getContainer()->get('doctrine.orm.entity_manager');
         $paylineManager = $this->getContainer()->get('unilend.service.payline_manager');
         /** @var Backpayline[] $pendingTransactions */
-        $pendingTransactions = $entityManager->getRepository('UnilendCoreBusinessBundle:Backpayline')->findTransactionsToApprove();
+        $pendingTransactions = $entityManager->getRepository(Backpayline::class)->findTransactionsToApprove();
 
         foreach ($pendingTransactions as $payline) {
             try {

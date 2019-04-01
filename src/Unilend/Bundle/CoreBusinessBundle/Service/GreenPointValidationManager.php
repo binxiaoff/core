@@ -5,7 +5,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 use Doctrine\ORM\EntityManagerInterface;
 use JMS\Serializer\SerializerInterface;
 use Psr\Log\LoggerInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{Attachment, AttachmentType, Clients, ClientsStatus, GreenpointAttachment, GreenpointKyc};
+use Unilend\Entity\{Attachment, AttachmentType, ClientAddressAttachment, Clients, ClientsStatus, ClientsStatusHistory, GreenpointAttachment, GreenpointKyc};
 use Unilend\Bundle\WSClientBundle\Entity\GreenPoint\{HousingCertificate, Identity, Rib};
 use Unilend\Bundle\WSClientBundle\Service\GreenPointManager;
 
@@ -122,7 +122,7 @@ class GreenPointValidationManager
             return false;
         }
 
-        $clientStatusHistoryRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ClientsStatusHistory');
+        $clientStatusHistoryRepository = $this->entityManager->getRepository(ClientsStatusHistory::class);
 
         try {
             $validationCount = $clientStatusHistoryRepository->getValidationsCount($attachment->getClient()->getIdClient());
@@ -194,7 +194,7 @@ class GreenPointValidationManager
     public function saveClientKycStatus(Clients $client): void
     {
         $kycInfo   = $this->greenPointWsManager->getClientKYCStatus($client);
-        $clientKyc = $this->entityManager->getRepository('UnilendCoreBusinessBundle:GreenpointKyc')->findOneBy(['idClient' => $client->getIdClient()]);
+        $clientKyc = $this->entityManager->getRepository(GreenpointKyc::class)->findOneBy(['idClient' => $client->getIdClient()]);
 
         if (null === $clientKyc) {
             $clientKyc = new GreenpointKyc();
@@ -251,8 +251,8 @@ class GreenPointValidationManager
     private function handleHousingCertificateReturn(Attachment $attachment, GreenpointAttachment $greenPointAttachment): void
     {
         if (AttachmentType::JUSTIFICATIF_DOMICILE === $attachment->getType()->getId() && GreenpointAttachment::STATUS_VALIDATION_VALID === $greenPointAttachment->getValidationStatus()) {
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\ClientAddressAttachment $addressAttachment */
-            $addressAttachment = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ClientAddressAttachment')->findOneBy(['idAttachment' => $attachment]);
+            /** @var \Unilend\Entity\ClientAddressAttachment $addressAttachment */
+            $addressAttachment = $this->entityManager->getRepository(ClientAddressAttachment::class)->findOneBy(['idAttachment' => $attachment]);
             if (null === $addressAttachment || null === $addressAttachment->getIdClientAddress()) {
                 $this->logger->error(
                     'Lender housing certificate has no associated address - Client: ' . $attachment->getClient()->getIdClient(), [

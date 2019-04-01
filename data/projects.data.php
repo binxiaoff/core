@@ -4,7 +4,7 @@ use Doctrine\DBAL\Cache\QueryCacheProfile;
 use Doctrine\DBAL\Driver\ResultStatement;
 use Doctrine\DBAL\Statement;
 use Unilend\Bridge\Doctrine\DBAL\Connection;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{Bids, Clients, CompanyStatus, EcheanciersEmprunteur, Loans, OperationSubType, Projects as ProjectsEntity, ProjectsStatus};
+use Unilend\Entity\{AttachmentType, Bids, Clients, CompanyStatus, EcheanciersEmprunteur, Loans, OperationSubType, Projects as ProjectsEntity, ProjectsStatus};
 use Unilend\librairies\CacheKeys;
 
 class projects extends projects_crud
@@ -84,7 +84,7 @@ class projects extends projects_crud
             INNER JOIN (SELECT id_project, MAX(id_project_status_history) AS id_project_status_history FROM projects_status_history GROUP BY id_project) plsh ON plsh.id_project = p.id_project
             INNER JOIN projects_status_history psh ON psh.id_project_status_history = plsh.id_project_status_history
             LEFT JOIN project_attachment pa ON pa.id_project = p.id_project
-            LEFT JOIN attachment a ON a.id = pa.id_attachment AND a.archived IS NULL AND a.id_type = ' . \Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType::DERNIERE_LIASSE_FISCAL . '
+            LEFT JOIN attachment a ON a.id = pa.id_attachment AND a.archived IS NULL AND a.id_type = ' . AttachmentType::DERNIERE_LIASSE_FISCAL . '
             WHERE p.status = ' . $status . '
                 AND DATE_SUB(CURDATE(), INTERVAL ' . $daysInterval . ' DAY) = DATE(psh.added)
                 AND psh.numero_relance = ' . $previousReminderIndex . '

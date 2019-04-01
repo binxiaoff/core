@@ -5,7 +5,7 @@ namespace Unilend\Bundle\CommandBundle\Command;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{ClientsStatus, Users};
+use Unilend\Entity\{ClientsStatus, ClientsStatusHistory, Users};
 
 class EmailLenderCompletenessReminderCommand extends ContainerAwareCommand
 {
@@ -31,7 +31,7 @@ class EmailLenderCompletenessReminderCommand extends ContainerAwareCommand
         /** @var \clients $clients */
         $clients                       = $this->getContainer()->get('unilend.service.entity_manager')->getRepository('clients');
         $clientStatusManager           = $this->getContainer()->get('unilend.service.client_status_manager');
-        $clientStatusHistoryRepository = $this->getContainer()->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:ClientsStatusHistory');
+        $clientStatusHistoryRepository = $this->getContainer()->get('doctrine.orm.entity_manager')->getRepository(ClientsStatusHistory::class);
 
         $firstReminderDate  = (new \DateTime(self::REMINDER_DELAY_DAYS_FIRST . ' days ago'))->setTime(0, 0, 0);
         $secondReminderDate = (new \DateTime(self::REMINDER_DELAY_DAYS_SECOND . ' days ago'))->setTime(0, 0, 0);

@@ -3,8 +3,7 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
 use Doctrine\ORM\EntityRepository;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
-use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyBeneficialOwnerDeclaration;
+use Unilend\Entity\{Companies, CompanyBeneficialOwnerDeclaration};
 
 class CompanyBeneficialOwnerDeclarationRepository extends EntityRepository
 {

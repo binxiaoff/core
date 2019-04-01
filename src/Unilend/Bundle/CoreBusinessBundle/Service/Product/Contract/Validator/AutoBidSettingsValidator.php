@@ -2,8 +2,7 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\Validator;
 
-use Unilend\Bundle\CoreBusinessBundle\Entity\UnderlyingContract;
-use Unilend\Bundle\CoreBusinessBundle\Entity\UnderlyingContractAttributeType;
+use Unilend\Entity\{UnderlyingContract, UnderlyingContractAttributeType};
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\Checker\AutoBidSettingsChecker;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\ContractAttributeManager;
 

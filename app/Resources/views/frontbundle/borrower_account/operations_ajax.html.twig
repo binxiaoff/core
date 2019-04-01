@@ -1,6 +1,6 @@
 {% for i, op in operations %}
     {% set classAmount = op.amount > 0 ? 'ui-amount-positive' : 'ui-amount-negative' %}
-    {% if op.label == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\OperationSubType::BORROWER_COMMISSION_REPAYMENT') %}
+    {% if op.label == constant('\\Unilend\\Entity\\OperationSubType::BORROWER_COMMISSION_REPAYMENT') %}
         {% set data_details = {
             "label":"",
             "items": [
@@ -15,10 +15,10 @@
         } %}
     {% endif %}
 
-    <tr id="operation-{{ i }}" {% if op.label == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\OperationSubType::BORROWER_COMMISSION_REPAYMENT') %} data-details="{{ data_details|json_encode|escape('html_attr') }}" {% endif %} class="table-myoperations-borrower-item {{ classAmount }}">
+    <tr id="operation-{{ i }}" {% if op.label == constant('\\Unilend\\Entity\\OperationSubType::BORROWER_COMMISSION_REPAYMENT') %} data-details="{{ data_details|json_encode|escape('html_attr') }}" {% endif %} class="table-myoperations-borrower-item {{ classAmount }}">
         <td class="table-myoperations-borrower-item-type">
             {{ ('borrower-operation_' ~ op.label)|trans }}
-            {% if op.label == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\OperationType::BORROWER_WITHDRAW') and op.third_party_company is defined and op.third_party_company is not empty %}
+            {% if op.label == constant('\\Unilend\\Entity\\OperationType::BORROWER_WITHDRAW') and op.third_party_company is defined and op.third_party_company is not empty %}
                 - {{ op.third_party_company.name }}
             {% endif %}
         </td>
@@ -28,7 +28,7 @@
         <td class="table-myoperations-borrower-item-controls">
             {% if op.label == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Service\\BorrowerOperationsManager::OP_LENDER_MONTHLY_REPAYMENT')  %}
                 <a href="{{ path('borrower_account_export_lender_details_csv', {'type': 'e', 'projectId': op.idProject, 'repaymentOrder': op.ordre}) }}" class="btn-export" title="Exporter"><span class="icon fa-excel-u16"></span></a>
-            {% elseif op.label == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\OperationType::LENDER_LOAN')  %}
+            {% elseif op.label == constant('\\Unilend\\Entity\\OperationType::LENDER_LOAN')  %}
                 <a href="{{ path('borrower_account_export_lender_details_csv', {'type': 'l', 'projectId': op.idProject}) }}" class="btn-export" title="Exporter"><span class="icon fa-excel-u16"></span></a>
             {% else %}
                 &nbsp;

@@ -1,6 +1,6 @@
 <?php
 
-use Unilend\Bundle\CoreBusinessBundle\Entity\{Companies, CompanyStatus, ProjectsStatus, UniversignEntityInterface};
+use Unilend\Entity\{Companies, CompanyStatus, ProjectsStatus, UniversignEntityInterface};
 
 ?>
 <script>

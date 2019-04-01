@@ -1,6 +1,6 @@
 <?php
 
-use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
+use Unilend\Entity\Zones;
 
 class treeController extends bootstrap
 {
@@ -146,7 +146,7 @@ class treeController extends bootstrap
                                 $this->redirections->from_slug = '/' . $this->tree->slug;
                                 $this->redirections->to_slug   = '/' . $slug_temp;
                                 $this->redirections->type      = 301;
-                                $this->redirections->status    = \Unilend\Bundle\CoreBusinessBundle\Entity\Redirections::STATUS_ENABLED;
+                                $this->redirections->status    = \Unilend\Entity\Redirections::STATUS_ENABLED;
 
                                 if ($createRedir) {
                                     $this->redirections->create(['from_slug' => '/' . $this->tree->slug, 'id_langue' => $key]);

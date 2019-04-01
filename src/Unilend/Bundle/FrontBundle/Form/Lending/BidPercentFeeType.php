@@ -5,7 +5,7 @@ namespace Unilend\Bundle\FrontBundle\Form\Lending;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Unilend\Bundle\CoreBusinessBundle\Entity\BidPercentFee;
+use Unilend\Entity\BidPercentFee;
 use Unilend\Bundle\FrontBundle\Form\Fee\PercentFeeType;
 
 class BidPercentFeeType extends AbstractType

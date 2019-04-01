@@ -1,6 +1,6 @@
 <?php
 
-use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
+use Unilend\Entity\Zones;
 use Unilend\Bundle\TranslationBundle\Service\TranslationManager;
 
 class traductionsController extends bootstrap
@@ -80,7 +80,7 @@ class traductionsController extends bootstrap
         $_SESSION['request_url'] = $this->url;
 
         /** @var \Unilend\Bundle\CoreBusinessBundle\Repository\TranslationsRepository $translationRepository */
-        $translationRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Translations');
+        $translationRepository = $this->get('doctrine.orm.entity_manager')->getRepository(Translations::class);
         $locale                = $this->getParameter('kernel.default_locale');
         $allTranslations       = $translationRepository->findBy(['locale' => $locale]);
 
@@ -94,7 +94,7 @@ class traductionsController extends bootstrap
         fputs($handle, "\xEF\xBB\xBF"); // add UTF-8 BOM in order to be compatible to Excel
         fputcsv($handle, ['Id_translation', 'locale', 'Section', 'Nom', 'Traduction', 'Date d\'ajout', 'Date de mise à jour'], ';');
 
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Translations$translation */
+        /** @var \Unilend\Entity\Translations$translation */
         foreach ($allTranslations as $translation) {
             $singleTranslation = [
                 $translation->getIdTranslation(),

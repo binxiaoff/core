@@ -1,6 +1,6 @@
 <?php
 
-use Unilend\Bundle\CoreBusinessBundle\Entity\{Bids, Loans as LoansEntity, ProjectsStatus};
+use Unilend\Entity\{Bids, Loans as LoansEntity, ProjectsStatus};
 
 class loans extends loans_crud
 {

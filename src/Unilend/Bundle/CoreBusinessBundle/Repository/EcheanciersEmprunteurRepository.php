@@ -5,7 +5,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\NoResultException;
 use Doctrine\ORM\Query\Expr\Join;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{CompanyStatus, Echeanciers, EcheanciersEmprunteur, Projects, ProjectsStatus, Receptions};
+use Unilend\Entity\{Companies, CompanyStatus, Echeanciers, EcheanciersEmprunteur, Factures, Projects, ProjectsStatus, Receptions};
 
 class EcheanciersEmprunteurRepository extends EntityRepository
 {
@@ -106,10 +106,10 @@ class EcheanciersEmprunteurRepository extends EntityRepository
     public function findPaymentSchedulesToInvoice($limit)
     {
         $queryBuilder = $this->createQueryBuilder('ee');
-        $queryBuilder->innerJoin('UnilendCoreBusinessBundle:Projects', 'p', Join::WITH, 'ee.idProject = p.idProject')
-            ->innerJoin('UnilendCoreBusinessBundle:Companies', 'c', Join::WITH, 'c.idCompany = p.idCompany')
-            ->innerJoin('UnilendCoreBusinessBundle:CompanyStatus', 'cs', Join::WITH, 'cs.id = c.idStatus')
-            ->leftJoin('UnilendCoreBusinessBundle:Factures', 'f', Join::WITH, 'ee.idProject = f.idProject AND f.ordre = ee.ordre')
+        $queryBuilder->innerJoin(Projects::class, 'p', Join::WITH, 'ee.idProject = p.idProject')
+            ->innerJoin(Companies::class, 'c', Join::WITH, 'c.idCompany = p.idCompany')
+            ->innerJoin(CompanyStatus::class, 'cs', Join::WITH, 'cs.id = c.idStatus')
+            ->leftJoin(Factures::class, 'f', Join::WITH, 'ee.idProject = f.idProject AND f.ordre = ee.ordre')
             ->where('DATE(ee.dateEcheanceEmprunteur) <= :today')
             ->andWhere('p.status in (:status)')
             ->andWhere('p.closeOutNettingDate IS NULL OR p.closeOutNettingDate = :emptyDate')
@@ -333,9 +333,9 @@ class EcheanciersEmprunteurRepository extends EntityRepository
                   ELSE e.dateEcheanceReel
                 END AS lenderRepaymentDate'
             )
-            ->innerJoin('Unilend\Bundle\CoreBusinessBundle\Entity\Projects', 'p', Join::WITH, 'ee.idProject = p.idProject')
-            ->innerJoin('Unilend\Bundle\CoreBusinessBundle\Entity\Prelevements', 'prel', Join::WITH, 'ee.ordre = prel.numPrelevement AND ee.idProject = prel.idProject')
-            ->innerJoin('Unilend\Bundle\CoreBusinessBundle\Entity\Echeanciers', 'e', Join::WITH, 'e.ordre = prel.numPrelevement AND e.idProject = prel.idProject')
+            ->innerJoin('Unilend\Entity\Projects', 'p', Join::WITH, 'ee.idProject = p.idProject')
+            ->innerJoin('Unilend\Entity\Prelevements', 'prel', Join::WITH, 'ee.ordre = prel.numPrelevement AND ee.idProject = prel.idProject')
+            ->innerJoin('Unilend\Entity\Echeanciers', 'e', Join::WITH, 'e.ordre = prel.numPrelevement AND e.idProject = prel.idProject')
             ->where('ee.idProject = :projectId')
             ->andWhere('ee.statusRa = ' . EcheanciersEmprunteur::STATUS_NO_EARLY_REPAYMENT)
             ->groupBy('ee.idProject, ee.ordre')

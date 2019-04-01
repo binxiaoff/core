@@ -5,8 +5,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
+use Unilend\Entity\{BankAccount, Clients, Virements};
 
 class WireTransferOutRepository extends EntityRepository
 {
@@ -36,7 +35,7 @@ class WireTransferOutRepository extends EntityRepository
     public function findWireTransferToThirdParty($client, array $status)
     {
         $qb = $this->createQueryBuilder('wto');
-        $qb->innerJoin('UnilendCoreBusinessBundle:BankAccount', 'ba', Join::WITH, 'wto.bankAccount = ba.id')
+        $qb->innerJoin(BankAccount::class, 'ba', Join::WITH, 'wto.bankAccount = ba.id')
            ->where('ba.idClient != wto.idClient')
            ->andWhere('wto.idClient = :client')
            ->andWhere('wto.status in (:status)')

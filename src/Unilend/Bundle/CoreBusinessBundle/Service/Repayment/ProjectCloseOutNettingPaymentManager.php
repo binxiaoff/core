@@ -3,16 +3,8 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Service\Repayment;
 
 use Doctrine\ORM\EntityManagerInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\DebtCollectionMission;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectCharge;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRepaymentTask;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Receptions;
-use Unilend\Bundle\CoreBusinessBundle\Entity\TaxType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
-use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
-use Unilend\Bundle\CoreBusinessBundle\Service\DebtCollectionFeeManager;
-use Unilend\Bundle\CoreBusinessBundle\Service\DebtCollectionMissionManager;
-use Unilend\Bundle\CoreBusinessBundle\Service\ProjectChargeManager;
+use Unilend\Entity\{CloseOutNettingPayment, CloseOutNettingRepayment, DebtCollectionMission, ProjectCharge, ProjectRepaymentTask, Receptions, TaxType, Users, Wallet, WalletType};
+use Unilend\Bundle\CoreBusinessBundle\Service\{DebtCollectionFeeManager, DebtCollectionMissionManager, ProjectChargeManager};
 
 class ProjectCloseOutNettingPaymentManager
 {
@@ -65,14 +57,14 @@ class ProjectCloseOutNettingPaymentManager
      */
     public function pay(Receptions $wireTransferIn, Users $user, \DateTime $repayOn, DebtCollectionMission $debtCollectionMission = null, $debtCollectionFeeRate = null, $projectCharges = null)
     {
-        $walletRepository                 = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet');
-        $closeOutNettingPaymentRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CloseOutNettingPayment');
+        $walletRepository                 = $this->entityManager->getRepository(Wallet::class);
+        $closeOutNettingPaymentRepository = $this->entityManager->getRepository(CloseOutNettingPayment::class);
 
         $project                          = $wireTransferIn->getIdProject();
         $amount                           = round(bcdiv($wireTransferIn->getMontant(), 100, 4), 2);
         $isDebtCollectionFeeDueToBorrower = $this->debtCollectionMissionManager->isDebtCollectionFeeDueToBorrower($project);
 
-        $ongoingProjectRepaymentTask = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRepaymentTask')->findOneBy([
+        $ongoingProjectRepaymentTask = $this->entityManager->getRepository(ProjectRepaymentTask::class)->findOneBy([
             'idProject' => $project,
             'status'    => ProjectRepaymentTask::STATUS_IN_PROGRESS
         ]);
@@ -100,7 +92,7 @@ class ProjectCloseOutNettingPaymentManager
             }
         }
 
-        $vatTax = $this->entityManager->getRepository('UnilendCoreBusinessBundle:TaxType')->find(TaxType::TYPE_VAT);
+        $vatTax = $this->entityManager->getRepository(TaxType::class)->find(TaxType::TYPE_VAT);
         if (null === $vatTax) {
             throw new \Exception('The VAT rate is not defined.');
         }
@@ -122,7 +114,7 @@ class ProjectCloseOutNettingPaymentManager
 
             $debtCollectionFeeOnRepayment = 0;
 
-            $closeOutNettingRepayments = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CloseOutNettingRepayment')->findByProject($project);
+            $closeOutNettingRepayments = $this->entityManager->getRepository(CloseOutNettingRepayment::class)->findByProject($project);
 
             foreach ($closeOutNettingRepayments as $closeOutNettingRepayment) {
                 $notRepaidCapital       = round(bcsub($closeOutNettingRepayment->getCapital(), $closeOutNettingRepayment->getRepaidCapital(), 4), 2);
@@ -195,7 +187,7 @@ class ProjectCloseOutNettingPaymentManager
     public function rejectPayment(Receptions $wireTransferIn, Users $user)
     {
         $project                      = $wireTransferIn->getIdProject();
-        $projectRepaymentTaskToCancel = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRepaymentTask')
+        $projectRepaymentTaskToCancel = $this->entityManager->getRepository(ProjectRepaymentTask::class)
             ->findOneBy([
                 'idProject'        => $project,
                 'idWireTransferIn' => $wireTransferIn,
@@ -210,7 +202,7 @@ class ProjectCloseOutNettingPaymentManager
             ]);
 
         if ($projectRepaymentTaskToCancel) {
-            $closeOutNettingPaymentRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CloseOutNettingPayment');
+            $closeOutNettingPaymentRepository = $this->entityManager->getRepository(CloseOutNettingPayment::class);
             $this->entityManager->getConnection()->beginTransaction();
             try {
                 $closeOutNettingPayment = $closeOutNettingPaymentRepository->findOneBy(['idProject' => $project]);

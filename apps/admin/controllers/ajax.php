@@ -1,7 +1,7 @@
 <?php
 
 use Doctrine\ORM\EntityManager;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, Bids, Clients, Pays, ProjectRejectionReason, Projects, ProjectsComments, ProjectsNotes, ProjectsStatus, WalletType, Zones};
+use Unilend\Entity\{AddressType, Bids, Clients, Pays, ProjectRejectionReason, Projects, ProjectsComments, ProjectsNotes, ProjectsStatus, WalletType, Zones};
 use Unilend\Bundle\CoreBusinessBundle\Service\LenderOperationsManager;
 use Unilend\Bundle\TranslationBundle\Service\TranslationManager;
 
@@ -252,14 +252,14 @@ class ajaxController extends bootstrap
                 /** @var \Unilend\Bundle\CoreBusinessBundle\Service\AddressManager $addressManager */
                 $addressManager = $this->get('unilend.service.address_manager');
                 $emailRegex    = $entityManager
-                    ->getRepository('UnilendCoreBusinessBundle:Settings')
+                    ->getRepository(Settings::class)
                     ->findOneBy(['type' => 'Regex validation email'])
                     ->getValue();
 
                 /** @var \companies $company */
                 $company = $this->loadData('companies');
                 $company->get($project->id_company, 'id_company');
-                $companyEntity = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->find($project->id_company);
+                $companyEntity = $entityManager->getRepository(Companies::class)->find($project->id_company);
 
                 /** @var \clients $client */
                 $client = $this->loadData('clients');
@@ -269,7 +269,7 @@ class ajaxController extends bootstrap
                 if (false === empty($email) && 1 !== preg_match($emailRegex, $email)) {
                     $errors[] = 'Le format de l\'adresse email est invalide';
                 } elseif (false === empty($email) && $email !== $client->email) {
-                    $clientRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
+                    $clientRepository = $entityManager->getRepository(Clients::class);
                     $duplicates       = $clientRepository->findGrantedLoginAccountsByEmail($email);
 
                     if (false === empty($duplicates)) {
@@ -562,7 +562,7 @@ class ajaxController extends bootstrap
             $serialize = serialize($_POST);
             $this->users_history->histo(4, 'Bid en cours delete', $_SESSION['user']['id_user'], $serialize);
 
-            $bid = $entityManager->getRepository('UnilendCoreBusinessBundle:Bids')->find($_POST['id_bid']);
+            $bid = $entityManager->getRepository(Bids::class)->find($_POST['id_bid']);
             $bidManager->reject($bid, false);
 
             $this->lBids = $bids->select('id_wallet = ' . $bid->getWallet()->getId() . ' AND status = ' . Bids::STATUS_PENDING, 'added DESC');
@@ -583,7 +583,7 @@ class ajaxController extends bootstrap
 
             $year                   = filter_var($_POST['year'], FILTER_VALIDATE_INT);
             $idClient               = filter_var($_POST['id_client'], FILTER_VALIDATE_INT);
-            $wallet                 = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($idClient, WalletType::LENDER);
+            $wallet                 = $entityManager->getRepository(Wallet::class)->getWalletByType($idClient, WalletType::LENDER);
             $start                  = new \DateTime();
             $start->setDate($year, 1, 1);
             $end                    = new \DateTime();
@@ -626,7 +626,7 @@ class ajaxController extends bootstrap
             /** @var EntityManager $entityManager */
             $entityManager = $this->get('doctrine.orm.entity_manager');
             /** @var ProjectRejectionReason[] $rejectionReasons */
-            $rejectionReasons = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRejectionReason')
+            $rejectionReasons = $entityManager->getRepository(ProjectRejectionReason::class)
                 ->findBy(['idRejection' => $requestParams['rejection_reason']]);
             if (empty($rejectionReasons) || count($rejectionReasons) !== count($requestParams['rejection_reason'])) {
                 $this->get('logger')->error('Could not update the project status to : ' . ProjectsStatus::STATUS_CANCELLED . '. At least one of the submitted rejection reasons is unknown.', [
@@ -666,7 +666,7 @@ class ajaxController extends bootstrap
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
         /** @var \Unilend\Bundle\CoreBusinessBundle\Repository\ProjectsRepository $projectsRepository */
-        $projectsRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
+        $projectsRepository = $entityManager->getRepository(Projects::class);
 
         if (
             false === isset($_POST['id_project'], $_POST['status'])
@@ -699,7 +699,7 @@ class ajaxController extends bootstrap
             return;
         }
 
-        $projectRating = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsNotes')->findOneBy(['idProject' => $project]);
+        $projectRating = $entityManager->getRepository(ProjectsNotes::class)->findOneBy(['idProject' => $project]);
 
         if (null === $projectRating) {
             $projectRating = new ProjectsNotes();
@@ -739,7 +739,7 @@ class ajaxController extends bootstrap
         if ($_POST['status'] == 1) {
             $projectStatusManager->addProjectStatus($this->userEntity, ProjectsStatus::STATUS_REQUEST, $project);
         } elseif ($_POST['status'] == 2) {
-            $rejectionReasons = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRejectionReason')
+            $rejectionReasons = $entityManager->getRepository(ProjectRejectionReason::class)
                 ->findBy(['idRejection' => $_POST['rejection_reason']]);
 
             if (false === empty($rejectionReasons) && count($rejectionReasons) === count($_POST['rejection_reason'])) {
@@ -779,7 +779,7 @@ class ajaxController extends bootstrap
 
         if (
             false === isset($_POST['id_project'], $_POST['status'])
-            || null === ($project = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($_POST['id_project']))
+            || null === ($project = $entityManager->getRepository(Projects::class)->find($_POST['id_project']))
             || in_array($_POST['status'], [1, 4]) && (
                 empty($_POST['structure_comite']) || $_POST['structure_comite'] > 10
                 || empty($_POST['rentabilite_comite']) || $_POST['rentabilite_comite'] > 10
@@ -808,7 +808,7 @@ class ajaxController extends bootstrap
             return;
         }
 
-        $projectRating = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsNotes')->findOneBy(['idProject' => $project]);
+        $projectRating = $entityManager->getRepository(ProjectsNotes::class)->findOneBy(['idProject' => $project]);
 
         $projectRating->setStructureComite(round(str_replace(',', '.', $_POST['structure_comite']), 1));
         $projectRating->setRentabiliteComite(round(str_replace(',', '.', $_POST['rentabilite_comite']), 1));
@@ -852,7 +852,7 @@ class ajaxController extends bootstrap
             $projectStatusHistory = $this->loadData('projects_status_history');
 
             $existingStatus  = [];
-            $companyProjects = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->findBy(['idCompany' => $project->getIdCompany()]);
+            $companyProjects = $entityManager->getRepository(Projects::class)->findBy(['idCompany' => $project->getIdCompany()]);
 
             foreach ($companyProjects as $companyProject) {
                 $statusHistory = $projectStatusHistory->getHistoryDetails($companyProject->getIdProject());
@@ -863,7 +863,7 @@ class ajaxController extends bootstrap
             $projectStatusManager->addProjectStatus($this->userEntity, ProjectsStatus::STATUS_REVIEW, $project);
         } elseif ($_POST['status'] == 2) {
             /** @var ProjectRejectionReason[] $rejectionReasons */
-            $rejectionReasons = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRejectionReason')
+            $rejectionReasons = $entityManager->getRepository(ProjectRejectionReason::class)
                 ->findBy(['idRejection' => $_POST['rejection_reason']]);
 
             if (false === empty($rejectionReasons) && count($rejectionReasons) === count($_POST['rejection_reason'])) {
@@ -884,7 +884,7 @@ class ajaxController extends bootstrap
                 return;
             }
         } elseif ($_POST['status'] == 4) {
-            $projectCommentEntity = new \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsComments();
+            $projectCommentEntity = new \Unilend\Entity\ProjectsComments();
             $projectCommentEntity->setIdProject($project);
             $projectCommentEntity->setIdUser($this->userEntity);
             $projectCommentEntity->setContent('<p><u>Conditions suspensives de mise en ligne</u><p>' . $_POST['suspensive_conditions_comment'] . '</p>');
@@ -1032,7 +1032,7 @@ class ajaxController extends bootstrap
         if (false === empty($clientId)) {
             /** @var EntityManager $entityManager */
             $entityManager = $this->get('doctrine.orm.entity_manager');
-            $client        = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($clientId);
+            $client        = $entityManager->getRepository(Clients::class)->find($clientId);
 
             switch ($type) {
                 case 'open':
@@ -1063,8 +1063,8 @@ class ajaxController extends bootstrap
         if ($search = filter_input(INPUT_GET, 'q', FILTER_SANITIZE_STRING)) {
             /** @var EntityManager $entityManager */
             $entityManager      = $this->get('doctrine.orm.entity_manager');
-            $projectsRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
-            $clientsRepository  = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
+            $projectsRepository = $entityManager->getRepository(Projects::class);
+            $clientsRepository  = $entityManager->getRepository(Clients::class);
 
             foreach ($projectsRepository->findByAutocomplete($search, 5) as $project) {
                 $result['projects'][] = [
@@ -1109,7 +1109,7 @@ class ajaxController extends bootstrap
         $error         = null;
 
         if ($project instanceof \projects) {
-            $project = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')
+            $project = $entityManager->getRepository(Projects::class)
                 ->find($project->id_project);
         }
 

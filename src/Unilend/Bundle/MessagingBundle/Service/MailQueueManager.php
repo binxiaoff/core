@@ -4,9 +4,11 @@ namespace Unilend\Bundle\MessagingBundle\Service;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\MailQueue;
+use Unilend\Entity\Clients;
+use Unilend\Entity\MailQueue;
 use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage;
 use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessageProvider;
+use Unilend\Entity\MailTemplates;
 
 class MailQueueManager
 {
@@ -49,7 +51,7 @@ class MailQueueManager
      */
     public function queue(TemplateMessage $message) : bool
     {
-        $mailTemplate = $this->entityManager->getRepository('UnilendCoreBusinessBundle:MailTemplates')->find($message->getTemplateId());
+        $mailTemplate = $this->entityManager->getRepository(MailTemplates::class)->find($message->getTemplateId());
 
         $attachments = [];
         foreach ($message->getChildren() as $index => $child) {
@@ -62,7 +64,7 @@ class MailQueueManager
             chmod($this->sharedTemporaryPath . $attachments[$index]['tmp_file'], 0660);
         }
 
-        $clientRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
+        $clientRepository = $this->entityManager->getRepository(Clients::class);
         $replyTo          = $this->emailAddressToString($message->getReplyTo());
 
         foreach ($message->getTo() as $email => $name) {
@@ -149,7 +151,7 @@ class MailQueueManager
      */
     public function getMailsToSend($limit)
     {
-        return $this->entityManager->getRepository('UnilendCoreBusinessBundle:MailQueue')
+        return $this->entityManager->getRepository(MailQueue::class)
             ->getPendingMails($limit);
     }
 
@@ -165,7 +167,7 @@ class MailQueueManager
      */
     public function searchSentEmails($clientId = null, $from = null, $to = null, $subject = null, \DateTime $dateStart = null, \DateTime $dateEnd = null)
     {
-        return $this->entityManager->getRepository('UnilendCoreBusinessBundle:MailQueue')
+        return $this->entityManager->getRepository(MailQueue::class)
             ->searchSentEmails($clientId, $from, $to, $subject, $dateStart, $dateEnd);
     }
 
@@ -176,7 +178,7 @@ class MailQueueManager
      */
     public function existsInMailQueue($templateId)
     {
-        return $this->entityManager->getRepository('UnilendCoreBusinessBundle:MailQueue')
+        return $this->entityManager->getRepository(MailQueue::class)
             ->existsTemplateInMailQueue($templateId);
     }
 

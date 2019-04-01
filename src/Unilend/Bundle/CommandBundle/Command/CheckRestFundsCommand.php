@@ -5,6 +5,8 @@ namespace Unilend\Bundle\CommandBundle\Command;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Unilend\Entity\Projects;
+use Unilend\Entity\Settings;
 
 class CheckRestFundsCommand extends ContainerAwareCommand
 {
@@ -18,7 +20,7 @@ class CheckRestFundsCommand extends ContainerAwareCommand
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $entityManager = $this->getContainer()->get('doctrine.orm.entity_manager');
-        $projects      = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->findPartiallyReleasedProjects(new \DateTime('1 month ago'));
+        $projects      = $entityManager->getRepository(Projects::class)->findPartiallyReleasedProjects(new \DateTime('1 month ago'));
         $adminHost     = $this->getContainer()->getParameter('router.request_context.scheme') . '://' . $this->getContainer()->getParameter('url.host_admin');
 
         $projectsTexts = '';
@@ -27,7 +29,7 @@ class CheckRestFundsCommand extends ContainerAwareCommand
         }
 
         if (0 < count($projects)) {
-            $settings  = $entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Adresse controle interne']);
+            $settings  = $entityManager->getRepository(Settings::class)->findOneBy(['type' => 'Adresse controle interne']);
             $variables = ['projects' => $projectsTexts];
             $message   = $this->getContainer()->get('unilend.swiftmailer.message_provider')->newMessage('notification-project-rest-funds', $variables);
 

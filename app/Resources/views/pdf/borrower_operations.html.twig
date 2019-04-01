@@ -113,7 +113,7 @@
             <tr id="operation-{{ i }}" class="transaction-{{ op.label }} {{ backgroundClass }}">
                 <td class="item-operation">
                     {{ ('borrower-operation_' ~ op.label)|trans }}
-                    {% if op.label == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\OperationType::BORROWER_WITHDRAW') and op.third_party_company is defined and op.third_party_company is not empty %}
+                    {% if op.label == constant('\\Unilend\\Entity\\OperationType::BORROWER_WITHDRAW') and op.third_party_company is defined and op.third_party_company is not empty %}
                         - {{ op.third_party_company.name }}
                     {% endif %}
                 </td>
@@ -121,7 +121,7 @@
                 <td class="item-date">{{ op.date|localizeddate('short', 'none') }}</td>
                 <td class="item-amount {{ colorClass }}">{{ op.amount|localizedcurrency('EUR') }}</td>
             </tr>
-            {% if op.label == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\OperationSubType::BORROWER_COMMISSION_REPAYMENT') %}
+            {% if op.label == constant('\\Unilend\\Entity\\OperationSubType::BORROWER_COMMISSION_REPAYMENT') %}
                 <tr class="details {{ backgroundClass }}">
                     <td colspan="2"></td>
                     <td>{% trans %}borrower-operation_commission-excl-tax{% endtrans %}</td>

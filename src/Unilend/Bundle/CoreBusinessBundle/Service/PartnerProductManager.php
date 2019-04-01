@@ -1,9 +1,7 @@
 <?php
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Product, Projects
-};
+use Unilend\Entity\{Product, Projects};
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductManager;
 
 class PartnerProductManager extends ProductManager

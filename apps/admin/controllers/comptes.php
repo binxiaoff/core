@@ -2,9 +2,9 @@
 
 use Doctrine\ORM\EntityManager;
 use Symfony\Component\HttpFoundation\Request;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
+use Unilend\Entity\Clients;
+use Unilend\Entity\WalletType;
+use Unilend\Entity\Zones;
 use Unilend\Bundle\CoreBusinessBundle\Service\BackOfficeUserManager;
 
 class comptesController extends bootstrap
@@ -62,7 +62,7 @@ class comptesController extends bootstrap
 
             /** @var EntityManager $entityManager */
             $entityManager     = $this->get('doctrine.orm.entity_manager');
-            $clientsRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
+            $clientsRepository = $entityManager->getRepository(Clients::class);
             $accounts          = $clientsRepository->findDuplicatesByEmail($email);
 
             foreach ($accounts as $account) {

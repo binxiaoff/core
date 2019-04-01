@@ -1,6 +1,6 @@
 <?php
 
-use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatus;
+use Unilend\Entity\ClientsStatus;
 
 class clients_gestion_notifications extends clients_gestion_notifications_crud
 {

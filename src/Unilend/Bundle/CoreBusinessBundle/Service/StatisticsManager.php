@@ -4,7 +4,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Cache\CacheItemPoolInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{Clients, OperationType, ProjectsStatus, UnderlyingContract, UnilendStats};
+use Unilend\Entity\{Clients, EcheanciersEmprunteur, Operation, OperationType, Projects, ProjectsStatus, UnderlyingContract, UnilendStats};
 use Unilend\Bundle\CoreBusinessBundle\Repository\ClientsRepository;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\librairies\CacheKeys;
@@ -107,9 +107,9 @@ class StatisticsManager
         $cachedItem = $this->cachePool->getItem($cacheKey);
         if (false === $cachedItem->isHit()) {
             if ($date->format('Y-m-d') == $today->format('Y-m-d')) {
-                $statsEntry = $this->entityManager->getRepository('UnilendCoreBusinessBundle:UnilendStats')->findOneBy(['typeStat' => CacheKeys::UNILEND_STATISTICS], ['added' => 'DESC']);
+                $statsEntry = $this->entityManager->getRepository(UnilendStats::class)->findOneBy(['typeStat' => CacheKeys::UNILEND_STATISTICS], ['added' => 'DESC']);
             } else {
-                $statsEntry = $this->entityManager->getRepository('UnilendCoreBusinessBundle:UnilendStats')->findStatisticAtDate($date, CacheKeys::UNILEND_STATISTICS);
+                $statsEntry = $this->entityManager->getRepository(UnilendStats::class)->findStatisticAtDate($date, CacheKeys::UNILEND_STATISTICS);
             }
             $statistics = json_decode($statsEntry->getValue(), true);
             $cachedItem->set($statistics)->expiresAfter(CacheKeys::LONG_TIME);
@@ -136,9 +136,9 @@ class StatisticsManager
 
         if (false === $cachedItem->isHit()) {
             if ($date->format('Y-m-d') == $today->format('Y-m-d')) {
-                $statsEntry = $this->entityManager->getRepository('UnilendCoreBusinessBundle:UnilendStats')->findOneBy(['typeStat' => UnilendStats::TYPE_FPF_FRONT_STATISTIC], ['added' => 'DESC']);
+                $statsEntry = $this->entityManager->getRepository(UnilendStats::class)->findOneBy(['typeStat' => UnilendStats::TYPE_FPF_FRONT_STATISTIC], ['added' => 'DESC']);
             } else {
-                $statsEntry = $this->entityManager->getRepository('UnilendCoreBusinessBundle:UnilendStats')->findStatisticAtDate($date, UnilendStats::TYPE_FPF_FRONT_STATISTIC);
+                $statsEntry = $this->entityManager->getRepository(UnilendStats::class)->findStatisticAtDate($date, UnilendStats::TYPE_FPF_FRONT_STATISTIC);
             }
             $statistics = json_decode($statsEntry->getValue(), true);
             $cachedItem->set($statistics)->expiresAfter(CacheKeys::LONG_TIME);
@@ -165,9 +165,9 @@ class StatisticsManager
         $cachedItem = $this->cachePool->getItem($cacheKey);
         if (false === $cachedItem->isHit()) {
             if ($date->format('Y-m-d') == $today->format('Y-m-d')) {
-                $statsEntry = $this->entityManager->getRepository('UnilendCoreBusinessBundle:UnilendStats')->findOneBy(['typeStat' => UnilendStats::TYPE_INCIDENCE_RATE], ['added' => 'DESC']);
+                $statsEntry = $this->entityManager->getRepository(UnilendStats::class)->findOneBy(['typeStat' => UnilendStats::TYPE_INCIDENCE_RATE], ['added' => 'DESC']);
             } else {
-                $statsEntry = $this->entityManager->getRepository('UnilendCoreBusinessBundle:UnilendStats')->findStatisticAtDate($date, UnilendStats::TYPE_INCIDENCE_RATE);
+                $statsEntry = $this->entityManager->getRepository(UnilendStats::class)->findStatisticAtDate($date, UnilendStats::TYPE_INCIDENCE_RATE);
             }
             $statistics = json_decode($statsEntry->getValue(), true);
             $cachedItem->set($statistics)->expiresAfter(CacheKeys::LONG_TIME);
@@ -185,7 +185,7 @@ class StatisticsManager
     public function getAvailableDatesForFPFStatistics(): array
     {
         $availableDates = [];
-        foreach ($this->entityManager->getRepository('UnilendCoreBusinessBundle:UnilendStats')->getAvailableDatesForStatisticType(UnilendStats::TYPE_FPF_FRONT_STATISTIC) as $date) {
+        foreach ($this->entityManager->getRepository(UnilendStats::class)->getAvailableDatesForStatisticType(UnilendStats::TYPE_FPF_FRONT_STATISTIC) as $date) {
             $availableDates[] = $date['added'];
         }
 
@@ -199,7 +199,7 @@ class StatisticsManager
      */
     public function saveQuarterIncidenceRate(): void
     {
-        $unilendStatRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:UnilendStats');
+        $unilendStatRepository = $this->entityManager->getRepository(UnilendStats::class);
         $thirdMonth            = new \DateTime('Last day of last month');
         $secondMonth           = new \DateTime('Last day of 2 months ago');
         $firstMonth            = new \DateTime('Last day of 3 months ago');
@@ -309,8 +309,8 @@ class StatisticsManager
         /** @var \loans $loans */
         $loans             = $this->entityManagerSimulator->getRepository('loans');
         $startDate         = new \DateTime('NOW - 6 MONTHS');
-        $clientRepository  = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
-        $projectRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
+        $clientRepository  = $this->entityManager->getRepository(Clients::class);
+        $projectRepository = $this->entityManager->getRepository(Projects::class);
 
         $statistics = [
             'numberOfLendersInCommunity'      => $clientRepository->countLenders(),
@@ -364,7 +364,7 @@ class StatisticsManager
     private function getLendersByType(): array
     {
         /** @var ClientsRepository $clientRepository */
-        $clientRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
+        $clientRepository = $this->entityManager->getRepository(Clients::class);
         /** @var int $lendersPerson */
         $lendersPerson = $clientRepository->countLendersByClientType([Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER]);
         /** @var int $lendersLegalEntity */
@@ -432,7 +432,7 @@ class StatisticsManager
         $projects = $this->entityManagerSimulator->getRepository('projects');
         /** @var \companies $companies */
         $companies           = $this->entityManagerSimulator->getRepository('companies');
-        $operationRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
+        $operationRepository = $this->entityManager->getRepository(Operation::class);
 
         $borrowedCapital                             = $this->formatCohortQueryResult($loans->sumLoansByCohort(), $years);
         $repaidCapital                               = $this->formatCohortQueryResult($operationRepository->getTotalRepaymentByCohort(OperationType::CAPITAL_REPAYMENT), $years);
@@ -609,9 +609,9 @@ class StatisticsManager
         /** @var \echeanciers_emprunteur $borrowerPaymentSchedule */
         $borrowerPaymentSchedule = $this->entityManagerSimulator->getRepository('echeanciers_emprunteur');
 
-        $projectRepository         = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
-        $paymentScheduleRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur');
-        $operationRepository       = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
+        $projectRepository         = $this->entityManager->getRepository(Projects::class);
+        $paymentScheduleRepository = $this->entityManager->getRepository(EcheanciersEmprunteur::class);
+        $operationRepository       = $this->entityManager->getRepository(Operation::class);
 
         $years                                       = range(2013, date('Y'));
         $borrowedCapital                             = $this->formatCohortQueryResult($loans->sumLoansByCohort(self::GROUP_FIRST_YEAR_COHORT), $years);
@@ -733,7 +733,7 @@ class StatisticsManager
      */
     public function getIncidenceRatesOfLast36Months(\DateTime $date): array
     {
-        $data        = $this->entityManager->getRepository('UnilendCoreBusinessBundle:UnilendStats')->getQuarterIncidenceRate($date, self::ACPR_CALCULATION_PERIOD_MONTHS);
+        $data        = $this->entityManager->getRepository(UnilendStats::class)->getQuarterIncidenceRate($date, self::ACPR_CALCULATION_PERIOD_MONTHS);
         $quarterData = [];
 
         /** @var UnilendStats $stat */

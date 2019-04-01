@@ -68,34 +68,34 @@
                             {% for account in accounts %}
                                 <tr>
                                     <td>
-                                        {% if account.walletType == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\WalletType::LENDER') %}
+                                        {% if account.walletType == constant('\\Unilend\\Entity\\WalletType::LENDER') %}
                                             <a href="{{ app.adminUrl }}/preteurs/edit/{{ account.idClient }}">{{ account.idClient }}</a>
-                                        {% elseif account.walletType == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\WalletType::BORROWER') %}
+                                        {% elseif account.walletType == constant('\\Unilend\\Entity\\WalletType::BORROWER') %}
                                             <a href="{{ app.adminUrl }}/emprunteurs/edit/{{ account.idClient }}">{{ account.idClient }}</a>
-                                        {% elseif account.walletType == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\WalletType::PARTNER') %}
+                                        {% elseif account.walletType == constant('\\Unilend\\Entity\\WalletType::PARTNER') %}
                                             <a href="{{ app.adminUrl }}/partenaires/edit/{{ account.idPartner }}">{{ account.idClient }}</a>
                                         {% endif %}
                                     </td>
                                     <td>
-                                        {% if account.walletType == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\WalletType::LENDER') %}
+                                        {% if account.walletType == constant('\\Unilend\\Entity\\WalletType::LENDER') %}
                                             <a href="{{ app.adminUrl }}/preteurs/edit/{{ account.idClient }}">{{ account.name }}</a>
-                                        {% elseif account.walletType == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\WalletType::BORROWER') %}
+                                        {% elseif account.walletType == constant('\\Unilend\\Entity\\WalletType::BORROWER') %}
                                             <a href="{{ app.adminUrl }}/emprunteurs/edit/{{ account.idClient }}">{{ account.name }}</a>
-                                        {% elseif account.walletType == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\WalletType::PARTNER') %}
+                                        {% elseif account.walletType == constant('\\Unilend\\Entity\\WalletType::PARTNER') %}
                                             <a href="{{ app.adminUrl }}/partenaires/edit/{{ account.idPartner }}">{{ account.name }}</a>
                                         {% endif %}
                                     </td>
                                     <td>
-                                        {% if account.walletType == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\WalletType::LENDER') %}
+                                        {% if account.walletType == constant('\\Unilend\\Entity\\WalletType::LENDER') %}
                                             Prêteur
-                                            {% if account.clientType in [constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::TYPE_LEGAL_ENTITY'), constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::TYPE_LEGAL_ENTITY_FOREIGNER')] %}
+                                            {% if account.clientType in [constant('\\Unilend\\Entity\\Clients::TYPE_LEGAL_ENTITY'), constant('\\Unilend\\Entity\\Clients::TYPE_LEGAL_ENTITY_FOREIGNER')] %}
                                                 (personne morale)
                                             {% else %}
                                                 (personne physique)
                                             {% endif %}
-                                        {% elseif account.walletType == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\WalletType::BORROWER') %}
+                                        {% elseif account.walletType == constant('\\Unilend\\Entity\\WalletType::BORROWER') %}
                                             Emprunteur
-                                        {% elseif account.walletType == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\WalletType::PARTNER') %}
+                                        {% elseif account.walletType == constant('\\Unilend\\Entity\\WalletType::PARTNER') %}
                                             Partenaire ({{ account.partnerName }})
                                         {% elseif account.walletType is not empty %}
                                             {{ account.walletType }}
@@ -106,7 +106,7 @@
                                         {% endif %}
                                     </td>
                                     <td data-order="{{ account.status }}">
-                                        {% if account.status in constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ClientsStatus::GRANTED_LOGIN') %}
+                                        {% if account.status in constant('\\Unilend\\Entity\\ClientsStatus::GRANTED_LOGIN') %}
                                             <span class="badge badge-success"><i class="fa fa-check"></i></span>
                                         {% else %}
                                             <span class="badge badge-danger"><i class="fa fa-times-circle"></i></span>
@@ -118,11 +118,11 @@
                                     <td>{{ account.creationDate|date('d/m/Y') }}</td>
                                     <td>{{ account.operations }}</td>
                                     <td>
-                                        {% if account.walletType == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\WalletType::LENDER') %}
+                                        {% if account.walletType == constant('\\Unilend\\Entity\\WalletType::LENDER') %}
                                             <a href="{{ app.adminUrl }}/preteurs/edit/{{ account.idClient }}" class="btn btn-xs btn-default" title="Modifier"><i class="fa fa-pencil"></i></a>
-                                        {% elseif account.walletType == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\WalletType::BORROWER') %}
+                                        {% elseif account.walletType == constant('\\Unilend\\Entity\\WalletType::BORROWER') %}
                                             <a href="{{ app.adminUrl }}/emprunteurs/edit/{{ account.idClient }}" class="btn btn-xs btn-default" title="Modifier"><i class="fa fa-pencil"></i></a>
-                                        {% elseif account.walletType == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\WalletType::PARTNER') %}
+                                        {% elseif account.walletType == constant('\\Unilend\\Entity\\WalletType::PARTNER') %}
                                             <a href="{{ app.adminUrl }}/partenaires/edit/{{ account.idPartner }}" class="btn btn-xs btn-default" title="Modifier"><i class="fa fa-pencil"></i></a>
                                         {% endif %}
                                     </td>

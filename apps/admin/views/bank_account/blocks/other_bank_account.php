@@ -1,4 +1,4 @@
-<?php use Unilend\Bundle\CoreBusinessBundle\Entity\BankAccount; ?>
+<?php use Unilend\Entity\BankAccount; ?>
 <h3>Autres RIB</h3>
 <?php if (false === empty($this->bankAccountDocuments)) : ?>
     <table class="tablesorter">
@@ -13,7 +13,7 @@
         <tbody>
         <?php $i = 0; ?>
         <?php foreach ($this->bankAccountDocuments as $attachment) : ?>
-            <?php /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\BankAccount $bankAccount */ ?>
+            <?php /** @var \Unilend\Entity\BankAccount $bankAccount */ ?>
             <?php $bankAccount = $attachment->getBankAccount(); ?>
             <?php if (null === $bankAccount || BankAccount::STATUS_PENDING === $bankAccount->getStatus() || BankAccount::STATUS_ARCHIVED === $bankAccount->getStatus()) : ?>
                 <tr<?= ($i % 2 == 1 ? '' : ' class="odd"') ?>>

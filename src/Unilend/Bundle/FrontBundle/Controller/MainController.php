@@ -11,7 +11,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\Authorization\AuthorizationChecker;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Translation\TranslatorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{Clients, OffresBienvenues, ProjectsStatus, Tree, Users};
+use Unilend\Entity\{BorrowingMotive, Clients, OffresBienvenues, Projects, ProjectsStatus, Tree, Users};
 use Unilend\Bundle\CoreBusinessBundle\Repository\ProjectsRepository;
 use Unilend\Bundle\CoreBusinessBundle\Service\{ProjectRequestManager, StatisticsManager, WelcomeOfferManager};
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
@@ -88,7 +88,7 @@ class MainController extends Controller
         $template['projects'] = $projectDisplayManager->getProjectsList([], [ProjectsRepository::SORT_FIELD_END => 'DESC'], null, 3, $client);
 
         $translator        = $this->get('translator');
-        $projectRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Projects');
+        $projectRepository = $this->get('doctrine.orm.entity_manager')->getRepository(Projects::class);
 
         array_walk($template['projects'], function(&$project) use ($translator, $projectDisplayManager, $client, $projectRepository) {
             if (ProjectDisplayManager::VISIBILITY_FULL !== $projectDisplayManager->getVisibility($projectRepository->find($project['projectId']), $client)) {
@@ -113,7 +113,7 @@ class MainController extends Controller
         $template['loanPeriods']       = $projectManager->getPossibleProjectPeriods();
         $template['projectAmountMax']  = $projectManager->getMaxProjectAmount();
         $template['projectAmountMin']  = $projectManager->getMinProjectAmount();
-        $template['borrowingMotives']  = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:BorrowingMotive')->findBy([], ['rank' => 'ASC']);
+        $template['borrowingMotives']  = $this->get('doctrine.orm.entity_manager')->getRepository(BorrowingMotive::class)->findBy([], ['rank' => 'ASC']);
         $template['projects'] = $projectDisplayManager->getProjectsList(
             [ProjectsStatus::STATUS_ONLINE],
             [ProjectsRepository::SORT_FIELD_END => 'DESC']
@@ -176,7 +176,7 @@ class MainController extends Controller
         $projectRequestManager = $this->get('unilend.service.project_request_manager');
         $projectManager        = $this->get('unilend.service.project_manager');
 
-        $user = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find(Users::USER_ID_FRONT);
+        $user = $entityManager->getRepository(Users::class)->find(Users::USER_ID_FRONT);
 
         $errors = [];
 
@@ -197,7 +197,7 @@ class MainController extends Controller
         }
 
         $borrowingMotive = $request->request->getInt('reason');
-        if (empty($borrowingMotive) || null === $entityManager->getRepository('UnilendCoreBusinessBundle:BorrowingMotive')->find($borrowingMotive)) {
+        if (empty($borrowingMotive) || null === $entityManager->getRepository(BorrowingMotive::class)->find($borrowingMotive)) {
             $errors[] = ProjectRequestManager::EXCEPTION_CODE_INVALID_REASON;
         }
 
@@ -395,7 +395,7 @@ class MainController extends Controller
      */
     private function renderBorrowerLandingPage(Request $request, array $content, array $complement): Response
     {
-        $borrowingReasons = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:BorrowingMotive')->findBy([], ['rank' => 'ASC']);
+        $borrowingReasons = $this->get('doctrine.orm.entity_manager')->getRepository(BorrowingMotive::class)->findBy([], ['rank' => 'ASC']);
         $sessionHandler   = $request->getSession();
         $isPartnerFunnel  = isset($content['tunnel-partenaire']) ? $content['tunnel-partenaire'] == 1 : false;
 

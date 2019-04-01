@@ -1,6 +1,6 @@
 <?php
 
-use Unilend\Bundle\CoreBusinessBundle\Entity\Users as UsersEntity;
+use Unilend\Entity\Users as UsersEntity;
 use Unilend\core\Loader;
 
 class users extends users_crud

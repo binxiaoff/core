@@ -3,7 +3,7 @@
 namespace Unilend\Bundle\FrontBundle\Twig;
 
 use Doctrine\ORM\EntityManagerInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{EcheanciersEmprunteur, Projects, ProjectsStatus};
+use Unilend\Entity\{Bids, EcheanciersEmprunteur, Projects, ProjectsStatus};
 use Unilend\Bundle\CoreBusinessBundle\Service\{AutoBidSettingsManager, ProjectManager};
 
 class ProjectExtension extends \Twig_Extension
@@ -50,7 +50,7 @@ class ProjectExtension extends \Twig_Extension
     public function getFundingPercentage(Projects $project): float
     {
         try {
-            $totalBidAmount = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Bids')->getProjectTotalAmount($project);
+            $totalBidAmount = $this->entityManager->getRepository(Bids::class)->getProjectTotalAmount($project);
         } catch (\Exception $exception) {
             $totalBidAmount = 0;
         }
@@ -65,7 +65,7 @@ class ProjectExtension extends \Twig_Extension
      */
     public function getAverageInterestRate(Projects $project): float
     {
-        return round($this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->getAverageInterestRate($project), 2);
+        return round($this->entityManager->getRepository(Projects::class)->getAverageInterestRate($project), 2);
     }
 
     /**
@@ -86,7 +86,7 @@ class ProjectExtension extends \Twig_Extension
     public function getRepaymentScheduleAmount(Projects $project): float
     {
         $scheduledAmount           = 0;
-        $paymentScheduleRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur');
+        $paymentScheduleRepository = $this->entityManager->getRepository(EcheanciersEmprunteur::class);
 
         if ($project->getStatus() !== ProjectsStatus::STATUS_REPAID) {
             $schedule = $paymentScheduleRepository->findOneBy(['idProject' => $project]);
@@ -106,7 +106,7 @@ class ProjectExtension extends \Twig_Extension
      */
     public function getNextRepaymentScheduleAmount(Projects $project): \DateTime
     {
-        $paymentScheduleRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur');
+        $paymentScheduleRepository = $this->entityManager->getRepository(EcheanciersEmprunteur::class);
         $nextScheduledDate         = new \DateTime();
 
         if ($project->getStatus() !== ProjectsStatus::STATUS_REPAID) {

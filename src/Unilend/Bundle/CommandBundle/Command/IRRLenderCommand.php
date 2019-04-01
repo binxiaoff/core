@@ -8,7 +8,7 @@ use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{CompanyStatusHistory, LenderStatisticQueue, Projects, ProjectsStatusHistory, Wallet};
+use Unilend\Entity\{CompanyStatusHistory, LenderStatisticQueue, Projects, ProjectsStatusHistory, Wallet};
 use Unilend\Bundle\CoreBusinessBundle\Repository\WalletRepository;
 use Unilend\Bundle\CoreBusinessBundle\Service\IRRManager;
 use Unilend\librairies\CacheKeys;
@@ -56,7 +56,7 @@ EOF
         $calculatedIRRs         = 0;
 
         /** @var LenderStatisticQueue $queueEntry */
-        foreach ($entityManager->getRepository('UnilendCoreBusinessBundle:LenderStatisticQueue')->findBy([], ['added' => 'DESC'], $amountOfLenderAccounts) as $queueEntry) {
+        foreach ($entityManager->getRepository(LenderStatisticQueue::class)->findBy([], ['added' => 'DESC'], $amountOfLenderAccounts) as $queueEntry) {
             $wallet = $queueEntry->getIdWallet();
             $irrManager->addIRRLender($wallet);
             $entityManager->remove($queueEntry);
@@ -73,14 +73,14 @@ EOF
         $entityManager = $this->getContainer()->get('doctrine.orm.entity_manager');
 
         /** @var WalletRepository $walletRepository */
-        $walletRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet');
+        $walletRepository = $entityManager->getRepository(Wallet::class);
         foreach ($walletRepository->getLendersWalletsWithLatePaymentsForIRR() as $lender) {
             $this->addLenderToStatisticQueue($lender);
         }
         $entityManager->flush();
 
-        $projectStatusHistoryRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatusHistory');
-        $companyStatusHistoryRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyStatusHistory');
+        $projectStatusHistoryRepository = $entityManager->getRepository(ProjectsStatusHistory::class);
+        $companyStatusHistoryRepository = $entityManager->getRepository(CompanyStatusHistory::class);
         $yesterday                      = new \DateTime('NOW - 1 day');
         $projectStatusChanges           = $projectStatusHistoryRepository->getProjectStatusChangesOnDate($yesterday, IRRManager::PROJECT_STATUS_TRIGGERING_CHANGE);
         $companyStatusChanges           = $companyStatusHistoryRepository->getCompanyStatusChangesOnDate($yesterday, IRRManager::COMPANY_STATUS_TRIGGERING_CHANGE);
@@ -113,14 +113,14 @@ EOF
         }
 
         if (is_array($lender) && array_key_exists('id_lender', $lender)) {
-           $lenderWallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->find($lender['id_lender']);
+           $lenderWallet = $entityManager->getRepository(Wallet::class)->find($lender['id_lender']);
            if (null === $lenderWallet) {
                /** @var Wallet $lenderWallet */
-               $lenderWallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->findOneBy(['id' => $lender['id_lender']]);
+               $lenderWallet = $entityManager->getRepository(Wallet::class)->findOneBy(['id' => $lender['id_lender']]);
             }
         }
 
-        if (null !== $lenderWallet && null === $entityManager->getRepository('UnilendCoreBusinessBundle:LenderStatisticQueue')->findOneBy(['idWallet' => $lenderWallet->getId()])) {
+        if (null !== $lenderWallet && null === $entityManager->getRepository(LenderStatisticQueue::class)->findOneBy(['idWallet' => $lenderWallet->getId()])) {
             $lenderInQueue = new LenderStatisticQueue();
             $lenderInQueue->setIdWallet($lenderWallet);
             $entityManager->persist($lenderInQueue);
@@ -136,7 +136,7 @@ EOF
     private function getProjects(array $projectStatusHistory, array $companyStatusHistory)
     {
         $entityManager      = $entityManager = $this->getContainer()->get('doctrine.orm.entity_manager');
-        $projectsRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
+        $projectsRepository = $entityManager->getRepository(Projects::class);
 
         $projects = [];
 

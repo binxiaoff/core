@@ -7,7 +7,7 @@ use PhpOffice\PhpSpreadsheet\{Exception as PhpSpreadsheetException, IOFactory as
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Filesystem\{Exception\FileNotFoundException, Filesystem};
 use Symfony\Component\HttpFoundation\File\UploadedFile;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{Attachment, AttachmentType, Clients, ProjectAttachment, Projects, Transfer, TransferAttachment};
+use Unilend\Entity\{Attachment, AttachmentType, Clients, ProjectAttachment, ProjectAttachmentType, Projects, Transfer, TransferAttachment};
 
 class AttachmentManager
 {
@@ -71,7 +71,7 @@ class AttachmentManager
 
         $attachmentsToArchive = [];
         if ($archivePreviousAttachments) {
-            $attachmentsToArchive = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Attachment')
+            $attachmentsToArchive = $this->entityManager->getRepository(Attachment::class)
                 ->findBy([
                     'idClient' => $client,
                     'idType'   => $attachmentType,
@@ -206,9 +206,9 @@ class AttachmentManager
      */
     public function attachToProject(Attachment $attachment, Projects $project)
     {
-        $projectAttachmentRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectAttachment');
+        $projectAttachmentRepository = $this->entityManager->getRepository(ProjectAttachment::class);
         $attached                    = $projectAttachmentRepository->getAttachedAttachmentsByType($project, $attachment->getType());
-        $projectAttachmentType       = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectAttachmentType')->findOneBy([
+        $projectAttachmentType       = $this->entityManager->getRepository(ProjectAttachmentType::class)->findOneBy([
             'idType' => $attachment->getType()
         ]);
 
@@ -246,7 +246,7 @@ class AttachmentManager
      */
     public function attachToTransfer(Attachment $attachment, Transfer $transfer)
     {
-        $transferAttachmentRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:TransferAttachment');
+        $transferAttachmentRepository = $this->entityManager->getRepository(TransferAttachment::class);
         $attached                     = $transferAttachmentRepository->getAttachedAttachments($transfer, $attachment->getType());
 
         foreach ($attached as $attachmentToDetach) {
@@ -254,7 +254,7 @@ class AttachmentManager
             $this->entityManager->flush($attachmentToDetach);
         }
 
-        $transferAttachment = $this->entityManager->getRepository('UnilendCoreBusinessBundle:TransferAttachment')->findOneBy(['idAttachment' => $attachment, 'idTransfer' => $transfer]);
+        $transferAttachment = $this->entityManager->getRepository(TransferAttachment::class)->findOneBy(['idAttachment' => $attachment, 'idTransfer' => $transfer]);
         if (null === $transferAttachment) {
             $transferAttachment = new TransferAttachment();
             $transferAttachment->setTransfer($transfer)
@@ -317,7 +317,7 @@ class AttachmentManager
             ]);
         }
 
-        return $this->entityManager->getRepository('UnilendCoreBusinessBundle:AttachmentType')->findTypesIn($types);
+        return $this->entityManager->getRepository(AttachmentType::class)->findTypesIn($types);
     }
 
     /**
@@ -328,7 +328,7 @@ class AttachmentManager
     public function isModifiedAttachment(Attachment $attachment)
     {
         try {
-            $previousAttachment = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Attachment')
+            $previousAttachment = $this->entityManager->getRepository(Attachment::class)
                 ->findPreviousNotArchivedAttachment($attachment);
         } catch (\Exception $exception) {
             $previousAttachment = null;

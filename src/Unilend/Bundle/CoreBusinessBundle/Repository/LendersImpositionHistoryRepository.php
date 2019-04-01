@@ -4,8 +4,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
+use Unilend\Entity\{Clients, Pays, Wallet};
 
 class LendersImpositionHistoryRepository extends EntityRepository
 {
@@ -54,7 +53,7 @@ class LendersImpositionHistoryRepository extends EntityRepository
 
         $queryBuilder = $this->createQueryBuilder('lih');
         $queryBuilder->select('p.iso')
-            ->innerJoin('UnilendCoreBusinessBundle:Pays', 'p', Join::WITH, 'p.idPays = lih.idPays')
+            ->innerJoin(Pays::class, 'p', Join::WITH, 'p.idPays = lih.idPays')
             ->where('lih.idLender = :wallet')
             ->andWhere('lih.added <= :date')
             ->orderBy('lih.added', 'DESC')

@@ -6,7 +6,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Psr\Cache\CacheItemPoolInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Redirections;
+use Unilend\Entity\Redirections;
 use Unilend\librairies\CacheKeys;
 
 /**
@@ -43,7 +43,7 @@ class RedirectionHandler
         $newPath       = null;
         $cachedItem    = $this->cacheItemPool->getItem(md5('redirection_handler.handle.' . $requestedPath));
         if (false === $cachedItem->isHit()) {
-            $redirection = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Redirections')->findOneBy([
+            $redirection = $this->entityManager->getRepository(Redirections::class)->findOneBy([
                 'fromSlug' => $requestedPath,
                 'status'   => Redirections::STATUS_ENABLED
             ]);

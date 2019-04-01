@@ -103,8 +103,16 @@ doctrine:
                 schema_filter: ~^(?!(project_search|xerfi))~
     orm:
         auto_generate_proxy_classes: "%kernel.debug%"
-        auto_mapping: true
-        naming_strategy: doctrine.orm.naming_strategy.underscore
+        entity_managers:
+            default:
+                naming_strategy: doctrine.orm.naming_strategy.underscore
+                mappings:
+                    custom_mapping:
+                        type: annotation
+                        prefix: Unilend\Entity\
+                        dir: "%kernel.project_dir%/src/Entity/"
+                        is_bundle: false
+
 
 doctrine_migrations:
     name: Database Migrations

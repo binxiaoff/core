@@ -24,7 +24,7 @@
                 </div><!-- /.ui-fileattach -->
             </div><!-- /.form-field -->
 
-            {% if company.statusClient > constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Companies::CLIENT_STATUS_MANAGER') %}
+            {% if company.statusClient > constant('\\Unilend\\Entity\\Companies::CLIENT_STATUS_MANAGER') %}
             <div class="form-field">
                 <div class="custom-input-file" id="form-lender-subscription-info-file-delegation-authority"
                      data-fileattach

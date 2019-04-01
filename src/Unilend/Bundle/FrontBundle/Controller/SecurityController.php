@@ -11,7 +11,7 @@ use Symfony\Component\Security\Core\Exception\BadCredentialsException;
 use Symfony\Component\Security\Csrf\CsrfToken;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 use Symfony\Component\Translation\TranslatorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{Clients, ClientsHistoryActions, TemporaryLinksLogin, WalletType};
+use Unilend\Entity\{Clients, ClientsHistoryActions, Settings, TemporaryLinksLogin, Wallet, WalletType};
 use Unilend\Bundle\CoreBusinessBundle\Service\GoogleRecaptchaManager;
 use Unilend\Bundle\FrontBundle\Security\{BCryptPasswordEncoder, LoginAuthenticator};
 
@@ -106,7 +106,7 @@ class SecurityController extends Controller
         }
 
         $entityManager     = $this->get('doctrine.orm.entity_manager');
-        $clientsRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
+        $clientsRepository = $entityManager->getRepository(Clients::class);
         $clients           = $clientsRepository->findGrantedLoginAccountsByEmail($email);
         $clientsCount      = count($clients);
 
@@ -131,9 +131,9 @@ class SecurityController extends Controller
         }
 
         $client = current($clients);
-        $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->findOneBy(['idClient' => $client]);
+        $wallet = $entityManager->getRepository(Wallet::class)->findOneBy(['idClient' => $client]);
         $token  = $entityManager
-            ->getRepository('UnilendCoreBusinessBundle:TemporaryLinksLogin')
+            ->getRepository(TemporaryLinksLogin::class)
             ->generateTemporaryLink($client, TemporaryLinksLogin::PASSWORD_TOKEN_LIFETIME_SHORT);
 
         if (null === $wallet) {
@@ -163,7 +163,7 @@ class SecurityController extends Controller
                 $keywords = [
                     'firstName'            => $client->getPrenom(),
                     'temporaryToken'       => $token,
-                    'borrowerServiceEmail' => $entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Adresse emprunteur'])->getValue()
+                    'borrowerServiceEmail' => $entityManager->getRepository(Settings::class)->findOneBy(['type' => 'Adresse emprunteur'])->getValue()
                 ];
                 break;
             case WalletType::PARTNER:
@@ -253,7 +253,7 @@ class SecurityController extends Controller
         }
 
         $entityManager           = $this->get('doctrine.orm.entity_manager');
-        $temporaryLinkRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:TemporaryLinksLogin');
+        $temporaryLinkRepository = $entityManager->getRepository(TemporaryLinksLogin::class);
         $temporaryLink           = $temporaryLinkRepository->findOneBy(['token' => $securityToken]);
 
         /** @var TemporaryLinksLogin $temporaryLink */
@@ -283,7 +283,7 @@ class SecurityController extends Controller
     public function changePasswordFormAction(string $securityToken, Request $request): Response
     {
         $entityManager           = $this->get('doctrine.orm.entity_manager');
-        $temporaryLinkRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:TemporaryLinksLogin');
+        $temporaryLinkRepository = $entityManager->getRepository(TemporaryLinksLogin::class);
         $temporaryLink           = $temporaryLinkRepository->findOneBy(['token' => $securityToken]);
 
         /** @var TemporaryLinksLogin $temporaryLink */
@@ -317,7 +317,7 @@ class SecurityController extends Controller
 
             try {
                 $password = $this->get('security.password_encoder')->encodePassword($client, $request->request->get('client_new_password'));
-                $entityManager->getRepository('UnilendCoreBusinessBundle:TemporaryLinksLogin')->revokeTemporaryLinks($client);
+                $entityManager->getRepository(TemporaryLinksLogin::class)->revokeTemporaryLinks($client);
                 $client->setPassword($password);
                 $entityManager->flush($client);
 

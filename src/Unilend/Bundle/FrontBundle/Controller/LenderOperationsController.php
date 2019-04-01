@@ -8,7 +8,8 @@ use Symfony\Component\HttpFoundation\{JsonResponse, Request, Response, StreamedR
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Translation\TranslatorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, ClientAddress, Clients, CompanyAddress, CompanyStatus, Notifications, OperationSubType, OperationType, Projects, Wallet, WalletType};
+use Unilend\Entity\{AcceptedBids, AddressType, Bids, ClientAddress, Clients, Companies, CompanyAddress, CompanyStatus, CompanyStatusHistory, Notifications, Operation, OperationSubType, OperationType,
+    ProjectNotification, Projects, Wallet, WalletType};
 use Unilend\Bundle\CoreBusinessBundle\Service\LenderOperationsManager;
 use Unilend\Bundle\FrontBundle\Service\LenderLoansDisplayManager;
 use Unilend\core\Loader;
@@ -34,7 +35,7 @@ class LenderOperationsController extends Controller
         $entityManager           = $this->get('doctrine.orm.entity_manager');
         $lenderOperationsManager = $this->get('unilend.service.lender_operations_manager');
 
-        $wallet                 = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
+        $wallet                 = $entityManager->getRepository(Wallet::class)->getWalletByType($client, WalletType::LENDER);
         $filters                = $this->getOperationFilters($request, $client);
         $operations             = $lenderOperationsManager->getOperationsAccordingToFilter($filters['operation']);
         $lenderOperations       = $lenderOperationsManager->getLenderOperations($wallet, $filters['startDate'], $filters['endDate'], $filters['project'], $operations);
@@ -77,7 +78,7 @@ class LenderOperationsController extends Controller
         }
 
         $entityManager = $this->get('doctrine.orm.entity_manager');
-        $wallet        = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
+        $wallet        = $entityManager->getRepository(Wallet::class)->getWalletByType($client, WalletType::LENDER);
         $loans         = $this->commonLoans($request, $wallet);
 
         return $this->json([
@@ -109,7 +110,7 @@ class LenderOperationsController extends Controller
 
         $entityManager           = $this->get('doctrine.orm.entity_manager');
         $lenderOperationsManager = $this->get('unilend.service.lender_operations_manager');
-        $wallet                  = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
+        $wallet                  = $entityManager->getRepository(Wallet::class)->getWalletByType($client, WalletType::LENDER);
         $filters                 = $this->getOperationFilters($request, $client);
         $operations              = $lenderOperationsManager->getOperationsAccordingToFilter($filters['operation']);
         $lenderOperations        = $lenderOperationsManager->getLenderOperations($wallet, $filters['startDate'], $filters['endDate'], $filters['project'], $operations);
@@ -150,7 +151,7 @@ class LenderOperationsController extends Controller
 
         $entityManager           = $this->get('doctrine.orm.entity_manager');
         $lenderOperationsManager = $this->get('unilend.service.lender_operations_manager');
-        $wallet                  = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
+        $wallet                  = $entityManager->getRepository(Wallet::class)->getWalletByType($client, WalletType::LENDER);
         $filters                 = $session->get('lenderOperationsFilters');
         $operations              = $lenderOperationsManager->getOperationsAccordingToFilter($filters['operation']);
         $fileName                = 'operations_' . date('Y-m-d_His') . '.xlsx';
@@ -184,7 +185,7 @@ class LenderOperationsController extends Controller
         $entityManager          = $this->get('doctrine.orm.entity_manager');
         $entityManagerSimulator = $this->get('unilend.service.entity_manager');
 
-        $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
+        $wallet = $entityManager->getRepository(Wallet::class)->getWalletByType($client, WalletType::LENDER);
         /** @var \echeanciers $repaymentSchedule */
         $repaymentSchedule = $entityManagerSimulator->getRepository('echeanciers');
 
@@ -519,14 +520,14 @@ class LenderOperationsController extends Controller
         $translator      = $this->get('translator');
         $numberFormatter = $this->get('number_formatter');
 
-        $operationRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
-        $project             = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($projectId);
-        $wallet              = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
+        $operationRepository = $entityManager->getRepository(Operation::class);
+        $project             = $entityManager->getRepository(Projects::class)->find($projectId);
+        $wallet              = $entityManager->getRepository(Wallet::class)->getWalletByType($client, WalletType::LENDER);
 
         $data = [];
 
         $companyStatusHistoryContent = $entityManager
-            ->getRepository('UnilendCoreBusinessBundle:CompanyStatusHistory')
+            ->getRepository(CompanyStatusHistory::class)
             ->getNotificationContent($project->getIdCompany());
 
         foreach ($companyStatusHistoryContent as $content) {
@@ -545,7 +546,7 @@ class LenderOperationsController extends Controller
         }
 
         $projectNotifications = $entityManager
-            ->getRepository('UnilendCoreBusinessBundle:ProjectNotification')
+            ->getRepository(ProjectNotification::class)
             ->findBy(['idProject' => $project->getIdProject()], ['notificationDate' => 'DESC']);
 
         foreach ($projectNotifications as $projectNotification) {
@@ -562,7 +563,7 @@ class LenderOperationsController extends Controller
             ];
         }
 
-        $capitalEarlyRepaymentType = $entityManager->getRepository('UnilendCoreBusinessBundle:OperationSubType')->findOneBy(['label' => OperationSubType::CAPITAL_REPAYMENT_EARLY]);
+        $capitalEarlyRepaymentType = $entityManager->getRepository(OperationSubType::class)->findOneBy(['label' => OperationSubType::CAPITAL_REPAYMENT_EARLY]);
         $earlyRepayments           = $operationRepository->findBy([
             'idProject'        => $project,
             'idWalletCreditor' => $wallet,
@@ -587,7 +588,7 @@ class LenderOperationsController extends Controller
             ];
         }
 
-        $capitalDebtCollectionRepaymentType = $entityManager->getRepository('UnilendCoreBusinessBundle:OperationSubType')->findOneBy(['label' => OperationSubType::CAPITAL_REPAYMENT_DEBT_COLLECTION]);
+        $capitalDebtCollectionRepaymentType = $entityManager->getRepository(OperationSubType::class)->findOneBy(['label' => OperationSubType::CAPITAL_REPAYMENT_DEBT_COLLECTION]);
         $debtCollectionRepayments           = $operationRepository->findBy([
             'idProject'        => $project,
             'idWalletCreditor' => $wallet,
@@ -612,7 +613,7 @@ class LenderOperationsController extends Controller
             ];
         }
 
-        $capitalRepaymentType = $entityManager->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::CAPITAL_REPAYMENT]);
+        $capitalRepaymentType = $entityManager->getRepository(OperationType::class)->findOneBy(['label' => OperationType::CAPITAL_REPAYMENT]);
         $scheduledRepayments  = $operationRepository->findBy([
             'idProject'        => $project,
             'idWalletCreditor' => $wallet,
@@ -645,7 +646,7 @@ class LenderOperationsController extends Controller
             ];
         }
 
-        $capitalRepaymentRegularizationType = $entityManager->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::CAPITAL_REPAYMENT_REGULARIZATION]);
+        $capitalRepaymentRegularizationType = $entityManager->getRepository(OperationType::class)->findOneBy(['label' => OperationType::CAPITAL_REPAYMENT_REGULARIZATION]);
         $regularizedRepayments              = $operationRepository->findBy([
             'idProject'      => $project,
             'idWalletDebtor' => $wallet,
@@ -680,10 +681,10 @@ class LenderOperationsController extends Controller
 
         /** @var \ficelle $ficelle */
         $ficelle                    = Loader::loadLib('ficelle');
-        $bidsEntity                 = $entityManager->getRepository('UnilendCoreBusinessBundle:Bids');
-        $acceptedBidEntity          = $entityManager->getRepository('UnilendCoreBusinessBundle:AcceptedBids');
+        $bidsEntity                 = $entityManager->getRepository(Bids::class);
+        $acceptedBidEntity          = $entityManager->getRepository(AcceptedBids::class);
         $acceptedLoansNotifications = $entityManager
-            ->getRepository('UnilendCoreBusinessBundle:Notifications')
+            ->getRepository(Notifications::class)
             ->findBy(['idProject' => $projectId, 'idLender' => $wallet, 'type' => Notifications::TYPE_LOAN_ACCEPTED]);
 
         foreach ($acceptedLoansNotifications as $notification) {
@@ -803,10 +804,10 @@ class LenderOperationsController extends Controller
         $entityManager           = $this->get('doctrine.orm.entity_manager');
         $lenderOperationsManager = $this->get('unilend.service.lender_operations_manager');
         /** @var Wallet $wallet */
-        $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
+        $wallet = $entityManager->getRepository(Wallet::class)->getWalletByType($client, WalletType::LENDER);
 
         if (false === $client->isNaturalPerson()) {
-            $company = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $client]);
+            $company = $entityManager->getRepository(Companies::class)->findOneBy(['idClientOwner' => $client]);
         }
 
         $filters    = $session->get('lenderOperationsFilters');
@@ -860,7 +861,7 @@ class LenderOperationsController extends Controller
         }
 
         /** @var Wallet $wallet */
-        $wallet = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Wallet')
+        $wallet = $this->get('doctrine.orm.entity_manager')->getRepository(Wallet::class)
             ->getWalletByType($client, WalletType::LENDER);
         /** @var \loans $loans */
         $loans                     = $this->get('unilend.service.entity_manager')->getRepository('loans');
@@ -912,11 +913,11 @@ class LenderOperationsController extends Controller
             $entityManager = $this->get('doctrine.orm.entity_manager');
 
             if ($client->isNaturalPerson()) {
-                $lenderAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientAddress')
+                $lenderAddress = $entityManager->getRepository(ClientAddress::class)
                     ->findLastModifiedNotArchivedAddressByType($client, AddressType::TYPE_MAIN_ADDRESS);
             } else {
-                $company       = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $client]);
-                $lenderAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')
+                $company       = $entityManager->getRepository(Companies::class)->findOneBy(['idClientOwner' => $client]);
+                $lenderAddress = $entityManager->getRepository(CompanyAddress::class)
                     ->findLastModifiedNotArchivedAddressByType($company, AddressType::TYPE_MAIN_ADDRESS);
             }
         } catch (\Exception $exception) {

@@ -6,7 +6,7 @@ use GuzzleHttp\{Client, ClientInterface};
 use JMS\Serializer\SerializerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Log\LoggerInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\WsExternalResource;
+use Unilend\Entity\WsExternalResource;
 use Unilend\Bundle\WSClientBundle\Entity\Infolegale\{AnnouncementCollection, AnnouncementDetailsCollection, DirectorAnnouncementCollection, ExecutiveCollection, HomonymCollection, Identity,
     MandateCollection, ScoreDetails};
 

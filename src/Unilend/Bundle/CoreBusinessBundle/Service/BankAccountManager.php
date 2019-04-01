@@ -6,7 +6,7 @@ use Doctrine\ORM\{EntityManagerInterface, OptimisticLockException};
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Validator\Constraints\{Bic, Iban};
 use Symfony\Component\Validator\Validator\ValidatorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{Attachment, BankAccount, Clients};
+use Unilend\Entity\{Attachment, BankAccount, Clients};
 
 class BankAccountManager
 {
@@ -71,7 +71,7 @@ class BankAccountManager
                 throw new \InvalidArgumentException('BIC is not valid');
             }
 
-            $bankAccountRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount');
+            $bankAccountRepository = $this->entityManager->getRepository(BankAccount::class);
             $bankAccount           = $bankAccountRepository->findOneBy(['idClient' => $client, 'iban' => $iban]);
             if ($bankAccount instanceof BankAccount) {
                 if ($bic !== $bankAccount->getBic()) {
@@ -114,7 +114,7 @@ class BankAccountManager
     {
         $this->entityManager->getConnection()->beginTransaction();
         try {
-            $currentlyValidBankAccount = $this->entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($bankAccountToValidate->getIdClient());
+            $currentlyValidBankAccount = $this->entityManager->getRepository(BankAccount::class)->getClientValidatedBankAccount($bankAccountToValidate->getIdClient());
             if ($currentlyValidBankAccount !== $bankAccountToValidate) {
                 if ($currentlyValidBankAccount) {
                     $this->archive($currentlyValidBankAccount);

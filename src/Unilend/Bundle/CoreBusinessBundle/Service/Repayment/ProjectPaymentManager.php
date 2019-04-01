@@ -3,18 +3,8 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Service\Repayment;
 
 use Doctrine\ORM\EntityManagerInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\DebtCollectionMission;
-use Unilend\Bundle\CoreBusinessBundle\Entity\EcheanciersEmprunteur;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectCharge;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRepaymentTask;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Receptions;
-use Unilend\Bundle\CoreBusinessBundle\Entity\TaxType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
-use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
-use Unilend\Bundle\CoreBusinessBundle\Service\DebtCollectionFeeManager;
-use Unilend\Bundle\CoreBusinessBundle\Service\DebtCollectionMissionManager;
-use Unilend\Bundle\CoreBusinessBundle\Service\ProjectChargeManager;
-use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
+use Unilend\Entity\{DebtCollectionMission, Echeanciers, EcheanciersEmprunteur, Loans, ProjectCharge, ProjectRepaymentTask, Receptions, TaxType, Users, Wallet, WalletType};
+use Unilend\Bundle\CoreBusinessBundle\Service\{DebtCollectionFeeManager, DebtCollectionMissionManager, ProjectChargeManager, Simulator\EntityManager as EntityManagerSimulator};
 
 class ProjectPaymentManager
 {
@@ -85,15 +75,15 @@ class ProjectPaymentManager
     {
         /** @var \echeanciers $repaymentScheduleData */
         $repaymentScheduleData       = $this->entityManagerSimulator->getRepository('echeanciers');
-        $paymentScheduleRepository   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur');
-        $repaymentScheduleRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers');
-        $walletRepository            = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet');
+        $paymentScheduleRepository   = $this->entityManager->getRepository(EcheanciersEmprunteur::class);
+        $repaymentScheduleRepository = $this->entityManager->getRepository(Echeanciers::class);
+        $walletRepository            = $this->entityManager->getRepository(Wallet::class);
 
         $project                          = $wireTransferIn->getIdProject();
         $amount                           = round(bcdiv($wireTransferIn->getMontant(), 100, 4), 2);
         $isDebtCollectionFeeDueToBorrower = $this->debtCollectionMissionManager->isDebtCollectionFeeDueToBorrower($project);
 
-        $ongoingProjectRepaymentTask = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRepaymentTask')->findOneBy([
+        $ongoingProjectRepaymentTask = $this->entityManager->getRepository(ProjectRepaymentTask::class)->findOneBy([
             'idProject' => $project,
             'status'    => ProjectRepaymentTask::STATUS_IN_PROGRESS
         ]);
@@ -116,7 +106,7 @@ class ProjectPaymentManager
             }
         }
 
-        $vatTax = $this->entityManager->getRepository('UnilendCoreBusinessBundle:TaxType')->find(TaxType::TYPE_VAT);
+        $vatTax = $this->entityManager->getRepository(TaxType::class)->find(TaxType::TYPE_VAT);
         if (null === $vatTax) {
             throw new \Exception('The VAT rate is not defined.');
         }
@@ -142,7 +132,7 @@ class ProjectPaymentManager
 
             $debtCollectionFeeOnRepayment = 0;
 
-            $loans = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Loans')->findBy(['idProject' => $project]);
+            $loans = $this->entityManager->getRepository(Loans::class)->findBy(['idProject' => $project]);
 
             foreach ($loans as $loan) {
                 $notRepaidAmount        = $repaymentScheduleRepository->getTotalOverdueAmountByLoan($loan);
@@ -264,7 +254,7 @@ class ProjectPaymentManager
     public function rejectPayment(Receptions $wireTransferIn, Users $user)
     {
         $project                       = $wireTransferIn->getIdProject();
-        $projectRepaymentTasksToCancel = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRepaymentTask')
+        $projectRepaymentTasksToCancel = $this->entityManager->getRepository(ProjectRepaymentTask::class)
             ->findBy([
                 'idProject'        => $project,
                 'idWireTransferIn' => $wireTransferIn,
@@ -284,7 +274,7 @@ class ProjectPaymentManager
 
         $this->entityManager->getConnection()->beginTransaction();
         try {
-            $paymentScheduleRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur');
+            $paymentScheduleRepository = $this->entityManager->getRepository(EcheanciersEmprunteur::class);
             /** @var \echeanciers $repaymentScheduleData */
             $repaymentScheduleData = $this->entityManagerSimulator->getRepository('echeanciers');
 

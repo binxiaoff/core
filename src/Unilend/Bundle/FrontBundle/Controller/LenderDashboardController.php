@@ -7,7 +7,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\{JsonResponse, Request, Response};
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\User\UserInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{Bids, Clients, ClientsStatus, LenderStatistic, OperationType, Projects, ProjectsStatus, Wallet, WalletType};
+use Unilend\Entity\{Bids, Clients, ClientsStatus, Echeanciers, LenderStatistic, Loans, Operation, OperationType, Product, Projects, ProjectsStatus, Wallet, WalletType};
 use Unilend\Bundle\CoreBusinessBundle\Repository\ProjectsRepository;
 
 class LenderDashboardController extends Controller
@@ -43,13 +43,13 @@ class LenderDashboardController extends Controller
         $bid = $entityManagerSimulator->getRepository('bids');
 
         $entityManager               = $this->get('doctrine.orm.entity_manager');
-        $walletRepository            = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet');
-        $repaymentScheduleRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers');
-        $projectRepository           = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
+        $walletRepository            = $entityManager->getRepository(Wallet::class);
+        $repaymentScheduleRepository = $entityManager->getRepository(Echeanciers::class);
+        $projectRepository           = $entityManager->getRepository(Projects::class);
 
         /** @var Wallet $wallet */
         $wallet          = $walletRepository->getWalletByType($client, WalletType::LENDER);
-        $products        = $entityManager->getRepository('UnilendCoreBusinessBundle:Product')->findAvailableProductsByClient($wallet->getIdClient());
+        $products        = $entityManager->getRepository(Product::class)->findAvailableProductsByClient($wallet->getIdClient());
 
         $ongoingProjects = $projectRepository->findByWithCustomSort(
             ['status' => ProjectsStatus::STATUS_ONLINE, 'idProduct' => $products],
@@ -131,10 +131,10 @@ class LenderDashboardController extends Controller
         }
 
         $irrData          = $this->getIRRDetailsForUserLevelWidget($client);
-        $hasBids          = 0 < $entityManager->getRepository('UnilendCoreBusinessBundle:Bids')->countByClientInPeriod($wallet->getAdded(), new \DateTime('NOW'), $wallet->getIdClient()->getIdClient());
-        $hasAcceptedLoans = 0 < $entityManager->getRepository('UnilendCoreBusinessBundle:Operation')->sumDebitOperationsByTypeSince($wallet, [OperationType::LENDER_LOAN]);
+        $hasBids          = 0 < $entityManager->getRepository(Bids::class)->countByClientInPeriod($wallet->getAdded(), new \DateTime('NOW'), $wallet->getIdClient()->getIdClient());
+        $hasAcceptedLoans = 0 < $entityManager->getRepository(Operation::class)->sumDebitOperationsByTypeSince($wallet, [OperationType::LENDER_LOAN]);
 
-        $loansRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Loans');
+        $loansRepository = $entityManager->getRepository(Loans::class);
 
         return $this->render(
             'lender_dashboard/index.html.twig',
@@ -222,7 +222,7 @@ class LenderDashboardController extends Controller
         /** @var \lender_panel_preference $panelPreferences */
         $panelPreferences = $entityManagerSimulator->getRepository('lender_panel_preference');
 
-        $wallet   = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
+        $wallet   = $entityManager->getRepository(Wallet::class)->getWalletByType($client, WalletType::LENDER);
         $pageName = 'lender_dashboard';
         $postData = $request->request->get('panels');
         $result   = ['error' => 1, 'msg' => ''];
@@ -289,7 +289,7 @@ class LenderDashboardController extends Controller
         /** @var \lender_panel_preference $panelPreferences */
         $panelPreferences = $entityManagerSimulator->getRepository('lender_panel_preference');
 
-        $wallet               = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
+        $wallet               = $entityManager->getRepository(Wallet::class)->getWalletByType($client, WalletType::LENDER);
         $pageName             = 'lender_dashboard';
         $panelPreferencesData = [
             'account'    => ['order' => 0, 'id' => 'account', 'hidden' => false],
@@ -527,16 +527,16 @@ class LenderDashboardController extends Controller
         $lenderManager = $this->get('unilend.service.lender_manager');
 
         /** @var Wallet $wallet */
-        $wallet                    = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
+        $wallet                    = $entityManager->getRepository(Wallet::class)->getWalletByType($client, WalletType::LENDER);
         $hasLossRate               = false;
         $widgetValue               = 0;
         $irrHasBeenCalculated      = false;
         $irrTranslationType        = '';
-        $companiesLenderInvestedIn = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->countCompaniesLenderInvestedIn($wallet->getId());
+        $companiesLenderInvestedIn = $entityManager->getRepository(Projects::class)->countCompaniesLenderInvestedIn($wallet->getId());
 
         if (0 < $companiesLenderInvestedIn) {
             /** @var LenderStatistic $lastIRR */
-            $lastIRR = $entityManager->getRepository('UnilendCoreBusinessBundle:LenderStatistic')->findOneBy(['idWallet' => $wallet, 'typeStat' => LenderStatistic::TYPE_STAT_IRR], ['added' => 'DESC']);
+            $lastIRR = $entityManager->getRepository(LenderStatistic::class)->findOneBy(['idWallet' => $wallet, 'typeStat' => LenderStatistic::TYPE_STAT_IRR], ['added' => 'DESC']);
             if (null !== $lastIRR) {
                 $irrHasBeenCalculated  = true;
                 switch ($lastIRR->getStatus()) {

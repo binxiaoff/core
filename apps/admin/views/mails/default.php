@@ -114,7 +114,7 @@
                             <td><?= $mailTemplate->getType() ?></td>
                             <td data-order="<?= $updateDate->getTimestamp() ?>"><?= $updateDate->format('d/m/Y H:i') ?></td>
                             <td align="center">
-                                <a href="<?= $this->lurl ?>/mails/edit/<?= $mailTemplate->getType() ?>/<?= \Unilend\Bundle\CoreBusinessBundle\Entity\MailTemplates::PART_TYPE_HEADER ?>" title="Modifier <?= $mailTemplate->getType() ?>">
+                                <a href="<?= $this->lurl ?>/mails/edit/<?= $mailTemplate->getType() ?>/<?= \Unilend\Entity\MailTemplates::PART_TYPE_HEADER ?>" title="Modifier <?= $mailTemplate->getType() ?>">
                                     <img src="<?= $this->surl ?>/images/admin/edit.png" alt="Modifier <?= $mailTemplate->getType() ?>"/>
                                 </a>
                             </td>
@@ -144,7 +144,7 @@
                             <td><?= $mailTemplate->getType() ?></td>
                             <td data-order="<?= $updateDate->getTimestamp() ?>"><?= $updateDate->format('d/m/Y H:i') ?></td>
                             <td align="center">
-                                <a href="<?= $this->lurl ?>/mails/edit/<?= $mailTemplate->getType() ?>/<?= \Unilend\Bundle\CoreBusinessBundle\Entity\MailTemplates::PART_TYPE_FOOTER ?>" title="Modifier <?= $mailTemplate->getType() ?>">
+                                <a href="<?= $this->lurl ?>/mails/edit/<?= $mailTemplate->getType() ?>/<?= \Unilend\Entity\MailTemplates::PART_TYPE_FOOTER ?>" title="Modifier <?= $mailTemplate->getType() ?>">
                                     <img src="<?= $this->surl ?>/images/admin/edit.png" alt="Modifier <?= $mailTemplate->getType() ?>"/>
                                 </a>
                             </td>

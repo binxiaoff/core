@@ -1,12 +1,12 @@
 <?php
 
-use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatus;
-use Unilend\Bundle\CoreBusinessBundle\Entity\OperationSubType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Sponsorship;
-use Unilend\Bundle\CoreBusinessBundle\Entity\SponsorshipCampaign;
-use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
+use Unilend\Entity\ClientsStatus;
+use Unilend\Entity\OperationSubType;
+use Unilend\Entity\OperationType;
+use Unilend\Entity\Sponsorship;
+use Unilend\Entity\SponsorshipCampaign;
+use Unilend\Entity\WalletType;
+use Unilend\Entity\Zones;
 use Unilend\Bundle\CoreBusinessBundle\Service\OperationManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\SponsorshipManager;
 
@@ -28,12 +28,12 @@ class parrainageController extends bootstrap
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\SponsorshipManager $sponsorshipManager */
         $sponsorshipManager = $this->get('unilend.service.sponsorship_manager');
         /** @var \Unilend\Bundle\CoreBusinessBundle\Repository\SponsorshipRepository $sponsorshipRepository */
-        $sponsorshipRepository         = $entityManager->getRepository('UnilendCoreBusinessBundle:Sponsorship');
-        $operationRepository           = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
-        $sponsorshipCampaignRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:SponsorshipCampaign');
+        $sponsorshipRepository         = $entityManager->getRepository(Sponsorship::class);
+        $operationRepository           = $entityManager->getRepository(Operation::class);
+        $sponsorshipCampaignRepository = $entityManager->getRepository(SponsorshipCampaign::class);
 
-        $unilendPromotionWalletType = $entityManager->getRepository('UnilendCoreBusinessBundle:WalletType')->findOneBy(['label' => WalletType::UNILEND_PROMOTIONAL_OPERATION]);
-        $unilendPromotionWallet     = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->findOneBy(['idType' => $unilendPromotionWalletType]);
+        $unilendPromotionWalletType = $entityManager->getRepository(WalletType::class)->findOneBy(['label' => WalletType::UNILEND_PROMOTIONAL_OPERATION]);
+        $unilendPromotionWallet     = $entityManager->getRepository(Wallet::class)->findOneBy(['idType' => $unilendPromotionWalletType]);
 
         $totalRewardsPaidSponsee = $operationRepository->sumDebitOperationsByTypeUntil($unilendPromotionWallet, [OperationType::UNILEND_PROMOTIONAL_OPERATION], [OperationSubType::UNILEND_PROMOTIONAL_OPERATION_SPONSORSHIP_REWARD_SPONSEE]);
         $totalRewardsPaidSponsor = $operationRepository->sumDebitOperationsByTypeUntil($unilendPromotionWallet, [OperationType::UNILEND_PROMOTIONAL_OPERATION], [OperationSubType::UNILEND_PROMOTIONAL_OPERATION_SPONSORSHIP_REWARD_SPONSOR]);
@@ -49,8 +49,8 @@ class parrainageController extends bootstrap
             'totalRewardPaidOutSponsor' => $totalRewardsPaidSponsor,
             'validCampaigns'            => $validCampaigns,
             'archivedCampaigns'         => $archivedCampaigns,
-            'blacklistedClients'        => $entityManager->getRepository('UnilendCoreBusinessBundle:SponsorshipBlacklist')->findAll(),
-            'allSponsorshipRewards'     => $entityManager->getRepository('UnilendCoreBusinessBundle:Sponsorship')->getPaidOutSponsorshipDetails(),
+            'blacklistedClients'        => $entityManager->getRepository(SponsorshipBlacklist::class)->findAll(),
+            'allSponsorshipRewards'     => $entityManager->getRepository(Sponsorship::class)->getPaidOutSponsorshipDetails(),
             'currentCampaign'           => $sponsorshipManager->getCurrentSponsorshipCampaign(),
             'formErrors'                => $this->getErrorsFromSession(),
             'formSuccess'               => $this->getSuccessFromSession()
@@ -119,9 +119,9 @@ class parrainageController extends bootstrap
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
         /** @var \Unilend\Bundle\CoreBusinessBundle\Repository\OperationRepository $operationRepository */
-        $operationRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
+        $operationRepository = $entityManager->getRepository(Operation::class);
         /** @var \Unilend\Bundle\CoreBusinessBundle\Repository\SponsorshipRepository $sponsorshipRepository */
-        $sponsorshipRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Sponsorship');
+        $sponsorshipRepository = $entityManager->getRepository(Sponsorship::class);
         $campaignDetails = [];
 
         /** @var SponsorshipCampaign $campaign */
@@ -225,8 +225,8 @@ class parrainageController extends bootstrap
                 $this->sendAjaxResponse(false, null, ['Veuillez saisir un ID client']);
             }
 
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Clients $client */
-            $client = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients')->find($idClient);
+            /** @var \Unilend\Entity\Clients $client */
+            $client = $this->get('doctrine.orm.entity_manager')->getRepository(Clients::class)->find($idClient);
             if (null === $client) {
                 $this->sendAjaxResponse(false, null, ['Ce client n\'existe pas']);
             }
@@ -252,7 +252,7 @@ class parrainageController extends bootstrap
                 die;
             }
 
-            $client = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($idClient);
+            $client = $entityManager->getRepository(Clients::class)->find($idClient);
             if (null === $client) {
                 $_SESSION['sponsorship_blacklist']['errors'][] = 'Ce client n\'existe pas';
                 header('Location: ' . $this->lurl . '/parrainage');
@@ -268,7 +268,7 @@ class parrainageController extends bootstrap
             $idCampaign = $this->request->request->getInt('campaign');
             $campaign   = null;
             if (0 < $idCampaign) {
-                $campaign = $entityManager->getRepository('UnilendCoreBusinessBundle:SponsorshipCampaign')->find($idCampaign);
+                $campaign = $entityManager->getRepository(SponsorshipCampaign::class)->find($idCampaign);
                 if (null === $campaign) {
                     $_SESSION['sponsorship_blacklist']['errors'][] = 'La campagne choisie n\'existe pas';
                     header('Location: ' . $this->lurl . '/parrainage');
@@ -295,7 +295,7 @@ class parrainageController extends bootstrap
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\SponsorshipManager $sponsorshipManager */
             $sponsorshipManager = $this->get('unilend.service.sponsorship_manager');
             $idSponsorship      = $this->request->request->getInt('id_sponsorship');
-            $sponsorship        = $entityManager->getRepository('UnilendCoreBusinessBundle:Sponsorship')->find($idSponsorship);
+            $sponsorship        = $entityManager->getRepository(Sponsorship::class)->find($idSponsorship);
 
             if (null === $sponsorship) {
                 $_SESSION['pay_out_sponsorship']['errors'][] = 'Le parrainage choisi n\'existe pas';
@@ -349,7 +349,7 @@ class parrainageController extends bootstrap
             /** @var \Doctrine\ORM\EntityManager $entityManager */
             $entityManager = $this->get('doctrine.orm.entity_manager');
             $idClient      = $this->request->request->getInt('id_client');
-            $client        = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($idClient);
+            $client        = $entityManager->getRepository(Clients::class)->find($idClient);
             if (null === $client) {
                 $this->sendAjaxResponse(false, null, ['Le client n\'existe pas']);
             }
@@ -363,7 +363,7 @@ class parrainageController extends bootstrap
                 $this->sendAjaxResponse(false, null, ['Merci de spécifier s\'il s\'agit d\'un parrain ou d\'un filleul']);
             }
 
-            $sponsorshipRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Sponsorship');
+            $sponsorshipRepository = $entityManager->getRepository(Sponsorship::class);
 
             if ('sponsor' == $type) {
                 $sponsorship = $sponsorshipRepository->getSponsorshipDetailBySponsor($client);
@@ -390,7 +390,7 @@ class parrainageController extends bootstrap
                 $this->sendAjaxResponse(false, null, ['L\'id client du parrain n\'est pas valide']);
             }
 
-            $sponsor   = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($idClientSponsor);
+            $sponsor   = $entityManager->getRepository(Clients::class)->find($idClientSponsor);
             if (null === $sponsor) {
                 $this->sendAjaxResponse(false, null, ['Le client parrain n\'existe pas']);
             }
@@ -404,7 +404,7 @@ class parrainageController extends bootstrap
                 $this->sendAjaxResponse(false, null, ['L\'id client du filleul n\'est pas valide']);
             }
 
-            $sponsee  = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($idClientSponsee);
+            $sponsee  = $entityManager->getRepository(Clients::class)->find($idClientSponsee);
             if (null === $sponsee) {
                 $this->sendAjaxResponse(false, null, ['Le client filleul n\'existe pas']);
             }
@@ -413,7 +413,7 @@ class parrainageController extends bootstrap
                 $this->sendAjaxResponse(false, null, ['Le client filleul n\'est pas un prêteur']);
             }
 
-            $sponseeValidationDate = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsStatusHistory')->getFirstClientValidation($sponsee->getIdClient());
+            $sponseeValidationDate = $entityManager->getRepository(ClientsStatusHistory::class)->getFirstClientValidation($sponsee->getIdClient());
             $sponsorshipData       = [
                 'idClientSponsor'                => $sponsor->getIdClient(),
                 'lastNameSponsor'                => $sponsor->getNom(),
@@ -444,7 +444,7 @@ class parrainageController extends bootstrap
                 die;
             }
 
-            $sponsor = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($idClientSponsor);
+            $sponsor = $entityManager->getRepository(Clients::class)->find($idClientSponsor);
             if (null === $sponsor) {
                 $_SESSION['create_sponsorship']['errors'][] = 'Le client parrain n\'existe pas';
                 header('Location: ' . $this->lurl . '/parrainage');
@@ -464,7 +464,7 @@ class parrainageController extends bootstrap
                 die;
             }
 
-            $sponsee = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($idClientSponsee);
+            $sponsee = $entityManager->getRepository(Clients::class)->find($idClientSponsee);
             if (null === $sponsee) {
                 $_SESSION['create_sponsorship']['errors'][] = 'Le client filleul n\'existe pas';
                 header('Location: ' . $this->lurl . '/parrainage');
@@ -477,7 +477,7 @@ class parrainageController extends bootstrap
                 die;
             }
 
-            $firstToBeCheckedStatus = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsStatusHistory')
+            $firstToBeCheckedStatus = $entityManager->getRepository(ClientsStatusHistory::class)
                 ->findOneBy(
                     ['idClient' => $sponsee->getIdClient(), 'idStatus' => ClientsStatus::STATUS_TO_BE_CHECKED],
                     ['added' => 'ASC']
@@ -489,7 +489,7 @@ class parrainageController extends bootstrap
                 die;
             }
 
-            $campaign = $entityManager->getRepository('UnilendCoreBusinessBundle:SponsorshipCampaign')->findCampaignValidAtDate($firstToBeCheckedStatus->getAdded());
+            $campaign = $entityManager->getRepository(SponsorshipCampaign::class)->findCampaignValidAtDate($firstToBeCheckedStatus->getAdded());
             if (null === $campaign) {
                 $_SESSION['create_sponsorship']['errors'][] = 'Il n\'y a pas de campagne active au moment de l\'inscription du filleul';
                 header('Location: ' . $this->lurl . '/parrainage');
@@ -502,7 +502,7 @@ class parrainageController extends bootstrap
                 die;
             }
 
-            $sponsorship = $entityManager->getRepository('UnilendCoreBusinessBundle:Sponsorship')->findOneBy(['idClientSponsor' => $sponsor, 'idClientSponsee' => $sponsee]);
+            $sponsorship = $entityManager->getRepository(Sponsorship::class)->findOneBy(['idClientSponsor' => $sponsor, 'idClientSponsee' => $sponsee]);
             if (null !== $sponsorship) {
                 $_SESSION['create_sponsorship']['errors'][] = 'L\'assosciation parrain filleul pour ces clients existe déjà';
                 header('Location: ' . $this->lurl . '/parrainage');
@@ -514,7 +514,7 @@ class parrainageController extends bootstrap
             $sponsorshipManager = $this->get('unilend.service.sponsorship_manager');
             $sponsorshipManager->createSponsorship($sponsee, $sponsor->getSponsorCode(), $campaign);
 
-            $sponsorship = $entityManager->getRepository('UnilendCoreBusinessBundle:Sponsorship')->findOneBy(['idClientSponsee' => $sponsee]);
+            $sponsorship = $entityManager->getRepository(Sponsorship::class)->findOneBy(['idClientSponsee' => $sponsee]);
             $sponsorship
                 ->setIdCampaign($campaign)
                 ->setStatus($status);
@@ -545,7 +545,7 @@ class parrainageController extends bootstrap
 
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
-        $details       = $entityManager->getRepository('UnilendCoreBusinessBundle:Sponsorship')->getPaidOutSponsorshipDetails();
+        $details       = $entityManager->getRepository(Sponsorship::class)->getPaidOutSponsorshipDetails();
 
         $document = new \PHPExcel();
         $document->getDefaultStyle()->getFont()->setName('Arial');

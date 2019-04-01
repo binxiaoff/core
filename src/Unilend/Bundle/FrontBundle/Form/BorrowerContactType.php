@@ -7,7 +7,9 @@ use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\{ChoiceType, EmailType, TextareaType, TextType};
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+use Unilend\Entity\Clients;
+use Unilend\Entity\Companies;
+use Unilend\Entity\ContactRequestSubjects;
 
 class BorrowerContactType extends AbstractType
 {
@@ -40,14 +42,14 @@ class BorrowerContactType extends AbstractType
             $lastName  = $this->borrower->getNom();
             $firstName = $this->borrower->getPrenom();
 
-            $company = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $this->borrower]);
+            $company = $this->entityManager->getRepository(Companies::class)->findOneBy(['idClientOwner' => $this->borrower]);
             if ($company) {
                 $mobile = empty($this->borrower->getMobile()) ? $this->borrower->getTelephone() : $this->borrower->getMobile();
                 $email  = empty($this->borrower->getEmail()) ? $company->getEmailDirigeant() : $this->borrower->getEmail();
             }
         }
 
-        $subjects = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ContactRequestSubjects')->findAll();
+        $subjects = $this->entityManager->getRepository(ContactRequestSubjects::class)->findAll();
 
         $subjectsChoices = [];
         foreach ($subjects as $subject) {

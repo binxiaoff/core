@@ -6,14 +6,8 @@ use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Asset\Packages;
 use Symfony\Component\Routing\RouterInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Echeanciers;
-use Unilend\Bundle\CoreBusinessBundle\Entity\EcheanciersEmprunteur;
-use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Receptions;
-use Unilend\Bundle\CoreBusinessBundle\Entity\RemboursementAnticipeMailAEnvoyer;
-use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage;
-use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessageProvider;
+use Unilend\Entity\{Echeanciers, EcheanciersEmprunteur, Loans, Operation, OperationType, Projects, ProjectsStatusHistory, Receptions, RemboursementAnticipeMailAEnvoyer, Settings};
+use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\{TemplateMessage, TemplateMessageProvider};
 
 class ProjectRepaymentNotificationSender
 {
@@ -85,7 +79,7 @@ class ProjectRepaymentNotificationSender
     {
         $lenderWallet   = $repaymentSchedule->getIdLoan()->getWallet();
         $lender         = $lenderWallet->getIdClient();
-        $netRepayment   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Operation')->getNetAmountByRepaymentScheduleId($repaymentSchedule);
+        $netRepayment   = $this->entityManager->getRepository(Operation::class)->getNetAmountByRepaymentScheduleId($repaymentSchedule);
 
         $keywords = [
             'companyName'     => $repaymentSchedule->getIdLoan()->getProject()->getIdCompany()->getName(),
@@ -114,7 +108,7 @@ class ProjectRepaymentNotificationSender
      */
     public function sendIncompleteRepaymentNotification(Projects $project, $repaymentSequence)
     {
-        $alertMailIT = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'DebugMailIt'])->getValue();
+        $alertMailIT = $this->entityManager->getRepository(Settings::class)->findOneBy(['type' => 'DebugMailIt'])->getValue();
 
         $keywords = [
             'project_id'    => $project->getIdProject(),
@@ -144,7 +138,7 @@ class ProjectRepaymentNotificationSender
         $project           = $paymentSchedule->getIdProject();
         $company           = $project->getIdCompany();
         $borrower          = $company->getIdClientOwner();
-        $lastProjectStatus = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatusHistory')->findOneBy(
+        $lastProjectStatus = $this->entityManager->getRepository(ProjectsStatusHistory::class)->findOneBy(
             ['idProject' => $project->getIdProject()],
             ['added' => 'DESC', 'idProjectStatusHistory' => 'DESC']
         );
@@ -176,7 +170,7 @@ class ProjectRepaymentNotificationSender
      */
     public function sendRepaymentMailToLender(Echeanciers $repaymentSchedule)
     {
-        $operationRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
+        $operationRepository = $this->entityManager->getRepository(Operation::class);
         $lenderWallet        = $repaymentSchedule->getIdLoan()->getWallet();
         $netRepayment        = $operationRepository->getNetAmountByRepaymentScheduleId($repaymentSchedule);
 
@@ -188,7 +182,7 @@ class ProjectRepaymentNotificationSender
             'lenderPattern'         => $lenderWallet->getWireTransferPattern(),
             'loanDate'              => strftime('%A %d %B %G', $repaymentSchedule->getIdLoan()->getAdded()->getTimestamp()),
         ];
-        $pendingRepaymentSchedule = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers')->findOneBy([
+        $pendingRepaymentSchedule = $this->entityManager->getRepository(Echeanciers::class)->findOneBy([
             'idLoan' => $repaymentSchedule->getIdLoan(),
             'status' => Echeanciers::STATUS_PENDING
         ]);
@@ -215,7 +209,7 @@ class ProjectRepaymentNotificationSender
      */
     public function sendInComingEarlyRepaymentNotification(Receptions $reception)
     {
-        $email    = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Adresse notification nouveau remboursement anticipe'])->getValue();
+        $email    = $this->entityManager->getRepository(Settings::class)->findOneBy(['type' => 'Adresse notification nouveau remboursement anticipe'])->getValue();
         $keywords = [
             '$surl'       => $this->assetsPackages->getUrl(''),
             '$url'        => $this->frontUrl,
@@ -246,11 +240,11 @@ class ProjectRepaymentNotificationSender
     {
         $company                = $project->getIdCompany();
         $client                 = $project->getIdCompany()->getIdClientOwner();
-        $borrowerWithdrawalType = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::BORROWER_WITHDRAW]);
+        $borrowerWithdrawalType = $this->entityManager->getRepository(OperationType::class)->findOneBy(['label' => OperationType::BORROWER_WITHDRAW]);
         $borrowerWithdrawal     = $this->entityManager
-            ->getRepository('UnilendCoreBusinessBundle:Operation')
+            ->getRepository(Operation::class)
             ->findOneBy(['idType' => $borrowerWithdrawalType, 'idProject' => $project], ['added' => 'ASC']);
-        $lastRepayment          = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Receptions')->findOneBy(['idProject' => $project], ['added' => 'DESC']);
+        $lastRepayment          = $this->entityManager->getRepository(Receptions::class)->findOneBy(['idProject' => $project], ['added' => 'DESC']);
 
         $keywords = [
             'firstName'            => $client->getPrenom(),
@@ -258,9 +252,9 @@ class ProjectRepaymentNotificationSender
             'companyName'          => $company->getName(),
             'projectAmount'        => $this->numberFormatter->format($project->getAmount(), 0),
             'projectDuration'      => $project->getPeriod(),
-            'lendersCount'         => $this->entityManager->getRepository('UnilendCoreBusinessBundle:Loans')->getLenderNumber($project),
+            'lendersCount'         => $this->entityManager->getRepository(Loans::class)->getLenderNumber($project),
             'repaymentDate'        => $lastRepayment->getAdded()->format('d/m/Y'),
-            'borrowerServiceEmail' => $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Adresse emprunteur'])->getValue()
+            'borrowerServiceEmail' => $this->entityManager->getRepository(Settings::class)->findOneBy(['type' => 'Adresse emprunteur'])->getValue()
         ];
 
         /** @var TemplateMessage $message */
@@ -283,7 +277,7 @@ class ProjectRepaymentNotificationSender
     public function sendInternalNotificationEndOfRepayment(Projects $project)
     {
         $company  = $project->getIdCompany();
-        $settings = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Adresse controle interne']);
+        $settings = $this->entityManager->getRepository(Settings::class)->findOneBy(['type' => 'Adresse controle interne']);
 
         $keywords = [
             'companyName' => $company->getName(),

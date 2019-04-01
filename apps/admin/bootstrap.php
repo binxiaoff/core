@@ -1,7 +1,7 @@
 <?php
 
 use Doctrine\ORM\EntityManager;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{LoginConnectionAdmin, ProjectsStatus, UserAccess, Users, Zones};
+use Unilend\Entity\{LoginConnectionAdmin, ProjectsStatus, UserAccess, Users, Zones};
 
 class bootstrap extends Controller
 {
@@ -504,7 +504,7 @@ class bootstrap extends Controller
                 $this->error_login = 'Vous n\'êtes pas autorisé à vous connecter depuis cette adresse IP';
             } else {
                 $this->duree_waiting             = 1;
-                $this->nb_tentatives_precedentes = $entityManager->getRepository('UnilendCoreBusinessBundle:LoginConnectionAdmin')->countFailedAttemptsSince($_SERVER['REMOTE_ADDR'], new \DateTime('10 minutes ago'));
+                $this->nb_tentatives_precedentes = $entityManager->getRepository(LoginConnectionAdmin::class)->countFailedAttemptsSince($_SERVER['REMOTE_ADDR'], new \DateTime('10 minutes ago'));
 
                 if ($this->nb_tentatives_precedentes > 0 && $this->nb_tentatives_precedentes < 100) {
                     for ($i = 1; $i <= $this->nb_tentatives_precedentes; $i++) {
@@ -553,7 +553,7 @@ class bootstrap extends Controller
             /** @var \Doctrine\ORM\EntityManager $entityManager */
             $entityManager = $this->get('doctrine.orm.entity_manager');
 
-            $this->userEntity = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find($_SESSION['user']['id_user']);
+            $this->userEntity = $entityManager->getRepository(Users::class)->find($_SESSION['user']['id_user']);
 
             $userAccessEntity = new UserAccess();
             $userAccessEntity->setAction($this->current_function);

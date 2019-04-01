@@ -9,6 +9,7 @@ use Symfony\Component\HttpFoundation\{Request, Response};
 use Symfony\Component\Routing\Annotation\Route;
 use Unilend\Bundle\CoreBusinessBundle\Service\GreenPointValidationManager;
 use Unilend\Bundle\WSClientBundle\Service\GreenPointManager;
+use Unilend\Entity\{Attachment, Settings};
 
 class GreenPointController extends Controller
 {
@@ -51,7 +52,7 @@ class GreenPointController extends Controller
             return new Response('Unexpected Type', 404);
         }
 
-        $attachment = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Attachment')->find($document);
+        $attachment = $this->entityManager->getRepository(Attachment::class)->find($document);
         if (null === $attachment) {
             $this->logger->warning(
                 'Attachement not found', [
@@ -89,7 +90,7 @@ class GreenPointController extends Controller
      */
     private function checkIp(Request $request)
     {
-        $settingRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings');
+        $settingRepository = $this->entityManager->getRepository(Settings::class);
 
         switch ($this->getParameter('kernel.environment')) {
             case 'prod':

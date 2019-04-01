@@ -4,7 +4,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectAttachmentType;
+use Unilend\Entity\{ProjectAttachmentType, ProjectAttachmentTypeCategory};
 
 class ProjectAttachmentTypeRepository extends EntityRepository
 {
@@ -15,7 +15,7 @@ class ProjectAttachmentTypeRepository extends EntityRepository
     {
         $queryBuilder = $this->createQueryBuilder('t', 't.type');
         $queryBuilder
-            ->innerJoin('UnilendCoreBusinessBundle:ProjectAttachmentTypeCategory', 'c', Join::WITH, 't.idCategory = c.id')
+            ->innerJoin(ProjectAttachmentTypeCategory::class, 'c', Join::WITH, 't.idCategory = c.id')
             ->orderBy('c.rank', 'ASC')
             ->addOrderBy('t.rank', 'ASC');
 

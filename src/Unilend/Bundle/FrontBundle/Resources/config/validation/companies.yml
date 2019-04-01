@@ -1,4 +1,4 @@
-Unilend\Bundle\CoreBusinessBundle\Entity\Companies:
+Unilend\Entity\Companies:
     properties:
         name:
             - NotBlank: ~

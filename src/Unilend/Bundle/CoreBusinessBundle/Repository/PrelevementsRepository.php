@@ -4,7 +4,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{EcheanciersEmprunteur, Prelevements, Projects, ProjectsStatus};
+use Unilend\Entity\{EcheanciersEmprunteur, Prelevements, Projects, ProjectsStatus};
 
 class PrelevementsRepository extends EntityRepository
 {
@@ -110,8 +110,8 @@ class PrelevementsRepository extends EntityRepository
     {
         $queryBuilder = $this->createQueryBuilder('pre');
         $queryBuilder
-            ->innerJoin('UnilendCoreBusinessBundle:Projects', 'pro', Join::WITH, 'pre.idProject = pro.idProject')
-            ->innerJoin('UnilendCoreBusinessBundle:EcheanciersEmprunteur', 'ee', Join::WITH, 'pre.idProject = ee.idProject AND ee.ordre = pre.numPrelevement')
+            ->innerJoin(Projects::class, 'pro', Join::WITH, 'pre.idProject = pro.idProject')
+            ->innerJoin(EcheanciersEmprunteur::class, 'ee', Join::WITH, 'pre.idProject = ee.idProject AND ee.ordre = pre.numPrelevement')
             ->where('pro.status = :repayment')
             ->andWhere('ee.statusEmprunteur = :pending')
             ->andWhere('pre.type = :borrower')

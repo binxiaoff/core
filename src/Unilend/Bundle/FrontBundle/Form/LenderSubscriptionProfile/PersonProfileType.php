@@ -32,7 +32,7 @@ class PersonProfileType extends AbstractType
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefaults([
-            'data_class'        => 'Unilend\Bundle\CoreBusinessBundle\Entity\Clients',
+            'data_class'        => 'Unilend\Entity\Clients',
             'validation_groups' => ['lender_person']
         ]);
     }

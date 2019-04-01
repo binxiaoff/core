@@ -4,7 +4,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\ORMException;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRateSettings;
+use Unilend\Entity\ProjectRateSettings;
 
 class ProjectRateSettingsRepository extends EntityRepository
 {

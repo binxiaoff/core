@@ -23,7 +23,7 @@
                 <?php $i = 1; ?>
                 <?php foreach ($this->loginLogs as $log) : ?>
                     <?php
-                        /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\LoginConnectionAdmin $log */
+                        /** @var \Unilend\Entity\LoginConnectionAdmin $log */
                         if (empty($log->getIdUser()) && $this->users->get($log->getEmail(), 'email')) {
                             $log->setIdUser($this->users->id_user);
                             $log->setNomUser($this->users->firstname . ' ' . $this->users->name);

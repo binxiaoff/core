@@ -4,7 +4,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Cache\CacheItemPoolInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{CompanyAddress, Pays};
+use Unilend\Entity\{CompanyAddress, Pays, Villes};
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\librairies\CacheKeys;
 
@@ -65,7 +65,7 @@ class LocationManager
             $countryId = Pays::COUNTRY_FRANCE;
         }
 
-        $country = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Pays')->find($countryId);
+        $country = $this->entityManager->getRepository(Pays::class)->find($countryId);
 
         if (null !== $country) {
             $curl = curl_init('https://api.mapbox.com/geocoding/v5/mapbox.places/' . urlencode($city . ' ' . $postCode . ' ' . $country->getFr()) . '.json?access_token=' . $this->mapboxToken);
@@ -139,7 +139,7 @@ class LocationManager
         }
 
         $countyList = [];
-        $countries  = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Pays')->findBy([], ['ordre' => 'ASC']);
+        $countries  = $this->entityManager->getRepository(Pays::class)->findBy([], ['ordre' => 'ASC']);
 
         foreach ($countries as $country) {
             $countyList[$country->getIdPays()] = $country->getFr();
@@ -271,12 +271,12 @@ class LocationManager
      */
     public function getInseeCog($postCode, $city): ?string
     {
-        $citiesInsee = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Villes')->findBy(['cp' => $postCode]);
+        $citiesInsee = $this->entityManager->getRepository(Villes::class)->findBy(['cp' => $postCode]);
 
         if (1 === count($citiesInsee)) {
             return $citiesInsee[0]->getInsee();
         } else {
-            $cityInsee = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Villes')->findOneBy(['cp' => $postCode, 'ville' => $this->cleanLookupCityName($city)]);
+            $cityInsee = $this->entityManager->getRepository(Villes::class)->findOneBy(['cp' => $postCode, 'ville' => $this->cleanLookupCityName($city)]);
 
             if ($cityInsee) {
                 return $cityInsee->getInsee();

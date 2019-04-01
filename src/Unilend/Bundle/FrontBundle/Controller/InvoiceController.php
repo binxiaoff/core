@@ -5,6 +5,8 @@ namespace Unilend\Bundle\FrontBundle\Controller;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\{BinaryFileResponse, Response};
 use Symfony\Component\Routing\Annotation\Route;
+use Unilend\Entity\Clients;
+use Unilend\Entity\Projects;
 
 class InvoiceController extends Controller
 {
@@ -22,8 +24,8 @@ class InvoiceController extends Controller
         $entityManager  = $this->get('doctrine.orm.entity_manager');
         $invoiceManager = $this->get('unilend.service.invoice_manager');
         $translator     = $this->get('translator');
-        $project        = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($idProject);
-        $client         = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->findOneBy(['hash' => $clientHash]);
+        $project        = $entityManager->getRepository(Projects::class)->find($idProject);
+        $client         = $entityManager->getRepository(Clients::class)->findOneBy(['hash' => $clientHash]);
 
         if (null === $project) {
             return $this->render(
@@ -84,8 +86,8 @@ class InvoiceController extends Controller
         $entityManager  = $this->get('doctrine.orm.entity_manager');
         $invoiceManager = $this->get('unilend.service.invoice_manager');
         $translator     = $this->get('translator');
-        $project        = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($idProject);
-        $client         = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->findOneBy(['hash' => $clientHash]);
+        $project        = $entityManager->getRepository(Projects::class)->find($idProject);
+        $client         = $entityManager->getRepository(Clients::class)->findOneBy(['hash' => $clientHash]);
 
         if (null === $project) {
             return $this->render(

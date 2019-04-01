@@ -60,11 +60,11 @@
         <div class="inner-wrap">
             <table id="identity-attachments" class="add-attachment">
                 <?php
-                /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Attachment $attachment */
+                /** @var \Unilend\Entity\Attachment $attachment */
                 foreach ($attachmentGroup['attachments'] as $attachment) :
                     $greenpointLabel       = 'Non Contrôlé par GreenPoint';
                     $greenpointColor       = 'error';
-                    /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\GreenpointAttachment $greenPointAttachment */
+                    /** @var \Unilend\Entity\GreenpointAttachment $greenPointAttachment */
                     $greenPointAttachment  = $attachment->getGreenpointAttachment();
                     if ($greenPointAttachment) {
                         $greenpointLabel = $greenPointAttachment->getValidationStatusLabel();

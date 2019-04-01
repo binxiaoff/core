@@ -6,8 +6,8 @@ use Doctrine\ORM\{EntityManagerInterface, EntityRepository, NonUniqueResultExcep
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\Translation\TranslatorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{AcceptedBids, Autobid, Bids, BidsLogs, Clients, ClientsGestionTypeNotif, ClientsStatus, Notifications, Projects, ProjectsStatus, RepaymentType, Settings,
-    TaxType, UnderlyingContract, UnderlyingContractAttributeType, Users, Wallet, WalletType};
+use Unilend\Entity\{AcceptedBids, Autobid, Bids, BidsLogs, Clients, ClientsGestionNotifications, ClientsGestionTypeNotif, ClientsStatus, Notifications, Product, Projects, ProjectsStatus,
+    RepaymentType, Settings, TaxType, UnderlyingContract, UnderlyingContractAttributeType, Users, Wallet, WalletType};
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\ContractAttributeManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Repayment\ProjectRepaymentScheduleManager;
@@ -225,7 +225,7 @@ class ProjectLifecycleManager
         $cumulativeBidsAmount     = 0;
         $logCheck                 = false;
         $logStart                 = new \DateTime();
-        $bidRepository            = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Bids');
+        $bidRepository            = $this->entityManager->getRepository(Bids::class);
         $totalBidsAmount          = $bidRepository->getProjectTotalAmount($project);
         $projectAmount            = $project->getAmount();
 
@@ -301,7 +301,7 @@ class ProjectLifecycleManager
     private function bidAllAutoBid(Projects $project): void
     {
         $globalSetting = $this->entityManager
-            ->getRepository('UnilendCoreBusinessBundle:Settings')
+            ->getRepository(Settings::class)
             ->findOneBy(['type' => Settings::TYPE_AUTOBID_GLOBAL_SWITCH]);
 
         if (null === $globalSetting || empty($globalSetting->getValue())) {
@@ -309,7 +309,7 @@ class ProjectLifecycleManager
         }
 
         $rateRange         = $this->bidManager->getProjectRateRange($project);
-        $autoBidRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Autobid');
+        $autoBidRepository = $this->entityManager->getRepository(Autobid::class);
         $autoBidSettings   = $autoBidRepository->getAutobidsForProject($project);
 
         foreach ($autoBidSettings as $autoBidSetting) {
@@ -335,11 +335,11 @@ class ProjectLifecycleManager
      */
     private function reBidAutoBid(Projects $project, bool $sendNotification): void
     {
-        $rateStep = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')
+        $rateStep = $this->entityManager->getRepository(Settings::class)
             ->findOneBy(['type' => Settings::TYPE_AUTOBID_STEP])
             ->getValue();
 
-        $bidRepository      = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Bids');
+        $bidRepository      = $this->entityManager->getRepository(Bids::class);
         $currentRate        = bcsub($bidRepository->getProjectMaxRate($project), $rateStep, 1);
         $bidOrder           = null;
         $preCalculatedOrder = false;
@@ -414,7 +414,7 @@ class ProjectLifecycleManager
     private function acceptBids(Projects $project): void
     {
         $bidBalance    = 0;
-        $bidRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Bids');
+        $bidRepository = $this->entityManager->getRepository(Bids::class);
         $bids          = $bidRepository->findBy(
             ['idProject' => $project, 'status' => Bids::STATUS_PENDING],
             ['rate' => 'ASC', 'ordre' => 'ASC']
@@ -470,7 +470,7 @@ class ProjectLifecycleManager
      */
     private function buildIfpPrioritizedMixedLoan(Projects $project, string $additionalContractLabel): void
     {
-        $ifpContract = $this->entityManager->getRepository('UnilendCoreBusinessBundle:UnderlyingContract')->findOneBy(['label' => UnderlyingContract::CONTRACT_IFP]);
+        $ifpContract = $this->entityManager->getRepository(UnderlyingContract::class)->findOneBy(['label' => UnderlyingContract::CONTRACT_IFP]);
         if (null === $ifpContract) {
             throw new \InvalidArgumentException('The contract ' . UnderlyingContract::CONTRACT_IFP . ' does not exist.');
         }
@@ -482,14 +482,14 @@ class ProjectLifecycleManager
             $IfpLoanAmountMax = $contractAttrVars[0];
         }
 
-        $additionalContract = $this->entityManager->getRepository('UnilendCoreBusinessBundle:UnderlyingContract')->findOneBy(['label' => $additionalContractLabel]);
+        $additionalContract = $this->entityManager->getRepository(UnderlyingContract::class)->findOneBy(['label' => $additionalContractLabel]);
         if (null === $additionalContract) {
             throw new \InvalidArgumentException('The contract ' . $additionalContractLabel . ' does not exist.');
         }
 
-        $acceptedBidsRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:AcceptedBids');
+        $acceptedBidsRepository = $this->entityManager->getRepository(AcceptedBids::class);
         /** @var Wallet $wallet */
-        foreach ($this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->findLendersWithAcceptedBidsByProject($project) as $wallet) {
+        foreach ($this->entityManager->getRepository(Wallet::class)->findLendersWithAcceptedBidsByProject($project) as $wallet) {
             $acceptedBids   = $acceptedBidsRepository->findAcceptedBidsByLenderAndProject($wallet, $project);
             $loansLenderSum = 0;
             $isIfpContract  = true;
@@ -549,13 +549,13 @@ class ProjectLifecycleManager
      */
     private function buildLoanIfp(Projects $project): void
     {
-        $ifpContract = $this->entityManager->getRepository('UnilendCoreBusinessBundle:UnderlyingContract')->findOneBy(['label' => UnderlyingContract::CONTRACT_IFP]);
+        $ifpContract = $this->entityManager->getRepository(UnderlyingContract::class)->findOneBy(['label' => UnderlyingContract::CONTRACT_IFP]);
         if (null === $ifpContract) {
             throw new \InvalidArgumentException('The contract ' . UnderlyingContract::CONTRACT_IFP . ' does not exist.');
         }
 
-        $acceptedBidsRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:AcceptedBids');
-        $lenderWallets          = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->findLendersWithAcceptedBidsByProject($project);
+        $acceptedBidsRepository = $this->entityManager->getRepository(AcceptedBids::class);
+        $lenderWallets          = $this->entityManager->getRepository(Wallet::class)->findLendersWithAcceptedBidsByProject($project);
 
         /** @var Wallet $wallet */
         foreach ($lenderWallets as $wallet) {
@@ -576,18 +576,18 @@ class ProjectLifecycleManager
      */
     private function buildMinibonPrioritizedMixedLoanWithIfp(Projects $project): void
     {
-        $miniBonContract = $this->entityManager->getRepository('UnilendCoreBusinessBundle:UnderlyingContract')->findOneBy(['label' => UnderlyingContract::CONTRACT_MINIBON]);
+        $miniBonContract = $this->entityManager->getRepository(UnderlyingContract::class)->findOneBy(['label' => UnderlyingContract::CONTRACT_MINIBON]);
         if (null === $miniBonContract) {
             throw new \InvalidArgumentException('The contract ' . UnderlyingContract::CONTRACT_MINIBON . ' does not exist.');
         }
 
-        $ifpContract = $this->entityManager->getRepository('UnilendCoreBusinessBundle:UnderlyingContract')->findOneBy(['label' => UnderlyingContract::CONTRACT_IFP]);
+        $ifpContract = $this->entityManager->getRepository(UnderlyingContract::class)->findOneBy(['label' => UnderlyingContract::CONTRACT_IFP]);
         if (null === $ifpContract) {
             throw new \InvalidArgumentException('The contract ' . UnderlyingContract::CONTRACT_IFP . ' does not exist.');
         }
 
-        $acceptedBidsRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:AcceptedBids');
-        $lenderWallets          = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->findLendersWithAcceptedBidsByProject($project);
+        $acceptedBidsRepository = $this->entityManager->getRepository(AcceptedBids::class);
+        $lenderWallets          = $this->entityManager->getRepository(Wallet::class)->findLendersWithAcceptedBidsByProject($project);
 
         foreach ($lenderWallets as $wallet) {
             $acceptedBids       = $acceptedBidsRepository->findAcceptedBidsByLenderAndProject($wallet, $project);
@@ -614,7 +614,7 @@ class ProjectLifecycleManager
      */
     public function treatFundFailed(Projects $project): void
     {
-        $bidRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Bids');
+        $bidRepository = $this->entityManager->getRepository(Bids::class);
 
         $this->projectStatusManager->addProjectStatus(Users::USER_ID_CRON, ProjectsStatus::STATUS_CANCELLED, $project);
 
@@ -652,7 +652,7 @@ class ProjectLifecycleManager
      */
     public function createRepaymentSchedule(Projects $project): void
     {
-        $product = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Product')->find($project->getIdProduct());
+        $product = $this->entityManager->getRepository(Product::class)->find($project->getIdProduct());
 
         if (null === $product) {
             throw new \Exception('Invalid product ID ' . $project->getIdProduct() . ' found for project ID ' . $project->getIdProject());
@@ -803,7 +803,7 @@ class ProjectLifecycleManager
      */
     public function createPaymentSchedule(Projects $project): void
     {
-        $product = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Product')->find($project->getIdProduct());
+        $product = $this->entityManager->getRepository(Product::class)->find($project->getIdProduct());
 
         if (null === $product) {
             throw new \Exception('Invalid product ID ' . $project->getIdProduct() . ' found for project ID ' . $project->getIdProject());
@@ -967,7 +967,7 @@ class ProjectLifecycleManager
     public function saveInterestRate(Projects $project): void
     {
         $interestRate = $this->entityManager
-            ->getRepository('UnilendCoreBusinessBundle:Projects')
+            ->getRepository(Projects::class)
             ->getAverageInterestRate($project, false);
 
         $project->setInterestRate($interestRate);
@@ -984,10 +984,10 @@ class ProjectLifecycleManager
     {
         /** @var \clients $clientData */
         $clientData                            = $this->entityManagerSimulator->getRepository('clients');
-        $autobidRepository                     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Autobid');
-        $bidsRepository                        = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Bids');
-        $clientsGestionNotificationsRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ClientsGestionNotifications');
-        $walletRepository                      = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet');
+        $autobidRepository                     = $this->entityManager->getRepository(Autobid::class);
+        $bidsRepository                        = $this->entityManager->getRepository(Bids::class);
+        $clientsGestionNotificationsRepository = $this->entityManager->getRepository(ClientsGestionNotifications::class);
+        $walletRepository                      = $this->entityManager->getRepository(Wallet::class);
 
         $commonKeywords = [
             'companyName'     => $project->getIdCompany()->getName(),
@@ -1203,7 +1203,7 @@ class ProjectLifecycleManager
     {
         /** @var \clients $clientData */
         $clientData       = $this->entityManagerSimulator->getRepository('clients');
-        $walletRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet');
+        $walletRepository = $this->entityManager->getRepository(Wallet::class);
 
         $offset = 0;
         $limit  = 100;
@@ -1252,7 +1252,7 @@ class ProjectLifecycleManager
     {
         /** @var \bids $bidData */
         $bidData          = $this->entityManagerSimulator->getRepository('bids');
-        $walletRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet');
+        $walletRepository = $this->entityManager->getRepository(Wallet::class);
 
         $offset = 0;
         $limit  = 100;

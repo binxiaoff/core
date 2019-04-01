@@ -1,6 +1,6 @@
 <?php
 
-use Unilend\Bundle\CoreBusinessBundle\Entity\{Projects, ProjectsStatus};
+use Unilend\Entity\{Projects, ProjectsStatus};
 
 ?>
 <script>

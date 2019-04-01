@@ -13,7 +13,7 @@
                 <tr>
                     <th></th>
                     <?php foreach (array_keys(array_values($this->groupedRate)[0]) as $evaluation) : ?>
-                        <th><?= constant('\Unilend\Bundle\CoreBusinessBundle\Entity\Projects::RISK_' . $evaluation) ?>* (taux min - taux max)</th>
+                        <th><?= constant('\Unilend\Entity\Projects::RISK_' . $evaluation) ?>* (taux min - taux max)</th>
                     <?php endforeach; ?>
                 </tr>
             </thead>

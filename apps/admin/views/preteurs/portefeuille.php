@@ -19,7 +19,7 @@
                 <?php if(null === $this->IRR) : ?>
                     Ce prêteur est trop récent. Son TRI n'a pas encore été calculé.
                 <?php else : ?>
-                    <?= \Unilend\Bundle\CoreBusinessBundle\Entity\LenderStatistic::STAT_VALID_OK === $this->IRR->getStatus() ? number_format($this->IRR->getValue(), 2, ',', ' ') . '%'  : 'TRI non valide'?>
+                    <?= \Unilend\Entity\LenderStatistic::STAT_VALID_OK === $this->IRR->getStatus() ? number_format($this->IRR->getValue(), 2, ',', ' ') . '%'  : 'TRI non valide'?>
                     <?= (is_null($this->IRR->getAdded())) ? '' : '(calculé le ' . $this->IRR->getAdded()->format('d/m/Y') . ')' ?>
                 <?php endif; ?>
             </h3>
@@ -71,7 +71,7 @@
                             $settingsCount += count($periodSettings);
                         }
                     ?>
-                    <?php if (false === in_array($settingsCount, [0, \Unilend\Bundle\CoreBusinessBundle\Entity\Autobid::REGULAR_SETTINGS_COUNT])) : ?>
+                    <?php if (false === in_array($settingsCount, [0, \Unilend\Entity\Autobid::REGULAR_SETTINGS_COUNT])) : ?>
                         <p style="background-color: #f9babe; padding: 10px; font-weight: bold;">La configuration Autolend de ce client n'est pas correcte. Veuillez vous rapprocher du service informatique, ce cas nécessitant des investigations.</p>
                     <?php else : ?>
                         <table class="autobid-param-advanced-table">
@@ -82,14 +82,14 @@
                             <tr>
                                 <th scope="col" class="table-title"><?= $this->translator->trans('autobid_expert-settings-table-title-period') ?></th>
                                 <?php foreach (array_keys(array_values($this->aAutoBidSettings)[0]) as $evaluation) : ?>
-                                    <th><?=constant('\Unilend\Bundle\CoreBusinessBundle\Entity\Projects::RISK_' . $evaluation)?>*</th>
+                                    <th><?=constant('\Unilend\Entity\Projects::RISK_' . $evaluation)?>*</th>
                                 <?php endforeach; ?>
                             </tr>
                             <?php foreach ($this->aAutoBidSettings as $aPeriodSettings) : ?>
                                 <tr>
                                     <th scope="row"><?= $this->translator->trans('autobid_autobid-period-' . array_values($aPeriodSettings)[0]['id_period'], ['[#SEPARATOR#]' => '<br>']); ?></th>
                                     <?php foreach ($aPeriodSettings as $aSetting) : ?>
-                                        <td class="<?= (\Unilend\Bundle\CoreBusinessBundle\Entity\Autobid::STATUS_INACTIVE == $aSetting['status']) ? 'param-off' : '' ?>
+                                        <td class="<?= (\Unilend\Entity\Autobid::STATUS_INACTIVE == $aSetting['status']) ? 'param-off' : '' ?>
                                         <?= ($aSetting['rate_min'] <= round($aSetting['AverageRateUnilend'], 1) || empty($aSetting['AverageRateUnilend'])) ? '' : 'param-over' ?>">
                                             <div class="cell-inner">
                                                 <label class="param-advanced-label"><?= empty($aSetting['rate_min']) ? 'off' : $this->ficelle->formatNumber($aSetting['rate_min'], 1) ?>%</label>
@@ -172,7 +172,7 @@
                                 <?php if ($aProjectLoans['nb_loan'] == 1) : ?>
                                     <td>
                                         <?php if ($this->loan->get($aProjectLoans['id_loan_if_one_loan']) && false === empty($this->loan->id_transfer)) :
-                                            /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Clients $formerOwner */
+                                            /** @var \Unilend\Entity\Clients $formerOwner */
                                             $formerOwner = $this->loanManager->getFormerOwner($this->loan); ?>
                                             <a href="<?= $this->lurl . '/preteurs/edit/' . $formerOwner->getIdClient() ?>"><?= $formerOwner->id_client_owner ?></a>
                                         <?php endif; ?>
@@ -203,7 +203,7 @@
                                         <td>
                                             <?php if (false === empty($aLoan['id_transfer'])) :
                                                 $this->loan->get($aLoan['id_loan']);
-                                                /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Clients $formerOwner */
+                                                /** @var \Unilend\Entity\Clients $formerOwner */
                                                 $formerOwner = $this->loanManager->getFormerOwner($this->loan); ?>
                                                 <a href="<?= $this->lurl . '/preteurs/edit/' . $formerOwner->getIdClient() ?>"><?= $formerOwner->getIdClient() ?></a>
                                             <?php endif; ?>

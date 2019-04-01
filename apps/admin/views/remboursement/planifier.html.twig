@@ -78,7 +78,7 @@
             })
 
             $(document).on('change', '#repayment-type', function () {
-                if ({{ constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectRepaymentTask::TYPE_EARLY') }} === parseInt($(this).val())) {
+                if ({{ constant('\\Unilend\\Entity\\ProjectRepaymentTask::TYPE_EARLY') }} === parseInt($(this).val())) {
                     $('#next-schedule-date').removeClass('visibility-hidden')
                 } else {
                     $('#next-schedule-date').addClass('visibility-hidden')
@@ -219,13 +219,13 @@
                                     <div class="form-group col-md-12">
                                         <select class="form-control required" id="repayment-type" name="repayment_type" required>
                                             <option value="">Sélectionner un mode</option>
-                                            <option value="{{ constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectRepaymentTask::TYPE_REGULAR') }}">
+                                            <option value="{{ constant('\\Unilend\\Entity\\ProjectRepaymentTask::TYPE_REGULAR') }}">
                                                 Remboursement normal
                                             </option>
-                                            <option value="{{ constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectRepaymentTask::TYPE_LATE') }}">
+                                            <option value="{{ constant('\\Unilend\\Entity\\ProjectRepaymentTask::TYPE_LATE') }}">
                                                 Remboursement de régularisation
                                             </option>
-                                            <option value="{{ constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectRepaymentTask::TYPE_EARLY') }}">
+                                            <option value="{{ constant('\\Unilend\\Entity\\ProjectRepaymentTask::TYPE_EARLY') }}">
                                                 Remboursement anticipé
                                             </option>
                                         </select>
@@ -236,7 +236,7 @@
                             <div class="row">
                                 <div class="form-group col-md-12">
                                     <input id="repayment-date" class="form-control required push-10" type="text" name="repay_on" data-date-format="dd/mm/yyyy" placeholder="dd/mm/yyyy" required>
-                                    {% if reception.type == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Receptions::TYPE_DIRECT_DEBIT') %}
+                                    {% if reception.type == constant('\\Unilend\\Entity\\Receptions::TYPE_DIRECT_DEBIT') %}
                                         <p class="bg-warning font-s12" style="padding: 10px 15px;">
                                             S'agissant d'un prélèvement emprunteur pendant un recouvrement, un délai de 8 semaines s'impose, pendant lequel aucun rejet ne devra avoir eu lieu.
                                         </p>

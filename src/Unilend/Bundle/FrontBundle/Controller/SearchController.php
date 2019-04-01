@@ -7,6 +7,7 @@ use Symfony\Component\HttpFoundation\{Request, Response};
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Unilend\Bundle\FrontBundle\Service\ProjectDisplayManager;
+use Unilend\Entity\Projects;
 
 class SearchController extends Controller
 {
@@ -39,7 +40,7 @@ class SearchController extends Controller
                 unset($results['projects']);
             } else {
                 $projectDisplayManager = $this->get('unilend.frontbundle.service.project_display_manager');
-                $projectRepository     = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Projects');
+                $projectRepository     = $this->get('doctrine.orm.entity_manager')->getRepository(Projects::class);
 
                 foreach ($results['projects'] as $index => $result) {
                     $project = $projectRepository->find($result['projectId']);

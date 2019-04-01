@@ -4,7 +4,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service\RiskDataMonitoring;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Translation\TranslatorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{Companies, CompanyRatingHistory, ProjectEligibilityRuleSet, ProjectsComments, RiskDataMonitoring, RiskDataMonitoringAssessment, RiskDataMonitoringCallLog,
+use Unilend\Entity\{Companies, CompanyRating, CompanyRatingHistory, ProjectEligibilityRuleSet, Projects, ProjectsComments, RiskDataMonitoring, RiskDataMonitoringAssessment, RiskDataMonitoringCallLog,
     RiskDataMonitoringType, Users};
 use Unilend\Bundle\CoreBusinessBundle\Service\ProjectStatusManager;
 
@@ -70,7 +70,7 @@ class DataWriter
     {
         $currentRiskPolicy = null;
         if ($monitoringType->getIdProjectEligibilityRule()) {
-            $currentRiskPolicy = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectEligibilityRuleSet')
+            $currentRiskPolicy = $this->entityManager->getRepository(ProjectEligibilityRuleSet::class)
                 ->findOneBy(['status' => ProjectEligibilityRuleSet::STATUS_ACTIVE]);
         }
 
@@ -106,7 +106,7 @@ class DataWriter
     private function projectRiskEvaluationToHtml(RiskDataMonitoringCallLog $callLog, string $provider): string
     {
         $memoContent             = '';
-        $providerMonitoringTypes = $this->entityManager->getRepository('UnilendCoreBusinessBundle:RiskDataMonitoringType')->findBy(['provider' => $provider]);
+        $providerMonitoringTypes = $this->entityManager->getRepository(RiskDataMonitoringType::class)->findBy(['provider' => $provider]);
 
         /** @var RiskDataMonitoringType $type */
         foreach ($providerMonitoringTypes as $type) {
@@ -114,7 +114,7 @@ class DataWriter
                 continue;
             }
 
-            $assessment  = $this->entityManager->getRepository('UnilendCoreBusinessBundle:RiskDataMonitoringAssessment')
+            $assessment  = $this->entityManager->getRepository(RiskDataMonitoringAssessment::class)
                 ->findOneBy(['idRiskDataMonitoringType' => $type, 'idRiskDataMonitoringCallLog' => $callLog]);
             $rule        = $type->getIdProjectEligibilityRule()->getDescription();
             $reason      = $this->projectStatusManager->getStatusReasonByLabel($assessment->getValue(), 'rejection');
@@ -122,7 +122,7 @@ class DataWriter
             $memoContent .= '<li>' . $rule . ' :<strong> ' . $result . '</strong></li>';
         }
 
-        $currentRiskPolicy = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectEligibilityRuleSet')->findOneBy(['status' => ProjectEligibilityRuleSet::STATUS_ACTIVE]);
+        $currentRiskPolicy = $this->entityManager->getRepository(ProjectEligibilityRuleSet::class)->findOneBy(['status' => ProjectEligibilityRuleSet::STATUS_ACTIVE]);
         $ruleSet           = '<br><strong>Evaluation des règles concernées selon politique de risque version ' . $currentRiskPolicy->getLabel() . '</strong>';
         $eligibilityHtml   = empty($memoContent) ? '' : $ruleSet . '<ul>' . $memoContent . '</ul>';
 
@@ -138,7 +138,7 @@ class DataWriter
      */
     public function saveMonitoringEventInProjectMemos(RiskDataMonitoringCallLog $callLog, string $provider): void
     {
-        $projectCommentsRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsComments');
+        $projectCommentsRepository = $this->entityManager->getRepository(ProjectsComments::class);
 
         $newData        = $this->companyRatingToHtml($callLog->getIdCompanyRatingHistory());
         $riskEvaluation = $this->projectRiskEvaluationToHtml($callLog, $provider);
@@ -147,7 +147,7 @@ class DataWriter
         $memoContent .= false === empty($newData) ? $newData : '';
         $memoContent .= false === empty($riskEvaluation) ? $riskEvaluation : '';
 
-        $companyProjects = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->findBy(['idCompany' => $callLog->getIdCompanyRatingHistory()->getIdCompany()]);
+        $companyProjects = $this->entityManager->getRepository(Projects::class)->findBy(['idCompany' => $callLog->getIdCompanyRatingHistory()->getIdCompany()]);
         foreach ($companyProjects as $project) {
             $commentWithSameContent = $projectCommentsRepository->findOneBy(['idProject' => $project, 'content' => $memoContent], ['added' => 'DESC']);
 
@@ -155,7 +155,7 @@ class DataWriter
                 $projectCommentEntity = new ProjectsComments();
                 $projectCommentEntity
                     ->setIdProject($project)
-                    ->setIdUser($this->entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find(Users::USER_ID_WEBSERVICE))
+                    ->setIdUser($this->entityManager->getRepository(Users::class)->find(Users::USER_ID_WEBSERVICE))
                     ->setContent($memoContent)
                     ->setPublic(false);
 
@@ -173,7 +173,7 @@ class DataWriter
      */
     public function companyRatingToHtml(CompanyRatingHistory $companyRatingHistory): string
     {
-        $companyRatings = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CompanyRating')
+        $companyRatings = $this->entityManager->getRepository(CompanyRating::class)
             ->findBy(['idCompanyRatingHistory' => $companyRatingHistory->getIdCompanyRatingHistory()]);
 
         $html = '';

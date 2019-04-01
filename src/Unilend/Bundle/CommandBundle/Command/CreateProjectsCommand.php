@@ -5,7 +5,7 @@ namespace Unilend\Bundle\CommandBundle\Command;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{ProjectsStatus, Users, UsersHistory};
+use Unilend\Entity\{Partner, ProjectsStatus, Users, UsersHistory};
 use Unilend\Bundle\CoreBusinessBundle\Service\ProjectRequestManager;
 
 class CreateProjectsCommand extends ContainerAwareCommand
@@ -21,7 +21,7 @@ class CreateProjectsCommand extends ContainerAwareCommand
         $entityManager           = $this->getContainer()->get('doctrine.orm.entity_manager');
         $projectRequestManager   = $this->getContainer()->get('unilend.service.project_request_manager');
         $partnerManager          = $this->getContainer()->get('unilend.service.partner_manager');
-        $projectStatusRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatus');
+        $projectStatusRepository = $entityManager->getRepository(ProjectsStatus::class);
         $slackManager            = $this->getContainer()->get('unilend.service.slack_manager');
         $messageProvider         = $this->getContainer()->get('unilend.swiftmailer.message_provider');
 
@@ -35,7 +35,7 @@ class CreateProjectsCommand extends ContainerAwareCommand
             $user = $bulkCompanyCheckManager->getUploadUser($fileName);
 
             if (null === $user) {
-                $user = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find(Users::USER_ID_CRON);
+                $user = $entityManager->getRepository(Users::class)->find(Users::USER_ID_CRON);
             }
             $createdProjects = [];
             try {
@@ -61,7 +61,7 @@ class CreateProjectsCommand extends ContainerAwareCommand
                         $amount = filter_var(FILTER_VALIDATE_INT, $inputRow[1]);
                     }
                     if (isset($inputRow[2]) && filter_var(FILTER_VALIDATE_INT, $inputRow[2])) {
-                        $partner = $entityManager->getRepository('UnilendCoreBusinessBundle:Partner')->find(filter_var(FILTER_VALIDATE_INT, $inputRow[2]));
+                        $partner = $entityManager->getRepository(Partner::class)->find(filter_var(FILTER_VALIDATE_INT, $inputRow[2]));
                     }
                     $partner = empty($partner) ? $partnerManager->getDefaultPartner() : $partner;
 

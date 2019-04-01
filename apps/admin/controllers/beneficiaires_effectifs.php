@@ -2,7 +2,7 @@
 
 use Doctrine\ORM\EntityManager;
 use Symfony\Component\HttpFoundation\Request;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{AttachmentType, BeneficialOwner, CompanyBeneficialOwnerDeclaration, Pays, ProjectsStatus, Zones};
+use Unilend\Entity\{AttachmentType, BeneficialOwner, CompanyBeneficialOwnerDeclaration, Pays, ProjectsStatus, Zones};
 use Unilend\Bundle\CoreBusinessBundle\Repository\BeneficialOwnerRepository;
 use Unilend\Bundle\CoreBusinessBundle\Service\BeneficialOwnerManager;
 
@@ -31,7 +31,7 @@ class beneficiaires_effectifsController extends bootstrap
 
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
-        $company       = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->find($this->params[0]);
+        $company       = $entityManager->getRepository(Companies::class)->find($this->params[0]);
 
         if (null === $company) {
             header('Location: ' . $this->lurl);
@@ -42,16 +42,16 @@ class beneficiaires_effectifsController extends bootstrap
         $countryList   = $this->get('unilend.service.location_manager')->getCountries();
         $ownerTypes    = $this->getBeneficialOwnerTypes();
 
-        $companyBeneficialOwnerDeclarationRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyBeneficialOwnerDeclaration');
+        $companyBeneficialOwnerDeclarationRepository = $entityManager->getRepository(CompanyBeneficialOwnerDeclaration::class);
         $currentDeclaration                          = $companyBeneficialOwnerDeclarationRepository->findCurrentDeclarationByCompany($company);
         $existingDeclarations                        = [];
 
         if (null !== $currentDeclaration) {
             $currentOwners        = $this->formatOwnerList($currentDeclaration->getBeneficialOwners());
-            $existingDeclarations = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectBeneficialOwnerUniversign')->findAllDeclarationsForCompany($company);
+            $existingDeclarations = $entityManager->getRepository(ProjectBeneficialOwnerUniversign::class)->findAllDeclarationsForCompany($company);
 
             if (empty($existingDeclarations)) {
-                foreach ($entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->findBy(['status' => ProjectsStatus::STATUS_FUNDED, 'idCompany' => $company->getIdCompany()]) as $project) {
+                foreach ($entityManager->getRepository(Projects::class)->findBy(['status' => ProjectsStatus::STATUS_FUNDED, 'idCompany' => $company->getIdCompany()]) as $project) {
                     $existingDeclarations[] = $this->get('unilend.service.beneficial_owner_manager')->addProjectBeneficialOwnerDeclaration($currentDeclaration, $project);
                 }
             }
@@ -71,10 +71,10 @@ class beneficiaires_effectifsController extends bootstrap
             unset($_SESSION['email_status']);
         }
 
-        $passportType = $entityManager->getRepository('UnilendCoreBusinessBundle:AttachmentType')->find(AttachmentType::CNI_PASSPORTE);
-        $passport     = $entityManager->getRepository('UnilendCoreBusinessBundle:Attachment')->findOneClientAttachmentByType($company->getIdClientOwner(), $passportType);
+        $passportType = $entityManager->getRepository(AttachmentType::class)->find(AttachmentType::CNI_PASSPORTE);
+        $passport     = $entityManager->getRepository(Attachment::class)->findOneClientAttachmentByType($company->getIdClientOwner(), $passportType);
 
-        $address = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsAdresses')->findOneBy(['idClient' => $company->getIdClientOwner()]);
+        $address = $entityManager->getRepository(ClientsAdresses::class)->findOneBy(['idClient' => $company->getIdClientOwner()]);
         $fiscalCountryId = 0;
         if ($address) {
             $fiscalCountryId = $address->getIdPaysFiscal();
@@ -82,7 +82,7 @@ class beneficiaires_effectifsController extends bootstrap
 
         $this->render(null, [
             'companyOwner'         => $company->getIdClientOwner(),
-            'companyOwnerAddress'  => $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsAdresses')->findBy(['idClient' => $company->getIdClientOwner()]),
+            'companyOwnerAddress'  => $entityManager->getRepository(ClientsAdresses::class)->findBy(['idClient' => $company->getIdClientOwner()]),
             'companyOwnerPassport' => null === $passport ? '' : '<a href="' . $this->lurl . '/attachment/download/id/' . $passport->getId() . '/file/' . urlencode($passport->getPath()) . '" target="_blank">' . $passport->getOriginalName() . '</a>',
             'beneficial_owners'    => $currentOwners,
             'countries'            => $countryList,
@@ -218,7 +218,7 @@ class beneficiaires_effectifsController extends bootstrap
             }
         }
 
-        if (false === empty($type) && null === ($ownerType = $entityManager->getRepository('UnilendCoreBusinessBundle:BeneficialOwnerType')->find($type))) {
+        if (false === empty($type) && null === ($ownerType = $entityManager->getRepository(BeneficialOwnerType::class)->find($type))) {
             $errors[] = 'Le type de bénéficiaire effectif n\'est pas valide';
         }
 
@@ -232,7 +232,7 @@ class beneficiaires_effectifsController extends bootstrap
         $declaration            = null;
         if (false === empty($declarationId)) {
             /** @var CompanyBeneficialOwnerDeclaration $declaration */
-            $declaration = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyBeneficialOwnerDeclaration')->find($declarationId);
+            $declaration = $entityManager->getRepository(CompanyBeneficialOwnerDeclaration::class)->find($declarationId);
             if (null === $declaration) {
                 $errors[] = 'Impossible de trouver la déclaration correspondante';
             }
@@ -240,7 +240,7 @@ class beneficiaires_effectifsController extends bootstrap
 
         if (null !== $declaration && null !== $ownerType) {
             /** @var BeneficialOwnerRepository $beneficialOwnerRepository */
-            $beneficialOwnerRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:BeneficialOwner');
+            $beneficialOwnerRepository = $entityManager->getRepository(BeneficialOwner::class);
             $numberBeneficialOwners    = $beneficialOwnerRepository->getCountBeneficialOwnersForDeclarationByType($declaration, $ownerType->getLabel());
             $maxNumber                 = $beneficialOwnerManager->getMaxNumbersAccordingToType($ownerType->getLabel());
             if ($numberBeneficialOwners > $maxNumber) {
@@ -262,7 +262,7 @@ class beneficiaires_effectifsController extends bootstrap
 
         $clientAttachment = null;
         if (false === empty($clientId)) {
-            $owner = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($clientId);
+            $owner = $entityManager->getRepository(Clients::class)->find($clientId);
             if (null === $owner) {
                 $errors[] = 'Le client ID ' . $clientId . ' n\'existe pas';
             }
@@ -282,7 +282,7 @@ class beneficiaires_effectifsController extends bootstrap
             if (null === $request->files->all()) {
                 $attachmentName = $request->request->filter('id_card_passport', FILTER_SANITIZE_STRING);
                 if (null !== $attachmentName) {
-                    $clientAttachment = $entityManager->getRepository('UnilendCoreBusinessBundle:Attachment')->findOneClientAttachmentByType($owner, AttachmentType::CNI_PASSPORTE);
+                    $clientAttachment = $entityManager->getRepository(Attachment::class)->findOneClientAttachmentByType($owner, AttachmentType::CNI_PASSPORTE);
                     if ($clientAttachment->getOriginalName() !== $clientAttachment) {
                         $errors[] = 'Le nom de la pièce d\'identité transmis et le nom du document enregistré en base pour ce client ne correspondent pas.';
                     }
@@ -341,7 +341,7 @@ class beneficiaires_effectifsController extends bootstrap
         $errors        = [];
 
         /** @var BeneficialOwner $owner */
-        $owner = $entityManager->getRepository('UnilendCoreBusinessBundle:BeneficialOwner')->find($request->request->getInt('id'));
+        $owner = $entityManager->getRepository(BeneficialOwner::class)->find($request->request->getInt('id'));
         if (null === $owner) {
             return [
                 'owner'  => $owner,
@@ -403,7 +403,7 @@ class beneficiaires_effectifsController extends bootstrap
         }
 
         $type = 0 === $request->request->getInt('type') ? null : $request->request->getInt('type');
-        if (false === empty($type) && null === $ownerType = $entityManager->getRepository('UnilendCoreBusinessBundle:BeneficialOwnerType')->find($type)) {
+        if (false === empty($type) && null === $ownerType = $entityManager->getRepository(BeneficialOwnerType::class)->find($type)) {
             $errors[] = 'Le type de bénéficiaire effectif n\'est pas valide.';
         }
 
@@ -423,7 +423,7 @@ class beneficiaires_effectifsController extends bootstrap
         if ('no_change' !== $request->request->get('id_card_passport') && null !== $request->files->all()) {
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\AttachmentManager $attachmentManager */
             $attachmentManager = $this->get('unilend.service.attachment_manager');
-            $attachmentType    = $entityManager->getRepository('UnilendCoreBusinessBundle:AttachmentType')->find(AttachmentType::CNI_PASSPORTE);
+            $attachmentType    = $entityManager->getRepository(AttachmentType::class)->find(AttachmentType::CNI_PASSPORTE);
             if ($attachmentType) {
                 $attachmentManager->upload($owner->getIdClient(), $attachmentType, $request->files->get('id_card_passport'));
             }
@@ -436,7 +436,7 @@ class beneficiaires_effectifsController extends bootstrap
             ->setIdPaysNaissance($birthCountry)
             ->setVilleNaissance($birthPlace);
 
-        $clientAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsAdresses')->findOneBy(['idClient' => $owner->getIdClient()]);
+        $clientAddress = $entityManager->getRepository(ClientsAdresses::class)->findOneBy(['idClient' => $owner->getIdClient()]);
         $clientAddress->setIdPaysFiscal($countryOfResidence);
 
         $entityManager->flush([$owner->getIdClient(), $clientAddress]);
@@ -466,7 +466,7 @@ class beneficiaires_effectifsController extends bootstrap
 
         $idBeneficialOwner = $request->request->getInt('id');
         /** @var BeneficialOwner $owner */
-        $owner = $entityManager->getRepository('UnilendCoreBusinessBundle:BeneficialOwner')->find($idBeneficialOwner);
+        $owner = $entityManager->getRepository(BeneficialOwner::class)->find($idBeneficialOwner);
 
         if (null === $owner) {
             $errors[] = 'Une erreur s\'est produite';
@@ -532,9 +532,9 @@ class beneficiaires_effectifsController extends bootstrap
         /** @var \Symfony\Component\Translation\TranslatorInterface $translator */
         $translator = $this->get('translator');
 
-        $clientAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsAdresses')->findOneBy(['idClient' => $owner->getIdClient()]);
-        $passportType  = $entityManager->getRepository('UnilendCoreBusinessBundle:AttachmentType')->find(AttachmentType::CNI_PASSPORTE);
-        $passport      = $entityManager->getRepository('UnilendCoreBusinessBundle:Attachment')->findOneClientAttachmentByType($owner->getIdClient(), $passportType);
+        $clientAddress = $entityManager->getRepository(ClientsAdresses::class)->findOneBy(['idClient' => $owner->getIdClient()]);
+        $passportType  = $entityManager->getRepository(AttachmentType::class)->find(AttachmentType::CNI_PASSPORTE);
+        $passport      = $entityManager->getRepository(Attachment::class)->findOneClientAttachmentByType($owner->getIdClient(), $passportType);
 
         $responseData = [
             'last_name'        => $owner->getIdClient()->getNom(),
@@ -549,7 +549,7 @@ class beneficiaires_effectifsController extends bootstrap
         ];
 
         if ($formatForView) {
-            $countriesRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Pays');
+            $countriesRepository = $entityManager->getRepository(Pays::class);
             $birthCountry        = $countriesRepository->find($owner->getIdClient()->getIdPaysNaissance());
             $country             = $countriesRepository->find($clientAddress->getIdPaysFiscal());
 
@@ -601,7 +601,7 @@ class beneficiaires_effectifsController extends bootstrap
     {
         /** @var EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
-        $country       = $entityManager->getRepository('UnilendCoreBusinessBundle:Pays')->find($countryId);
+        $country       = $entityManager->getRepository(Pays::class)->find($countryId);
 
         if (null === $country) {
             return [
@@ -636,7 +636,7 @@ class beneficiaires_effectifsController extends bootstrap
         $translator = $this->get('translator');
 
         $types = [];
-        foreach ($entityManager->getRepository('UnilendCoreBusinessBundle:BeneficialOwnerType')->findAll() as $type) {
+        foreach ($entityManager->getRepository(BeneficialOwnerType::class)->findAll() as $type) {
             $types[$type->getId()] = $translator->trans('beneficial-owner_type-label-' . $type->getLabel());
         }
         return $types;
@@ -652,7 +652,7 @@ class beneficiaires_effectifsController extends bootstrap
         if ($search = filter_input(INPUT_GET, 'q', FILTER_SANITIZE_STRING)) {
             /** @var EntityManager $entityManager */
             $entityManager     = $this->get('doctrine.orm.entity_manager');
-            $clientsRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
+            $clientsRepository = $entityManager->getRepository(Clients::class);
             $result            = $clientsRepository->findBeneficialOwnerByName($search);
 
             foreach ($result as $client) {
@@ -693,14 +693,14 @@ class beneficiaires_effectifsController extends bootstrap
 
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
-        $company       = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->find($this->params[0]);
+        $company       = $entityManager->getRepository(Companies::class)->find($this->params[0]);
 
         if (null === $company) {
             header('Location: ' . $this->lurl);
             die;
         }
 
-        $declaration = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyBeneficialOwnerDeclaration')->findCurrentDeclarationByCompany($company);
+        $declaration = $entityManager->getRepository(CompanyBeneficialOwnerDeclaration::class)->findCurrentDeclarationByCompany($company);
         if (null === $declaration) {
             header('Location: ' . $this->lurl . '/beneficiaires_effectifs/' . $company->getIdCompany());
             die;
@@ -726,7 +726,7 @@ class beneficiaires_effectifsController extends bootstrap
 
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
-        $company       = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->find($this->params[0]);
+        $company       = $entityManager->getRepository(Companies::class)->find($this->params[0]);
 
         if (null === $company) {
             header('Location: ' . $this->lurl);
@@ -740,7 +740,7 @@ class beneficiaires_effectifsController extends bootstrap
             header('Location: ' . $this->lurl . '/beneficiaires_effectifs/' . $company->getIdCompany());
             die;
         }
-        $project = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->params[1]);
+        $project = $entityManager->getRepository(Projects::class)->find($this->params[1]);
         if (null === $project) {
             header('Location: ' . $this->lurl . '/beneficiaires_effectifs/' . $company->getIdCompany());
             die;

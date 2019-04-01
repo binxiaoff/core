@@ -4,7 +4,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
+use Unilend\Entity\Projects;
 
 class ProjectEligibilityAssessmentRepository extends EntityRepository
 {
@@ -15,7 +15,7 @@ class ProjectEligibilityAssessmentRepository extends EntityRepository
     {
         $qb = $this->createQueryBuilder('pea');
         $qb->select('p')
-            ->innerJoin('UnilendCoreBusinessBundle:Projects', 'p', Join::WITH, 'p.idProject = pea.idProject')
+            ->innerJoin(Projects::class, 'p', Join::WITH, 'p.idProject = pea.idProject')
             ->groupBy('pea.idProject');
 
         return $qb->getQuery()->getResult();

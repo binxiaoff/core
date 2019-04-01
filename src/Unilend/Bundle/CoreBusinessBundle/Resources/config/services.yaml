@@ -17,7 +17,6 @@ services:
 
     Unilend\Bundle\CoreBusinessBundle\:
         resource: '%kernel.project_dir%/src/Unilend/Bundle/CoreBusinessBundle/*'
-        exclude: '%kernel.project_dir%/src/Unilend/Bundle/CoreBusinessBundle/Entity'
 
     Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductManager: '@Unilend\Bundle\CoreBusinessBundle\Service\PartnerProductManager'
 

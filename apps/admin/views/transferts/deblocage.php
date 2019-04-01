@@ -1,6 +1,6 @@
 <?php
 
-use Unilend\Bundle\CoreBusinessBundle\Entity\{Projects, ProjectsPouvoir, UniversignEntityInterface};
+use Unilend\Entity\{Projects, ProjectsPouvoir, UniversignEntityInterface};
 
 ?>
 <script type="text/javascript">

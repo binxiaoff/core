@@ -5,7 +5,7 @@ namespace Unilend\Bundle\CommandBundle\Command;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{ProjectAbandonReason, Projects, ProjectsStatus, Users};
+use Unilend\Entity\{ProjectAbandonReason, Projects, ProjectsStatus, Users};
 use Unilend\core\Loader;
 
 class EmailBorrowerCompletenessReminderCommand extends ContainerAwareCommand
@@ -55,8 +55,8 @@ class EmailBorrowerCompletenessReminderCommand extends ContainerAwareCommand
         $sUrl                 = $this->getContainer()->getParameter('router.request_context.scheme') . '://' . $this->getContainer()->getParameter('url.host_default');
         $projectStatusManager = $this->getContainer()->get('unilend.service.project_status_manager');
         $entityManager        = $this->getContainer()->get('doctrine.orm.entity_manager');
-        $projectsRepository   = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
-        $projectAbandonReason = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectAbandonReason')->findBy(['label' => ProjectAbandonReason::BORROWER_FOLLOW_UP_UNSUCCESSFUL]);
+        $projectsRepository   = $entityManager->getRepository(Projects::class);
+        $projectAbandonReason = $entityManager->getRepository(ProjectAbandonReason::class)->findBy(['label' => ProjectAbandonReason::BORROWER_FOLLOW_UP_UNSUCCESSFUL]);
 
         foreach ($aReminderIntervals as $sStatus => $aIntervals) {
             if (1 === preg_match('/^status-([1-9][0-9]*)$/', $sStatus, $aMatches)) {
@@ -151,7 +151,7 @@ class EmailBorrowerCompletenessReminderCommand extends ContainerAwareCommand
                             /**
                              * When project is pending documents, abort status is not automatic and must be set manually in BO
                              */
-                            if ($iReminderIndex === $iLastIndex && $iStatus != \projects_status::COMMERCIAL_REVIEW) {
+                            if ($iReminderIndex === $iLastIndex && $iStatus != ProjectsStatus::STATUS_REVIEW) {
                                 $projectStatusManager->abandonProject($project, $projectAbandonReason, Users::USER_ID_CRON, $iReminderIndex);
                             } else {
                                 $projectStatusManager->addProjectStatus(Users::USER_ID_CRON, $iStatus, $project, $iReminderIndex, $projectStatusHistory->content);

@@ -8,7 +8,7 @@
     </tr>
     </thead>
     <tbody>
-        <?php /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatusHistory $historyEntry */ ?>
+        <?php /** @var \Unilend\Entity\ClientsStatusHistory $historyEntry */ ?>
         <?php foreach ($this->statusHistory as $historyEntry) : ?>
             <tr>
                 <td><?= $historyEntry->getIdStatus()->getLabel() ?></td>

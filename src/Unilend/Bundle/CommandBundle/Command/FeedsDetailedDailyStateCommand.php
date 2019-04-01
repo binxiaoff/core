@@ -7,9 +7,7 @@ use Symfony\Component\Console\Input\{
     InputArgument, InputInterface, InputOption
 };
 use Symfony\Component\Console\Output\OutputInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    DetailedDailyStateBalanceHistory, OperationSubType, OperationType, Settings, Virements, WalletType
-};
+use Unilend\Entity\{DetailedDailyStateBalanceHistory, Operation, OperationSubType, OperationType, Prelevements, Settings, Virements, WalletBalanceHistory, WalletType};
 
 class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
 {
@@ -179,7 +177,7 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
     private function addMovementData(\PHPExcel_Worksheet $activeSheet, \DateTime $firstDay, \DateTime $requestedDate, array $specificRows)
     {
         $entityManager       = $this->getContainer()->get('doctrine.orm.entity_manager');
-        $operationRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
+        $operationRepository = $entityManager->getRepository(Operation::class);
 
         $incomingMovements = [
             OperationType::LENDER_PROVISION,
@@ -244,7 +242,7 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
      */
     private function addBalanceData(\PHPExcel_Worksheet $activeSheet, \DateTime $firstDay, \DateTime $requestedDate, array $specificRows)
     {
-        $detailedDailyStateBalanceRepository = $this->getContainer()->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:DetailedDailyStateBalanceHistory');
+        $detailedDailyStateBalanceRepository = $this->getContainer()->get('doctrine.orm.entity_manager')->getRepository(DetailedDailyStateBalanceHistory::class);
         $previousDay                         = $firstDay->sub(\DateInterval::createFromDateString('1 day'));
         $previousDayBalanceHistory           = $detailedDailyStateBalanceRepository->findOneBy(['date' => $previousDay]);
 
@@ -311,7 +309,7 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
     private function newDailyStateBalanceHistory(\DateTime $date) : DetailedDailyStateBalanceHistory
     {
         $entityManager                  = $this->getContainer()->get('doctrine.orm.entity_manager');
-        $walletBalanceHistoryRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:WalletBalanceHistory');
+        $walletBalanceHistoryRepository = $entityManager->getRepository(WalletBalanceHistory::class);
 
         $balanceHistory = new DetailedDailyStateBalanceHistory();
         $balanceHistory->setLenderBalance($walletBalanceHistoryRepository->sumBalanceForDailyState($date, [WalletType::LENDER]));
@@ -467,7 +465,7 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
     private function addMonths(\PHPExcel_Worksheet $activeSheet, \DateTime $requestedDate, int $row) : array
     {
         $monthInterval    = \DateInterval::createFromDateString('1 month');
-        $year             = new \DatePeriod(new \Datetime('First day of January ' . $requestedDate->format('Y')), $monthInterval, new \DateTime('Last day of december ' . $requestedDate->format('Y')));
+        $year             = new \DatePeriod(new \DateTime('First day of January ' . $requestedDate->format('Y')), $monthInterval, new \DateTime('Last day of december ' . $requestedDate->format('Y')));
         $coordinatesMonth = [];
 
         /** @var \DateTime $month */
@@ -915,8 +913,8 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
     private function addBankAccountData(\PHPExcel_Worksheet $activeSheet, \DateTime $firstDay, \DateTime $requestedDate, array $specificRows)
     {
         $entityManager             = $this->getContainer()->get('doctrine.orm.entity_manager');
-        $wireTransferOutRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Virements');
-        $directDebitRepository     = $entityManager->getRepository('UnilendCoreBusinessBundle:Prelevements');
+        $wireTransferOutRepository = $entityManager->getRepository(Virements::class);
+        $directDebitRepository     = $entityManager->getRepository(Prelevements::class);
 
         $wireTransfersDay = [
             'out'         => $wireTransferOutRepository->sumWireTransferOutByDay($firstDay, $requestedDate, Virements::STATUS_SENT),
@@ -966,7 +964,7 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
     {
         $entityManager = $this->getContainer()->get('doctrine.orm.entity_manager');
         /** @var Settings $recipientSetting */
-        $recipientSetting = $entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Adresse notification etat quotidien']);
+        $recipientSetting = $entityManager->getRepository(Settings::class)->findOneBy(['type' => 'Adresse notification etat quotidien']);
 
         /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
         $message = $this->getContainer()->get('unilend.swiftmailer.message_provider')->newMessage('notification-etat-quotidien', [], false);

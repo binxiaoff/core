@@ -1,6 +1,6 @@
 <?php
 
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
+use Unilend\Entity\{
     Attachment, BankAccount, ClientAddress, CompanyAddress
 };
 

@@ -6,7 +6,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Asset\Packages;
 use Symfony\Component\Translation\TranslatorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{MailTemplates, Translations};
+use Unilend\Entity\{MailTemplates, Settings, Translations};
 
 class TemplateMessageProvider
 {
@@ -81,7 +81,7 @@ class TemplateMessageProvider
      */
     public function newMessage(string $templateName, array $keywords = [], bool $wrapKeywords = true)
     {
-        $mailTemplate = $this->entityManager->getRepository('UnilendCoreBusinessBundle:MailTemplates')->findOneBy([
+        $mailTemplate = $this->entityManager->getRepository(MailTemplates::class)->findOneBy([
             'type'   => $templateName,
             'locale' => $this->defaultLocale,
             'status' => MailTemplates::STATUS_ACTIVE,
@@ -164,7 +164,7 @@ class TemplateMessageProvider
      */
     private function getCommonKeywords()
     {
-        $settingsRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings');
+        $settingsRepository = $this->entityManager->getRepository(Settings::class);
 
         return [
             'staticUrl'       => $this->staticUrl,

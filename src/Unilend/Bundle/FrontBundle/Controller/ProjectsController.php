@@ -10,8 +10,8 @@ use Symfony\Component\HttpFoundation\{JsonResponse, RedirectResponse, Request, R
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Translation\TranslatorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{AttachmentType, Bids, Clients, ClientsHistoryActions, Embeddable\LendingRate, Loans, Projects, ProjectsStatus, UnderlyingContract,
-    UnderlyingContractAttributeType, WalletType};
+use Unilend\Entity\{Attachment, AttachmentType, Bids, Clients, ClientsHistoryActions, Companies, Embeddable\LendingRate, Loans, Operation, Product, Projects, ProjectsStatus, UnderlyingContract,
+    UnderlyingContractAttributeType, Wallet, WalletType};
 use Unilend\Bundle\CoreBusinessBundle\Exception\BidException;
 use Unilend\Bundle\CoreBusinessBundle\Repository\ProjectsRepository;
 use Unilend\Bundle\CoreBusinessBundle\Service\CIPManager;
@@ -134,7 +134,7 @@ class ProjectsController extends Controller
     {
         $entityManager         = $this->get('doctrine.orm.entity_manager');
         $projectDisplayManager = $this->get('unilend.frontbundle.service.project_display_manager');
-        $projectRepository     = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
+        $projectRepository     = $entityManager->getRepository(Projects::class);
 
         $template      = [];
         $pagination    = $this->getPaginationStartAndLimit($page);
@@ -152,7 +152,7 @@ class ProjectsController extends Controller
 
         $template['projects'] = $projectDisplayManager->getProjectsList([], $sort, $start, $limit, $client);
 
-        $productRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Product');
+        $productRepository = $entityManager->getRepository(Product::class);
         $products          = $productRepository->findAvailableProductsByClient($client);
         $projects          = $projectRepository->findBy(['status' => ProjectsStatus::STATUS_ONLINE, 'idProduct' => $products]);
 
@@ -322,7 +322,7 @@ class ProjectsController extends Controller
             }
         }
 
-        $projectEntity = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Projects')->find($project->id_project);
+        $projectEntity = $this->get('doctrine.orm.entity_manager')->getRepository(Projects::class)->find($project->id_project);
         $visibility    = $projectDisplayManager->getVisibility($projectEntity, $client);
 
         if (ProjectDisplayManager::VISIBILITY_FULL === $visibility) {
@@ -394,7 +394,7 @@ class ProjectsController extends Controller
 
         $projectDisplayManager = $this->get('unilend.frontbundle.service.project_display_manager');
         $entityManager         = $this->get('doctrine.orm.entity_manager');
-        $projectEntity         = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($project->id_project);
+        $projectEntity         = $entityManager->getRepository(Projects::class)->find($project->id_project);
 
         if (
             $project->status >= ProjectsStatus::STATUS_REVIEW && $project->status < ProjectsStatus::STATUS_ONLINE
@@ -497,7 +497,7 @@ class ProjectsController extends Controller
 
             $formManager->saveFormSubmission($client, ClientsHistoryActions::LENDER_BID, serialize(['id_client' => $client->getIdClient(), 'post' => $post, 'id_projet' => $projectId]), $request->getClientIp());
 
-            $wallet    = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client->getIdClient(), WalletType::LENDER);
+            $wallet    = $entityManager->getRepository(Wallet::class)->getWalletByType($client->getIdClient(), WalletType::LENDER);
             $bidAmount = floor($post['amount']); // the cents is not allowed
             $rate      = empty($post['interest']) ? 0.0 : (float) $post['interest'];
 
@@ -511,7 +511,7 @@ class ProjectsController extends Controller
             $bidManager = $this->get('unilend.service.bid_manager');
 
             try {
-                $projectEntity  = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Projects')->find($projectId);
+                $projectEntity  = $this->get('doctrine.orm.entity_manager')->getRepository(Projects::class)->find($projectId);
                 $bids           = $bidManager->bid($wallet, $projectEntity, $bidAmount, $rate);
                 /** @var MemcacheCachePool $oCachePool */
                 $oCachePool = $this->get('memcache.default');
@@ -602,7 +602,7 @@ class ProjectsController extends Controller
         }
 
         if ($client instanceof Clients && $client->isLender()) {
-            $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
+            $wallet = $entityManager->getRepository(Wallet::class)->getWalletByType($client, WalletType::LENDER);
 
             array_walk($template['bids'], function(&$bid) use ($wallet) {
                 if ($bid['lenderId'] == $wallet->getId()) {
@@ -911,7 +911,7 @@ class ProjectsController extends Controller
             ]);
         }
 
-        $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
+        $wallet = $entityManager->getRepository(Wallet::class)->getWalletByType($client, WalletType::LENDER);
 
         if ($wallet->getAvailableBalance() < $amount) {
             return new JsonResponse([
@@ -922,12 +922,12 @@ class ProjectsController extends Controller
         }
 
         $lendingRate = (new LendingRate())
-            ->setType(LendingRate::TYPE_FIXED)
+            ->setType(LendingRate::INDEX_FIXED)
             ->setMargin($rate);
 
         $bid = new Bids();
         $bid
-            ->setProject($entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($project->id_project))
+            ->setProject($entityManager->getRepository(Projects::class)->find($project->id_project))
             ->setWallet($wallet)
             ->setAmount($amount * 100)
             ->setRate($lendingRate);
@@ -935,7 +935,7 @@ class ProjectsController extends Controller
         $reasons = $productManager->checkBidEligibility($bid);
 
         if (false === empty($reasons)) {
-            $pendingBidAmount = $entityManager->getRepository('UnilendCoreBusinessBundle:Bids')
+            $pendingBidAmount = $entityManager->getRepository(Bids::class)
                 ->getSumByWalletAndProjectAndStatus($wallet, $bid->getProject(), [Bids::STATUS_PENDING]);
 
             $product = $entityManagerSimulator->getRepository('product');
@@ -1120,7 +1120,7 @@ class ProjectsController extends Controller
     private function getDIRSCompany(\projects $project): array
     {
         $entityManager              = $this->get('doctrine.orm.entity_manager');
-        $company                    = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->find($project->id_company);
+        $company                    = $entityManager->getRepository(Companies::class)->find($project->id_company);
         $companyBalanceSheetManager = $this->get('unilend.service.company_balance_sheet_manager');
 
         $balanceDetails = $companyBalanceSheetManager->getBalanceSheetsByAnnualAccount([$project->id_dernier_bilan]);
@@ -1157,9 +1157,9 @@ class ProjectsController extends Controller
         $attachmentManager      = $this->get('unilend.service.attachment_manager');
 
         /** @var Projects $projectEntity */
-        $projectEntity  = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($project->id_project);
-        $attachmentType = $entityManager->getRepository('UnilendCoreBusinessBundle:AttachmentType')->find(AttachmentType::DEBTS_STATEMENT);
-        $attachment     = $entityManager->getRepository('UnilendCoreBusinessBundle:Attachment')->getProjectAttachmentByType($projectEntity, $attachmentType);
+        $projectEntity  = $entityManager->getRepository(Projects::class)->find($project->id_project);
+        $attachmentType = $entityManager->getRepository(AttachmentType::class)->find(AttachmentType::DEBTS_STATEMENT);
+        $attachment     = $entityManager->getRepository(Attachment::class)->getProjectAttachmentByType($projectEntity, $attachmentType);
 
         /** @var \project_rate_settings $projectRateSettings */
         $projectRateSettings = $entityManagerSimulator->getRepository('project_rate_settings');
@@ -1187,7 +1187,7 @@ class ProjectsController extends Controller
             'start_date'          => $startDate,
             'end_date'            => $endDate,
             'signature_date'      => $signatureDate,
-            'released_funds'      => $entityManager->getRepository('UnilendCoreBusinessBundle:Operation')->getLastYearReleasedFundsBySIREN($projectEntity->getIdCompany()->getSiren()),
+            'released_funds'      => $entityManager->getRepository(Operation::class)->getLastYearReleasedFundsBySIREN($projectEntity->getIdCompany()->getSiren()),
             'debts_statement_img' => base64_encode(file_get_contents($attachmentManager->getFullPath($attachment))),
             'repayment_schedule'  => $repaymentSchedule
         ];

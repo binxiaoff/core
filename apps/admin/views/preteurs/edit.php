@@ -253,18 +253,18 @@
                 <th>&Eacute;tat de validation</th>
             </tr>
             <?php
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType $attachmentType */
+            /** @var \Unilend\Entity\AttachmentType $attachmentType */
             foreach ($this->attachmentTypes as $attachmentType) :
                 $currentAttachment     = null;
                 $greenPointAttachment  = null;
                 $greenpointLabel       = 'Non Contrôlé par GreenPoint';
                 $greenpointColor       = 'error';
                 $greenpointFinalStatus = '';
-                /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Attachment $attachment */
+                /** @var \Unilend\Entity\Attachment $attachment */
                 foreach ($this->attachments as $attachment) :
                     if ($attachment->getType() === $attachmentType) {
                         $currentAttachment = $attachment;
-                        /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\GreenpointAttachment $greenPointAttachment */
+                        /** @var \Unilend\Entity\GreenpointAttachment $greenPointAttachment */
                         $greenPointAttachment = $currentAttachment->getGreenpointAttachment();
                         break;
                     }
@@ -276,7 +276,7 @@
                 }
                 if ($greenPointAttachment) {
                     $greenpointLabel = empty($greenPointAttachment->getValidationStatusLabel()) ? 'Erreur d\'appel GreenPoint' : $greenPointAttachment->getValidationStatusLabel();
-                    if (\Unilend\Bundle\CoreBusinessBundle\Entity\GreenpointAttachment::STATUS_VALIDATION_VALID === $greenPointAttachment->getValidationStatus()) {
+                    if (\Unilend\Entity\GreenpointAttachment::STATUS_VALIDATION_VALID === $greenPointAttachment->getValidationStatus()) {
                         $greenpointFinalStatus = 'Statut définitif';
                     } else {
                         $greenpointFinalStatus = 'Statut peut être modifié par un retour asychrone';
@@ -308,7 +308,7 @@
             <h2>Document de transfert (en cas de succession)</h2>
             <table class="attachment-list" style="width: auto; border-collapse: separate; border-spacing: 2px;">
                 <?php
-                /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Transfer $transfer */
+                /** @var \Unilend\Entity\Transfer $transfer */
                 foreach ($this->transfers as $transfer) :
                     foreach ($transfer->getAttachments() as $transferAttachment) :
                     $attachment = $transferAttachment->getAttachment();

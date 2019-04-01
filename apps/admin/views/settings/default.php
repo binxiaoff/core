@@ -15,7 +15,7 @@
                 </tr>
             </thead>
             <tbody>
-                <?php /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Settings $setting */ ?>
+                <?php /** @var \Unilend\Entity\Settings $setting */ ?>
                 <?php foreach ($this->settings as $setting) : ?>
                     <tr>
                         <td><?= $setting->getType() ?></td>

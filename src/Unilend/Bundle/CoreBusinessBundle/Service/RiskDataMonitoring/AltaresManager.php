@@ -5,7 +5,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service\RiskDataMonitoring;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\OptimisticLockException;
 use Psr\Log\LoggerInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{Companies, CompanyRatingHistory};
+use Unilend\Entity\{Companies, CompanyRatingHistory, RiskDataMonitoringType};
 use Unilend\Bundle\CoreBusinessBundle\Service\Eligibility\Validator\CompanyValidator;
 use Unilend\Bundle\CoreBusinessBundle\Service\ExternalDataManager;
 use Unilend\Bundle\WSClientBundle\Entity\Altares\RiskDataMonitoring\{EventDetail, Notification, NotificationInformation};
@@ -84,7 +84,7 @@ class AltaresManager
             }
 
             $monitoredCompanies = $this->monitoringManager->getMonitoredCompanies($siren, self::PROVIDER_NAME);
-            $monitoringTypes    = $this->entityManager->getRepository('UnilendCoreBusinessBundle:RiskDataMonitoringType')->findBy(['provider' => self::PROVIDER_NAME]);
+            $monitoringTypes    = $this->entityManager->getRepository(RiskDataMonitoringType::class)->findBy(['provider' => self::PROVIDER_NAME]);
 
             $this->refreshData($siren);
 

@@ -2,7 +2,7 @@
 
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
+use Unilend\Entity\Zones;
 use Unilend\Bundle\CoreBusinessBundle\Service\BackOfficeUserManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\BulkCompanyCheckManager;
 

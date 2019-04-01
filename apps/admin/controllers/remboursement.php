@@ -4,7 +4,7 @@ use Box\Spout\Common\Type;
 use Box\Spout\Writer\WriterFactory;
 use Doctrine\ORM\EntityManager;
 use Symfony\Component\HttpFoundation\Request;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{Clients, DebtCollectionFeeDetail, EcheanciersEmprunteur, ProjectRepaymentTask, Projects, ProjectsStatus, Receptions, Zones};
+use Unilend\Entity\{Clients, DebtCollectionFeeDetail, EcheanciersEmprunteur, ProjectRepaymentTask, Projects, ProjectsStatus, Receptions, Zones};
 use Unilend\Bundle\CoreBusinessBundle\Service\{BackOfficeUserManager, DebtCollectionMissionManager, ProjectCloseOutNettingManager, Repayment\ProjectCloseOutNettingPaymentManager,
     Repayment\ProjectPaymentManager};
 
@@ -25,7 +25,7 @@ class remboursementController extends bootstrap
     {
         /** @var EntityManager $entityManager */
         $entityManager        = $this->get('doctrine.orm.entity_manager');
-        $receptionsToValidate = $entityManager->getRepository('UnilendCoreBusinessBundle:Receptions')
+        $receptionsToValidate = $entityManager->getRepository(Receptions::class)
             ->findReceptionsWithPendingRepaymentTasks();
         $this->render(null, ['receptionsToValidate' => $receptionsToValidate]);
 
@@ -45,9 +45,9 @@ class remboursementController extends bootstrap
         $userManager = $this->get('unilend.service.back_office_user_manager');
         $session     = $this->get('session');
 
-        $projectChargeRepository         = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectCharge');
-        $debtCollectionMissionRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:DebtCollectionMission');
-        $receptionRepository             = $entityManager->getRepository('UnilendCoreBusinessBundle:Receptions');
+        $projectChargeRepository         = $entityManager->getRepository(ProjectCharge::class);
+        $debtCollectionMissionRepository = $entityManager->getRepository(DebtCollectionMission::class);
+        $receptionRepository             = $entityManager->getRepository(Receptions::class);
 
         $receptionId = filter_var($this->params[0], FILTER_VALIDATE_INT);
         $reception   = $receptionRepository->find($receptionId);
@@ -71,7 +71,7 @@ class remboursementController extends bootstrap
             die;
         }
 
-        $repaymentTask = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRepaymentTask')->findOneBy([
+        $repaymentTask = $entityManager->getRepository(ProjectRepaymentTask::class)->findOneBy([
             'idWireTransferIn' => $reception,
             'status'           => [
                 ProjectRepaymentTask::STATUS_PENDING,
@@ -205,9 +205,9 @@ class remboursementController extends bootstrap
             }
         }
 
-        $nextRepaymentSchedule = $entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers')->findNextPendingScheduleAfter(new DateTime(), $reception->getIdProject());
+        $nextRepaymentSchedule = $entityManager->getRepository(Echeanciers::class)->findNextPendingScheduleAfter(new DateTime(), $reception->getIdProject());
 
-        $ongoingProjectRepaymentTask = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRepaymentTask')->findOneBy([
+        $ongoingProjectRepaymentTask = $entityManager->getRepository(ProjectRepaymentTask::class)->findOneBy([
             'idProject' => $reception->getIdProject(),
             'status'    => ProjectRepaymentTask::STATUS_IN_PROGRESS
         ]);
@@ -215,7 +215,7 @@ class remboursementController extends bootstrap
         $hasOngoingProjectRepaymentTask = null !== $ongoingProjectRepaymentTask;
 
         $projectCharges = $projectChargeRepository->findBy(['idProject' => $reception->getIdProject(), 'idWireTransferIn' => null]);
-        $projectStatus  = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatus')->findOneBy(['status' => $reception->getIdProject()->getStatus()]);
+        $projectStatus  = $entityManager->getRepository(ProjectsStatus::class)->findOneBy(['status' => $reception->getIdProject()->getStatus()]);
 
         /** @var DebtCollectionMissionManager $debtCollectionMissionManager */
         $debtCollectionMissionManager = $this->get('unilend.service.debt_collection_mission_manager');
@@ -266,13 +266,13 @@ class remboursementController extends bootstrap
         $entityManager = $this->get('doctrine.orm.entity_manager');
 
         $receptionId = filter_var($this->params[0], FILTER_VALIDATE_INT);
-        $reception   = $entityManager->getRepository('UnilendCoreBusinessBundle:Receptions')->find($receptionId);
+        $reception   = $entityManager->getRepository(Receptions::class)->find($receptionId);
         if (null === $reception) {
             header('Location: ' . $this->url);
             die;
         }
 
-        $projectRepaymentTaskRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRepaymentTask');
+        $projectRepaymentTaskRepository = $entityManager->getRepository(ProjectRepaymentTask::class);
         $projectRepaymentTasks          = $projectRepaymentTaskRepository->findBy([
             'idWireTransferIn' => $reception,
             'status'           => [
@@ -318,8 +318,8 @@ class remboursementController extends bootstrap
         /** @var DebtCollectionMissionManager $debtCollectionMissionManager */
         $debtCollectionMissionManager = $this->get('unilend.service.debt_collection_mission_manager');
 
-        $debtCollectionFeeDetailRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:DebtCollectionFeeDetail');
-        $projectChargeRepository           = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectCharge');
+        $debtCollectionFeeDetailRepository = $entityManager->getRepository(DebtCollectionFeeDetail::class);
+        $projectChargeRepository           = $entityManager->getRepository(ProjectCharge::class);
 
         $feeOnLoan       = $debtCollectionFeeDetailRepository->getAmountsByTypeAndWireTransferIn(DebtCollectionFeeDetail::TYPE_LOAN, $reception);
         $feeOnCommission = $debtCollectionFeeDetailRepository->getAmountsByTypeAndWireTransferIn(DebtCollectionFeeDetail::TYPE_REPAYMENT_COMMISSION, $reception);
@@ -332,7 +332,7 @@ class remboursementController extends bootstrap
         $closeOutNettingPayment = null;
         $remainingCapital       = 0;
         if ($reception->getIdProject()->getCloseOutNettingDate()) {
-            $closeOutNettingPayment = $entityManager->getRepository('UnilendCoreBusinessBundle:CloseOutNettingPayment')->findOneBy(['idProject' => $reception->getIdProject()]);
+            $closeOutNettingPayment = $entityManager->getRepository(CloseOutNettingPayment::class)->findOneBy(['idProject' => $reception->getIdProject()]);
         } else {
             $firstProjectRepaymentTask = current($projectRepaymentTasks);
             // All tasks created by a wire transfer have the same type.
@@ -342,13 +342,13 @@ class remboursementController extends bootstrap
                     $sequences[] = $task->getSequence();
                 }
 
-                $paidPaymentSchedules = $entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur')->findBy(['idProject' => $reception->getIdProject(), 'ordre' => $sequences]);
+                $paidPaymentSchedules = $entityManager->getRepository(EcheanciersEmprunteur::class)->findBy(['idProject' => $reception->getIdProject(), 'ordre' => $sequences]);
             } else {
-                $nextRepayment = $entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers')
+                $nextRepayment = $entityManager->getRepository(Echeanciers::class)
                     ->findNextPendingScheduleAfter($firstProjectRepaymentTask->getRepayAt(), $reception->getIdProject());
 
                 if ($nextRepayment) {
-                    $remainingCapital = $entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur')
+                    $remainingCapital = $entityManager->getRepository(EcheanciersEmprunteur::class)
                         ->getRemainingCapitalFrom($reception->getIdProject(), $nextRepayment->getOrdre());
                 }
             }
@@ -374,7 +374,7 @@ class remboursementController extends bootstrap
             'paidPaymentSchedules'             => $paidPaymentSchedules,
             'repaymentTaskValidated'           => $validated,
             'closeOutNettingPayment'           => $closeOutNettingPayment,
-            'projectStatus'                    => $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatus')->findOneBy(['status' => $reception->getIdProject()->getStatus()]),
+            'projectStatus'                    => $entityManager->getRepository(ProjectsStatus::class)->findOneBy(['status' => $reception->getIdProject()->getStatus()]),
             'remainingCapital'                 => $remainingCapital,
             'plannedRepaymentTasks'            => $projectRepaymentTasks,
         ]);
@@ -385,7 +385,7 @@ class remboursementController extends bootstrap
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
         if (false === empty($this->params[0])) {
-            $projectRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
+            $projectRepository = $entityManager->getRepository(Projects::class);
 
             $projectId       = filter_var($this->params[0], FILTER_VALIDATE_INT);
             $latePaymentData = [];
@@ -397,11 +397,11 @@ class remboursementController extends bootstrap
                 /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectCloseOutNettingManager $projectCloseOutNettingManager */
                 $projectCloseOutNettingManager = $this->get('unilend.service.project_close_out_netting_manager');
 
-                $projectStatus            = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatus')->findOneBy(['status' => $project->getStatus()]);
-                $lastCompanyStatus        = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyStatusHistory')->findOneBy(['idCompany' => $project->getIdCompany()], ['added' => 'DESC']);
+                $projectStatus            = $entityManager->getRepository(ProjectsStatus::class)->findOneBy(['status' => $project->getStatus()]);
+                $lastCompanyStatus        = $entityManager->getRepository(CompanyStatusHistory::class)->findOneBy(['idCompany' => $project->getIdCompany()], ['added' => 'DESC']);
                 $totalOverdueAmounts      = $projectManager->getOverdueAmounts($project);
                 $totalOverdueAmount       = round(bcadd(bcadd($totalOverdueAmounts['capital'], $totalOverdueAmounts['interest'], 4), $totalOverdueAmounts['commission'], 4), 2);
-                $currentMission           = $entityManager->getRepository('UnilendCoreBusinessBundle:DebtCollectionMission')->findOneBy(['idProject' => $project, 'archived' => null]);
+                $currentMission           = $entityManager->getRepository(DebtCollectionMission::class)->findOneBy(['idProject' => $project, 'archived' => null]);
                 $entrustedToDebtCollector = 0;
                 if (null !== $currentMission) {
                     $entrustedToDebtCollector = round(bcadd($currentMission->getCapital(), bcadd($currentMission->getInterest(), $currentMission->getCommissionVatIncl(), 4), 4), 2);
@@ -416,7 +416,7 @@ class remboursementController extends bootstrap
 
                 if (null === $project->getCloseOutNettingDate()) {
                     $latePaymentData           = $this->getLatePaymentsData($project);
-                    $paymentScheduleRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur');
+                    $paymentScheduleRepository = $entityManager->getRepository(EcheanciersEmprunteur::class);
                     $unpaidScheduleCount       = count($paymentScheduleRepository->findBy([
                         'idProject'        => $project,
                         'statusEmprunteur' => [
@@ -432,7 +432,7 @@ class remboursementController extends bootstrap
                         $paymentSchedules[$paymentSchedule->getOrdre()] = $paymentSchedule;
                     }
                 } else {
-                    $closeOutNettingPayment = $entityManager->getRepository('UnilendCoreBusinessBundle:CloseOutNettingPayment')->findOneBy(['idProject' => $project]);
+                    $closeOutNettingPayment = $entityManager->getRepository(CloseOutNettingPayment::class)->findOneBy(['idProject' => $project]);
                     $totalAmount            = round(bcadd($closeOutNettingPayment->getCommissionTaxIncl(), bcadd($closeOutNettingPayment->getCapital(), $closeOutNettingPayment->getInterest(), 4),
                         4), 2);
                     $paidAmount             = round(bcadd($closeOutNettingPayment->getPaidCommissionTaxIncl(),
@@ -447,8 +447,8 @@ class remboursementController extends bootstrap
                 }
 
                 $debtCollectionMissions = $project->getDebtCollectionMissions(true, ['id' => 'DESC']);
-                $pendingWireTransferIn  = $entityManager->getRepository('UnilendCoreBusinessBundle:Receptions')->findPendingWireTransferIn($project);
-                $plannedRepaymentTasks  = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRepaymentTask')->findBy([
+                $pendingWireTransferIn  = $entityManager->getRepository(Receptions::class)->findPendingWireTransferIn($project);
+                $plannedRepaymentTasks  = $entityManager->getRepository(ProjectRepaymentTask::class)->findBy([
                     'idProject' => $project,
                     'status'    => ProjectRepaymentTask::STATUS_PLANNED
                 ]);
@@ -461,19 +461,19 @@ class remboursementController extends bootstrap
                     'entrustedToDebtCollector'   => $entrustedToDebtCollector,
                     'canBeDeclined'              => $projectCloseOutNettingManager->canBeDeclined($project),
                     'latePaymentsData'           => $latePaymentData,
-                    'debtCollector'              => $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')
+                    'debtCollector'              => $entityManager->getRepository(Clients::class)
                         ->findOneBy(['hash' => DebtCollectionMissionManager::CLIENT_HASH_PROGERIS]),
                     'debtCollectionMissionsData' => $debtCollectionMissions,
                     'pendingWireTransferIn'      => $pendingWireTransferIn,
-                    'projectCharges'             => $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectCharge')->findBy(['idProject' => $project]),
-                    'projectChargeTypes'         => $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectChargeType')->findAll(),
+                    'projectCharges'             => $entityManager->getRepository(ProjectCharge::class)->findBy(['idProject' => $project]),
+                    'projectChargeTypes'         => $entityManager->getRepository(ProjectChargeType::class)->findAll(),
                     'futurSchedule'              => $futurSchedule,
                     'paidScheduleCount'          => $paidScheduleCount,
                     'futureScheduleCount'        => $unpaidScheduleCount - count($latePaymentData),
                     'futureScheduledAmount'      => round(bcsub($unpaidScheduledAmount, $totalOverdueAmount, 4), 2),
                     'paidScheduledAmount'        => $paidScheduledAmount,
                     'plannedRepaymentTasks'      => $plannedRepaymentTasks,
-                    'lenderCount'                => $entityManager->getRepository('UnilendCoreBusinessBundle:Loans')->getLenderNumber($project),
+                    'lenderCount'                => $entityManager->getRepository(Loans::class)->getLenderNumber($project),
                     'paymentSchedules'           => $paymentSchedules,
                     'repaymentProjectStatus'     => ProjectsStatus::STATUS_FUNDED . ',' . ProjectsStatus::STATUS_REPAYMENT . ',' . ProjectsStatus::STATUS_REPAID
                 ];
@@ -507,7 +507,7 @@ class remboursementController extends bootstrap
                 $this->sendAjaxResponse(false, null, ['paramètres invalides.']);
             }
 
-            $project = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($projectId);
+            $project = $entityManager->getRepository(Projects::class)->find($projectId);
 
             if (null === $project) {
                 $this->sendAjaxResponse(false, null, ['paramètres invalides.']);
@@ -565,7 +565,7 @@ class remboursementController extends bootstrap
         if ($userManager->isGrantedRisk($this->userEntity) && $projectId) {
             /** @var EntityManager $entityManager */
             $entityManager = $this->get('doctrine.orm.entity_manager');
-            $project       = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($projectId);
+            $project       = $entityManager->getRepository(Projects::class)->find($projectId);
             /** @var ProjectCloseOutNettingManager $projectCloseOutNettingManager */
             $projectCloseOutNettingManager = $this->get('unilend.service.project_close_out_netting_manager');
 
@@ -598,8 +598,8 @@ class remboursementController extends bootstrap
     {
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager                    = $this->get('doctrine.orm.entity_manager');
-        $paymentRepository                = $entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur');
-        $missionPaymentScheduleRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:DebtCollectionMissionPaymentSchedule');
+        $paymentRepository                = $entityManager->getRepository(EcheanciersEmprunteur::class);
+        $missionPaymentScheduleRepository = $entityManager->getRepository(DebtCollectionMissionPaymentSchedule::class);
         $latePaymentData                  = [];
 
         $pendingPayments = $paymentRepository->findBy(
@@ -649,7 +649,7 @@ class remboursementController extends bootstrap
 
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
-        $project       = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($projectId);
+        $project       = $entityManager->getRepository(Projects::class)->find($projectId);
 
         if (null === $project || null === $project->getCloseOutNettingDate()) {
             header('Location: ' . $this->lurl . '/dossiers');

@@ -1,6 +1,6 @@
 <?php
 
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
+use Unilend\Entity\{
     WsExternalResource, Zones
 };
 use Unilend\Bundle\StoreBundle\Document\WsCall;
@@ -397,7 +397,7 @@ class simulationController extends bootstrap
 
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager        = $this->get('doctrine.orm.entity_manager');
-        $wsResourceRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:WsExternalResource');
+        $wsResourceRepository = $entityManager->getRepository(WsExternalResource::class);
         $service              = $this->request->request->filter('service', FILTER_SANITIZE_STRING);
         $wsResource           = $wsResourceRepository->findOneBy(['label' => $service]);
 

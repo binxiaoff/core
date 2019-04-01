@@ -2,15 +2,8 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract;
 
-use Unilend\Bundle\CoreBusinessBundle\Entity\Bids;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
-use Unilend\Bundle\CoreBusinessBundle\Entity\UnderlyingContract;
-use Unilend\Bundle\CoreBusinessBundle\Entity\UnderlyingContractAttributeType;
-use Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\Validator\AutoBidSettingsValidator;
-use Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\Validator\BidValidator;
-use Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\Validator\ClientValidator;
-use Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\Validator\ProjectValidator;
+use Unilend\Entity\{Bids, Clients, Projects, UnderlyingContract, UnderlyingContractAttributeType};
+use Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\Validator\{AutoBidSettingsValidator, BidValidator, ClientValidator, ProjectValidator};
 
 class ContractManager
 {

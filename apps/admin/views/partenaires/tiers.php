@@ -40,7 +40,7 @@
             <tbody>
             <?php $i = 1; ?>
             <?php
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\PartnerThirdParty $thirdParty */
+            /** @var \Unilend\Entity\PartnerThirdParty $thirdParty */
             foreach ($thirdParties as $thirdParty) : ?>
                 <tr<?= ($i % 2 == 1 ? '' : ' class="odd"') ?>>
                     <td><?= $thirdParty->getIdCompany()->getName() ?></td>

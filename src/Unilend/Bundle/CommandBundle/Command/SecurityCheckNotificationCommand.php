@@ -6,6 +6,7 @@ use SensioLabs\Security\SecurityChecker;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Unilend\Entity\Settings;
 
 class SecurityCheckNotificationCommand extends ContainerAwareCommand
 {
@@ -36,7 +37,7 @@ class SecurityCheckNotificationCommand extends ContainerAwareCommand
             $slackManager = $this->getContainer()->get('unilend.service.slack_manager');
             $slackManager->sendMessage($content, '#it-monitoring');
 
-            $addressEmail = $this->getContainer()->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Adresse email IT']);
+            $addressEmail = $this->getContainer()->get('doctrine.orm.entity_manager')->getRepository(Settings::class)->findOneBy(['type' => 'Adresse email IT']);
 
             if ($addressEmail) {
                 $message = $this->getContainer()->get('unilend.swiftmailer.message_provider')->newMessage('notification-security-check', ['content' => nl2br($content)]);

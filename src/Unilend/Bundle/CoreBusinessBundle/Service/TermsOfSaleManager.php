@@ -5,7 +5,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{AcceptationsLegalDocs, Clients, Companies, Elements, ProjectCgv, Projects, Settings, UniversignEntityInterface};
+use Unilend\Entity\{AcceptationsLegalDocs, Clients, Companies, Elements, ProjectCgv, Projects, Settings, TreeElements, UniversignEntityInterface};
 use Unilend\core\Loader;
 
 class TermsOfSaleManager
@@ -90,7 +90,7 @@ class TermsOfSaleManager
     public function isAcceptedVersion(Clients $client, int $legalDocId): bool
     {
         $legalDocsAcceptance = $this->entityManager
-            ->getRepository('UnilendCoreBusinessBundle:AcceptationsLegalDocs')
+            ->getRepository(AcceptationsLegalDocs::class)
             ->findOneBy(['idClient' => $client, 'idLegalDoc' => $legalDocId]);
 
         return null !== $legalDocsAcceptance;
@@ -116,7 +116,7 @@ class TermsOfSaleManager
     public function getCurrentVersionForPerson(): int
     {
         return (int) $this->entityManager
-            ->getRepository('UnilendCoreBusinessBundle:Settings')
+            ->getRepository(Settings::class)
             ->findOneBy(['type' => Settings::TYPE_LENDER_TOS_NATURAL_PERSON])
             ->getValue();
     }
@@ -127,7 +127,7 @@ class TermsOfSaleManager
     public function  getCurrentVersionForLegalEntity(): int
     {
         return (int) $this->entityManager
-            ->getRepository('UnilendCoreBusinessBundle:Settings')
+            ->getRepository(Settings::class)
              ->findOneBy(['type' => Settings::TYPE_LENDER_TOS_LEGAL_ENTITY])
              ->getValue();
     }
@@ -138,7 +138,7 @@ class TermsOfSaleManager
     public function getDateOfNewTermsOfSaleWithTwoMandates(): \DateTime
     {
         $setting = $this->entityManager
-            ->getRepository('UnilendCoreBusinessBundle:Settings')
+            ->getRepository(Settings::class)
             ->findOneBy(['type' => Settings::TYPE_DATE_LENDER_TOS])
             ->getValue();
 
@@ -197,10 +197,10 @@ class TermsOfSaleManager
             throw new \Exception('Invalid client mobile phone number', self::EXCEPTION_CODE_INVALID_PHONE_NUMBER);
         }
 
-        $termsOfSale = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectCgv')->findOneBy(['idProject' => $project]);
+        $termsOfSale = $this->entityManager->getRepository(ProjectCgv::class)->findOneBy(['idProject' => $project]);
 
         if (null === $termsOfSale) {
-            $tree = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => Settings::TYPE_BORROWER_TOS]);
+            $tree = $this->entityManager->getRepository(Settings::class)->findOneBy(['type' => Settings::TYPE_BORROWER_TOS]);
 
             if (null === $tree) {
                 throw new \Exception('Unable to find tree element', self::EXCEPTION_CODE_PDF_FILE_NOT_FOUND);
@@ -219,7 +219,7 @@ class TermsOfSaleManager
             $this->entityManager->flush($termsOfSale);
         }
 
-        $pdfElement = $this->entityManager->getRepository('UnilendCoreBusinessBundle:TreeElements')->findOneBy([
+        $pdfElement = $this->entityManager->getRepository(TreeElements::class)->findOneBy([
             'idTree'    => $termsOfSale->getIdTree(),
             'idElement' => Elements::TYPE_PDF_TERMS_OF_SALE,
             'idLangue'  => substr($this->locale, 0, 2)

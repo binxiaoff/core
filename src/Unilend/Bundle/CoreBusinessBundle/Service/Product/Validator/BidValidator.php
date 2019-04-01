@@ -3,7 +3,7 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Service\Product\Validator;
 
 use Doctrine\ORM\EntityManagerInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{Bids, ProductAttributeType, ProductUnderlyingContract, UnderlyingContractAttributeType};
+use Unilend\Entity\{Bids, Product, ProductAttributeType, ProductUnderlyingContract, UnderlyingContractAttributeType};
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\Checker\BidChecker;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\ContractManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductAttributeManager;
@@ -40,7 +40,7 @@ class BidValidator
     {
         $violations = [];
 
-        $product = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Product')->find($bid->getProject()->getIdProduct());
+        $product = $this->entityManager->getRepository(Product::class)->find($bid->getProject()->getIdProduct());
         $client  = $bid->getWallet()->getIdClient();
 
         if (false === $this->isEligibleForClientId($client, $product, $this->productAttributeManager)) {

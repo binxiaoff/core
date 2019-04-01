@@ -5,7 +5,7 @@ namespace Unilend\Bundle\FrontBundle\Form\Fee;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\{AbstractType, Extension\Core\Type\CheckboxType, Extension\Core\Type\NumberType, FormBuilderInterface};
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{FeeType, PercentFee};
+use Unilend\Entity\{FeeType, PercentFee};
 
 class PercentFeeType extends AbstractType
 {

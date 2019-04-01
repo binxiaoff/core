@@ -3,7 +3,7 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\ORM\EntityManagerInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
+use Unilend\Entity\{Projects, ProjectsNotes};
 
 class ProjectRatingManager
 {
@@ -69,7 +69,7 @@ class ProjectRatingManager
      */
     public function calculateCommitteeAverageGrade(Projects $project)
     {
-        $projectRating = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsNotes')->findOneBy(['idProject' => $project]);
+        $projectRating = $this->entityManager->getRepository(ProjectsNotes::class)->findOneBy(['idProject' => $project]);
 
         if ($projectRating) {
             return round(

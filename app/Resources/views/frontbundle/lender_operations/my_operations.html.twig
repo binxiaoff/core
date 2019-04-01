@@ -119,8 +119,8 @@
                     </thead>
                     <tbody data-sortable-content>
                     {% for i, op in lenderOperations %}
-                        {% set classAmount = op.label != constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\OperationType::LENDER_LOAN') ? op.amount >= 0 ? 'ui-amount-positive' : 'ui-amount-negative' : '' %}
-                        {% set classBalance = op.label != constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\OperationType::LENDER_LOAN') ? op.available_balance >= 0 ? 'ui-balance-positive' : 'ui-balance-negative' : '' %}
+                        {% set classAmount = op.label != constant('\\Unilend\\Entity\\OperationType::LENDER_LOAN') ? op.amount >= 0 ? 'ui-amount-positive' : 'ui-amount-negative' : '' %}
+                        {% set classBalance = op.label != constant('\\Unilend\\Entity\\OperationType::LENDER_LOAN') ? op.available_balance >= 0 ? 'ui-balance-positive' : 'ui-balance-negative' : '' %}
                         <tr id="operation-{{ op.id }}" class="table-myoperations-item {{ classAmount }} {{ classBalance }}"
                             {% if op.detail is defined  %} data-details='{{ op.detail|json_encode|escape('html_attr') }}'{% endif %}
                             data-sortable-type="{{ op.label }}"

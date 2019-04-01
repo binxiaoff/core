@@ -4,7 +4,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
-use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyBeneficialOwnerDeclaration;
+use Unilend\Entity\{BeneficialOwnerType, CompanyBeneficialOwnerDeclaration};
 
 class BeneficialOwnerRepository extends EntityRepository
 {
@@ -18,7 +18,7 @@ class BeneficialOwnerRepository extends EntityRepository
     {
         $queryBuilder = $this->createQueryBuilder('bo');
         $queryBuilder->select('COUNT(bo.id)')
-            ->innerJoin('UnilendCoreBusinessBundle:BeneficialOwnerType', 'bot', Join::WITH, 'bo.idType = bot.id')
+            ->innerJoin(BeneficialOwnerType::class, 'bot', Join::WITH, 'bo.idType = bot.id')
             ->where('bo.idDeclaration = :idDeclaration')
             ->andWhere('bot.label = :label')
             ->setParameter('label', $type)

@@ -18,10 +18,12 @@ class SourceManager
 
     /** @var RequestStack */
     private $requestStack;
+    /** @var array */
+    private $sources;
 
     public function __construct(RequestStack $requestStack)
     {
-        $this->requestStack     = $requestStack;
+        $this->requestStack = $requestStack;
 
         $this->sources = [
             self::SOURCE1    => 'utm_source',

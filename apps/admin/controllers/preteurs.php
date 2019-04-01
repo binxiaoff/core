@@ -2,7 +2,7 @@
 
 use Box\Spout\{Common\Type, Writer\WriterFactory};
 use Doctrine\ORM\EntityManager;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, Attachment, AttachmentType, Autobid, Bids, Clients, ClientsGestionNotifications, ClientsGestionTypeNotif, ClientsStatus, Companies,
+use Unilend\Entity\{AddressType, Attachment, AttachmentType, Autobid, Bids, Clients, ClientsGestionNotifications, ClientsGestionTypeNotif, ClientsStatus, Companies,
     LenderStatistic, LenderTaxExemption, Loans, MailTemplates, OffresBienvenues, OperationType, ProjectNotification, ProjectsStatus, UsersHistory, VigilanceRule, Wallet, WalletType, Zones};
 use Unilend\Bundle\CoreBusinessBundle\Repository\LenderStatisticRepository;
 use Unilend\Bundle\CoreBusinessBundle\Service\{AttachmentManager, ClientAuditer, ClientDataHistoryManager, ClientStatusManager, LenderOperationsManager};
@@ -81,7 +81,7 @@ class preteursController extends bootstrap
             }
 
             /** @var \Unilend\Bundle\CoreBusinessBundle\Repository\ClientsRepository $clientRepository */
-            $clientRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients');
+            $clientRepository = $this->get('doctrine.orm.entity_manager')->getRepository(Clients::class);
             try {
                 $this->lPreteurs = $clientRepository->findLenders($clientId, $email, $lastName, $firstName, $companyName, $siren);
 
@@ -145,7 +145,7 @@ class preteursController extends bootstrap
             $this->params[0]
             && false !== filter_var($this->params[0], FILTER_VALIDATE_INT)
             && $this->clients->get($this->params[0], 'id_client')
-            && null !== $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($this->params[0], WalletType::LENDER)
+            && null !== $wallet = $entityManager->getRepository(Wallet::class)->getWalletByType($this->params[0], WalletType::LENDER)
         ) {
             $this->wallet              = $wallet;
             $this->client              = $wallet->getIdClient();
@@ -155,13 +155,13 @@ class preteursController extends bootstrap
             try {
                 if ($this->client->isNaturalPerson()) {
                     $this->validatedAddress    = $this->client->getIdAddress();
-                    $this->lastModifiedAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientAddress')
+                    $this->lastModifiedAddress = $entityManager->getRepository(ClientAddress::class)
                         ->findLastModifiedNotArchivedAddressByType($this->client, AddressType::TYPE_MAIN_ADDRESS);
                 } else {
                     $this->companies->get($this->client->getIdClient(), 'id_client_owner');
-                    $this->companyEntity       = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->find($this->companies->id_company);
+                    $this->companyEntity       = $entityManager->getRepository(Companies::class)->find($this->companies->id_company);
                     $this->validatedAddress    = $this->companyEntity->getIdAddress();
-                    $this->lastModifiedAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')
+                    $this->lastModifiedAddress = $entityManager->getRepository(CompanyAddress::class)
                         ->findLastModifiedNotArchivedAddressByType($this->companyEntity, AddressType::TYPE_MAIN_ADDRESS);
                 }
             } catch (\Exception $exception) {
@@ -184,10 +184,10 @@ class preteursController extends bootstrap
                 $this->lEncheres = $loans->select('id_wallet = ' . $wallet->getId() . ' AND YEAR(added) = YEAR(CURDATE()) AND status = ' . Loans::STATUS_ACCEPTED);
             }
 
-            $this->SumDepot = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation')->sumCreditOperationsByTypeAndYear($wallet, [OperationType::LENDER_PROVISION]);
-            $provisionType  = $entityManager->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneByLabel(OperationType::LENDER_PROVISION);
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Operation $firstProvision */
-            $firstProvision       = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation')->findOneBy(['idWalletCreditor' => $wallet, 'idType' => $provisionType], ['id' => 'ASC']);
+            $this->SumDepot = $entityManager->getRepository(Operation::class)->sumCreditOperationsByTypeAndYear($wallet, [OperationType::LENDER_PROVISION]);
+            $provisionType  = $entityManager->getRepository(OperationType::class)->findOneByLabel(OperationType::LENDER_PROVISION);
+            /** @var \Unilend\Entity\Operation $firstProvision */
+            $firstProvision       = $entityManager->getRepository(Operation::class)->findOneBy(['idWalletCreditor' => $wallet, 'idType' => $provisionType], ['id' => 'ASC']);
             $this->SumInscription = null !== $firstProvision ? $firstProvision->getAmount() : 0;
             $this->sumRembInte    = $this->echeanciers->getRepaidInterests(['id_lender' => $wallet->getId()]);
 
@@ -220,7 +220,7 @@ class preteursController extends bootstrap
             $this->attachments     = $wallet->getIdClient()->getAttachments();
 
             $this->exemptionYears         = [];
-            $lenderTaxExemptionRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:LenderTaxExemption');
+            $lenderTaxExemptionRepository = $entityManager->getRepository(LenderTaxExemption::class);
             foreach ($lenderTaxExemptionRepository->findBy(['idLender' => $wallet], ['year' => 'DESC']) as $taxExemption) {
                 $this->exemptionYears[] = $taxExemption->getYear();
             }
@@ -231,11 +231,11 @@ class preteursController extends bootstrap
             $start                  = new \DateTime('First day of january this year');
             $end                    = new \DateTime('NOW');
             $this->lenderOperations = $lenderOperationsManager->getLenderOperations($wallet, $start, $end, null, LenderOperationsManager::ALL_TYPES);
-            $this->transfers        = $entityManager->getRepository('UnilendCoreBusinessBundle:Transfer')->findTransferByClient($wallet->getIdClient());
+            $this->transfers        = $entityManager->getRepository(Transfer::class)->findTransferByClient($wallet->getIdClient());
 
             $this->clientStatusMessage = $this->getMessageAboutClientStatus();
             $this->firstValidation     = $entityManager
-                ->getRepository('UnilendCoreBusinessBundle:ClientsStatusHistory')
+                ->getRepository(ClientsStatusHistory::class)
                 ->findOneBy(
                     ['idClient' => $this->client, 'idStatus' => ClientsStatus::STATUS_VALIDATED],
                     ['added' => 'ASC', 'id' => 'ASC']
@@ -335,9 +335,9 @@ class preteursController extends bootstrap
 
         /** @var EntityManager $entityManager */
         $entityManager                = $this->get('doctrine.orm.entity_manager');
-        $lenderTaxExemptionRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:LenderTaxExemption');
+        $lenderTaxExemptionRepository = $entityManager->getRepository(LenderTaxExemption::class);
 
-        $this->countries = $entityManager->getRepository('UnilendCoreBusinessBundle:Pays')->findBy([], ['ordre' => 'ASC']);
+        $this->countries = $entityManager->getRepository(Pays::class)->findBy([], ['ordre' => 'ASC']);
 
         /** @var \Psr\Log\LoggerInterface $logger */
         $logger = $this->get('logger');
@@ -353,7 +353,7 @@ class preteursController extends bootstrap
         if (
             isset($this->params[0])
             && false !== filter_var($this->params[0], FILTER_VALIDATE_INT)
-            && null !== $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($this->params[0], WalletType::LENDER)
+            && null !== $wallet = $entityManager->getRepository(Wallet::class)->getWalletByType($this->params[0], WalletType::LENDER)
         ) {
             $this->wallet              = $wallet;
             $this->client              = $wallet->getIdClient();
@@ -363,13 +363,13 @@ class preteursController extends bootstrap
 
             try {
                 if ($this->client->isNaturalPerson()) {
-                    $this->lastModifiedAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientAddress')
+                    $this->lastModifiedAddress = $entityManager->getRepository(ClientAddress::class)
                         ->findLastModifiedNotArchivedAddressByType($this->client, AddressType::TYPE_MAIN_ADDRESS);
                     $this->samePostalAddress   = null === $this->client->getIdPostalAddress();
                 } else {
                     /** @var Companies companyEntity */
-                    $this->companyEntity       = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $this->client]);
-                    $this->lastModifiedAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')
+                    $this->companyEntity       = $entityManager->getRepository(Companies::class)->findOneBy(['idClientOwner' => $this->client]);
+                    $this->lastModifiedAddress = $entityManager->getRepository(CompanyAddress::class)
                         ->findLastModifiedNotArchivedAddressByType($this->companyEntity, AddressType::TYPE_MAIN_ADDRESS);
                     $this->samePostalAddress   = null === $this->companyEntity->getIdPostalAddress();
                 }
@@ -402,7 +402,7 @@ class preteursController extends bootstrap
             $this->taxationCountryHistory = $this->getTaxationHistory($wallet->getId());
             $this->clientStatusMessage    = $this->getMessageAboutClientStatus();
             $this->dataHistory            = $this->get(ClientDataHistoryManager::class)->getDataHistory($this->client);
-            $this->statusHistory          = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsStatusHistory')->findBy(
+            $this->statusHistory          = $entityManager->getRepository(ClientsStatusHistory::class)->findBy(
                 ['idClient' => $this->client, 'idStatus' => [ClientsStatus::STATUS_CREATION, ClientsStatus::STATUS_TO_BE_CHECKED, ClientsStatus::STATUS_COMPLETENESS, ClientsStatus::STATUS_COMPLETENESS_REPLY, ClientsStatus::STATUS_MODIFICATION, ClientsStatus::STATUS_VALIDATED, ClientsStatus::STATUS_SUSPENDED, ClientsStatus::STATUS_DISABLED, ClientsStatus::STATUS_CLOSED_LENDER_REQUEST, ClientsStatus::STATUS_CLOSED_BY_UNILEND, ClientsStatus::STATUS_CLOSED_DEFINITELY]], // All but "Complétude (Relance)" which is only a "technical" status
                 ['added' => 'DESC', 'id' => 'DESC']
             );
@@ -413,16 +413,16 @@ class preteursController extends bootstrap
             $attachmentTypes   = $attachmentManager->getAllTypesForLender();
             $this->setAttachments($attachments, $attachmentTypes);
 
-            $this->currentBankAccount = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getLastModifiedBankAccount($this->client);
-            $this->treeRepository     = $entityManager->getRepository('UnilendCoreBusinessBundle:Tree');
-            $this->legalDocuments     = $entityManager->getRepository('UnilendCoreBusinessBundle:AcceptationsLegalDocs')->findBy(['idClient' => $this->client->getIdClient()]);
+            $this->currentBankAccount = $entityManager->getRepository(BankAccount::class)->getLastModifiedBankAccount($this->client);
+            $this->treeRepository     = $entityManager->getRepository(Tree::class);
+            $this->legalDocuments     = $entityManager->getRepository(AcceptationsLegalDocs::class)->findBy(['idClient' => $this->client->getIdClient()]);
 
-            $identityDocument = $entityManager->getRepository('UnilendCoreBusinessBundle:Attachment')->findOneClientAttachmentByType($this->client, AttachmentType::CNI_PASSPORTE);
+            $identityDocument = $entityManager->getRepository(Attachment::class)->findOneClientAttachmentByType($this->client, AttachmentType::CNI_PASSPORTE);
             if ($identityDocument && $identityDocument->getGreenpointAttachment()) {
                 $this->lenderIdentityMRZData = $identityDocument->getGreenpointAttachment()->getGreenpointAttachmentDetail();
             }
 
-            $hostIdentityDocument = $entityManager->getRepository('UnilendCoreBusinessBundle:Attachment')->findOneClientAttachmentByType($this->client, AttachmentType::CNI_PASSPORT_TIERS_HEBERGEANT);
+            $hostIdentityDocument = $entityManager->getRepository(Attachment::class)->findOneClientAttachmentByType($this->client, AttachmentType::CNI_PASSPORT_TIERS_HEBERGEANT);
             if ($hostIdentityDocument && $hostIdentityDocument->getGreenpointAttachment()) {
                 $this->hostIdentityMRZData = $hostIdentityDocument->getGreenpointAttachment()->getGreenpointAttachmentDetail();
             }
@@ -430,7 +430,7 @@ class preteursController extends bootstrap
             $this->setClientVigilanceStatusData();
 
             try {
-                $this->duplicateAccounts = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->getDuplicatesByName($this->client->getNom(), $this->client->getPrenom(), $this->client->getNaissance());
+                $this->duplicateAccounts = $entityManager->getRepository(Clients::class)->getDuplicatesByName($this->client->getNom(), $this->client->getPrenom(), $this->client->getNaissance());
             } catch (\Doctrine\DBAL\DBALException $exception) {
                 $this->duplicateAccounts = [];
                 $logger->error('An exception occurred while trying to look for a duplicated client accounts. id_client: ' . $this->client->getIdClient() . ' Exception message: ' . $exception->getMessage(), [
@@ -464,7 +464,7 @@ class preteursController extends bootstrap
             if (isset($_POST['send_edit_preteur'])) {
                 if ($this->client->isNaturalPerson()) {
                     $birthCountry = $this->request->request->getInt('id_pays_naissance');
-                    $type         = (false !== $birthCountry && $birthCountry == \Unilend\Bundle\CoreBusinessBundle\Entity\NationalitesV2::NATIONALITY_FRENCH) ? Clients::TYPE_PERSON : Clients::TYPE_PERSON_FOREIGNER;
+                    $type         = (false !== $birthCountry && $birthCountry == \Unilend\Entity\NationalitesV2::NATIONALITY_FRENCH) ? Clients::TYPE_PERSON : Clients::TYPE_PERSON_FOREIGNER;
                     $email        = $this->request->request->filter('email', FILTER_VALIDATE_EMAIL);
                     $birthday     = $this->request->request->filter('naissance', FILTER_SANITIZE_STRING);
 
@@ -663,7 +663,7 @@ class preteursController extends bootstrap
         $idClient                    = $this->request->request->getInt('id_client_to_validate');
         /** @var EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
-        $client        = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($idClient);
+        $client        = $entityManager->getRepository(Clients::class)->find($idClient);
 
         if (null !== $client) {
             $addressId     = null;
@@ -671,11 +671,11 @@ class preteursController extends bootstrap
 
             try {
                 if ($client->isNaturalPerson()) {
-                    $lastModifiedAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientAddress')
+                    $lastModifiedAddress = $entityManager->getRepository(ClientAddress::class)
                         ->findLastModifiedNotArchivedAddressByType($client, AddressType::TYPE_MAIN_ADDRESS);
                 } else {
-                    $company             = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $client]);
-                    $lastModifiedAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')
+                    $company             = $entityManager->getRepository(Companies::class)->findOneBy(['idClientOwner' => $client]);
+                    $lastModifiedAddress = $entityManager->getRepository(CompanyAddress::class)
                         ->findLastModifiedNotArchivedAddressByType($company, AddressType::TYPE_MAIN_ADDRESS);
                 }
                 $addressId = (null !== $lastModifiedAddress) ? $lastModifiedAddress->getId() : null;
@@ -690,7 +690,7 @@ class preteursController extends bootstrap
             }
 
             try {
-                $currentBankAccount = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getLastModifiedBankAccount($client);
+                $currentBankAccount = $entityManager->getRepository(BankAccount::class)->getLastModifiedBankAccount($client);
                 $bankAccountId      = (null !== $currentBankAccount) ? $currentBankAccount->getId() : null;
             } catch (\Doctrine\ORM\NonUniqueResultException $exception) {
                 $this->get('logger')->error('An exception occurred while getting lender last modified bank account. Message: ' . $exception->getMessage(), [
@@ -780,11 +780,11 @@ class preteursController extends bootstrap
         /** @var EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
         /** @var \Unilend\Bundle\CoreBusinessBundle\Repository\ClientsRepository $clientsRepository */
-        $clientsRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
+        $clientsRepository = $entityManager->getRepository(Clients::class);
         $this->lPreteurs   = $clientsRepository->getClientsToValidate($statusOrderedByPriority);
 
         if (false === empty($this->lPreteurs)) {
-            $greenpointKycRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:GreenpointKyc');
+            $greenpointKycRepository = $entityManager->getRepository(GreenpointKyc::class);
 
             /** @var array aGreenPointStatus */
             $this->aGreenPointStatus = [];
@@ -816,7 +816,7 @@ class preteursController extends bootstrap
 
         /** @var EntityManager $entityManager */
         $entityManager      = $this->get('doctrine.orm.entity_manager');
-        $this->mailTemplate = $entityManager->getRepository('UnilendCoreBusinessBundle:MailTemplates')->findOneBy([
+        $this->mailTemplate = $entityManager->getRepository(MailTemplates::class)->findOneBy([
             'type'   => 'completude',
             'locale' => $this->getParameter('locale'),
             'status' => MailTemplates::STATUS_ACTIVE,
@@ -839,7 +839,7 @@ class preteursController extends bootstrap
         $timeCreate    = \DateTime::createFromFormat('Y-m-d H:i:s', $this->clients->added);
 
         if (false === empty($this->clients->id_client_status_history)) {
-            $statusHistory = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsStatusHistory')->find($this->clients->id_client_status_history);
+            $statusHistory = $entityManager->getRepository(ClientsStatusHistory::class)->find($this->clients->id_client_status_history);
             $timeCreate    = $statusHistory->getAdded();
         }
 
@@ -860,7 +860,7 @@ class preteursController extends bootstrap
             $tabVars['[EMV DYN]' . $key . '[EMV /DYN]'] = $value;
         }
 
-        $mailTemplateRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:MailTemplates');
+        $mailTemplateRepository = $entityManager->getRepository(MailTemplates::class);
         $mailTemplate           = $mailTemplateRepository->findOneBy([
             'type'   => 'completude',
             'locale' => $this->getParameter('locale'),
@@ -891,7 +891,7 @@ class preteursController extends bootstrap
         $entityManager = $this->get('doctrine.orm.entity_manager');
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\WelcomeOfferManager $welcomeOfferManager */
         $welcomeOfferManager  = $this->get('unilend.service.welcome_offer_manager');
-        $paidOutWelcomeOffers = $entityManager->getRepository('UnilendCoreBusinessBundle:OffresBienvenuesDetails');
+        $paidOutWelcomeOffers = $entityManager->getRepository(OffresBienvenuesDetails::class);
 
         if (isset($_SESSION['create_new_welcome_offer']['errors'])) {
             $this->newWelcomeOfferFormErrors = $_SESSION['create_new_welcome_offer']['errors'];
@@ -932,20 +932,20 @@ class preteursController extends bootstrap
         }
 
         if (isset($_POST['affect_welcome_offer']) && isset($this->params[0]) && is_numeric($this->params[0])) {
-            $client = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($this->params[0]);
+            $client = $entityManager->getRepository(Clients::class)->find($this->params[0]);
             if (null !== $client) {
                 $this->payOutWelcomeOffer($client);
             }
         }
 
-        $unilendPromotionWalletType          = $entityManager->getRepository('UnilendCoreBusinessBundle:WalletType')->findOneBy(['label' => WalletType::UNILEND_PROMOTIONAL_OPERATION]);
-        $unilendPromotionWallet              = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->findOneBy(['idType' => $unilendPromotionWalletType]);
+        $unilendPromotionWalletType          = $entityManager->getRepository(WalletType::class)->findOneBy(['label' => WalletType::UNILEND_PROMOTIONAL_OPERATION]);
+        $unilendPromotionWallet              = $entityManager->getRepository(Wallet::class)->findOneBy(['idType' => $unilendPromotionWalletType]);
         $this->sumDispoPourOffres            = $unilendPromotionWallet->getAvailableBalance();
-        $this->alreadyPaidOutAllOffers       = $entityManager->getRepository('UnilendCoreBusinessBundle:OffresBienvenuesDetails')->getSumPaidOutForOffer();
+        $this->alreadyPaidOutAllOffers       = $entityManager->getRepository(OffresBienvenuesDetails::class)->getSumPaidOutForOffer();
         $this->offerIsDisplayedOnHome        = $welcomeOfferManager->displayOfferOnHome();
         $this->offerIsDisplayedOnLandingPage = $welcomeOfferManager->displayOfferOnLandingPage();
 
-        $this->currentOfferHomepage = $entityManager->getRepository('UnilendCoreBusinessBundle:OffresBienvenues')->findOneBy([
+        $this->currentOfferHomepage = $entityManager->getRepository(OffresBienvenues::class)->findOneBy([
             'status' => OffresBienvenues::STATUS_ONLINE,
             'type'   => OffresBienvenues::TYPE_HOME
         ]);
@@ -954,7 +954,7 @@ class preteursController extends bootstrap
             $this->remainingAmountCurrentOfferHomepage = round(bcsub($this->currentOfferHomepage->getMontantLimit(), $this->alreadyPaidOutCurrentOfferHomepage, 4), 2);
         }
 
-        $this->currentOfferLandingPage = $entityManager->getRepository('UnilendCoreBusinessBundle:OffresBienvenues')->findOneBy([
+        $this->currentOfferLandingPage = $entityManager->getRepository(OffresBienvenues::class)->findOneBy([
             'status' => OffresBienvenues::STATUS_ONLINE,
             'type'   => OffresBienvenues::TYPE_LANDING_PAGE
         ]);
@@ -963,7 +963,7 @@ class preteursController extends bootstrap
             $this->remainingAmountCurrentOfferLandingPage = round(bcsub($this->currentOfferLandingPage->getMontantLimit(), $this->alreadyPaidOutCurrentOfferLandingPage, 4), 2);
         }
 
-        $this->pastOffers = $entityManager->getRepository('UnilendCoreBusinessBundle:OffresBienvenues')->findBy(['status' => OffresBienvenues::STATUS_OFFLINE]);
+        $this->pastOffers = $entityManager->getRepository(OffresBienvenues::class)->findBy(['status' => OffresBienvenues::STATUS_OFFLINE]);
     }
 
     private function createNewWelcomeOffer()
@@ -1034,12 +1034,12 @@ class preteursController extends bootstrap
         $welcomeOfferManager = $this->get('unilend.service.welcome_offer_manager');
         /** @var EntityManager $entityManager */
         $entityManager      = $this->get('doctrine.orm.entity_manager');
-        $this->client       = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($this->params[0]);
+        $this->client       = $entityManager->getRepository(Clients::class)->find($this->params[0]);
         $welcomeOfferType   = $welcomeOfferManager->getWelcomeOfferTypeForClient($this->client);
-        $this->welcomeOffer = $entityManager->getRepository('UnilendCoreBusinessBundle:OffresBienvenues')->findOneBy(['type' => $welcomeOfferType]);
+        $this->welcomeOffer = $entityManager->getRepository(OffresBienvenues::class)->findOneBy(['type' => $welcomeOfferType]);
 
         if (false === $this->client->isNaturalPerson()) {
-            $this->company = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $this->client]);
+            $this->company = $entityManager->getRepository(Companies::class)->findOneBy(['idClientOwner' => $this->client]);
         }
     }
 
@@ -1050,7 +1050,7 @@ class preteursController extends bootstrap
 
         /** @var EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
-        $welcomeOffer  = $entityManager->getRepository('UnilendCoreBusinessBundle:OffresBienvenues')->find($this->request->request->getInt('welcome_offer_id'));
+        $welcomeOffer  = $entityManager->getRepository(OffresBienvenues::class)->find($this->request->request->getInt('welcome_offer_id'));
 
         if (
             null !== $welcomeOffer
@@ -1082,7 +1082,7 @@ class preteursController extends bootstrap
         ) {
             /** @var EntityManager $entityManager */
             $entityManager = $this->get('doctrine.orm.entity_manager');
-            $this->wallet  = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($this->clients->id_client, WalletType::LENDER);
+            $this->wallet  = $entityManager->getRepository(Wallet::class)->getWalletByType($this->clients->id_client, WalletType::LENDER);
             $this->client  = $this->wallet->getIdClient();
 
             if (isset($_POST['send_dates'])) {
@@ -1222,18 +1222,18 @@ class preteursController extends bootstrap
         /** @var EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
         /** @var LenderStatisticRepository $lenderStatisticsRepository */
-        $lenderStatisticsRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:LenderStatistic');
+        $lenderStatisticsRepository = $this->get('doctrine.orm.entity_manager')->getRepository(LenderStatistic::class);
 
         if (
             $this->params[0]
             && is_numeric($this->params[0])
             && $this->clients->get($this->params[0], 'id_client')
-            && null !== $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($this->params[0], WalletType::LENDER)
+            && null !== $wallet = $entityManager->getRepository(Wallet::class)->getWalletByType($this->params[0], WalletType::LENDER)
         ) {
             $this->wallet          = $wallet;
             $this->client          = $wallet->getIdClient();
             $this->lSumLoans       = $this->loans->getSumLoansByProject($wallet->getId());
-            $this->aProjectsInDebt = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->getProjectsInDebt();
+            $this->aProjectsInDebt = $entityManager->getRepository(Projects::class)->getProjectsInDebt();
 
             /** @var LenderStatistic $lastIRR */
             $this->IRR = $lenderStatisticsRepository->findOneBy(['idWallet' => $wallet, 'typeStat' => LenderStatistic::TYPE_STAT_IRR], ['added' => 'DESC']);
@@ -1270,7 +1270,7 @@ class preteursController extends bootstrap
             $this->settings->get('date-premier-projet-tunnel-de-taux', 'type');
             $startingDate           = $this->settings->value;
             $this->aAutoBidSettings = [];
-            $autobidRepository      = $entityManager->getRepository('UnilendCoreBusinessBundle:Autobid');
+            $autobidRepository      = $entityManager->getRepository(Autobid::class);
             $aAutoBidSettings       = $autobidRepository->getSettings($wallet, null, null, [Autobid::STATUS_ACTIVE, Autobid::STATUS_INACTIVE]);
             foreach ($aAutoBidSettings as $aSetting) {
                 $aSetting['AverageRateUnilend']                                          = $this->projects->getAvgRate($aSetting['evaluation'], $aSetting['period_min'], $aSetting['period_max'], $startingDate);
@@ -1313,7 +1313,7 @@ class preteursController extends bootstrap
      */
     private function sendCompletenessRequest(Clients $client): void
     {
-        $wallet        = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
+        $wallet        = $this->get('doctrine.orm.entity_manager')->getRepository(Wallet::class)->getWalletByType($client, WalletType::LENDER);
         $timeCreate    = empty($this->statusHistory[0]) ? $client->getAdded() : $this->statusHistory[0]->getAdded();
         $dateFormatter = new \IntlDateFormatter($this->getParameter('locale'), \IntlDateFormatter::LONG, \IntlDateFormatter::NONE);
         $keywords      = [
@@ -1405,7 +1405,7 @@ class preteursController extends bootstrap
         /** @var EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
 
-        $this->vigilanceStatusHistory = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientVigilanceStatusHistory')->findBy(['client' => $this->client], ['id' => 'DESC']);
+        $this->vigilanceStatusHistory = $entityManager->getRepository(ClientVigilanceStatusHistory::class)->findBy(['client' => $this->client], ['id' => 'DESC']);
 
         if (empty($this->vigilanceStatusHistory)) {
             $this->vigilanceStatus = [
@@ -1413,11 +1413,11 @@ class preteursController extends bootstrap
                 'message'           => 'Vigilance standard',
                 'checkOnValidation' => false
             ];
-            $this->userRepository  = $entityManager->getRepository('UnilendCoreBusinessBundle:Users');
+            $this->userRepository  = $entityManager->getRepository(Users::class);
             return;
         }
 
-        $this->clientAtypicalOperations = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientAtypicalOperation')->findBy(['client' => $this->client], ['added' => 'DESC']);
+        $this->clientAtypicalOperations = $entityManager->getRepository(ClientAtypicalOperation::class)->findBy(['client' => $this->client], ['added' => 'DESC']);
 
         switch ($this->vigilanceStatusHistory[0]->getVigilanceStatus()) {
             case VigilanceRule::VIGILANCE_STATUS_LOW:
@@ -1454,8 +1454,8 @@ class preteursController extends bootstrap
 
         /** @var \Symfony\Component\Translation\Translator translator */
         $this->translator                   = $this->get('translator');
-        $this->userRepository               = $entityManager->getRepository('UnilendCoreBusinessBundle:Users');
-        $this->clientVigilanceStatusHistory = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientVigilanceStatusHistory');
+        $this->userRepository               = $entityManager->getRepository(Users::class);
+        $this->clientVigilanceStatusHistory = $entityManager->getRepository(ClientVigilanceStatusHistory::class);
     }
 
     public function _saveBetaTesterSetting()
@@ -1465,7 +1465,7 @@ class preteursController extends bootstrap
 
         /** @var EntityManager $entityManager */
         $entityManager    = $this->get('doctrine.orm.entity_manager');
-        $clientRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
+        $clientRepository = $entityManager->getRepository(Clients::class);
 
         if (
             isset($this->params[0], $this->params[1])
@@ -1498,7 +1498,7 @@ class preteursController extends bootstrap
         /** @var EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
         /** @var Clients $client */
-        $client = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($clientId);
+        $client = $entityManager->getRepository(Clients::class)->find($clientId);
 
         if (null === $client) {
             header('Location: ' . $this->lurl . '/preteurs/search');
@@ -1568,7 +1568,7 @@ class preteursController extends bootstrap
     {
         /** @var EntityManager $entityManager */
         $entityManager    = $this->get('doctrine.orm.entity_manager');
-        $clientRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
+        $clientRepository = $entityManager->getRepository(Clients::class);
         $duplicates       = $clientRepository->findGrantedLoginAccountsByEmail($client->getEmail());
 
         if (false === empty($duplicates)) {
@@ -1578,7 +1578,7 @@ class preteursController extends bootstrap
             return false;
         }
 
-        $lastTwoStatus = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsStatusHistory')->findLastTwoClientStatus($client->getIdClient());
+        $lastTwoStatus = $entityManager->getRepository(ClientsStatusHistory::class)->findLastTwoClientStatus($client->getIdClient());
 
         if (empty($lastTwoStatus[1])) {
             $status = ClientsStatus::STATUS_TO_BE_CHECKED;
@@ -1605,7 +1605,7 @@ class preteursController extends bootstrap
             $this->params[0]
             && is_numeric($this->params[0])
             && $this->clients->get($this->params[0], 'id_client')
-            && null !== $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($this->params[0], WalletType::LENDER)
+            && null !== $wallet = $entityManager->getRepository(Wallet::class)->getWalletByType($this->params[0], WalletType::LENDER)
         ) {
             $this->wallet              = $wallet;
             $this->client              = $wallet->getIdClient();
@@ -1652,7 +1652,7 @@ class preteursController extends bootstrap
         if (
             isset($this->params[0])
             && is_numeric($this->params[0])
-            && null !== $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($this->params[0], WalletType::LENDER)
+            && null !== $wallet = $entityManager->getRepository(Wallet::class)->getWalletByType($this->params[0], WalletType::LENDER)
         ) {
             try {
                 $lenderBids = $bids->getBidsByLenderAndDates($wallet);
@@ -1695,7 +1695,7 @@ class preteursController extends bootstrap
 
         /** @var EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
-        $emailRegex    = $entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Regex validation email'])->getValue();
+        $emailRegex    = $entityManager->getRepository(Settings::class)->findOneBy(['type' => 'Regex validation email'])->getValue();
 
         if (1 !== preg_match($emailRegex, $email)) {
             $_SESSION['error_email_exist'] = 'Impossible de modifier l‘adresse email. Le format est incorrect';
@@ -1703,7 +1703,7 @@ class preteursController extends bootstrap
         }
 
         $duplicates = $entityManager
-            ->getRepository('UnilendCoreBusinessBundle:Clients')
+            ->getRepository(Clients::class)
             ->findGrantedLoginAccountsByEmail($email);
 
         if (count($duplicates) > 0) {
@@ -1751,7 +1751,7 @@ class preteursController extends bootstrap
             $entityManager = $this->get('doctrine.orm.entity_manager');
             /** @var LenderOperationsManager $lenderOperationsManager */
             $lenderOperationsManager = $this->get('unilend.service.lender_operations_manager');
-            $wallet                  = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($this->params[0], WalletType::LENDER);
+            $wallet                  = $entityManager->getRepository(Wallet::class)->getWalletByType($this->params[0], WalletType::LENDER);
             $start                   = \DateTime::createFromFormat('m/d/Y', $_POST['dateStart']);
             $end                     = \DateTime::createFromFormat('m/d/Y', $_POST['dateEnd']);
             $fileName                = 'operations_' . date('Y-m-d_H:i:s') . '.xlsx';
@@ -1769,8 +1769,8 @@ class preteursController extends bootstrap
         if (isset($_POST['searchProject'])) {
             /** @var EntityManager $entityManager */
             $entityManager                 = $this->get('doctrine.orm.entity_manager');
-            $projectRepository             = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
-            $this->projectStatusRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatus');
+            $projectRepository             = $entityManager->getRepository(Projects::class);
+            $this->projectStatusRepository = $entityManager->getRepository(ProjectsStatus::class);
             $this->projectList             = [];
 
             if (isset($_POST['projectId']) && filter_var($_POST['projectId'], FILTER_VALIDATE_INT)) {
@@ -1797,7 +1797,7 @@ class preteursController extends bootstrap
             false === empty($_POST['notificationSubject'])
             && false === empty($_POST['notificationContent'])
             && false === empty($_POST['selectedProjectId'])
-            && $project = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find(filter_var($_POST['selectedProjectId'], FILTER_SANITIZE_NUMBER_INT))
+            && $project = $entityManager->getRepository(Projects::class)->find(filter_var($_POST['selectedProjectId'], FILTER_SANITIZE_NUMBER_INT))
         ) {
             $projectNotification = new ProjectNotification();
             $projectNotification->setIdProject($project)

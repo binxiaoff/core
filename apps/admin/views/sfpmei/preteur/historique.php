@@ -1,6 +1,6 @@
 <?php
 
-use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatus;
+use Unilend\Entity\ClientsStatus;
 
 ?>
 <div class="row">
@@ -16,7 +16,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatus;
                 </tr>
                 </thead>
                 <tbody>
-                <?php /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatusHistory $historyEntry */ ?>
+                <?php /** @var \Unilend\Entity\ClientsStatusHistory $historyEntry */ ?>
                 <?php foreach ($this->statusHistory as $historyEntry) : ?>
                     <?php switch ($historyEntry->getIdStatus()->getId()) :
                         case ClientsStatus::STATUS_CREATION: ?>
@@ -212,7 +212,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatus;
                 </thead>
                 <tbody>
                 <?php foreach ($this->termsOfSalesAcceptation as $termsOfSales) : ?>
-                    <?php /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\AcceptationsLegalDocs $termsOfSales */ ?>
+                    <?php /** @var \Unilend\Entity\AcceptationsLegalDocs $termsOfSales */ ?>
                     <?php $tree = $this->treeRepository->findOneBy(['idTree' => $termsOfSales->getIdLegalDoc(), 'idLangue' => $this->language]); ?>
                     <tr>
                         <td><?= $termsOfSales->getIdLegalDoc() ?></td>

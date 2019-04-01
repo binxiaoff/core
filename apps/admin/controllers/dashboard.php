@@ -1,6 +1,6 @@
 <?php
 
-use Unilend\Bundle\CoreBusinessBundle\Entity\{BorrowingMotive, Partner, Projects, ProjectsStatus, Users, UsersTypes, Zones};
+use Unilend\Entity\{BorrowingMotive, Partner, Projects, ProjectsStatus, Users, UsersTypes, Zones};
 use Unilend\Bundle\CoreBusinessBundle\Service\ProjectRequestManager;
 use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessageProvider;
 
@@ -53,7 +53,7 @@ class dashboardController extends bootstrap
             $this->userProjects                 = $this->getSaleUserProjects($this->userEntity);
             $this->teamProjects                 = $this->getSaleTeamProjects($this->userEntity);
             $this->upcomingProjects             = $this->getSaleUpcomingProjects();
-            $this->impossibleEvaluationProjects = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->findImpossibleEvaluationProjects();
+            $this->impossibleEvaluationProjects = $entityManager->getRepository(Projects::class)->findImpossibleEvaluationProjects();
             $this->collapsedStatus              = self::SALES_MY_PROJECTS_COLLAPSED_STATUS;
             $this->salesPeople                  = $user->select('status = ' . Users::STATUS_ONLINE . ' AND id_user_type = ' . UsersTypes::TYPE_COMMERCIAL, 'firstname ASC, name ASC');
             $this->otherTasksProjects           = [
@@ -73,7 +73,7 @@ class dashboardController extends bootstrap
 
         $userId = $this->request->request->getInt('userId');
         $user   = $this->get('doctrine.orm.entity_manager')
-            ->getRepository('UnilendCoreBusinessBundle:Users')
+            ->getRepository(Users::class)
             ->find($userId);
 
         $this->templateProjects = null == $user ? $this->getSaleTeamProjects($this->userEntity) : $this->getSaleUserProjects($user);
@@ -132,7 +132,7 @@ class dashboardController extends bootstrap
     private function getSaleUserProjects(Users $user): array
     {
         $projects = $this->get('doctrine.orm.entity_manager')
-            ->getRepository('UnilendCoreBusinessBundle:Projects')
+            ->getRepository(Projects::class)
             ->getSaleUserProjects($user);
 
         return [
@@ -150,7 +150,7 @@ class dashboardController extends bootstrap
     private function getSaleTeamProjects(Users $user): array
     {
         $projects = $this->get('doctrine.orm.entity_manager')
-            ->getRepository('UnilendCoreBusinessBundle:Projects')
+            ->getRepository(Projects::class)
             ->getSaleProjectsExcludingUser($user);
 
         return [
@@ -166,7 +166,7 @@ class dashboardController extends bootstrap
     private function getSaleUpcomingProjects(): array
     {
         $projects = $this->get('doctrine.orm.entity_manager')
-            ->getRepository('UnilendCoreBusinessBundle:Projects')
+            ->getRepository(Projects::class)
             ->getUpcomingSaleProjects();
 
         return [
@@ -183,7 +183,7 @@ class dashboardController extends bootstrap
     {
         $pendingMandateProjects = [];
         $projects               = $this->get('doctrine.orm.entity_manager')
-            ->getRepository('UnilendCoreBusinessBundle:Projects')
+            ->getRepository(Projects::class)
             ->getProjectsInRepaymentWithPendingMandate();
 
         foreach ($projects as $project) {
@@ -204,7 +204,7 @@ class dashboardController extends bootstrap
     {
         $fundsToReleaseProjects = [];
         $projects               = $this->get('doctrine.orm.entity_manager')
-            ->getRepository('UnilendCoreBusinessBundle:Projects')
+            ->getRepository(Projects::class)
             ->getProjectsWithFundsToRelease();
 
         foreach ($projects as $project) {
@@ -269,7 +269,7 @@ class dashboardController extends bootstrap
         $projectStatusManager = $this->get('unilend.service.project_status_manager');
         /** @var ProjectRequestManager $projectRequestManager */
         $projectRequestManager = $this->get('unilend.service.project_request_manager');
-        $projectRepository     = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
+        $projectRepository     = $entityManager->getRepository(Projects::class);
 
         foreach ($projectRepository->findImpossibleEvaluationProjects() as $project) {
             if (null === $projectRequestManager->checkProjectRisk($project, $this->userEntity->getIdUser())) {
@@ -339,7 +339,7 @@ class dashboardController extends bootstrap
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
 
-        $projectRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
+        $projectRepository = $entityManager->getRepository(Projects::class);
 
         try {
             // nombre de projets en cours de traitement commercial
@@ -368,7 +368,7 @@ class dashboardController extends bootstrap
             $statRepayment      = $this->getProjectCountInStatus(ProjectsStatus::STATUS_REPAYMENT, $thirteenMonthsAgo, $today);
 
             // projets en cours
-            $countableStatus        = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatus')->findBy([
+            $countableStatus        = $entityManager->getRepository(ProjectsStatus::class)->findBy([
                 'status' => [
                     ProjectsStatus::STATUS_REQUEST,
                     ProjectsStatus::STATUS_REVIEW,
@@ -512,7 +512,7 @@ class dashboardController extends bootstrap
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
 
-        $projectRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
+        $projectRepository = $entityManager->getRepository(Projects::class);
 
         $releasedProject       = $projectRepository->findProjectsHavingHadStatusBetweenDates(ProjectsStatus::STATUS_REPAYMENT, $from, $end);
         $releasedProjectCount  = count($releasedProject);
@@ -572,7 +572,7 @@ class dashboardController extends bootstrap
     private function getProjectCountInStatus(int $status, DateTime $start, DateTime $end): array
     {
         $entityManager = $this->get('doctrine.orm.entity_manager');
-        $countInStatus = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->getStatisticsByStatusByMonth($status, true, $start, $end);
+        $countInStatus = $entityManager->getRepository(Projects::class)->getStatisticsByStatusByMonth($status, true, $start, $end);
 
         $partnerColor = [
             Partner::PARTNER_CACIB_COLLPUB_ID   => '#FCA234',
@@ -605,7 +605,7 @@ class dashboardController extends bootstrap
     {
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
-        $delays        = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->getDelayByStatus($status, $motives, $from, $to);
+        $delays        = $entityManager->getRepository(Projects::class)->getDelayByStatus($status, $motives, $from, $to);
 
         $formattedDelays = [];
         foreach ($delays as $delay) {
@@ -632,7 +632,7 @@ class dashboardController extends bootstrap
             $status[] = $item->getStatus();
         }
 
-        $statusCount = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->countByStatus($status, $borrowingMotives, $partners);
+        $statusCount = $entityManager->getRepository(Projects::class)->countByStatus($status, $borrowingMotives, $partners);
 
         $formattedStatusCount = [];
         foreach ($statusCount as $number) {
@@ -656,9 +656,9 @@ class dashboardController extends bootstrap
             $entityManager = $this->get('doctrine.orm.entity_manager');
             /** @var \Monolog\Logger $logger */
             $logger            = $this->get('logger');
-            $projectRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
+            $projectRepository = $entityManager->getRepository(Projects::class);
             try {
-                $intervalSetting       = $entityManager->getRepository('UnilendCoreBusinessBundle:Settings')
+                $intervalSetting       = $entityManager->getRepository(Settings::class)
                     ->findOneBy(['type' => 'Jours avant notification decheance du terme']);
                 $projectsToDeclineSoon = $projectRepository->getProjectsWithUpcomingCloseOutNettingDate(null !== $intervalSetting ? $intervalSetting->getValue() : 15);
 

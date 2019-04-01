@@ -4,7 +4,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Translation\TranslatorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{Bids, Clients, UnderlyingContract, UnderlyingContractAttributeType, Wallet, WalletType};
+use Unilend\Entity\{Bids, Clients, LenderEvaluation, UnderlyingContract, UnderlyingContractAttributeType, Wallet, WalletType};
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\ContractManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
@@ -83,7 +83,7 @@ class CIPManager
         if (false === $client->isLender()) {
             throw new \Exception('Client ' . $client->getIdClient() . ' is not a Lender');
         }
-        $wallet = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
+        $wallet = $this->entityManager->getRepository(Wallet::class)->getWalletByType($client, WalletType::LENDER);
 
         /** @var \lender_evaluation $evaluation */
         $evaluation     = $this->entityManagerSimulator->getRepository('lender_evaluation');
@@ -115,9 +115,9 @@ class CIPManager
             throw new \Exception('Client ' . $client->getIdClient() . ' is not a Lender');
         }
 
-        $wallet = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
+        $wallet = $this->entityManager->getRepository(Wallet::class)->getWalletByType($client, WalletType::LENDER);
 
-        $validEvaluation = $this->entityManager->getRepository('UnilendCoreBusinessBundle:LenderEvaluation')->findValidEvaluation($wallet, $date);
+        $validEvaluation = $this->entityManager->getRepository(LenderEvaluation::class)->findValidEvaluation($wallet, $date);
 
         return null !== $validEvaluation;
     }
@@ -135,8 +135,8 @@ class CIPManager
             throw new \Exception('Client ' . $client->getIdClient() . ' is not a Lender');
         }
 
-        $wallet     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
-        $evaluation = $this->entityManager->getRepository('UnilendCoreBusinessBundle:LenderEvaluation')->findOneBy(['idLender' => $wallet]);
+        $wallet     = $this->entityManager->getRepository(Wallet::class)->getWalletByType($client, WalletType::LENDER);
+        $evaluation = $this->entityManager->getRepository(LenderEvaluation::class)->findOneBy(['idLender' => $wallet]);
 
         return null !== $evaluation;
     }
@@ -189,7 +189,7 @@ class CIPManager
             throw new \Exception('Client ' . $client->getIdClient() . ' is not a Lender');
         }
         /** @var Wallet $wallet */
-        $wallet     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
+        $wallet     = $this->entityManager->getRepository(Wallet::class)->getWalletByType($client, WalletType::LENDER);
         $evaluation = $this->getCurrentEvaluation($client);
 
         if (null === $evaluation) {
@@ -669,7 +669,7 @@ class CIPManager
         }
 
         $thresholdAmount = $this->getContractThresholdAmount();
-        $lenderBids      = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Bids')
+        $lenderBids      = $this->entityManager->getRepository(Bids::class)
             ->getSumByWalletAndProjectAndStatus($wallet, $bid->getProject()->getIdProject(), [Bids::STATUS_PENDING, Bids::STATUS_TEMPORARILY_REJECTED_AUTOBID]);
         $totalAmount     = bcdiv($bid->getAmount(), 100, 2);
         $totalAmount     = bcadd($totalAmount, (string) $lenderBids, 2);

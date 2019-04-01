@@ -7,7 +7,7 @@ use Psr\Cache\{CacheException, CacheItemPoolInterface};
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{Clients, Users};
+use Unilend\Entity\{Clients, Users};
 use Unilend\librairies\CacheKeys;
 
 class AutomaticLenderValidationCommand extends ContainerAwareCommand
@@ -25,8 +25,8 @@ class AutomaticLenderValidationCommand extends ContainerAwareCommand
         $entityManager           = $this->getContainer()->get('doctrine.orm.entity_manager');
         $lenderValidationManager = $this->getContainer()->get('unilend.service.lender_validation_manager');
 
-        $clientRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
-        $userRepository   = $entityManager->getRepository('UnilendCoreBusinessBundle:Users');
+        $clientRepository = $entityManager->getRepository(Clients::class);
+        $userRepository   = $entityManager->getRepository(Users::class);
 
         try {
             foreach ($clientRepository->getClientsToAutoValidate() as $clientData) {

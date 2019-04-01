@@ -5,7 +5,7 @@ namespace Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer;
 use Doctrine\ORM\{EntityManagerInterface, OptimisticLockException};
 use Mailjet\Response;
 use Psr\Log\LoggerInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\MailQueue;
+use Unilend\Entity\MailQueue;
 use Unilend\Bundle\MessagingBundle\Service\MailQueueManager;
 
 class DatabaseSpool extends \Swift_ConfigurableSpool

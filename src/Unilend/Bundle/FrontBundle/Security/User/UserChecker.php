@@ -4,7 +4,7 @@ namespace Unilend\Bundle\FrontBundle\Security\User;
 
 use Symfony\Component\Security\Core\Exception\DisabledException;
 use Symfony\Component\Security\Core\User\{UserCheckerInterface, UserInterface};
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+use Unilend\Entity\Clients;
 
 class UserChecker implements UserCheckerInterface
 {

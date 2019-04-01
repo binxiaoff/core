@@ -6,10 +6,7 @@ use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\UnderlyingContract;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
+use Unilend\Entity\{Clients, CloseOutNettingRepayment, Echeanciers, Loans, Operation, OperationType, Projects, UnderlyingContract, Wallet};
 use Unilend\Bundle\CoreBusinessBundle\Service\IfuManager;
 
 class QueriesLenderRevenueCommand extends ContainerAwareCommand
@@ -64,17 +61,17 @@ EOF
         $activeSheet->setCellValueExplicitByColumnAndRow(5, $row, 'Monnaie');
         $row++;
 
-        $operationRepository                = $this->getContainer()->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Operation');
-        $loanRepository                     = $this->getContainer()->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Loans');
-        $repaymentScheduleRepository        = $this->getContainer()->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Echeanciers');
-        $closeOutNettingRepaymentRepository = $this->getContainer()->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:CloseOutNettingRepayment');
+        $operationRepository                = $this->getContainer()->get('doctrine.orm.entity_manager')->getRepository(Operation::class);
+        $loanRepository                     = $this->getContainer()->get('doctrine.orm.entity_manager')->getRepository(Loans::class);
+        $repaymentScheduleRepository        = $this->getContainer()->get('doctrine.orm.entity_manager')->getRepository(Echeanciers::class);
+        $closeOutNettingRepaymentRepository = $this->getContainer()->get('doctrine.orm.entity_manager')->getRepository(CloseOutNettingRepayment::class);
 
         $walletsWithMovements = $this->getContainer()->get('unilend.service.ifu_manager')->getWallets($year);
         $lostProjects         = [];
         if (false === empty(IfuManager::LOSS_PROJECT_IDS[$year])) {
-            $lostProjects = $this->getContainer()->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Projects')->findBy(['idProject' => IfuManager::LOSS_PROJECT_IDS[$year]]);
+            $lostProjects = $this->getContainer()->get('doctrine.orm.entity_manager')->getRepository(Projects::class)->findBy(['idProject' => IfuManager::LOSS_PROJECT_IDS[$year]]);
         }
-        $eligibleContractsTolost = $this->getContainer()->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:UnderlyingContract')->findBy([
+        $eligibleContractsTolost = $this->getContainer()->get('doctrine.orm.entity_manager')->getRepository(UnderlyingContract::class)->findBy([
             'label' => [UnderlyingContract::CONTRACT_IFP, UnderlyingContract::CONTRACT_MINIBON]
         ]);
 

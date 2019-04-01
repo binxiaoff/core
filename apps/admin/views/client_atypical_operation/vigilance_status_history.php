@@ -25,9 +25,9 @@
             <td><?= $vigilanceStatus->getClient()->getPrenom() . ' ' . $vigilanceStatus->getClient()->getNom() ?></td>
             <td><?= $this->translator->trans('client-vigilance_status-' . $vigilanceStatus->getVigilanceStatus()) ?></td>
             <td>
-                <?php if (\Unilend\Bundle\CoreBusinessBundle\Entity\Users::USER_ID_CRON === $vigilanceStatus->getIdUser()->getIdUser()) : ?>
+                <?php if (\Unilend\Entity\Users::USER_ID_CRON === $vigilanceStatus->getIdUser()->getIdUser()) : ?>
                     Cron
-                <?php elseif (\Unilend\Bundle\CoreBusinessBundle\Entity\Users::USER_ID_FRONT === $vigilanceStatus->getIdUser()->getIdUser()) : ?>
+                <?php elseif (\Unilend\Entity\Users::USER_ID_FRONT === $vigilanceStatus->getIdUser()->getIdUser()) : ?>
                     Front
                 <?php else : ?>
                     <?= $vigilanceStatus->getIdUser()->getFirstName() . ' ' .  $vigilanceStatus->getIdUser()->getName() ?>

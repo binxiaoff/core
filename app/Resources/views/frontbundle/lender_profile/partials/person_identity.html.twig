@@ -9,9 +9,9 @@
             <dd id="profile-info-statut-output">{% trans %} lender-profile_information-tab-identity-section-client-type-person-label {% endtrans %}</dd>
         <dt>{% trans %} common_title {% endtrans %}</dt>
         <dd id="profile-info-civilite-output">
-            {% if client.civilite == constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::TITLE_MISTER') %}
+            {% if client.civilite == constant('Unilend\\Entity\\Clients::TITLE_MISTER') %}
                 {% trans %} common_title-male {% endtrans %}
-            {% elseif client.civilite == constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::TITLE_MISS') %}
+            {% elseif client.civilite == constant('Unilend\\Entity\\Clients::TITLE_MISS') %}
                 {% trans %} common_title-female {% endtrans %}
             {% endif %}
         </dd>
@@ -34,7 +34,7 @@
             {% for attachment in identityAttachments %}
                 {% if attachment is not null %}
                     {% set attachmentDate = attachment.updated|default(attachment.added)|localizeddate('short', 'none', app.request.locale) %}
-                    {% if attachment.getType().id == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\AttachmentType::CNI_PASSPORTE') %}
+                    {% if attachment.getType().id == constant('\\Unilend\\Entity\\AttachmentType::CNI_PASSPORTE') %}
                         <span id="form-profile-info-file-identite-cni-1-output" class="file-justificatif file-identity-side-a"
                               title="{{ "lender-profile_lender-attachment-provided-label-type-#{ attachment.getType().id }"|trans({'%date%' : attachmentDate }) }}" data-toggle="tooltip">
                                     <span class="sr-only">{{ "lender-profile_lender-attachment-provided-label-type-#{ attachment.getType().id }"|trans({'%date%' : attachmentDate}) }}</span>

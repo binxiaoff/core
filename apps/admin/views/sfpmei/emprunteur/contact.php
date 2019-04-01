@@ -1,4 +1,4 @@
-<?php use Unilend\Bundle\CoreBusinessBundle\Entity\BankAccount; ?>
+<?php use Unilend\Entity\BankAccount; ?>
 <div class="row">
     <div class="col-md-6">
         <table class="table table-bordered table-striped">
@@ -22,7 +22,7 @@
             </tr>
             <tr>
                 <th>Secteur d'activité</th>
-                <?php if ($this->companies->code_naf === \Unilend\Bundle\CoreBusinessBundle\Entity\Companies::NAF_CODE_NO_ACTIVITY || empty($this->companies->sector)) : ?>
+                <?php if ($this->companies->code_naf === \Unilend\Entity\Companies::NAF_CODE_NO_ACTIVITY || empty($this->companies->sector)) : ?>
                     <td> - </td>
                 <?php else : ?>
                     <td><?= $this->translator->trans('company-sector_sector-' . $this->companies->sector) ?></td>
@@ -84,7 +84,7 @@
             <tbody>
             <?php if (false === empty($this->bankAccountDocuments)) : ?>
                 <?php foreach ($this->bankAccountDocuments as $attachment) : ?>
-                    <?php /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\BankAccount $bankAccount */ ?>
+                    <?php /** @var \Unilend\Entity\BankAccount $bankAccount */ ?>
                     <?php $bankAccount = $attachment->getBankAccount(); ?>
                     <?php if (null === $bankAccount || BankAccount::STATUS_PENDING === $bankAccount->getStatus() || BankAccount::STATUS_ARCHIVED === $bankAccount->getStatus()) : ?>
                         <tr>

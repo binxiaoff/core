@@ -3,7 +3,7 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Service\Eligibility;
 
 use Doctrine\ORM\EntityManagerInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{Companies, Projects};
+use Unilend\Entity\{Companies, Projects};
 use Unilend\Bundle\CoreBusinessBundle\Service\Eligibility\Validator\CompanyValidator;
 
 class EligibilityManager

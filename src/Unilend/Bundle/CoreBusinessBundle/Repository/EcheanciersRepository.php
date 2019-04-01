@@ -4,7 +4,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
 use Doctrine\DBAL\{Cache\QueryCacheProfile, Connection};
 use Doctrine\ORM\{EntityRepository, NoResultException, Query\Expr\Join};
-use Unilend\Bundle\CoreBusinessBundle\Entity\{Clients, CompanyStatus, Echeanciers, Loans, OperationType, Projects, ProjectsStatus, UnilendStats, Wallet};
+use Unilend\Entity\{Clients, Companies, CompanyStatus, Echeanciers, EcheanciersEmprunteur, Loans, OperationType, Projects, ProjectsStatus, UnilendStats, Wallet};
 use Unilend\Bundle\CoreBusinessBundle\Service\TaxManager;
 use Unilend\Bundle\FrontBundle\Controller\LenderDashboardController;
 use Unilend\librairies\CacheKeys;
@@ -26,9 +26,9 @@ class EcheanciersRepository extends EntityRepository
 
         $qb = $this->createQueryBuilder('e');
         $qb->select('SUM(e.capital)')
-            ->innerJoin('UnilendCoreBusinessBundle:Projects', 'p', Join::WITH, 'e.idProject = p.idProject')
-            ->innerJoin('UnilendCoreBusinessBundle:Companies', 'c', Join::WITH, 'c.idCompany = p.idCompany')
-            ->innerJoin('UnilendCoreBusinessBundle:CompanyStatus', 'cs', Join::WITH, 'cs.id = c.idStatus')
+            ->innerJoin(Projects::class, 'p', Join::WITH, 'e.idProject = p.idProject')
+            ->innerJoin(Companies::class, 'c', Join::WITH, 'c.idCompany = p.idCompany')
+            ->innerJoin(CompanyStatus::class, 'cs', Join::WITH, 'cs.id = c.idStatus')
             ->where('e.idLender = :idLender')
             ->andWhere('e.status = ' . Echeanciers::STATUS_PENDING)
             ->andWhere('cs.label IN (:companyStatus) OR (p.status = ' . ProjectsStatus::STATUS_LOSS . ' AND DATEDIFF(NOW(), e.dateEcheance) > ' . UnilendStats::DAYS_AFTER_LAST_PROBLEM_STATUS_FOR_STATISTIC_LOSS . ')')
@@ -95,9 +95,9 @@ class EcheanciersRepository extends EntityRepository
     public function findByProject($project, $repaymentSequence = null, $client = null, $status = [], $paymentStatus = null, $earlyRepaymentStatus = null, $start = null, $limit = null)
     {
         $qb = $this->createQueryBuilder('e');
-        $qb->innerJoin('UnilendCoreBusinessBundle:Loans', 'l', Join::WITH, 'e.idLoan = l.idLoan')
-            ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'w.id = l.wallet')
-            ->innerJoin('UnilendCoreBusinessBundle:EcheanciersEmprunteur', 'ee', Join::WITH, 'ee.idProject = l.project AND ee.ordre = e.ordre')
+        $qb->innerJoin(Loans::class, 'l', Join::WITH, 'e.idLoan = l.idLoan')
+            ->innerJoin(Wallet::class, 'w', Join::WITH, 'w.id = l.wallet')
+            ->innerJoin(EcheanciersEmprunteur::class, 'ee', Join::WITH, 'ee.idProject = l.project AND ee.ordre = e.ordre')
             ->where('l.project = :project')
             ->setParameter('project', $project);
 
@@ -505,8 +505,8 @@ class EcheanciersRepository extends EntityRepository
 
         $queryBuilder = $this->createQueryBuilder('e');
         $queryBuilder->select('IFNULL(ROUND(SUM(e.capital  - e.capitalRembourse) / 100, 2), 0) AS capital, IFNULL(ROUND(SUM(e.interets  - e.interetsRembourses) / 100, 2), 0) AS interest')
-            ->innerJoin('UnilendCoreBusinessBundle:Loans', 'l', Join::WITH, 'e.idLoan = l.idLoan')
-            ->innerJoin('UnilendCoreBusinessBundle:EcheanciersEmprunteur', 'ee', Join::WITH, 'ee.idProject = l.project AND ee.ordre = e.ordre')
+            ->innerJoin(Loans::class, 'l', Join::WITH, 'e.idLoan = l.idLoan')
+            ->innerJoin(EcheanciersEmprunteur::class, 'ee', Join::WITH, 'ee.idProject = l.project AND ee.ordre = e.ordre')
             ->where('e.idLoan = :loan')
             ->setParameter('loan', $loan)
             ->andWhere('ee.dateEcheanceEmprunteur < :today')
@@ -563,7 +563,7 @@ class EcheanciersRepository extends EntityRepository
     {
         $queryBuilder = $this->createQueryBuilder('e');
         $queryBuilder->select('IDENTITY(e.idLoan) as idLoan, e.ordre, ROUND(SUM(e.capital  - e.capitalRembourse) / 100, 2) AS capital, ROUND(SUM(e.interets  - e.interetsRembourses) / 100, 2) AS interest')
-            ->innerJoin('UnilendCoreBusinessBundle:Loans', 'l', Join::WITH, 'e.idLoan = l.idLoan')
+            ->innerJoin(Loans::class, 'l', Join::WITH, 'e.idLoan = l.idLoan')
             ->where('l.project = :project')
             ->setParameter('project', $project)
             ->groupBy('e.idLoan')

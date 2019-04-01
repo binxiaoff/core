@@ -3,11 +3,7 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Service\Product\Checker;
 
 use Doctrine\ORM\EntityManagerInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Bids;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Product;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
-use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
+use Unilend\Entity\{Bids, Clients, Product, Projects, Wallet, WalletType};
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\ContractManager;
 
 trait LenderChecker
@@ -29,10 +25,10 @@ trait LenderChecker
      */
     public function getAmountLenderCanStillBid(Clients $client, Projects $project, ContractManager $contractManager, EntityManagerInterface $entityManager, $isAutoBid = false)
     {
-        $wallet  = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
-        $product = $entityManager->getRepository('UnilendCoreBusinessBundle:Product')->find($project->getIdProduct());
+        $wallet  = $entityManager->getRepository(Wallet::class)->getWalletByType($client, WalletType::LENDER);
+        $product = $entityManager->getRepository(Product::class)->find($project->getIdProduct());
 
-        $totalAmount       = $entityManager->getRepository('UnilendCoreBusinessBundle:Bids')
+        $totalAmount       = $entityManager->getRepository(Bids::class)
             ->getSumByWalletAndProjectAndStatus($wallet, $project->getIdProject(), [Bids::STATUS_PENDING]);
         $maxAmountEligible = $this->getMaxEligibleAmount($client, $product, $contractManager, $isAutoBid);
 

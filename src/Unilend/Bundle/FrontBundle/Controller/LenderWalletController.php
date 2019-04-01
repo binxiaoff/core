@@ -9,7 +9,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Csrf\CsrfToken;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{Backpayline, BankAccount, Clients, ClientsGestionMailsNotif, ClientsGestionTypeNotif, ClientsHistoryActions, Notifications, Wallet, WalletType};
+use Unilend\Entity\{Backpayline, BankAccount, Clients, ClientsGestionMailsNotif, ClientsGestionTypeNotif, ClientsHistoryActions, Notifications, Operation, Wallet, WalletBalanceHistory, WalletType};
 use Unilend\Bundle\FrontBundle\Form\LenderWithdrawalType;
 use Unilend\core\Loader;
 
@@ -61,7 +61,7 @@ class LenderWalletController extends Controller
         }
 
         $entityManager = $this->get('doctrine.orm.entity_manager');
-        $backPayline   = $entityManager->getRepository('UnilendCoreBusinessBundle:Backpayline')->findOneBy(['token' => $paymentToken]);
+        $backPayline   = $entityManager->getRepository(Backpayline::class)->findOneBy(['token' => $paymentToken]);
         $wallet        = $this->getWallet($client);
 
         if ($wallet && $backPayline && $backPayline->getWallet() === $wallet) {
@@ -108,7 +108,7 @@ class LenderWalletController extends Controller
         }
 
         $entityManager = $this->get('doctrine.orm.entity_manager');
-        $bankAccount   = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($client);
+        $bankAccount   = $entityManager->getRepository(BankAccount::class)->getClientValidatedBankAccount($client);
 
         if (null === $bankAccount) {
             $this->setWithdrawalInformationMessage($client);
@@ -148,7 +148,7 @@ class LenderWalletController extends Controller
      */
     private function setWithdrawalInformationMessage(Clients $client): void
     {
-        $lastModifiedBankAccount = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:BankAccount')->getLastModifiedBankAccount($client);
+        $lastModifiedBankAccount = $this->get('doctrine.orm.entity_manager')->getRepository(BankAccount::class)->getLastModifiedBankAccount($client);
         $translator              = $this->get('translator');
 
         if (null === $lastModifiedBankAccount) {
@@ -189,7 +189,7 @@ class LenderWalletController extends Controller
         $wallet        = $this->getWallet($client);
 
         /** @var BankAccount $bankAccount */
-        $bankAccount = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($client);
+        $bankAccount = $entityManager->getRepository(BankAccount::class)->getClientValidatedBankAccount($client);
         $amount      = $post['amount'];
         $serialize   = serialize(['id_client' => $client->getIdClient(), 'montant' => $amount, 'mdp' => md5($post['password'])]);
 
@@ -255,8 +255,8 @@ class LenderWalletController extends Controller
             $notificationManager = $this->get('unilend.service.notification_manager');
             $notification        = $notificationManager->createNotification(Notifications::TYPE_DEBIT, $wallet->getIdClient()->getIdClient(), null, $amount);
 
-            $withdrawalOperation  = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation')->findOneBy(['idWireTransferOut' => $wireTransferOut]);
-            $walletBalanceHistory = $entityManager->getRepository('UnilendCoreBusinessBundle:WalletBalanceHistory')->findOneBy([
+            $withdrawalOperation  = $entityManager->getRepository(Operation::class)->findOneBy(['idWireTransferOut' => $wireTransferOut]);
+            $walletBalanceHistory = $entityManager->getRepository(WalletBalanceHistory::class)->findOneBy([
                 'idOperation' => $withdrawalOperation,
                 'idWallet'    => $wallet
             ]);
@@ -422,6 +422,6 @@ class LenderWalletController extends Controller
      */
     private function getWallet(Clients $client): Wallet
     {
-        return $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
+        return $this->get('doctrine.orm.entity_manager')->getRepository(Wallet::class)->getWalletByType($client, WalletType::LENDER);
     }
 }

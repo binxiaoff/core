@@ -9,7 +9,8 @@ use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+use Unilend\Entity\Clients;
+use Unilend\Entity\Settings;
 
 class OriginOfFundsType extends AbstractType
 {
@@ -50,7 +51,7 @@ class OriginOfFundsType extends AbstractType
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefaults([
-            'data_class' => 'Unilend\Bundle\CoreBusinessBundle\Entity\Clients'
+            'data_class' => 'Unilend\Entity\Clients'
         ]);
     }
 
@@ -67,11 +68,11 @@ class OriginOfFundsType extends AbstractType
         switch ($clientType) {
             case Clients::TYPE_PERSON:
             case Clients::TYPE_PERSON_FOREIGNER:
-                $setting = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneByType('Liste deroulante origine des fonds');
+                $setting = $this->entityManager->getRepository(Settings::class)->findOneByType('Liste deroulante origine des fonds');
                 break;
             case Clients::TYPE_LEGAL_ENTITY:
             case Clients::TYPE_LEGAL_ENTITY_FOREIGNER;
-                $setting = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneByType('Liste deroulante origine des fonds societe');
+                $setting = $this->entityManager->getRepository(Settings::class)->findOneByType('Liste deroulante origine des fonds societe');
                 break;
             default:
                 throw new \Exception('Client type not supported for origin of funds list');

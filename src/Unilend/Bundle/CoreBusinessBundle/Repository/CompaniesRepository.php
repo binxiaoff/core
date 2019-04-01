@@ -5,7 +5,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
 use Unilend\Bridge\Doctrine\DBAL\Connection;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{Companies, CompanyStatus, OperationType, ProjectsStatus};
+use Unilend\Entity\{Companies, CompanyStatus, CompanyStatusHistory, Operation, OperationType, Projects, ProjectsStatus, ProjectsStatusHistory, RiskDataMonitoring, Wallet};
 use Unilend\Bundle\CoreBusinessBundle\Service\RiskDataMonitoring\MonitoringCycleManager;
 
 class CompaniesRepository extends EntityRepository
@@ -17,11 +17,11 @@ class CompaniesRepository extends EntityRepository
      */
     public function getLegalEntitiesByCumulativeDepositAmount($maxDepositAmount)
     {
-        $operationType = $this->getEntityManager()->getRepository('UnilendCoreBusinessBundle:OperationType');
+        $operationType = $this->getEntityManager()->getRepository(OperationType::class);;
         $queryBuilder  = $this->createQueryBuilder('c')
              ->select('IDENTITY(c.idClientOwner) AS idClient, c.capital, SUM(o.amount) AS depositAmount, GROUP_CONCAT(o.id) AS operation')
-            ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'c.idClientOwner = w.idClient')
-            ->innerJoin('UnilendCoreBusinessBundle:Operation', 'o', Join::WITH, 'o.idWalletCreditor = w.id')
+            ->innerJoin(Wallet::class, 'w', Join::WITH, 'c.idClientOwner = w.idClient')
+            ->innerJoin(Operation::class, 'o', Join::WITH, 'o.idWalletCreditor = w.id')
             ->where('o.idType = :operation_type')
             ->setParameter('operation_type', $operationType->findOneBy(['label' => OperationType::LENDER_PROVISION]))
             ->groupBy('o.idWalletCreditor')
@@ -43,8 +43,8 @@ class CompaniesRepository extends EntityRepository
     {
         $queryBuilder = $this->createQueryBuilder('c');
         $queryBuilder
-            ->innerJoin('UnilendCoreBusinessBundle:Projects', 'p', Join::WITH, 'p.idCompany = c.idCompany')
-            ->innerJoin('UnilendCoreBusinessBundle:RiskDataMonitoring', 'rdm', Join::WITH, 'c.siren = rdm.siren')
+            ->innerJoin(Projects::class, 'p', Join::WITH, 'p.idCompany = c.idCompany')
+            ->innerJoin(RiskDataMonitoring::class, 'rdm', Join::WITH, 'c.siren = rdm.siren')
             ->where('c.siren = :siren')
             ->setParameter('siren', $siren);
 
@@ -113,11 +113,11 @@ class CompaniesRepository extends EntityRepository
     {
         $queryBuilder = $this->createQueryBuilder('c')
             ->select('COUNT(c.idCompany)')
-            ->innerJoin('UnilendCoreBusinessBundle:CompanyStatusHistory', 'csh', Join::WITH,  'csh.idCompany = c.idCompany')
-            ->innerJoin('UnilendCoreBusinessBundle:Projects', 'p', Join::WITH,  'p.idCompany = c.idCompany')
-            ->innerJoin('UnilendCoreBusinessBundle:ProjectsStatusHistory', 'psh', Join::WITH,  'psh.idProject = p.idProject')
-            ->innerJoin('UnilendCoreBusinessBundle:CompanyStatus', 'cs', Join::WITH,  'cs.id = csh.idStatus')
-            ->innerJoin('UnilendCoreBusinessBundle:ProjectsStatus', 'ps', Join::WITH,  'ps.idProjectStatus = psh.idProjectStatus')
+            ->innerJoin(CompanyStatusHistory::class, 'csh', Join::WITH,  'csh.idCompany = c.idCompany')
+            ->innerJoin(Projects::class, 'p', Join::WITH,  'p.idCompany = c.idCompany')
+            ->innerJoin(ProjectsStatusHistory::class, 'psh', Join::WITH,  'psh.idProject = p.idProject')
+            ->innerJoin(CompanyStatus::class, 'cs', Join::WITH,  'cs.id = csh.idStatus')
+            ->innerJoin(ProjectsStatus::class, 'ps', Join::WITH,  'ps.idProjectStatus = psh.idProjectStatus')
             ->where('c.siren = :siren')
             ->setParameter('siren', $siren)
             ->andWhere('cs.label != :inBonis')
@@ -155,12 +155,12 @@ class CompaniesRepository extends EntityRepository
         $sirenExistSubQuery = $this->getEntityManager()
             ->createQueryBuilder()
             ->select('rdm2')
-            ->from('UnilendCoreBusinessBundle:RiskDataMonitoring', 'rdm2')
+            ->leftJoin(RiskDataMonitoring::class, 'rdm2')
             ->where('rdm2.siren = co.siren')      ;
 
         $queryBuilder = $this->createQueryBuilder('co');
         $queryBuilder->select('DISTINCT co.siren')
-            ->innerJoin('UnilendCoreBusinessBundle:Projects', 'p', Join::WITH, 'p.idCompany = co.idCompany')
+            ->innerJoin(Projects::class, 'p', Join::WITH, 'p.idCompany = co.idCompany')
             ->where('p.status > :firstProjectStatus')
             ->andWhere('p.status NOT IN (:excludedStatus)')
             ->andWhere($queryBuilder->expr()->not($queryBuilder->expr()->exists($sirenExistSubQuery->getDQL())))
@@ -179,9 +179,9 @@ class CompaniesRepository extends EntityRepository
     {
         $queryBuilder = $this->createQueryBuilder('co');
         $queryBuilder->select('DISTINCT(co.siren) AS siren')
-            ->innerJoin('UnilendCoreBusinessBundle:CompanyStatus', 'cs', Join::WITH, 'cs.id = co.idStatus')
-            ->innerJoin('UnilendCoreBusinessBundle:Projects', 'p', Join::WITH, 'co.idCompany = p.idCompany')
-            ->innerJoin('UnilendCoreBusinessBundle:RiskDataMonitoring', 'rdm', Join::WITH, 'co.siren = rdm.siren')
+            ->innerJoin(CompanyStatus::class, 'cs', Join::WITH, 'cs.id = co.idStatus')
+            ->innerJoin(Projects::class, 'p', Join::WITH, 'co.idCompany = p.idCompany')
+            ->innerJoin(RiskDataMonitoring::class, 'rdm', Join::WITH, 'co.siren = rdm.siren')
             ->where('cs.label != :inBonis')
             ->orWhere('p.status IN (:finalStatus)')
             ->setParameter('inBonis', CompanyStatus::STATUS_IN_BONIS)

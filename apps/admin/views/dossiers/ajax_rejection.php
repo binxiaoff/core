@@ -1,6 +1,6 @@
 <?php
 
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
+use Unilend\Entity\ProjectsStatus;
 
 ?>
 <link rel="stylesheet" href="<?= $this->lurl ?>/oneui/js/plugins/select2/select2.min.css">
@@ -15,7 +15,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
                 <select name="rejection_reason[]" id="rejection_reason" class="js-select2 form-control required" data-placeholder="Sélectionner un ou plusieurs motifs.." multiple>
                     <option value=""></option>
                     <?php foreach ($this->rejectionReasons as $rejectionReason) : ?>
-                        <?php /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRejectionReason $rejectionReason */ ?>
+                        <?php /** @var \Unilend\Entity\ProjectRejectionReason $rejectionReason */ ?>
                         <option value="<?= $rejectionReason->getIdRejection() ?>" title="<?= htmlentities($rejectionReason->getDescription()) ?>" class="tooltip"><?= $rejectionReason->getReason() ?></option>
                     <?php endforeach; ?>
                 </select>

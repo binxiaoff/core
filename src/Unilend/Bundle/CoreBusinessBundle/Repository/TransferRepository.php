@@ -2,7 +2,7 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
 use Doctrine\ORM\EntityRepository;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Transfer;
+use Unilend\Entity\Transfer;
 
 class TransferRepository extends EntityRepository
 {

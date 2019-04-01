@@ -3,7 +3,7 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\ORM\EntityManagerInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{Clients, NationalitesV2, Pays, TaxType, UnderlyingContract, Users, WalletType};
+use Unilend\Entity\{Clients, LenderTaxExemption, NationalitesV2, Pays, TaxType, UnderlyingContract, Users, Wallet, WalletType};
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 
 class TaxManager
@@ -63,7 +63,7 @@ class TaxManager
             throw new \Exception('Client ' . $client->getIdClient() . ' has no validated main address');
         }
 
-        $wallet    = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
+        $wallet    = $this->entityManager->getRepository(Wallet::class)->getWalletByType($client, WalletType::LENDER);
         $foreigner = 0;
 
         if (
@@ -126,7 +126,7 @@ class TaxManager
      */
     private function getNaturalPersonLenderRepaymentInterestsTax(Clients $client, $interestsGross, \DateTime $taxDate, UnderlyingContract $underlyingContract = null)
     {
-        $wallet = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client->getIdClient(), WalletType::LENDER);
+        $wallet = $this->entityManager->getRepository(Wallet::class)->getWalletByType($client->getIdClient(), WalletType::LENDER);
 
         if (null === $wallet) {
             throw new \Exception('Unable to load lender wallet with client ID ' . $client->getIdClient());
@@ -144,7 +144,7 @@ class TaxManager
         }
 
         if (0 == $lenderTaxationHistory->resident_etranger) {
-            $LenderTaxExemptionRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:LenderTaxExemption');
+            $LenderTaxExemptionRepository = $this->entityManager->getRepository(LenderTaxExemption::class);
             $taxExemption = $LenderTaxExemptionRepository->findOneBy(['idLender' => $wallet, 'year' => $taxDate->format('Y'), 'isoCountry' => 'FR']);
 
             if (null !== $taxExemption) { // @todo i18n
@@ -169,7 +169,7 @@ class TaxManager
      */
     public function calculateTaxes($amount, array $taxTypes)
     {
-        $taxTypeRepo = $this->entityManager->getRepository('UnilendCoreBusinessBundle:TaxType');
+        $taxTypeRepo = $this->entityManager->getRepository(TaxType::class);
         $taxes       = [];
 
         foreach ($taxTypes as $taxTypeId) {

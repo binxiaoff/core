@@ -3,13 +3,7 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\ORM\EntityManagerInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Bids;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Loans;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Operation;
-use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
-use Unilend\Bundle\CoreBusinessBundle\Entity\WalletBalanceHistory;
-use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
+use Unilend\Entity\{Bids, Loans, Operation, OperationType, Wallet, WalletBalanceHistory, WalletType};
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 
 /**
@@ -69,7 +63,7 @@ class WalletManager
                 //throw new \DomainException('The available balance for wallet id : ' . $wallet->getId() . ' must not be lower than zero');
             }
 
-            $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->engageBalance($wallet, $amount);
+            $this->entityManager->getRepository(Wallet::class)->engageBalance($wallet, $amount);
 
             $this->entityManager->refresh($wallet);
             $walletBalanceHistory = $this->snap($wallet, $bid);
@@ -98,7 +92,7 @@ class WalletManager
                 //throw new \DomainException('The committed balance for wallet id : ' . $wallet->getId() . ' must not be lower than zero');
             }
 
-            $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->releaseBalance($wallet, $amount);
+            $this->entityManager->getRepository(Wallet::class)->releaseBalance($wallet, $amount);
 
             $this->entityManager->refresh($wallet);
             $walletBalanceHistory = $this->snap($wallet, $origin);
@@ -120,7 +114,7 @@ class WalletManager
         if (WalletType::DEBT_COLLECTOR !== $creditor->getIdType()->getLabel() && $creditor->getAvailableBalance() < 0) {
             //throw new \DomainException('The available balance for wallet id : ' . $creditor->getId() . ' must not be lower than zero');
         }
-        $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->creditAvailableBalance($creditor, $operation->getAmount());
+        $this->entityManager->getRepository(Wallet::class)->creditAvailableBalance($creditor, $operation->getAmount());
 
         $this->entityManager->refresh($creditor);
         $this->snap($creditor, $operation);
@@ -138,13 +132,13 @@ class WalletManager
                 if (WalletType::DEBT_COLLECTOR !== $debtor->getIdType()->getLabel() && $debtor->getCommittedBalance() < 0) {
                     //throw new \DomainException('The committed balance for wallet id : ' . $debtor->getId() . '  must not be lower than zero');
                 }
-                $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->debitCommittedBalance($debtor, $operation->getAmount());
+                $this->entityManager->getRepository(Wallet::class)->debitCommittedBalance($debtor, $operation->getAmount());
                 break;
             default :
                 if (WalletType::DEBT_COLLECTOR !== $debtor->getIdType()->getLabel() && $debtor->getAvailableBalance() < 0) {
                     //throw new \DomainException('The available balance for wallet id : ' . $debtor->getId() . '  must not be lower than zero');
                 }
-                $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->debitAvailableBalance($debtor, $operation->getAmount());
+                $this->entityManager->getRepository(Wallet::class)->debitAvailableBalance($debtor, $operation->getAmount());
                 break;
         }
         $this->entityManager->refresh($debtor);

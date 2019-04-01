@@ -35,7 +35,7 @@
             </tr>
         <?php endif; ?>
 
-        <?php if ($this->reception instanceof \Unilend\Bundle\CoreBusinessBundle\Entity\Receptions) : ?>
+        <?php if ($this->reception instanceof \Unilend\Entity\Receptions) : ?>
             <?php if ($this->wireTransferAmountOk && $this->displayActionButton) : ?>
                 <tr>
                     <th>Actions :</th>
@@ -64,7 +64,7 @@
             </tr>
         <?php endif; ?>
     </table>
-    <?php if (false === $this->reception instanceof \Unilend\Bundle\CoreBusinessBundle\Entity\Receptions) : ?>
+    <?php if (false === $this->reception instanceof \Unilend\Entity\Receptions) : ?>
         <p>* : Le montant correspond aux CRD des échéances restantes après celle du <?= $this->nextScheduledRepaymentDate->format('d/m/Y') ?> qui sera prélevée normalement</p>
     <?php endif; ?>
 <?php else: ?>
