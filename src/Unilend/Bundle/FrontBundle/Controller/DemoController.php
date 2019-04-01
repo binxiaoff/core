@@ -13,10 +13,10 @@ use Symfony\Component\HttpFoundation\{JsonResponse, RedirectResponse, Request, R
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{Attachment, Bids, Clients, Companies, FeeType, Loans, Partner, PercentFee, ProjectParticipant, ProjectPercentFee, Projects, ProjectsComments,
-    ProjectsStatus, Users, WalletType};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{Attachment, Bids, Clients, Companies, FeeType, Loans, Partner, PercentFee, ProjectParticipant, ProjectPercentFee, Projects,
+    ProjectsComments, ProjectsStatus, Users, WalletType};
 use Unilend\Bundle\CoreBusinessBundle\Repository\ProjectParticipantRepository;
-use Unilend\Bundle\CoreBusinessBundle\Service\{AttachmentManager, ProjectManager, ProjectStatusManager};
+use Unilend\Bundle\CoreBusinessBundle\Service\{AttachmentManager, DemoMailerManager, ProjectManager, ProjectStatusManager};
 use Unilend\Bundle\FrontBundle\Form\Lending\BidType;
 use Unilend\Bundle\FrontBundle\Service\ProjectDisplayManager;
 use Unilend\Bundle\WSClientBundle\Service\InseeManager;
@@ -103,7 +103,7 @@ class DemoController extends AbstractController
                 ->getQuery()
                 ->getResult();
 
-            $template['projects']['lender']['inProgress'] = array_merge((array) $projectsInProgressBid, (array) $projectsInProgressNonSignedLoan);
+            $template['projects']['lender']['inProgress'] = array_merge((array)$projectsInProgressBid, (array)$projectsInProgressNonSignedLoan);
 
             $inProgressBidCount = $projectRepository->createQueryBuilder('p')
                 ->select('count(p)')
@@ -226,6 +226,7 @@ class DemoController extends AbstractController
      * @param UserInterface|Clients|null $user
      * @param ProjectStatusManager       $projectStatusManager
      * @param AttachmentManager          $attachmentManager
+     * @param DemoMailerManager          $mailerManager
      *
      * @return RedirectResponse
      * @throws \Doctrine\DBAL\ConnectionException
@@ -234,7 +235,8 @@ class DemoController extends AbstractController
         Request $request,
         ?UserInterface $user,
         ProjectStatusManager $projectStatusManager,
-        AttachmentManager $attachmentManager
+        AttachmentManager $attachmentManager,
+        DemoMailerManager $mailerManager
     ): RedirectResponse
     {
         $borrowerId         = $request->request->get('borrower');
@@ -294,7 +296,7 @@ class DemoController extends AbstractController
                 $percentFee
                     ->setType($type)
                     ->setRate(str_replace(',', '.', $fee['percentFee']['rate']))
-                    ->setIsRecurring((bool) empty($fee['percentFee']['isRecurring']) ? false : $fee['percentFee']['isRecurring']);
+                    ->setIsRecurring((bool)empty($fee['percentFee']['isRecurring']) ? false : $fee['percentFee']['isRecurring']);
 
                 $projectPercentFee = new ProjectPercentFee();
                 $projectPercentFee->setPercentFee($percentFee);
@@ -310,6 +312,17 @@ class DemoController extends AbstractController
             $this->uploadDocuments($request, $project, $user, $attachmentManager);
 
             $this->entityManager->commit();
+
+            try {
+                $mailerManager->sendProjectRequest($project);
+            } catch (\Swift_SwiftException $exception) {
+                $this->logger->error('An error occurred while sending project request email. Message: ' . $exception->getMessage(), [
+                    'class'    => __CLASS__,
+                    'function' => __FUNCTION__,
+                    'file'     => $exception->getFile(),
+                    'line'     => $exception->getLine()
+                ]);
+            }
 
             return $this->redirectToRoute('demo_project_details', ['hash' => $project->getHash()]);
         } catch (\Exception $exception) {
@@ -607,12 +620,18 @@ class DemoController extends AbstractController
      * @param Request              $request
      * @param string               $hash
      * @param ProjectStatusManager $projectStatusManager
+     * @param DemoMailerManager    $mailerManager
      *
      * @return Response
      * @throws \Doctrine\ORM\NonUniqueResultException
      * @throws \Doctrine\ORM\OptimisticLockException
      */
-    public function projectStatusUpdate(Request $request, string $hash, ProjectStatusManager $projectStatusManager): Response
+    public function projectStatusUpdate(
+        Request $request,
+        string $hash,
+        ProjectStatusManager $projectStatusManager,
+        DemoMailerManager $mailerManager
+    ): Response
     {
         $projectRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
         $project           = $projectRepository->findOneBy(['hash' => $hash]);
@@ -653,6 +672,33 @@ class DemoController extends AbstractController
 
         if ($status) {
             $projectStatusManager->addProjectStatus(Users::USER_ID_FRONT, $status, $project);
+
+            switch ($status) {
+                case ProjectsStatus::STATUS_ONLINE:
+                    try {
+                        $mailerManager->sendProjectPublication($project);
+                    } catch (\Swift_SwiftException $exception) {
+                        $this->logger->error('An error occurred while sending project publication email. Message: ' . $exception->getMessage(), [
+                            'class'    => __CLASS__,
+                            'function' => __FUNCTION__,
+                            'file'     => $exception->getFile(),
+                            'line'     => $exception->getLine()
+                        ]);
+                    }
+                    break;
+                case ProjectsStatus::STATUS_FUNDED:
+                    try {
+                        $mailerManager->sendProjectFundingEnd($project);
+                    } catch (\Swift_SwiftException $exception) {
+                        $this->logger->error('An error occurred while sending project publication email. Message: ' . $exception->getMessage(), [
+                            'class'    => __CLASS__,
+                            'function' => __FUNCTION__,
+                            'file'     => $exception->getFile(),
+                            'line'     => $exception->getLine()
+                        ]);
+                    }
+                    break;
+            }
         }
 
         return $this->redirectToRoute('demo_project_details', ['hash' => $project->getHash()]);
@@ -729,13 +775,14 @@ class DemoController extends AbstractController
     /**
      * @Route("/projet/update/{hash}", name="demo_project_update", requirements={"hash":"[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}"})
      *
-     * @param Request        $request
-     * @param string         $hash
-     * @param ProjectManager $projectManager
+     * @param Request           $request
+     * @param string            $hash
+     * @param ProjectManager    $projectManager
+     * @param DemoMailerManager $mailerManager
      *
      * @return Response
      */
-    public function projectUpdate(Request $request, string $hash, ProjectManager $projectManager): Response
+    public function projectUpdate(Request $request, string $hash, ProjectManager $projectManager, DemoMailerManager $mailerManager): Response
     {
         $projectRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
         $project           = $projectRepository->findOneBy(['hash' => $hash]);
@@ -772,7 +819,7 @@ class DemoController extends AbstractController
                 $outputValue = $formatter->format($project->getAmount());
                 break;
             case 'duration':
-                $value = (int) $value;
+                $value = (int)$value;
                 $project->setPeriod($value * 12);
                 $this->entityManager->flush($project);
 
@@ -791,7 +838,7 @@ class DemoController extends AbstractController
                     $value = null;
                 } else {
                     $value = str_replace(',', '.', $value);
-                    $value = (float) preg_replace('/[^0-9.]/', '', $value);
+                    $value = (float)preg_replace('/[^0-9.]/', '', $value);
                 }
                 $project->setInterestRate($value);
                 $this->entityManager->flush($project);
@@ -863,12 +910,34 @@ class DemoController extends AbstractController
                 $project->setNatureProject($value);
                 $this->entityManager->flush($project);
 
+                try {
+                    $mailerManager->sendArrangerScoringChanged($project);
+                } catch (\Swift_SwiftException $exception) {
+                    $this->logger->error('An error occurred while sending arranger scoring email. Message: ' . $exception->getMessage(), [
+                        'class'    => __CLASS__,
+                        'function' => __FUNCTION__,
+                        'file'     => $exception->getFile(),
+                        'line'     => $exception->getLine()
+                    ]);
+                }
+
                 $outputValue = $value;
                 break;
             case 'run-scoring':
                 $value = $value ?: null;
                 $project->setObjectifLoan($value);
                 $this->entityManager->flush($project);
+
+                try {
+                    $mailerManager->sendRunScoringChanged($project);
+                } catch (\Swift_SwiftException $exception) {
+                    $this->logger->error('An error occurred while sending RUN scoring email. Message: ' . $exception->getMessage(), [
+                        'class'    => __CLASS__,
+                        'function' => __FUNCTION__,
+                        'file'     => $exception->getFile(),
+                        'line'     => $exception->getLine()
+                    ]);
+                }
 
                 $outputValue = $value;
                 break;
@@ -925,6 +994,7 @@ class DemoController extends AbstractController
      * @param Request                      $request
      * @param ProjectParticipantRepository $projectParticipantRepository
      * @param ProjectDisplayManager        $projectDisplayManager
+     * @param DemoMailerManager            $mailerManager
      *
      * @return Response
      */
@@ -933,7 +1003,8 @@ class DemoController extends AbstractController
         ?UserInterface $client,
         Request $request,
         ProjectParticipantRepository $projectParticipantRepository,
-        ProjectDisplayManager $projectDisplayManager
+        ProjectDisplayManager $projectDisplayManager,
+        DemoMailerManager $mailerManager
     ): Response
     {
         $project = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->findOneBy(['slug' => $slug, 'status' => ProjectDisplayManager::STATUS_DISPLAYABLE]);
@@ -957,12 +1028,22 @@ class DemoController extends AbstractController
         }
 
         $form = $this->createForm(BidType::class, $bid);
-
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
             $this->entityManager->persist($bid);
             $this->entityManager->flush();
+
+            try {
+                $mailerManager->sendBidSubmitted($bid);
+            } catch (\Swift_SwiftException $exception) {
+                $this->logger->error('An error occurred while sending submitted bid email. Message: ' . $exception->getMessage(), [
+                    'class'    => __CLASS__,
+                    'function' => __FUNCTION__,
+                    'file'     => $exception->getFile(),
+                    'line'     => $exception->getLine()
+                ]);
+            }
         }
 
         return $this->render(':frontbundle/demo:project.html.twig', [
@@ -980,11 +1061,12 @@ class DemoController extends AbstractController
     /**
      * @Route("/bid/change/status", name="demo_change_bid_status")
      *
-     * @param Request $request
+     * @param Request           $request
+     * @param DemoMailerManager $mailerManager
      *
      * @return JsonResponse
      */
-    public function changeBidStatus(Request $request): JsonResponse
+    public function changeBidStatus(Request $request, DemoMailerManager $mailerManager): JsonResponse
     {
         $bidId  = $request->request->get('bid');
         $status = $request->request->get('status');
@@ -993,6 +1075,19 @@ class DemoController extends AbstractController
         if ($bid && in_array($status, $bid->getAllStatus())) {
             $bid->setStatus($status);
             $this->entityManager->flush();
+
+            if (in_array($status, [Bids::STATUS_ACCEPTED, Bids::STATUS_REJECTED])) {
+                try {
+                    $mailerManager->sendBidAcceptedRejected($bid);
+                } catch (\Swift_SwiftException $exception) {
+                    $this->logger->error('An error occurred while sending accepted/rejected bid email. Message: ' . $exception->getMessage(), [
+                        'class'    => __CLASS__,
+                        'function' => __FUNCTION__,
+                        'file'     => $exception->getFile(),
+                        'line'     => $exception->getLine()
+                    ]);
+                }
+            }
         }
 
         return $this->json('OK');
@@ -1090,7 +1185,7 @@ class DemoController extends AbstractController
                 $type       = $this->entityManager->getRepository(FeeType::class)->find($fee['percentFee']['type']);
                 $percentFee->setType($type)
                     ->setRate(str_replace(',', '.', $fee['percentFee']['rate']))
-                    ->setIsRecurring((bool) empty($fee['percentFee']['isRecurring']) ? false : $fee['percentFee']['isRecurring']);
+                    ->setIsRecurring((bool)empty($fee['percentFee']['isRecurring']) ? false : $fee['percentFee']['isRecurring']);
 
                 $projectPercentFee = new ProjectPercentFee();
                 $projectPercentFee->setPercentFee($percentFee);
