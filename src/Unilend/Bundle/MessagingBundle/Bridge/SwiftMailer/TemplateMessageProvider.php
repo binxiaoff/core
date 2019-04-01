@@ -44,7 +44,7 @@ class TemplateMessageProvider
         string $templateMessageFQCN,
         string $defaultLocale,
         TranslatorInterface $translator,
-        //Packages $assetsPackages,
+        Packages $assetsPackages,
         string $frontUrl,
         string $adminUrl
     )
@@ -53,8 +53,7 @@ class TemplateMessageProvider
         $this->templateMessageFQCN = $templateMessageFQCN;
         $this->defaultLocale       = $defaultLocale;
         $this->translator          = $translator;
-        //$this->staticUrl           = $assetsPackages->getUrl('');
-        $this->staticUrl           = $frontUrl;
+        $this->staticUrl           = $assetsPackages->getUrl('');
         $this->frontUrl            = $frontUrl;
         $this->adminUrl            = $adminUrl;
     }
