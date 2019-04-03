@@ -8,7 +8,7 @@ use Symfony\Component\HttpFoundation\{JsonResponse, Request, Response};
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Unilend\Entity\{Bids, Clients, ClientsStatus, Echeanciers, LenderStatistic, Loans, Operation, OperationType, Product, Projects, ProjectsStatus, Wallet, WalletType};
-use Unilend\Bundle\CoreBusinessBundle\Repository\ProjectsRepository;
+use Unilend\Repository\ProjectsRepository;
 
 class LenderDashboardController extends Controller
 {

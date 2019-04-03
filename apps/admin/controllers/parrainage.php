@@ -20,7 +20,7 @@ class parrainageController extends bootstrap
         $entityManager = $this->get('doctrine.orm.entity_manager');
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\SponsorshipManager $sponsorshipManager */
         $sponsorshipManager = $this->get('unilend.service.sponsorship_manager');
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Repository\SponsorshipRepository $sponsorshipRepository */
+        /** @var \Unilend\Repository\SponsorshipRepository $sponsorshipRepository */
         $sponsorshipRepository         = $entityManager->getRepository(Sponsorship::class);
         $operationRepository           = $entityManager->getRepository(Operation::class);
         $sponsorshipCampaignRepository = $entityManager->getRepository(SponsorshipCampaign::class);
@@ -111,9 +111,9 @@ class parrainageController extends bootstrap
     {
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Repository\OperationRepository $operationRepository */
+        /** @var \Unilend\Repository\OperationRepository $operationRepository */
         $operationRepository = $entityManager->getRepository(Operation::class);
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Repository\SponsorshipRepository $sponsorshipRepository */
+        /** @var \Unilend\Repository\SponsorshipRepository $sponsorshipRepository */
         $sponsorshipRepository = $entityManager->getRepository(Sponsorship::class);
         $campaignDetails = [];
 

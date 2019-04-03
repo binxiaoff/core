@@ -5,7 +5,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Unilend\Entity\{CompanyStatus, CompanyStatusHistory, LenderStatistic, ProjectsStatus, ProjectsStatusHistory, UnilendStats, Wallet};
-use Unilend\Bundle\CoreBusinessBundle\Repository\WalletRepository;
+use Unilend\Repository\WalletRepository;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 
 /**

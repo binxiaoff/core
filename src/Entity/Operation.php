@@ -24,7 +24,7 @@ use Doctrine\ORM\Mapping as ORM;
  *     @ORM\Index(name="idx_operation_id_sponsorship", columns={"id_sponsorship"}),
  *     @ORM\Index(name="idx_operation_added", columns={"added"}),
  * })
- * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\OperationRepository")
+ * @ORM\Entity(repositoryClass="Unilend\Repository\OperationRepository")
  * @ORM\HasLifecycleCallbacks
  */
 class Operation

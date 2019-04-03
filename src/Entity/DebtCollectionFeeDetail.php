@@ -14,7 +14,7 @@ use Doctrine\ORM\Mapping as ORM;
  *     @ORM\Index(name="idx_debt_collection_fee_detail_id_wallet_debtor", columns={"id_wallet_debtor"}),
  *     @ORM\Index(name="idx_debt_collection_fee_detail_id_debt_collection_mission", columns={"id_debt_collection_mission"})
  * })
- * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\DebtCollectionFeeDetailRepository")
+ * @ORM\Entity(repositoryClass="Unilend\Repository\DebtCollectionFeeDetailRepository")
  * @ORM\HasLifecycleCallbacks
  */
 class DebtCollectionFeeDetail

@@ -8,7 +8,7 @@ use Symfony\Component\HttpFoundation\{JsonResponse, Request, Response};
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Unilend\Entity\{Clients, ProjectAbandonReason, ProjectCgv, Projects, ProjectsComments, ProjectsStatus, ProjectsStatusHistory};
-use Unilend\Bundle\CoreBusinessBundle\Repository\ProjectsRepository;
+use Unilend\Repository\ProjectsRepository;
 use Unilend\Bundle\CoreBusinessBundle\Service\TermsOfSaleManager;
 
 class ProjectsListController extends Controller

@@ -8,7 +8,7 @@ use Doctrine\ORM\Mapping as ORM;
  * UnilendStats
  *
  * @ORM\Table(name="unilend_stats")
- * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\UnilendStatsRepository")
+ * @ORM\Entity(repositoryClass="Unilend\Repository\UnilendStatsRepository")
  * @ORM\HasLifecycleCallbacks()
  */
 class UnilendStats

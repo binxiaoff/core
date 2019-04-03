@@ -10,7 +10,7 @@ use Unilend\Entity\Traits\Timestampable;
 /**
  * Companies
  *
- * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\CompaniesRepository")
+ * @ORM\Entity(repositoryClass="Unilend\Repository\CompaniesRepository")
  * @ORM\HasLifecycleCallbacks
  */
 class Companies

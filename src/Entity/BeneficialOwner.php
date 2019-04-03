@@ -9,7 +9,7 @@ use Doctrine\ORM\Mapping as ORM;
  *
  * @ORM\Table(name="beneficial_owner", uniqueConstraints={@ORM\UniqueConstraint(name="id_client_id_declaration", columns={"id_client", "id_declaration"})})
  * @ORM\HasLifecycleCallbacks
- * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\BeneficialOwnerRepository")
+ * @ORM\Entity(repositoryClass="Unilend\Repository\BeneficialOwnerRepository")
  */
 class BeneficialOwner
 {

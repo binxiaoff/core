@@ -65,7 +65,7 @@ class sfpmeiController extends bootstrap
                 die;
             }
 
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Repository\ClientsRepository $clientRepository */
+            /** @var \Unilend\Repository\ClientsRepository $clientRepository */
             $clientRepository = $this->get('doctrine.orm.entity_manager')->getRepository(Clients::class);
             $this->lenders    = $clientRepository->findLenders($clientId, $email, $lastName, null, $companyName);
 

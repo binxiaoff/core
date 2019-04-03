@@ -24,7 +24,7 @@ use Unilend\Entity\Traits\Timestampable;
  *     @ORM\Index(name="fk_projects_id_client_submitter", columns={"id_client_submitter"}),
  *     @ORM\Index(name="fk_projects_status", columns={"status"})
  * })
- * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\ProjectsRepository")
+ * @ORM\Entity(repositoryClass="Unilend\Repository\ProjectsRepository")
  * @ORM\HasLifecycleCallbacks
  */
 class Projects

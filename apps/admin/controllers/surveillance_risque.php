@@ -1,7 +1,7 @@
 <?php
 
 use Unilend\Entity\{Operation, ProjectsStatus, RiskDataMonitoring, Zones};
-use Unilend\Bundle\CoreBusinessBundle\Repository\RiskDataMonitoringRepository;
+use Unilend\Repository\RiskDataMonitoringRepository;
 use Unilend\Bundle\WSClientBundle\Entity\Euler\CompanyRating as EulerCompanyRating;
 
 class surveillance_risqueController extends bootstrap
@@ -59,7 +59,7 @@ class surveillance_risqueController extends bootstrap
     {
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Repository\OperationRepository $operationRepository */
+        /** @var \Unilend\Repository\OperationRepository $operationRepository */
         $operationRepository              = $entityManager->getRepository(Operation::class);
         $activeStatus                     = [
             ProjectsStatus::SALES_TEAM_UPCOMING_STATUS,

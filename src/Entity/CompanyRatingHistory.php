@@ -8,7 +8,7 @@ use Doctrine\ORM\Mapping as ORM;
  * CompanyRatingHistory
  *
  * @ORM\Table(name="company_rating_history", indexes={@ORM\Index(name="id_company", columns={"id_company"})})
- * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\CompanyRatingHistoryRepository")
+ * @ORM\Entity(repositoryClass="Unilend\Repository\CompanyRatingHistoryRepository")
  * @ORM\HasLifecycleCallbacks
  */
 class CompanyRatingHistory

@@ -8,7 +8,7 @@ use Doctrine\ORM\Mapping as ORM;
  * ClientsHistory
  *
  * @ORM\Table(name="clients_history", indexes={@ORM\Index(name="id_client", columns={"id_client"}), @ORM\Index(name="idx_clients_history_ip", columns={"ip"}), @ORM\Index(name="idx_clients_history_added", columns={"added"}), @ORM\Index(name="idx_clients_history_id_user_agent", columns={"id_user_agent"})})
- * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\ClientsHistoryRepository")
+ * @ORM\Entity(repositoryClass="Unilend\Repository\ClientsHistoryRepository")
  * @ORM\HasLifecycleCallbacks
  */
 class ClientsHistory

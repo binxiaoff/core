@@ -363,7 +363,7 @@ class transfertsController extends bootstrap
                 die;
             }
 
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Repository\ClientsRepository $clientRepository */
+            /** @var \Unilend\Repository\ClientsRepository $clientRepository */
             $clientRepository   = $this->get('doctrine.orm.entity_manager')->getRepository(Clients::class);
             $this->lPreteurs    = $clientRepository->findLenders($clientId, $email, $lastName, $firstName, $companyName, null, true);
             $this->id_reception = $_POST['id_reception'];

@@ -8,7 +8,7 @@ use Doctrine\ORM\Mapping as ORM;
  * EcheanciersEmprunteur
  *
  * @ORM\Table(name="echeanciers_emprunteur", indexes={@ORM\Index(name="id_project", columns={"id_project"}), @ORM\Index(name="date_echeance_emprunteur_reel", columns={"date_echeance_emprunteur_reel"}), @ORM\Index(name="ordre", columns={"ordre"}), @ORM\Index(name="status_emprunteur", columns={"status_emprunteur"}), @ORM\Index(name="project_status_emprunteur", columns={"id_project", "status_emprunteur"})})
- * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\EcheanciersEmprunteurRepository")
+ * @ORM\Entity(repositoryClass="Unilend\Repository\EcheanciersEmprunteurRepository")
  */
 class EcheanciersEmprunteur
 {

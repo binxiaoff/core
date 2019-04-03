@@ -16,7 +16,7 @@ use Doctrine\ORM\Mapping as ORM;
  *     @ORM\Index(name="numero_relance", columns={"numero_relance"}),
  *     @ORM\Index(name="idx_psh_idproject", columns={"id_project"})
  * })
- * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\ProjectsStatusHistoryRepository")
+ * @ORM\Entity(repositoryClass="Unilend\Repository\ProjectsStatusHistoryRepository")
  * @ORM\HasLifecycleCallbacks
  */
 class ProjectsStatusHistory

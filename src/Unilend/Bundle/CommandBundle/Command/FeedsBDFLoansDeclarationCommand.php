@@ -8,7 +8,7 @@ use Symfony\Component\Console\Input\{
 };
 use Symfony\Component\Console\Output\OutputInterface;
 use Unilend\Entity\{CompanyStatus, Echeanciers, TransmissionSequence, UnderlyingContract};
-use Unilend\Bundle\CoreBusinessBundle\Repository\TransmissionSequenceRepository;
+use Unilend\Repository\TransmissionSequenceRepository;
 use Unilend\Bundle\CoreBusinessBundle\Service\BdfLoansDeclarationManager;
 use Unilend\core\Loader;
 

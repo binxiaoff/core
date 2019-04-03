@@ -8,7 +8,7 @@ use Doctrine\ORM\Mapping as ORM;
  * DebtCollectionMissionPaymentSchedule
  *
  * @ORM\Table(name="debt_collection_mission_payment_schedule", indexes={@ORM\Index(name="idx_dc_mission_payment_schedule_id_mission", columns={"id_mission"}), @ORM\Index(name="idx_dc_mission_payment_schedule_id_payment", columns={"id_payment_schedule"})})
- * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\DebtCollectionMissionPaymentScheduleRepository")
+ * @ORM\Entity(repositoryClass="Unilend\Repository\DebtCollectionMissionPaymentScheduleRepository")
  */
 class DebtCollectionMissionPaymentSchedule
 {

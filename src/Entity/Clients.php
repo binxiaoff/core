@@ -18,7 +18,7 @@ use Symfony\Component\Security\Core\User\{EquatableInterface, UserInterface};
  *     @ORM\Index(name="email", columns={"email"}),
  *     @ORM\Index(name="idx_client_nom", columns={"nom"}),
  *     @ORM\Index(name="idx_clients_id_client_status_history", columns={"id_client_status_history"})})
- * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\ClientsRepository")
+ * @ORM\Entity(repositoryClass="Unilend\Repository\ClientsRepository")
  * @ORM\HasLifecycleCallbacks
  */
 class Clients implements UserInterface, EquatableInterface, EncoderAwareInterface

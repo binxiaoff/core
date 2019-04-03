@@ -20,7 +20,7 @@ use Doctrine\ORM\Mapping as ORM;
  *     @ORM\Index(name="idx_echeanciers_date_echeance", columns={"date_echeance"}),
  *     @ORM\Index(name="idx_echeanciers_id_project_ordre", columns={"id_project", "ordre"})
  * })
- * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\EcheanciersRepository")
+ * @ORM\Entity(repositoryClass="Unilend\Repository\EcheanciersRepository")
  * @ORM\HasLifecycleCallbacks
  */
 class Echeanciers

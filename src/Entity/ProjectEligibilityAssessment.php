@@ -8,7 +8,7 @@ use Doctrine\ORM\Mapping as ORM;
  * ProjectEligibilityAssessment
  *
  * @ORM\Table(name="project_eligibility_assessment", indexes={@ORM\Index(name="fk_project_eligibility_assessment_id_project", columns={"id_project"}), @ORM\Index(name="fk_project_eligibility_assessment_id_rule", columns={"id_rule"}), @ORM\Index(name="fk_project_eligibility_assessment_id_rule_set", columns={"id_rule_set"})})
- * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\ProjectEligibilityAssessmentRepository")
+ * @ORM\Entity(repositoryClass="Unilend\Repository\ProjectEligibilityAssessmentRepository")
  * @ORM\HasLifecycleCallbacks
  */
 class ProjectEligibilityAssessment

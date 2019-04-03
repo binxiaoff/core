@@ -8,7 +8,7 @@ use Doctrine\ORM\Mapping as ORM;
  * LoginLog
  *
  * @ORM\Table(name="login_log", indexes={@ORM\Index(name="pseudo", columns={"pseudo"}), @ORM\Index(name="idx_login_log_IP", columns={"IP"})})
- * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\LoginLogRepository")
+ * @ORM\Entity(repositoryClass="Unilend\Repository\LoginLogRepository")
  * @ORM\HasLifecycleCallbacks
  */
 class LoginLog

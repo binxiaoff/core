@@ -10,7 +10,7 @@ use Unilend\Entity\Traits\{ConstantsAware, Lendable, Timestampable};
  * Bids
  *
  * @ORM\Table(name="bids", indexes={@ORM\Index(name="idprojectstatus", columns={"id_project", "status"})})
- * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\BidsRepository")
+ * @ORM\Entity(repositoryClass="Unilend\Repository\BidsRepository")
  * @ORM\HasLifecycleCallbacks
  * @ORM\AssociationOverrides({@ORM\AssociationOverride(name="project", inversedBy="bids")})
  */

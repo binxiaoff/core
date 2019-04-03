@@ -9,7 +9,7 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Unilend\Entity\{CompanyStatusHistory, LenderStatisticQueue, Projects, ProjectsStatusHistory, Wallet};
-use Unilend\Bundle\CoreBusinessBundle\Repository\WalletRepository;
+use Unilend\Repository\WalletRepository;
 use Unilend\Bundle\CoreBusinessBundle\Service\IRRManager;
 use Unilend\librairies\CacheKeys;
 

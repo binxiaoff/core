@@ -9,7 +9,7 @@ use Doctrine\ORM\Mapping as ORM;
  *
  * @ORM\Table(name="company_address", indexes={@ORM\Index(name="idx_company_address_updated", columns={"updated"})})
  * @ORM\HasLifecycleCallbacks
- * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\CompanyAddressRepository")
+ * @ORM\Entity(repositoryClass="Unilend\Repository\CompanyAddressRepository")
  */
 class CompanyAddress
 {

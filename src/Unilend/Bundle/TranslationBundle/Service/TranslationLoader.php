@@ -7,7 +7,7 @@ use Symfony\Component\Translation\Exception\{InvalidResourceException, NotFoundR
 use Symfony\Component\Translation\Loader\LoaderInterface;
 use Symfony\Component\Translation\MessageCatalogue;
 use Unilend\Entity\Translations;
-use Unilend\Bundle\CoreBusinessBundle\Repository\TranslationsRepository;
+use Unilend\Repository\TranslationsRepository;
 
 class TranslationLoader implements LoaderInterface
 {

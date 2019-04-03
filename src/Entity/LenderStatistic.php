@@ -8,7 +8,7 @@ use Doctrine\ORM\Mapping as ORM;
  * LenderStatistic
  *
  * @ORM\Table(name="lender_statistic", indexes={@ORM\Index(name="idx_added", columns={"added"}), @ORM\Index(name="fk_lender_statistic_id_wallet", columns={"id_wallet"})})
- * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\LenderStatisticRepository")
+ * @ORM\Entity(repositoryClass="Unilend\Repository\LenderStatisticRepository")
  * @ORM\HasLifecycleCallbacks()
  */
 class LenderStatistic

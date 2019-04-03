@@ -8,7 +8,7 @@ use Doctrine\ORM\Mapping as ORM;
  * Wallet
  *
  * @ORM\Table(name="wallet")
- * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\WalletRepository")
+ * @ORM\Entity(repositoryClass="Unilend\Repository\WalletRepository")
  * @ORM\HasLifecycleCallbacks
  */
 class Wallet

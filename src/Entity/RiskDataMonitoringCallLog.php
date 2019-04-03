@@ -8,7 +8,7 @@ use Doctrine\ORM\Mapping as ORM;
  * RiskDataMonitoringCallLog
  *
  * @ORM\Table(name="risk_data_monitoring_call_log", indexes={@ORM\Index(name="idx_risk_data_monitoring_call_log_risk_data_monitoring", columns={"id_risk_data_monitoring"}), @ORM\Index(name="idx_risk_data_monitoring_call_log_company_rating_history", columns={"id_company_rating_history"})})
- * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\RiskDataMonitoringCallLogRepository")
+ * @ORM\Entity(repositoryClass="Unilend\Repository\RiskDataMonitoringCallLogRepository")
  * @ORM\HasLifecycleCallbacks()
  */
 class RiskDataMonitoringCallLog

@@ -8,7 +8,7 @@ use Doctrine\ORM\Mapping as ORM;
  * ProjectRepaymentDetail
  *
  * @ORM\Table(name="project_repayment_detail", indexes={@ORM\Index(name="idx_project_repayment_task_details_id_repayment_schedule", columns={"id_repayment_schedule"}), @ORM\Index(name="idx_project_repayment_task_details_id_loan", columns={"id_loan"}), @ORM\Index(name="idx_project_repayment_task_details_id_task", columns={"id_task"}), @ORM\Index(name="idx_project_repayment_task_details_id_task_log", columns={"id_task_log"})})
- * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\ProjectRepaymentDetailRepository")
+ * @ORM\Entity(repositoryClass="Unilend\Repository\ProjectRepaymentDetailRepository")
  * @ORM\HasLifecycleCallbacks
  */
 class ProjectRepaymentDetail

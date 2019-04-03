@@ -79,7 +79,7 @@ class traductionsController extends bootstrap
 
         $_SESSION['request_url'] = $this->url;
 
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Repository\TranslationsRepository $translationRepository */
+        /** @var \Unilend\Repository\TranslationsRepository $translationRepository */
         $translationRepository = $this->get('doctrine.orm.entity_manager')->getRepository(Translations::class);
         $locale                = $this->getParameter('kernel.default_locale');
         $allTranslations       = $translationRepository->findBy(['locale' => $locale]);
