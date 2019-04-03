@@ -280,7 +280,7 @@ class DemoController extends AbstractController
                 ->setIdClientSubmitter($user)
                 ->setDateRetrait($date)
                 ->setInterestRate($rate)
-                ->setMeansRepayment($guarantee);
+                ->setBalanceCount($guarantee);
 
             if ($arrangerId && $arranger = $companiesRepository->find($arrangerId)) {
                 $project->addArranger($arranger);
@@ -860,10 +860,10 @@ class DemoController extends AbstractController
                 }
                 break;
             case 'guarantee':
-                $project->setMeansRepayment(empty($value) ? 0 : 1);
+                $project->setBalanceCount(empty($value) ? 0 : 1);
                 $this->entityManager->flush($project);
 
-                $outputValue = $project->getMeansRepayment();
+                $outputValue = $project->getBalanceCount();
                 break;
             case 'description':
                 $project->setComments($value);
@@ -921,7 +921,14 @@ class DemoController extends AbstractController
                     ]);
                 }
 
-                $outputValue = $value;
+                $outputValue = $project->getNatureProject();
+                break;
+            case 'arranger-risk-analysis':
+                $value = $value ?: null;
+                $project->setPresentationCompany($value);
+                $this->entityManager->flush($project);
+
+                $outputValue = $project->getPresentationCompany();
                 break;
             case 'run-scoring':
                 $value = $value ?: null;
@@ -939,7 +946,14 @@ class DemoController extends AbstractController
                     ]);
                 }
 
-                $outputValue = $value;
+                $outputValue = $project->getObjectifLoan();
+                break;
+            case 'run-risk-analysis':
+                $value = $value ?: null;
+                $project->setMeansRepayment($value);
+                $this->entityManager->flush($project);
+
+                $outputValue = $project->getMeansRepayment();
                 break;
         }
 

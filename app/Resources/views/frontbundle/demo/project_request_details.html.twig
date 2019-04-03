@@ -113,8 +113,8 @@
                                 <dt>Ce dossier fait l‘objet d‘une garantie collatérale</dt>
                                 <dd>
                                     {% if isEditable %}
-                                        <a href="#" id="guarantee" data-type="checklist" data-value="{{ project.meansRepayment ? '1' : '' }}"></a>
-                                    {% elseif project.meansRepayment %}
+                                        <a href="#" id="guarantee" data-type="checklist" data-value="{{ project.balanceCount ? '1' : '' }}"></a>
+                                    {% elseif project.balanceCount %}
                                         Oui
                                     {% else %}
                                         Non
@@ -130,7 +130,7 @@
                             <div class="row description-container">
                                 <em>
                                     {% if isEditable %}
-                                        <span href="#" id="description" class="editable" data-type="textarea" data-toggle="manual" data-inputclass="input-field">{{ project.comments|nl2br }}</span>
+                                        <span href="#" id="description" class="editable" data-type="textarea" data-toggle="manual" data-inputclass="input-field">{{ project.comments }}</span>
                                     {% else %}
                                         {{ project.comments|nl2br }}
                                     {% endif %}
@@ -183,11 +183,12 @@
                 <div class="panel">
                     <fieldset>
                         <h4 class="h4">Notations</h4>
-                        <div class="row">
+                        <div class="row row-multi-col-computer scoring">
                             <dl class="col-md-2 col-lg-2">
                                 <dt>&nbsp;</dt>
                                 <dd>Responsable</dd>
                                 <dd>Notation</dd>
+                                <dd>Analyse</dd>
                             </dl>
                             <dl class="col-md-5 col-lg-5">
                                 <dt>Arrangeur</dt>
@@ -205,16 +206,23 @@
                                 <dd>
                                     {% if isProjectScoringEditable %}
                                         <a href="#" class="editable" id="arranger-scoring" data-type="text" data-inputclass="input-field">
-                                            {% if project.natureProject %}
+                                            {% if project.natureProject is not empty %}
                                                 {{ project.natureProject }}
                                             {% endif %}
                                         </a>
+                                    {% elseif project.natureProject is not empty %}
+                                        {{ project.natureProject }}
                                     {% else %}
-                                        {% if project.natureProject %}
-                                            {{ project.natureProject }}
-                                        {% else %}
-                                            N/A
-                                        {% endif %}
+                                        N/A
+                                    {% endif %}
+                                </dd>
+                                <dd class="risk-analysis-container">
+                                    {% if isProjectScoringEditable %}
+                                        <a href="#" id="arranger-risk-analysis" class="editable" data-type="textarea" data-inputclass="input-field">{{ project.presentationCompany }}</a>
+                                    {% elseif project.presentationCompany is not empty %}
+                                        {{ project.presentationCompany|nl2br }}
+                                    {% else %}
+                                        N/A
                                     {% endif %}
                                 </dd>
                             </dl>
@@ -236,16 +244,23 @@
                                 <dd>
                                     {% if isBorrowerScoringEditable %}
                                         <a href="#" class="editable" id="run-scoring" data-type="text" data-inputclass="input-field">
-                                            {% if project.objectifLoan %}
+                                            {% if project.objectifLoan is not empty %}
                                                 {{ project.objectifLoan }}
                                             {% endif %}
                                         </a>
+                                    {% elseif project.objectifLoan is not empty %}
+                                        {{ project.objectifLoan }}
                                     {% else %}
-                                        {% if project.objectifLoan %}
-                                            {{ project.objectifLoan }}
-                                        {% else %}
-                                            N/A
-                                        {% endif %}
+                                        N/A
+                                    {% endif %}
+                                </dd>
+                                <dd class="risk-analysis-container">
+                                    {% if isBorrowerScoringEditable %}
+                                        <a href="#" id="run-risk-analysis" class="editable" data-type="textarea" data-inputclass="input-field">{{ project.meansRepayment }}</a>
+                                    {% elseif project.meansRepayment is not empty %}
+                                        {{ project.meansRepayment|nl2br }}
+                                    {% else %}
+                                        N/A
                                     {% endif %}
                                 </dd>
                             </dl>
@@ -580,6 +595,11 @@
 
         #project-breadcrumb div.complete:after {
             border-left-color: #2ba48f;
+        }
+
+        .risk-analysis-container .editable-container,
+        .risk-analysis-container .editable-container .editable-input {
+            width: 100%;
         }
     </style>
 {% endblock %}
