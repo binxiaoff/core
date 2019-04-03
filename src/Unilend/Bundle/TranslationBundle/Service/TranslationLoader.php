@@ -6,7 +6,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Translation\Exception\{InvalidResourceException, NotFoundResourceException};
 use Symfony\Component\Translation\Loader\LoaderInterface;
 use Symfony\Component\Translation\MessageCatalogue;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Translations;
+use Unilend\Entity\Translations;
 use Unilend\Bundle\CoreBusinessBundle\Repository\TranslationsRepository;
 
 class TranslationLoader implements LoaderInterface
@@ -24,7 +24,7 @@ class TranslationLoader implements LoaderInterface
      */
     public function __construct(EntityManagerInterface $entityManager, string $defaultLocale)
     {
-        $this->translationRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Translations');
+        $this->translationRepository = $entityManager->getRepository(Translations::class);
         $this->defaultLocale         = $defaultLocale;
     }
 

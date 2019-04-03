@@ -5,7 +5,7 @@ namespace Unilend\Bundle\CommandBundle\Command;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\VigilanceRule;
+use Unilend\Entity\VigilanceRule;
 
 class FraudControlCommand extends ContainerAwareCommand
 {
@@ -22,7 +22,7 @@ class FraudControlCommand extends ContainerAwareCommand
         $stopWatch            = $this->getContainer()->get('debug.stopwatch');
         $logger               = $this->getContainer()->get('monolog.logger.console');
         /** @var VigilanceRule[] $vigilanceRules */
-        $vigilanceRules = $entityManager->getRepository('UnilendCoreBusinessBundle:VigilanceRule')->findAll();
+        $vigilanceRules = $entityManager->getRepository(VigilanceRule::class)->findAll();
 
         foreach ($vigilanceRules as $rule) {
             $logContext = ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_rule' => $rule->getId()];

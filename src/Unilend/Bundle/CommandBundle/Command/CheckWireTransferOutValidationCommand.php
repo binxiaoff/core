@@ -5,7 +5,7 @@ namespace Unilend\Bundle\CommandBundle\Command;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
+use Unilend\Entity\Virements;
 
 class CheckWireTransferOutValidationCommand extends ContainerAwareCommand
 {
@@ -21,7 +21,7 @@ class CheckWireTransferOutValidationCommand extends ContainerAwareCommand
         $wireTransferOutManager  = $this->getContainer()->get('unilend.service.wire_transfer_out_manager');
         $pendingWireTransferOuts = $this->getContainer()
                                         ->get('doctrine.orm.entity_manager')
-                                        ->getRepository('UnilendCoreBusinessBundle:Virements')
+                                        ->getRepository(Virements::class)
                                         ->findWireTransferBefore(Virements::STATUS_PENDING, new \DateTime('2 days ago'));
         foreach ($pendingWireTransferOuts as $wireTransferOut) {
             $wireTransferOutManager->sendToValidateNotificationToClient($wireTransferOut);

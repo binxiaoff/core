@@ -5,7 +5,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 use Doctrine\ORM\EntityManagerInterface;
 use Knp\Snappy\GeneratorInterface;
 use Twig_Environment;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{CompteurFactures, EcheanciersEmprunteur, Factures, Projects, ProjectsStatus, TaxType};
+use Unilend\Entity\{CompteurFactures, EcheanciersEmprunteur, Factures, Projects, ProjectsStatus, ProjectsStatusHistory, TaxType};
 
 class InvoiceManager
 {
@@ -52,7 +52,7 @@ class InvoiceManager
             $order       = '';
         }
 
-        $invoice = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Factures')->findOneBy([
+        $invoice = $this->entityManager->getRepository(Factures::class)->findOneBy([
             'typeCommission' => $invoiceType,
             'idCompany'      => $project->getIdCompany()->getIdCompany(),
             'idProject'      => $project->getIdProject(),
@@ -71,8 +71,8 @@ class InvoiceManager
      */
     public function generateProjectFundsCommissionInvoice(Factures $invoice)
     {
-        $projectStatusHistoryRepository      = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatusHistory');
-        $repaymentStatus                     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatus')->findOneBy(['status' => ProjectsStatus::STATUS_REPAYMENT]);
+        $projectStatusHistoryRepository      = $this->entityManager->getRepository(ProjectsStatusHistory::class);
+        $repaymentStatus                     = $this->entityManager->getRepository(ProjectsStatus::class)->findOneBy(['status' => ProjectsStatus::STATUS_REPAYMENT]);
         $projectsStatusHistoryFirstRepayment = $projectStatusHistoryRepository->findStatusFirstOccurrence($invoice->getIdProject(), $repaymentStatus);
 
         $this->generateInvoice($invoice, $projectsStatusHistoryFirstRepayment->getAdded());
@@ -111,7 +111,7 @@ class InvoiceManager
             'project'        => $invoice->getIdProject(),
             'invoice'        => $invoice,
             'paymentDate'    => null === $paymentDate ? $invoice->getDate() : $paymentDate,
-            'vat'            => $this->entityManager->getRepository('UnilendCoreBusinessBundle:TaxType')->find(TaxType::TYPE_VAT),
+            'vat'            => $this->entityManager->getRepository(TaxType::class)->find(TaxType::TYPE_VAT),
         ]);
 
         $this->snappy->generateFromHtml($pdfContent, $filePath, $options, true);
@@ -212,7 +212,7 @@ class InvoiceManager
     private function getInvoiceNumber(Projects $project, \DateTime $date)
     {
         $invoiceCount = $this->entityManager
-            ->getRepository('UnilendCoreBusinessBundle:CompteurFactures')
+            ->getRepository(CompteurFactures::class)
             ->findOneBy(['date' => $date], ['ordre' => 'DESC']);
 
         $dailyCount = 0;

@@ -5,7 +5,7 @@ namespace Unilend\Bundle\CommandBundle\Command;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Prelevements;
+use Unilend\Entity\{ClientsMandats, Prelevements, Settings};
 
 class FeedsDirectDebitCommand extends ContainerAwareCommand
 {
@@ -34,9 +34,9 @@ class FeedsDirectDebitCommand extends ContainerAwareCommand
 
         $entityManager = $this->getContainer()->get('doctrine.orm.entity_manager');
 
-        $directDebitRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Prelevements');
-        $mandateRepository     = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsMandats');
-        $settingsRepository    = $entityManager->getRepository('UnilendCoreBusinessBundle:Settings');
+        $directDebitRepository = $entityManager->getRepository(Prelevements::class);
+        $mandateRepository     = $entityManager->getRepository(ClientsMandats::class);
+        $settingsRepository    = $entityManager->getRepository(Settings::class);
 
         $now           = new \DateTime();
         $bic           = $settingsRepository->findOneBy(['type' => 'Virement - BIC'])->getValue();

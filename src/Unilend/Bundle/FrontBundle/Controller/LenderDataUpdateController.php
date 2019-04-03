@@ -7,7 +7,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\{Request, Response};
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\User\UserInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, Attachment, AttachmentType, Clients, GreenpointAttachment};
+use Unilend\Entity\{AddressType, Attachment, AttachmentType, BankAccount, ClientAddress, Clients, Companies, CompanyAddress, GreenpointAttachment, Settings};
 use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\{BankAccountType, CompanyIdentityType, LegalEntityProfileType, OriginOfFundsType, PersonPhoneType, PersonProfileType};
 use Unilend\Bundle\FrontBundle\Service\LenderProfileFormsHandler;
 
@@ -26,7 +26,7 @@ class LenderDataUpdateController extends Controller
         $company = null;
 
         if (false === $client->isNaturalPerson()) {
-            $company = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $client]);
+            $company = $this->get('doctrine.orm.entity_manager')->getRepository(Companies::class)->findOneBy(['idClientOwner' => $client]);
         }
 
         return $this->render('lender_data_update/start.html.twig', [
@@ -52,7 +52,7 @@ class LenderDataUpdateController extends Controller
         $unattachedClient     = clone $client;
         $company              = null;
         $unattachedCompany    = null;
-        $bankAccount          = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getLastModifiedBankAccount($client);
+        $bankAccount          = $entityManager->getRepository(BankAccount::class)->getLastModifiedBankAccount($client);
         $identityDocumentType = AttachmentType::CNI_PASSPORTE;
         $formErrors           = [];
 
@@ -66,17 +66,17 @@ class LenderDataUpdateController extends Controller
         }
 
         if ($client->isNaturalPerson()) {
-            $lastModifiedMainAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientAddress')->findLastModifiedNotArchivedAddressByType($client, AddressType::TYPE_MAIN_ADDRESS);
+            $lastModifiedMainAddress = $entityManager->getRepository(ClientAddress::class)->findLastModifiedNotArchivedAddressByType($client, AddressType::TYPE_MAIN_ADDRESS);
             $addressForm             = $formManager->getClientAddressFormBuilder($client, $lastModifiedMainAddress, AddressType::TYPE_MAIN_ADDRESS);
             $formBuilder
                 ->add('client', PersonProfileType::class, ['data' => $client])
                 ->add('phone', PersonPhoneType::class, ['data' => $client]);
         } else {
             $identityDocumentType = AttachmentType::CNI_PASSPORTE_DIRIGEANT;
-            $company              = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $client]);
+            $company              = $entityManager->getRepository(Companies::class)->findOneBy(['idClientOwner' => $client]);
             $unattachedCompany    = clone $company;
 
-            $lastModifiedMainAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')->findLastModifiedNotArchivedAddressByType($company, AddressType::TYPE_MAIN_ADDRESS);
+            $lastModifiedMainAddress = $entityManager->getRepository(CompanyAddress::class)->findLastModifiedNotArchivedAddressByType($company, AddressType::TYPE_MAIN_ADDRESS);
             $addressForm             = $formManager->getCompanyAddressFormBuilder($lastModifiedMainAddress, AddressType::TYPE_MAIN_ADDRESS);
 
             $formBuilder
@@ -119,7 +119,7 @@ class LenderDataUpdateController extends Controller
             $formErrors = $form->getErrors(true);
         }
 
-        $attachmentRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Attachment');
+        $attachmentRepository = $entityManager->getRepository(Attachment::class);
         /** @var Attachment $identityDocument */
         $identityDocument = $attachmentRepository->findOneBy([
             'idClient' => $client,
@@ -145,7 +145,7 @@ class LenderDataUpdateController extends Controller
             ]);
         }
 
-        $externalCounselListSetting = $entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Liste deroulante conseil externe de l\'entreprise']);
+        $externalCounselListSetting = $entityManager->getRepository(Settings::class)->findOneBy(['type' => 'Liste deroulante conseil externe de l\'entreprise']);
         $externalCounselList        = [];
         if ($externalCounselListSetting) {
             $externalCounselList = json_decode($externalCounselListSetting->getValue(), true);
@@ -198,7 +198,7 @@ class LenderDataUpdateController extends Controller
         $company = null;
 
         if (false === $client->isNaturalPerson()) {
-            $company = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $client]);
+            $company = $this->get('doctrine.orm.entity_manager')->getRepository(Companies::class)->findOneBy(['idClientOwner' => $client]);
         }
 
         return $this->render('lender_data_update/end.html.twig', [

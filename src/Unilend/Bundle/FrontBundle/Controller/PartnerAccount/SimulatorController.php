@@ -7,7 +7,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\User\UserInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{Clients, TaxType};
+use Unilend\Entity\{Clients, PartnerProduct, Settings, TaxType};
 
 class SimulatorController extends Controller
 {
@@ -26,12 +26,12 @@ class SimulatorController extends Controller
         $entityManager           = $this->get('doctrine.orm.entity_manager');
         $projectManager          = $this->get('unilend.service.project_manager');
         $ratesByPeriod           = [];
-        $partnerProduct          = $entityManager->getRepository('UnilendCoreBusinessBundle:PartnerProduct')->findOneBy(
+        $partnerProduct          = $entityManager->getRepository(PartnerProduct::class)->findOneBy(
             ['idPartner' => $partner],
             ['commissionRateFunds' => 'ASC']
         ); // For the moment, all partner products have the same rates
-        $vatRate                 = $entityManager->getRepository('UnilendCoreBusinessBundle:TaxType')->find(TaxType::TYPE_VAT)->getRate();
-        $fundingDurationsSetting = $entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Durée des prêts autorisées'])->getValue();
+        $vatRate                 = $entityManager->getRepository(TaxType::class)->find(TaxType::TYPE_VAT)->getRate();
+        $fundingDurationsSetting = $entityManager->getRepository(Settings::class)->findOneBy(['type' => 'Durée des prêts autorisées'])->getValue();
         $fundingDurations        = explode(',', $fundingDurationsSetting);
         $minDuration             = min($fundingDurations);
         $maxDuration             = max($fundingDurations);

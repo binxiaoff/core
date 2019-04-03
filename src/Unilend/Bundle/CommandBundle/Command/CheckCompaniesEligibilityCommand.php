@@ -6,7 +6,7 @@ use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{PreScoring, ProjectEligibilityRuleSet, ProjectEligibilityRuleSetMember, ProjectsStatus, Users};
+use Unilend\Entity\{PreScoring, ProjectEligibilityRuleSet, ProjectEligibilityRuleSetMember, ProjectsStatus, Users};
 use Unilend\Bundle\CoreBusinessBundle\Service\{Eligibility\Validator\CompanyValidator, ExternalDataManager};
 use Unilend\Bundle\WSClientBundle\Entity\Euler\CompanyRating as EulerHermesCompanyRating;
 use Unilend\Bundle\WSClientBundle\Service\AltaresManager;
@@ -31,9 +31,9 @@ class CheckCompaniesEligibilityCommand extends ContainerAwareCommand
         $logger                  = $this->getContainer()->get('monolog.logger.console');
         $altaresManager          = $this->getContainer()->get('unilend.service.ws_client.altares_manager');
 
-        $currentRiskPolicy = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectEligibilityRuleSet')
+        $currentRiskPolicy = $entityManager->getRepository(ProjectEligibilityRuleSet::class)
             ->findOneBy(['status' => ProjectEligibilityRuleSet::STATUS_ACTIVE]);
-        $ruleSet           = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectEligibilityRuleSetMember')
+        $ruleSet           = $entityManager->getRepository(ProjectEligibilityRuleSetMember::class)
             ->findBy(['idRuleSet' => $currentRiskPolicy]);
         $now               = new \DateTime();
         $outputFilePath    = $bulkCompanyCheckManager->getEligibilityOutputDir() . $now->format('Y-m') . DIRECTORY_SEPARATOR;
@@ -59,7 +59,7 @@ class CheckCompaniesEligibilityCommand extends ContainerAwareCommand
             $user = $bulkCompanyCheckManager->getUploadUser($fileName);
 
             if (null === $user) {
-                $user = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find(Users::USER_ID_CRON);
+                $user = $entityManager->getRepository(Users::class)->find(Users::USER_ID_CRON);
             }
 
             try {
@@ -243,7 +243,7 @@ class CheckCompaniesEligibilityCommand extends ContainerAwareCommand
 
         if (false === in_array(null, [$altaresScore, $infolegaleScore, $eulerHermesGrade], true)) {
             /** @var PreScoring $preScoringEntity */
-            $preScoringEntity = $entityManager->getRepository('UnilendCoreBusinessBundle:PreScoring')->findOneBy([
+            $preScoringEntity = $entityManager->getRepository(PreScoring::class)->findOneBy([
                 'altares'          => $altaresScore->getScore20(),
                 'infolegale'       => $infolegaleScore->getScore(),
                 'eulerHermesGrade' => $eulerHermesGrade->getGrade()

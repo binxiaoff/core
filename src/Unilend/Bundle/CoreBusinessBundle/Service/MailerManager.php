@@ -6,8 +6,8 @@ use Doctrine\ORM\{EntityManagerInterface, ORMException};
 use Psr\Log\LoggerInterface;
 use Symfony\Component\{Asset\Packages, DependencyInjection\ContainerInterface, Routing\RouterInterface,
     Translation\TranslatorInterface};
-use Unilend\Bundle\CoreBusinessBundle\Entity\{Bids, Clients, ClientSettingType, ClientsGestionTypeNotif, ClientsMandats, Companies, Operation, OperationSubType, ProjectCgv,
-    Projects, ProjectsPouvoir, ProjectsStatus, Settings, TemporaryLinksLogin, UniversignEntityInterface, Users, Wallet, WalletType};
+use Unilend\Entity\{Bids, Clients, ClientSettingType, ClientsGestionTypeNotif, ClientsMandats, Companies, Loans, Operation, OperationSubType, ProjectBeneficialOwnerUniversign, ProjectCgv, Projects,
+    ProjectsPouvoir, ProjectsStatus, Settings, TemporaryLinksLogin, UniversignEntityInterface, Users, Wallet, WalletBalanceHistory, WalletType};
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\{TemplateMessage, TemplateMessageProvider};
 use Unilend\core\Loader;
@@ -82,7 +82,7 @@ class MailerManager
         $this->messageProvider        = $messageProvider;
         $this->mailer                 = $mailer;
         $this->translator             = $translator;
-        $this->settingsRepository     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings');
+        $this->settingsRepository     = $this->entityManager->getRepository(Settings::class);
 
         $this->oFicelle = Loader::loadLib('ficelle');
 
@@ -108,7 +108,7 @@ class MailerManager
     public function sendBidConfirmation(\notifications $notification)
     {
         /** @var Bids $bid */
-        $bid = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Bids')->findOneBy(['idBid' => $notification->id_bid, 'idAutobid' => null]);
+        $bid = $this->entityManager->getRepository(Bids::class)->findOneBy(['idBid' => $notification->id_bid, 'idAutobid' => null]);
 
         if (null !== $bid) {
             $keywords = [
@@ -143,7 +143,7 @@ class MailerManager
     public function sendFundFailedToLender(Projects $project): void
     {
         $bids = $this->entityManager
-            ->getRepository('UnilendCoreBusinessBundle:Bids')
+            ->getRepository(Bids::class)
             ->findBy(['idProject' => $project], ['rate' => 'ASC', 'added' => 'ASC']);
 
         foreach ($bids as $bid) {
@@ -204,7 +204,7 @@ class MailerManager
         }
 
         if ($borrower->isValidated()) {
-            $projectRepository   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
+            $projectRepository   = $this->entityManager->getRepository(Projects::class);
             $averageInterestRate = $projectRepository->getAverageInterestRate($project);
             $keywords            = [
                 'firstName'         => $borrower->getPrenom(),
@@ -248,10 +248,10 @@ class MailerManager
         $monthlyPayment = $monthlyPayment / 100;
 
         $mandate = $this->entityManager
-            ->getRepository('UnilendCoreBusinessBundle:ClientsMandats')
+            ->getRepository(ClientsMandats::class)
             ->findOneBy(['idProject' => $project, 'status' => UniversignEntityInterface::STATUS_SIGNED], ['added' => 'DESC']);
         $proxy   = $this->entityManager
-            ->getRepository('UnilendCoreBusinessBundle:ProjectsPouvoir')
+            ->getRepository(ProjectsPouvoir::class)
             ->findOneBy(['idProject' => $project, 'status' => UniversignEntityInterface::STATUS_SIGNED], ['added' => 'DESC']);
 
         $documents = '';
@@ -264,7 +264,7 @@ class MailerManager
         }
 
         if (false === in_array($project->getIdCompany()->getLegalFormCode(), BeneficialOwnerManager::BENEFICIAL_OWNER_DECLARATION_EXEMPTED_LEGAL_FORM_CODES)) {
-            $beneficialOwnerDeclaration = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectBeneficialOwnerUniversign')
+            $beneficialOwnerDeclaration = $this->entityManager->getRepository(ProjectBeneficialOwnerUniversign::class)
                 ->findOneBy(['idProject' => $project, 'status' => UniversignEntityInterface::STATUS_SIGNED], ['added' => 'DESC']);
             if (null === $beneficialOwnerDeclaration) {
                 $documents .= $this->translator->trans('universign_beneficial-owner-description-for-email');
@@ -273,7 +273,7 @@ class MailerManager
 
         $averageInterestRate = $project->getInterestRate();
         if (empty($averageInterestRate)) {
-            $projectRepository   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
+            $projectRepository   = $this->entityManager->getRepository(Projects::class);
             $averageInterestRate = $projectRepository->getAverageInterestRate($project, false);
         }
 
@@ -315,7 +315,7 @@ class MailerManager
         /** @var \bids $bid */
         $bid = $this->entityManagerSimulator->getRepository('bids');
 
-        $projectRepository   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
+        $projectRepository   = $this->entityManager->getRepository(Projects::class);
         $averageInterestRate = $projectRepository->getAverageInterestRate($project, false);
         $keywords            = [
             '$surl'         => $this->sSUrl,
@@ -354,7 +354,7 @@ class MailerManager
     {
         /** @var \projects $project */
         $project       = $this->entityManagerSimulator->getRepository('projects');
-        $bidRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Bids');
+        $bidRepository = $this->entityManager->getRepository(Bids::class);
         $bid           = $bidRepository->find($notification->id_bid);
 
         if ($bid->getWallet()->getIdClient()->isGrantedLogin()) {
@@ -498,7 +498,7 @@ class MailerManager
     public function sendProjectFinishedToStaff(Projects $project): void
     {
         try {
-            $totalBidsAmount = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Bids')->getProjectTotalAmount($project);
+            $totalBidsAmount = $this->entityManager->getRepository(Bids::class)->getProjectTotalAmount($project);
         } catch (ORMException $exception) {
             $this->oLogger->error('Cannot calculate bids total amount for sending finished project email to staff. Exception: ' . $exception->getMessage(), [
                 'id_project' => $project->getIdProject(),
@@ -512,11 +512,11 @@ class MailerManager
 
         $averageInterestRate = $project->getInterestRate();
         if (empty($averageInterestRate)) {
-            $projectRepository   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
+            $projectRepository   = $this->entityManager->getRepository(Projects::class);
             $averageInterestRate = $projectRepository->getAverageInterestRate($project, false);
         }
 
-        $lendersCount    = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Loans')->getLenderNumber($project);
+        $lendersCount    = $this->entityManager->getRepository(Loans::class)->getLenderNumber($project);
         $totalBidsAmount = min($totalBidsAmount, $project->getAmount());
         $keywords        = [
             '$surl'         => $this->sSUrl,
@@ -553,7 +553,7 @@ class MailerManager
     public function sendFirstAutoBidActivation(\notifications $notification): void
     {
         /** @var Wallet $wallet */
-        $wallet = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->find($notification->id_lender);
+        $wallet = $this->entityManager->getRepository(Wallet::class)->find($notification->id_lender);
 
         if ($wallet->getIdClient()->isGrantedLogin()) {
             $keyWords = [
@@ -1206,7 +1206,7 @@ class MailerManager
 
             foreach ($aCustomerMailNotifications as $iCustomerId => $aMailNotifications) {
                 try {
-                    $wallet              = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($iCustomerId, WalletType::LENDER);
+                    $wallet              = $this->entityManager->getRepository(Wallet::class)->getWalletByType($iCustomerId, WalletType::LENDER);
                     $sLoansListHTML      = '';
                     $iSumAcceptedLoans   = 0;
                     $iAcceptedLoansCount = count($aMailNotifications);
@@ -1371,7 +1371,7 @@ class MailerManager
 
             foreach ($aCustomerMailNotifications as $iCustomerId => $aMailNotifications) {
                 try {
-                    $wallet = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($iCustomerId, WalletType::LENDER);
+                    $wallet = $this->entityManager->getRepository(Wallet::class)->getWalletByType($iCustomerId, WalletType::LENDER);
 
                     $earlyRepaymentContent      = '';
                     $sRepaymentsListHTML        = '';
@@ -1395,7 +1395,7 @@ class MailerManager
                         $loanId              = null;
                         $repaymentScheduleId = null;
 
-                        $walletBalanceHistory = $this->entityManager->getRepository('UnilendCoreBusinessBundle:WalletBalanceHistory')->find($aMailNotification['id_wallet_balance_history']);
+                        $walletBalanceHistory = $this->entityManager->getRepository(WalletBalanceHistory::class)->find($aMailNotification['id_wallet_balance_history']);
                         /** @var Operation $operation */
                         $operation = $walletBalanceHistory->getIdOperation();
 
@@ -1448,7 +1448,7 @@ class MailerManager
                             $fRepaymentCapital              = bcdiv($oLenderRepayment->capital_rembourse, 100, 2);
                             $fRepaymentInterestsTaxIncluded = bcdiv($oLenderRepayment->interets_rembourses, 100, 2);
                             if (false == empty($oLenderRepayment->id_echeancier)) {
-                                $fRepaymentTax = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Operation')->getTaxAmountByRepaymentScheduleId($oLenderRepayment->id_echeancier);
+                                $fRepaymentTax = $this->entityManager->getRepository(Operation::class)->getTaxAmountByRepaymentScheduleId($oLenderRepayment->id_echeancier);
                             } else {
                                 $fRepaymentTax = 0;
                             }
@@ -1557,7 +1557,7 @@ class MailerManager
     public function sendNewPasswordEmail($user, string $newPassword)
     {
         if ($user instanceof \users) {
-            $user = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find($user->id_user);
+            $user = $this->entityManager->getRepository(Users::class)->find($user->id_user);
         }
 
         $replacements = [
@@ -1620,7 +1620,7 @@ class MailerManager
     public function sendInternalNotificationEndOfRepayment(Projects $project)
     {
         $company  = $project->getIdCompany();
-        $settings = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Adresse controle interne']);
+        $settings = $this->entityManager->getRepository(Settings::class)->findOneBy(['type' => 'Adresse controle interne']);
 
         $varMail = [
             'surl'           => $this->sSUrl,
@@ -1677,7 +1677,7 @@ class MailerManager
     public function sendPartnerAccountActivation(Clients $client)
     {
         $token = $this->entityManager
-            ->getRepository('UnilendCoreBusinessBundle:TemporaryLinksLogin')
+            ->getRepository(TemporaryLinksLogin::class)
             ->generateTemporaryLink($client, TemporaryLinksLogin::PASSWORD_TOKEN_LIFETIME_LONG);
 
         $variables = [
@@ -1749,18 +1749,18 @@ class MailerManager
     public function sendBorrowerAccount($client, string $email = 'ouverture-espace-emprunteur'): void
     {
         if ($client instanceof \clients) {
-            $client = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($client->id_client);
+            $client = $this->entityManager->getRepository(Clients::class)->find($client->id_client);
         }
 
         if ($client->isValidated()) {
             $token = $this->entityManager
-                ->getRepository('UnilendCoreBusinessBundle:TemporaryLinksLogin')
+                ->getRepository(TemporaryLinksLogin::class)
                 ->generateTemporaryLink($client, TemporaryLinksLogin::PASSWORD_TOKEN_LIFETIME_LONG);
 
             $keywords = [
                 'firstName'            => $client->getPrenom(),
                 'temporaryToken'       => $token,
-                'borrowerServiceEmail' => $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Adresse emprunteur'])->getValue()
+                'borrowerServiceEmail' => $this->entityManager->getRepository(Settings::class)->findOneBy(['type' => 'Adresse emprunteur'])->getValue()
             ];
 
             $message = $this->messageProvider->newMessage($email, $keywords);

@@ -1,4 +1,4 @@
-<?php use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus; ?>
+<?php use Unilend\Entity\ProjectsStatus; ?>
 <div class="row">
     <div class="col-md-12">
         <h3>Portefeuille</h3>
@@ -14,7 +14,7 @@
                     <?php if (null === $this->lenderIRR) : ?>
                         Ce prêteur est trop récent. Son TRI n'a pas encore été calculé.
                     <?php else : ?>
-                        <?= \Unilend\Bundle\CoreBusinessBundle\Entity\LenderStatistic::STAT_VALID_OK === $this->lenderIRR->getStatus() ? $this->ficelle->formatNumber($this->lenderIRR->getValue()) . ' %'  : 'TRI non valide'?>
+                        <?= \Unilend\Entity\LenderStatistic::STAT_VALID_OK === $this->lenderIRR->getStatus() ? $this->ficelle->formatNumber($this->lenderIRR->getValue()) . ' %'  : 'TRI non valide'?>
                         <?= (is_null($this->lenderIRR->getAdded())) ? '' : '(calculé le ' . $this->lenderIRR->getAdded()->format('d/m/Y') . ')' ?>
                     <?php endif; ?>
                 </td>
@@ -138,7 +138,7 @@
                             <?php if ($loan['nb_loan'] == 1) : ?>
                                 <td>
                                     <?php if ($this->loans->get($loan['id_loan_if_one_loan']) && false === empty($this->loans->id_transfer)) :
-                                        /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Clients $formerOwner */
+                                        /** @var \Unilend\Entity\Clients $formerOwner */
                                         $formerOwner = $this->get('unilend.service.loan_manager')->getFormerOwner($this->loans); ?>
                                         <a href="<?= $this->lurl ?>/preteur/<?= $formerOwner->getIdClient() ?>"><?= $formerOwner->getIdClient() ?></a>
                                     <?php endif; ?>
@@ -169,7 +169,7 @@
                                     <td>
                                         <?php if (false === empty($subLoan['id_transfer'])) :
                                             $this->loans->get($subLoan['id_loan']);
-                                            /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Clients $formerOwner */
+                                            /** @var \Unilend\Entity\Clients $formerOwner */
                                             $formerOwner = $this->get('unilend.service.loan_manager')->getFormerOwner($this->loans); ?>
                                             <a href="<?= $this->lurl ?>/preteur/<?= $formerOwner->getIdClient() ?>"><?= $formerOwner->getIdClient() ?></a>
                                         <?php endif; ?>

@@ -56,7 +56,7 @@ class LegalEntityType extends AbstractType
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
-            'data_class' => 'Unilend\Bundle\CoreBusinessBundle\Entity\Clients'
+            'data_class' => 'Unilend\Entity\Clients'
         ]);
     }
 }

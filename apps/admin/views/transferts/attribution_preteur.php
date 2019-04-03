@@ -59,7 +59,7 @@
                 if ($this->companies->get($c['id_client'], 'id_client_owner')) {
                     $companies = true;
 
-                    if ($this->companies->status_client == \Unilend\Bundle\CoreBusinessBundle\Entity\Companies::CLIENT_STATUS_MANAGER) {
+                    if ($this->companies->status_client == \Unilend\Entity\Companies::CLIENT_STATUS_MANAGER) {
                         $this->clients->get($this->companies->id_client_owner, 'id_client');
                         $dirigeant = $this->clients->prenom . ' ' . $this->clients->nom;
                     } else {

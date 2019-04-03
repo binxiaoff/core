@@ -1,6 +1,6 @@
 <?php
 
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
+use Unilend\Entity\ProjectsStatus;
 use Unilend\Bundle\WSClientBundle\Service\InfogreffeManager;
 
 ?>

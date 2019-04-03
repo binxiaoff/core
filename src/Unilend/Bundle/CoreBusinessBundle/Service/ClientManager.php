@@ -4,7 +4,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{Clients, ClientSettingType};
+use Unilend\Entity\{Clients, ClientSettingType};
 
 class ClientManager
 {

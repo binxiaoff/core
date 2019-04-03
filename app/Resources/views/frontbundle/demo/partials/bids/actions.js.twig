@@ -3,7 +3,7 @@ $(document).on('click', `[data-action="accept-bid"]`, function () {
     $.ajax({
         url: '{{ path('demo_change_bid_status') }}',
         method: 'POST',
-        data: {bid: bidId, status: {{ constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Bids::STATUS_ACCEPTED') }}}
+        data: {bid: bidId, status: {{ constant('Unilend\\Entity\\Bids::STATUS_ACCEPTED') }}}
     }).done(function () {
         window.location.reload(false);
     })
@@ -15,7 +15,7 @@ $(document).on('click', `[data-action="refuse-bid"]`, function () {
     $.ajax({
         url: '{{ path('demo_change_bid_status') }}',
         method: 'POST',
-        data: {bid: bidId, status: {{ constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Bids::STATUS_REJECTED') }}}
+        data: {bid: bidId, status: {{ constant('Unilend\\Entity\\Bids::STATUS_REJECTED') }}}
     }).done(function () {
         window.location.reload(false);
     })

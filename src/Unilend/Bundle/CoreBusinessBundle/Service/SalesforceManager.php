@@ -6,6 +6,7 @@ use Doctrine\DBAL\Statement;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
+use Unilend\Entity\Clients;
 
 class SalesforceManager
 {
@@ -88,7 +89,7 @@ class SalesforceManager
     public function extractLenders()
     {
         try {
-            $statement = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->getLendersSalesForce();
+            $statement = $this->entityManager->getRepository(Clients::class)->getLendersSalesForce();
             if ($statement) {
                 $this->createFileFromQuery($statement, 'preteurs.csv');
             }

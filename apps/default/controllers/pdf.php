@@ -2,7 +2,8 @@
 
 use Knp\Snappy\Pdf;
 use Psr\Log\LoggerInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, Clients, CompanyStatus, Elements, Loans, ProjectCgv, ProjectsStatus, UnderlyingContract, UniversignEntityInterface};
+use Unilend\Entity\{AddressType, BankAccount, ClientAddress, Clients, CompanyAddress, CompanyStatus, CompanyStatusHistory, Elements, Loans, ProjectCgv, ProjectsStatus, TaxType, UnderlyingContract,
+    UniversignEntityInterface, Wallet};
 use Unilend\Bundle\CoreBusinessBundle\Service\Repayment\ProjectRepaymentScheduleManager;
 
 class pdfController extends bootstrap
@@ -250,7 +251,7 @@ class pdfController extends bootstrap
         } else {
             /** @var \Doctrine\ORM\EntityManager $entityManager */
             $entityManager = $this->get('doctrine.orm.entity_manager');
-            $bankAccount   = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($this->pdfClient->id_client);
+            $bankAccount   = $entityManager->getRepository(BankAccount::class)->getClientValidatedBankAccount($this->pdfClient->id_client);
             if (null === $bankAccount) {
                 return [
                     'action' => 'redirect',
@@ -287,10 +288,10 @@ class pdfController extends bootstrap
         $this->iban  = $mandates->iban;
         $this->bic   = $mandates->bic;
 
-        if (isset($this->params[1]) && $project = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->params[1])) {
+        if (isset($this->params[1]) && $project = $entityManager->getRepository(Projects::class)->find($this->params[1])) {
             $borrowerManager      = $this->get('unilend.service.borrower_manager');
             $this->motif          = $borrowerManager->getProjectBankTransferLabel($project);
-            $company              = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->find($this->companies->id_company);
+            $company              = $entityManager->getRepository(Companies::class)->find($this->companies->id_company);
             $this->companyAddress = $company->getIdAddress();
         }
 
@@ -475,14 +476,14 @@ class pdfController extends bootstrap
         }
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager                = $this->get('doctrine.orm.entity_manager');
-        $this->companyAddress         = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->find($this->companies->id_company)->getIdAddress();
+        $this->companyAddress         = $entityManager->getRepository(Companies::class)->find($this->companies->id_company)->getIdAddress();
         $this->companies_actif_passif = $this->loadData('companies_actif_passif');
         $this->companies_bilans       = $this->loadData('companies_bilans');
         $this->echeanciers            = $this->loadData('echeanciers');
         $this->oLoans                 = $this->loadData('loans');
         /** @var underlying_contract $contract */
         $contract               = $this->loadData('underlying_contract');
-        $this->walletRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet');
+        $this->walletRepository = $entityManager->getRepository(Wallet::class);
 
         $contract->get(UnderlyingContract::CONTRACT_BDC, 'label');
         $BDCContractId = $contract->id_contract;
@@ -496,7 +497,7 @@ class pdfController extends bootstrap
         $this->montantPrete        = $this->projects->amount;
         $this->commissionRateFunds = round(bcdiv($this->projects->commission_rate_funds, 100, 4), 2);
         $commissionAmount          = round(bcmul($this->projects->amount, $this->commissionRateFunds, 4), 2);
-        $vatTax                    = $entityManager->getRepository('UnilendCoreBusinessBundle:TaxType')->find(\Unilend\Bundle\CoreBusinessBundle\Entity\TaxType::TYPE_VAT);
+        $vatTax                    = $entityManager->getRepository(TaxType::class)->find(\Unilend\Entity\TaxType::TYPE_VAT);
         $vatAmount                 = round(bcmul($commissionAmount, $vatTax->getRate() / 100, 5), 2);
         $this->releasedNetAmount   = bcsub(round($this->projects->amount * bcsub(1, $this->commissionRateFunds, 2)), $vatAmount, 2);
         $this->taux                = $this->projects->getAverageInterestRate();
@@ -533,7 +534,7 @@ class pdfController extends bootstrap
     {
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
-        $loans         = $entityManager->getRepository('UnilendCoreBusinessBundle:Loans')->findBy(['idProject' => $projectId], ['rate' => 'ASC']);
+        $loans         = $entityManager->getRepository(Loans::class)->findBy(['idProject' => $projectId], ['rate' => 'ASC']);
         $lenderList    = [];
 
         /** @var Loans $loan */
@@ -545,7 +546,7 @@ class pdfController extends bootstrap
             if ($client->isNaturalPerson()) {
                 $validatedAddress = $client->getIdAddress();
             } else {
-                $lenderCompany    = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')
+                $lenderCompany    = $entityManager->getRepository(Companies::class)
                     ->findOneBy(['idClientOwner' => $client->getIdClient()]);
                 $validatedAddress = $lenderCompany->getIdAddress();
             }
@@ -557,10 +558,10 @@ class pdfController extends bootstrap
 
                 try {
                     if ($client->isNaturalPerson()) {
-                        $lastModifiedAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientAddress')
+                        $lastModifiedAddress = $entityManager->getRepository(ClientAddress::class)
                             ->findLastModifiedNotArchivedAddressByType($client, AddressType::TYPE_MAIN_ADDRESS);
                     } else {
-                        $lastModifiedAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')
+                        $lastModifiedAddress = $entityManager->getRepository(CompanyAddress::class)
                             ->findLastModifiedNotArchivedAddressByType($lenderCompany, AddressType::TYPE_MAIN_ADDRESS);
                     }
                     $lenderAddress = $lastModifiedAddress;
@@ -706,8 +707,8 @@ class pdfController extends bootstrap
         $entityManager = $this->get('doctrine.orm.entity_manager');
 
         if (isset($iIdLoan) && $this->oLoans->get($iIdLoan, 'status = "' . Loans::STATUS_ACCEPTED . '" AND id_loan')) {
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Wallet $wallet */
-            $wallet        = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->find($this->oLoans->id_wallet);
+            /** @var \Unilend\Entity\Wallet $wallet */
+            $wallet        = $entityManager->getRepository(Wallet::class)->find($this->oLoans->id_wallet);
             $lenderAddress = null;
             $client        = $wallet->getIdClient();
 
@@ -721,14 +722,14 @@ class pdfController extends bootstrap
             $this->companiesEmp->get($this->projects->id_company, 'id_company');
             $this->emprunteur->get($this->companiesEmp->id_client_owner, 'id_client');
             $this->preteur->get($wallet->getIdClient()->getIdClient(), 'id_client');
-            $this->borrowerCompanyAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->find($this->projects->id_company)->getIdAddress();
+            $this->borrowerCompanyAddress = $entityManager->getRepository(Companies::class)->find($this->projects->id_company)->getIdAddress();
 
             $this->lEcheances = array_values($this->echeanciers->getYearlySchedule(array('id_loan' => $this->oLoans->id_loan)));
 
             if ($client->isNaturalPerson()) {
                 $validatedAddress    = $client->getIdAddress();
             } else {
-                $lenderCompany = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')
+                $lenderCompany = $entityManager->getRepository(Companies::class)
                     ->findOneBy(['idClientOwner' => $client]);
                 $validatedAddress    = $lenderCompany->getIdAddress();
             }
@@ -740,10 +741,10 @@ class pdfController extends bootstrap
 
                 try {
                     if ($client->isNaturalPerson()) {
-                        $lastModifiedAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientAddress')
+                        $lastModifiedAddress = $entityManager->getRepository(ClientAddress::class)
                             ->findLastModifiedNotArchivedAddressByType($client, AddressType::TYPE_MAIN_ADDRESS);
                     } else {
-                        $lastModifiedAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')
+                        $lastModifiedAddress = $entityManager->getRepository(CompanyAddress::class)
                             ->findLastModifiedNotArchivedAddressByType($lenderCompany, AddressType::TYPE_MAIN_ADDRESS);
                     }
 
@@ -791,14 +792,14 @@ class pdfController extends bootstrap
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
 
-        $loan = $entityManager->getRepository('UnilendCoreBusinessBundle:Loans')->find($this->params[1]);
+        $loan = $entityManager->getRepository(Loans::class)->find($this->params[1]);
 
         if (null === $loan) {
             header('Location: ' . $this->lurl);
             exit;
         }
 
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Wallet $wallet */
+        /** @var \Unilend\Entity\Wallet $wallet */
         $wallet = $loan->getWallet();
 
         if (false === $wallet->getIdClient()->isLender()) {
@@ -850,10 +851,10 @@ class pdfController extends bootstrap
         $this->translator = $this->get('translator');
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Wallet $wallet */
+        /** @var \Unilend\Entity\Wallet $wallet */
         $wallet = $loan->getWallet();
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Companies borrowerCompany */
-        $this->borrowerCompany        = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->find($this->projects->id_company);
+        /** @var \Unilend\Entity\Companies borrowerCompany */
+        $this->borrowerCompany        = $entityManager->getRepository(Companies::class)->find($this->projects->id_company);
         $this->borrowerCompanyAddress = $this->borrowerCompany->getIdAddress();
         $status                       = [
             CompanyStatus::STATUS_PRECAUTIONARY_PROCESS,
@@ -864,12 +865,12 @@ class pdfController extends bootstrap
 
         if (in_array($this->borrowerCompany->getIdStatus()->getLabel(), $status)) {
             if (in_array($client->type, [Clients::TYPE_LEGAL_ENTITY, Clients::TYPE_LEGAL_ENTITY_FOREIGNER])) {
-                $this->lenderCompany = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')
+                $this->lenderCompany = $entityManager->getRepository(Companies::class)
                     ->findOneBy(['idClientOwner' => $client->id_client]);
                 $clientEntity        = $this->lenderCompany->getIdClientOwner();
                 $validatedAddress    = $this->lenderCompany->getIdAddress();
             } else {
-                $clientEntity     = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($client->id_client);
+                $clientEntity     = $entityManager->getRepository(Clients::class)->find($client->id_client);
                 $validatedAddress = $clientEntity->getIdAddress();
             }
 
@@ -880,10 +881,10 @@ class pdfController extends bootstrap
 
                 try {
                     if ($clientEntity->isNaturalPerson()) {
-                        $lastModifiedAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientAddress')
+                        $lastModifiedAddress = $entityManager->getRepository(ClientAddress::class)
                             ->findLastModifiedNotArchivedAddressByType($clientEntity, AddressType::TYPE_MAIN_ADDRESS);
                     } else {
-                        $lastModifiedAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')
+                        $lastModifiedAddress = $entityManager->getRepository(CompanyAddress::class)
                             ->findLastModifiedNotArchivedAddressByType($this->lenderCompany, AddressType::TYPE_MAIN_ADDRESS);
                     }
 
@@ -910,7 +911,7 @@ class pdfController extends bootstrap
                 exit;
             }
 
-            $companyStatusHistoryRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyStatusHistory');
+            $companyStatusHistoryRepository = $entityManager->getRepository(CompanyStatusHistory::class);
             $companyStatusHistory           = $companyStatusHistoryRepository->findFirstHistoryByCompanyAndStatus($this->borrowerCompany->getIdCompany(), $status);
 
             $this->date            = $companyStatusHistory->getChangedOn();

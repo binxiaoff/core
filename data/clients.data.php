@@ -1,7 +1,6 @@
 <?php
 
-use Doctrine\DBAL\Driver\Statement;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, AttachmentType, Clients as ClientEntity, ClientsStatus, GreenpointAttachment, OperationSubType, Pays, Users, VigilanceRule, WalletType};
+use Unilend\Entity\{Clients as ClientEntity, ClientsStatus, OperationSubType, Pays, WalletType};
 
 class clients extends clients_crud
 {

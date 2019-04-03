@@ -3,13 +3,8 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Service\Product\Validator;
 
 use Doctrine\ORM\EntityManagerInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProductAttributeType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
-use Unilend\Bundle\CoreBusinessBundle\Service\Product\Checker\ClientChecker;
-use Unilend\Bundle\CoreBusinessBundle\Service\Product\Checker\LenderChecker;
-use Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\ContractManager;
-use Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductAttributeManager;
+use Unilend\Entity\{Clients, Product, ProductAttributeType, Projects};
+use Unilend\Bundle\CoreBusinessBundle\Service\{Product\Checker\ClientChecker, Product\Checker\LenderChecker, Product\Contract\ContractManager, Product\ProductAttributeManager};
 
 class ClientValidator
 {
@@ -48,7 +43,7 @@ class ClientValidator
     public function validate(?Clients $client, Projects $project): array
     {
         $violations = [];
-        $product    = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Product')->find($project->getIdProduct());
+        $product    = $this->entityManager->getRepository(Product::class)->find($project->getIdProduct());
 
         if (false === $this->isEligibleForClientId($client, $product, $this->productAttributeManager)) {
             $violations[] = ProductAttributeType::ELIGIBLE_CLIENT_ID;

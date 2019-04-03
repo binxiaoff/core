@@ -7,7 +7,7 @@ use GuzzleHttp\Client;
 use JMS\Serializer\SerializerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Log\LoggerInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+use Unilend\Entity\Clients;
 use Unilend\Bundle\WSClientBundle\Entity\GreenPoint\{HousingCertificate, Identity, Kyc, Rib};
 
 class GreenPointManager

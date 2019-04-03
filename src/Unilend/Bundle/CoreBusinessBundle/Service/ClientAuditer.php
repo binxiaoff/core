@@ -5,7 +5,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\OptimisticLockException;
 use Psr\Log\LoggerInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{ClientDataHistory, Clients, Users};
+use Unilend\Entity\{ClientDataHistory, Clients, Users};
 
 class ClientAuditer
 {

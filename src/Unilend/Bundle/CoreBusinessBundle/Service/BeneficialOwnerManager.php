@@ -8,7 +8,7 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Routing\RouterInterface;
 use Twig_Environment;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{Attachment, AttachmentType, BeneficialOwner, BeneficialOwnerType, Clients, ClientsAdresses, Companies,
+use Unilend\Entity\{Attachment, AttachmentType, BeneficialOwner, BeneficialOwnerType, Clients, ClientsAdresses, Companies,
     CompanyBeneficialOwnerDeclaration, ProjectBeneficialOwnerUniversign, Projects, ProjectsStatus, UniversignEntityInterface};
 use Unilend\Bundle\FrontBundle\Service\UniversignManager;
 
@@ -123,11 +123,11 @@ class BeneficialOwnerManager
     public function createProjectBeneficialOwnerDeclaration($project, $client): array
     {
         if ($project instanceof \projects) {
-            $project = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($project->id_project);
+            $project = $this->entityManager->getRepository(Projects::class)->find($project->id_project);
         }
 
         if ($client instanceof \clients) {
-            $client = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($client->id_client);
+            $client = $this->entityManager->getRepository(Clients::class)->find($client->id_client);
         }
 
         $defaultReturn = [
@@ -144,12 +144,12 @@ class BeneficialOwnerManager
         }
 
         $projectDeclaration = $this->entityManager
-            ->getRepository('UnilendCoreBusinessBundle:ProjectBeneficialOwnerUniversign')
+            ->getRepository(ProjectBeneficialOwnerUniversign::class)
             ->findOneBy(['idProject' => $project, 'status' => [UniversignEntityInterface::STATUS_PENDING, UniversignEntityInterface::STATUS_SIGNED]], ['added' => 'DESC']);
 
         if (null === $projectDeclaration) {
             $companyDeclaration = $this->entityManager
-                ->getRepository('UnilendCoreBusinessBundle:CompanyBeneficialOwnerDeclaration')
+                ->getRepository(CompanyBeneficialOwnerDeclaration::class)
                 ->findCurrentDeclarationByCompany($project->getIdCompany());
 
             if (null === $companyDeclaration) {
@@ -289,7 +289,7 @@ class BeneficialOwnerManager
 
             $this->entityManager->persist($ownerAddress);
         } else {
-            $owner = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($idClient);
+            $owner = $this->entityManager->getRepository(Clients::class)->find($idClient);
             if (null === $owner) {
                 throw new \Exception('The client with id ' . $idClient . ' does not exist and can not be used as beneficial Owner');
             }
@@ -314,7 +314,7 @@ class BeneficialOwnerManager
                 $owner->setIdPaysNaissance($idBirthCountry);
             }
 
-            $ownerAddress = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ClientsAdresses')->findOneBy(['idClient' => $owner]);
+            $ownerAddress = $this->entityManager->getRepository(ClientsAdresses::class)->findOneBy(['idClient' => $owner]);
             if (null === $ownerAddress) {
                 $ownerAddress = new ClientsAdresses();
                 $ownerAddress->setIdPaysFiscal($countryOfResidence)
@@ -335,7 +335,7 @@ class BeneficialOwnerManager
         $this->entityManager->persist($beneficialOwner);
         $this->entityManager->flush([$declaration, $owner, $ownerAddress, $beneficialOwner]);
 
-        $attachmentType = $this->entityManager->getRepository('UnilendCoreBusinessBundle:AttachmentType')->find(AttachmentType::CNI_PASSPORTE);
+        $attachmentType = $this->entityManager->getRepository(AttachmentType::class)->find(AttachmentType::CNI_PASSPORTE);
         if ($passport instanceof UploadedFile && $attachmentType) {
             $this->attachmentManager->upload($owner, $attachmentType, $passport);
         }
@@ -359,7 +359,7 @@ class BeneficialOwnerManager
         $ownerType = null;
 
         if (null !== $type) {
-            $ownerType = $this->entityManager->getRepository('UnilendCoreBusinessBundle:BeneficialOwnerType')->find($type);
+            $ownerType = $this->entityManager->getRepository(BeneficialOwnerType::class)->find($type);
             if (null === $ownerType) {
                 throw new \Exception('BeneficialOwnerType ' . $type . ' does not exist.');
             }
@@ -406,7 +406,7 @@ class BeneficialOwnerManager
      */
     public function modifyPendingCompanyDeclaration(CompanyBeneficialOwnerDeclaration $declaration)
     {
-        $projectDeclarations = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectBeneficialOwnerUniversign')->findBy(['idDeclaration' => $declaration]);
+        $projectDeclarations = $this->entityManager->getRepository(ProjectBeneficialOwnerUniversign::class)->findBy(['idDeclaration' => $declaration]);
 
         if (false === empty($projectDeclarations)) {
             foreach ($projectDeclarations as $universign) {
@@ -451,7 +451,7 @@ class BeneficialOwnerManager
 
         $this->entityManager->flush([$owner, $newOwner, $newDeclaration]);
 
-        $projectDeclarations = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectBeneficialOwnerUniversign')->findBy(['idDeclaration' => $currentDeclaration]);
+        $projectDeclarations = $this->entityManager->getRepository(ProjectBeneficialOwnerUniversign::class)->findBy(['idDeclaration' => $currentDeclaration]);
 
         if (false === empty($projectDeclarations)) {
             foreach ($projectDeclarations as $universign) {
@@ -502,7 +502,7 @@ class BeneficialOwnerManager
     public function projectNeedsBeneficialOwnerDeclaration($project)
     {
         if ($project instanceof \projects) {
-            $project = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($project->id_project);
+            $project = $this->entityManager->getRepository(Projects::class)->find($project->id_project);
         }
 
         return $this->companyNeedsBeneficialOwnerDeclaration($project->getIdCompany());
@@ -516,7 +516,7 @@ class BeneficialOwnerManager
     public function companyNeedsBeneficialOwnerDeclaration($company)
     {
         if (false === $company instanceof Companies) {
-            $company = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->find($company);
+            $company = $this->entityManager->getRepository(Companies::class)->find($company);
         }
 
         return false === in_array($company->getLegalFormCode(), self::BENEFICIAL_OWNER_DECLARATION_EXEMPTED_LEGAL_FORM_CODES);
@@ -530,12 +530,12 @@ class BeneficialOwnerManager
     public function checkBeneficialOwnerDeclarationContainsAtLeastCompanyOwner($company)
     {
         if (false === $company instanceof Companies) {
-            $company = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->find($company);
+            $company = $this->entityManager->getRepository(Companies::class)->find($company);
         }
 
-        $currentDeclaration         = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CompanyBeneficialOwnerDeclaration')
+        $currentDeclaration         = $this->entityManager->getRepository(CompanyBeneficialOwnerDeclaration::class)
             ->findCurrentDeclarationByCompany($company);
-        $companyOwnerBeneficialOwner = $this->entityManager->getRepository('UnilendCoreBusinessBundle:BeneficialOwner')
+        $companyOwnerBeneficialOwner = $this->entityManager->getRepository(BeneficialOwner::class)
             ->findOneBy(['idDeclaration' => $currentDeclaration, 'idClient' => $company->getIdClientOwner()]);
 
         return null !== $companyOwnerBeneficialOwner;
@@ -550,7 +550,7 @@ class BeneficialOwnerManager
     {
         $owners = [];
         foreach ($declaration->getBeneficialOwners() as $owner) {
-            $clientAddress = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ClientsAdresses')->findOneBy(['idClient' => $owner->getIdClient()]);
+            $clientAddress = $this->entityManager->getRepository(ClientsAdresses::class)->findOneBy(['idClient' => $owner->getIdClient()]);
             $owners[]        = [
                 'owner'   => $owner,
                 'country' => $clientAddress->getIdPaysFiscal()

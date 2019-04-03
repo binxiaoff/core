@@ -4,7 +4,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
 use Doctrine\ORM\{EntityRepository, NoResultException};
 use Doctrine\ORM\Query\Expr\Join;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{AcceptedBids, Loans, Projects, Wallet};
+use Unilend\Entity\{AcceptedBids, Bids, Loans, Projects, Wallet};
 
 class AcceptedBidsRepository extends EntityRepository
 {
@@ -19,7 +19,7 @@ class AcceptedBidsRepository extends EntityRepository
     {
         $queryBuilder = $this->createQueryBuilder('ab');
         $queryBuilder
-            ->innerJoin('UnilendCoreBusinessBundle:Bids', 'b', Join::WITH, 'ab.idBid = b.idBid')
+            ->innerJoin(Bids::class, 'b', Join::WITH, 'ab.idBid = b.idBid')
             ->where('b.wallet = :wallet')
             ->andWhere('b.project = :project')
             ->orderBy('b.rate', 'DESC')
@@ -58,7 +58,7 @@ class AcceptedBidsRepository extends EntityRepository
         $queryBuilder = $this->createQueryBuilder('ab');
         $queryBuilder
             ->select('COUNT(ab.idBid)')
-            ->innerJoin('UnilendCoreBusinessBundle:Loans', 'l', Join::WITH, 'ab.idLoan = l.idLoan')
+            ->innerJoin(Loans::class, 'l', Join::WITH, 'ab.idLoan = l.idLoan')
             ->where('l.wallet = :lender')
             ->andWhere('l.project = :project')
             ->setParameter('lender', $wallet)

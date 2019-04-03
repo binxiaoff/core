@@ -1,11 +1,11 @@
 {% set backgroundColor = '#787679' %}
-{% if partner == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Partner::PARTNER_CALS_LABEL') %}
+{% if partner == constant('\\Unilend\\Entity\\Partner::PARTNER_CALS_LABEL') %}
     {% set backgroundColor = '#5fc5d1' %}
-{% elseif partner == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Partner::PARTNER_CACIB_COLLPUB_LABEL') %}
+{% elseif partner == constant('\\Unilend\\Entity\\Partner::PARTNER_CACIB_COLLPUB_LABEL') %}
     {% set backgroundColor = '#1b88db' %}
-{% elseif partner == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Partner::PARTNER_CACIB_CORPORATE_LABEL') %}
+{% elseif partner == constant('\\Unilend\\Entity\\Partner::PARTNER_CACIB_CORPORATE_LABEL') %}
     {% set backgroundColor = '#ffca2c' %}
-{% elseif partner == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Partner::PARTNER_UNIFERGIE_LABEL') %}
+{% elseif partner == constant('\\Unilend\\Entity\\Partner::PARTNER_UNIFERGIE_LABEL') %}
     {% set backgroundColor = '#f76965' %}
 {% endif %}
 <span class="bubble" style="background-color: {{ backgroundColor }};">{{ ('partner-name_bubble-' ~ partner)|trans }}</span>

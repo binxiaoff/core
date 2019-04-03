@@ -7,7 +7,7 @@ use Mailjet\Resources;
 use Mailjet\Response;
 use Psr\Log\LoggerInterface;
 use Swift_Events_EventListener;
-use Unilend\Bundle\CoreBusinessBundle\Entity\MailQueue;
+use Unilend\Entity\MailQueue;
 
 class MailjetTransport implements \Swift_Transport
 {

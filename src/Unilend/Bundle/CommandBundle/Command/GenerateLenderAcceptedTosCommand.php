@@ -8,6 +8,7 @@ use Symfony\Component\Console\Command\Command;
 use Unilend\Bundle\CoreBusinessBundle\Service\Document\LenderTermsOfSaleGenerator;
 use Symfony\Component\Console\{Input\InputInterface, Input\InputOption, Output\OutputInterface};
 use Unilend\Bundle\CoreBusinessBundle\Service\TermsOfSaleManager;
+use Unilend\Entity\AcceptationsLegalDocs;
 
 class GenerateLenderAcceptedTosCommand extends Command
 {
@@ -71,7 +72,7 @@ EOF
         ];
 
         $acceptedTermsOfUse = $this->entityManager
-            ->getRepository('UnilendCoreBusinessBundle:AcceptationsLegalDocs')
+            ->getRepository(AcceptationsLegalDocs::class)
             ->findByIdLegalDocWithoutPfd($types, $limit);
 
         foreach ($acceptedTermsOfUse as $accepted) {

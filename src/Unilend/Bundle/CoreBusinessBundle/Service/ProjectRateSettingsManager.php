@@ -1,7 +1,7 @@
 <?php
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRateSettings;
+use Unilend\Entity\ProjectRateSettings;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\{
     TemplateMessage, TemplateMessageProvider

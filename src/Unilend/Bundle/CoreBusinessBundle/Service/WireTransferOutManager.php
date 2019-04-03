@@ -6,7 +6,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Asset\Packages;
 use Symfony\Component\Routing\{Generator\UrlGeneratorInterface, RouterInterface};
-use Unilend\Bundle\CoreBusinessBundle\Entity\{BankAccount, Projects, Users, Virements, Wallet, WalletType};
+use Unilend\Entity\{BankAccount, Projects, Settings, Users, Virements, Wallet, WalletType};
 use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessageProvider;
 
 class WireTransferOutManager
@@ -252,7 +252,7 @@ class WireTransferOutManager
                 'url'     => $this->adminUrl
             ];
 
-            $settings = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Adresse controle interne']);
+            $settings = $this->entityManager->getRepository(Settings::class)->findOneBy(['type' => 'Adresse controle interne']);
 
             /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
             $message = $this->messageProvider->newMessage('wire-transfer-out-to-validate-staff-notification', $keywords);
@@ -281,7 +281,7 @@ class WireTransferOutManager
     {
         $amount = 0;
 
-        $wireTransferOuts = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Virements')->findBy([
+        $wireTransferOuts = $this->entityManager->getRepository(Virements::class)->findBy([
             'idClient' => $wallet->getIdClient(),
             'status'   => [Virements::STATUS_PENDING, Virements::STATUS_CLIENT_VALIDATED]
         ]);

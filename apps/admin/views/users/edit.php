@@ -46,9 +46,9 @@
                 <tr>
                     <th><label>Statut</label></th>
                     <td>
-                        <input type="radio" value="<?= \Unilend\Bundle\CoreBusinessBundle\Entity\Users::STATUS_ONLINE ?>" id="status1" name="status" class="radio"<?= $this->users->status == \Unilend\Bundle\CoreBusinessBundle\Entity\Users::STATUS_ONLINE ? ' checked' : '' ?>>
+                        <input type="radio" value="<?= \Unilend\Entity\Users::STATUS_ONLINE ?>" id="status1" name="status" class="radio"<?= $this->users->status == \Unilend\Entity\Users::STATUS_ONLINE ? ' checked' : '' ?>>
                         <label for="status1" class="label_radio">&nbsp;En ligne</label>
-                        <input type="radio" value="<?= \Unilend\Bundle\CoreBusinessBundle\Entity\Users::STATUS_OFFLINE ?>" id="status0" name="status" class="radio"<?= $this->users->status == \Unilend\Bundle\CoreBusinessBundle\Entity\Users::STATUS_OFFLINE ? ' checked' : '' ?>>
+                        <input type="radio" value="<?= \Unilend\Entity\Users::STATUS_OFFLINE ?>" id="status0" name="status" class="radio"<?= $this->users->status == \Unilend\Entity\Users::STATUS_OFFLINE ? ' checked' : '' ?>>
                         <label for="status0" class="label_radio">&nbsp;Hors ligne</label>
                     </td>
                 </tr>

@@ -3,9 +3,7 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Service\Product\Checker;
 
 use Doctrine\ORM\EntityManagerInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Product;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProductAttributeType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
+use Unilend\Entity\{Product, ProductAttributeType, Projects, ProjectsNotes};
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductAttributeManager;
 
 trait ProjectChecker
@@ -114,7 +112,7 @@ trait ProjectChecker
             return true;
         }
 
-        $projectNote = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsNotes')->findOneBy(['idProject' => $project->getIdProject()]);
+        $projectNote = $entityManager->getRepository(ProjectsNotes::class)->findOneBy(['idProject' => $project->getIdProject()]);
 
         if (null === $projectNote || empty($projectNote->getPreScoring())) {
             return null;
@@ -139,7 +137,7 @@ trait ProjectChecker
             return true;
         }
 
-        $projectNote = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsNotes')->findOneBy(['idProject' => $project->getIdProject()]);
+        $projectNote = $entityManager->getRepository(ProjectsNotes::class)->findOneBy(['idProject' => $project->getIdProject()]);
 
         if (empty($projectNote->getPreScoring())) {
             return null;

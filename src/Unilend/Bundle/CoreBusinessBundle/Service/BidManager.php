@@ -6,8 +6,8 @@ use Doctrine\ORM\{EntityManagerInterface, NonUniqueResultException, NoResultExce
 use Psr\Cache\CacheException;
 use Psr\Cache\CacheItemPoolInterface;
 use Psr\Log\LoggerInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{AcceptedBids, Autobid, Bids, ClientsGestionTypeNotif, Embeddable\LendingRate, Notifications, OffresBienvenuesDetails, Projects,
-    ProjectsStatus, Sponsorship, Wallet, WalletBalanceHistory, WalletType};
+use Unilend\Entity\{AcceptedBids, Autobid, Bids, ClientsGestionTypeNotif, Embeddable\LendingRate, Notifications, OffresBienvenuesDetails, ProjectRateSettings, Projects, ProjectsStatus, Settings,
+    Sponsorship, Wallet, WalletBalanceHistory, WalletType};
 use Unilend\Bundle\CoreBusinessBundle\Exception\BidException;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductManager;
 use Unilend\librairies\CacheKeys;
@@ -100,7 +100,7 @@ class BidManager
     public function bid(Wallet $wallet, Projects $project, $amount, float $rate, ?Autobid $autoBidSetting = null, bool $sendNotification = true): Bids
     {
         $rate = (new LendingRate())
-            ->setType(LendingRate::TYPE_FIXED)
+            ->setType(LendingRate::INDEX_FIXED)
             ->setMargin($rate);
 
         $bid = new Bids();
@@ -113,7 +113,7 @@ class BidManager
             ->setAutobid($autoBidSetting);
 
         if (false === $autoBidSetting instanceof Autobid) {
-            $bidNb = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Bids')->countBy(['idProject' => $project]);
+            $bidNb = $this->entityManager->getRepository(Bids::class)->countBy(['idProject' => $project]);
             $bidNb++;
             $bid->setOrdre($bidNb);
 
@@ -133,7 +133,7 @@ class BidManager
         $this->entityManager->flush($bid);
 
         $clientId = $wallet->getIdClient()->getIdClient();
-        $unusedWelcomeOffers = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OffresBienvenuesDetails')->findBy(['idClient' => $clientId, 'status' => OffresBienvenuesDetails::TYPE_OFFER]);
+        $unusedWelcomeOffers = $this->entityManager->getRepository(OffresBienvenuesDetails::class)->findBy(['idClient' => $clientId, 'status' => OffresBienvenuesDetails::TYPE_OFFER]);
         if ($unusedWelcomeOffers != null) {
             $offerTotal = 0;
             /** @var OffresBienvenuesDetails $offer */
@@ -191,7 +191,7 @@ class BidManager
     private function checkMinimumAmount(Bids $bid): void
     {
         $bidAmount     = bcdiv($bid->getAmount(), 100);
-        $minimumAmount = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')
+        $minimumAmount = $this->entityManager->getRepository(Settings::class)
             ->findOneBy(['type' => 'Pret min'])
             ->getValue();
 
@@ -419,7 +419,7 @@ class BidManager
             && bccomp($currentRate, $bid->getAutobid()->getRateMin(), 1) >= 0
         ) {
             if (null === $bidOrder) {
-                $bidOrder = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Bids')->countBy(['idProject' => $bid->getProject()->getIdProject()]);
+                $bidOrder = $this->entityManager->getRepository(Bids::class)->countBy(['idProject' => $bid->getProject()->getIdProject()]);
                 $bidOrder++;
             }
 
@@ -459,7 +459,7 @@ class BidManager
         $amountX100           = $amount * 100;
         $welcomeOffer         = new OffresBienvenuesDetails();
 
-        $welcomeOfferTotal = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OffresBienvenuesDetails')->getSumOfferByBid($bid->getWallet()->getIdClient()->getIdClient(), $bid->getIdBid());
+        $welcomeOfferTotal = $this->entityManager->getRepository(OffresBienvenuesDetails::class)->getSumOfferByBid($bid->getWallet()->getIdClient()->getIdClient(), $bid->getIdBid());
         if ($welcomeOfferTotal > 0) {
             if ($bid->getAmount() === $amountX100) { //Totally credit
                 $welcomeOffer->setMontant(min($welcomeOfferTotal, $amountX100));
@@ -515,7 +515,7 @@ class BidManager
     public function getProjectRateRange($project): array
     {
         if ($project instanceof \projects) {
-            $project = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($project->id_project);
+            $project = $this->entityManager->getRepository(Projects::class)->find($project->id_project);
         }
 
         try {
@@ -531,7 +531,7 @@ class BidManager
         }
 
         $projectRateSettings           = null;
-        $projectRateSettingsRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRateSettings');
+        $projectRateSettingsRepository = $this->entityManager->getRepository(ProjectRateSettings::class);
 
         if (false === empty($project->getIdRate())) {
             $projectRateSettings = $projectRateSettingsRepository->find($project->getIdRate());
@@ -580,7 +580,7 @@ class BidManager
             $this->notificationRejection($bid, $walletBalanceHistory);
         }
 
-        if (null !== $this->entityManager->getRepository('UnilendCoreBusinessBundle:Sponsorship')->findOneBy(['idClientSponsee' => $bid->getWallet()->getIdClient(), 'status' => Sponsorship::STATUS_SPONSEE_PAID])) {
+        if (null !== $this->entityManager->getRepository(Sponsorship::class)->findOneBy(['idClientSponsee' => $bid->getWallet()->getIdClient(), 'status' => Sponsorship::STATUS_SPONSEE_PAID])) {
             try {
                 $this->sponsorshipManager->attributeSponsorReward($bid->getWallet()->getIdClient());
             } catch (\Exception $exception) {

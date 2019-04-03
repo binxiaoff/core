@@ -1,6 +1,6 @@
 <?php
 
-use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
+use Unilend\Entity\Projects;
 
 ?>
 <style>

@@ -3,9 +3,7 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
 use Doctrine\ORM\EntityRepository;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    BankAccount, Clients
-};
+use Unilend\Entity\{BankAccount, Clients};
 
 class BankAccountRepository extends EntityRepository
 {

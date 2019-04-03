@@ -4,7 +4,7 @@ namespace Unilend\Bundle\FrontBundle\Form\Lending;
 
 use Symfony\Component\Form\{AbstractType, Extension\Core\Type\ChoiceType, Extension\Core\Type\NumberType, FormBuilderInterface};
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Embeddable\LendingRate;
+use Unilend\Entity\Embeddable\LendingRate;
 
 class LendingRateType extends AbstractType
 {

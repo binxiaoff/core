@@ -5,9 +5,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Bids, Clients, Echeanciers, OperationType, Projects, ProjectsStatus, Wallet, WalletType
-};
+use Unilend\Entity\{AcceptedBids, Bids, Clients, Echeanciers, Loans, Operation, OperationType, Projects, ProjectsStatus, Wallet, WalletBalanceHistory, WalletType};
 
 class WalletRepository extends EntityRepository
 {
@@ -18,7 +16,7 @@ class WalletRepository extends EntityRepository
     {
         $cb = $this->createQueryBuilder('w');
         $cb->select('w')
-            ->innerJoin('UnilendCoreBusinessBundle:WalletType', 'wt', Join::WITH, 'w.idType = wt.id')
+            ->innerJoin(WalletType::class, 'wt', Join::WITH, 'w.idType = wt.id')
             ->where('wt.label IN (:taxWallets)')
             ->setParameter('taxWallets', WalletType::TAX_FR_WALLETS, Connection::PARAM_STR_ARRAY);
         $query = $cb->getQuery();
@@ -35,7 +33,7 @@ class WalletRepository extends EntityRepository
     public function getWalletByType($idClient, $walletType)
     {
         $cb = $this->createQueryBuilder('w');
-        $cb->innerJoin('UnilendCoreBusinessBundle:WalletType', 'wt', Join::WITH, 'w.idType = wt.id')
+        $cb->innerJoin(WalletType::class, 'wt', Join::WITH, 'w.idType = wt.id')
             ->where('w.idClient = :idClient')
             ->andWhere('wt.label = :walletType')
             ->setMaxResults(1)
@@ -100,10 +98,10 @@ class WalletRepository extends EntityRepository
     public function getLenderWalletsWithOperationsInYear(array $operationTypes, $year)
     {
         $qb = $this->createQueryBuilder('w');
-        $qb->innerJoin('UnilendCoreBusinessBundle:WalletBalanceHistory', 'wbh', Join::WITH, 'w.id = wbh.idWallet')
-            ->innerJoin('UnilendCoreBusinessBundle:Operation', 'o', Join::WITH, 'o.id = wbh.idOperation')
-            ->innerJoin('UnilendCoreBusinessBundle:OperationType', 'ot', Join::WITH, 'ot.id = o.idType')
-            ->innerJoin('UnilendCoreBusinessBundle:WalletType', 'wt', Join::WITH, 'wt.id = w.idType')
+        $qb->innerJoin(WalletBalanceHistory::class, 'wbh', Join::WITH, 'w.id = wbh.idWallet')
+            ->innerJoin(Operation::class, 'o', Join::WITH, 'o.id = wbh.idOperation')
+            ->innerJoin(OperationType::class, 'ot', Join::WITH, 'ot.id = o.idType')
+            ->innerJoin(WalletType::class, 'wt', Join::WITH, 'wt.id = w.idType')
             ->where('wt.label = :lender')
             ->andWhere('ot.label IN (:operationTypes)')
             ->andWhere('o.added BETWEEN :start AND :end')
@@ -125,15 +123,15 @@ class WalletRepository extends EntityRepository
 
         $qb = $this->createQueryBuilder('w')
             ->select('w')
-            ->innerJoin('UnilendCoreBusinessBundle:Echeanciers', 'e', Join::WITH, 'w.id = e.idLender')
-            ->innerJoin('UnilendCoreBusinessBundle:Projects', 'p', Join::WITH, 'e.idProject = p.idProject')
+            ->innerJoin(Echeanciers::class, 'e', Join::WITH, 'w.id = e.idLender')
+            ->innerJoin(Projects::class, 'p', Join::WITH, 'e.idProject = p.idProject')
             ->where('e.dateEcheance < :now')
             ->andWhere('e.status = ' . Echeanciers::STATUS_PENDING)
             ->andWhere('p.status = ' . ProjectsStatus::STATUS_LOSS);
 
         $subQuery = $this->getEntityManager()->createQueryBuilder()
             ->add('select', 'MAX(ls.added)')
-            ->add('from', 'UnilendCoreBusinessBundle:LenderStatistic ls')
+            ->add('from', 'Uinlend\Entity\LenderStatistic ls')
             ->add('where', 'w.id = ls.idWallet');
 
         $qb->andWhere('(' . $subQuery->getDQL() . ') < e.dateEcheance')
@@ -242,11 +240,11 @@ class WalletRepository extends EntityRepository
         $end->setTime(23, 59, 59);
 
         $queryBuilder = $this->createQueryBuilder('w');
-        $queryBuilder->innerJoin('UnilendCoreBusinessBundle:Operation', 'o', Join::WITH, 'o.idWalletCreditor = w.id')
-            ->innerJoin('UnilendCoreBusinessBundle:OperationType', 'ot', Join::WITH, 'o.idType = ot.id')
-            ->innerJoin('UnilendCoreBusinessBundle:Clients', 'c', Join::WITH, 'c.idClient = w.idClient')
+        $queryBuilder->innerJoin(Operation::class, 'o', Join::WITH, 'o.idWalletCreditor = w.id')
+            ->innerJoin(OperationType::class, 'ot', Join::WITH, 'o.idType = ot.id')
+            ->innerJoin(Clients::class, 'c', Join::WITH, 'c.idClient = w.idClient')
             ->where('ot.label = :lenderProvision')
-            ->andwhere('w.id NOT IN (SELECT IDENTITY(b.wallet) FROM Unilend\Bundle\CoreBusinessBundle\Entity\Bids b WHERE b.status = :accepted AND b.added BETWEEN :start AND :end)')
+            ->andwhere('w.id NOT IN (SELECT IDENTITY(b.wallet) FROM Unilend\Entity\Bids b WHERE b.status = :accepted AND b.added BETWEEN :start AND :end)')
             ->groupBy('w.id')
             ->setParameter('lenderProvision', OperationType::LENDER_PROVISION)
             ->setParameter('accepted', Bids::STATUS_ACCEPTED)
@@ -265,8 +263,8 @@ class WalletRepository extends EntityRepository
     {
         $queryBuilder = $this->createQueryBuilder('w');
         $queryBuilder
-            ->innerJoin('UnilendCoreBusinessBundle:Bids', 'b', Join::WITH, 'w.id = b.wallet')
-            ->innerJoin('UnilendCoreBusinessBundle:AcceptedBids', 'ab', Join::WITH, 'b.idBid = ab.idBid')
+            ->innerJoin(Bids::class, 'b', Join::WITH, 'w.id = b.wallet')
+            ->innerJoin(AcceptedBids::class, 'ab', Join::WITH, 'b.idBid = ab.idBid')
             ->where('b.project = :project')
             ->groupBy('w.id')
             ->setParameter('project', $project);
@@ -284,7 +282,7 @@ class WalletRepository extends EntityRepository
         $queryBuilder = $this->createQueryBuilder('w');
         $queryBuilder
             ->distinct()
-            ->innerJoin('UnilendCoreBusinessBundle:Loans', 'l', Join::WITH, 'l.wallet = w.id')
+            ->innerJoin(Loans::class, 'l', Join::WITH, 'l.wallet = w.id')
             ->where('l.project in (:projects)')
             ->setParameter('projects', $projects);
 

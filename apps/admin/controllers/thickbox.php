@@ -1,8 +1,6 @@
 <?php
 
-use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
+use Unilend\Entity\{CompanyStatus, CompanyStatusHistory, ProjectsStatus, Zones};
 
 class thickboxController extends bootstrap
 {
@@ -109,9 +107,9 @@ class thickboxController extends bootstrap
 
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus $companyStatusEntity */
-        $companyStatus = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyStatus')->find($this->companyStatusId);
-        $company       = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->find($companyId);
+        /** @var \Unilend\Entity\CompanyStatus $companyStatusEntity */
+        $companyStatus = $entityManager->getRepository(CompanyStatus::class)->find($this->companyStatusId);
+        $company       = $entityManager->getRepository(Companies::class)->find($companyId);
 
         if (null === $companyStatus || null === $company || $company->getIdClientOwner()->getIdClient() != $this->clientId) {
             return;
@@ -122,7 +120,7 @@ class thickboxController extends bootstrap
         $this->statusLabel    = $this->companyManager->getCompanyStatusNameByLabel($companyStatus->getLabel());
 
         if (in_array($companyStatus->getLabel(), array(CompanyStatus::STATUS_RECEIVERSHIP, CompanyStatus::STATUS_COMPULSORY_LIQUIDATION))) {
-            $companyStatusHistory   = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyStatusHistory')
+            $companyStatusHistory   = $entityManager->getRepository(CompanyStatusHistory::class)
                 ->findOneBy(['idCompany' => $companyId], ['added' => 'DESC']);
             $this->previousReceiver = '';
             if (null !== $companyStatusHistory) {

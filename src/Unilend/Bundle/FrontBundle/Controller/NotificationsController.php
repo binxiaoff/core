@@ -7,7 +7,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\{JsonResponse, Request};
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\User\UserInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{Clients, WalletType};
+use Unilend\Entity\{Clients, Notifications, Wallet, WalletType};
 
 class NotificationsController extends Controller
 {
@@ -34,8 +34,8 @@ class NotificationsController extends Controller
         }
 
         $entityManager           = $this->get('doctrine.orm.entity_manager');
-        $notificationsRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Notifications');
-        $wallet                  = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
+        $notificationsRepository = $entityManager->getRepository(Notifications::class);
+        $wallet                  = $entityManager->getRepository(Wallet::class)->getWalletByType($client, WalletType::LENDER);
 
         switch ($action) {
             case 'all_read':

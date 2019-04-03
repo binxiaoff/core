@@ -3,7 +3,7 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
 use Doctrine\ORM\EntityRepository;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Backpayline;
+use Unilend\Entity\Backpayline;
 
 class BackpaylineRepository extends EntityRepository
 {

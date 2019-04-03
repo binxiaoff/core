@@ -4,6 +4,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service\Repayment;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Service\WorkingDaysManager;
+use Unilend\Entity\Settings;
 
 class ProjectRepaymentScheduleManager
 {
@@ -60,7 +61,7 @@ class ProjectRepaymentScheduleManager
         $lenderRepaymentDate = $this->generateLenderMonthlyAmortizationDate($fundedDate, $sequence);
 
         $daysOffsetSetting = $this->entityManager
-            ->getRepository('UnilendCoreBusinessBundle:Settings')
+            ->getRepository(Settings::class)
             ->findOneBy(['type' => 'Nombre jours avant remboursement pour envoyer une demande de prelevement']);
 
         if ($daysOffsetSetting) {

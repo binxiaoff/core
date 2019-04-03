@@ -1,7 +1,7 @@
 <?php
 
 use Doctrine\ORM\EntityManager;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{CompanyRating, Projects, ProjectsStatus, ProjectsStatusHistory, Zones};
+use Unilend\Entity\{CompanyRating, CompanyRatingHistory, Operation, ProjectNeed, Projects, ProjectsStatus, ProjectsStatusHistory, Zones};
 use Unilend\Bundle\WSClientBundle\Entity\Euler\CompanyRating as EulerCompanyRating;
 
 class societeController extends bootstrap
@@ -26,14 +26,14 @@ class societeController extends bootstrap
 
         /** @var EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
-        $company       = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->find($this->params[0]);
+        $company       = $entityManager->getRepository(Companies::class)->find($this->params[0]);
 
         if (null === $company) {
             header('Location: ' . $this->lurl . '/dashboard');
             return;
         }
 
-        $companyRatingHistoryRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyRatingHistory');
+        $companyRatingHistoryRepository = $entityManager->getRepository(CompanyRatingHistory::class);
         $ratings                        = [
             CompanyRating::TYPE_EULER_HERMES_GRADE,
             CompanyRating::TYPE_EULER_HERMES_TRAFFIC_LIGHT,
@@ -48,7 +48,7 @@ class societeController extends bootstrap
         $dates                          = $formattedRatings['dates'];
         unset($formattedRatings['dates']);
 
-        $projectsRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
+        $projectsRepository = $entityManager->getRepository(Projects::class);
         $allProjects        = $projectsRepository->findBySiren($company->getSiren());
         $formattedProjects  = $this->formatProjectData($allProjects);
 
@@ -62,7 +62,7 @@ class societeController extends bootstrap
             'ratings'                   => $formattedRatings,
             'dates'                     => $dates,
             'projects'                  => $formattedProjects,
-            'remainingDueCapital'       => $entityManager->getRepository('UnilendCoreBusinessBundle:Operation')->getRemainingDueCapitalForProjects(new \DateTime('NOW'), array_column($formattedProjects, 'id'))
+            'remainingDueCapital'       => $entityManager->getRepository(Operation::class)->getRemainingDueCapitalForProjects(new \DateTime('NOW'), array_column($formattedProjects, 'id'))
         ]);
     }
 
@@ -220,8 +220,8 @@ class societeController extends bootstrap
 
         /** @var Projects $project */
         foreach ($projects as $index => $project) {
-            $projectStatusHistory         = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatusHistory')->findBy(['idProject' => $project->getIdProject()]);
-            $projectNeed                  = empty($project->getIdProjectNeed()) ? null : $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectNeed')->find($project->getIdProjectNeed());
+            $projectStatusHistory         = $entityManager->getRepository(ProjectsStatusHistory::class)->findBy(['idProject' => $project->getIdProject()]);
+            $projectNeed                  = empty($project->getIdProjectNeed()) ? null : $entityManager->getRepository(ProjectNeed::class)->find($project->getIdProjectNeed());
             $projectDetails[$index]['id'] = $project->getIdProject();
 
             /** @var ProjectsStatusHistory $status */

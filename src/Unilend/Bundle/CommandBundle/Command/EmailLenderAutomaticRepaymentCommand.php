@@ -3,12 +3,8 @@
 namespace Unilend\Bundle\CommandBundle\Command;
 
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
-use Symfony\Component\Console\{
-    Input\InputInterface, Output\OutputInterface
-};
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Clients, ClientsGestionTypeNotif, ClientsStatus, Notifications, ProjectRepaymentDetail, ProjectRepaymentTask
-};
+use Symfony\Component\Console\{Input\InputInterface, Output\OutputInterface};
+use Unilend\Entity\{ClientsGestionTypeNotif, Notifications, Operation, ProjectRepaymentDetail, ProjectRepaymentTask, WalletBalanceHistory};
 
 class EmailLenderAutomaticRepaymentCommand extends ContainerAwareCommand
 {
@@ -26,8 +22,8 @@ class EmailLenderAutomaticRepaymentCommand extends ContainerAwareCommand
         $projectRepaymentNotificationSender = $this->getContainer()->get('unilend.service_repayment.project_repayment_notification_sender');
         $projectRepaymentTaskManager        = $this->getContainer()->get('unilend.service_repayment.project_repayment_task_manager');
 
-        $operationRepository            = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
-        $walletBalanceHistoryRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:WalletBalanceHistory');
+        $operationRepository            = $entityManager->getRepository(Operation::class);
+        $walletBalanceHistoryRepository = $entityManager->getRepository(WalletBalanceHistory::class);
         /** @var \notifications $notifications */
         $notifications = $entityManagerSimulator->getRepository('notifications');
         /** @var \clients_gestion_notifications $clients_gestion_notifications */
@@ -35,7 +31,7 @@ class EmailLenderAutomaticRepaymentCommand extends ContainerAwareCommand
         /** @var \clients_gestion_mails_notif $clients_gestion_mails_notif */
         $clients_gestion_mails_notif = $entityManagerSimulator->getRepository('clients_gestion_mails_notif');
         /** @var ProjectRepaymentDetail[] $repaymentDetails */
-        $repaymentDetails = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRepaymentDetail')->findBy(['status' => ProjectRepaymentDetail::STATUS_TREATED], null, 500);
+        $repaymentDetails = $entityManager->getRepository(ProjectRepaymentDetail::class)->findBy(['status' => ProjectRepaymentDetail::STATUS_TREATED], null, 500);
 
         $emailNB = 0;
 
@@ -86,6 +82,6 @@ class EmailLenderAutomaticRepaymentCommand extends ContainerAwareCommand
         }
 
         $entityManager->flush();
-        $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRepaymentDetail')->deleteFinished(new \DateTime('3 months ago'));
+        $entityManager->getRepository(ProjectRepaymentDetail::class)->deleteFinished(new \DateTime('3 months ago'));
     }
 }

@@ -7,7 +7,7 @@ use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\{EmailType, TextareaType, TextType};
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+use Unilend\Entity\Clients;
 
 class PartnerContactType extends AbstractType
 {

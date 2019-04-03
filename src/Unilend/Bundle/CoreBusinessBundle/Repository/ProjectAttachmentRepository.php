@@ -4,9 +4,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AttachmentType, ProjectAttachment, Projects
-};
+use Unilend\Entity\{Attachment, AttachmentType, ProjectAttachment, ProjectAttachmentType, ProjectAttachmentTypeCategory, Projects};
 
 class ProjectAttachmentRepository extends EntityRepository
 {
@@ -20,7 +18,7 @@ class ProjectAttachmentRepository extends EntityRepository
     {
         $queryBuilder = $this->createQueryBuilder('pa');
         $queryBuilder
-            ->innerJoin('UnilendCoreBusinessBundle:Attachment', 'a', Join::WITH, $queryBuilder->expr()->eq('pa.idAttachment', 'a.id'))
+            ->innerJoin(Attachment::class, 'a', Join::WITH, $queryBuilder->expr()->eq('pa.idAttachment', 'a.id'))
             ->where($queryBuilder->expr()->eq('a.idType', ':attachmentType'))
             ->andWhere($queryBuilder->expr()->eq('pa.idProject', ':project'))
             ->setParameter(':project', $project)
@@ -41,11 +39,11 @@ class ProjectAttachmentRepository extends EntityRepository
         $queryBuilder = $this->getEntityManager()->createQueryBuilder();
         $queryBuilder
             ->select('cat.id AS categoryId, cat.name AS categoryName, pat.name AS typeName, a.id AS attachmentId, a.path, a.originalName, at.downloadable')
-            ->from('UnilendCoreBusinessBundle:Attachment', 'a')
-            ->innerJoin('UnilendCoreBusinessBundle:AttachmentType', 'at', Join::WITH, $queryBuilder->expr()->eq('a.idType', 'at.id'))
-            ->innerJoin('UnilendCoreBusinessBundle:ProjectAttachment', 'pa', Join::WITH, $queryBuilder->expr()->eq('pa.idAttachment', 'a.id'))
-            ->innerJoin('UnilendCoreBusinessBundle:ProjectAttachmentType', 'pat', Join::WITH, $queryBuilder->expr()->eq('pat.idType', 'a.idType'))
-            ->innerJoin('UnilendCoreBusinessBundle:ProjectAttachmentTypeCategory', 'cat', Join::WITH, $queryBuilder->expr()->eq('cat.id', 'pat.idCategory'))
+            ->leftJoin(Attachment::class, 'a')
+            ->innerJoin(AttachmentType::class, 'at', Join::WITH, $queryBuilder->expr()->eq('a.idType', 'at.id'))
+            ->innerJoin(ProjectAttachment::class, 'pa', Join::WITH, $queryBuilder->expr()->eq('pa.idAttachment', 'a.id'))
+            ->innerJoin(ProjectAttachmentType::class, 'pat', Join::WITH, $queryBuilder->expr()->eq('pat.idType', 'a.idType'))
+            ->innerJoin(ProjectAttachmentTypeCategory::class, 'cat', Join::WITH, $queryBuilder->expr()->eq('cat.id', 'pat.idCategory'))
             ->where($queryBuilder->expr()->eq('pa.idProject', ':project'))
             ->orderBy('cat.rank', 'ASC')
             ->addOrderBy('pat.rank', 'ASC')
@@ -57,10 +55,10 @@ class ProjectAttachmentRepository extends EntityRepository
         $queryBuilder = $this->getEntityManager()->createQueryBuilder();
         $queryBuilder
             ->select('-1 AS categoryId, \'Legacy\' AS categoryName, at.label AS typeName, a.id AS attachmentId, a.path, a.originalName, at.downloadable')
-            ->from('UnilendCoreBusinessBundle:Attachment', 'a')
-            ->innerJoin('UnilendCoreBusinessBundle:AttachmentType', 'at', Join::WITH, $queryBuilder->expr()->eq('a.idType', 'at.id'))
-            ->innerJoin('UnilendCoreBusinessBundle:ProjectAttachment', 'pa', Join::WITH, $queryBuilder->expr()->eq('pa.idAttachment', 'a.id'))
-            ->leftJoin('UnilendCoreBusinessBundle:ProjectAttachmentType', 'pat', Join::WITH, $queryBuilder->expr()->eq('pat.idType', 'a.idType'))
+            ->leftJoin(Attachment::class, 'a')
+            ->innerJoin(AttachmentType::class, 'at', Join::WITH, $queryBuilder->expr()->eq('a.idType', 'at.id'))
+            ->innerJoin(ProjectAttachment::class, 'pa', Join::WITH, $queryBuilder->expr()->eq('pa.idAttachment', 'a.id'))
+            ->leftJoin(ProjectAttachmentType::class, 'pat', Join::WITH, $queryBuilder->expr()->eq('pat.idType', 'a.idType'))
             ->where($queryBuilder->expr()->eq('pa.idProject', ':project'))
             ->andWhere($queryBuilder->expr()->isNull('pat.id'))
             ->orderBy('at.label', 'ASC')

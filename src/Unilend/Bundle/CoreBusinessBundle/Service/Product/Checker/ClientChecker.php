@@ -2,9 +2,7 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service\Product\Checker;
 
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Product;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProductAttributeType;
+use Unilend\Entity\{Clients, Product, ProductAttributeType};
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductAttributeManager;
 
 trait ClientChecker

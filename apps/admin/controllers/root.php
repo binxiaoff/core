@@ -1,7 +1,7 @@
 <?php
 
 use Doctrine\ORM\EntityManager;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{LoginConnectionAdmin, Zones};
+use Unilend\Entity\{LoginConnectionAdmin, Zones};
 
 class rootController extends bootstrap
 {

@@ -5,7 +5,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 use Psr\Cache\{
     CacheItemPoolInterface, InvalidArgumentException
 };
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+use Unilend\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\librairies\CacheKeys;
 

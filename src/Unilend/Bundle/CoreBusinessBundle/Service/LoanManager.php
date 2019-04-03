@@ -4,7 +4,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{AcceptedBids, Clients, Embeddable\LendingRate, Loans, UnderlyingContract, UnderlyingContractAttributeType};
+use Unilend\Entity\{AcceptationsLegalDocs, AcceptedBids, Clients, Embeddable\LendingRate, Loans, LoanTransfer, UnderlyingContract, UnderlyingContractAttributeType};
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\ContractAttributeManager;
 
 /**
@@ -74,11 +74,11 @@ class LoanManager
         }
 
         $currentAcceptedTermsOfSale = $this->entityManager
-            ->getRepository('UnilendCoreBusinessBundle:AcceptationsLegalDocs')
+            ->getRepository(AcceptationsLegalDocs::class)
             ->findOneBy(['idClient' => $acceptedBids[0]->getIdBid()->getWallet()->getIdClient()], ['added' => 'DESC']);
 
         $lendingRate = (new LendingRate())
-            ->setType(LendingRate::TYPE_FIXED)
+            ->setType(LendingRate::INDEX_FIXED)
             ->setMargin(round(bcdiv($interests, $loanAmount, 4), 1));
 
         $loan = new Loans();
@@ -109,7 +109,7 @@ class LoanManager
     public function getFormerOwner($loan)
     {
         if ($loan instanceof \loans) {
-            $loan = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Loans')->find($loan->id_loan);
+            $loan = $this->entityManager->getRepository(Loans::class)->find($loan->id_loan);
         }
 
         $loanTransfer = $loan->getIdTransfer();
@@ -128,10 +128,10 @@ class LoanManager
     public function getFirstOwner($loan)
     {
         if ($loan instanceof \loans) {
-            $loan = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Loans')->find($loan->id_loan);
+            $loan = $this->entityManager->getRepository(Loans::class)->find($loan->id_loan);
         }
 
-        $firstTransfer = $this->entityManager->getRepository('UnilendCoreBusinessBundle:LoanTransfer')->findOneBy(['idLoan' => $loan], ['added' => 'ASC']);
+        $firstTransfer = $this->entityManager->getRepository(LoanTransfer::class)->findOneBy(['idLoan' => $loan], ['added' => 'ASC']);
 
         if ($firstTransfer) {
             return $firstTransfer->getIdTransfer()->getClientOrigin();

@@ -5,7 +5,8 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Translation\TranslatorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{BorrowingMotive, Companies, CompanyRating, Partner, ProjectRejectionReason, Projects, ProjectsStatus, ProjectStatusHistoryReason, TaxType, Users};
+use Unilend\Entity\{BorrowingMotive, Companies, CompaniesBilans, CompanyRating, CompanyRatingHistory, Partner, PartnerProduct, ProjectRejectionReason, Projects, ProjectsStatus, ProjectsStatusHistory,
+    ProjectStatusHistoryReason, Settings, TaxType, Users};
 use Unilend\Bundle\CoreBusinessBundle\Service\Eligibility\EligibilityManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\Bundle\FrontBundle\Service\SourceManager;
@@ -178,7 +179,7 @@ class ProjectRequestManager
 
         if (null !== $reason) {
             if (false === empty($reason) && filter_var($reason, FILTER_VALIDATE_INT)) {
-                $reason = $this->entityManager->getRepository('UnilendCoreBusinessBundle:BorrowingMotive')->find($reason);
+                $reason = $this->entityManager->getRepository(BorrowingMotive::class)->find($reason);
             }
 
             if (false === $reason instanceof BorrowingMotive) {
@@ -243,7 +244,7 @@ class ProjectRequestManager
         $createdInBO = $user->getIdUser() === Users::USER_ID_FRONT ? false : true;
         $reasonId    = null === $reason ? null : $reason->getIdMotive();
 
-        $product = $this->entityManager->getRepository('UnilendCoreBusinessBundle:PartnerProduct')->findBy(['idPartner' => $partner]);
+        $product = $this->entityManager->getRepository(PartnerProduct::class)->findBy(['idPartner' => $partner]);
         $product = $product[array_rand($product)]->getIdProduct();
 
         $project = new Projects();
@@ -283,7 +284,7 @@ class ProjectRequestManager
     {
         /** @var \company_rating $companyRating */
         $companyRating                  = $this->entityManagerSimulator->getRepository('company_rating');
-        $companyRatingHistoryRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CompanyRatingHistory');
+        $companyRatingHistoryRepository = $this->entityManager->getRepository(CompanyRatingHistory::class);
         $lastCompanyRatingHistory       = $companyRatingHistoryRepository->findOneBy(
             ['idCompany' => $company->getIdCompany()],
             ['added' => 'DESC']
@@ -325,20 +326,20 @@ class ProjectRequestManager
         return null;
 
         if ($projectToCheck instanceof \projects) {
-            $project = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($projectToCheck->id_project);
+            $project = $this->entityManager->getRepository(Projects::class)->find($projectToCheck->id_project);
         } else {
             $project = $projectToCheck;
         }
         $company     = $project->getIdCompany();
         $eligibility = $this->checkCompanyRisk($company, $userId, $project);
 
-        $companyRatingHistoryRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CompanyRatingHistory');
+        $companyRatingHistoryRepository = $this->entityManager->getRepository(CompanyRatingHistory::class);
         $lastCompanyRatingHistory       = $companyRatingHistoryRepository->findOneBy(
             ['idCompany' => $company->getIdCompany()],
             ['added' => 'DESC']
         );
 
-        $lastBalance = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CompaniesBilans')
+        $lastBalance = $this->entityManager->getRepository(CompaniesBilans::class)
             ->findBy(['idCompany' => $company->getIdCompany()], ['clotureExerciceFiscal' => 'DESC'], 1);
 
         if (false === empty($lastBalance)) {
@@ -382,7 +383,7 @@ class ProjectRequestManager
                 $this->projectStatusManager->addProjectStatus($userId, $status, $project, 0, $motive);
                 break;
             default:
-                $rejectionReasons = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRejectionReason')
+                $rejectionReasons = $this->entityManager->getRepository(ProjectRejectionReason::class)
                     ->findBy(['label' => $motive]);
                 try {
                     $result = $this->projectStatusManager->rejectProject($project, ProjectsStatus::STATUS_CANCELLED, $rejectionReasons, $userId);
@@ -419,7 +420,7 @@ class ProjectRequestManager
     {
         try {
             if ($project instanceof \projects) {
-                $project = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($project->id_project);
+                $project = $this->entityManager->getRepository(Projects::class)->find($project->id_project);
             }
 
             if (false === empty($project->getIdPartner())) {
@@ -428,7 +429,7 @@ class ProjectRequestManager
                 if (count($products) === 1 && isset($products[0]) && $products[0] instanceof \product) {
                     $project->setIdProduct($products[0]->id_product);
 
-                    $partnerProduct = $this->entityManager->getRepository('UnilendCoreBusinessBundle:PartnerProduct')
+                    $partnerProduct = $this->entityManager->getRepository(PartnerProduct::class)
                         ->findOneBy(['idPartner' => $project->getIdPartner(), 'idProduct' => $products[0]->id_product]);
 
                     if (null !== $partnerProduct) {
@@ -442,7 +443,7 @@ class ProjectRequestManager
 
                 if (empty($products) && $addProjectStatus) {
                     $rejectionReason = $this->entityManager
-                        ->getRepository('UnilendCoreBusinessBundle:ProjectRejectionReason')
+                        ->getRepository(ProjectRejectionReason::class)
                         ->findBy(['label' => ProjectRejectionReason::PRODUCT_NOT_FOUND]);
                     try {
                         $this->projectStatusManager->rejectProject($project, ProjectsStatus::STATUS_CANCELLED, $rejectionReason, $userId);
@@ -524,7 +525,7 @@ class ProjectRequestManager
         }
 
         $message                  = $this->translator->trans('project-request_end-page-external-rating-rejection-default-message');
-        $lastProjectStatusHistory = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatusHistory')
+        $lastProjectStatusHistory = $this->entityManager->getRepository(ProjectsStatusHistory::class)
             ->findOneBy(['idProject' => $project], ['added' => 'DESC', 'idProjectStatusHistory' => 'DESC']);
 
         if (null === $lastProjectStatusHistory) {
@@ -570,9 +571,9 @@ class ProjectRequestManager
             $project = $this->entityManager->getRepository('Projects')->find($project->id_project);
         }
         $translation              = 'partner-project-request_not-eligible-reason-no-product';
-        $lastProjectStatusHistory = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatusHistory')
+        $lastProjectStatusHistory = $this->entityManager->getRepository(ProjectsStatusHistory::class)
             ->findOneBy(['idProject' => $project], ['added' => 'DESC', 'idProjectStatusHistory' => 'DESC']);
-        $borrowerServiceEmail     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')
+        $borrowerServiceEmail     = $this->entityManager->getRepository(Settings::class)
             ->findOneBy(['type' => 'Adresse emprunteur']);
 
         if (null === $lastProjectStatusHistory) {

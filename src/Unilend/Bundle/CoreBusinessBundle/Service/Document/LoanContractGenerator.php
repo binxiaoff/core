@@ -8,7 +8,8 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\Asset\Packages;
 use Symfony\Component\Filesystem\Filesystem;
 use Twig\Environment;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, Loans, ProjectsStatus, TaxType, UnderlyingContract};
+use Unilend\Entity\{AddressType, Blocs, BlocsElements, ClientAddress, Companies, CompaniesActifPassif, CompaniesBilans, CompanyAddress, Echeanciers, Elements, Loans, ProjectsStatus,
+    ProjectsStatusHistory, TaxType, UnderlyingContract};
 use Unilend\Bundle\CoreBusinessBundle\Service\LoanManager;
 
 class LoanContractGenerator implements DocumentGeneratorInterface
@@ -152,11 +153,11 @@ class LoanContractGenerator implements DocumentGeneratorInterface
 
         if (UnderlyingContract::CONTRACT_BDC === $loan->getIdTypeContract()->getLabel()) {
             if (false === empty($loan->getProject()->getIdDernierBilan())) {
-                $annualAccountsRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CompaniesBilans');
+                $annualAccountsRepository = $this->entityManager->getRepository(CompaniesBilans::class);
                 $lastAnnualAccounts       = $annualAccountsRepository->find($loan->getProject()->getIdDernierBilan());
 
                 if (null !== $lastAnnualAccounts) {
-                    $assetsDebtsRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CompaniesActifPassif');
+                    $assetsDebtsRepository = $this->entityManager->getRepository(CompaniesActifPassif::class);
 
                     $template['finance'] = [
                         'lastAnnualAccountsDate' => $lastAnnualAccounts->getClotureExerciceFiscal()->format('d/m/Y'),
@@ -182,7 +183,7 @@ class LoanContractGenerator implements DocumentGeneratorInterface
         $interests         = 0;
         $loanAmount        = bcdiv($loan->getAmount(), 100);
         $repaymentSchedule = $this->entityManager
-            ->getRepository('UnilendCoreBusinessBundle:Echeanciers')
+            ->getRepository(Echeanciers::class)
             ->findBy(['idLoan' => $loan], ['ordre' => 'ASC']);
 
         foreach ($repaymentSchedule as $repayment) {
@@ -192,17 +193,17 @@ class LoanContractGenerator implements DocumentGeneratorInterface
         $repaymentAmount = bcdiv(bcadd($repaymentSchedule[0]->getCapital(), $repaymentSchedule[0]->getInterets()), 100, 5);
 
         $repaymentStatus = $this->entityManager
-            ->getRepository('UnilendCoreBusinessBundle:ProjectsStatus')
+            ->getRepository(ProjectsStatus::class)
             ->findOneBy(['status' => ProjectsStatus::STATUS_REPAYMENT]);
 
         $repaymentStatusHistory = $this->entityManager
-            ->getRepository('UnilendCoreBusinessBundle:ProjectsStatusHistory')
+            ->getRepository(ProjectsStatusHistory::class)
             ->findOneBy(
                 ['idProject' => $loan->getProject()->getIdProject(), 'idProjectStatus' => $repaymentStatus],
                 ['added' => 'ASC', 'idProjectStatusHistory' => 'ASC']
             );
 
-        $vatRate                    = $this->entityManager->getRepository('UnilendCoreBusinessBundle:TaxType')->findOneBy(['idTaxType' => TaxType::TYPE_VAT]);
+        $vatRate                    = $this->entityManager->getRepository(TaxType::class)->findOneBy(['idTaxType' => TaxType::TYPE_VAT]);
         $fundsReleaseCommissionRate = round(bcdiv($loan->getProject()->getCommissionRateFunds(), 100, 4), 2);
         $repaymentCommissionRate    = round(bcdiv($loan->getProject()->getCommissionRateRepayment(), 100, 4), 2);
         $repaymentCommission        = \repayment::getRepaymentCommission($loanAmount, $loan->getProject()->getPeriod(), $repaymentCommissionRate, $vatRate->getRate());
@@ -238,14 +239,14 @@ class LoanContractGenerator implements DocumentGeneratorInterface
 
         $content = [];
         $block   = $this->entityManager
-            ->getRepository('UnilendCoreBusinessBundle:Blocs')
+            ->getRepository(Blocs::class)
             ->findOneBy(['slug' => $loan->getIdTypeContract()->getBlockSlug()]);
 
         $blockElements = $this->entityManager
-            ->getRepository('UnilendCoreBusinessBundle:BlocsElements')
+            ->getRepository(BlocsElements::class)
             ->findBy(['idBloc' => $block->getIdBloc()]);
 
-        $elementRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Elements');
+        $elementRepository = $this->entityManager->getRepository(Elements::class);
 
         foreach ($blockElements as $blockElement) {
             $element                      = $elementRepository->find($blockElement->getIdElement());
@@ -298,7 +299,7 @@ class LoanContractGenerator implements DocumentGeneratorInterface
             $address = $client->getIdAddress();
         } else {
             $company = $this->entityManager
-                ->getRepository('UnilendCoreBusinessBundle:Companies')
+                ->getRepository(Companies::class)
                 ->findOneBy(['idClientOwner' => $client]);
 
             $address = $company->getIdAddress();
@@ -313,11 +314,11 @@ class LoanContractGenerator implements DocumentGeneratorInterface
 
             if ($client->isNaturalPerson()) {
                 $address = $this->entityManager
-                    ->getRepository('UnilendCoreBusinessBundle:ClientAddress')
+                    ->getRepository(ClientAddress::class)
                     ->findLastModifiedNotArchivedAddressByType($client, AddressType::TYPE_MAIN_ADDRESS);
             } else {
                 $address = $this->entityManager
-                    ->getRepository('UnilendCoreBusinessBundle:CompanyAddress')
+                    ->getRepository(CompanyAddress::class)
                     ->findLastModifiedNotArchivedAddressByType($company, AddressType::TYPE_MAIN_ADDRESS);
             }
         }

@@ -57,7 +57,7 @@
                 <td>
                     <select id="bank_account" class="input_large" name="bank_account">
                         <?php
-                        /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\BankAccount $bankAccount */
+                        /** @var \Unilend\Entity\BankAccount $bankAccount */
                         foreach ($this->bankAccounts as $bankAccount) :
                             $beneficiaryCompany = $this->companyRepository->findOneBy(['idClientOwner' => $bankAccount->getIdClient()->getIdClient()]);
                             ?>

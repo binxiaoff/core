@@ -2,9 +2,7 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\Checker;
 
-use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
-use Unilend\Bundle\CoreBusinessBundle\Entity\UnderlyingContract;
-use Unilend\Bundle\CoreBusinessBundle\Entity\UnderlyingContractAttributeType;
+use Unilend\Entity\{Companies, UnderlyingContract, UnderlyingContractAttributeType};
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\ContractAttributeManager;
 
 trait CompanyChecker

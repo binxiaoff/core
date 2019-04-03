@@ -3,7 +3,7 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Service\Product\Checker;
 
 use Doctrine\ORM\EntityManagerInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{Companies, Product, ProductAttributeType, ProjectsStatus};
+use Unilend\Entity\{Companies, Product, ProductAttributeType, Projects, ProjectsStatus, ProjectsStatusHistory, Xerfi};
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductAttributeManager;
 
 trait CompanyChecker
@@ -115,7 +115,7 @@ trait CompanyChecker
             return null;
         }
 
-        $xerfiScore = $entityManager->getRepository('UnilendCoreBusinessBundle:Xerfi')->find($company->getCodeNaf());
+        $xerfiScore = $entityManager->getRepository(Xerfi::class)->find($company->getCodeNaf());
         if ($xerfiScore) {
             return $xerfiScore->getScore() <= $maxXerfiScore[0];
         }
@@ -139,9 +139,9 @@ trait CompanyChecker
             return true;
         }
 
-        $projectRepository              = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
-        $productRepository              = $entityManager->getRepository('UnilendCoreBusinessBundle:Product');
-        $projectStatusHistoryRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatusHistory');
+        $projectRepository              = $entityManager->getRepository(Projects::class);
+        $productRepository              = $entityManager->getRepository(Product::class);
+        $projectStatusHistoryRepository = $entityManager->getRepository(ProjectsStatusHistory::class);
         $projects                       = $projectRepository->findBySiren($company->getSiren());
 
         foreach ($projects as $project) {
@@ -182,9 +182,9 @@ trait CompanyChecker
             return true;
         }
 
-        $projectRepository              = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
-        $productRepository              = $entityManager->getRepository('UnilendCoreBusinessBundle:Product');
-        $projectStatusHistoryRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatusHistory');
+        $projectRepository              = $entityManager->getRepository(Projects::class);
+        $productRepository              = $entityManager->getRepository(Product::class);
+        $projectStatusHistoryRepository = $entityManager->getRepository(ProjectsStatusHistory::class);
 
         $projects = $projectRepository->findBySiren($company->getSiren());
 
@@ -221,9 +221,9 @@ trait CompanyChecker
             return true;
         }
 
-        $projectRepository              = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
-        $productRepository              = $entityManager->getRepository('UnilendCoreBusinessBundle:Product');
-        $projectStatusHistoryRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatusHistory');
+        $projectRepository              = $entityManager->getRepository(Projects::class);
+        $productRepository              = $entityManager->getRepository(Product::class);
+        $projectStatusHistoryRepository = $entityManager->getRepository(ProjectsStatusHistory::class);
 
         $projects = $projectRepository->findBySiren($company->getSiren());
 

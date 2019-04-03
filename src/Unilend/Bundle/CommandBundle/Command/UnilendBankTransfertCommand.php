@@ -5,7 +5,7 @@ namespace Unilend\Bundle\CommandBundle\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
-use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
+use Unilend\Entity\{Wallet, WalletType};
 
 class UnilendBankTransfertCommand extends ContainerAwareCommand
 {
@@ -25,8 +25,8 @@ class UnilendBankTransfertCommand extends ContainerAwareCommand
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $entityManager     = $this->getContainer()->get('doctrine.orm.entity_manager');
-        $unilendWalletType = $entityManager->getRepository('UnilendCoreBusinessBundle:WalletType')->findOneBy(['label' => WalletType::UNILEND]);
-        $unilendWallet     = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->findOneBy(['idType' => $unilendWalletType]);
+        $unilendWalletType = $entityManager->getRepository(WalletType::class)->findOneBy(['label' => WalletType::UNILEND]);
+        $unilendWallet     = $entityManager->getRepository(Wallet::class)->findOneBy(['idType' => $unilendWalletType]);
         $total             = $unilendWallet->getAvailableBalance();
 
         if ($total > 0) {

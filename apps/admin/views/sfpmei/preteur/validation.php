@@ -18,18 +18,18 @@
             <tbody>
                 <?php foreach ($this->attachmentTypes as $attachmentType) : ?>
                     <?php
-                    /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType $attachmentType */
+                    /** @var \Unilend\Entity\AttachmentType $attachmentType */
                     $currentAttachment     = null;
                     $greenPointAttachment  = null;
                     $greenpointLabel       = 'Non Contrôlé par GreenPoint';
                     $greenpointColor       = 'danger';
                     $greenpointFinalStatus = '';
 
-                    /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Attachment $attachment */
+                    /** @var \Unilend\Entity\Attachment $attachment */
                     foreach ($this->attachments as $attachment) {
                         if ($attachment->getType() === $attachmentType) {
                             $currentAttachment = $attachment;
-                            /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\GreenpointAttachment $greenPointAttachment */
+                            /** @var \Unilend\Entity\GreenpointAttachment $greenPointAttachment */
                             $greenPointAttachment = $currentAttachment->getGreenpointAttachment();
                             break;
                         }
@@ -41,7 +41,7 @@
 
                     if ($greenPointAttachment) {
                         $greenpointLabel = empty($greenPointAttachment->getValidationStatusLabel()) ? 'Erreur d\'appel GreenPoint' : $greenPointAttachment->getValidationStatusLabel();
-                        if (\Unilend\Bundle\CoreBusinessBundle\Entity\GreenpointAttachment::STATUS_VALIDATION_VALID === $greenPointAttachment->getValidationStatus()) {
+                        if (\Unilend\Entity\GreenpointAttachment::STATUS_VALIDATION_VALID === $greenPointAttachment->getValidationStatus()) {
                             $greenpointFinalStatus = 'Statut définitif';
                         } else {
                             $greenpointFinalStatus = 'Statut peut être modifié par un retour asychrone';
@@ -101,7 +101,7 @@
                 </thead>
                 <tbody>
                     <?php foreach ($this->transfers as $transfer) : ?>
-                        <?php /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Transfer $transfer */ ?>
+                        <?php /** @var \Unilend\Entity\Transfer $transfer */ ?>
                         <?php foreach ($transfer->getAttachments() as $transferAttachment) : ?>
                             <tr>
                                 <th><?= $transferAttachment->getAttachment()->getType()->getLabel() ?></th>

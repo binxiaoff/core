@@ -5,7 +5,9 @@ namespace Unilend\Bundle\CommandBundle\Command;
 use Doctrine\ORM\EntityManager;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\{Input\InputInterface, Output\OutputInterface};
-use Unilend\Bundle\CoreBusinessBundle\Entity\Echeanciers;
+use Unilend\Entity\Echeanciers;
+use Unilend\Entity\EcheanciersEmprunteur;
+use Unilend\Entity\Settings;
 
 class CheckBorrowerDebitCommand extends ContainerAwareCommand
 {
@@ -26,10 +28,10 @@ class CheckBorrowerDebitCommand extends ContainerAwareCommand
     {
         /** @var EntityManager $entityManager */
         $entityManager = $this->getContainer()->get('doctrine.orm.entity_manager');
-        $payment       = $entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur');
+        $payment       = $entityManager->getRepository(EcheanciersEmprunteur::class);
 
         $debitList  = '';
-        $schedules  = $entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers')->findScheduledToday();
+        $schedules  = $entityManager->getRepository(Echeanciers::class)->findScheduledToday();
         $scheme     = $this->getContainer()->getParameter('router.request_context.scheme');
         $host       = $this->getContainer()->getParameter('url.host_admin');
         $projectUrl = $scheme . '://' . $host . '/dossiers/edit/';
@@ -59,7 +61,7 @@ class CheckBorrowerDebitCommand extends ContainerAwareCommand
         try {
             $emailType   = 'notification-prelevement-emprunteur';
             $settingType = 'Adresse notification check remb preteurs';
-            $setting     = $entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => $settingType]);
+            $setting     = $entityManager->getRepository(Settings::class)->findOneBy(['type' => $settingType]);
 
             if ($setting && false === empty($setting->getValue())) {
                 $message = $this->getContainer()->get('unilend.swiftmailer.message_provider')

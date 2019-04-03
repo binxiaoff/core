@@ -5,7 +5,7 @@ namespace Unilend\Bundle\FrontBundle\Controller\Endpoint;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\{Request, Response};
 use Symfony\Component\Routing\Annotation\Route;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Backpayline;
+use Unilend\Entity\Backpayline;
 
 class PaylineController extends Controller
 {

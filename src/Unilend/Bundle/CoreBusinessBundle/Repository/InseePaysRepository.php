@@ -4,7 +4,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\NonUniqueResultException;
-use Unilend\Bundle\CoreBusinessBundle\Entity\InseePays;
+use Unilend\Entity\InseePays;
 
 class InseePaysRepository extends EntityRepository
 {

@@ -10,6 +10,7 @@ use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Unilend\Entity\WalletBalanceHistory;
 
 class FeedsMonthRepaymentsCommand extends ContainerAwareCommand
 {
@@ -46,7 +47,7 @@ class FeedsMonthRepaymentsCommand extends ContainerAwareCommand
 
         try {
             $entityManager = $this->getContainer()->get('doctrine.orm.entity_manager');
-            $result        = $entityManager->getRepository('UnilendCoreBusinessBundle:WalletBalanceHistory')->getMonthlyRepayments($month);
+            $result        = $entityManager->getRepository(WalletBalanceHistory::class)->getMonthlyRepayments($month);
 
             if (false === empty($result)) {
                 $header = array_keys(current($result));

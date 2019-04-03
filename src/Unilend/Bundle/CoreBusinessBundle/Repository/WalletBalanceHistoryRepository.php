@@ -7,7 +7,8 @@ use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query;
 use Doctrine\ORM\Query\Expr\Join;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{Clients, Echeanciers, OperationType, Wallet, WalletBalanceHistory, WalletType};
+use Unilend\Entity\{Clients, Echeanciers, Operation, OperationSubType, OperationType, ProjectRepaymentTask, ProjectRepaymentTaskLog, Receptions, SepaRejectionReason, Wallet, WalletBalanceHistory,
+    WalletType};
 use Unilend\Bundle\CoreBusinessBundle\Service\LenderOperationsManager;
 use Unilend\librairies\CacheKeys;
 
@@ -186,11 +187,11 @@ class WalletBalanceHistoryRepository extends EntityRepository
                 CASE WHEN ot.label in (:repaymentTypes) THEN prt.id WHEN ot.label = :loan THEN CONCAT(\'loan_\', IDENTITY(o.idProject)) ELSE o.id END AS HIDDEN forGroupBy
                 '
         )
-            ->leftJoin('UnilendCoreBusinessBundle:Receptions', 'r', Join::WITH, 'o.idWireTransferIn = r.idReception')
-            ->leftJoin('UnilendCoreBusinessBundle:SepaRejectionReason', 'srr', Join::WITH, 'r.rejectionIsoCode = srr.isoCode')
-            ->leftJoin('UnilendCoreBusinessBundle:Echeanciers', 'e', Join::WITH, 'o.idRepaymentSchedule = e.idEcheancier')
-            ->leftJoin('UnilendCoreBusinessBundle:ProjectRepaymentTaskLog', 'prtl', Join::WITH, 'o.idRepaymentTaskLog = prtl.id')
-            ->leftJoin('UnilendCoreBusinessBundle:ProjectRepaymentTask', 'prt', Join::WITH, 'prt.id = prtl.idTask')
+            ->leftJoin(Receptions::class, 'r', Join::WITH, 'o.idWireTransferIn = r.idReception')
+            ->leftJoin(SepaRejectionReason::class, 'srr', Join::WITH, 'r.rejectionIsoCode = srr.isoCode')
+            ->leftJoin(Echeanciers::class, 'e', Join::WITH, 'o.idRepaymentSchedule = e.idEcheancier')
+            ->leftJoin(ProjectRepaymentTaskLog::class, 'prtl', Join::WITH, 'o.idRepaymentTaskLog = prtl.id')
+            ->leftJoin(ProjectRepaymentTask::class, 'prt', Join::WITH, 'prt.id = prtl.idTask')
             ->addGroupBy('forGroupBy')
             ->setParameter('repaymentTypes', [
                 OperationType::CAPITAL_REPAYMENT,
@@ -264,9 +265,9 @@ class WalletBalanceHistoryRepository extends EntityRepository
                 IDENTITY(o.idProject) AS idProject, 
                 DATE(o.added) AS date'
             )
-            ->innerJoin('UnilendCoreBusinessBundle:Operation', 'o', Join::WITH, 'o.id = wbh.idOperation')
-            ->innerJoin('UnilendCoreBusinessBundle:OperationType', 'ot', Join::WITH, 'o.idType = ot.id')
-            ->leftJoin('UnilendCoreBusinessBundle:OperationSubType', 'ost', Join::WITH, 'o.idSubType = ost.id')
+            ->innerJoin(Operation::class, 'o', Join::WITH, 'o.id = wbh.idOperation')
+            ->innerJoin(OperationType::class, 'ot', Join::WITH, 'o.idType = ot.id')
+            ->leftJoin(OperationSubType::class, 'ost', Join::WITH, 'o.idSubType = ost.id')
             ->where('wbh.idWallet = :idWallet')
             ->setParameter('idWallet', $idWallet)
             ->orderBy('wbh.id', 'DESC');

@@ -4,7 +4,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{CompanyStatus, LenderStatistic, ProjectsStatus, UnilendStats, Wallet};
+use Unilend\Entity\{CompanyStatus, CompanyStatusHistory, LenderStatistic, ProjectsStatus, ProjectsStatusHistory, UnilendStats, Wallet};
 use Unilend\Bundle\CoreBusinessBundle\Repository\WalletRepository;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 
@@ -110,7 +110,7 @@ class IRRManager
      */
     public function calculateIRRForLender(Wallet $wallet)
     {
-        $lenderStatisticRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:LenderStatistic');
+        $lenderStatisticRepository = $this->entityManager->getRepository(LenderStatistic::class);
         $valuesIRR                 = $lenderStatisticRepository->getValuesForIRR($wallet->getId());
 
         return $this->calculateIRR($valuesIRR);
@@ -123,7 +123,7 @@ class IRRManager
     {
         set_time_limit(1000);
 
-        $unilendStatsRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:UnilendStats');
+        $unilendStatsRepository = $this->entityManager->getRepository(UnilendStats::class);
         $valuesIRR              = $unilendStatsRepository->getDataForUnilendIRR();
 
         return $this->calculateIRR($valuesIRR);
@@ -137,12 +137,12 @@ class IRRManager
     public function IRRUnilendNeedsToBeRecalculated(\DateTime $date)
     {
         /** @var WalletRepository $walletRepository */
-        $walletRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet');
+        $walletRepository = $this->entityManager->getRepository(Wallet::class);
 
         $lendersWithLatePayments   = $walletRepository->getLendersWalletsWithLatePaymentsForIRR();
-        $projectStatusChanges = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatusHistory')
+        $projectStatusChanges = $this->entityManager->getRepository(ProjectsStatusHistory::class)
             ->getProjectStatusChangesOnDate($date, self::PROJECT_STATUS_TRIGGERING_CHANGE);
-        $companyStatusChanges      = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CompanyStatusHistory')
+        $companyStatusChanges      = $this->entityManager->getRepository(CompanyStatusHistory::class)
             ->getCompanyStatusChangesOnDate($date, self::COMPANY_STATUS_TRIGGERING_CHANGE);
 
         return count($projectStatusChanges) > 0 || count($lendersWithLatePayments) > 0 || count($companyStatusChanges) > 0;
@@ -178,7 +178,7 @@ class IRRManager
      */
     public function getLastUnilendIRR()
     {
-        $unilendStatsRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:UnilendStats');
+        $unilendStatsRepository = $this->entityManager->getRepository(UnilendStats::class);
 
         return $unilendStatsRepository->findOneBy(['typeStat' => UnilendStats::TYPE_STAT_IRR], ['added' => 'DESC']);
     }
@@ -193,7 +193,7 @@ class IRRManager
     {
         set_time_limit(1000);
 
-        $unilendStatsRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:UnilendStats');
+        $unilendStatsRepository = $this->entityManager->getRepository(UnilendStats::class);
         $valuesIRR              = $unilendStatsRepository->getIRRValuesByCohort($cohortStartDate, $cohortEndDate);
 
         return $this->calculateIRR($valuesIRR);
@@ -238,7 +238,7 @@ class IRRManager
     {
         set_time_limit(1000);
 
-        $unilendStatsRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:UnilendStats');
+        $unilendStatsRepository = $this->entityManager->getRepository(UnilendStats::class);
         $valuesIRR              = $unilendStatsRepository->getOptimisticIRRValuesByCohort($cohortStartDate, $cohortEndDate);
 
         return $this->calculateIRR($valuesIRR);
@@ -251,7 +251,7 @@ class IRRManager
     {
         set_time_limit(1000);
 
-        $unilendStatsRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:UnilendStats');
+        $unilendStatsRepository = $this->entityManager->getRepository(UnilendStats::class);
         $valuesIRR              = $unilendStatsRepository->getOptimisticIRRValuesUntilDateLimit(new \DateTime('NOW'));
 
         return $this->calculateIRR($valuesIRR);
@@ -302,7 +302,7 @@ class IRRManager
      */
     public function getLastOptimisticUnilendIRR()
     {
-        $unilendStatsRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:UnilendStats');
+        $unilendStatsRepository = $this->entityManager->getRepository(UnilendStats::class);
 
         return $unilendStatsRepository->findOneBy(['typeStat' => UnilendStats::TYPE_STAT_MAX_IRR], ['added' => 'DESC']);
     }

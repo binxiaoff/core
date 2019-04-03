@@ -2,12 +2,8 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\Validator;
 
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectContractAssessment;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
-use Unilend\Bundle\CoreBusinessBundle\Entity\UnderlyingContract;
-use Unilend\Bundle\CoreBusinessBundle\Entity\UnderlyingContractAttributeType;
-use Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\Checker\CompanyChecker;
-use Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\Checker\ProjectChecker;
+use Unilend\Entity\{ProjectContractAssessment, Projects, UnderlyingContract, UnderlyingContractAttributeType};
+use Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\Checker\{CompanyChecker, ProjectChecker};
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\ContractAttributeManager;
 use Doctrine\ORM\EntityManagerInterface;
 
@@ -39,7 +35,7 @@ class ProjectValidator
      */
     public function validate(Projects $project, UnderlyingContract $contract)
     {
-        $contractAttributeTypes = $this->entityManager->getRepository('UnilendCoreBusinessBundle:UnderlyingContractAttributeType')->findAll();
+        $contractAttributeTypes = $this->entityManager->getRepository(UnderlyingContractAttributeType::class)->findAll();
 
         foreach ($contractAttributeTypes as $contractAttributeType) {
             if (false === $this->check($project, $contract, $contractAttributeType)) {
@@ -86,7 +82,7 @@ class ProjectValidator
      */
     private function logCheck(Projects $project, UnderlyingContract $contract, UnderlyingContractAttributeType $contractAttributeType, $checkResult)
     {
-        $assessment = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectContractAssessment')->findOneBy([
+        $assessment = $this->entityManager->getRepository(ProjectContractAssessment::class)->findOneBy([
             'idProject'               => $project,
             'idContract'              => $contract,
             'idContractAttributeType' => $contractAttributeType

@@ -7,9 +7,7 @@ use Symfony\Component\Console\Input\{
     InputArgument, InputInterface, InputOption
 };
 use Symfony\Component\Console\Output\OutputInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    OperationSubType, OperationType, TaxType, UnderlyingContract, Wallet, WalletBalanceHistory
-};
+use Unilend\Entity\{Operation, OperationSubType, OperationType, Settings, TaxType, UnderlyingContract, Wallet, WalletBalanceHistory};
 
 class FeedsFiscalStateCommand extends ContainerAwareCommand
 {
@@ -31,10 +29,10 @@ class FeedsFiscalStateCommand extends ContainerAwareCommand
     protected function execute(InputInterface $input, OutputInterface $output): void
     {
         $entityManager       = $this->getContainer()->get('doctrine.orm.entity_manager');
-        $operationRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
+        $operationRepository = $entityManager->getRepository(Operation::class);
 
         /** @var TaxType[] $frenchTaxes */
-        $frenchTaxes = $entityManager->getRepository('UnilendCoreBusinessBundle:TaxType')->findBy(['country' => 'fr']);
+        $frenchTaxes = $entityManager->getRepository(TaxType::class)->findBy(['country' => 'fr']);
         $taxRate     = [];
         foreach ($frenchTaxes as $tax) {
             $taxRate[$tax->getIdTaxType()] = $tax->getRate();
@@ -106,7 +104,7 @@ class FeedsFiscalStateCommand extends ContainerAwareCommand
 
         foreach ($interestsRawData as $row) {
             /** @var UnderlyingContract $contract */
-            $contract = $entityManager->getRepository('UnilendCoreBusinessBundle:UnderlyingContract')->find($row['id_type_contract']);
+            $contract = $entityManager->getRepository(UnderlyingContract::class)->find($row['id_type_contract']);
             if ('person' == $row['client_type'] && 'fr' == $row['fiscal_residence'] && 'taxable' == $row['exemption_status']) {
                 switch ($contract->getLabel()) {
                     case UnderlyingContract::CONTRACT_BDC:
@@ -137,7 +135,7 @@ class FeedsFiscalStateCommand extends ContainerAwareCommand
         $regularisedInterestsRawData = $operationRepository->getInterestFiscalState($firstDayOfLastMonth, $lastDayOfLastMonth, true);
         foreach ($regularisedInterestsRawData as $row) {
             /** @var UnderlyingContract $contract */
-            $contract = $entityManager->getRepository('UnilendCoreBusinessBundle:UnderlyingContract')->find($row['id_type_contract']);
+            $contract = $entityManager->getRepository(UnderlyingContract::class)->find($row['id_type_contract']);
             if ('person' == $row['client_type'] && 'fr' == $row['fiscal_residence'] && 'taxable' == $row['exemption_status']) {
                 switch ($contract->getLabel()) {
                     case UnderlyingContract::CONTRACT_BDC:
@@ -218,7 +216,7 @@ class FeedsFiscalStateCommand extends ContainerAwareCommand
             return;
         }
 
-        $recipientSetting = $entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Adresse notification etat fiscal']);
+        $recipientSetting = $entityManager->getRepository(Settings::class)->findOneBy(['type' => 'Adresse notification etat fiscal']);
         $url              = $this->getContainer()->getParameter('router.request_context.scheme') . '://' . $this->getContainer()->getParameter('url.host_default');
         $keywords         = ['$surl' => $url, '$url' => $url];
 
@@ -308,10 +306,10 @@ class FeedsFiscalStateCommand extends ContainerAwareCommand
         $totalTaxAmount    = 0;
 
         /** @var Wallet[] $taxWallets */
-        $taxWallets = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getTaxWallets();
+        $taxWallets = $entityManager->getRepository(Wallet::class)->getTaxWallets();
         foreach ($taxWallets as $wallet) {
             /** @var WalletBalanceHistory $lastMonthWalletHistory */
-            $lastMonthWalletHistory = $entityManager->getRepository('UnilendCoreBusinessBundle:WalletBalanceHistory')->getBalanceOfTheDay($wallet, $lastDayOfLastMonth);
+            $lastMonthWalletHistory = $entityManager->getRepository(WalletBalanceHistory::class)->getBalanceOfTheDay($wallet, $lastDayOfLastMonth);
             if (null === $lastMonthWalletHistory) {
                 $logger->error('Could not get the wallet balance for ' . $wallet->getIdType()->getLabel(), ['class' => __CLASS__, 'function' => __FUNCTION__]);
                 continue;

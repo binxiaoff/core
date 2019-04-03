@@ -4,7 +4,7 @@ namespace Unilend\Bundle\FrontBundle\Twig;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{Clients, Partner, Wallet, WalletType};
+use Unilend\Entity\{Clients, Partner, Wallet, WalletType};
 use Unilend\Bundle\CoreBusinessBundle\Service\{LenderManager, PartnerManager};
 use Unilend\Bundle\FrontBundle\Service\NotificationDisplayManager;
 
@@ -274,7 +274,7 @@ class ClientExtension extends \Twig_Extension
         }
 
         /** @var Wallet $wallet */
-        $wallet = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, $walletType);
+        $wallet = $this->entityManager->getRepository(Wallet::class)->getWalletByType($client, $walletType);
 
         return (float) $wallet->getAvailableBalance();
     }

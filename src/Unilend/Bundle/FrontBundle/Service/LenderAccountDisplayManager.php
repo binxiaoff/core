@@ -5,7 +5,7 @@ namespace Unilend\Bundle\FrontBundle\Service;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Cache\CacheItemPoolInterface;
 use Symfony\Component\Translation\TranslatorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{Bids, Clients, Projects, WalletType};
+use Unilend\Entity\{Bids, Clients, Loans, Projects, Wallet, WalletType};
 use Unilend\Bundle\CoreBusinessBundle\Service\{CIPManager, LocationManager, Product\ProductManager, Simulator\EntityManager as EntityManagerSimulator};
 use Unilend\librairies\CacheKeys;
 
@@ -67,7 +67,7 @@ class LenderAccountDisplayManager
         if (false === $client->isLender()) {
             throw new \Exception('Client ' . $client->getIdClient() . ' is not a Lender');
         }
-        $wallet = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
+        $wallet = $this->entityManager->getRepository(Wallet::class)->getWalletByType($client, WalletType::LENDER);
 
         /** @var \bids $bids */
         $bids       = $this->entityManagerSimulator->getRepository('bids');
@@ -113,7 +113,7 @@ class LenderAccountDisplayManager
         if (false === $client->isLender()) {
             throw new \Exception('Client ' . $client->getIdClient() . ' is not a Lender');
         }
-        $wallet = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
+        $wallet = $this->entityManager->getRepository(Wallet::class)->getWalletByType($client, WalletType::LENDER);
 
         /** @var \loans $loans */
         $loans = $this->entityManagerSimulator->getRepository('loans');
@@ -136,7 +136,7 @@ class LenderAccountDisplayManager
         if (false === $client->isLender()) {
             throw new \Exception('Client ' . $client->getIdClient() . ' is not a Lender');
         }
-        $wallet = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
+        $wallet = $this->entityManager->getRepository(Wallet::class)->getWalletByType($client, WalletType::LENDER);
 
         $dataForTreeMap = [];
         $data           = $this->getLoansAllocationByCompanySector($wallet->getId());
@@ -167,7 +167,7 @@ class LenderAccountDisplayManager
         if (false === $client->isLender()) {
             throw new \Exception('Client ' . $client->getIdClient() . ' is not a Lender');
         }
-        $wallet = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
+        $wallet = $this->entityManager->getRepository(Wallet::class)->getWalletByType($client, WalletType::LENDER);
 
         $regions        = $this->locationManager->getFrenchRegions();
         $dataForTreeMap = [];
@@ -202,7 +202,7 @@ class LenderAccountDisplayManager
         $cachedItem = $this->cachePool->getItem(__FUNCTION__ . $lenderId);
 
         if (false === $cachedItem->isHit()) {
-            $loanRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Loans');
+            $loanRepository = $this->entityManager->getRepository(Loans::class);
             try {
                 $projectsCountByRegion = $loanRepository->countProjectsForLenderByRegion($lenderId);
                 $cachedItem->set($projectsCountByRegion)->expiresAfter(CacheKeys::DAY);

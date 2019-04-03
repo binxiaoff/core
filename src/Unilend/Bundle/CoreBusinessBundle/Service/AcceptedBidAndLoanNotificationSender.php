@@ -5,7 +5,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Translation\TranslatorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{ClientsGestionNotifications, ClientsStatus, Loans, Notifications, Projects, UnderlyingContract, Wallet};
+use Unilend\Entity\{AcceptedBids, ClientsGestionMailsNotif, ClientsGestionNotifications, ClientsStatus, Echeanciers, Loans, Notifications, Projects, UnderlyingContract, Wallet};
 use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\{TemplateMessage, TemplateMessageProvider};
 
 class AcceptedBidAndLoanNotificationSender
@@ -63,11 +63,11 @@ class AcceptedBidAndLoanNotificationSender
      */
     public function sendBidAccepted(Projects $project): void
     {
-        $loanRepository         = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Loans');
-        $acceptedBidsRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:AcceptedBids');
-        $repaymentRepository    = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers');
-        $walletRepository       = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet');
-        $projectLenders         = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Loans')->getProjectLoanDetailsForEachLender($project);
+        $loanRepository         = $this->entityManager->getRepository(Loans::class);
+        $acceptedBidsRepository = $this->entityManager->getRepository(AcceptedBids::class);
+        $repaymentRepository    = $this->entityManager->getRepository(Echeanciers::class);
+        $walletRepository       = $this->entityManager->getRepository(Wallet::class);
+        $projectLenders         = $this->entityManager->getRepository(Loans::class)->getProjectLoanDetailsForEachLender($project);
         $countProjectLenders    = count($projectLenders);
         $countTreatedLenders    = 0;
         $typeEmail              = 'preteur-bid-ok';
@@ -157,15 +157,15 @@ class AcceptedBidAndLoanNotificationSender
      */
     public function sendLoanAccepted(Projects $project): void
     {
-        $loanRepository         = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Loans');
-        $acceptedBidsRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:AcceptedBids');
-        $repaymentRepository    = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers');
-        $projectLenders         = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Loans')->getProjectLoanDetailsForEachLender($project);
+        $loanRepository         = $this->entityManager->getRepository(Loans::class);
+        $acceptedBidsRepository = $this->entityManager->getRepository(AcceptedBids::class);
+        $repaymentRepository    = $this->entityManager->getRepository(Echeanciers::class);
+        $projectLenders         = $this->entityManager->getRepository(Loans::class)->getProjectLoanDetailsForEachLender($project);
         $typeEmail              = 'preteur-contrat';
 
         foreach ($projectLenders as $lender) {
             /** @var Wallet $wallet */
-            $wallet = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->find($lender['idLender']);
+            $wallet = $this->entityManager->getRepository(Wallet::class)->find($lender['idLender']);
             if (null === $wallet) {
                 continue;
             }
@@ -251,11 +251,11 @@ class AcceptedBidAndLoanNotificationSender
 
         try {
             if ($wallet->getIdClient()->isNaturalPerson()) {
-                $ifpContract = $this->entityManager->getRepository('UnilendCoreBusinessBundle:UnderlyingContract')->findOneBy(['label' => UnderlyingContract::CONTRACT_IFP]);
-                $ifpLoan     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Loans')->findOneBy(['idProject' => $project, 'idLender' => $wallet, 'idTypeContract' => $ifpContract]);
+                $ifpContract = $this->entityManager->getRepository(UnderlyingContract::class)->findOneBy(['label' => UnderlyingContract::CONTRACT_IFP]);
+                $ifpLoan     = $this->entityManager->getRepository(Loans::class)->findOneBy(['idProject' => $project, 'idLender' => $wallet, 'idTypeContract' => $ifpContract]);
 
                 if (false === empty($ifpLoan)) {
-                    $numberOfBidsInLoanIFP = $this->entityManager->getRepository('UnilendCoreBusinessBundle:AcceptedBids')->getCountAcceptedBidsByLoan($ifpLoan);
+                    $numberOfBidsInLoanIFP = $this->entityManager->getRepository(AcceptedBids::class)->getCountAcceptedBidsByLoan($ifpLoan);
 
                     if (1 < $numberOfBidsInLoanIFP) {
                         $multiBidsDisclaimer  = $this->translator->trans('email-' . $typeMail . '_multi-bids-disclaimer', ['%numberOfBidsInLoanIFP%' => $numberOfBidsInLoanIFP]);
@@ -290,7 +290,7 @@ class AcceptedBidAndLoanNotificationSender
      */
     private function getFormattedLoanDetails(array $lenderLoans): string
     {
-        $repaymentRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers');
+        $repaymentRepository = $this->entityManager->getRepository(Echeanciers::class);
         $loanDetails         = '';
 
         /** @var Loans $loan */
@@ -318,7 +318,7 @@ class AcceptedBidAndLoanNotificationSender
         /** @var Loans $loan */
         foreach ($lenderLoans as $loan) {
             try {
-                $clientMailNotifications   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ClientsGestionMailsNotif');
+                $clientMailNotifications   = $this->entityManager->getRepository(ClientsGestionMailsNotif::class);
                 $immediateLoanNotification = $clientMailNotifications->findOneBy(['idLoan' => $loan->getIdLoan(), 'idClient' => $loan->getWallet()->getIdClient()->getIdClient()]);
 
                 if (null !== $immediateLoanNotification) {

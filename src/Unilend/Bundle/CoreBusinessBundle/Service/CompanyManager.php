@@ -5,7 +5,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Translation\TranslatorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{Clients, ClientsStatus, Companies, CompanyStatus, CompanyStatusHistory, Prelevements, ProjectsStatus, Users, WalletType};
+use Unilend\Entity\{Clients, ClientsStatus, Companies, CompanyStatus, CompanyStatusHistory, Prelevements, Projects, ProjectsStatus, Users, WalletType};
 
 class CompanyManager
 {
@@ -55,7 +55,7 @@ class CompanyManager
             $possibleStatus[] = CompanyStatus::STATUS_IN_BONIS;
         }
 
-        return $this->entityManager->getRepository('UnilendCoreBusinessBundle:CompanyStatus')->findBy(['label' => $possibleStatus], ['id' => 'ASC']);
+        return $this->entityManager->getRepository(CompanyStatus::class)->findBy(['label' => $possibleStatus], ['id' => 'ASC']);
     }
 
     /**
@@ -100,14 +100,14 @@ class CompanyManager
             $this->entityManager->flush($companyStatusHistory);
 
             if (in_array($newStatus->getLabel(), [CompanyStatus::STATUS_PRECAUTIONARY_PROCESS, CompanyStatus::STATUS_RECEIVERSHIP, CompanyStatus::STATUS_COMPULSORY_LIQUIDATION])) {
-                $companyProjects = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->findFundedButNotRepaidProjectsByCompany($company);
+                $companyProjects = $this->entityManager->getRepository(Projects::class)->findFundedButNotRepaidProjectsByCompany($company);
 
                 foreach ($companyProjects as $project) {
                     if (ProjectsStatus::STATUS_LOSS !== $project->getStatus()) {
                         $this->projectStatusManager->addProjectStatus($user, ProjectsStatus::STATUS_LOSS, $project);
                     }
 
-                    $directDebitEntity = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Prelevements');
+                    $directDebitEntity = $this->entityManager->getRepository(Prelevements::class);
                     /** @var Prelevements[] $upcomingDirectDebits */
                     $upcomingDirectDebits = $directDebitEntity->findUpcomingDirectDebitsByProject($project);
 
@@ -138,7 +138,7 @@ class CompanyManager
         $this->entityManager->getConnection()->beginTransaction();
         try {
             if (null !== $email) {
-                $duplicates = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->findGrantedLoginAccountsByEmail($email);
+                $duplicates = $this->entityManager->getRepository(Clients::class)->findGrantedLoginAccountsByEmail($email);
                 if (false === empty($duplicates)) {
                     $email .= '-' . time();
                 }
@@ -167,7 +167,7 @@ class CompanyManager
 
             $this->clientCreationManager->createAccount($client, WalletType::BORROWER, $user->getIdUser(), ClientsStatus::STATUS_VALIDATED);
 
-            $statusInBonis = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CompanyStatus')->findOneBy(['label' => CompanyStatus::STATUS_IN_BONIS]);
+            $statusInBonis = $this->entityManager->getRepository(CompanyStatus::class)->findOneBy(['label' => CompanyStatus::STATUS_IN_BONIS]);
             $this->addCompanyStatus($company, $statusInBonis, $user);
             $this->entityManager->getConnection()->commit();
 
@@ -216,13 +216,13 @@ class CompanyManager
 
             $this->clientCreationManager->createAccount($clientEntity, WalletType::BORROWER, $userId, ClientsStatus::STATUS_VALIDATED);
 
-            $statusInBonis = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CompanyStatus')
+            $statusInBonis = $this->entityManager->getRepository(CompanyStatus::class)
                 ->findOneBy(['label' => CompanyStatus::STATUS_IN_BONIS]);
 
             $this->addCompanyStatus(
                 $companyEntity,
                 $statusInBonis,
-                $this->entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find($userId)
+                $this->entityManager->getRepository(Users::class)->find($userId)
             );
 
             $this->entityManager->getConnection()->commit();

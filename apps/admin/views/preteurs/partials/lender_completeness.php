@@ -1,6 +1,6 @@
 <?php
 
-use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatus;
+use Unilend\Entity\ClientsStatus;
 
 $clientStatus = $this->wallet->getIdClient()->getIdClientStatusHistory()->getIdStatus()->getId();
 ?>

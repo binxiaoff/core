@@ -4,7 +4,7 @@ namespace Unilend\Bundle\MessagingBundle\Service;
 
 use Doctrine\ORM\EntityManagerInterface;
 use RobertoTru\ToInlineStyleEmailBundle\Converter\ToInlineStyleEmailConverter;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{MailTemplates, Translations};
+use Unilend\Entity\{MailQueue, MailTemplates, Translations};
 use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessageProvider;
 use Unilend\Bundle\TranslationBundle\Service\TranslationManager;
 
@@ -71,7 +71,7 @@ class MailTemplateManager
     )
     {
         $part         = null === $part ? MailTemplates::PART_TYPE_CONTENT : $part;
-        $mailTemplate = $this->entityManager->getRepository('UnilendCoreBusinessBundle:MailTemplates')->findOneBy([
+        $mailTemplate = $this->entityManager->getRepository(MailTemplates::class)->findOneBy([
             'type'   => $type,
             'locale' => $this->defaultLocale,
             'status' => MailTemplates::STATUS_ACTIVE,
@@ -135,10 +135,10 @@ class MailTemplateManager
         $templatesWithFooter = [];
 
         if (MailTemplates::PART_TYPE_HEADER === $mailTemplate->getPart()) {
-            $mailTemplateRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:MailTemplates');
+            $mailTemplateRepository = $this->entityManager->getRepository(MailTemplates::class);
             $templatesWithHeader    = $mailTemplateRepository->findBy(['idHeader' => $mailTemplate]);
         } elseif (MailTemplates::PART_TYPE_FOOTER === $mailTemplate->getPart()) {
-            $mailTemplateRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:MailTemplates');
+            $mailTemplateRepository = $this->entityManager->getRepository(MailTemplates::class);
             $templatesWithFooter    = $mailTemplateRepository->findBy(['idFooter' => $mailTemplate]);
         }
 
@@ -269,7 +269,7 @@ class MailTemplateManager
             $criteria['recipientType'] = $recipientType;
         }
 
-        return $this->entityManager->getRepository('UnilendCoreBusinessBundle:MailTemplates')->findBy($criteria, ['type' => 'ASC']);
+        return $this->entityManager->getRepository(MailTemplates::class)->findBy($criteria, ['type' => 'ASC']);
     }
 
     /**
@@ -277,7 +277,7 @@ class MailTemplateManager
      */
     public function getMailTemplateUsage()
     {
-        $mailQueueRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:MailQueue');
+        $mailQueueRepository = $this->entityManager->getRepository(MailQueue::class);
         $formattedMailTemplatesUsage  = [];
 
         $mailTemplateUsage = $mailQueueRepository->getMailTemplateSendFrequency();

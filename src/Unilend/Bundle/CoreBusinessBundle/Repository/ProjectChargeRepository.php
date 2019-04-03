@@ -3,7 +3,7 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
 use Doctrine\ORM\EntityRepository;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Receptions;
+use Unilend\Entity\Receptions;
 
 class ProjectChargeRepository extends EntityRepository
 {

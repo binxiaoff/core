@@ -5,8 +5,7 @@ namespace Unilend\Bundle\CommandBundle\Command;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
-use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
+use Unilend\Entity\{BankAccount, Wallet, WalletType};
 
 class DebtCollectorBankTransferCommand extends ContainerAwareCommand
 {
@@ -21,10 +20,10 @@ class DebtCollectorBankTransferCommand extends ContainerAwareCommand
         $logger                  = $this->getContainer()->get('monolog.logger.console');
         $entityManager           = $this->getContainer()->get('doctrine.orm.entity_manager');
         $wireTransferOutManager  = $this->getContainer()->get('unilend.service.wire_transfer_out_manager');
-        $bankAccountRepository   = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount');
-        $debtCollectorWalletType = $entityManager->getRepository('UnilendCoreBusinessBundle:WalletType')->findOneBy(['label' => WalletType::DEBT_COLLECTOR]);
+        $bankAccountRepository   = $entityManager->getRepository(BankAccount::class);
+        $debtCollectorWalletType = $entityManager->getRepository(WalletType::class)->findOneBy(['label' => WalletType::DEBT_COLLECTOR]);
         /** @var Wallet[] $debtCollectorWallets */
-        $debtCollectorWallets = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->findBy(['idType' => $debtCollectorWalletType]);
+        $debtCollectorWallets = $entityManager->getRepository(Wallet::class)->findBy(['idType' => $debtCollectorWalletType]);
 
         foreach ($debtCollectorWallets as $collectorWallet) {
             $total       = $collectorWallet->getAvailableBalance();

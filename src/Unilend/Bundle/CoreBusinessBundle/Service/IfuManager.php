@@ -3,7 +3,7 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\ORM\EntityManagerInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
+use Unilend\Entity\{OperationType, Wallet};
 
 class IfuManager
 {
@@ -36,7 +36,7 @@ class IfuManager
      */
     public function getWallets(int $year) : array
     {
-        $walletsWithMovements = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getLenderWalletsWithOperationsInYear([
+        $walletsWithMovements = $this->entityManager->getRepository(Wallet::class)->getLenderWalletsWithOperationsInYear([
             OperationType::LENDER_LOAN,
             OperationType::CAPITAL_REPAYMENT,
             OperationType::GROSS_INTEREST_REPAYMENT
@@ -87,7 +87,7 @@ class IfuManager
         $wallets  = [];
 
         if ($projects) {
-            $wallets = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getLenderWalletsByProjects(self::LOSS_PROJECT_IDS[$year]);
+            $wallets = $this->entityManager->getRepository(Wallet::class)->getLenderWalletsByProjects(self::LOSS_PROJECT_IDS[$year]);
         }
 
         return $wallets;

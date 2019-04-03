@@ -278,7 +278,7 @@
                                     {% endfor %}
                                 </tr>
                                 <tr>
-                                    {% for ratingInfo in ratings[constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\CompanyRating::TYPE_EULER_HERMES_GRADE')] %}
+                                    {% for ratingInfo in ratings[constant('\\Unilend\\Entity\\CompanyRating::TYPE_EULER_HERMES_GRADE')] %}
                                         <td {% if ratingInfo.change %}class="score-change"{% endif %} style="width: 130px;">
                                             {% if ratingInfo.value is not empty %}
                                                 {%  if ratingInfo.change %}
@@ -290,7 +290,7 @@
                                     {% endfor %}
                                 </tr>
                                 <tr>
-                                    {% for ratingInfo in ratings[constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\CompanyRating::TYPE_EULER_HERMES_TRAFFIC_LIGHT')] %}
+                                    {% for ratingInfo in ratings[constant('\\Unilend\\Entity\\CompanyRating::TYPE_EULER_HERMES_TRAFFIC_LIGHT')] %}
                                         <td {% if ratingInfo.change %}class="score-change"{% endif %}>
                                             {% if ratingInfo.value is not empty %}
                                                 {%  if ratingInfo.change %}
@@ -302,7 +302,7 @@
                                     {% endfor %}
                                 </tr>
                                 <tr>
-                                    {% for ratingInfo in ratings[constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\CompanyRating::TYPE_ALTARES_SCORE_20')] %}
+                                    {% for ratingInfo in ratings[constant('\\Unilend\\Entity\\CompanyRating::TYPE_ALTARES_SCORE_20')] %}
                                         <td {% if ratingInfo.change %}class="score-change"{% endif %}>
                                             {% if ratingInfo.value is not empty %}
                                                 {%  if ratingInfo.change %}
@@ -314,7 +314,7 @@
                                     {% endfor %}
                                 </tr>
                                 <tr>
-                                    {% for ratingInfo in ratings[constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\CompanyRating::TYPE_ALTARES_SECTORAL_SCORE_20')] %}
+                                    {% for ratingInfo in ratings[constant('\\Unilend\\Entity\\CompanyRating::TYPE_ALTARES_SECTORAL_SCORE_20')] %}
                                         <td {% if ratingInfo.change %}class="score-change"{% endif %}>
                                             {% if ratingInfo.value is not empty %}
                                                 {%  if ratingInfo.change %}
@@ -326,7 +326,7 @@
                                     {% endfor %}
                                 </tr>
                                 <tr>
-                                    {% for ratingInfo in ratings[constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\CompanyRating::TYPE_INFOLEGALE_SCORE')] %}
+                                    {% for ratingInfo in ratings[constant('\\Unilend\\Entity\\CompanyRating::TYPE_INFOLEGALE_SCORE')] %}
                                         <td {% if ratingInfo.change %}class="score-change"{% endif %}>
                                             {% if ratingInfo.value is not empty %}
                                                 {%  if ratingInfo.change %}
@@ -338,7 +338,7 @@
                                     {% endfor %}
                                 </tr>
                                 <tr>
-                                    {% for ratingInfo in ratings[constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\CompanyRating::TYPE_XERFI_RISK_SCORE')] %}
+                                    {% for ratingInfo in ratings[constant('\\Unilend\\Entity\\CompanyRating::TYPE_XERFI_RISK_SCORE')] %}
                                         <td {% if ratingInfo.change %}class="score-change"{% endif %}>
                                             {% if ratingInfo.value is not empty %}
                                                 {%  if ratingInfo.change %}
@@ -350,7 +350,7 @@
                                     {% endfor %}
                                 </tr>
                                 <tr>
-                                    {% for ratingInfo in ratings[constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\CompanyRating::TYPE_UNILEND_XERFI_RISK')] %}
+                                    {% for ratingInfo in ratings[constant('\\Unilend\\Entity\\CompanyRating::TYPE_UNILEND_XERFI_RISK')] %}
                                         <td {% if ratingInfo.change %}class="score-change"{% endif %}>
                                             {% if ratingInfo.value is not empty %}
                                                 {%  if ratingInfo.change %}

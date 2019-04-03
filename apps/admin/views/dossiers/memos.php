@@ -10,7 +10,7 @@
         </thead>
         <tbody>
         <?php $i = 1; ?>
-        <?php /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsComments $comment */ ?>
+        <?php /** @var \Unilend\Entity\ProjectsComments $comment */ ?>
         <?php foreach ($this->projectComments as $comment) : ?>
             <tr<?= ($i++ % 2 == 1 ? '' : ' class="odd"') ?> data-comment-id="<?= $comment->getIdProjectComment() ?>">
                 <td>

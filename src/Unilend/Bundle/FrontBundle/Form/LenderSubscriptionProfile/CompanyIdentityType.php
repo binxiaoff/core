@@ -11,8 +11,9 @@ use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
+use Unilend\Entity\Companies;
 use Unilend\Bundle\FrontBundle\Form\Components\GenderType;
+use Unilend\Entity\Settings;
 
 class CompanyIdentityType extends AbstractType
 {
@@ -33,7 +34,7 @@ class CompanyIdentityType extends AbstractType
      */
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
-        $settingEntity       = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => "Liste deroulante conseil externe de l'entreprise"]);
+        $settingEntity       = $this->entityManager->getRepository(Settings::class)->findOneBy(['type' => "Liste deroulante conseil externe de l'entreprise"]);
         $externalCounselList = array_flip(json_decode($settingEntity->getValue(), true));
 
         $clientStatusChoices = [
@@ -75,7 +76,7 @@ class CompanyIdentityType extends AbstractType
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefaults([
-            'data_class' => 'Unilend\Bundle\CoreBusinessBundle\Entity\Companies'
+            'data_class' => 'Unilend\Entity\Companies'
         ]);
     }
 

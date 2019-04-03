@@ -24,16 +24,16 @@
     <dl class="list-2col">
         <dt>{% trans %} common_title {% endtrans %}</dt>
         <dd id="profile-info-civilite-output">
-            {% if client.civilite == constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::TITLE_MISTER') %}
+            {% if client.civilite == constant('Unilend\\Entity\\Clients::TITLE_MISTER') %}
                 {% trans %} common_title-male {% endtrans %}
-            {% elseif client.civilite == constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::TITLE_MISS') %}
+            {% elseif client.civilite == constant('Unilend\\Entity\\Clients::TITLE_MISS') %}
                 {% trans %} common_title-female {% endtrans %}
             {% endif %}
         </dd>
         <dt>{% trans %} lender-profile_information-tab-identity-section-company-client-status-label {% endtrans %}</dt>
         <dd><span>{{ "lender-profile_information-tab-identity-section-company-client-status-#{ company.statusClient }" | trans }} </span>
-            {% if company.statusClient == constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Companies::CLIENT_STATUS_EXTERNAL_CONSULTANT') %}
-                {% if company.statusConseilExterneEntreprise == constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Companies::CLIENT_STATUS_EXTERNAL_COUNSEL_OTHER') %}
+            {% if company.statusClient == constant('Unilend\\Entity\\Companies::CLIENT_STATUS_EXTERNAL_CONSULTANT') %}
+                {% if company.statusConseilExterneEntreprise == constant('Unilend\\Entity\\Companies::CLIENT_STATUS_EXTERNAL_COUNSEL_OTHER') %}
                     <span>{{ company.preciserConseilExterneEntreprise }} </span>
                 {% else %}
                     <span>{{ externalCounselList[company.statusConseilExterneEntreprise]|default() }} </span>
@@ -55,13 +55,13 @@
             {% for attachment in companyIdAttachments %}
                 {% if attachment is not null %}
                     {% set attachmentDate = attachment.updated|default(attachment.added)|localizeddate('short', 'none', app.request.locale) %}
-                    {% if attachment.type.id == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\AttachmentType::CNI_PASSPORTE_DIRIGEANT') %}
+                    {% if attachment.type.id == constant('\\Unilend\\Entity\\AttachmentType::CNI_PASSPORTE_DIRIGEANT') %}
                         <span id="form-profile-info-file-identite-cni-1-output" class="file-justificatif file-identity-side-a"
                               title="{{ "lender-profile_lender-attachment-provided-label-type-#{ attachment.type.id }"|trans({'%date%' : attachmentDate}) }}"
                               data-toggle="tooltip">
                         <span class="sr-only">{{ "lender-profile_lender-attachment-provided-label-type-#{ attachment.type.id }"|trans({'%date%' : attachmentDate}) }}</span>
                     </span>
-                    {% elseif attachment.type.id == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\AttachmentType::CNI_PASSPORTE_VERSO') %}
+                    {% elseif attachment.type.id == constant('\\Unilend\\Entity\\AttachmentType::CNI_PASSPORTE_VERSO') %}
                         <span id="form-profile-info-file-identite-cni-2-output" class="file-justificatif file-identity-side-b"
                               title="{{ "lender-profile_lender-attachment-provided-label-type-#{ attachment.type.id }"|trans({'%date%' : attachmentDate}) }}"
                               data-toggle="tooltip">
@@ -73,7 +73,7 @@
         </dd>
     </dl>
 
-    {% if company.statusClient > constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Companies::CLIENT_STATUS_MANAGER') %}
+    {% if company.statusClient > constant('Unilend\\Entity\\Companies::CLIENT_STATUS_MANAGER') %}
     <h5>{% trans %} lender-profile_information-tab-identity-section-company-director-title {% endtrans %}</h5>
     <dl class="list-2col">
         <dt>{% trans %} common_title {% endtrans %}</dt>

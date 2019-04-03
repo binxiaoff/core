@@ -7,7 +7,7 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+use Unilend\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Service\GreenPointValidationManager;
 
 class GreenPointValidationCommand extends Command
@@ -58,7 +58,7 @@ EOF
     protected function execute(InputInterface $input, OutputInterface $output): void
     {
         /** @var Clients[] $clients */
-        $clients = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->getLendersForGreenpointCheck();
+        $clients = $this->entityManager->getRepository(Clients::class)->getLendersForGreenpointCheck();
         if (empty($clients)) {
             return;
         }

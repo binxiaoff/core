@@ -4,7 +4,7 @@ namespace Unilend\Bundle\FrontBundle\Form\Lending;
 
 use Symfony\Component\Form\{AbstractType, Extension\Core\Type\CheckboxType, Extension\Core\Type\CollectionType, Extension\Core\Type\MoneyType, FormBuilderInterface};
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Bids;
+use Unilend\Entity\Bids;
 
 class BidType extends AbstractType
 {

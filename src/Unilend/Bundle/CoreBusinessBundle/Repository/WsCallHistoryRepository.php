@@ -5,7 +5,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
-use Unilend\Bundle\CoreBusinessBundle\Entity\WsExternalResource;
+use Unilend\Entity\WsExternalResource;
 
 class WsCallHistoryRepository extends EntityRepository
 {
@@ -33,7 +33,7 @@ class WsCallHistoryRepository extends EntityRepository
             COUNT(1) AS totalByResource,' .
                 '(' . $firstDownQb->getDQL() . ') AS firstErrorDate'
             )
-            ->innerJoin('UnilendCoreBusinessBundle:WsExternalResource', 'wer', Join::WITH, 'wer.idResource = wch.idResource')
+            ->innerJoin(WsExternalResource::class, 'wer', Join::WITH, 'wer.idResource = wch.idResource')
             ->where('wch.added >= :from')
             ->setParameter('from', $from)
             ->andWhere('wer.providerName = :provider')

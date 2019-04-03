@@ -149,29 +149,29 @@
                             <td class="text-right">{{ repayment.sequence }}</td>
                             <td class="text-right" data-order="{{ repayment.capital }}">{{ repayment.capital|localizedcurrency('EUR') }}</td>
                             <td class="text-right" data-order="{{ repayment.repaidCapital }}">
-                                {% if repayment.status != constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Echeanciers::STATUS_PENDING') %}
+                                {% if repayment.status != constant('Unilend\\Entity\\Echeanciers::STATUS_PENDING') %}
                                     {{ repayment.repaidCapital|localizedcurrency('EUR') }}
                                 {% endif %}
                             </td>
                             <td class="text-right" data-order="{{ repayment.interests }}">{{ repayment.interests|localizedcurrency('EUR') }}</td>
                             <td class="text-right" data-order="{{ repayment.repaidInterests }}">
-                                {% if repayment.status != constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Echeanciers::STATUS_PENDING') %}
+                                {% if repayment.status != constant('Unilend\\Entity\\Echeanciers::STATUS_PENDING') %}
                                     {{ repayment.repaidInterests|localizedcurrency('EUR') }}
                                 {% endif %}
                             </td>
                             <td class="text-right" data-order="{{ repayment.taxes }}">
-                                {% if repayment.status != constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Echeanciers::STATUS_PENDING') %}
+                                {% if repayment.status != constant('Unilend\\Entity\\Echeanciers::STATUS_PENDING') %}
                                     {{ repayment.taxes|localizedcurrency('EUR') }}
                                 {% endif %}
                             </td>
                             <td>{{ repayment.theoreticalRepaymentDate|localizeddate('short', 'none') }}</td>
                             <td>{% if repayment.actualRepaymentDate is not empty %}{{ repayment.actualRepaymentDate|localizeddate('short', 'none') }}{% endif %}</td>
                             <td>
-                                {% if repayment.status == constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Echeanciers::STATUS_PENDING') %}
+                                {% if repayment.status == constant('Unilend\\Entity\\Echeanciers::STATUS_PENDING') %}
                                     À venir
-                                {% elseif repayment.status == constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Echeanciers::STATUS_PARTIALLY_REPAID') %}
+                                {% elseif repayment.status == constant('Unilend\\Entity\\Echeanciers::STATUS_PARTIALLY_REPAID') %}
                                     Partiellement remboursé
-                                {% elseif repayment.status == constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Echeanciers::STATUS_REPAID') %}
+                                {% elseif repayment.status == constant('Unilend\\Entity\\Echeanciers::STATUS_REPAID') %}
                                     Remboursé
                                 {% else %}
                                     Inconnu

@@ -3,14 +3,8 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Service\Product\Validator;
 
 use Doctrine\ORM\EntityManagerInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Product;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProductAttributeType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectProductAssessment;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
-use Unilend\Bundle\CoreBusinessBundle\Service\Product\Checker\CompanyChecker;
-use Unilend\Bundle\CoreBusinessBundle\Service\Product\Checker\ProjectChecker;
-use Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\ContractManager;
-use Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductAttributeManager;
+use Unilend\Entity\{Product, ProductAttributeType, ProjectProductAssessment, Projects};
+use Unilend\Bundle\CoreBusinessBundle\Service\Product\{Checker\CompanyChecker, Checker\ProjectChecker, Contract\ContractManager, ProductAttributeManager};
 use Unilend\Bundle\WSClientBundle\Service\InfolegaleManager;
 
 class ProjectValidator
@@ -46,7 +40,7 @@ class ProjectValidator
      */
     public function validate(Projects $project, Product $product)
     {
-        $productAttributeTypes = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProductAttributeType')->findAll();
+        $productAttributeTypes = $this->entityManager->getRepository(ProductAttributeType::class)->findAll();
         foreach ($productAttributeTypes as $productAttributeType) {
             if (false === $this->check($project, $product, $productAttributeType)) {
                 return [$productAttributeType->getLabel()];
@@ -136,7 +130,7 @@ class ProjectValidator
      */
     private function logCheck(Projects $project, Product $product, $productAttributeType, $checkResult)
     {
-        $assessment = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectProductAssessment')->findOneBy([
+        $assessment = $this->entityManager->getRepository(ProjectProductAssessment::class)->findOneBy([
             'idProject'              => $project,
             'idProduct'              => $product,
             'idProductAttributeType' => $productAttributeType

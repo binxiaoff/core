@@ -2,9 +2,7 @@
 
 use Box\Spout\Common\Type;
 use Box\Spout\Writer\WriterFactory;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Bids, ClientsStatus, OperationType, Projects, WalletType, Zones
-};
+use Unilend\Entity\{Bids, ClientsStatus, OperationType, Projects, TransmissionSequence, WalletType, Zones};
 use Unilend\Bundle\CoreBusinessBundle\Service\{
     BdfLoansDeclarationManager, IfuManager
 };
@@ -318,7 +316,7 @@ class statsController extends bootstrap
     public function _requete_source_emprunteurs()
     {
         /** @var \Unilend\Bundle\CoreBusinessBundle\Repository\ClientsRepository $clientRepository */
-        $clientRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients');
+        $clientRepository = $this->get('doctrine.orm.entity_manager')->getRepository(Clients::class);
         $this->message    = '';
 
         if (false === empty($_POST['dateStart']) && false === empty($_POST['dateEnd'])) {
@@ -349,7 +347,7 @@ class statsController extends bootstrap
         $entityManager = $this->get('doctrine.orm.entity_manager');
         /** @var BdfLoansDeclarationManager $bdfLoansDeclarationManager */
         $bdfLoansDeclarationManager = $this->get('unilend.service.bdf_loans_declaration_manager');
-        $declarations               = $entityManager->getRepository('UnilendCoreBusinessBundle:TransmissionSequence')->findBy([], ['added' => 'DESC']);
+        $declarations               = $entityManager->getRepository(TransmissionSequence::class)->findBy([], ['added' => 'DESC']);
         $declarationList            = [];
         $documentTypes              = [
             BdfLoansDeclarationManager::TYPE_IFP_BDC,

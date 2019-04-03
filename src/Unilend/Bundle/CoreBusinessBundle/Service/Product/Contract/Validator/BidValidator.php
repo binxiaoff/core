@@ -3,9 +3,7 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\Validator;
 
 use Doctrine\ORM\EntityManagerInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Bids;
-use Unilend\Bundle\CoreBusinessBundle\Entity\UnderlyingContract;
-use Unilend\Bundle\CoreBusinessBundle\Entity\UnderlyingContractAttributeType;
+use Unilend\Entity\{Bids, UnderlyingContract, UnderlyingContractAttributeType};
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\Checker\ClientChecker;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\ContractAttributeManager;
 

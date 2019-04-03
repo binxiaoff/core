@@ -7,8 +7,8 @@ use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\{BinaryFileResponse, Response};
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\User\UserInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Loans;
+use Unilend\Entity\Clients;
+use Unilend\Entity\Loans;
 use Unilend\Bundle\CoreBusinessBundle\Service\Document\LoanContractGenerator;
 
 class DocumentController extends Controller
@@ -34,7 +34,7 @@ class DocumentController extends Controller
     {
         /** @var Loans $loan */
         $loan = $this->get('doctrine.orm.entity_manager')
-            ->getRepository('UnilendCoreBusinessBundle:Loans')
+            ->getRepository(Loans::class)
             ->find($idLoan);
 
         if (null === $loan) {

@@ -8,7 +8,7 @@
         <form method="post" action="<?= $this->lurl ?>/partenaires/ajout_tiers/<?= $this->partner->getId() ?>">
             <fieldset>
                 <?php
-                /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Companies $company */
+                /** @var \Unilend\Entity\Companies $company */
                 foreach ($this->companies as $company) : ?>
                     <label>
                         <input type="radio" name="id_company" value="<?= $company->getIdCompany() ?>" required>
@@ -23,7 +23,7 @@
                 <label>Type de tiers
                     <select name="third_party_type" class="select">
                         <?php
-                        /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\PartnerThirdPartyType $type */
+                        /** @var \Unilend\Entity\PartnerThirdPartyType $type */
                         foreach ($this->thirdPartyTypes as $type) : ?>
                             <option value="<?= $type->getId() ?>"><?= $this->translator->trans('partner_third-party-type-' . $type->getLabel()) ?></option>
                         <?php endforeach; ?>

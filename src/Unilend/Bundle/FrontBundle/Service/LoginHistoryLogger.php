@@ -4,7 +4,7 @@ namespace Unilend\Bundle\FrontBundle\Service;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{Clients, ClientsHistory, LoginLog};
+use Unilend\Entity\{Clients, ClientsHistory, LoginLog};
 use Unilend\Bundle\CoreBusinessBundle\Service\{UserActivity\IpGeoLocManager, UserActivity\UserAgentManager};
 
 class LoginHistoryLogger

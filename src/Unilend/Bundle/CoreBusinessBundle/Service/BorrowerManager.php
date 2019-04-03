@@ -3,13 +3,17 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\ORM\EntityManagerInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{Companies, Projects, Wallet};
+use Unilend\Entity\{Companies, Projects, Wallet};
 use Unilend\Bundle\CoreBusinessBundle\Service\Repayment\ProjectRepaymentTaskManager;
 
 class BorrowerManager
 {
     /** @var EntityManagerInterface */
     private $entityManager;
+    /** @var WireTransferOutManager */
+    private $wireTransferOutManager;
+    /** @var ProjectRepaymentTaskManager */
+    private $projectRepaymentTaskManager;
 
     /**
      * @param EntityManagerInterface      $entityManager
@@ -53,7 +57,7 @@ class BorrowerManager
         $balance = $wallet->getAvailableBalance();
         $balance = round(bcsub($balance, $this->wireTransferOutManager->getCommittedAmount($wallet), 4), 2);
 
-        $company = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $wallet->getIdClient()]);
+        $company = $this->entityManager->getRepository(Companies::class)->findOneBy(['idClientOwner' => $wallet->getIdClient()]);
         if ($company) {
             $balance = round(bcsub($balance, $this->projectRepaymentTaskManager->getPlannedRepaymentTaskAmountByCompany($company), 4), 2);
         }

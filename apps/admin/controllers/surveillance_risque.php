@@ -1,6 +1,6 @@
 <?php
 
-use Unilend\Bundle\CoreBusinessBundle\Entity\{ProjectsStatus, Zones};
+use Unilend\Entity\{Operation, ProjectsStatus, RiskDataMonitoring, Zones};
 use Unilend\Bundle\CoreBusinessBundle\Repository\RiskDataMonitoringRepository;
 use Unilend\Bundle\WSClientBundle\Entity\Euler\CompanyRating as EulerCompanyRating;
 
@@ -27,7 +27,7 @@ class surveillance_risqueController extends bootstrap
         $start = new \DateTime('2 months ago');
 
         /** @var RiskDataMonitoringRepository $riskDataMonitoringRepository */
-        $riskDataMonitoringRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:RiskDataMonitoring');
+        $riskDataMonitoringRepository = $this->get('doctrine.orm.entity_manager')->getRepository(RiskDataMonitoring::class);
 
         try {
             $this->companyRatingEvents = $this->formatEvents($riskDataMonitoringRepository->getCompanyRatingEvents($start));
@@ -60,7 +60,7 @@ class surveillance_risqueController extends bootstrap
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
         /** @var \Unilend\Bundle\CoreBusinessBundle\Repository\OperationRepository $operationRepository */
-        $operationRepository              = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
+        $operationRepository              = $entityManager->getRepository(Operation::class);
         $activeStatus                     = [
             ProjectsStatus::SALES_TEAM_UPCOMING_STATUS,
             ProjectsStatus::SALES_TEAM,

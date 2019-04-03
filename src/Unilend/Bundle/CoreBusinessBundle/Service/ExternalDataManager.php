@@ -6,7 +6,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\{EntityManagerInterface, OptimisticLockException};
 use Psr\Cache\{CacheException, CacheItemPoolInterface};
 use Psr\Log\LoggerInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, CompanyRating, CompanyRatingHistory, InfolegaleExecutivePersonalChange, Pays};
+use Unilend\Entity\{AddressType, CompanyRating, CompanyRatingHistory, InfolegaleExecutivePersonalChange, Pays, Xerfi};
 use Unilend\Bundle\WSClientBundle\Entity\Altares\{BalanceSheetListDetail, CompanyBalanceSheet, CompanyIdentityDetail, CompanyRatingDetail, FinancialSummaryListDetail};
 use Unilend\Bundle\WSClientBundle\Entity\Codinf\IncidentList;
 use Unilend\Bundle\WSClientBundle\Entity\Ellisphere\Report as EllisphereReport;
@@ -164,7 +164,7 @@ class ExternalDataManager
             $xerfiScore   = 'N/A';
             $xerfiUnilend = 'PAS DE DONNEES';
 
-            if ($xerfi = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Xerfi')->findOneBy(['naf' => $naf])) {
+            if ($xerfi = $this->entityManager->getRepository(Xerfi::class)->findOneBy(['naf' => $naf])) {
                 if (false === empty($xerfi->getScore())) {
                     $xerfiScore = $xerfi->getScore();
                 }
@@ -391,7 +391,7 @@ class ExternalDataManager
                 continue;
             }
             $mandates                 = $mandateCollection->getMandates();
-            $personalChangeRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:InfolegaleExecutivePersonalChange');
+            $personalChangeRepository = $this->entityManager->getRepository(InfolegaleExecutivePersonalChange::class);
             $refreshedCompanyPosition = [];
 
             foreach ($mandates as $mandate) {
@@ -460,7 +460,7 @@ class ExternalDataManager
     {
         $this->refreshExecutiveChanges($siren);
 
-        return $this->entityManager->getRepository('UnilendCoreBusinessBundle:InfolegaleExecutivePersonalChange')
+        return $this->entityManager->getRepository(InfolegaleExecutivePersonalChange::class)
             ->getAllMandatesExceptGivenSirenOnActiveExecutives($siren, $sinceDate);
     }
 
@@ -475,10 +475,10 @@ class ExternalDataManager
     {
         $this->refreshExecutiveChanges($siren);
 
-        $previousExecutives = $this->entityManager->getRepository('UnilendCoreBusinessBundle:InfolegaleExecutivePersonalChange')
+        $previousExecutives = $this->entityManager->getRepository(InfolegaleExecutivePersonalChange::class)
             ->getPreviousExecutivesLeftAfter($siren, $sinceDate);
 
-        return $this->entityManager->getRepository('UnilendCoreBusinessBundle:InfolegaleExecutivePersonalChange')
+        return $this->entityManager->getRepository(InfolegaleExecutivePersonalChange::class)
             ->findMandatesByExecutivesSince($previousExecutives, $sinceDate);
     }
 
@@ -494,7 +494,7 @@ class ExternalDataManager
         $now     = new \DateTime();
         $started = $now;
         $ended   = $now;
-        $changes = $this->entityManager->getRepository('UnilendCoreBusinessBundle:InfolegaleExecutivePersonalChange')->findBy([
+        $changes = $this->entityManager->getRepository(InfolegaleExecutivePersonalChange::class)->findBy([
             'idExecutive' => $executiveId,
             'siren'       => $siren
         ]);
@@ -638,7 +638,7 @@ class ExternalDataManager
      */
     private function hasRating($type)
     {
-        $companyRatingRespository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CompanyRating');
+        $companyRatingRespository = $this->entityManager->getRepository(CompanyRating::class);
         $companyRating            = $companyRatingRespository->findOneBy([
             'idCompanyRatingHistory' => $this->companyRatingHistory->getIdCompanyRatingHistory(),
             'type'                   => $type
@@ -685,7 +685,7 @@ class ExternalDataManager
 
         $this->refreshExecutiveChanges($siren);
 
-        return $this->entityManager->getRepository('UnilendCoreBusinessBundle:InfolegaleExecutivePersonalChange')->getActiveExecutives($siren);
+        return $this->entityManager->getRepository(InfolegaleExecutivePersonalChange::class)->getActiveExecutives($siren);
     }
 
     /**

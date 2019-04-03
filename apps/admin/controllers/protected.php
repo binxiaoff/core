@@ -69,7 +69,7 @@ class protectedController extends bootstrap
 
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
-        $loan          = $entityManager->getRepository('UnilendCoreBusinessBundle:Loans')->find($this->params[1]);
+        $loan          = $entityManager->getRepository(Loans::class)->find($this->params[1]);
 
         if (null === $loan || empty($loan->getProject()) || empty($loan->getWallet())) {
             header('Location: ' . $this->lurl);
@@ -101,9 +101,9 @@ class protectedController extends bootstrap
         $entityManager = $this->get('doctrine.orm.entity_manager');
 
         if (isset($this->params[0]) && isset($this->params[1])) {
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Clients $client */
-            $client = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->findByHash($this->params[0]);
-            $loan   = $entityManager->getRepository('UnilendCoreBusinessBundle:Loans')->find($this->params[1]);
+            /** @var \Unilend\Entity\Clients $client */
+            $client = $entityManager->getRepository(Clients::class)->findByHash($this->params[0]);
+            $loan   = $entityManager->getRepository(Loans::class)->find($this->params[1]);
 
             if (
                 null === $client

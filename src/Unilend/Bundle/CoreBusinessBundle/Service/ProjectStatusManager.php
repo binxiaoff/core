@@ -5,7 +5,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Translation\TranslatorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{ProjectAbandonReason, ProjectRejectionReason, Projects, ProjectsStatus, ProjectsStatusHistory, ProjectStatusHistoryReason, Users};
+use Unilend\Entity\{EcheanciersEmprunteur, ProjectAbandonReason, ProjectRejectionReason, Projects, ProjectsStatus, ProjectsStatusHistory, ProjectStatusHistoryReason, Users};
 use Unilend\Bundle\CoreBusinessBundle\Service\Repayment\ProjectRepaymentTaskManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\Bundle\FrontBundle\Service\UniversignManager;
@@ -67,8 +67,8 @@ class ProjectStatusManager
      */
     public function getPossibleStatus(Projects $project)
     {
-        $projectStatus             = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatus');
-        $paymentScheduleRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur');
+        $projectStatus             = $this->entityManager->getRepository(ProjectsStatus::class);
+        $paymentScheduleRepository = $this->entityManager->getRepository(EcheanciersEmprunteur::class);
 
         switch ($project->getStatus()) {
             case ProjectsStatus::STATUS_LOSS:
@@ -146,7 +146,7 @@ class ProjectStatusManager
         $reasonText        = [];
         $reasonDescription = [];
 
-        $lastProjectStatusHistory = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatusHistory')
+        $lastProjectStatusHistory = $this->entityManager->getRepository(ProjectsStatusHistory::class)
             ->findOneBy(['idProject' => $project], ['added' => 'DESC', 'idProjectStatusHistory' => 'DESC']);
 
         switch ($project->getStatus()) {
@@ -195,10 +195,10 @@ class ProjectStatusManager
             $reason = null;
             switch ($type) {
                 case 'rejection':
-                    $reason = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRejectionReason')->findOneBy(['label' => $reasonLabel]);
+                    $reason = $this->entityManager->getRepository(ProjectRejectionReason::class)->findOneBy(['label' => $reasonLabel]);
                     break;
                 case 'abandon':
-                    $reason = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectAbandonReason')->findOneBy(['label' => $reasonLabel]);
+                    $reason = $this->entityManager->getRepository(ProjectAbandonReason::class)->findOneBy(['label' => $reasonLabel]);
                     break;
             }
 
@@ -224,18 +224,18 @@ class ProjectStatusManager
     public function addProjectStatus($user, int $projectStatus, $project, ?int $reminderNumber = null, ?string $content = null)
     {
         if ($project instanceof \projects) {
-            $projectEntity = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($project->id_project);
+            $projectEntity = $this->entityManager->getRepository(Projects::class)->find($project->id_project);
         } else {
             $projectEntity = $project;
         }
 
         if (is_numeric($user)) {
-            $user = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find($user);
+            $user = $this->entityManager->getRepository(Users::class)->find($user);
         }
 
         if (
             $projectStatus === ProjectsStatus::STATUS_REPAYMENT
-            && 0 < $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur')->getOverdueScheduleCount($projectEntity)
+            && 0 < $this->entityManager->getRepository(EcheanciersEmprunteur::class)->getOverdueScheduleCount($projectEntity)
         ) {
             return;
         }
@@ -243,7 +243,7 @@ class ProjectStatusManager
         $originStatus = $projectEntity->getStatus();
 
         try {
-            $projectStatusEntity   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatus')->findOneBy(['status' => $projectStatus]);
+            $projectStatusEntity   = $this->entityManager->getRepository(ProjectsStatus::class)->findOneBy(['status' => $projectStatus]);
             $projectsStatusHistory = new ProjectsStatusHistory();
             $projectsStatusHistory
                 ->setIdProject($projectEntity->getIdProject())
@@ -261,7 +261,7 @@ class ProjectStatusManager
             }
 
             if ($project instanceof \projects) {
-                $project->status = $projectStatus;
+                $project->status= $projectStatus;
             }
         } catch (\Exception $exception) {
             $this->logger->critical('An exception occured while updating project status for project ' . $projectEntity->getIdProject() . '. Message: ' . $exception->getMessage(), [
@@ -317,9 +317,9 @@ class ProjectStatusManager
         switch ($project->getStatus()) {
             case ProjectsStatus::STATUS_CANCELLED:
                 if (false === empty($project->getIdCompany()->getSiren())) {
-                    $abandonReason    = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectAbandonReason')
+                    $abandonReason    = $this->entityManager->getRepository(ProjectAbandonReason::class)
                         ->findBy(['label' => ProjectAbandonReason::OTHER_PROJECT_OF_SAME_COMPANY_REJECTED]);
-                    $previousProjects = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects')
+                    $previousProjects = $this->entityManager->getRepository(Projects::class)
                         ->findBySiren($project->getIdCompany()->getSiren(), [ProjectsStatus::STATUS_CANCELLED, ProjectsStatus::STATUS_REQUEST, ProjectsStatus::STATUS_REVIEW], $project->getAdded());
 
                     foreach ($previousProjects as $previousProject) {
@@ -390,7 +390,7 @@ class ProjectStatusManager
     private function rejectOrAbandonProject($project, int $projectStatus, $user, array $reasons, ?int $reminder = 0): bool
     {
         if ($project instanceof \projects) {
-            $project = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects')
+            $project = $this->entityManager->getRepository(Projects::class)
                 ->find($project->id_project);
         }
 
@@ -407,7 +407,7 @@ class ProjectStatusManager
             return false;
         }
 
-        $lastProjectStatusHistory = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatusHistory')
+        $lastProjectStatusHistory = $this->entityManager->getRepository(ProjectsStatusHistory::class)
             ->findOneBy(['idProject' => $project], ['added' => 'DESC', 'idProjectStatusHistory' => 'DESC']);
 
         if (null !== $lastProjectStatusHistory && $lastProjectStatusHistory->getIdProjectStatus()->getStatus() === $projectStatus) {
@@ -494,7 +494,7 @@ class ProjectStatusManager
     public function getIndexedProjectStatus(): array
     {
         $indexedStatus = [];
-        foreach ($this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatus')->findAll() as $status) {
+        foreach ($this->entityManager->getRepository(ProjectsStatus::class)->findAll() as $status) {
             $indexedStatus[$status->getStatus()] = $status->getLabel();
         }
 

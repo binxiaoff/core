@@ -198,7 +198,7 @@
 {% endblock %}
 
 {% set companyStatusName = 'company-status_label-' ~ companyLastStatusHistory.idStatus.label|replace({'_': '-'}) %}
-{% set isCompanyInBonis = companyLastStatusHistory.idStatus.label == constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\CompanyStatus::STATUS_IN_BONIS') %}
+{% set isCompanyInBonis = companyLastStatusHistory.idStatus.label == constant('Unilend\\Entity\\CompanyStatus::STATUS_IN_BONIS') %}
 
 {% block modals %}
     <div class="modal fade in" id="modal-close-out-netting">
@@ -340,7 +340,7 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <input type="hidden" name="problematic_status" value="{{ constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_LOSS') }}">
+                    <input type="hidden" name="problematic_status" value="{{ constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_LOSS') }}">
                     <button class="btn btn-sm btn-default" type="button" data-dismiss="modal">Annuler</button>
                     <button class="btn btn-sm btn-primary" type="submit">Valider</button>
                 </div>
@@ -376,9 +376,9 @@
                             <label>Type de mission</label>
                             <select class="form-control required" name="debt-collection-type">
                                 <option value="">Sélectionner</option>
-                                <option value="{{ constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\DebtCollectionMission::TYPE_AMICABLE') }}">Amiable</option>
-                                <option value="{{ constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\DebtCollectionMission::TYPE_LITIGATION') }}">Contentieux</option>
-                                <option value="{{ constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\DebtCollectionMission::TYPE_PRE_LITIGATION') }}">Pré-contentieux</option>
+                                <option value="{{ constant('\\Unilend\\Entity\\DebtCollectionMission::TYPE_AMICABLE') }}">Amiable</option>
+                                <option value="{{ constant('\\Unilend\\Entity\\DebtCollectionMission::TYPE_LITIGATION') }}">Contentieux</option>
+                                <option value="{{ constant('\\Unilend\\Entity\\DebtCollectionMission::TYPE_PRE_LITIGATION') }}">Pré-contentieux</option>
                             </select>
                         </div>
                         <div class="form-group">
@@ -478,8 +478,8 @@
         <br>
         <label class="css-input switch switch-sm switch-primary">
             <input type="checkbox"
-                   name="auto-repayment"{% if constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Projects::AUTO_REPAYMENT_ON') == project.rembAuto %} checked{% endif %}
-                    {% if constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::STATUS_LOSS') == project.status %}disabled{% endif %}>
+                   name="auto-repayment"{% if constant('\\Unilend\\Entity\\Projects::AUTO_REPAYMENT_ON') == project.rembAuto %} checked{% endif %}
+                    {% if constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_LOSS') == project.status %}disabled{% endif %}>
             <span></span>
             Remboursement automatique <i class="fa fa-spinner fa-spin visibility-hidden" id="auto-repayment-spinner"></i>
         </label>

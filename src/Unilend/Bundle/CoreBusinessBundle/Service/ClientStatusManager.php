@@ -5,8 +5,8 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 use Doctrine\DBAL\ConnectionException;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, Attachment, AttachmentType, ClientAddress, Clients, ClientsStatus, ClientsStatusHistory, Companies, CompanyAddress, NationalitesV2, Pays,
-    Users, WalletType};
+use Unilend\Entity\{AddressType, Attachment, AttachmentType, BankAccount, ClientAddress, Clients, ClientsStatus, ClientsStatusHistory, Companies, CompanyAddress, NationalitesV2, Pays, Users, Wallet,
+    WalletType};
 
 class ClientStatusManager
 {
@@ -53,7 +53,7 @@ class ClientStatusManager
      */
     public function closeLenderAccount(\clients $client, $userId, $comment): void
     {
-        $wallet = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client->id_client, WalletType::LENDER);
+        $wallet = $this->entityManager->getRepository(Wallet::class)->getWalletByType($client->id_client, WalletType::LENDER);
 
         if ($wallet->getAvailableBalance() > 0) {
             throw new \Exception('The client still has money in his account');
@@ -62,7 +62,7 @@ class ClientStatusManager
         $this->notificationManager->deactivateAllNotificationSettings($client);
         $this->autoBidSettingsManager->off($wallet->getIdClient());
 
-        $currentlyValidBankAccount = $this->entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($client->id_client);
+        $currentlyValidBankAccount = $this->entityManager->getRepository(BankAccount::class)->getClientValidatedBankAccount($client->id_client);
 
         if ($currentlyValidBankAccount) {
             $this->bankAccountManager->archive($currentlyValidBankAccount);
@@ -188,7 +188,7 @@ class ClientStatusManager
     public function addClientStatus($client, int $userId, int $status, ?string $comment = null, ?int $reminder = null): void
     {
         if ($client instanceof \clients) {
-            $client = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($client->id_client);
+            $client = $this->entityManager->getRepository(Clients::class)->find($client->id_client);
         }
 
         if (
@@ -203,8 +203,8 @@ class ClientStatusManager
         $this->entityManager->getConnection()->beginTransaction();
 
         try {
-            $clientStatus = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ClientsStatus')->find($status);
-            $user         = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find($userId);
+            $clientStatus = $this->entityManager->getRepository(ClientsStatus::class)->find($status);
+            $user         = $this->entityManager->getRepository(Users::class)->find($userId);
 
             $clientStatusHistory = new ClientsStatusHistory();
             $clientStatusHistory
@@ -245,7 +245,7 @@ class ClientStatusManager
      */
     public function hasBeenValidatedAtLeastOnce(Clients $client): bool
     {
-        $clientStatusHistory = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ClientsStatusHistory');
+        $clientStatusHistory = $this->entityManager->getRepository(ClientsStatusHistory::class);
         $previousValidation  = $clientStatusHistory->getFirstClientValidation($client);
 
         return null !== $previousValidation;
@@ -426,12 +426,12 @@ class ClientStatusManager
     private function getPendingMainAddress(Clients $client)
     {
         if ($client->isNaturalPerson()) {
-            $clientAddressRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ClientAddress');
+            $clientAddressRepository = $this->entityManager->getRepository(ClientAddress::class);
             $pendingMainAddress      = $clientAddressRepository->findLastModifiedNotArchivedAddressByType($client, AddressType::TYPE_MAIN_ADDRESS);
         } else {
-            $company = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $client]);
+            $company = $this->entityManager->getRepository(Companies::class)->findOneBy(['idClientOwner' => $client]);
             if ($company) {
-                $companyAddressRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress');
+                $companyAddressRepository = $this->entityManager->getRepository(CompanyAddress::class);
                 $pendingMainAddress       = $companyAddressRepository->findLastModifiedNotArchivedAddressByType($company, AddressType::TYPE_MAIN_ADDRESS);
             } else {
                 throw new \Exception('Lender is a legal entity but no attached company found.');

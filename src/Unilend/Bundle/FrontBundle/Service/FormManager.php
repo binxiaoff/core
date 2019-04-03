@@ -6,7 +6,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Form\{Extension\Core\Type\CheckboxType, FormBuilderInterface, FormFactoryInterface, FormInterface};
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Translation\TranslatorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, ClientAddress, Clients, ClientsHistoryActions, CompanyAddress};
+use Unilend\Entity\{AddressType, ClientAddress, Clients, ClientsHistoryActions, CompanyAddress};
 use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\{BankAccountType, ClientAddressType, CompanyAddressType, OriginOfFundsType};
 
 class FormManager
@@ -130,7 +130,7 @@ class FormManager
     public function saveFormSubmission($client, string $formName, string $serialize, string $ip)
     {
         if ($client instanceof \clients) {
-            $client = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($client->id_client);
+            $client = $this->entityManager->getRepository(Clients::class)->find($client->id_client);
         }
 
         $clientAction = new ClientsHistoryActions();

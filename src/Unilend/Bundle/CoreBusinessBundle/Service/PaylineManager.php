@@ -8,7 +8,7 @@ use Payline\PaylineSDK;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Routing\RouterInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{Backpayline, ClientsGestionMailsNotif, ClientsGestionTypeNotif, Notifications, OperationType, Wallet};
+use Unilend\Entity\{Backpayline, ClientsGestionMailsNotif, ClientsGestionNotifications, ClientsGestionTypeNotif, Notifications, Operation, OperationType, Wallet, WalletBalanceHistory};
 use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessageProvider;
 
 class PaylineManager
@@ -202,7 +202,7 @@ class PaylineManager
             return null;
         }
 
-        $backPayline = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Backpayline')->findOneBy(['idBackpayline' => $response['order']['ref']]);
+        $backPayline = $this->entityManager->getRepository(Backpayline::class)->findOneBy(['idBackpayline' => $response['order']['ref']]);
 
         if ($backPayline instanceof Backpayline) {
             $backPayline
@@ -283,9 +283,9 @@ class PaylineManager
      */
     private function notifyClientAboutMoneyTransfer(Backpayline $backPayline): void
     {
-        $lenderProvision      = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::LENDER_PROVISION]);
-        $provisionOperation   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Operation')->findOneBy(['idBackpayline' => $backPayline, 'idType' => $lenderProvision]);
-        $walletBalanceHistory = $this->entityManager->getRepository('UnilendCoreBusinessBundle:WalletBalanceHistory')->findOneBy(['idWallet' => $backPayline->getWallet(), 'idOperation' => $provisionOperation]);
+        $lenderProvision      = $this->entityManager->getRepository(OperationType::class)->findOneBy(['label' => OperationType::LENDER_PROVISION]);
+        $provisionOperation   = $this->entityManager->getRepository(Operation::class)->findOneBy(['idBackpayline' => $backPayline, 'idType' => $lenderProvision]);
+        $walletBalanceHistory = $this->entityManager->getRepository(WalletBalanceHistory::class)->findOneBy(['idWallet' => $backPayline->getWallet(), 'idOperation' => $provisionOperation]);
 
         $amount = round(bcdiv($backPayline->getAmount(), 100, 4), 2);
 
@@ -308,7 +308,7 @@ class PaylineManager
             ->setIdWalletBalanceHistory($walletBalanceHistory);
 
         $notificationSettings = $this->entityManager
-            ->getRepository('UnilendCoreBusinessBundle:ClientsGestionNotifications')
+            ->getRepository(ClientsGestionNotifications::class)
             ->findOneBy([
                 'idClient'      => $backPayline->getWallet()->getIdClient()->getIdClient(),
                 'idNotif'       => ClientsGestionTypeNotif::TYPE_CREDIT_CARD_CREDIT,

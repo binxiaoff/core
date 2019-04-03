@@ -7,9 +7,9 @@ use Symfony\Component\HttpFoundation\{Request, Response};
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Translation\TranslatorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\FrontBundle\Service\ProjectDisplayManager;
 use Unilend\core\Loader;
+use Unilend\Entity\{Clients, Companies, Projects, Settings};
 
 class ContactController extends Controller
 {
@@ -85,7 +85,7 @@ class ContactController extends Controller
         }
 
         if (false === $client->isNaturalPerson() || $client->isBorrower() || $client->isPartner()) {
-            $company = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $client]);
+            $company = $this->get('doctrine.orm.entity_manager')->getRepository(Companies::class)->findOneBy(['idClientOwner' => $client]);
         }
 
         $formData = [
@@ -128,7 +128,7 @@ class ContactController extends Controller
                 unset($results['projects']);
             } else {
                 $projectDisplayManager = $this->get('unilend.frontbundle.service.project_display_manager');
-                $projectRepository     = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Projects');
+                $projectRepository     = $this->get('doctrine.orm.entity_manager')->getRepository(Projects::class);
 
                 foreach ($results['projects'] as $index => $result) {
                     $project = $projectRepository->find($result['projectId']);
@@ -228,7 +228,7 @@ class ContactController extends Controller
             }
 
             $recipient = $this->get('doctrine.orm.entity_manager')
-                ->getRepository('UnilendCoreBusinessBundle:Settings')
+                ->getRepository(Settings::class)
                 ->findOneBy(['type' => $settingType])->getValue();
 
             $infos = '<ul>';

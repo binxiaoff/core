@@ -1,9 +1,6 @@
 <?php
 
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
-use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
+use Unilend\Entity\{Clients, DebtCollectionMission, Operation, Wallet, WalletBalanceHistory, WalletType, Zones};
 use Unilend\Bundle\CoreBusinessBundle\Service\DebtCollectionMissionManager;
 
 class recouvreurController extends bootstrap
@@ -21,9 +18,9 @@ class recouvreurController extends bootstrap
     {
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager       = $this->get('doctrine.orm.entity_manager');
-        $walletDebtCollector = $entityManager->getRepository('UnilendCoreBusinessBundle:WalletType')
+        $walletDebtCollector = $entityManager->getRepository(WalletType::class)
             ->findOneBy(['label' => WalletType::DEBT_COLLECTOR]);
-        $debtCollectors      = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')
+        $debtCollectors      = $entityManager->getRepository(Wallet::class)
             ->findBy(['idType' => $walletDebtCollector]);
         $data                = [];
 
@@ -45,12 +42,12 @@ class recouvreurController extends bootstrap
             /** @var \Doctrine\ORM\EntityManager $entityManager */
             $entityManager        = $this->get('doctrine.orm.entity_manager');
             $clientId             = filter_var($this->params[0], FILTER_VALIDATE_INT);
-            $wallet               = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->findOneBy(['idClient' => $clientId]);
-            $walletBalanceHistory = $entityManager->getRepository('UnilendCoreBusinessBundle:WalletBalanceHistory');
+            $wallet               = $entityManager->getRepository(Wallet::class)->findOneBy(['idClient' => $clientId]);
+            $walletBalanceHistory = $entityManager->getRepository(WalletBalanceHistory::class);
             $data                 = [];
 
             if ($wallet && WalletType::DEBT_COLLECTOR === $wallet->getIdType()->getLabel()) {
-                $company = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $wallet->getIdClient()->getIdClient()]);
+                $company = $entityManager->getRepository(Companies::class)->findOneBy(['idClientOwner' => $wallet->getIdClient()->getIdClient()]);
                 $data    = [
                     'company'           => $company,
                     'entrustedProjects' => $this->getEntrustedProjectData($wallet->getIdClient()),
@@ -74,8 +71,8 @@ class recouvreurController extends bootstrap
             $wireTransferId        = filter_var($this->params[0], FILTER_VALIDATE_INT);
             $debtCollectorClientId = filter_var($this->params[1], FILTER_VALIDATE_INT);
             if (
-                null !== ($wireTransfer = $entityManager->getRepository('UnilendCoreBusinessBundle:Receptions')->find($wireTransferId))
-                && null !== ($debtCollectorWallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->findOneBy(['idClient' => $debtCollectorClientId]))
+                null !== ($wireTransfer = $entityManager->getRepository(Receptions::class)->find($wireTransferId))
+                && null !== ($debtCollectorWallet = $entityManager->getRepository(Wallet::class)->findOneBy(['idClient' => $debtCollectorClientId]))
                 && WalletType::DEBT_COLLECTOR === $debtCollectorWallet->getIdType()->getLabel()
             ) {
                 try {
@@ -114,7 +111,7 @@ class recouvreurController extends bootstrap
     {
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager         = $this->get('doctrine.orm.entity_manager');
-        $debtCollectionMission = $entityManager->getRepository('UnilendCoreBusinessBundle:DebtCollectionMission');
+        $debtCollectionMission = $entityManager->getRepository(DebtCollectionMission::class);
 
         return [
             'ongoing' => $debtCollectionMission->getCountMissionsByDebtCollector($debtCollector),
@@ -132,7 +129,7 @@ class recouvreurController extends bootstrap
     {
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager       = $this->get('doctrine.orm.entity_manager');
-        $operationRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
+        $operationRepository = $entityManager->getRepository(Operation::class);
 
         return $operationRepository->getFeesPaymentOperations($wallet);
     }

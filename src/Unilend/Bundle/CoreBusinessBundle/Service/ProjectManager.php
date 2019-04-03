@@ -3,7 +3,8 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\ORM\{EntityManagerInterface, NonUniqueResultException, NoResultException};
-use Unilend\Bundle\CoreBusinessBundle\Entity\{Bids, Clients, CompanyStatus, Factures, Loans, Projects, ProjectsStatus, TaxType, Virements};
+use Unilend\Entity\{Bids, Clients, CloseOutNettingPayment, CloseOutNettingRepayment, CompanyStatus, CompanyStatusHistory, Echeanciers, EcheanciersEmprunteur, Factures, Loans, Projects, ProjectsStatus,
+    Settings, TaxType, Virements};
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 
 class ProjectManager
@@ -50,7 +51,7 @@ class ProjectManager
      */
     public function isFunded(Projects $project): bool
     {
-        $totalBidsAmount = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Bids')->getProjectTotalAmount($project);
+        $totalBidsAmount = $this->entityManager->getRepository(Bids::class)->getProjectTotalAmount($project);
 
         if (bccomp($totalBidsAmount, $project->getAmount()) >= 0) {
             return true;
@@ -116,7 +117,7 @@ class ProjectManager
     public function getAverageFundingDuration($amount)
     {
         $fundingDurationSetting = $this->entityManager
-            ->getRepository('UnilendCoreBusinessBundle:Settings')
+            ->getRepository(Settings::class)
             ->findOneBy(['type' => 'Durée moyenne financement'])
             ->getValue();
 
@@ -152,7 +153,7 @@ class ProjectManager
         $minimumRate = min(array_column($rateSettings, 'rate_min'));
         $maximumRate = max(array_column($rateSettings, 'rate_max'));
 
-        $taxType = $this->entityManager->getRepository('UnilendCoreBusinessBundle:TaxType')->find(TaxType::TYPE_VAT);
+        $taxType = $this->entityManager->getRepository(TaxType::class)->find(TaxType::TYPE_VAT);
         $vatRate = $taxType->getRate() / 100;
 
         $commissionRateRepayment = round(bcdiv($repaymentCommissionRate, 100, 4), 2);
@@ -212,7 +213,7 @@ class ProjectManager
     {
         $rateRange       = $this->bidManager->getProjectRateRange($project);
         $totalBidRateMin = $this->entityManager
-            ->getRepository('UnilendCoreBusinessBundle:Bids')
+            ->getRepository(Bids::class)
             ->getProjectTotalAmount($project, $rateRange['rate_min'], [Bids::STATUS_PENDING, Bids::STATUS_ACCEPTED]);
 
         return bccomp($totalBidRateMin, $project->getAmount()) >= 0;
@@ -226,7 +227,7 @@ class ProjectManager
      */
     public function getCommissionFunds(Projects $project, $inclTax)
     {
-        $invoice        = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Factures')->findOneBy(['idProject' => $project, 'typeCommission' => Factures::TYPE_COMMISSION_FUNDS]);
+        $invoice        = $this->entityManager->getRepository(Factures::class)->findOneBy(['idProject' => $project, 'typeCommission' => Factures::TYPE_COMMISSION_FUNDS]);
         $commissionRate = round(bcdiv($project->getCommissionRateFunds(), 100, 5), 4);
         $commission     = round(bcmul($project->getAmount(), $commissionRate, 4), 2);
         if (null !== $invoice) {
@@ -237,7 +238,7 @@ class ProjectManager
             if (null !== $invoice) {
                 $commission = round(bcdiv($invoice->getMontantTtc(), 100, 4), 2);
             } else {
-                $vatTax     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:TaxType')->find(TaxType::TYPE_VAT);
+                $vatTax     = $this->entityManager->getRepository(TaxType::class)->find(TaxType::TYPE_VAT);
                 $vatRate    = bcadd(1, bcdiv($vatTax->getRate(), 100, 4), 4);
                 $commission = round(bcmul($vatRate, $commission, 4), 2);
             }
@@ -281,7 +282,7 @@ class ProjectManager
             null === $project->getCloseOutNettingDate()
             && 0 === count($project->getDebtCollectionMissions())
             && CompanyStatus::STATUS_IN_BONIS === $project->getIdCompany()->getIdStatus()->getLabel()
-            && 0 === $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur')->getOverdueScheduleCount($project)
+            && 0 === $this->entityManager->getRepository(EcheanciersEmprunteur::class)->getOverdueScheduleCount($project)
         ) {
             return true;
         }
@@ -297,7 +298,7 @@ class ProjectManager
     public function getOverdueAmounts(Projects $project): array
     {
         if (null === $project->getCloseOutNettingDate()) {
-            $overdueAmounts = $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur')->getTotalOverdueAmounts($project);
+            $overdueAmounts = $this->entityManager->getRepository(EcheanciersEmprunteur::class)->getTotalOverdueAmounts($project);
         } else {
             $overdueAmounts = $this->getCloseOutNettingRemainingAmounts($project);
         }
@@ -314,7 +315,7 @@ class ProjectManager
     {
         if (null === $project->getCloseOutNettingDate()) {
             try {
-                $remainingAmounts = $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur')->getRemainingAmountsByProject($project);
+                $remainingAmounts = $this->entityManager->getRepository(EcheanciersEmprunteur::class)->getRemainingAmountsByProject($project);
             } catch (NoResultException $exception) {
                 $remainingAmounts = ['capital' => 0, 'interest' => 0, 'commission' => 0];
             }
@@ -335,7 +336,7 @@ class ProjectManager
         $remainingAmounts = ['capital' => 0, 'interest' => 0, 'commission' => 0];
 
         if ($project->getCloseOutNettingDate()) {
-            $closeOutNettingPayment = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CloseOutNettingPayment')->findOneBy(['idProject' => $project]);
+            $closeOutNettingPayment = $this->entityManager->getRepository(CloseOutNettingPayment::class)->findOneBy(['idProject' => $project]);
             if ($closeOutNettingPayment) {
                 $remainingAmounts = [
                     'capital'    => round(bcsub($closeOutNettingPayment->getCapital(), $closeOutNettingPayment->getPaidCapital(), 4), 2),
@@ -358,7 +359,7 @@ class ProjectManager
     public function getCreditorClaimAmounts(Loans $loan)
     {
         if ($loan->getProject()->getCloseOutNettingDate()) {
-            $closeOutNettingRepayment = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CloseOutNettingRepayment')->findOneBy(['idLoan' => $loan]);
+            $closeOutNettingRepayment = $this->entityManager->getRepository(CloseOutNettingRepayment::class)->findOneBy(['idLoan' => $loan]);
             $remainingCapital         = round(bcsub($closeOutNettingRepayment->getCapital(), $closeOutNettingRepayment->getRepaidCapital(), 4), 2);
             $remainingInterest        = round(bcsub($closeOutNettingRepayment->getInterest(), $closeOutNettingRepayment->getRepaidInterest(), 4), 2);
             $expired                  = round(bcadd($remainingCapital, $remainingInterest, 4), 2);
@@ -370,10 +371,10 @@ class ProjectManager
                 CompanyStatus::STATUS_COMPULSORY_LIQUIDATION
             ];
             $companyStatusHistory       = $this->entityManager
-                ->getRepository('UnilendCoreBusinessBundle:CompanyStatusHistory')
+                ->getRepository(CompanyStatusHistory::class)
                 ->findFirstHistoryByCompanyAndStatus($loan->getProject()->getIdCompany(), $collectiveProceedingStatus);
 
-            $repaymentScheduleRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers');
+            $repaymentScheduleRepository = $this->entityManager->getRepository(Echeanciers::class);
             $expired                     = $repaymentScheduleRepository->getTotalOverdueAmountByLoan($loan, $companyStatusHistory->getChangedOn());
             $toExpire                    = round(bcsub(
                 $repaymentScheduleRepository->getRemainingCapitalByLoan($loan),

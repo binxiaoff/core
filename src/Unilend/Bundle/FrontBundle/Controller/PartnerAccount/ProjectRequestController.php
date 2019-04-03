@@ -9,7 +9,7 @@ use Symfony\Component\HttpFoundation\{RedirectResponse, Request, Response};
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\User\UserInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{Clients, ClientsStatus, CompanyClient, PartnerProjectAttachment, ProjectAbandonReason, ProjectRejectionReason, Projects, ProjectsStatus, Users};
+use Unilend\Entity\{BorrowingMotive, Clients, ClientsStatus, CompanyClient, PartnerProjectAttachment, ProjectAbandonReason, ProjectRejectionReason, Projects, ProjectsStatus, Users};
 use Unilend\Bundle\CoreBusinessBundle\Service\ProjectRequestManager;
 use Unilend\core\Loader;
 
@@ -31,7 +31,7 @@ class ProjectRequestController extends Controller
             'loanPeriods'      => $projectManager->getPossibleProjectPeriods(),
             'projectAmountMin' => $projectManager->getMinProjectAmount(),
             'projectAmountMax' => $projectManager->getMaxProjectAmount(),
-            'borrowingMotives' => $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:BorrowingMotive')->findBy([], ['rank' => 'ASC']),
+            'borrowingMotives' => $this->get('doctrine.orm.entity_manager')->getRepository(BorrowingMotive::class)->findBy([], ['rank' => 'ASC']),
             'form'             => $request->getSession()->get('partnerProjectRequest', [])
         ];
 
@@ -66,9 +66,9 @@ class ProjectRequestController extends Controller
             }
 
             /** @var Users $frontUser */
-            $frontUser = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find(Users::USER_ID_FRONT);
+            $frontUser = $entityManager->getRepository(Users::class)->find(Users::USER_ID_FRONT);
             /** @var CompanyClient $partnerRole */
-            $partnerRole    = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyClient')->findOneBy(['idClient' => $partnerUser]);
+            $partnerRole    = $entityManager->getRepository(CompanyClient::class)->findOneBy(['idClient' => $partnerUser]);
             $partnerCompany = null;
             if ($partnerRole) {
                 $partnerCompany = $partnerRole->getIdCompany();
@@ -147,7 +147,7 @@ class ProjectRequestController extends Controller
             $template['rejectionReason'] = $projectRequestManager->getPartnerMainRejectionReasonMessage($project);
         } else {
             $monthlyPaymentBoundaries = $projectManager->getMonthlyPaymentBoundaries($project->getAmount(), $project->getPeriod(), $project->getCommissionRateRepayment());
-            $projectAbandonReasonList = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectAbandonReason')
+            $projectAbandonReasonList = $entityManager->getRepository(ProjectAbandonReason::class)
                 ->findBy(['status' => ProjectRejectionReason::STATUS_ONLINE], ['reason' => 'ASC']);
             $partner                  = $this->get('unilend.service.partner_manager')->getPartner($partnerUser);
 
@@ -197,7 +197,7 @@ class ProjectRequestController extends Controller
         $entityManager            = $this->get('doctrine.orm.entity_manager');
         $projectManager           = $this->get('unilend.service.project_manager');
         $client                   = $project->getIdCompany()->getIdClientOwner();
-        $projectAbandonReasonList = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectAbandonReason')
+        $projectAbandonReasonList = $entityManager->getRepository(ProjectAbandonReason::class)
             ->findBy(['status' => ProjectAbandonReason::STATUS_ONLINE], ['reason' => 'ASC']);
         $partner                  = $this->get('unilend.service.partner_manager')->getPartner($partnerUser);
 
@@ -221,7 +221,7 @@ class ProjectRequestController extends Controller
             'averageFundingDuration'   => $projectManager->getAverageFundingDuration($project->getAmount()),
             'monthlyPaymentBoundaries' => $projectManager->getMonthlyPaymentBoundaries($project->getAmount(), $project->getPeriod(), $project->getCommissionRateRepayment()),
             'abandonReasons'           => $projectAbandonReasonList,
-            'attachments'              => $entityManager->getRepository('UnilendCoreBusinessBundle:PartnerProjectAttachment')->findBy(['idPartner' => $partner], ['rank' => 'ASC']),
+            'attachments'              => $entityManager->getRepository(PartnerProjectAttachment::class)->findBy(['idPartner' => $partner], ['rank' => 'ASC']),
             'activeExecutives'         => $activeExecutives
         ];
 
@@ -317,7 +317,7 @@ class ProjectRequestController extends Controller
         $entityManager = $this->get('doctrine.orm.entity_manager');
         $partner       = $this->get('unilend.service.partner_manager')->getPartner($partnerUser);
         /** @var PartnerProjectAttachment[] $partnerAttachments */
-        $partnerAttachments = $entityManager->getRepository('UnilendCoreBusinessBundle:PartnerProjectAttachment')->findBy(['idPartner' => $partner]);
+        $partnerAttachments = $entityManager->getRepository(PartnerProjectAttachment::class)->findBy(['idPartner' => $partner]);
         if ($submit) {
             if (empty($title) || false === empty($title) && false === in_array($title, [Clients::TITLE_MISS, Clients::TITLE_MISTER])) {
                 $errors['contact']['title'] = true;
@@ -355,7 +355,7 @@ class ProjectRequestController extends Controller
         }
 
         /** @var Clients $client */
-        $clientRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
+        $clientRepository = $entityManager->getRepository(Clients::class);
         $client           = $clientRepository->find($project->getIdCompany()->getIdClientOwner());
 
         if (empty($errors)) {
@@ -533,7 +533,7 @@ class ProjectRequestController extends Controller
         }
 
         $entityManager           = $this->get('doctrine.orm.entity_manager');
-        $abandonReasonRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectAbandonReason');
+        $abandonReasonRepository = $entityManager->getRepository(ProjectAbandonReason::class);
 
         if (
             $project->getStatus() !== ProjectsStatus::STATUS_CANCELLED
@@ -595,7 +595,7 @@ class ProjectRequestController extends Controller
     {
         $entityManager     = $this->get('doctrine.orm.entity_manager');
         $partnerManager    = $this->get('unilend.service.partner_manager');
-        $projectRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
+        $projectRepository = $entityManager->getRepository(Projects::class);
         $project           = $projectRepository->findOneBy(['hash' => $hash]);
         $userCompanies     = $partnerManager->getUserCompanies($partnerUser);
 

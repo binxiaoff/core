@@ -23,7 +23,7 @@ classNames: 'user-preter-profile'
     {% set fiscalAddressViewCollapse = 'in' %}
 {% endif %}
 
-{% if client.type in [constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::TYPE_PERSON'), constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::TYPE_PERSON_FOREIGNER')] %}
+{% if client.type in [constant('\\Unilend\\Entity\\Clients::TYPE_PERSON'), constant('\\Unilend\\Entity\\Clients::TYPE_PERSON_FOREIGNER')] %}
     {% form_theme forms.contact '/frontbundle/forms/fields.html.twig' %}
     {% if forms.contact.vars.valid == false %}
         {% set contactFormCollapse = 'in' %}
@@ -57,7 +57,7 @@ classNames: 'user-preter-profile'
                     </div>
                 </header>
                 <section id="profile-info-section" role="tablist" class="ui-toggle-group" aria-multiselectable="true">
-                    {% if client.type in [constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::TYPE_PERSON'), constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::TYPE_PERSON_FOREIGNER')] %}
+                    {% if client.type in [constant('\\Unilend\\Entity\\Clients::TYPE_PERSON'), constant('\\Unilend\\Entity\\Clients::TYPE_PERSON_FOREIGNER')] %}
                         {% include 'lender_profile/partials/person_identity.html.twig' %}
                         {% include 'lender_profile/partials/person_identity_form.html.twig' %}
                     {% else %}
@@ -67,7 +67,7 @@ classNames: 'user-preter-profile'
                 </section><!-- /.ui-toggle-group -->
             </article><!-- /.panel -->
 
-            {% if client.type in [constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::TYPE_PERSON'), constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::TYPE_PERSON_FOREIGNER')] %}
+            {% if client.type in [constant('\\Unilend\\Entity\\Clients::TYPE_PERSON'), constant('\\Unilend\\Entity\\Clients::TYPE_PERSON_FOREIGNER')] %}
                 <article id="panel-contact" class="panel">
                     <header class="panel-header">
                         <h3>{% trans %} lender-profile_information-tab-contact-section-title {% endtrans %}</h3>
@@ -103,7 +103,7 @@ classNames: 'user-preter-profile'
                     </div>
                 </header>
                 <section id="profile-address-section" role="tablist" class="ui-toggle-group" aria-multiselectable="true">
-                    {% if client.type in [constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::TYPE_PERSON'), constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::TYPE_PERSON_FOREIGNER')] %}
+                    {% if client.type in [constant('\\Unilend\\Entity\\Clients::TYPE_PERSON'), constant('\\Unilend\\Entity\\Clients::TYPE_PERSON_FOREIGNER')] %}
                         {% include 'lender_profile/partials/person_main_address.html.twig' %}
                     {% else %}
                         {% include 'lender_profile/partials/legal_entity_main_address.html.twig' %}
@@ -126,7 +126,7 @@ classNames: 'user-preter-profile'
                     </div>
                 </header>
                 <section id="profile-correspondence-section" role="tablist" class="ui-toggle-group" aria-multiselectable="true">
-                    {% if client.type in [constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::TYPE_PERSON'), constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::TYPE_PERSON_FOREIGNER')] %}
+                    {% if client.type in [constant('\\Unilend\\Entity\\Clients::TYPE_PERSON'), constant('\\Unilend\\Entity\\Clients::TYPE_PERSON_FOREIGNER')] %}
                         {% include 'lender_profile/partials/person_postal_address.html.twig' %}
                     {% else %}
                         {% include 'lender_profile/partials/legal_entity_postal_address.html.twig' %}

@@ -2,7 +2,7 @@
 
 namespace Unilend\Bundle\WSClientBundle\Service;
 
-use Unilend\Bundle\CoreBusinessBundle\Entity\WsExternalResource;
+use Unilend\Entity\WsExternalResource;
 use Doctrine\ORM\EntityManagerInterface;
 
 class ResourceManager
@@ -25,7 +25,7 @@ class ResourceManager
      */
     public function getResource($resourceLabel)
     {
-        $wsResource = $this->entityManager->getRepository('UnilendCoreBusinessBundle:WsExternalResource')
+        $wsResource = $this->entityManager->getRepository(WsExternalResource::class)
             ->findOneBy(['label' => $resourceLabel]);
 
         return $wsResource;

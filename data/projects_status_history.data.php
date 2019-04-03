@@ -1,6 +1,6 @@
 <?php
 
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
+use Unilend\Entity\ProjectsStatus;
 
 class projects_status_history extends projects_status_history_crud
 {

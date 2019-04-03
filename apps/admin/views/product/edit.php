@@ -9,13 +9,13 @@
             <th>Statut</th>
             <?php
             switch ( $this->product->status) {
-                case \Unilend\Bundle\CoreBusinessBundle\Entity\Product::STATUS_OFFLINE:
+                case \Unilend\Entity\Product::STATUS_OFFLINE:
                     $status = 'Desactivé FO (indisponible FO mais disponible BO)';
                     break;
-                case \Unilend\Bundle\CoreBusinessBundle\Entity\Product::STATUS_ONLINE:
+                case \Unilend\Entity\Product::STATUS_ONLINE:
                     $status = 'Activé';
                     break;
-                case \Unilend\Bundle\CoreBusinessBundle\Entity\Product::STATUS_ARCHIVED:
+                case \Unilend\Entity\Product::STATUS_ARCHIVED:
                     $status = 'Archivé (indisponible FO et BO)';
                     break;
             }

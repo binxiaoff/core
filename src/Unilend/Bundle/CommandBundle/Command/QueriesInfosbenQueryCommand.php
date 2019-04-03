@@ -6,7 +6,7 @@ use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
+use Unilend\Entity\Wallet;
 use Unilend\Bundle\CoreBusinessBundle\Service\IfuManager;
 
 class QueriesInfosbenQueryCommand extends ContainerAwareCommand

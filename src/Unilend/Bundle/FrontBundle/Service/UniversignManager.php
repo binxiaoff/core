@@ -10,16 +10,18 @@ use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Routing\Router;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\Translation\TranslatorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsMandats;
-use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyBeneficialOwnerDeclaration;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Prelevements;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectBeneficialOwnerUniversign;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectCgv;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsPouvoir;
-use Unilend\Bundle\CoreBusinessBundle\Entity\UniversignEntityInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\WireTransferOutUniversign;
+use Unilend\Entity\BankAccount;
+use Unilend\Entity\Clients;
+use Unilend\Entity\ClientsMandats;
+use Unilend\Entity\CompanyBeneficialOwnerDeclaration;
+use Unilend\Entity\Prelevements;
+use Unilend\Entity\ProjectBeneficialOwnerUniversign;
+use Unilend\Entity\ProjectCgv;
+use Unilend\Entity\Projects;
+use Unilend\Entity\ProjectsPouvoir;
+use Unilend\Entity\Settings;
+use Unilend\Entity\UniversignEntityInterface;
+use Unilend\Entity\WireTransferOutUniversign;
 use Unilend\Bundle\CoreBusinessBundle\Service\MailerManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\SlackManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\WireTransferOutManager;
@@ -179,7 +181,7 @@ class UniversignManager
      */
     private function signProxy(ProjectsPouvoir $proxy)
     {
-        $mandate = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ClientsMandats')->findOneBy([
+        $mandate = $this->entityManager->getRepository(ClientsMandats::class)->findOneBy([
             'idProject' => $proxy->getIdProject(),
             'status'    => UniversignEntityInterface::STATUS_SIGNED
         ]);
@@ -199,7 +201,7 @@ class UniversignManager
      */
     public function createProject(Projects $project, ProjectsPouvoir $proxy, ClientsMandats $mandate, ProjectBeneficialOwnerUniversign $beneficialOwnerUniversign = null)
     {
-        $bankAccount = $this->entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($project->getIdCompany()->getIdClientOwner());
+        $bankAccount = $this->entityManager->getRepository(BankAccount::class)->getClientValidatedBankAccount($project->getIdCompany()->getIdClientOwner());
         if (null === $bankAccount) {
             $this->logger->warning('No validated bank account found for mandate ' . $mandate->getId() . ' of client ' . $mandate->getIdClient()->getIdClient(), ['function' => __FUNCTION__]);
 
@@ -248,7 +250,7 @@ class UniversignManager
      */
     public function createMandate(ClientsMandats $mandate)
     {
-        $bankAccount = $this->entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($mandate->getIdClient());
+        $bankAccount = $this->entityManager->getRepository(BankAccount::class)->getClientValidatedBankAccount($mandate->getIdClient());
         if (null === $bankAccount) {
             $this->logger->warning('No validated bank account found for mandate ' . $mandate->getId() . ' of client ' . $mandate->getIdClient()->getIdClient(), ['function' => __FUNCTION__]);
 
@@ -277,13 +279,13 @@ class UniversignManager
      */
     private function signMandate(ClientsMandats $mandate)
     {
-        $archivedMandate = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ClientsMandats')->findBy([
+        $archivedMandate = $this->entityManager->getRepository(ClientsMandats::class)->findBy([
             'idProject' => $mandate->getIdProject(),
             'status'    => UniversignEntityInterface::STATUS_ARCHIVED
         ]);
 
         if (false === empty($archivedMandate)) {
-            $futureDirectDebits = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Prelevements')->findBy([
+            $futureDirectDebits = $this->entityManager->getRepository(Prelevements::class)->findBy([
                 'idProject' => $mandate->getIdProject()->getIdProject(),
                 'status'    => Prelevements::STATUS_PENDING
             ]);
@@ -298,7 +300,7 @@ class UniversignManager
             }
         }
 
-        $proxy = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsPouvoir')->findOneBy([
+        $proxy = $this->entityManager->getRepository(ProjectsPouvoir::class)->findOneBy([
             'idProject' => $mandate->getIdProject(),
             'status'    => UniversignEntityInterface::STATUS_SIGNED
         ]);
@@ -529,22 +531,22 @@ class UniversignManager
             case ProjectsPouvoir::class:
                 /** @var ProjectsPouvoir $document */
                 $clientId = $document->getIdProject()->getIdCompany()->getIdClientOwner();
-                $client   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($clientId);
+                $client   = $this->entityManager->getRepository(Clients::class)->find($clientId);
                 break;
             case ProjectCgv::class:
                 /** @var ProjectCgv $document */
                 $clientId = $document->getIdProject()->getIdCompany()->getIdClientOwner();
-                $client   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($clientId);
+                $client   = $this->entityManager->getRepository(Clients::class)->find($clientId);
                 break;
             case WireTransferOutUniversign::class:
                 /** @var WireTransferOutUniversign $document */
                 $clientId = $document->getIdWireTransferOut()->getProject()->getIdCompany()->getIdClientOwner();
-                $client   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($clientId);
+                $client   = $this->entityManager->getRepository(Clients::class)->find($clientId);
                 break;
             case ProjectBeneficialOwnerUniversign::class:
                 /** @var ProjectBeneficialOwnerUniversign $document */
                 $clientId = $document->getIdProject()->getIdCompany()->getIdClientOwner();
-                $client   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($clientId);
+                $client   = $this->entityManager->getRepository(Clients::class)->find($clientId);
                 break;
             default:
                 $this->logger->error('Unknown Universign document type : ' . get_class($document) . '  id : ' . $document->getId(), ['class' => __CLASS__, 'function' => __FUNCTION__]);
@@ -671,7 +673,7 @@ class UniversignManager
      */
     private function notifyError($signatureType, $signatureId, $soapResult)
     {
-        $setting  = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'DebugMailIt']);
+        $setting  = $this->entityManager->getRepository(Settings::class)->findOneBy(['type' => 'DebugMailIt']);
         $keywords = [
             '[DOCUMENT_TYPE]'     => $signatureType,
             '[DOCUMENT_ID]'       => $signatureId,
@@ -704,8 +706,8 @@ class UniversignManager
     public function cancelProxyAndMandate(Projects $project)
     {
         try {
-            $mandate = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ClientsMandats')->findOneBy(['idProject' => $project]);
-            $proxy   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsPouvoir')->findOneBy(['idProject' => $project]);
+            $mandate = $this->entityManager->getRepository(ClientsMandats::class)->findOneBy(['idProject' => $project]);
+            $proxy   = $this->entityManager->getRepository(ProjectsPouvoir::class)->findOneBy(['idProject' => $project]);
             $client  = new Client($this->universignURL);
 
             if (null !== $mandate) {

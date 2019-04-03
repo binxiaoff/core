@@ -3,21 +3,21 @@
     <dl class="list-2col">
         <dt>{% trans %} common_title {% endtrans %}</dt>
         <dd id="data-update-info-civilite-output">
-            {% if client.civilite == constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::TITLE_MISTER') %}
+            {% if client.civilite == constant('Unilend\\Entity\\Clients::TITLE_MISTER') %}
                 {% trans %} common_title-male {% endtrans %}
-            {% elseif client.civilite == constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::TITLE_MISS') %}
+            {% elseif client.civilite == constant('Unilend\\Entity\\Clients::TITLE_MISS') %}
                 {% trans %} common_title-female {% endtrans %}
             {% endif %}
         </dd>
         <dt>{% trans %} lender-profile_information-tab-identity-section-company-client-status-label {% endtrans %}</dt>
         <dd>
             <span id="data-update-info-company-client-status-output">{{ "lender-profile_information-tab-identity-section-company-client-status-#{ company.statusClient }" | trans }} </span>
-            <span id="data-update-info-company-status-conseil-externe-entreprise-output" class="legal-entity-status-3 collapse {% if company.statusClient == constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Companies::CLIENT_STATUS_EXTERNAL_CONSULTANT') %}in{% endif %}">
-                {% if company.statusConseilExterneEntreprise != constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Companies::CLIENT_STATUS_EXTERNAL_COUNSEL_OTHER') %}
+            <span id="data-update-info-company-status-conseil-externe-entreprise-output" class="legal-entity-status-3 collapse {% if company.statusClient == constant('Unilend\\Entity\\Companies::CLIENT_STATUS_EXTERNAL_CONSULTANT') %}in{% endif %}">
+                {% if company.statusConseilExterneEntreprise != constant('Unilend\\Entity\\Companies::CLIENT_STATUS_EXTERNAL_COUNSEL_OTHER') %}
                     {{ externalCounselList[company.statusConseilExterneEntreprise]|default() }}
                 {% endif %}
             </span>
-        <span id="data-update-info-company-specify-externe-conseil-output" class="legal-entity-status-other-field collapse {% if company.statusConseilExterneEntreprise == constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Companies::CLIENT_STATUS_EXTERNAL_COUNSEL_OTHER') %}in{% endif %}">
+        <span id="data-update-info-company-specify-externe-conseil-output" class="legal-entity-status-other-field collapse {% if company.statusConseilExterneEntreprise == constant('Unilend\\Entity\\Companies::CLIENT_STATUS_EXTERNAL_COUNSEL_OTHER') %}in{% endif %}">
              {{ company.preciserConseilExterneEntreprise }}
         </span>
         </dd>
@@ -34,11 +34,11 @@
     </dl>
 
     <section role="tabpanel"
-             class="legal-entity-status-not-1 collapse {% if company.statusClient != constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Companies::CLIENT_STATUS_MANAGER') %}in{% endif %}">
+             class="legal-entity-status-not-1 collapse {% if company.statusClient != constant('Unilend\\Entity\\Companies::CLIENT_STATUS_MANAGER') %}in{% endif %}">
         <h5>{% trans %} lender-profile_information-tab-identity-section-company-director-title {% endtrans %}</h5>
         <dl class="list-2col">
             <dt>{% trans %} common_title {% endtrans %}</dt>
-            {% if company.civiliteDirigeant == constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::TITLE_MISTER') %}
+            {% if company.civiliteDirigeant == constant('Unilend\\Entity\\Clients::TITLE_MISTER') %}
                 <dd id="data-update-info-company-manager-title-output">{% trans %} common_title-male {% endtrans %}</dd>
             {% else %}
                 <dd id="data-update-info-company-manager-title-output">{% trans %} common_title-female {% endtrans %}</dd>
@@ -135,7 +135,7 @@
             </div><!-- /.form-field -->
 
             <div class="col-lg-6 col-md-6">
-                <div class="legal-entity-status-other-field form-field collapse {% if form.company.vars.value.statusConseilExterneEntreprise == constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Companies::CLIENT_STATUS_EXTERNAL_COUNSEL_OTHER') %}in{% endif %} {% if form.company.preciserConseilExterneEntreprise.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
+                <div class="legal-entity-status-other-field form-field collapse {% if form.company.vars.value.statusConseilExterneEntreprise == constant('Unilend\\Entity\\Companies::CLIENT_STATUS_EXTERNAL_COUNSEL_OTHER') %}in{% endif %} {% if form.company.preciserConseilExterneEntreprise.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
                     <label for="form-data-update-info-company-client-status-other">
                         {% trans %} lender-profile_information-tab-identity-section-company-other-external-counsel-label {% endtrans %}
                         <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span>
@@ -250,7 +250,7 @@
     </div><!-- /.row -->
 
     {# Show if company_client_status is not Companies::CLIENT_STATUS_MANAGER #}
-    <div class="legal-entity-status-not-1 collapse {% if form.company.vars.value.statusClient != constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Companies::CLIENT_STATUS_MANAGER') %}in{% endif %}">
+    <div class="legal-entity-status-not-1 collapse {% if form.company.vars.value.statusClient != constant('Unilend\\Entity\\Companies::CLIENT_STATUS_MANAGER') %}in{% endif %}">
         <h3>{% trans %} lender-profile_information-tab-identity-section-company-director-title {% endtrans %}</h3>
 
         <div class="row">

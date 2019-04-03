@@ -4,7 +4,7 @@ namespace Unilend\Bundle\CommandBundle\Command;
 
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\{Input\InputInterface, Output\OutputInterface};
-use Unilend\Bundle\CoreBusinessBundle\Entity\CloseOutNettingPayment;
+use Unilend\Entity\CloseOutNettingPayment;
 
 class EmailCloseOutNettingNotificationCommand extends ContainerAwareCommand
 {
@@ -25,7 +25,7 @@ class EmailCloseOutNettingNotificationCommand extends ContainerAwareCommand
     {
         $entityManager                    = $this->getContainer()->get('doctrine.orm.entity_manager');
         $projectStatusNotificationSender  = $this->getContainer()->get('unilend.service.project_status_notification_sender');
-        $closeOutNettingPaymentRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:CloseOutNettingPayment');
+        $closeOutNettingPaymentRepository = $entityManager->getRepository(CloseOutNettingPayment::class);
 
         /** @var CloseOutNettingPayment $closeOutNettingPayment */
         foreach ($closeOutNettingPaymentRepository->findBy(['borrowerNotified' => false]) as $closeOutNettingPayment) {

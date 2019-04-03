@@ -5,11 +5,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\OptimisticLockException;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ClientAtypicalOperation;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ClientVigilanceStatusHistory;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
-use Unilend\Bundle\CoreBusinessBundle\Entity\VigilanceRule;
+use Unilend\Entity\{ClientAtypicalOperation, Clients, ClientVigilanceStatusHistory, Users, VigilanceRule};
 
 
 class ClientVigilanceStatusManager
@@ -40,9 +36,9 @@ class ClientVigilanceStatusManager
     public function upgradeClientVigilanceStatusHistory(Clients $client, int $vigilanceStatus, $userId, ?ClientAtypicalOperation $clientAtypicalOperation = null, ?string $comment = null) : ?ClientVigilanceStatusHistory
     {
         if (false === $userId instanceof Users) {
-            $userId = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find($userId);
+            $userId = $this->entityManager->getRepository(Users::class)->find($userId);
         }
-        $currentClientVigilanceStatus = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ClientVigilanceStatusHistory')->findOneBy(['client' => $client], ['added' => 'DESC']);
+        $currentClientVigilanceStatus = $this->entityManager->getRepository(ClientVigilanceStatusHistory::class)->findOneBy(['client' => $client], ['added' => 'DESC']);
 
         if (null === $currentClientVigilanceStatus ||
             $currentClientVigilanceStatus->getVigilanceStatus() < $vigilanceStatus
@@ -75,9 +71,9 @@ class ClientVigilanceStatusManager
     public function retrogradeClientVigilanceStatusHistory(Clients $client, int $vigilanceStatus, $userId, ?ClientAtypicalOperation $clientAtypicalOperation = null, ?string $comment = null) : ?ClientVigilanceStatusHistory
     {
         if (false === $userId instanceof Users) {
-            $userId = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find($userId);
+            $userId = $this->entityManager->getRepository(Users::class)->find($userId);
         }
-        $currentClientVigilanceStatus = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ClientVigilanceStatusHistory')->findOneBy(['client' => $client], ['added' => 'DESC']);
+        $currentClientVigilanceStatus = $this->entityManager->getRepository(ClientVigilanceStatusHistory::class)->findOneBy(['client' => $client], ['added' => 'DESC']);
 
         if (null === $currentClientVigilanceStatus ||
             $currentClientVigilanceStatus->getVigilanceStatus() >= $vigilanceStatus
@@ -110,7 +106,7 @@ class ClientVigilanceStatusManager
     public function addClientAtypicalOperation(VigilanceRule $vigilanceRule, Clients $client, $atypicalValue = null, $operationLog = null, $comment = null, $checkPendingDuplicate = false)
     {
         if (true === $checkPendingDuplicate) {
-            $pendingAtypicalOperation = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ClientAtypicalOperation')
+            $pendingAtypicalOperation = $this->entityManager->getRepository(ClientAtypicalOperation::class)
                 ->findOneBy(['client' => $client, 'rule' => $vigilanceRule, 'atypicalValue' => $atypicalValue, 'operationLog' => $operationLog]);
 
             if (null !== $pendingAtypicalOperation) {
@@ -125,7 +121,7 @@ class ClientVigilanceStatusManager
             ->setAtypicalValue($atypicalValue)
             ->setOperationLog($operationLog)
             ->setUserComment($comment)
-            ->setIdUser($this->entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find(Users::USER_ID_CRON));
+            ->setIdUser($this->entityManager->getRepository(Users::class)->find(Users::USER_ID_CRON));
 
         $this->entityManager->persist($atypicalOperation);
         $this->entityManager->flush($atypicalOperation);

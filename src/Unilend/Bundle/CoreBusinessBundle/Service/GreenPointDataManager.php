@@ -4,8 +4,8 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, Attachment, AttachmentType, GreenpointAttachment, GreenpointAttachmentDetail};
-use Unilend\Bundle\WSClientBundle\Entity\Greenpoint\{HousingCertificate, Identity, Rib};
+use Unilend\Entity\{AddressType, Attachment, AttachmentType, ClientAddress, Companies, CompanyAddress, GreenpointAttachment, GreenpointAttachmentDetail};
+use Unilend\Bundle\WSClientBundle\Entity\GreenPoint\{HousingCertificate, Identity, Rib};
 use Unilend\Bundle\WSClientBundle\Service\GreenPointManager;
 
 class GreenPointDataManager
@@ -94,10 +94,10 @@ class GreenPointDataManager
     private function getAddressData(Attachment $attachment): array
     {
         if ($attachment->getClient()->isNaturalPerson()) {
-            $address = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ClientAddress')->findLastModifiedNotArchivedAddressByType($attachment->getClient(), AddressType::TYPE_MAIN_ADDRESS);
+            $address = $this->entityManager->getRepository(ClientAddress::class)->findLastModifiedNotArchivedAddressByType($attachment->getClient(), AddressType::TYPE_MAIN_ADDRESS);
         } else {
-            $company = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $attachment->getClient()]);
-            $address = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')->findLastModifiedNotArchivedAddressByType($company, AddressType::TYPE_MAIN_ADDRESS);
+            $company = $this->entityManager->getRepository(Companies::class)->findOneBy(['idClientOwner' => $attachment->getClient()]);
+            $address = $this->entityManager->getRepository(CompanyAddress::class)->findLastModifiedNotArchivedAddressByType($company, AddressType::TYPE_MAIN_ADDRESS);
         }
 
         if (null === $address) {
@@ -179,7 +179,7 @@ class GreenPointDataManager
      */
     private function updateGreenpointAttachment(Attachment $attachment, $response): GreenpointAttachment
     {
-        $greenPointAttachment = $this->entityManager->getRepository('UnilendCoreBusinessBundle:GreenpointAttachment')->findOneBy(['idAttachment' => $attachment->getId()]);
+        $greenPointAttachment = $this->entityManager->getRepository(GreenpointAttachment::class)->findOneBy(['idAttachment' => $attachment->getId()]);
 
         if (null === $greenPointAttachment) {
             $greenPointAttachment = $this->createGreenpointAttachment($attachment);

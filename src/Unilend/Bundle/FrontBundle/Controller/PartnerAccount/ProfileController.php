@@ -8,7 +8,7 @@ use Symfony\Component\Form\{FormError, FormInterface};
 use Symfony\Component\HttpFoundation\{Request, Response};
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\User\UserInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+use Unilend\Entity\Clients;
 use Unilend\Bundle\FrontBundle\Form\ClientPasswordType;
 
 class ProfileController extends Controller

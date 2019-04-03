@@ -42,7 +42,7 @@
 <div id="freeow-tr" class="freeow freeow-top-right"></div>
 <div id="contenu">
 <?php
-use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
+use Unilend\Entity\Virements;
 if (empty($this->wireTransferOuts)) : ?>
     <h2>Aucun projet en cours</h2>
 <?php else : ?>
@@ -63,7 +63,7 @@ if (empty($this->wireTransferOuts)) : ?>
                 <td colspan="10"><span class="sign"></span> <?= $this->translator->trans('wire-transfer-out_status-' . $status) ?> (<?= count($wireTransferOuts) ?>)</td>
             </tr>
             <?php
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Virements $wireTransferOut */
+            /** @var \Unilend\Entity\Virements $wireTransferOut */
             $i = 0;
             ?>
             <?php foreach ($wireTransferOuts as $wireTransferOut) : ?>

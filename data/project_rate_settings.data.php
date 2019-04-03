@@ -1,7 +1,7 @@
 <?php
 
 use Doctrine\DBAL\Connection;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectPeriod;
+use Unilend\Entity\{ProjectPeriod, ProjectRateSettings};
 
 class project_rate_settings extends project_rate_settings_crud
 {
@@ -57,7 +57,7 @@ class project_rate_settings extends project_rate_settings_crud
     public function getSettings(
         $evaluation = null,
         $periodId = null,
-        $status = [\Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRateSettings::STATUS_ACTIVE],
+        $status = [ProjectRateSettings::STATUS_ACTIVE],
         $order = ['pp.min' => 'ASC', 'prs.evaluation' => 'DESC'],
         $limit = null,
         $offset = null

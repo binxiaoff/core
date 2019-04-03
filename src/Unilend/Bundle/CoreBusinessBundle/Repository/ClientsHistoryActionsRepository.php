@@ -2,9 +2,8 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
-
 use Doctrine\ORM\EntityRepository;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsHistoryActions;
+use Unilend\Entity\ClientsHistoryActions;
 
 class ClientsHistoryActionsRepository extends EntityRepository
 {

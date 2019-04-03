@@ -5,7 +5,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Translation\TranslatorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, Attachment, Clients, Companies, WalletType};
+use Unilend\Entity\{AddressType, Attachment, BankAccount, ClientAddress, ClientDataHistory, Clients, Companies, CompanyAddress, Wallet, WalletType};
 use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessageProvider;
 
 class ClientDataHistoryManager
@@ -68,7 +68,7 @@ class ClientDataHistoryManager
      */
     private function fillClientDataHistory(Clients $client, array &$history): void
     {
-        $clientData = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ClientDataHistory')->findBy(
+        $clientData = $this->entityManager->getRepository(ClientDataHistory::class)->findBy(
             ['idClient' => $client],
             ['datePending' => 'ASC', 'id' => 'ASC']
         );
@@ -92,7 +92,7 @@ class ClientDataHistoryManager
     private function fillBankAccountHistory(Clients $client, array &$history): void
     {
         $previousBankAccount = null;
-        $bankAccounts        = $this->entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->findBy(
+        $bankAccounts        = $this->entityManager->getRepository(BankAccount::class)->findBy(
             ['idClient' => $client],
             ['datePending' => 'ASC', 'id' => 'ASC']
         );
@@ -150,13 +150,13 @@ class ClientDataHistoryManager
         ];
 
         if ($client->isNaturalPerson()) {
-            $addresses = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ClientAddress')->findBy(
+            $addresses = $this->entityManager->getRepository(ClientAddress::class)->findBy(
                 ['idClient' => $client],
                 ['datePending' => 'ASC', 'id' => 'ASC']
             );
         } else {
-            $company   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $client]);
-            $addresses = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')->findBy(
+            $company   = $this->entityManager->getRepository(Companies::class)->findOneBy(['idClientOwner' => $client]);
+            $addresses = $this->entityManager->getRepository(CompanyAddress::class)->findBy(
                 ['idCompany' => $company],
                 ['datePending' => 'ASC', 'id' => 'ASC']
             );
@@ -211,7 +211,7 @@ class ClientDataHistoryManager
      */
     private function fillAttachmentHistory(Clients $client, array &$history): void
     {
-        $attachments = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Attachment')->findBy(
+        $attachments = $this->entityManager->getRepository(Attachment::class)->findBy(
             ['idClient' => $client],
             ['added' => 'ASC', 'id' => 'ASC']
         );
@@ -267,7 +267,7 @@ class ClientDataHistoryManager
         }
 
         try {
-            $lenderWallet        = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')
+            $lenderWallet        = $this->entityManager->getRepository(Wallet::class)
                 ->getWalletByType($client, WalletType::LENDER);
             $wireTransferPattern = null !== $lenderWallet ? $lenderWallet->getWireTransferPattern() : '';
         } catch (\Exception $exception) {
@@ -301,7 +301,7 @@ class ClientDataHistoryManager
         } else {
             $templateName = 'synthese-modification-donnees-personne-morale';
             /** @var Companies $company */
-            $company = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $client]);
+            $company = $this->entityManager->getRepository(Companies::class)->findOneBy(['idClientOwner' => $client]);
 
             if (null !== $company && false === empty($company->getName())) {
                 $keywords += [
@@ -373,7 +373,7 @@ class ClientDataHistoryManager
         $translations      = [];
 
         if (false === $client->isNaturalPerson()) {
-            $company = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $client]);
+            $company = $this->entityManager->getRepository(Companies::class)->findOneBy(['idClientOwner' => $client]);
             if ($company) {
                 $translationParams = ['%companyName%' => $company->getName()];
             }

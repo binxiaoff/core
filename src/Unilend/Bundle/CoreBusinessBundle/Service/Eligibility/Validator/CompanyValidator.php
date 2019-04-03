@@ -10,7 +10,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service\Eligibility\Validator;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{Companies, ProjectEligibilityAssessment, ProjectEligibilityRule, ProjectEligibilityRuleSet, ProjectRejectionReason, Projects, ProjectsNotes,
+use Unilend\Entity\{Companies, CompanyRatingHistory, PreScoring, ProjectEligibilityAssessment, ProjectEligibilityRule, ProjectEligibilityRuleSet, ProjectRejectionReason, Projects, ProjectsNotes,
     ProjectsStatus, Xerfi};
 use Unilend\Bundle\CoreBusinessBundle\Service\ExternalDataManager;
 use Unilend\Bundle\WSClientBundle\Entity\{Altares\CompanyBalanceSheet, Altares\CompanyIdentityDetail, Euler\CompanyRating as EulerHermesCompanyRating, Infolegale\AnnouncementDetails,
@@ -74,7 +74,7 @@ class CompanyValidator
         return [];
 
         if (null !== $company) {
-            $lastCompanyRatingHistory = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CompanyRatingHistory')->findOneBy(
+            $lastCompanyRatingHistory = $this->entityManager->getRepository(CompanyRatingHistory::class)->findOneBy(
                 ['idCompany' => $company->getIdCompany()],
                 ['added' => 'DESC']
             );
@@ -407,7 +407,7 @@ class CompanyValidator
                 return [];
             }
 
-            $xerfi = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Xerfi')->find($nafCode);
+            $xerfi = $this->entityManager->getRepository(Xerfi::class)->find($nafCode);
 
             if ($xerfi instanceof Xerfi && Xerfi::UNILEND_ELIMINATION_SCORE === $xerfi->getUnilendRating()) {
                 return [ProjectRejectionReason::UNILEND_XERFI_ELIMINATION_SCORE];
@@ -454,7 +454,7 @@ class CompanyValidator
 
         try {
             $nafCode = $this->getNAFCode($siren);
-            $xerfi   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Xerfi')->find($nafCode);
+            $xerfi   = $this->entityManager->getRepository(Xerfi::class)->find($nafCode);
 
             if (
                 EulerHermesCompanyRating::COLOR_RED === $trafficLight->getColor()
@@ -963,7 +963,7 @@ class CompanyValidator
      */
     private function calculatePreScoring(Projects $project)
     {
-        $projectNotes = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsNotes')->findOneBy(['idProject' => $project]);
+        $projectNotes = $this->entityManager->getRepository(ProjectsNotes::class)->findOneBy(['idProject' => $project]);
 
         if (null === $projectNotes || null === $projectNotes->getPreScoring()) {
             $siren            = $project->getIdCompany()->getSiren();
@@ -978,7 +978,7 @@ class CompanyValidator
             }
 
             if (false === in_array(null, [$altaresScore, $infolegaleScore, $eulerHermesGrade], true)) {
-                $preScoringEntity = $this->entityManager->getRepository('UnilendCoreBusinessBundle:PreScoring')->findOneBy([
+                $preScoringEntity = $this->entityManager->getRepository(PreScoring::class)->findOneBy([
                     'altares'          => $altaresScore->getScore20(),
                     'infolegale'       => $infolegaleScore->getScore(),
                     'eulerHermesGrade' => $eulerHermesGrade->getGrade()
@@ -1018,8 +1018,8 @@ class CompanyValidator
         $result = $method->invoke($this, $siren);
 
         if ($project instanceof Projects) {
-            $rule    = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectEligibilityRule')->findOneBy(['label' => $ruleName]);
-            $ruleSet = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectEligibilityRuleSet')->findOneBy(['status' => ProjectEligibilityRuleSet::STATUS_ACTIVE]);
+            $rule    = $this->entityManager->getRepository(ProjectEligibilityRule::class)->findOneBy(['label' => $ruleName]);
+            $ruleSet = $this->entityManager->getRepository(ProjectEligibilityRuleSet::class)->findOneBy(['status' => ProjectEligibilityRuleSet::STATUS_ACTIVE]);
             $this->logCheck($project, $rule, $ruleSet, $result);
         }
 
@@ -1036,7 +1036,7 @@ class CompanyValidator
      */
     private function logCheck(Projects $project, ProjectEligibilityRule $rule, ProjectEligibilityRuleSet $ruleSet, $result)
     {
-        $assessment = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectEligibilityAssessment')->findOneBy([
+        $assessment = $this->entityManager->getRepository(ProjectEligibilityAssessment::class)->findOneBy([
             'idProject' => $project,
             'idRule'    => $rule,
             'idRuleSet' => $ruleSet

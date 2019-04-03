@@ -1,6 +1,6 @@
 <?php
 
-use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
+use Unilend\Entity\Virements;
 
 if (count($this->wireTransferOuts) > 0) :
     ?>
@@ -17,7 +17,7 @@ if (count($this->wireTransferOuts) > 0) :
         </thead>
         <tbody>
         <?php
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Virements $wireTransferOut */
+        /** @var \Unilend\Entity\Virements $wireTransferOut */
         $i = 0;
         ?>
         <?php foreach ($this->wireTransferOuts as $wireTransferOut) : ?>

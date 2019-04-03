@@ -1,7 +1,7 @@
 <?php
 
-use \Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
-use \Unilend\Bundle\CoreBusinessBundle\Entity\OperationSubType;
+use Unilend\Entity\OperationType;
+use Unilend\Entity\OperationSubType;
 
 ?>
 <?php if (empty($this->operations)) : ?>

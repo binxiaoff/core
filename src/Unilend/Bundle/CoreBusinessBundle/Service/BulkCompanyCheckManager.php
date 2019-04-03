@@ -5,10 +5,8 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Filesystem\Filesystem;
-use Symfony\Component\HttpFoundation\File\Exception\FileException;
-use Symfony\Component\HttpFoundation\File\File;
-use Symfony\Component\HttpFoundation\File\UploadedFile;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
+use Symfony\Component\HttpFoundation\File\{Exception\FileException, File, UploadedFile};
+use Unilend\Entity\Users;
 
 class BulkCompanyCheckManager
 {
@@ -188,7 +186,7 @@ class BulkCompanyCheckManager
     {
         $fileNameParts = explode('_', $fileName);
 
-        if (isset($fileNameParts[0]) && $user = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find($fileNameParts[0])) {
+        if (isset($fileNameParts[0]) && $user = $this->entityManager->getRepository(Users::class)->find($fileNameParts[0])) {
             return $user;
         }
 

@@ -9,8 +9,8 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, Attachment, AttachmentType, Backpayline, ClientAddress, Clients, ClientsHistory, ClientsHistoryActions, ClientsStatus, Companies,
-    NationalitesV2, OffresBienvenues, Pays, Users, WalletType};
+use Unilend\Entity\{AddressType, Attachment, AttachmentType, Backpayline, ClientAddress, Clients, ClientsHistory, ClientsHistoryActions, ClientsStatus, Companies, CompanyAddress, Nationalites,
+    NationalitesV2, OffresBienvenues, Pays, Users, Villes, Wallet, WalletType};
 use Unilend\Bundle\CoreBusinessBundle\Service\{GoogleRecaptchaManager, NewsletterManager, SponsorshipManager};
 use Unilend\Bundle\FrontBundle\Form\{LenderSubscriptionIdentityLegalEntity, LenderSubscriptionIdentityPerson};
 use Unilend\Bundle\FrontBundle\Service\{DataLayerCollector, SourceManager};
@@ -155,16 +155,16 @@ class LenderSubscriptionController extends Controller
 
         $noUsPerson ? $client->setUsPerson(false) : $client->setUsPerson(true);
 
-        if (Pays::COUNTRY_FRANCE == $countryId && null === $entityManager->getRepository('UnilendCoreBusinessBundle:Villes')->findOneBy(['cp' => $zip])) {
+        if (Pays::COUNTRY_FRANCE == $countryId && null === $entityManager->getRepository(Villes::class)->findOneBy(['cp' => $zip])) {
             $form->get('fiscalAddress')->get('cpFiscal')->addError(new FormError($translator->trans('lender-subscription_personal-information-error-fiscal-address-wrong-zip')));
         }
 
         $countryCheck = true;
-        if (null === $entityManager->getRepository('UnilendCoreBusinessBundle:Nationalites')->find($client->getIdNationalite())) {
+        if (null === $entityManager->getRepository(Nationalites::class)->find($client->getIdNationalite())) {
             $countryCheck = false;
             $form->get('client')->get('idNationalite')->addError(new FormError($translator->trans('lender-subscription_personal-information-error-wrong-nationality')));
         }
-        if (null === $entityManager->getRepository('UnilendCoreBusinessBundle:Pays')->find($client->getIdPaysNaissance())) {
+        if (null === $entityManager->getRepository(Pays::class)->find($client->getIdPaysNaissance())) {
             $countryCheck = false;
             $form->get('client')->get('idNationalite')->addError(new FormError($translator->trans('lender-subscription_personal-information-error-wrong-birth-country')));
         }
@@ -176,14 +176,14 @@ class LenderSubscriptionController extends Controller
 
         if ($countryCheck) {
             if (Pays::COUNTRY_FRANCE == $client->getIdPaysNaissance() && false === empty($client->getInseeBirth())) {
-                $cityByInsee = $entityManager->getRepository('UnilendCoreBusinessBundle:Villes')->findOneBy(['insee' => $client->getInseeBirth()]);
+                $cityByInsee = $entityManager->getRepository(Villes::class)->findOneBy(['insee' => $client->getInseeBirth()]);
 
                 if (null !== $cityByInsee) {
                     $client->setVilleNaissance($cityByInsee->getVille());
                 }
 
             } else {
-                $country        = $entityManager->getRepository('UnilendCoreBusinessBundle:Pays')->find($client->getIdPaysNaissance());
+                $country        = $entityManager->getRepository(Pays::class)->find($client->getIdPaysNaissance());
                 $inseeCountries = $this->get('unilend.service.entity_manager')->getRepository('insee_pays');
                 if (null !== $country && $inseeCountries->getByCountryIso(trim($country->getIso()))) {
                     $client->setInseeBirth($inseeCountries->COG);
@@ -441,7 +441,7 @@ class LenderSubscriptionController extends Controller
         }
 
         $countryId = $form->get('mainAddress')->get('idCountry')->getData();
-        if (false === empty($countryId) && Pays::COUNTRY_FRANCE === $countryId && null === $entityManager->getRepository('UnilendCoreBusinessBundle:Villes')->findOneBy(['cp' => $zip])) {
+        if (false === empty($countryId) && Pays::COUNTRY_FRANCE === $countryId && null === $entityManager->getRepository(Villes::class)->findOneBy(['cp' => $zip])) {
             $form->get('fiscalAddress')->get('zip')->addError(new FormError($translator->trans('lender-subscription_personal-information-error-fiscal-address-wrong-zip')));
         }
 
@@ -523,7 +523,7 @@ class LenderSubscriptionController extends Controller
     {
         $translator    = $this->get('translator');
         $entityManager = $this->get('doctrine.orm.entity_manager');
-        $duplicates    = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->findGrantedLoginAccountsByEmail($client->getEmail());
+        $duplicates    = $entityManager->getRepository(Clients::class)->findGrantedLoginAccountsByEmail($client->getEmail());
 
         if (false === empty($duplicates)) {
             $form->get('client')->get('email')->addError(new FormError($translator->trans('lender-profile_security-identification-error-existing-email')));
@@ -577,14 +577,14 @@ class LenderSubscriptionController extends Controller
         }
 
         $entityManager = $this->get('doctrine.orm.entity_manager');
-        $client        = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->findOneBy(['hash' => $clientHash]);
+        $client        = $entityManager->getRepository(Clients::class)->findOneBy(['hash' => $clientHash]);
 
         if ($client->isNaturalPerson()) {
-            $clientAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientAddress')->findLastModifiedNotArchivedAddressByType($client, AddressType::TYPE_MAIN_ADDRESS);
+            $clientAddress = $entityManager->getRepository(ClientAddress::class)->findLastModifiedNotArchivedAddressByType($client, AddressType::TYPE_MAIN_ADDRESS);
             $countryId     = $clientAddress->getIdCountry()->getIdPays();
         } else {
-            $company        = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $client]);
-            $companyAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')->findLastModifiedNotArchivedAddressByType($company, AddressType::TYPE_MAIN_ADDRESS);
+            $company        = $entityManager->getRepository(Companies::class)->findOneBy(['idClientOwner' => $client]);
+            $companyAddress = $entityManager->getRepository(CompanyAddress::class)->findLastModifiedNotArchivedAddressByType($company, AddressType::TYPE_MAIN_ADDRESS);
             $countryId      = $companyAddress->getIdCountry()->getIdPays();
         }
 
@@ -660,7 +660,7 @@ class LenderSubscriptionController extends Controller
         if ($client->isNaturalPerson()) {
             $this->validateAttachmentsPerson($form, $client, $fileBag, $countryId);
         } else {
-            $company = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $client]);
+            $company = $this->get('doctrine.orm.entity_manager')->getRepository(Companies::class)->findOneBy(['idClientOwner' => $client]);
             $this->validateAttachmentsLegalEntity($form, $client, $company, $fileBag);
         }
 
@@ -714,7 +714,7 @@ class LenderSubscriptionController extends Controller
 
                     if ($attachmentTypeId == AttachmentType::JUSTIFICATIF_DOMICILE && $attachment instanceof Attachment) {
                         $address = $entityManager
-                            ->getRepository('UnilendCoreBusinessBundle:ClientAddress')
+                            ->getRepository(ClientAddress::class)
                             ->findLastModifiedNotArchivedAddressByType($client, AddressType::TYPE_MAIN_ADDRESS);
 
                         if ($address instanceof ClientAddress) {
@@ -841,7 +841,7 @@ class LenderSubscriptionController extends Controller
         }
 
         $entityManager = $this->get('doctrine.orm.entity_manager');
-        $client        = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->findOneBy(['hash' => $clientHash]);
+        $client        = $entityManager->getRepository(Clients::class)->findOneBy(['hash' => $clientHash]);
 
         $client->setEtapeInscriptionPreteur(Clients::SUBSCRIPTION_STEP_MONEY_DEPOSIT);
         $entityManager->flush($client);
@@ -850,7 +850,7 @@ class LenderSubscriptionController extends Controller
             'client'           => $client,
             'maxDepositAmount' => LenderWalletController::MAX_DEPOSIT_AMOUNT,
             'minDepositAmount' => LenderWalletController::MIN_DEPOSIT_AMOUNT,
-            'lenderBankMotif'  => $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER)->getWireTransferPattern()
+            'lenderBankMotif'  => $entityManager->getRepository(Wallet::class)->getWalletByType($client, WalletType::LENDER)->getWireTransferPattern()
         ];
 
         return $this->render('lender_subscription/money_deposit.html.twig', $template);
@@ -882,8 +882,8 @@ class LenderSubscriptionController extends Controller
 
             if (is_numeric($amount) && $amount >= LenderWalletController::MIN_DEPOSIT_AMOUNT && $amount <= LenderWalletController::MAX_DEPOSIT_AMOUNT) {
                 $entityManager = $this->get('doctrine.orm.entity_manager');
-                $client        = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->findOneBy(['hash' => $clientHash]);
-                $wallet        = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client->getIdClient(), WalletType::LENDER);
+                $client        = $entityManager->getRepository(Clients::class)->findOneBy(['hash' => $clientHash]);
+                $wallet        = $entityManager->getRepository(Wallet::class)->getWalletByType($client->getIdClient(), WalletType::LENDER);
                 $successUrl    = $this->generateUrl('lender_subscription_money_transfer', ['clientHash' => $wallet->getIdClient()->getHash()], UrlGeneratorInterface::ABSOLUTE_URL);
                 $cancelUrl     = $this->generateUrl('lender_subscription_money_deposit', ['clientHash' => $wallet->getIdClient()->getHash()], UrlGeneratorInterface::ABSOLUTE_URL);
 
@@ -913,7 +913,7 @@ class LenderSubscriptionController extends Controller
     {
         $translator       = $this->get('translator');
         $entityManager    = $this->get('doctrine.orm.entity_manager');
-        $clientRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
+        $clientRepository = $entityManager->getRepository(Clients::class);
         $client           = $clientRepository->findOneBy(['hash' => $clientHash]);
 
         if (null === $client) {
@@ -971,7 +971,7 @@ class LenderSubscriptionController extends Controller
         $redirectPath         = null;
         $currentPath          = $request->getPathInfo();
         $authorizationChecker = $this->get('security.authorization_checker');
-        $clientRepository     = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients');
+        $clientRepository     = $this->get('doctrine.orm.entity_manager')->getRepository(Clients::class);
 
         if ($authorizationChecker->isGranted('IS_AUTHENTICATED_FULLY')) {
             if ($authorizationChecker->isGranted('ROLE_BORROWER')) {
@@ -1088,7 +1088,7 @@ class LenderSubscriptionController extends Controller
     {
         $attachmentManager = $this->get('unilend.service.attachment_manager');
         $entityManager     = $this->get('doctrine.orm.entity_manager');
-        $attachmentType    = $entityManager->getRepository('UnilendCoreBusinessBundle:AttachmentType')->find($attachmentTypeId);
+        $attachmentType    = $entityManager->getRepository(AttachmentType::class)->find($attachmentTypeId);
         $attachment        = $attachmentManager->upload($client, $attachmentType, $file);
         if (false === $attachment instanceof Attachment) {
             throw new \Exception();

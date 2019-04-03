@@ -2,7 +2,7 @@
 
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Translation\TranslatorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, AttachmentType, Clients, ClientsStatus, Companies, Pays, Zones};
+use Unilend\Entity\{AddressType, Attachment, AttachmentType, BankAccount, Clients, ClientsStatus, Companies, Pays, Zones};
 use Unilend\Bundle\WSClientBundle\Entity\Altares\{CompanyIdentityDetail, EstablishmentIdentityDetail};
 
 class companyController extends bootstrap
@@ -32,7 +32,7 @@ class companyController extends bootstrap
             $siren = filter_var($this->request->request->get('siren'), FILTER_SANITIZE_STRING);
             /** @var \Doctrine\ORM\EntityManager $entityManager */
             $entityManager   = $this->get('doctrine.orm.entity_manager');
-            $this->companies = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findBy(['siren' => $siren], ['idCompany' => 'DESC']);
+            $this->companies = $entityManager->getRepository(Companies::class)->findBy(['siren' => $siren], ['idCompany' => 'DESC']);
         }
     }
 
@@ -114,7 +114,7 @@ class companyController extends bootstrap
             header('Location: ' . $this->url . '/company');
             die;
         }
-        $this->company = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->find($this->params[0]);
+        $this->company = $entityManager->getRepository(Companies::class)->find($this->params[0]);
 
         if (null === $this->company) {
             header('Location: ' . $this->url . '/company');
@@ -129,8 +129,8 @@ class companyController extends bootstrap
         }
 
         $this->siren                = $this->company->getSiren();
-        $this->bankAccount          = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($this->client);
-        $this->bankAccountDocuments = $entityManager->getRepository('UnilendCoreBusinessBundle:Attachment')->findBy([
+        $this->bankAccount          = $entityManager->getRepository(BankAccount::class)->getClientValidatedBankAccount($this->client);
+        $this->bankAccountDocuments = $entityManager->getRepository(Attachment::class)->findBy([
             'idClient' => $this->client,
             'idType'   => AttachmentType::RIB
         ]);
@@ -187,7 +187,7 @@ class companyController extends bootstrap
 
         if ($email !== $this->client->getEmail()) {
             $duplicates = $entityManager
-                ->getRepository('UnilendCoreBusinessBundle:Clients')
+                ->getRepository(Clients::class)
                 ->findGrantedLoginAccountsByEmail($email);
 
             if (false === empty($duplicates)) {
@@ -231,11 +231,11 @@ class companyController extends bootstrap
             $addressManager->saveCompanyAddress($address, $postCode, $city, Pays::COUNTRY_FRANCE, $this->company, AddressType::TYPE_MAIN_ADDRESS);
 
             if ($bankAccountDocument) {
-                $attachmentTypeRib = $entityManager->getRepository('UnilendCoreBusinessBundle:AttachmentType')->find(AttachmentType::RIB);
+                $attachmentTypeRib = $entityManager->getRepository(AttachmentType::class)->find(AttachmentType::RIB);
                 $attachmentManager->upload($this->client, $attachmentTypeRib, $bankAccountDocument);
             }
             if ($registryForm) {
-                $attachmentTypeKbis = $entityManager->getRepository('UnilendCoreBusinessBundle:AttachmentType')->find(AttachmentType::KBIS);
+                $attachmentTypeKbis = $entityManager->getRepository(AttachmentType::class)->find(AttachmentType::KBIS);
                 $attachmentManager->upload($this->client, $attachmentTypeKbis, $registryForm);
             }
 

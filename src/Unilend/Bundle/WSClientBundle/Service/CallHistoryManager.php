@@ -9,7 +9,7 @@ use Psr\Cache\CacheItemPoolInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Asset\Packages;
 use Symfony\Component\Stopwatch\Stopwatch;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{WsCallHistory, WsExternalResource};
+use Unilend\Entity\{WsCallHistory, WsExternalResource};
 use Unilend\Bundle\CoreBusinessBundle\Service\SlackManager;
 use Unilend\Bundle\StoreBundle\Document\WsCall;
 use Unilend\librairies\CacheKeys;

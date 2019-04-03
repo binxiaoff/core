@@ -4,14 +4,14 @@ namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityRepository;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Notifications;
+use Unilend\Entity\Notifications;
 
 class NotificationsRepository extends EntityRepository
 {
     public function markAllLenderNotificationsAsRead($lenderId)
     {
         $qb = $this->getEntityManager()->createQueryBuilder();
-        $qb->update('UnilendCoreBusinessBundle:Notifications', 'n')
+        $qb->update(Notifications::class, 'n')
             ->set('n.status', $qb->expr()->literal(Notifications::STATUS_READ))
             ->where('n.status = ' . Notifications::STATUS_UNREAD)
             ->andWhere('n.idLender = :lenderId')
@@ -27,7 +27,7 @@ class NotificationsRepository extends EntityRepository
     public function markLenderNotificationsAsRead($lenderId, array $notifications)
     {
         $qb = $this->getEntityManager()->createQueryBuilder();
-        $qb->update('UnilendCoreBusinessBundle:Notifications', 'n')
+        $qb->update(Notifications::class, 'n')
             ->set('n.status', $qb->expr()->literal(Notifications::STATUS_READ))
             ->where('n.status = ' . Notifications::STATUS_UNREAD)
             ->andWhere('n.idLender = :lenderId')

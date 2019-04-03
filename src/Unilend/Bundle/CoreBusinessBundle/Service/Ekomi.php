@@ -4,7 +4,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{Projects, ProjectsStatus};
+use Unilend\Entity\{Projects, ProjectsStatus, ProjectsStatusHistory};
 
 class Ekomi
 {
@@ -62,8 +62,8 @@ class Ekomi
             return false;
         }
 
-        $projectStatus        = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatus')->findOneBy(['status' => ProjectsStatus::STATUS_FUNDED]);
-        $projectStatusHistory = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatusHistory')->findOneBy([
+        $projectStatus        = $this->entityManager->getRepository(ProjectsStatus::class)->findOneBy(['status' => ProjectsStatus::STATUS_FUNDED]);
+        $projectStatusHistory = $this->entityManager->getRepository(ProjectsStatusHistory::class)->findOneBy([
             'idProjectStatus' => $projectStatus,
             'idProject'       => $project->getIdProject()
         ]);

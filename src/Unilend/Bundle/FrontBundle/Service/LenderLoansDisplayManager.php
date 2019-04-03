@@ -6,7 +6,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Asset\Packages;
 use Symfony\Component\Routing\{Generator\UrlGeneratorInterface, RouterInterface};
 use Symfony\Component\Translation\TranslatorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{CompanyStatus, Loans, Notifications, Projects, ProjectsStatus, UnderlyingContract, Wallet};
+use Unilend\Entity\{CompanyStatus, Loans, Notifications, Projects, ProjectsStatus, UnderlyingContract, Wallet};
 
 class LenderLoansDisplayManager
 {
@@ -73,9 +73,9 @@ class LenderLoansDisplayManager
      */
     public function formatLenderLoansData(Wallet $wallet, array $lenderLoans, ?string $statusFilter = null): array
     {
-        $projectRepository       = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
-        $notificationsRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Notifications');
-        $loansRepository         = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Loans');
+        $projectRepository       = $this->entityManager->getRepository(Projects::class);
+        $notificationsRepository = $this->entityManager->getRepository(Notifications::class);
+        $loansRepository         = $this->entityManager->getRepository(Loans::class);
 
         $projectsInDept     = $projectRepository->getProjectsInDebt();
         $loanStatus         = array_fill_keys(array_keys(self::LOAN_STATUS_FILTER), 0);
@@ -228,7 +228,7 @@ class LenderLoansDisplayManager
      */
     public function formatLenderLoansForExport(array $lenderLoans): array
     {
-        $projectRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
+        $projectRepository = $this->entityManager->getRepository(Projects::class);
 
         $projectsInDept     = $projectRepository->getProjectsInDebt();
         $lenderProjectLoans = [];

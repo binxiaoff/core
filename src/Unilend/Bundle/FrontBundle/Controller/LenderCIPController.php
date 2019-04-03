@@ -8,7 +8,7 @@ use Symfony\Component\HttpFoundation\{Request, Response};
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{Clients, Wallet, WalletType};
+use Unilend\Entity\{Clients, Wallet, WalletType};
 use Unilend\Bundle\CoreBusinessBundle\Service\CIPManager;
 use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage;
 
@@ -280,7 +280,7 @@ class LenderCIPController extends Controller
     public function cipAdvisePdfAction(string $clientHash): Response
     {
         /** @var Clients $client */
-        $client = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients')->findOneBy(['hash' => $clientHash]);
+        $client = $this->get('doctrine.orm.entity_manager')->getRepository(Clients::class)->findOneBy(['hash' => $clientHash]);
 
         if (false === $client->isGrantedLenderRead()) {
             return $this->redirectToRoute('home');
@@ -321,7 +321,7 @@ class LenderCIPController extends Controller
     private function sendAdviceEmail(Clients $client): void
     {
         /** @var Wallet $wallet */
-        $wallet   = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
+        $wallet   = $this->get('doctrine.orm.entity_manager')->getRepository(Wallet::class)->getWalletByType($client, WalletType::LENDER);
         $keywords = [
             'firstName'     => $client->getPrenom(),
             'advice'        => str_replace('h5', 'p', $this->getFormattedAdvice($client)),

@@ -8,7 +8,7 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\Form\{FormError, FormInterface};
 use Symfony\Component\HttpFoundation\{File\UploadedFile, FileBag};
 use Symfony\Component\Translation\TranslatorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, Attachment, AttachmentType, BankAccount, ClientAddress, Clients, Companies, CompanyAddress, Pays, Users, WalletType};
+use Unilend\Entity\{AddressType, Attachment, AttachmentType, BankAccount, ClientAddress, Clients, Companies, CompanyAddress, Pays, Users, Villes, Wallet, WalletType};
 use Unilend\Bundle\CoreBusinessBundle\Service\{AddressManager, AttachmentManager, BankAccountManager, ClientAuditer, ClientDataHistoryManager, ClientStatusManager};
 use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessageProvider;
 
@@ -325,7 +325,7 @@ class LenderProfileFormsHandler
         $zip       = $form->get('zip')->getData();
         $countryId = $form->get('idCountry')->getData();
 
-        if (Pays::COUNTRY_FRANCE == $countryId && null === $this->entityManager->getRepository('UnilendCoreBusinessBundle:Villes')->findOneBy(['cp' => $zip])) {
+        if (Pays::COUNTRY_FRANCE == $countryId && null === $this->entityManager->getRepository(Villes::class)->findOneBy(['cp' => $zip])) {
             $form->get('zip')->addError(new FormError($this->translator->trans('lender-profile_information-tab-fiscal-address-section-unknown-zip-code-error-message')));
         }
     }
@@ -451,7 +451,7 @@ class LenderProfileFormsHandler
             && $newAttachments[AttachmentType::JUSTIFICATIF_DOMICILE] instanceof Attachment
         ) {
             $lastModifiedAddress = $this->entityManager
-                ->getRepository('UnilendCoreBusinessBundle:ClientAddress')
+                ->getRepository(ClientAddress::class)
                 ->findLastModifiedNotArchivedAddressByType($client, AddressType::TYPE_MAIN_ADDRESS);
 
             if ($lastModifiedAddress instanceof ClientAddress) {
@@ -535,7 +535,7 @@ class LenderProfileFormsHandler
     public function handleBankDetailsForm(Clients $client, Clients $unattachedClient, FormInterface $form, FileBag $fileBag): bool
     {
         $this->checkBankDetailsForm($form);
-        $bankAccount         = $this->entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getLastModifiedBankAccount($client);
+        $bankAccount         = $this->entityManager->getRepository(BankAccount::class)->getLastModifiedBankAccount($client);
         $bankAccountDocument = $this->uploadBankDocument($client, $form, $fileBag, $bankAccount);
 
         if ($this->isFormValid($form)) {
@@ -638,7 +638,7 @@ class LenderProfileFormsHandler
     private function isUpdatingUsingExistingEmail(Clients $client, Clients $unattachedClient)
     {
         return $client->getEmail() !== $unattachedClient->getEmail()
-            && false === empty($this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->findGrantedLoginAccountsByEmail($client->getEmail()));
+            && false === empty($this->entityManager->getRepository(Clients::class)->findGrantedLoginAccountsByEmail($client->getEmail()));
     }
 
     /**
@@ -699,7 +699,7 @@ class LenderProfileFormsHandler
      */
     private function logAndSaveClientChanges(Clients $client): array
     {
-        $frontUser     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find(Users::USER_ID_FRONT);
+        $frontUser     = $this->entityManager->getRepository(Users::class)->find(Users::USER_ID_FRONT);
         $clientChanges = $this->clientAuditer->logChanges($client, $frontUser);
 
         if (false === empty($clientChanges['email'][0])) {
@@ -717,7 +717,7 @@ class LenderProfileFormsHandler
      */
     private function notifyEmailChangeToOldAddress(Clients $client, string $oldEmail): void
     {
-        $walletRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet');
+        $walletRepository = $this->entityManager->getRepository(Wallet::class);
         $wallet           = $walletRepository->getWalletByType($client, WalletType::LENDER);
 
         if (null === $wallet) {
@@ -761,7 +761,7 @@ class LenderProfileFormsHandler
      */
     private function upload(Clients $client, int $attachmentTypeId, UploadedFile $file): Attachment
     {
-        $attachmentType = $this->entityManager->getRepository('UnilendCoreBusinessBundle:AttachmentType')->find($attachmentTypeId);
+        $attachmentType = $this->entityManager->getRepository(AttachmentType::class)->find($attachmentTypeId);
         $attachment     = $this->attachmentManager->upload($client, $attachmentType, $file);
 
         if (false === $attachment instanceof Attachment) {
@@ -811,7 +811,7 @@ class LenderProfileFormsHandler
 
         //Bank Account
         $isBankAccountModified = false;
-        $bankAccount           = $this->entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getLastModifiedBankAccount($client);
+        $bankAccount           = $this->entityManager->getRepository(BankAccount::class)->getLastModifiedBankAccount($client);
         $bankAccountAttachment = $this->uploadBankDocument($client, $bankForm, $fileBag, $bankAccount);
         if ($bankAccountAttachment) {
             $this->checkBankDetailsForm($bankForm);
@@ -901,7 +901,7 @@ class LenderProfileFormsHandler
 
         //Bank Account
         $isBankAccountModified = false;
-        $bankAccount           = $this->entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getLastModifiedBankAccount($client);
+        $bankAccount           = $this->entityManager->getRepository(BankAccount::class)->getLastModifiedBankAccount($client);
         $bankAccountAttachment = $this->uploadBankDocument($client, $bankForm, $fileBag, $bankAccount);
         if ($bankAccountAttachment) {
             $this->checkBankDetailsForm($bankForm);

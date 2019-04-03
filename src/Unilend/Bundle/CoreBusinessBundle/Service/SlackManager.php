@@ -7,7 +7,7 @@ use Nexy\Slack\Client;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Asset\Packages;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{Projects, ProjectsStatus};
+use Unilend\Entity\{Projects, ProjectsStatus};
 
 class SlackManager
 {

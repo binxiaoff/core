@@ -2,8 +2,8 @@
 
 use Doctrine\ORM\{EntityManager, ORMException, UnexpectedResultException};
 use Symfony\Component\HttpFoundation\Request;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, Clients, ClientsStatus, Companies, CompanyClient, Partner, PartnerProduct, PartnerProjectAttachment, PartnerThirdParty, Pays, Product,
-    ProjectsStatus, TemporaryLinksLogin, WalletType, Zones};
+use Unilend\Entity\{AddressType, AttachmentType, Clients, ClientsStatus, Companies, CompanyClient, Partner, PartnerProduct, PartnerProjectAttachment, PartnerThirdParty, PartnerThirdPartyType, Pays,
+    Product, ProjectsStatus, TemporaryLinksLogin, WalletType, Zones};
 use Unilend\Bundle\CoreBusinessBundle\Service\AddressManager;
 
 class partenairesController extends bootstrap
@@ -20,7 +20,7 @@ class partenairesController extends bootstrap
     {
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
-        $partners      = $entityManager->getRepository('UnilendCoreBusinessBundle:Partner')->getPartnersSortedByName();
+        $partners      = $entityManager->getRepository(Partner::class)->getPartnersSortedByName();
 
         $this->render(null, ['partners' => $partners]);
     }
@@ -29,7 +29,7 @@ class partenairesController extends bootstrap
     {
         /** @var Doctrine\ORM\EntityManager $entityManager = */
         $entityManager     = $this->get('doctrine.orm.entity_manager');
-        $partnerRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Partner');
+        $partnerRepository = $entityManager->getRepository(Partner::class);
 
         if (
             empty($this->params[0])
@@ -46,17 +46,17 @@ class partenairesController extends bootstrap
         unset($_SESSION['forms']['partner']['success']);
         unset($_SESSION['forms']['partner']['errors']);
 
-        $agencies   = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findBy(['idParentCompany' => $partner->getIdCompany()->getIdCompany()]);
+        $agencies   = $entityManager->getRepository(Companies::class)->findBy(['idParentCompany' => $partner->getIdCompany()->getIdCompany()]);
         $agencies[] = $partner->getIdCompany();
         usort($agencies, function($first, $second) {
             return strcasecmp($first->getName(), $second->getName());
         });
 
-        $users = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyClient')->findBy(['idCompany' => $agencies]);
+        $users = $entityManager->getRepository(CompanyClient::class)->findBy(['idCompany' => $agencies]);
 
         /** @var \Symfony\Component\Translation\TranslatorInterface $translator */
         $translator        = $this->get('translator');
-        $productRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Product');
+        $productRepository = $entityManager->getRepository(Product::class);
         $productTypes      = $productRepository->findBy(['status' => [Product::STATUS_OFFLINE, Product::STATUS_ONLINE]]);
         foreach ($productTypes as $productType) {
             $productType->setLabel($translator->trans('product_label_' . $productType->getLabel()));
@@ -81,7 +81,7 @@ class partenairesController extends bootstrap
             'partner'       => $partner,
             'agencies'      => $agencies,
             'users'         => $users,
-            'documentTypes' => $entityManager->getRepository('UnilendCoreBusinessBundle:AttachmentType')->findBy([], ['label' => 'ASC']),
+            'documentTypes' => $entityManager->getRepository(AttachmentType::class)->findBy([], ['label' => 'ASC']),
             'documents'     => $partner->getAttachmentTypes(),
             'productTypes'  => $productTypes,
             'products'      => $products,
@@ -108,7 +108,7 @@ class partenairesController extends bootstrap
 
         /** @var EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
-        $partner       = $entityManager->getRepository('UnilendCoreBusinessBundle:Partner')->find($this->params[0]);
+        $partner       = $entityManager->getRepository(Partner::class)->find($this->params[0]);
 
         if (null === $partner) {
             $this->sendAjaxResponse(false, null, ['Partenaire inconnu']);
@@ -176,7 +176,7 @@ class partenairesController extends bootstrap
             $agency->setIdParentCompany($partner->getIdCompany());
 
             try {
-                $duplicates = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->countDuplicatesByNameAndParent($agency);
+                $duplicates = $entityManager->getRepository(Companies::class)->countDuplicatesByNameAndParent($agency);
 
                 if ($duplicates > 0) {
                     $errors[] = 'Doublon : cette agence a déjà été créée.';
@@ -229,7 +229,7 @@ class partenairesController extends bootstrap
 
         /** @var EntityManager $entityManager */
         $entityManager       = $this->get('doctrine.orm.entity_manager');
-        $companiesRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies');
+        $companiesRepository = $entityManager->getRepository(Companies::class);
         $agency              = $companiesRepository->find($id);
 
         if (null === $agency) {
@@ -280,7 +280,7 @@ class partenairesController extends bootstrap
 
         /** @var EntityManager $entityManager */
         $entityManager       = $this->get('doctrine.orm.entity_manager');
-        $companiesRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies');
+        $companiesRepository = $entityManager->getRepository(Companies::class);
         $agency              = $companiesRepository->find($id);
 
         if (null === $agency) {
@@ -288,21 +288,21 @@ class partenairesController extends bootstrap
             return null;
         }
 
-        $companyClientRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyClient');
+        $companyClientRepository = $entityManager->getRepository(CompanyClient::class);
 
         if (false === empty($companyClientRepository->findOneBy(['idCompany' => $agency]))) {
             $errors[] = 'Cette agence a des utilisateurs qui lui sont rattachés';
             return null;
         }
 
-        $projectRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
+        $projectRepository = $entityManager->getRepository(Projects::class);
 
         if (false === empty($projectRepository->findOneBy(['idCompany' => $agency]))) {
             $errors[] = 'Cette agence a des projets qui lui sont rattachés';
             return null;
         }
 
-        $projectRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies');
+        $projectRepository = $entityManager->getRepository(Companies::class);
 
         if (false === empty($projectRepository->findOneBy(['idParentCompany' => $agency]))) {
             $errors[] = 'Cette agence a d\'autres agences qui lui sont rattachées';
@@ -373,7 +373,7 @@ class partenairesController extends bootstrap
 
         /** @var EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
-        $partner       = $entityManager->getRepository('UnilendCoreBusinessBundle:Partner')->find($this->params[0]);
+        $partner       = $entityManager->getRepository(Partner::class)->find($this->params[0]);
 
         if (null === $partner) {
             $this->sendAjaxResponse(false, null, ['Partenaire inconnu']);
@@ -465,7 +465,7 @@ class partenairesController extends bootstrap
         $errors        = $this->setCompanyClientData($request, $companyClient);
 
         if (empty($errors)) {
-            $clientRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
+            $clientRepository = $entityManager->getRepository(Clients::class);
 
             try {
                 $duplicates = $clientRepository->countDuplicatesByFullName($companyClient);
@@ -518,7 +518,7 @@ class partenairesController extends bootstrap
 
         /** @var EntityManager $entityManager */
         $entityManager           = $this->get('doctrine.orm.entity_manager');
-        $companyClientRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyClient');
+        $companyClientRepository = $entityManager->getRepository(CompanyClient::class);
         $companyClient           = $companyClientRepository->find($id);
 
         if (null === $companyClient) {
@@ -557,7 +557,7 @@ class partenairesController extends bootstrap
 
         /** @var EntityManager $entityManager */
         $entityManager           = $this->get('doctrine.orm.entity_manager');
-        $companyClientRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyClient');
+        $companyClientRepository = $entityManager->getRepository(CompanyClient::class);
         /** @var CompanyClient $companyClient */
         $companyClient = $companyClientRepository->find($id);
 
@@ -566,7 +566,7 @@ class partenairesController extends bootstrap
             return null;
         }
 
-        $projectRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
+        $projectRepository = $entityManager->getRepository(Projects::class);
 
         if (false === empty($projectRepository->findOneBy(['idClientSubmitter' => $companyClient->getIdClient()]))) {
             $errors[] = 'Cet utilisateur a des projets qui lui sont rattachés';
@@ -610,7 +610,7 @@ class partenairesController extends bootstrap
 
         /** @var EntityManager $entityManager */
         $entityManager           = $this->get('doctrine.orm.entity_manager');
-        $companyClientRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyClient');
+        $companyClientRepository = $entityManager->getRepository(CompanyClient::class);
         /** @var CompanyClient $companyClient */
         $companyClient = $companyClientRepository->find($id);
 
@@ -620,7 +620,7 @@ class partenairesController extends bootstrap
         }
 
         if ('activate' === $request->request->get('action') && false === $companyClient->getIdClient()->isValidated()) {
-            $clientsRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
+            $clientsRepository = $entityManager->getRepository(Clients::class);
             $duplicates        = $clientsRepository->findGrantedLoginAccountsByEmail($companyClient->getIdClient()->getEmail());
 
             if (count($duplicates)) {
@@ -663,7 +663,7 @@ class partenairesController extends bootstrap
 
         /** @var EntityManager $entityManager */
         $entityManager           = $this->get('doctrine.orm.entity_manager');
-        $companyClientRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyClient');
+        $companyClientRepository = $entityManager->getRepository(CompanyClient::class);
         /** @var CompanyClient $companyClient */
         $companyClient = $companyClientRepository->find($id);
 
@@ -678,7 +678,7 @@ class partenairesController extends bootstrap
         }
 
         $token = $entityManager
-            ->getRepository('UnilendCoreBusinessBundle:TemporaryLinksLogin')
+            ->getRepository(TemporaryLinksLogin::class)
             ->generateTemporaryLink($companyClient->getIdClient(), TemporaryLinksLogin::PASSWORD_TOKEN_LIFETIME_MEDIUM);
 
         $keywords = [
@@ -738,7 +738,7 @@ class partenairesController extends bootstrap
         if (false === filter_var($email, FILTER_VALIDATE_EMAIL)) {
             $errors[] = 'Vous devez renseigner une adresse email valide';
         }
-        $clientsRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
+        $clientsRepository = $entityManager->getRepository(Clients::class);
         $duplicates        = $clientsRepository->findGrantedLoginAccountsByEmail($email);
 
         if (false === empty($duplicates) && (null === $companyClient->getIdClient() || $companyClient->getIdClient()->getEmail() !== $email)) {
@@ -747,7 +747,7 @@ class partenairesController extends bootstrap
         if (empty($agency)) {
             $errors[] = 'Vous devez renseigner une agence de rattachement';
         }
-        $companiesRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies');
+        $companiesRepository = $entityManager->getRepository(Companies::class);
         $agency              = $companiesRepository->find($agency);
 
         if (null === $agency) {
@@ -783,7 +783,7 @@ class partenairesController extends bootstrap
     {
         /** @var Doctrine\ORM\EntityManager $entityManager = */
         $entityManager     = $this->get('doctrine.orm.entity_manager');
-        $partnerRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Partner');
+        $partnerRepository = $entityManager->getRepository(Partner::class);
 
         if (
             false === $this->request->isMethod(Request::METHOD_POST)
@@ -829,7 +829,7 @@ class partenairesController extends bootstrap
     {
         /** @var Doctrine\ORM\EntityManager $entityManager = */
         $entityManager     = $this->get('doctrine.orm.entity_manager');
-        $partnerRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Partner');
+        $partnerRepository = $entityManager->getRepository(Partner::class);
 
         if (
             false === $this->request->isMethod(Request::METHOD_POST)
@@ -851,8 +851,8 @@ class partenairesController extends bootstrap
         }
 
         $newOrder                           = array_column($newDocuments, 'id');
-        $attachmentTypeRepository           = $entityManager->getRepository('UnilendCoreBusinessBundle:AttachmentType');
-        $partnerProjectAttachmentRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:PartnerProjectAttachment');
+        $attachmentTypeRepository           = $entityManager->getRepository(AttachmentType::class);
+        $partnerProjectAttachmentRepository = $entityManager->getRepository(PartnerProjectAttachment::class);
         $currentDocuments                   = $partnerProjectAttachmentRepository->findBy(['idPartner' => $partner], ['rank' => 'ASC']);
 
         foreach ($currentDocuments as $currentDocument) {
@@ -900,7 +900,7 @@ class partenairesController extends bootstrap
     {
         /** @var Doctrine\ORM\EntityManager $entityManager = */
         $entityManager     = $this->get('doctrine.orm.entity_manager');
-        $partnerRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Partner');
+        $partnerRepository = $entityManager->getRepository(Partner::class);
 
         if (
             false === $this->request->isMethod(Request::METHOD_POST)
@@ -913,7 +913,7 @@ class partenairesController extends bootstrap
         }
 
         $productId         = $this->request->request->getInt('product');
-        $productRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Product');
+        $productRepository = $entityManager->getRepository(Product::class);
 
         if (empty($productId) || null === ($product = $productRepository->find($productId))) {
             $_SESSION['forms']['partner']['errors']['products'] = ['Produit inconnu.'];
@@ -922,7 +922,7 @@ class partenairesController extends bootstrap
             return;
         }
 
-        $partnerProductRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:PartnerProduct');
+        $partnerProductRepository = $entityManager->getRepository(PartnerProduct::class);
         $partnerProducts          = $partnerProductRepository->findBy(['idPartner' => $partner]);
 
         if (($action = $this->request->request->get('action')) && 'delete' === $action) {
@@ -987,7 +987,7 @@ class partenairesController extends bootstrap
     {
         /** @var Doctrine\ORM\EntityManager $entityManager = */
         $entityManager     = $this->get('doctrine.orm.entity_manager');
-        $partnerRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Partner');
+        $partnerRepository = $entityManager->getRepository(Partner::class);
 
         if (
             false === $this->request->isMethod(Request::METHOD_POST)
@@ -1012,7 +1012,7 @@ class partenairesController extends bootstrap
     {
         /** @var Doctrine\ORM\EntityManager $entityManager = */
         $entityManager     = $this->get('doctrine.orm.entity_manager');
-        $partnerRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Partner');
+        $partnerRepository = $entityManager->getRepository(Partner::class);
 
         if (
             empty($this->params[0])
@@ -1024,7 +1024,7 @@ class partenairesController extends bootstrap
         }
 
         $this->translator = $this->get('translator');
-        $this->partner    = $entityManager->getRepository('UnilendCoreBusinessBundle:Partner')->find($this->params[0]);
+        $this->partner    = $entityManager->getRepository(Partner::class)->find($this->params[0]);
     }
 
     public function _ajout_tiers()
@@ -1037,9 +1037,9 @@ class partenairesController extends bootstrap
         ) {
             /** @var Doctrine\ORM\EntityManager $entityManager = */
             $entityManager = $this->get('doctrine.orm.entity_manager');
-            $company       = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->find($this->request->request->get('id_company'));
-            $partner       = $entityManager->getRepository('UnilendCoreBusinessBundle:Partner')->find($this->params[0]);
-            $type          = $entityManager->getRepository('UnilendCoreBusinessBundle:PartnerThirdPartyType')->find($this->request->request->get('third_party_type'));
+            $company       = $entityManager->getRepository(Companies::class)->find($this->request->request->get('id_company'));
+            $partner       = $entityManager->getRepository(Partner::class)->find($this->params[0]);
+            $type          = $entityManager->getRepository(PartnerThirdPartyType::class)->find($this->request->request->get('third_party_type'));
 
             if ($company && $partner && $type) {
                 try {
@@ -1074,9 +1074,9 @@ class partenairesController extends bootstrap
             $entityManager         = $this->get('doctrine.orm.entity_manager');
             $this->translator      = $this->get('translator');
             $this->siren           = $this->params[1];
-            $this->partner         = $entityManager->getRepository('UnilendCoreBusinessBundle:Partner')->find($this->params[0]);
-            $this->companies       = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findBy(['siren' => $this->siren]);
-            $this->thirdPartyTypes = $entityManager->getRepository('UnilendCoreBusinessBundle:PartnerThirdPartyType')->findAll();
+            $this->partner         = $entityManager->getRepository(Partner::class)->find($this->params[0]);
+            $this->companies       = $entityManager->getRepository(Companies::class)->findBy(['siren' => $this->siren]);
+            $this->thirdPartyTypes = $entityManager->getRepository(PartnerThirdPartyType::class)->findAll();
         }
     }
 
@@ -1095,7 +1095,7 @@ class partenairesController extends bootstrap
 
         /** @var EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
-        $partner       = $entityManager->getRepository('UnilendCoreBusinessBundle:Partner')->find($this->request->request->getInt('partner'));
+        $partner       = $entityManager->getRepository(Partner::class)->find($this->request->request->getInt('partner'));
 
         if (null === $partner) {
             $this->sendAjaxResponse(false, null, ['Partenaire inconnu']);
@@ -1104,7 +1104,7 @@ class partenairesController extends bootstrap
         $agencies = [
             ['id' => $partner->getIdCompany()->getIdCompany(), 'name' => 'Siège']
         ];
-        foreach ($entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findBy(['idParentCompany' => $partner->getIdCompany()]) as $agency) {
+        foreach ($entityManager->getRepository(Companies::class)->findBy(['idParentCompany' => $partner->getIdCompany()]) as $agency) {
             $agencies[] = [
                 'id'   => $agency->getIdCompany(),
                 'name' => $agency->getName()
@@ -1132,14 +1132,14 @@ class partenairesController extends bootstrap
 
         /** @var EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
-        $agency        = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->find($this->request->request->getInt('agency'));
+        $agency        = $entityManager->getRepository(Companies::class)->find($this->request->request->getInt('agency'));
 
         if (null === $agency) {
             $this->sendAjaxResponse(false, null, ['Agence inconnue']);
         }
 
         $users = [];
-        foreach ($entityManager->getRepository('UnilendCoreBusinessBundle:CompanyClient')->findBy(['idCompany' => $agency->getIdCompany()]) as $user) {
+        foreach ($entityManager->getRepository(CompanyClient::class)->findBy(['idCompany' => $agency->getIdCompany()]) as $user) {
             $users[] = [
                 'id'   => $user->getIdClient()->getIdClient(),
                 'name' => $user->getIdClient()->getPrenom() . ' ' . $user->getIdClient()->getNom()
@@ -1161,7 +1161,7 @@ class partenairesController extends bootstrap
 
         /** @var Doctrine\ORM\EntityManager $entityManager */
         $entityManager     = $this->get('doctrine.orm.entity_manager');
-        $partnerRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Partner');
+        $partnerRepository = $entityManager->getRepository(Partner::class);
 
         switch ($this->params[0]) {
             case 'partenaire':
@@ -1170,13 +1170,13 @@ class partenairesController extends bootstrap
                 $name      = $partner->getIdCompany()->getName();
                 break;
             case 'agence':
-                $companyRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies');
+                $companyRepository = $entityManager->getRepository(Companies::class);
                 $submitter         = $companyRepository->find($this->params[1]);
                 $partner           = $partnerRepository->findOneBy(['idCompany' => $submitter->getIdParentCompany()]);
                 $name              = 'Agence ' . $submitter->getName();
                 break;
             case 'utilisateur':
-                $companyClientRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyClient');
+                $companyClientRepository = $entityManager->getRepository(CompanyClient::class);
                 $companyClient           = $companyClientRepository->find($this->params[1]);
                 $submitter               = $companyClient->getIdClient();
                 $partner                 = $partnerRepository->findOneBy(['idCompany' => $companyClient->getIdCompany()->getIdParentCompany()]);
@@ -1187,7 +1187,7 @@ class partenairesController extends bootstrap
                 return;
         }
 
-        $projectRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
+        $projectRepository = $entityManager->getRepository(Projects::class);
 
         try {
             $kpi = $projectRepository->getSubmitterKPI($submitter);
@@ -1243,15 +1243,15 @@ class partenairesController extends bootstrap
 
         switch ($this->params[0]) {
             case 'partenaire':
-                $partnerRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Partner');
+                $partnerRepository = $entityManager->getRepository(Partner::class);
                 $submitter         = $partnerRepository->find($this->params[1]);
                 break;
             case 'agence':
-                $companyRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies');
+                $companyRepository = $entityManager->getRepository(Companies::class);
                 $submitter         = $companyRepository->find($this->params[1]);
                 break;
             case 'utilisateur':
-                $companyClientRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyClient');
+                $companyClientRepository = $entityManager->getRepository(CompanyClient::class);
                 $companyClient           = $companyClientRepository->find($this->params[1]);
                 $submitter               = $companyClient->getIdClient();
                 break;
@@ -1261,7 +1261,7 @@ class partenairesController extends bootstrap
         }
 
         try {
-            $projectRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
+            $projectRepository = $entityManager->getRepository(Projects::class);
             $projects          = $projectRepository->findSubmitterProjectsByStatus($submitter, $this->request->request->getInt('projectStatus'));
 
             $this->sendAjaxResponse(true, $this->render('partenaires/projects_list.html.twig', ['type' => $this->params[0], 'projects' => $projects], true));

@@ -5,7 +5,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service\Repayment;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{Echeanciers, ProjectRepaymentTask, ProjectRepaymentTaskLog, ProjectsStatus, Users};
+use Unilend\Entity\{Echeanciers, EcheanciersEmprunteur, Loans, Prelevements, ProjectRepaymentTask, ProjectRepaymentTaskLog, ProjectsStatus, Users};
 use Unilend\Bundle\CoreBusinessBundle\Service\{OperationManager, ProjectStatusManager};
 
 class ProjectEarlyRepaymentManager
@@ -80,15 +80,15 @@ class ProjectEarlyRepaymentManager
         try {
             $projectRepaymentTaskLog = $this->projectRepaymentTaskManager->start($projectRepaymentTask);
 
-            $this->entityManager->getRepository('UnilendCoreBusinessBundle:Prelevements')->terminatePendingDirectDebits($project);
-            $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur')->earlyPayAllPendingSchedules($projectRepaymentTask->getIdWireTransferIn());
+            $this->entityManager->getRepository(Prelevements::class)->terminatePendingDirectDebits($project);
+            $this->entityManager->getRepository(EcheanciersEmprunteur::class)->earlyPayAllPendingSchedules($projectRepaymentTask->getIdWireTransferIn());
             $this->projectRepaymentNotificationSender->createEarlyRepaymentEmail($projectRepaymentTask->getIdWireTransferIn());
 
             $this->projectStatusManager->addProjectStatus($idUser, ProjectsStatus::STATUS_REPAID, $project);
 
-            $loans = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Loans')->findBy(['idProject' => $project]);
+            $loans = $this->entityManager->getRepository(Loans::class)->findBy(['idProject' => $project]);
 
-            $repaymentScheduleRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers');
+            $repaymentScheduleRepository = $this->entityManager->getRepository(Echeanciers::class);
 
             foreach ($loans as $loan) {
                 $this->entityManager->getConnection()->beginTransaction();

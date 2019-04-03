@@ -3,13 +3,9 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
 use Doctrine\DBAL\Connection;
-use Doctrine\ORM\{
-    EntityRepository, ORMException
-};
+use Doctrine\ORM\{EntityRepository, ORMException};
 use Doctrine\ORM\Query\Expr\Join;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Autobid, ClientSettingType, ClientsStatus, ProjectPeriod, ProjectRateSettings, Projects, Wallet, WalletType
-};
+use Unilend\Entity\{Autobid, Bids, Clients, ClientSettings, ClientSettingType, ClientsStatus, ClientsStatusHistory, ProjectPeriod, ProjectRateSettings, Projects, Wallet, WalletType};
 
 class AutobidRepository extends EntityRepository
 {
@@ -24,9 +20,9 @@ class AutobidRepository extends EntityRepository
     {
         $queryBuilder = $this->createQueryBuilder('a');
         $queryBuilder->select('IFNULL(SUM(a.amount), 0)')
-            ->innerJoin('UnilendCoreBusinessBundle:ProjectPeriod', 'pp', Join::WITH, 'a.idPeriod = pp.idPeriod')
-            ->innerJoin('UnilendCoreBusinessBundle:ProjectRateSettings', 'prs', Join::WITH, 'pp.idPeriod = prs.idPeriod')
-            ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'a.idLender = w.id')
+            ->innerJoin(ProjectPeriod::class, 'pp', Join::WITH, 'a.idPeriod = pp.idPeriod')
+            ->innerJoin(ProjectRateSettings::class, 'prs', Join::WITH, 'pp.idPeriod = prs.idPeriod')
+            ->innerJoin(Wallet::class, 'w', Join::WITH, 'a.idLender = w.id')
             ->where(':duration BETWEEN pp.min AND pp.max')
             ->setParameter('duration', $duration)
             ->andWhere('a.status = :autobidSettingActive')
@@ -100,8 +96,8 @@ class AutobidRepository extends EntityRepository
                 pp.status AS period_status,
                 IDENTITY(w.idClient) AS id_client'
             )
-            ->innerJoin('UnilendCoreBusinessBundle:ProjectPeriod', 'pp', Join::WITH, 'pp.idPeriod = a.idPeriod AND pp.status = :pp_status')
-            ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'w.id = a.idLender')
+            ->innerJoin(ProjectPeriod::class, 'pp', Join::WITH, 'pp.idPeriod = a.idPeriod AND pp.status = :pp_status')
+            ->innerJoin(Wallet::class, 'w', Join::WITH, 'w.id = a.idLender')
             ->setParameter('pp_status', ProjectPeriod::STATUS_ACTIVE);
 
         if ($lenderId !== null) {
@@ -145,15 +141,15 @@ class AutobidRepository extends EntityRepository
         $queryBuilder = $this->createQueryBuilder('a');
         $queryBuilder
             ->select('a')
-            ->innerJoin('UnilendCoreBusinessBundle:ProjectPeriod', 'p', Join::WITH, 'a.idPeriod = p.idPeriod')
-            ->innerJoin('UnilendCoreBusinessBundle:ProjectRateSettings', 'prs', Join::WITH, 'a.rateMin <= prs.rateMax')
-            ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'a.idLender = w.id')
-            ->innerJoin('UnilendCoreBusinessBundle:WalletType', 'wt', Join::WITH, 'w.idType = wt.id AND wt.label = :walletType')
-            ->innerJoin('UnilendCoreBusinessBundle:Clients', 'c', Join::WITH, 'w.idClient = c.idClient')
-            ->innerJoin('UnilendCoreBusinessBundle:ClientsStatusHistory', 'csh', Join::WITH, 'c.idClientStatusHistory = csh.id')
-            ->innerJoin('UnilendCoreBusinessBundle:ClientSettings', 'cs', Join::WITH, 'w.idClient = cs.idClient')
-            ->innerJoin('UnilendCoreBusinessBundle:ClientSettingType', 'cst', Join::WITH, 'cs.idType = cst.idType AND cst.label = :settingType')
-            ->leftJoin('UnilendCoreBusinessBundle:Bids', 'b', Join::WITH, 'a.idAutobid = b.idAutobid AND b.project = :project')
+            ->innerJoin(ProjectPeriod::class, 'p', Join::WITH, 'a.idPeriod = p.idPeriod')
+            ->innerJoin(ProjectRateSettings::class, 'prs', Join::WITH, 'a.rateMin <= prs.rateMax')
+            ->innerJoin(Wallet::class, 'w', Join::WITH, 'a.idLender = w.id')
+            ->innerJoin(WalletType::class, 'wt', Join::WITH, 'w.idType = wt.id AND wt.label = :walletType')
+            ->innerJoin(Clients::class, 'c', Join::WITH, 'w.idClient = c.idClient')
+            ->innerJoin(ClientsStatusHistory::class, 'csh', Join::WITH, 'c.idClientStatusHistory = csh.id')
+            ->innerJoin(ClientSettings::class, 'cs', Join::WITH, 'w.idClient = cs.idClient')
+            ->innerJoin(ClientSettingType::class, 'cst', Join::WITH, 'cs.idType = cst.idType AND cst.label = :settingType')
+            ->leftJoin(Bids::class, 'b', Join::WITH, 'a.idAutobid = b.idAutobid AND b.project = :project')
             ->where('a.status = :bidStatus')
             ->andWhere('p.status = :periodStatus')
             ->andWhere('p.min <= :projectDuration')

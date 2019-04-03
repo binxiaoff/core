@@ -1,7 +1,7 @@
 <div id="contenu">
     <h1>Modifier <?= $this->mailTemplate->getType() ?></h1>
     <form method="post" action="<?= $this->lurl ?>/mails/edit/<?= $this->mailTemplate->getType() ?><?= isset($this->params[1]) ? '/' . $this->params[1] : '' ?>">
-        <?php if (\Unilend\Bundle\CoreBusinessBundle\Entity\MailTemplates::PART_TYPE_CONTENT === $this->mailTemplate->getPart()) : ?>
+        <?php if (\Unilend\Entity\MailTemplates::PART_TYPE_CONTENT === $this->mailTemplate->getPart()) : ?>
             <div class="row">
                 <div class="form-group col-md-6">
                     <label for="sender-name">Nom expéditeur</label>
@@ -44,8 +44,8 @@
                 <div class="form-group col-md-4">
                     <label for="recipient-type">Usage</label>
                     <select id="recipient-type" name="recipient_type" class="form-control">
-                        <option value="external"<?= $this->mailTemplate->getRecipientType() === \Unilend\Bundle\CoreBusinessBundle\Entity\MailTemplates::RECIPIENT_TYPE_EXTERNAL ? ' selected' : '' ?>>Externe</option>
-                        <option value="internal"<?= $this->mailTemplate->getRecipientType() === \Unilend\Bundle\CoreBusinessBundle\Entity\MailTemplates::RECIPIENT_TYPE_INTERNAL ? ' selected' : '' ?>>Interne</option>
+                        <option value="external"<?= $this->mailTemplate->getRecipientType() === \Unilend\Entity\MailTemplates::RECIPIENT_TYPE_EXTERNAL ? ' selected' : '' ?>>Externe</option>
+                        <option value="internal"<?= $this->mailTemplate->getRecipientType() === \Unilend\Entity\MailTemplates::RECIPIENT_TYPE_INTERNAL ? ' selected' : '' ?>>Interne</option>
                     </select>
                 </div>
             </div>
@@ -59,7 +59,7 @@
         <div class="row">
             <div class="form-group col-md-12">
                 <button type="submit" class="btn-primary pull-right">Valider</button>
-                <?php if (\Unilend\Bundle\CoreBusinessBundle\Entity\MailTemplates::PART_TYPE_CONTENT === $this->mailTemplate->getPart()) : ?>
+                <?php if (\Unilend\Entity\MailTemplates::PART_TYPE_CONTENT === $this->mailTemplate->getPart()) : ?>
                     <button type="button" id="preview-button" class="btn-default pull-right" style="margin-right: 5px;">Prévisualiser</button>
                 <?php endif; ?>
             </div>

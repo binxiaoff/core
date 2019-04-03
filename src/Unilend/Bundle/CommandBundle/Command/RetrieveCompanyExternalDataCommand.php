@@ -6,7 +6,7 @@ use Box\Spout\{Common\Type, Writer\CSV\Writer, Writer\WriterFactory};
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\{Input\InputInterface, Output\OutputInterface};
 use Symfony\Component\Filesystem\Filesystem;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
+use Unilend\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Service\{BulkCompanyCheckManager};
 
 class RetrieveCompanyExternalDataCommand extends ContainerAwareCommand

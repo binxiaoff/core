@@ -1,6 +1,6 @@
 <?php
 
-use Unilend\Bundle\CoreBusinessBundle\Entity\{CompanyStatus, ProjectsStatus};
+use Unilend\Entity\{CompanyStatus, ProjectsStatus};
 
 class companies extends companies_crud
 {
@@ -199,7 +199,7 @@ class companies extends companies_crud
      */
     public function setSectorAccordingToNaf()
     {
-        if ($this->code_naf == \Unilend\Bundle\CoreBusinessBundle\Entity\Companies::NAF_CODE_NO_ACTIVITY) {
+        if ($this->code_naf == \Unilend\Entity\Companies::NAF_CODE_NO_ACTIVITY) {
             return;
         }
 
@@ -305,7 +305,7 @@ class companies extends companies_crud
                           ORDER BY psh2.added DESC, psh2.id_project_status_history DESC
                           LIMIT 1
                          )
-                ) > ' . \Unilend\Bundle\CoreBusinessBundle\Entity\UnilendStats::DAYS_AFTER_LAST_PROBLEM_STATUS_FOR_STATISTIC_LOSS . ' )
+                ) > ' . \Unilend\Entity\UnilendStats::DAYS_AFTER_LAST_PROBLEM_STATUS_FOR_STATISTIC_LOSS . ' )
             GROUP BY cohort';
 
         $statement = $this->bdd->executeQuery(

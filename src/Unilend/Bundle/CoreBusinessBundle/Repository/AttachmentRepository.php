@@ -4,10 +4,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Attachment;
-use Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
+use Unilend\Entity\{Attachment, AttachmentType, Clients, ProjectAttachment, Projects};
 
 class AttachmentRepository extends EntityRepository
 {
@@ -21,7 +18,7 @@ class AttachmentRepository extends EntityRepository
     public function getProjectAttachmentByType($project, $attachmentType)
     {
         $queryBuilder = $this->createQueryBuilder('a');
-        $queryBuilder->innerJoin('UnilendCoreBusinessBundle:ProjectAttachment', 'pa', Join::WITH, 'a.id = pa.idAttachment')
+        $queryBuilder->innerJoin(ProjectAttachment::class, 'pa', Join::WITH, 'a.id = pa.idAttachment')
            ->where('pa.idProject = :project')
            ->andWhere('a.idType = :attachmentType')
            ->setParameters(['project' => $project, 'attachmentType' => $attachmentType]);
@@ -37,7 +34,7 @@ class AttachmentRepository extends EntityRepository
      */
     public function findOneClientAttachmentByType($client, $attachmentType)
     {
-        return $this->getEntityManager()->getRepository('UnilendCoreBusinessBundle:Attachment')->findOneBy([
+        return $this->getEntityManager()->getRepository(Attachment::class)->findOneBy([
             'idClient' => $client,
             'idType'   => $attachmentType,
             'archived' => null

@@ -7,9 +7,8 @@ use Symfony\Component\Console\Input\{
     InputArgument, InputInterface
 };
 use Symfony\Component\Console\Output\OutputInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AddressType, ClientAddress, Clients, Companies, CompanyAddress, OperationType, WalletType
-};
+use Unilend\Entity\{AddressType, ClientAddress, Clients, ClientsStatusHistory, Companies, CompanyAddress, LendersImpositionHistory, Nationalites, Operation, OperationType, Wallet,
+    WalletBalanceHistory, WalletType};
 
 class QueriesCrsDacCommand extends ContainerAwareCommand
 {
@@ -49,7 +48,7 @@ class QueriesCrsDacCommand extends ContainerAwareCommand
         $filePath         = $this->getContainer()->getParameter('path.protected') . '/queries/' . 'preteurs_crs_dac' . $year . '.xlsx';
         $logger           = $this->getContainer()->get('logger');
         $entityManager    = $this->getContainer()->get('doctrine.orm.entity_manager');
-        $clientRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
+        $clientRepository = $entityManager->getRepository(Clients::class);
 
         /** @var \PHPExcel $document */
         $document    = new \PHPExcel();
@@ -114,11 +113,11 @@ class QueriesCrsDacCommand extends ContainerAwareCommand
     private function writeLineForClient(Clients $client, int $row, \PHPExcel_Worksheet $activeSheet, \DateTime $lastDayOfTheYear)
     {
         $entityManager                  = $this->getContainer()->get('doctrine.orm.entity_manager');
-        $walletRepository               = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet');
-        $walletBalanceHistoryRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:WalletBalanceHistory');
-        $operationRepository            = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
-        $clientStatusHistoryRepository  = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsStatusHistory');
-        $lenderImpositionRepository     = $entityManager->getRepository('UnilendCoreBusinessBundle:LendersImpositionHistory');
+        $walletRepository               = $entityManager->getRepository(Wallet::class);
+        $walletBalanceHistoryRepository = $entityManager->getRepository(WalletBalanceHistory::class);
+        $operationRepository            = $entityManager->getRepository(Operation::class);
+        $clientStatusHistoryRepository  = $entityManager->getRepository(ClientsStatusHistory::class);
+        $lenderImpositionRepository     = $entityManager->getRepository(LendersImpositionHistory::class);
 
         $clientAddress               = $this->getMostRecentMainAddress($client);
         $wallet                      = $walletRepository->getWalletByType($client, WalletType::LENDER);
@@ -128,14 +127,14 @@ class QueriesCrsDacCommand extends ContainerAwareCommand
         $amountInvested              = $operationRepository->sumDebitOperationsByTypeUntil($wallet, [OperationType::LENDER_LOAN], null, $lastDayOfTheYear);
         $firstValidation             = $clientStatusHistoryRepository->getFirstClientValidation($client);
         $fiscalCountryIso            = $lenderImpositionRepository->getFiscalIsoAtDate($wallet, $lastDayOfTheYear);
-        $nationalityCountry          = $entityManager->getRepository('UnilendCoreBusinessBundle:Nationalites')->find($client->getIdNationalite());
+        $nationalityCountry          = $entityManager->getRepository(Nationalites::class)->find($client->getIdNationalite());
         $grossInterest               = $operationRepository->sumCreditOperationsByTypeAndYear($wallet, [OperationType::GROSS_INTEREST_REPAYMENT], null, $lastDayOfTheYear->format('Y'));
         $grossInterestRegularization = $operationRepository->sumDebitOperationsByTypeAndYear($wallet, [OperationType::GROSS_INTEREST_REPAYMENT_REGULARIZATION], null, $lastDayOfTheYear->format('Y'));
         $yearlyGrossInterest         = round(bcsub($grossInterest, $grossInterestRegularization, 4), 2);
 
         if (false === $client->isNaturalPerson()) {
             /** @var Companies $company */
-            $company = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $client]);
+            $company = $entityManager->getRepository(Companies::class)->findOneBy(['idClientOwner' => $client]);
         }
 
         $activeSheet->setCellValue('A' . $row, $client->getIdClient());
@@ -172,7 +171,7 @@ class QueriesCrsDacCommand extends ContainerAwareCommand
         $logger        = $this->getContainer()->get('logger');
 
         if ($client->isNaturalPerson()) {
-            $clientAddressRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientAddress');
+            $clientAddressRepository = $entityManager->getRepository(ClientAddress::class);
             /** @var ClientAddress $mostRecentAddress */
             $mostRecentAddress = $clientAddressRepository->findLastModifiedNotArchivedAddressByType($client, AddressType::TYPE_MAIN_ADDRESS);
             if (null === $mostRecentAddress) {
@@ -184,12 +183,12 @@ class QueriesCrsDacCommand extends ContainerAwareCommand
             }
         } else {
             /** @var Companies $company */
-            $company = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $client]);
+            $company = $entityManager->getRepository(Companies::class)->findOneBy(['idClientOwner' => $client]);
             if (null === $company) {
                 throw new \Exception('Client' . $client->getIdClient() . ' of type legal entity has no company');
             }
 
-            $companyAddressRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress');
+            $companyAddressRepository = $entityManager->getRepository(CompanyAddress::class);
             /** @var CompanyAddress $mostRecentAddress */
             $mostRecentAddress = $companyAddressRepository->findLastModifiedNotArchivedAddressByType($company, AddressType::TYPE_MAIN_ADDRESS);
             if (null === $mostRecentAddress) {

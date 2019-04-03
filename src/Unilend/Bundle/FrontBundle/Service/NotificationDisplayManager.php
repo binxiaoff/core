@@ -5,7 +5,7 @@ namespace Unilend\Bundle\FrontBundle\Service;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\Translation\TranslatorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{Clients, Notifications, Projects, WalletType};
+use Unilend\Entity\{Autobid, Clients, Notifications, Projects, Wallet, WalletType};
 use Unilend\Bundle\CoreBusinessBundle\Service\{AutoBidSettingsManager, BidManager, Simulator\EntityManager as EntityManagerSimulator};
 use Unilend\core\Loader;
 
@@ -100,10 +100,10 @@ class NotificationDisplayManager
         if (false === $client->isLender()) {
             throw new \Exception('Client ' . $client->getIdClient() . ' is not a Lender');
         }
-        $wallet = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
+        $wallet = $this->entityManager->getRepository(Wallet::class)->getWalletByType($client, WalletType::LENDER);
         /** @var \accepted_bids $acceptedBid */
         $acceptedBid = $this->entityManagerSimulator->getRepository('accepted_bids');
-        $autobidRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Autobid');
+        $autobidRepository = $this->entityManager->getRepository(Autobid::class);
         /** @var \bids $bid */
         $bid = $this->entityManagerSimulator->getRepository('bids');
         /** @var \companies $company */

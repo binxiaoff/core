@@ -35,7 +35,7 @@
             <tbody>
             <?php $i = 1; ?>
             <?php
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Companies $company */
+            /** @var \Unilend\Entity\Companies $company */
             foreach ($this->companies as $company) : ?>
                 <tr<?= ($i % 2 == 1 ? '' : ' class="odd"') ?>>
                     <td><?= $company->getName() ?></td>

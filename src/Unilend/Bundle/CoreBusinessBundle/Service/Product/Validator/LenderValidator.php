@@ -2,9 +2,7 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service\Product\Validator;
 
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
-use Unilend\Bundle\CoreBusinessBundle\Entity\UnderlyingContractAttributeType;
+use Unilend\Entity\{Clients, Product, Projects, UnderlyingContractAttributeType};
 
 class LenderValidator extends ClientValidator
 {
@@ -17,7 +15,7 @@ class LenderValidator extends ClientValidator
     public function validate(?Clients $client, Projects $project): array
     {
         $violations = parent::validate($client, $project);
-        $product    = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Product')->find($project->getIdProduct());
+        $product    = $this->entityManager->getRepository(Product::class)->find($project->getIdProduct());
 
         if (false === $this->canStillBid($client, $project, $this->contractManager, $this->entityManager)) {
             $violations[] = UnderlyingContractAttributeType::TOTAL_LOAN_AMOUNT_LIMITATION_IN_EURO;

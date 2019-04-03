@@ -1,8 +1,6 @@
 <?php
 
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Bids as BidsEntity, Wallet
-};
+use Unilend\Entity\{Bids as BidsEntity, Wallet};
 
 class bids extends bids_crud
 {

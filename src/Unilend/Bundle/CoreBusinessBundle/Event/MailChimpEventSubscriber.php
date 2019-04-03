@@ -5,7 +5,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Event;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{Clients, Users};
+use Unilend\Entity\{Clients, Users};
 use Unilend\Bundle\CoreBusinessBundle\Service\ClientAuditer;
 use Welp\MailchimpBundle\Event\WebhookEvent;
 use Welp\MailchimpBundle\Provider\ProviderInterface;
@@ -83,8 +83,8 @@ class MailChimpEventSubscriber implements EventSubscriberInterface, ProviderInte
             && isset($event->getData()['email'])
             && false !== filter_var($event->getData()['email'], FILTER_VALIDATE_EMAIL)
         ) {
-            $frontUser        = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find(Users::USER_ID_FRONT);
-            $clientRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
+            $frontUser        = $this->entityManager->getRepository(Users::class)->find(Users::USER_ID_FRONT);
+            $clientRepository = $this->entityManager->getRepository(Clients::class);
             $clients          = $clientRepository->findBy(['email' => $event->getData()['email']]);
 
             foreach ($clients as $client) {

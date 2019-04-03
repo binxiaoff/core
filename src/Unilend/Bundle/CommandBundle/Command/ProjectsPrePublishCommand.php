@@ -4,7 +4,7 @@ namespace Unilend\Bundle\CommandBundle\Command;
 
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\{Input\InputInterface, Output\OutputInterface};
-use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
+use Unilend\Entity\Projects;
 
 class ProjectsPrePublishCommand extends ContainerAwareCommand
 {
@@ -25,7 +25,7 @@ class ProjectsPrePublishCommand extends ContainerAwareCommand
     {
         $logger                  = $this->getContainer()->get('monolog.logger.console');
         $projectLifecycleManager = $this->getContainer()->get('unilend.service.project_lifecycle_manager');
-        $projectRepository       = $this->getContainer()->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Projects');
+        $projectRepository       = $this->getContainer()->get('doctrine.orm.entity_manager')->getRepository(Projects::class);
         $projectsToFund          = $projectRepository->findPrePublish(1);
 
         $projectLifecycleManager->setLogger($logger);

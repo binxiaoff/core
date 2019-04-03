@@ -4,7 +4,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service\UserActivity;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{Clients, UserAgent as UserAgentEntity};
+use Unilend\Entity\{Clients, UserAgent as UserAgentEntity};
 use UserAgentParser\Model\UserAgent;
 use UserAgentParser\Provider\Chain;
 
@@ -42,7 +42,7 @@ class UserAgentManager
             $browser = $parser->getBrowser();
             $device  = $parser->getDevice();
 
-            $knownUserAgent = $this->entityManager->getRepository('UnilendCoreBusinessBundle:UserAgent')
+            $knownUserAgent = $this->entityManager->getRepository(UserAgent::class)
                 ->findOneBy(['idClient' => $client, 'browserName' => $browser->getName(), 'deviceModel' => $device->getModel(), 'deviceBrand' => $device->getBrand(), 'deviceType' => $device->getType()]);
 
             if ($knownUserAgent) {

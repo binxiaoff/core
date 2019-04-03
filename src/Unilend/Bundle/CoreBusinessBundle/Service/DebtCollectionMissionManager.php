@@ -6,8 +6,8 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Filesystem\Filesystem;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{Clients, DebtCollectionFeeDetail, DebtCollectionMission, DebtCollectionMissionPaymentSchedule, EcheanciersEmprunteur, ProjectCharge, Projects,
-    ProjectsStatus, Receptions, TaxType, Users};
+use Unilend\Entity\{Clients, CloseOutNettingPayment, DebtCollectionFeeDetail, DebtCollectionMission, DebtCollectionMissionPaymentSchedule, Echeanciers, EcheanciersEmprunteur, Loans, Operation,
+    ProjectCharge, ProjectRepaymentDetail, ProjectRepaymentTask, Projects, ProjectsStatus, ProjectsStatusHistory, Receptions, TaxType, Users};
 use Unilend\Bundle\CoreBusinessBundle\Service\Repayment\ProjectRepaymentTaskManager;
 
 class DebtCollectionMissionManager
@@ -69,7 +69,7 @@ class DebtCollectionMissionManager
      */
     public function generateExcelFile(DebtCollectionMission $debtCollectionMission)
     {
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\DebtCollectionMissionPaymentSchedule[] $missionPaymentSchedules */
+        /** @var \Unilend\Entity\DebtCollectionMissionPaymentSchedule[] $missionPaymentSchedules */
         $missionPaymentSchedules          = $debtCollectionMission->getDebtCollectionMissionPaymentSchedules();
         $isDebtCollectionFeeDueToBorrower = $this->isDebtCollectionFeeDueToBorrower($debtCollectionMission->getIdProject());
         $isCloseOutNetting                = null !== $debtCollectionMission->getIdProject()->getCloseOutNettingDate();
@@ -312,7 +312,7 @@ class DebtCollectionMissionManager
 
     private function getChargeDetails(DebtCollectionMission $debtCollectionMission)
     {
-        $charges = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectCharge')->findBy([
+        $charges = $this->entityManager->getRepository(ProjectCharge::class)->findBy([
             'idProject' => $debtCollectionMission->getIdProject(),
             'status'    => ProjectCharge::STATUS_PAID_BY_UNILEND
         ]);
@@ -325,7 +325,7 @@ class DebtCollectionMissionManager
         $totalFeeTaxIncl = 0;
         $totalFeeVat     = 0;
         if ($this->isDebtCollectionFeeDueToBorrower($debtCollectionMission->getIdProject())) {
-            $vatTax = $this->entityManager->getRepository('UnilendCoreBusinessBundle:TaxType')->find(TaxType::TYPE_VAT);
+            $vatTax = $this->entityManager->getRepository(TaxType::class)->find(TaxType::TYPE_VAT);
             if (null === $vatTax) {
                 throw new \Exception('The VAT rate is not defined.');
             }
@@ -369,14 +369,14 @@ class DebtCollectionMissionManager
                 $totalRemainingCommission = round(bcadd($totalRemainingCommission, $remainingCommissionBySchedule, 4), 2);
             }
         } else {
-            $closeOutNettingPayment   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CloseOutNettingPayment')->findOneBy(['idProject' => $debtCollectionMission->getIdProject()]);
+            $closeOutNettingPayment   = $this->entityManager->getRepository(CloseOutNettingPayment::class)->findOneBy(['idProject' => $debtCollectionMission->getIdProject()]);
             $totalRemainingCommission = round(bcsub($closeOutNettingPayment->getCommissionTaxIncl(), $closeOutNettingPayment->getPaidCommissionTaxIncl(), 4), 2);
 
             $commissionDetails['remaining_commission'] = $totalRemainingCommission;
         }
 
         if ($this->isDebtCollectionFeeDueToBorrower($debtCollectionMission->getIdProject())) {
-            $vatTax = $this->entityManager->getRepository('UnilendCoreBusinessBundle:TaxType')->find(TaxType::TYPE_VAT);
+            $vatTax = $this->entityManager->getRepository(TaxType::class)->find(TaxType::TYPE_VAT);
             if (null === $vatTax) {
                 throw new \Exception('The VAT rate is not defined.');
             }
@@ -412,12 +412,12 @@ class DebtCollectionMissionManager
 
         $this->projectRepaymentTaskManager->prepareNonFinishedTask($debtCollectionMission->getIdProject());
 
-        $repaymentScheduleRepository        = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers');
-        $projectRepaymentDetailRepository   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRepaymentDetail');
-        $loanRepository                     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Loans');
+        $repaymentScheduleRepository        = $this->entityManager->getRepository(Echeanciers::class);
+        $projectRepaymentDetailRepository   = $this->entityManager->getRepository(ProjectRepaymentDetail::class);
+        $loanRepository                     = $this->entityManager->getRepository(Loans::class);
 
         $project                 = $debtCollectionMission->getIdProject();
-        $vatTax                  = $this->entityManager->getRepository('UnilendCoreBusinessBundle:TaxType')->find(TaxType::TYPE_VAT);
+        $vatTax                  = $this->entityManager->getRepository(TaxType::class)->find(TaxType::TYPE_VAT);
         $remainingAmountsByLoans = $repaymentScheduleRepository->getRemainingAmountsByLoanAndSequence($project); // for resolve the memory issue. 200 MB reduced.
         $loanDetails             = $loanRepository->getBasicInformation($project); // for resolve the memory issue. 30 MB reduced.
 
@@ -488,7 +488,7 @@ class DebtCollectionMissionManager
     public function isDebtCollectionFeeDueToBorrower(Projects $project)
     {
         $statusHistory = $this->entityManager
-            ->getRepository('UnilendCoreBusinessBundle:ProjectsStatusHistory')
+            ->getRepository(ProjectsStatusHistory::class)
             ->findStatusFirstOccurrence($project, ProjectsStatus::STATUS_ONLINE);
         $putOnlineDate = $statusHistory->getAdded();
         $putOnlineDate->setTime(0, 0, 0);
@@ -523,9 +523,9 @@ class DebtCollectionMissionManager
      */
     private function getLoanFeeDetails(Receptions $wireTransferIn)
     {
-        $operationRepository               = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
-        $debtCollectionFeeDetailRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:DebtCollectionFeeDetail');
-        $loanDetails                       = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Loans')->getBasicInformation($wireTransferIn->getIdProject());
+        $operationRepository               = $this->entityManager->getRepository(Operation::class);
+        $debtCollectionFeeDetailRepository = $this->entityManager->getRepository(DebtCollectionFeeDetail::class);
+        $loanDetails                       = $this->entityManager->getRepository(Loans::class)->getBasicInformation($wireTransferIn->getIdProject());
 
         foreach ($loanDetails as $loanId => $loanDetail) {
             $repaidAmounts                           = $operationRepository->getTotalRepaidAmountsByLoanAndWireTransferIn($loanId, $wireTransferIn);
@@ -546,8 +546,8 @@ class DebtCollectionMissionManager
      */
     private function getCommissionFeeDetails(Receptions $wireTransferIn)
     {
-        $debtCollectionFeeDetailRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:DebtCollectionFeeDetail');
-        $projectRepaymentTaskRepository    = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRepaymentTask');
+        $debtCollectionFeeDetailRepository = $this->entityManager->getRepository(DebtCollectionFeeDetail::class);
+        $projectRepaymentTaskRepository    = $this->entityManager->getRepository(ProjectRepaymentTask::class);
 
         $feeAmounts                        = $debtCollectionFeeDetailRepository->getAmountsByTypeAndWireTransferIn(DebtCollectionFeeDetail::TYPE_REPAYMENT_COMMISSION, $wireTransferIn);
         $commissionDetails['commission']   = $projectRepaymentTaskRepository->getTotalCommissionByWireTransferIn($wireTransferIn);
@@ -564,8 +564,8 @@ class DebtCollectionMissionManager
      */
     private function getChargeFeeDetails(Receptions $wireTransferIn)
     {
-        $debtCollectionFeeDetailRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:DebtCollectionFeeDetail');
-        $projectChargeRepository           = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectCharge');
+        $debtCollectionFeeDetailRepository = $this->entityManager->getRepository(DebtCollectionFeeDetail::class);
+        $projectChargeRepository           = $this->entityManager->getRepository(ProjectCharge::class);
 
         $feeAmounts                    = $debtCollectionFeeDetailRepository->getAmountsByTypeAndWireTransferIn(DebtCollectionFeeDetail::TYPE_PROJECT_CHARGE, $wireTransferIn);
         $chargeDetails['charge']       = $projectChargeRepository->getTotalChargeByWireTransferIn($wireTransferIn);
@@ -703,7 +703,7 @@ class DebtCollectionMissionManager
      */
     public function newMission(Projects $project, Clients $debtCollector, $type, $feesRate, Users $user)
     {
-        $debtCollectionMissionRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:DebtCollectionMission');
+        $debtCollectionMissionRepository = $this->entityManager->getRepository(DebtCollectionMission::class);
         /** @var DebtCollectionMission $currentMission */
         $currentMission  = $debtCollectionMissionRepository->findOneBy(['idProject' => $project, 'idClientDebtCollector' => $debtCollector, 'archived' => null]);
         $totalCapital    = 0;
@@ -733,7 +733,7 @@ class DebtCollectionMissionManager
 
             if (null === $closeOutNettingDate) {
                 /** @var EcheanciersEmprunteur[] $pendingPayments */
-                $pendingPayments                  = $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur')->findBy(
+                $pendingPayments                  = $this->entityManager->getRepository(EcheanciersEmprunteur::class)->findBy(
                     [
                         'idProject'        => $project,
                         'statusEmprunteur' => [EcheanciersEmprunteur::STATUS_PENDING, EcheanciersEmprunteur::STATUS_PARTIALLY_PAID]
@@ -764,7 +764,7 @@ class DebtCollectionMissionManager
                 }
                 $newMission->setDebtCollectionMissionPaymentSchedules($paymentScheduleMissionCollection);
             } else {
-                $closeOutNettingPayment = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CloseOutNettingPayment')->findOneBy(['idProject' => $project]);
+                $closeOutNettingPayment = $this->entityManager->getRepository(CloseOutNettingPayment::class)->findOneBy(['idProject' => $project]);
                 $totalCapital           = round(bcsub($closeOutNettingPayment->getCapital(), $closeOutNettingPayment->getPaidCapital(), 4), 2);
                 $totalInterest          = round(bcsub($closeOutNettingPayment->getInterest(), $closeOutNettingPayment->getPaidInterest(), 4), 2);
                 $totalCommission        = round(bcsub($closeOutNettingPayment->getCommissionTaxIncl(), $closeOutNettingPayment->getPaidCommissionTaxIncl(), 4), 2);

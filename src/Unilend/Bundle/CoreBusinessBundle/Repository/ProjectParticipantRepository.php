@@ -5,8 +5,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Symfony\Bridge\Doctrine\RegistryInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectParticipant;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
+use Unilend\Entity\{ProjectParticipant, Projects};
 
 class ProjectParticipantRepository extends ServiceEntityRepository
 {

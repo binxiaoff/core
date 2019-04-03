@@ -3,7 +3,7 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\ORM\EntityManagerInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{Clients, VigilanceRule, WalletType};
+use Unilend\Entity\{Clients, ClientVigilanceStatusHistory, Echeanciers, Loans, Projects, Settings, VigilanceRule, Wallet, WalletType};
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 
 /**
@@ -49,8 +49,8 @@ class LenderManager
             throw new \Exception('Client ' . $client->getIdClient() . ' is not a Lender');
         }
 
-        $wallet               = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
-        $projectsRepository   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
+        $wallet               = $this->entityManager->getRepository(Wallet::class)->getWalletByType($client, WalletType::LENDER);
+        $projectsRepository   = $this->entityManager->getRepository(Projects::class);
         $numberOfCompanies    = $projectsRepository->countCompaniesLenderInvestedIn($wallet->getId());
         $diversificationLevel = 0;
 
@@ -116,7 +116,7 @@ class LenderManager
      */
     public function getLenderPattern(Clients $client)
     {
-        $wallet = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
+        $wallet = $this->entityManager->getRepository(Wallet::class)->getWalletByType($client, WalletType::LENDER);
 
         if (null === $wallet) {
             throw new \Exception('Client ' . $client->getIdClient() . ' is not a Lender');
@@ -137,9 +137,9 @@ class LenderManager
             throw new \Exception('Client ' . $client->getIdClient() . ' is not a Lender');
         }
 
-        $wallet                      = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
-        $repaymentScheduleRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers');
-        $loansRepository             = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Loans');
+        $wallet                      = $this->entityManager->getRepository(Wallet::class)->getWalletByType($client, WalletType::LENDER);
+        $repaymentScheduleRepository = $this->entityManager->getRepository(Echeanciers::class);
+        $loansRepository             = $this->entityManager->getRepository(Loans::class);
         $lostAmount                  = $repaymentScheduleRepository->getLostCapitalForLender($wallet->getId());
         $remainingDueCapital         = round(bcdiv($lostAmount, 100, 3), 2);
         $sumOfLoans                  = $loansRepository->sumLoansOfProjectsInRepayment($wallet);
@@ -167,7 +167,7 @@ class LenderManager
         }
 
         $fundsOriginList = $this->entityManager
-            ->getRepository('UnilendCoreBusinessBundle:Settings')
+            ->getRepository(Settings::class)
             ->findOneBy(['type' => $settingName])
             ->getValue();
         $fundsOriginList = explode(';', $fundsOriginList);
@@ -186,7 +186,7 @@ class LenderManager
             throw new \InvalidArgumentException('Client ' . $client->getIdClient() . ' is not a Lender');
         }
 
-        $clientVigilanceStatus = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ClientVigilanceStatusHistory')->findOneBy(['client' => $client], ['added' => 'DESC', 'id' => 'DESC']);
+        $clientVigilanceStatus = $this->entityManager->getRepository(ClientVigilanceStatusHistory::class)->findOneBy(['client' => $client], ['added' => 'DESC', 'id' => 'DESC']);
 
         $currentVigilanceStatus = VigilanceRule::VIGILANCE_STATUS_LOW;
         if ($clientVigilanceStatus) {

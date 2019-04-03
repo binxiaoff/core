@@ -9,7 +9,7 @@ use Doctrine\DBAL\Query\QueryBuilder;
 use Doctrine\ORM\{AbstractQuery, EntityRepository, NonUniqueResultException, QueryBuilder as ORMQueryBuilder, Query\Expr\Join, Query\ResultSetMappingBuilder};
 use PDO;
 use Psr\Log\InvalidArgumentException;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{Bids, Clients, ClientsMandats, Companies, CompanyStatus, Echeanciers, EcheanciersEmprunteur, Factures, OperationType, Partner, Projects, ProjectsPouvoir,
+use Unilend\Entity\{Bids, Clients, ClientsMandats, Companies, CompanyStatus, Echeanciers, EcheanciersEmprunteur, Factures, OperationType, Partner, Projects, ProjectSearch, ProjectsPouvoir,
     ProjectsStatus, UnilendStats, Users, Virements};
 use Unilend\Bundle\CoreBusinessBundle\Service\{DebtCollectionMissionManager, ProjectCloseOutNettingManager};
 use Unilend\librairies\CacheKeys;
@@ -56,7 +56,7 @@ class ProjectsRepository extends EntityRepository
     public function findPartiallyReleasedProjects(\DateTime $dateTime)
     {
         $rsm = new ResultSetMappingBuilder($this->getEntityManager());
-        $rsm->addRootEntityFromClassMetadata('UnilendCoreBusinessBundle:Projects', 'p');
+        $rsm->addRootEntityFromClassMetadata(Projects::class, 'p');
 
         $sql = 'SELECT p.*, MIN(psh.added) AS release_date, p.amount - ROUND(i.montant_ttc / 100, 2) - IF(f.release_funds IS NULL, 0, f.release_funds ) AS rest_funds
                 FROM projects p
@@ -214,14 +214,14 @@ class ProjectsRepository extends EntityRepository
         $companyStatusId = $this->getEntityManager()
             ->createQueryBuilder()
             ->select('cs.id')
-            ->from('UnilendCoreBusinessBundle:CompanyStatus', 'cs')
+            ->leftJoin(CompanyStatus::class, 'cs')
             ->where('cs.label IN (:companyStatusLabel)')
             ->setParameter('companyStatusLabel', $companyStatusLabel, Connection::PARAM_STR_ARRAY)
             ->getQuery()->getResult(AbstractQuery::HYDRATE_ARRAY);
 
         $queryBuilder = $this->createQueryBuilder('p');
         $queryBuilder->select('COUNT(p.idProject)')
-            ->innerJoin('UnilendCoreBusinessBundle:Companies', 'co', Join::WITH, 'co.idCompany = p.idCompany')
+            ->innerJoin(Companies::class, 'co', Join::WITH, 'co.idCompany = p.idCompany')
             ->where('p.status NOT IN (:projectStatus)')
             ->andWhere('co.siren = :siren')
             ->andWhere('co.idStatus NOT IN (:companyStatusId)')
@@ -243,7 +243,7 @@ class ProjectsRepository extends EntityRepository
     {
         $queryBuilder = $this->createQueryBuilder('p');
         $queryBuilder
-            ->innerJoin('UnilendCoreBusinessBundle:Companies', 'c', Join::WITH, 'p.idCompany = c.idCompany')
+            ->innerJoin(Companies::class, 'c', Join::WITH, 'p.idCompany = c.idCompany')
             ->where('c.siren = :siren')
             ->setParameter('siren', $siren);
 
@@ -478,8 +478,8 @@ class ProjectsRepository extends EntityRepository
         $search       = trim(filter_var($search, FILTER_SANITIZE_STRING));
         $queryBuilder = $this->createQueryBuilder('p')
             ->select('p.idProject, p.title, p.amount, p.period, co.name, co.siren, ps.label')
-            ->innerJoin('UnilendCoreBusinessBundle:Companies', 'co', Join::WITH, 'co.idCompany = p.idCompany')
-            ->innerJoin('UnilendCoreBusinessBundle:ProjectsStatus', 'ps', Join::WITH, 'ps.status = p.status')
+            ->innerJoin(Companies::class, 'co', Join::WITH, 'co.idCompany = p.idCompany')
+            ->innerJoin(ProjectsStatus::class, 'ps', Join::WITH, 'ps.status = p.status')
             ->where('p.title LIKE :searchLike')
             ->orWhere('co.name LIKE :searchLike')
             ->setParameter('searchLike', '%' . $search . '%')
@@ -526,8 +526,8 @@ class ProjectsRepository extends EntityRepository
         $queryBuilder = $this->createQueryBuilder('p');
 
         $queryBuilder->select('p.idProject, ps.label AS projectStatusLabel')
-            ->innerJoin('UnilendCoreBusinessBundle:EcheanciersEmprunteur', 'ee', Join::WITH, 'ee.idProject = p.idProject')
-            ->innerJoin('UnilendCoreBusinessBundle:ProjectsStatus', 'ps', Join::WITH, 'p.status = ps.status')
+            ->innerJoin(EcheanciersEmprunteur::class, 'ee', Join::WITH, 'ee.idProject = p.idProject')
+            ->innerJoin(ProjectsStatus::class, 'ps', Join::WITH, 'p.status = ps.status')
             ->where('ee.dateEcheanceEmprunteur < :today')
             ->setParameter('today', (new \DateTime())->format('Y-m-d 00:00:00'))
             ->andWhere('ee.statusEmprunteur IN (:paymentStatus)')
@@ -551,7 +551,7 @@ class ProjectsRepository extends EntityRepository
     {
         $queryBuilder = $this->createQueryBuilder('p')
             ->select('COUNT(DISTINCT p.idProject)')
-            ->innerJoin('UnilendCoreBusinessBundle:Companies', 'co', Join::WITH, 'co.idCompany = p.idCompany')
+            ->innerJoin(Companies::class, 'co', Join::WITH, 'co.idCompany = p.idCompany')
             ->where('p.status IN (:status)')
             ->andWhere('co.siren = :siren')
             ->setParameter('status', $status)
@@ -1067,8 +1067,8 @@ class ProjectsRepository extends EntityRepository
     {
         $queryBuilder = $this->createQueryBuilder('p');
         $queryBuilder->select('p.idProject')
-            ->innerJoin('UnilendCoreBusinessBundle:Companies', 'c', Join::WITH, 'c.idCompany = p.idCompany')
-            ->innerJoin('UnilendCoreBusinessBundle:CompanyStatus', 'cs', Join::WITH, 'c.idStatus = cs.id')
+            ->innerJoin(Companies::class, 'c', Join::WITH, 'c.idCompany = p.idCompany')
+            ->innerJoin(CompanyStatus::class, 'cs', Join::WITH, 'c.idStatus = cs.id')
             ->where('cs.label in (:problemStatus)')
             ->setParameter('problemStatus', [CompanyStatus::STATUS_PRECAUTIONARY_PROCESS, CompanyStatus::STATUS_RECEIVERSHIP, CompanyStatus::STATUS_COMPULSORY_LIQUIDATION]);
 
@@ -1189,7 +1189,7 @@ class ProjectsRepository extends EntityRepository
     public function findSubmitterProjectsByStatus($submitter, int $status): array
     {
         $rsm = new ResultSetMappingBuilder($this->getEntityManager());
-        $rsm->addRootEntityFromClassMetadata('UnilendCoreBusinessBundle:Projects', 'p');
+        $rsm->addRootEntityFromClassMetadata(Projects::class, 'p');
 
         $query = '
             SELECT * 
@@ -1429,7 +1429,7 @@ class ProjectsRepository extends EntityRepository
     {
         $queryBuilder = $this->createQueryBuilder('p');
         $queryBuilder->select('p.idProject')
-            ->innerJoin('UnilendCoreBusinessBundle:Companies', 'c', Join::WITH, 'c.idCompany = p.idCompany')
+            ->innerJoin(Companies::class, 'c', Join::WITH, 'c.idCompany = p.idCompany')
             ->where('c.siren = :siren')
             ->andWhere('p.idProject != :project')
             ->andWhere('p.status IN (:projectStatus)')
@@ -1565,7 +1565,7 @@ class ProjectsRepository extends EntityRepository
     public function findImpossibleEvaluationProjects(): array
     {
         $queryBuilder = $this->createQueryBuilder('p')
-            ->innerJoin('UnilendCoreBusinessBundle:Companies', 'c', Join::WITH, 'c.idCompany = p.idCompany')
+            ->innerJoin(Companies::class, 'c', Join::WITH, 'c.idCompany = p.idCompany')
             ->where('p.status = :status')
             ->andWhere('c.siren IS NOT NULL AND c.siren != \'\'')
             ->setParameter('status', ProjectsStatus::STATUS_CANCELLED)
@@ -1820,7 +1820,7 @@ class ProjectsRepository extends EntityRepository
         $queryBuilder = $this->createQueryBuilder('p');
 
         if (null !== $siren || null !== $companyName) {
-            $queryBuilder->innerJoin('UnilendCoreBusinessBundle:Companies', 'co', Join::WITH, 'p.idCompany = co.idCompany');
+            $queryBuilder->innerJoin(Companies::class, 'co', Join::WITH, 'p.idCompany = co.idCompany');
         }
 
         if (null !== $status) {
@@ -1901,7 +1901,7 @@ class ProjectsRepository extends EntityRepository
         $queryBuilder = $this->createQueryBuilder('p');
         $queryBuilder
             ->select('p')
-            ->innerJoin('UnilendCoreBusinessBundle:ProjectSearch', 's', Join::WITH, 'p.idProject = s.idProject')
+            ->innerJoin(ProjectSearch::class, 's', Join::WITH, 'p.idProject = s.idProject')
             ->where('p.status >= ' . ProjectsStatus::STATUS_ONLINE)
             ->setFirstResult($offset)
             ->setMaxResults($limit);

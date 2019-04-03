@@ -5,12 +5,8 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service\Repayment;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRepaymentDetail;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRepaymentTask;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRepaymentTaskLog;
-use Unilend\Bundle\CoreBusinessBundle\Service\DebtCollectionFeeManager;
-use Unilend\Bundle\CoreBusinessBundle\Service\OperationManager;
-use Unilend\Bundle\CoreBusinessBundle\Service\ProjectChargeManager;
+use Unilend\Entity\{CloseOutNettingRepayment, ProjectRepaymentDetail, ProjectRepaymentTask, ProjectRepaymentTaskLog};
+use Unilend\Bundle\CoreBusinessBundle\Service\{DebtCollectionFeeManager, OperationManager, ProjectChargeManager};
 
 class ProjectCloseOutNettingRepaymentManager
 {
@@ -136,12 +132,12 @@ class ProjectCloseOutNettingRepaymentManager
         $repaymentSequence = $projectRepaymentTask->getSequence();
         $project           = $projectRepaymentTask->getIdProject();
 
-        $projectRepaymentDetails = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRepaymentDetail')->findBy([
+        $projectRepaymentDetails = $this->entityManager->getRepository(ProjectRepaymentDetail::class)->findBy([
             'idTask' => $projectRepaymentTask,
             'status' => ProjectRepaymentDetail::STATUS_PENDING
         ]);
 
-        $closeOutNettingRepaymentRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CloseOutNettingRepayment');
+        $closeOutNettingRepaymentRepository = $this->entityManager->getRepository(CloseOutNettingRepayment::class);
 
         foreach ($projectRepaymentDetails as $projectRepaymentDetail) {
             if ($projectRepaymentDetail->getCapital() == 0 && $projectRepaymentDetail->getInterest() == 0) {

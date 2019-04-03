@@ -8,8 +8,8 @@ use Symfony\Component\HttpFoundation\{Request, Response};
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\User\UserInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\FrontBundle\Form\PartnerContactType;
+use Unilend\Entity\{Clients, Settings};
 
 class ContactController extends Controller
 {
@@ -48,7 +48,7 @@ class ContactController extends Controller
             if (false === $error) {
                 $filePath           = '';
                 $file               = $request->files->get('attachment');
-                $settingsRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Settings');
+                $settingsRepository = $this->get('doctrine.orm.entity_manager')->getRepository(Settings::class);
                 $keywords           = [
                     '[staticUrl]' => $this->get('assets.packages')->getUrl(''),
                     '[partner]'   => $this->get('unilend.service.partner_manager')->getPartner($client)->getIdCompany()->getName(),

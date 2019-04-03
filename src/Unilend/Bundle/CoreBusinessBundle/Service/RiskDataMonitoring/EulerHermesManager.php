@@ -4,7 +4,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service\RiskDataMonitoring;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{Companies, CompanyRating, CompanyRatingHistory};
+use Unilend\Entity\{Companies, CompanyRating, CompanyRatingHistory, Projects, RiskDataMonitoringType};
 use Unilend\Bundle\WSClientBundle\Entity\Euler\CompanyRating as EulerCompanyRating;
 use Unilend\Bundle\WSClientBundle\Service\EulerHermesManager as EulerHermesWsClient;
 
@@ -83,7 +83,7 @@ class EulerHermesManager
             throw new \InvalidArgumentException('SIREN ' . $siren . ' has no company.');
         }
 
-        $monitoringType  = $this->entityManager->getRepository('UnilendCoreBusinessBundle:RiskDataMonitoringType')->findOneBy(['provider' => self::PROVIDER_NAME]);
+        $monitoringType  = $this->entityManager->getRepository(RiskDataMonitoringType::class)->findOneBy(['provider' => self::PROVIDER_NAME]);
 
         $this->eulerHermesManager->setReadFromCache(false);
         try {
@@ -149,7 +149,7 @@ class EulerHermesManager
             return false;
         }
 
-        foreach ($this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->findBy(['idCompany' => $company]) as $project) {
+        foreach ($this->entityManager->getRepository(Projects::class)->findBy(['idCompany' => $company]) as $project) {
             if (false === in_array($project->getStatus(), MonitoringCycleManager::LONG_TERM_MONITORING_EXCLUDED_PROJECTS_STATUS )) {
                 return true;
             }

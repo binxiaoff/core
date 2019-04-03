@@ -5,7 +5,7 @@ namespace Unilend\Bundle\CommandBundle\Command;
 use Doctrine\ORM\ORMException;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\{Input\InputInterface, Input\InputOption, Output\OutputInterface};
-use Unilend\Bundle\CoreBusinessBundle\Entity\{ClientAddress, CompanyAddress, Loans, Pays, ProjectsStatus};
+use Unilend\Entity\{ClientAddress, Companies, CompanyAddress, Loans, Pays, Projects, ProjectsStatus};
 
 class GenerateLoanContractCommand extends ContainerAwareCommand
 {
@@ -33,7 +33,7 @@ EOF
 
         $logger        = $this->getContainer()->get('monolog.logger.console');
         $entityManager = $this->getContainer()->get('doctrine.orm.entity_manager');
-        $projects      = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->findBy([
+        $projects      = $entityManager->getRepository(Projects::class)->findBy([
             'status' => [
                 ProjectsStatus::STATUS_REPAYMENT,
                 ProjectsStatus::STATUS_REPAID,
@@ -45,8 +45,8 @@ EOF
             $limit = $input->getOption('limit-loans');
             $limit = $limit ? $limit : 100;
 
-            $companyRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies');
-            $loanRepository    = $entityManager->getRepository('UnilendCoreBusinessBundle:Loans');
+            $companyRepository = $entityManager->getRepository(Companies::class);
+            $loanRepository    = $entityManager->getRepository(Loans::class);
             $loans             = $loanRepository->findBy(
                 ['status' => Loans::STATUS_ACCEPTED, 'fichierDeclarationcontratpret' => null, 'idProject' => $projects],
                 ['idLoan' => 'ASC'],

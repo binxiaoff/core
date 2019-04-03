@@ -1,6 +1,6 @@
 <div class="row">
     <div class="col-md-12">
-        <?php use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
+        <?php use Unilend\Entity\ProjectsStatus;
 
         if (count($this->projects) > 0) : ?>
             <table class="tablesorter table table-hover table-striped project-list">
@@ -30,7 +30,7 @@
                                 <a href="/emprunteurs/link_ligthbox/pouvoir/<?= $project['id_project'] ?>" class="thickbox cboxElement">POUVOIR</a>
                             <?php endif; ?>
                             &nbsp;&nbsp;
-                            <?php if ($this->clients_mandats->get($this->clients->id_client, 'id_project = ' . $project['id_project'] . ' AND status = ' . \Unilend\Bundle\CoreBusinessBundle\Entity\UniversignEntityInterface::STATUS_SIGNED . ' AND id_client')) : ?>
+                            <?php if ($this->clients_mandats->get($this->clients->id_client, 'id_project = ' . $project['id_project'] . ' AND status = ' . \Unilend\Entity\UniversignEntityInterface::STATUS_SIGNED . ' AND id_client')) : ?>
                                 <a href="<?= $this->lurl ?>/protected/mandats/<?= $this->clients_mandats->name ?>">MANDAT</a>
                             <?php elseif ($project['status'] > ProjectsStatus::STATUS_FUNDED) : ?>
                                 <a href="/emprunteurs/link_ligthbox/mandat/<?= $project['id_project'] ?>" class="thickbox cboxElement">MANDAT</a>

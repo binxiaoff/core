@@ -6,7 +6,7 @@ use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{Clients, ProjectsStatus};
+use Unilend\Entity\{Backpayline, Clients, ClientsStatusHistory, Companies, Echeanciers, Operation, Projects, ProjectsStatus, ProjectsStatusHistory, Receptions, Wallet};
 
 class QueriesMonthlyReportingSfpmeiCommand extends ContainerAwareCommand
 {
@@ -48,14 +48,14 @@ class QueriesMonthlyReportingSfpmeiCommand extends ContainerAwareCommand
         $startDate = new \DateTime('First day of' . $endDate->format('F Y'));
 
         $entityManager                 = $this->getContainer()->get('doctrine.orm.entity_manager');
-        $operationRepository           = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
-        $projectRepository             = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
-        $wireTransferInRepository      = $entityManager->getRepository('UnilendCoreBusinessBundle:Receptions');
-        $repaymentRepository           = $entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers');
-        $clientStatusHistoryRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsStatusHistory');
-        $companiesRepository           = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies');
+        $operationRepository           = $entityManager->getRepository(Operation::class);
+        $projectRepository             = $entityManager->getRepository(Projects::class);
+        $wireTransferInRepository      = $entityManager->getRepository(Receptions::class);
+        $repaymentRepository           = $entityManager->getRepository(Echeanciers::class);
+        $clientStatusHistoryRepository = $entityManager->getRepository(ClientsStatusHistory::class);
+        $companiesRepository           = $entityManager->getRepository(Companies::class);
 
-        $failedCreditCardProvision = $entityManager->getRepository('UnilendCoreBusinessBundle:Backpayline')->getCountFailedTransactionsBetweenDates($startDate, $endDate);
+        $failedCreditCardProvision = $entityManager->getRepository(Backpayline::class)->getCountFailedTransactionsBetweenDates($startDate, $endDate);
         $creditCardProvisions      = [];
         $wireTransferInProvisions  = [];
         foreach ($operationRepository->getLenderProvisionIndicatorsBetweenDates($startDate, $endDate) as $indicator) {
@@ -86,12 +86,12 @@ class QueriesMonthlyReportingSfpmeiCommand extends ContainerAwareCommand
         $earlyRepaidProjects                  = $projectRepository->findProjectsHavingHadStatusBetweenDates(ProjectsStatus::STATUS_REPAID, $startDate, $endDate);
         $rejectWireTransfersIn                = $wireTransferInRepository->getRejectedDirectDebitIndicatorsBetweenDates($startDate, $endDate);
         $regularizationWireTransfers          = $wireTransferInRepository->getBorrowerProvisionRegularizationIndicatorsBetweenDates($startDate, $endDate);
-        $lateRepayments                       = $entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers')->getLateRepaymentIndicators($endDate);
+        $lateRepayments                       = $entityManager->getRepository(Echeanciers::class)->getLateRepaymentIndicators($endDate);
         $projectsInDebtCollection             = $projectRepository->findProjectsWithDebtCollectionMissionBetweenDates(new \DateTime('January 2013'), $endDate);
         $remainingDueCapitalInDebtCollection  = $operationRepository->getRemainingDueCapitalForProjects($endDate, array_column($projectsInDebtCollection, 'id_project'));
         $projectsInCollectiveProceeding       = $projectRepository->findProjectsHavingHadCompanyStatusInCollectiveProceeding(new \DateTime('January 2013'), $endDate);
         $companiesInCollectiveProceeding      = $companiesRepository->getCountCompaniesInCollectiveProceedingBetweenDates($startDate, $endDate);
-        $newlyRiskAnalysisProjects            = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatusHistory')->getCountProjectsInRiskReviewBetweenDates($startDate, $endDate);
+        $newlyRiskAnalysisProjects            = $entityManager->getRepository(ProjectsStatusHistory::class)->getCountProjectsInRiskReviewBetweenDates($startDate, $endDate);
         $newlyPresentedProjects               = $projectRepository->getIndicatorBetweenDates('COUNT(p.id_project) AS newProjects', $startDate, $endDate, ProjectsStatus::STATUS_ONLINE)['newProjects'];
         $totalNewLenders                      = $clientStatusHistoryRepository->countLendersValidatedBetweenDatesByType($startDate, $endDate, [
             Clients::TYPE_PERSON,
@@ -111,7 +111,7 @@ class QueriesMonthlyReportingSfpmeiCommand extends ContainerAwareCommand
         $totalLenders                         = $clientStatusHistoryRepository->countLendersValidatedBetweenDatesByType(new \DateTime('January 2013'), $endDate);
         $totalLendersPerson                   = $clientStatusHistoryRepository->countLendersValidatedBetweenDatesByType(new \DateTime('January 2013'), $endDate, [Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER]);
         $totalLendersLegalEntity              = $clientStatusHistoryRepository->countLendersValidatedBetweenDatesByType(new \DateTime('January 2013'), $endDate, [Clients::TYPE_LEGAL_ENTITY, Clients::TYPE_LEGAL_ENTITY_FOREIGNER]);
-        $lendersWithProvisionAndNoValidBid    = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->findLendersWithProvisionButWithoutAcceptedBidBetweenDates(new \DateTime('January 2013'), $endDate);
+        $lendersWithProvisionAndNoValidBid    = $entityManager->getRepository(Wallet::class)->findLendersWithProvisionButWithoutAcceptedBidBetweenDates(new \DateTime('January 2013'), $endDate);
         $totalLenderProvisionIndicators       = $operationRepository->getLenderProvisionIndicatorsBetweenDates(new \DateTime('January 2013'), $endDate, false)[0];
 
         $document = new \PHPExcel();

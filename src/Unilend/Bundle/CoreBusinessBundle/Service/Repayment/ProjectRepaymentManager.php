@@ -5,7 +5,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service\Repayment;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{Echeanciers, ProjectRepaymentDetail, ProjectRepaymentTask, ProjectRepaymentTaskLog, ProjectsStatus, Users};
+use Unilend\Entity\{Echeanciers, EcheanciersEmprunteur, ProjectRepaymentDetail, ProjectRepaymentTask, ProjectRepaymentTaskLog, ProjectsStatus, Users};
 use Unilend\Bundle\CoreBusinessBundle\Service\{DebtCollectionFeeManager, OperationManager, ProjectChargeManager, ProjectStatusManager,
     Simulator\EntityManager as EntityManagerSimulator};
 
@@ -117,7 +117,7 @@ class ProjectRepaymentManager
         }
 
         if ($this->projectRepaymentTaskManager->isCompleteRepayment($projectRepaymentTask)) {
-            $paymentSchedule = $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur')->findOneBy([
+            $paymentSchedule = $this->entityManager->getRepository(EcheanciersEmprunteur::class)->findOneBy([
                 'idProject' => $projectRepaymentTask->getIdProject(),
                 'ordre'     => $projectRepaymentTask->getSequence()
             ]);
@@ -126,7 +126,7 @@ class ProjectRepaymentManager
         }
 
         // Send "end of repayment" notifications
-        $pendingRepaymentSchedule = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers')
+        $pendingRepaymentSchedule = $this->entityManager->getRepository(Echeanciers::class)
             ->findByProject($projectRepaymentTask->getIdProject(), null, null, [Echeanciers::STATUS_PENDING, Echeanciers::STATUS_PARTIALLY_REPAID], null, null, 0, 1);
         if (0 === count($pendingRepaymentSchedule)) {
             $this->projectStatusManager->addProjectStatus($userId, ProjectsStatus::STATUS_REPAID, $projectRepaymentTask->getIdProject());
@@ -155,7 +155,7 @@ class ProjectRepaymentManager
         $repaymentSequence = $projectRepaymentTask->getSequence();
         $project           = $projectRepaymentTask->getIdProject();
 
-        $projectRepaymentDetails = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRepaymentDetail')->findBy([
+        $projectRepaymentDetails = $this->entityManager->getRepository(ProjectRepaymentDetail::class)->findBy([
             'idTask' => $projectRepaymentTask,
             'status' => ProjectRepaymentDetail::STATUS_PENDING
         ]);

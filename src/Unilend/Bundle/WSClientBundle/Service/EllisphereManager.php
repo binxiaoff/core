@@ -8,7 +8,7 @@ use JMS\Serializer\SerializerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Config\Definition\Exception\Exception;
-use Unilend\Bundle\CoreBusinessBundle\Entity\WsExternalResource;
+use Unilend\Entity\WsExternalResource;
 use Unilend\Bundle\WSClientBundle\Entity\Ellisphere\EstablishmentCollection;
 use Unilend\Bundle\WSClientBundle\Entity\Ellisphere\Report;
 
@@ -115,7 +115,7 @@ class EllisphereManager
      */
     public function getReport($siren)
     {
-        $wsResource = $this->entityManager->getRepository('UnilendCoreBusinessBundle:WsExternalResource')->findOneBy(['label' => self::RESOURCE_ONLINE_ORDER]);
+        $wsResource = $this->entityManager->getRepository(WsExternalResource::class)->findOneBy(['label' => self::RESOURCE_ONLINE_ORDER]);
         $result     = $this->sendRequest($wsResource, ['siren' => $siren]);
 
         if ($result && isset($result->response->report)) {
@@ -127,7 +127,7 @@ class EllisphereManager
 
     public function searchBySiren($siren)
     {
-        $wsResource = $this->entityManager->getRepository('UnilendCoreBusinessBundle:WsExternalResource')->findOneBy(['label' => self::RESOURCE_SEARCH]);
+        $wsResource = $this->entityManager->getRepository(WsExternalResource::class)->findOneBy(['label' => self::RESOURCE_SEARCH]);
         $result     = $this->sendRequest($wsResource, ['siren' => $siren]);
 
         if ($result && isset($result->response)) {

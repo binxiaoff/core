@@ -1,4 +1,4 @@
-<?php use \Unilend\Bundle\CoreBusinessBundle\Entity\UniversignEntityInterface; ?>
+<?php use Unilend\Entity\UniversignEntityInterface; ?>
 <div class="row">
     <div class="col-md-12">
         <?php if (count($this->aMoneyOrders) > 0) : ?>

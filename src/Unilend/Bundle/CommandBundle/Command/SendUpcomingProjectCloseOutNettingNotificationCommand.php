@@ -4,13 +4,10 @@ namespace Unilend\Bundle\CommandBundle\Command;
 
 use Doctrine\DBAL\DBALException;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
-use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\{InputArgument, InputInterface};
 use Symfony\Component\Console\Output\OutputInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Settings;
-use Unilend\Bundle\CoreBusinessBundle\Service\DebtCollectionMissionManager;
-use Unilend\Bundle\CoreBusinessBundle\Service\ProjectCloseOutNettingManager;
+use Unilend\Entity\{Projects, Settings};
+use Unilend\Bundle\CoreBusinessBundle\Service\{DebtCollectionMissionManager, ProjectCloseOutNettingManager};
 
 class SendUpcomingProjectCloseOutNettingNotificationCommand extends ContainerAwareCommand
 {
@@ -27,12 +24,12 @@ class SendUpcomingProjectCloseOutNettingNotificationCommand extends ContainerAwa
         $slackManager                 = $this->getContainer()->get('unilend.service.slack_manager');
         $entityManager                = $this->getContainer()->get('doctrine.orm.entity_manager');
         $debtCollectionMissionManager = $this->getContainer()->get('unilend.service.debt_collection_mission_manager');
-        $projectRepository            = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
+        $projectRepository            = $entityManager->getRepository(Projects::class);
         $logger                       = $this->getContainer()->get('monolog.logger.console');
 
         $interval = $input->getArgument('interval');
         try {
-            $projectsList = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->getProjectsWithUpcomingCloseOutNettingDate($interval);
+            $projectsList = $entityManager->getRepository(Projects::class)->getProjectsWithUpcomingCloseOutNettingDate($interval);
         } catch (DBALException $exception) {
             $logger->error(
                 'Could not get projects list to check upcoming close out netting. Error: ' . $exception->getMessage(),
@@ -103,7 +100,7 @@ class SendUpcomingProjectCloseOutNettingNotificationCommand extends ContainerAwa
 
         /** @var Settings $slackListSetting */
         $slackListSetting = $this->getContainer()->get('doctrine.orm.entity_manager')
-            ->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => $settingType]);
+            ->getRepository(Settings::class)->findOneBy(['type' => $settingType]);
         if (null !== $slackListSetting) {
             foreach (explode(',', $slackListSetting->getValue()) as $slackChannel) {
                 $slackManager->sendMessage('Projets à déchoir sous ' . $interval . ' jours: ' . implode(', ', $projectNames), $slackChannel);
@@ -134,7 +131,7 @@ class SendUpcomingProjectCloseOutNettingNotificationCommand extends ContainerAwa
         try {
             /** @var Settings[] $recipients */
             $recipients = $this->getContainer()->get('doctrine.orm.entity_manager')
-                ->getRepository('UnilendCoreBusinessBundle:Settings')->findBy(['type' => $settingTypes]);
+                ->getRepository(Settings::class)->findBy(['type' => $settingTypes]);
             foreach ($recipients as $recipient) {
                 $emails[] = $recipient->getValue();
             }

@@ -3,7 +3,7 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
 use Doctrine\ORM\EntityRepository;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
+use Unilend\Entity\Wallet;
 
 class LenderTaxExemptionRepository extends EntityRepository
 {

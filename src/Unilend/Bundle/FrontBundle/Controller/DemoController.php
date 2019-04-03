@@ -13,8 +13,8 @@ use Symfony\Component\HttpFoundation\{JsonResponse, RedirectResponse, Request, R
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{Attachment, Bids, Clients, Companies, FeeType, Loans, Partner, PercentFee, ProjectParticipant, ProjectPercentFee, Projects,
-    ProjectsComments, ProjectsStatus, Users, WalletType};
+use Unilend\Entity\{Attachment, AttachmentType, Bids, Clients, Companies, FeeType, Loans, Partner, PartnerProduct, PercentFee, Product, ProjectAttachment, ProjectAttachmentType, ProjectParticipant,
+    ProjectPercentFee, Projects, ProjectsComments, ProjectsStatus, Users, Wallet, WalletType};
 use Unilend\Bundle\CoreBusinessBundle\Repository\ProjectParticipantRepository;
 use Unilend\Bundle\CoreBusinessBundle\Service\{AttachmentManager, DemoMailerManager, ProjectManager, ProjectStatusManager};
 use Unilend\Bundle\FrontBundle\Form\Lending\BidType;
@@ -55,7 +55,7 @@ class DemoController extends AbstractController
             'projects' => []
         ];
 
-        $projectRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
+        $projectRepository = $this->entityManager->getRepository(Projects::class);
 
         if ($user->isBorrower() || $user->isPartner()) {
             $template['projects']['borrower'] = $this->groupByStatusAndSort($projectRepository->createQueryBuilder('p')
@@ -82,7 +82,7 @@ class DemoController extends AbstractController
         }
 
         if ($user->isLender()) {
-            $wallet = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($user, WalletType::LENDER);
+            $wallet = $this->entityManager->getRepository(Wallet::class)->getWalletByType($user, WalletType::LENDER);
 
             // En cours (HOT)
             $projectsInProgressBid = $projectRepository->createQueryBuilder('p')
@@ -168,7 +168,7 @@ class DemoController extends AbstractController
     private function groupByStatusAndSort(array $projects)
     {
         $groupedProjects = [];
-        $statuses        = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatus')->findBy([], ['status' => 'ASC']);
+        $statuses        = $this->entityManager->getRepository(ProjectsStatus::class)->findBy([], ['status' => 'ASC']);
 
         foreach ($statuses as $status) {
             $groupedProjects[$status->getStatus()] = [];
@@ -194,8 +194,8 @@ class DemoController extends AbstractController
     public function projectRequest(ProjectManager $projectManager, TranslatorInterface $translator): Response
     {
         $arrangers           = [];
-        $partners            = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Partner')->findAll();
-        $companiesRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Companies');
+        $partners            = $this->entityManager->getRepository(Partner::class)->findAll();
+        $companiesRepository = $this->entityManager->getRepository(Companies::class);
 
         foreach ($partners as $partner) {
             $company = $partner->getIdCompany();
@@ -213,7 +213,7 @@ class DemoController extends AbstractController
             'products'        => $this->getProductsList($partners, $translator),
             'arrangers'       => $arrangers,
             'runs'            => $companiesRepository->findBy(['idCompany' => range(6, 45)], ['name' => 'ASC']),
-            'attachmentTypes' => $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectAttachmentType')->getAttachmentTypes()
+            'attachmentTypes' => $this->entityManager->getRepository(ProjectAttachmentType::class)->getAttachmentTypes()
         ];
 
         return $this->render(':frontbundle/demo:project_request.html.twig', $template);
@@ -260,8 +260,8 @@ class DemoController extends AbstractController
         try {
             $this->entityManager->beginTransaction();
 
-            $partner             = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Partner')->find($partnerId);
-            $companiesRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Companies');
+            $partner             = $this->entityManager->getRepository(Partner::class)->find($partnerId);
+            $companiesRepository = $this->entityManager->getRepository(Companies::class);
             $borrower            = $companiesRepository->find($borrowerId);
 
             $project = new Projects();
@@ -356,7 +356,7 @@ class DemoController extends AbstractController
         ?UserInterface $user
     ): Response
     {
-        $projectRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
+        $projectRepository = $this->entityManager->getRepository(Projects::class);
         $project           = $projectRepository->findOneBy(['hash' => $hash]);
 
         if (null === $project) {
@@ -380,7 +380,7 @@ class DemoController extends AbstractController
 
         asort($arrangers);
 
-        $companyRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Companies');
+        $companyRepository = $this->entityManager->getRepository(Companies::class);
         $regionalBanks     = $companyRepository->findBy(['idCompany' => range(6, 45)], ['name' => 'ASC']);
 
         $visibility = [];
@@ -391,10 +391,10 @@ class DemoController extends AbstractController
             }
         }
 
-        $projectAttachmentRepository     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectAttachment');
-        $projectAttachmentTypeRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectAttachmentType');
-        $projectCommentRepository        = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsComments');
-        $productRepository               = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Product');
+        $projectAttachmentRepository     = $this->entityManager->getRepository(ProjectAttachment::class);
+        $projectAttachmentTypeRepository = $this->entityManager->getRepository(ProjectAttachmentType::class);
+        $projectCommentRepository        = $this->entityManager->getRepository(ProjectsComments::class);
+        $productRepository               = $this->entityManager->getRepository(Product::class);
         $template                        = [
             'loanPeriods'               => $projectManager->getPossibleProjectPeriods(),
             'products'                  => $this->getProductsList([$project->getIdPartner()], $translator),
@@ -432,7 +432,7 @@ class DemoController extends AbstractController
      */
     public function projectDetailsUpload(string $hash, Request $request, AttachmentManager $attachmentManager, ?UserInterface $user): RedirectResponse
     {
-        $projectRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
+        $projectRepository = $this->entityManager->getRepository(Projects::class);
         $project           = $projectRepository->findOneBy(['hash' => $hash]);
 
         if (null === $project) {
@@ -454,7 +454,7 @@ class DemoController extends AbstractController
      */
     private function uploadDocuments(Request $request, Projects $project, Clients $user, AttachmentManager $attachmentManager): void
     {
-        $attachmentTypeRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:AttachmentType');
+        $attachmentTypeRepository = $this->entityManager->getRepository(AttachmentType::class);
 
         foreach ($request->files->all() as $field => $file) {
             if (false === empty($file)) {
@@ -481,7 +481,7 @@ class DemoController extends AbstractController
      */
     public function projectVisibility(string $hash, Request $request): Response
     {
-        $projectRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
+        $projectRepository = $this->entityManager->getRepository(Projects::class);
         $project           = $projectRepository->findOneBy(['hash' => $hash]);
 
         if (null === $project) {
@@ -522,7 +522,7 @@ class DemoController extends AbstractController
             }
         }
 
-        $companyRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Companies');
+        $companyRepository = $this->entityManager->getRepository(Companies::class);
         $lenders           = $companyRepository->findBy(['idCompany' => $visibility]);
 
         $project->addLenders($lenders);
@@ -543,7 +543,7 @@ class DemoController extends AbstractController
      */
     public function projectChat(string $hash, Request $request, ?UserInterface $user): Response
     {
-        $projectRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
+        $projectRepository = $this->entityManager->getRepository(Projects::class);
         $project           = $projectRepository->findOneBy(['hash' => $hash]);
 
         if (null === $project) {
@@ -551,7 +551,7 @@ class DemoController extends AbstractController
         }
 
         $content   = $request->request->filter('content', null, FILTER_SANITIZE_STRING);
-        $frontUser = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find(Users::USER_ID_FRONT);
+        $frontUser = $this->entityManager->getRepository(Users::class)->find(Users::USER_ID_FRONT);
 
         if ($content) {
             $message = new ProjectsComments();
@@ -567,7 +567,7 @@ class DemoController extends AbstractController
         }
 
         $template = [
-            'messages' => $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsComments')->findBy(['idProject' => $project, 'public' => true], ['added' => 'DESC'])
+            'messages' => $this->entityManager->getRepository(ProjectsComments::class)->findBy(['idProject' => $project, 'public' => true], ['added' => 'DESC'])
         ];
 
         return $this->render(':frontbundle/demo:project_chat.html.twig', $template);
@@ -585,9 +585,9 @@ class DemoController extends AbstractController
      */
     public function projectDocument(string $hash, int $idProjectAttachment, AttachmentManager $attachmentManager, Filesystem $filesystem): Response
     {
-        $projectRepository           = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
+        $projectRepository           = $this->entityManager->getRepository(Projects::class);
         $project                     = $projectRepository->findOneBy(['hash' => $hash]);
-        $projectAttachmentRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectAttachment');
+        $projectAttachmentRepository = $this->entityManager->getRepository(ProjectAttachment::class);
         $projectAttachment           = $projectAttachmentRepository->find($idProjectAttachment);
 
         if (null === $project || null === $projectAttachment || $project !== $projectAttachment->getProject()) {
@@ -633,7 +633,7 @@ class DemoController extends AbstractController
         DemoMailerManager $mailerManager
     ): Response
     {
-        $projectRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
+        $projectRepository = $this->entityManager->getRepository(Projects::class);
         $project           = $projectRepository->findOneBy(['hash' => $hash]);
 
         if (false === $project instanceof Projects) {
@@ -723,7 +723,7 @@ class DemoController extends AbstractController
             ]);
         }
 
-        $companyRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Companies');
+        $companyRepository = $this->entityManager->getRepository(Companies::class);
         $company           = $companyRepository->findOneBy(['siren' => $siren]);
 
         if (null === $company) {
@@ -784,7 +784,7 @@ class DemoController extends AbstractController
      */
     public function projectUpdate(Request $request, string $hash, ProjectManager $projectManager, DemoMailerManager $mailerManager): Response
     {
-        $projectRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
+        $projectRepository = $this->entityManager->getRepository(Projects::class);
         $project           = $projectRepository->findOneBy(['hash' => $hash]);
 
         if (false === $project instanceof Projects) {
@@ -826,7 +826,7 @@ class DemoController extends AbstractController
                 $outputValue = $project->getPeriod() / 12;
                 break;
             case 'product':
-                $product = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Product')->find($value);
+                $product = $this->entityManager->getRepository(Product::class)->find($value);
                 $product = $product ? $product->getIdProduct() : null;
                 $project->setIdProduct($product);
                 $this->entityManager->flush($project);
@@ -872,7 +872,7 @@ class DemoController extends AbstractController
                 $outputValue = $project->getComments();
                 break;
             case 'arranger':
-                $companyRepository          = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Companies');
+                $companyRepository          = $this->entityManager->getRepository(Companies::class);
                 $arrangerCompany            = $companyRepository->find($value);
                 $currentArrangerParticipant = $project->getArrangerParticipant();
 
@@ -889,7 +889,7 @@ class DemoController extends AbstractController
                 $outputValue = $arrangerCompany ? $arrangerCompany->getIdCompany() : null;
                 break;
             case 'run':
-                $companyRepository     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Companies');
+                $companyRepository     = $this->entityManager->getRepository(Companies::class);
                 $runCompany            = $companyRepository->find($value);
                 $currentRunParticipant = $project->getRunParticipant();
 
@@ -979,7 +979,7 @@ class DemoController extends AbstractController
         $sortType      = $request->query->get('sortType', 'dateFin');
         $sort          = ['status' => 'ASC', $sortType => $sortDirection];
         /** @var Projects[] $projects */
-        $projects = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->findBy(['status' => ProjectDisplayManager::STATUS_DISPLAYABLE], $sort);
+        $projects = $this->entityManager->getRepository(Projects::class)->findBy(['status' => ProjectDisplayManager::STATUS_DISPLAYABLE], $sort);
 
         foreach ($projects as $index => $project) {
             if (ProjectDisplayManager::VISIBILITY_FULL !== $projectDisplayManager->getVisibility($project, $user)) {
@@ -1021,15 +1021,15 @@ class DemoController extends AbstractController
         DemoMailerManager $mailerManager
     ): Response
     {
-        $project = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->findOneBy(['slug' => $slug, 'status' => ProjectDisplayManager::STATUS_DISPLAYABLE]);
+        $project = $this->entityManager->getRepository(Projects::class)->findOneBy(['slug' => $slug, 'status' => ProjectDisplayManager::STATUS_DISPLAYABLE]);
 
         if (ProjectDisplayManager::VISIBILITY_FULL !== $projectDisplayManager->getVisibility($project, $client)) {
             return $this->redirectToRoute('demo_projects_list');
         }
 
-        $wallet   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
-        $bid      = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Bids')->findOneBy(['wallet' => $wallet, 'project' => $project, 'status' => [Bids::STATUS_PENDING, Bids::STATUS_ACCEPTED]]);
-        $product  = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Product')->find($project->getIdProduct());
+        $wallet   = $this->entityManager->getRepository(Wallet::class)->getWalletByType($client, WalletType::LENDER);
+        $bid      = $this->entityManager->getRepository(Bids::class)->findOneBy(['wallet' => $wallet, 'project' => $project, 'status' => [Bids::STATUS_PENDING, Bids::STATUS_ACCEPTED]]);
+        $product  = $this->entityManager->getRepository(Product::class)->find($project->getIdProduct());
         $form     = null;
         $arranger = $projectParticipantRepository->findByProjectAndRole($project, ProjectParticipant::COMPANY_ROLE_ARRANGER);
         $run      = $projectParticipantRepository->findByProjectAndRole($project, ProjectParticipant::COMPANY_ROLE_RUN);
@@ -1068,7 +1068,7 @@ class DemoController extends AbstractController
             'arranger'           => $arranger,
             'run'                => $run,
             'form'               => $form->createView(),
-            'projectAttachments' => $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectAttachment')->findBy(['idProject' => $project], ['added' => 'DESC']),
+            'projectAttachments' => $this->entityManager->getRepository(ProjectAttachment::class)->findBy(['idProject' => $project], ['added' => 'DESC']),
         ]);
     }
 
@@ -1164,7 +1164,7 @@ class DemoController extends AbstractController
      */
     private function getProductsList(array $partners, TranslatorInterface $translator): array
     {
-        $partnerProducts = $this->entityManager->getRepository('UnilendCoreBusinessBundle:PartnerProduct')->findBy(['idPartner' => $partners]);
+        $partnerProducts = $this->entityManager->getRepository(PartnerProduct::class)->findBy(['idPartner' => $partners]);
 
         foreach ($partnerProducts as $partnerProduct) {
             $productId = $partnerProduct->getIdProduct()->getIdProduct();

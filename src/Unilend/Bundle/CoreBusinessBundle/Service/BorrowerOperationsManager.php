@@ -5,7 +5,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Translation\TranslatorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{OperationSubType, OperationType, Receptions, TaxType, Wallet};
+use Unilend\Entity\{Companies, Operation, OperationSubType, OperationType, Receptions, TaxType, Wallet, WalletBalanceHistory};
 
 class BorrowerOperationsManager
 {
@@ -47,12 +47,12 @@ class BorrowerOperationsManager
      */
     public function getBorrowerOperations(Wallet $wallet, \DateTime $start, \DateTime $end, array $projectsIds = [], $borrowerOperationType = 'all')
     {
-        $walletBalanceHistoryRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:WalletBalanceHistory');
-        $operationRepository            = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
+        $walletBalanceHistoryRepository = $this->entityManager->getRepository(WalletBalanceHistory::class);
+        $operationRepository            = $this->entityManager->getRepository(Operation::class);
         $walletHistory                  = $walletBalanceHistoryRepository->getBorrowerWalletOperations($wallet, $start, $end, $projectsIds);
         $borrowerOperations             = [];
 
-        $vatTax = $this->entityManager->getRepository('UnilendCoreBusinessBundle:TaxType')->find(TaxType::TYPE_VAT);
+        $vatTax = $this->entityManager->getRepository(TaxType::class)->find(TaxType::TYPE_VAT);
         if (null === $vatTax) {
             throw new \Exception('The VAT rate is not defined.');
         }
@@ -97,7 +97,7 @@ class BorrowerOperationsManager
                     && $operationEntity->getWireTransferOut()->getBankAccount()->getIdClient() !== $operationEntity->getWalletDebtor()->getIdClient()
                 ) {
                     $thirdPartyClient                 = $operationEntity->getWireTransferOut()->getBankAccount()->getIdClient();
-                    $thirdPartyCompany                = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $thirdPartyClient->getIdClient()]);
+                    $thirdPartyCompany                = $this->entityManager->getRepository(Companies::class)->findOneBy(['idClientOwner' => $thirdPartyClient->getIdClient()]);
                     $operation['third_party_company'] = $thirdPartyCompany->getName();
                 }
             }

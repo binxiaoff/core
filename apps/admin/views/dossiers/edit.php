@@ -1,6 +1,6 @@
 <?php
 
-use Unilend\Bundle\CoreBusinessBundle\Entity\{AttachmentType, Companies, ProjectsStatus, UnderlyingContract, UniversignEntityInterface};
+use Unilend\Entity\{AttachmentType, Companies, ProjectsStatus, UnderlyingContract, UniversignEntityInterface};
 
 ?>
 <link rel="stylesheet" href="<?= $this->lurl ?>/oneui/js/plugins/dropzonejs/dropzone.min.css">
@@ -418,7 +418,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{AttachmentType, Companies, Project
                     }
                 })
             }
-            if ($select.val() === '<?= \Unilend\Bundle\CoreBusinessBundle\Entity\Partner::PARTNER_CALS_ID ?>') {
+            if ($select.val() === '<?= \Unilend\Entity\Partner::PARTNER_CALS_ID ?>') {
                 return false
             }
 
@@ -866,7 +866,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{AttachmentType, Companies, Project
                                     <select name="commercial" id="commercial" class="select">
                                         <option value="0"></option>
                                         <?php
-                                        /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Users $salesperson */
+                                        /** @var \Unilend\Entity\Users $salesperson */
                                         foreach ($this->salesPersons as $salesperson) :
                                             ?>
                                             <option value="<?= $salesperson->getIdUser() ?>"<?= ($this->projects->id_commercial == $salesperson->getIdUser() ? ' selected' : '') ?>><?= $salesperson->getFirstname() ?> <?= $salesperson->getName() ?></option>
@@ -883,7 +883,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{AttachmentType, Companies, Project
                                     <select name="analyste" id="analyste" class="select">
                                         <option value="0"></option>
                                         <?php
-                                        /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Users $analyst */
+                                        /** @var \Unilend\Entity\Users $analyst */
                                         foreach ($this->analysts as $analyst) :
                                             ?>
                                             <option value="<?= $analyst->getIdUser() ?>"<?= ($this->projects->id_analyste == $analyst->getIdUser() ? ' selected' : '') ?>><?= $analyst->getFirstname() ?> <?= $analyst->getName() ?></option>
@@ -1030,7 +1030,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{AttachmentType, Companies, Project
                         <?php if ($this->projects_pouvoir->get($this->projects->id_project, 'id_project')) : ?>
                             <tr>
                                 <th>
-                                    <?php if ($this->projects_pouvoir->status == \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsPouvoir::STATUS_SIGNED) : ?>
+                                    <?php if ($this->projects_pouvoir->status == \Unilend\Entity\ProjectsPouvoir::STATUS_SIGNED) : ?>
                                         <span>&nbsp;&#9989;</span>
                                     <?php else: ?>
                                         <span>&nbsp;&#10060;</span>
@@ -1126,7 +1126,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{AttachmentType, Companies, Project
                                     <select style="width: 80%;" name="reason[]" id="reason" class="js-select2 form-control required select" data-placeholder="Séléctionnez un ou plusieurs motifs.." multiple>
                                         <option value=""></option>
                                         <?php foreach ($this->projectAbandonReasonList as $abandonReason) : ?>
-                                            <?php /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectAbandonReason $abandonReason */ ?>
+                                            <?php /** @var \Unilend\Entity\ProjectAbandonReason $abandonReason */ ?>
                                             <option value="<?= $abandonReason->getIdAbandon() ?>" title="<?= htmlentities($abandonReason->getDescription()) ?>" class="tooltip"><?= $abandonReason->getReason() ?></option>
                                         <?php endforeach; ?>
                                     </select>

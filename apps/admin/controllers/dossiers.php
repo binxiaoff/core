@@ -1,9 +1,10 @@
 <?php
 
 use Psr\Log\LoggerInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, AttachmentType, BorrowingMotive, Companies, CompanyAddress, CompanyStatus, Echeanciers, Loans, Partner, PartnerProjectAttachment,
-    Prelevements, ProjectAbandonReason, ProjectNotification, ProjectRejectionReason, ProjectRepaymentTask, Projects, ProjectsComments, ProjectsPouvoir, ProjectsStatus, Users, UsersTypes, Virements,
-    WalletType, Zones};
+use Unilend\Entity\{AcceptationsLegalDocs, AddressType, Attachment, AttachmentType, BankAccount, BorrowingMotive, Companies, CompanyAddress, CompanyBeneficialOwnerDeclaration, CompanyClient,
+    CompanyStatus, CompanyStatusHistory, Echeanciers, EcheanciersEmprunteur, Loans, Operation, Partner, PartnerProjectAttachment, Prelevements, ProjectAbandonReason, ProjectAttachmentType,
+    ProjectBeneficialOwnerUniversign, ProjectNotification, ProjectRejectionReason, ProjectRepaymentTask, Projects, ProjectsComments, ProjectsNotes, ProjectsPouvoir, ProjectsStatus,
+    ProjectsStatusHistory, ProjectStatusHistoryReason, Users, UsersTypes, Virements, Wallet, WalletType, Zones};
 use Unilend\Bundle\CoreBusinessBundle\Service\{BackOfficeUserManager, ProjectManager, ProjectRequestManager, TermsOfSaleManager, WireTransferOutManager, WorkingDaysManager};
 
 class dossiersController extends bootstrap
@@ -61,7 +62,7 @@ class dossiersController extends bootstrap
     {
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager       = $this->get('doctrine.orm.entity_manager');
-        $projectStatus       = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatus')->findBy([], ['status' => 'ASC']);
+        $projectStatus       = $entityManager->getRepository(ProjectsStatus::class)->findBy([], ['status' => 'ASC']);
         $this->projectStatus = [];
 
         foreach ($projectStatus as $status) {
@@ -82,7 +83,7 @@ class dossiersController extends bootstrap
         $this->page = $this->page > 0 ? $this->page : 1;
 
         if (isset($_POST['form_search_dossier'])) {
-            $projectRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
+            $projectRepository = $entityManager->getRepository(Projects::class);
 
             if (false === empty($_POST['id']) && filter_var($_POST['id'], FILTER_VALIDATE_INT) && null !== $projectRepository->find($_POST['id'])) {
                 header('Location: ' . $this->lurl . '/dossiers/edit/' . $_POST['id']);
@@ -115,7 +116,7 @@ class dossiersController extends bootstrap
             }
         } elseif (isset($this->params[0]) && 1 === preg_match('/^[1-9]([0-9,]*[0-9]+)*$/', $this->params[0])) {
             $statuses           = explode(',', $this->params[0]);
-            $projectRepository  = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
+            $projectRepository  = $entityManager->getRepository(Projects::class);
             $this->searchResult = $projectRepository->search($statuses);
             $this->resultsCount = count($this->searchResult);
 
@@ -125,7 +126,7 @@ class dossiersController extends bootstrap
         }
 
         if (isset($this->searchResult)) {
-            $this->projectNotesRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsNotes');
+            $this->projectNotesRepository = $entityManager->getRepository(ProjectsNotes::class);
         }
 
         /** @var BackOfficeUserManager $backOfficeUserManager */
@@ -134,6 +135,13 @@ class dossiersController extends bootstrap
         $this->hasRepaymentAccess = $backOfficeUserManager->isGrantedZone($this->userEntity, Zones::ZONE_LABEL_REPAYMENT);
     }
 
+    /**
+     * @throws \Doctrine\DBAL\ConnectionException
+     * @throws \Doctrine\ORM\NoResultException
+     * @throws \Doctrine\ORM\NonUniqueResultException
+     * @throws \Doctrine\ORM\ORMException
+     * @throws \Doctrine\ORM\OptimisticLockException
+     */
     public function _edit()
     {
         $this->projects                      = $this->loadData('projects');
@@ -176,7 +184,7 @@ class dossiersController extends bootstrap
         $this->beneficialOwnerDeclaration = null;
 
         if (isset($this->params[0]) && $this->projects->get($this->params[0], 'id_project')) {
-            $this->projectEntity   = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->projects->id_project);
+            $this->projectEntity   = $entityManager->getRepository(Projects::class)->find($this->projects->id_project);
             $this->taxFormTypes    = $companyTaxFormType->select();
             $this->allTaxFormTypes = [];
 
@@ -190,7 +198,7 @@ class dossiersController extends bootstrap
             $taxType = $this->loadData('tax_type');
 
             $taxRate        = $taxType->getTaxRateByCountry('fr');
-            $this->fVATRate = $taxRate[\Unilend\Bundle\CoreBusinessBundle\Entity\TaxType::TYPE_VAT] / 100;
+            $this->fVATRate = $taxRate[\Unilend\Entity\TaxType::TYPE_VAT] / 100;
 
             $this->companies->get($this->projects->id_company, 'id_company');
             $this->clients->get($this->companies->id_client_owner, 'id_client');
@@ -199,10 +207,10 @@ class dossiersController extends bootstrap
             $this->projects_notes->get($this->projects->id_project, 'id_project');
             $this->project_cgv->get($this->projects->id_project, 'id_project');
 
-            $this->projectStatus = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatus')->findOneBy(['status' => $this->projectEntity->getStatus()]);
+            $this->projectStatus = $entityManager->getRepository(ProjectsStatus::class)->findOneBy(['status' => $this->projectEntity->getStatus()]);
 
             try {
-                $projectStatusHistoryRejectionReason = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectStatusHistoryReason')
+                $projectStatusHistoryRejectionReason = $entityManager->getRepository(ProjectStatusHistoryReason::class)
                     ->findLastRejectionReasonByProjectAndLabel($this->projects->id_project, ProjectRejectionReason::UNKNOWN_SIREN);
             } catch (\Exception $exception) {
                 $projectStatusHistoryRejectionReason = null;
@@ -230,12 +238,12 @@ class dossiersController extends bootstrap
                 $mandate       = $clientMandate->select('id_project = ' . $this->projects->id_project, 'updated DESC');
                 $this->mandate = empty($mandate) ? [] : $mandate[0];
 
-                $this->validBankAccount = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($this->clients->id_client);
+                $this->validBankAccount = $entityManager->getRepository(BankAccount::class)->getClientValidatedBankAccount($this->clients->id_client);
 
                 if (false === $beneficialOwnerManager->companyNeedsBeneficialOwnerDeclaration($this->projects->id_company)) {
-                    $companyBeneficialOwnerDeclaration = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyBeneficialOwnerDeclaration')->findBy(['idCompany' => $this->projects->id_company]);
+                    $companyBeneficialOwnerDeclaration = $entityManager->getRepository(CompanyBeneficialOwnerDeclaration::class)->findBy(['idCompany' => $this->projects->id_company]);
                     if (false === empty($companyBeneficialOwnerDeclaration)) {
-                        $beneficialOwnerDeclaration       = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectBeneficialOwnerUniversign')->findOneBy(['idProject' => $this->projects->id_project], ['id' => 'DESC']);
+                        $beneficialOwnerDeclaration       = $entityManager->getRepository(ProjectBeneficialOwnerUniversign::class)->findOneBy(['idProject' => $this->projects->id_project], ['id' => 'DESC']);
                         $this->beneficialOwnerDeclaration = $beneficialOwnerDeclaration;
                     }
                 }
@@ -245,7 +253,7 @@ class dossiersController extends bootstrap
             $this->longitude = null === $this->companyMainAddress ? 0 : (float) $this->companyMainAddress->getLongitude();
 
             $this->aAnnualAccountsDates = [];
-            $userRepository             = $entityManager->getRepository('UnilendCoreBusinessBundle:Users');
+            $userRepository             = $entityManager->getRepository(Users::class);
             /** @var \Doctrine\Common\Collections\ArrayCollection analysts */
             $this->analysts = $userManager->getAnalysts();
             if (false === empty($this->projects->id_analyste) && $currentAnalyst = $userRepository->find($this->projects->id_analyste)) {
@@ -259,13 +267,13 @@ class dossiersController extends bootstrap
                     $this->salesPersons[] = $currentSalesPerson;
                 }
             }
-            $this->projectComments     = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsComments')
+            $this->projectComments     = $entityManager->getRepository(ProjectsComments::class)
                 ->findBy(['idProject' => $this->projects->id_project], ['added' => 'DESC']);
             $this->aAllAnnualAccounts = $this->companies_bilans->select('id_company = ' . $this->companies->id_company, 'cloture_exercice_fiscal DESC');
 
             $this->possibleProjectStatus = $projectStatusManager->getPossibleStatus($this->projectEntity);
             if ($this->projectEntity->getStatus()) {
-                $this->currentProjectStatus = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatus')->findOneBy(['status' => $this->projectEntity->getStatus()]);
+                $this->currentProjectStatus = $entityManager->getRepository(ProjectsStatus::class)->findOneBy(['status' => $this->projectEntity->getStatus()]);
             }
 
             if (empty($this->projects->id_dernier_bilan)) {
@@ -385,7 +393,7 @@ class dossiersController extends bootstrap
                         $echeanciers = $this->loadData('echeanciers');
                         $echeanciers->delete($this->projects->id_project, 'id_project');
 
-                        $loanRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Loans');
+                        $loanRepository = $entityManager->getRepository(Loans::class);
                         $lendersCount   = $loanRepository->getLenderNumber($this->projects->id_project);
                         $loans          = $loanRepository->findBy(['idProject' => $this->projects->id_project, 'status' => Loans::STATUS_ACCEPTED]);
 
@@ -394,7 +402,7 @@ class dossiersController extends bootstrap
                             $entityManager->flush($loan);
 
                             $this->get('unilend.service.operation_manager')->refuseLoan($loan);
-                            /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Wallet $wallet */
+                            /** @var \Unilend\Entity\Wallet $wallet */
                             $wallet   = $loan->getWallet();
                             $keywords = [
                                 'firstName'         => $wallet->getIdClient()->getPrenom(),
@@ -686,7 +694,7 @@ class dossiersController extends bootstrap
             $this->aCompanyProjects            = $this->companies->getProjectsBySIREN();
             $this->iCompanyProjectsCount       = count($this->aCompanyProjects);
             $this->fCompanyOwedCapital         = $this->companies->getOwedCapitalBySIREN();
-            $companiesRepository               = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies');
+            $companiesRepository               = $entityManager->getRepository(Companies::class);
             $this->bIsProblematicCompany       = $companiesRepository->isProblematicCompany($this->companies->siren);
 
             /** @var \product $product */
@@ -718,7 +726,7 @@ class dossiersController extends bootstrap
             }
 
             /** @var \Unilend\Bundle\CoreBusinessBundle\Repository\PartnerRepository $partnerRepository */
-            $partnerRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Partner');
+            $partnerRepository = $entityManager->getRepository(Partner::class);
 
             $this->eligibleProducts       = $productManager->findEligibleProducts($this->projectEntity, true);
             $this->selectedProduct        = $product;
@@ -728,7 +736,7 @@ class dossiersController extends bootstrap
             $this->isUnilendPartner       = Partner::PARTNER_CALS_ID === $this->projectEntity->getIdPartner()->getId();
             $this->agencies               = [];
             $this->submitters             = [];
-            $this->hasBeneficialOwner     = null !== $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyBeneficialOwnerDeclaration')->findCurrentDeclarationByCompany($this->projects->id_company);
+            $this->hasBeneficialOwner     = null !== $entityManager->getRepository(CompanyBeneficialOwnerDeclaration::class)->findCurrentDeclarationByCompany($this->projects->id_company);
             $this->ownerIsBeneficialOwner = $beneficialOwnerManager->checkBeneficialOwnerDeclarationContainsAtLeastCompanyOwner($this->projects->id_company);
 
             if (false === empty($this->projects->id_product)) {
@@ -736,7 +744,7 @@ class dossiersController extends bootstrap
             }
 
             if (false === $this->isUnilendPartner) {
-                $this->agencies = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findBy(['idParentCompany' => $this->projectEntity->getIdPartner()->getIdCompany()->getIdCompany()]);
+                $this->agencies = $entityManager->getRepository(Companies::class)->findBy(['idParentCompany' => $this->projectEntity->getIdPartner()->getIdCompany()->getIdCompany()]);
 
                 /** @var Companies $headquarters */
                 $headquarters = clone $this->projectEntity->getIdPartner()->getIdCompany();
@@ -748,7 +756,7 @@ class dossiersController extends bootstrap
             });
 
             if ($this->projectEntity->getIdCompanySubmitter() && $this->projectEntity->getIdCompanySubmitter()->getIdCompany()) {
-                $companyClients = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyClient')->findBy(['idCompany' => $this->projectEntity->getIdCompanySubmitter()]);
+                $companyClients = $entityManager->getRepository(CompanyClient::class)->findBy(['idCompany' => $this->projectEntity->getIdCompanySubmitter()]);
 
                 foreach ($companyClients as $companyClient) {
                     $this->submitters[$companyClient->getIdClient()->getIdClient()] = $companyClient->getIdClient();
@@ -776,7 +784,7 @@ class dossiersController extends bootstrap
                 }
             }
 
-            $attachmentTypes          = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectAttachmentType')->getAttachmentTypes();
+            $attachmentTypes          = $entityManager->getRepository(ProjectAttachmentType::class)->getAttachmentTypes();
             $mandatoryAttachmentTypes = array_map(function (PartnerProjectAttachment $type) {
                 return $type->getAttachmentType()->getId();
             }, $this->projectEntity->getIdPartner()->getAttachmentTypes(true));
@@ -786,7 +794,7 @@ class dossiersController extends bootstrap
             $this->projectAttachmentsByType          = [];
             $this->projectAttachmentsCountByCategory = [];
 
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectAttachment $projectAttachment */
+            /** @var \Unilend\Entity\ProjectAttachment $projectAttachment */
             foreach ($this->projectEntity->getAttachments() as $projectAttachment) {
                 $this->projectAttachmentsByType[$projectAttachment->getAttachment()->getType()->getId()][] = $projectAttachment;
             }
@@ -806,7 +814,7 @@ class dossiersController extends bootstrap
             }
 
             $this->isFundsCommissionRateEditable = $this->isFundsCommissionRateEditable();
-            $this->lastBalanceSheet              = $entityManager->getRepository('UnilendCoreBusinessBundle:Attachment')->findOneBy([
+            $this->lastBalanceSheet              = $entityManager->getRepository(Attachment::class)->findOneBy([
                 'idClient' => $this->projectEntity->getIdCompany()->getIdClientOwner(),
                 'idType'   => AttachmentType::DERNIERE_LIASSE_FISCAL
             ]);
@@ -816,8 +824,8 @@ class dossiersController extends bootstrap
             }
 
             $this->loadEarlyRepaymentInformation(false);
-            $this->treeRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Tree');
-            $this->legalDocuments = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:AcceptationsLegalDocs')->findBy(['idClient' => $this->clients->id_client]);
+            $this->treeRepository = $this->get('doctrine.orm.entity_manager')->getRepository(Tree::class);
+            $this->legalDocuments = $this->get('doctrine.orm.entity_manager')->getRepository(AcceptationsLegalDocs::class)->findBy(['idClient' => $this->clients->id_client]);
 
             $this->companyManager      = $this->get('unilend.service.company_manager');
             $this->projectStatusHeader = '';
@@ -841,7 +849,7 @@ class dossiersController extends bootstrap
             $numberFormatter                = $this->get('number_formatter');
             $this->projectRating            = $numberFormatter->format($projectRatingManager->getRating($this->projectEntity)) . ' étoiles';
             $this->projectCommiteeAvgGrade  = $numberFormatter->format($projectRatingManager->calculateCommitteeAverageGrade($this->projectEntity));
-            $this->projectAbandonReasonList = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectAbandonReason')
+            $this->projectAbandonReasonList = $entityManager->getRepository(ProjectAbandonReason::class)
                 ->findBy(['status' => ProjectAbandonReason::STATUS_ONLINE], ['reason' => 'ASC']);
         } else {
             header('Location: ' . $this->lurl . '/dossiers');
@@ -880,7 +888,7 @@ class dossiersController extends bootstrap
 
             /** @var \Doctrine\ORM\EntityManager $entityManager */
             $entityManager = $this->get('doctrine.orm.entity_manager');
-            $company       = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->find($this->companies->id_company);
+            $company       = $entityManager->getRepository(Companies::class)->find($this->companies->id_company);
             // Refresh entity data because it will be used further in checkProjectRisk
             $entityManager->refresh($company);
 
@@ -898,8 +906,8 @@ class dossiersController extends bootstrap
             $entityManager = $this->get('doctrine.orm.entity_manager');
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $projectManager */
             $projectManager              = $this->get('unilend.service.project_manager');
-            $this->companyRepository     = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies');
-            $this->bankAccountRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount');
+            $this->companyRepository     = $entityManager->getRepository(Companies::class);
+            $this->bankAccountRepository = $entityManager->getRepository(BankAccount::class);
             $this->currencyFormatter     = $this->get('currency_formatter');
 
             $this->restFunds        = $projectManager->getRestOfFundsToRelease($project, true);
@@ -951,7 +959,7 @@ class dossiersController extends bootstrap
 
         if (false === empty($this->params[0])) {
             if (false !== ($projectId = filter_var($this->params[0], FILTER_VALIDATE_INT))
-                && null !== ($project = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($projectId))
+                && null !== ($project = $entityManager->getRepository(Projects::class)->find($projectId))
             ) {
                 $errors = $this->problematicStatusForm($project);
 
@@ -991,7 +999,7 @@ class dossiersController extends bootstrap
 
         // This will be displayed on lender loans notifications table
         if (false === empty($this->request->request->get('site_content'))) {
-            $firstNotRepaidRepaymentSchedule = $entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers')->findOneBy([
+            $firstNotRepaidRepaymentSchedule = $entityManager->getRepository(Echeanciers::class)->findOneBy([
                 'idProject' => $project,
                 'status'    => [Echeanciers::STATUS_PENDING, Echeanciers::STATUS_PARTIALLY_REPAID]
             ], ['ordre' => 'ASC']);
@@ -1161,14 +1169,14 @@ class dossiersController extends bootstrap
         $taxType = $this->loadData('tax_type');
 
         $taxRate        = $taxType->getTaxRateByCountry('fr');
-        $this->fVATRate = $taxRate[\Unilend\Bundle\CoreBusinessBundle\Entity\TaxType::TYPE_VAT] / 100;
+        $this->fVATRate = $taxRate[\Unilend\Entity\TaxType::TYPE_VAT] / 100;
 
         /** @var company_rating $oCompanyRating */
         $oCompanyRating = $this->loadData('company_rating');
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\CompanyBalanceSheetManager $companyBalanceSheetManager */
         $companyBalanceSheetManager = $this->get('unilend.service.company_balance_sheet_manager');
         /** @var \Unilend\Bundle\CoreBusinessBundle\Repository\CompaniesRepository $companiesRepository */
-        $companiesRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Companies');
+        $companiesRepository = $this->get('doctrine.orm.entity_manager')->getRepository(Companies::class);
 
         $this->ratings                  = $oCompanyRating->getHistoryRatingsByType($this->oProject->id_company_rating_history);
         $this->aAnnualAccounts          = $oAnnualAccounts->select('id_company = ' . $this->oCompany->id_company . ' AND cloture_exercice_fiscal <= (SELECT cloture_exercice_fiscal FROM companies_bilans WHERE id_bilan = ' . $this->oProject->id_dernier_bilan . ')',
@@ -1201,7 +1209,7 @@ class dossiersController extends bootstrap
 
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager          = $this->get('doctrine.orm.entity_manager');
-        $this->rejectionReasons = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRejectionReason')
+        $this->rejectionReasons = $entityManager->getRepository(ProjectRejectionReason::class)
             ->findBy(['status' => ProjectRejectionReason::STATUS_ONLINE], ['reason' => 'ASC']);
         $this->step             = $this->params[0];
         $this->projectId        = $this->params[1];
@@ -1232,11 +1240,11 @@ class dossiersController extends bootstrap
                 isset($_POST['projectId'], $_POST['content'])
                 && filter_var($_POST['projectId'], FILTER_VALIDATE_INT)
             ) {
-                $projectRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
+                $projectRepository = $entityManager->getRepository(Projects::class);
                 $projectEntity     = $projectRepository->find($_POST['projectId']);
 
                 if (null !== $projectEntity) {
-                    /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Projects $projectEntity */
+                    /** @var \Unilend\Entity\Projects $projectEntity */
                     $projectCommentEntity = new ProjectsComments();
                     $projectCommentEntity->setIdProject($projectEntity);
                     $projectCommentEntity->setContent($_POST['content']);
@@ -1269,7 +1277,7 @@ class dossiersController extends bootstrap
                         $slackManager->sendMessage($slackNotification, '@' . $projectEntity->getIdAnalyste()->getSlack());
                     }
 
-                    $projectCommentRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsComments');
+                    $projectCommentRepository = $entityManager->getRepository(ProjectsComments::class);
                     $this->projectComments    = $projectCommentRepository->findBy(['idProject' => $_POST['projectId']], ['added' => 'DESC']);
 
                     $this->autoFireView = true;
@@ -1284,7 +1292,7 @@ class dossiersController extends bootstrap
             ) {
                 $errors                   = null;
                 $public                   = (bool) $_POST['public'];
-                $projectCommentRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsComments');
+                $projectCommentRepository = $entityManager->getRepository(ProjectsComments::class);
                 $projectCommentEntity     = $projectCommentRepository->find($_POST['commentId']);
 
                 if (null === $projectCommentEntity) {
@@ -1325,7 +1333,7 @@ class dossiersController extends bootstrap
         $this->projects = $this->loadData('projects');
         $defaultPartner = $partnerManager->getDefaultPartner();
         /** @var \Unilend\Bundle\CoreBusinessBundle\Repository\PartnerRepository $partnerRepository */
-        $partnerRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Partner');
+        $partnerRepository = $entityManager->getRepository(Partner::class);
         $this->partnerList = $partnerRepository->getPartnersSortedByName(Partner::STATUS_VALIDATED);
 
         try {
@@ -1333,7 +1341,7 @@ class dossiersController extends bootstrap
                 isset($this->params[0], $_POST['id_client'])
                 && 'client' === $this->params[0]
                 && false !== filter_var($_POST['id_client'], FILTER_VALIDATE_INT)
-                && null !== ($clientEntity = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($_POST['id_client']))
+                && null !== ($clientEntity = $entityManager->getRepository(Clients::class)->find($_POST['id_client']))
             ) {
                 if (false === $clientEntity->isBorrower()) {
                     $_SESSION['freeow']['title']   = 'Impossible de créer le projet';
@@ -1343,7 +1351,7 @@ class dossiersController extends bootstrap
                     exit;
                 }
 
-                $company = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $clientEntity]);
+                $company = $entityManager->getRepository(Companies::class)->findOneBy(['idClientOwner' => $clientEntity]);
                 $project = $projectRequestManager->createProjectByCompany($this->userEntity, $company, $defaultPartner, ProjectsStatus::STATUS_REQUEST);
                 $this->users_history->histo(7, 'dossier create', $this->userEntity->getIdUser(), serialize(['id_project' => $project->getIdProject()]));
 
@@ -1419,16 +1427,16 @@ class dossiersController extends bootstrap
 
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
-        $project       = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->params[0]);
+        $project       = $entityManager->getRepository(Projects::class)->find($this->params[0]);
 
         if (null === $project) {
             header('Location: /dossiers');
             exit;
         }
 
-        $loanRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Loans');
-        $projectStatus  = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatus')->findOneBy(['status' => $project->getStatus()]);
-        $companyStatus  = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyStatusHistory')->findOneBy(['idCompany' => $project->getIdCompany()], ['added' => 'DESC'])->getIdStatus();
+        $loanRepository = $entityManager->getRepository(Loans::class);
+        $projectStatus  = $entityManager->getRepository(ProjectsStatus::class)->findOneBy(['status' => $project->getStatus()]);
+        $companyStatus  = $entityManager->getRepository(CompanyStatusHistory::class)->findOneBy(['idCompany' => $project->getIdCompany()], ['added' => 'DESC'])->getIdStatus();
         $loans          = $loanRepository->getProjectLoans($project);
 
         $this->render(null, [
@@ -1452,7 +1460,7 @@ class dossiersController extends bootstrap
 
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
-        $loan          = $entityManager->getRepository('UnilendCoreBusinessBundle:Loans')->find($this->params[0]);
+        $loan          = $entityManager->getRepository(Loans::class)->find($this->params[0]);
 
         if (null === $loan) {
             header('Location: /dossiers');
@@ -1464,12 +1472,12 @@ class dossiersController extends bootstrap
         $lenderCompanyName           = null;
         $earlyRepayment              = null;
         $owedCapital                 = round(bcdiv($loan->getAmount(), 100, 5), 2);
-        $projectStatus               = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatus')->findOneBy(['status' => $loan->getProject()->getStatus()]);
-        $companyStatus               = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyStatusHistory')->findOneBy(['idCompany' => $loan->getProject()->getIdCompany()], ['added' => 'DESC'])->getIdStatus();
-        $lenderCompany               = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $loan->getWallet()->getIdClient()]);
-        $repaymentScheduleRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers');
+        $projectStatus               = $entityManager->getRepository(ProjectsStatus::class)->findOneBy(['status' => $loan->getProject()->getStatus()]);
+        $companyStatus               = $entityManager->getRepository(CompanyStatusHistory::class)->findOneBy(['idCompany' => $loan->getProject()->getIdCompany()], ['added' => 'DESC'])->getIdStatus();
+        $lenderCompany               = $entityManager->getRepository(Companies::class)->findOneBy(['idClientOwner' => $loan->getWallet()->getIdClient()]);
+        $repaymentScheduleRepository = $entityManager->getRepository(Echeanciers::class);
         $repaymentEntities           = $repaymentScheduleRepository->findBy(['idLoan' => $loan, 'statusRa' => Echeanciers::IS_NOT_EARLY_REPAID]);
-        $operationRepository         = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
+        $operationRepository         = $entityManager->getRepository(Operation::class);
 
         if ($lenderCompany) {
             $lenderCompanyName = $lenderCompany->getName();
@@ -1534,7 +1542,7 @@ class dossiersController extends bootstrap
 
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
-        $project       = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->params[0]);
+        $project       = $entityManager->getRepository(Projects::class)->find($this->params[0]);
 
         if (null === $project) {
             header('Location: /dossiers');
@@ -1545,9 +1553,9 @@ class dossiersController extends bootstrap
         $projectManager = $this->get('unilend.service.project_manager');
         $owedCapital    = $projectManager->getRemainingAmounts($project)['capital'];
         $earlyRepayment = [];
-        $projectStatus  = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatus')->findOneBy(['status' => $project->getStatus()]);
-        $companyStatus  = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyStatusHistory')->findOneBy(['idCompany' => $project->getIdCompany()], ['added' => 'DESC'])->getIdStatus();
-        $payments       = $entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur')->getDetailedProjectPaymentSchedule($project);
+        $projectStatus  = $entityManager->getRepository(ProjectsStatus::class)->findOneBy(['status' => $project->getStatus()]);
+        $companyStatus  = $entityManager->getRepository(CompanyStatusHistory::class)->findOneBy(['idCompany' => $project->getIdCompany()], ['added' => 'DESC'])->getIdStatus();
+        $payments       = $entityManager->getRepository(EcheanciersEmprunteur::class)->getDetailedProjectPaymentSchedule($project);
         $payments       = array_map(function ($payment) {
             $payment['borrowerPaymentDate']   = \DateTime::createFromFormat('Y-m-d H:i:s', $payment['borrowerPaymentDate']);
             $payment['lenderRepaymentDate']   = \DateTime::createFromFormat('Y-m-d H:i:s', $payment['lenderRepaymentDate']);
@@ -1557,7 +1565,7 @@ class dossiersController extends bootstrap
         }, $payments);
 
         if (ProjectsStatus::STATUS_REPAID === $project->getStatus()) {
-            $repaymentTask = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRepaymentTask')->findOneBy(
+            $repaymentTask = $entityManager->getRepository(ProjectRepaymentTask::class)->findOneBy(
                 ['idProject' => $project, 'type' => ProjectRepaymentTask::TYPE_EARLY, 'status' => ProjectRepaymentTask::STATUS_REPAID],
                 ['repayAt' => 'DESC']
             );
@@ -1663,7 +1671,7 @@ class dossiersController extends bootstrap
                 $this->earlyRepaymentLimitDate    = $workingDaysManager->getPreviousWorkingDay(\DateTime::createFromFormat('Y-m-d H:i:s', $nextRepayment[0]['date_echeance']), 5);
                 $this->nextScheduledRepaymentDate = \DateTime::createFromFormat('Y-m-d H:i:s', $nextRepayment[0]['date_echeance']);
                 $this->lenderOwedCapital          = $repaymentSchedule->getRemainingCapitalAtDue($this->projects->id_project, $nextRepayment[0]['ordre'] + 1);
-                $this->borrowerOwedCapital        = $entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur')
+                $this->borrowerOwedCapital        = $entityManager->getRepository(EcheanciersEmprunteur::class)
                     ->getRemainingCapitalFrom($this->projects->id_project, $nextRepayment[0]['ordre'] + 1);
 
                 if (0 === bccomp($this->lenderOwedCapital, $this->borrowerOwedCapital, 2)) {
@@ -1679,22 +1687,22 @@ class dossiersController extends bootstrap
                 /** @var \Doctrine\ORM\EntityManager $entityManager */
                 $entityManager = $this->get('doctrine.orm.entity_manager');
                 /** @var \Unilend\Bundle\CoreBusinessBundle\Repository\ReceptionsRepository $receptionRepository */
-                $receptionRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Receptions');
+                $receptionRepository = $entityManager->getRepository(Receptions::class);
                 $this->reception     = $receptionRepository->getBorrowerAnticipatedRepaymentWireTransfer(
-                    $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')
+                    $entityManager->getRepository(Projects::class)
                         ->find($this->projects->id_project)
                 );
 
                 if (1 === count($this->reception)) {
-                    /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Receptions reception */
+                    /** @var \Unilend\Entity\Receptions reception */
                     $this->reception   = $this->reception[0];
                     $lastPaidRepayment = $repaymentSchedule->select('id_project = ' . $this->projects->id_project . ' AND status = ' . Echeanciers::STATUS_REPAID, ' ordre DESC', 0, 1);
 
                     $currentLenderOwedCapital   = $repaymentSchedule->getRemainingCapitalAtDue($this->projects->id_project, $lastPaidRepayment[0]['ordre'] + 1);
-                    $currentBorrowerOwedCapital = $entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur')
+                    $currentBorrowerOwedCapital = $entityManager->getRepository(EcheanciersEmprunteur::class)
                         ->getRemainingCapitalFrom($this->projects->id_project, $lastPaidRepayment[0]['ordre'] + 1);
 
-                    $projectRepaymentTask = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRepaymentTask')->findOneBy([
+                    $projectRepaymentTask = $entityManager->getRepository(ProjectRepaymentTask::class)->findOneBy([
                         'idProject' => $this->projects->id_project,
                         'type'      => ProjectRepaymentTask::TYPE_EARLY,
                         'status'    => ProjectRepaymentTask::STATUS_READY
@@ -1735,7 +1743,7 @@ class dossiersController extends bootstrap
 
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager     = $this->get('doctrine.orm.entity_manager');
-        $projectRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
+        $projectRepository = $entityManager->getRepository(Projects::class);
 
         if (
             empty($this->params[0])
@@ -1810,7 +1818,7 @@ class dossiersController extends bootstrap
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
 
-        $projectStatusRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatus');
+        $projectStatusRepository = $entityManager->getRepository(ProjectsStatus::class);
         $this->statuses          = $projectStatusRepository->findBy([], ['status' => 'ASC']);
 
         if (false === empty($this->params[0]) && false === empty($this->params[1])
@@ -1828,7 +1836,7 @@ class dossiersController extends bootstrap
                 && $this->firstRangeEnd <= $today
                 && $this->firstRangeStart <= $this->firstRangeEnd
             ) {
-                $projectStatusHistoryRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatusHistory');
+                $projectStatusHistoryRepository = $entityManager->getRepository(ProjectsStatusHistory::class);
                 $baseStatus                     = $projectStatusHistoryRepository->getStatusByDates($this->baseStatus, $this->firstRangeStart, $this->firstRangeEnd);
 
                 if (false === empty($baseStatus)) {
@@ -1950,7 +1958,7 @@ class dossiersController extends bootstrap
             /** @var \Doctrine\ORM\EntityManager $entityManager */
             $entityManager        = $this->get('doctrine.orm.entity_manager');
             $projectCommentEntity = new ProjectsComments();
-            $projectCommentEntity->setIdProject($entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->projects->id_project));
+            $projectCommentEntity->setIdProject($entityManager->getRepository(Projects::class)->find($this->projects->id_project));
             $projectCommentEntity->setIdUser($this->userEntity);
             $projectCommentEntity->setContent('<p><u>Report projet</u></p>' . $_POST['comment']);
             $projectCommentEntity->setPublic(empty($_POST['public']) ? false : true);
@@ -1974,7 +1982,7 @@ class dossiersController extends bootstrap
 
         if (
             false === isset($this->params[0])
-            || null === $project = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->params[0])
+            || null === $project = $entityManager->getRepository(Projects::class)->find($this->params[0])
         ) {
             $_SESSION['freeow']['title']   = 'Erreur abandon projet';
             $_SESSION['freeow']['message'] = 'Votre demande est incorrecte.';
@@ -1984,7 +1992,7 @@ class dossiersController extends bootstrap
 
         if (false === empty($_POST['reason'])) {
             /** @var ProjectAbandonReason[] $abandonReasons */
-            $abandonReasons = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectAbandonReason')
+            $abandonReasons = $entityManager->getRepository(ProjectAbandonReason::class)
                 ->findBy(['idAbandon' => $_POST['reason']]);
 
             if (empty($abandonReasons) || count($abandonReasons) !== count($_POST['reason'])) {
@@ -2068,7 +2076,7 @@ class dossiersController extends bootstrap
         }
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager      = $this->get('doctrine.orm.entity_manager');
-        $companyMainAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')->findLastModifiedNotArchivedAddressByType($this->projects->id_company, AddressType::TYPE_MAIN_ADDRESS);
+        $companyMainAddress = $entityManager->getRepository(CompanyAddress::class)->findLastModifiedNotArchivedAddressByType($this->projects->id_company, AddressType::TYPE_MAIN_ADDRESS);
 
         if (null === $companyMainAddress) {
             $_SESSION['publish_error'] = 'L\'entreprise n\'a pas d\'adresse principale';
@@ -2077,7 +2085,7 @@ class dossiersController extends bootstrap
             die;
         }
 
-        if (null === $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyBeneficialOwnerDeclaration')->findCurrentDeclarationByCompany($this->projects->id_company)) {
+        if (null === $entityManager->getRepository(CompanyBeneficialOwnerDeclaration::class)->findCurrentDeclarationByCompany($this->projects->id_company)) {
             $_SESSION['publish_error'] = 'Il n\'y a pas de bénéficiaire effectif déclaré';
 
             header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->projects->id_project);
@@ -2117,7 +2125,7 @@ class dossiersController extends bootstrap
 
             $slackManager    = $this->container->get('unilend.service.slack_manager');
             $publicationDate = new \DateTime($this->projects->date_publication);
-            $project         = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->projects->id_project);
+            $project         = $entityManager->getRepository(Projects::class)->find($this->projects->id_project);
             $star            = str_replace('.', ',', $projectRatingManager->getRating($project));
             $message         = $slackManager->getProjectName($project) . ' sera mis en ligne le *' . $publicationDate->format('d/m/Y à H:i') . '* - ' . $this->projects->period . ' mois :calendar: / ' . $this->ficelle->formatNumber($this->projects->amount,
                     0) . ' € :moneybag: / ' . $star . ' :star:';
@@ -2149,7 +2157,7 @@ class dossiersController extends bootstrap
             /** @var \Doctrine\ORM\EntityManager $entityManager */
             $entityManager        = $this->get('doctrine.orm.entity_manager');
             $projectCommentEntity = new ProjectsComments();
-            $projectCommentEntity->setIdProject($entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->projects->id_project));
+            $projectCommentEntity->setIdProject($entityManager->getRepository(Projects::class)->find($this->projects->id_project));
             $projectCommentEntity->setIdUser($this->userEntity);
             $projectCommentEntity->setContent('<p><u>Retour à l\'analyse</u><p>' . $_POST['comment'] . '</p>');
 
@@ -2187,7 +2195,7 @@ class dossiersController extends bootstrap
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
         /** @var Projects $project */
-        $project = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->params[0]);
+        $project = $entityManager->getRepository(Projects::class)->find($this->params[0]);
 
         if (null === $project || null === $project->getIdCompany() || null === $project->getIdCompany()->getIdClientOwner()) {
             header('Location: ' . $this->lurl);
@@ -2199,7 +2207,7 @@ class dossiersController extends bootstrap
         $projectStatusManager = $this->get('unilend.service.project_status_manager');
         try {
             /** @var ProjectRejectionReason[] $rejectionReason */
-            $rejectionReason = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRejectionReason')
+            $rejectionReason = $entityManager->getRepository(ProjectRejectionReason::class)
                 ->findBy(['label' => ProjectRejectionReason::SUSPENSIVE_CONDITIONS]);
             $result          = $projectStatusManager->rejectProject($project, ProjectsStatus::STATUS_CANCELLED, $rejectionReason, $this->userEntity);
         } catch (\Exception $exception) {
@@ -2379,7 +2387,7 @@ class dossiersController extends bootstrap
     {
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
-        $company       = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->find($this->projects->id_target_company);
+        $company       = $entityManager->getRepository(Companies::class)->find($this->projects->id_target_company);
 
         /** @var ProjectRequestManager $projectRequestManager */
         $projectRequestManager = $this->get('unilend.service.project_request_manager');
@@ -2607,8 +2615,8 @@ class dossiersController extends bootstrap
 
         if (
             isset($this->params[0], $this->params[1])
-            && ($project = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->params[0]))
-            && ($partner = $entityManager->getRepository('UnilendCoreBusinessBundle:Partner')->find($this->params[1]))
+            && ($project = $entityManager->getRepository(Projects::class)->find($this->params[0]))
+            && ($partner = $entityManager->getRepository(Partner::class)->find($this->params[1]))
         ) {
             $project->setIdPartner($partner);
 
@@ -2647,22 +2655,22 @@ class dossiersController extends bootstrap
             /** @var \NumberFormatter $currencyFormatter */
             $this->currencyFormatter = $this->get('currency_formatter');
 
-            $this->companyRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies');
+            $this->companyRepository = $entityManager->getRepository(Companies::class);
             $this->hasOverdue        = false;
 
             if (WireTransferOutManager::TRANSFER_OUT_BY_PROJECT === $this->params[0]) {
-                $this->project       = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->params[1]);
+                $this->project       = $entityManager->getRepository(Projects::class)->find($this->params[1]);
                 $this->company       = $this->project->getIdCompany();
                 $this->borrowerMotif = $borrowerManager->getProjectBankTransferLabel($this->project);
                 $this->restFunds     = $projectManager->getRestOfFundsToRelease($this->project, true);
             } else {
                 $this->project       = null;
-                $this->company       = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->find($this->params[1]);
+                $this->company       = $entityManager->getRepository(Companies::class)->find($this->params[1]);
                 $this->borrowerMotif = $borrowerManager->getCompanyBankTransferLabel($this->company);
-                $wallet              = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($this->company->getIdClientOwner(), WalletType::BORROWER);
+                $wallet              = $entityManager->getRepository(Wallet::class)->getWalletByType($this->company->getIdClientOwner(), WalletType::BORROWER);
                 $this->restFunds     = $borrowerManager->getRestOfFundsToRelease($wallet);
 
-                $this->projects = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->findBy(['idCompany' => $this->company]);
+                $this->projects = $entityManager->getRepository(Projects::class)->findBy(['idCompany' => $this->company]);
                 foreach ($this->projects as $project) {
                     $overDueAmounts = $projectManager->getOverdueAmounts($project);
                     if ($overDueAmounts['capital'] > 0 || $overDueAmounts['interest'] > 0 || $overDueAmounts['commission'] > 0) {
@@ -2675,7 +2683,7 @@ class dossiersController extends bootstrap
                 }
             }
             $client             = $this->company->getIdClientOwner();
-            $this->bankAccounts = [$entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($client)];
+            $this->bankAccounts = [$entityManager->getRepository(BankAccount::class)->getClientValidatedBankAccount($client)];
             if (WireTransferOutManager::TRANSFER_OUT_BY_PROJECT === $this->params[0]) {
                 $this->bankAccounts = array_merge($this->bankAccounts, $partnerManager->getPartnerThirdPartyBankAccounts($this->project->getIdPartner()));
             }
@@ -2710,7 +2718,7 @@ class dossiersController extends bootstrap
                 }
 
                 if (empty($this->project)) {
-                    $this->project = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->request->request->getInt('project'));
+                    $this->project = $entityManager->getRepository(Projects::class)->find($this->request->request->getInt('project'));
                     if (null === $this->project) {
                         $_SESSION['freeow']['title']   = 'Transfert de fonds';
                         $_SESSION['freeow']['message'] = 'Le transfert de fonds n\'a pas été créé. Projet non validé.';
@@ -2719,8 +2727,8 @@ class dossiersController extends bootstrap
                     }
                 }
 
-                $bankAccount = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->find($this->request->request->get('bank_account'));
-                $wallet      = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::BORROWER);
+                $bankAccount = $entityManager->getRepository(BankAccount::class)->find($this->request->request->get('bank_account'));
+                $wallet      = $entityManager->getRepository(Wallet::class)->getWalletByType($client, WalletType::BORROWER);
 
                 try {
                     $wireTransferOutManager->createTransfer($wallet, $amount, $bankAccount, $this->project, $this->userEntity, $date, $this->request->request->get('pattern'));
@@ -2752,9 +2760,9 @@ class dossiersController extends bootstrap
             /** @var \NumberFormatTest currencyFormatter */
             $this->currencyFormatter = $this->get('currency_formatter');
 
-            $this->wireTransferOut       = $entityManager->getRepository('UnilendCoreBusinessBundle:Virements')->find($this->params[0]);
-            $this->bankAccountRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount');
-            $this->companyRepository     = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies');
+            $this->wireTransferOut       = $entityManager->getRepository(Virements::class)->find($this->params[0]);
+            $this->bankAccountRepository = $entityManager->getRepository(BankAccount::class);
+            $this->companyRepository     = $entityManager->getRepository(Companies::class);
         }
 
         if (false === empty($this->params[0]) && $this->request->isMethod('POST') && $this->wireTransferOut) {
@@ -2792,9 +2800,9 @@ class dossiersController extends bootstrap
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\CompanyManager $companyManager */
             $companyManager = $this->get('unilend.service.company_manager');
 
-            $projectsRepository        = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
-            $receptionsRepository      = $entityManager->getRepository('UnilendCoreBusinessBundle:Receptions');
-            $paymentScheduleRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur');
+            $projectsRepository        = $entityManager->getRepository(Projects::class);
+            $receptionsRepository      = $entityManager->getRepository(Receptions::class);
+            $paymentScheduleRepository = $entityManager->getRepository(EcheanciersEmprunteur::class);
 
             $totalPendingWireTransferInAmount = 0;
             $totalOverdueAmount               = 0;
@@ -2808,7 +2816,7 @@ class dossiersController extends bootstrap
                 $overdueAmount        = round(bcadd(bcadd($overdueAmounts['capital'], $overdueAmounts['interest'], 4), $overdueAmounts['commission'], 4), 2);
                 $debtCollectionAmount = 0;
 
-                /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\DebtCollectionMission $mission */
+                /** @var \Unilend\Entity\DebtCollectionMission $mission */
                 foreach ($project->getDebtCollectionMissions() as $mission) {
                     $entrustedAmount      = round(bcadd(bcadd($mission->getCapital(), $mission->getInterest(), 4), $mission->getCommissionVatIncl(), 4), 2);
                     $debtCollectionAmount = round(bcadd($debtCollectionAmount, $entrustedAmount, 4), 2);

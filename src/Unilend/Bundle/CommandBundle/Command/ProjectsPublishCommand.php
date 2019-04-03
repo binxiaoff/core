@@ -4,7 +4,7 @@ namespace Unilend\Bundle\CommandBundle\Command;
 
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\{Input\InputInterface, Output\OutputInterface};
-use Unilend\Bundle\CoreBusinessBundle\Entity\{Attachment, AttachmentType, Projects};
+use Unilend\Entity\{Attachment, AttachmentType, Projects};
 use Unilend\librairies\CacheKeys;
 
 class ProjectsPublishCommand extends ContainerAwareCommand
@@ -32,7 +32,7 @@ EOF
         $hasProjectPublished     = false;
         $logger                  = $this->getContainer()->get('monolog.logger.console');
         $entityManager           = $this->getContainer()->get('doctrine.orm.entity_manager');
-        $projectRepository       = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
+        $projectRepository       = $entityManager->getRepository(Projects::class);
         $projectLifecycleManager = $this->getContainer()->get('unilend.service.project_lifecycle_manager');
         $projectLifecycleManager->setLogger($logger);
 

@@ -5,6 +5,8 @@ namespace Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Swift_Transport;
+use Unilend\Entity\MailTemplates;
+use Unilend\Entity\Settings;
 
 class UnilendMailer extends \Swift_Mailer
 {
@@ -39,7 +41,7 @@ class UnilendMailer extends \Swift_Mailer
     {
         if ($message instanceof TemplateMessage) {
             $failedRecipients   = (array) $failedRecipients;
-            $mailTemplate       = $this->entityManager->getRepository('UnilendCoreBusinessBundle:MailTemplates')->find($message->getTemplateId());
+            $mailTemplate       = $this->entityManager->getRepository(MailTemplates::class)->find($message->getTemplateId());
             $recipientsAreClean = $this->checkRecipients($message, $failedRecipients);
 
             if (false === empty($failedRecipients)) {
@@ -123,7 +125,7 @@ class UnilendMailer extends \Swift_Mailer
     private function checkEmailAddress(string $email) : bool
     {
         $regex = $this->entityManager
-            ->getRepository('UnilendCoreBusinessBundle:Settings')
+            ->getRepository(Settings::class)
             ->findOneBy(['type' => 'Regex validation email'])
             ->getValue();
 

@@ -9,7 +9,7 @@
             <th>Commission ponctuelle</th>
             <th>Commission récurrente</th>
             <th>Souhaite être agent</th>
-            {% if bid.status == constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Bids::STATUS_PENDING') %}
+            {% if bid.status == constant('Unilend\\Entity\\Bids::STATUS_PENDING') %}
                 <th style="width: 60px;">&nbsp;</th>
             {% endif %}
         </tr>
@@ -25,7 +25,7 @@
                 {{ bid.recurringFeeTotalRate|localizednumberwithprecision(2) }}&nbsp;%
             </td>
             <td>{% if bid.isAgent %}Oui{% else %}Non{% endif %}</td>
-            {% if bid.status == constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Bids::STATUS_PENDING') %}
+            {% if bid.status == constant('Unilend\\Entity\\Bids::STATUS_PENDING') %}
                 <td>
                     <button class="btn-default btn-shape-xxs"
                             data-toggle="tooltip" title="Annuler l‘offre"

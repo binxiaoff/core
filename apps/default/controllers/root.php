@@ -1,6 +1,6 @@
 <?php
 
-use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, Clients, Wallet};
+use Unilend\Entity\{AddressType, ClientAddress, Clients, CompanyAddress, Wallet};
 
 class rootController extends bootstrap
 {
@@ -115,7 +115,7 @@ class rootController extends bootstrap
             /** @var \Doctrine\ORM\EntityManager $entityManager */
             $entityManager = $this->get('doctrine.orm.entity_manager');
             /** @var Wallet $wallet */
-            $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($this->clients->id_client, \Unilend\Bundle\CoreBusinessBundle\Entity\WalletType::LENDER);
+            $wallet = $entityManager->getRepository(Wallet::class)->getWalletByType($this->clients->id_client, \Unilend\Entity\WalletType::LENDER);
 
             /** @var \loans $oLoans */
             $oLoans      = $this->loadData('loans');
@@ -124,7 +124,7 @@ class rootController extends bootstrap
             if (in_array($this->clients->type, [Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER])) {
                 $clientAddress = $wallet->getIdClient()->getIdAddress();
                 if (null === $clientAddress) {
-                    $clientAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientAddress')
+                    $clientAddress = $entityManager->getRepository(ClientAddress::class)
                         ->findLastModifiedNotArchivedAddressByType($wallet->getIdClient(), AddressType::TYPE_MAIN_ADDRESS);
                 }
 
@@ -141,12 +141,12 @@ class rootController extends bootstrap
                 $this->mandat_de_recouvrement           = str_replace(array_keys($aReplacements), $aReplacements, $this->content['mandat-de-recouvrement']);
                 $this->mandat_de_recouvrement_avec_pret = $iLoansCount > 0 ? str_replace(array_keys($aReplacements), $aReplacements, $this->content['mandat-de-recouvrement-avec-pret']) : '';
             } else {
-                $company        = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $this->clients->id_client]);
+                $company        = $entityManager->getRepository(Companies::class)->findOneBy(['idClientOwner' => $this->clients->id_client]);
                 $companyAddress = $company->getIdAddress();
 
                 if (null === $companyAddress) {
                     $companyAddress = $entityManager
-                        ->getRepository('UnilendCoreBusinessBundle:CompanyAddress')
+                        ->getRepository(CompanyAddress::class)
                         ->findLastModifiedNotArchivedAddressByType($company, AddressType::TYPE_MAIN_ADDRESS);
                 }
 

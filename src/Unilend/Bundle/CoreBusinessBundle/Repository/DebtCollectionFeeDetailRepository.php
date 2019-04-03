@@ -3,10 +3,7 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
 use Doctrine\ORM\EntityRepository;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Loans;
-use Unilend\Bundle\CoreBusinessBundle\Entity\DebtCollectionFeeDetail;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Receptions;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
+use Unilend\Entity\{Loans, DebtCollectionFeeDetail, Receptions, Wallet};
 
 class DebtCollectionFeeDetailRepository extends EntityRepository
 {

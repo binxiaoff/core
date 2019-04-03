@@ -5,7 +5,7 @@ namespace Unilend\Bundle\CommandBundle\Command;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRepaymentTask;
+use Unilend\Entity\ProjectRepaymentTask;
 
 class AutomaticLenderRepaymentCommand extends ContainerAwareCommand
 {
@@ -28,7 +28,7 @@ class AutomaticLenderRepaymentCommand extends ContainerAwareCommand
 
         $repaymentDate = new \DateTime();
         /** @var ProjectRepaymentTask[] $projectRepaymentTask */
-        $projectRepaymentTask = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRepaymentTask')->getProjectsToRepay($repaymentDate, 1);
+        $projectRepaymentTask = $entityManager->getRepository(ProjectRepaymentTask::class)->getProjectsToRepay($repaymentDate, 1);
 
         foreach ($projectRepaymentTask as $task) {
             try {

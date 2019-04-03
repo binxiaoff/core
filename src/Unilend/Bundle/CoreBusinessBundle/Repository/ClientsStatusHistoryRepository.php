@@ -4,9 +4,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
 use Doctrine\ORM\EntityRepository;
 use Unilend\Bridge\Doctrine\DBAL\Connection;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Clients, ClientsStatus, ClientsStatusHistory, WalletType
-};
+use Unilend\Entity\{Clients, ClientsStatus, ClientsStatusHistory, WalletType};
 
 class ClientsStatusHistoryRepository extends EntityRepository
 {

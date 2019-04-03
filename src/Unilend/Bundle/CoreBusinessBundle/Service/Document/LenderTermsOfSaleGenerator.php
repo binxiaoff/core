@@ -8,7 +8,7 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\Asset\Packages;
 use Symfony\Component\Filesystem\Filesystem;
 use Twig\Environment;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{AcceptationsLegalDocs, AddressType, ClientAddress, CompanyAddress, Elements, TreeElements, WalletType};
+use Unilend\Entity\{AcceptationsLegalDocs, AddressType, ClientAddress, Companies, CompanyAddress, Elements, Loans, TreeElements, Wallet, WalletType};
 use Unilend\Bundle\CoreBusinessBundle\Service\TermsOfSaleManager;
 
 class LenderTermsOfSaleGenerator implements DocumentGeneratorInterface
@@ -193,8 +193,8 @@ class LenderTermsOfSaleGenerator implements DocumentGeneratorInterface
         }
 
         $newTermsOfServiceDate        = $this->termsOfSaleManager->getDateOfNewTermsOfSaleWithTwoMandates();
-        $wallet                       = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($acceptedLegalDoc->getIdClient(), WalletType::LENDER);
-        $loansCount                   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Loans')->getCountLoansForLenderBeforeDate($wallet, $newTermsOfServiceDate);
+        $wallet                       = $this->entityManager->getRepository(Wallet::class)->getWalletByType($acceptedLegalDoc->getIdClient(), WalletType::LENDER);
+        $loansCount                   = $this->entityManager->getRepository(Loans::class)->getCountLoansForLenderBeforeDate($wallet, $newTermsOfServiceDate);
 
         $replacements                                     = $acceptedLegalDoc->getIdClient()->isNaturalPerson() ? $this->getNaturalPersonData($acceptedLegalDoc) : $this->getLegalEntityData($acceptedLegalDoc);
         $content                                          = $this->getContent($acceptedLegalDoc->getIdLegalDoc());
@@ -212,7 +212,7 @@ class LenderTermsOfSaleGenerator implements DocumentGeneratorInterface
      */
     private function getNaturalPersonData(AcceptationsLegalDocs $accepted): array
     {
-        $clientAddressRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ClientAddress');
+        $clientAddressRepository = $this->entityManager->getRepository(ClientAddress::class);
         $clientAddress           = $clientAddressRepository->findMainAddressAddedBeforeDate($accepted->getAdded(), $accepted->getIdClient());
 
         if (null === $clientAddress) {
@@ -239,12 +239,12 @@ class LenderTermsOfSaleGenerator implements DocumentGeneratorInterface
      */
     private function getLegalEntityData(AcceptationsLegalDocs $accepted): array
     {
-        $company = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $accepted->getIdClient()]);
+        $company = $this->entityManager->getRepository(Companies::class)->findOneBy(['idClientOwner' => $accepted->getIdClient()]);
         if (null === $company) {
             throw new \InvalidArgumentException('Client of type legal entity has no attached company');
         }
 
-        $companyAddressRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress');
+        $companyAddressRepository = $this->entityManager->getRepository(CompanyAddress::class);
         $companyAddress           = $companyAddressRepository->findMainAddressAddedBeforeDate($accepted->getAdded(), $company);
 
         if (null === $companyAddress) {
@@ -271,7 +271,7 @@ class LenderTermsOfSaleGenerator implements DocumentGeneratorInterface
      */
     private function getContent(int $idTree): array
     {
-        $tosElements = $this->entityManager->getRepository('UnilendCoreBusinessBundle:TreeElements')
+        $tosElements = $this->entityManager->getRepository(TreeElements::class)
             ->findBy(['idTree' => $idTree]);
 
         if (empty($tosElements)) {
@@ -279,7 +279,7 @@ class LenderTermsOfSaleGenerator implements DocumentGeneratorInterface
         }
 
         $content           = [];
-        $elementRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Elements');
+        $elementRepository = $this->entityManager->getRepository(Elements::class);
         /** @var TreeElements $treeElement */
         foreach ($tosElements as $treeElement) {
             /** @var Elements $element */

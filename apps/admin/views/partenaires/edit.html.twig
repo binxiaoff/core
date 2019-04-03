@@ -289,7 +289,7 @@
                             <select name="product" class="form-control required" title="Liste des produits">
                                 <option value="0">Sélectionner un produit</option>
                                 {% for productType in productTypes %}
-                                    <option value="{{ productType.idProduct }}" data-funds="{{ constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Projects::DEFAULT_COMMISSION_RATE_FUNDS') }}" data-repayment="{{ constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Projects::DEFAULT_COMMISSION_RATE_REPAYMENT') }}">
+                                    <option value="{{ productType.idProduct }}" data-funds="{{ constant('\\Unilend\\Entity\\Projects::DEFAULT_COMMISSION_RATE_FUNDS') }}" data-repayment="{{ constant('\\Unilend\\Entity\\Projects::DEFAULT_COMMISSION_RATE_REPAYMENT') }}">
                                         {{ productType.label }}
                                     </option>
                                 {% endfor %}
@@ -484,7 +484,7 @@
                         </form>
                     </div>
                 </div>
-                {% if constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Zones::ZONE_LABEL_CONFIGURATION') in app.userZones %}
+                {% if constant('\\Unilend\\Entity\\Zones::ZONE_LABEL_CONFIGURATION') in app.userZones %}
                     <div id="products" class="block block-bordered">
                         <div class="block-header">
                             <h3 class="block-title">Produits</h3>

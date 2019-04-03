@@ -4,7 +4,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service\RiskDataMonitoring;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{Companies, CompanyStatus, ProjectsStatus, RiskDataMonitoring};
+use Unilend\Entity\{Companies, CompanyStatus, Projects, ProjectsStatus, RiskDataMonitoring};
 
 class MonitoringCycleManager
 {
@@ -62,7 +62,7 @@ class MonitoringCycleManager
      */
     public function activateMonitoringForNewSiren(): void
     {
-        $sirenToBeActivated  = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->getNotYetMonitoredSirenWithProjects();
+        $sirenToBeActivated  = $this->entityManager->getRepository(Companies::class)->getNotYetMonitoredSirenWithProjects();
 
         foreach ($sirenToBeActivated as $siren) {
             if ($this->altaresManager->sirenExist($siren['siren'])) {
@@ -111,8 +111,8 @@ class MonitoringCycleManager
      */
     public function stopMonitoringForSiren(string $siren): void
     {
-        $riskDataMonitoringRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:RiskDataMonitoring');
-        $projectRepository            = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
+        $riskDataMonitoringRepository = $this->entityManager->getRepository(RiskDataMonitoring::class);
+        $projectRepository            = $this->entityManager->getRepository(Projects::class);
 
         try {
             if (0 == $projectRepository->getCountProjectsBySirenAndNotInStatus($siren, self::LONG_TERM_MONITORING_EXCLUDED_PROJECTS_STATUS, self::LONG_TERM_MONITORING_EXCLUDED_COMPANY_STATUS)) {
@@ -151,10 +151,10 @@ class MonitoringCycleManager
      */
     private function reactivateMonitoringForNotAtAllMonitoredSiren(): void
     {
-        $notMonitoredSiren = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->getSirenWithActiveProjectsAndNoMonitoring();
+        $notMonitoredSiren = $this->entityManager->getRepository(Companies::class)->getSirenWithActiveProjectsAndNoMonitoring();
 
         foreach ($notMonitoredSiren as $siren) {
-            $companies = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findBy(['siren' => $siren['siren']]);
+            $companies = $this->entityManager->getRepository(Companies::class)->findBy(['siren' => $siren['siren']]);
 
             foreach ($companies as $company) {
                 try {
@@ -183,14 +183,14 @@ class MonitoringCycleManager
      */
     private function reactivateMonitoringForPartiallyMonitoredSiren()
     {
-        $companiesRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Companies');
+        $companiesRepository = $this->entityManager->getRepository(Companies::class);
 
         foreach ($companiesRepository->getSirenWithActiveProjectsAndNoMonitoringByProvider(AltaresManager::PROVIDER_NAME) as $siren) {
             $this->altaresManager->activateMonitoring($siren['siren']);
         }
 
         foreach ($companiesRepository->getSirenWithActiveProjectsAndNoMonitoringByProvider(EulerHermesManager::PROVIDER_NAME) as $siren) {
-            $companies = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findBy(['siren' => $siren['siren']]);
+            $companies = $this->entityManager->getRepository(Companies::class)->findBy(['siren' => $siren['siren']]);
 
             foreach ($companies as $company) {
                 if ($this->eulerHermesManager->eligibleForEulerLongTermMonitoring($company)) {

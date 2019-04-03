@@ -40,9 +40,9 @@
             <td><?= $this->translator->trans('client-vigilance_status-' . $atypicalOperation->getRule()->getVigilanceStatus()) ?></td>
             <td><?= $atypicalOperation->getAtypicalValue() ?></td>
             <td>
-                <?php if (\Unilend\Bundle\CoreBusinessBundle\Entity\Users::USER_ID_CRON === $atypicalOperation->getIdUser()->getIdUser()) : ?>
+                <?php if (\Unilend\Entity\Users::USER_ID_CRON === $atypicalOperation->getIdUser()->getIdUser()) : ?>
                     Cron
-                <?php elseif (\Unilend\Bundle\CoreBusinessBundle\Entity\Users::USER_ID_FRONT === $atypicalOperation->getIdUser()->getIdUser()) : ?>
+                <?php elseif (\Unilend\Entity\Users::USER_ID_FRONT === $atypicalOperation->getIdUser()->getIdUser()) : ?>
                     Front
                 <?php else : ?>
                     <?= $atypicalOperation->getIdUser()->getFirstname() . ' ' . $atypicalOperation->getIdUser()->getName() ?>
@@ -59,14 +59,14 @@
             <td><?= htmlentities($atypicalOperation->getUserComment()) ?></td>
             <?php if ($this->showActions) : ?>
                 <td>
-                    <?php if ($atypicalOperation->getDetectionStatus() === \Unilend\Bundle\CoreBusinessBundle\Entity\ClientAtypicalOperation::STATUS_PENDING) : ?>
+                    <?php if ($atypicalOperation->getDetectionStatus() === \Unilend\Entity\ClientAtypicalOperation::STATUS_PENDING) : ?>
                         <a class="thickbox" href="<?= $this->lurl ?>/client_atypical_operation/process_detection_box/doubt/<?= $atypicalOperation->getId() ?>">
                             <img class="process-detection" src="<?= $this->surl ?>/images/admin/edit.png" alt="Levée du doute" title="Levée du doute"/>
                         </a>
                         <a class="thickbox" href="<?= $this->lurl ?>/client_atypical_operation/process_detection_box/ack/<?= $atypicalOperation->getId() ?>">
                             <img class="process-detection" src="<?= $this->surl ?>/images/admin/modif.png" alt="Soumettre à SFPMEI" title="Soumettre à SFPMEI"/>
                         </a>
-                    <?php elseif ($atypicalOperation->getDetectionStatus() === \Unilend\Bundle\CoreBusinessBundle\Entity\ClientAtypicalOperation::STATUS_WAITING_ACK) : ?>
+                    <?php elseif ($atypicalOperation->getDetectionStatus() === \Unilend\Entity\ClientAtypicalOperation::STATUS_WAITING_ACK) : ?>
                         <a class="thickbox" href="<?= $this->lurl ?>/client_atypical_operation/process_detection_box/doubt/<?= $atypicalOperation->getId() ?>">
                             <img class="process-detection" src="<?= $this->surl ?>/images/admin/edit.png" alt="Levée du doute" title="Levée du doute"/>
                         </a>

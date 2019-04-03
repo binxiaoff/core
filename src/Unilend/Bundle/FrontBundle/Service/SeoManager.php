@@ -4,7 +4,7 @@ namespace Unilend\Bundle\FrontBundle\Service;
 use Sonata\SeoBundle\Seo\SeoPage;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Translation\TranslatorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Tree;
+use Unilend\Entity\Tree;
 
 class SeoManager
 {

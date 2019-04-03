@@ -9,7 +9,7 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
 use Doctrine\ORM\EntityRepository;
-use Unilend\Bundle\CoreBusinessBundle\Entity\InfolegaleExecutivePersonalChange;
+use Unilend\Entity\InfolegaleExecutivePersonalChange;
 
 class InfolegaleExecutivePersonalChangeRepository extends EntityRepository
 {

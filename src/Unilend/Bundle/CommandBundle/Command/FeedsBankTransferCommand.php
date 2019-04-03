@@ -4,9 +4,7 @@ namespace Unilend\Bundle\CommandBundle\Command;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
-use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
+use Unilend\Entity\{Clients, Companies, Operation, Virements, Wallet, WalletType};
 
 class FeedsBankTransferCommand extends ContainerAwareCommand
 {
@@ -52,7 +50,7 @@ class FeedsBankTransferCommand extends ContainerAwareCommand
         $settings->get('Retrait Unilend - Titulaire du compte', 'type');
         $unilendAccountHolder = utf8_decode($settings->value);
 
-        $pendingBankTransfers      = $entityManager->getRepository('UnilendCoreBusinessBundle:Virements')->findWireTransferReadyToSend();
+        $pendingBankTransfers      = $entityManager->getRepository(Virements::class)->findWireTransferReadyToSend();
         $pendingBankTransfersCount = 0;
         $totalAmount               = 0;
         $counterId                 = $counter->counter('type = 1') + 1;
@@ -66,7 +64,7 @@ class FeedsBankTransferCommand extends ContainerAwareCommand
 
         /** @var Virements $pendingBankTransfer */
         foreach ($pendingBankTransfers as $pendingBankTransfer) {
-            $withDrawalOperation = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation')->findOneBy(['idWireTransferOut' => $pendingBankTransfer]);
+            $withDrawalOperation = $entityManager->getRepository(Operation::class)->findOneBy(['idWireTransferOut' => $pendingBankTransfer]);
 
             if ($withDrawalOperation && $withDrawalOperation->getAdded() < new \DateTime('today')) {
                 $bankAccount = $pendingBankTransfer->getBankAccount();
@@ -87,7 +85,7 @@ class FeedsBankTransferCommand extends ContainerAwareCommand
                     $recipientBic  = $unilendBic;
                     $recipientName = $unilendAccountHolder;
                 } elseif ($client->isBorrower()) {
-                    $company       = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $pendingBankTransfer->getClient()->getIdClient()]);
+                    $company       = $entityManager->getRepository(Companies::class)->findOneBy(['idClientOwner' => $pendingBankTransfer->getClient()->getIdClient()]);
                     $recipientIban = $bankAccount->getIban();
                     $recipientBic  = $bankAccount->getBic();
                     $recipientName = $company->getName();
@@ -96,7 +94,7 @@ class FeedsBankTransferCommand extends ContainerAwareCommand
                     $recipientBic  = $bankAccount->getBic();
                     $recipientName = $client->getNom();
                 } elseif ($client->isLender()) {
-                    $wallet  = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client->getIdClient(), WalletType::LENDER);
+                    $wallet  = $entityManager->getRepository(Wallet::class)->getWalletByType($client->getIdClient(), WalletType::LENDER);
                     $balance = $wallet->getAvailableBalance();
                     if ($balance < 0) {
                         $negativeBalanceError[] = ['id_client' => $pendingBankTransfer->getClient()->getIdClient(), 'balance' => $balance];
@@ -105,7 +103,7 @@ class FeedsBankTransferCommand extends ContainerAwareCommand
                     $recipientIban = $bankAccount->getIban();
                     $recipientBic  = $bankAccount->getBic();
                     if (in_array($client->getType(), [Clients::TYPE_LEGAL_ENTITY, Clients::TYPE_LEGAL_ENTITY_FOREIGNER])) {
-                        $company       = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $pendingBankTransfer->getClient()->getIdClient()]);
+                        $company       = $entityManager->getRepository(Companies::class)->findOneBy(['idClientOwner' => $pendingBankTransfer->getClient()->getIdClient()]);
                         $recipientName = $company->getName();
                     } else {
                         $recipientName = $client->getNom() . ' ' . $client->getPrenom();

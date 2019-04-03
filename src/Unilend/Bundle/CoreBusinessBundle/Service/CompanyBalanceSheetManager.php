@@ -1,7 +1,7 @@
 <?php
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
-use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
+use Unilend\Entity\Companies;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 use Unilend\Bundle\WSClientBundle\Entity\Altares\BalanceSheetListDetail;
 

@@ -4,7 +4,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
-use Unilend\Bundle\CoreBusinessBundle\Entity\RiskDataMonitoringCallLog;
+use Unilend\Entity\{RiskDataMonitoring, RiskDataMonitoringCallLog};
 
 class RiskDataMonitoringCallLogRepository extends EntityRepository
 {
@@ -20,7 +20,7 @@ class RiskDataMonitoringCallLogRepository extends EntityRepository
         $queryBuilder = $this->createQueryBuilder('rdmcl');
         $queryBuilder
             ->select('COUNT(DISTINCT rdmcl.id)')
-            ->innerJoin('UnilendCoreBusinessBundle:RiskDataMonitoring', 'rdm', Join::WITH, 'rdmcl.idRiskDataMonitoring =  rdm.id')
+            ->innerJoin(RiskDataMonitoring::class, 'rdm', Join::WITH, 'rdmcl.idRiskDataMonitoring =  rdm.id')
             ->where('rdm.siren = :siren')
             ->setParameter('siren', $siren);
 
@@ -40,7 +40,7 @@ class RiskDataMonitoringCallLogRepository extends EntityRepository
         $queryBuilder = $this->createQueryBuilder('rdmcl');
         $queryBuilder
             ->select('COUNT(DISTINCT rdmcl.id)')
-            ->innerJoin('UnilendCoreBusinessBundle:RiskDataMonitoring', 'rdm', Join::WITH, 'rdmcl.idRiskDataMonitoring =  rdm.id')
+            ->innerJoin(RiskDataMonitoring::class, 'rdm', Join::WITH, 'rdmcl.idRiskDataMonitoring =  rdm.id')
             ->where('rdm.siren = :siren')
             ->andWhere('rdmcl.added > :date')
             ->setParameter('siren', $siren)
@@ -58,7 +58,7 @@ class RiskDataMonitoringCallLogRepository extends EntityRepository
     public function findLastCallLogForProvider(string $provider): ?RiskDataMonitoringCallLog
     {
         $queryBuilder = $this->createQueryBuilder('rdmcl');
-        $queryBuilder->innerJoin('UnilendCoreBusinessBundle:RiskDataMonitoring', 'rdm', Join::WITH, 'rdmcl.idRiskDataMonitoring =  rdm.id')
+        $queryBuilder->innerJoin(RiskDataMonitoring::class, 'rdm', Join::WITH, 'rdmcl.idRiskDataMonitoring =  rdm.id')
             ->where('rdm.provider = :provider')
             ->orderBy('rdmcl.added', 'DESC')
             ->setMaxResults(1)

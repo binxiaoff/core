@@ -5,12 +5,7 @@ namespace Unilend\Bundle\CommandBundle\Command;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\OffresBienvenuesDetails;
-use Unilend\Bundle\CoreBusinessBundle\Entity\OperationSubType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Settings;
-use Unilend\Bundle\CoreBusinessBundle\Entity\SponsorshipCampaign;
-use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
+use Unilend\Entity\{OffresBienvenuesDetails, Operation, OperationSubType, OperationType, Settings, Sponsorship, SponsorshipCampaign, Wallet, WalletType};
 use Unilend\Bundle\CoreBusinessBundle\Repository\SponsorshipRepository;
 
 class CheckPromotionalOfferValidityCommand extends ContainerAwareCommand
@@ -37,16 +32,16 @@ class CheckPromotionalOfferValidityCommand extends ContainerAwareCommand
     private function cancelWelcomeOffers()
     {
         $entityManager               = $this->getContainer()->get('doctrine.orm.entity_manager');
-        $operationRepository         = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
+        $operationRepository         = $entityManager->getRepository(Operation::class);
         $operationManager            = $this->getContainer()->get('unilend.service.operation_manager');
         $logger                      = $this->getContainer()->get('monolog.logger.console');
-        $validitySetting             = $entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Durée validité Offre de bienvenue']);
+        $validitySetting             = $entityManager->getRepository(Settings::class)->findOneBy(['type' => 'Durée validité Offre de bienvenue']);
         $dateLimit                   = new \DateTime('NOW - ' . $validitySetting->getValue() . ' DAYS');
         $numberOfUnusedWelcomeOffers = 0;
 
         /** @var OffresBienvenuesDetails $welcomeOffer */
-        foreach ($entityManager->getRepository('UnilendCoreBusinessBundle:OffresBienvenuesDetails')->findUnusedWelcomeOffers($dateLimit) as $welcomeOffer) {
-            $wallet                    = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($welcomeOffer->getIdClient(), WalletType::LENDER);
+        foreach ($entityManager->getRepository(OffresBienvenuesDetails::class)->findUnusedWelcomeOffers($dateLimit) as $welcomeOffer) {
+            $wallet                    = $entityManager->getRepository(Wallet::class)->getWalletByType($welcomeOffer->getIdClient(), WalletType::LENDER);
             $sumLoans                  = $operationRepository->sumDebitOperationsByTypeUntil($wallet, [OperationType::LENDER_LOAN]);
             $sumWelcomeOffers          = $operationRepository->sumCreditOperationsByTypeUntil($wallet, [OperationType::UNILEND_PROMOTIONAL_OPERATION], [OperationSubType::UNILEND_PROMOTIONAL_OPERATION_WELCOME_OFFER]);
             $sumCancelledWelcomeOffers = $operationRepository->sumDebitOperationsByTypeUntil($wallet, [OperationType::UNILEND_PROMOTIONAL_OPERATION_CANCEL], [OperationSubType::UNILEND_PROMOTIONAL_OPERATION_CANCEL_WELCOME_OFFER]);
@@ -70,7 +65,7 @@ class CheckPromotionalOfferValidityCommand extends ContainerAwareCommand
     private function cancelSponsorshipOffers()
     {
         /** @var SponsorshipRepository $sponsorshipRepository */
-        $sponsorshipRepository = $this->getContainer()->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Sponsorship');
+        $sponsorshipRepository = $this->getContainer()->get('doctrine.orm.entity_manager')->getRepository(Sponsorship::class);
         $sponsorshipManager    = $this->getContainer()->get('unilend.service.sponsorship_manager');
         $expiredSponseeOffers  = $sponsorshipRepository->findExpiredSponsorshipsSponsee();
         $expiredSponsorOffers  = $sponsorshipRepository->findExpiredSponsorshipsSponsor();
@@ -109,12 +104,12 @@ class CheckPromotionalOfferValidityCommand extends ContainerAwareCommand
     {
         $entityManager     = $this->getContainer()->get('doctrine.orm.entity_manager');
         $currencyFormatter = $this->getContainer()->get('currency_formatter');
-        $unilendWalletType = $entityManager->getRepository('UnilendCoreBusinessBundle:WalletType')->findOneBy(['label' => WalletType::UNILEND_PROMOTIONAL_OPERATION]);
-        $unilendWallet     = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->findOneBy(['idType' => $unilendWalletType]);
+        $unilendWalletType = $entityManager->getRepository(WalletType::class)->findOneBy(['label' => WalletType::UNILEND_PROMOTIONAL_OPERATION]);
+        $unilendWallet     = $entityManager->getRepository(Wallet::class)->findOneBy(['idType' => $unilendWalletType]);
 
         if ($unilendWallet->getAvailableBalance() <= self::PROMOTIONAL_WALLET_BALANCE_WARNING_LIMIT) {
             /** @var Settings $recipientSetting */
-            $recipientSetting = $entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Adresse notification solde unilend promotion']);
+            $recipientSetting = $entityManager->getRepository(Settings::class)->findOneBy(['type' => 'Adresse notification solde unilend promotion']);
             $variables = [
                 'balance' => $currencyFormatter->formatCurrency($unilendWallet->getAvailableBalance(), 'EUR')
             ];
@@ -141,7 +136,7 @@ class CheckPromotionalOfferValidityCommand extends ContainerAwareCommand
     private function archivePastSponsorshipCampaigns()
     {
         $entityManager   = $this->getContainer()->get('doctrine.orm.entity_manager');
-        $activeCampaigns = $entityManager->getRepository('UnilendCoreBusinessBundle:SponsorshipCampaign')->findBy(['status' => SponsorshipCampaign::STATUS_VALID], ['start' => 'ASC']);
+        $activeCampaigns = $entityManager->getRepository(SponsorshipCampaign::class)->findBy(['status' => SponsorshipCampaign::STATUS_VALID], ['start' => 'ASC']);
         $now             = new \DateTime('NOW');
 
         /** @var SponsorshipCampaign $campaign */

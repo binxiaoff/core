@@ -5,8 +5,8 @@ namespace Unilend\Bundle\CommandBundle\Command;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\{Input\InputInterface, Input\InputOption, Output\OutputInterface};
-use Unilend\Bundle\CoreBusinessBundle\Entity\{Clients, ClientsGestionTypeNotif, EcheanciersEmprunteur, Notifications, Prelevements, Projects, ProjectsStatus, Receptions, SepaRejectionReason, Users,
-    Wallet, WalletType};
+use Unilend\Entity\{Clients, ClientsGestionTypeNotif, EcheanciersEmprunteur, Notifications, Operation, Prelevements, Projects, ProjectsStatus, Receptions, SepaRejectionReason, Users, Wallet,
+    WalletBalanceHistory, WalletType};
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 
 class FeedsSfpmeiIncomingCommand extends ContainerAwareCommand
@@ -39,7 +39,7 @@ EOF
         $entityManager                = $this->getContainer()->get('doctrine.orm.entity_manager');
         $this->logger                 = $this->getContainer()->get('monolog.logger.console');
 
-        $projectRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
+        $projectRepository = $entityManager->getRepository(Projects::class);
 
         $aReceivedTransfersStatus = [05, 18, 45, 13];
         $aEmittedTransfersStatus  = [06, 21];
@@ -56,7 +56,7 @@ EOF
         }
 
         $aReceivedData = $this->parseReceptionFile($receptionPath . self::FILE_ROOT_NAME . date('Ymd') . '.txt', $aEmittedLeviesStatus);
-        $aReception    = $entityManager->getRepository('UnilendCoreBusinessBundle:Receptions')->getByDate(new \DateTime());
+        $aReception    = $entityManager->getRepository(Receptions::class)->getByDate(new \DateTime());
 
         if (false === empty($aReceivedData) && (empty($aReception) || $input->getOption('force-replay'))) {
             $slackManager = $this->getContainer()->get('unilend.service.slack_manager');
@@ -289,19 +289,19 @@ EOF
             $entityManager = $this->getContainer()->get('doctrine.orm.entity_manager');
             $projectId     = (int) $extract[0];
             /** @var EcheanciersEmprunteur $unpaidSchedule */
-            $unpaidSchedule = $entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur')
+            $unpaidSchedule = $entityManager->getRepository(EcheanciersEmprunteur::class)
                 ->findOneBy(['idProject' => $projectId, 'statusEmprunteur' => [EcheanciersEmprunteur::STATUS_PENDING, EcheanciersEmprunteur::STATUS_PARTIALLY_PAID]], ['ordre' => 'ASC']);
 
             if ($unpaidSchedule) {
                 /** @var Prelevements $bankDirectDebit */
-                $bankDirectDebit = $entityManager->getRepository('UnilendCoreBusinessBundle:Prelevements')
+                $bankDirectDebit = $entityManager->getRepository(Prelevements::class)
                     ->findOneBy(['idProject' => $projectId, 'numPrelevement' => $unpaidSchedule->getOrdre()]);
 
                 if ($bankDirectDebit && false !== strpos($motif, $bankDirectDebit->getMotif())) {
                     $operationManager      = $this->getContainer()->get('unilend.service.operation_manager');
                     $projectPaymentManager = $this->getContainer()->get('unilend.service_repayment.project_payment_manager');
 
-                    $project = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($projectId);
+                    $project = $entityManager->getRepository(Projects::class)->find($projectId);
 
                     if ($project instanceof Projects) {
                         $reception
@@ -314,7 +314,7 @@ EOF
                         $operationManager->provisionBorrowerWallet($reception);
 
                         if ($project->getStatus() === ProjectsStatus::STATUS_REPAYMENT) {
-                            $user = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find(Users::USER_ID_CRON);
+                            $user = $entityManager->getRepository(Users::class)->find(Users::USER_ID_CRON);
                             $projectPaymentManager->pay($reception, $user);
                         }
                     }
@@ -344,7 +344,7 @@ EOF
         $entityManager->flush();
 
         $operationManager->provisionBorrowerWallet($reception);
-        $user = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find(Users::USER_ID_CRON);
+        $user = $entityManager->getRepository(Users::class)->find(Users::USER_ID_CRON);
         $projectRepaymentTaskManager->planEarlyRepaymentTask($project, $reception, $user);
     }
 
@@ -371,7 +371,7 @@ EOF
         $operationManager->provisionBorrowerWallet($reception);
 
         if ($project->getStatus() === ProjectsStatus::STATUS_REPAYMENT) {
-            $user = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find(Users::USER_ID_CRON);
+            $user = $entityManager->getRepository(Users::class)->find(Users::USER_ID_CRON);
             $projectPaymentManager->pay($reception, $user);
         }
     }
@@ -394,13 +394,13 @@ EOF
         $entityManager   = $this->getContainer()->get('doctrine.orm.entity_manager');
         $numberFormatter = $this->getContainer()->get('number_formatter');
 
-        $operationRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
+        $operationRepository = $entityManager->getRepository(Operation::class);
 
         if (1 === preg_match('/([0-9]{6}) ?[A-Z]+/', $pattern, $matches)) {
-            $client = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find((int) $matches[1]);
+            $client = $entityManager->getRepository(Clients::class)->find((int) $matches[1]);
             if ($client instanceof Clients) {
                 /** @var Wallet $wallet */
-                $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
+                $wallet = $entityManager->getRepository(Wallet::class)->getWalletByType($client, WalletType::LENDER);
                 if (null !== $wallet) {
                     $pattern       = str_replace(' ', '', $pattern);
                     $lenderPattern = str_replace(' ', '', $wallet->getWireTransferPattern());
@@ -425,7 +425,7 @@ EOF
                             $notifications->create();
 
                             $provisionOperation   = $operationRepository->findOneBy(['idWireTransferIn' => $reception]);
-                            $walletBalanceHistory = $entityManager->getRepository('UnilendCoreBusinessBundle:WalletBalanceHistory')->findOneBy([
+                            $walletBalanceHistory = $entityManager->getRepository(WalletBalanceHistory::class)->findOneBy([
                                 'idOperation' => $provisionOperation,
                                 'idWallet'    => $wallet
                             ]);
@@ -482,18 +482,18 @@ EOF
 
         if (1 === preg_match('#^RUM[^0-9]*([0-9]+)#', $aRow['libelleOpe3'], $matches)) {
             /** @var Projects $project */
-            $project = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find((int) $matches[1]);
+            $project = $entityManager->getRepository(Projects::class)->find((int) $matches[1]);
 
             if (1 === preg_match('#^RCNUNILEND/([0-9]{8})/([0-9]+)#', $aRow['libelleOpe4'], $matches)) {
                 $from                        = \DateTime::createFromFormat('Ymd', $matches[1]);
-                $originalRejectedDirectDebit = $entityManager->getRepository('UnilendCoreBusinessBundle:Receptions')->findOriginalDirectDebitByRejectedOne($project, $from);
+                $originalRejectedDirectDebit = $entityManager->getRepository(Receptions::class)->findOriginalDirectDebitByRejectedOne($project, $from);
 
                 if ($project && $originalRejectedDirectDebit) {
                     $project->setRembAuto(Projects::AUTO_REPAYMENT_OFF);
                     $entityManager->flush();
 
                     /** @var Wallet $wallet */
-                    $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($project->getIdCompany()->getIdClientOwner(), WalletType::BORROWER);
+                    $wallet = $entityManager->getRepository(Wallet::class)->getWalletByType($project->getIdCompany()->getIdClientOwner(), WalletType::BORROWER);
 
                     if ($wallet) {
                         $reception
@@ -513,7 +513,7 @@ EOF
                             $projectPaymentManager = $this->getContainer()->get('unilend.service_repayment.project_close_out_netting_payment_manager');
                         }
 
-                        $user = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find(Users::USER_ID_CRON);
+                        $user = $entityManager->getRepository(Users::class)->find(Users::USER_ID_CRON);
                         $projectPaymentManager->rejectPayment($originalRejectedDirectDebit, $user);
 
                         $this->sendBorrowerRepaymentRejectionNotification($reception);
@@ -532,7 +532,7 @@ EOF
     {
         if (false === empty($row['libelleOpe6']) && false !== ($isoCode = substr($row['libelleOpe6'], -4, 4))) {
             return $this->getContainer()->get('doctrine.orm.entity_manager')
-                ->getRepository('UnilendCoreBusinessBundle:SepaRejectionReason')
+                ->getRepository(SepaRejectionReason::class)
                 ->findOneBy(['isoCode' => $isoCode]);
         }
 

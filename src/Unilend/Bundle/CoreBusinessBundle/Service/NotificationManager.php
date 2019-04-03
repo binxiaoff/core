@@ -3,7 +3,7 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\ORM\EntityManagerInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{Clients, ClientsGestionMailsNotif, ClientsGestionNotifications, ClientsGestionTypeNotif, WalletBalanceHistory, WalletType};
+use Unilend\Entity\{Clients, ClientsGestionMailsNotif, ClientsGestionNotifications, ClientsGestionTypeNotif, Wallet, WalletBalanceHistory, WalletType};
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 
 class NotificationManager
@@ -89,7 +89,7 @@ class NotificationManager
     {
         /** @var \notifications $notification */
         $notification = $this->entityManagerSimulator->getRepository('notifications');
-        $wallet       = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($clientId, WalletType::LENDER);
+        $wallet       = $this->entityManager->getRepository(Wallet::class)->getWalletByType($clientId, WalletType::LENDER);
 
         $lenderId = '';
         if (null !== $wallet) {
@@ -163,7 +163,7 @@ class NotificationManager
      */
     public function generateDefaultNotificationSettings(Clients $client)
     {
-        $allTypes = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ClientsGestionTypeNotif')->findAll();
+        $allTypes = $this->entityManager->getRepository(ClientsGestionTypeNotif::class)->findAll();
 
         /** @var ClientsGestionTypeNotif $type */
         foreach ($allTypes as $type) {
@@ -185,7 +185,7 @@ class NotificationManager
             return;
         }
 
-        $allTypes = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ClientsGestionTypeNotif')->findAll();
+        $allTypes = $this->entityManager->getRepository(ClientsGestionTypeNotif::class)->findAll();
 
         /** @var ClientsGestionTypeNotif $type */
         foreach ($allTypes as $type) {

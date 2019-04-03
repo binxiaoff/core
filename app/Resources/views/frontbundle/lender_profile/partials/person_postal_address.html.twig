@@ -14,7 +14,7 @@
         <dt>{% trans %} lender-profile_information-tab-postal-address-section-city-label {% endtrans %}</dt>
         <dd id="profile-correspondence-ville-output">{{ clientPostalAddress.city|default('') }}</dd>
         <dt>{% trans %} lender-profile_information-tab-postal-address-section-country-label {% endtrans %}</dt>
-        <dd id="profile-correspondence-pays-output">{{ clientPostalAddress.idCountry.idPays|default(constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Pays::COUNTRY_FRANCE'))|countryLabel }}</dd>
+        <dd id="profile-correspondence-pays-output">{{ clientPostalAddress.idCountry.idPays|default(constant('\\Unilend\\Entity\\Pays::COUNTRY_FRANCE'))|countryLabel }}</dd>
     </dl>
 </section><!-- /.profile-correspondence-view -->
 

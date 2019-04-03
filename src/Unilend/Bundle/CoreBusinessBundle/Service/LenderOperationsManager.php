@@ -6,7 +6,7 @@ use Box\Spout\Common\Type;
 use Box\Spout\Writer\{AbstractWriter, Style\Border, Style\BorderBuilder, Style\Color, Style\StyleBuilder, WriterFactory, XLSX\Writer};
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Translation\TranslatorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{Operation, OperationSubType, OperationType, Wallet, WalletType};
+use Unilend\Entity\{LenderTaxExemption, Loans, Operation, OperationSubType, OperationType, Wallet, WalletBalanceHistory, WalletType};
 
 class LenderOperationsManager
 {
@@ -116,8 +116,8 @@ class LenderOperationsManager
             throw new \Exception('Wallet is not a lender wallet');
         }
 
-        $walletBalanceHistoryRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:WalletBalanceHistory');
-        $operationRepository            = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
+        $walletBalanceHistoryRepository = $this->entityManager->getRepository(WalletBalanceHistory::class);
+        $operationRepository            = $this->entityManager->getRepository(Operation::class);
         $walletHistory                  = $walletBalanceHistoryRepository->getLenderOperationHistory($wallet, $start, $end);
         $lenderOperations               = [];
         $previousHistoryLineIndex       = null;
@@ -162,7 +162,7 @@ class LenderOperationsManager
 
                 if (false === empty($historyLine['id_loan'])) {
                     $historyLine['label']  = self::OP_REFUSED_LOAN;
-                    $loan                  = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Loans')->find($historyLine['id_loan']);
+                    $loan                  = $this->entityManager->getRepository(Loans::class)->find($historyLine['id_loan']);
                     $historyLine['amount'] = bcdiv($loan->getAmount(), 100, 2);
                 }
             }
@@ -187,7 +187,7 @@ class LenderOperationsManager
      */
     private function formatRepaymentOperation(Wallet $wallet, $repaymentDetail, array $historyLine, $type)
     {
-        $taxExemptionRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:LenderTaxExemption');
+        $taxExemptionRepository = $this->entityManager->getRepository(LenderTaxExemption::class);
 
         if (is_array($repaymentDetail)) {
             $historyLine['label']  = $type;
@@ -296,7 +296,7 @@ class LenderOperationsManager
      */
     public function getOperationsExcelFile(Wallet $wallet, $start, $end, $idProject, $operationTypes, $fileName)
     {
-        $operationRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
+        $operationRepository = $this->entityManager->getRepository(Operation::class);
         $lenderOperations    = $this->getLenderOperations($wallet, $start, $end, $idProject, $operationTypes);
         $taxColumns          = [];
         $hasLoans            = false;
@@ -472,7 +472,7 @@ class LenderOperationsManager
             throw new \Exception('Wallet is not a lender wallet');
         }
 
-        $operationRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
+        $operationRepository = $this->entityManager->getRepository(Operation::class);
 
         return round(bcsub(
             $operationRepository->sumCreditOperationsByTypeAndYear($wallet, [OperationType::LENDER_PROVISION]),
@@ -492,7 +492,7 @@ class LenderOperationsManager
             throw new \Exception('Wallet is not a lender wallet');
         }
 
-        $operationRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
+        $operationRepository = $this->entityManager->getRepository(Operation::class);
 
         return round(bcsub(
             $operationRepository->sumDebitOperationsByTypeAndYear($wallet, [OperationType::LENDER_WITHDRAW]),

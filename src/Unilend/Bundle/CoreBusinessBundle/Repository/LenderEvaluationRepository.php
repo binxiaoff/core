@@ -3,8 +3,7 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
 use Doctrine\ORM\EntityRepository;
-use Unilend\Bundle\CoreBusinessBundle\Entity\LenderEvaluation;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
+use Unilend\Entity\{LenderEvaluation, Wallet};
 
 class LenderEvaluationRepository extends EntityRepository
 {
