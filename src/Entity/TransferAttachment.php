@@ -8,7 +8,7 @@ use Doctrine\ORM\Mapping as ORM;
  * TransferAttachment
  *
  * @ORM\Table(name="transfer_attachment", indexes={@ORM\Index(name="id_transfer", columns={"id_transfer"}), @ORM\Index(name="id_attachment", columns={"id_attachment"})})
- * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\TransferAttachmentRepository")
+ * @ORM\Entity(repositoryClass="Unilend\Repository\TransferAttachmentRepository")
  * @ORM\HasLifecycleCallbacks
  */
 class TransferAttachment

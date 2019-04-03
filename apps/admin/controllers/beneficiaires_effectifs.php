@@ -4,7 +4,7 @@ use Doctrine\ORM\EntityManager;
 use Symfony\Component\HttpFoundation\Request;
 use Unilend\Entity\{Attachment, AttachmentType, BeneficialOwner, BeneficialOwnerType, ClientsAdresses, CompanyBeneficialOwnerDeclaration, Pays, ProjectBeneficialOwnerUniversign, ProjectsStatus,
     Zones};
-use Unilend\Bundle\CoreBusinessBundle\Repository\BeneficialOwnerRepository;
+use Unilend\Repository\BeneficialOwnerRepository;
 use Unilend\Bundle\CoreBusinessBundle\Service\BeneficialOwnerManager;
 
 class beneficiaires_effectifsController extends bootstrap

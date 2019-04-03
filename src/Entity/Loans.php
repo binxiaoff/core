@@ -14,7 +14,7 @@ use Unilend\Entity\Traits\{Lendable, Timestampable};
  *     @ORM\Index(name="status", columns={"status"}),
  *     @ORM\Index(name="idx_loans_added", columns={"added"})
  * })
- * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\LoansRepository")
+ * @ORM\Entity(repositoryClass="Unilend\Repository\LoansRepository")
  * @ORM\HasLifecycleCallbacks
  * @ORM\AssociationOverrides({@ORM\AssociationOverride(name="project", inversedBy="loans")})
  */

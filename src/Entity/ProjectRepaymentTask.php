@@ -18,7 +18,7 @@ use Doctrine\ORM\Mapping as ORM;
  *     @ORM\Index(name="idx_project_repayment_task_id_user_cancellation", columns={"id_user_cancellation"}),
  *     @ORM\Index(name="idx_project_repayment_task_id_debt_collection_mission", columns={"id_debt_collection_mission"})
  * })
- * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\ProjectRepaymentTaskRepository")
+ * @ORM\Entity(repositoryClass="Unilend\Repository\ProjectRepaymentTaskRepository")
  * @ORM\HasLifecycleCallbacks
  */
 class ProjectRepaymentTask

@@ -9,7 +9,7 @@ use Doctrine\ORM\Mapping as ORM;
  * Partner
  *
  * @ORM\Table(name="partner")
- * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\PartnerRepository")
+ * @ORM\Entity(repositoryClass="Unilend\Repository\PartnerRepository")
  */
 class Partner
 {

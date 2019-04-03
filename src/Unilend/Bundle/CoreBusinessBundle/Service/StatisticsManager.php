@@ -5,7 +5,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Cache\CacheItemPoolInterface;
 use Unilend\Entity\{Clients, EcheanciersEmprunteur, Operation, OperationType, Projects, ProjectsStatus, UnderlyingContract, UnilendStats};
-use Unilend\Bundle\CoreBusinessBundle\Repository\ClientsRepository;
+use Unilend\Repository\ClientsRepository;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\librairies\CacheKeys;
 

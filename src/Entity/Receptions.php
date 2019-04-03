@@ -11,7 +11,7 @@ use Doctrine\ORM\Mapping as ORM;
  *
  * @ORM\Table(name="receptions", indexes={@ORM\Index(name="idx_receptions_type", columns={"type"}), @ORM\Index(name="idx_receptions_added", columns={"added"}), @ORM\Index(name="type", columns={"type"}), @ORM\Index(name="status_virement", columns={"status_virement"}), @ORM\Index(name="status_prelevement", columns={"status_prelevement"}), @ORM\Index(name="status_bo", columns={"status_bo"}), @ORM\Index(name="id_client", columns={"id_client"}), @ORM\Index(name="id_project", columns={"id_project"}), @ORM\Index(name="id_user", columns={"id_user"}), @ORM\Index(name="idx_receptions_rejection_iso_code", columns={"rejection_iso_code"})})
  * @ORM\HasLifecycleCallbacks
- * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\ReceptionsRepository")
+ * @ORM\Entity(repositoryClass="Unilend\Repository\ReceptionsRepository")
  */
 class Receptions
 {

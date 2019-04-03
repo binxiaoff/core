@@ -15,7 +15,7 @@ use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Unilend\Entity\{Attachment, AttachmentType, Bids, Clients, Companies, FeeType, Loans, Partner, PartnerProduct, PercentFee, Product, ProjectAttachment, ProjectAttachmentType, ProjectParticipant,
     ProjectPercentFee, Projects, ProjectsComments, ProjectsStatus, Users, Wallet, WalletType};
-use Unilend\Bundle\CoreBusinessBundle\Repository\ProjectParticipantRepository;
+use Unilend\Repository\ProjectParticipantRepository;
 use Unilend\Bundle\CoreBusinessBundle\Service\{AttachmentManager, DemoMailerManager, ProjectManager, ProjectStatusManager};
 use Unilend\Bundle\FrontBundle\Form\Lending\BidType;
 use Unilend\Bundle\FrontBundle\Service\ProjectDisplayManager;

@@ -12,7 +12,7 @@ use Doctrine\ORM\Mapping as ORM;
  *     @ORM\Index(name="idx_id_attachment", columns={"id_attachment"}),
  *     @ORM\Index(name="idx_bank_account_date_pending", columns={"date_pending"})
  * })
- * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\BankAccountRepository")
+ * @ORM\Entity(repositoryClass="Unilend\Repository\BankAccountRepository")
  * @ORM\HasLifecycleCallbacks
  */
 class BankAccount

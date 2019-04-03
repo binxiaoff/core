@@ -6,7 +6,7 @@ use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Unilend\Entity\{OffresBienvenuesDetails, Operation, OperationSubType, OperationType, Settings, Sponsorship, SponsorshipCampaign, Wallet, WalletType};
-use Unilend\Bundle\CoreBusinessBundle\Repository\SponsorshipRepository;
+use Unilend\Repository\SponsorshipRepository;
 
 class CheckPromotionalOfferValidityCommand extends ContainerAwareCommand
 {

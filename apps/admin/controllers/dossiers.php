@@ -725,7 +725,7 @@ class dossiersController extends bootstrap
                 sort($this->dureePossible);
             }
 
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Repository\PartnerRepository $partnerRepository */
+            /** @var \Unilend\Repository\PartnerRepository $partnerRepository */
             $partnerRepository = $entityManager->getRepository(Partner::class);
 
             $this->eligibleProducts       = $productManager->findEligibleProducts($this->projectEntity, true);
@@ -1175,7 +1175,7 @@ class dossiersController extends bootstrap
         $oCompanyRating = $this->loadData('company_rating');
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\CompanyBalanceSheetManager $companyBalanceSheetManager */
         $companyBalanceSheetManager = $this->get('unilend.service.company_balance_sheet_manager');
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Repository\CompaniesRepository $companiesRepository */
+        /** @var \Unilend\Repository\CompaniesRepository $companiesRepository */
         $companiesRepository = $this->get('doctrine.orm.entity_manager')->getRepository(Companies::class);
 
         $this->ratings                  = $oCompanyRating->getHistoryRatingsByType($this->oProject->id_company_rating_history);
@@ -1332,7 +1332,7 @@ class dossiersController extends bootstrap
         /** @var projects projects */
         $this->projects = $this->loadData('projects');
         $defaultPartner = $partnerManager->getDefaultPartner();
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Repository\PartnerRepository $partnerRepository */
+        /** @var \Unilend\Repository\PartnerRepository $partnerRepository */
         $partnerRepository = $entityManager->getRepository(Partner::class);
         $this->partnerList = $partnerRepository->getPartnersSortedByName(Partner::STATUS_VALIDATED);
 
@@ -1686,7 +1686,7 @@ class dossiersController extends bootstrap
                 }
                 /** @var \Doctrine\ORM\EntityManager $entityManager */
                 $entityManager = $this->get('doctrine.orm.entity_manager');
-                /** @var \Unilend\Bundle\CoreBusinessBundle\Repository\ReceptionsRepository $receptionRepository */
+                /** @var \Unilend\Repository\ReceptionsRepository $receptionRepository */
                 $receptionRepository = $entityManager->getRepository(Receptions::class);
                 $this->reception     = $receptionRepository->getBorrowerAnticipatedRepaymentWireTransfer(
                     $entityManager->getRepository(Projects::class)

@@ -8,7 +8,7 @@ use Doctrine\ORM\Mapping as ORM;
  * ProjectAttachment
  *
  * @ORM\Table(name="project_attachment", indexes={@ORM\Index(name="id_project", columns={"id_project"}), @ORM\Index(name="id_attachment", columns={"id_attachment"})})
- * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\ProjectAttachmentRepository")
+ * @ORM\Entity(repositoryClass="Unilend\Repository\ProjectAttachmentRepository")
  * @ORM\HasLifecycleCallbacks
  */
 class ProjectAttachment

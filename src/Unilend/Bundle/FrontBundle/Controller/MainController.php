@@ -12,7 +12,7 @@ use Symfony\Component\Security\Core\Authorization\AuthorizationChecker;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Entity\{BorrowingMotive, Clients, OffresBienvenues, Projects, ProjectsStatus, Tree, Users};
-use Unilend\Bundle\CoreBusinessBundle\Repository\ProjectsRepository;
+use Unilend\Repository\ProjectsRepository;
 use Unilend\Bundle\CoreBusinessBundle\Service\{ProjectRequestManager, StatisticsManager, WelcomeOfferManager};
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\Bundle\FrontBundle\Service\{ContentManager, ProjectDisplayManager, SourceManager};

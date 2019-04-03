@@ -6,7 +6,7 @@ use Unilend\Entity\{AcceptationsLegalDocs, AddressType, Attachment, AttachmentTy
     ClientsGestionNotifications, ClientsGestionTypeNotif, ClientsStatus, ClientsStatusHistory, ClientVigilanceStatusHistory, Companies, CompanyAddress, GreenpointKyc, LenderStatistic,
     LenderTaxExemption, Loans, MailTemplates, OffresBienvenues, OffresBienvenuesDetails, Operation, OperationType, Pays, ProjectNotification, ProjectsStatus, UsersHistory, VigilanceRule, Wallet,
     WalletType, Zones};
-use Unilend\Bundle\CoreBusinessBundle\Repository\LenderStatisticRepository;
+use Unilend\Repository\LenderStatisticRepository;
 use Unilend\Bundle\CoreBusinessBundle\Service\{AttachmentManager, ClientAuditer, ClientDataHistoryManager, ClientStatusManager, LenderOperationsManager};
 
 class preteursController extends bootstrap
@@ -82,7 +82,7 @@ class preteursController extends bootstrap
                 die;
             }
 
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Repository\ClientsRepository $clientRepository */
+            /** @var \Unilend\Repository\ClientsRepository $clientRepository */
             $clientRepository = $this->get('doctrine.orm.entity_manager')->getRepository(Clients::class);
             try {
                 $this->lPreteurs = $clientRepository->findLenders($clientId, $email, $lastName, $firstName, $companyName, $siren);
@@ -781,7 +781,7 @@ class preteursController extends bootstrap
 
         /** @var EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Repository\ClientsRepository $clientsRepository */
+        /** @var \Unilend\Repository\ClientsRepository $clientsRepository */
         $clientsRepository = $entityManager->getRepository(Clients::class);
         $this->lPreteurs   = $clientsRepository->getClientsToValidate($statusOrderedByPriority);
 

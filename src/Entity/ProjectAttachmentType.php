@@ -8,7 +8,7 @@ use Doctrine\ORM\Mapping as ORM;
  * ProjectAttachmentType
  *
  * @ORM\Table(name="project_attachment_type")
- * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\ProjectAttachmentTypeRepository")
+ * @ORM\Entity(repositoryClass="Unilend\Repository\ProjectAttachmentTypeRepository")
  */
 class ProjectAttachmentType
 {

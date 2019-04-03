@@ -8,7 +8,7 @@ use Doctrine\ORM\Mapping as ORM;
  * Sponsorship
  *
  * @ORM\Table(name="sponsorship", uniqueConstraints={@ORM\UniqueConstraint(name="id_client_sponsee_id_client_sponsor", columns={"id_client_sponsee", "id_client_sponsor"})}, indexes={@ORM\Index(name="idx_sponsorship_status", columns={"status"}), @ORM\Index(name="idx_sponsorship_id_client_sponsor", columns={"id_client_sponsor"}), @ORM\Index(name="idx_sponsorship_id_client_sponsee", columns={"id_client_sponsee"}), @ORM\Index(name="idx_sponsorship_id_campaign", columns={"id_campaign"})})
- * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\SponsorshipRepository")
+ * @ORM\Entity(repositoryClass="Unilend\Repository\SponsorshipRepository")
  * @ORM\HasLifecycleCallbacks
  */
 class Sponsorship

@@ -8,7 +8,7 @@ use Doctrine\ORM\Mapping as ORM;
  * LoginConnectionAdmin
  *
  * @ORM\Table(name="login_connection_admin", indexes={@ORM\Index(name="id_user", columns={"id_user"})})
- * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\LoginConnectionAdminRepository")
+ * @ORM\Entity(repositoryClass="Unilend\Repository\LoginConnectionAdminRepository")
  * @ORM\HasLifecycleCallbacks
  */
 class LoginConnectionAdmin

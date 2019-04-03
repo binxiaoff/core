@@ -8,7 +8,7 @@ use Doctrine\ORM\Mapping as ORM;
  * Translations
  *
  * @ORM\Table(name="translations", uniqueConstraints={@ORM\UniqueConstraint(name="unq_translation", columns={"locale", "section", "name"})}, indexes={@ORM\Index(name="section", columns={"section"})})
- * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\TranslationsRepository")
+ * @ORM\Entity(repositoryClass="Unilend\Repository\TranslationsRepository")
  * @ORM\HasLifecycleCallbacks
  */
 class Translations

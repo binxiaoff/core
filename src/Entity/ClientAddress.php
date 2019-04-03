@@ -12,7 +12,7 @@ use Doctrine\ORM\Mapping as ORM;
  *     @ORM\Index(name="idx_client_address_pays_id_country", columns={"id_country"}),
  *     @ORM\Index(name="idx_client_address_updated", columns={"updated"}),
  * })
- * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\ClientAddressRepository")
+ * @ORM\Entity(repositoryClass="Unilend\Repository\ClientAddressRepository")
  * @ORM\HasLifecycleCallbacks()
  */
 class ClientAddress

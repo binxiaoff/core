@@ -8,7 +8,7 @@ use Doctrine\ORM\Mapping as ORM;
  * Backpayline
  *
  * @ORM\Table(name="backpayline", indexes={@ORM\Index(name="idx_backpayline_token", columns={"token"}), @ORM\Index(name="idx_id_wallet", columns={"id_wallet"})})
- * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\BackpaylineRepository")
+ * @ORM\Entity(repositoryClass="Unilend\Repository\BackpaylineRepository")
  * @ORM\HasLifecycleCallbacks
  */
 class Backpayline

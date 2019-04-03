@@ -665,7 +665,7 @@ class ajaxController extends bootstrap
 
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Repository\ProjectsRepository $projectsRepository */
+        /** @var \Unilend\Repository\ProjectsRepository $projectsRepository */
         $projectsRepository = $entityManager->getRepository(Projects::class);
 
         if (

@@ -8,7 +8,7 @@ use Doctrine\ORM\Mapping as ORM;
  * SponsorshipCampaign
  *
  * @ORM\Table(name="sponsorship_campaign")
- * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\SponsorshipCampaignRepository")
+ * @ORM\Entity(repositoryClass="Unilend\Repository\SponsorshipCampaignRepository")
  * @ORM\HasLifecycleCallbacks()
  */
 class SponsorshipCampaign

@@ -13,7 +13,7 @@ use Doctrine\ORM\Mapping as ORM;
  *     @ORM\Index(name="idx_company_status_history_id_user", columns={"id_user"}),
  *     @ORM\Index(name="idx_company_status_history_changed_on", columns={"changed_on"})
  * })
- * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\CompanyStatusHistoryRepository")
+ * @ORM\Entity(repositoryClass="Unilend\Repository\CompanyStatusHistoryRepository")
  * @ORM\HasLifecycleCallbacks
  */
 class CompanyStatusHistory

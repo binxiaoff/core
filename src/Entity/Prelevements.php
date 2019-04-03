@@ -11,7 +11,7 @@ use Doctrine\ORM\Mapping as ORM;
  *     @ORM\Index(name="idx_prelevements_id_client", columns={"id_client"}),
  *     @ORM\Index(name="idx_prelevements_id_project", columns={"id_project"})
  * })
- * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\PrelevementsRepository")
+ * @ORM\Entity(repositoryClass="Unilend\Repository\PrelevementsRepository")
  * @ORM\HasLifecycleCallbacks
  */
 class Prelevements

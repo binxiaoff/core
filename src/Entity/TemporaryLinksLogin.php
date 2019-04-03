@@ -8,7 +8,7 @@ use Doctrine\ORM\Mapping as ORM;
  * TemporaryLinksLogin
  *
  * @ORM\Table(name="temporary_links_login", indexes={@ORM\Index(name="fk_temporary_links_login_id_client", columns={"id_client"})})
- * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\TemporaryLinksLoginRepository")
+ * @ORM\Entity(repositoryClass="Unilend\Repository\TemporaryLinksLoginRepository")
  * @ORM\HasLifecycleCallbacks
  */
 class TemporaryLinksLogin

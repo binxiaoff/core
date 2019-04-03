@@ -200,7 +200,7 @@
                                         data-sortable-loan-amount="{{ loan.amount }}"
                                         data-sortable-rate="{{ loan.rate.margin }}">
                                         <td class="table-projects-item-partner">
-                                            {% include ':frontbundle/demo/partials:bubble.html.twig' %}
+                                            {% include ':frontbundle/demo/partials:bubble.html.twig' with {'partner': project.idPartner.label} %}
                                         </td>
                                         <td class="table-projects-item-title">{{ project.title }}</td>
                                         <td class="table-projects-item-project-amount">{{ project.amount|localizednumber }}&nbsp;€</td>
@@ -327,7 +327,7 @@
                                         data-sortable-loan-amount="{{ loan.amount }}"
                                         data-sortable-rate="{{ loan.rate.margin }}">
                                         <td class="table-projects-item-partner">
-                                            {% include ':frontbundle/demo/partials:bubble.html.twig' %}
+                                            {% include ':frontbundle/demo/partials:bubble.html.twig' with {'partner': project.idPartner.label} %}
                                         </td>
                                         <td class="table-projects-item-title">{{ project.title }}</td>
                                         <td class="table-projects-item-project-amount">{{ project.amount|localizednumber }}&nbsp;€</td>
@@ -380,7 +380,7 @@
                                         data-sortable-loan-amount="{{ loan.amount }}"
                                         data-sortable-rate="{{ loan.rate.margin }}">
                                         <td class="table-projects-item-partner">
-                                            {% include ':frontbundle/demo/partials:bubble.html.twig' %}
+                                            {% include ':frontbundle/demo/partials:bubble.html.twig' with {'partner': project.idPartner.label} %}
                                         </td>
                                         <td class="table-projects-item-title">{{ project.title }}</td>
                                         <td class="table-projects-item-project-amount">{{ project.amount|localizednumber }}&nbsp;€</td>

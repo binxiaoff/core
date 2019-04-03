@@ -15,7 +15,7 @@ use Doctrine\ORM\Mapping as ORM;
  *     @ORM\Index(name="id_message_mailjet", columns={"id_message_mailjet"})
  * })
  * @ORM\HasLifecycleCallbacks
- * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\MailQueueRepository")
+ * @ORM\Entity(repositoryClass="Unilend\Repository\MailQueueRepository")
  */
 class MailQueue
 {

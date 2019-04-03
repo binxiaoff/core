@@ -315,7 +315,7 @@ class statsController extends bootstrap
 
     public function _requete_source_emprunteurs()
     {
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Repository\ClientsRepository $clientRepository */
+        /** @var \Unilend\Repository\ClientsRepository $clientRepository */
         $clientRepository = $this->get('doctrine.orm.entity_manager')->getRepository(Clients::class);
         $this->message    = '';
 
