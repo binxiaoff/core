@@ -1,6 +1,6 @@
 <?php
 
-use Unilend\Entity\{ProjectsStatus, Zones};
+use Unilend\Entity\{Operation, ProjectsStatus, RiskDataMonitoring, Zones};
 use Unilend\Bundle\CoreBusinessBundle\Repository\RiskDataMonitoringRepository;
 use Unilend\Bundle\WSClientBundle\Entity\Euler\CompanyRating as EulerCompanyRating;
 

@@ -1,7 +1,7 @@
 <?php
 
 use Symfony\Component\HttpFoundation\File\File;
-use Unilend\Entity\{BankAccount, Clients, Prelevements, ProjectsStatus, UniversignEntityInterface, Zones};
+use Unilend\Entity\{Attachment, BankAccount, Clients, EcheanciersEmprunteur, Prelevements, ProjectsStatus, UniversignEntityInterface, Zones};
 
 class bank_accountController extends bootstrap
 {

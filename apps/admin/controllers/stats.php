@@ -2,9 +2,7 @@
 
 use Box\Spout\Common\Type;
 use Box\Spout\Writer\WriterFactory;
-use Unilend\Entity\{
-    Bids, ClientsStatus, OperationType, Projects, WalletType, Zones
-};
+use Unilend\Entity\{Bids, ClientsStatus, OperationType, Projects, TransmissionSequence, WalletType, Zones};
 use Unilend\Bundle\CoreBusinessBundle\Service\{
     BdfLoansDeclarationManager, IfuManager
 };

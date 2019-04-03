@@ -1,7 +1,7 @@
 <?php
 
 use Doctrine\ORM\EntityManager;
-use Unilend\Entity\{Users, Zones};
+use Unilend\Entity\{LoginConnectionAdmin, Users, UsersTypes, Zones};
 
 class usersController extends bootstrap
 {

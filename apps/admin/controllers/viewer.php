@@ -1,6 +1,7 @@
 <?php
 
 use Doctrine\ORM\EntityManager;
+use Unilend\Entity\{Attachment, ProjectAttachment};
 
 class viewerController extends bootstrap
 {

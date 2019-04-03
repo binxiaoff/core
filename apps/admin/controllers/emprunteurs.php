@@ -1,6 +1,6 @@
 <?php
 
-use Unilend\Entity\{AddressType, AttachmentType, ClientsStatus, Companies, CompanyStatus, Pays, WalletType, Zones};
+use Unilend\Entity\{AddressType, Attachment, AttachmentType, BankAccount, Companies, CompanyStatus, Pays, Wallet, WalletType, Zones};
 
 class emprunteursController extends bootstrap
 {

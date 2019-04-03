@@ -1,9 +1,6 @@
 <?php
 
-use Unilend\Entity\Clients;
-use Unilend\Entity\Wallet;
-use Unilend\Entity\WalletType;
-use Unilend\Entity\Zones;
+use Unilend\Entity\{Clients, DebtCollectionMission, Operation, Wallet, WalletBalanceHistory, WalletType, Zones};
 use Unilend\Bundle\CoreBusinessBundle\Service\DebtCollectionMissionManager;
 
 class recouvreurController extends bootstrap

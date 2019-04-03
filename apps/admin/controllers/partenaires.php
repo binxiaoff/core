@@ -2,8 +2,8 @@
 
 use Doctrine\ORM\{EntityManager, ORMException, UnexpectedResultException};
 use Symfony\Component\HttpFoundation\Request;
-use Unilend\Entity\{AddressType, Clients, ClientsStatus, Companies, CompanyClient, Partner, PartnerProduct, PartnerProjectAttachment, PartnerThirdParty, Pays, Product,
-    ProjectsStatus, TemporaryLinksLogin, WalletType, Zones};
+use Unilend\Entity\{AddressType, AttachmentType, Clients, ClientsStatus, Companies, CompanyClient, Partner, PartnerProduct, PartnerProjectAttachment, PartnerThirdParty, PartnerThirdPartyType, Pays,
+    Product, ProjectsStatus, TemporaryLinksLogin, WalletType, Zones};
 use Unilend\Bundle\CoreBusinessBundle\Service\AddressManager;
 
 class partenairesController extends bootstrap

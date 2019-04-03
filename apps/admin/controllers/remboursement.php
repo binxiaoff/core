@@ -4,7 +4,8 @@ use Box\Spout\Common\Type;
 use Box\Spout\Writer\WriterFactory;
 use Doctrine\ORM\EntityManager;
 use Symfony\Component\HttpFoundation\Request;
-use Unilend\Entity\{Clients, DebtCollectionFeeDetail, EcheanciersEmprunteur, ProjectRepaymentTask, Projects, ProjectsStatus, Receptions, Zones};
+use Unilend\Entity\{Clients, CloseOutNettingPayment, CompanyStatusHistory, DebtCollectionFeeDetail, DebtCollectionMission, DebtCollectionMissionPaymentSchedule, EcheanciersEmprunteur, ProjectCharge,
+    ProjectChargeType, ProjectRepaymentTask, Projects, ProjectsStatus, Receptions, Zones};
 use Unilend\Bundle\CoreBusinessBundle\Service\{BackOfficeUserManager, DebtCollectionMissionManager, ProjectCloseOutNettingManager, Repayment\ProjectCloseOutNettingPaymentManager,
     Repayment\ProjectPaymentManager};
 

@@ -1,11 +1,8 @@
 <?php
 
 use Symfony\Component\HttpFoundation\Request;
-use Unilend\Entity\MailTemplates;
-use Unilend\Entity\Translations;
-use Unilend\Entity\Zones;
-use Unilend\Bundle\MessagingBundle\Service\MailQueueManager;
-use Unilend\Bundle\MessagingBundle\Service\MailTemplateManager;
+use Unilend\Entity\{MailQueue, MailTemplates, Translations, Zones};
+use Unilend\Bundle\MessagingBundle\Service\{MailQueueManager, MailTemplateManager};
 
 class mailsController extends bootstrap
 {

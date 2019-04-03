@@ -1,6 +1,6 @@
 <?php
 
-use Unilend\Entity\{AddressType, Clients, Wallet};
+use Unilend\Entity\{AddressType, ClientAddress, Clients, CompanyAddress, Wallet};
 
 class rootController extends bootstrap
 {

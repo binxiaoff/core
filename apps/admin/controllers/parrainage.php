@@ -1,14 +1,7 @@
 <?php
 
-use Unilend\Entity\ClientsStatus;
-use Unilend\Entity\OperationSubType;
-use Unilend\Entity\OperationType;
-use Unilend\Entity\Sponsorship;
-use Unilend\Entity\SponsorshipCampaign;
-use Unilend\Entity\WalletType;
-use Unilend\Entity\Zones;
-use Unilend\Bundle\CoreBusinessBundle\Service\OperationManager;
-use Unilend\Bundle\CoreBusinessBundle\Service\SponsorshipManager;
+use Unilend\Entity\{ClientsStatus, ClientsStatusHistory, Operation, OperationSubType, OperationType, Sponsorship, SponsorshipBlacklist, SponsorshipCampaign, Wallet, WalletType, Zones};
+use Unilend\Bundle\CoreBusinessBundle\Service\{OperationManager, SponsorshipManager};
 
 class parrainageController extends bootstrap
 {

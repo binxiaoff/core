@@ -2,8 +2,10 @@
 
 use Box\Spout\{Common\Type, Writer\WriterFactory};
 use Doctrine\ORM\EntityManager;
-use Unilend\Entity\{AddressType, Attachment, AttachmentType, Autobid, Bids, Clients, ClientsGestionNotifications, ClientsGestionTypeNotif, ClientsStatus, Companies,
-    LenderStatistic, LenderTaxExemption, Loans, MailTemplates, OffresBienvenues, OperationType, ProjectNotification, ProjectsStatus, UsersHistory, VigilanceRule, Wallet, WalletType, Zones};
+use Unilend\Entity\{AcceptationsLegalDocs, AddressType, Attachment, AttachmentType, Autobid, BankAccount, Bids, ClientAddress, ClientAtypicalOperation, Clients, ClientSettingType,
+    ClientsGestionNotifications, ClientsGestionTypeNotif, ClientsStatus, ClientsStatusHistory, ClientVigilanceStatusHistory, Companies, CompanyAddress, GreenpointKyc, LenderStatistic,
+    LenderTaxExemption, Loans, MailTemplates, OffresBienvenues, OffresBienvenuesDetails, Operation, OperationType, Pays, ProjectNotification, ProjectsStatus, UsersHistory, VigilanceRule, Wallet,
+    WalletType, Zones};
 use Unilend\Bundle\CoreBusinessBundle\Repository\LenderStatisticRepository;
 use Unilend\Bundle\CoreBusinessBundle\Service\{AttachmentManager, ClientAuditer, ClientDataHistoryManager, ClientStatusManager, LenderOperationsManager};
 

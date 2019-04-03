@@ -3,8 +3,8 @@
 use Box\Spout\{Common\Type, Writer\Style\StyleBuilder, Writer\WriterFactory};
 use Doctrine\ORM\EntityManager;
 use Symfony\Component\Translation\TranslatorInterface;
-use Unilend\Entity\{AddressType, BankAccount, Bids, ClientsStatus, LenderStatistic, Loans, OperationType, ProjectsStatus, Receptions, VigilanceRule, Wallet, WalletType,
-    Zones};
+use Unilend\Entity\{AcceptationsLegalDocs, AddressType, Attachment, BankAccount, Bids, ClientAddress, ClientAtypicalOperation, ClientsStatus, ClientsStatusHistory, ClientVigilanceStatusHistory,
+    CompanyAddress, LenderStatistic, LenderTaxExemption, Loans, Operation, OperationType, Pays, ProjectsStatus, Receptions, VigilanceRule, Wallet, WalletType, Zones};
 use Unilend\Bundle\CoreBusinessBundle\Service\{ClientDataHistoryManager, LenderOperationsManager};
 
 class sfpmeiController extends bootstrap

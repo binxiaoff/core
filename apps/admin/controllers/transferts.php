@@ -2,8 +2,9 @@
 
 use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
-use Unilend\Entity\{AttachmentType, Bids, ClientsGestionTypeNotif, Factures, LenderStatisticQueue, Notifications, OperationSubType, OperationType, Prelevements,
-    ProjectRepaymentTask, ProjectsPouvoir, ProjectsStatus, Receptions, UniversignEntityInterface, Virements, Wallet, WalletType, Zones};
+use Unilend\Entity\{AttachmentType, BankAccount, Bids, ClientsGestionTypeNotif, ClientsMandats, EcheanciersEmprunteur, Factures, LenderStatisticQueue, Notifications, Operation, OperationSubType,
+    OperationType, Prelevements, ProjectAttachment, ProjectBeneficialOwnerUniversign, ProjectRepaymentTask, ProjectsPouvoir, ProjectsStatus, Receptions, UniversignEntityInterface, Virements, Wallet,
+    WalletBalanceHistory, WalletType, Zones};
 
 class transfertsController extends bootstrap
 {

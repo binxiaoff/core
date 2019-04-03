@@ -1,9 +1,7 @@
 <?php
 
 use Symfony\Component\HttpFoundation\Request;
-use Unilend\Entity\DebtCollectionMission;
-use Unilend\Entity\ProjectCharge;
-use Unilend\Entity\Zones;
+use Unilend\Entity\{DebtCollectionMission, ProjectCharge, ProjectChargeType, Zones};
 use Unilend\Bundle\CoreBusinessBundle\Service\DebtCollectionMissionManager;
 
 class debt_collection_missionController extends bootstrap

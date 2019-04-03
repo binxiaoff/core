@@ -1,8 +1,6 @@
 <?php
 
-use Unilend\Entity\CompanyStatus;
-use Unilend\Entity\ProjectsStatus;
-use Unilend\Entity\Zones;
+use Unilend\Entity\{CompanyStatus, CompanyStatusHistory, ProjectsStatus, Zones};
 
 class thickboxController extends bootstrap
 {

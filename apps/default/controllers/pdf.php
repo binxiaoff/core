@@ -2,7 +2,8 @@
 
 use Knp\Snappy\Pdf;
 use Psr\Log\LoggerInterface;
-use Unilend\Entity\{AddressType, Clients, CompanyStatus, Elements, Loans, ProjectCgv, ProjectsStatus, UnderlyingContract, UniversignEntityInterface};
+use Unilend\Entity\{AddressType, BankAccount, ClientAddress, Clients, CompanyAddress, CompanyStatus, CompanyStatusHistory, Elements, Loans, ProjectCgv, ProjectsStatus, TaxType, UnderlyingContract,
+    UniversignEntityInterface, Wallet};
 use Unilend\Bundle\CoreBusinessBundle\Service\Repayment\ProjectRepaymentScheduleManager;
 
 class pdfController extends bootstrap

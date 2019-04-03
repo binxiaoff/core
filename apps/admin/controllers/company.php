@@ -2,7 +2,7 @@
 
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Translation\TranslatorInterface;
-use Unilend\Entity\{AddressType, AttachmentType, Clients, ClientsStatus, Companies, Pays, Zones};
+use Unilend\Entity\{AddressType, Attachment, AttachmentType, BankAccount, Clients, ClientsStatus, Companies, Pays, Zones};
 use Unilend\Bundle\WSClientBundle\Entity\Altares\{CompanyIdentityDetail, EstablishmentIdentityDetail};
 
 class companyController extends bootstrap

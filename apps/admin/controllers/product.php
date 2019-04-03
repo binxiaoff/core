@@ -1,8 +1,6 @@
 <?php
 
-use Unilend\Entity\ProductAttributeType;
-use Unilend\Entity\UnderlyingContractAttributeType;
-use Unilend\Entity\Zones;
+use Unilend\Entity\{ProductAttributeType, RepaymentType, UnderlyingContractAttributeType, Zones};
 
 class productController extends bootstrap
 {
