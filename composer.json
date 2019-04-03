@@ -10,6 +10,8 @@
       "Unilend\\Repository\\": "src/Repository",
       "Unilend\\Console\\": "src/Console",
       "Unilend\\Command\\": "src/Command",
+      "Unilend\\EventSubscriber\\": "src/EventSubscriber",
+      "Unilend\\DependencyInjection\\": "src/DependencyInjection",
       "Unilend\\Bridge\\": "src/Unilend/Bridge",
       "Unilend\\Bundle\\": "src/Unilend/Bundle"
     },
