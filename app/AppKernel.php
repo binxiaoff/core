@@ -1,7 +1,9 @@
 <?php
 
 use Symfony\Component\Config\Loader\LoaderInterface;
+use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\HttpKernel\Kernel;
+use Unilend\DependencyInjection\Compiler\OverrideNewRelicSettingsForConsolePass;
 
 class AppKernel extends Kernel
 {
@@ -15,7 +17,6 @@ class AppKernel extends Kernel
             new Doctrine\Bundle\DoctrineBundle\DoctrineBundle(),
             new Cache\AdapterBundle\CacheAdapterBundle(),
             new Unilend\Bundle\CoreBusinessBundle\UnilendCoreBusinessBundle(),
-            new Unilend\Bundle\CommandBundle\UnilendCommandBundle(),
             new Unilend\Bundle\MessagingBundle\UnilendMessagingBundle(),
             new Symfony\Bundle\TwigBundle\TwigBundle(),
             new Unilend\Bundle\FrontBundle\UnilendFrontBundle(),
@@ -65,5 +66,12 @@ class AppKernel extends Kernel
     public function registerContainerConfiguration(LoaderInterface $loader)
     {
         $loader->load($this->rootDir . '/config/config_' . $this->environment . '.yml');
+    }
+
+    public function build(ContainerBuilder $container)
+    {
+        parent::build($container);
+
+        $container->addCompilerPass(new OverrideNewRelicSettingsForConsolePass());
     }
 }

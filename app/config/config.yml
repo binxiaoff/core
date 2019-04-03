@@ -3,6 +3,7 @@ imports:
     - { resource: security.yml }
     - { resource: parameters_extended.yml, ignore_errors: true }
     - { resource: dql_mysql_functions.yml }
+    - { resource: services.yaml }
 
 framework:
     secret: "%secret%"
@@ -242,17 +243,6 @@ unilend_translation:
     parameters:
         cache:
             path: "%kernel.cache_dir%/translations"
-
-services:
-    # Define the memcache adaptor as the application default cache globally in order to have the right adaptor when autowiring Psr\Cache\CacheItemPoolInterface
-    # Since we use the cache/adapter-bundle as the cache system, the configuration framework.cache.app won't work.
-    # It can be removed once TECH-333 will be done.
-    cache.app: '@memcache.default'
-    # Define the logger service as public so we can continue to have access to it via $container->get().
-    # But $container->get('logger') is deprecated, do not use it any more.
-    logger:
-        alias: 'monolog.logger'
-        public: true
 
 google_tag_manager:
     enabled: false
