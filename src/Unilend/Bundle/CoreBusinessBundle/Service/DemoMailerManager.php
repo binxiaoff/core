@@ -5,7 +5,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{Bids, Clients, Projects};
+use Unilend\Entity\{Bids, Clients, Projects};
 use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessageProvider;
 
 class DemoMailerManager
@@ -259,7 +259,7 @@ class DemoMailerManager
 
         $sent         = 0;
         $recipients   = $this->getProjectRecipients($project, [self::RECIPIENT_TYPE_ARRANGER]);
-        $acceptedBids = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Bids')->findBy([
+        $acceptedBids = $this->entityManager->getRepository(Bids::class)->findBy([
             'project' => $project,
             'status'  => Bids::STATUS_ACCEPTED
         ]);
