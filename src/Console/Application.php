@@ -1,6 +1,6 @@
 <?php
 
-namespace Unilend\Bundle\CommandBundle\Bridge;
+namespace Unilend\Console;
 
 use Symfony\Bundle\FrameworkBundle\Console\Application as FrameworkBundleApplication;
 use Symfony\Component\Console\{Input\InputInterface, Input\InputOption, Output\OutputInterface};

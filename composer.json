@@ -8,6 +8,8 @@
       "Unilend\\": "",
       "Unilend\\Entity\\": "src/Entity",
       "Unilend\\Repository\\": "src/Repository",
+      "Unilend\\Console\\": "src/Console",
+      "Unilend\\Command\\": "src/Command",
       "Unilend\\Bridge\\": "src/Unilend/Bridge",
       "Unilend\\Bundle\\": "src/Unilend/Bundle"
     },
