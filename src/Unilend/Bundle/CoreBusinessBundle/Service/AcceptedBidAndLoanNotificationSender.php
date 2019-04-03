@@ -6,7 +6,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Entity\{AcceptedBids, ClientsGestionMailsNotif, ClientsGestionNotifications, ClientsStatus, Echeanciers, Loans, Notifications, Projects, UnderlyingContract, Wallet};
-use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\{TemplateMessage, TemplateMessageProvider};
+use Unilend\SwiftMailer\{TemplateMessage, TemplateMessageProvider};
 
 class AcceptedBidAndLoanNotificationSender
 {

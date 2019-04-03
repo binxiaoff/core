@@ -687,7 +687,7 @@ class partenairesController extends bootstrap
             'passwordLink' => $this->furl . '/partenaire/securite/' . $token
         ];
 
-        /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+        /** @var \Unilend\SwiftMailer\TemplateMessage $message */
         $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('mot-de-passe-oublie-partenaire', $keywords);
 
         try {

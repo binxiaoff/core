@@ -105,7 +105,7 @@ class project_rate_settingsController extends bootstrap
                         'lenderPattern'        => $wallet->getWireTransferPattern()
                     ];
 
-                    /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+                    /** @var \Unilend\SwiftMailer\TemplateMessage $message */
                     $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('bad-autolend-settings', $keywords);
 
                     try {

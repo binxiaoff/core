@@ -10,7 +10,7 @@ use Symfony\Component\HttpFoundation\{File\UploadedFile, FileBag};
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Entity\{AddressType, Attachment, AttachmentType, BankAccount, ClientAddress, Clients, Companies, CompanyAddress, Pays, Users, Villes, Wallet, WalletType};
 use Unilend\Bundle\CoreBusinessBundle\Service\{AddressManager, AttachmentManager, BankAccountManager, ClientAuditer, ClientDataHistoryManager, ClientStatusManager};
-use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessageProvider;
+use Unilend\SwiftMailer\TemplateMessageProvider;
 
 class LenderProfileFormsHandler
 {

@@ -59,7 +59,7 @@ class ContactController extends Controller
                     '[message]'   => $formData['message']
                 ];
 
-                /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+                /** @var \Unilend\SwiftMailer\TemplateMessage $message */
                 $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('notification-demande-de-contact-partenaire', $keywords, false);
 
                 try {

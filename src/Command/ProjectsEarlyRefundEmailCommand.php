@@ -132,7 +132,7 @@ class ProjectsEarlyRefundEmailCommand extends ContainerAwareCommand
                             'lenderPattern'    => $wallet->getWireTransferPattern()
                         ];
 
-                        /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+                        /** @var \Unilend\SwiftMailer\TemplateMessage $message */
                         $message = $this->getContainer()->get('unilend.swiftmailer.message_provider')->newMessage('preteur-remboursement-anticipe', $keywords);
 
                         try {

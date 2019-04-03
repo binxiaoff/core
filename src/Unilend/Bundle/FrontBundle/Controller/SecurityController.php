@@ -186,7 +186,7 @@ class SecurityController extends Controller
                 ]);
         }
 
-        /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+        /** @var \Unilend\SwiftMailer\TemplateMessage $message */
         $message = $this->get('unilend.swiftmailer.message_provider')->newMessage($mailType, $keywords);
 
         try {
@@ -384,7 +384,7 @@ class SecurityController extends Controller
             'lenderPattern' => $this->get('unilend.service.lender_manager')->getLenderPattern($client)
         ];
 
-        /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+        /** @var \Unilend\SwiftMailer\TemplateMessage $message */
         $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('generation-mot-de-passe', $keywords);
         $message->setTo($client->getEmail());
         $mailer = $this->get('mailer');

@@ -1218,7 +1218,7 @@ class ProjectRequestController extends Controller
                 '[SURL]'           => $this->getParameter('router.request_context.scheme') . '://' . $this->getParameter('url.host_default')
             ];
 
-            /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+            /** @var \Unilend\SwiftMailer\TemplateMessage $message */
             $message = $this->get('unilend.swiftmailer.message_provider')->newMessage($emailType, $aReplacements, false);
             try {
                 $message->setTo(trim($user->getEmail()));

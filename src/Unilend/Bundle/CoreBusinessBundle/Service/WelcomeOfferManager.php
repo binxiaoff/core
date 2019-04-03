@@ -5,7 +5,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Unilend\Entity\{Clients, ClientsStatusHistory, OffresBienvenues, OffresBienvenuesDetails, Operation, OperationSubType, OperationType, Settings, Wallet, WalletType};
-use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\{TemplateMessage, TemplateMessageProvider};
+use Unilend\SwiftMailer\{TemplateMessage, TemplateMessageProvider};
 
 class WelcomeOfferManager
 {

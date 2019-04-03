@@ -7,7 +7,7 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\Asset\Packages;
 use Symfony\Component\Routing\RouterInterface;
 use Unilend\Entity\{Echeanciers, EcheanciersEmprunteur, Loans, Operation, OperationType, Projects, ProjectsStatusHistory, Receptions, RemboursementAnticipeMailAEnvoyer, Settings};
-use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\{TemplateMessage, TemplateMessageProvider};
+use Unilend\SwiftMailer\{TemplateMessage, TemplateMessageProvider};
 
 class ProjectRepaymentNotificationSender
 {
@@ -88,7 +88,7 @@ class ProjectRepaymentNotificationSender
             'lenderPattern'   => $lenderWallet->getWireTransferPattern()
         ];
 
-        /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+        /** @var \Unilend\SwiftMailer\TemplateMessage $message */
         $message = $this->messageProvider->newMessage('preteur-regularisation-remboursement', $keywords);
 
         try {
@@ -116,7 +116,7 @@ class ProjectRepaymentNotificationSender
             'order'         => $repaymentSequence
         ];
 
-        /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+        /** @var \Unilend\SwiftMailer\TemplateMessage $message */
         $message = $this->messageProvider->newMessage('incomplete-repayment-notification', $keywords);
 
         try {
@@ -152,7 +152,7 @@ class ProjectRepaymentNotificationSender
             'invoiceLink'         => $this->frontUrl . '/pdf/facture_ER/' . $borrower->getHash() . '/' . $project->getIdProject() . '/' . $paymentSchedule->getOrdre()
         ];
 
-        /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+        /** @var \Unilend\SwiftMailer\TemplateMessage $message */
         $message = $this->messageProvider->newMessage('facture-emprunteur-remboursement', $keywords);
         try {
             $message->setTo($borrower->getEmail());

@@ -7,7 +7,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Asset\Packages;
 use Unilend\Entity\{BankAccount, ClientAddress, ClientDataHistory, Clients, ClientsStatus, CompanyAddress, Users, Wallet, WalletType};
-use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessageProvider;
+use Unilend\SwiftMailer\TemplateMessageProvider;
 
 /**
  * @package Unilend\Bundle\CoreBusinessBundle\Service

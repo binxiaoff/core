@@ -188,7 +188,7 @@ class ContactController extends Controller
                 'firstName' => $post['firstname']
             ];
 
-            /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+            /** @var \Unilend\SwiftMailer\TemplateMessage $message */
             $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('demande-de-contact', $keywords);
 
             try {
@@ -251,7 +251,7 @@ class ContactController extends Controller
                 '$infos'  => $infos
             );
 
-            /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+            /** @var \Unilend\SwiftMailer\TemplateMessage $message */
             $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('notification-demande-de-contact', $variablesInternalMail, false);
             try {
                 $message->setTo($recipient);

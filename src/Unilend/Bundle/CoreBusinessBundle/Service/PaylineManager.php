@@ -9,7 +9,7 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Routing\RouterInterface;
 use Unilend\Entity\{Backpayline, ClientsGestionMailsNotif, ClientsGestionNotifications, ClientsGestionTypeNotif, Notifications, Operation, OperationType, Wallet, WalletBalanceHistory};
-use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessageProvider;
+use Unilend\SwiftMailer\TemplateMessageProvider;
 
 class PaylineManager
 {

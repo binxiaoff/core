@@ -354,7 +354,7 @@ class BorrowerAccountController extends Controller
                     'firstName' => $formData['first_name']
                 ];
 
-                /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+                /** @var \Unilend\SwiftMailer\TemplateMessage $message */
                 $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('demande-de-contact-emprunteur', $keywords);
 
                 try {
@@ -383,7 +383,7 @@ class BorrowerAccountController extends Controller
                     '[SURL]'      => $this->get('assets.packages')->getUrl('')
                 ];
 
-                /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+                /** @var \Unilend\SwiftMailer\TemplateMessage $message */
                 $message   = $this->get('unilend.swiftmailer.message_provider')->newMessage('notification-demande-de-contact-emprunteur', $keywords, false);
                 $recipient = $entityManager->getRepository(Settings::class)->findOneBy(['type' => 'Adresse emprunteur'])->getValue();
                 $recipient = trim($recipient);
