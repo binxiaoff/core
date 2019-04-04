@@ -6,8 +6,8 @@ use Doctrine\ORM\EntityManagerInterface;
 use JMS\Serializer\SerializerInterface;
 use Psr\Log\LoggerInterface;
 use Unilend\Entity\{Attachment, AttachmentType, ClientAddressAttachment, Clients, ClientsStatus, ClientsStatusHistory, GreenpointAttachment, GreenpointKyc};
-use Unilend\Bundle\WSClientBundle\Entity\GreenPoint\{HousingCertificate, Identity, Rib};
-use Unilend\Bundle\WSClientBundle\Service\GreenPointManager;
+use Unilend\Entity\External\GreenPoint\{HousingCertificate, Identity, Rib};
+use Unilend\Service\WebServiceClient\GreenPointManager;
 
 class GreenPointValidationManager
 {

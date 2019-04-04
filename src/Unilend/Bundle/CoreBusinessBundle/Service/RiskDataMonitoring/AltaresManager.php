@@ -8,8 +8,8 @@ use Psr\Log\LoggerInterface;
 use Unilend\Entity\{Companies, CompanyRatingHistory, RiskDataMonitoringType};
 use Unilend\Bundle\CoreBusinessBundle\Service\Eligibility\Validator\CompanyValidator;
 use Unilend\Bundle\CoreBusinessBundle\Service\ExternalDataManager;
-use Unilend\Bundle\WSClientBundle\Entity\Altares\RiskDataMonitoring\{EventDetail, Notification, NotificationInformation};
-use Unilend\Bundle\WSClientBundle\Service\AltaresManager as AltaresWsClient;
+use Unilend\Entity\External\Altares\RiskDataMonitoring\{EventDetail, Notification, NotificationInformation};
+use Unilend\Service\WebServiceClient\AltaresManager as AltaresWsClient;
 
 class AltaresManager
 {

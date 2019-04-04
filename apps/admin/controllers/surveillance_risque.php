@@ -2,7 +2,7 @@
 
 use Unilend\Entity\{Operation, ProjectsStatus, RiskDataMonitoring, Zones};
 use Unilend\Repository\RiskDataMonitoringRepository;
-use Unilend\Bundle\WSClientBundle\Entity\Euler\CompanyRating as EulerCompanyRating;
+use Unilend\Entity\External\Euler\CompanyRating as EulerCompanyRating;
 
 class surveillance_risqueController extends bootstrap
 {

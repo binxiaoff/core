@@ -1,9 +1,7 @@
 <?php
 
-use Unilend\Entity\{
-    WsExternalResource, Zones
-};
-use Unilend\Bundle\StoreBundle\Document\WsCall;
+use Unilend\Entity\{WsExternalResource, Zones};
+use Unilend\Document\WsCall;
 
 class simulationController extends bootstrap
 {
@@ -578,7 +576,7 @@ class simulationController extends bootstrap
             $siren = $_POST['parameter']['siren'];
         }
 
-        /** @var \Unilend\Bundle\WSClientBundle\Service\CallHistoryManager $wsCallHistory */
+        /** @var \Unilend\Service\WebServiceClient\CallHistoryManager $wsCallHistory */
         $wsCallHistory  = $this->get('unilend.service.ws_client.call_history_handler');
         $wsCallResponse = $wsCallHistory->fetchLatestDataFromMongo(
             $siren,

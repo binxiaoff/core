@@ -1,0 +1,16 @@
+# remove these if/when you are not fetching these directly
+# from the container via $container->get()
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+        public: true
+
+    # aliases so that the old service ids can still be accessed
+    unilend.service.ws_client.call_history_handler: '@Unilend\Service\WebServiceClient\CallHistoryManager'
+    unilend.service.ws_client.euler_manager: '@Unilend\Service\WebServiceClient\EulerHermesManager'
+    unilend.service.ws_client.codinf_manager: '@Unilend\Service\WebServiceClient\CodinfManager'
+    unilend.service.ws_client.infolegale_manager: '@Unilend\Service\WebServiceClient\InfolegaleManager'
+    unilend.service.ws_client.infogreffe_manager: '@Unilend\Service\WebServiceClient\InfogreffeManager'
+    unilend.service.ws_client.altares_manager: '@Unilend\Service\WebServiceClient\AltaresManager'
+    unilend.service.ws_client.ellisphere_manager: '@Unilend\Service\WebServiceClient\EllisphereManager'

@@ -8,7 +8,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\{Request, Response};
 use Symfony\Component\Routing\Annotation\Route;
 use Unilend\Bundle\CoreBusinessBundle\Service\GreenPointValidationManager;
-use Unilend\Bundle\WSClientBundle\Service\GreenPointManager;
+use Unilend\Service\WebServiceClient\GreenPointManager;
 use Unilend\Entity\{Attachment, Settings};
 
 class GreenPointController extends Controller

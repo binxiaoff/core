@@ -13,7 +13,7 @@ use Psr\Log\LoggerInterface;
 use Unilend\Entity\{Companies, CompanyRatingHistory, PreScoring, ProjectEligibilityAssessment, ProjectEligibilityRule, ProjectEligibilityRuleSet, ProjectRejectionReason, Projects, ProjectsNotes,
     ProjectsStatus, Xerfi};
 use Unilend\Bundle\CoreBusinessBundle\Service\ExternalDataManager;
-use Unilend\Bundle\WSClientBundle\Entity\{Altares\CompanyBalanceSheet, Altares\CompanyIdentityDetail, Euler\CompanyRating as EulerHermesCompanyRating, Infolegale\AnnouncementDetails,
+use Unilend\Entity\External\{Altares\CompanyBalanceSheet, Altares\CompanyIdentityDetail, Euler\CompanyRating as EulerHermesCompanyRating, Infolegale\AnnouncementDetails,
     Infolegale\AnnouncementEvent, Infolegale\ContentiousParticipant};
 
 class CompanyValidator

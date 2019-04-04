@@ -7,13 +7,13 @@ use Doctrine\ORM\{EntityManagerInterface, OptimisticLockException};
 use Psr\Cache\{CacheException, CacheItemPoolInterface};
 use Psr\Log\LoggerInterface;
 use Unilend\Entity\{AddressType, CompanyRating, CompanyRatingHistory, InfolegaleExecutivePersonalChange, Pays, Xerfi};
-use Unilend\Bundle\WSClientBundle\Entity\Altares\{BalanceSheetListDetail, CompanyBalanceSheet, CompanyIdentityDetail, CompanyRatingDetail, FinancialSummaryListDetail};
-use Unilend\Bundle\WSClientBundle\Entity\Codinf\IncidentList;
-use Unilend\Bundle\WSClientBundle\Entity\Ellisphere\Report as EllisphereReport;
-use Unilend\Bundle\WSClientBundle\Entity\Euler\CompanyRating as EulerCompanyRating;
-use Unilend\Bundle\WSClientBundle\Entity\Infogreffe\CompanyIndebtedness;
-use Unilend\Bundle\WSClientBundle\Entity\Infolegale\{AnnouncementDetails, DirectorAnnouncement, Mandate, ScoreDetails};
-use Unilend\Bundle\WSClientBundle\Service\{AltaresManager, CodinfManager, EllisphereManager, EulerHermesManager, InfogreffeManager, InfolegaleManager};
+use Unilend\Entity\External\Altares\{BalanceSheetListDetail, CompanyBalanceSheet, CompanyIdentityDetail, CompanyRatingDetail, FinancialSummaryListDetail};
+use Unilend\Entity\External\Codinf\IncidentList;
+use Unilend\Entity\External\Ellisphere\Report as EllisphereReport;
+use Unilend\Entity\External\Euler\CompanyRating as EulerCompanyRating;
+use Unilend\Entity\External\Infogreffe\CompanyIndebtedness;
+use Unilend\Entity\External\Infolegale\{AnnouncementDetails, DirectorAnnouncement, Mandate, ScoreDetails};
+use Unilend\Service\WebServiceClient\{AltaresManager, CodinfManager, EllisphereManager, EulerHermesManager, InfogreffeManager, InfolegaleManager};
 use Unilend\librairies\CacheKeys;
 
 class ExternalDataManager
