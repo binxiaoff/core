@@ -27,7 +27,6 @@ class AppKernel extends Kernel
             new Ekino\NewRelicBundle\EkinoNewRelicBundle(),
             new Sonata\CacheBundle\SonataCacheBundle(),
             new Doctrine\Bundle\MongoDBBundle\DoctrineMongoDBBundle(),
-            new Unilend\Bundle\StoreBundle\UnilendStoreBundle(),
             new JMS\SerializerBundle\JMSSerializerBundle(),
             new EightPoints\Bundle\GuzzleBundle\EightPointsGuzzleBundle(),
             new Unilend\Bundle\WSClientBundle\UnilendWSClientBundle(),

@@ -3,7 +3,7 @@
 use Unilend\Entity\{
     WsExternalResource, Zones
 };
-use Unilend\Bundle\StoreBundle\Document\WsCall;
+use Unilend\Document\WsCall;
 
 class simulationController extends bootstrap
 {

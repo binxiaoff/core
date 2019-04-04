@@ -11,7 +11,7 @@ use Symfony\Component\Asset\Packages;
 use Symfony\Component\Stopwatch\Stopwatch;
 use Unilend\Entity\{WsCallHistory, WsExternalResource};
 use Unilend\Bundle\CoreBusinessBundle\Service\SlackManager;
-use Unilend\Bundle\StoreBundle\Document\WsCall;
+use Unilend\Document\WsCall;
 use Unilend\librairies\CacheKeys;
 
 class CallHistoryManager
@@ -254,7 +254,7 @@ class CallHistoryManager
         $this->stopwatch->start(__FUNCTION__ . $time);
         try {
             /** @var Builder $queryBuilder */
-            $queryBuilder = $this->managerRegistry->getManager()->createQueryBuilder('UnilendStoreBundle:WsCall');
+            $queryBuilder = $this->managerRegistry->getManager()->createQueryBuilder(WsCall::class);
 
             if (false === empty($parameter)) {
                 $queryBuilder->field('parameter')->equals(json_encode($parameter));
