@@ -31,9 +31,9 @@ use Unilend\Entity\ProjectsStatus;
                 <th><label for="comments_etape3">Informations utiles</label></th>
                 <td colspan="3">
                     <?php if ($this->projects->create_bo) : ?>
-                        <textarea style="width:780px;" name="comments_etape3" id="comments_etape3" class="textarea_lng"><?= $this->projects->comments ?></textarea>
+                        <textarea style="width:780px;" name="comments_etape3" id="comments_etape3" class="textarea_lng"><?= $this->projects->description ?></textarea>
                     <?php else : ?>
-                        <span style="color: #000"><?= empty($this->projects->comments) ? '-' : nl2br($this->projects->comments) ?></span>
+                        <span style="color: #000"><?= empty($this->projects->description) ? '-' : nl2br($this->projects->description) ?></span>
                     <?php endif; ?>
                 </td>
             </tr>

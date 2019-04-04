@@ -37,7 +37,6 @@ class AppKernel extends Kernel
             new Http\HttplugBundle\HttplugBundle(),
             new Nexy\SlackBundle\NexySlackBundle(),
             new Cravler\MaxMindGeoIpBundle\CravlerMaxMindGeoIpBundle(),
-            new Stof\DoctrineExtensionsBundle\StofDoctrineExtensionsBundle(),
         ];
 
         if (in_array($this->getEnvironment(), ['dev', 'test'], true)) {

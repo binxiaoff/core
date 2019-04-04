@@ -423,7 +423,7 @@ class ProjectRequestController extends Controller
         $entityManager->flush($client);
 
         if ($description) {
-            $project->setComments($description);
+            $project->setDescription($description);
 
             $entityManager->flush($project);
         }

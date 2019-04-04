@@ -644,7 +644,7 @@ class DemoController extends AbstractController
     {
         return $this->json([
             'id'                      => $comment->getId(),
-            'parent'                  => $comment->getParent(),
+            'parent'                  => $comment->getParent() ? $comment->getParent()->getId() : null,
             'created'                 => $comment->getAdded()->format('c'),
             'modified'                => $comment->getUpdated() ? $comment->getUpdated()->format('c') : $comment->getAdded()->format('c'),
             'content'                 => $comment->getContent(),

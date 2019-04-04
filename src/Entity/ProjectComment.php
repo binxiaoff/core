@@ -3,11 +3,9 @@
 namespace Unilend\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
-use Gedmo\Mapping\Annotation as Gedmo;
 use Unilend\Entity\Traits\Timestampable;
 
 /**
- * @Gedmo\Tree(type="nestedset")
  * @ORM\Entity
  * @ORM\HasLifecycleCallbacks
  */
@@ -29,7 +27,6 @@ class ProjectComment
     /**
      * @var ProjectComment
      *
-     * @Gedmo\TreeParent
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\ProjectComment", inversedBy="children")
      * @ORM\JoinColumn(name="id_parent", referencedColumnName="id", onDelete="CASCADE")
      */

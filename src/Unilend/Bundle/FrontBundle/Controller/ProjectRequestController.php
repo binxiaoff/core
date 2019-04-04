@@ -394,8 +394,9 @@ class ProjectRequestController extends Controller
             $tosAcceptation->create();
         }
 
-        $project->setPeriod($duration);
-        $project->setComments($description);
+        $project
+            ->setPeriod($duration)
+            ->setDescription($description);
 
         $entityManager->flush($project);
 
@@ -845,7 +846,7 @@ class ProjectRequestController extends Controller
         if ($duration = filter_var($request->request->get('project')['duration'], FILTER_VALIDATE_INT)) {
             $project->setPeriod($duration);
         }
-        $project->setComments($request->request->get('project')['description']);
+        $project->setDescription($request->request->get('project')['description']);
 
         $entityManager->flush($project);
 

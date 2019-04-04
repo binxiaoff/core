@@ -1613,7 +1613,7 @@ class Clients implements UserInterface, EquatableInterface, EncoderAwareInterfac
      */
     public function isGrantedLogin(): bool
     {
-        return in_array($this->getIdClientStatusHistory()->getIdStatus()->getId(), ClientsStatus::GRANTED_LOGIN);
+        return $this->isInStatus(ClientsStatus::GRANTED_LOGIN);
     }
 
     /**
@@ -1621,7 +1621,7 @@ class Clients implements UserInterface, EquatableInterface, EncoderAwareInterfac
      */
     public function isGrantedLenderRead(): bool
     {
-        return in_array($this->getIdClientStatusHistory()->getIdStatus()->getId(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ);
+        return $this->isInStatus(ClientsStatus::GRANTED_LENDER_ACCOUNT_READ);
     }
 
     /**
@@ -1630,7 +1630,7 @@ class Clients implements UserInterface, EquatableInterface, EncoderAwareInterfac
      */
     public function isGrantedLenderDeposit(): bool
     {
-        return in_array($this->getIdClientStatusHistory()->getIdStatus()->getId(), ClientsStatus::GRANTED_LENDER_DEPOSIT);
+        return $this->isInStatus(ClientsStatus::GRANTED_LENDER_DEPOSIT);
     }
 
     /**
@@ -1638,7 +1638,7 @@ class Clients implements UserInterface, EquatableInterface, EncoderAwareInterfac
      */
     public function isGrantedLenderWithdraw(): bool
     {
-        return in_array($this->getIdClientStatusHistory()->getIdStatus()->getId(), ClientsStatus::GRANTED_LENDER_WITHDRAW);
+        return $this->isInStatus(ClientsStatus::GRANTED_LENDER_WITHDRAW);
     }
 
     /**
@@ -1646,7 +1646,7 @@ class Clients implements UserInterface, EquatableInterface, EncoderAwareInterfac
      */
     public function isGreantedLenderSponsorship(): bool
     {
-        return in_array($this->getIdClientStatusHistory()->getIdStatus()->getId(), ClientsStatus::GRANTED_LENDER_SPONSORSHIP);
+        return $this->isInStatus(ClientsStatus::GRANTED_LENDER_SPONSORSHIP);
     }
 
     /**
@@ -1654,7 +1654,7 @@ class Clients implements UserInterface, EquatableInterface, EncoderAwareInterfac
      */
     public function isValidated(): bool
     {
-        return $this->getIdClientStatusHistory()->getIdStatus()->getId() === ClientsStatus::STATUS_VALIDATED;
+        return $this->isInStatus([ClientsStatus::STATUS_VALIDATED]);
     }
 
     /**
@@ -1662,7 +1662,7 @@ class Clients implements UserInterface, EquatableInterface, EncoderAwareInterfac
      */
     public function isInCompleteness(): bool
     {
-        return in_array($this->getIdClientStatusHistory()->getIdStatus()->getId(), [ClientsStatus::STATUS_COMPLETENESS, ClientsStatus::STATUS_COMPLETENESS_REMINDER]);
+        return $this->isInStatus([ClientsStatus::STATUS_COMPLETENESS, ClientsStatus::STATUS_COMPLETENESS_REMINDER]);
     }
 
     /**
@@ -1670,7 +1670,7 @@ class Clients implements UserInterface, EquatableInterface, EncoderAwareInterfac
      */
     public function isInSubscription(): bool
     {
-        return $this->getIdClientStatusHistory()->getIdStatus()->getId() === ClientsStatus::STATUS_CREATION;
+        return $this->isInStatus([ClientsStatus::STATUS_CREATION]);
     }
 
     /**
@@ -1678,7 +1678,16 @@ class Clients implements UserInterface, EquatableInterface, EncoderAwareInterfac
      */
     public function isSuspended(): bool
     {
-        return $this->getIdClientStatusHistory()->getIdStatus()->getId() === ClientsStatus::STATUS_SUSPENDED;
+        return $this->isInStatus([ClientsStatus::STATUS_SUSPENDED]);
+    }
+
+    /**
+     * @param array $status
+     * @return bool
+     */
+    private function isInStatus(array $status): bool
+    {
+        return $this->getIdClientStatusHistory() && in_array($this->getIdClientStatusHistory()->getIdStatus()->getId(), $status);
     }
 
     /**
