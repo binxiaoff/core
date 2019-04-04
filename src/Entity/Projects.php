@@ -126,9 +126,9 @@ class Projects
     /**
      * @var string
      *
-     * @ORM\Column(name="comments", type="text", length=16777215, nullable=true)
+     * @ORM\Column(name="description", type="text", length=16777215, nullable=true)
      */
-    private $comments;
+    private $description;
 
     /**
      * @var string
@@ -382,6 +382,7 @@ class Projects
     private $mandates;
 
     /**
+     * @deprecated
      * @var ProjectsComments[]
      *
      * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectsComments", mappedBy="idProject")
@@ -450,6 +451,14 @@ class Projects
     private $projectPercentFees;
 
     /**
+     * @var ProjectComment[]|ArrayCollection
+     *
+     * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectComment", mappedBy="project")
+     * @ORM\OrderBy({"added" = "DESC"})
+     */
+    private $comments;
+
+    /**
      * Projects constructor.
      */
     public function __construct()
@@ -462,6 +471,7 @@ class Projects
         $this->debtCollectionMissions = new ArrayCollection();
         $this->projectParticipants    = new ArrayCollection();
         $this->projectPercentFees     = new ArrayCollection();
+        $this->comments               = new ArrayCollection();
     }
 
     /**
@@ -681,27 +691,27 @@ class Projects
     }
 
     /**
-     * Set comments
+     * Set description
      *
-     * @param string $comments
+     * @param string $description
      *
      * @return Projects
      */
-    public function setComments($comments)
+    public function setDescription($description)
     {
-        $this->comments = $comments;
+        $this->description = $description;
 
         return $this;
     }
 
     /**
-     * Get comments
+     * Get description
      *
      * @return string
      */
-    public function getComments()
+    public function getDescription()
     {
-        return $this->comments;
+        return $this->description;
     }
 
     /**
@@ -1458,6 +1468,7 @@ class Projects
     }
 
     /**
+     * @deprecated
      * Get project memos
      *
      * @return ArrayCollection|ProjectsComments[]
@@ -1471,6 +1482,7 @@ class Projects
     }
 
     /**
+     * @deprecated
      * Get project public memos
      *
      * @return ArrayCollection|ProjectsComments[]
@@ -1819,7 +1831,6 @@ class Projects
     }
 
     /**
-     *
      * @return Loans[]|ArrayCollection
      */
     public function getLoans(): iterable
@@ -1863,5 +1874,13 @@ class Projects
     public function getProjectPercentFees(): iterable
     {
         return $this->projectPercentFees;
+    }
+
+    /**
+     * @return ProjectComment[]|ArrayCollection
+     */
+    public function getComments(): iterable
+    {
+        return $this->comments;
     }
 }

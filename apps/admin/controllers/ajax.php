@@ -337,7 +337,7 @@ class ajaxController extends bootstrap
                 }
 
                 if ($project->create_bo) {
-                    $project->comments = $_POST['comments_etape3'];
+                    $project->description = $_POST['comments_etape3'];
                 }
                 $project->objectif_loan        = $_POST['objectif_etape3'];
                 $project->nature_project       = $_POST['nature_project'];

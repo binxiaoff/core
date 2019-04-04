@@ -13,8 +13,8 @@ use Symfony\Component\HttpFoundation\{JsonResponse, RedirectResponse, Request, R
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
-use Unilend\Entity\{Attachment, AttachmentType, Bids, Clients, Companies, FeeType, Loans, Partner, PartnerProduct, PercentFee, Product, ProjectAttachment, ProjectAttachmentType, ProjectParticipant,
-    ProjectPercentFee, Projects, ProjectsComments, ProjectsStatus, Users, Wallet, WalletType};
+use Unilend\Entity\{Attachment, AttachmentType, Bids, Clients, Companies, FeeType, Loans, Partner, PartnerProduct, PercentFee, Product, ProjectAttachment, ProjectAttachmentType,
+    ProjectComment, ProjectParticipant, ProjectPercentFee, Projects, ProjectsStatus, Users, Wallet, WalletType};
 use Unilend\Repository\ProjectParticipantRepository;
 use Unilend\Bundle\CoreBusinessBundle\Service\{AttachmentManager, DemoMailerManager, ProjectManager, ProjectStatusManager};
 use Unilend\Bundle\FrontBundle\Form\Lending\BidType;
@@ -271,7 +271,7 @@ class DemoController extends AbstractController
                 ->setSlug($this->entityManager->getConnection()->generateSlug($title) . '-' . substr(Uuid::uuid4(), 0, 8))
                 ->setAmount($amount)
                 ->setPeriod($duration * 12)
-                ->setComments($description)
+                ->setDescription($description)
                 ->setCreateBo(false)
                 ->setStatus(ProjectsStatus::STATUS_REQUEST)
                 ->setIdPartner($partner)
@@ -393,7 +393,6 @@ class DemoController extends AbstractController
 
         $projectAttachmentRepository     = $this->entityManager->getRepository(ProjectAttachment::class);
         $projectAttachmentTypeRepository = $this->entityManager->getRepository(ProjectAttachmentType::class);
-        $projectCommentRepository        = $this->entityManager->getRepository(ProjectsComments::class);
         $productRepository               = $this->entityManager->getRepository(Product::class);
         $template                        = [
             'loanPeriods'               => $projectManager->getPossibleProjectPeriods(),
@@ -407,7 +406,6 @@ class DemoController extends AbstractController
             'projectStatus'             => [ProjectsStatus::STATUS_REQUEST, ProjectsStatus::STATUS_REVIEW, ProjectsStatus::STATUS_ONLINE, ProjectsStatus::STATUS_FUNDED, ProjectsStatus::STATUS_SIGNED, ProjectsStatus::STATUS_REPAYMENT, ProjectsStatus::STATUS_REPAID],
             'project'                   => $project,
             'product'                   => $project->getIdProduct() ? $productRepository->find($project->getIdProduct()) : null,
-            'messages'                  => $projectCommentRepository->findBy(['idProject' => $project, 'public' => true], ['added' => 'DESC']),
             'attachmentTypes'           => $projectAttachmentTypeRepository->getAttachmentTypes(),
             'projectAttachments'        => $projectAttachmentRepository->findBy(['idProject' => $project], ['added' => 'DESC']),
             'isEditable'                => $projectManager->isEditable($project),
@@ -533,44 +531,125 @@ class DemoController extends AbstractController
     }
 
     /**
-     * @Route("/projet/chat/{hash}", name="demo_project_chat", requirements={"hash":"[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}"})
+     * @Route("/project/comment/{hash}", name="demo_project_comment_add", requirements={"hash":"[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}"})
      *
      * @param string                     $hash
      * @param Request                    $request
      * @param UserInterface|Clients|null $user
      *
-     * @return Response
+     * @return JsonResponse
      */
-    public function projectChat(string $hash, Request $request, ?UserInterface $user): Response
+    public function projectCommentAdd(string $hash, Request $request, ?UserInterface $user): JsonResponse
     {
         $projectRepository = $this->entityManager->getRepository(Projects::class);
         $project           = $projectRepository->findOneBy(['hash' => $hash]);
 
         if (null === $project) {
-            return $this->redirectToRoute('demo_loans');
+            return $this->json([
+                'error'   => true,
+                'message' => 'Invalid parameters'
+            ], Response::HTTP_BAD_REQUEST);
         }
 
-        $content   = $request->request->filter('content', null, FILTER_SANITIZE_STRING);
-        $frontUser = $this->entityManager->getRepository(Users::class)->find(Users::USER_ID_FRONT);
+        $userId = $request->request->filter('user', null, FILTER_VALIDATE_INT);
+
+        if ($userId !== $user->getIdClient()) {
+            return $this->json([
+                'error'   => true,
+                'message' => 'Invalid user ID'
+            ], Response::HTTP_BAD_REQUEST);
+        }
+
+        $content = $request->request->get('content');
 
         if ($content) {
-            $message = new ProjectsComments();
-            $message
-                ->setIdProject($project)
-                ->setIdClient($user)
+            $parent  = $request->request->getInt('parent');
+            $parent  = $parent ? $this->entityManager->getRepository(ProjectComment::class)->find($parent) : null;
+            $comment = new ProjectComment();
+            $comment
+                ->setParent($parent)
+                ->setProject($project)
+                ->setClient($user)
                 ->setContent($content)
-                ->setIdUser($frontUser)
-                ->setPublic(true);
+                ->setVisibility(ProjectComment::VISIBILITY_ALL);
 
-            $this->entityManager->persist($message);
-            $this->entityManager->flush($message);
+            $this->entityManager->persist($comment);
+            $this->entityManager->flush($comment);
+
+            return $this->getCommentResponse($comment);
         }
 
-        $template = [
-            'messages' => $this->entityManager->getRepository(ProjectsComments::class)->findBy(['idProject' => $project, 'public' => true], ['added' => 'DESC'])
-        ];
+        return $this->json([
+            'error'   => true,
+            'message' => 'Unable to add comment'
+        ], Response::HTTP_BAD_REQUEST);
+    }
 
-        return $this->render(':frontbundle/demo:project_chat.html.twig', $template);
+    /**
+     * @Route("/project/comment", name="demo_project_comment_update")
+     *
+     * @param Request                    $request
+     * @param UserInterface|Clients|null $user
+     *
+     * @return JsonResponse
+     */
+    public function projectCommentUpdate(Request $request, ?UserInterface $user): JsonResponse
+    {
+        $commentId = $request->request->getInt('id');
+
+        if (empty($commentId)) {
+            return $this->json([
+                'error'   => true,
+                'message' => 'Invalid parameters'
+            ], Response::HTTP_BAD_REQUEST);
+        }
+
+        $comment = $this->entityManager->getRepository(ProjectComment::class)->find($commentId);
+
+        if (null === $comment) {
+            return $this->json([
+                'error'   => true,
+                'message' => 'Unknown comment'
+            ], Response::HTTP_BAD_REQUEST);
+        }
+
+        if ($comment->getClient() !== $user) {
+            return $this->json([
+                'error'   => true,
+                'message' => 'User cannot edit this comment'
+            ], Response::HTTP_FORBIDDEN);
+        }
+
+        $content = $request->request->get('content');
+
+        if ($content) {
+            $comment->setContent($content);
+            $this->entityManager->flush($comment);
+
+            return $this->getCommentResponse($comment);
+        }
+
+        return $this->json([
+            'error'   => true,
+            'message' => 'Invalid user ID'
+        ], Response::HTTP_BAD_REQUEST);
+    }
+
+    /**
+     * @param ProjectComment $comment
+     * @return JsonResponse
+     */
+    private function getCommentResponse(ProjectComment $comment): JsonResponse
+    {
+        return $this->json([
+            'id'                      => $comment->getId(),
+            'parent'                  => $comment->getParent() ? $comment->getParent()->getId() : null,
+            'created'                 => $comment->getAdded()->format('c'),
+            'modified'                => $comment->getUpdated() ? $comment->getUpdated()->format('c') : $comment->getAdded()->format('c'),
+            'content'                 => $comment->getContent(),
+            'fullname'                => $comment->getClient()->getPrenom() . ' ' . $comment->getClient()->getNom(),
+            'created_by_current_user' => true
+        ]);
     }
 
     /**
@@ -866,10 +945,10 @@ class DemoController extends AbstractController
                 $outputValue = $project->getBalanceCount();
                 break;
             case 'description':
-                $project->setComments($value);
+                $project->setDescription($value);
                 $this->entityManager->flush($project);
 
-                $outputValue = $project->getComments();
+                $outputValue = $project->getDescription();
                 break;
             case 'arranger':
                 $companyRepository          = $this->entityManager->getRepository(Companies::class);

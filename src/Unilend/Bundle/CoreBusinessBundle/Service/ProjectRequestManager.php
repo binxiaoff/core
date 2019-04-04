@@ -253,7 +253,7 @@ class ProjectRequestManager
             ->setAmount($amount)
             ->setPeriod($duration)
             ->setIdBorrowingMotive($reasonId)
-            ->setComments($comments)
+            ->setDescription($comments)
             ->setStatus($status)
             ->setIdPartner($partner)
             ->setCommissionRateFunds(Projects::DEFAULT_COMMISSION_RATE_FUNDS)

@@ -5,6 +5,7 @@ namespace Unilend\Entity;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
+ * @deprecated
  * ProjectsComments
  *
  * @ORM\Table(name="projects_comments", indexes={@ORM\Index(name="projects_comments_id_project", columns={"id_project"}), @ORM\Index(name="projects_comments_id_user", columns={"id_user"}), @ORM\Index(name="idx_projects_comments_public", columns={"public"})})

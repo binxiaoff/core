@@ -6,7 +6,7 @@ namespace DoctrineMigrations;
 
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\Migrations\AbstractMigration;
-use Unilend\Bundle\CoreBusinessBundle\Entity\MailTemplates;
+use Unilend\Entity\MailTemplates;
 
 final class Version20190328095739 extends AbstractMigration
 {

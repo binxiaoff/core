@@ -130,9 +130,9 @@
                             <div class="row description-container">
                                 <em>
                                     {% if isEditable %}
-                                        <span href="#" id="description" class="editable" data-type="textarea" data-toggle="manual" data-inputclass="input-field">{{ project.comments }}</span>
+                                        <span href="#" id="description" class="editable" data-type="textarea" data-toggle="manual" data-inputclass="input-field">{{ project.description }}</span>
                                     {% else %}
-                                        {{ project.comments|nl2br }}
+                                        {{ project.description|nl2br }}
                                     {% endif %}
                                 </em>
                             </div>
@@ -450,23 +450,7 @@
             <article class="dashboard-tab-pane margin-20-t" id="article-discussions">
                 <div class="panel" style="font-size: 16px;">
                     <h4 class="h4">Discussions</h4>
-                    <div class="row">
-                        <div style="display: inline-block; position: relative; width: 100%;">
-                            <form id="chat-form" action="{{ path('demo_project_chat', {'hash': project.hash}) }}" method="post">
-                                <textarea name="content" class="input-field" placeholder="Nouveau message ..." rows="1"
-                                          onchange="this.style.height = 'auto'; this.style.height = this.scrollHeight + 'px'"
-                                          onkeyup="this.style.height = 'auto'; this.style.height = this.scrollHeight + 'px'"
-                                          onkeydown="this.style.height = 'auto'; this.style.height = this.scrollHeight + 'px'"
-                                          style="overflow: hidden; resize: none;"></textarea>
-                                <button type="submit" class="btn-primary btn-shape-xxs ui-spinnerbutton" style="position: absolute; bottom: 4px; right: 4px;">
-                                    <span class="icon fa-pen-u32"></span>
-                                </button>
-                            </form>
-                        </div>
-                    </div>
-                    <div id="chat-content">
-                        {% include ':frontbundle/demo:project_chat.html.twig' %}
-                    </div>
+                    <div id="comments-container"></div>
                 </div>
             </article>
         </div><!-- /.dashboard-tabs-content -->
@@ -474,6 +458,8 @@
 {% endblock %}
 
 {% block pageHeadScripts %}
+    <link href="{{ asset('js/vendor/jquery-comments/jquery-comments.css', 'gulp') }}" rel="stylesheet"/>
+    <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css" rel="stylesheet"/>
     <link href="//cdnjs.cloudflare.com/ajax/libs/x-editable/1.5.0/jquery-editable/css/jquery-editable.css" rel="stylesheet"/>
     <link href="//cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.8.0/css/bootstrap-datepicker.min.css" rel="stylesheet"/>
     <style>
@@ -601,10 +587,19 @@
         .risk-analysis-container .editable-container .editable-input {
             width: 100%;
         }
+
+        #comments-container ul > li {
+            list-style: none;
+        }
+
+        #comments-container .control-row .delete {
+            display: none;
+        }
     </style>
 {% endblock %}
 
 {% block pageScripts %}
+    <script src="{{ asset('js/vendor/jquery-comments/jquery-comments.min.js', 'gulp') }}"></script>
     <script src="{{ asset('js/vendor/jquery.poshytip.min.js', 'gulp') }}"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/x-editable/1.5.0/jquery-editable/js/jquery-editable-poshytip.js"></script>
     <script>{% include ':frontbundle/demo/partials/bids:actions.js.twig' %}</script>
@@ -691,29 +686,104 @@
                 $('.visibility-bank-crca').not(':disabled').prop('checked', $(this).is(':checked'))
             })
 
-            var $chatForm = $('#chat-form')
-            var $textarea = $chatForm.find('textarea')
-            var $chatContainer = $('#chat-content')
+            $('#comments-container').comments({
+                currentUserId: {{ app.user.idClient }},
+                textareaPlaceholderText: 'Ajouter un commentaire',
+                newestText: 'Récents',
+                oldestText: 'Anciens',
+                popularText: '',
+                attachmentsText: 'Documents',
+                sendText: 'Commenter',
+                replyText: 'Répondre',
+                editText: 'Éditer',
+                editedText: 'Modifié',
+                youText: 'Vous',
+                saveText: 'Enregistrer',
+                deleteText: 'Supprimer',
+                viewAllRepliesText: 'Voir toutes les réponse (__replyCount__)',
+                hideRepliesText: 'Masquer',
+                noCommentsText: 'Aucun commentaire',
+                noAttachmentsText: 'Aucun document',
+                attachmentDropText: 'Déposez vos fichiers ici',
+                highlightColor: '#2bc9af',
+                deleteButtonColor: '#eceaed',
+                enableReplying: true,
+                enableEditing: true,
+                enableUpvoting: false,
+                enableDeleting: false,
+                enableDeletingCommentWithReplies: false,
+                enableAttachments: false, // @todo may be interesting in the future
+                enableHashtags: false, // @todo may be interesting in the future
+                enablePinging: false, // @todo may be interesting in the future
+                enableNavigation: true,
+                postCommentOnEnter: false,
+                forceResponsive: false,
+                readOnly: false,
+                getComments: function(success, error) {
+                    let commentsArray = [{% for comment in project.comments %}{
+                        id: {{ comment.id }},
+                        parent: {% if comment.parent %}{{ comment.parent.id }}{% else %}null{% endif %},
+                        created: '{{ comment.added|date('c') }}',
+                        modified: '{% if comment.updated %}{{ comment.updated|date('c') }}{% else %}{{ comment.added|date('c') }}{% endif %}',
+                        content: '{{ comment.content|raw|e('js') }}',
+                        fullname: '{{ comment.client.prenom }} {{ comment.client.nom }}',
+                        created_by_current_user: {% if app.user == comment.client %}true{% else %}false{% endif %}
+                    },{% endfor %}]
+                    success(commentsArray)
+                },
+                postComment: function(commentJSON, success, error) {
+                    let userId = this.currentUserId
 
-            $chatForm.on('submit', function (event) {
-                event.preventDefault()
-
-                $.ajax({
-                    url: $chatForm.attr('action'),
-                    method: $chatForm.attr('method'),
-                    data: $chatForm.serialize(),
-                    success: function (response) {
-                        $chatContainer.html(response)
-                        $textarea.val('')
-                    }
-                })
-            })
-
-            $chatForm.on('keydown', function (event) {
-                if (event.keyCode === 13 && event.metaKey) {
-                    $chatForm.submit()
-                }
-            })
+                    $.ajax({
+                        type: 'post',
+                        url: '{{ path('demo_project_comment_add', {'hash': project.hash}) }}',
+                        data: {
+                            user: userId,
+                            content: commentJSON.content,
+                            parent: commentJSON.parent
+                        },
+                        success: function(comment) {
+                            success(comment)
+                        },
+                        error: error
+                    })
+                },
+                putComment: function(commentJSON, success, error) {
+                    $.ajax({
+                        type: 'post',
+                        url: '{{ path('demo_project_comment_update') }}',
+                        data: {
+                            id: commentJSON.id,
+                            content: commentJSON.content,
+                            parent: commentJSON.parent
+                        },
+                        success: function(comment) {
+                            success(comment)
+                        },
+                        error: error
+                    })
+                },
+                timeFormatter: function(time) {
+                    let date = new Date(time)
+                    return date.toLocaleDateString() + ' ' + ('0' + date.getHours()).slice(-2) + ':' + ('0' + date.getMinutes()).slice(-2)
+                },
+                defaultNavigationSortKey: 'newest',
+                roundProfilePictures: false,
+                textareaRows: 2,
+                textareaRowsOnFocus: 2,
+                textareaMaxRows: 5,
+                maxRepliesVisible: 20,
+                // getUsers: function(success, error) {
+                //     setTimeout(function() {
+                //         success(usersArray);
+                //     }, 500);
+                // },
+                // uploadAttachments: function(dataArray, success, error) {
+                //     setTimeout(function() {
+                //         success(dataArray);
+                //     }, 500);
+                // },
+            });
         })
     </script>
 {% endblock %}

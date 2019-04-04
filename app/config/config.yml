@@ -320,7 +320,7 @@ eight_points_guzzle:
             options:
                 headers:
                     Accept: "application/json"
-                    Authorization: "Bearer 6a92714f-2b81-313c-be11-d90039c2a53b"
+                    Authorization: "Bearer 50afb10f-39b3-3f75-8660-764884f834bb"
                 http_errors: false
 
 welp_mailchimp:
