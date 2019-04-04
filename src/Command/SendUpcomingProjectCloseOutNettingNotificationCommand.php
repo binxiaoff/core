@@ -126,7 +126,7 @@ class SendUpcomingProjectCloseOutNettingNotificationCommand extends ContainerAwa
             'changeDate'  => $debtCollectionChangeDate->format('d/m/Y'),
             'interval'    => $interval
         ];
-        /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+        /** @var \Unilend\SwiftMailer\TemplateMessage $message */
         $message = $this->getContainer()->get('unilend.swiftmailer.message_provider')->newMessage($mailType, $keywords);
         try {
             /** @var Settings[] $recipients */

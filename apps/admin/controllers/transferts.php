@@ -471,7 +471,7 @@ class transfertsController extends bootstrap
                             'projectsLink'     => $this->furl . '/projets-a-financer',
                         ];
 
-                        /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+                        /** @var \Unilend\SwiftMailer\TemplateMessage $message */
                         $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('preteur-alimentation-manu', $keywords);
 
                         try {

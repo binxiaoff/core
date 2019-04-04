@@ -57,7 +57,7 @@ class CheckLendersRepaymentCommand extends ContainerAwareCommand
         $settings->get('Adresse notification check remb preteurs', 'type');
         $recipient = $settings->value;
 
-        /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+        /** @var \Unilend\SwiftMailer\TemplateMessage $message */
         $message = $this->getContainer()->get('unilend.swiftmailer.message_provider')->newMessage('notification-check-remboursements-preteurs', $replacements, false);
 
          try {

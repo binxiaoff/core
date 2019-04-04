@@ -10,7 +10,7 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Unilend\Entity\{Clients, Wallet, WalletType};
 use Unilend\Bundle\CoreBusinessBundle\Service\CIPManager;
-use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage;
+use Unilend\SwiftMailer\TemplateMessage;
 
 class LenderCIPController extends Controller
 {

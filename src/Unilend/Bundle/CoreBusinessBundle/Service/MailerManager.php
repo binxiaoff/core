@@ -9,7 +9,7 @@ use Symfony\Component\{Asset\Packages, DependencyInjection\ContainerInterface, R
 use Unilend\Entity\{Bids, Clients, ClientSettingType, ClientsGestionTypeNotif, ClientsMandats, Companies, Loans, Operation, OperationSubType, ProjectBeneficialOwnerUniversign, ProjectCgv, Projects,
     ProjectsPouvoir, ProjectsStatus, Settings, TemporaryLinksLogin, UniversignEntityInterface, Users, Wallet, WalletBalanceHistory, WalletType};
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
-use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\{TemplateMessage, TemplateMessageProvider};
+use Unilend\SwiftMailer\{TemplateMessage, TemplateMessageProvider};
 use Unilend\core\Loader;
 
 class MailerManager

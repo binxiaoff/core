@@ -4,6 +4,11 @@ services:
         autoconfigure: true
         bind:
             $consoleLogger: '@monolog.logger.console'
+            $defaultLocale: '%locale%'
+            $sharedTemporaryPath: '%path.shared_tmp%'
+            $templateMessageFQCN: 'Unilend\SwiftMailer\TemplateMessage'
+            $frontUrl: '%router.request_context.scheme%://%url.host_default%'
+            $adminUrl: '%router.request_context.scheme%://%url.host_admin%'
 
     # makes classes in src/ available to be used as services
     # this creates a service per class whose id is the fully-qualified class name
@@ -21,3 +26,20 @@ services:
     logger:
         alias: 'monolog.logger'
         public: true
+
+    Mailjet\Client:
+        $key: '%mailjet.api_key%'
+        $secret: '%mailjet.api_secret%'
+        $call: true
+        $settings:
+            version: '%mailjet.api_version%'
+
+    # Swift Mailer and its bridges
+    swiftmailer.spool.db: '@Unilend\SwiftMailer\DatabaseSpool'
+    swiftmailer.mailer.default.spool.db: '@Unilend\SwiftMailer\DatabaseSpool'
+    swiftmailer.mailer.transport.mailjet: '@Unilend\SwiftMailer\MailjetTransport'
+    mailjet: '@Unilend\SwiftMailer\MailjetTransport'
+
+    Unilend\Service\Translation\TranslationLoader:
+        tags:
+            - { name: translation.loader, alias: db }

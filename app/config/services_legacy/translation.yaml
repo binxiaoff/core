@@ -6,4 +6,4 @@ services:
         autoconfigure: true
         public: true
 
-    unilend.service.translation_manager: '@Unilend\Bundle\TranslationBundle\Service\TranslationManager'
+    unilend.service.translation_manager: '@Unilend\Service\Translation\TranslationManager'

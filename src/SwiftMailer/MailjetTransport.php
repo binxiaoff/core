@@ -1,6 +1,6 @@
 <?php
 
-namespace Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer;
+namespace Unilend\SwiftMailer;
 
 use Mailjet\Client;
 use Mailjet\Resources;

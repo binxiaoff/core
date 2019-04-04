@@ -2,7 +2,7 @@
 
 use Symfony\Component\HttpFoundation\Request;
 use Unilend\Entity\{MailQueue, MailTemplates, Translations, Zones};
-use Unilend\Bundle\MessagingBundle\Service\{MailQueueManager, MailTemplateManager};
+use Unilend\Service\Mailer\{MailQueueManager, MailTemplateManager};
 
 class mailsController extends bootstrap
 {
@@ -274,7 +274,7 @@ class mailsController extends bootstrap
 
         $this->hideDecoration();
         $_SESSION['request_url'] = $this->url;
-        /** @var \Unilend\Bundle\MessagingBundle\Service\MailQueueManager $mailQueueManager */
+        /** @var \Unilend\Service\Mailer\MailQueueManager $mailQueueManager */
         $mailQueueManager = $this->get('unilend.service.mail_queue');
 
         try {

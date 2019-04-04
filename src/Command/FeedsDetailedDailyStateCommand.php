@@ -966,7 +966,7 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
         /** @var Settings $recipientSetting */
         $recipientSetting = $entityManager->getRepository(Settings::class)->findOneBy(['type' => 'Adresse notification etat quotidien']);
 
-        /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+        /** @var \Unilend\SwiftMailer\TemplateMessage $message */
         $message = $this->getContainer()->get('unilend.swiftmailer.message_provider')->newMessage('notification-etat-quotidien', [], false);
         $message->setSubject('Etat Quotidien avec soldes détaillés')
             ->setTo(explode(';', trim($recipientSetting->getValue())))

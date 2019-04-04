@@ -1,6 +1,6 @@
 <?php
 
-namespace Unilend\Bundle\TranslationBundle\Service;
+namespace Unilend\Service\Translation;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Sonata\CacheBundle\Adapter\SymfonyCache;

@@ -3,7 +3,7 @@
 use Doctrine\ORM\EntityManager;
 use Unilend\Entity\{AddressType, Bids, Clients, Pays, ProjectRejectionReason, Projects, ProjectsComments, ProjectsNotes, ProjectsStatus, Wallet, WalletType, Zones};
 use Unilend\Bundle\CoreBusinessBundle\Service\LenderOperationsManager;
-use Unilend\Bundle\TranslationBundle\Service\TranslationManager;
+use Unilend\Service\Translation\TranslationManager;
 
 class ajaxController extends bootstrap
 {
@@ -521,7 +521,7 @@ class ajaxController extends bootstrap
                 'lenderPattern' => $this->clients->getLenderPattern($this->clients->id_client)
             ];
 
-            /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+            /** @var \Unilend\SwiftMailer\TemplateMessage $message */
             $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('generation-mot-de-passe', $keywords);
 
             try {
@@ -1152,7 +1152,7 @@ class ajaxController extends bootstrap
                     'firstName' => $client->getPrenom()
                 ];
 
-                /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+                /** @var \Unilend\SwiftMailer\TemplateMessage $message */
                 $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('emprunteur-dossier-rejete', $keywords);
 
                 try {

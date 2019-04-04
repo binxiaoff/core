@@ -6,7 +6,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Entity\{AddressType, Attachment, BankAccount, ClientAddress, ClientDataHistory, Clients, Companies, CompanyAddress, Wallet, WalletType};
-use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessageProvider;
+use Unilend\SwiftMailer\TemplateMessageProvider;
 
 class ClientDataHistoryManager
 {

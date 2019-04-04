@@ -1,13 +1,13 @@
 <?php
 
-namespace Unilend\Bundle\MessagingBundle\Service;
+namespace Unilend\Service\Mailer;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Unilend\Entity\Clients;
 use Unilend\Entity\MailQueue;
-use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage;
-use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessageProvider;
+use Unilend\SwiftMailer\TemplateMessage;
+use Unilend\SwiftMailer\TemplateMessageProvider;
 use Unilend\Entity\MailTemplates;
 
 class MailQueueManager

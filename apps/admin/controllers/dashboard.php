@@ -2,7 +2,7 @@
 
 use Unilend\Entity\{BorrowingMotive, Partner, Projects, ProjectsStatus, Users, UsersTypes, Zones};
 use Unilend\Bundle\CoreBusinessBundle\Service\ProjectRequestManager;
-use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessageProvider;
+use Unilend\SwiftMailer\TemplateMessageProvider;
 
 class dashboardController extends bootstrap
 {
@@ -314,7 +314,7 @@ class dashboardController extends bootstrap
         if (null !== $company && null !== $company->getIdClientOwner() && false === empty($company->getIdClientOwner()->getEmail())) {
             /** @var TemplateMessageProvider $messageProvider */
             $messageProvider = $this->get('unilend.swiftmailer.message_provider');
-            /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+            /** @var \Unilend\SwiftMailer\TemplateMessage $message */
             $message = $messageProvider->newMessage('emprunteur-dossier-rejete', ['firstName' => $company->getIdClientOwner()->getPrenom()]);
 
             try {

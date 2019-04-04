@@ -8,7 +8,7 @@ use Symfony\Component\{Asset\Packages, Routing\RouterInterface, Translation\Tran
 use Unilend\Entity\{ClientsGestionTypeNotif, CloseOutNettingPayment, CloseOutNettingRepayment, CompanyStatus, CompanyStatusHistory, Echeanciers, EcheanciersEmprunteur, Loans, Notifications, Operation,
     Projects, ProjectsStatus, Settings, Wallet};
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
-use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessageProvider;
+use Unilend\SwiftMailer\TemplateMessageProvider;
 
 class ProjectStatusNotificationSender
 {
@@ -183,7 +183,7 @@ class ProjectStatusNotificationSender
                 'borrowerServiceEmail'       => $borrowerEmail
             ];
 
-        /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+        /** @var \Unilend\SwiftMailer\TemplateMessage $message */
         $message = $this->messageProvider->newMessage($mailType, $keywords);
 
         try {
@@ -400,7 +400,7 @@ class ProjectStatusNotificationSender
 
                     $mailType = $wallet->getIdClient()->isNaturalPerson() ? $mailTypePerson : $mailTypeLegalEntity;
 
-                    /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+                    /** @var \Unilend\SwiftMailer\TemplateMessage $message */
                     $message = $this->messageProvider->newMessage($mailType, $lenderKeywords);
 
                     try {

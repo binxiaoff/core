@@ -7,7 +7,7 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\Asset\Packages;
 use Symfony\Component\Routing\{Generator\UrlGeneratorInterface, RouterInterface};
 use Unilend\Entity\{BankAccount, Projects, Settings, Users, Virements, Wallet, WalletType};
-use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessageProvider;
+use Unilend\SwiftMailer\TemplateMessageProvider;
 
 class WireTransferOutManager
 {
@@ -220,7 +220,7 @@ class WireTransferOutManager
                     'universignLink'  => $this->frontUrl . $universignLink
                 ];
 
-                /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+                /** @var \Unilend\SwiftMailer\TemplateMessage $message */
                 $message = $this->messageProvider->newMessage('wire-transfer-out-borrower-notification', $keywords);
                 try {
                     $message->setTo($wireTransferOut->getClient()->getEmail());
@@ -254,7 +254,7 @@ class WireTransferOutManager
 
             $settings = $this->entityManager->getRepository(Settings::class)->findOneBy(['type' => 'Adresse controle interne']);
 
-            /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+            /** @var \Unilend\SwiftMailer\TemplateMessage $message */
             $message = $this->messageProvider->newMessage('wire-transfer-out-to-validate-staff-notification', $keywords);
             try {
                 $message->setTo($settings->getValue());
