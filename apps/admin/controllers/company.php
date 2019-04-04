@@ -157,9 +157,9 @@ class companyController extends bootstrap
     {
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\AttachmentManager $attachmentManager */
+        /** @var \Unilend\Service\AttachmentManager $attachmentManager */
         $attachmentManager = $this->get('unilend.service.attachment_manager');
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\AddressManager $addressManager */
+        /** @var \Unilend\Service\AddressManager $addressManager */
         $addressManager = $this->get('unilend.service.address_manager');
 
         $siren               = substr(filter_var($this->request->request->get('siren'), FILTER_SANITIZE_STRING), 0, 9);

@@ -16,7 +16,7 @@ use Symfony\Component\Security\Guard\Authenticator\AbstractFormLoginAuthenticato
 use Symfony\Component\Security\Http\Session\SessionAuthenticationStrategyInterface;
 use Symfony\Component\Security\Http\Util\TargetPathTrait;
 use Unilend\Entity\{Clients, ClientsStatus, LoginLog, Settings};
-use Unilend\Bundle\CoreBusinessBundle\Service\{CIPManager, GoogleRecaptchaManager, LenderManager};
+use Unilend\Service\{CIPManager, GoogleRecaptchaManager, LenderManager};
 use Unilend\Bundle\FrontBundle\Service\LoginHistoryLogger;
 
 class LoginAuthenticator extends AbstractFormLoginAuthenticator

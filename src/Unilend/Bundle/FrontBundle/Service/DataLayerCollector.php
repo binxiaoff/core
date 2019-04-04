@@ -6,7 +6,7 @@ use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Unilend\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Service\PartnerManager;
+use Unilend\Service\PartnerManager;
 use Xynnn\GoogleTagManagerBundle\Service\GoogleTagManagerInterface;
 
 /**

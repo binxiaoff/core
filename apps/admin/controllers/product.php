@@ -36,7 +36,7 @@ class productController extends bootstrap
         $this->repaymentType = $this->get('doctrine.orm.entity_manager')->getRepository(RepaymentType::class)->find($this->product->id_repayment_type);
 
         // max / min duration
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductManager $productManager */
+        /** @var \Unilend\Service\Product\ProductManager $productManager */
         $productManager        = $this->get('unilend.service_product.product_manager');
         $this->duration['min'] = $productManager->getAttributesByType($this->product, ProductAttributeType::MIN_LOAN_DURATION_IN_MONTH);
         $this->duration['max'] = $productManager->getAttributesByType($this->product, ProductAttributeType::MAX_LOAN_DURATION_IN_MONTH);
@@ -89,7 +89,7 @@ class productController extends bootstrap
             header('Location: /product');
         }
 
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\ContractManager $contractManager */
+        /** @var \Unilend\Service\Product\Contract\ContractManager $contractManager */
         $contractManager = $this->get('unilend.service_product_contract.contract_manager');
 
         $this->lenderType         = $contractManager->getAttributesByType($this->contract, UnderlyingContractAttributeType::ELIGIBLE_CLIENT_TYPE);

@@ -2,7 +2,7 @@
 
 use Symfony\Component\HttpFoundation\Request;
 use Unilend\Entity\{DebtCollectionMission, ProjectCharge, ProjectChargeType, Zones};
-use Unilend\Bundle\CoreBusinessBundle\Service\DebtCollectionMissionManager;
+use Unilend\Service\DebtCollectionMissionManager;
 
 class debt_collection_missionController extends bootstrap
 {
@@ -21,7 +21,7 @@ class debt_collection_missionController extends bootstrap
         $debtCollectionMissionManager = $this->get('unilend.service.debt_collection_mission_manager');
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BackOfficeUserManager $userManager */
+        /** @var \Unilend\Service\BackOfficeUserManager $userManager */
         $userManager = $this->get('unilend.service.back_office_user_manager');
 
         if ($userManager->isGrantedRisk($this->userEntity) || $userManager->isUserGroupIT($this->userEntity)) {
@@ -59,7 +59,7 @@ class debt_collection_missionController extends bootstrap
     {
         $this->hideDecoration();
         $this->autoFireView = false;
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BackOfficeUserManager $userManager */
+        /** @var \Unilend\Service\BackOfficeUserManager $userManager */
         $userManager = $this->get('unilend.service.back_office_user_manager');
 
         if (false === empty($this->params[0]) && $userManager->isGrantedRisk($this->userEntity) && $this->request->isMethod(Request::METHOD_POST)) {
@@ -99,7 +99,7 @@ class debt_collection_missionController extends bootstrap
                 $feesRate = 0;
             }
 
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\DebtCollectionMissionManager $debtCollectionManager */
+            /** @var \Unilend\Service\DebtCollectionMissionManager $debtCollectionManager */
             $debtCollectionManager = $this->get('unilend.service.debt_collection_mission_manager');
 
             if (empty($errors)) {
@@ -129,7 +129,7 @@ class debt_collection_missionController extends bootstrap
     {
         $this->hideDecoration();
         $this->autoFireView = false;
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BackOfficeUserManager $userManager */
+        /** @var \Unilend\Service\BackOfficeUserManager $userManager */
         $userManager = $this->get('unilend.service.back_office_user_manager');
 
         if (false === empty($this->params[0]) && $userManager->isGrantedRisk($this->userEntity) && $this->request->isMethod(Request::METHOD_POST)) {
@@ -142,7 +142,7 @@ class debt_collection_missionController extends bootstrap
                 $errors[] = 'La mission de recouvrement n\'existe pas.';
             }
 
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\DebtCollectionMissionManager $debtCollectionManager */
+            /** @var \Unilend\Service\DebtCollectionMissionManager $debtCollectionManager */
             $debtCollectionManager = $this->get('unilend.service.debt_collection_mission_manager');
 
             if (empty($errors)) {
@@ -161,7 +161,7 @@ class debt_collection_missionController extends bootstrap
     {
         $this->hideDecoration();
         $this->autoFireView = false;
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BackOfficeUserManager $userManager */
+        /** @var \Unilend\Service\BackOfficeUserManager $userManager */
         $userManager = $this->get('unilend.service.back_office_user_manager');
 
         if (false === empty($this->params[0]) && $userManager->isGrantedRisk($this->userEntity)) {

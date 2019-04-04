@@ -40,7 +40,7 @@ class queriesController extends bootstrap
     {
         $this->queries   = $this->loadData('queries');
         $this->lRequetes = $this->queries->select('', 'executed DESC');
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BackOfficeUserManager $userManager */
+        /** @var \Unilend\Service\BackOfficeUserManager $userManager */
         $userManager = $this->get('unilend.service.back_office_user_manager');
 
         if (isset($_POST['form_edit_requete']) && $userManager->isGrantedIT($this->userEntity)) {

@@ -3,7 +3,7 @@
 use Box\Spout\Common\Type;
 use Box\Spout\Writer\WriterFactory;
 use Unilend\Entity\{Bids, ClientsStatus, OperationType, Projects, TransmissionSequence, WalletType, Zones};
-use Unilend\Bundle\CoreBusinessBundle\Service\{
+use Unilend\Service\{
     BdfLoansDeclarationManager, IfuManager
 };
 
@@ -106,7 +106,7 @@ class statsController extends bootstrap
         $this->autoFireView = false;
         $this->hideDecoration();
 
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\IfuManager $ifuManager */
+        /** @var \Unilend\Service\IfuManager $ifuManager */
         $ifuManager = $this->get('unilend.service.ifu_manager');
         $filePath   = $ifuManager->getStorageRootPath() . DIRECTORY_SEPARATOR . $fileName;
 
@@ -464,7 +464,7 @@ class statsController extends bootstrap
 
     public function _logs_webservices()
     {
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\WsMonitoringManager $wsMonitoringManager */
+        /** @var \Unilend\Service\WsMonitoringManager $wsMonitoringManager */
         $wsMonitoringManager = $this->get('unilend.service.ws_monitoring_manager');
         $data                = $wsMonitoringManager->getDataForChart();
         $this->chartData     = json_encode($data);

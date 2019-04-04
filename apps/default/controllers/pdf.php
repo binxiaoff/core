@@ -4,7 +4,7 @@ use Knp\Snappy\Pdf;
 use Psr\Log\LoggerInterface;
 use Unilend\Entity\{AddressType, BankAccount, ClientAddress, Clients, CompanyAddress, CompanyStatus, CompanyStatusHistory, Elements, Loans, ProjectCgv, ProjectsStatus, TaxType, UnderlyingContract,
     UniversignEntityInterface, Wallet};
-use Unilend\Bundle\CoreBusinessBundle\Service\Repayment\ProjectRepaymentScheduleManager;
+use Unilend\Service\Repayment\ProjectRepaymentScheduleManager;
 
 class pdfController extends bootstrap
 {
@@ -148,7 +148,7 @@ class pdfController extends bootstrap
             $proxy   = $this->commonProxy();
             $mandate = $this->commonMandate();
 
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BeneficialOwnerManager $beneficialOwnerManager */
+            /** @var \Unilend\Service\BeneficialOwnerManager $beneficialOwnerManager */
             $beneficialOwnerManager                 = $this->get('unilend.service.beneficial_owner_manager');
             $projectNeedsBeneficialOwnerDeclaration = $beneficialOwnerManager->projectNeedsBeneficialOwnerDeclaration($this->projects);
             if ($projectNeedsBeneficialOwnerDeclaration) {
@@ -917,7 +917,7 @@ class pdfController extends bootstrap
             $this->date            = $companyStatusHistory->getChangedOn();
             $this->mandataires_var = $companyStatusHistory->getReceiver();
 
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $projectManager */
+            /** @var \Unilend\Service\ProjectManager $projectManager */
             $projectManager = $this->get('unilend.service.project_manager');
 
             $creditorClaimAmounts = $projectManager->getCreditorClaimAmounts($loan);
@@ -925,7 +925,7 @@ class pdfController extends bootstrap
             $this->echoir         = $creditorClaimAmounts['to_expired'];
             $this->total          = round(bcadd($creditorClaimAmounts['expired'], $creditorClaimAmounts['to_expired'], 4), 2);
 
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\CompanyManager $companyManager */
+            /** @var \Unilend\Service\CompanyManager $companyManager */
             $companyManager   = $this->get('unilend.service.company_manager');
             $this->nature_var = $companyManager->getCompanyStatusNameByLabel($companyStatusHistory->getIdStatus()->getLabel());
 

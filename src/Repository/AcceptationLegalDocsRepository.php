@@ -5,7 +5,7 @@ namespace Unilend\Repository;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
 use Unilend\Entity\{AcceptationsLegalDocs, Wallet, WalletType};
-use Unilend\Bundle\CoreBusinessBundle\Service\TermsOfSaleManager;
+use Unilend\Service\TermsOfSaleManager;
 
 class AcceptationLegalDocsRepository extends EntityRepository
 {

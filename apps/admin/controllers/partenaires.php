@@ -4,7 +4,7 @@ use Doctrine\ORM\{EntityManager, ORMException, UnexpectedResultException};
 use Symfony\Component\HttpFoundation\Request;
 use Unilend\Entity\{AddressType, AttachmentType, Clients, ClientsStatus, Companies, CompanyClient, Partner, PartnerProduct, PartnerProjectAttachment, PartnerThirdParty, PartnerThirdPartyType, Pays,
     Product, ProjectsStatus, TemporaryLinksLogin, WalletType, Zones};
-use Unilend\Bundle\CoreBusinessBundle\Service\AddressManager;
+use Unilend\Service\AddressManager;
 
 class partenairesController extends bootstrap
 {
@@ -484,11 +484,11 @@ class partenairesController extends bootstrap
                 $entityManager->persist($companyClient);
                 $entityManager->flush([$companyClient->getIdClient(), $companyClient]);
 
-                /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ClientCreationManager $clientCreationManager */
+                /** @var \Unilend\Service\ClientCreationManager $clientCreationManager */
                 $clientCreationManager = $this->get('unilend.service.client_creation_manager');
                 $clientCreationManager->createAccount($companyClient->getIdClient(), WalletType::PARTNER, $_SESSION['user']['id_user'], ClientsStatus::STATUS_VALIDATED);
 
-                /** @var \Unilend\Bundle\CoreBusinessBundle\Service\MailerManager $mailerManager */
+                /** @var \Unilend\Service\MailerManager $mailerManager */
                 $mailerManager = $this->get('unilend.service.email_manager');
                 $mailerManager->sendPartnerAccountActivation($companyClient->getIdClient());
 
@@ -577,7 +577,7 @@ class partenairesController extends bootstrap
             $companyClientId = $companyClient->getId();
 
             try {
-                /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ClientStatusManager $clientStatusManager */
+                /** @var \Unilend\Service\ClientStatusManager $clientStatusManager */
                 $clientStatusManager = $this->get('unilend.service.client_status_manager');
                 $clientStatusManager->addClientStatus($companyClient->getIdClient(), $this->userEntity->getIdUser(), ClientsStatus::STATUS_DISABLED);
 
@@ -626,12 +626,12 @@ class partenairesController extends bootstrap
             if (count($duplicates)) {
                 $errors[] = 'Il existe déjà un compte en ligne avec cette adresse email';
             } else {
-                /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ClientStatusManager $clientStatusManager */
+                /** @var \Unilend\Service\ClientStatusManager $clientStatusManager */
                 $clientStatusManager = $this->get('unilend.service.client_status_manager');
                 $clientStatusManager->addClientStatus($companyClient->getIdClient(), $this->userEntity->getIdUser(), ClientsStatus::STATUS_VALIDATED);
             }
         } elseif ('deactivate' === $request->request->get('action')) {
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ClientStatusManager $clientStatusManager */
+            /** @var \Unilend\Service\ClientStatusManager $clientStatusManager */
             $clientStatusManager = $this->get('unilend.service.client_status_manager');
             $clientStatusManager->addClientStatus($companyClient->getIdClient(), $this->userEntity->getIdUser(), ClientsStatus::STATUS_DISABLED);
         }

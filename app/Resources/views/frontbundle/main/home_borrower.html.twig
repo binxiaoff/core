@@ -310,11 +310,11 @@
         idMotiveShareBuyBack: {{ constant('\\Unilend\\Entity\\BorrowingMotive::ID_MOTIVE_SHARE_BUYBACK') }}
       }
       var borrowerEsimErrorCode = {
-        invalidAmount: {{ constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Service\\ProjectRequestManager::EXCEPTION_CODE_INVALID_AMOUNT') }},
-        invalidDuration: {{ constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Service\\ProjectRequestManager::EXCEPTION_CODE_INVALID_DURATION') }},
-        invalidReason: {{ constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Service\\ProjectRequestManager::EXCEPTION_CODE_INVALID_REASON') }},
-        invalidSiren: {{ constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Service\\ProjectRequestManager::EXCEPTION_CODE_INVALID_SIREN') }},
-        invalidEmail: {{ constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Service\\ProjectRequestManager::EXCEPTION_CODE_INVALID_EMAIL') }}
+        invalidAmount: {{ constant('\\Unilend\\Service\\ProjectRequestManager::EXCEPTION_CODE_INVALID_AMOUNT') }},
+        invalidDuration: {{ constant('\\Unilend\\Service\\ProjectRequestManager::EXCEPTION_CODE_INVALID_DURATION') }},
+        invalidReason: {{ constant('\\Unilend\\Service\\ProjectRequestManager::EXCEPTION_CODE_INVALID_REASON') }},
+        invalidSiren: {{ constant('\\Unilend\\Service\\ProjectRequestManager::EXCEPTION_CODE_INVALID_SIREN') }},
+        invalidEmail: {{ constant('\\Unilend\\Service\\ProjectRequestManager::EXCEPTION_CODE_INVALID_EMAIL') }}
       }
       var borrowerEsimErrorMessages = {
         invalidAmount: '{{ "project-request-simulator_invalid-amount"|trans|e("js") }}',

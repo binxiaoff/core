@@ -14,7 +14,7 @@ use Unilend\Entity\{Attachment, AttachmentType, Bids, Clients, ClientsHistoryAct
     UnderlyingContractAttributeType, Wallet, WalletType};
 use Unilend\Exception\BidException;
 use Unilend\Repository\ProjectsRepository;
-use Unilend\Bundle\CoreBusinessBundle\Service\CIPManager;
+use Unilend\Service\CIPManager;
 use Unilend\Bundle\FrontBundle\Security\LoginAuthenticator;
 use Unilend\Bundle\FrontBundle\Service\{LenderAccountDisplayManager, ProjectDisplayManager};
 use Unilend\core\Loader;

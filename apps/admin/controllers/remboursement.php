@@ -6,7 +6,7 @@ use Doctrine\ORM\EntityManager;
 use Symfony\Component\HttpFoundation\Request;
 use Unilend\Entity\{Clients, CloseOutNettingPayment, CompanyStatusHistory, DebtCollectionFeeDetail, DebtCollectionMission, DebtCollectionMissionPaymentSchedule, EcheanciersEmprunteur, ProjectCharge,
     ProjectChargeType, ProjectRepaymentTask, Projects, ProjectsStatus, Receptions, Zones};
-use Unilend\Bundle\CoreBusinessBundle\Service\{BackOfficeUserManager, DebtCollectionMissionManager, ProjectCloseOutNettingManager, Repayment\ProjectCloseOutNettingPaymentManager,
+use Unilend\Service\{BackOfficeUserManager, DebtCollectionMissionManager, ProjectCloseOutNettingManager, Repayment\ProjectCloseOutNettingPaymentManager,
     Repayment\ProjectPaymentManager};
 
 class remboursementController extends bootstrap
@@ -133,7 +133,7 @@ class remboursementController extends bootstrap
             }
 
             if (empty($errors)) {
-                /** @var \Unilend\Bundle\CoreBusinessBundle\Service\Repayment\ProjectRepaymentTaskManager $projectRepaymentTaskManager */
+                /** @var \Unilend\Service\Repayment\ProjectRepaymentTaskManager $projectRepaymentTaskManager */
                 $projectRepaymentTaskManager = $this->get('unilend.service_repayment.project_repayment_task_manager');
 
                 /** @var Projects $project */
@@ -169,12 +169,12 @@ class remboursementController extends bootstrap
                             break;
                     }
 
-                    /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $projectManager */
+                    /** @var \Unilend\Service\ProjectManager $projectManager */
                     $projectManager = $this->get('unilend.service.project_manager');
 
                     if ($projectManager->isHealthy($project)) {
                         $projectRepaymentTaskManager->enableAutomaticRepayment($project, $this->userEntity);
-                        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectStatusManager $projectStatusManager */
+                        /** @var \Unilend\Service\ProjectStatusManager $projectStatusManager */
                         $projectStatusManager = $this->get('unilend.service.project_status_manager');
                         $projectStatusManager->addProjectStatus($this->userEntity, ProjectsStatus::STATUS_REPAYMENT, $project);
                     }
@@ -393,9 +393,9 @@ class remboursementController extends bootstrap
             $project         = $projectRepository->find($projectId);
 
             if (null !== $project && $project->getStatus() >= ProjectsStatus::STATUS_REPAYMENT) {
-                /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $projectManager */
+                /** @var \Unilend\Service\ProjectManager $projectManager */
                 $projectManager = $this->get('unilend.service.project_manager');
-                /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectCloseOutNettingManager $projectCloseOutNettingManager */
+                /** @var \Unilend\Service\ProjectCloseOutNettingManager $projectCloseOutNettingManager */
                 $projectCloseOutNettingManager = $this->get('unilend.service.project_close_out_netting_manager');
 
                 $projectStatus            = $entityManager->getRepository(ProjectsStatus::class)->findOneBy(['status' => $project->getStatus()]);
@@ -519,7 +519,7 @@ class remboursementController extends bootstrap
             }
 
             try {
-                /** @var \Unilend\Bundle\CoreBusinessBundle\Service\Repayment\ProjectRepaymentTaskManager $projectRepaymentTaskManager */
+                /** @var \Unilend\Service\Repayment\ProjectRepaymentTaskManager $projectRepaymentTaskManager */
                 $projectRepaymentTaskManager = $this->get('unilend.service_repayment.project_repayment_task_manager');
 
                 if ($switch) {

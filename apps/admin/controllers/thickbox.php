@@ -115,7 +115,7 @@ class thickboxController extends bootstrap
             return;
         }
 
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\CompanyManager companyManager */
+        /** @var \Unilend\Service\CompanyManager companyManager */
         $this->companyManager = $this->get('unilend.service.company_manager');
         $this->statusLabel    = $this->companyManager->getCompanyStatusNameByLabel($companyStatus->getLabel());
 

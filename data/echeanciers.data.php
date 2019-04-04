@@ -1,7 +1,7 @@
 <?php
 
 use Unilend\Entity\{CompanyStatus, Echeanciers as EcheanciersEntity, Loans, ProjectsStatus, UnilendStats};
-use Unilend\Bundle\CoreBusinessBundle\Service\StatisticsManager;
+use Unilend\Service\StatisticsManager;
 
 class echeanciers extends echeanciers_crud
 {

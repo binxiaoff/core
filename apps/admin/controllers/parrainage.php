@@ -1,7 +1,7 @@
 <?php
 
 use Unilend\Entity\{ClientsStatus, ClientsStatusHistory, Operation, OperationSubType, OperationType, Sponsorship, SponsorshipBlacklist, SponsorshipCampaign, Wallet, WalletType, Zones};
-use Unilend\Bundle\CoreBusinessBundle\Service\{OperationManager, SponsorshipManager};
+use Unilend\Service\{OperationManager, SponsorshipManager};
 
 class parrainageController extends bootstrap
 {
@@ -18,7 +18,7 @@ class parrainageController extends bootstrap
     {
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\SponsorshipManager $sponsorshipManager */
+        /** @var \Unilend\Service\SponsorshipManager $sponsorshipManager */
         $sponsorshipManager = $this->get('unilend.service.sponsorship_manager');
         /** @var \Unilend\Repository\SponsorshipRepository $sponsorshipRepository */
         $sponsorshipRepository         = $entityManager->getRepository(Sponsorship::class);
@@ -178,7 +178,7 @@ class parrainageController extends bootstrap
             }
 
             $idCampaign = $this->request->request->get('id_campaign', null);
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\SponsorshipManager $sponsorshipManager */
+            /** @var \Unilend\Service\SponsorshipManager $sponsorshipManager */
             $sponsorshipManager = $this->get('unilend.service.sponsorship_manager');
 
             try {
@@ -269,7 +269,7 @@ class parrainageController extends bootstrap
                 }
             }
 
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\SponsorshipManager $sponsorshipManager */
+            /** @var \Unilend\Service\SponsorshipManager $sponsorshipManager */
             $sponsorshipManager = $this->get('unilend.service.sponsorship_manager');
             $sponsorshipManager->blacklistClientAsSponsor($client, $this->userEntity, $campaign);
 
@@ -285,7 +285,7 @@ class parrainageController extends bootstrap
         if (null !== $this->request->request->get('pay_out_reward')) {
             /** @var \Doctrine\ORM\EntityManager $entityManager */
             $entityManager = $this->get('doctrine.orm.entity_manager');
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\SponsorshipManager $sponsorshipManager */
+            /** @var \Unilend\Service\SponsorshipManager $sponsorshipManager */
             $sponsorshipManager = $this->get('unilend.service.sponsorship_manager');
             $idSponsorship      = $this->request->request->getInt('id_sponsorship');
             $sponsorship        = $entityManager->getRepository(Sponsorship::class)->find($idSponsorship);
@@ -503,7 +503,7 @@ class parrainageController extends bootstrap
             }
 
             $status = $this->get('unilend.service.welcome_offer_manager')->clientHasReceivedWelcomeOffer($sponsee) ? Sponsorship::STATUS_SPONSEE_PAID : Sponsorship::STATUS_ONGOING;
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\SponsorshipManager $sponsorshipManager */
+            /** @var \Unilend\Service\SponsorshipManager $sponsorshipManager */
             $sponsorshipManager = $this->get('unilend.service.sponsorship_manager');
             $sponsorshipManager->createSponsorship($sponsee, $sponsor->getSponsorCode(), $campaign);
 

@@ -5,7 +5,7 @@ use Doctrine\ORM\EntityManager;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Entity\{AcceptationsLegalDocs, AddressType, Attachment, BankAccount, Bids, ClientAddress, ClientAtypicalOperation, ClientsStatus, ClientsStatusHistory, ClientVigilanceStatusHistory,
     CompanyAddress, LenderStatistic, LenderTaxExemption, Loans, Operation, OperationType, Pays, ProjectsStatus, Receptions, VigilanceRule, Wallet, WalletType, Zones};
-use Unilend\Bundle\CoreBusinessBundle\Service\{ClientDataHistoryManager, LenderOperationsManager};
+use Unilend\Service\{ClientDataHistoryManager, LenderOperationsManager};
 
 class sfpmeiController extends bootstrap
 {
@@ -509,7 +509,7 @@ class sfpmeiController extends bootstrap
         $this->companies_bilans        = $this->loadData('companies_bilans');
         $this->clients                 = $this->loadData('clients');
         $this->projects_pouvoir        = $this->loadData('projects_pouvoir');
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\CompanyBalanceSheetManager $companyBalanceSheetManager */
+        /** @var \Unilend\Service\CompanyBalanceSheetManager $companyBalanceSheetManager */
         $companyBalanceSheetManager = $this->get('unilend.service.company_balance_sheet_manager');
         /** @var EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
@@ -582,7 +582,7 @@ class sfpmeiController extends bootstrap
 
             $this->treeRepository = $this->get('doctrine.orm.entity_manager')->getRepository(Tree::class);
 
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectRatingManager $projectRatingManager */
+            /** @var \Unilend\Service\ProjectRatingManager $projectRatingManager */
             $projectRatingManager = $this->get('unilend.service.project_rating_manager');
             /** @var \NumberFormatter $numberFormatter */
             $numberFormatter              = $this->get('number_formatter');

@@ -10,7 +10,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Unilend\Entity\{AttachmentType, BorrowingMotive, Clients, Companies, CompaniesBilans, Partner, ProjectAbandonReason, ProjectAttachmentType, ProjectRejectionReason, Projects, ProjectsStatus,
     Settings, Tree, Users};
-use Unilend\Bundle\CoreBusinessBundle\Service\{ProjectRequestManager, ProjectStatusManager};
+use Unilend\Service\{ProjectRequestManager, ProjectStatusManager};
 use Unilend\Bundle\FrontBundle\Service\{DataLayerCollector};
 use Unilend\core\Loader;
 

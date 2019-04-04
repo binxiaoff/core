@@ -7,7 +7,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Unilend\Entity\{Clients, CloseOutNettingRepayment, Echeanciers, Loans, Operation, OperationType, Projects, UnderlyingContract, Wallet};
-use Unilend\Bundle\CoreBusinessBundle\Service\IfuManager;
+use Unilend\Service\IfuManager;
 
 class QueriesLenderRevenueCommand extends ContainerAwareCommand
 {

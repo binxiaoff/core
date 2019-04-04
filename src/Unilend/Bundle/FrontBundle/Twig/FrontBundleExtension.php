@@ -5,7 +5,7 @@ namespace Unilend\Bundle\FrontBundle\Twig;
 use Psr\Cache\CacheItemPoolInterface;
 use Symfony\Component\Asset\Packages;
 use Unilend\Entity\{Pays, Projects};
-use Unilend\Bundle\CoreBusinessBundle\Service\{LocationManager, Simulator\EntityManager, StatisticsManager};
+use Unilend\Service\{LocationManager, Simulator\EntityManager, StatisticsManager};
 use Unilend\Service\Translation\TranslationManager;
 use Unilend\librairies\CacheKeys;
 

@@ -11,7 +11,7 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Unilend\Entity\{AddressType, Attachment, AttachmentType, Backpayline, ClientAddress, Clients, ClientsHistory, ClientsHistoryActions, ClientsStatus, Companies, CompanyAddress, Nationalites,
     NationalitesV2, OffresBienvenues, Pays, Users, Villes, Wallet, WalletType};
-use Unilend\Bundle\CoreBusinessBundle\Service\{GoogleRecaptchaManager, NewsletterManager, SponsorshipManager};
+use Unilend\Service\{GoogleRecaptchaManager, NewsletterManager, SponsorshipManager};
 use Unilend\Bundle\FrontBundle\Form\{LenderSubscriptionIdentityLegalEntity, LenderSubscriptionIdentityPerson};
 use Unilend\Bundle\FrontBundle\Service\{DataLayerCollector, SourceManager};
 use Unilend\core\Loader;

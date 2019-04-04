@@ -7,7 +7,7 @@ use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\{Request, Response};
 use Symfony\Component\Routing\Annotation\Route;
-use Unilend\Bundle\CoreBusinessBundle\Service\GreenPointValidationManager;
+use Unilend\Service\GreenPointValidationManager;
 use Unilend\Service\WebServiceClient\GreenPointManager;
 use Unilend\Entity\{Attachment, Settings};
 

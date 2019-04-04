@@ -11,9 +11,9 @@ use Symfony\Component\HttpFoundation\{BinaryFileResponse, JsonResponse, Request,
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Entity\{AcceptationsLegalDocs, Clients, Tree, Wallet, WalletType};
-use Unilend\Bundle\CoreBusinessBundle\Service\Document\LenderTermsOfSaleGenerator;
-use Unilend\Bundle\CoreBusinessBundle\Service\{NewsletterManager, TermsOfSaleManager};
-use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
+use Unilend\Service\Document\LenderTermsOfSaleGenerator;
+use Unilend\Service\{NewsletterManager, TermsOfSaleManager};
+use Unilend\Service\Simulator\EntityManager as EntityManagerSimulator;
 //use Unilend\Bundle\FrontBundle\Service\SeoManager;
 
 class TermsOfSaleController extends Controller

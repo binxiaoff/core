@@ -5,7 +5,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Unilend\Entity\Clients;
 use Unilend\Entity\WalletType;
 use Unilend\Entity\Zones;
-use Unilend\Bundle\CoreBusinessBundle\Service\BackOfficeUserManager;
+use Unilend\Service\BackOfficeUserManager;
 
 class comptesController extends bootstrap
 {

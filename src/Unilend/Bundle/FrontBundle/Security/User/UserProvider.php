@@ -7,7 +7,7 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\Security\Core\Exception\{UnsupportedUserException, UsernameNotFoundException};
 use Symfony\Component\Security\Core\User\{UserInterface, UserProviderInterface};
 use Unilend\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Service\{ClientManager, LenderManager, SlackManager, TermsOfSaleManager};
+use Unilend\Service\{ClientManager, LenderManager, SlackManager, TermsOfSaleManager};
 use Unilend\Bundle\FrontBundle\Service\NotificationDisplayManager;
 
 class UserProvider implements UserProviderInterface

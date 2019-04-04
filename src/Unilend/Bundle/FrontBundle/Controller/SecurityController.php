@@ -12,7 +12,7 @@ use Symfony\Component\Security\Csrf\CsrfToken;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Entity\{Clients, ClientsHistoryActions, Settings, TemporaryLinksLogin, Wallet, WalletType};
-use Unilend\Bundle\CoreBusinessBundle\Service\GoogleRecaptchaManager;
+use Unilend\Service\GoogleRecaptchaManager;
 use Unilend\Bundle\FrontBundle\Security\{BCryptPasswordEncoder, LoginAuthenticator};
 
 class SecurityController extends Controller

@@ -7,7 +7,7 @@ use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Unilend\Entity\{PreScoring, ProjectEligibilityRuleSet, ProjectEligibilityRuleSetMember, ProjectsStatus, Users};
-use Unilend\Bundle\CoreBusinessBundle\Service\{Eligibility\Validator\CompanyValidator, ExternalDataManager};
+use Unilend\Service\{Eligibility\Validator\CompanyValidator, ExternalDataManager};
 use Unilend\Entity\External\Euler\CompanyRating as EulerHermesCompanyRating;
 use Unilend\Service\WebServiceClient\AltaresManager;
 

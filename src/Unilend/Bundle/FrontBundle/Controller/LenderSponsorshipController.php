@@ -9,7 +9,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Unilend\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Service\SponsorshipManager;
+use Unilend\Service\SponsorshipManager;
 
 class LenderSponsorshipController extends Controller
 {

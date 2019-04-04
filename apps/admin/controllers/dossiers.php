@@ -5,7 +5,7 @@ use Unilend\Entity\{AcceptationsLegalDocs, AddressType, Attachment, AttachmentTy
     CompanyStatus, CompanyStatusHistory, Echeanciers, EcheanciersEmprunteur, Loans, Operation, Partner, PartnerProjectAttachment, Prelevements, ProjectAbandonReason, ProjectAttachmentType,
     ProjectBeneficialOwnerUniversign, ProjectNotification, ProjectRejectionReason, ProjectRepaymentTask, Projects, ProjectsComments, ProjectsNotes, ProjectsPouvoir, ProjectsStatus,
     ProjectsStatusHistory, ProjectStatusHistoryReason, Users, UsersTypes, Virements, Wallet, WalletType, Zones};
-use Unilend\Bundle\CoreBusinessBundle\Service\{BackOfficeUserManager, ProjectManager, ProjectRequestManager, TermsOfSaleManager, WireTransferOutManager, WorkingDaysManager};
+use Unilend\Service\{BackOfficeUserManager, ProjectManager, ProjectRequestManager, TermsOfSaleManager, WireTransferOutManager, WorkingDaysManager};
 
 class dossiersController extends bootstrap
 {
@@ -168,15 +168,15 @@ class dossiersController extends bootstrap
         $companyTaxFormType = $this->loadData('company_tax_form_type');
         /** @var \company_balance_type $companyBalanceDetailsType */
         $companyBalanceDetailsType = $this->loadData('company_balance_type');
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $oProjectManager */
+        /** @var \Unilend\Service\ProjectManager $oProjectManager */
         $oProjectManager = $this->get('unilend.service.project_manager');
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductManager $productManager */
+        /** @var \Unilend\Service\Product\ProductManager $productManager */
         $productManager = $this->get('unilend.service_product.product_manager');
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\CompanyBalanceSheetManager $companyBalanceSheetManager */
+        /** @var \Unilend\Service\CompanyBalanceSheetManager $companyBalanceSheetManager */
         $companyBalanceSheetManager = $this->get('unilend.service.company_balance_sheet_manager');
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BeneficialOwnerManager $beneficialOwnerManager */
+        /** @var \Unilend\Service\BeneficialOwnerManager $beneficialOwnerManager */
         $beneficialOwnerManager = $this->get('unilend.service.beneficial_owner_manager');
         /** @var BackOfficeUserManager $userManager */
         $userManager = $this->get('unilend.service.back_office_user_manager');
@@ -225,7 +225,7 @@ class dossiersController extends bootstrap
             }
             $this->isSirenEditable = $this->canEditSiren();
 
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectStatusManager $projectStatusManager */
+            /** @var \Unilend\Service\ProjectStatusManager $projectStatusManager */
             $projectStatusManager   = $this->get('unilend.service.project_status_manager');
             $this->statusReasonText = $projectStatusManager->getStatusReasonByProject($this->projectEntity);
 
@@ -544,7 +544,7 @@ class dossiersController extends bootstrap
                     $longitude = (float) $this->companies->longitude;
 
                     if (null !== $this->companyMainAddress && empty($latitude) && empty($longitude)) {
-                        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\LocationManager $location */
+                        /** @var \Unilend\Service\LocationManager $location */
                         $location    = $this->get('unilend.service.location_manager');
                         $coordinates = $location->getCompanyCoordinates($this->companyMainAddress);
 
@@ -776,7 +776,7 @@ class dossiersController extends bootstrap
 
             if (false === empty($this->projects->risk) && false === empty($this->projects->period) && $this->projects->status >= ProjectsStatus::STATUS_REVIEW) {
                 if (false === empty($this->projects->id_rate)) {
-                    /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BidManager $bidManager */
+                    /** @var \Unilend\Service\BidManager $bidManager */
                     $bidManager     = $this->get('unilend.service.bid_manager');
                     $rateRange      = $bidManager->getProjectRateRange($this->projects);
                     $this->rate_min = $rateRange['rate_min'];
@@ -843,7 +843,7 @@ class dossiersController extends bootstrap
             }
 
             $this->transferFunds($this->projectEntity);
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectRatingManager $projectRatingManager */
+            /** @var \Unilend\Service\ProjectRatingManager $projectRatingManager */
             $projectRatingManager = $this->get('unilend.service.project_rating_manager');
             /** @var \NumberFormatter $numberFormatter */
             $numberFormatter                = $this->get('number_formatter');
@@ -904,7 +904,7 @@ class dossiersController extends bootstrap
         if ($project->getStatus() >= ProjectsStatus::STATUS_REPAYMENT) {
             /** @var \Doctrine\ORM\EntityManager $entityManager */
             $entityManager = $this->get('doctrine.orm.entity_manager');
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $projectManager */
+            /** @var \Unilend\Service\ProjectManager $projectManager */
             $projectManager              = $this->get('unilend.service.project_manager');
             $this->companyRepository     = $entityManager->getRepository(Companies::class);
             $this->bankAccountRepository = $entityManager->getRepository(BankAccount::class);
@@ -981,9 +981,9 @@ class dossiersController extends bootstrap
     {
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectStatusNotificationSender $projectStatusNotificationSender */
+        /** @var \Unilend\Service\ProjectStatusNotificationSender $projectStatusNotificationSender */
         $projectStatusNotificationSender = $this->get('unilend.service.project_status_notification_sender');
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectStatusManager $projectStatusManager */
+        /** @var \Unilend\Service\ProjectStatusManager $projectStatusManager */
         $projectStatusManager = $this->get('unilend.service.project_status_manager');
         $projectStatusManager->addProjectStatus($this->userEntity, $this->request->request->getInt('problematic_status'), $project);
 
@@ -1173,7 +1173,7 @@ class dossiersController extends bootstrap
 
         /** @var company_rating $oCompanyRating */
         $oCompanyRating = $this->loadData('company_rating');
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\CompanyBalanceSheetManager $companyBalanceSheetManager */
+        /** @var \Unilend\Service\CompanyBalanceSheetManager $companyBalanceSheetManager */
         $companyBalanceSheetManager = $this->get('unilend.service.company_balance_sheet_manager');
         /** @var \Unilend\Repository\CompaniesRepository $companiesRepository */
         $companiesRepository = $this->get('doctrine.orm.entity_manager')->getRepository(Companies::class);
@@ -1254,7 +1254,7 @@ class dossiersController extends bootstrap
                     $entityManager->persist($projectCommentEntity);
                     $entityManager->flush($projectCommentEntity);
 
-                    /** @var \Unilend\Bundle\CoreBusinessBundle\Service\SlackManager $slackManager */
+                    /** @var \Unilend\Service\SlackManager $slackManager */
                     $slackManager      = $this->get('unilend.service.slack_manager');
                     $slackNotification = 'Mémo ajouté par *' . $projectCommentEntity->getIdUser()->getFirstname() . ' ' . $projectCommentEntity->getIdUser()
                             ->getName() . '* sur le projet ' . $slackManager->getProjectName($projectEntity);
@@ -1320,7 +1320,7 @@ class dossiersController extends bootstrap
     {
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\PartnerManager $partnerManager */
+        /** @var \Unilend\Service\PartnerManager $partnerManager */
         $partnerManager = $this->get('unilend.service.partner_manager');
         /** @var ProjectRequestManager $projectRequestManager */
         $projectRequestManager = $this->get('unilend.service.project_request_manager');
@@ -1946,7 +1946,7 @@ class dossiersController extends bootstrap
             return;
         }
 
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectStatusManager $projectStatusManager */
+        /** @var \Unilend\Service\ProjectStatusManager $projectStatusManager */
         $projectStatusManager = $this->get('unilend.service.project_status_manager');
 
         if (isset($this->params[1]) && 'resume' === $this->params[1] && ProjectsStatus::STATUS_REVIEW == $this->projects->status) {
@@ -2008,7 +2008,7 @@ class dossiersController extends bootstrap
                 header('Location: ' . $this->lurl . '/dossiers/edit/' . $project->getIdProject());
                 die;
             }
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectStatusManager $projectStatusManager */
+            /** @var \Unilend\Service\ProjectStatusManager $projectStatusManager */
             $projectStatusManager = $this->get('unilend.service.project_status_manager');
             $result               = $projectStatusManager->abandonProject($project, $abandonReasons, $this->userEntity);
 
@@ -2117,9 +2117,9 @@ class dossiersController extends bootstrap
             $_SESSION['freeow']['title']   = 'Mise en ligne';
             $_SESSION['freeow']['message'] = 'Mise en ligne programmée avec succès';
 
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectStatusManager $projectStatusManager */
+            /** @var \Unilend\Service\ProjectStatusManager $projectStatusManager */
             $projectStatusManager = $this->get('unilend.service.project_status_manager');
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectRatingManager $projectRatingManager */
+            /** @var \Unilend\Service\ProjectRatingManager $projectRatingManager */
             $projectRatingManager = $this->get('unilend.service.project_rating_manager');
             $projectStatusManager->addProjectStatus($this->userEntity, ProjectsStatus::STATUS_REVIEW, $this->projects);
 
@@ -2164,7 +2164,7 @@ class dossiersController extends bootstrap
             $entityManager->persist($projectCommentEntity);
             $entityManager->flush($projectCommentEntity);
 
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectStatusManager $projectStatusManager */
+            /** @var \Unilend\Service\ProjectStatusManager $projectStatusManager */
             $projectStatusManager = $this->get('unilend.service.project_status_manager');
             $projectStatusManager->addProjectStatus($this->userEntity, ProjectsStatus::STATUS_REQUEST, $this->projects);
 
@@ -2203,7 +2203,7 @@ class dossiersController extends bootstrap
         }
         $client = $project->getIdCompany()->getIdClientOwner();
 
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectStatusManager $projectStatusManager */
+        /** @var \Unilend\Service\ProjectStatusManager $projectStatusManager */
         $projectStatusManager = $this->get('unilend.service.project_status_manager');
         try {
             /** @var ProjectRejectionReason[] $rejectionReason */
@@ -2253,7 +2253,7 @@ class dossiersController extends bootstrap
         $this->projects = $this->loadData('projects');
         $this->projects->get($this->params[0]);
 
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectStatusManager $projectStatusManager */
+        /** @var \Unilend\Service\ProjectStatusManager $projectStatusManager */
         $projectStatusManager = $this->get('unilend.service.project_status_manager');
         $projectStatusManager->addProjectStatus($this->userEntity, ProjectsStatus::STATUS_REVIEW, $this->projects);
 
@@ -2297,7 +2297,7 @@ class dossiersController extends bootstrap
                     }
                     break;
                 case 'create':
-                    /** @var \Unilend\Bundle\CoreBusinessBundle\Service\CompanyManager $companyManager */
+                    /** @var \Unilend\Service\CompanyManager $companyManager */
                     $companyManager = $this->get('unilend.service.company_manager');
                     $siren          = filter_var($this->request->request->get('siren'), FILTER_SANITIZE_NUMBER_INT);
                     $company        = $companyManager->createBorrowerCompany($this->userEntity, $siren);
@@ -2620,7 +2620,7 @@ class dossiersController extends bootstrap
         ) {
             $project->setIdPartner($partner);
 
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductManager $productManager */
+            /** @var \Unilend\Service\Product\ProductManager $productManager */
             $productManager   = $this->get('unilend.service_product.product_manager');
             $eligibleProducts = $productManager->findEligibleProducts($project, true);
             $translator       = $this->get('translator');
@@ -2644,13 +2644,13 @@ class dossiersController extends bootstrap
         if (false === empty($this->params[0]) && false === empty($this->params[1])) {
             /** @var \Doctrine\ORM\EntityManager $entityManager */
             $entityManager = $this->get('doctrine.orm.entity_manager');
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BorrowerManager $borrowerManager */
+            /** @var \Unilend\Service\BorrowerManager $borrowerManager */
             $borrowerManager = $this->get('unilend.service.borrower_manager');
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\PartnerManager $partnerManager */
+            /** @var \Unilend\Service\PartnerManager $partnerManager */
             $partnerManager = $this->get('unilend.service.partner_manager');
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\WireTransferOutManager $wireTransferOutManager */
+            /** @var \Unilend\Service\WireTransferOutManager $wireTransferOutManager */
             $wireTransferOutManager = $this->get('unilend.service.wire_transfer_out_manager');
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $projectManager */
+            /** @var \Unilend\Service\ProjectManager $projectManager */
             $projectManager = $this->get('unilend.service.project_manager');
             /** @var \NumberFormatter $currencyFormatter */
             $this->currencyFormatter = $this->get('currency_formatter');
@@ -2795,9 +2795,9 @@ class dossiersController extends bootstrap
             $this->menu_admin = 'remboursement';
             /** @var \Doctrine\ORM\EntityManager $entityManager */
             $entityManager = $this->get('doctrine.orm.entity_manager');
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $projectManager */
+            /** @var \Unilend\Service\ProjectManager $projectManager */
             $projectManager = $this->get('unilend.service.project_manager');
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\CompanyManager $companyManager */
+            /** @var \Unilend\Service\CompanyManager $companyManager */
             $companyManager = $this->get('unilend.service.company_manager');
 
             $projectsRepository        = $entityManager->getRepository(Projects::class);

@@ -5,7 +5,7 @@ namespace Unilend\Command;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
+use Unilend\Service\Simulator\EntityManager;
 
 class CheckLendersRepaymentCommand extends ContainerAwareCommand
 {

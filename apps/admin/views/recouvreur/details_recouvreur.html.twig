@@ -117,7 +117,7 @@
                                     <td>{{ repaymentFee.added|localizeddate('short', 'none') }}</td>
                                     <td class="text-right">{{ repaymentFee.amount|localizedcurrency('EUR') }}</td>
                                     <td>
-                                        {% if repaymentFee.added < constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Service\\DebtCollectionMissionManager::FEES_DETAILS_AVAILABILITY_DATE') %}
+                                        {% if repaymentFee.added < constant('\\Unilend\\Service\\DebtCollectionMissionManager::FEES_DETAILS_AVAILABILITY_DATE') %}
                                             Détails indisponibles pour ce remboursement
                                         {% else %}
                                             <a href="/recouvreur/downloadFeesFile/{{ repaymentFee.idWireTransferIn }}/{{ address.idClient.idClient }}" class="btn btn-xs btn-default">

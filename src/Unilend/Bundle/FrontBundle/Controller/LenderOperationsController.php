@@ -10,7 +10,7 @@ use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Entity\{AcceptedBids, AddressType, Bids, ClientAddress, Clients, Companies, CompanyAddress, CompanyStatus, CompanyStatusHistory, Notifications, Operation, OperationSubType, OperationType,
     ProjectNotification, Projects, Wallet, WalletType};
-use Unilend\Bundle\CoreBusinessBundle\Service\LenderOperationsManager;
+use Unilend\Service\LenderOperationsManager;
 use Unilend\Bundle\FrontBundle\Service\LenderLoansDisplayManager;
 use Unilend\core\Loader;
 

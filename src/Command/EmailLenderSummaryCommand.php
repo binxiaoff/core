@@ -8,8 +8,8 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Unilend\Entity\ClientsGestionTypeNotif;
-use Unilend\Bundle\CoreBusinessBundle\Service\MailerManager;
-use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
+use Unilend\Service\MailerManager;
+use Unilend\Service\Simulator\EntityManager;
 
 class EmailLenderSummaryCommand extends ContainerAwareCommand
 {

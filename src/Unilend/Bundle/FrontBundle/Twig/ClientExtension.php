@@ -5,7 +5,7 @@ namespace Unilend\Bundle\FrontBundle\Twig;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Unilend\Entity\{Clients, Partner, Wallet, WalletType};
-use Unilend\Bundle\CoreBusinessBundle\Service\{LenderManager, PartnerManager};
+use Unilend\Service\{LenderManager, PartnerManager};
 use Unilend\Bundle\FrontBundle\Service\NotificationDisplayManager;
 
 class ClientExtension extends \Twig_Extension

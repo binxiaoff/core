@@ -1,7 +1,7 @@
 <?php
 
 use Unilend\Entity\{BorrowingMotive, Partner, Projects, ProjectsStatus, Users, UsersTypes, Zones};
-use Unilend\Bundle\CoreBusinessBundle\Service\ProjectRequestManager;
+use Unilend\Service\ProjectRequestManager;
 use Unilend\SwiftMailer\TemplateMessageProvider;
 
 class dashboardController extends bootstrap
@@ -27,7 +27,7 @@ class dashboardController extends bootstrap
         $user = $this->loadData('users');
         $user->get($_SESSION['user']['id_user']);
 
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BackOfficeUserManager $userManager */
+        /** @var \Unilend\Service\BackOfficeUserManager $userManager */
         $userManager = $this->get('unilend.service.back_office_user_manager');
 
         $this->showProjectsToDecline = false;
@@ -265,7 +265,7 @@ class dashboardController extends bootstrap
     {
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectStatusManager $projectStatusManager */
+        /** @var \Unilend\Service\ProjectStatusManager $projectStatusManager */
         $projectStatusManager = $this->get('unilend.service.project_status_manager');
         /** @var ProjectRequestManager $projectRequestManager */
         $projectRequestManager = $this->get('unilend.service.project_request_manager');
@@ -646,7 +646,7 @@ class dashboardController extends bootstrap
     {
         $this->hideDecoration();
 
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BackOfficeUserManager $userManager */
+        /** @var \Unilend\Service\BackOfficeUserManager $userManager */
         $userManager = $this->get('unilend.service.back_office_user_manager');
         $error       = null;
         $data        = [];

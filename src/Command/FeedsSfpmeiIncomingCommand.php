@@ -7,7 +7,7 @@ use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\{Input\InputInterface, Input\InputOption, Output\OutputInterface};
 use Unilend\Entity\{Clients, ClientsGestionTypeNotif, EcheanciersEmprunteur, Notifications, Operation, Prelevements, Projects, ProjectsStatus, Receptions, SepaRejectionReason, Users, Wallet,
     WalletBalanceHistory, WalletType};
-use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
+use Unilend\Service\Simulator\EntityManager as EntityManagerSimulator;
 
 class FeedsSfpmeiIncomingCommand extends ContainerAwareCommand
 {

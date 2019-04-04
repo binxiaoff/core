@@ -4,7 +4,7 @@ use Doctrine\ORM\EntityManager;
 use Unilend\Entity\{
     ClientSettingType, Wallet, WalletType, Zones
 };
-use Unilend\Bundle\CoreBusinessBundle\Service\{
+use Unilend\Service\{
     AutoBidSettingsManager, LenderManager
 };
 
@@ -40,7 +40,7 @@ class project_rate_settingsController extends bootstrap
 
         $response = ['result' => 'KO', 'message' => ''];
         if (isset($this->params[0], $this->params[1], $_POST['rate_min'], $_POST['rate_max'])) {
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectRateSettingsManager $projectRateSettingsManager */
+            /** @var \Unilend\Service\ProjectRateSettingsManager $projectRateSettingsManager */
             $projectRateSettingsManager = $this->get('unilend.service.project_rate_settings_manager');
             try {
                 $projectRateSettingsManager->saveSetting($this->params[0], $this->params[1], $_POST['rate_min'], $_POST['rate_max']);

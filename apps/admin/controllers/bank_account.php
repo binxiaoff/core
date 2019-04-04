@@ -18,9 +18,9 @@ class bank_accountController extends bootstrap
             $this->attachment = $entityManager->getRepository(Attachment::class)->find($this->params[0]);
 
             if ($this->attachment) {
-                /** @var \Unilend\Bundle\CoreBusinessBundle\Service\AttachmentManager $attachmentManager */
+                /** @var \Unilend\Service\AttachmentManager $attachmentManager */
                 $attachmentManager = $this->get('unilend.service.attachment_manager');
-                /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BankAccountManager $bankAccountManager */
+                /** @var \Unilend\Service\BankAccountManager $bankAccountManager */
                 $bankAccountManager = $this->get('unilend.service.bank_account_manager');
                 try {
                     $file = new File($attachmentManager->getFullPath($this->attachment));
@@ -87,11 +87,11 @@ class bank_accountController extends bootstrap
                     if ($bankAccount->getIdClient()->isBorrower()) {
                         $this->updateMandat($bankAccount->getIdClient());
                     }
-                    /** @var \Unilend\Bundle\CoreBusinessBundle\Service\MailerManager $oMailerManager */
+                    /** @var \Unilend\Service\MailerManager $oMailerManager */
                     $oMailerManager = $this->get('unilend.service.email_manager');
                     $oMailerManager->sendIbanUpdateToStaff($bankAccount->getIdClient()->getIdClient(), $currentIban, $bankAccount->getIban());
 
-                    /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BankAccountManager $bankAccountManager */
+                    /** @var \Unilend\Service\BankAccountManager $bankAccountManager */
                     $bankAccountManager = $this->get('unilend.service.bank_account_manager');
                     $bankAccountManager->validate($bankAccount);
                 }

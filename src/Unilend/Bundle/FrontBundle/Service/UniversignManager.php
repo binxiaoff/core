@@ -22,9 +22,9 @@ use Unilend\Entity\ProjectsPouvoir;
 use Unilend\Entity\Settings;
 use Unilend\Entity\UniversignEntityInterface;
 use Unilend\Entity\WireTransferOutUniversign;
-use Unilend\Bundle\CoreBusinessBundle\Service\MailerManager;
-use Unilend\Bundle\CoreBusinessBundle\Service\SlackManager;
-use Unilend\Bundle\CoreBusinessBundle\Service\WireTransferOutManager;
+use Unilend\Service\MailerManager;
+use Unilend\Service\SlackManager;
+use Unilend\Service\WireTransferOutManager;
 use Unilend\Bundle\FrontBundle\Controller\UniversignController;
 use Unilend\SwiftMailer\TemplateMessageProvider;
 

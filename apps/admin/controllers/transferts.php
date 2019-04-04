@@ -224,7 +224,7 @@ class transfertsController extends bootstrap
                         ->setIdUser($user)
                         ->setAssignmentDate(new \DateTime());
 
-                    /** @var \Unilend\Bundle\CoreBusinessBundle\Service\OperationManager $operationManager */
+                    /** @var \Unilend\Service\OperationManager $operationManager */
                     $operationManager = $this->get('unilend.service.operation_manager');
                     $operationManager->provisionBorrowerWallet($reception);
 
@@ -549,7 +549,7 @@ class transfertsController extends bootstrap
 
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BeneficialOwnerManager $beneficialOwnerManager */
+        /** @var \Unilend\Service\BeneficialOwnerManager $beneficialOwnerManager */
         $beneficialOwnerManager = $this->get('unilend.service.beneficial_owner_manager');
 
         if (isset($_POST['validateProxy'], $_POST['id_project'])) {
@@ -606,19 +606,19 @@ class transfertsController extends bootstrap
                 die;
             }
 
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $projectManager */
+            /** @var \Unilend\Service\ProjectManager $projectManager */
             $projectManager = $this->get('unilend.service.project_manager');
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectStatusManager $projectStatusManager */
+            /** @var \Unilend\Service\ProjectStatusManager $projectStatusManager */
             $projectStatusManager = $this->get('unilend.service.project_status_manager');
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\MailerManager $mailerManager */
+            /** @var \Unilend\Service\MailerManager $mailerManager */
             $mailerManager = $this->get('unilend.service.email_manager');
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\AcceptedBidAndLoanNotificationSender $acceptedLoanNotificationSender */
-            $acceptedLoanNotificationSender = $this->get(\Unilend\Bundle\CoreBusinessBundle\Service\AcceptedBidAndLoanNotificationSender::class);
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\NotificationManager $notificationManager */
+            /** @var \Unilend\Service\AcceptedBidAndLoanNotificationSender $acceptedLoanNotificationSender */
+            $acceptedLoanNotificationSender = $this->get(\Unilend\Service\AcceptedBidAndLoanNotificationSender::class);
+            /** @var \Unilend\Service\NotificationManager $notificationManager */
             $notificationManager = $this->get('unilend.service.notification_manager');
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\OperationManager $operationManager */
+            /** @var \Unilend\Service\OperationManager $operationManager */
             $operationManager = $this->get('unilend.service.operation_manager');
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\SlackManager $slackManager */
+            /** @var \Unilend\Service\SlackManager $slackManager */
             $slackManager = $this->container->get('unilend.service.slack_manager');
             /** @var \accepted_bids $acceptedBids */
             $acceptedBids = $this->loadData('accepted_bids');
@@ -653,14 +653,14 @@ class transfertsController extends bootstrap
 
                 $fundsInvoice = $entityManager->getRepository(Factures::class)->findOneBy(['idProject' => $project, 'typeCommission' => Factures::TYPE_COMMISSION_FUNDS]);
                 if (null === $fundsInvoice) {
-                    /** @var \Unilend\Bundle\CoreBusinessBundle\Service\InvoiceManager $invoiceManager */
+                    /** @var \Unilend\Service\InvoiceManager $invoiceManager */
                     $invoiceManager = $this->get('unilend.service.invoice_manager');
                     $invoiceManager->createFundsInvoice($project);
                 }
 
                 $directDebits = $entityManager->getRepository(Prelevements::class)->findOneBy(['idProject' => $project]);
                 if (null === $directDebits) {
-                    /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BorrowerManager $borrowerManager */
+                    /** @var \Unilend\Service\BorrowerManager $borrowerManager */
                     $borrowerManager   = $this->get('unilend.service.borrower_manager');
                     $bankTransferLabel = $borrowerManager->getProjectBankTransferLabel($project);
 
@@ -730,7 +730,7 @@ class transfertsController extends bootstrap
 
                 if ($this->getParameter('kernel.environment') === 'prod') {
                     try {
-                        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\Ekomi $ekomi */
+                        /** @var \Unilend\Service\Ekomi $ekomi */
                         $ekomi = $this->get('unilend.service.ekomi');
                         $ekomi->sendProjectEmail($project);
                     } catch (\Exception $exception) {
@@ -826,7 +826,7 @@ class transfertsController extends bootstrap
     {
         $this->users->checkAccess(Zones::ZONE_LABEL_TRANSFERS);
         if (isset($_POST['succession_check']) || isset($_POST['succession_validate'])) {
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ClientStatusManager $clientStatusManager */
+            /** @var \Unilend\Service\ClientStatusManager $clientStatusManager */
             $clientStatusManager = $this->get('unilend.service.client_status_manager');
             /** @var \clients $originalClient */
             $originalClient = $this->loadData('clients');
@@ -909,7 +909,7 @@ class transfertsController extends bootstrap
                     $transfer->create();
 
                     $transferEntity = $entityManager->getRepository(Transfer::class)->find($transfer->id_transfer);
-                    /** @var \Unilend\Bundle\CoreBusinessBundle\Service\AttachmentManager $attachmentManager */
+                    /** @var \Unilend\Service\AttachmentManager $attachmentManager */
                     $attachmentManager = $this->get('unilend.service.attachment_manager');
                     $attachmentType    = $entityManager->getRepository(AttachmentType::class)->find(AttachmentType::TRANSFER_CERTIFICATE);
                     if ($attachmentType) {
@@ -919,7 +919,7 @@ class transfertsController extends bootstrap
                         $attachmentManager->attachToTransfer($attachment, $transferEntity);
                     }
                     $originalClientBalance = $originalWallet->getAvailableBalance();
-                    /** @var \Unilend\Bundle\CoreBusinessBundle\Service\OperationManager $operationManager */
+                    /** @var \Unilend\Service\OperationManager $operationManager */
                     $operationManager = $this->get('unilend.service.operation_manager');
                     $operationManager->lenderTransfer($transferEntity, $originalClientBalance);
 
@@ -1086,7 +1086,7 @@ class transfertsController extends bootstrap
         }
 
         if (false === empty($this->params[0]) && $this->request->isMethod('POST') && $this->wireTransferOut) {
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\WireTransferOutManager $wireTransferOutManager */
+            /** @var \Unilend\Service\WireTransferOutManager $wireTransferOutManager */
             $wireTransferOutManager = $this->get('unilend.service.wire_transfer_out_manager');
             if (in_array($this->wireTransferOut->getStatus(), [Virements::STATUS_CLIENT_VALIDATED])) {
                 $user = $entityManager->getRepository(Users::class)->find($_SESSION['user']['id_user']);
