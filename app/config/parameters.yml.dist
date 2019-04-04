@@ -134,3 +134,5 @@ parameters:
     mailchimp.webhook_secret:         ''
     mailchimp.list_id:                ''
     mailchimp.gdpr_segment_id:        ''
+
+    translation_cache_path:           "%kernel.cache_dir%/translations"

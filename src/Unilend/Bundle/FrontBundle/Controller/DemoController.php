@@ -20,6 +20,7 @@ use Unilend\Bundle\CoreBusinessBundle\Service\{AttachmentManager, DemoMailerMana
 use Unilend\Bundle\FrontBundle\Form\Lending\BidType;
 use Unilend\Bundle\FrontBundle\Service\ProjectDisplayManager;
 use Unilend\Bundle\WSClientBundle\Service\InseeManager;
+use Unilend\Service\Translation\TranslationManager;
 
 /**
  * @Security("is_granted('ROLE_USER')")

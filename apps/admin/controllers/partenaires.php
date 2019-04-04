@@ -804,7 +804,7 @@ class partenairesController extends bootstrap
             return;
         }
 
-        /** @var \Unilend\Bundle\TranslationBundle\Service\TranslationManager $translationManager */
+        /** @var \Unilend\Service\Translation\TranslationManager $translationManager */
         $translationManager          = $this->get('unilend.service.translation_manager');
         $descriptionTranslationLabel = 'description-instructions-' . $partner->getLabel();
         $documentsTranslationLabel   = 'documents-instructions-' . $partner->getLabel();

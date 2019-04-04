@@ -1,7 +1,7 @@
 <?php
 
 use Unilend\Entity\Zones;
-use Unilend\Bundle\TranslationBundle\Service\TranslationManager;
+use Unilend\Service\Translation\TranslationManager;
 
 class traductionsController extends bootstrap
 {

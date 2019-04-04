@@ -344,7 +344,7 @@ class preteursController extends bootstrap
         /** @var \Psr\Log\LoggerInterface $logger */
         $logger = $this->get('logger');
 
-        /** @var \Unilend\Bundle\TranslationBundle\Service\TranslationManager $translationManager */
+        /** @var \Unilend\Service\Translation\TranslationManager $translationManager */
         $translationManager       = $this->get('unilend.service.translation_manager');
         $this->completude_wording = $translationManager->getAllTranslationsForSection('lender-completeness');
 

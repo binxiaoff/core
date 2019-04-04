@@ -3,7 +3,7 @@
 use Symfony\Component\Config\Loader\LoaderInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\HttpKernel\Kernel;
-use Unilend\DependencyInjection\Compiler\OverrideNewRelicSettingsForConsolePass;
+use Unilend\DependencyInjection\Compiler\{MakeSonataCacheSymfonyPublicPass, OverrideNewRelicSettingsForConsolePass};
 
 class AppKernel extends Kernel
 {
@@ -19,7 +19,6 @@ class AppKernel extends Kernel
             new Unilend\Bundle\CoreBusinessBundle\UnilendCoreBusinessBundle(),
             new Symfony\Bundle\TwigBundle\TwigBundle(),
             new Unilend\Bundle\FrontBundle\UnilendFrontBundle(),
-            new Unilend\Bundle\TranslationBundle\UnilendTranslationBundle(),
             new Symfony\Bundle\SecurityBundle\SecurityBundle(),
             new Symfony\Cmf\Bundle\RoutingBundle\CmfRoutingBundle,
             new Xynnn\GoogleTagManagerBundle\GoogleTagManagerBundle(),
@@ -72,5 +71,6 @@ class AppKernel extends Kernel
         parent::build($container);
 
         $container->addCompilerPass(new OverrideNewRelicSettingsForConsolePass());
+        $container->addCompilerPass(new MakeSonataCacheSymfonyPublicPass());
     }
 }
