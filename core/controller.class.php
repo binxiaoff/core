@@ -19,7 +19,7 @@ abstract class Controller implements ContainerAwareInterface
     public $autoFireView = true;
     /** @var bool */
     public $autoFireFooter = true;
-    /** @var \Unilend\Bridge\Doctrine\DBAL\Connection */
+    /** @var \Unilend\Doctrine\DBAL\Connection */
     public $bdd;
     /** @var string */
     public $view;

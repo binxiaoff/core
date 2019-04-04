@@ -2,7 +2,7 @@
 
 class --classe--
 {
-    /** @var \Unilend\Bridge\Doctrine\DBAL\Connection */
+    /** @var \Unilend\Doctrine\DBAL\Connection */
     protected $bdd;
 
 --declaration--

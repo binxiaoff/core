@@ -1,5 +1,6 @@
 <?php
 
+use Doctrine\DBAL\Connection;
 use Unilend\Entity\{CompanyStatus, ProjectsStatus};
 
 class companies extends companies_crud
@@ -315,8 +316,8 @@ class companies extends companies_crud
                 'projectStatus' => [ProjectsStatus::STATUS_REPAYMENT, ProjectsStatus::STATUS_LOSS]
             ],
             [
-                'companyStatus' => \Unilend\Bridge\Doctrine\DBAL\Connection::PARAM_STR_ARRAY,
-                'projectStatus' => \Unilend\Bridge\Doctrine\DBAL\Connection::PARAM_INT_ARRAY
+                'companyStatus' => Connection::PARAM_STR_ARRAY,
+                'projectStatus' => Connection::PARAM_INT_ARRAY
             ]
         );
         return $statement->fetchAll(PDO::FETCH_ASSOC);

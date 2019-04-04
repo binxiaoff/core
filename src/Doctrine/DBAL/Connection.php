@@ -1,5 +1,5 @@
 <?php
-namespace Unilend\Bridge\Doctrine\DBAL;
+namespace Unilend\Doctrine\DBAL;
 
 use Facile\DoctrineMySQLComeBack\Doctrine\DBAL\Connection as BaseConnection;
 use Doctrine\DBAL\Driver\Statement;

@@ -4,7 +4,7 @@
  * This class is for backward compatibility. Once the migration for Symfony flex will be done, we can remove it.
  */
 
-namespace Unilend\Bridge\Composer;
+namespace Unilend\Composer;
 
 use Symfony\Component\Process\Process;
 use Symfony\Component\Process\PhpExecutableFinder;

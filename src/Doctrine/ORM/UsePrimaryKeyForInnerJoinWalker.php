@@ -1,6 +1,6 @@
 <?php
 
-namespace Unilend\Bridge\Doctrine\ORM;
+namespace Unilend\Doctrine\ORM;
 
 use Doctrine\ORM\Query\SqlWalker;
 

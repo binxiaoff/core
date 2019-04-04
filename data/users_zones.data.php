@@ -1,6 +1,6 @@
 <?php
 
-use Unilend\Bridge\Doctrine\DBAL\Connection;
+use Unilend\Doctrine\DBAL\Connection;
 
 class users_zones extends users_zones_crud
 {

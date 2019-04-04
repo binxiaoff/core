@@ -6,11 +6,12 @@
   "autoload": {
     "psr-4": {
       "Unilend\\": "",
-      "Unilend\\Bridge\\": "src/Unilend/Bridge",
       "Unilend\\Bundle\\": "src/Unilend/Bundle",
       "Unilend\\Command\\": "src/Command",
+      "Unilend\\Composer\\": "src/Composer",
       "Unilend\\Console\\": "src/Console",
       "Unilend\\DependencyInjection\\": "src/DependencyInjection",
+      "Unilend\\Doctrine\\": "src/Doctrine",
       "Unilend\\Document\\": "src/Document",
       "Unilend\\Entity\\": "src/Entity",
       "Unilend\\EventSubscriber\\": "src/EventSubscriber",
@@ -80,8 +81,8 @@
   "scripts": {
     "symfony-scripts": [
       "Incenteev\\ParameterHandler\\ScriptHandler::buildParameters",
-      "Unilend\\Bridge\\Composer\\ScriptHandler::clearCache",
-      "Unilend\\Bridge\\Composer\\ScriptHandler::installAssets"
+      "Unilend\\Composer\\ScriptHandler::clearCache",
+      "Unilend\\Composer\\ScriptHandler::installAssets"
     ],
     "post-install-cmd": [
       "@symfony-scripts"
