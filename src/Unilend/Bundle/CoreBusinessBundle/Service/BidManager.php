@@ -8,7 +8,7 @@ use Psr\Cache\CacheItemPoolInterface;
 use Psr\Log\LoggerInterface;
 use Unilend\Entity\{AcceptedBids, Autobid, Bids, ClientsGestionTypeNotif, Embeddable\LendingRate, Notifications, OffresBienvenuesDetails, ProjectRateSettings, Projects, ProjectsStatus, Settings,
     Sponsorship, Wallet, WalletBalanceHistory, WalletType};
-use Unilend\Bundle\CoreBusinessBundle\Exception\BidException;
+use Unilend\Exception\BidException;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductManager;
 use Unilend\librairies\CacheKeys;
 

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "d1f2dd80784efddd6e89fc7b089beeaa",
+    "content-hash": "b445ef6c56399e5026e7f69605bf7977",
     "packages": [
         {
             "name": "alcaeus/mongo-php-adapter",
@@ -621,7 +621,7 @@
                 {
                     "name": "Tobias Nyholm",
                     "email": "tobias.nyholm@gmail.com",
-                    "homepage": "https://github.com/Nyholm"
+                    "homepage": "https://github.com/nyholm"
                 }
             ],
             "description": "A decorator that makes your cache support namespaces",
@@ -670,7 +670,7 @@
                 {
                     "name": "Tobias Nyholm",
                     "email": "tobias.nyholm@gmail.com",
-                    "homepage": "https://github.com/Nyholm"
+                    "homepage": "https://github.com/nyholm"
                 },
                 {
                     "name": "Nicolas Grekas",
@@ -2281,50 +2281,6 @@
                 "reflection"
             ],
             "time": "2018-06-14T14:45:07+00:00"
-        },
-        {
-            "name": "drewm/mailchimp-api",
-            "version": "v2.5.2",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/drewm/mailchimp-api.git",
-                "reference": "3e290e5640f56292b06403f3f4d3574e1e777948"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/drewm/mailchimp-api/zipball/3e290e5640f56292b06403f3f4d3574e1e777948",
-                "reference": "3e290e5640f56292b06403f3f4d3574e1e777948",
-                "shasum": ""
-            },
-            "require": {
-                "ext-curl": "*",
-                "ext-json": "*",
-                "php": ">=5.3"
-            },
-            "require-dev": {
-                "phpunit/phpunit": "7.0.*",
-                "vlucas/phpdotenv": "^2.0"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "DrewM\\MailChimp\\": "src"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Drew McLellan",
-                    "email": "drew.mclellan@gmail.com",
-                    "homepage": "http://allinthehead.com/"
-                }
-            ],
-            "description": "Super-simple, minimum abstraction MailChimp API v3 wrapper",
-            "homepage": "https://github.com/drewm/mailchimp-api",
-            "time": "2019-03-26T09:00:38+00:00"
         },
         {
             "name": "egulias/email-validator",
@@ -7763,57 +7719,6 @@
             "time": "2019-03-23T14:28:58+00:00"
         },
         {
-            "name": "welp/mailchimp-bundle",
-            "version": "1.2.3",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/welpdev/mailchimp-bundle.git",
-                "reference": "b12e65c208fe47b4cac5d4a4394a0ba649e5fc44"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/welpdev/mailchimp-bundle/zipball/b12e65c208fe47b4cac5d4a4394a0ba649e5fc44",
-                "reference": "b12e65c208fe47b4cac5d4a4394a0ba649e5fc44",
-                "shasum": ""
-            },
-            "require": {
-                "drewm/mailchimp-api": "^2.2",
-                "php": ">=5.6"
-            },
-            "require-dev": {
-                "phpspec/phpspec": "~2@dev",
-                "phpunit/phpunit": "~5",
-                "symfony/symfony": ">=2.7"
-            },
-            "type": "symfony-bundle",
-            "autoload": {
-                "psr-4": {
-                    "Welp\\MailchimpBundle\\": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Titouan BENOIT",
-                    "email": "titouan@welp.today"
-                }
-            ],
-            "description": "MailChimp API V3 Symfony Bundle",
-            "homepage": "https://github.com/welpdev/mailchimp-bundle",
-            "keywords": [
-                "api",
-                "mailchimp",
-                "subscriber",
-                "symfony",
-                "user",
-                "v3"
-            ],
-            "time": "2018-12-05T10:28:40+00:00"
-        },
-        {
             "name": "whichbrowser/parser",
             "version": "v2.0.37",
             "source": {
@@ -8899,7 +8804,8 @@
         "ext-bcmath": "*",
         "ext-curl": "*",
         "ext-openssl": "^7.1",
-        "ext-pdo": "*"
+        "ext-pdo": "*",
+        "ext-soap": "*"
     },
     "platform-dev": []
 }

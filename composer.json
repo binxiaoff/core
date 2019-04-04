@@ -14,6 +14,7 @@
       "Unilend\\Document\\": "src/Document",
       "Unilend\\Entity\\": "src/Entity",
       "Unilend\\EventSubscriber\\": "src/EventSubscriber",
+      "Unilend\\Exception\\": "src/Exception",
       "Unilend\\Repository\\": "src/Repository",
       "Unilend\\Service\\": "src/Service",
       "Unilend\\SwiftMailer\\": "src/SwiftMailer"
@@ -69,7 +70,6 @@
     "symfony/symfony": "^4.0",
     "thadafinser/user-agent-parser": "^2.0",
     "twig/extensions": "^1.5",
-    "welp/mailchimp-bundle": "^1.2",
     "whichbrowser/parser": "^2.0",
     "xynnn/google-tag-manager-bundle": "^2.0"
   },

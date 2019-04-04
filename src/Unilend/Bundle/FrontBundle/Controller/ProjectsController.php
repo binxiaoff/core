@@ -12,7 +12,7 @@ use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Entity\{Attachment, AttachmentType, Bids, Clients, ClientsHistoryActions, Companies, Embeddable\LendingRate, Loans, Operation, Product, Projects, ProjectsStatus, UnderlyingContract,
     UnderlyingContractAttributeType, Wallet, WalletType};
-use Unilend\Bundle\CoreBusinessBundle\Exception\BidException;
+use Unilend\Exception\BidException;
 use Unilend\Repository\ProjectsRepository;
 use Unilend\Bundle\CoreBusinessBundle\Service\CIPManager;
 use Unilend\Bundle\FrontBundle\Security\LoginAuthenticator;

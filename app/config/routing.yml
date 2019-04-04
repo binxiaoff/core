@@ -9,7 +9,3 @@ sonata_cache_cache:
 _knp_mailjet:
     path:  /ws/mailjet/notify/{token}
     defaults: { _controller: knp_mailjet.event.controller:handleEventAction, token: null }
-
-#welp_mailchimp_webhook:
-#    resource: "@WelpMailchimpBundle/Resources/config/routing.yml"
-#    prefix:   /ws/mailchimp

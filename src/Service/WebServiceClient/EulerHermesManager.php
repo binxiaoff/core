@@ -54,7 +54,7 @@ class EulerHermesManager
      * @param string                 $accountApiKey
      * @param string                 $accountPassword
      * @param string                 $accountEmail
-     * @param LoggerInterface        $wsClientCallLogger
+     * @param LoggerInterface        $wsClientLogger
      * @param CallHistoryManager     $callHistoryManager
      * @param SerializerInterface    $serializer
      * @param ResourceManager        $resourceManager
@@ -66,7 +66,7 @@ class EulerHermesManager
         $accountApiKey,
         $accountPassword,
         $accountEmail,
-        LoggerInterface $wsClientCallLogger,
+        LoggerInterface $wsClientLogger,
         CallHistoryManager $callHistoryManager,
         SerializerInterface $serializer,
         ResourceManager $resourceManager,
@@ -77,7 +77,7 @@ class EulerHermesManager
         $this->gradingApiKey      = $gradingApiKey;
         $this->callHistoryManager = $callHistoryManager;
         $this->serializer         = $serializer;
-        $this->logger             = $wsClientCallLogger;
+        $this->logger             = $wsClientLogger;
         $this->accountKey         = $accountApiKey;
         $this->accountPassword    = $accountPassword;
         $this->accountEmail       = $accountEmail;

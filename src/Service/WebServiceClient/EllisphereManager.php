@@ -53,7 +53,7 @@ class EllisphereManager
      * @param ClientInterface        $client
      * @param CallHistoryManager     $callHistoryManager
      * @param SerializerInterface    $serializer
-     * @param LoggerInterface        $wsClientCallLogger
+     * @param LoggerInterface        $wsClientLogger
      * @param string                 $contractId
      * @param string                 $userPrefix
      * @param string                 $userId
@@ -64,7 +64,7 @@ class EllisphereManager
         ClientInterface $client,
         CallHistoryManager $callHistoryManager,
         SerializerInterface $serializer,
-        LoggerInterface $wsClientCallLogger,
+        LoggerInterface $wsClientLogger,
         $contractId,
         $userPrefix,
         $userId,
@@ -75,7 +75,7 @@ class EllisphereManager
         $this->userPrefix         = $userPrefix;
         $this->userId             = $userId;
         $this->password           = $password;
-        $this->logger             = $wsClientCallLogger;
+        $this->logger             = $wsClientLogger;
         $this->client             = $client;
         $this->callHistoryManager = $callHistoryManager;
         $this->entityManager      = $entityManager;
