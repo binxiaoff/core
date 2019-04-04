@@ -20,6 +20,7 @@ use Unilend\Bundle\CoreBusinessBundle\Service\{AttachmentManager, DemoMailerMana
 use Unilend\Bundle\FrontBundle\Form\Lending\BidType;
 use Unilend\Bundle\FrontBundle\Service\ProjectDisplayManager;
 use Unilend\Bundle\WSClientBundle\Service\InseeManager;
+use Unilend\Service\Translation\TranslationManager;
 
 /**
  * @Security("is_granted('ROLE_USER')")
@@ -1018,7 +1019,8 @@ class DemoController extends AbstractController
         Request $request,
         ProjectParticipantRepository $projectParticipantRepository,
         ProjectDisplayManager $projectDisplayManager,
-        DemoMailerManager $mailerManager
+        DemoMailerManager $mailerManager,
+        TranslationManager $translationManager
     ): Response
     {
         $project = $this->entityManager->getRepository(Projects::class)->findOneBy(['slug' => $slug, 'status' => ProjectDisplayManager::STATUS_DISPLAYABLE]);

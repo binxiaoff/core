@@ -6,7 +6,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use RobertoTru\ToInlineStyleEmailBundle\Converter\ToInlineStyleEmailConverter;
 use Unilend\Entity\{MailQueue, MailTemplates, Translations};
 use Unilend\SwiftMailer\TemplateMessageProvider;
-use Unilend\Bundle\TranslationBundle\Service\TranslationManager;
+use Unilend\Service\Translation\TranslationManager;
 
 class MailTemplateManager
 {

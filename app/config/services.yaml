@@ -39,3 +39,7 @@ services:
     swiftmailer.mailer.default.spool.db: '@Unilend\SwiftMailer\DatabaseSpool'
     swiftmailer.mailer.transport.mailjet: '@Unilend\SwiftMailer\MailjetTransport'
     mailjet: '@Unilend\SwiftMailer\MailjetTransport'
+
+    Unilend\Service\Translation\TranslationLoader:
+        tags:
+            - { name: translation.loader, alias: db }

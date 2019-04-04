@@ -22,11 +22,7 @@ framework:
                 base_path: /assets
         json_manifest_path: '%kernel.root_dir%/../public/default/assets/rev-manifest.json'
     translator:
-        enabled: true
-        fallbacks: ["fr_FR"]
-        paths:
-            - "%kernel.root_dir%/../src/Unilend/Bundle/TranslationBundle/Resources/translations"
-        logging: true
+        fallbacks: ["%locale%"]
     session:
         handler_id: null
         gc_maxlifetime: 3600
@@ -239,11 +235,6 @@ swiftmailer:
     transport: '%mailer_transport%'
     host: '%mailer_host%'
     port: '%mailer_port%'
-
-unilend_translation:
-    parameters:
-        cache:
-            path: "%kernel.cache_dir%/translations"
 
 google_tag_manager:
     enabled: false

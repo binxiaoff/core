@@ -3,7 +3,7 @@
 use Doctrine\ORM\EntityManager;
 use Unilend\Entity\{AddressType, Bids, Clients, Pays, ProjectRejectionReason, Projects, ProjectsComments, ProjectsNotes, ProjectsStatus, Wallet, WalletType, Zones};
 use Unilend\Bundle\CoreBusinessBundle\Service\LenderOperationsManager;
-use Unilend\Bundle\TranslationBundle\Service\TranslationManager;
+use Unilend\Service\Translation\TranslationManager;
 
 class ajaxController extends bootstrap
 {
