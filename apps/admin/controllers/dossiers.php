@@ -412,7 +412,7 @@ class dossiersController extends bootstrap
                                 'lenderPattern'     => $wallet->getWireTransferPattern()
                             ];
 
-                            /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+                            /** @var \Unilend\SwiftMailer\TemplateMessage $message */
                             $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('preteur-pret-refuse', $keywords);
 
                             try {
@@ -2228,7 +2228,7 @@ class dossiersController extends bootstrap
                 'firstName' => $client->getPrenom()
             ];
 
-            /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+            /** @var \Unilend\SwiftMailer\TemplateMessage $message */
             $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('emprunteur-dossier-rejete', $keywords);
             try {
                 $message->setTo($client->getEmail());

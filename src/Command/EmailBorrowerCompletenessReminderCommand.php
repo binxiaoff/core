@@ -127,7 +127,7 @@ class EmailBorrowerCompletenessReminderCommand extends ContainerAwareCommand
                                     $keywords['date_demande'] = strftime('%d %B %Y', $oCompletenessDate->getTimestamp());
                                 }
 
-                                /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+                                /** @var \Unilend\SwiftMailer\TemplateMessage $message */
                                 $message = $this->getContainer()->get('unilend.swiftmailer.message_provider')->newMessage('depot-dossier-relance-status-' . $iStatus . '-' . $iReminderIndex, $keywords);
 
                                 try {

@@ -12,7 +12,7 @@ use Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\ContractAttribute
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Repayment\ProjectRepaymentScheduleManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
-use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessageProvider;
+use Unilend\SwiftMailer\TemplateMessageProvider;
 
 class ProjectLifecycleManager
 {

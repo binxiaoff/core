@@ -72,7 +72,7 @@ class EmailBorrowerUpcomingRepaymentCommand extends ContainerAwareCommand
                 'borrowerServiceEmail'       => $borrowerServiceEmail
             ];
 
-            /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+            /** @var \Unilend\SwiftMailer\TemplateMessage $message */
             $message = $this->getContainer()->get('unilend.swiftmailer.message_provider')->newMessage('mail-echeance-emprunteur', $keywords);
 
             try {

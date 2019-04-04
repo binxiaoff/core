@@ -3,7 +3,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Unilend\Entity\ProjectRateSettings;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
-use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\{
+use Unilend\SwiftMailer\{
     TemplateMessage, TemplateMessageProvider
 };
 

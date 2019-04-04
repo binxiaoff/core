@@ -1,6 +1,6 @@
 <?php
 
-namespace Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer;
+namespace Unilend\SwiftMailer;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;

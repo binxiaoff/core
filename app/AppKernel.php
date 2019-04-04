@@ -17,7 +17,6 @@ class AppKernel extends Kernel
             new Doctrine\Bundle\DoctrineBundle\DoctrineBundle(),
             new Cache\AdapterBundle\CacheAdapterBundle(),
             new Unilend\Bundle\CoreBusinessBundle\UnilendCoreBusinessBundle(),
-            new Unilend\Bundle\MessagingBundle\UnilendMessagingBundle(),
             new Symfony\Bundle\TwigBundle\TwigBundle(),
             new Unilend\Bundle\FrontBundle\UnilendFrontBundle(),
             new Unilend\Bundle\TranslationBundle\UnilendTranslationBundle(),

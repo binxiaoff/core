@@ -1071,7 +1071,7 @@ class preteursController extends bootstrap
 
     public function _email_history()
     {
-        /** @var \Unilend\Bundle\MessagingBundle\Service\MailQueueManager $oMailQueueManager */
+        /** @var \Unilend\Service\Mailer\MailQueueManager $oMailQueueManager */
         $oMailQueueManager = $this->get('unilend.service.mail_queue');
 
         $clientNotifications = $this->loadData('clients_gestion_notifications');
@@ -1295,7 +1295,7 @@ class preteursController extends bootstrap
             'firstName' => $client->getPrenom()
         ];
 
-        /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+        /** @var \Unilend\SwiftMailer\TemplateMessage $message */
         $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('confirmation-fermeture-compte-preteur', $keywords);
 
         try {
@@ -1326,7 +1326,7 @@ class preteursController extends bootstrap
             'lenderPattern'    => $wallet->getWireTransferPattern()
         ];
 
-        /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+        /** @var \Unilend\SwiftMailer\TemplateMessage $message */
         $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('completude', $keywords);
 
         try {

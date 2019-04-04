@@ -7,7 +7,7 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Routing\RouterInterface;
 use Unilend\Entity\{Bids, Clients, Operation, OperationSubType, OperationType, Settings, Sponsorship, SponsorshipBlacklist, SponsorshipCampaign, Users, Wallet, WalletType};
-use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\{TemplateMessage, TemplateMessageProvider};
+use Unilend\SwiftMailer\{TemplateMessage, TemplateMessageProvider};
 
 class SponsorshipManager
 {

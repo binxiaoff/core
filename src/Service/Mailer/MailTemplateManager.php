@@ -1,11 +1,11 @@
 <?php
 
-namespace Unilend\Bundle\MessagingBundle\Service;
+namespace Unilend\Service\Mailer;
 
 use Doctrine\ORM\EntityManagerInterface;
 use RobertoTru\ToInlineStyleEmailBundle\Converter\ToInlineStyleEmailConverter;
 use Unilend\Entity\{MailQueue, MailTemplates, Translations};
-use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessageProvider;
+use Unilend\SwiftMailer\TemplateMessageProvider;
 use Unilend\Bundle\TranslationBundle\Service\TranslationManager;
 
 class MailTemplateManager
