@@ -1019,8 +1019,7 @@ class DemoController extends AbstractController
         Request $request,
         ProjectParticipantRepository $projectParticipantRepository,
         ProjectDisplayManager $projectDisplayManager,
-        DemoMailerManager $mailerManager,
-        TranslationManager $translationManager
+        DemoMailerManager $mailerManager
     ): Response
     {
         $project = $this->entityManager->getRepository(Projects::class)->findOneBy(['slug' => $slug, 'status' => ProjectDisplayManager::STATUS_DISPLAYABLE]);
