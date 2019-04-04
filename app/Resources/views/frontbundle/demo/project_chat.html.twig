@@ -1,9 +1,0 @@
-{% for message in messages %}
-    <div class="row" style="border-bottom: 1px solid #000; font-weight: bold; margin-top: 15px;">
-        {{ message.idClient.prenom }} {{ message.idClient.nom }}
-        <div class="pull-right" style="font-size: 14px;">{{ message.added|localizeddate('short', 'short') }}</div>
-    </div>
-    <div class="row" style="line-height: 26px; margin: 10px 0;">
-        {{ message.content|raw|nl2br }}
-    </div>
-{% endfor %}
