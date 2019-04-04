@@ -29,7 +29,6 @@ class AppKernel extends Kernel
             new Doctrine\Bundle\MongoDBBundle\DoctrineMongoDBBundle(),
             new JMS\SerializerBundle\JMSSerializerBundle(),
             new EightPoints\Bundle\GuzzleBundle\EightPointsGuzzleBundle(),
-            new Unilend\Bundle\WSClientBundle\UnilendWSClientBundle(),
             new RobertoTru\ToInlineStyleEmailBundle\RobertoTruToInlineStyleEmailBundle(),
             new Welp\MailchimpBundle\WelpMailchimpBundle(),
             new Doctrine\Bundle\MigrationsBundle\DoctrineMigrationsBundle(),

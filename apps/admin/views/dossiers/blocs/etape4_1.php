@@ -1,7 +1,7 @@
 <?php
 
 use Unilend\Entity\ProjectsStatus;
-use Unilend\Bundle\WSClientBundle\Service\InfogreffeManager;
+use Unilend\Service\WebServiceClient\InfogreffeManager;
 
 ?>
 <script type="text/javascript">

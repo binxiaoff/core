@@ -5,7 +5,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service\Product\Validator;
 use Doctrine\ORM\EntityManagerInterface;
 use Unilend\Entity\{Product, ProductAttributeType, ProjectProductAssessment, Projects};
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\{Checker\CompanyChecker, Checker\ProjectChecker, Contract\ContractManager, ProductAttributeManager};
-use Unilend\Bundle\WSClientBundle\Service\InfolegaleManager;
+use Unilend\Service\WebServiceClient\InfolegaleManager;
 
 class ProjectValidator
 {

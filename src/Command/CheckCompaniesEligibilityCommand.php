@@ -8,8 +8,8 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Unilend\Entity\{PreScoring, ProjectEligibilityRuleSet, ProjectEligibilityRuleSetMember, ProjectsStatus, Users};
 use Unilend\Bundle\CoreBusinessBundle\Service\{Eligibility\Validator\CompanyValidator, ExternalDataManager};
-use Unilend\Bundle\WSClientBundle\Entity\Euler\CompanyRating as EulerHermesCompanyRating;
-use Unilend\Bundle\WSClientBundle\Service\AltaresManager;
+use Unilend\Entity\External\Euler\CompanyRating as EulerHermesCompanyRating;
+use Unilend\Service\WebServiceClient\AltaresManager;
 
 class CheckCompaniesEligibilityCommand extends ContainerAwareCommand
 {

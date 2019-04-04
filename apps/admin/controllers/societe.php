@@ -2,7 +2,7 @@
 
 use Doctrine\ORM\EntityManager;
 use Unilend\Entity\{CompanyRating, CompanyRatingHistory, Operation, ProjectNeed, Projects, ProjectsStatus, ProjectsStatusHistory, Zones};
-use Unilend\Bundle\WSClientBundle\Entity\Euler\CompanyRating as EulerCompanyRating;
+use Unilend\Entity\External\Euler\CompanyRating as EulerCompanyRating;
 
 class societeController extends bootstrap
 {

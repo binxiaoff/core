@@ -4,6 +4,7 @@ services:
         autoconfigure: true
         bind:
             $consoleLogger: '@monolog.logger.console'
+            $wsClientCallLogger: '@monolog.logger.wsclient'
             $defaultLocale: '%locale%'
             $sharedTemporaryPath: '%path.shared_tmp%'
             $templateMessageFQCN: 'Unilend\SwiftMailer\TemplateMessage'
@@ -43,3 +44,77 @@ services:
     Unilend\Service\Translation\TranslationLoader:
         tags:
             - { name: translation.loader, alias: db }
+
+    Unilend\Service\WebServiceClient\CallHistoryManager:
+        arguments:
+            $alertChannel: '%slack.default_channel%'
+            $mongoDBLogger: '@monolog.logger.mongodb'
+            $mongoLogEnabled: "%mongodb.log.enable%"
+
+    soap_client.altares_identity:
+        class: \SoapClient
+        arguments:
+            $wsdl: '%altares.wsdl_url_identity%'
+            $options:
+                exception: 1
+                trace: 1
+
+    soap_client.altares_risque:
+        class: \SoapClient
+        arguments:
+            $wsdl: '%altares.wsdl_url_risk%'
+            $options:
+                exception: 1
+                trace: 1
+
+    soap_client.altares_risk_monitoring:
+        class: \SoapClient
+        arguments:
+            $wsdl: '%altares.wsdl_url_risk_monitoring%'
+            $options:
+                exception: 1
+                trace: 1
+
+    Unilend\Service\WebServiceClient\EulerHermesManager:
+        $client: '@eight_points_guzzle.client.euler'
+        $gradingApiKey: '%euler.grading_key%'
+        $accountApiKey: '%euler.account_key%'
+        $accountPassword: '%euler.password%'
+        $accountEmail: '%euler.email%'
+
+    Unilend\Service\WebServiceClient\CodinfManager:
+        $client: '@eight_points_guzzle.client.codinf'
+        $user: '%codinf.user%'
+        $password: '%codinf.password%'
+
+    Unilend\Service\WebServiceClient\InfolegaleManager:
+        $client: '@eight_points_guzzle.client.infolegale'
+        $token: '%infolegale.token%'
+
+    Unilend\Service\WebServiceClient\InfogreffeManager:
+        $login: '%infogreffe.login%'
+        $password: '%infogreffe.password%'
+        $wsdl: '%infogreffe.wsdl_url%'
+        $url: '%infogreffe.url%'
+
+    Unilend\Service\WebServiceClient\AltaresManager:
+        $login: '%altares.login%'
+        $password: '%altares.password%'
+        $identityClient: '@soap_client.altares_identity'
+        $riskClient: '@soap_client.altares_risque'
+        $riskMonitoringClient: '@soap_client.altares_risk_monitoring'
+
+    Unilend\Service\WebServiceClient\EllisphereManager:
+        $client: '@eight_points_guzzle.client.ellisphere'
+        $contractId: '%ellisphere.contract_id%'
+        $userPrefix: '%ellisphere.user_prefix%'
+        $userId: '%ellisphere.user_id%'
+        $password: '%ellisphere.password%'
+
+    Unilend\Service\WebServiceClient\GreenPointManager:
+        $client: '@eight_points_guzzle.client.greenpoint'
+        $login: '%greenpoint.login%'
+        $password: '%greenpoint.password%'
+
+    Unilend\Service\WebServiceClient\InseeManager:
+        $client: '@eight_points_guzzle.client.insee'

@@ -3,7 +3,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Unilend\Entity\Companies;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
-use Unilend\Bundle\WSClientBundle\Entity\Altares\BalanceSheetListDetail;
+use Unilend\Entity\External\Altares\BalanceSheetListDetail;
 
 class CompanyBalanceSheetManager
 {

@@ -4,7 +4,7 @@ imports:
     - { resource: parameters_extended.yml, ignore_errors: true }
     - { resource: dql_mysql_functions.yml }
     - { resource: services.yaml }
-    - { resource: services_legacy/messaging.yaml}
+    - { resource: services_legacy/*.yaml}
 
 framework:
     secret: "%secret%"

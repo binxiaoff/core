@@ -2,8 +2,8 @@
 
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Translation\TranslatorInterface;
-use Unilend\Entity\{AddressType, Attachment, AttachmentType, BankAccount, Clients, ClientsStatus, Companies, Pays, Zones};
-use Unilend\Bundle\WSClientBundle\Entity\Altares\{CompanyIdentityDetail, EstablishmentIdentityDetail};
+use Unilend\Entity\{AddressType, Attachment, AttachmentType, BankAccount, Clients, Companies, Pays, Zones};
+use Unilend\Entity\External\Altares\{CompanyIdentityDetail, EstablishmentIdentityDetail};
 
 class companyController extends bootstrap
 {
@@ -67,9 +67,9 @@ class companyController extends bootstrap
         $this->hideDecoration();
         if (false === empty($this->params[0])) {
             $siren = filter_var($this->params[0], FILTER_SANITIZE_STRING);
-            /** @var \Unilend\Bundle\WSClientBundle\Service\AltaresManager $altares */
+            /** @var \Unilend\Service\WebServiceClient\AltaresManager $altares */
             $altares = $this->get('unilend.service.ws_client.altares_manager');
-            /** @var \Unilend\Bundle\WSClientBundle\Service\InfolegaleManager $infoLegale */
+            /** @var \Unilend\Service\WebServiceClient\InfolegaleManager $infoLegale */
             $infoLegale = $this->get('unilend.service.ws_client.infolegale_manager');
             /** @var \JMS\Serializer\Serializer $serializer */
             $serializer = $this->get('jms_serializer');

@@ -19,8 +19,7 @@ use Unilend\Repository\ProjectParticipantRepository;
 use Unilend\Bundle\CoreBusinessBundle\Service\{AttachmentManager, DemoMailerManager, ProjectManager, ProjectStatusManager};
 use Unilend\Bundle\FrontBundle\Form\Lending\BidType;
 use Unilend\Bundle\FrontBundle\Service\ProjectDisplayManager;
-use Unilend\Bundle\WSClientBundle\Service\InseeManager;
-use Unilend\Service\Translation\TranslationManager;
+use Unilend\Service\WebServiceClient\InseeManager;
 
 /**
  * @Security("is_granted('ROLE_USER')")

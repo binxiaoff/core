@@ -4,7 +4,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Unilend\Entity\{Projects, ProjectsStatus, Settings, WsCallHistory, WsExternalResource};
-use Unilend\Bundle\WSClientBundle\Service\CallHistoryManager;
+use Unilend\Service\WebServiceClient\CallHistoryManager;
 
 class WsMonitoringManager
 {

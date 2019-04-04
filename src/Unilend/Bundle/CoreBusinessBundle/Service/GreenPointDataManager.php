@@ -5,8 +5,8 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Unilend\Entity\{AddressType, Attachment, AttachmentType, ClientAddress, Companies, CompanyAddress, GreenpointAttachment, GreenpointAttachmentDetail};
-use Unilend\Bundle\WSClientBundle\Entity\GreenPoint\{HousingCertificate, Identity, Rib};
-use Unilend\Bundle\WSClientBundle\Service\GreenPointManager;
+use Unilend\Entity\External\GreenPoint\{HousingCertificate, Identity, Rib};
+use Unilend\Service\WebServiceClient\GreenPointManager;
 
 class GreenPointDataManager
 {

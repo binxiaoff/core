@@ -5,8 +5,8 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service\RiskDataMonitoring;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Unilend\Entity\{Companies, CompanyRating, CompanyRatingHistory, Projects, RiskDataMonitoringType};
-use Unilend\Bundle\WSClientBundle\Entity\Euler\CompanyRating as EulerCompanyRating;
-use Unilend\Bundle\WSClientBundle\Service\EulerHermesManager as EulerHermesWsClient;
+use Unilend\Entity\External\Euler\CompanyRating as EulerCompanyRating;
+use Unilend\Service\WebServiceClient\EulerHermesManager as EulerHermesWsClient;
 
 class EulerHermesManager
 {
