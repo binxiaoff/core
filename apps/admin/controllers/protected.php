@@ -1,6 +1,6 @@
 <?php
 
-use Unilend\Bundle\CoreBusinessBundle\Service\Document\LoanContractGenerator;
+use Unilend\Service\Document\LoanContractGenerator;
 
 class protectedController extends bootstrap
 {

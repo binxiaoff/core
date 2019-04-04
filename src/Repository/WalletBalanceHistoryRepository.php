@@ -9,7 +9,7 @@ use Doctrine\ORM\Query;
 use Doctrine\ORM\Query\Expr\Join;
 use Unilend\Entity\{Clients, Echeanciers, Operation, OperationSubType, OperationType, ProjectRepaymentTask, ProjectRepaymentTaskLog, Receptions, SepaRejectionReason, Wallet, WalletBalanceHistory,
     WalletType};
-use Unilend\Bundle\CoreBusinessBundle\Service\LenderOperationsManager;
+use Unilend\Service\LenderOperationsManager;
 use Unilend\librairies\CacheKeys;
 
 class WalletBalanceHistoryRepository extends EntityRepository

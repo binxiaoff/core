@@ -5,7 +5,7 @@ namespace Unilend\Bundle\FrontBundle\Controller\Endpoint;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\{JsonResponse, Request};
 use Symfony\Component\Routing\Annotation\Route;
-use Unilend\Bundle\CoreBusinessBundle\Service\RiskDataMonitoring\EulerHermesManager;
+use Unilend\Service\RiskDataMonitoring\EulerHermesManager;
 use Unilend\Entity\{Companies, Settings};
 
 class RiskDataMonitoringController extends Controller

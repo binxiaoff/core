@@ -7,7 +7,7 @@ use Unilend\Entity\{AcceptationsLegalDocs, AddressType, Attachment, AttachmentTy
     LenderTaxExemption, Loans, MailTemplates, OffresBienvenues, OffresBienvenuesDetails, Operation, OperationType, Pays, ProjectNotification, ProjectsStatus, UsersHistory, VigilanceRule, Wallet,
     WalletType, Zones};
 use Unilend\Repository\LenderStatisticRepository;
-use Unilend\Bundle\CoreBusinessBundle\Service\{AttachmentManager, ClientAuditer, ClientDataHistoryManager, ClientStatusManager, LenderOperationsManager};
+use Unilend\Service\{AttachmentManager, ClientAuditer, ClientDataHistoryManager, ClientStatusManager, LenderOperationsManager};
 
 class preteursController extends bootstrap
 {
@@ -705,7 +705,7 @@ class preteursController extends bootstrap
             }
 
             try {
-                /** @var \Unilend\Bundle\CoreBusinessBundle\Service\LenderValidationManager $lenderValidationManager */
+                /** @var \Unilend\Service\LenderValidationManager $lenderValidationManager */
                 $lenderValidationManager = $this->get('unilend.service.lender_validation_manager');
                 $duplicates              = [];
                 $clientIsValidated       = $lenderValidationManager->validateClient($client, $this->userEntity, $duplicates, $bankAccountId, $addressId);
@@ -891,7 +891,7 @@ class preteursController extends bootstrap
         $this->currencyFormatter = $this->get('currency_formatter');
         /** @var EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\WelcomeOfferManager $welcomeOfferManager */
+        /** @var \Unilend\Service\WelcomeOfferManager $welcomeOfferManager */
         $welcomeOfferManager  = $this->get('unilend.service.welcome_offer_manager');
         $paidOutWelcomeOffers = $entityManager->getRepository(OffresBienvenuesDetails::class);
 
@@ -1032,7 +1032,7 @@ class preteursController extends bootstrap
     public function _affect_welcome_offer()
     {
         $this->hideDecoration();
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\WelcomeOfferManager $welcomeOfferManager */
+        /** @var \Unilend\Service\WelcomeOfferManager $welcomeOfferManager */
         $welcomeOfferManager = $this->get('unilend.service.welcome_offer_manager');
         /** @var EntityManager $entityManager */
         $entityManager      = $this->get('doctrine.orm.entity_manager');
@@ -1215,11 +1215,11 @@ class preteursController extends bootstrap
         $this->contract = $this->loadData('underlying_contract');
         /** @var \Symfony\Component\Translation\TranslatorInterface translator */
         $this->translator = $this->get('translator');
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\LoanManager loanManager */
+        /** @var \Unilend\Service\LoanManager loanManager */
         $this->loanManager = $this->get('unilend.service.loan_manager');
         /** @var \loans loan */
         $this->loan = $this->loadData('loans');
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\LenderManager lenderManager */
+        /** @var \Unilend\Service\LenderManager lenderManager */
         $lenderManager = $this->get('unilend.service.lender_manager');
         /** @var EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
@@ -1248,9 +1248,9 @@ class preteursController extends bootstrap
 
             $this->clientStatusMessage = $this->getMessageAboutClientStatus();
 
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\AutoBidSettingsManager $oAutoBidSettingsManager */
+            /** @var \Unilend\Service\AutoBidSettingsManager $oAutoBidSettingsManager */
             $oAutoBidSettingsManager = $this->get('unilend.service.autobid_settings_manager');
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ClientManager $oClientManager */
+            /** @var \Unilend\Service\ClientManager $oClientManager */
             $oClientManager = $this->get('unilend.service.client_manager');
 
             $this->bAutoBidOn     = $oAutoBidSettingsManager->isOn($wallet->getIdClient());
@@ -1280,7 +1280,7 @@ class preteursController extends bootstrap
             }
 
             $this->hasTransferredLoans = $lenderManager->hasTransferredLoans($wallet->getIdClient());
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\CIPManager $cipManager */
+            /** @var \Unilend\Service\CIPManager $cipManager */
             $cipManager       = $this->get('unilend.service.cip_manager');
             $this->cipEnabled = $cipManager->hasValidEvaluation($wallet->getIdClient());
         }
@@ -1477,7 +1477,7 @@ class preteursController extends bootstrap
         ) {
             $value = ('on' == $this->params[1]) ? \client_settings::BETA_TESTER_ON : \client_settings::BETA_TESTER_OFF;
 
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ClientSettingsManager $clientSettingsManager */
+            /** @var \Unilend\Service\ClientSettingsManager $clientSettingsManager */
             $clientSettingsManager = $this->get('unilend.service.client_settings_manager');
             $clientSettingsManager->saveClientSetting($client, ClientSettingType::TYPE_BETA_TESTER, $value);
 

@@ -186,7 +186,7 @@ use Unilend\Entity\{Companies, CompanyStatus, ProjectsStatus, UniversignEntityIn
                 <div class="form-group">
                     <label>Solde</label>
                     <?php if ($this->restFunds > 0) : ?>
-                        <a href="<?= $this->lurl ?>/dossiers/add_wire_transfer_out_lightbox/<?= \Unilend\Bundle\CoreBusinessBundle\Service\WireTransferOutManager::TRANSFER_OUT_BY_COMPANY ?>/<?= $this->companyEntity->getIdCompany() ?>"
+                        <a href="<?= $this->lurl ?>/dossiers/add_wire_transfer_out_lightbox/<?= \Unilend\Service\WireTransferOutManager::TRANSFER_OUT_BY_COMPANY ?>/<?= $this->companyEntity->getIdCompany() ?>"
                            class="thickbox cboxElement"><img src="<?= $this->surl ?>/images/admin/add.png"></a>
                     <?php endif; ?>
                     <p><?= $this->currencyFormatter->formatCurrency($this->availableBalance, 'EUR') ?> (dont <?= $this->currencyFormatter->formatCurrency($this->restFunds, 'EUR') ?> disponible)</p>

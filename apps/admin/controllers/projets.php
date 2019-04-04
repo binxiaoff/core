@@ -3,8 +3,8 @@
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Unilend\Entity\Zones;
-use Unilend\Bundle\CoreBusinessBundle\Service\BackOfficeUserManager;
-use Unilend\Bundle\CoreBusinessBundle\Service\BulkCompanyCheckManager;
+use Unilend\Service\BackOfficeUserManager;
+use Unilend\Service\BulkCompanyCheckManager;
 
 class projetsController extends bootstrap
 {

@@ -4,7 +4,7 @@ namespace Unilend\Bundle\FrontBundle\Twig;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Unilend\Entity\{Bids, EcheanciersEmprunteur, Projects, ProjectsStatus};
-use Unilend\Bundle\CoreBusinessBundle\Service\{AutoBidSettingsManager, ProjectManager};
+use Unilend\Service\{AutoBidSettingsManager, ProjectManager};
 
 class ProjectExtension extends \Twig_Extension
 {

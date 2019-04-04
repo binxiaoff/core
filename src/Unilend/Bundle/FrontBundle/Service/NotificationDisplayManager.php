@@ -6,7 +6,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Entity\{Autobid, Clients, Notifications, Projects, Wallet, WalletType};
-use Unilend\Bundle\CoreBusinessBundle\Service\{AutoBidSettingsManager, BidManager, Simulator\EntityManager as EntityManagerSimulator};
+use Unilend\Service\{AutoBidSettingsManager, BidManager, Simulator\EntityManager as EntityManagerSimulator};
 use Unilend\core\Loader;
 
 class NotificationDisplayManager

@@ -2,7 +2,7 @@
 
 use Doctrine\ORM\EntityManager;
 use Unilend\Entity\{AddressType, Bids, Clients, Pays, ProjectRejectionReason, Projects, ProjectsComments, ProjectsNotes, ProjectsStatus, Wallet, WalletType, Zones};
-use Unilend\Bundle\CoreBusinessBundle\Service\LenderOperationsManager;
+use Unilend\Service\LenderOperationsManager;
 use Unilend\Service\Translation\TranslationManager;
 
 class ajaxController extends bootstrap
@@ -217,7 +217,7 @@ class ajaxController extends bootstrap
                     return;
                 }
 
-                /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectRequestManager $projectRequestManager */
+                /** @var \Unilend\Service\ProjectRequestManager $projectRequestManager */
                 $projectRequestManager = $this->get('unilend.service.project_request_manager');
                 $result                = $projectRequestManager->checkProjectRisk($project, $this->userEntity->getIdUser());
 
@@ -249,7 +249,7 @@ class ajaxController extends bootstrap
             } elseif ($_POST['etape'] == 2) {
                 /** @var EntityManager $entityManager */
                 $entityManager = $this->get('doctrine.orm.entity_manager');
-                /** @var \Unilend\Bundle\CoreBusinessBundle\Service\AddressManager $addressManager */
+                /** @var \Unilend\Service\AddressManager $addressManager */
                 $addressManager = $this->get('unilend.service.address_manager');
                 $emailRegex    = $entityManager
                     ->getRepository(Settings::class)
@@ -382,7 +382,7 @@ class ajaxController extends bootstrap
                 if (isset($_POST['box'])) {
                     /** @var companies_bilans $companyAnnualAccounts */
                     $companyAnnualAccounts = $this->loadData('companies_bilans');
-                    /** @var \Unilend\Bundle\CoreBusinessBundle\Service\CompanyBalanceSheetManager $companyBalanceSheetManager */
+                    /** @var \Unilend\Service\CompanyBalanceSheetManager $companyBalanceSheetManager */
                     $companyBalanceSheetManager = $this->get('unilend.service.company_balance_sheet_manager');
 
                     foreach ($_POST['box'] as $balanceSheetId => $boxes){
@@ -555,7 +555,7 @@ class ajaxController extends bootstrap
         $this->projects = $this->loadData('projects');
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BidManager $bidManager */
+        /** @var \Unilend\Service\BidManager $bidManager */
         $bidManager = $this->get('unilend.service.bid_manager');
 
         if (isset($_POST['id_bid']) && $bids->get($_POST['id_bid'], 'id_bid')) {
@@ -620,7 +620,7 @@ class ajaxController extends bootstrap
             return;
         }
 
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectStatusManager $projectStatusManager */
+        /** @var \Unilend\Service\ProjectStatusManager $projectStatusManager */
         $projectStatusManager = $this->get('unilend.service.project_status_manager');
         if ($requestParams['status'] == ProjectsStatus::STATUS_CANCELLED && isset($requestParams['rejection_reason']) && is_array($requestParams['rejection_reason'])) {
             /** @var EntityManager $entityManager */
@@ -733,7 +733,7 @@ class ajaxController extends bootstrap
 
         $entityManager->flush($projectRating);
 
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectStatusManager $projectStatusManager */
+        /** @var \Unilend\Service\ProjectStatusManager $projectStatusManager */
         $projectStatusManager = $this->get('unilend.service.project_status_manager');
 
         if ($_POST['status'] == 1) {
@@ -774,7 +774,7 @@ class ajaxController extends bootstrap
 
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BackOfficeUserManager $userManager */
+        /** @var \Unilend\Service\BackOfficeUserManager $userManager */
         $userManager = $this->get('unilend.service.back_office_user_manager');
 
         if (
@@ -824,11 +824,11 @@ class ajaxController extends bootstrap
 
         $entityManager->flush($projectRating);
 
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $projectManager */
+        /** @var \Unilend\Service\ProjectManager $projectManager */
         $projectManager = $this->get('unilend.service.project_manager');
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectRatingManager $projectRatingManager */
+        /** @var \Unilend\Service\ProjectRatingManager $projectRatingManager */
         $projectRatingManager = $this->get('unilend.service.project_rating_manager');
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectStatusManager $projectStatusManager */
+        /** @var \Unilend\Service\ProjectStatusManager $projectStatusManager */
         $projectStatusManager = $this->get('unilend.service.project_status_manager');
 
         $riskRating = $projectRatingManager->calculateRiskRating($project);
@@ -1044,7 +1044,7 @@ class ajaxController extends bootstrap
                     break;
             }
 
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\MailerManager $mailerManager */
+            /** @var \Unilend\Service\MailerManager $mailerManager */
             $mailerManager = $this->get('unilend.service.email_manager');
             $mailerManager->sendBorrowerAccount($client, $emailType);
         }
@@ -1102,7 +1102,7 @@ class ajaxController extends bootstrap
      */
     private function rejectProject($project, int $rejectionStatus, array $rejectionReasons, bool $sendBorrowerEmail = false, ?string $comment = null, bool $isCommentPublic = false): array
     {
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectStatusManager $projectStatusManager */
+        /** @var \Unilend\Service\ProjectStatusManager $projectStatusManager */
         $projectStatusManager = $this->get('unilend.service.project_status_manager');
         /** @var EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');

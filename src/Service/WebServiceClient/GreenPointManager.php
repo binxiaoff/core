@@ -56,7 +56,7 @@ class GreenPointManager
 
     /**
      * @param Client                 $client
-     * @param LoggerInterface        $wsClientCallLogger
+     * @param LoggerInterface        $wsClientLogger
      * @param ResourceManager        $resourceManager
      * @param EntityManagerInterface $entityManager
      * @param string                 $login
@@ -65,7 +65,7 @@ class GreenPointManager
      */
     public function __construct(
         Client $client,
-        LoggerInterface $wsClientCallLogger,
+        LoggerInterface $wsClientLogger,
         ResourceManager $resourceManager,
         EntityManagerInterface $entityManager,
         string $login,
@@ -74,7 +74,7 @@ class GreenPointManager
     )
     {
         $this->client          = $client;
-        $this->logger          = $wsClientCallLogger;
+        $this->logger          = $wsClientLogger;
         $this->resourceManager = $resourceManager;
         $this->entityManager   = $entityManager;
         $this->login           = $login;

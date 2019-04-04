@@ -12,7 +12,7 @@ use Doctrine\ORM\UnexpectedResultException;
 use PDO;
 use Unilend\Entity\{AddressType, Attachment, AttachmentType, BankAccount, BeneficialOwner, ClientAddress, Clients, ClientsAdresses, ClientsStatus, ClientsStatusHistory, Companies, CompanyClient,
     Loans, Operation, OperationType, GreenpointAttachment, Partner, Pays, Users, VigilanceRule, Wallet, WalletBalanceHistory, WalletType};
-use Unilend\Bundle\CoreBusinessBundle\Service\{GreenPointValidationManager, LenderValidationManager};
+use Unilend\Service\{GreenPointValidationManager, LenderValidationManager};
 
 class ClientsRepository extends EntityRepository
 {

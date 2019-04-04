@@ -1141,7 +1141,7 @@ use Unilend\Entity\{AttachmentType, Companies, ProjectsStatus, UnderlyingContrac
                         <h2>
                             Transfert
                             <?php if ($this->restFunds > 0) : ?>
-                                <a href="<?= $this->lurl ?>/dossiers/add_wire_transfer_out_lightbox/<?= \Unilend\Bundle\CoreBusinessBundle\Service\WireTransferOutManager::TRANSFER_OUT_BY_PROJECT ?>/<?= $this->projects->id_project ?>" class="thickbox cboxElement"><img src="<?= $this->surl ?>/images/admin/add.png"></a>
+                                <a href="<?= $this->lurl ?>/dossiers/add_wire_transfer_out_lightbox/<?= \Unilend\Service\WireTransferOutManager::TRANSFER_OUT_BY_PROJECT ?>/<?= $this->projects->id_project ?>" class="thickbox cboxElement"><img src="<?= $this->surl ?>/images/admin/add.png"></a>
                             <?php endif; ?>
                         </h2>
                         <p>

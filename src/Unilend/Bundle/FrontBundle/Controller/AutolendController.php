@@ -8,7 +8,7 @@ use Symfony\Component\HttpFoundation\{Request, Response};
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Unilend\Entity\{Autobid, Clients, ClientSettingType, ClientsHistoryActions, ProjectPeriod, ProjectRateSettings, Projects, Wallet, WalletType};
-use Unilend\Bundle\CoreBusinessBundle\Service\AutoBidSettingsManager;
+use Unilend\Service\AutoBidSettingsManager;
 use Unilend\core\Loader;
 
 class AutolendController extends Controller

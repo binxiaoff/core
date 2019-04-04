@@ -4,7 +4,7 @@ use Doctrine\ORM\{EntityManager, OptimisticLockException};
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Filesystem\Exception\FileNotFoundException;
 use Unilend\Entity\{Attachment, AttachmentType, ProjectAttachment, ProjectAttachmentType, UsersHistory, Zones};
-use Unilend\Bundle\CoreBusinessBundle\Service\AttachmentManager;
+use Unilend\Service\AttachmentManager;
 
 class attachmentController extends bootstrap
 {

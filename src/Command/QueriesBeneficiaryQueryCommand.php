@@ -6,7 +6,7 @@ use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\{InputInterface, InputOption};
 use Symfony\Component\Console\Output\OutputInterface;
 use Unilend\Entity\{AddressType, ClientAddress, Clients, Companies, CompanyAddress, InseePays, Pays, TaxType, Wallet};
-use Unilend\Bundle\CoreBusinessBundle\Service\IfuManager;
+use Unilend\Service\IfuManager;
 
 class QueriesBeneficiaryQueryCommand extends ContainerAwareCommand
 {

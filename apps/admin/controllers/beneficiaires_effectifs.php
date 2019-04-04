@@ -5,7 +5,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Unilend\Entity\{Attachment, AttachmentType, BeneficialOwner, BeneficialOwnerType, ClientsAdresses, CompanyBeneficialOwnerDeclaration, Pays, ProjectBeneficialOwnerUniversign, ProjectsStatus,
     Zones};
 use Unilend\Repository\BeneficialOwnerRepository;
-use Unilend\Bundle\CoreBusinessBundle\Service\BeneficialOwnerManager;
+use Unilend\Service\BeneficialOwnerManager;
 
 class beneficiaires_effectifsController extends bootstrap
 {
@@ -228,7 +228,7 @@ class beneficiaires_effectifsController extends bootstrap
             $errors[] = 'Le pourcentage des parts détenues n\'est pas correct. Il ne doit pas être inférieur à ' . $minPercentage . '&nbsp;% ou supérieur à 100&nbsp;%';
         }
 
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BeneficialOwnerManager $beneficialOwnerManager */
+        /** @var \Unilend\Service\BeneficialOwnerManager $beneficialOwnerManager */
         $beneficialOwnerManager = $this->get('unilend.service.beneficial_owner_manager');
         $declaration            = null;
         if (false === empty($declarationId)) {
@@ -422,7 +422,7 @@ class beneficiaires_effectifsController extends bootstrap
         }
 
         if ('no_change' !== $request->request->get('id_card_passport') && null !== $request->files->all()) {
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\AttachmentManager $attachmentManager */
+            /** @var \Unilend\Service\AttachmentManager $attachmentManager */
             $attachmentManager = $this->get('unilend.service.attachment_manager');
             $attachmentType    = $entityManager->getRepository(AttachmentType::class)->find(AttachmentType::CNI_PASSPORTE);
             if ($attachmentType) {
@@ -612,7 +612,7 @@ class beneficiaires_effectifsController extends bootstrap
         }
 
         if (Pays::COUNTRY_FRANCE === $country->getIdPays() && null !== $birthPlace) {
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\LocationManager $locationManager */
+            /** @var \Unilend\Service\LocationManager $locationManager */
             $locationManager = $this->get('unilend.service.location_manager');
             $city            = $locationManager->getCities($birthPlace, true);
             if (empty($city)) {

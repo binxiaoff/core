@@ -49,7 +49,7 @@ class InfogreffeManager
      * @param string              $password
      * @param string              $wsdl
      * @param string              $url
-     * @param LoggerInterface     $wsClientCallLogger
+     * @param LoggerInterface     $wsClientLogger
      * @param CallHistoryManager  $callHistoryManager
      * @param SerializerInterface $serializer
      * @param ResourceManager     $resourceManager
@@ -59,7 +59,7 @@ class InfogreffeManager
         $password,
         $wsdl,
         $url,
-        LoggerInterface $wsClientCallLogger,
+        LoggerInterface $wsClientLogger,
         CallHistoryManager $callHistoryManager,
         SerializerInterface $serializer,
         ResourceManager $resourceManager
@@ -69,7 +69,7 @@ class InfogreffeManager
         $this->password           = $password;
         $this->wsdl               = $wsdl;
         $this->url                = $url;
-        $this->logger             = $wsClientCallLogger;
+        $this->logger             = $wsClientLogger;
         $this->callHistoryManager = $callHistoryManager;
         $this->serializer         = $serializer;
         $this->resourceManager    = $resourceManager;

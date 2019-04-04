@@ -11,7 +11,7 @@ use PDO;
 use Psr\Log\InvalidArgumentException;
 use Unilend\Entity\{Bids, Clients, ClientsMandats, Companies, CompanyStatus, Echeanciers, EcheanciersEmprunteur, Factures, OperationType, Partner, Projects, ProjectSearch, ProjectsPouvoir,
     ProjectsStatus, UnilendStats, Users, Virements};
-use Unilend\Bundle\CoreBusinessBundle\Service\{DebtCollectionMissionManager, ProjectCloseOutNettingManager};
+use Unilend\Service\{DebtCollectionMissionManager, ProjectCloseOutNettingManager};
 use Unilend\librairies\CacheKeys;
 
 class ProjectsRepository extends EntityRepository

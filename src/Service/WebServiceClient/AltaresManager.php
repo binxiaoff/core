@@ -65,7 +65,7 @@ class AltaresManager
     /**
      * @param string              $login
      * @param string              $password
-     * @param LoggerInterface     $wsClientCallLogger
+     * @param LoggerInterface     $wsClientLogger
      * @param CallHistoryManager  $callHistoryManager
      * @param SoapClient          $identityClient
      * @param SoapClient          $riskClient
@@ -76,7 +76,7 @@ class AltaresManager
     public function __construct(
         $login,
         $password,
-        LoggerInterface $wsClientCallLogger,
+        LoggerInterface $wsClientLogger,
         CallHistoryManager $callHistoryManager,
         SoapClient $identityClient,
         SoapClient $riskClient,
@@ -87,7 +87,7 @@ class AltaresManager
     {
         $this->login                = $login;
         $this->password             = $password;
-        $this->logger               = $wsClientCallLogger;
+        $this->logger               = $wsClientLogger;
         $this->callHistoryManager   = $callHistoryManager;
         $this->identityClient       = $identityClient;
         $this->riskClient           = $riskClient;

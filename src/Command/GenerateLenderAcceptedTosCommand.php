@@ -5,9 +5,9 @@ namespace Unilend\Command;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Command\Command;
-use Unilend\Bundle\CoreBusinessBundle\Service\Document\LenderTermsOfSaleGenerator;
+use Unilend\Service\Document\LenderTermsOfSaleGenerator;
 use Symfony\Component\Console\{Input\InputInterface, Input\InputOption, Output\OutputInterface};
-use Unilend\Bundle\CoreBusinessBundle\Service\TermsOfSaleManager;
+use Unilend\Service\TermsOfSaleManager;
 use Unilend\Entity\AcceptationsLegalDocs;
 
 class GenerateLenderAcceptedTosCommand extends Command

@@ -323,26 +323,6 @@ eight_points_guzzle:
                     Authorization: "Bearer 50afb10f-39b3-3f75-8660-764884f834bb"
                 http_errors: false
 
-welp_mailchimp:
-    api_key: "%mailchimp.api_key%"
-    list_provider: welp_mailchimp.list_provider
-    lists:
-        "%mailchimp.list_id%":
-            subscriber_provider: 'Unilend\Bundle\CoreBusinessBundle\Event\MailChimpEventSubscriber'
-            webhook_secret: "%mailchimp.webhook_secret%"
-            webhook_url: "%router.request_context.scheme%://%url.host_default%"
-            merge_fields:
-                -
-                    tag: FNAME
-                    name: Prénom
-                    type: text
-                    public: true
-                -
-                    tag: LNAME
-                    name: Nom
-                    type: text
-                    public: true
-
 httplug:
     plugins:
         logger: ~

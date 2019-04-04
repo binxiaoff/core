@@ -5,7 +5,7 @@ namespace Unilend\Repository;
 use Doctrine\DBAL\{Cache\QueryCacheProfile, Connection};
 use Doctrine\ORM\{EntityRepository, NoResultException, Query\Expr\Join};
 use Unilend\Entity\{Clients, Companies, CompanyStatus, Echeanciers, EcheanciersEmprunteur, Loans, OperationType, Projects, ProjectsStatus, UnilendStats, Wallet};
-use Unilend\Bundle\CoreBusinessBundle\Service\TaxManager;
+use Unilend\Service\TaxManager;
 use Unilend\Bundle\FrontBundle\Controller\LenderDashboardController;
 use Unilend\librairies\CacheKeys;
 

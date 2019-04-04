@@ -10,7 +10,7 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\Asset\Packages;
 use Symfony\Component\Stopwatch\Stopwatch;
 use Unilend\Entity\{WsCallHistory, WsExternalResource};
-use Unilend\Bundle\CoreBusinessBundle\Service\SlackManager;
+use Unilend\Service\SlackManager;
 use Unilend\Document\WsCall;
 use Unilend\librairies\CacheKeys;
 
@@ -44,7 +44,7 @@ class CallHistoryManager
      * @param SlackManager           $slackManager
      * @param string                 $alertChannel
      * @param Packages               $assetPackage
-     * @param LoggerInterface        $wsClientCallLogger
+     * @param LoggerInterface        $wsClientLogger
      * @param ManagerRegistry        $managerRegistry
      * @param LoggerInterface        $mongoDBLogger
      * @param bool                   $mongoLogEnabled
@@ -56,7 +56,7 @@ class CallHistoryManager
         SlackManager $slackManager,
         $alertChannel,
         Packages $assetPackage,
-        LoggerInterface $wsClientCallLogger,
+        LoggerInterface $wsClientLogger,
         ManagerRegistry $managerRegistry,
         LoggerInterface $mongoDBLogger,
         bool $mongoLogEnabled
@@ -68,7 +68,7 @@ class CallHistoryManager
         $this->slackManager    = $slackManager;
         $this->alertChannel    = $alertChannel;
         $this->assetPackage    = $assetPackage;
-        $this->logger          = $wsClientCallLogger;
+        $this->logger          = $wsClientLogger;
         $this->managerRegistry = $managerRegistry;
         $this->mongoDBLogger   = $mongoDBLogger;
         $this->mongoLogEnabled = $mongoLogEnabled;

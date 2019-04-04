@@ -42,7 +42,7 @@ class InfolegaleManager
     /**
      * @param ClientInterface     $client
      * @param string              $token
-     * @param LoggerInterface     $wsClientCallLogger
+     * @param LoggerInterface     $wsClientLogger
      * @param CallHistoryManager  $callHistoryManager
      * @param SerializerInterface $serializer
      * @param ResourceManager     $resourceManager
@@ -50,7 +50,7 @@ class InfolegaleManager
     public function __construct(
         ClientInterface $client,
         $token,
-        LoggerInterface $wsClientCallLogger,
+        LoggerInterface $wsClientLogger,
         CallHistoryManager $callHistoryManager,
         SerializerInterface $serializer,
         ResourceManager $resourceManager
@@ -58,7 +58,7 @@ class InfolegaleManager
     {
         $this->client             = $client;
         $this->token              = $token;
-        $this->logger             = $wsClientCallLogger;
+        $this->logger             = $wsClientLogger;
         $this->callHistoryManager = $callHistoryManager;
         $this->serializer         = $serializer;
         $this->resourceManager    = $resourceManager;

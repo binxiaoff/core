@@ -4,12 +4,18 @@ services:
         autoconfigure: true
         bind:
             $consoleLogger: '@monolog.logger.console'
-            $wsClientCallLogger: '@monolog.logger.wsclient'
+            $wsClientLogger: '@monolog.logger.wsclient'
             $defaultLocale: '%locale%'
             $sharedTemporaryPath: '%path.shared_tmp%'
             $templateMessageFQCN: 'Unilend\SwiftMailer\TemplateMessage'
             $frontUrl: '%router.request_context.scheme%://%url.host_default%'
             $adminUrl: '%router.request_context.scheme%://%url.host_admin%'
+            $rootDirectory: '%kernel.root_dir%'
+            $numberFormatter: '@number_formatter'
+            $currencyFormatter: '@currency_formatter'
+            $environment: '%kernel.environment%'
+            $protectedPath: '%path.protected%'
+            $staticPath: '%path.static%'
 
     # makes classes in src/ available to be used as services
     # this creates a service per class whose id is the fully-qualified class name
@@ -52,7 +58,7 @@ services:
             $mongoLogEnabled: "%mongodb.log.enable%"
 
     soap_client.altares_identity:
-        class: \SoapClient
+        class: SoapClient
         arguments:
             $wsdl: '%altares.wsdl_url_identity%'
             $options:
@@ -60,7 +66,7 @@ services:
                 trace: 1
 
     soap_client.altares_risque:
-        class: \SoapClient
+        class: SoapClient
         arguments:
             $wsdl: '%altares.wsdl_url_risk%'
             $options:
@@ -68,7 +74,7 @@ services:
                 trace: 1
 
     soap_client.altares_risk_monitoring:
-        class: \SoapClient
+        class: SoapClient
         arguments:
             $wsdl: '%altares.wsdl_url_risk_monitoring%'
             $options:
@@ -118,3 +124,71 @@ services:
 
     Unilend\Service\WebServiceClient\InseeManager:
         $client: '@eight_points_guzzle.client.insee'
+
+    Unilend\Service\Product\ProductManager: '@Unilend\Service\PartnerProductManager'
+
+    # The "public: true" can be removed if there is no more access via $container->get()
+    Unilend\Service\AcceptedBidAndLoanNotificationSender:
+        public: true
+
+    Unilend\Service\SalesforceManager:
+        $extractionDir: '%path.protected%dataloader'
+        $configDir: '%kernel.root_dir%/dataloader/conf'
+
+    Unilend\Service\LocationManager:
+        $mapboxToken: '%mapbox.token%'
+
+    Unilend\Service\SearchService:
+        $deskUser: '%desk_user%'
+        $deskPassword: '%desk_password%'
+
+    Unilend\Service\Ekomi:
+        $url: '%ekomi.url%'
+        $shopId: '%ekomi.shop_id%'
+        $password: '%ekomi.password%'
+
+    Unilend\Service\PaylineManager:
+        $merchantId: '%payline.merchant_id%'
+        $accessKey: '%payline.access_key%'
+        $logPath: '%path.payline%'
+
+    Unilend\Service\AttachmentManager:
+        $uploadRootDirectory: '%path.protected%attachments'
+        $tmpDirectory: '%path.shared_tmp%'
+
+    Unilend\Service\GoogleRecaptchaManager:
+        $client: '@eight_points_guzzle.client.google_recaptcha'
+        $secret: '%google.recaptcha_secret%'
+
+    currency_formatter:
+        public: true
+        class: NumberFormatter
+        arguments:
+            - '%locale%'
+            - !php/const \NumberFormatter::CURRENCY
+
+    number_formatter:
+        public: true
+        class: NumberFormatter
+        arguments:
+            - '%locale%'
+            - !php/const \NumberFormatter::DEFAULT_STYLE
+
+    date_formatter:
+        public: true
+        class: IntlDateFormatter
+        arguments:
+            - '%locale%'
+            - !php/const \IntlDateFormatter::MEDIUM
+            - !php/const \IntlDateFormatter::SHORT
+
+    UserAgentParser\Provider\WhichBrowser:
+        class: UserAgentParser\Provider\WhichBrowser
+
+    UserAgentParser\Provider\PiwikDeviceDetector:
+        class: UserAgentParser\Provider\PiwikDeviceDetector
+
+    UserAgentParser\Provider\Chain:
+        $providers:
+            - '@UserAgentParser\Provider\WhichBrowser'
+            - '@UserAgentParser\Provider\PiwikDeviceDetector'

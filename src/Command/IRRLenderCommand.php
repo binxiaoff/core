@@ -10,7 +10,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Unilend\Entity\{CompanyStatusHistory, LenderStatisticQueue, Projects, ProjectsStatusHistory, Wallet};
 use Unilend\Repository\WalletRepository;
-use Unilend\Bundle\CoreBusinessBundle\Service\IRRManager;
+use Unilend\Service\IRRManager;
 use Unilend\librairies\CacheKeys;
 
 class IRRLenderCommand extends ContainerAwareCommand

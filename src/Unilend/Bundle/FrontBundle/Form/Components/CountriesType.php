@@ -6,7 +6,7 @@ namespace Unilend\Bundle\FrontBundle\Form\Components;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Form\AbstractType;
-use Unilend\Bundle\CoreBusinessBundle\Service\LocationManager;
+use Unilend\Service\LocationManager;
 
 class CountriesType extends AbstractType
 {

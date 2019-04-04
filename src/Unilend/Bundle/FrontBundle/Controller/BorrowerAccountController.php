@@ -12,7 +12,7 @@ use Symfony\Component\Routing\Exception\RouteNotFoundException;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Unilend\Entity\{BankAccount, Clients, ClientsMandats, Companies, Factures, OperationSubType, OperationType, Projects, ProjectsPouvoir, ProjectsStatus, Settings, TemporaryLinksLogin, Users,
     Virements, Wallet, WalletType};
-use Unilend\Bundle\CoreBusinessBundle\Service\{BorrowerOperationsManager, ProjectStatusManager};
+use Unilend\Service\{BorrowerOperationsManager, ProjectStatusManager};
 use Unilend\Bundle\FrontBundle\Form\{BorrowerContactType, SimpleProjectType};
 
 // Must have ROLE_BORROWER to access to these pages

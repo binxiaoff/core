@@ -6,7 +6,7 @@ use Unilend\Entity\ClientVigilanceStatusHistory;
 use Unilend\Entity\Users;
 use Unilend\Entity\VigilanceRule;
 use Unilend\Entity\Zones;
-use Unilend\Bundle\CoreBusinessBundle\Service\ClientVigilanceStatusManager;
+use Unilend\Service\ClientVigilanceStatusManager;
 
 class client_atypical_operationController extends bootstrap
 {

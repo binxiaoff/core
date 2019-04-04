@@ -101,7 +101,7 @@ class emprunteursController extends bootstrap
             $entityManager = $this->get('doctrine.orm.entity_manager');
             /** @var NumberFormatter currencyFormatter */
             $this->currencyFormatter = $this->get('currency_formatter');
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BorrowerManager $borrowerManager */
+            /** @var \Unilend\Service\BorrowerManager $borrowerManager */
             $borrowerManager = $this->get('unilend.service.borrower_manager');
 
             $walletType       = $entityManager->getRepository(WalletType::class)->findOneBy(['label' => WalletType::BORROWER]);
@@ -202,18 +202,18 @@ class emprunteursController extends bootstrap
             }
 
             $this->aMoneyOrders = $this->clients_mandats->getMoneyOrderHistory($this->companies->id_company);
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BorrowerOperationsManager $borrowerOperationsManager */
+            /** @var \Unilend\Service\BorrowerOperationsManager $borrowerOperationsManager */
             $borrowerOperationsManager = $this->get('unilend.service.borrower_operations_manager');
             $start                     = new \DateTime('First day of january this year');
             $end                       = new \DateTime('NOW');
             $this->operations          = $borrowerOperationsManager->getBorrowerOperations($borrowerWallet, $start, $end);
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\CompanyManager companyManager */
+            /** @var \Unilend\Service\CompanyManager companyManager */
             $this->companyManager        = $this->get('unilend.service.company_manager');
             $companyStatusRepository     = $entityManager->getRepository(CompanyStatus::class);
             $this->possibleCompanyStatus = $this->companyManager->getPossibleStatus($this->companyEntity);
             $this->companyStatusInBonis  = $companyStatusRepository->findOneBy(['label' => CompanyStatus::STATUS_IN_BONIS]);
 
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BackOfficeUserManager $backOfficeUserManager */
+            /** @var \Unilend\Service\BackOfficeUserManager $backOfficeUserManager */
             $backOfficeUserManager    = $this->get('unilend.service.back_office_user_manager');
             $this->hasRepaymentAccess = $backOfficeUserManager->isGrantedZone($this->userEntity, Zones::ZONE_LABEL_REPAYMENT);
         } else {
@@ -288,7 +288,7 @@ class emprunteursController extends bootstrap
             $this->currencyFormatter = $this->get('currency_formatter');
             /** @var \Symfony\Component\Translation\TranslatorInterface $translator */
             $this->translator = $this->get('translator');
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BorrowerOperationsManager $borrowerOperationsManager */
+            /** @var \Unilend\Service\BorrowerOperationsManager $borrowerOperationsManager */
             $borrowerOperationsManager = $this->get('unilend.service.borrower_operations_manager');
             /** @var \Doctrine\ORM\EntityManager $entityManager */
             $entityManager = $this->get('doctrine.orm.entity_manager');
@@ -319,14 +319,14 @@ class emprunteursController extends bootstrap
         $siteContent = isset($_POST['site_content']) ? $_POST['site_content'] : null;
         $mailContent = isset($_POST['mail_content']) ? $_POST['mail_content'] : null;
         $status      = $entityManager->getRepository(CompanyStatus::class)->find($_POST['problematic_status']);
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\CompanyManager $companyManager */
+        /** @var \Unilend\Service\CompanyManager $companyManager */
         $companyManager = $this->get('unilend.service.company_manager');
         $companyManager->addCompanyStatus($company, $status, $user, $changedOn, $receiver, $siteContent, $mailContent);
 
         if (in_array($company->getIdStatus()->getLabel(), [CompanyStatus::STATUS_PRECAUTIONARY_PROCESS, CompanyStatus::STATUS_RECEIVERSHIP, CompanyStatus::STATUS_COMPULSORY_LIQUIDATION])) {
             $projectsRepository = $entityManager->getRepository(Projects::class);
             $companyProjects    = $projectsRepository->findFundedButNotRepaidProjectsByCompany($company);
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectStatusNotificationSender $projectStatusNotificationSender */
+            /** @var \Unilend\Service\ProjectStatusNotificationSender $projectStatusNotificationSender */
             $projectStatusNotificationSender = $this->get('unilend.service.project_status_notification_sender');
             /** @var \Psr\Log\LoggerInterface $logger */
             $logger = $this->get('logger');
@@ -349,9 +349,9 @@ class emprunteursController extends bootstrap
 
     public function _test_eligibilite()
     {
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BackOfficeUserManager $userManager */
+        /** @var \Unilend\Service\BackOfficeUserManager $userManager */
         $userManager = $this->get('unilend.service.back_office_user_manager');
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BulkCompanyCheckManager $bulkCompanyCheckManager */
+        /** @var \Unilend\Service\BulkCompanyCheckManager $bulkCompanyCheckManager */
         $bulkCompanyCheckManager = $this->get('unilend.service.eligibility.bulk_company_check_manager');
 
         if ($userManager->isGrantedRisk($this->userEntity)) {
@@ -367,9 +367,9 @@ class emprunteursController extends bootstrap
 
     public function _donnees_externes()
     {
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BackOfficeUserManager $userManager */
+        /** @var \Unilend\Service\BackOfficeUserManager $userManager */
         $userManager = $this->get('unilend.service.back_office_user_manager');
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BulkCompanyCheckManager $bulkCompanyCheckManager */
+        /** @var \Unilend\Service\BulkCompanyCheckManager $bulkCompanyCheckManager */
         $bulkCompanyCheckManager = $this->get('unilend.service.eligibility.bulk_company_check_manager');
 
         if ($userManager->isGrantedRisk($this->userEntity)) {
@@ -391,7 +391,7 @@ class emprunteursController extends bootstrap
      */
     private function uploadSirenFile(string $uploadDir): array
     {
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BulkCompanyCheckManager $bulkCompanyCheckManager */
+        /** @var \Unilend\Service\BulkCompanyCheckManager $bulkCompanyCheckManager */
         $bulkCompanyCheckManager = $this->get('unilend.service.eligibility.bulk_company_check_manager');
 
         $success = '';

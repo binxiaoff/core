@@ -7,7 +7,7 @@ use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\{Input\InputInterface, Output\OutputInterface};
 use Symfony\Component\Filesystem\Filesystem;
 use Unilend\Entity\ProjectsStatus;
-use Unilend\Bundle\CoreBusinessBundle\Service\{BulkCompanyCheckManager};
+use Unilend\Service\{BulkCompanyCheckManager};
 
 class RetrieveCompanyExternalDataCommand extends ContainerAwareCommand
 {

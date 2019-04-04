@@ -5,7 +5,7 @@ namespace Unilend\Command;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\{Input\InputInterface, Output\OutputInterface};
 use Unilend\Entity\{Projects, ProjectsStatus};
-use Unilend\Bundle\CoreBusinessBundle\Service\AcceptedBidAndLoanNotificationSender;
+use Unilend\Service\AcceptedBidAndLoanNotificationSender;
 use Unilend\librairies\CacheKeys;
 
 class ProjectsFundingCommand extends ContainerAwareCommand

@@ -1,0 +1,37 @@
+<?php
+
+namespace Unilend\Service\Product\Contract\Validator;
+
+use Unilend\Entity\{Clients, UnderlyingContract, UnderlyingContractAttributeType};
+use Unilend\Service\Product\Contract\Checker\ClientChecker;
+use Unilend\Service\Product\Contract\ContractAttributeManager;
+
+class ClientValidator
+{
+    use ClientChecker;
+
+    /** @var ContractAttributeManager */
+    private $contractAttributeManager;
+
+    public function __construct(ContractAttributeManager $contractAttributeManager)
+    {
+        $this->contractAttributeManager = $contractAttributeManager;
+    }
+
+    /**
+     * @param Clients|null            $client
+     * @param UnderlyingContract $contract
+     *
+     * @return array
+     */
+    public function validate(Clients $client = null, UnderlyingContract $contract)
+    {
+        $violations = [];
+
+        if (false === $this->isEligibleForClientType($client, $contract, $this->contractAttributeManager)) {
+            $violations[] = UnderlyingContractAttributeType::ELIGIBLE_CLIENT_TYPE;
+        }
+
+        return $violations;
+    }
+}

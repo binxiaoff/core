@@ -7,7 +7,7 @@ use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\{InputArgument, InputInterface};
 use Symfony\Component\Console\Output\OutputInterface;
 use Unilend\Entity\{Projects, Settings};
-use Unilend\Bundle\CoreBusinessBundle\Service\{DebtCollectionMissionManager, ProjectCloseOutNettingManager};
+use Unilend\Service\{DebtCollectionMissionManager, ProjectCloseOutNettingManager};
 
 class SendUpcomingProjectCloseOutNettingNotificationCommand extends ContainerAwareCommand
 {

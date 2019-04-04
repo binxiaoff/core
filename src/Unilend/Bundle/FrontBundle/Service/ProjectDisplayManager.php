@@ -6,9 +6,9 @@ use Doctrine\ORM\EntityManagerInterface;
 use Psr\Cache\CacheItemPoolInterface;
 use Unilend\Entity\{Bids, Clients, ClientsStatus, Companies, Product, Projects, ProjectsStatus};
 use Unilend\Repository\ProjectsRepository;
-use Unilend\Bundle\CoreBusinessBundle\Service\{BidManager, CompanyBalanceSheetManager, ProjectManager};
-use Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductManager;
-use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
+use Unilend\Service\{BidManager, CompanyBalanceSheetManager, ProjectManager};
+use Unilend\Service\Product\ProductManager;
+use Unilend\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\librairies\CacheKeys;
 
 class ProjectDisplayManager

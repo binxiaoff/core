@@ -9,7 +9,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Unilend\Entity\Clients;
 use Unilend\Entity\Loans;
-use Unilend\Bundle\CoreBusinessBundle\Service\Document\LoanContractGenerator;
+use Unilend\Service\Document\LoanContractGenerator;
 
 class DocumentController extends Controller
 {

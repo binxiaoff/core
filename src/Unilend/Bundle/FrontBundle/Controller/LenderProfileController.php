@@ -12,7 +12,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Unilend\Entity\{AcceptationsLegalDocs, AddressType, Attachment, AttachmentType, BankAccount, ClientAddress, Clients, ClientsGestionNotifications, ClientsGestionTypeNotif, ClientsHistoryActions,
     ClientsStatus, ClientsStatusHistory, Companies, CompanyAddress, Ifu, LendersImpositionHistory, LenderTaxExemption, Operation, Pays, Settings, TaxType, Wallet, WalletBalanceHistory, WalletType};
-use Unilend\Bundle\CoreBusinessBundle\Service\{ClientDataHistoryManager, LocationManager, NewsletterManager, UserActivity\UserActivityDisplayManager};
+use Unilend\Service\{ClientDataHistoryManager, LocationManager, NewsletterManager, UserActivity\UserActivityDisplayManager};
 use Unilend\Bundle\FrontBundle\Form\ClientPasswordType;
 use Unilend\Bundle\FrontBundle\Form\LenderPersonContactType;
 use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\{BankAccountType, ClientEmailType, CompanyIdentityType, LegalEntityProfileType, OriginOfFundsType, PersonProfileType, SecurityQuestionType};

@@ -38,7 +38,7 @@ class CodinfManager
      * @param ClientInterface     $client
      * @param string              $user
      * @param string              $password
-     * @param LoggerInterface     $wsClientCallLogger
+     * @param LoggerInterface     $wsClientLogger
      * @param CallHistoryManager  $callHistoryManager
      * @param SerializerInterface $serializer
      * @param ResourceManager     $resourceManager
@@ -47,7 +47,7 @@ class CodinfManager
         ClientInterface $client,
         $user,
         $password,
-        LoggerInterface $wsClientCallLogger,
+        LoggerInterface $wsClientLogger,
         CallHistoryManager $callHistoryManager,
         SerializerInterface $serializer,
         ResourceManager $resourceManager
@@ -56,7 +56,7 @@ class CodinfManager
         $this->client             = $client;
         $this->user               = $user;
         $this->password           = $password;
-        $this->logger             = $wsClientCallLogger;
+        $this->logger             = $wsClientLogger;
         $this->callHistoryManager = $callHistoryManager;
         $this->serializer         = $serializer;
         $this->resourceManager    = $resourceManager;
