@@ -32,7 +32,7 @@ var cssTask = function () {
     // Add js/vendor and node_modules to importable paths
     import_path: [
       './js/vendor',
-      '../../../node_modules'
+      '../node_modules'
     ],
     sourcemap: true
   }

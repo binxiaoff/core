@@ -1,6 +1,6 @@
 {
   "root": {
-    "src": "./app/Resources/assets",
+    "src": "./assets",
     "dest": "./public/default/assets"
   },
 
@@ -18,15 +18,15 @@
       "vendorDest": "js/vendor",
       "extensions": ["js", "json"],
       "dependencies": [
-        "./app/Resources/assets/js/app/modernizr/modernizr.js",
-        "./app/Resources/assets/js/vendor/jquery.js",
-        "./app/Resources/assets/js/vendor/swiper/swiper.jquery.js",
-        "./app/Resources/assets/js/vendor/jquery.fancybox.js",
-        "./app/Resources/assets/js/vendor/jquery.fancybox-media.js",
-        "./app/Resources/assets/js/vendor/videojs/video.js",
-        "./app/Resources/assets/js/vendor/videojs/Youtube.js",
-        "./app/Resources/assets/js/vendor/jquery.caret.js",
-        "./app/Resources/assets/js/vendor/jquery.datatables.js",
+        "./assets/js/app/modernizr/modernizr.js",
+        "./assets/js/vendor/jquery.js",
+        "./assets/js/vendor/swiper/swiper.jquery.js",
+        "./assets/js/vendor/jquery.fancybox.js",
+        "./assets/js/vendor/jquery.fancybox-media.js",
+        "./assets/js/vendor/videojs/video.js",
+        "./assets/js/vendor/videojs/Youtube.js",
+        "./assets/js/vendor/jquery.caret.js",
+        "./assets/js/vendor/jquery.datatables.js",
         "./node_modules/select2/dist/js/select2.js",
         "./node_modules/select2/dist/js/i18n/fr.js"
       ],
