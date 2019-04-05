@@ -1,0 +1,115 @@
+{% extends 'demo/_layout.html.twig' %}
+
+{% set page = {
+    id: 'demo-projects',
+    classNames: ''
+} %}
+
+{% block dashboardContent %}
+    <article id="projets-index" class="page" data-has-spinner style="background-color: #fff;">
+        <section id="projets-index-project-list" class="page-section">
+            <div class="site-wrap">
+                <div id="projets-index-project-list-module" class="project-list">
+                    <div class="tabs">
+                        <div class="project-list-content tab-content">
+                            <div id="project-list-view" role="tabpanel" class="tab-pane active">
+                                <div class="project-list-filters">
+                                    {% if sortDirection == 'desc' %}
+                                        {% set sortParameter = 'asc' %}
+                                    {% else %}
+                                        {% set sortParameter = 'desc' %}
+                                    {% endif %}
+                                    <div class="project-list-item-category project-list-filter{% if sortType == 'idPartner' %} ui-sortable-current ui-sortable-direction-{{ sortDirection }} {% endif %}">
+                                        <a href="{{ path(app.request.attributes.get('_route'), {'page': currentPage, 'sortType': 'idPartner', sortDirection: sortParameter}) }}">
+                                            <span class="label">Marché</span>
+                                            <span class="project-list-filter-order"></span>
+                                        </a>
+                                    </div><!-- /.project-list-filter -->
+                                    <div class="project-list-item-info project-list-filter{% if sortType == 'title' %} ui-sortable-current ui-sortable-direction-{{ sortDirection }} {% endif %}">
+                                        <a href="{{ path(app.request.attributes.get('_route'), {'page': currentPage, 'sortType': 'title', sortDirection: sortParameter}) }}">
+                                            <span class="label">Projet</span>
+                                            <span class="project-list-filter-order"></span>
+                                        </a>
+                                    </div><!-- /.project-list-filter -->
+                                    <div class="project-list-item-amount project-list-filter{% if sortType == 'amount' %} ui-sortable-current ui-sortable-direction-{{ sortDirection }} {% endif %}">
+                                        <a href="{{ path(app.request.attributes.get('_route'), {'page': currentPage, 'sortType': 'amount', sortDirection: sortParameter}) }}">
+                                            <span class="label">{% trans %} Montant {% endtrans %}</span>
+                                            <span class="project-list-filter-order"></span>
+                                        </a>
+                                    </div><!-- /.project-list-filter -->
+                                    <div class="project-list-item-period project-list-filter{% if sortType == 'period' %} ui-sortable-current ui-sortable-direction-{{ sortDirection }} {% endif %}">
+                                        <a href="{{ path(app.request.attributes.get('_route'), {'page': currentPage, 'sortType': 'period', sortDirection: sortParameter}) }}">
+                                            <span class="label">Maturité</span>
+                                            <span class="project-list-filter-order"></span>
+                                        </a>
+                                    </div><!-- /.project-list-filter -->
+                                    <div class="project-list-item-period project-list-filter{% if sortType == 'presentationCompany' %} ui-sortable-current ui-sortable-direction-{{ sortDirection }} {% endif %}">
+                                        <a href="{{ path(app.request.attributes.get('_route'), {'page': currentPage, 'sortType': 'presentationCompany', sortDirection: sortParameter}) }}">
+                                            <span class="label">Pourcentage Financement</span>
+                                            <span class="project-list-filter-order"></span>
+                                        </a>
+                                    </div><!-- /.project-list-filter -->
+                                    <div class="project-list-item-view project-list-filter">
+                                        <span class="label">&nbsp;</span>
+                                    </div><!-- /.project-list-filter -->
+                                </div><!-- /.project-list-filters -->
+
+                                <div class="project-list-items">
+                                    {% for project in projects %}
+                                        <article class="project-list-item{% if false == project.isOnline %} ui-project-expired{% endif %}">
+                                            <div class="project-list-item-category">
+                                                {% include 'demo/partials/bubble.html.twig' with {'partner': project.idPartner.label} %}
+                                            </div>
+                                            <div class="project-list-item-info">
+                                                <h3 class="project-list-item-title"><a href="{{ path('demo_lender_project_details', {'slug': project.slug }) }}">{{ project.idCompany.name }}</a></h3>
+                                                <div class="project-list-item-description">
+                                                    <p>{{ project.title|striptags|raw|truncate(100) }}</p>
+                                                </div>
+                                            </div>
+                                            <div class="project-list-item-amount">
+                                                {{ project.amount|localizednumber }}&nbsp;€
+                                            </div>
+                                            <div class="project-list-item-period">
+                                                {% transchoice(project.period / 12) with {'%duration%': project.period / 12} %} demo-project-request_simulator-duration-select-option {% endtranschoice %}
+                                            </div>
+                                            <div class="project-list-item-stats">
+                                                {% if project.status <= constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_ONLINE') %}
+                                                    {{ project.presentationCompany|localizednumber }}&nbsp;%
+                                                {% else %}
+                                                    100 %
+                                                {% endif %}
+                                            </div>
+                                            <div class="project-list-item-view">
+                                                <a href="{{ path('demo_lender_project_details', {'slug': project.slug}) }}">
+                                                    <span class="icon fa-angle-right"></span><span class="sr-only">{% trans %} project-list_view-project-label {% endtrans %}</span>
+                                                </a>
+                                            </div>
+                                        </article><!-- /.project-list-item -->
+                                    {% endfor %}
+                                </div><!-- /.project-list-items -->
+
+                                {% if showPagination %}
+                                    {% include 'projects/list/pagination.html.twig' %}
+                                {% endif %}
+                            </div><!-- /#project-list-view.tab-pane -->
+                        </div><!-- /.project-list-content -->
+                    </div><!-- /.tabs -->
+                </div><!-- /.project-list -->
+            </div><!-- /.site-wrap -->
+        </section><!-- /.page-section -->
+    </article><!-- /.page -->
+{% endblock %}
+
+{% block pageHeadScripts %}
+    <style>
+        .bubble {
+            display: inline-block;
+            border-radius: 12px;
+            padding: 2px 10px;
+            line-height: 18px;
+            color: #fbf9fb;
+            font-weight: 900;
+            font-size: small;
+        }
+    </style>
+{% endblock %}

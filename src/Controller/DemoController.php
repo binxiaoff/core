@@ -157,7 +157,7 @@ class DemoController extends AbstractController
             $template['projects']['lender']['masked'] = $projectsMasked;
         }
 
-        return $this->render(':frontbundle/demo:loans.html.twig', $template);
+        return $this->render('demo/loans.html.twig', $template);
     }
 
     /**
@@ -216,7 +216,7 @@ class DemoController extends AbstractController
             'attachmentTypes' => $this->entityManager->getRepository(ProjectAttachmentType::class)->getAttachmentTypes()
         ];
 
-        return $this->render(':frontbundle/demo:project_request.html.twig', $template);
+        return $this->render('demo/project_request.html.twig', $template);
     }
 
     /**
@@ -414,7 +414,7 @@ class DemoController extends AbstractController
             'canChangeBidStatus'        => true
         ];
 
-        return $this->render(':frontbundle/demo:project_request_details.html.twig', $template);
+        return $this->render('demo/project_request_details.html.twig', $template);
     }
 
     /**
@@ -1076,7 +1076,7 @@ class DemoController extends AbstractController
             'projects'       => $projects
         ];
 
-        return $this->render(':frontbundle/demo:projects_list.html.twig', $template);
+        return $this->render('demo/projects_list.html.twig', $template);
     }
 
     /**
@@ -1139,7 +1139,7 @@ class DemoController extends AbstractController
             }
         }
 
-        return $this->render(':frontbundle/demo:project.html.twig', [
+        return $this->render('demo/project.html.twig', [
             'project'            => $project,
             'wallet'             => $wallet,
             'bid'                => $bid,
@@ -1193,7 +1193,7 @@ class DemoController extends AbstractController
      */
     public function reporting(): Response
     {
-        return $this->render(':frontbundle/demo:reporting.html.twig');
+        return $this->render('demo/reporting.html.twig');
     }
 
     /**
