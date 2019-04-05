@@ -2,7 +2,7 @@
 namespace Unilend\Twig;
 
 use \Twig\Extensions\IntlExtension as BaseIntlExtension;
-use Twig\TwigFunction;
+use Twig\TwigFilter;
 
 class IntlExtension extends BaseIntlExtension
 {
@@ -15,7 +15,7 @@ class IntlExtension extends BaseIntlExtension
     {
         return array_merge(
             parent::getFilters(),
-            [new TwigFunction('localizednumberwithprecision', [$this, 'localizedNumberWithPrecisionFilter'])]
+            [new TwigFilter('localizednumberwithprecision', [$this, 'localizedNumberWithPrecisionFilter'])]
         );
     }
 
