@@ -11,7 +11,7 @@
                     {% if document.universign.status == constant('Unilend\\Entity\\UniversignEntityInterface::STATUS_SIGNED') %}
                         <div class="document-download">
                             <a href="{{ document.pdfLink }}" target="_blank">
-                                <img class="document-download" src="{{ siteurlmedia('dashboard/file-pdf-60x80.png') }}" alt="{{ 'borrower-document_invoices-invoice-download-link-placeholder'|trans|e('html_attr') }}">
+                                <img class="document-download" src="{{ asset('images/dashboard/file-pdf-60x80.png', 'gulp') }}" alt="{{ 'borrower-document_invoices-invoice-download-link-placeholder'|trans|e('html_attr') }}">
                                 {% trans %} borrower-document_invoices-invoice-download-link {% endtrans %}
                             </a>
                         </div>

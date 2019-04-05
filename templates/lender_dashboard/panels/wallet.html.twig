@@ -278,9 +278,9 @@
             </div><!-- /.tabs -->
         {% else %}
             <div class="dashboard-panel-empty">
-                <div class="panel-empty-computer"><img src="/assets/images/dashboard/empty/panel-wallet-computer.jpg" alt=""/></div>
-                <div class="panel-empty-tablet"><img src="/assets/images/dashboard/empty/panel-wallet-tablet.jpg" alt=""/></div>
-                <div class="panel-empty-mobile"><img src="/assets/images/dashboard/empty/panel-wallet-mobile.jpg" alt=""/></div>
+                <div class="panel-empty-computer"><img src="{{ asset('images/dashboard/empty/panel-wallet-computer.jpg', 'gulp') }}" alt=""/></div>
+                <div class="panel-empty-tablet"><img src="{{ asset('images/dashboard/empty/panel-wallet-tablet.jpg', 'gulp') }}" alt=""/></div>
+                <div class="panel-empty-mobile"><img src="{{ asset('images/dashboard/empty/panel-wallet-mobile.jpg', 'gulp') }}" alt=""/></div>
                 <div class="cta-message">
                     <p>{% trans %} lender-dashboard_get-started-message {% endtrans %}</p>
                     <a href="{{ path('lender_projects') }}" class="btn-outline">{% trans %} lender-dashboard_get-started-button {% endtrans %}</a>

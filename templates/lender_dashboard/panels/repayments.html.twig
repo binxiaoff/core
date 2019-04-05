@@ -282,9 +282,9 @@
             {% endif %}
         {% else %}
             <div class="dashboard-panel-empty">
-                <div class="panel-empty-computer"><img src="/assets/images/dashboard/empty/panel-repayments-computer.jpg" alt=""/></div>
-                <div class="panel-empty-tablet"><img src="/assets/images/dashboard/empty/panel-repayments-tablet.jpg" alt=""/></div>
-                <div class="panel-empty-mobile"><img src="/assets/images/dashboard/empty/panel-repayments-mobile.jpg" alt=""/></div>
+                <div class="panel-empty-computer"><img src="{{ asset('images/dashboard/empty/panel-repayments-computer.jpg', 'gulp') }}" alt=""/></div>
+                <div class="panel-empty-tablet"><img src="{{ asset('images/dashboard/empty/panel-repayments-tablet.jpg', 'gulp') }}" alt=""/></div>
+                <div class="panel-empty-mobile"><img src="{{ asset('images/dashboard/empty/panel-repayments-mobile.jpg', 'gulp') }}" alt=""/></div>
                 <div class="cta-message">
                     <p>{% trans %} lender-dashboard_get-started-message {% endtrans %}</p>
                     <a href="{{ path('lender_projects') }}" class="btn-outline">{% trans %} lender-dashboard_get-started-button {% endtrans %}</a>

@@ -180,7 +180,7 @@
                                                 {% if signedProxies[project.getIdProject()] is defined %}
                                                     <div class="document-download">
                                                         <a href="/pdf/pouvoir/{{ app.user.hash }}/{{ project.getIdProject() }}" target="_blank">
-                                                            <img class="document-download" src="{{ siteurlmedia('dashboard/file-voucher-28x38.png') }}" alt="{% trans %} borrower-document_contracts-proxy-download-link-placeholder {% endtrans %}"/>
+                                                            <img class="document-download" src="{{ asset('images/dashboard/file-voucher-28x38.png', 'gulp') }}" alt="{% trans %} borrower-document_contracts-proxy-download-link-placeholder {% endtrans %}"/>
                                                             {% trans %} borrower-document_contracts-proxy-download-link {% endtrans %}
                                                         </a>
                                                     </div>
@@ -192,7 +192,7 @@
                                                 {% if signedMandates[project.getIdProject()] is defined %}
                                                     <div class="document-download">
                                                     <a href="/pdf/mandat/{{ app.user.hash }}/{{ project.getIdProject() }}" target="_blank">
-                                                        <img class="document-download" src="{{ siteurlmedia('dashboard/file-declaration-28x38.png') }}" alt="{% trans %} borrower-document_contracts-mandate-download-link-placeholder {% endtrans %}"/>
+                                                        <img class="document-download" src="{{ asset('images/dashboard/file-declaration-28x38.png', 'gulp') }}" alt="{% trans %} borrower-document_contracts-mandate-download-link-placeholder {% endtrans %}"/>
                                                         {% trans %} borrower-document_contracts-mandate-download-link {% endtrans %}
                                                     </a>
                                                 </div>
@@ -242,7 +242,7 @@
                                             <td class="table-mydocuments-borrower-item-bill">
                                                 <div class="document-download">
                                                     <a href="{{ invoice.url }}" target="_blank">
-                                                        <img class="document-download" src="{{ siteurlmedia('dashboard/file-pdf-60x80.png') }}" alt="{% trans %} borrower-document_invoices-invoice-download-link-placeholder {% endtrans %}"/>
+                                                        <img class="document-download" src="{{ asset('dashboard/file-pdf-60x80.png', 'gulp') }}" alt="{% trans %} borrower-document_invoices-invoice-download-link-placeholder {% endtrans %}"/>
                                                         {% trans %} borrower-document_invoices-invoice-download-link {% endtrans %}
                                                     </a>
                                                 </div>
@@ -288,7 +288,7 @@
                                             <td class="table-mydocuments-borrower-item-wiretransferout-document">
                                                 <div class="document-download">
                                                     <a href="{{ path('wire_transfer_out_request_pdf', {'wireTransferOutId': wire_transfer_out.idVirement, 'clientHash': wire_transfer_out.client.hash}) }}" target="_blank">
-                                                        <img class="document-download" src="{{ siteurlmedia('dashboard/file-pdf-60x80.png') }}" alt="{% trans %} borrower-document_wire-transfer-out-download-link-placeholder {% endtrans %}"/>
+                                                        <img class="document-download" src="{{ asset('images/dashboard/file-pdf-60x80.png', 'gulp') }}" alt="{% trans %} borrower-document_wire-transfer-out-download-link-placeholder {% endtrans %}"/>
                                                         {% trans %} borrower-document_wire-transfer-out-download-link {% endtrans %}
                                                     </a>
                                                 </div>
