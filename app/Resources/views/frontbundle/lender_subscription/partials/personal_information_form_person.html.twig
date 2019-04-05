@@ -489,7 +489,7 @@
         </div>
     </fieldset>
 
-    {% if app.session.get(constant('Unilend\\Bundle\\FrontBundle\\Controller\\LenderSubscriptionController::SESSION_NAME_CAPTCHA')) %}
+    {% if app.session.get(constant('Unilend\\Controller\\LenderSubscriptionController::SESSION_NAME_CAPTCHA')) %}
         {% import 'partials/form_elements.html.twig' as forms %}
         <fieldset class="panel">
             <div class="row">

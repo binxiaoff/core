@@ -212,7 +212,7 @@ class WalletBalanceHistoryRepository extends EntityRepository
 
         $query = $qb->getQuery();
 
-        $query->setHint(Query::HINT_CUSTOM_OUTPUT_WALKER, 'Unilend\Bridge\Doctrine\ORM\UsePrimaryKeyForInnerJoinWalker');
+        $query->setHint(Query::HINT_CUSTOM_OUTPUT_WALKER, 'Unilend\Doctrine\ORM\UsePrimaryKeyForInnerJoinWalker');
 
         return $query->getResult();
     }

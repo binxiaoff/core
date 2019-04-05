@@ -87,22 +87,22 @@
                             </label>
                             <select id="contact-message-profession" name="message[role]" class="input-field" data-formvalidation-input data-formvalidation-required="true">
                                 <option value="0">{% trans %}contact_preciser{% endtrans %}</option>
-                                <option value="{{ constant('\\Unilend\\Bundle\\FrontBundle\\Controller\\ContactController::CONTACT_ROLE_PRESS') }}"{% if formData.role is defined and formData.role == constant('\\Unilend\\Bundle\\FrontBundle\\Controller\\ContactController::CONTACT_ROLE_PRESS') %} selected{% endif %}>
+                                <option value="{{ constant('\\Unilend\\Controller\\ContactController::CONTACT_ROLE_PRESS') }}"{% if formData.role is defined and formData.role == constant('\\Unilend\\Controller\\ContactController::CONTACT_ROLE_PRESS') %} selected{% endif %}>
                                     {% trans %}contact_relation-presse{% endtrans %}
                                 </option>
-                                <option value="{{ constant('\\Unilend\\Bundle\\FrontBundle\\Controller\\ContactController::CONTACT_ROLE_LENDER') }}"{% if formData.role is defined and formData.role == constant('\\Unilend\\Bundle\\FrontBundle\\Controller\\ContactController::CONTACT_ROLE_LENDER') %} selected{% endif %}>
+                                <option value="{{ constant('\\Unilend\\Controller\\ContactController::CONTACT_ROLE_LENDER') }}"{% if formData.role is defined and formData.role == constant('\\Unilend\\Controller\\ContactController::CONTACT_ROLE_LENDER') %} selected{% endif %}>
                                     {% trans %}contact_demande-preteur{% endtrans %}
                                 </option>
-                                <option value="{{ constant('\\Unilend\\Bundle\\FrontBundle\\Controller\\ContactController::CONTACT_ROLE_BORROWER') }}"{% if formData.role is defined and formData.role == constant('\\Unilend\\Bundle\\FrontBundle\\Controller\\ContactController::CONTACT_ROLE_BORROWER') %} selected{% endif %}>
+                                <option value="{{ constant('\\Unilend\\Controller\\ContactController::CONTACT_ROLE_BORROWER') }}"{% if formData.role is defined and formData.role == constant('\\Unilend\\Controller\\ContactController::CONTACT_ROLE_BORROWER') %} selected{% endif %}>
                                     {% trans %}contact_demande-emprunteur{% endtrans %}
                                 </option>
-                                <option value="{{ constant('\\Unilend\\Bundle\\FrontBundle\\Controller\\ContactController::CONTACT_ROLE_RECRUITMENT') }}"{% if formData.role is defined and formData.role == constant('\\Unilend\\Bundle\\FrontBundle\\Controller\\ContactController::CONTACT_ROLE_RECRUITMENT') %} selected{% endif %}>
+                                <option value="{{ constant('\\Unilend\\Controller\\ContactController::CONTACT_ROLE_RECRUITMENT') }}"{% if formData.role is defined and formData.role == constant('\\Unilend\\Controller\\ContactController::CONTACT_ROLE_RECRUITMENT') %} selected{% endif %}>
                                     {% trans %}contact_recrutement{% endtrans %}
                                 </option>
-                                <option value="{{ constant('\\Unilend\\Bundle\\FrontBundle\\Controller\\ContactController::CONTACT_ROLE_OTHER') }}"{% if formData.role is defined and formData.role == constant('\\Unilend\\Bundle\\FrontBundle\\Controller\\ContactController::CONTACT_ROLE_OTHER') %} selected{% endif %}>
+                                <option value="{{ constant('\\Unilend\\Controller\\ContactController::CONTACT_ROLE_OTHER') }}"{% if formData.role is defined and formData.role == constant('\\Unilend\\Controller\\ContactController::CONTACT_ROLE_OTHER') %} selected{% endif %}>
                                     {% trans %}contact_autre{% endtrans %}
                                 </option>
-                                <option value="{{ constant('\\Unilend\\Bundle\\FrontBundle\\Controller\\ContactController::CONTACT_ROLE_PARTNER') }}"{% if formData.role is defined and formData.role == constant('\\Unilend\\Bundle\\FrontBundle\\Controller\\ContactController::CONTACT_ROLE_PARTNER') %} selected{% endif %}>
+                                <option value="{{ constant('\\Unilend\\Controller\\ContactController::CONTACT_ROLE_PARTNER') }}"{% if formData.role is defined and formData.role == constant('\\Unilend\\Controller\\ContactController::CONTACT_ROLE_PARTNER') %} selected{% endif %}>
                                     {% trans %}contact_partenariat{% endtrans %}
                                 </option>
                             </select>

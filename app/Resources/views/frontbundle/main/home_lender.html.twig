@@ -41,7 +41,7 @@
                     <div class="btn-toolbar">
                         <a href="{{ path('lender_faq') }}" class="btn-default">{% trans %} home-lender_question-button {% endtrans %}</a>
                         <a href="{{ path('lender_subscription_personal_information',
-                        {'source' : constant('\\Unilend\\Bundle\\FrontBundle\\Service\\SourceManager::HP_LENDER_SOURCE_PARAMETER')})
+                        {'source' : constant('\\Unilend\\Service\\Front\\SourceManager::HP_LENDER_SOURCE_PARAMETER')})
                         }}" class="btn-primary">{% trans %} home-lender_create-account-button {% endtrans %}</a>
                     </div><!-- /.btn-toolbar -->
                     {% if showWelcomeOffer == true %}
@@ -121,7 +121,7 @@
             </div><!-- /.site-wrap -->
         </section><!-- /.promos -->
 
-        {{ render(controller('UnilendFrontBundle:Main:footerReviews')) }}
+        {{ render(controller('Unilend\\Controller\\MainController::footerReviewsAction')) }}
 
         {% include 'partials/scroll_more.html.twig' %}
 

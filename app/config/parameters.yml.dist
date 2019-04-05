@@ -89,7 +89,7 @@ parameters:
 
     # End of parameters managed also by Ansible
 
-    dbal_wrapper_class:               Unilend\Bridge\Doctrine\DBAL\Connection
+    dbal_wrapper_class:               Unilend\Doctrine\DBAL\Connection
     dbal_driver_class:                Facile\DoctrineMySQLComeBack\Doctrine\DBAL\Driver\PDOMySql\Driver
 
     secret:                           ''

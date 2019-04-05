@@ -1,3 +1,0 @@
-front:
-    resource: "@UnilendFrontBundle/Controller"
-    type:     annotation

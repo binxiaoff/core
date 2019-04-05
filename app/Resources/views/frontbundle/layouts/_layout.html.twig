@@ -40,7 +40,7 @@
             </div>
 
             {% block siteFooter %}
-                {{ render(controller('UnilendFrontBundle:Main:footer', {'route': app.request.attributes.get('_route')})) }}
+                {{ render(controller('Unilend\\Controller\\MainController::footerAction', {'route': app.request.attributes.get('_route')})) }}
             {% endblock %}
         </div>
 

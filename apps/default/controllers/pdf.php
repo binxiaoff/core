@@ -2,6 +2,7 @@
 
 use Knp\Snappy\Pdf;
 use Psr\Log\LoggerInterface;
+use Unilend\Controller\UniversignController;
 use Unilend\Entity\{AddressType, BankAccount, ClientAddress, Clients, CompanyAddress, CompanyStatus, CompanyStatusHistory, Elements, Loans, ProjectCgv, ProjectsStatus, TaxType, UnderlyingContract,
     UniversignEntityInterface, Wallet};
 use Unilend\Service\Repayment\ProjectRepaymentScheduleManager;
@@ -158,7 +159,7 @@ class pdfController extends bootstrap
             if ('read' === $proxy['action'] && 'read' === $mandate['action'] && ($projectNeedsBeneficialOwnerDeclaration && 'read' === $beneficialOwnerDeclaration['action'])) {
                 /** @var \Symfony\Component\Routing\RouterInterface $router */
                 $router = $this->get('router');
-                header('Location: ' . $router->generate('universign_signature_status', ['signatureType' => \Unilend\Bundle\FrontBundle\Controller\UniversignController::SIGNATURE_TYPE_PROJECT, 'signatureId' => $this->projects->id_project, 'clientHash' => $this->pdfClient->hash]));
+                header('Location: ' . $router->generate('universign_signature_status', ['signatureType' => UniversignController::SIGNATURE_TYPE_PROJECT, 'signatureId' => $this->projects->id_project, 'clientHash' => $this->pdfClient->hash]));
                 exit;
             } elseif (
                 'redirect' === $proxy['action'] && 'redirect' === $mandate['action'] && ($projectNeedsBeneficialOwnerDeclaration && 'redirect' === $beneficialOwnerDeclaration['action'])

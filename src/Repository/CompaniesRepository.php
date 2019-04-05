@@ -4,7 +4,7 @@ namespace Unilend\Repository;
 
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
-use Unilend\Bridge\Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Connection;
 use Unilend\Entity\{Companies, CompanyStatus, CompanyStatusHistory, Operation, OperationType, Projects, ProjectsStatus, ProjectsStatusHistory, RiskDataMonitoring, Wallet};
 use Unilend\Service\RiskDataMonitoring\MonitoringCycleManager;
 

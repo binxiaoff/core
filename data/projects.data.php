@@ -1,9 +1,9 @@
 <?php
 
 use Doctrine\DBAL\Cache\QueryCacheProfile;
+use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Driver\ResultStatement;
 use Doctrine\DBAL\Statement;
-use Unilend\Bridge\Doctrine\DBAL\Connection;
 use Unilend\Entity\{AttachmentType, Bids, Clients, CompanyStatus, EcheanciersEmprunteur, Loans, OperationSubType, Projects as ProjectsEntity, ProjectsStatus};
 use Unilend\librairies\CacheKeys;
 
@@ -137,7 +137,7 @@ class projects extends projects_crud
                 $queryBuilder
                     ->from('bids')
                     ->andWhere('status IN (:status)')
-                    ->setParameter('status', [Bids::STATUS_PENDING, Bids::STATUS_ACCEPTED], \Doctrine\DBAL\Connection::PARAM_INT_ARRAY);
+                    ->setParameter('status', [Bids::STATUS_PENDING, Bids::STATUS_ACCEPTED], Connection::PARAM_INT_ARRAY);
                 break;
             case ProjectsStatus::STATUS_CANCELLED:
                 $queryBuilder
@@ -714,13 +714,13 @@ class projects extends projects_crud
             'loanAccepted'                     => \PDO::PARAM_INT,
             'declarationLastDay'               => \PDO::PARAM_STR,
             'inBonis'                          => \PDO::PARAM_STR,
-            'collectiveProceeding'             => \Doctrine\DBAL\Connection::PARAM_STR_ARRAY,
-            'projectStatusList'                => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY,
-            'clientTypePerson'                 => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY,
-            'clientTypeLegalEntity'            => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY,
-            'opSubTypeTypeRepayment'           => \Doctrine\DBAL\Connection::PARAM_STR_ARRAY,
-            'opSubTypeRepaymentRegularization' => \Doctrine\DBAL\Connection::PARAM_STR_ARRAY,
-            'contractType'                     => \Doctrine\DBAL\Connection::PARAM_STR_ARRAY,
+            'collectiveProceeding'             => Connection::PARAM_STR_ARRAY,
+            'projectStatusList'                => Connection::PARAM_INT_ARRAY,
+            'clientTypePerson'                 => Connection::PARAM_INT_ARRAY,
+            'clientTypeLegalEntity'            => Connection::PARAM_INT_ARRAY,
+            'opSubTypeTypeRepayment'           => Connection::PARAM_STR_ARRAY,
+            'opSubTypeRepaymentRegularization' => Connection::PARAM_STR_ARRAY,
+            'contractType'                     => Connection::PARAM_STR_ARRAY,
         ];
 
         $sql = "

@@ -1,0 +1,21 @@
+# remove these if/when you are not fetching these directly
+# from the container via $container->get()
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+        public: true
+
+    # aliases so that the old service ids can still be accessed
+    unilend.frontbundle.notification_display_manager: '@Unilend\Service\Front\NotificationDisplayManager'
+    unilend.frontbundle.security.password_encoder: '@Unilend\Security\BCryptPasswordEncoder'
+    unilend.frontbundle.service.content_manager: '@Unilend\Service\Front\ContentManager'
+    unilend.frontbundle.service.form_manager: '@Unilend\Service\Front\FormManager'
+    unilend.frontbundle.service.lender_account_display_manager: '@Unilend\Service\Front\LenderAccountDisplayManager'
+    unilend.frontbundle.service.project_display_manager: '@Unilend\Service\Front\ProjectDisplayManager'
+    unilend.frontbundle.service.source_manager: '@Unilend\Service\Front\SourceManager'
+    unilend.frontbundle.service.universign_manager: '@Unilend\Service\Front\UniversignManager'
+
+    # define these services as public so that they can still be accessed via $container->get()
+    Unilend\Service\Front\LenderLoansDisplayManager: ~
+    Unilend\Service\Front\LenderProfileFormsHandler: ~

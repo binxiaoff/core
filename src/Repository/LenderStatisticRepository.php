@@ -3,7 +3,7 @@
 namespace Unilend\Repository;
 
 use Doctrine\ORM\EntityRepository;
-use Unilend\Bridge\Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Connection;
 use Unilend\Entity\{CompanyStatus, Echeanciers, OperationSubType, OperationType, ProjectsStatus, UnilendStats};
 
 class LenderStatisticRepository extends EntityRepository

@@ -3,7 +3,7 @@
 namespace Unilend\core;
 
 use Doctrine\Bundle\DoctrineBundle\ConnectionFactory;
-use Unilend\Bridge\Doctrine\DBAL\Connection as UnilendConnection;
+use Unilend\Doctrine\DBAL\Connection as UnilendConnection;
 use Doctrine\DBAL\Connection as DoctrineConnection;
 use Symfony\Component\Yaml\Yaml;
 

@@ -9,7 +9,7 @@ use Unilend\Entity\{BorrowingMotive, Companies, CompaniesBilans, CompanyRating, 
     ProjectStatusHistoryReason, Settings, TaxType, Users};
 use Unilend\Service\Eligibility\EligibilityManager;
 use Unilend\Service\Simulator\EntityManager as EntityManagerSimulator;
-use Unilend\Bundle\FrontBundle\Service\SourceManager;
+use Unilend\Service\Front\SourceManager;
 
 class ProjectRequestManager
 {
