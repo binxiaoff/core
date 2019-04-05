@@ -1,0 +1,20 @@
+{% set pendingBids = project.bids(constant('Unilend\\Entity\\Bids::STATUS_PENDING')) %}
+{% set acceptedBids = project.bids(constant('Unilend\\Entity\\Bids::STATUS_ACCEPTED')) %}
+{% set refusedBids = project.bids(constant('Unilend\\Entity\\Bids::STATUS_REJECTED')) %}
+
+{% if pendingBids|length > 0 %}
+    <h4>En cours</h4>
+    {% include 'demo/partials/bids/bids_table.html.twig' with {bids: pendingBids, displayAction: true} %}
+{% else %}
+    Aucune offre en cours pour le moment.
+{% endif %}
+
+{% if acceptedBids|length > 0 %}
+    <h4 class="margin-20-t">Acceptée(s)</h4>
+    {% include 'demo/partials/bids/bids_table.html.twig' with {bids: acceptedBids, displayAction: false} %}
+{% endif %}
+
+{% if refusedBids|length > 0 %}
+    <h4 class="margin-20-t">Refusée(s)</h4>
+    {% include 'demo/partials/bids/bids_table.html.twig' with {bids: refusedBids, displayAction: false} %}
+{% endif %}

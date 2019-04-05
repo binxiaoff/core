@@ -1,0 +1,409 @@
+<article role="tabpanel" class="dashboard-tab-pane tab-pane{% if active == 'lender' %} active{% endif %}" id="tab-lender">
+    <div class="panel">
+        <div class="panel-content">
+            {% if projects.lender.inProgress|length == 0 and projects.lender.active|length == 0 and projects.lender.finished|length == 0 and projects.lender.masked|length == 0 %}
+                <div class="message-info">Vous n‘avez fait aucune offre de participation pour le moment.</div>
+            {% else %}
+                {% if projects.lender.inProgress is defined and projects.lender.inProgress is not empty %}
+                    <div class="row margin-20-b">
+                        <div class="row">
+                            <a href="#lender-bids" role="button" data-toggle="collapse"
+                               style="display: block; text-decoration: none; color: #787679; background-color: #eceaed; padding: 10px 20px;">
+                                En cours de financement ({{ projects.lender.inProgressCount.pending }} en
+                                cours, {{ projects.lender.inProgressCount.refused }} refusées)
+                                <div class="pull-right">
+                                    <span class="icon fa-angle-d-u"></span>
+                                </div>
+                            </a>
+                        </div>
+                        <div id="lender-bids" class="table-scroll collapse"
+                             style="margin-bottom: 0; border-top: 1px solid #dcdcdc;">
+                            <table class="table table-projects" data-sortable style="table-layout: auto;">
+                                <thead class="table-sortable-columns">
+                                <tr style="border-bottom: 1px solid #dcdcdc;">
+                                    <th colspan="4" style="text-align: center;">Dossier</th>
+                                    <th colspan="3" style="text-align: center;">Offre</th>
+                                    <th>&nbsp;</th>
+                                </tr>
+                                <tr>
+                                    <th class="table-projects-item-partner table-sortable-column"
+                                        data-sortable-by="partner">
+                                        <span class="label" title="Marché" data-toggle="tooltip">
+                                            Marché
+                                        </span>
+                                    </th>
+                                    <th class="table-projects-item-title table-sortable-column"
+                                        data-sortable-by="title">
+                                        <span class="label" title="Nom du dossier" data-toggle="tooltip">
+                                            Nom
+                                        </span>
+                                    </th>
+                                    <th class="table-projects-item-amount table-sortable-column"
+                                        data-sortable-by="project-amount">
+                                        <span class="label" title="Montant du dossier" data-toggle="tooltip">
+                                            Montant
+                                        </span>
+                                    </th>
+                                    <th class="table-projects-item-duration table-sortable-column"
+                                        data-sortable-by="duration">
+                                        <span class="label" title="Maturité" data-toggle="tooltip">
+                                            Maturité
+                                        </span>
+                                    </th>
+                                    <th class="table-projects-item-amount table-sortable-column"
+                                        data-sortable-by="bid-amount">
+                                        <span class="label" title="Montant de l‘offre" data-toggle="tooltip">
+                                            Montant
+                                        </span>
+                                    </th>
+                                    <th class="table-projects-item-amount table-sortable-column"
+                                        data-sortable-by="rate">
+                                        <span class="label" title="Taux de l‘offre" data-toggle="tooltip">
+                                            Taux
+                                        </span>
+                                    </th>
+                                    <th class="table-projects-item-amount table-sortable-column"
+                                        data-sortable-by="status">
+                                        <span class="label" title="Statut de l‘offre" data-toggle="tooltip">
+                                            Statut
+                                        </span>
+                                    </th>
+                                    <th>&nbsp;</th>
+                                </tr>
+                                </thead>
+                                <tbody data-sortable-content>
+                                {% for project in projects.lender.inProgress %}
+                                    {% if project.loans is not empty %}
+                                        {% set offer = project.loans.first %}
+                                    {% else %}
+                                        {% set offer = project.bids.first %}
+                                    {% endif %}
+                                    {% set maturity = (project.period / 12)|round %}
+                                    <tr id="lender-bid"
+                                        class="table-projects-item {% if loop.index is divisible by(2) %}even{% else %}odd{% endif %}"
+                                        data-hash="{{ project.hash }}"
+                                        data-sortable-partner="{{ ('partner-name_bubble-' ~ project.idPartner.label)|trans }}"
+                                        data-sortable-title="{{ project.title|e('html_attr') }}"
+                                        data-sortable-project-amount="{{ project.amount }}"
+                                        data-sortable-duration="{{ maturity|localizednumber }}"
+                                        data-sortable-bid-amount="{{ offer.amount }}"
+                                        data-sortable-rate="{{ offer.rate.margin }}"
+                                        data-sortable-status="{{ offer.status }}">
+                                        <td class="table-projects-item-partner">
+                                            {% include 'demo/partials/bubble.html.twig' with {'partner': project.idPartner.label} %}
+                                        </td>
+                                        <td class="table-projects-item-title">{{ project.title }}</td>
+                                        <td class="table-projects-item-project-amount">{{ project.amount|localizednumber }} €</td>
+                                        <td class="table-projects-item-duration">{{ maturity|localizednumber }} ans</td>
+                                        <td class="table-projects-item-bid-amount">{{ offer.amount|localizednumber }}&nbsp;€</td>
+                                        <td class="table-projects-item-rate">{{ offer.rate.margin|localizednumberwithprecision(2) }}&nbsp;%</td>
+                                        <td class="table-projects-item-status">
+                                            {% if offer.status == 0 %} En cours {% elseif offer.status == 1 %} Accepté {% else %} Refusé {% endif %}
+                                        </td>
+                                        <td class="table-actions">
+                                            <a href="{{ path('demo_lender_project_details', {'slug': project.slug}) }}"
+                                               role="button" class="btn-default" title="Voir le dossier de financement"
+                                               data-toggle="tooltip">
+                                                <span class="icon fa-view-u16"></span>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table><!-- /.table-projects -->
+                        </div><!-- /.table-scroll -->
+                    </div><!-- /.row -->
+                {% endif %}
+
+                {% if projects.lender.active is defined and projects.lender.active is not empty %}
+                    <div class="row margin-20-b">
+                        <div class="row">
+                            <a href="#lender-loans-active" role="button" data-toggle="collapse"
+                               style="display: block; text-decoration: none; color: #787679; background-color: #eceaed; padding: 10px 20px;">
+                                Actifs ({{ projects.lender.active|length }})
+                                <div class="pull-right">
+                                    <span class="icon fa-angle-d-u"></span>
+                                </div>
+                            </a>
+                        </div>
+
+                        <div id="lender-loans-active" class="table-scroll collapse"
+                             style="margin-bottom: 0; border-top: 1px solid #dcdcdc;">
+                            <table class="table table-projects" data-sortable style="table-layout: auto;">
+                                <thead class="table-sortable-columns">
+                                <tr style="border-bottom: 1px solid #dcdcdc;">
+                                    <th colspan="4" style="text-align: center;">Dossier</th>
+                                    <th colspan="4" style="text-align: center;">Prêt</th>
+                                    <th>&nbsp;</th>
+                                </tr>
+                                <tr>
+                                    <th class="table-projects-item-partner table-sortable-column"
+                                        data-sortable-by="partner">
+                                        <span class="label" title="Marché" data-toggle="tooltip">
+                                            Marché
+                                        </span>
+                                    </th>
+                                    <th class="table-projects-item-title table-sortable-column"
+                                        data-sortable-by="title">
+                                        <span class="label" title="Nom du dossier" data-toggle="tooltip">
+                                            Nom
+                                        </span>
+                                    </th>
+                                    <th class="table-projects-item-amount table-sortable-column"
+                                        data-sortable-by="project-amount">
+                                        <span class="label" title="Montant du dossier" data-toggle="tooltip">
+                                            Montant
+                                        </span>
+                                    </th>
+                                    <th class="table-projects-item-duration table-sortable-column"
+                                        data-sortable-by="duration">
+                                        <span class="label" title="Maturité" data-toggle="tooltip">
+                                            Maturité
+                                        </span>
+                                    </th>
+                                    <th class="table-projects-item-amount table-sortable-column"
+                                        data-sortable-by="loan-amount">
+                                        <span class="label" title="Montant du prêt" data-toggle="tooltip">
+                                            Montant
+                                        </span>
+                                    </th>
+                                    <th class="table-projects-item-amount table-sortable-column"
+                                        data-sortable-by="rate">
+                                        <span class="label" title="Taux de l‘offre" data-toggle="tooltip">
+                                            Taux
+                                        </span>
+                                    </th>
+                                    <th class="table-projects-item-amount">
+                                        <span class="label" title="Date de fin de remboursement" data-toggle="tooltip">
+                                            Date de fin de remboursement
+                                        </span>
+                                    </th>
+                                    <th class="table-projects-item-status">
+                                        <span class="label" title="Statut du projet" data-toggle="tooltip">
+                                            Statut
+                                        </span>
+                                    </th>
+                                    <th>&nbsp;</th>
+                                </tr>
+                                </thead>
+                                <tbody data-sortable-content>
+                                {% for project in projects.lender.active %}
+                                    {% set loan = project.loans.first %}
+                                    {% set maturity = (project.period / 12)|round %}
+                                    <tr id="lender-bid-{{ loan.idLoan }}"
+                                        class="table-projects-item {% if loop.index is divisible by(2) %}even{% else %}odd{% endif %}"
+                                        data-hash="{{ project.hash }}"
+                                        data-sortable-partner="{{ ('partner-name_bubble-' ~ project.idPartner.label)|trans }}"
+                                        data-sortable-title="{{ project.title|e('html_attr') }}"
+                                        data-sortable-project-amount="{{ project.amount }}"
+                                        data-sortable-duration="{{ maturity|localizednumber }}"
+                                        data-sortable-loan-amount="{{ loan.amount }}"
+                                        data-sortable-rate="{{ loan.rate.margin }}">
+                                        <td class="table-projects-item-partner">
+                                            {% include 'demo/partials/bubble.html.twig' with {'partner': project.idPartner.label} %}
+                                        </td>
+                                        <td class="table-projects-item-title">{{ project.title }}</td>
+                                        <td class="table-projects-item-project-amount">{{ project.amount|localizednumber }}&nbsp;€</td>
+                                        <td class="table-projects-item-duration">{{ maturity|localizednumber }} ans</td>
+                                        <td class="table-projects-item-loan-amount">{{ loan.amount|localizednumber }}&nbsp;€</td>
+                                        <td class="table-projects-item-rate">{{ loan.rate.margin|localizednumberwithprecision(2) }}&nbsp;%</td>
+                                        <td class="table-projects-item-end-date">{{ project.added|date_modify("+" ~ maturity ~ 'year')|date("d/m/Y") }}</td>
+                                        <td class="table-projects-item-status">
+                                            {% set status = project.status %}
+                                            {% set statusLabel = '' %}
+                                            {% if status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_REQUEST') %}
+                                                {% set statusLabel = 'À compléter' %}
+                                            {% elseif status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_REVIEW') %}
+                                                {% set statusLabel = 'En cours de revue' %}
+                                            {% elseif status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_ONLINE') %}
+                                                {% set statusLabel = 'En cours de financement' %}
+                                            {% elseif status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_FUNDED') %}
+                                                {% set statusLabel = 'En attente de signature' %}
+                                            {% elseif status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_SIGNED') %}
+                                                {% set statusLabel = 'Signé' %}
+                                            {% elseif status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_REPAYMENT') %}
+                                                {% set statusLabel = 'En cours de remboursement' %}
+                                            {% elseif status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_REPAID') %}
+                                                {% set statusLabel = 'Terminé' %}
+                                            {% elseif status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_LOSS') %}
+                                                {% set statusLabel = 'Défaut' %}
+                                            {% elseif status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_CANCELLED') %}
+                                                {% set statusLabel = 'Annulé' %}
+                                            {% endif %}
+                                            {{ statusLabel }}
+                                        </td>
+                                        <td class="table-actions">
+                                            <a href="{{ path('demo_lender_project_details', {'slug': project.slug}) }}"
+                                               role="button"
+                                               class="btn-default" title="Voir le dossier de financement"
+                                               data-toggle="tooltip">
+                                                <span class="icon fa-view-u16"></span>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table><!-- /.table-projects -->
+                        </div><!-- /.table-scroll -->
+                    </div><!-- /.row -->
+                {% endif %}
+                {% if projects.lender.finished is defined and projects.lender.finished is not empty or projects.lender.masked is defined and projects.lender.masked is not empty %}
+                    <div class="row margin-20-b">
+                        <div class="row">
+                            <a href="#lender-loans-finished" role="button" data-toggle="collapse"
+                               style="display: block; text-decoration: none; color: #787679; background-color: #eceaed; padding: 10px 20px;">
+                                Terminés ({{ projects.lender.finished|length + projects.lender.masked|length }} )
+                                <div class="pull-right">
+                                    <span class="icon fa-angle-d-u"></span>
+                                </div>
+                            </a>
+                        </div>
+
+                        <div id="lender-loans-finished" class="table-scroll collapse"
+                             style="margin-bottom: 0; border-top: 1px solid #dcdcdc;">
+                            <table class="table table-projects" data-sortable style="table-layout: auto;">
+                                <thead class="table-sortable-columns">
+                                <tr style="border-bottom: 1px solid #dcdcdc;">
+                                    <th colspan="4" style="text-align: center;">Dossier</th>
+                                    <th colspan="3" style="text-align: center;">Prêt</th>
+                                    <th>&nbsp;</th>
+                                </tr>
+                                <tr>
+                                    <th class="table-projects-item-partner table-sortable-column"
+                                        data-sortable-by="partner">
+                                        <span class="label" title="Marché" data-toggle="tooltip">
+                                            Marché
+                                        </span>
+                                    </th>
+                                    <th class="table-projects-item-title table-sortable-column"
+                                        data-sortable-by="title">
+                                        <span class="label" title="Nom du dossier" data-toggle="tooltip">
+                                            Nom
+                                        </span>
+                                    </th>
+                                    <th class="table-projects-item-amount table-sortable-column"
+                                        data-sortable-by="project-amount">
+                                        <span class="label" title="Montant du dossier" data-toggle="tooltip">
+                                            Montant
+                                        </span>
+                                    </th>
+                                    <th class="table-projects-item-duration table-sortable-column"
+                                        data-sortable-by="duration">
+                                        <span class="label" title="Maturité" data-toggle="tooltip">
+                                            Maturité
+                                        </span>
+                                    </th>
+                                    <th class="table-projects-item-amount table-sortable-column"
+                                        data-sortable-by="loan-amount">
+                                        <span class="label" title="Montant du prêt" data-toggle="tooltip">
+                                            Montant
+                                        </span>
+                                    </th>
+                                    <th class="table-projects-item-amount table-sortable-column"
+                                        data-sortable-by="rate">
+                                        <span class="label" title="Taux de l‘offre" data-toggle="tooltip">
+                                            Taux
+                                        </span>
+                                    </th>
+                                    <th class="table-projects-item-status">
+                                        <span class="label" title="Statut du projet" data-toggle="tooltip">
+                                            Statut
+                                        </span>
+                                    </th>
+                                    <th>&nbsp;</th>
+                                </tr>
+                                </thead>
+                                <tbody data-sortable-content>
+                                {% for project in projects.lender.finished %}
+                                    {% set loan = project.loans.first %}
+                                    {% set maturity = (project.period / 12)|round %}
+                                    <tr id="lender-bid-{{ loan.idLoan }}"
+                                        class="table-projects-item {% if loop.index is divisible by(2) %}even{% else %}odd{% endif %}"
+                                        data-hash="{{ project.hash }}"
+                                        data-sortable-partner="{{ ('partner-name_bubble-' ~ project.idPartner.label)|trans }}"
+                                        data-sortable-title="{{ project.title|e('html_attr') }}"
+                                        data-sortable-project-amount="{{ project.amount }}"
+                                        data-sortable-duration="{{ maturity|localizednumber }}"
+                                        data-sortable-loan-amount="{{ loan.amount }}"
+                                        data-sortable-rate="{{ loan.rate.margin }}">
+                                        <td class="table-projects-item-partner">
+                                            {% include 'demo/partials/bubble.html.twig' with {'partner': project.idPartner.label} %}
+                                        </td>
+                                        <td class="table-projects-item-title">{{ project.title }}</td>
+                                        <td class="table-projects-item-project-amount">{{ project.amount|localizednumber }}&nbsp;€</td>
+                                        <td class="table-projects-item-duration">{{ maturity|localizednumber }} ans</td>
+                                        <td class="table-projects-item-loan-amount">{{ loan.amount|localizednumber }}&nbsp;€</td>
+                                        <td class="table-projects-item-rate">{{ loan.rate.margin|localizednumberwithprecision(2) }}&nbsp;%</td>
+                                        <td class="table-projects-item-status">
+                                            {% set status = project.status %}
+                                            {% set statusLabel = '' %}
+                                            {% if status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_REQUEST') %}
+                                                {% set statusLabel = 'À compléter' %}
+                                            {% elseif status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_REVIEW') %}
+                                                {% set statusLabel = 'En cours de revue' %}
+                                            {% elseif status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_ONLINE') %}
+                                                {% set statusLabel = 'En cours de financement' %}
+                                            {% elseif status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_FUNDED') %}
+                                                {% set statusLabel = 'En attente de signature' %}
+                                            {% elseif status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_SIGNED') %}
+                                                {% set statusLabel = 'Signé' %}
+                                            {% elseif status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_REPAYMENT') %}
+                                                {% set statusLabel = 'En cours de remboursement' %}
+                                            {% elseif status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_REPAID') %}
+                                                {% set statusLabel = 'Terminé' %}
+                                            {% elseif status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_LOSS') %}
+                                                {% set statusLabel = 'Défaut' %}
+                                            {% elseif status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_CANCELLED') %}
+                                                {% set statusLabel = 'Annulé' %}
+                                            {% endif %}
+                                            {{ statusLabel }}
+                                        </td>
+                                        <td class="table-actions">
+                                            <a href="{{ path('demo_lender_project_details', {'slug': project.slug}) }}"
+                                               role="button"
+                                               class="btn-default" title="Voir le dossier de financement"
+                                               data-toggle="tooltip">
+                                                <span class="icon fa-view-u16"></span>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                                {% for project in projects.lender.masked %}
+                                    {% set loan = project.loans.first %}
+                                    <tr id="lender-bid-{{ loan.idLoan }}"
+                                        class="table-projects-item {% if loop.index is divisible by(2) %}even{% else %}odd{% endif %}"
+                                        data-hash="{{ project.hash }}"
+                                        data-sortable-partner="{{ ('partner-name_bubble-' ~ project.idPartner.label)|trans }}"
+                                        data-sortable-title="{{ project.title|e('html_attr') }}"
+                                        data-sortable-project-amount="{{ project.amount }}"
+                                        data-sortable-duration="{{ maturity|localizednumber }}"
+                                        data-sortable-loan-amount="{{ loan.amount }}"
+                                        data-sortable-rate="{{ loan.rate.margin }}">
+                                        <td class="table-projects-item-partner">
+                                            {% include 'demo/partials/bubble.html.twig' with {'partner': project.idPartner.label} %}
+                                        </td>
+                                        <td class="table-projects-item-title">{{ project.title }}</td>
+                                        <td class="table-projects-item-project-amount">{{ project.amount|localizednumber }}&nbsp;€</td>
+                                        <td class="table-projects-item-duration">{{ maturity|localizednumber }} ans</td>
+                                        <td class="table-projects-item-loan-amount">{{ loan.amount|localizednumber }}&nbsp;€</td>
+                                        <td class="table-projects-item-rate">{{ loan.rate.margin|localizednumberwithprecision(2) }}&nbsp;%</td>
+                                        <td class="table-projects-item-status">Prêt refusé</td>
+                                        <td class="table-actions">
+                                            <a href="{{ path('demo_lender_project_details', {'slug': project.slug}) }}"
+                                               role="button"
+                                               class="btn-default" title="Voir le dossier de financement"
+                                               data-toggle="tooltip">
+                                                <span class="icon fa-view-u16"></span>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table><!-- /.table-projects -->
+                        </div><!-- /.table-scroll -->
+                    </div><!-- /.row -->
+                {% endif %}
+            {% endif %}
+        </div><!-- /.panel-content -->
+    </div><!-- /.panel -->
+</article><!-- /.dashboard-tab-pane -->

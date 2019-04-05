@@ -54,7 +54,7 @@ cmf_routing:
 twig:
     strict_variables: "%kernel.debug%"
     paths:
-        - "%kernel.root_dir%/Resources/views/frontbundle/"
+        - "%kernel.project_dir%/templates"
     form_themes:
         - 'frontbundle/layouts/form_layout.html.twig'
 
