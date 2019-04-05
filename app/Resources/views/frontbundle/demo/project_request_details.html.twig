@@ -147,7 +147,9 @@
                                 <li><a href="#article-scoring">Notations</a></li>
                                 <li><a href="#article-fees">Frais / commissions</a></li>
                                 <li><a href="#article-visibility">Visibilité</a></li>
-                                <li><a href="#article-bids">Offres de participation</a></li>
+                                {% if project.status >= constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_ONLINE') %}
+                                    <li><a href="#article-bids">Offres de participation</a></li>
+                                {% endif %}
                                 <li><a href="#article-documents">Documents</a></li>
                                 <li><a href="#article-discussions">Discussions</a></li>
                             </ul>
@@ -384,14 +386,16 @@
                     </form>
                 </div>
             </article><!-- /.dashboard-tab-pane -->
-            <article class="dashboard-tab-pane margin-20-t" id="article-bids">
-                <div class="panel">
-                    <div class="panel-content">
-                        <h4 class="h4">Offres de participation</h4>
-                        {% include ':frontbundle/demo/partials/bids:bids_list.html.twig' with {bids: project.bids} %}
-                    </div><!-- /.project-single-content -->
-                </div>
-            </article><!-- /.dashboard-tab-pane -->
+            {% if project.status >= constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_ONLINE') %}
+                <article class="dashboard-tab-pane margin-20-t" id="article-bids">
+                    <div class="panel">
+                        <div class="panel-content">
+                            <h4 class="h4">Offres de participation</h4>
+                            {% include ':frontbundle/demo/partials/bids:bids_list.html.twig' with {bids: project.bids} %}
+                        </div><!-- /.project-single-content -->
+                    </div>
+                </article><!-- /.dashboard-tab-pane -->
+            {% endif %}
             <article class="dashboard-tab-pane margin-20-t" id="article-documents">
                 <div class="panel">
                     <form action="{{ path('demo_project_details_upload', {'hash': project.hash}) }}" method="post" enctype="multipart/form-data" data-formvalidation data-formvalidation-shownotifications="false">
