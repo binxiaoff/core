@@ -4,8 +4,8 @@ namespace Unilend\Entity;
 
 use Doctrine\Common\Collections\{ArrayCollection, Collection, Criteria};
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Entity\Traits\Timestampable;
-
 
 /**
  * Companies
@@ -54,6 +54,8 @@ class Companies
      * @var string
      *
      * @ORM\Column(name="name", type="text", length=16777215, nullable=true)
+     *
+     * @Assert\NotBlank()
      */
     private $name;
 
@@ -61,6 +63,8 @@ class Companies
      * @var string
      *
      * @ORM\Column(name="forme", type="string", length=191, nullable=true)
+     *
+     * @Assert\NotBlank()
      */
     private $forme;
 
@@ -75,6 +79,9 @@ class Companies
      * @var string
      *
      * @ORM\Column(name="siren", type="string", length=15, nullable=true)
+     *
+     * @Assert\NotBlank()
+     * @Assert\Length(min=9, max=14)
      */
     private $siren;
 
@@ -117,6 +124,9 @@ class Companies
      * @var float
      *
      * @ORM\Column(name="capital", type="float", precision=10, scale=0, nullable=true)
+     *
+     * @Assert\NotBlank()
+     * @Assert\Type(type="numeric")
      */
     private $capital;
 
@@ -330,13 +340,13 @@ class Companies
     }
 
     /**
+     * @param Clients|null $client
+     *
+     * @return Companies
      * @deprecated use $this->addStaff() instead
      *
      * Set idClientOwner
      *
-     * @param Clients|null $client
-     *
-     * @return Companies
      */
     public function setIdClientOwner(Clients $client = null)
     {
@@ -348,11 +358,11 @@ class Companies
     }
 
     /**
+     * @return Clients|null
      * @deprecated use $this->getStaff() instead
      *
      * Get idClientOwner
      *
-     * @return Clients|null
      */
     public function getIdClientOwner()
     {

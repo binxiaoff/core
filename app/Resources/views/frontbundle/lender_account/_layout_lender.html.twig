@@ -9,7 +9,7 @@
         <div class="dashboard-inner">
             <div class="site-wrap">
                 <div class="col-menu">
-                    {{ render(controller('UnilendFrontBundle:LenderAccount:lenderMenu', {'route': app.request.attributes.get('_route')})) }}
+                    {{ render(controller('Unilend\\Controller\\LenderAccountController::lenderMenuAction', {'route': app.request.attributes.get('_route')})) }}
 
                     {% block dashboardNotifications %}
                         {% include 'lender_account/dashboard_panel_notifications.twig' %}

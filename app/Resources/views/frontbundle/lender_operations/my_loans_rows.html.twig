@@ -25,13 +25,13 @@
     <td class="table-myloans-item-rate">
         {{ loan.rate|localizednumber }}&nbsp;<sup>%</sup>
     </td>
-    {% if loan.loanStatus == constant('\\Unilend\\Bundle\\FrontBundle\\Service\\LenderLoansDisplayManager::LOAN_STATUS_DISPLAY_PENDING') %}
+    {% if loan.loanStatus == constant('\\Unilend\\Service\\Front\\LenderLoansDisplayManager::LOAN_STATUS_DISPLAY_PENDING') %}
         <td colspan="4" class="table-myloans-item-next">
             <em class="c-t2">
                 {% trans %} lender-operations_loans-table-project-status-label-pending {% endtrans %}
             </em>
         </td>
-    {% elseif loan.loanStatus == constant('\\Unilend\\Bundle\\FrontBundle\\Service\\LenderLoansDisplayManager::LOAN_STATUS_DISPLAY_COMPLETED') %}
+    {% elseif loan.loanStatus == constant('\\Unilend\\Service\\Front\\LenderLoansDisplayManager::LOAN_STATUS_DISPLAY_COMPLETED') %}
         <td colspan="4" class="table-myloans-item-next">
             <em class="c-t2">
                 {% if loan.isCloseOutNetting %}
@@ -42,16 +42,16 @@
             </em>
         </td>
     {% elseif loan.loanStatus in [
-        constant('\\Unilend\\Bundle\\FrontBundle\\Service\\LenderLoansDisplayManager::LOAN_STATUS_DISPLAY_PROCEEDING'),
-        constant('\\Unilend\\Bundle\\FrontBundle\\Service\\LenderLoansDisplayManager::LOAN_STATUS_DISPLAY_AMICABLE_DC'),
-        constant('\\Unilend\\Bundle\\FrontBundle\\Service\\LenderLoansDisplayManager::LOAN_STATUS_DISPLAY_LITIGATION_DC')
+        constant('\\Unilend\\Service\\Front\\LenderLoansDisplayManager::LOAN_STATUS_DISPLAY_PROCEEDING'),
+        constant('\\Unilend\\Service\\Front\\LenderLoansDisplayManager::LOAN_STATUS_DISPLAY_AMICABLE_DC'),
+        constant('\\Unilend\\Service\\Front\\LenderLoansDisplayManager::LOAN_STATUS_DISPLAY_LITIGATION_DC')
     ] %}
         <td colspan="4" class="table-myloans-item-next">
             <em class="c-t2">
                 {% transchoice loan.count.declaration %} lender-operations_loans-table-project-procedure-in-progress {% endtranschoice %}
             </em>
         </td>
-    {% elseif loan.loanStatus == constant('\\Unilend\\Bundle\\FrontBundle\\Service\\LenderLoansDisplayManager::LOAN_STATUS_DISPLAY_LOSS') %}
+    {% elseif loan.loanStatus == constant('\\Unilend\\Service\\Front\\LenderLoansDisplayManager::LOAN_STATUS_DISPLAY_LOSS') %}
         <td colspan="4" class="table-myloans-item-next">
             <em class="c-t2">
                 {{ loan.loanStatusLabel }}
@@ -84,7 +84,7 @@
             </a>
         {% endif %}
         {% if loan.count is defined %}
-            <a href="javascript:;" title="{{ 'lender-operations_loans-table-project-documents'|trans|e('html_attr') }}"  class="ui-show-table-myloans-item-docs loan-doc {% if loan.loanStatus in [constant('\\Unilend\\Bundle\\FrontBundle\\Service\\LenderLoansDisplayManager::LOAN_STATUS_DISPLAY_PROCEEDING'), constant('\\Unilend\\Bundle\\FrontBundle\\Service\\LenderLoansDisplayManager::LOAN_STATUS_DISPLAY_LOSS')] %} loan-doc-declaration {% endif %}" data-toggle="tooltip">
+            <a href="javascript:;" title="{{ 'lender-operations_loans-table-project-documents'|trans|e('html_attr') }}"  class="ui-show-table-myloans-item-docs loan-doc {% if loan.loanStatus in [constant('\\Unilend\\Service\\Front\\LenderLoansDisplayManager::LOAN_STATUS_DISPLAY_PROCEEDING'), constant('\\Unilend\\Service\\Front\\LenderLoansDisplayManager::LOAN_STATUS_DISPLAY_LOSS')] %} loan-doc-declaration {% endif %}" data-toggle="tooltip">
                 <span class="sr-only">{% trans %} lender-operations_loans-table-project-documents {% endtrans %}</span>
                 {% set docCount = 0 %}
                 {% for docType, totalCount in loan.count if totalCount > 0 %}

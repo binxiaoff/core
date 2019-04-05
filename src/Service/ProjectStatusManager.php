@@ -8,7 +8,7 @@ use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Entity\{EcheanciersEmprunteur, ProjectAbandonReason, ProjectRejectionReason, Projects, ProjectsStatus, ProjectsStatusHistory, ProjectStatusHistoryReason, Users};
 use Unilend\Service\Repayment\ProjectRepaymentTaskManager;
 use Unilend\Service\Simulator\EntityManager as EntityManagerSimulator;
-use Unilend\Bundle\FrontBundle\Service\UniversignManager;
+use Unilend\Service\Front\UniversignManager;
 
 class ProjectStatusManager
 {

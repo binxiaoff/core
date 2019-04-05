@@ -9,6 +9,7 @@ use Ramsey\Uuid\Exception\UnsatisfiedDependencyException;
 use Ramsey\Uuid\Uuid;
 use Symfony\Component\Security\Core\Encoder\EncoderAwareInterface;
 use Symfony\Component\Security\Core\User\{EquatableInterface, UserInterface};
+use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * Clients
@@ -87,6 +88,10 @@ class Clients implements UserInterface, EquatableInterface, EncoderAwareInterfac
      * @var string
      *
      * @ORM\Column(name="nom", type="string", length=191, nullable=true)
+     *
+     * @Assert\NotBlank()
+     * @Assert\Length(min=2)
+     * @Assert\Regex(pattern="/[^A-zÀ-ÿ\s\-\'']+/i", match=false)
      */
     private $nom;
 
@@ -94,6 +99,7 @@ class Clients implements UserInterface, EquatableInterface, EncoderAwareInterfac
      * @var string
      *
      * @ORM\Column(name="nom_usage", type="string", length=191, nullable=true)
+     * @Assert\Regex(pattern="/[^A-zÀ-ÿ\s\-\'']+/i", match=false, groups={"lender_person"})
      */
     private $nomUsage;
 
@@ -101,6 +107,9 @@ class Clients implements UserInterface, EquatableInterface, EncoderAwareInterfac
      * @var string
      *
      * @ORM\Column(name="prenom", type="string", length=191, nullable=true)
+     *
+     * @Assert\Length(min=2)
+     * @Assert\Regex(pattern="/[^A-zÀ-ÿ\s\-\'']+/i", match=false)
      */
     private $prenom;
 
@@ -115,6 +124,9 @@ class Clients implements UserInterface, EquatableInterface, EncoderAwareInterfac
      * @var string
      *
      * @ORM\Column(name="fonction", type="string", length=191, nullable=true)
+     *
+     * @Assert\Length(min=2, groups={"lender_legal_entity"})
+     * @Assert\Regex(pattern="/[^A-zÀ-ÿ\s\-]+/i", match=false, groups={"lender_legal_entity"})
      */
     private $fonction;
 
@@ -122,6 +134,8 @@ class Clients implements UserInterface, EquatableInterface, EncoderAwareInterfac
      * @var \DateTime
      *
      * @ORM\Column(name="naissance", type="date", nullable=true)
+     *
+     * @Assert\Date(groups={"lender_person"})
      */
     private $naissance;
 
@@ -129,6 +143,9 @@ class Clients implements UserInterface, EquatableInterface, EncoderAwareInterfac
      * @var int
      *
      * @ORM\Column(name="id_pays_naissance", type="integer", nullable=true)
+     *
+     * @Assert\NotBlank(groups={"lender_person"})
+     * @Assert\Length(min=1, max=3, groups={"lender_person"})
      */
     private $idPaysNaissance;
 
@@ -143,6 +160,8 @@ class Clients implements UserInterface, EquatableInterface, EncoderAwareInterfac
      * @var string
      *
      * @ORM\Column(name="insee_birth", type="string", length=16, nullable=true)
+     *
+     * @Assert\Length(min=5, groups={"lender_person"})
      */
     private $inseeBirth;
 
@@ -150,6 +169,9 @@ class Clients implements UserInterface, EquatableInterface, EncoderAwareInterfac
      * @var int
      *
      * @ORM\Column(name="id_nationalite", type="integer", nullable=true)
+     *
+     * @Assert\NotBlank(groups={"lender_person"})
+     * @Assert\Length(min=1, max=3, groups={"lender_person"})
      */
     private $idNationalite;
 
@@ -164,6 +186,9 @@ class Clients implements UserInterface, EquatableInterface, EncoderAwareInterfac
      * @var string
      *
      * @ORM\Column(name="telephone", type="string", length=191, nullable=true)
+     *
+     * @Assert\Regex(pattern="/[^0-9\s\-\+]/", match=false)
+     * @Assert\Length(min=10)
      */
     private $telephone;
 
@@ -171,6 +196,9 @@ class Clients implements UserInterface, EquatableInterface, EncoderAwareInterfac
      * @var string
      *
      * @ORM\Column(name="mobile", type="string", length=191, nullable=true)
+     *
+     * @Assert\Regex(pattern="/[^0-9\s\-\+]/", match=false)
+     * @Assert\Length(min=10)
      */
     private $mobile;
 
@@ -178,6 +206,9 @@ class Clients implements UserInterface, EquatableInterface, EncoderAwareInterfac
      * @var string
      *
      * @ORM\Column(name="email", type="string", length=191, nullable=true)
+     *
+     * @Assert\NotBlank()
+     * @Assert\Email()
      */
     private $email;
 
@@ -199,6 +230,7 @@ class Clients implements UserInterface, EquatableInterface, EncoderAwareInterfac
      * @var string
      *
      * @ORM\Column(name="secrete_reponse", type="string", length=191, nullable=true)
+     *
      */
     private $secreteReponse;
 
@@ -1236,7 +1268,7 @@ class Clients implements UserInterface, EquatableInterface, EncoderAwareInterfac
      */
     public function setAddedValue()
     {
-        if (! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
+        if (!$this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
             $this->added = new \DateTime();
         }
     }
@@ -1283,6 +1315,7 @@ class Clients implements UserInterface, EquatableInterface, EncoderAwareInterfac
                 $newName .= ($i == 0 ? '' : '-') . ucwords($name);
                 $i++;
             }
+
             return $newName;
         }
     }
@@ -1351,6 +1384,7 @@ class Clients implements UserInterface, EquatableInterface, EncoderAwareInterfac
     private function generateHash()
     {
         $uuid4 = Uuid::uuid4();
+
         return $uuid4->toString();
     }
 
@@ -1683,6 +1717,7 @@ class Clients implements UserInterface, EquatableInterface, EncoderAwareInterfac
 
     /**
      * @param array $status
+     *
      * @return bool
      */
     private function isInStatus(array $status): bool

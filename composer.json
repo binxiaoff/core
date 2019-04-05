@@ -6,19 +6,22 @@
   "autoload": {
     "psr-4": {
       "Unilend\\": "",
-      "Unilend\\Bundle\\": "src/Unilend/Bundle",
       "Unilend\\Command\\": "src/Command",
       "Unilend\\Composer\\": "src/Composer",
       "Unilend\\Console\\": "src/Console",
+      "Unilend\\Controller\\": "src/Controller",
       "Unilend\\DependencyInjection\\": "src/DependencyInjection",
       "Unilend\\Doctrine\\": "src/Doctrine",
       "Unilend\\Document\\": "src/Document",
       "Unilend\\Entity\\": "src/Entity",
       "Unilend\\EventSubscriber\\": "src/EventSubscriber",
       "Unilend\\Exception\\": "src/Exception",
+      "Unilend\\Form\\": "src/Form",
       "Unilend\\Repository\\": "src/Repository",
+      "Unilend\\Security\\": "src/Security",
       "Unilend\\Service\\": "src/Service",
-      "Unilend\\SwiftMailer\\": "src/SwiftMailer"
+      "Unilend\\SwiftMailer\\": "src/SwiftMailer",
+      "Unilend\\Twig\\": "src/Twig"
     },
     "classmap": [
       "app/AppKernel.php",

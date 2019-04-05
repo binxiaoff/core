@@ -48,8 +48,8 @@ cmf_routing:
             cmf_routing.dynamic_router: 100
     dynamic:
         enabled: true
-        default_controller: Unilend\Bundle\FrontBundle\Controller\MainController::cmsAction
-        route_provider_service_id: Unilend\Bundle\FrontBundle\Service\RouteProvider
+        default_controller: Unilend\Controller\MainController::cmsAction
+        route_provider_service_id: Unilend\Service\Front\RouteProvider
 
 twig:
     strict_variables: "%kernel.debug%"

@@ -101,9 +101,9 @@
     <div class="row">
         {% set
             inProceeding = [
-                constant('\\Unilend\\Bundle\\FrontBundle\\Service\\LenderLoansDisplayManager::LOAN_STATUS_DISPLAY_PROCEEDING'),
-                constant('\\Unilend\\Bundle\\FrontBundle\\Service\\LenderLoansDisplayManager::LOAN_STATUS_DISPLAY_AMICABLE_DC'),
-                constant('\\Unilend\\Bundle\\FrontBundle\\Service\\LenderLoansDisplayManager::LOAN_STATUS_DISPLAY_LITIGATION_DC')
+                constant('\\Unilend\\Service\\Front\\LenderLoansDisplayManager::LOAN_STATUS_DISPLAY_PROCEEDING'),
+                constant('\\Unilend\\Service\\Front\\LenderLoansDisplayManager::LOAN_STATUS_DISPLAY_AMICABLE_DC'),
+                constant('\\Unilend\\Service\\Front\\LenderLoansDisplayManager::LOAN_STATUS_DISPLAY_LITIGATION_DC')
         ] %}
         <table class="table">
             <tbody>
@@ -134,11 +134,11 @@
                     <td class="item-date">
                         {{ loan.startDate }}
                     </td>
-                    {% if constant('\\Unilend\\Bundle\\FrontBundle\\Service\\LenderLoansDisplayManager::LOAN_STATUS_DISPLAY_PENDING') == loan.loanStatus %}
+                    {% if constant('\\Unilend\\Service\\Front\\LenderLoansDisplayManager::LOAN_STATUS_DISPLAY_PENDING') == loan.loanStatus %}
                         <td colspan="3" class="item-date">
                             {% trans %} lender-loans_pdf-project-status-label-pending {% endtrans %}
                         </td>
-                    {% elseif constant('\\Unilend\\Bundle\\FrontBundle\\Service\\LenderLoansDisplayManager::LOAN_STATUS_DISPLAY_COMPLETED') == loan.loanStatus %}
+                    {% elseif constant('\\Unilend\\Service\\Front\\LenderLoansDisplayManager::LOAN_STATUS_DISPLAY_COMPLETED') == loan.loanStatus %}
                         <td colspan="3" class="item-date">
                             {% if loan.isCloseOutNetting %}
                                 {% trans with {'%date%': loan.finalRepaymentDate} %} lender-loans_pdf-project-status-label-collected-on-date {% endtrans %}
@@ -150,7 +150,7 @@
                         <td colspan="3" class="item-date">
                             {% transchoice loan.numberOfLoansInDebt %} lender-loans_pdf-project-procedure-in-progress {% endtranschoice %}
                         </td>
-                    {% elseif constant('\\Unilend\\Bundle\\FrontBundle\\Service\\LenderLoansDisplayManager::LOAN_STATUS_DISPLAY_LOSS') == loan.loanStatus %}
+                    {% elseif constant('\\Unilend\\Service\\Front\\LenderLoansDisplayManager::LOAN_STATUS_DISPLAY_LOSS') == loan.loanStatus %}
                         <td colspan="3" class="item-date">
                             {% trans %} lender-loans_pdf-project-status-label-lost {% endtrans %}
                         </td>
