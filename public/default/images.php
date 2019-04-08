@@ -1,5 +1,7 @@
 <?php
 
+use Unilend\Kernel;
+
 /**
  * Image resizer
  * If an image does not exists in corresponding directory, we resize it from source
@@ -10,15 +12,16 @@
  * - Output format is JPEG
  * - Output compression is 90%
  */
-$loader = require __DIR__ . '/../../app/autoload.php';
-require_once __DIR__ . '/../../app/AppKernel.php';
+
+$loader = require __DIR__ . '/../../config/autoload.php';
+require_once __DIR__ . '/../../src/App/Kernel.php';
 
 error_reporting(E_ALL & ~E_DEPRECATED & ~E_NOTICE);
 
 ini_set('display_errors', 0);
 ini_set('log_errors', 1);
 
-$kernel = new AppKernel('prod', false);
+$kernel = new Kernel('prod', false);
 $kernel->boot();
 
 $config = $kernel->getContainer()->getParameter('image_resize');

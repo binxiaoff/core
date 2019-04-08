@@ -1,0 +1,6 @@
+doctrine_migrations:
+    name: Database Migrations
+    dir_name: '%kernel.project_dir%/src/Migrations'
+    namespace: DoctrineMigrations
+    organize_migrations: BY_YEAR
+    column_length: 30

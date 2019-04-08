@@ -6,20 +6,14 @@
 /protected
 /public/default/images/dyn
 /public/default/var
-/librairies/payline/logs
 
-# Symfony 3
-/app/config/parameters.yml
-/app/config/parameters_extended.yml
-/build/
-/phpunit.xml
+# Symfony
 /var/*
-!var/SymfonyRequirements.php
 /public/default/bundles/
 
 # PHPStorm
 .idea/
-/app/config/phpstorm.yml
+/config/packages/dev/phpstorm.yml
 
 # VS Code
 .vscode
@@ -33,6 +27,3 @@
 npm-debug.log
 /public/default/assets/
 /assets/css
-
-# MaxMind
-/src/Resources/MaxMind/

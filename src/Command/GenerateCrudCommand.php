@@ -37,7 +37,7 @@ class GenerateCrudCommand extends ContainerAwareCommand
         if ($table) {
             $generatedCruds[] = [$table, $this->checkCrud($table)];
         } else {
-            $dataDir   = $this->getContainer()->getParameter('kernel.root_dir') . '/../data';
+            $dataDir   = $this->getContainer()->getParameter('kernel.project_dir') . '/data';
             $dataFiles = array_diff(scandir($dataDir), ['.', '..']);
             foreach ($dataFiles as $file) {
                 if (false === is_dir($file) && 1 === preg_match('#(.+)\.data\.php$#', $file, $matches)) {

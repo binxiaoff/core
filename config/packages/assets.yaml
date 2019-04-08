@@ -1,0 +1,8 @@
+framework:
+    assets:
+        base_urls:
+            - "%router.request_context.scheme%://%url.host_default%"
+        packages:
+            gulp:
+                base_path: /assets
+        json_manifest_path: '%kernel.project_dir%/public/default/assets/rev-manifest.json'

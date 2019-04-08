@@ -4,8 +4,7 @@ namespace Unilend\DependencyInjection\Compiler;
 
 use Ekino\NewRelicBundle\Listener\CommandListener;
 use Ekino\NewRelicBundle\NewRelic\Config;
-use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
-use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\{Compiler\CompilerPassInterface, ContainerBuilder};
 
 class OverrideNewRelicSettingsForConsolePass implements CompilerPassInterface
 {

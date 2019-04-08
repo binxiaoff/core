@@ -5,28 +5,9 @@
   "minimum-stability": "stable",
   "autoload": {
     "psr-4": {
-      "Unilend\\": "",
-      "Unilend\\Command\\": "src/Command",
-      "Unilend\\Composer\\": "src/Composer",
-      "Unilend\\Console\\": "src/Console",
-      "Unilend\\Controller\\": "src/Controller",
-      "Unilend\\DependencyInjection\\": "src/DependencyInjection",
-      "Unilend\\Doctrine\\": "src/Doctrine",
-      "Unilend\\Document\\": "src/Document",
-      "Unilend\\Entity\\": "src/Entity",
-      "Unilend\\EventSubscriber\\": "src/EventSubscriber",
-      "Unilend\\Exception\\": "src/Exception",
-      "Unilend\\Form\\": "src/Form",
-      "Unilend\\Repository\\": "src/Repository",
-      "Unilend\\Security\\": "src/Security",
-      "Unilend\\Service\\": "src/Service",
-      "Unilend\\SwiftMailer\\": "src/SwiftMailer",
-      "Unilend\\Twig\\": "src/Twig"
-    },
-    "classmap": [
-      "app/AppKernel.php",
-      "app/AppCache.php"
-    ]
+      "Unilend\\": "src/",
+      "Unilend\\core\\": "core/"
+    }
   },
   "require": {
     "php": ">=7.1.11",
@@ -81,9 +62,14 @@
     "phpstan/phpstan-symfony": "^0.11.3",
     "phpstan/phpstan-doctrine": "^0.11.2"
   },
+  "config": {
+    "preferred-install": {
+      "*": "dist"
+    },
+    "sort-packages": true
+  },
   "scripts": {
     "symfony-scripts": [
-      "Incenteev\\ParameterHandler\\ScriptHandler::buildParameters",
       "Unilend\\Composer\\ScriptHandler::clearCache",
       "Unilend\\Composer\\ScriptHandler::installAssets"
     ],
@@ -93,16 +79,5 @@
     "post-update-cmd": [
       "@symfony-scripts"
     ]
-  },
-  "extra": {
-    "symfony-app-dir": "app",
-    "symfony-bin-dir": "bin",
-    "symfony-var-dir": "var",
-    "symfony-web-dir": "public/default",
-    "symfony-tests-dir": "tests",
-    "symfony-assets-install": "relative",
-    "incenteev-parameters": {
-      "file": "app/config/parameters.yml"
-    }
   }
 }
