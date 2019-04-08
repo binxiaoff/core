@@ -7,10 +7,6 @@
 /public/default/images/dyn
 /public/default/var
 
-# Symfony
-/var/*
-/public/default/bundles/
-
 # PHPStorm
 .idea/
 /config/packages/dev/phpstorm.yml
@@ -18,12 +14,18 @@
 # VS Code
 .vscode
 
-# Composer
-/vendor/
-
 #npm & gulp
 .sass-cache
 /node_modules
 npm-debug.log
 /public/default/assets/
 /assets/css
+
+###> symfony/framework-bundle ###
+/.env.local
+/.env.local.php
+/.env.*.local
+/public/default/bundles/
+/var/
+/vendor/
+###< symfony/framework-bundle ###

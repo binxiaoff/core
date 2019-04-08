@@ -5,6 +5,7 @@ namespace Unilend\Twig;
 use Psr\Cache\CacheItemPoolInterface;
 use Symfony\Component\Asset\Packages;
 use Twig\Extension\AbstractExtension;
+use Twig\TwigFilter;
 use Twig\TwigFunction;
 use Unilend\Entity\{Pays, Projects};
 use Unilend\Service\{LocationManager, Simulator\EntityManager, StatisticsManager};
@@ -62,13 +63,13 @@ class FrontBundleExtension extends AbstractExtension
     public function getFilters()
     {
         return array(
-            new TwigFunction('nbsp', [$this, 'nbspFilter']),
-            new TwigFunction('convertRisk', [$this, 'convertProjectRiskFilter']),
-            new TwigFunction('completeProjectImagePath', [$this, 'projectImagePathFilter']),
-            new TwigFunction('baseUrl', [$this, 'addBaseUrl']),
-            new TwigFunction('countryLabel', [$this, 'getCountry']),
-            new TwigFunction('nationalityLabel', [$this, 'getNationality']),
-            new TwigFunction('json_decode', [$this, 'jsonDecode'])
+            new TwigFilter('nbsp', [$this, 'nbspFilter']),
+            new TwigFilter('convertRisk', [$this, 'convertProjectRiskFilter']),
+            new TwigFilter('completeProjectImagePath', [$this, 'projectImagePathFilter']),
+            new TwigFilter('baseUrl', [$this, 'addBaseUrl']),
+            new TwigFilter('countryLabel', [$this, 'getCountry']),
+            new TwigFilter('nationalityLabel', [$this, 'getNationality']),
+            new TwigFilter('json_decode', [$this, 'jsonDecode'])
         );
     }
 

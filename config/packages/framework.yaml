@@ -10,13 +10,8 @@ framework:
         log: true
     cache:
         prefix_seed: cals-app
-    validation:
-        email_validation_mode: 'html5'
-        enable_annotations: true
     templating:
         engines: ['twig']
     form:
         csrf_protection:
             field_name: _csrf
-    serializer:
-        enabled: true
