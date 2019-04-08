@@ -305,12 +305,12 @@
                         </div><!-- /.promo -->
 
                         <br />
-                        <img src="{{ siteurlmedia('apropos/statistiques/icons-members.png') }}" alt="">
+                        <img src="{{ asset('images/apropos/statistiques/icons-members.png', 'gulp') }}" alt="">
                     </div>
 
                     {% set lendersByType = getStatistic('lendersByType', date) %}
                     <div class="stats-enterprises">
-                        <img src="{{ siteurlmedia('apropos/statistiques/icons-enterprises.png') }}" alt="">
+                        <img src="{{ asset('images/apropos/statistiques/icons-enterprises.png', 'gulp') }}" alt="">
                         <div>
                             <span class="stats-number"><span data-textcount data-start-count="0" data-end-count="{{ lendersByType.person.percentage }}" data-total-time="2000" data-tween-count="easeOutCirc">{{ lendersByType.person.percentage|localizednumber }}</span><sup>%</sup></span> {% trans %} about-us-statistics_lender-statistics-members-type-person-text {% endtrans %}
                         </div>
@@ -433,7 +433,7 @@
             <div class="row">
                 <div class="promo col-lg-4 col-md-4">
                     <div class="promo-image">
-                        <img src="{{ siteurlmedia('apropos/statistiques/medal-bolt.png') }}" alt=""/>
+                        <img src="{{ asset('images/apropos/statistiques/medal-bolt.png', 'gulp') }}" alt=""/>
                     </div>
                     {% set highestAmountObtainedFastest = getStatistic('highestAmountObtainedFastest', date) %}
                     <h3 class="promo-highlight promo-highlight-lg">
@@ -443,14 +443,14 @@
                 </div>
                 <div class="promo col-lg-4 col-md-4">
                     <div class="promo-image">
-                        <img src="{{ siteurlmedia('apropos/statistiques/medal-handshake.png') }}" alt=""/>
+                        <img src="{{ asset('images/apropos/statistiques/medal-handshake.png', 'gulp') }}" alt=""/>
                     </div>
                     <h3 class="promo-highlight promo-highlight-lg">{{ getStatistic('secondsForBid', date)|localizednumber }}<sup>sec</sup></h3>
                     <p>{% trans with {'%seconds%' : getStatistic('secondsForBid', date)|localizednumber }%} about-us-statistics_unilend-records-medal-handshake-text {% endtrans %}</p>
                 </div>
                 <div class="promo col-lg-4 col-md-4">
                     <div class="promo-image">
-                        <img src="{{ siteurlmedia('apropos/statistiques/medal-clock.png') }}" alt=""/>
+                        <img src="{{ asset('images/apropos/statistiques/medal-clock.png', 'gulp') }}" alt=""/>
                     </div>
                     <h3 class="promo-highlight promo-highlight-lg">
                         <span data-textcount data-start-count="0" data-end-count="1" data-total-time="100" data-tween-count="easeOutCirc">1</span><sup>sec</sup>

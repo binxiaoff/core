@@ -5,6 +5,7 @@ namespace Unilend\Twig;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Twig\Extension\AbstractExtension;
+use Twig\TwigFunction;
 use Unilend\Entity\{Clients, Partner, Wallet, WalletType};
 use Unilend\Service\{LenderManager, PartnerManager};
 use Unilend\Service\Front\NotificationDisplayManager;
@@ -51,10 +52,10 @@ class ClientExtension extends AbstractExtension
     public function getFunctions()
     {
         return array(
-            new \Twig_SimpleFunction('lenderDiversificationLevel', [$this, 'getLenderDiversificationLevel']),
-            new \Twig_SimpleFunction('partner', [$this, 'getPartner']),
-            new \Twig_SimpleFunction('walletBalance', [$this, 'getBalance']),
-            new \Twig_SimpleFunction('lenderNotifications', [$this, 'getLenderNotifications'])
+            new TwigFunction('lenderDiversificationLevel', [$this, 'getLenderDiversificationLevel']),
+            new TwigFunction('partner', [$this, 'getPartner']),
+            new TwigFunction('walletBalance', [$this, 'getBalance']),
+            new TwigFunction('lenderNotifications', [$this, 'getLenderNotifications'])
         );
     }
 

@@ -5,6 +5,7 @@ namespace Unilend\Twig;
 use Psr\Cache\CacheItemPoolInterface;
 use Symfony\Component\Asset\Packages;
 use Twig\Extension\AbstractExtension;
+use Twig\TwigFunction;
 use Unilend\Entity\{Pays, Projects};
 use Unilend\Service\{LocationManager, Simulator\EntityManager, StatisticsManager};
 use Unilend\Service\Translation\TranslationManager;
@@ -49,26 +50,25 @@ class FrontBundleExtension extends AbstractExtension
     public function getFunctions()
     {
         return array(
-            new \Twig_SimpleFunction('setting', [$this, 'settingFunction']),
-            new \Twig_SimpleFunction('svgimage', [$this, 'svgImageFunction']),
-            new \Twig_SimpleFunction('siteurlmedia', [$this, 'completeUrlMediaFunction']),
-            new \Twig_SimpleFunction('uploadedImage', [$this, 'uploadedImageFunction']),
-            new \Twig_SimpleFunction('photo', [$this, 'photo']),
-            new \Twig_SimpleFunction('dictionary', [$this, 'dictionary']),
-            new \Twig_SimpleFunction('getStatistic', [$this, 'getStatisticFunction'])
+            new TwigFunction('setting', [$this, 'settingFunction']),
+            new TwigFunction('svgimage', [$this, 'svgImageFunction']),
+            new TwigFunction('uploadedImage', [$this, 'uploadedImageFunction']),
+            new TwigFunction('photo', [$this, 'photo']),
+            new TwigFunction('dictionary', [$this, 'dictionary']),
+            new TwigFunction('getStatistic', [$this, 'getStatisticFunction'])
         );
     }
 
     public function getFilters()
     {
         return array(
-            new \Twig_SimpleFilter('nbsp', [$this, 'nbspFilter']),
-            new \Twig_SimpleFilter('convertRisk', [$this, 'convertProjectRiskFilter']),
-            new \Twig_SimpleFilter('completeProjectImagePath', [$this, 'projectImagePathFilter']),
-            new \Twig_SimpleFilter('baseUrl', [$this, 'addBaseUrl']),
-            new \Twig_SimpleFilter('countryLabel', [$this, 'getCountry']),
-            new \Twig_SimpleFilter('nationalityLabel', [$this, 'getNationality']),
-            new \Twig_SimpleFilter('json_decode', [$this, 'jsonDecode'])
+            new TwigFunction('nbsp', [$this, 'nbspFilter']),
+            new TwigFunction('convertRisk', [$this, 'convertProjectRiskFilter']),
+            new TwigFunction('completeProjectImagePath', [$this, 'projectImagePathFilter']),
+            new TwigFunction('baseUrl', [$this, 'addBaseUrl']),
+            new TwigFunction('countryLabel', [$this, 'getCountry']),
+            new TwigFunction('nationalityLabel', [$this, 'getNationality']),
+            new TwigFunction('json_decode', [$this, 'jsonDecode'])
         );
     }
 
@@ -131,11 +131,6 @@ class FrontBundleExtension extends AbstractExtension
         $sSvgHtml                 = '<svg role="img"' . $sTitleAttr . $sWidthAttr . $sHeightAttr . $sPreserveAspectRatioAttr . ' class="svg-icon svg-icon-' . $sUseId . '"' . $sSvgHeaders . '>' . $sUses . '</svg>';
 
         return $sSvgHtml;
-    }
-
-    public function completeUrlMediaFunction($sPath)
-    {
-        return $this->packages->getUrl('/assets/images/' . $sPath);
     }
 
     public function getStatisticFunction($statisticType, $date = null)

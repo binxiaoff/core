@@ -4,6 +4,7 @@ namespace Unilend\Twig;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Twig\Extension\AbstractExtension;
+use Twig\TwigFunction;
 use Unilend\Entity\{Bids, EcheanciersEmprunteur, Projects, ProjectsStatus};
 use Unilend\Service\{AutoBidSettingsManager, ProjectManager};
 
@@ -34,12 +35,12 @@ class ProjectExtension extends AbstractExtension
     public function getFunctions()
     {
         return array(
-            new \Twig_SimpleFunction('projectFundingPercentage', [$this, 'getFundingPercentage']),
-            new \Twig_SimpleFunction('projectAverageInterestRate', [$this, 'getAverageInterestRate']),
-            new \Twig_SimpleFunction('projectEnded', [$this, 'getProjectEnded']),
-            new \Twig_SimpleFunction('projectRepaymentScheduleAmount', [$this, 'getRepaymentScheduleAmount']),
-            new \Twig_SimpleFunction('projectRemainingCapital', [$this, 'getRemainingCapital']),
-            new \Twig_SimpleFunction('projectNextRepaymentScheduleAmount', [$this, 'getNextRepaymentScheduleAmount']),
+            new TwigFunction('projectFundingPercentage', [$this, 'getFundingPercentage']),
+            new TwigFunction('projectAverageInterestRate', [$this, 'getAverageInterestRate']),
+            new TwigFunction('projectEnded', [$this, 'getProjectEnded']),
+            new TwigFunction('projectRepaymentScheduleAmount', [$this, 'getRepaymentScheduleAmount']),
+            new TwigFunction('projectRemainingCapital', [$this, 'getRemainingCapital']),
+            new TwigFunction('projectNextRepaymentScheduleAmount', [$this, 'getNextRepaymentScheduleAmount']),
         );
     }
 
