@@ -4,7 +4,7 @@ namespace Unilend\Service\Front;
 
 use Psr\Cache\CacheItemPoolInterface;
 use Unilend\Service\Simulator\EntityManager;
-use Unilend\librairies\CacheKeys;
+use Unilend\CacheKeys;
 
 class ContentManager
 {

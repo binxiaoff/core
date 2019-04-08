@@ -7,7 +7,7 @@ use Psr\Cache\CacheItemPoolInterface;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Entity\{Bids, Clients, Loans, Projects, Wallet, WalletType};
 use Unilend\Service\{CIPManager, LocationManager, Product\ProductManager, Simulator\EntityManager as EntityManagerSimulator};
-use Unilend\librairies\CacheKeys;
+use Unilend\CacheKeys;
 
 class LenderAccountDisplayManager
 {

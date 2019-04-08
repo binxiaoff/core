@@ -1,10 +1,10 @@
 <?php
 
-namespace Unilend\librairies;
+namespace Unilend;
 
 /**
  * Class Cache
- * @package Unilend\librairies
+ * @package Unilend
  */
 class CacheKeys
 {

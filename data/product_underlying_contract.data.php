@@ -88,7 +88,7 @@ class product_underlying_contract extends product_underlying_contract_crud
             $queryBuilder->getSQL(),
             $queryBuilder->getParameters(),
             $queryBuilder->getParameterTypes(),
-            new \Doctrine\DBAL\Cache\QueryCacheProfile(\Unilend\librairies\CacheKeys::SHORT_TIME, md5(__METHOD__)));
+            new \Doctrine\DBAL\Cache\QueryCacheProfile(\Unilend\CacheKeys::SHORT_TIME, md5(__METHOD__)));
         $result    = $statement->fetchAll();
         $statement->closeCursor();
 

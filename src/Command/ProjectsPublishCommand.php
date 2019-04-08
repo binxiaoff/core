@@ -5,7 +5,7 @@ namespace Unilend\Command;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\{Input\InputInterface, Output\OutputInterface};
 use Unilend\Entity\{Attachment, AttachmentType, Projects};
-use Unilend\librairies\CacheKeys;
+use Unilend\CacheKeys;
 
 class ProjectsPublishCommand extends ContainerAwareCommand
 {

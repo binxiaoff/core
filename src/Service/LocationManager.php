@@ -6,7 +6,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Psr\Cache\CacheItemPoolInterface;
 use Unilend\Entity\{CompanyAddress, Pays, Villes};
 use Unilend\Service\Simulator\EntityManager as EntityManagerSimulator;
-use Unilend\librairies\CacheKeys;
+use Unilend\CacheKeys;
 
 /**
  * Class LocationManager

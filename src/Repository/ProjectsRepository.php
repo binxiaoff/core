@@ -12,7 +12,7 @@ use Psr\Log\InvalidArgumentException;
 use Unilend\Entity\{Bids, Clients, ClientsMandats, Companies, CompanyStatus, Echeanciers, EcheanciersEmprunteur, Factures, OperationType, Partner, Projects, ProjectSearch, ProjectsPouvoir,
     ProjectsStatus, UnilendStats, Users, Virements};
 use Unilend\Service\{DebtCollectionMissionManager, ProjectCloseOutNettingManager};
-use Unilend\librairies\CacheKeys;
+use Unilend\CacheKeys;
 
 class ProjectsRepository extends EntityRepository
 {

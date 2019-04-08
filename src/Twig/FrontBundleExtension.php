@@ -9,7 +9,7 @@ use Twig\TwigFunction;
 use Unilend\Entity\{Pays, Projects};
 use Unilend\Service\{LocationManager, Simulator\EntityManager, StatisticsManager};
 use Unilend\Service\Translation\TranslationManager;
-use Unilend\librairies\CacheKeys;
+use Unilend\CacheKeys;
 
 class FrontBundleExtension extends AbstractExtension
 {

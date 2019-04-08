@@ -7,7 +7,7 @@ use Doctrine\ORM\{EntityRepository, NoResultException, Query\Expr\Join};
 use Unilend\Entity\{Clients, Companies, CompanyStatus, Echeanciers, EcheanciersEmprunteur, Loans, OperationType, Projects, ProjectsStatus, UnilendStats, Wallet};
 use Unilend\Service\TaxManager;
 use Unilend\Controller\LenderDashboardController;
-use Unilend\librairies\CacheKeys;
+use Unilend\CacheKeys;
 
 class EcheanciersRepository extends EntityRepository
 {

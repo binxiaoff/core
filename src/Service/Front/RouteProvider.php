@@ -9,7 +9,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Route;
 use Symfony\Component\Routing\RouteCollection;
 use Unilend\Service\Simulator\EntityManager;
-use Unilend\librairies\CacheKeys;
+use Unilend\CacheKeys;
 
 class RouteProvider implements RouteProviderInterface
 {

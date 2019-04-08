@@ -10,7 +10,7 @@ use Psr\Log\LoggerInterface;
 use Unilend\Entity\WsExternalResource;
 use Unilend\Entity\External\Euler\CompanyIdentity;
 use Unilend\Entity\External\Euler\CompanyRating;
-use Unilend\librairies\CacheKeys;
+use Unilend\CacheKeys;
 
 class EulerHermesManager
 {

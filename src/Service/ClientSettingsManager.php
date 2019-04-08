@@ -7,7 +7,7 @@ use Psr\Cache\{
 };
 use Unilend\Entity\Clients;
 use Unilend\Service\Simulator\EntityManager as EntityManagerSimulator;
-use Unilend\librairies\CacheKeys;
+use Unilend\CacheKeys;
 
 /**
  * Class ClientSettingsManager

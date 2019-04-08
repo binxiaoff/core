@@ -5,7 +5,7 @@ namespace Unilend\Service\Product\Contract;
 use Psr\Cache\CacheItemPoolInterface;
 use Unilend\Entity\UnderlyingContract;
 use Unilend\Service\Simulator\EntityManager;
-use Unilend\librairies\CacheKeys;
+use Unilend\CacheKeys;
 
 class ContractAttributeManager
 {
