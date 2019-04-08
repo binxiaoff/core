@@ -5,7 +5,7 @@ namespace Unilend\Repository;
 use Doctrine\DBAL\Cache\QueryCacheProfile;
 use Doctrine\ORM\EntityRepository;
 use Unilend\Entity\ProjectsStatus;
-use Unilend\librairies\CacheKeys;
+use Unilend\CacheKeys;
 
 class RiskDataMonitoringRepository extends EntityRepository
 {

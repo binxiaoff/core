@@ -339,7 +339,7 @@ class echeanciers extends echeanciers_crud
             $query                 .= ' AND e.id_lender = :id_lender ';
         }
 
-        $statement = $this->bdd->executeQuery($query, $bind, $bindType, new \Doctrine\DBAL\Cache\QueryCacheProfile(\Unilend\librairies\CacheKeys::MEDIUM_TIME, md5(__METHOD__)));
+        $statement = $this->bdd->executeQuery($query, $bind, $bindType, new \Doctrine\DBAL\Cache\QueryCacheProfile(\Unilend\CacheKeys::MEDIUM_TIME, md5(__METHOD__)));
         $result    = $statement->fetchAll(PDO::FETCH_ASSOC);
         $statement->closeCursor();
 
@@ -372,7 +372,7 @@ class echeanciers extends echeanciers_crud
         $statement = $this->bdd->executeQuery($sql,
             ['id_project' => $projectId],
             ['id_project' => \PDO::PARAM_INT],
-            new \Doctrine\DBAL\Cache\QueryCacheProfile(\Unilend\librairies\CacheKeys::SHORT_TIME, md5(__METHOD__))
+            new \Doctrine\DBAL\Cache\QueryCacheProfile(\Unilend\CacheKeys::SHORT_TIME, md5(__METHOD__))
         );
 
         $result = $statement->fetchAll(\PDO::FETCH_ASSOC);

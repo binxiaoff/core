@@ -1,5 +1,7 @@
 <?php
 
+use Unilend\Kernel;
+
 /*
 Copyright (c) 2009 Grzegorz Żydek
 
@@ -28,12 +30,12 @@ THE SOFTWARE.
 //i.e. include($_SERVER['DOCUMENT_ROOT'].'/_files/application/PGRFileManagerConfig.php');
 
 // Hotfix-20150819-page-blanche-explorateur-fichier
-$loader = require __DIR__ . '/../../../../../app/autoload.php';
-require_once __DIR__ . '/../../../../../app/AppKernel.php';
-$kernel = new AppKernel('prod', false);
+require __DIR__ . '/../../../../../config/autoload.php';
+require_once __DIR__ . '/../../../../../src/App/Kernel.php';
+$kernel = new Kernel('prod', false);
 $kernel->boot();
 
-$staticUrl = $kernel->getContainer()->get('assets.packages')->getUrl('');
+$staticUrl = $this->getContainer()->getParameter('router.request_context.scheme') . '://' . $this->getContainer()->getParameter('url.host_default');
 //real absolute path to root directory (directory you want to use with PGRFileManager) on your server
 //i.e  PGRFileManagerConfig::$rootPath = '/home/user/htdocs/userfiles'
 //you can check your absoulte path using

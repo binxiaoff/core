@@ -12,7 +12,7 @@ use Symfony\Component\Stopwatch\Stopwatch;
 use Unilend\Entity\{WsCallHistory, WsExternalResource};
 use Unilend\Service\SlackManager;
 use Unilend\Document\WsCall;
-use Unilend\librairies\CacheKeys;
+use Unilend\CacheKeys;
 
 class CallHistoryManager
 {

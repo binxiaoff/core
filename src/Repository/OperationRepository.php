@@ -9,7 +9,7 @@ use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
 use Unilend\Entity\{Clients, ClientsStatus, ClientsStatusHistory, CompanyStatus, Echeanciers, Loans, Operation, OperationSubType, OperationType, Pays, ProjectRepaymentTask, ProjectRepaymentTaskLog,
     Projects, ProjectsStatus, Receptions, Sponsorship, SponsorshipCampaign, UnilendStats, Wallet};
-use Unilend\librairies\CacheKeys;
+use Unilend\CacheKeys;
 
 class OperationRepository extends EntityRepository
 {

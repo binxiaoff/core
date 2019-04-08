@@ -6,26 +6,13 @@
 /protected
 /public/default/images/dyn
 /public/default/var
-/librairies/payline/logs
-
-# Symfony 3
-/app/config/parameters.yml
-/app/config/parameters_extended.yml
-/build/
-/phpunit.xml
-/var/*
-!var/SymfonyRequirements.php
-/public/default/bundles/
 
 # PHPStorm
 .idea/
-/app/config/phpstorm.yml
+/config/packages/dev/phpstorm.yml
 
 # VS Code
 .vscode
-
-# Composer
-/vendor/
 
 #npm & gulp
 .sass-cache
@@ -34,5 +21,11 @@ npm-debug.log
 /public/default/assets/
 /assets/css
 
-# MaxMind
-/src/Resources/MaxMind/
+###> symfony/framework-bundle ###
+/.env.local
+/.env.local.php
+/.env.*.local
+/public/default/bundles/
+/var/
+/vendor/
+###< symfony/framework-bundle ###

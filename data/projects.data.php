@@ -5,7 +5,7 @@ use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Driver\ResultStatement;
 use Doctrine\DBAL\Statement;
 use Unilend\Entity\{AttachmentType, Bids, Clients, CompanyStatus, EcheanciersEmprunteur, Loans, OperationSubType, Projects as ProjectsEntity, ProjectsStatus};
-use Unilend\librairies\CacheKeys;
+use Unilend\CacheKeys;
 
 class projects extends projects_crud
 {

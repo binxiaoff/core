@@ -8,7 +8,7 @@ use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Unilend\Entity\{Clients, Users};
-use Unilend\librairies\CacheKeys;
+use Unilend\CacheKeys;
 
 class AutomaticLenderValidationCommand extends ContainerAwareCommand
 {

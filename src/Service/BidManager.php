@@ -10,7 +10,7 @@ use Unilend\Entity\{AcceptedBids, Autobid, Bids, ClientsGestionTypeNotif, Embedd
     Sponsorship, Wallet, WalletBalanceHistory, WalletType};
 use Unilend\Exception\BidException;
 use Unilend\Service\Product\ProductManager;
-use Unilend\librairies\CacheKeys;
+use Unilend\CacheKeys;
 
 /**
  * Class BidManager

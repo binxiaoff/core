@@ -8,7 +8,7 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Annotation\Route;
 use Cache\Adapter\Memcache\MemcacheCachePool;
 use Unilend\Service\WebServiceClient\{AltaresManager, CodinfManager, EllisphereManager, EulerHermesManager, InfogreffeManager, InfolegaleManager};
-use Unilend\librairies\CacheKeys;
+use Unilend\CacheKeys;
 
 class UptimeController extends Controller
 {

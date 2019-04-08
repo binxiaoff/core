@@ -5,7 +5,7 @@ namespace Unilend\Service\Product;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Cache\CacheItemPoolInterface;
 use Unilend\Entity\{Product, ProductAttributeType};
-use Unilend\librairies\CacheKeys;
+use Unilend\CacheKeys;
 
 class ProductAttributeManager
 {

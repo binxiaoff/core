@@ -1,0 +1,6 @@
+nexy_slack:
+    http:
+        client: httplug.client.nexy_slack
+    endpoint: '%slack.endpoint%'
+    channel: '%slack.default_channel%'
+    username: '%slack.default_username%'

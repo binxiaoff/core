@@ -1,0 +1,8 @@
+cache_adapter:
+    providers:
+        default_memcache_adapter:
+            factory: 'cache.factory.memcache'
+            options:
+                host: "%server1.memcache_host%"
+                port: "%server1.memcache_port%"
+            aliases: ['memcache.default']

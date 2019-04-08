@@ -6,7 +6,7 @@ use Doctrine\DBAL\Cache\QueryCacheProfile;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
 use Unilend\Entity\{AddressType, ClientAddress, Clients, Companies, Echeanciers, Loans, LoanTransfer, Projects, ProjectsStatus, Transfer, UnderlyingContract, Wallet, WalletType};
-use Unilend\librairies\CacheKeys;
+use Unilend\CacheKeys;
 
 class LoansRepository extends EntityRepository
 {

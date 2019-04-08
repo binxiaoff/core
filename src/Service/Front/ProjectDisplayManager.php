@@ -9,7 +9,7 @@ use Unilend\Repository\ProjectsRepository;
 use Unilend\Service\{BidManager, CompanyBalanceSheetManager, ProjectManager};
 use Unilend\Service\Product\ProductManager;
 use Unilend\Service\Simulator\EntityManager as EntityManagerSimulator;
-use Unilend\librairies\CacheKeys;
+use Unilend\CacheKeys;
 
 class ProjectDisplayManager
 {

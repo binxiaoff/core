@@ -1,0 +1,3 @@
+unilend_front:
+    resource: '../../src/Controller/'
+    type: annotation

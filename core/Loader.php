@@ -37,11 +37,8 @@ class Loader
      */
     private static function getConnection(): DoctrineConnection
     {
-        $params = Yaml::parse(file_get_contents(__DIR__ . '/../app/config/parameters.yml'));
-
-        if (file_exists(__DIR__ . '/../app/config/parameters_extended.yml')) {
-            $params['parameters'] = array_merge($params['parameters'], Yaml::parse(file_get_contents(__DIR__ . '/../app/config/parameters_extended.yml'))['parameters']);
-        }
+        // todo: replace it by ENV
+        $params = Yaml::parse(file_get_contents(dirname(__DIR__) . '/config/services.yaml'));
 
         $connectionFactory = new ConnectionFactory([]);
 

@@ -14,7 +14,7 @@ use Unilend\Entity\External\Euler\CompanyRating as EulerCompanyRating;
 use Unilend\Entity\External\Infogreffe\CompanyIndebtedness;
 use Unilend\Entity\External\Infolegale\{AnnouncementDetails, DirectorAnnouncement, Mandate, ScoreDetails};
 use Unilend\Service\WebServiceClient\{AltaresManager, CodinfManager, EllisphereManager, EulerHermesManager, InfogreffeManager, InfolegaleManager};
-use Unilend\librairies\CacheKeys;
+use Unilend\CacheKeys;
 
 class ExternalDataManager
 {

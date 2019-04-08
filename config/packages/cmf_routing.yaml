@@ -1,0 +1,9 @@
+cmf_routing:
+    chain:
+        routers_by_id:
+            router.default: 200
+            cmf_routing.dynamic_router: 100
+    dynamic:
+        enabled: true
+        default_controller: Unilend\Controller\MainController::cmsAction
+        route_provider_service_id: Unilend\Service\Front\RouteProvider

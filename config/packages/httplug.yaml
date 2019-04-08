@@ -1,0 +1,9 @@
+httplug:
+    plugins:
+        logger: ~
+    clients:
+        nexy_slack:
+            factory: 'httplug.factory.guzzle6'
+            plugins: ['httplug.plugin.logger']
+            config:
+                timeout: 2

@@ -7,13 +7,14 @@ use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
+use Unilend\Kernel;
 
 class Dispatcher
 {
     private $Command;
     /** @var  Request */
     private $request;
-    /** @var \AppKernel */
+    /** @var Kernel */
     private $kernel;
 
     public function __construct($kernel, $name, $request)
