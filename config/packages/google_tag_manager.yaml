@@ -1,4 +1,4 @@
 google_tag_manager:
     enabled: false
-    id: "%google.gtm_token%"
+    id: "%env(GOOGLE_GTM_TOKEN)%"
     autoAppend: false

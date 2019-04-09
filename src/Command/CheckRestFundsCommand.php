@@ -21,7 +21,7 @@ class CheckRestFundsCommand extends ContainerAwareCommand
     {
         $entityManager = $this->getContainer()->get('doctrine.orm.entity_manager');
         $projects      = $entityManager->getRepository(Projects::class)->findPartiallyReleasedProjects(new \DateTime('1 month ago'));
-        $adminHost     = $this->getContainer()->getParameter('router.request_context.scheme') . '://' . $this->getContainer()->getParameter('url.host_admin');
+        $adminHost     = $this->getContainer()->getParameter('router.request_context.scheme') . '://' . getenv('HOST_ADMIN_URL');
 
         $projectsTexts = '';
         foreach ($projects as $project) {

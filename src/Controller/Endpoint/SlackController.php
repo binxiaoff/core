@@ -128,7 +128,7 @@ class SlackController extends Controller
             'headers' => ['Content-Type' => 'application/json'],
             'body'    => json_encode([
                 'response_type' => 'in_channel',
-                'text'          => '<' . $this->getParameter('router.request_context.scheme') . '://' . $this->getParameter('url.host_admin') . '/dossiers/add/siren/' . $siren . '|Créer un dossier pour ce SIREN>',
+                'text'          => '<' . $this->getParameter('router.request_context.scheme') . '://' . getenv('HOST_ADMIN_URL') . '/dossiers/add/siren/' . $siren . '|Créer un dossier pour ce SIREN>',
                 'unfurl_links'  => false,
                 'attachments'   => [[
                     'fallback'   => $eligibility,

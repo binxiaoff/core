@@ -19,7 +19,7 @@ eight_points_guzzle:
             options:
                 http_errors: false
         google_recaptcha:
-            base_url: "%google.recaptcha_url%"
+            base_url: 'https://www.google.com/recaptcha/api/siteverify'
             options:
                 http_errors: false
         greenpoint:

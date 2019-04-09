@@ -33,7 +33,7 @@ class CheckBorrowerDebitCommand extends ContainerAwareCommand
         $debitList  = '';
         $schedules  = $entityManager->getRepository(Echeanciers::class)->findScheduledToday();
         $scheme     = $this->getContainer()->getParameter('router.request_context.scheme');
-        $host       = $this->getContainer()->getParameter('url.host_admin');
+        $host       = getenv('HOST_ADMIN_URL');
         $projectUrl = $scheme . '://' . $host . '/dossiers/edit/';
 
         foreach ($schedules as $repayment) {

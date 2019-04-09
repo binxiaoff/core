@@ -1,79 +1,16 @@
 parameters:
-    database_driver: pdo_mysql
-    database_host: localhost
-    database_port: null
-    database_name: unilend
-    database_user: unilend
-    database_password: myPassw0rd
-    database_user_migration: unilend
-    database_password_migration: myPassw0rd
-    database_ssl_key: null
-    database_ssl_cert: null
-    database_ssl_ca: null
-    mongodb_server: 'mongodb://127.0.0.1:27017'
-    mongodb_username: unilend
-    mongodb_password: passw0rd
-    mongodb_default_database: ws_call
-    mongodb_auth_source: ws_call
-    mongodb_ssl_connect: false
-    mongodb_replica_set_name: null
-    mongodb.log.enable: false
-    mailjet.api_key: null
-    mailjet.api_secret: null
-    mailjet.api_version: v3.1
-    mailer_transport: smtp
-    mailer_host: localhost
-    mailer_port: 1025
-    desk_user: ''
-    desk_password: ''
-    google.gtm_token: ''
-    google.recaptcha_key: ''
-    google.recaptcha_secret: ''
-    google.recaptcha_url: 'https://www.google.com/recaptcha/api/siteverify'
-    url.universign: ''
-    url.host_admin: admin.local.unilend.fr
-    url.host_default: www.local.unilend.fr
+    # To delete
+    ekomi.shop_id: null
+    ekomi.password: null
+    ekomi.url: 'https://srr.ekomi.com/add-recipient'
+    # End of to delete
     sonata_cache.servers:
         -
             domain: www.local.unilend.fr
             ip: 192.168.110.12
             port: 443
-    payline.merchant_id: ''
-    payline.access_key: ''
-    ekomi.url: 'https://srr.ekomi.com/add-recipient'
-    ekomi.shop_id: null
-    ekomi.password: null
-    euler.account_key: ''
-    euler.grading_key: ''
-    euler.url: 'https://api-demo.single-invoice.co/v2.0/'
-    euler.email: ''
-    euler.password: ''
-    codinf.user: null
-    codinf.password: null
-    codinf.url: 'https://www.codinf.fr/incidents/'
-    infolegale.token: ''
-    infolegale.url: 'https://wspreprod.infolegale.fr/'
-    infogreffe.login: ''
-    infogreffe.password: ''
-    infogreffe.url: 'https://qual.infogreffe.fr:443/WSContextInfogreffe/INFOGREFFE'
-    infogreffe.wsdl_url: 'https://qual.infogreffe.fr/InfogreffeWs/wsdl.jsp'
-    altares.login: ''
-    altares.password: ''
-    altares.wsdl_url_identity: 'https://intuiz.altares.fr/iws-v3.13/services/CallistoIdentite?wsdl'
-    altares.wsdl_url_risk: 'https://intuiz.altares.fr/iws-v3.13/services/CallistoRisque?wsdl'
-    altares.wsdl_url_risk_monitoring: 'https://intuiz.altares.fr/iws-v3.13/services/CallistoAlerte?wsdl'
-    ellisphere.contract_id: null
-    ellisphere.user_prefix: null
-    ellisphere.user_id: null
-    ellisphere.password: null
-    ellisphere.url: 'https://services.data-access-gateway.com/1/rest/'
-    greenpoint.url: 'https://id-control.fr/api/'
-    greenpoint.login: ''
-    greenpoint.password: ''
-    slack.default_channel: '#it-testing'
     dbal_wrapper_class: Unilend\Doctrine\DBAL\Connection
     dbal_driver_class: Facile\DoctrineMySQLComeBack\Doctrine\DBAL\Driver\PDOMySql\Driver
-    secret: ''
     locale: fr_FR
     server1.memcache_host: 127.0.0.1
     server1.memcache_port: 11211
@@ -95,19 +32,6 @@ parameters:
     path.payline: '%path.logs%/payline'
     mapbox.token: ''
     security.bcrypt.cost: 13
-    new_relic.api_key: edc37da0a36bfd74eded96d4d454c8f7b4b0ab8d4bce97e
-    new_relic.front_app_name: Unilend-front
-    new_relic.back_app_name: Unilend-backoffice
-    new_relic.console_app_name: Unilend-batchjobs
-    slack.team_id: ''
-    slack.command_token: ''
-    slack.monitoring_channel: '#it-monitoring'
-    slack.default_username: Unilend
-    slack.endpoint: 'https://hooks.slack.com/services'
-    mailchimp.api_key: '-'
-    mailchimp.webhook_secret: ''
-    mailchimp.list_id: ''
-    mailchimp.gdpr_segment_id: ''
     translation_cache_path: '%kernel.cache_dir%/translations'
 
 services:
@@ -120,8 +44,8 @@ services:
             $defaultLocale: '%locale%'
             $sharedTemporaryPath: '%path.shared_tmp%'
             $templateMessageFQCN: 'Unilend\SwiftMailer\TemplateMessage'
-            $frontUrl: '%router.request_context.scheme%://%url.host_default%'
-            $adminUrl: '%router.request_context.scheme%://%url.host_admin%'
+            $frontUrl: '%router.request_context.scheme%://%env(HOST_DEFAULT_URL)%'
+            $adminUrl: '%router.request_context.scheme%://%env(HOST_ADMIN_URL)%'
             $rootDirectory: '%kernel.root_dir%'
             $numberFormatter: '@number_formatter'
             $currencyFormatter: '@currency_formatter'
@@ -145,19 +69,6 @@ services:
     logger:
         alias: 'monolog.logger'
         public: true
-
-    Mailjet\Client:
-        $key: '%mailjet.api_key%'
-        $secret: '%mailjet.api_secret%'
-        $call: true
-        $settings:
-            version: '%mailjet.api_version%'
-
-    # Swift Mailer and its bridges
-    swiftmailer.spool.db: '@Unilend\SwiftMailer\DatabaseSpool'
-    swiftmailer.mailer.default.spool.db: '@Unilend\SwiftMailer\DatabaseSpool'
-    swiftmailer.mailer.transport.mailjet: '@Unilend\SwiftMailer\MailjetTransport'
-    mailjet: '@Unilend\SwiftMailer\MailjetTransport'
 
     Unilend\Service\Translation\TranslationLoader:
         tags:
@@ -250,10 +161,6 @@ services:
     Unilend\Service\LocationManager:
         $mapboxToken: '%mapbox.token%'
 
-    Unilend\Service\SearchService:
-        $deskUser: '%desk_user%'
-        $deskPassword: '%desk_password%'
-
     Unilend\Service\Ekomi:
         $url: '%ekomi.url%'
         $shopId: '%ekomi.shop_id%'
@@ -270,7 +177,7 @@ services:
 
     Unilend\Service\GoogleRecaptchaManager:
         $client: '@eight_points_guzzle.client.google_recaptcha'
-        $secret: '%google.recaptcha_secret%'
+        $secret: '%env(GOOGLE_RECAPTCHA_SECRET)%'
 
     currency_formatter:
         public: true

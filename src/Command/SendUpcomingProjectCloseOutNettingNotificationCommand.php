@@ -40,7 +40,7 @@ class SendUpcomingProjectCloseOutNettingNotificationCommand extends ContainerAwa
         $rows         = '';
         $projectNames = [];
         $scheme       = $this->getContainer()->getParameter('router.request_context.scheme');
-        $host         = $this->getContainer()->getParameter('url.host_admin');
+        $host         = getenv('HOST_ADMIN_URL');
         $projectUrl   = $scheme . '://' . $host . '/dossiers/edit/';
         $today        = new \DateTime();
 

@@ -18,9 +18,9 @@ class Loader
      * @param array                  $params
      * @param UnilendConnection|null $db
      *
+     * @return object|bool
      * @internal You cannot call this method directly.
      *
-     * @return object|bool
      */
     public static function loadData(string $object, array $params = [], ?UnilendConnection $db = null)
     {
@@ -29,6 +29,7 @@ class Loader
         }
 
         $object = '\\' . $object;
+
         return new $object($db, $params);
     }
 
@@ -43,14 +44,7 @@ class Loader
         $connectionFactory = new ConnectionFactory([]);
 
         return $connectionFactory->createConnection([
-            'driver'       => $params['parameters']['database_driver'],
-            'host'         => $params['parameters']['database_host'],
-            'dbname'       => $params['parameters']['database_name'],
-            'user'         => $params['parameters']['database_user'],
-            'password'     => $params['parameters']['database_password'],
-            'charset'      => 'utf8',
-            'wrapperClass' => $params['parameters']['dbal_wrapper_class'],
-            'driverClass'  => $params['parameters']['dbal_driver_class'],
+            'url' => $_ENV['DATABASE_URL'] . '&driverClass=' . $params['parameters']['dbal_driver_class'] . '&wrapperClass=' . $params['parameters']['dbal_wrapper_class'],
         ]);
     }
 
@@ -62,6 +56,7 @@ class Loader
     public static function crudExists(string $object): bool
     {
         $path = realpath(dirname(__FILE__) . '/..') . '/data/crud/' . $object . '.crud.php';
+
         return file_exists($path);
     }
 
@@ -218,6 +213,7 @@ class Loader
         }
 
         $sClassName = '\\' . $sLibrary;
+
         return new $sClassName($aParams);
     }
 }

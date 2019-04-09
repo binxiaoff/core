@@ -1,7 +1,7 @@
 framework:
     assets:
         base_urls:
-            - "%router.request_context.scheme%://%url.host_default%"
+            - "%router.request_context.scheme%://%env(HOST_DEFAULT_URL)%"
         packages:
             gulp:
                 base_path: /assets

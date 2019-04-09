@@ -48,7 +48,7 @@ class CheckLendersRepaymentCommand extends ContainerAwareCommand
         }
 
         $replacements = [
-            '[#SURL#]'       => $this->getContainer()->getParameter('router.request_context.scheme') . '://' . $this->getContainer()->getParameter('url.host_default'),
+            '[#SURL#]'       => $this->getContainer()->getParameter('router.request_context.scheme') . '://' . getenv('HOST_DEFAULT_URL'),
             '[#REPAYMENTS#]' => $repaymentsTable
         ];
 

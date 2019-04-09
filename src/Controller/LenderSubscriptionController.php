@@ -122,7 +122,7 @@ class LenderSubscriptionController extends Controller
         ];
 
         if ($this->get('session')->get(self::SESSION_NAME_CAPTCHA, false)) {
-            $template['recaptchaKey'] = $this->getParameter('google.recaptcha_key');
+            $template['recaptchaKey'] = getenv('GOOGLE_RECAPTCHA_KEY');
         }
 
         return $this->render('lender_subscription/personal_information.html.twig', $template);

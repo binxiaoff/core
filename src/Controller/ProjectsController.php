@@ -247,7 +247,7 @@ class ProjectsController extends Controller
             'project'             => $projectDisplayManager->getProjectData($project, $client),
             'bidToken'            => sha1('tokenBid-' . time() . '-' . uniqid()),
             'suggestAutolend'     => false,
-            'recaptchaKey'        => $this->getParameter('google.recaptcha_key'),
+            'recaptchaKey'        => getenv('GOOGLE_RECAPTCHA_KEY'),
             'displayLoginCaptcha' => $request->getSession()->get(LoginAuthenticator::SESSION_NAME_LOGIN_CAPTCHA, false)
         ];
 

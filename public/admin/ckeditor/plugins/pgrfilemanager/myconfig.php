@@ -31,11 +31,11 @@ THE SOFTWARE.
 
 // Hotfix-20150819-page-blanche-explorateur-fichier
 require __DIR__ . '/../../../../../config/autoload.php';
-require_once __DIR__ . '/../../../../../src/App/Kernel.php';
+require_once __DIR__ . '/../../../../../src/Kernel.php';
 $kernel = new Kernel('prod', false);
 $kernel->boot();
 
-$staticUrl = $this->getContainer()->getParameter('router.request_context.scheme') . '://' . $this->getContainer()->getParameter('url.host_default');
+$staticUrl = $kernel->getContainer()->getParameter('router.request_context.scheme') . '://' . getenv('HOST_DEFAULT_URL');
 //real absolute path to root directory (directory you want to use with PGRFileManager) on your server
 //i.e  PGRFileManagerConfig::$rootPath = '/home/user/htdocs/userfiles'
 //you can check your absoulte path using

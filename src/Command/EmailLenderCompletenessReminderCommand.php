@@ -88,7 +88,7 @@ class EmailLenderCompletenessReminderCommand extends ContainerAwareCommand
             'firstName'        => $client->prenom,
             'modificationDate' => $dateFormatter->format($timeCreate),
             'content'          => $content,
-            'uploadLink'       => $this->getContainer()->getParameter('router.request_context.scheme') . '://' . $this->getContainer()->getParameter('url.host_default') . '/profile/documents',
+            'uploadLink'       => $this->getContainer()->getParameter('router.request_context.scheme') . '://' . getenv('HOST_DEFAULT_URL') . '/profile/documents',
             'lenderPattern'    => $client->getLenderPattern($client->id_client)
         ];
 

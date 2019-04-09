@@ -52,7 +52,7 @@ class EmailBorrowerCompletenessReminderCommand extends ContainerAwareCommand
         $settings->get('Téléphone emprunteur', 'type');
         $sBorrowerPhoneNumber = $settings->value;
 
-        $sUrl                 = $this->getContainer()->getParameter('router.request_context.scheme') . '://' . $this->getContainer()->getParameter('url.host_default');
+        $sUrl                 = $this->getContainer()->getParameter('router.request_context.scheme') . '://' . getenv('HOST_DEFAULT_URL');
         $projectStatusManager = $this->getContainer()->get('unilend.service.project_status_manager');
         $entityManager        = $this->getContainer()->get('doctrine.orm.entity_manager');
         $projectsRepository   = $entityManager->getRepository(Projects::class);

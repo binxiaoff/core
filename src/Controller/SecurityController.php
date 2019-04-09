@@ -37,7 +37,7 @@ class SecurityController extends Controller
         $pageData            = [
             'last_username'       => $lastUsername,
             'error'               => $error,
-            'recaptchaKey'        => $this->getParameter('google.recaptcha_key'),
+            'recaptchaKey'        => getenv('GOOGLE_RECAPTCHA_KEY'),
             'displayLoginCaptcha' => $request->getSession()->get(LoginAuthenticator::SESSION_NAME_LOGIN_CAPTCHA, false)
         ];
 

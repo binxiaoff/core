@@ -9,7 +9,6 @@
 
 # PHPStorm
 .idea/
-/config/packages/dev/phpstorm.yml
 
 # VS Code
 .vscode

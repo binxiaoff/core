@@ -217,7 +217,7 @@ class FeedsFiscalStateCommand extends ContainerAwareCommand
         }
 
         $recipientSetting = $entityManager->getRepository(Settings::class)->findOneBy(['type' => 'Adresse notification etat fiscal']);
-        $url              = $this->getContainer()->getParameter('router.request_context.scheme') . '://' . $this->getContainer()->getParameter('url.host_default');
+        $url              = $this->getContainer()->getParameter('router.request_context.scheme') . '://' . getenv('HOST_DEFAULT_URL');
         $keywords         = ['$surl' => $url, '$url' => $url];
 
         $message = $this->getContainer()->get('unilend.swiftmailer.message_provider')->newMessage('notification-etat-fiscal', $keywords, false);

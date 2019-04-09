@@ -51,7 +51,7 @@ class FeedsBPICommand extends ContainerAwareCommand
             ProjectsStatus::STATUS_LOSS
         ];
 
-        $hostUrl  = $this->getContainer()->getParameter('router.request_context.scheme') . '://' . $this->getContainer()->getParameter('url.host_default');
+        $hostUrl  = $this->getContainer()->getParameter('router.request_context.scheme') . '://' . getenv('HOST_DEFAULT_URL');
         $userPath = $this->getContainer()->getParameter('path.user');
         $partner  = strtolower($input->getArgument('partner'));
         $products = $entityManager->getRepository(Product::class)->findAvailableProductsByClient();

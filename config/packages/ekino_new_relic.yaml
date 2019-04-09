@@ -1,7 +1,7 @@
 ekino_new_relic:
     enabled: false
 #    application_name: "%new_relic.front_app_name%"
-#    api_key: "%new_relic.api_key%"
+#    api_key: "%env(NEWRELIC_API_KEY)%"
 #    instrument: true
 #    deprecations: false
 #    http:

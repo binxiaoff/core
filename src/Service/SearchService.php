@@ -1,4 +1,5 @@
 <?php
+
 namespace Unilend\Service;
 
 use Symfony\Component\Routing\RouterInterface;
@@ -22,22 +23,16 @@ class SearchService
      * @param EntityManager       $entityManager
      * @param TranslatorInterface $translator
      * @param RouterInterface     $router
-     * @param string              $deskUser
-     * @param string              $deskPassword
      */
     public function __construct(
         EntityManager $entityManager,
         TranslatorInterface $translator,
-        RouterInterface $router,
-        $deskUser,
-        $deskPassword
+        RouterInterface $router
     )
     {
         $this->entityManager = $entityManager;
         $this->translator    = $translator;
         $this->router        = $router;
-        $this->deskUser      = $deskUser;
-        $this->deskPassword  = $deskPassword;
     }
 
     /**
@@ -52,7 +47,6 @@ class SearchService
         $cmsResult    = $this->searchInCMSContent($query);
         $nonCMSResult = $this->searchInNonCMSPages($query);
         $projects     = $this->searchInProjects($query);
-        $deskResult   = $this->searchInDesk($query);
 
         if (false === empty($nonCMSResult) || false === empty($cmsResult)) {
             $result['unilend'] = array_merge($nonCMSResult, $cmsResult);
@@ -60,10 +54,6 @@ class SearchService
 
         if (false === empty($projects)) {
             $result['projects'] = $projects;
-        }
-
-        if (false === empty($deskResult)) {
-            $result['desk'] = $deskResult;
         }
 
         return $result;
@@ -81,52 +71,6 @@ class SearchService
         $result = $tree->search($query);
 
         return $result;
-    }
-
-    /**
-     * @param string $query
-     *
-     * @return array|bool
-     */
-    private function searchInDesk($query)
-    {
-        $parameters = [
-            'text'              => $query,
-            'locale'            => 'fr_fr',
-            'sort_field'        => 'score',
-            'sort_direction'    => 'desc',
-            'in_support_center' => true,
-            'per_page'          => 10
-        ];
-
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, 'https://unilend.desk.com/api/v2/articles/search?' . http_build_query($parameters));
-        curl_setopt($ch, CURLOPT_TIMEOUT, 3);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
-        curl_setopt($ch, CURLOPT_USERPWD, $this->deskUser . ':' . $this->deskPassword);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, ['Accept: application/json']);
-        $response = curl_exec($ch);
-
-        curl_close($ch);
-
-        if ($response) {
-            $response = json_decode($response, true);
-
-            if (isset($response['_embedded']['entries']) && false === empty($response['_embedded']['entries'])) {
-                $deskResult = [];
-
-                foreach ($response['_embedded']['entries'] as $entry) {
-                    $deskResult[] = [
-                        'title' => $entry['subject'],
-                        'url'   => $entry['public_url']
-                    ];
-                }
-
-                return $deskResult;
-            }
-        }
-        return false;
     }
 
     /**
@@ -168,7 +112,7 @@ class SearchService
                 break;
             default:
                 break;
-            }
+        }
 
         return $specificResult;
     }

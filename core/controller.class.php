@@ -65,10 +65,10 @@ abstract class Controller implements ContainerAwareInterface
         $this->logPath    = $this->get('kernel')->getLogDir();
 
         //$this->surl = $this->get('assets.packages')->getUrl('');
-        $this->surl = $this->getParameter('router.request_context.scheme') . '://' . $this->getParameter('url.host_default');
-        $this->url  = $this->getParameter('router.request_context.scheme') . '://' . $this->getParameter('url.host_' . $this->App);
-        $this->aurl = $this->getParameter('router.request_context.scheme') . '://' . $this->getParameter('url.host_admin');
-        $this->furl = $this->getParameter('router.request_context.scheme') . '://' . $this->getParameter('url.host_default');
+        $this->surl = $this->getParameter('router.request_context.scheme') . '://' . getenv('HOST_DEFAULT_URL');
+        $this->url  = $this->getParameter('router.request_context.scheme') . '://' . getenv('HOST_' . strtoupper($this->App) . '_URL');
+        $this->aurl = $this->getParameter('router.request_context.scheme') . '://' . getenv('HOST_ADMIN_URL');
+        $this->furl = $this->getParameter('router.request_context.scheme') . '://' . getenv('HOST_DEFAULT_URL');
         $this->lurl = $this->url;
     }
 
@@ -203,10 +203,10 @@ abstract class Controller implements ContainerAwareInterface
 
         $context['app'] += [
             'environment' => $this->getParameter('kernel.environment'),
-            'adminUrl'    => $this->getParameter('router.request_context.scheme') . '://' . $this->getParameter('url.host_admin'),
-            'frontUrl'    => $this->getParameter('router.request_context.scheme') . '://' . $this->getParameter('url.host_default'),
+            'adminUrl'    => $this->getParameter('router.request_context.scheme') . '://' . getenv('HOST_ADMIN_URL'),
+            'frontUrl'    => $this->getParameter('router.request_context.scheme') . '://' . getenv('HOST_DEFAULT_URL'),
             //'staticUrl'   => $this->get('assets.packages')->getUrl(''),
-            'staticUrl'   => $this->getParameter('router.request_context.scheme') . '://' . $this->getParameter('url.host_default'),
+            'staticUrl'   => $this->getParameter('router.request_context.scheme') . '://' . getenv('HOST_DEFAULT_URL'),
             'parameters'  => $this->Command->getParameters()
         ];
 

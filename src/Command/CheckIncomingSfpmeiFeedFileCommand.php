@@ -36,7 +36,7 @@ EOF
      */
     private function sendMissingReceptionFileMail()
     {
-        $sUrl       = $this->getContainer()->getParameter('router.request_context.scheme') . '://' . $this->getContainer()->getParameter('url.host_default');
+        $sUrl       = $this->getContainer()->getParameter('router.request_context.scheme') . '://' . getenv('HOST_DEFAULT_URL');
         $sStaticUrl = $this->getContainer()->get('assets.packages')->getUrl('');
         /** @var \settings $settings */
         $settings = $settings = $this->getContainer()->get('unilend.service.entity_manager')->getRepository('settings');

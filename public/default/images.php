@@ -14,7 +14,7 @@ use Unilend\Kernel;
  */
 
 $loader = require __DIR__ . '/../../config/autoload.php';
-require_once __DIR__ . '/../../src/App/Kernel.php';
+require_once __DIR__ . '/../../src/Kernel.php';
 
 error_reporting(E_ALL & ~E_DEPRECATED & ~E_NOTICE);
 

@@ -1214,9 +1214,9 @@ class ProjectRequestController extends Controller
 
             $aReplacements = [
                 '[ID_PROJET]'      => $project->getIdProject(),
-                '[LIEN_BO_PROJET]' => $this->getParameter('router.request_context.scheme') . '://' . $this->getParameter('url.host_admin') . '/dossiers/edit/' . $project->getIdProject(),
+                '[LIEN_BO_PROJET]' => $this->getParameter('router.request_context.scheme') . '://' . getenv('HOST_ADMIN_URL') . '/dossiers/edit/' . $project->getIdProject(),
                 '[RAISON_SOCIALE]' => $project->getIdCompany()->getName(),
-                '[SURL]'           => $this->getParameter('router.request_context.scheme') . '://' . $this->getParameter('url.host_default')
+                '[SURL]'           => $this->getParameter('router.request_context.scheme') . '://' . getenv('HOST_DEFAULT_URL')
             ];
 
             /** @var \Unilend\SwiftMailer\TemplateMessage $message */

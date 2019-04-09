@@ -18,8 +18,6 @@ if (! class_exists(Application::class)) {
 $input = new ArgvInput();
 if (null !== $env = $input->getParameterOption(['--env', '-e'], null, true)) {
     putenv('APP_ENV=' . $_SERVER['APP_ENV'] = $_ENV['APP_ENV'] = $env);
-    // force loading .env files when --env is defined
-    $_SERVER['APP_ENV'] = null;
 }
 
 if ($input->hasParameterOption('--no-debug', true)) {
@@ -35,6 +33,6 @@ if ($_SERVER['APP_DEBUG']) {
         Debug::enable();
     }
 }
-$kernel      = new Kernel($_SERVER['APP_ENV'], (bool)$_SERVER['APP_DEBUG']);
+$kernel      = new Kernel($_SERVER['APP_ENV'], (bool) $_SERVER['APP_DEBUG']);
 $application = new Application($kernel);
 $application->run($input);
