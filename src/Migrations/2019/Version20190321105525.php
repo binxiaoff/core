@@ -26,8 +26,10 @@ final class Version20190321105525 extends AbstractMigration
         $this->addSql('ALTER TABLE project_percent_fee ADD CONSTRAINT FK_F7D17EEF270C44E3 FOREIGN KEY (id_percent_fee) REFERENCES percent_fee (id)');
         $this->addSql('ALTER TABLE project_percent_fee ADD CONSTRAINT FK_F7D17EEFF12E799E FOREIGN KEY (id_project) REFERENCES projects (id_project)');
         $this->addSql('INSERT INTO translations (locale, section, name, translation, added, updated)
-                            VALUES (\'fr_FR\', \'fee-type\', \'document_fee\', \'Commission de mise en place\', NOW(), NULL),
-                                   (\'fr_FR\', \'fee-type\', \'running_fee\', \'Frais de gestion running\', NOW(), NULL);');
+                            VALUES
+                                ("fr_FR", "fee-type", "arranging", "Commission d‘arrangement", NOW(), NULL),
+                                ("fr_FR", "fee-type", "repayment", "Frais de gestion running", NOW(), NULL),
+                                ("fr_FR", "fee-type", "non_drawing", "Frais de non tirage", NOW(), NULL)');
     }
 
     public function down(Schema $schema) : void

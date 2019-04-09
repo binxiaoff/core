@@ -3,21 +3,17 @@
 namespace Unilend\Service;
 
 use Symfony\Component\Routing\RouterInterface;
-use Symfony\Component\Translation\TranslatorInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 use Unilend\Service\Simulator\EntityManager;
 
 class SearchService
 {
     /** @var EntityManager */
     private $entityManager;
-    /** @var  TranslatorInterface */
+    /** @var TranslatorInterface */
     private $translator;
-    /** @var  RouterInterface */
+    /** @var RouterInterface */
     private $router;
-    /** @var string */
-    private $deskUser;
-    /** @var string */
-    private $deskPassword;
 
     /**
      * @param EntityManager       $entityManager
