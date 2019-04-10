@@ -3,13 +3,19 @@
 namespace Unilend\Repository;
 
 use DateTime;
+use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\DBAL\Connection;
-use Doctrine\ORM\EntityRepository;
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
 use Unilend\Entity\{Projects, ProjectsStatus, ProjectsStatusHistory};
 
-class ProjectsStatusHistoryRepository extends EntityRepository
+class ProjectsStatusHistoryRepository extends ServiceEntityRepository
 {
+    public function __construct(ManagerRegistry $registry)
+    {
+        parent::__construct($registry, ProjectsStatusHistory::class);
+    }
+
     /**
      * @param int|Projects       $project
      * @param int|ProjectsStatus $status

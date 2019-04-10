@@ -2,12 +2,18 @@
 
 namespace Unilend\Repository;
 
-use Doctrine\ORM\EntityRepository;
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\Query\Expr\Join;
-use Unilend\Entity\{BeneficialOwnerType, CompanyBeneficialOwnerDeclaration};
+use Unilend\Entity\{BeneficialOwner, BeneficialOwnerType, CompanyBeneficialOwnerDeclaration};
 
-class BeneficialOwnerRepository extends EntityRepository
+class BeneficialOwnerRepository extends ServiceEntityRepository
 {
+    public function __construct(ManagerRegistry $registry)
+    {
+        parent::__construct($registry, BeneficialOwner::class);
+    }
+
     /**
      * @param int|CompanyBeneficialOwnerDeclaration $declaration
      * @param string                                $type

@@ -2,13 +2,19 @@
 
 namespace Unilend\Repository;
 
+use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\DBAL\Connection;
-use Doctrine\ORM\EntityRepository;
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
 use Unilend\Entity\{BankAccount, Clients, Virements};
 
-class WireTransferOutRepository extends EntityRepository
+class WireTransferOutRepository extends ServiceEntityRepository
 {
+    public function __construct(ManagerRegistry $registry)
+    {
+        parent::__construct($registry, Virements::class);
+    }
+
     /**
      * @param int       $status
      * @param \DateTime $dateTime

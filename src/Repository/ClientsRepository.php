@@ -2,20 +2,27 @@
 
 namespace Unilend\Repository;
 
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\DBALException;
 use Doctrine\DBAL\Driver\Statement;
-use Doctrine\ORM\{AbstractQuery, EntityRepository, NonUniqueResultException, NoResultException};
+use Doctrine\ORM\{AbstractQuery, NonUniqueResultException, NoResultException};
 use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\ORM\Query\ResultSetMapping;
 use Doctrine\ORM\UnexpectedResultException;
 use PDO;
-use Unilend\Entity\{AddressType, Attachment, AttachmentType, BankAccount, BeneficialOwner, ClientAddress, Clients, ClientsAdresses, ClientsStatus, ClientsStatusHistory, Companies, CompanyClient,
-    Loans, Operation, OperationType, GreenpointAttachment, Partner, Pays, Users, VigilanceRule, Wallet, WalletBalanceHistory, WalletType};
+use Unilend\Entity\{AddressType, Attachment, AttachmentType, BankAccount, BeneficialOwner, ClientAddress, Clients, ClientsAdresses, ClientsStatus, ClientsStatusHistory,
+    Companies, CompanyClient, Loans, Operation, OperationType, GreenpointAttachment, Partner, Pays, Users, VigilanceRule, Wallet, WalletBalanceHistory, WalletType};
 use Unilend\Service\{GreenPointValidationManager, LenderValidationManager};
 
-class ClientsRepository extends EntityRepository
+class ClientsRepository extends ServiceEntityRepository
 {
+    public function __construct(ManagerRegistry $registry)
+    {
+        parent::__construct($registry, Clients::class);
+    }
+
     /**
      * @param integer|Clients $idClient
      *

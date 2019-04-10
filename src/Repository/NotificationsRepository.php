@@ -2,12 +2,18 @@
 
 namespace Unilend\Repository;
 
+use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\DBAL\Connection;
-use Doctrine\ORM\EntityRepository;
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Unilend\Entity\Notifications;
 
-class NotificationsRepository extends EntityRepository
+class NotificationsRepository extends ServiceEntityRepository
 {
+    public function __construct(ManagerRegistry $registry)
+    {
+        parent::__construct($registry, Notifications::class);
+    }
+
     public function markAllLenderNotificationsAsRead($lenderId)
     {
         $qb = $this->getEntityManager()->createQueryBuilder();

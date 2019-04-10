@@ -2,13 +2,19 @@
 
 namespace Unilend\Repository;
 
-use Doctrine\ORM\EntityRepository;
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\DBAL\Connection;
 use Unilend\Entity\{Companies, CompanyStatus, CompanyStatusHistory};
 
-class CompanyStatusHistoryRepository extends EntityRepository
+class CompanyStatusHistoryRepository extends ServiceEntityRepository
 {
+    public function __construct(ManagerRegistry $registry)
+    {
+        parent::__construct($registry, CompanyStatusHistory::class);
+    }
+
     /**
      * @param Companies|int $company
      *

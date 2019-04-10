@@ -2,11 +2,16 @@
 
 namespace Unilend\Repository;
 
-use Doctrine\ORM\EntityRepository;
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\Common\Persistence\ManagerRegistry;
 use Unilend\Entity\ClientsHistoryActions;
 
-class ClientsHistoryActionsRepository extends EntityRepository
+class ClientsHistoryActionsRepository extends ServiceEntityRepository
 {
+    public function __construct(ManagerRegistry $registry)
+    {
+        parent::__construct($registry, ClientsHistoryActions::class);
+    }
 
     /**
      * @param int $clientId

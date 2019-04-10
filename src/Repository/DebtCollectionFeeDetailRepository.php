@@ -2,11 +2,17 @@
 
 namespace Unilend\Repository;
 
-use Doctrine\ORM\EntityRepository;
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\Common\Persistence\ManagerRegistry;
 use Unilend\Entity\{Loans, DebtCollectionFeeDetail, Receptions, Wallet};
 
-class DebtCollectionFeeDetailRepository extends EntityRepository
+class DebtCollectionFeeDetailRepository extends ServiceEntityRepository
 {
+    public function __construct(ManagerRegistry $registry)
+    {
+        parent::__construct($registry, DebtCollectionFeeDetail::class);
+    }
+
     /**
      * @param Receptions|int $wireTransferIn
      * @param Wallet|int     $debtorWallet

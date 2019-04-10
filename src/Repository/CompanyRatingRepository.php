@@ -2,12 +2,18 @@
 
 namespace Unilend\Repository;
 
-use Doctrine\ORM\EntityRepository;
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\DBAL\Connection;
 use Unilend\Entity\{CompanyRating, CompanyRatingHistory};
 
-class CompanyRatingRepository extends EntityRepository
+class CompanyRatingRepository extends ServiceEntityRepository
 {
+    public function __construct(ManagerRegistry $registry)
+    {
+        parent::__construct($registry, CompanyRating::class);
+    }
+
     /**
      * @param CompanyRatingHistory|int $companyRatingHistory
      * @param array                    $ratingTypes

@@ -2,11 +2,17 @@
 
 namespace Unilend\Repository;
 
-use Doctrine\ORM\EntityRepository;
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\Common\Persistence\ManagerRegistry;
 use Unilend\Entity\Backpayline;
 
-class BackpaylineRepository extends EntityRepository
+class BackpaylineRepository extends ServiceEntityRepository
 {
+    public function __construct(ManagerRegistry $registry)
+    {
+        parent::__construct($registry, Backpayline::class);
+    }
+
     /**
      * @param \DateTime $date
      * @param int       $maxTransactionFails

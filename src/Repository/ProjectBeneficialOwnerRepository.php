@@ -2,12 +2,18 @@
 
 namespace Unilend\Repository;
 
-use Doctrine\ORM\EntityRepository;
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\Query\Expr\Join;
-use Unilend\Entity\{Companies, CompanyBeneficialOwnerDeclaration, UniversignEntityInterface};
+use Unilend\Entity\{Companies, CompanyBeneficialOwnerDeclaration, ProjectBeneficialOwnerUniversign, UniversignEntityInterface};
 
-class ProjectBeneficialOwnerRepository extends EntityRepository
+class ProjectBeneficialOwnerRepository extends ServiceEntityRepository
 {
+    public function __construct(ManagerRegistry $registry)
+    {
+        parent::__construct($registry, ProjectBeneficialOwnerUniversign::class);
+    }
+
     /**
      * @param int|Companies $company
      *

@@ -2,10 +2,17 @@
 
 namespace Unilend\Repository;
 
-use Doctrine\ORM\EntityRepository;
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\Common\Persistence\ManagerRegistry;
+use Unilend\Entity\CompanyRatingHistory;
 
-class CompanyRatingHistoryRepository extends EntityRepository
+class CompanyRatingHistoryRepository extends ServiceEntityRepository
 {
+    public function __construct(ManagerRegistry $registry)
+    {
+        parent::__construct($registry, CompanyRatingHistory::class);
+    }
+
     /**
      * @param string $siren
      * @param array  $ratingTypes

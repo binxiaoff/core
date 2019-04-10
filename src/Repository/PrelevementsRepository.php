@@ -2,12 +2,18 @@
 
 namespace Unilend\Repository;
 
-use Doctrine\ORM\EntityRepository;
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\Query\Expr\Join;
 use Unilend\Entity\{EcheanciersEmprunteur, Prelevements, Projects, ProjectsStatus};
 
-class PrelevementsRepository extends EntityRepository
+class PrelevementsRepository extends ServiceEntityRepository
 {
+    public function __construct(ManagerRegistry $registry)
+    {
+        parent::__construct($registry, Prelevements::class);
+    }
+
 
     /**
      * @param \DateTime $start

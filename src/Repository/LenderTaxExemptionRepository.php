@@ -2,11 +2,17 @@
 
 namespace Unilend\Repository;
 
-use Doctrine\ORM\EntityRepository;
-use Unilend\Entity\Wallet;
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\Common\Persistence\ManagerRegistry;
+use Unilend\Entity\{LenderTaxExemption, Wallet};
 
-class LenderTaxExemptionRepository extends EntityRepository
+class LenderTaxExemptionRepository extends ServiceEntityRepository
 {
+    public function __construct(ManagerRegistry $registry)
+    {
+        parent::__construct($registry, LenderTaxExemption::class);
+    }
+
     public function isLenderExemptedInYear(Wallet $wallet, $year)
     {
         $queryBuilder = $this->createQueryBuilder('lte');
