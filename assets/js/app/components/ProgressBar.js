@@ -13,7 +13,6 @@ var $ = require('jquery')
 var Utility = require('Utility')
 var ElementAttrsObject = require('ElementAttrsObject')
 var Templating = require('Templating')
-var gsap = require('gsap')
 
 /*
  * ProgressBar

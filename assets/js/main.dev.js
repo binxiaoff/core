@@ -29,8 +29,7 @@ var Tether = require('tether')
 var Drop = require('tether-drop')
 var SortableJS = require('sortablejs')
 
-// GSAP animation
-require('gsap.jquery') // Browserify alias (see package.json)
+// Browserify alias (see package.json)
 
 // Bootstrap -- browserify aliases (see package.json)
 require('bs.transition')
