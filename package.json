@@ -3,7 +3,7 @@
   "version": "3.1.0",
   "description": "Front-end app for Unilend website",
   "engines": {
-    "node": ">=0.12.0 ~5.9.0",
+    "node": "~8.10.0",
     "npm": ">=2.14.12 ~3.7.3"
   },
   "homepage": "http://www.unilend.fr/",
@@ -37,7 +37,6 @@
     "clipboard": "^2.0.4",
     "datatables.net": "^1.10.19",
     "del": "^3.0.0",
-    "gsap": "^2.0.2",
     "gulp": "^3.9.1",
     "gulp-autoprefixer": "^6.0.0",
     "gulp-clean-css": "^4.0.0",
@@ -130,13 +129,7 @@
     "highcharts/highstock.src": "./assets/js/vendor/highcharts/highstock.src.js",
     "highcharts/modules/treemap": "./assets/js/vendor/highcharts/modules/treemap.js",
     "highcharts/modules/map": "./assets/js/vendor/highcharts/modules/map.js",
-    "pikaday.jquery": "./node_modules/pikaday/plugins/pikaday.jquery.js",
-    "gsap.TweenLite": "./node_modules/gsap/src/uncompressed/TweenLite.js",
-    "gsap.TweenMax": "./node_modules/gsap/src/uncompressed/TweenMax.js",
-    "gsap.TimelineLite": "./node_modules/gsap/src/uncompressed/TimelineLite.js",
-    "gsap.TimelineMax": "./node_modules/gsap/src/uncompressed/TimelineMax.js",
-    "gsap.CSSPlugin": "./node_modules/gsap/src/uncompressed/plugins/CSSPlugin.js",
-    "gsap.jquery": "./node_modules/gsap/src/uncompressed/jquery.gsap.js"
+    "pikaday.jquery": "./node_modules/pikaday/plugins/pikaday.jquery.js"
   },
   "browserify": {
     "transform": [
@@ -151,12 +144,6 @@
     "jquery-ui": {
       "depends": [
         "jquery"
-      ]
-    },
-    "gsap.jquery": {
-      "depends": [
-        "gsap.TweenLite",
-        "gsap.CSSPlugin"
       ]
     }
   }
