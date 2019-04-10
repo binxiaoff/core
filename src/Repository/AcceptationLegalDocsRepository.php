@@ -2,13 +2,19 @@
 
 namespace Unilend\Repository;
 
-use Doctrine\ORM\EntityRepository;
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\Query\Expr\Join;
 use Unilend\Entity\{AcceptationsLegalDocs, Wallet, WalletType};
 use Unilend\Service\TermsOfSaleManager;
 
-class AcceptationLegalDocsRepository extends EntityRepository
+class AcceptationLegalDocsRepository extends ServiceEntityRepository
 {
+    public function __construct(ManagerRegistry $registry)
+    {
+        parent::__construct($registry, AcceptationsLegalDocs::class);
+    }
+
     /**
      * @param array $legalDocs
      * @param int   $limit

@@ -2,14 +2,20 @@
 
 namespace Unilend\Repository;
 
+use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\DBAL\Cache\QueryCacheProfile;
-use Doctrine\ORM\EntityRepository;
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
 use Unilend\Entity\{AddressType, ClientAddress, Clients, Companies, Echeanciers, Loans, LoanTransfer, Projects, ProjectsStatus, Transfer, UnderlyingContract, Wallet, WalletType};
 use Unilend\CacheKeys;
 
-class LoansRepository extends EntityRepository
+class LoansRepository extends ServiceEntityRepository
 {
+    public function __construct(ManagerRegistry $registry)
+    {
+        parent::__construct($registry, Loans::class);
+    }
+
     /**
      * @param Wallet $wallet
      *

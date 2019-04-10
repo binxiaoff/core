@@ -2,12 +2,18 @@
 
 namespace Unilend\Repository;
 
-use Doctrine\ORM\{EntityRepository, NoResultException};
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\ NoResultException;
 use Doctrine\ORM\Query\Expr\Join;
+use Doctrine\Common\Persistence\ManagerRegistry;
 use Unilend\Entity\{AcceptedBids, Bids, Loans, Projects, Wallet};
 
-class AcceptedBidsRepository extends EntityRepository
+class AcceptedBidsRepository extends ServiceEntityRepository
 {
+    public function __construct(ManagerRegistry $registry)
+    {
+        parent::__construct($registry, AcceptedBids::class);
+    }
 
     /**
      * @param Wallet|int   $wallet

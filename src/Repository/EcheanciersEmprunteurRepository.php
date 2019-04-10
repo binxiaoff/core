@@ -2,13 +2,19 @@
 
 namespace Unilend\Repository;
 
-use Doctrine\ORM\EntityRepository;
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\NoResultException;
 use Doctrine\ORM\Query\Expr\Join;
 use Unilend\Entity\{Companies, CompanyStatus, Echeanciers, EcheanciersEmprunteur, Factures, Projects, ProjectsStatus, Receptions};
 
-class EcheanciersEmprunteurRepository extends EntityRepository
+class EcheanciersEmprunteurRepository extends ServiceEntityRepository
 {
+    public function __construct(ManagerRegistry $registry)
+    {
+        parent::__construct($registry, EcheanciersEmprunteur::class);
+    }
+
     /**
      * @param Receptions $reception
      *

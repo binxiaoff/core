@@ -2,12 +2,18 @@
 
 namespace Unilend\Repository;
 
-use Doctrine\ORM\EntityRepository;
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\Query\Expr\Join;
-use Unilend\Entity\{Clients, Pays, Wallet};
+use Unilend\Entity\{Clients, LendersImpositionHistory, Pays, Wallet};
 
-class LendersImpositionHistoryRepository extends EntityRepository
+class LendersImpositionHistoryRepository extends ServiceEntityRepository
 {
+    public function __construct(ManagerRegistry $registry)
+    {
+        parent::__construct($registry, LendersImpositionHistory::class);
+    }
+
     /**
      * @param int $lenderId
      *

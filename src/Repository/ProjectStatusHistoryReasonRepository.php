@@ -2,12 +2,18 @@
 
 namespace Unilend\Repository;
 
-use Doctrine\ORM\EntityRepository;
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\Query\Expr\Join;
 use Unilend\Entity\{ProjectAbandonReason, ProjectRejectionReason, Projects, ProjectsStatusHistory, ProjectStatusHistoryReason};
 
-class ProjectStatusHistoryReasonRepository extends EntityRepository
+class ProjectStatusHistoryReasonRepository extends ServiceEntityRepository
 {
+    public function __construct(ManagerRegistry $registry)
+    {
+        parent::__construct($registry, ProjectStatusHistoryReason::class);
+    }
+
     /**
      * @param Projects|int $project
      * @param string       $rejectionReasonLabel

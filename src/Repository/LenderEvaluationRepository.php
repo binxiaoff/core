@@ -2,11 +2,17 @@
 
 namespace Unilend\Repository;
 
-use Doctrine\ORM\EntityRepository;
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\Common\Persistence\ManagerRegistry;
 use Unilend\Entity\{LenderEvaluation, Wallet};
 
-class LenderEvaluationRepository extends EntityRepository
+class LenderEvaluationRepository extends ServiceEntityRepository
 {
+    public function __construct(ManagerRegistry $registry)
+    {
+        parent::__construct($registry, LenderEvaluation::class);
+    }
+
     /**
      * @param Wallet         $lenderWallet
      * @param \DateTime|null $date

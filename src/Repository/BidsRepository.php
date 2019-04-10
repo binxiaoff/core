@@ -2,12 +2,19 @@
 
 namespace Unilend\Repository;
 
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\DBAL\Connection;
-use Doctrine\ORM\{EntityRepository, NonUniqueResultException, NoResultException, Query\Expr\Join};
+use Doctrine\ORM\{NonUniqueResultException, NoResultException, Query\Expr\Join};
 use Unilend\Entity\{Bids, Clients, Projects, Wallet};
 
-class BidsRepository extends EntityRepository
+class BidsRepository extends ServiceEntityRepository
 {
+    public function __construct(ManagerRegistry $registry)
+    {
+        parent::__construct($registry, Bids::class);
+    }
+
     /**
      * @param array $criteria
      *

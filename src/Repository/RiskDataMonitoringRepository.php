@@ -2,13 +2,20 @@
 
 namespace Unilend\Repository;
 
+use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\DBAL\Cache\QueryCacheProfile;
-use Doctrine\ORM\EntityRepository;
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Unilend\Entity\ProjectsStatus;
 use Unilend\CacheKeys;
+use Unilend\Entity\RiskDataMonitoring;
 
-class RiskDataMonitoringRepository extends EntityRepository
+class RiskDataMonitoringRepository extends ServiceEntityRepository
 {
+    public function __construct(ManagerRegistry $registry)
+    {
+        parent::__construct($registry, RiskDataMonitoring::class);
+    }
+
     /**
      * @param \DateTime $start
      *

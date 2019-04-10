@@ -2,10 +2,17 @@
 
 namespace Unilend\Repository;
 
-use Doctrine\ORM\EntityRepository;
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\Common\Persistence\ManagerRegistry;
+use Unilend\Entity\SponsorshipBlacklist;
 
-class SponsorshipBlacklistRepository extends EntityRepository
+class SponsorshipBlacklistRepository extends ServiceEntityRepository
 {
+    public function __construct(ManagerRegistry $registry)
+    {
+        parent::__construct($registry, SponsorshipBlacklist::class);
+    }
+
     /**
      * @param $idClient
      * @param $idCampaign

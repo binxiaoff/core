@@ -2,11 +2,17 @@
 
 namespace Unilend\Repository;
 
-use Doctrine\ORM\EntityRepository;
-use Unilend\Entity\Clients;
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\Common\Persistence\ManagerRegistry;
+use Unilend\Entity\{Clients, DebtCollectionMission};
 
-class DebtCollectionMissionRepository extends EntityRepository
+class DebtCollectionMissionRepository extends ServiceEntityRepository
 {
+    public function __construct(ManagerRegistry $registry)
+    {
+        parent::__construct($registry, DebtCollectionMission::class);
+    }
+
     /**
      * @param Clients|int $debtCollector
      * @param bool        $includeArchived

@@ -2,11 +2,18 @@
 
 namespace Unilend\Repository;
 
+use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\DBAL\Connection;
-use Doctrine\ORM\EntityRepository;
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Unilend\Entity\AttachmentType;
 
-class AttachmentTypeRepository extends EntityRepository
+class AttachmentTypeRepository extends ServiceEntityRepository
 {
+    public function __construct(ManagerRegistry $registry)
+    {
+        parent::__construct($registry, AttachmentType::class);
+    }
+
     /**
      * @param array $attachmentTypes
      *

@@ -2,12 +2,18 @@
 
 namespace Unilend\Repository;
 
-use Doctrine\ORM\EntityRepository;
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\DBAL\Connection;
-use Unilend\Entity\{CompanyStatus, Echeanciers, OperationSubType, OperationType, ProjectsStatus, UnilendStats};
+use Unilend\Entity\{CompanyStatus, Echeanciers, LenderStatistic, OperationSubType, OperationType, ProjectsStatus, UnilendStats};
 
-class LenderStatisticRepository extends EntityRepository
+class LenderStatisticRepository extends ServiceEntityRepository
 {
+    public function __construct(ManagerRegistry $registry)
+    {
+        parent::__construct($registry, LenderStatistic::class);
+    }
+
     /**
      * @param int $idWallet
      *

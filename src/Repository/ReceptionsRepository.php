@@ -3,14 +3,20 @@
 namespace Unilend\Repository;
 
 use DateTime;
+use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\DBAL\Connection;
-use Doctrine\ORM\EntityRepository;
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
 use Exception;
 use Unilend\Entity\{Operation, OperationType, ProjectRepaymentTask, Projects, Receptions, Wallet, WalletType};
 
-class ReceptionsRepository extends EntityRepository
+class ReceptionsRepository extends ServiceEntityRepository
 {
+    public function __construct(ManagerRegistry $registry)
+    {
+        parent::__construct($registry, Receptions::class);
+    }
+
     /**
      * @param DateTime $date
      *

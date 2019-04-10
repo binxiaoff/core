@@ -2,11 +2,13 @@
 
 namespace Unilend\Repository;
 
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\DBAL\Cache\QueryCacheProfile;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Driver\ResultStatement;
 use Doctrine\DBAL\Query\QueryBuilder;
-use Doctrine\ORM\{AbstractQuery, EntityRepository, NonUniqueResultException, QueryBuilder as ORMQueryBuilder, Query\Expr\Join, Query\ResultSetMappingBuilder};
+use Doctrine\ORM\{AbstractQuery, NonUniqueResultException, QueryBuilder as ORMQueryBuilder, Query\Expr\Join, Query\ResultSetMappingBuilder};
 use PDO;
 use Psr\Log\InvalidArgumentException;
 use Unilend\Entity\{Bids, Clients, ClientsMandats, Companies, CompanyStatus, Echeanciers, EcheanciersEmprunteur, Factures, OperationType, Partner, Projects, ProjectSearch, ProjectsPouvoir,
@@ -14,8 +16,13 @@ use Unilend\Entity\{Bids, Clients, ClientsMandats, Companies, CompanyStatus, Ech
 use Unilend\Service\{DebtCollectionMissionManager, ProjectCloseOutNettingManager};
 use Unilend\CacheKeys;
 
-class ProjectsRepository extends EntityRepository
+class ProjectsRepository extends ServiceEntityRepository
 {
+    public function __construct(ManagerRegistry $registry)
+    {
+        parent::__construct($registry, Projects::class);
+    }
+
     const SORT_FIELD_SECTOR = 'sector';
     const SORT_FIELD_AMOUNT = 'amount';
     const SORT_FIELD_RATE   = 'rate';

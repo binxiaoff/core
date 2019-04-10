@@ -2,13 +2,20 @@
 
 namespace Unilend\Repository;
 
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\DBAL\Connection;
-use Doctrine\ORM\{EntityRepository, ORMException};
+use Doctrine\ORM\ORMException;
 use Doctrine\ORM\Query\Expr\Join;
 use Unilend\Entity\{Autobid, Bids, Clients, ClientSettings, ClientSettingType, ClientsStatus, ClientsStatusHistory, ProjectPeriod, ProjectRateSettings, Projects, Wallet, WalletType};
 
-class AutobidRepository extends EntityRepository
+class AutobidRepository extends ServiceEntityRepository
 {
+    public function __construct(ManagerRegistry $registry)
+    {
+        parent::__construct($registry, Autobid::class);
+    }
+
     /**
      * @param string $evaluation
      * @param int    $duration

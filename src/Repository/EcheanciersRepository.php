@@ -2,15 +2,22 @@
 
 namespace Unilend\Repository;
 
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\DBAL\{Cache\QueryCacheProfile, Connection};
-use Doctrine\ORM\{EntityRepository, NoResultException, Query\Expr\Join};
+use Doctrine\ORM\{NoResultException, Query\Expr\Join};
 use Unilend\Entity\{Clients, Companies, CompanyStatus, Echeanciers, EcheanciersEmprunteur, Loans, OperationType, Projects, ProjectsStatus, UnilendStats, Wallet};
 use Unilend\Service\TaxManager;
 use Unilend\Controller\LenderDashboardController;
 use Unilend\CacheKeys;
 
-class EcheanciersRepository extends EntityRepository
+class EcheanciersRepository extends ServiceEntityRepository
 {
+    public function __construct(ManagerRegistry $registry)
+    {
+        parent::__construct($registry, Echeanciers::class);
+    }
+
     /**
      * @param int $idLender
      *

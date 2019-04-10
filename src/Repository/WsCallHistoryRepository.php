@@ -2,13 +2,19 @@
 
 namespace Unilend\Repository;
 
+use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\DBAL\Connection;
-use Doctrine\ORM\EntityRepository;
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
-use Unilend\Entity\WsExternalResource;
+use Unilend\Entity\{WsCallHistory, WsExternalResource};
 
-class WsCallHistoryRepository extends EntityRepository
+class WsCallHistoryRepository extends ServiceEntityRepository
 {
+    public function __construct(ManagerRegistry $registry)
+    {
+        parent::__construct($registry, WsCallHistory::class);
+    }
+
     /**
      * @param WsExternalResource $wsResource
      * @param \DateTime          $from

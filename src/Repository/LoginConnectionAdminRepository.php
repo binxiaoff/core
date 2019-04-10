@@ -2,11 +2,17 @@
 
 namespace Unilend\Repository;
 
-use Doctrine\ORM\EntityRepository;
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\Common\Persistence\ManagerRegistry;
 use Unilend\Entity\LoginConnectionAdmin;
 
-class LoginConnectionAdminRepository extends EntityRepository
+class LoginConnectionAdminRepository extends ServiceEntityRepository
 {
+    public function __construct(ManagerRegistry $registry)
+    {
+        parent::__construct($registry, LoginConnectionAdmin::class);
+    }
+
     /**
      * @param string    $ip
      * @param \DateTime $start

@@ -2,12 +2,18 @@
 
 namespace Unilend\Repository;
 
-use Doctrine\ORM\EntityRepository;
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\Query\Expr\Join;
 use Unilend\Entity\{Loans, ProjectRepaymentDetail, ProjectRepaymentTask};
 
-class ProjectRepaymentDetailRepository extends EntityRepository
+class ProjectRepaymentDetailRepository extends ServiceEntityRepository
 {
+    public function __construct(ManagerRegistry $registry)
+    {
+        parent::__construct($registry, ProjectRepaymentDetail::class);
+    }
+
 
     /**
      * @param ProjectRepaymentTask|int $projectRepaymentTask
