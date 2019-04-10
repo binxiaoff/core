@@ -44,7 +44,7 @@ class Loader
         $connectionFactory = new ConnectionFactory([]);
 
         return $connectionFactory->createConnection([
-            'url' => $_ENV['DATABASE_URL'] . '&driverClass=' . $params['parameters']['dbal_driver_class'] . '&wrapperClass=' . $params['parameters']['dbal_wrapper_class'],
+            'url' => getenv('DATABASE_URL') . '&driverClass=' . $params['parameters']['dbal_driver_class'] . '&wrapperClass=' . $params['parameters']['dbal_wrapper_class'],
         ]);
     }
 
