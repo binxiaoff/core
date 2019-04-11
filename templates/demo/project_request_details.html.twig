@@ -23,7 +23,7 @@
         <div class="row dashboard-tab-pane">
             <div id="project-breadcrumb" class="form-project-create-nav tab-nav">
                 <div class="{% if project.status > constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_REQUEST') %}complete{% else %}active{% endif %}">Dépôt</div>
-                <div class="{% if project.status > constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_REVIEW') %}complete{% elseif project.status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_REVIEW') %}active{% endif %}">Analyse</div>
+                <div class="{% if project.status > constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_REVIEW') %}complete{% elseif project.status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_REVIEW') %}active{% endif %}">Arrangement</div>
                 <div class="{% if project.status > constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_ONLINE') %}complete{% elseif project.status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_ONLINE') %}active{% endif %}">Financement</div>
                 <div class="{% if project.status > constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_FUNDED') %}complete{% elseif project.status in [constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_FUNDED'), constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_SIGNED')] %}active{% endif %}">Signature</div>
                 <div class="{% if project.status > constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_REPAYMENT') %}complete{% elseif project.status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_REPAYMENT') %}active{% endif %}">Remboursement</div>

@@ -33,6 +33,13 @@ parameters:
     mapbox.token: ''
     security.bcrypt.cost: 13
     translation_cache_path: '%kernel.cache_dir%/translations'
+    env(docusign_private_key): '%kernel.root_dir%/../config/docusign_private_key'
+    docusign.private_key: '%env(file:docusign_private_key)%'
+    docusign.integrator_key: '%env(DOCUSIGN_INTEGRATOR_KEY)%'
+    docusign.user_id: '%env(DOCUSIGN_USER_ID)%'
+    docusign.account_host: account-d.docusign.com
+    docusign.api_host: demo.docusign.net
+    docusign.test_email: 'antoine.preveaux@lafabriquebyca.com'
 
 services:
     _defaults:
@@ -75,10 +82,9 @@ services:
             - { name: translation.loader, alias: db }
 
     Unilend\Service\WebServiceClient\CallHistoryManager:
-        arguments:
-            $alertChannel: '%slack.default_channel%'
-            $mongoDBLogger: '@monolog.logger.mongodb'
-            $mongoLogEnabled: "%mongodb.log.enable%"
+        $alertChannel: '%slack.default_channel%'
+        $mongoDBLogger: '@monolog.logger.mongodb'
+        $mongoLogEnabled: "%mongodb.log.enable%"
 
     soap_client.altares_identity:
         class: SoapClient
@@ -178,6 +184,14 @@ services:
     Unilend\Service\GoogleRecaptchaManager:
         $client: '@eight_points_guzzle.client.google_recaptcha'
         $secret: '%env(GOOGLE_RECAPTCHA_SECRET)%'
+
+    Unilend\Service\ElectronicSignature:
+        $integratorKey: '%docusign.integrator_key%'
+        $userId: '%docusign.user_id%'
+        $privateKey: '%docusign.private_key%'
+        $accountHost: '%docusign.account_host%'
+        $apiHost: '%docusign.api_host%'
+        $testEmail: '%docusign.test_email%'
 
     currency_formatter:
         public: true

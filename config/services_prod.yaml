@@ -1,0 +1,4 @@
+parameters:
+  docusign.account_domain: account.docusign.com
+  docusign.api_host: 'https://www.docusign.net/restapi'
+  docusign.test_email: ~
