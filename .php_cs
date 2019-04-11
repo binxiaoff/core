@@ -4,6 +4,7 @@ $finder = PhpCsFixer\Finder::create()
     ->notPath('core/crud2.sample.php')
     ->notPath('core/crud.sample.php')
     ->exclude('vendor')
+    ->exclude('config')
     ->exclude('apps/admin/views/')
     ->exclude('apps/default/views/')
     ->in(__DIR__)
@@ -16,13 +17,9 @@ return PhpCsFixer\Config::create()
         '@DoctrineAnnotation'         => true,
         'array_syntax'                => ['syntax' => 'short'],
         'single_import_per_statement' => false,
-        'binary_operator_spaces'      => [
-            'align_double_arrow' => true,
-            'default'            => ['align_single_space_minimal'],
-        ],
+        'binary_operator_spaces'      => ['default' => 'align_single_space_minimal'],
         'concat_space'                => ['spacing' => 'one'],
         'combine_nested_dirname'      => true,
-        // Following rules are risky but safe for us, since we don't override any php native function.
         'dir_constant'                => true,
         'fopen_flag_order'            => true,
         'fopen_flags'                 => true,
