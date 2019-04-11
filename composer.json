@@ -84,13 +84,13 @@
     "xynnn/google-tag-manager-bundle": "^2.0"
   },
   "require-dev": {
+    "phpro/grumphp": "^0.15.0",
     "phpstan/phpstan-doctrine": "^0.11.2",
     "phpstan/phpstan-symfony": "^0.11.3",
     "symfony/browser-kit": "*",
     "symfony/debug-bundle": "*",
     "symfony/dotenv": "*",
     "symfony/web-profiler-bundle": "*"
-
   },
   "config": {
     "preferred-install": {
