@@ -1,0 +1,9 @@
+parameters:
+    tasks:
+        git_blacklist:
+            keywords: ['dump(', '>>>>', '<<<<']
+            triggered_by: ['php', 'js', 'css', 'scss', 'twig', 'xml']
+            regexp_type: G
+        phpcsfixer2:
+            allow_risky: true
+            config: .php_cs
