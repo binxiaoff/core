@@ -18,19 +18,19 @@ return PhpCsFixer\Config::create()
         'single_import_per_statement' => false,
         'binary_operator_spaces'      => [
             'align_double_arrow' => true,
-            'align_equals'       => true,
+            'default'            => ['align_single_space_minimal'],
         ],
-        'concat_space'           => ['spacing' => 'one'],
-        'combine_nested_dirname' => true,
+        'concat_space'                => ['spacing' => 'one'],
+        'combine_nested_dirname'      => true,
         // Following rules are risky but safe for us, since we don't override any php native function.
-        'dir_constant'            => true,
-        'fopen_flag_order'        => true,
-        'fopen_flags'             => true,
-        'function_to_constant'    => true,
-        'implode_call'            => true,
-        'is_null'                 => true,
-        'mb_str_functions'        => true,
-        'modernize_types_casting' => true,
+        'dir_constant'                => true,
+        'fopen_flag_order'            => true,
+        'fopen_flags'                 => true,
+        'function_to_constant'        => true,
+        'implode_call'                => true,
+        'is_null'                     => true,
+        'mb_str_functions'            => true,
+        'modernize_types_casting'     => true,
     ])
     ->setFinder($finder)
 ;
