@@ -1,0 +1,18 @@
+includes:
+    - vendor/phpstan/phpstan-doctrine/extension.neon
+    - vendor/phpstan/phpstan-symfony/extension.neon
+
+parameters:
+    level: 0
+    paths:
+        - src
+    bootstrap: %rootDir%/../../../config/autoload.php
+    autoload_files:
+        - %rootDir%/../../../core/command.class.php
+        - %rootDir%/../../../core/controller.class.php
+        - %rootDir%/../../../apps/default/bootstrap.php
+        - %rootDir%/../../../apps/default/controllers/pdf.php
+    excludes_analyse:
+        - %rootDir%/../../../src/Migrations
+    symfony:
+        container_xml_path: %rootDir%/../../../var/cache/dev/srcUnilend_KernelDevDebugContainer.xml
