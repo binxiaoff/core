@@ -10,14 +10,14 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Filesystem\Exception\FileNotFoundException;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\{JsonResponse, RedirectResponse, Request, Response};
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\{Annotation\Route, Router, RouterInterface};
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Unilend\Entity\{Attachment, AttachmentType, Bids, Clients, Companies, FeeType, Loans, Partner, PartnerProduct, PercentFee, Product, ProjectAttachment, ProjectAttachmentType,
     ProjectComment, ProjectParticipant, ProjectPercentFee, Projects, ProjectsStatus, Users, Wallet, WalletType};
-use Unilend\Repository\ProjectParticipantRepository;
-use Unilend\Service\{AttachmentManager, DemoMailerManager, ProjectManager, ProjectStatusManager};
 use Unilend\Form\Lending\BidType;
+use Unilend\Repository\ProjectParticipantRepository;
+use Unilend\Service\{AttachmentManager, DemoMailerManager, ElectronicSignature, ProjectManager, ProjectStatusManager};
 use Unilend\Service\Front\ProjectDisplayManager;
 use Unilend\Service\WebServiceClient\InseeManager;
 
@@ -1308,5 +1308,44 @@ class DemoController extends AbstractController
         }
 
         return $this->redirectToRoute('demo_project_details', ['hash' => $project->getHash()]);
+    }
+
+    /**
+     * @Route("/signature/{hash}", name="demo_sign_contracts", requirements={"hash":"[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}"})
+     *
+     * @param string              $hash
+     * @param ElectronicSignature $signature
+     * @param string              $staticPath
+     * @param RouterInterface     $router
+     * @return RedirectResponse
+     */
+    public function signContracts(string $hash, ElectronicSignature $signature, string $staticPath, RouterInterface $router): RedirectResponse
+    {
+        $project = $this->entityManager->getRepository(Projects::class)->findOneBy(['hash' => $hash]);
+        $url     = $signature->createSignatureRequest(
+            $project->getIdClientSubmitter(),
+            'Signature de votre convention de participation',
+            'Convention de participation',
+            base64_encode(file_get_contents($staticPath . '../admin/demo/operations.pdf')),
+            'pdf',
+            450,
+            700,
+            $router->generate('demo_signature_confirmation', ['hash' => $project->getHash()], Router::ABSOLUTE_URL)
+        );
+
+        return new RedirectResponse($url);
+    }
+
+    /**
+     * @Route("/signature/confirmation/{hash}", name="demo_signature_confirmation", requirements={"hash":"[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}"})
+     *
+     * @param string $hash
+     * @return Response
+     */
+    public function signatureConfirmation(string $hash): Response
+    {
+        // @todo check event status
+        // event=signing_complete
+        return $this->render('demo/signature_confirmation.html.twig');
     }
 }

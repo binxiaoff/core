@@ -161,6 +161,9 @@
     "doctrine/reflection": {
         "version": "v1.0.0"
     },
+    "docusign/esign-client": {
+        "version": "3.0.1"
+    },
     "egulias/email-validator": {
         "version": "2.1.7"
     },
@@ -277,6 +280,9 @@
         "files": [
             "config/packages/knp_snappy.yaml"
         ]
+    },
+    "lcobucci/jwt": {
+        "version": "3.3.x-dev"
     },
     "mailjet/mailjet-apiv3-php": {
         "version": "v1.4.1"
@@ -610,6 +616,9 @@
             "src/Kernel.php"
         ]
     },
+    "symfony/http-client": {
+        "version": "4.3-dev"
+    },
     "symfony/http-foundation": {
         "version": "v4.2.5"
     },
@@ -668,6 +677,9 @@
     },
     "symfony/polyfill-php72": {
         "version": "v1.11.0"
+    },
+    "symfony/polyfill-php73": {
+        "version": "1.11-dev"
     },
     "symfony/process": {
         "version": "v4.2.5"
