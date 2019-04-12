@@ -1,10 +1,12 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Unilend\Service;
 
-use DocuSign\eSign\{ApiClient, ApiException, Configuration};
 use DocuSign\eSign\Api\{AuthenticationApi, AuthenticationApi\LoginOptions, EnvelopesApi};
-use DocuSign\eSign\Model\{Document, EnvelopeDefinition, LoginAccount, LoginInformation, RecipientEmailNotification, Recipients, RecipientViewRequest, Signer, SignHere, Tabs};
+use DocuSign\eSign\Model\{Document, EnvelopeDefinition, LoginAccount, LoginInformation, RecipientEmailNotification, RecipientViewRequest, Recipients, SignHere, Signer, Tabs};
+use DocuSign\eSign\{ApiClient, ApiException, Configuration};
 use Lcobucci\JWT\{Builder, Signer\Rsa\Sha256};
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpClient\HttpClient;
@@ -65,8 +67,7 @@ class ElectronicSignature
         RequestStack $requestStack,
         LoggerInterface $logger,
         ?string $testEmail = null
-    )
-    {
+    ) {
         $this->httpClient    = HttpClient::create();
         $this->integratorKey = $integratorKey;
         $this->userId        = $userId;
@@ -79,7 +80,7 @@ class ElectronicSignature
     }
 
     /**
-     * For demonstration purpose, only one document, one signer
+     * For demonstration purpose, only one document, one signer.
      *
      * @param Clients $signerClient
      * @param string  $emailSubject
@@ -89,7 +90,8 @@ class ElectronicSignature
      * @param string  $signatureOffsetX
      * @param string  $signatureOffsetY
      * @param string  $returnUrl
-     * @return string|null
+     *
+     * @return null|string
      */
     public function createSignatureRequest(
         Clients $signerClient,
@@ -100,8 +102,7 @@ class ElectronicSignature
         string $signatureOffsetX,
         string $signatureOffsetY,
         string $returnUrl
-    ): ?string
-    {
+    ): ?string {
         try {
             $configuration = $this->getConfiguration();
             $loginAccount  = $this->getLoginAccount($configuration);
@@ -145,7 +146,7 @@ class ElectronicSignature
             $signer = new Signer();
             $signer
                 ->setName($signerClient->getPrenom() . ' ' . $signerClient->getNom())
-                ->setEmail($this->testEmail ?? $signerClient->getEmail())
+                ->setEmail($this->testEmail ?: $signerClient->getEmail())
                 ->setRecipientId($signerClient->getIdClient())
                 ->setClientUserId($signerClient->getIdClient()) // if set, email is not sent by DocuSign
                 ->setEmailNotification($recipientNotification)
@@ -182,7 +183,7 @@ class ElectronicSignature
                 ->setRecipientId($signer->getRecipientId())
                 ->setClientUserId($signer->getClientUserId())
                 ->setUserName($signer->getName())
-                ->setEmail($this->testEmail ?? $signer->getEmail())
+                ->setEmail($this->testEmail ?: $signer->getEmail())
             ;
 
             return $envelopeApi->createRecipientView(
@@ -196,7 +197,7 @@ class ElectronicSignature
                 'class'    => __CLASS__,
                 'function' => __FUNCTION__,
                 'file'     => $exception->getFile(),
-                'line'     => $exception->getLine()
+                'line'     => $exception->getLine(),
             ]);
         }
 
@@ -205,8 +206,10 @@ class ElectronicSignature
 
     /**
      * @param Configuration $configuration
-     * @return LoginAccount|null
+     *
      * @throws ApiException
+     *
+     * @return null|LoginAccount
      */
     private function getLoginAccount(Configuration $configuration): ?LoginAccount
     {
@@ -267,15 +270,15 @@ class ElectronicSignature
             $response = $this->httpClient->request(Request::METHOD_POST, $this->getAccountEndpoint(), [
                 'body' => [
                     'grant_type' => 'urn:ietf:params:oauth:grant-type:jwt-bearer',
-                    'assertion'  => (string)$token
-                ]
+                    'assertion'  => (string) $token,
+                ],
             ]);
 
             $accessTokenResponse = json_decode($response->getContent());
 
             $session->set(self::SESSION_TOKEN_KEY, [
                 'token'      => $accessTokenResponse->access_token,
-                'expiration' => time() + $accessTokenResponse->expires_in
+                'expiration' => time() + $accessTokenResponse->expires_in,
             ]);
 
             return $accessTokenResponse->access_token;
@@ -299,6 +302,7 @@ class ElectronicSignature
     private function getSession(): ?SessionInterface
     {
         $request = $this->requestStack->getCurrentRequest();
+
         return $request->getSession();
     }
 }

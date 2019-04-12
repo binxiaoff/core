@@ -34,12 +34,6 @@ parameters:
     security.bcrypt.cost: 13
     translation_cache_path: '%kernel.cache_dir%/translations'
     env(docusign_private_key): '%kernel.root_dir%/../config/docusign_private_key'
-    docusign.private_key: '%env(file:docusign_private_key)%'
-    docusign.integrator_key: '%env(DOCUSIGN_INTEGRATOR_KEY)%'
-    docusign.user_id: '%env(DOCUSIGN_USER_ID)%'
-    docusign.account_host: account-d.docusign.com
-    docusign.api_host: demo.docusign.net
-    docusign.test_email: 'antoine.preveaux@lafabriquebyca.com'
 
 services:
     _defaults:
@@ -186,12 +180,12 @@ services:
         $secret: '%env(GOOGLE_RECAPTCHA_SECRET)%'
 
     Unilend\Service\ElectronicSignature:
-        $integratorKey: '%docusign.integrator_key%'
-        $userId: '%docusign.user_id%'
-        $privateKey: '%docusign.private_key%'
-        $accountHost: '%docusign.account_host%'
-        $apiHost: '%docusign.api_host%'
-        $testEmail: '%docusign.test_email%'
+        $integratorKey: '%env(DOCUSIGN_INTEGRATOR_KEY)%'
+        $userId: '%env(DOCUSIGN_USER_ID)%'
+        $privateKey: '%env(file:docusign_private_key)%'
+        $accountHost: '%env(DOCUSIGN_ACCOUNT_HOST)%'
+        $apiHost: '%env(DOCUSIGN_API_HOST)%'
+        $testEmail: '%env(DOCUSIGN_TEST_EMAIL)%'
 
     currency_formatter:
         public: true

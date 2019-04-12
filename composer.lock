@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "60ceabe388927fe97c3e96eca2553194",
+    "content-hash": "35d14ce05d7669c6f7116079f877e8fb",
     "packages": [
         {
             "name": "alcaeus/mongo-php-adapter",
@@ -2284,16 +2284,16 @@
         },
         {
             "name": "docusign/esign-client",
-            "version": "dev-master",
+            "version": "3.0.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/docusign/docusign-php-client.git",
-                "reference": "968e7edafca6a7f01063aa126fe2fe6bad5609da"
+                "reference": "bf4c4afa000c141655c1001a0c96efdc28b211f9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/docusign/docusign-php-client/zipball/968e7edafca6a7f01063aa126fe2fe6bad5609da",
-                "reference": "968e7edafca6a7f01063aa126fe2fe6bad5609da",
+                "url": "https://api.github.com/repos/docusign/docusign-php-client/zipball/bf4c4afa000c141655c1001a0c96efdc28b211f9",
+                "reference": "bf4c4afa000c141655c1001a0c96efdc28b211f9",
                 "shasum": ""
             },
             "require": {
@@ -2331,7 +2331,7 @@
                 "sdk",
                 "swagger"
             ],
-            "time": "2019-02-21T13:41:50+00:00"
+            "time": "2017-10-25T22:08:40+00:00"
         },
         {
             "name": "egulias/email-validator",
@@ -7678,12 +7678,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/http-client.git",
-                "reference": "6c300b05fb356281562650e6413fbe2fa01f9c3d"
+                "reference": "66327bd1dcd55da7b5b1bb7f325555ce2fc56408"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/http-client/zipball/6c300b05fb356281562650e6413fbe2fa01f9c3d",
-                "reference": "6c300b05fb356281562650e6413fbe2fa01f9c3d",
+                "url": "https://api.github.com/repos/symfony/http-client/zipball/66327bd1dcd55da7b5b1bb7f325555ce2fc56408",
+                "reference": "66327bd1dcd55da7b5b1bb7f325555ce2fc56408",
                 "shasum": ""
             },
             "require": {
@@ -7732,7 +7732,7 @@
             ],
             "description": "Symfony HttpClient component",
             "homepage": "https://symfony.com",
-            "time": "2019-04-11T07:17:46+00:00"
+            "time": "2019-04-12T09:04:34+00:00"
         },
         {
             "name": "symfony/http-foundation",
@@ -12287,7 +12287,6 @@
     "aliases": [],
     "minimum-stability": "dev",
     "stability-flags": {
-        "docusign/esign-client": 20,
         "symfony/http-client": 20
     },
     "prefer-stable": false,

@@ -24,7 +24,7 @@
     "cache/memcache-adapter": "^1.0",
     "cravler/maxmind-geoip-bundle": "^1.2",
     "doctrine/mongodb-odm-bundle": "^3.4",
-    "docusign/esign-client": "dev-master",
+    "docusign/esign-client": "^3.0",
     "eightpoints/guzzle-bundle": "^7.2",
     "ekino/newrelic-bundle": "^2.0",
     "facile-it/doctrine-mysql-come-back": "^1.6",
