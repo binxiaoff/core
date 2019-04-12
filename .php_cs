@@ -15,19 +15,22 @@ return PhpCsFixer\Config::create()
         '@Symfony'                    => true,
         '@PhpCsFixer'                 => true,
         '@DoctrineAnnotation'         => true,
+        '@PHP71Migration'             => true,
         'array_syntax'                => ['syntax' => 'short'],
         'single_import_per_statement' => false,
         'binary_operator_spaces'      => ['default' => 'align_single_space_minimal'],
         'concat_space'                => ['spacing' => 'one'],
-        'combine_nested_dirname'      => true,
-        'dir_constant'                => true,
-        'fopen_flag_order'            => true,
-        'fopen_flags'                 => true,
-        'function_to_constant'        => true,
-        'implode_call'                => true,
-        'is_null'                     => true,
-        'mb_str_functions'            => true,
-        'modernize_types_casting'     => true,
+        'combine_nested_dirname'      => true, //risky
+        'dir_constant'                => true, //risky
+        'fopen_flag_order'            => true, //risky
+        'fopen_flags'                 => true, //risky
+        'function_to_constant'        => true, //risky
+        'implode_call'                => true, //risky
+        'is_null'                     => true, //risky
+        'mb_str_functions'            => true, //risky
+        'modernize_types_casting'     => true, //risky
+        'phpdoc_types_order'          => ['null_adjustment' => 'always_last', 'sort_algorithm' => 'none'],
+        'random_api_migration'        => true, //risky
     ])
     ->setFinder($finder)
 ;
