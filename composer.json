@@ -87,6 +87,7 @@
     "xynnn/google-tag-manager-bundle": "^2.0"
   },
   "require-dev": {
+    "escapestudios/symfony2-coding-standard": "^3.5",
     "friendsofphp/php-cs-fixer": "^2.14",
     "phpro/grumphp": "^0.15.0",
     "phpstan/phpstan-doctrine": "^0.11.2",
