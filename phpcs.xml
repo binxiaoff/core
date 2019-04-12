@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ruleset name="CALS" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="vendor/squizlabs/php_codesniffer/phpcs.xsd">
+    <arg name="basepath" value="."/>
+    <arg name="cache" value=".phpcs-cache"/>
+    <arg name="colors"/>
+    <arg name="extensions" value="php"/>
+    <file>src/</file>
+
+    <rule ref="PSR1"/>
+    <rule ref="PSR2">
+        <exclude name="PSR2.Namespaces.UseDeclaration"/>
+        <exclude name="PSR2.ControlStructures.ControlStructureSpacing.SpacingAfterOpenBrace"/>
+    </rule>
+    <rule ref="PSR12"/>
+    <rule ref="vendor/escapestudios/symfony2-coding-standard/Symfony/ruleset.xml">
+        <exclude name="Symfony.Commenting.License.Warning"/>
+        <exclude name="Symfony.Commenting.ClassComment.Missing"/>
+        <exclude name="Symfony.Functions.Arguments.Invalid"/>
+    </rule>
+    <rule ref="Generic.Files.LineLength">
+        <properties>
+            <property name="lineLimit" value="180"/>
+            <property name="absoluteLineLimit" value="0"/>
+        </properties>
+    </rule>
+    <rule ref="Generic.PHP.ForbiddenFunctions">
+        <properties>
+            <property name="forbiddenFunctions" type="array"
+                      value="dd=>null,var_dump=>null,dump=>null,exit=>null,die=>null,eval=>null,sizeof=>count,delete=>unset,print=>echo,is_null=>null,create_function=>null"/>
+        </properties>
+    </rule>
+    <rule ref="Generic.Arrays.DisallowLongArraySyntax"/>
+    <rule ref="Squiz.Strings.ConcatenationSpacing">
+        <properties>
+            <property name="spacing" value="1" />
+        </properties>
+    </rule>
+</ruleset>

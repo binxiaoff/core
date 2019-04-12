@@ -192,6 +192,9 @@
             "config/packages/prod/ekino_new_relic.yaml"
         ]
     },
+    "escapestudios/symfony2-coding-standard": {
+        "version": "3.5.2"
+    },
     "facile-it/doctrine-mysql-come-back": {
         "version": "v1.7"
     },
@@ -502,6 +505,18 @@
     },
     "sonata-project/seo-bundle": {
         "version": "2.7.0"
+    },
+    "squizlabs/php_codesniffer": {
+        "version": "3.0",
+        "recipe": {
+            "repo": "github.com/symfony/recipes-contrib",
+            "branch": "master",
+            "version": "3.0",
+            "ref": "0dc9cceda799fd3a08b96987e176a261028a3709"
+        },
+        "files": [
+            "phpcs.xml.dist"
+        ]
     },
     "swiftmailer/swiftmailer": {
         "version": "v6.2.0"
