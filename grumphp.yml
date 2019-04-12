@@ -8,3 +8,4 @@ parameters:
             allow_risky: true
             config: .php_cs
         phpcs: ~
+        phpmd: ~
