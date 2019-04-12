@@ -359,6 +359,9 @@
     "paragonie/random_compat": {
         "version": "v9.99.99"
     },
+    "pdepend/pdepend": {
+        "version": "2.5.2"
+    },
     "php-cs-fixer/diff": {
         "version": "v1.3.0"
     },
@@ -403,6 +406,9 @@
     },
     "phpcollection/phpcollection": {
         "version": "0.5.0"
+    },
+    "phpmd/phpmd": {
+        "version": "dev-master"
     },
     "phpoffice/phpexcel": {
         "version": "1.8.2"
