@@ -7,3 +7,4 @@ parameters:
         phpcsfixer2:
             allow_risky: true
             config: .php_cs
+        phpcs: ~
