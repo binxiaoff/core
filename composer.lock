@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "fa364c7f004a22d989ced4721332ada8",
+    "content-hash": "b182055f6da54b4d1080812cf9f22379",
     "packages": [
         {
             "name": "alcaeus/mongo-php-adapter",
@@ -11506,25 +11506,24 @@
         },
         {
             "name": "phpmd/phpmd",
-            "version": "dev-master",
+            "version": "2.6.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpmd/phpmd.git",
-                "reference": "42bf8ad43793e7b77c0c8681a1eabaf48b69bcf7"
+                "reference": "4e9924b2c157a3eb64395460fcf56b31badc8374"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpmd/phpmd/zipball/42bf8ad43793e7b77c0c8681a1eabaf48b69bcf7",
-                "reference": "42bf8ad43793e7b77c0c8681a1eabaf48b69bcf7",
+                "url": "https://api.github.com/repos/phpmd/phpmd/zipball/4e9924b2c157a3eb64395460fcf56b31badc8374",
+                "reference": "4e9924b2c157a3eb64395460fcf56b31badc8374",
                 "shasum": ""
             },
             "require": {
                 "ext-xml": "*",
                 "pdepend/pdepend": "^2.5",
-                "php": ">=5.4.0"
+                "php": ">=5.3.9"
             },
             "require-dev": {
-                "mikey179/vfsstream": "v1.6.4",
                 "phpunit/phpunit": "^4.0",
                 "squizlabs/php_codesniffer": "^2.0"
             },
@@ -11561,7 +11560,7 @@
                 }
             ],
             "description": "PHPMD is a spin-off project of PHP Depend and aims to be a PHP equivalent of the well known Java tool PMD.",
-            "homepage": "https://phpmd.org/",
+            "homepage": "http://phpmd.org/",
             "keywords": [
                 "mess detection",
                 "mess detector",
@@ -11569,7 +11568,7 @@
                 "phpmd",
                 "pmd"
             ],
-            "time": "2018-10-30T13:51:43+00:00"
+            "time": "2017-01-20T14:41:10+00:00"
         },
         {
             "name": "phpro/grumphp",
@@ -12498,8 +12497,7 @@
     "aliases": [],
     "minimum-stability": "dev",
     "stability-flags": {
-        "symfony/http-client": 20,
-        "phpmd/phpmd": 20
+        "symfony/http-client": 20
     },
     "prefer-stable": false,
     "prefer-lowest": false,

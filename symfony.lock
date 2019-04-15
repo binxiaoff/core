@@ -408,7 +408,7 @@
         "version": "0.5.0"
     },
     "phpmd/phpmd": {
-        "version": "dev-master"
+        "version": "2.6.0"
     },
     "phpoffice/phpexcel": {
         "version": "1.8.2"
