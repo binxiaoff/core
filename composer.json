@@ -89,6 +89,7 @@
   "require-dev": {
     "escapestudios/symfony2-coding-standard": "^3.5",
     "friendsofphp/php-cs-fixer": "^2.14",
+    "phpmd/phpmd": "^2.6",
     "phpro/grumphp": "^0.15.0",
     "phpstan/phpstan-doctrine": "^0.11.2",
     "phpstan/phpstan-symfony": "^0.11.3",
