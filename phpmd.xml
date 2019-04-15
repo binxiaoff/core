@@ -8,20 +8,20 @@
         CALS rule set.
     </description>
     <!-- Clean code. -->
-    <rule ref="vendor/phpmd/phpmd/src/main/resources/rulesets/cleancode.xml"/>
+    <rule ref="rulesets/cleancode.xml"/>
     <!-- Code size.  -->
-    <rule ref="vendor/phpmd/phpmd/src/main/resources/rulesets/codesize.xml"/>
+    <rule ref="rulesets/codesize.xml"/>
     <!-- Controversial. -->
-    <rule ref="vendor/phpmd/phpmd/src/main/resources/rulesets/controversial.xml"/>
+    <rule ref="rulesets/controversial.xml"/>
     <!-- Design. -->
-    <rule ref="vendor/phpmd/phpmd/src/main/resources/rulesets/design.xml"/>
+    <rule ref="rulesets/design.xml"/>
     <!-- Naming. -->
-    <rule ref="vendor/phpmd/phpmd/src/main/resources/rulesets/naming.xml">
+    <rule ref="rulesets/naming.xml">
         <exclude name="LongVariable" />
     </rule>
     <!-- Unused code. -->
-    <rule ref="vendor/phpmd/phpmd/src/main/resources/rulesets/unusedcode.xml"/>
-    <rule ref="vendor/phpmd/phpmd/src/main/resources/rulesets/naming.xml/LongVariable">
+    <rule ref="rulesets/unusedcode.xml"/>
+    <rule ref="rulesets/naming.xml/LongVariable">
         <properties>
             <property name="maximum" value="32"/>
         </properties>
