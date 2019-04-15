@@ -1,11 +1,14 @@
 includes:
     - vendor/phpstan/phpstan-doctrine/extension.neon
     - vendor/phpstan/phpstan-symfony/extension.neon
+    - vendor/phpstan/phpstan-phpunit/extension.neon
+    - vendor/phpstan/phpstan-phpunit/rules.neon
 
 parameters:
     level: 0
     paths:
         - src
+        - tests
     bootstrap: %rootDir%/../../../config/autoload.php
     autoload_files:
         - %rootDir%/../../../core/command.class.php
