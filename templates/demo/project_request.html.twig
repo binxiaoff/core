@@ -6,29 +6,37 @@
 } %}
 
 {% block dashboardContent %}
-    <section class="dashboard-tabs tabs">
-        <div class="dashboard-tabs-content tab-content">
-            <article class="dashboard-tab-pane">
-                <div class="panel">
-                    <header class="panel-header">
-                        <h3>{% trans %} demo-project-request_title {% endtrans %}</h3>
-                    </header>
-                    <form action="{{ path('demo_project_request_form') }}" method="post" enctype="multipart/form-data" data-formvalidation data-formvalidation-notificationselem=".form-validation-notifications">
-                        <fieldset class="simulator-pane-inner">
-                            <legend>Identification</legend>
+    <form action="{{ path('demo_project_request_form') }}" method="post" enctype="multipart/form-data"
+          data-formvalidation data-formvalidation-notificationselem=".form-validation-notifications">
+        <input id="request-type" type="hidden" name="request-type">
+        <section class="dashboard-tabs tabs">
+            <div class="dashboard-tabs-content tab-content">
+                <div id="form-container" class="dashboard-tab-pane">
+                    <article class="panel">
+                        <header class="panel-header">
+                            <h2 class="margin-10-t">{% trans %} demo-project-request_title {% endtrans %}</h2>
+                        </header>
+                        <section class="text-align-center collapse in">
+                            <button type="button" class="btn-default" data-request-type="primary"
+                                    data-toggle="collapse" data-target=".request-form-panel" data-parent="#form-container"
+                                    style="padding: 30px; margin: 30px 60px;">
+                                <span class="icon fa-user" style="font-size: 36px;"></span><br>
+                                Syndication primaire<br>
+                                <small>pour un client</small>
+                            </button>
+                            <button type="button" class="btn-default" data-request-type="secondary"
+                                    data-toggle="collapse" data-target=".request-form-panel" data-parent="#form-container"
+                                    style="padding: 30px; margin: 30px 60px;">
+                                <span class="icon fa-refresh" style="font-size: 36px;"></span><br>
+                                Syndication silencieuse<br>
+                                <small>d‘un encours client</small>
+                            </button>
+                        </section>
+                        <section class="request-form-panel collapse">
                             <div class="row row-multi-col-computer">
-                                <div class="form-field col-lg-6 col-md-6">
-                                    <label for="input-borrower">
-                                        {% trans %} demo-project-request_simulator-borrower-field-label {% endtrans %}
-                                        <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span>
-                                    </label>
-                                    <select id="input-borrower" name="borrower" class="input-field">
-                                        <option value=""></option>
-                                    </select>
-                                </div><!-- /.form-field -->
-                                <div class="form-field col-lg-6 col-md-6">
+                                <div class="form-field col-lg-4 col-md-4">
                                     <label for="input-title">
-                                        {% trans %} demo-project-request_simulator-title-field-label {% endtrans %}
+                                        Titre
                                         <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span>
                                     </label>
                                     <input id="input-title" type="text" step="any" name="title" class="input-field"
@@ -36,15 +44,57 @@
                                            data-formvalidation-type="string"
                                            data-formvalidation-required="true">
                                 </div><!-- /.form-field -->
+                                <div class="form-field col-lg-4 col-md-4">
+                                    <label for="input-borrower">
+                                        Contrepartie emprunteuse
+                                        <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span>
+                                    </label>
+                                    <select id="input-borrower" name="borrower" class="input-field"
+                                            data-formvalidation-input
+                                            data-formvalidation-required="true">
+                                        <option value=""></option>
+                                    </select>
+                                </div><!-- /.form-field -->
+                                <div class="form-field col-lg-4 col-md-4">
+                                    <label for="input-partner">
+                                        Marché
+                                        <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span>
+                                    </label>
+                                    <select id="input-partner" name="partner" class="input-field"
+                                            data-formvalidation-input
+                                            data-formvalidation-required="true">
+                                        <option value=""></option>
+                                        <option value="2">Collectivités publiques</option>
+                                        <option value="4">Énergie</option>
+                                        <option value="3">Entreprises</option>
+                                    </select>
+                                </div><!-- /.form-field -->
                             </div>
+                            {#<div class="row row-multi-col-computer">
+                                <div class="form-field col-lg-6 col-md-6">
+                                    <label for="input-sector">
+                                        Secteur d‘activité
+                                        <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span>
+                                    </label>
+                                    <select id="input-sector" name="sector" class="input-field"
+                                            data-formvalidation-input
+                                            data-formvalidation-required="true">
+                                        <option value=""></option>
+                                        {% for sector in sectors %}
+                                            <option value="{{ sector.idCompanySector }}">{{ sector.sector }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div><!-- /.form-field -->
+                            </div>#}
                             <div class="row">
                                 <div class="form-field">
                                     <label for="input-description">
-                                        {% trans %} demo-project-request_simulator-description-label {% endtrans %}
+                                        Description du projet
                                         <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span>
                                     </label>
                                     {% spaceless %}
-                                        <textarea id="input-description" name="description" class="input-field" rows="10"
+                                        <textarea id="input-description" name="description" class="input-field"
+                                                  rows="10"
                                                   data-formvalidation-input
                                                   data-formvalidation-required="true"
                                                   data-formvalidation-type="string">
@@ -52,174 +102,204 @@
                                     {% endspaceless %}
                                 </div><!-- /.form-field -->
                             </div>
-                        </fieldset>
-                        <fieldset class="simulator-pane-inner" style="margin-top: 20px;">
-                            <legend>Besoin de financement</legend>
-                            <div class="row row-multi-col-computer">
-                                <div class="form-field col-lg-4 col-md-4">
-                                    <label for="input-amount">
-                                        {% trans %} demo-project-request_simulator-amount-field-label {% endtrans %}
-                                        <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span>
-                                    </label>
-                                    <input id="input-amount" type="text" step="any" name="amount" class="input-field"
-                                           data-formvalidation-input
-                                           data-formvalidation-type="integer"
-                                           data-formvalidation-required="true"
-                                           data-fee-reference-amount>
-                                </div><!-- /.form-field -->
-                                <div class="form-field col-lg-4 col-md-4">
-                                    <label for="input-duration">
-                                        {% trans %} demo-project-request_simulator-duration-field-label {% endtrans %}
-                                        <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span>
-                                    </label>
-                                    <select id="input-duration" name="duration" class="input-field"
-                                            data-formvalidation-input
-                                            data-formvalidation-type="integer"
-                                            data-formvalidation-required="true">
-                                        <option value=""></option>
-                                        {% for period in loanPeriods %}
-                                            <option value="{{ period }}">{% transchoice(period) with {'%duration%': period} %} demo-project-request_simulator-duration-select-option {% endtranschoice %}</option>
-                                        {% endfor %}
-                                    </select>
-                                </div><!-- /.form-field -->
-                                <div class="form-field col-lg-4 col-md-4">
-                                    <label for="input-date">
-                                        Date de mise à disposition
-                                    </label>
-                                    <div class="input-group set-right">
-                                        <input id="input-date" type="text" name="date" class="input-field ui-has-datepicker" autocomplete="off">
-                                        <div class="btn-group">
-                                            <label for="filter-start"><span class="icon fa-calendar-u32 c-p1"> <span class="sr-only">Date de mise à disposition</span></span></label>
-                                        </div><!-- /.btn-group -->
-                                    </div><!-- /.input-group -->
-                                </div><!-- /.form-field -->
+                        </section>
+                    </article>
+                    <article class="request-form-panel panel collapse">
+                        <h3>Besoin de financement</h3>
+                        <div class="row row-multi-col-computer">
+                            <div class="form-field col-lg-6 col-md-6">
+                                <label for="input-amount">
+                                    Montant à syndiquer
+                                    <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span>
+                                </label>
+                                <input id="input-amount" type="text" step="any" name="amount" class="input-field"
+                                       data-formvalidation-input
+                                       data-formvalidation-type="integer"
+                                       data-formvalidation-required="true"
+                                       data-fee-reference-amount>
+                            </div><!-- /.form-field -->
+                            <div class="form-field col-lg-6 col-md-6">
+                                <label for="input-duration">
+                                    Durée
+                                    <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span>
+                                </label>
+                                <select id="input-duration" name="duration" class="input-field"
+                                        data-formvalidation-input
+                                        data-formvalidation-type="integer"
+                                        data-formvalidation-required="true">
+                                    <option value=""></option>
+                                    {% for period in loanPeriods %}
+                                        <option value="{{ period }}">{% transchoice(period) with {'%duration%': period} %} demo-project-request_simulator-duration-select-option {% endtranschoice %}</option>
+                                    {% endfor %}
+                                </select>
+                            </div><!-- /.form-field -->
+                        </div>
+                        <div class="row row-multi-col-computer">
+                            <div class="form-field col-lg-6 col-md-6">
+                                <label for="input-amortization">
+                                    Loi d‘amortissement
+                                    <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span>
+                                </label>
+                                <select id="input-amortization" name="amortization" class="input-field"
+                                        data-formvalidation-input
+                                        data-formvalidation-type="string"
+                                        data-formvalidation-required="true">
+                                    <option value=""></option>
+                                    <option value="{{ constant('Unilend\\Entity\\RepaymentType::REPAYMENT_TYPE_FIXED_PAYMENT') }}">Échéances constantes</option>
+                                    <option value="{{ constant('Unilend\\Entity\\RepaymentType::REPAYMENT_TYPE_FIXED_CAPITAL') }}">Capital constant</option>
+                                    <option value="{{ constant('Unilend\\Entity\\RepaymentType::REPAYMENT_TYPE_DEFERRED') }}">Différé</option>
+                                    <option value="{{ constant('Unilend\\Entity\\RepaymentType::REPAYMENT_TYPE_IN_FINE') }}">In fine</option>
+                                </select>
+                            </div><!-- /.form-field -->
+                            <div class="form-field col-lg-6 col-md-6">
+                                <label for="input-periodicity">
+                                    Périodicité
+                                    <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span>
+                                </label>
+                                <select id="input-periodicity" name="periodicity" class="input-field"
+                                        data-formvalidation-input
+                                        data-formvalidation-type="string"
+                                        data-formvalidation-required="true">
+                                    <option value=""></option>
+                                    <option value="1">Mensuel</option>
+                                    <option value="3">Trimestriel</option>
+                                    <option value="6">Semestriel</option>
+                                    <option value="12">Annuel</option>
+                                </select>
+                            </div><!-- /.form-field -->
+                            {#<div class="form-field col-lg-4 col-md-4">
+                                <label for="input-delay">
+                                    Différé (mois)
+                                </label>
+                                <input id="input-delay" type="text" step="any" name="delay" class="input-field"
+                                       data-formvalidation-input
+                                       data-formvalidation-type="integer">
+                            </div><!-- /.form-field -->#}
+                        </div>
+                        <div class="row row-multi-col-computer">
+                            <div class="form-field col-lg-4 col-md-4">
+                                <label for="input-response-date">
+                                    Date butoir de réponse
+                                </label>
+                                <div class="input-group set-right">
+                                    <input id="input-response-date" type="text" name="response-date" class="input-field ui-has-datepicker" autocomplete="off">
+                                    <div class="btn-group">
+                                        <label for="filter-start"><span class="icon fa-calendar-u32 c-p1"> <span class="sr-only">Date butoir de réponse</span></span></label>
+                                    </div><!-- /.btn-group -->
+                                </div><!-- /.input-group -->
+                            </div><!-- /.form-field -->
+                            <div class="form-field col-lg-4 col-md-4">
+                                <label for="input-release-date">
+                                    Date de mise à disposition
+                                </label>
+                                <div class="input-group set-right">
+                                    <input id="input-release-date" type="text" name="release-date" class="input-field ui-has-datepicker" autocomplete="off">
+                                    <div class="btn-group">
+                                        <label for="filter-start"><span class="icon fa-calendar-u32 c-p1"> <span class="sr-only">Date de mise à disposition</span></span></label>
+                                    </div><!-- /.btn-group -->
+                                </div><!-- /.input-group -->
+                            </div><!-- /.form-field -->
+                            <div class="form-field col-lg-4 col-md-4">
+                                <label for="input-first-payment-date">
+                                    Date de 1<sup>ère</sup> échéance
+                                </label>
+                                <div class="input-group set-right">
+                                    <input id="input-first-payment-date" type="text" name="first-payment-date" class="input-field ui-has-datepicker" autocomplete="off">
+                                    <div class="btn-group">
+                                        <label for="filter-start"><span class="icon fa-calendar-u32 c-p1"> <span class="sr-only">Date de 1ère échéance</span></span></label>
+                                    </div><!-- /.btn-group -->
+                                </div><!-- /.input-group -->
+                            </div><!-- /.form-field -->
+                        </div>
+                        <div class="row">
+                            <div class="form-field">
+                                <label>
+                                    <input id="has-guarantee" type="checkbox" name="has-guarantee" value="true">
+                                    Ce dossier fait déjà l‘objet d‘une demande de garantie auprès de FONCARIS
+                                </label>
+                                <label>
+                                    <input id="request-guarantee" type="checkbox" name="request-guarantee" value="true">
+                                    Faire une demande de garantie auprès de FONCARIS
+                                </label>
                             </div>
-                            <div class="row row-multi-col-computer">
+                        </div>
+                    </article>
+                    <article class="request-form-panel panel collapse">
+                        <h3>Structuration</h3>
+                        <div class="row row-multi-col-computer">
+                            <div class="form-field col-lg-6 col-md-6">
+                                <label for="input-arranger">Arrangeur</label>
+                                <select id="input-arranger" name="arranger" class="input-field">
+                                    <option value=""></option>
+                                    <option value="{{ app.user.company.idCompany }}">{{ app.user.company.name }}</option>
+                                    <option value="3">CA-CIB</option>
+                                    <option value="4">Unifergie</option>
+                                </select>
+                            </div>
+                            <div class="form-field col-lg-6 col-md-6">
+                                <label for="input-run">RUN</label>
+                                <select id="input-run" name="run" class="input-field">
+                                    <option value=""></option>
+                                    {% for run in runs %}
+                                        <option value="{{ run.idCompany }}"{% if app.user.company.idCompany == run.idCompany %} selected{% endif %}>{{ run.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    </article>
+                    {# Waiting for precise explanations on that precise #}
+                    {#<article class="request-form-panel panel collapse">
+                        <h3>Frais / Commission</h3>
+                        {% set feesTemplate = include('demo/partials/fees/new_project_fees.html.twig') %}
+                        <div class="row row-multi-col-computer fees"
+                             data-prototype="{{ feesTemplate|e('html_attr') }}"></div>
+                    </article>#}
+                    <article class="request-form-panel panel collapse">
+                        <h3>Documents</h3>
+                        <div class="form-extrafiles-list">
+                            <div class="form-field row row-multi-col-computer">
+                                <div class="col-lg-4 col-md-4">
+                                    Type de document
+                                </div>
+                                <div class="col-lg-4 col-md-4">
+                                    Nom du document
+                                </div>
+                            </div>
+                            <div class="form-field-multi file-upload-extra row row-multi-col-computer">
+                                <div class="col-lg-4 col-md-4">
+                                    {% include 'demo/partials/project_attachment_select.html.twig' with {'name': 'file'} %}
+                                </div>
                                 <div class="form-field col-lg-4 col-md-4">
-                                    <label for="input-partner">
-                                        {% trans %} demo-project-request_simulator-partner-field-label {% endtrans %}
-                                        <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span>
-                                    </label>
-                                    <select id="input-partner" name="partner" class="input-field"
-                                            data-formvalidation-input
-                                            data-formvalidation-required="true">
-                                        <option value="" data-partner-company=""></option>
-                                        {% for partner in partners %}
-                                            {% set idArranger = partner.idCompany.idCompany %}
-                                            {% if partner.idCompany.idCompany == 1 %}
-                                                {% set idArranger = app.user.company.idCompany %}
-                                            {% endif %}
-                                            <option value="{{ partner.id }}" data-partner-company="{{ idArranger }}">{{ ('partner-name_list-' ~ partner.label)|trans }}</option>
-                                        {% endfor %}
-                                    </select>
-                                </div><!-- /.form-field -->
-                                <div class="form-field col-lg-4 col-md-4">
-                                    <label for="input-product">
-                                        {% trans %} demo-project-request_simulator-product-field-label {% endtrans %}
-                                    </label>
-                                    <select id="input-product" name="product" class="input-field"
-                                            onchange="$('#rate-container').toggle(this.value === '5' || this.value === '6' || this.value === '7' || this.value === '8')"
-                                            data-formvalidation-input
-                                            data-formvalidation-type="integer">
-                                        <option value=""></option>
-                                        {% for productId, productLabel in products %}
-                                            <option value="{{ productId }}">{{ productLabel }}</option>
-                                        {% endfor %}
-                                    </select>
-                                </div><!-- /.form-field -->
-                                <div id="rate-container" class="form-field col-lg-4 col-md-4" style="display: none;">
-                                    <label for="input-rate">
-                                        Taux de progressivité
-                                    </label>
-                                    <input id="input-rate" type="text" name="rate" class="input-field"
-                                           data-formvalidation-input
-                                           data-formvalidation-type="float">
-                                </div><!-- /.form-field -->
-                            </div>
-                            <div class="row row-multi-col-computer">
-                                <div class="form-field">
-                                    <label>
-                                        <input type="checkbox" name="guarantee" value="true">
-                                        Ce dossier fait l‘objet d‘une garantie collatérale
-                                    </label>
+                                    <input type="text" name="filename[file]" class="input-field">
+                                </div>
+                                <div class="col-lg-4 col-md-4">
+                                    <div id="form-file" class="custom-input-file"
+                                         data-fileattach
+                                         data-fileattach-inputname="file"
+                                         data-fileattach-maxfiles="1"
+                                         data-fileattach-filetypes="pdf jpg jpeg png doc docx xls xlsx"></div>
+                                    <!-- /.ui-fileattach -->
                                 </div>
                             </div>
-                        </fieldset><!-- /.simulator-pane-inner -->
-                        <fieldset class="simulator-pane-inner" style="margin-top: 20px;">
-                            <legend>Participants</legend>
-                            <div class="row row-multi-col-computer">
-                                <div class="form-field col-lg-6 col-md-6">
-                                    <label for="input-arranger">Arrangeur</label>
-                                    <select id="input-arranger" name="arranger" class="input-field">
-                                        <option value=""></option>
-                                        <option value="{{ app.user.company.idCompany }}">{{ app.user.company.name }}</option>
-                                        {% for idArranger, arranger in arrangers %}
-                                            {% if idArranger != 1 %}
-                                                <option value="{{ idArranger }}">{{ arranger }}</option>
-                                            {% endif %}
-                                        {% endfor %}
-                                    </select>
-                                </div>
-                                <div class="form-field col-lg-6 col-md-6">
-                                    <label for="input-run">RUN</label>
-                                    <select id="input-run" name="run" class="input-field">
-                                        <option value=""></option>
-                                        {% for run in runs %}
-                                            <option value="{{ run.idCompany }}">{{ run.name }}</option>
-                                        {% endfor %}
-                                    </select>
-                                </div>
-                            </div>
-                        </fieldset><!-- /.simulator-pane-inner -->
-                        <fieldset class="simulator-pane-inner" style="margin-top: 20px;">
-                            <legend>Frais / Commission</legend>
-                            {% set feesTemplate = include('demo/partials/fees/new_project_fees.html.twig') %}
-                            <div class="row row-multi-col-computer fees" data-prototype="{{ feesTemplate|e('html_attr') }}"></div>
-                        </fieldset><!-- /.simulator-pane-inner -->
-                        <fieldset class="simulator-pane-inner" style="margin-top: 20px;">
-                            <legend>Documents</legend>
-                            <div class="form-extrafiles-list">
-                                <div class="form-field row row-multi-col-computer">
-                                    <div class="col-lg-4 col-md-4">
-                                        Type de document
-                                    </div>
-                                    <div class="col-lg-4 col-md-4">
-                                        Nom du document
-                                    </div>
-                                </div>
-                                <div class="form-field-multi file-upload-extra row row-multi-col-computer">
-                                    <div class="col-lg-4 col-md-4">
-                                        {% include 'demo/partials/project_attachment_select.html.twig' with {'name': 'file'} %}
-                                    </div>
-                                    <div class="form-field col-lg-4 col-md-4">
-                                        <input type="text" name="filename[file]" class="input-field">
-                                    </div>
-                                    <div class="col-lg-4 col-md-4">
-                                        <div id="form-file" class="custom-input-file"
-                                             data-fileattach data-fileattach-inputname="file"
-                                             data-fileattach-maxfiles="1"
-                                             data-fileattach-filetypes="pdf jpg jpeg png doc docx xls xlsx"></div><!-- /.ui-fileattach -->
-                                    </div>
-                                </div>
-                            </div><!-- /.form-extrafiles-list -->
-                            <a href="javascript:;" class="btn-default btn-shape-sq-md ui-form-extrafiles-add">
-                                <span class="icon fa-plus-u16 c-t2"></span>
-                                <span class="sr-only">Ajouter un document</span>
-                            </a>
-                        </fieldset><!-- /.simulator-pane-inner -->
+                        </div><!-- /.form-extrafiles-list -->
+                        <a href="javascript:;" class="btn-default btn-shape-sq-md ui-form-extrafiles-add">
+                            <span class="icon fa-plus-u16 c-t2"></span>
+                            <span class="sr-only">Ajouter un document</span>
+                        </a>
+                    </article>
+                    <article class="request-form-panel panel collapse">
                         <div class="form-validation-notifications"></div>
-                        <footer class="simulator-pane-inner actions bg-p1 c-bg5 text-align-right">
-                            <button type="submit" class="btn-continue btn-alternate" data-spinnerbutton>
-                                {% trans %} demo-project-request_simulator-footer-continue-button {% endtrans %}
-                            </button>
-                        </footer><!-- /.simulator-pane-inner -->
-                    </form><!-- /.simulator -->
-                </div>
-            </article><!-- /.dashboard-tab-pane -->
-        </div><!-- /.dashboard-tabs-content -->
-    </section><!-- /.dashboard-tabs -->
+                        <button type="submit" class="btn-continue btn-primary pull-right" data-spinnerbutton>
+                            Déposer le dossier
+                        </button>
+                    </article>
+                </div><!-- /.dashboard-tab-pane -->
+            </div><!-- /.dashboard-tabs-content -->
+        </section><!-- /.dashboard-tabs -->
+    </form><!-- /.simulator -->
 
-    <div id="form-extrafiles-template" class="ui-template-definition" style="display: none" disabled="disabled" aria-hidden="true">
+    <div id="form-extrafiles-template" class="ui-template-definition" style="display: none" disabled="disabled"
+         aria-hidden="true">
         <div class="form-field-multi file-upload-extra row row-multi-col-computer">
             <div class="col-lg-4 col-md-4">
                 {% include 'demo/partials/project_attachment_select.html.twig' with {'name': '__NUM__'} %}
@@ -229,7 +309,8 @@
             </div>
             <div class="col-lg-4 col-md-4">
                 <div id="form-extrafile" class="custom-input-file"
-                     data-fileattach data-fileattach-inputname="__NUM__"
+                     data-fileattach
+                     data-fileattach-inputname="__NUM__"
                      data-fileattach-maxfiles="1"
                      data-fileattach-filetypes="pdf jpg jpeg png doc docx xls xlsx"></div><!-- /.ui-fileattach -->
             </div>
@@ -242,17 +323,20 @@
         fieldset {
             border: 1px solid #eceaed;
         }
+
         legend {
             color: #2bc9af;
             font-size: 20px;
             font-weight: 400;
             padding: 0 5px;
         }
+
         .form-field .select2-container--default .select2-selection--single,
         .form-field .select2-container--default .select2-selection--single .select2-selection__rendered,
         .form-field .select2-container--default .select2-selection--single .select2-selection__arrow {
             height: 40px;
         }
+
         .form-field .select2-container--default .select2-selection--single .select2-selection__rendered {
             line-height: 40px;
         }
@@ -261,7 +345,22 @@
 
 {% block pageScripts %}
     <script>
-        $(function() {
+        $(function () {
+            $('[data-request-type]').on('click', function () {
+                $('#request-type').val($(this).attr('data-request-type'))
+            })
+
+            $('#has-guarantee, #request-guarantee').on('change', function () {
+                var checked = this.value === 'true'
+                var $siblingLabel = $(this).parent().siblings('label')
+
+                $siblingLabel.slideToggle(checked, function () {
+                    if (checked) {
+                        $siblingLabel.find('input').prop('checked', false)
+                    }
+                })
+            })
+
             $('#input-borrower').select2({
                 ajax: {
                     url: '{{ path('demo_borrower_search_form') }}',
@@ -287,13 +386,6 @@
                 minimumInputLength: 9,
                 maximumInputLength: 9,
                 placeholder: 'Veuillez saisir un numéro de SIREN'
-            })
-
-            $('#input-partner').on('change', function () {
-                var $dropdown = $(this)
-                var $selected = $dropdown.find(':selected')
-                var arranger = $selected.attr('data-partner-company')
-                $('#input-arranger option[value="' + arranger + '"]').prop('selected', true)
             })
         })
 

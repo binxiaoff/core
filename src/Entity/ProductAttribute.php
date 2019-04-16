@@ -2,12 +2,17 @@
 
 namespace Unilend\Entity;
 
+use DateTime;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * ProductAttribute
+ * ProductAttribute.
  *
- * @ORM\Table(name="product_attribute", uniqueConstraints={@ORM\UniqueConstraint(name="unq_attribute_product_type_value", columns={"id_product", "id_type", "attribute_value"})}, indexes={@ORM\Index(name="idx_attribute_id_product", columns={"id_product"}), @ORM\Index(name="idx_product_attribute_id_type", columns={"id_type"})})
+ * @ORM\Table(
+ *     name="product_attribute",
+ *     uniqueConstraints={@ORM\UniqueConstraint(name="unq_attribute_product_type_value", columns={"id_product", "id_type", "attribute_value"})},
+ *     indexes={@ORM\Index(name="idx_attribute_id_product", columns={"id_product"}), @ORM\Index(name="idx_product_attribute_id_type", columns={"id_type"})}
+ * )
  * @ORM\Entity
  */
 class ProductAttribute
@@ -20,14 +25,14 @@ class ProductAttribute
     private $attributeValue;
 
     /**
-     * @var \DateTime
+     * @var DateTime
      *
      * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
     /**
-     * @var \DateTime
+     * @var DateTime
      *
      * @ORM\Column(name="update", type="datetime")
      */
@@ -43,38 +48,36 @@ class ProductAttribute
     private $idAttribute;
 
     /**
-     * @var \Unilend\Entity\ProductAttributeType
+     * @var ProductAttributeType
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\ProductAttributeType")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_type", referencedColumnName="id_type", nullable=false)
+     *     @ORM\JoinColumn(name="id_type", referencedColumnName="id_type", nullable=false)
      * })
      */
     private $idType;
 
     /**
-     * @var \Unilend\Entity\Product
+     * @var Product
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\Product", inversedBy="productAttributes")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_product", referencedColumnName="id_product", nullable=false)
+     *     @ORM\JoinColumn(name="id_product", referencedColumnName="id_product", nullable=false)
      * })
      */
     private $idProduct;
 
     /**
-     * @var \Unilend\Entity\ProjectEligibilityRule
+     * @var ProjectEligibilityRule
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\ProjectEligibilityRule")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_rule", referencedColumnName="id")
+     *     @ORM\JoinColumn(name="id_rule", referencedColumnName="id")
      * })
      */
     private $idRule;
 
     /**
-     * Set attributeValue
-     *
      * @param string $attributeValue
      *
      * @return ProductAttribute
@@ -87,8 +90,6 @@ class ProductAttribute
     }
 
     /**
-     * Get attributeValue
-     *
      * @return string
      */
     public function getAttributeValue()
@@ -97,9 +98,7 @@ class ProductAttribute
     }
 
     /**
-     * Set added
-     *
-     * @param \DateTime $added
+     * @param DateTime $added
      *
      * @return ProductAttribute
      */
@@ -111,9 +110,7 @@ class ProductAttribute
     }
 
     /**
-     * Get added
-     *
-     * @return \DateTime
+     * @return DateTime
      */
     public function getAdded()
     {
@@ -121,9 +118,7 @@ class ProductAttribute
     }
 
     /**
-     * Set update
-     *
-     * @param \DateTime $update
+     * @param DateTime $update
      *
      * @return ProductAttribute
      */
@@ -135,9 +130,7 @@ class ProductAttribute
     }
 
     /**
-     * Get update
-     *
-     * @return \DateTime
+     * @return DateTime
      */
     public function getUpdate()
     {
@@ -145,9 +138,7 @@ class ProductAttribute
     }
 
     /**
-     * Get idAttribute
-     *
-     * @return integer
+     * @return int
      */
     public function getIdAttribute()
     {
@@ -155,13 +146,11 @@ class ProductAttribute
     }
 
     /**
-     * Set idType
-     *
-     * @param \Unilend\Entity\ProductAttributeType $idType
+     * @param ProductAttributeType $idType
      *
      * @return ProductAttribute
      */
-    public function setIdType(\Unilend\Entity\ProductAttributeType $idType = null)
+    public function setIdType(ProductAttributeType $idType = null)
     {
         $this->idType = $idType;
 
@@ -169,9 +158,7 @@ class ProductAttribute
     }
 
     /**
-     * Get idType
-     *
-     * @return \Unilend\Entity\ProductAttributeType
+     * @return ProductAttributeType
      */
     public function getIdType()
     {
@@ -179,13 +166,11 @@ class ProductAttribute
     }
 
     /**
-     * Set idProduct
-     *
-     * @param \Unilend\Entity\Product $idProduct
+     * @param Product $idProduct
      *
      * @return ProductAttribute
      */
-    public function setIdProduct(\Unilend\Entity\Product $idProduct = null)
+    public function setIdProduct(Product $idProduct = null)
     {
         $this->idProduct = $idProduct;
 
@@ -193,9 +178,7 @@ class ProductAttribute
     }
 
     /**
-     * Get idProduct
-     *
-     * @return \Unilend\Entity\Product
+     * @return Product
      */
     public function getIdProduct()
     {
@@ -203,8 +186,6 @@ class ProductAttribute
     }
 
     /**
-     * Get idRule
-     *
      * @return ProjectEligibilityRule
      */
     public function getIdRule()
@@ -213,8 +194,6 @@ class ProductAttribute
     }
 
     /**
-     * Set idRule
-     *
      * @param ProjectEligibilityRule $idRule
      *
      * @return ProductAttribute

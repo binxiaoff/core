@@ -490,7 +490,7 @@ FOOTER;
 <ul>
 <li>Emprunteur&nbsp;: [EMV DYN]borrower[EMV /DYN]</li>
 <li>Montant&nbsp;: [EMV DYN]amount[EMV /DYN]&nbsp;€</li>
-<li>Maturité&nbsp;: [EMV DYN]duration[EMV /DYN]</li>
+<li>Durée&nbsp;: [EMV DYN]duration[EMV /DYN]</li>
 </ul>
 <table border="0" cellpadding="0" cellspacing="0" width="100%">
     <tr>

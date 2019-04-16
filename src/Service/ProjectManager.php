@@ -2,9 +2,11 @@
 
 namespace Unilend\Service;
 
-use Doctrine\ORM\{EntityManagerInterface, NonUniqueResultException, NoResultException};
-use Unilend\Entity\{Bids, Clients, CloseOutNettingPayment, CloseOutNettingRepayment, CompanyStatus, CompanyStatusHistory, Echeanciers, EcheanciersEmprunteur, Factures, Loans, Projects, ProjectsStatus,
-    Settings, TaxType, Virements};
+use DateTime;
+use Doctrine\ORM\{EntityManagerInterface, NoResultException, NonUniqueResultException};
+use Exception;
+use Unilend\Entity\{Bids, Clients, CloseOutNettingPayment, CloseOutNettingRepayment, CompanyStatus, CompanyStatusHistory, Echeanciers, EcheanciersEmprunteur, Factures, Loans,
+    Projects, ProjectsStatus, Settings, TaxType, Virements};
 use Unilend\Service\Simulator\EntityManager as EntityManagerSimulator;
 
 class ProjectManager
@@ -31,12 +33,14 @@ class ProjectManager
     /**
      * @param Projects|\projects $project
      *
-     * @return \DateTime
+     * @throws Exception
+     *
+     * @return DateTime
      */
-    public function getProjectEndDate($project): \DateTime
+    public function getProjectEndDate($project): DateTime
     {
         if ($project instanceof \projects) {
-            return null !== $project->date_fin && $project->date_fin !== '0000-00-00 00:00:00' ? new \DateTime($project->date_fin) : new \DateTime($project->date_retrait);
+            return null !== $project->date_fin && '0000-00-00 00:00:00' !== $project->date_fin ? new DateTime($project->date_fin) : new DateTime($project->date_retrait);
         }
 
         return $project->getDateFin() ?? $project->getDateRetrait();
@@ -45,9 +49,10 @@ class ProjectManager
     /**
      * @param Projects $project
      *
-     * @return bool
      * @throws NoResultException
      * @throws NonUniqueResultException
+     *
+     * @return bool
      */
     public function isFunded(Projects $project): bool
     {
@@ -119,7 +124,8 @@ class ProjectManager
         $fundingDurationSetting = $this->entityManager
             ->getRepository(Settings::class)
             ->findOneBy(['type' => 'Durée moyenne financement'])
-            ->getValue();
+            ->getValue()
+        ;
 
         $projectAverageFundingDuration = 15;
         foreach (json_decode($fundingDurationSetting) as $averageFundingDuration) {
@@ -161,24 +167,25 @@ class ProjectManager
 
         return [
             'minimum' => round($financialCalculation->PMT($minimumRate / 100 / 12, $duration, -$amount) + $commission),
-            'maximum' => round($financialCalculation->PMT($maximumRate / 100 / 12, $duration, -$amount) + $commission)
+            'maximum' => round($financialCalculation->PMT($maximumRate / 100 / 12, $duration, -$amount) + $commission),
         ];
     }
 
     /**
      * @param Projects $project
      *
+     * @throws Exception
+     *
      * @return mixed
-     * @throws \Exception
      */
     public function getProjectRateRangeId(Projects $project)
     {
         if (empty($project->getPeriod())) {
-            throw new \Exception('project period not set.');
+            throw new Exception('project period not set.');
         }
 
         if (empty($project->getRisk())) {
-            throw new \Exception('project risk not set.');
+            throw new Exception('project risk not set.');
         }
 
         /** @var \project_period $projectPeriod */
@@ -190,38 +197,40 @@ class ProjectManager
             $rateSettings        = $projectRateSettings->getSettings($project->getRisk(), $projectPeriod->id_period);
 
             if (empty($rateSettings)) {
-                throw new \Exception('No rate settings found for the project.');
+                throw new Exception('No rate settings found for the project.');
             }
-            if (count($rateSettings) === 1) {
+            if (1 === count($rateSettings)) {
                 return $rateSettings[0]['id_rate'];
-            } else {
-                throw new \Exception('More than one rate settings found for the project.');
             }
-        } else {
-            throw new \Exception('Period not found for the project.');
+
+            throw new Exception('More than one rate settings found for the project.');
         }
+
+        throw new Exception('Period not found for the project.');
     }
 
     /**
      * @param Projects $project
      *
-     * @return bool
      * @throws NoResultException
      * @throws NonUniqueResultException
+     *
+     * @return bool
      */
     public function isRateMinReached(Projects $project)
     {
         $rateRange       = $this->bidManager->getProjectRateRange($project);
         $totalBidRateMin = $this->entityManager
             ->getRepository(Bids::class)
-            ->getProjectTotalAmount($project, $rateRange['rate_min'], [Bids::STATUS_PENDING, Bids::STATUS_ACCEPTED]);
+            ->getProjectTotalAmount($project, $rateRange['rate_min'], [Bids::STATUS_PENDING, Bids::STATUS_ACCEPTED])
+        ;
 
         return bccomp($totalBidRateMin, $project->getAmount()) >= 0;
     }
 
     /**
      * @param Projects $project
-     * @param boolean  $inclTax
+     * @param bool     $inclTax
      *
      * @return float
      */
@@ -249,7 +258,7 @@ class ProjectManager
 
     /**
      * @param Projects $project
-     * @param boolean  $includePendingRequest
+     * @param bool     $includePendingRequest
      *
      * @return string
      */
@@ -273,6 +282,8 @@ class ProjectManager
 
     /**
      * @param Projects $project
+     *
+     * @throws NonUniqueResultException
      *
      * @return bool
      */
@@ -327,6 +338,70 @@ class ProjectManager
     }
 
     /**
+     * @param Loans $loan
+     *
+     * @throws NoResultException
+     * @throws NonUniqueResultException
+     *
+     * @return array
+     */
+    public function getCreditorClaimAmounts(Loans $loan)
+    {
+        if ($loan->getProject()->getCloseOutNettingDate()) {
+            $closeOutNettingRepayment = $this->entityManager->getRepository(CloseOutNettingRepayment::class)->findOneBy(['idLoan' => $loan]);
+            $remainingCapital         = round(bcsub($closeOutNettingRepayment->getCapital(), $closeOutNettingRepayment->getRepaidCapital(), 4), 2);
+            $remainingInterest        = round(bcsub($closeOutNettingRepayment->getInterest(), $closeOutNettingRepayment->getRepaidInterest(), 4), 2);
+            $expired                  = round(bcadd($remainingCapital, $remainingInterest, 4), 2);
+            $toExpire                 = 0;
+        } else {
+            $collectiveProceedingStatus = [
+                CompanyStatus::STATUS_PRECAUTIONARY_PROCESS,
+                CompanyStatus::STATUS_RECEIVERSHIP,
+                CompanyStatus::STATUS_COMPULSORY_LIQUIDATION,
+            ];
+            $companyStatusHistory = $this->entityManager
+                ->getRepository(CompanyStatusHistory::class)
+                ->findFirstHistoryByCompanyAndStatus($loan->getProject()->getIdCompany(), $collectiveProceedingStatus)
+            ;
+
+            $repaymentScheduleRepository = $this->entityManager->getRepository(Echeanciers::class);
+            $expired                     = $repaymentScheduleRepository->getTotalOverdueAmountByLoan($loan, $companyStatusHistory->getChangedOn());
+            $toExpire                    = round(bcsub(
+                $repaymentScheduleRepository->getRemainingCapitalByLoan($loan),
+                $repaymentScheduleRepository->getOverdueCapitalByLoan($loan, $companyStatusHistory->getChangedOn()),
+                4
+            ), 2);
+        }
+
+        return ['expired' => $expired, 'to_expired' => $toExpire];
+    }
+
+    /**
+     * @param Projects $project
+     *
+     * @return bool
+     */
+    public function isEditable(Projects $project): bool
+    {
+        return $project->getStatus() < ProjectsStatus::STATUS_ONLINE;
+    }
+
+    /**
+     * @param Projects $project
+     * @param Clients  $user
+     *
+     * @return bool
+     */
+    public function isScoringEditable(Projects $project, Clients $user): bool
+    {
+        return
+            $this->isEditable($project)
+            && $project->getRunParticipant()
+            && $project->getRunParticipant()->getCompany() === $user->getCompany()
+        ;
+    }
+
+    /**
      * @param Projects $project
      *
      * @return array
@@ -347,79 +422,5 @@ class ProjectManager
         }
 
         return $remainingAmounts;
-    }
-
-    /**
-     * @param Loans $loan
-     *
-     * @return array
-     * @throws NoResultException
-     * @throws NonUniqueResultException
-     */
-    public function getCreditorClaimAmounts(Loans $loan)
-    {
-        if ($loan->getProject()->getCloseOutNettingDate()) {
-            $closeOutNettingRepayment = $this->entityManager->getRepository(CloseOutNettingRepayment::class)->findOneBy(['idLoan' => $loan]);
-            $remainingCapital         = round(bcsub($closeOutNettingRepayment->getCapital(), $closeOutNettingRepayment->getRepaidCapital(), 4), 2);
-            $remainingInterest        = round(bcsub($closeOutNettingRepayment->getInterest(), $closeOutNettingRepayment->getRepaidInterest(), 4), 2);
-            $expired                  = round(bcadd($remainingCapital, $remainingInterest, 4), 2);
-            $toExpire                 = 0;
-        } else {
-            $collectiveProceedingStatus = [
-                CompanyStatus::STATUS_PRECAUTIONARY_PROCESS,
-                CompanyStatus::STATUS_RECEIVERSHIP,
-                CompanyStatus::STATUS_COMPULSORY_LIQUIDATION
-            ];
-            $companyStatusHistory       = $this->entityManager
-                ->getRepository(CompanyStatusHistory::class)
-                ->findFirstHistoryByCompanyAndStatus($loan->getProject()->getIdCompany(), $collectiveProceedingStatus);
-
-            $repaymentScheduleRepository = $this->entityManager->getRepository(Echeanciers::class);
-            $expired                     = $repaymentScheduleRepository->getTotalOverdueAmountByLoan($loan, $companyStatusHistory->getChangedOn());
-            $toExpire                    = round(bcsub(
-                $repaymentScheduleRepository->getRemainingCapitalByLoan($loan),
-                $repaymentScheduleRepository->getOverdueCapitalByLoan($loan, $companyStatusHistory->getChangedOn()),
-                4
-            ), 2);
-        }
-
-        return ['expired' => $expired, 'to_expired' => $toExpire];
-    }
-
-    /**
-     * @param Projects $project
-     * @return bool
-     */
-    public function isEditable(Projects $project): bool
-    {
-        return $project->getStatus() < ProjectsStatus::STATUS_ONLINE;
-    }
-
-    /**
-     * @param Projects $project
-     * @param Clients  $user
-     * @return bool
-     */
-    public function isProjectScoringEditable(Projects $project, Clients $user): bool
-    {
-        return (
-            $this->isEditable($project)
-            && $project->getArrangerParticipant()
-            && $project->getArrangerParticipant()->getCompany() === $user->getCompany()
-        );
-    }
-
-    /**
-     * @param Projects $project
-     * @param Clients  $user
-     * @return bool
-     */
-    public function isBorrowerScoringEditable(Projects $project, Clients $user): bool
-    {
-        return (
-            $this->isEditable($project)
-            && $project->getRunParticipant()
-            && $project->getRunParticipant()->getCompany() === $user->getCompany()
-        );
     }
 }

@@ -1,24 +1,26 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Unilend\Entity;
 
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Criteria;
+use Doctrine\Common\Collections\{ArrayCollection, Criteria};
 use Doctrine\ORM\Mapping as ORM;
+use Unilend\Entity\Traits\Timestampable;
 
 /**
- * Product
- *
  * @ORM\Table(name="product")
  * @ORM\Entity(repositoryClass="Unilend\Repository\ProductRepository")
  */
 class Product
 {
-    const STATUS_OFFLINE  = 0; // Unavailable in FO
-    const STATUS_ONLINE   = 1; // available both in FO and BO
-    const STATUS_ARCHIVED = 2; // unavailable either in FO or BO
+    use Timestampable;
 
-    const PRODUCT_BLEND = 'amortization_ifp_blend_fr';
+    public const STATUS_OFFLINE  = 0; // Unavailable in FO
+    public const STATUS_ONLINE   = 1; // available both in FO and BO
+    public const STATUS_ARCHIVED = 2; // unavailable either in FO or BO
+
+    public const PRODUCT_BLEND = 'amortization_ifp_blend_fr';
 
     /**
      * @var string
@@ -37,30 +39,16 @@ class Product
     /**
      * @var string
      *
-     * @ORM\Column(name="proxy_template", type="string", length=191)
+     * @ORM\Column(name="proxy_template", type="string", length=191, nullable=true)
      */
     private $proxyTemplate;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="proxy_block_slug", type="string", length=191)
+     * @ORM\Column(name="proxy_block_slug", type="string", length=191, nullable=true)
      */
     private $proxyBlockSlug;
-
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="added", type="datetime")
-     */
-    private $added;
-
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="updated", type="datetime")
-     */
-    private $updated;
 
     /**
      * @var int
@@ -76,7 +64,7 @@ class Product
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\RepaymentType")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_repayment_type", referencedColumnName="id_repayment_type", nullable=false)
+     *     @ORM\JoinColumn(name="id_repayment_type", referencedColumnName="id_repayment_type", nullable=false)
      * })
      */
     private $idRepaymentType;
@@ -96,7 +84,7 @@ class Product
     private $productAttributes;
 
     /**
-     * Constructor
+     * Product constructor.
      */
     public function __construct()
     {
@@ -105,13 +93,11 @@ class Product
     }
 
     /**
-     * Set label
-     *
      * @param string $label
      *
      * @return Product
      */
-    public function setLabel($label)
+    public function setLabel(string $label): Product
     {
         $this->label = $label;
 
@@ -119,23 +105,19 @@ class Product
     }
 
     /**
-     * Get label
-     *
      * @return string
      */
-    public function getLabel()
+    public function getLabel(): string
     {
         return $this->label;
     }
 
     /**
-     * Set status
-     *
-     * @param integer $status
+     * @param int $status
      *
      * @return Product
      */
-    public function setStatus($status)
+    public function setStatus(int $status): Product
     {
         $this->status = $status;
 
@@ -143,23 +125,19 @@ class Product
     }
 
     /**
-     * Get status
-     *
-     * @return integer
+     * @return int
      */
-    public function getStatus()
+    public function getStatus(): int
     {
         return $this->status;
     }
 
     /**
-     * Set proxyTemplate
-     *
      * @param string $proxyTemplate
      *
      * @return Product
      */
-    public function setProxyTemplate($proxyTemplate)
+    public function setProxyTemplate(string $proxyTemplate): Product
     {
         $this->proxyTemplate = $proxyTemplate;
 
@@ -167,23 +145,19 @@ class Product
     }
 
     /**
-     * Get proxyTemplate
-     *
      * @return string
      */
-    public function getProxyTemplate()
+    public function getProxyTemplate(): string
     {
         return $this->proxyTemplate;
     }
 
     /**
-     * Set proxyBlockSlug
-     *
      * @param string $proxyBlockSlug
      *
      * @return Product
      */
-    public function setProxyBlockSlug($proxyBlockSlug)
+    public function setProxyBlockSlug(string $proxyBlockSlug): Product
     {
         $this->proxyBlockSlug = $proxyBlockSlug;
 
@@ -191,81 +165,27 @@ class Product
     }
 
     /**
-     * Get proxyBlockSlug
-     *
      * @return string
      */
-    public function getProxyBlockSlug()
+    public function getProxyBlockSlug(): string
     {
         return $this->proxyBlockSlug;
     }
 
     /**
-     * Set added
-     *
-     * @param \DateTime $added
-     *
-     * @return Product
+     * @return int
      */
-    public function setAdded($added)
-    {
-        $this->added = $added;
-
-        return $this;
-    }
-
-    /**
-     * Get added
-     *
-     * @return \DateTime
-     */
-    public function getAdded()
-    {
-        return $this->added;
-    }
-
-    /**
-     * Set updated
-     *
-     * @param \DateTime $updated
-     *
-     * @return Product
-     */
-    public function setUpdated($updated)
-    {
-        $this->updated = $updated;
-
-        return $this;
-    }
-
-    /**
-     * Get updated
-     *
-     * @return \DateTime
-     */
-    public function getUpdated()
-    {
-        return $this->updated;
-    }
-
-    /**
-     * Get idProduct
-     *
-     * @return integer
-     */
-    public function getIdProduct()
+    public function getIdProduct(): int
     {
         return $this->idProduct;
     }
 
     /**
-     * Set idRepaymentType
-     *
      * @param RepaymentType $idRepaymentType
      *
      * @return Product
      */
-    public function setIdRepaymentType(RepaymentType $idRepaymentType = null)
+    public function setIdRepaymentType(RepaymentType $idRepaymentType = null): Product
     {
         $this->idRepaymentType = $idRepaymentType;
 
@@ -273,11 +193,9 @@ class Product
     }
 
     /**
-     * Get idRepaymentType
-     *
      * @return RepaymentType
      */
-    public function getIdRepaymentType()
+    public function getIdRepaymentType(): RepaymentType
     {
         return $this->idRepaymentType;
     }
@@ -295,11 +213,12 @@ class Product
      *
      * @return ProductAttribute[]|ArrayCollection
      */
-    public function getProductAttributes(ProductAttributeType $attributeType = null)
+    public function getProductAttributes(ProductAttributeType $attributeType = null): iterable
     {
         if (null !== $attributeType && null !== $this->productAttributes) {
             $criteria = Criteria::create()
-                ->where(Criteria::expr()->eq('idType', $attributeType));
+                ->where(Criteria::expr()->eq('idType', $attributeType))
+            ;
 
             return $this->productAttributes->matching($criteria);
         }

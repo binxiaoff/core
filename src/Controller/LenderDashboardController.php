@@ -12,15 +12,18 @@ use Unilend\Repository\ProjectsRepository;
 
 class LenderDashboardController extends Controller
 {
-    const REPAYMENT_TIME_FRAME_MONTH   = 'month';
-    const REPAYMENT_TIME_FRAME_QUARTER = 'quarter';
-    const REPAYMENT_TIME_FRAME_YEAR    = 'year';
+    public const REPAYMENT_TIME_FRAME_MONTH   = 'month';
+    public const REPAYMENT_TIME_FRAME_QUARTER = 'quarter';
+    public const REPAYMENT_TIME_FRAME_YEAR    = 'year';
 
     /**
      * @Route("synthese", name="lender_dashboard")
+     *
      * @Security("has_role('ROLE_LENDER')")
      *
      * @param UserInterface|Clients|null $client
+     *
+     * @throws \Exception
      *
      * @return Response
      */
@@ -48,8 +51,8 @@ class LenderDashboardController extends Controller
         $projectRepository           = $entityManager->getRepository(Projects::class);
 
         /** @var Wallet $wallet */
-        $wallet          = $walletRepository->getWalletByType($client, WalletType::LENDER);
-        $products        = $entityManager->getRepository(Product::class)->findAvailableProductsByClient($wallet->getIdClient());
+        $wallet   = $walletRepository->getWalletByType($client, WalletType::LENDER);
+        $products = $entityManager->getRepository(Product::class)->findAvailableProductsByClient($wallet->getIdClient());
 
         $ongoingProjects = $projectRepository->findByWithCustomSort(
             ['status' => ProjectsStatus::STATUS_ONLINE, 'idProduct' => $products],
@@ -77,22 +80,22 @@ class LenderDashboardController extends Controller
                     'days_left'        => $project->getDateRetrait()->diff(new \DateTime('NOW'))->days,
                     'finished'         => $project->getStatus() > ProjectsStatus::STATUS_ONLINE || $project->getDateRetrait() < new \DateTime('NOW'),
                     'end_date'         => $project->getDateRetrait(),
-                    'pending_bids'     => $bid->getBidsByStatus(Bids::STATUS_PENDING, $project->getIdProject(), $wallet->getId())
+                    'pending_bids'     => $bid->getBidsByStatus(Bids::STATUS_PENDING, $project->getIdProject(), $wallet->getId()),
                 ];
             }
 
-            $company = $project->getIdCompany();
+            $company             = $project->getIdCompany();
             $publishedProjects[] = [
-                'title'            => $project->getTitle(),
-                'slug'             => $project->getSlug(),
-                'company_address'  => $company->getIdAddress() ? $company->getIdAddress()->getCity() . ', ' . $company->getIdAddress()->getZip() : '',
-                'amount'           => $project->getAmount(),
-                'days_left'        => $project->getDateRetrait()->diff(new \DateTime('NOW'))->days,
-                'risk'             => $project->getRisk(),
-                'average_rate'     => $projectRepository->getAverageInterestRate($project),
-                'bid_count'        => count($bid->getBidsByStatus(Bids::STATUS_PENDING, $project->getIdProject())),
-                'finished'         => $project->getStatus() > ProjectsStatus::STATUS_ONLINE || $project->getDateRetrait() < new \DateTime('NOW'),
-                'end_date'         => $project->getDateRetrait()
+                'title'           => $project->getTitle(),
+                'slug'            => $project->getSlug(),
+                'company_address' => $company->getIdAddress() ? $company->getIdAddress()->getCity() . ', ' . $company->getIdAddress()->getZip() : '',
+                'amount'          => $project->getAmount(),
+                'days_left'       => $project->getDateRetrait()->diff(new \DateTime('NOW'))->days,
+                'risk'            => $project->getRisk(),
+                'average_rate'    => $projectRepository->getAverageInterestRate($project),
+                'bid_count'       => count($bid->getBidsByStatus(Bids::STATUS_PENDING, $project->getIdProject())),
+                'finished'        => $project->getStatus() > ProjectsStatus::STATUS_ONLINE || $project->getDateRetrait() < new \DateTime('NOW'),
+                'end_date'        => $project->getDateRetrait(),
             ];
         }
 
@@ -115,6 +118,7 @@ class LenderDashboardController extends Controller
         $yearAxisData           = $this->getYearAxis($repaymentDateRange);
 
         $lenderOperationsManager = $this->get('unilend.service.lender_operations_manager');
+
         try {
             $provisionAmount = $lenderOperationsManager->getTotalProvisionAmount($wallet);
             $withdrawAmount  = $lenderOperationsManager->getTotalWithdrawalAmount($wallet);
@@ -126,7 +130,7 @@ class LenderDashboardController extends Controller
                 'class'     => __CLASS__,
                 'function'  => __FUNCTION__,
                 'file'      => $exception->getFile(),
-                'line'      => $exception->getLine()
+                'line'      => $exception->getLine(),
             ]);
         }
 
@@ -139,33 +143,33 @@ class LenderDashboardController extends Controller
         return $this->render(
             'lender_dashboard/index.html.twig',
             [
-                'dashboardPanels'   => $this->getDashboardPreferences($client),
-                'lenderDetails' => [
+                'dashboardPanels' => $this->getDashboardPreferences($client),
+                'lenderDetails'   => [
                     'numberOfLoans'             => $loansRepository->getDefinitelyAcceptedLoansCount($wallet),
                     'companiesLenderInvestedIn' => $irrData['companiesLenderInvestedIn'],
                     'hasBids'                   => $hasBids,
-                    'hasAcceptedLoans'          => $hasAcceptedLoans
+                    'hasAcceptedLoans'          => $hasAcceptedLoans,
                 ],
-                'irrData'           => $irrData,
-                'walletData'        => [
+                'irrData'    => $irrData,
+                'walletData' => [
                     'by_sector' => $lenderDisplayManager->getLenderLoansAllocationByCompanySector($wallet->getIdClient()),
                     'by_region' => $lenderDisplayManager->getLenderLoansAllocationByRegion($wallet->getIdClient()),
                 ],
-                'amountDetails'     => [
+                'amountDetails' => [
                     'loaned_amount'     => round($loan->sumPrets($wallet->getId()), 2),
                     'blocked_amount'    => round($wallet->getCommittedBalance(), 2),
                     'expected_earnings' => round($repaidGrossInterests + $upcomingGrossInterests - $problematicProjects['interests'], 2),
-                    'deposited_amount'  => $depositedAmount
+                    'deposited_amount'  => $depositedAmount,
                 ],
-                'capitalDetails'    => [
+                'capitalDetails' => [
                     'repaid_capital'        => round($lenderRepayment->getRepaidCapital(['id_lender' => $wallet->getId()]), 2),
                     'owed_capital'          => round($lenderRepayment->getOwedCapital(['id_lender' => $wallet->getId()]) - $problematicProjects['capital'], 2),
-                    'capital_in_difficulty' => round($problematicProjects['capital'], 2)
+                    'capital_in_difficulty' => round($problematicProjects['capital'], 2),
                 ],
-                'interestsDetails'  => [
+                'interestsDetails' => [
                     'received_interests'      => round($repaidGrossInterests, 2),
                     'upcoming_interests'      => round($upcomingGrossInterests - $problematicProjects['interests'], 2),
-                    'interests_in_difficulty' => round($problematicProjects['interests'], 2)
+                    'interests_in_difficulty' => round($problematicProjects['interests'], 2),
                 ],
                 'ongoingBids'       => $bid->counter('id_wallet = ' . $wallet->getId() . ' AND status = ' . Bids::STATUS_PENDING),
                 'ongoingProjects'   => $ongoingBidsByProject,
@@ -173,37 +177,38 @@ class LenderDashboardController extends Controller
                 'timeAxis'          => [
                     'month'   => $monthAxisData['monthAxis'],
                     'quarter' => $quarterAxisData['quarterAxis'],
-                    'year'    => $yearAxisData['yearAxis']
+                    'year'    => $yearAxisData['yearAxis'],
                 ],
-                'monthSum'          => [
+                'monthSum' => [
                     'capital'   => array_column($lenderRepaymentsData, 'capital'),
                     'interests' => array_column($lenderRepaymentsData, 'netInterests'),
                     'tax'       => array_column($lenderRepaymentsData, 'taxes'),
-                    'max'       => $repaymentScheduleRepository->getMaxRepaymentAmountForLender($wallet->getId(), self::REPAYMENT_TIME_FRAME_MONTH)
+                    'max'       => $repaymentScheduleRepository->getMaxRepaymentAmountForLender($wallet->getId(), self::REPAYMENT_TIME_FRAME_MONTH),
                 ],
-                'quarterSum'        => [
+                'quarterSum' => [
                     'capital'   => $repaymentDataPerPeriod['quarterCapital'],
                     'interests' => $repaymentDataPerPeriod['quarterInterests'],
                     'tax'       => $repaymentDataPerPeriod['quarterTax'],
-                    'max'       => $repaymentScheduleRepository->getMaxRepaymentAmountForLender($wallet->getId(), self::REPAYMENT_TIME_FRAME_QUARTER)
+                    'max'       => $repaymentScheduleRepository->getMaxRepaymentAmountForLender($wallet->getId(), self::REPAYMENT_TIME_FRAME_QUARTER),
                 ],
-                'yearSum'           => [
+                'yearSum' => [
                     'capital'   => $repaymentDataPerPeriod['yearCapital'],
                     'interests' => $repaymentDataPerPeriod['yearInterests'],
                     'tax'       => $repaymentDataPerPeriod['yearTax'],
-                    'max'       => $repaymentScheduleRepository->getMaxRepaymentAmountForLender($wallet->getId(), self::REPAYMENT_TIME_FRAME_YEAR)
+                    'max'       => $repaymentScheduleRepository->getMaxRepaymentAmountForLender($wallet->getId(), self::REPAYMENT_TIME_FRAME_YEAR),
                 ],
-                'bandOrigin'        => [
+                'bandOrigin' => [
                     'month'   => $monthAxisData['monthBandOrigin'],
                     'quarter' => $quarterAxisData['quarterBandOrigin'],
-                    'year'    => $yearAxisData['yearBandOrigin']
-                ]
+                    'year'    => $yearAxisData['yearBandOrigin'],
+                ],
             ]
         );
     }
 
     /**
      * @Route("/synthese/preferences", name="save_panel_preferences")
+     *
      * @Security("has_role('ROLE_LENDER')")
      *
      * @param Request                    $request
@@ -227,18 +232,18 @@ class LenderDashboardController extends Controller
         $postData = $request->request->get('panels');
         $result   = ['error' => 1, 'msg' => ''];
 
-        if ($request->getMethod() === 'PUT') {
+        if ('PUT' === $request->getMethod()) {
             try {
                 $preferences = $panelPreferences->getLenderPreferencesByPage($wallet->getId(), $pageName);
                 foreach ($postData as $panel) {
                     if (
-                        $panel['order'] == (int) $panel['order']
+                    (int) $panel['order'] === (int) $panel['order']
                         && isset($panel['hidden'], $panel['order'])
                     ) {
                         if (
-                            isset ($preferences[$panel['id']])
+                            isset($preferences[$panel['id']])
                             && ($preferences[$panel['id']]['hidden'] != $panel['hidden']
-                            || $preferences[$panel['id']]['panel_order'] != $panel['order'])
+                                || $preferences[$panel['id']]['panel_order'] != $panel['order'])
                         ) {
                             $panelPreferences->get($preferences[$panel['id']]['id_lender_panel_preference']);
                             $panelPreferences->hidden      = ('true' === $panel['hidden']) ? 1 : 0;
@@ -258,14 +263,14 @@ class LenderDashboardController extends Controller
             } catch (\Exception $exception) {
                 $result = ['error' => 1, 'msg' => $exception->getMessage(), 'data' => $postData];
             }
-        } elseif ($request->getMethod() === 'GET') {
+        } elseif ('GET' === $request->getMethod()) {
             try {
                 $data        = ['panels' => []];
                 $preferences = $panelPreferences->getLenderPreferencesByPage($wallet->getId(), $pageName);
 
                 if (false === empty($preferences)) {
                     foreach ($preferences as $panelName => $panel) {
-                        $data['panels'][] = ['id' => $panelName, 'order' => $panel['panel_order'], 'hidden' => $panel['hidden'] == 1];
+                        $data['panels'][] = ['id' => $panelName, 'order' => $panel['panel_order'], 'hidden' => 1 === (int) $panel['hidden']];
                     }
                 }
                 $result = ['success' => 1, 'data' => $data, 'preferences' => $preferences];
@@ -309,7 +314,7 @@ class LenderDashboardController extends Controller
                     $panelPreferencesData[$panelName] = [
                         'id'     => $panelName,
                         'order'  => $panel['panel_order'],
-                        'hidden' => $panel['hidden'] == 1
+                        'hidden' => 1 === (int) $panel['hidden'],
                     ];
                 }
             }
@@ -322,15 +327,16 @@ class LenderDashboardController extends Controller
     /**
      * @param array $repaymentDateRange
      *
-     * @return array
      * @throws \Exception
+     *
+     * @return array
      */
     private function getPaddingData(array $repaymentDateRange): array
     {
-        $firstDateTime   = new \DateTime($repaymentDateRange['first_repayment_date']);
-        $lastDateTime    = new \DateTime($repaymentDateRange['last_repayment_date']);
-        $interval        = new \DateInterval('P1M');
-        $paddingData     = [];
+        $firstDateTime = new \DateTime($repaymentDateRange['first_repayment_date']);
+        $lastDateTime  = new \DateTime($repaymentDateRange['last_repayment_date']);
+        $interval      = new \DateInterval('P1M');
+        $paddingData   = [];
 
         while ($firstDateTime->format('Y-m') <= $lastDateTime->format('Y-m')) {
             $paddingData[$firstDateTime->format('Y-m')] = [
@@ -340,7 +346,7 @@ class LenderDashboardController extends Controller
                 'capital'        => 0,
                 'grossInterests' => 0,
                 'netInterests'   => 0,
-                'taxes'          => 0
+                'taxes'          => 0,
             ];
             $firstDateTime->add($interval);
         }
@@ -351,8 +357,9 @@ class LenderDashboardController extends Controller
     /**
      * @param array $repaymentDateRange
      *
-     * @return array
      * @throws \Exception
+     *
+     * @return array
      */
     private function getMonthAxis(array $repaymentDateRange): array
     {
@@ -364,29 +371,32 @@ class LenderDashboardController extends Controller
         $monthNames      = $this->getMonthNames()['fullNames'];
 
         while ($firstDateTime->format('Y-m') <= $lastDateTime->format('Y-m')) {
-            if ($firstDateTime->format('Y-m') == date('Y-m')) {
+            if ($firstDateTime->format('Y-m') === date('Y-m')) {
                 $monthBandOrigin = count($monthAxis) - 0.5;
             }
 
             $monthAxis[] = $monthNames[$firstDateTime->format('n')] . ' ' . $firstDateTime->format('Y');
             $firstDateTime->add($interval);
         }
+
         return ['monthAxis' => $monthAxis, 'monthBandOrigin' => $monthBandOrigin];
     }
 
     /**
      * @param array $lenderRepaymentsData
      *
+     * @throws \Exception
+     *
      * @return array
      */
     private function getQuarterAxis(array $lenderRepaymentsData): array
     {
-        $monthNames        = $this->getMonthNames()['shortNames'];
-        $quarterLabels     = [
+        $monthNames    = $this->getMonthNames()['shortNames'];
+        $quarterLabels = [
             1 => $monthNames[1] . '-' . $monthNames[3],
             2 => $monthNames[4] . '-' . $monthNames[6],
             3 => $monthNames[7] . '-' . $monthNames[9],
-            4 => $monthNames[10] . '-' . $monthNames[12]
+            4 => $monthNames[10] . '-' . $monthNames[12],
         ];
         $quarterAxis       = [];
         $quarterBandOrigin = 0;
@@ -394,7 +404,7 @@ class LenderDashboardController extends Controller
 
         foreach ($lenderRepaymentsData as $lenderRepayment) {
             if ($lenderRepayment['month'] <= date('Y-m') && $currentQuarter != $lenderRepayment['quarter']) {
-                $quarterBandOrigin++;
+                ++$quarterBandOrigin;
             }
             $currentQuarter = $lenderRepayment['quarter'];
 
@@ -407,10 +417,11 @@ class LenderDashboardController extends Controller
     }
 
     /**
-     * Returns the full and short month names
+     * Returns the full and short month names.
+     *
+     * @throws \Exception
      *
      * @return array
-     * @throws \Exception
      */
     private function getMonthNames(): array
     {
@@ -419,16 +430,19 @@ class LenderDashboardController extends Controller
         $fullMonthNames  = [];
         $shortMonthNames = [];
 
-        for ($i = 1; $i <= 12; $i++) {
+        for ($i = 1; $i <= 12; ++$i) {
             $fullMonthNames[$i]  = strftime('%B', $startDate->getTimestamp());
             $shortMonthNames[$i] = strftime('%b', $startDate->getTimestamp());
             $startDate->add($monthCounter);
         }
+
         return ['fullNames' => $fullMonthNames, 'shortNames' => $shortMonthNames];
     }
 
     /**
      * @param array $repaymentDateRange
+     *
+     * @throws \Exception
      *
      * @return array
      */
@@ -437,13 +451,14 @@ class LenderDashboardController extends Controller
         $yearAxis       = [];
         $yearBandOrigin = 0;
 
-        for ($year = (new \DateTime($repaymentDateRange['first_repayment_date']))->format('Y'); $year <= (new \DateTime($repaymentDateRange['last_repayment_date']))->format('Y'); $year++) {
+        for ($year = (new \DateTime($repaymentDateRange['first_repayment_date']))->format('Y'); $year <= (new \DateTime($repaymentDateRange['last_repayment_date']))->format('Y'); ++$year) {
             $yearAxis[] = $year;
 
             if ($year == date('Y')) {
                 $yearBandOrigin = count($yearAxis) - 1.5;
             }
         }
+
         return ['yearAxis' => $yearAxis, 'yearBandOrigin' => $yearBandOrigin];
     }
 
@@ -482,13 +497,13 @@ class LenderDashboardController extends Controller
                 $yearTax[$lenderRepayment['year']] = 0;
             }
 
-            $quarterCapital[$lenderRepayment['year']][$lenderRepayment['quarter']] += $lenderRepayment['capital'];
+            $quarterCapital[$lenderRepayment['year']][$lenderRepayment['quarter']]   += $lenderRepayment['capital'];
             $quarterInterests[$lenderRepayment['year']][$lenderRepayment['quarter']] += $lenderRepayment['netInterests'];
-            $quarterTax[$lenderRepayment['year']][$lenderRepayment['quarter']] += $lenderRepayment['taxes'];
+            $quarterTax[$lenderRepayment['year']][$lenderRepayment['quarter']]       += $lenderRepayment['taxes'];
 
-            $yearCapital[$lenderRepayment['year']] += $lenderRepayment['capital'];
+            $yearCapital[$lenderRepayment['year']]   += $lenderRepayment['capital'];
             $yearInterests[$lenderRepayment['year']] += $lenderRepayment['netInterests'];
-            $yearTax[$lenderRepayment['year']] += $lenderRepayment['taxes'];
+            $yearTax[$lenderRepayment['year']]       += $lenderRepayment['taxes'];
         }
 
         $capital   = [];
@@ -503,6 +518,7 @@ class LenderDashboardController extends Controller
         array_walk_recursive($quarterTax, function ($value) use (&$tax) {
             $tax[] = $value;
         });
+
         return [
             'quarterCapital'   => $capital,
             'quarterInterests' => $interests,
@@ -516,10 +532,9 @@ class LenderDashboardController extends Controller
     /**
      * @param Clients $client
      *
-     * @return array
-     *
-     * @throws \Doctrine\DBAL\Cache\CacheException
      * @throws \Exception
+     *
+     * @return array
      */
     private function getIRRDetailsForUserLevelWidget(Clients $client): array
     {
@@ -532,24 +547,26 @@ class LenderDashboardController extends Controller
         $widgetValue               = 0;
         $irrHasBeenCalculated      = false;
         $irrTranslationType        = '';
-        $companiesLenderInvestedIn = $entityManager->getRepository(Projects::class)->countCompaniesLenderInvestedIn($wallet->getId());
+        $companiesLenderInvestedIn = 0; //$entityManager->getRepository(Projects::class)->countCompaniesLenderInvestedIn($wallet->getId());
 
         if (0 < $companiesLenderInvestedIn) {
             /** @var LenderStatistic $lastIRR */
             $lastIRR = $entityManager->getRepository(LenderStatistic::class)->findOneBy(['idWallet' => $wallet, 'typeStat' => LenderStatistic::TYPE_STAT_IRR], ['added' => 'DESC']);
             if (null !== $lastIRR) {
-                $irrHasBeenCalculated  = true;
+                $irrHasBeenCalculated = true;
                 switch ($lastIRR->getStatus()) {
                     case LenderStatistic::STAT_VALID_OK:
                         $widgetValue        = $lastIRR->getValue();
                         $irrTranslationType = $lastIRR->getValue() >= 0 ? 'positive-' : 'negative-';
+
                         break;
                     case LenderStatistic::STAT_VALID_NOK:
-                        $lossRate           = $lenderManager->getLossRate($wallet->getIdClient());
-                        $hasLossRate        = true;
+                        $lossRate    = $lenderManager->getLossRate($wallet->getIdClient());
+                        $hasLossRate = true;
                         if ($lossRate > 0) {
                             $widgetValue = -$lossRate;
                         }
+
                         break;
                     default:
                         //should not happen, there are only 2 status
@@ -563,7 +580,7 @@ class LenderDashboardController extends Controller
             'irrTranslation'            => $irrTranslationType,
             'companiesLenderInvestedIn' => $companiesLenderInvestedIn,
             'hasLossRate'               => $hasLossRate,
-            'irrHasBeenCalculated'      => $irrHasBeenCalculated
+            'irrHasBeenCalculated'      => $irrHasBeenCalculated,
         ];
     }
 }
