@@ -10,6 +10,8 @@ parameters:
         - src
         - tests
     bootstrap: %rootDir%/../../../config/autoload.php
+    autoload_directories:
+        - %rootDir%/../../../bin/.phpunit/phpunit-7.5/src
     autoload_files:
         - %rootDir%/../../../core/command.class.php
         - %rootDir%/../../../core/controller.class.php
