@@ -1,10 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ruleset name="CALS" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:noNamespaceSchemaLocation="vendor/squizlabs/php_codesniffer/phpcs.xsd">
+    <description>The coding standard for CALS project.</description>
+
     <arg name="basepath" value="."/>
     <arg name="cache" value=".phpcs-cache"/>
     <arg name="colors"/>
     <arg name="extensions" value="php"/>
+    <arg name="parallel" value="75"/>
+
     <file>src/</file>
     <file>tests/</file>
 
@@ -12,6 +16,7 @@
     <rule ref="PSR2">
         <exclude name="PSR2.Namespaces.UseDeclaration"/>
         <exclude name="PSR2.ControlStructures.ControlStructureSpacing.SpacingAfterOpenBrace"/>
+        <exclude name="Zend.NamingConventions.ValidVariableName.NotCamelCaps"/>
     </rule>
     <rule ref="PSR12"/>
     <rule ref="vendor/escapestudios/symfony2-coding-standard/Symfony/ruleset.xml">
@@ -25,16 +30,28 @@
             <property name="absoluteLineLimit" value="0"/>
         </properties>
     </rule>
+    <!-- Ban some functions -->
     <rule ref="Generic.PHP.ForbiddenFunctions">
         <properties>
-            <property name="forbiddenFunctions" type="array"
-                      value="dd=>null,var_dump=>null,dump=>null,exit=>null,die=>null,eval=>null,sizeof=>count,delete=>unset,print=>echo,is_null=>null,create_function=>null"/>
+            <property name="forbiddenFunctions" type="array">
+                <element key="dd" value="null"/>
+                <element key="var_dump" value="null"/>
+                <element key="dump" value="null"/>
+                <element key="exit" value="null"/>
+                <element key="die" value="null"/>
+                <element key="eval" value="null"/>
+                <element key="sizeof" value="count"/>
+                <element key="delete" value="unset"/>
+                <element key="print" value="echo"/>
+                <element key="is_null" value="null"/>
+                <element key="create_function" value="null"/>
+            </property>
         </properties>
     </rule>
     <rule ref="Generic.Arrays.DisallowLongArraySyntax"/>
     <rule ref="Squiz.Strings.ConcatenationSpacing">
         <properties>
-            <property name="spacing" value="1" />
+            <property name="spacing" value="1"/>
         </properties>
     </rule>
 </ruleset>
