@@ -115,18 +115,7 @@ class DemoController extends AbstractController
 
             $template['projects']['lender']['inProgress'] = array_merge((array) $projectsInProgressBid, (array) $projectsInProgressNonSignedLoan);
 
-            $inProgressBidCount = $projectRepository->createQueryBuilder('p')
-                ->select('count(p)')
-                ->distinct()
-                ->innerJoin('p.bids', 'b')
-                ->where('b.wallet = :wallet')
-                ->andWhere('b.status = :pending')
-                ->setParameters(['wallet' => $wallet, 'pending' => Bids::STATUS_PENDING])
-                ->getQuery()
-                ->getSingleScalarResult()
-            ;
-
-            $inProgressCount = $inProgressBidCount + count($projectsInProgressNonSignedLoan);
+            $inProgressCount = count($template['projects']['lender']['inProgress']) + count($projectsInProgressNonSignedLoan);
 
             $template['projects']['lender']['inProgressCount'] = [
                 'pending' => $inProgressCount,

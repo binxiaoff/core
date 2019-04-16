@@ -40,9 +40,9 @@
                                     <dt>Montant</dt>
                                     <dd data-fee-reference-amount>
                                         {% if isEditable %}
-                                            <a href="#" id="amount" class="editable" data-type="text" data-inputclass="input-field">{{ project.amount|localizednumber }}</a>&nbsp;€
+                                            <a href="#" id="amount" class="editable" data-type="text" data-inputclass="input-field">{{ project.amount|number_format(0, ',', '&nbsp;')|raw }}</a>&nbsp;€
                                         {% else %}
-                                            {{ project.amount|localizednumber }}&nbsp;€
+                                            {{ project.amount|number_format(0, ',', '&nbsp;')|raw }}&nbsp;€
                                         {% endif %}
                                     </dd>
                                 </dl>
@@ -194,7 +194,7 @@
                                     <a href="{{ path('demo_project_publish', {'hash': project.hash}) }}" class="btn-primary btn-shape-xs margin-10-t" style="width: 100%;">Proposer au financement</a>
                                 {% endif %}
                                 {% if project.status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_ONLINE') %}
-                                    <a href="{{ path('demo_project_fund', {'hash': project.hash}) }}" class="btn-primary btn-shape-xs margin-10-t" style="width: 100%;">Mettre fin à la période de financement</a>
+                                    <a href="{{ path('demo_project_fund', {'hash': project.hash}) }}" class="btn-primary btn-shape-xs margin-10-t" style="width: 100%;">Clôturer la syndication</a>
                                 {% endif %}
                                 {% if project.status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_FUNDED') %}
                                     <a href="{{ path('demo_project_sign', {'hash': project.hash}) }}" class="btn-primary btn-shape-xs margin-10-t" style="width: 100%;">Signer les contrats</a>

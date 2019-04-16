@@ -46,7 +46,7 @@
 
 <article class="dashboard-panel ui-draggable ui-dashboard-panel col-lg-12 col-md-12 col-sm-8 col-xs-4">
     <header class="dashboard-panel-header">
-        <h3 class="dashboard-panel-title">Répartition par canal</h3>
+        <h3 class="dashboard-panel-title">Répartition par marché</h3>
     </header>
     <div class="dashboard-panel-content">
         <div class="row tabs">
@@ -65,7 +65,7 @@
                                             {% endif %}
                                             <span class="label">{{ data.name }}</span>
                                         </dt>
-                                        <dd style="text-align: right">{{ data.y|localizednumber }}&nbsp;€</dd>
+                                        <dd style="text-align: right">{{ data.y|number_format(0, ',', '&nbsp;')|raw }}&nbsp;€</dd>
                                     </div>
                                 {% endfor %}
                             </dl>

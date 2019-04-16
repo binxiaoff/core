@@ -93,9 +93,9 @@
                                             {% include 'demo/partials/bubble.html.twig' with {'partner': project.idPartner.label} %}
                                         </td>
                                         <td class="table-projects-item-title">{{ project.title }}</td>
-                                        <td class="table-projects-item-project-amount">{{ project.amount|localizednumber }} €</td>
+                                        <td class="table-projects-item-project-amount">{{ project.amount|number_format(0, ',', '&nbsp;')|raw }} €</td>
                                         <td class="table-projects-item-duration">{{ maturity|localizednumber }} ans</td>
-                                        <td class="table-projects-item-bid-amount">{{ offer.amount|localizednumber }}&nbsp;€</td>
+                                        <td class="table-projects-item-bid-amount">{{ offer.amount|number_format(0, ',', '&nbsp;')|raw }}&nbsp;€</td>
                                         <td class="table-projects-item-rate">{{ offer.rate.margin|localizednumberwithprecision(2) }}&nbsp;%</td>
                                         <td class="table-projects-item-status">
                                             {% if offer.status == 0 %} En cours {% elseif offer.status == 1 %} Accepté {% else %} Refusé {% endif %}
@@ -203,9 +203,9 @@
                                             {% include 'demo/partials/bubble.html.twig' with {'partner': project.idPartner.label} %}
                                         </td>
                                         <td class="table-projects-item-title">{{ project.title }}</td>
-                                        <td class="table-projects-item-project-amount">{{ project.amount|localizednumber }}&nbsp;€</td>
+                                        <td class="table-projects-item-project-amount">{{ project.amount|number_format(0, ',', '&nbsp;')|raw }}&nbsp;€</td>
                                         <td class="table-projects-item-duration">{{ maturity|localizednumber }} ans</td>
-                                        <td class="table-projects-item-loan-amount">{{ loan.amount|localizednumber }}&nbsp;€</td>
+                                        <td class="table-projects-item-loan-amount">{{ loan.amount|number_format(0, ',', '&nbsp;')|raw }}&nbsp;€</td>
                                         <td class="table-projects-item-rate">{{ loan.rate.margin|localizednumberwithprecision(2) }}&nbsp;%</td>
                                         <td class="table-projects-item-end-date">{{ project.added|date_modify("+" ~ maturity ~ 'year')|date("d/m/Y") }}</td>
                                         <td class="table-projects-item-status">
@@ -330,9 +330,9 @@
                                             {% include 'demo/partials/bubble.html.twig' with {'partner': project.idPartner.label} %}
                                         </td>
                                         <td class="table-projects-item-title">{{ project.title }}</td>
-                                        <td class="table-projects-item-project-amount">{{ project.amount|localizednumber }}&nbsp;€</td>
+                                        <td class="table-projects-item-project-amount">{{ project.amount|number_format(0, ',', '&nbsp;')|raw }}&nbsp;€</td>
                                         <td class="table-projects-item-duration">{{ maturity|localizednumber }} ans</td>
-                                        <td class="table-projects-item-loan-amount">{{ loan.amount|localizednumber }}&nbsp;€</td>
+                                        <td class="table-projects-item-loan-amount">{{ loan.amount|number_format(0, ',', '&nbsp;')|raw }}&nbsp;€</td>
                                         <td class="table-projects-item-rate">{{ loan.rate.margin|localizednumberwithprecision(2) }}&nbsp;%</td>
                                         <td class="table-projects-item-status">
                                             {% set status = project.status %}
@@ -383,9 +383,9 @@
                                             {% include 'demo/partials/bubble.html.twig' with {'partner': project.idPartner.label} %}
                                         </td>
                                         <td class="table-projects-item-title">{{ project.title }}</td>
-                                        <td class="table-projects-item-project-amount">{{ project.amount|localizednumber }}&nbsp;€</td>
+                                        <td class="table-projects-item-project-amount">{{ project.amount|number_format(0, ',', '&nbsp;')|raw }}&nbsp;€</td>
                                         <td class="table-projects-item-duration">{{ maturity|localizednumber }} ans</td>
-                                        <td class="table-projects-item-loan-amount">{{ loan.amount|localizednumber }}&nbsp;€</td>
+                                        <td class="table-projects-item-loan-amount">{{ loan.amount|number_format(0, ',', '&nbsp;')|raw }}&nbsp;€</td>
                                         <td class="table-projects-item-rate">{{ loan.rate.margin|localizednumberwithprecision(2) }}&nbsp;%</td>
                                         <td class="table-projects-item-status">Prêt refusé</td>
                                         <td class="table-actions">

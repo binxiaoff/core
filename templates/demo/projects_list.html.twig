@@ -67,7 +67,7 @@
                                                 </div>
                                             </div>
                                             <div class="project-list-item-amount">
-                                                {{ project.amount|localizednumber }}&nbsp;€
+                                                {{ project.amount|number_format(0, ',', '&nbsp;')|raw }}&nbsp;€
                                             </div>
                                             <div class="project-list-item-period">
                                                 {% transchoice(project.period / 12) with {'%duration%': project.period / 12} %} demo-project-request_simulator-duration-select-option {% endtranschoice %}

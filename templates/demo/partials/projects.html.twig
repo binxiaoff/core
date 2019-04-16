@@ -82,7 +82,7 @@
                                             {% include 'demo/partials/bubble.html.twig' with {'partner': project.idPartner.label} %}
                                         </td>
                                         <td class="table-projects-item-title">{{ project.idCompany.name }}<br>{{ project.title }}</td>
-                                        <td class="table-projects-item-amount">{{ project.amount|localizednumber }}&nbsp;€</td>
+                                        <td class="table-projects-item-amount">{{ project.amount|number_format(0, ',', '&nbsp;')|raw }}&nbsp;€</td>
                                         <td class="table-projects-item-duration">{% transchoice(project.period / 12) with {'%duration%': project.period / 12} %} demo-project-request_simulator-duration-select-option {% endtranschoice %}</td>
                                         <td class="table-actions">
                                             {% if status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_FUNDED') %}

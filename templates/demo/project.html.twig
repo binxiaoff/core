@@ -65,7 +65,7 @@
                         <div class="row{% if projectAttachments|length %} col-lg-9 col-md-9 col-sm-9{% endif %}">
                             <dl class="col-lg-6 col-md-6">
                                 <dt>Montant</dt>
-                                <dd>{{ project.amount|localizednumber }}&nbsp;€</dd>
+                                <dd>{{ project.amount|number_format(0, ',', '&nbsp;')|raw }}&nbsp;€</dd>
                             </dl>
                             <dl class="col-lg-6 col-md-6">
                                 <dt>Durée</dt>
