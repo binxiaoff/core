@@ -1,8 +1,7 @@
 {% set lendindgData = [
-    {name: 'Direct', y: 12000000, color: '#5fc5d1'},
-    {name: 'Collectivité publique (CACIB)', y: 9600000, color: '#1b88db'},
+    {name: 'Collectivités publiques', y: 9600000, color: '#1b88db'},
     {name: 'Entreprises', y: 6300000, color: '#ffca2c'},
-    {name: 'Unifergie', y: 1250000, color: '#f76965'}
+    {name: 'Énergie', y: 12500000, color: '#f76965'}
 ] %}
 
 {% set walletAllocationChartData = {
@@ -47,7 +46,7 @@
 
 <article class="dashboard-panel ui-draggable ui-dashboard-panel col-lg-12 col-md-12 col-sm-8 col-xs-4">
     <header class="dashboard-panel-header">
-        <h3 class="dashboard-panel-title">Répartition par canal</h3>
+        <h3 class="dashboard-panel-title">Répartition par marché</h3>
     </header>
     <div class="dashboard-panel-content">
         <div class="row tabs">
@@ -56,7 +55,7 @@
                     <div class="row">
                         <div class="col-info col-lg-4 col-md-5 col-sm-8 col-xs-4">
                             <h2>Total financé</h2>
-                            <h2>29 150 000 €</h2>
+                            <h2>28 400 000 €</h2>
                             <dl>
                                 {% for i, data in walletAllocationChartData.highcharts.series[0].data %}
                                     <div class="dl-group dl-group-full">
@@ -66,7 +65,7 @@
                                             {% endif %}
                                             <span class="label">{{ data.name }}</span>
                                         </dt>
-                                        <dd style="text-align: right">{{ data.y|localizednumber }}&nbsp;€</dd>
+                                        <dd style="text-align: right">{{ data.y|number_format(0, ',', '&nbsp;')|raw }}&nbsp;€</dd>
                                     </div>
                                 {% endfor %}
                             </dl>

@@ -23,7 +23,7 @@
                                 </dl>
                                 <dl class="col-sm-4 col-md-6 col-lg-6">
                                     <dt>{% trans %} demo-project-request_simulator-summary-amount-field-label {% endtrans %}</dt>
-                                    <dd><strong class="ui-simulator-output-cost">{{ project.amount|localizednumber }}&nbsp;€</strong></dd>
+                                    <dd><strong class="ui-simulator-output-cost">{{ project.amount|number_format(0, ',', '&nbsp;')|raw }}&nbsp;€</strong></dd>
                                 </dl>
                                 <dl class="col-sm-4 col-md-6 col-lg-6">
                                     <dt>{% trans %} demo-project-request_simulator-summary-product-field-label {% endtrans %}</dt>

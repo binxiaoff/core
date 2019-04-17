@@ -308,7 +308,7 @@
   vertical-align: middle;
 
   @include devices('sm', 'md', 'lg') {
-    padding-right: 130px;
+    padding-right: 100px;
     line-height: $height-btn-xs - 10px;
     vertical-align: middle;
 

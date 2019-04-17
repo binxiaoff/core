@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Unilend\Twig;
 
@@ -7,8 +9,8 @@ use Psr\Log\LoggerInterface;
 use Twig\Extension\AbstractExtension;
 use Twig\TwigFunction;
 use Unilend\Entity\{Clients, Partner, Wallet, WalletType};
-use Unilend\Service\{LenderManager, PartnerManager};
 use Unilend\Service\Front\NotificationDisplayManager;
+use Unilend\Service\{LenderManager, PartnerManager};
 
 class ClientExtension extends AbstractExtension
 {
@@ -24,7 +26,6 @@ class ClientExtension extends AbstractExtension
     private $logger;
 
     /**
-     *
      * @param EntityManagerInterface     $entityManager
      * @param LenderManager              $lenderManager
      * @param PartnerManager             $partnerManager
@@ -37,8 +38,7 @@ class ClientExtension extends AbstractExtension
         PartnerManager $partnerManager,
         NotificationDisplayManager $notificationDisplayManager,
         LoggerInterface $logger
-    )
-    {
+    ) {
         $this->entityManager              = $entityManager;
         $this->lenderManager              = $lenderManager;
         $this->partnerManager             = $partnerManager;
@@ -47,51 +47,23 @@ class ClientExtension extends AbstractExtension
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getFunctions()
     {
-        return array(
-            new TwigFunction('lenderDiversificationLevel', [$this, 'getLenderDiversificationLevel']),
+        return [
             new TwigFunction('partner', [$this, 'getPartner']),
             new TwigFunction('walletBalance', [$this, 'getBalance']),
-            new TwigFunction('lenderNotifications', [$this, 'getLenderNotifications'])
-        );
-    }
-
-    /**
-     * @param Clients|null $client
-     *
-     * @return int
-     */
-    public function getLenderDiversificationLevel(?Clients $client): int
-    {
-        if (false === $client instanceof Clients || false === $client->isLender()) {
-            return 0;
-        }
-
-        try {
-            $userLevel = $this->lenderManager->getDiversificationLevel($client);
-        } catch (\Exception $exception) {
-            $userLevel = 0;
-            $this->logger->error(
-                'Unable to retrieve lender diversification level. Error: ' . $exception->getMessage(), [
-                    'id_client' => $client->getIdClient(),
-                    'class'     => __CLASS__,
-                    'function'  => __FUNCTION__,
-                    'file'      => $exception->getFile(),
-                    'line'      => $exception->getLine()
-                ]
-            );
-        }
-
-        return $userLevel;
+            new TwigFunction('lenderNotifications', [$this, 'getLenderNotifications']),
+        ];
     }
 
     /**
      * @param Clients|null $client
      *
      * @return array
+     *
+     * @throws \Exception
      */
     public function getLenderNotifications(?Clients $client): array
     {
@@ -105,7 +77,7 @@ class ClientExtension extends AbstractExtension
                 'iso-8601'  => (new \DateTime('2019-03-25 11:00:00'))->format('c'),
                 'content'   => 'L‘offre de participation de 20&nbsp;000&nbsp;€ que vous avez faite sur le projet «&nbsp;Éolien marin Manche&nbsp;» a été acceptée.',
                 'image'     => 'circle-accepted',
-                'status'    => 'unread'
+                'status'    => 'unread',
             ],
             [
                 'id'        => 2,
@@ -116,7 +88,7 @@ class ClientExtension extends AbstractExtension
                 'iso-8601'  => (new \DateTime('2019-03-20 12:15:00'))->format('c'),
                 'content'   => 'CA Centre vient de faire une offre de participation de 15&nbsp;000&nbsp;€ sur votre projet «&nbsp;Région Bretagne S2 2019&nbsp;».',
                 'image'     => '',
-                'status'    => 'unread'
+                'status'    => 'unread',
             ],
             [
                 'id'        => 3,
@@ -127,7 +99,7 @@ class ClientExtension extends AbstractExtension
                 'iso-8601'  => (new \DateTime('2019-01-01 10:00:00'))->format('c'),
                 'content'   => 'Un nouveau projet de financement vous est proposé par CA Touraine-Poitou.',
                 'image'     => 'project',
-                'status'    => 'unread'
+                'status'    => 'unread',
             ],
             [
                 'id'        => 4,
@@ -138,7 +110,7 @@ class ClientExtension extends AbstractExtension
                 'iso-8601'  => (new \DateTime('2018-12-18 19:20:00'))->format('c'),
                 'content'   => '',
                 'image'     => 'circle-rejected',
-                'status'    => 'unread'
+                'status'    => 'unread',
             ],
             [
                 'id'        => 5,
@@ -149,7 +121,7 @@ class ClientExtension extends AbstractExtension
                 'iso-8601'  => (new \DateTime('2018-12-17 07:50:00'))->format('c'),
                 'content'   => '',
                 'image'     => '',
-                'status'    => 'unread'
+                'status'    => 'unread',
             ],
             [
                 'id'        => 6,
@@ -160,7 +132,7 @@ class ClientExtension extends AbstractExtension
                 'iso-8601'  => (new \DateTime('2018-11-29 15:25:00'))->format('c'),
                 'content'   => '',
                 'image'     => '',
-                'status'    => 'unread'
+                'status'    => 'unread',
             ],
             [
                 'id'        => 7,
@@ -171,7 +143,7 @@ class ClientExtension extends AbstractExtension
                 'iso-8601'  => (new \DateTime('2018-11-27 17:45:00'))->format('c'),
                 'content'   => '',
                 'image'     => 'project',
-                'status'    => 'unread'
+                'status'    => 'unread',
             ],
             [
                 'id'        => 8,
@@ -182,7 +154,7 @@ class ClientExtension extends AbstractExtension
                 'iso-8601'  => (new \DateTime('2018-11-17 17:44:00'))->format('c'),
                 'content'   => '',
                 'image'     => '',
-                'status'    => 'unread'
+                'status'    => 'unread',
             ],
             [
                 'id'        => 9,
@@ -193,7 +165,7 @@ class ClientExtension extends AbstractExtension
                 'iso-8601'  => (new \DateTime('2018-11-01 11:11:00'))->format('c'),
                 'content'   => '',
                 'image'     => '',
-                'status'    => 'read'
+                'status'    => 'read',
             ],
             [
                 'id'        => 10,
@@ -204,8 +176,8 @@ class ClientExtension extends AbstractExtension
                 'iso-8601'  => (new \DateTime('2018-10-01 14:58:00'))->format('c'),
                 'content'   => '',
                 'image'     => 'project',
-                'status'    => 'read'
-            ]
+                'status'    => 'read',
+            ],
         ];
 
         if (false === $client instanceof Clients || false === $client->isLender()) {
@@ -217,12 +189,13 @@ class ClientExtension extends AbstractExtension
         } catch (\Exception $exception) {
             $notifications = [];
             $this->logger->error(
-                'Unable to retrieve last lender notifications. Error: ' . $exception->getMessage(), [
+                'Unable to retrieve last lender notifications. Error: ' . $exception->getMessage(),
+                [
                     'id_client' => $client->getIdClient(),
                     'class'     => __CLASS__,
                     'function'  => __FUNCTION__,
                     'file'      => $exception->getFile(),
-                    'line'      => $exception->getLine()
+                    'line'      => $exception->getLine(),
                 ]
             );
         }
@@ -264,13 +237,11 @@ class ClientExtension extends AbstractExtension
         } elseif ($client->isPartner()) {
             $walletType = WalletType::PARTNER;
         } else {
-            $this->logger->error(
-                'Cannot get the balance of the client. Unsupported client type !', [
-                    'id_client' => $client->getIdClient(),
-                    'class'     => __CLASS__,
-                    'function'  => __FUNCTION__,
-                ]
-            );
+            $this->logger->error('Cannot get the balance of the client. Unsupported client type !', [
+                'id_client' => $client->getIdClient(),
+                'class'     => __CLASS__,
+                'function'  => __FUNCTION__,
+            ]);
 
             return 0;
         }

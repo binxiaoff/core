@@ -1,16 +1,16 @@
 <form action="#">
-    <table class="table table-projects table-finance table-balance">
+    <table class="table table-projects table-finance table-balance" style="table-layout: auto;">
         <thead>
         <tr class="my-offers-bid-row">
             <th>Prêteur</th>
             <th>Montant</th>
             <th>Taux de référence</th>
             <th>Marge</th>
-            <th>Commission ponctuelle</th>
-            <th>Commission récurrente</th>
+            {#<th>Commission ponctuelle</th>
+            <th>Commission récurrente</th>#}
             <th>Souhaite être agent</th>
             {% if canChangeBidStatus is defined and canChangeBidStatus == true and displayAction == true %}
-                <th style="width: 60px;">&nbsp;</th>
+                <th style="width: 115px;">&nbsp;</th>
             {% endif %}
         </tr>
         </thead>
@@ -18,13 +18,13 @@
         {% for offer in bids %}
             <tr>
                 <td>{{ offer.wallet.idClient.company.name }}</td>
-                <td>{{ (offer.amount / 100)|localizednumber }}&nbsp;€</td>
+                <td>{{ (offer.amount / 100)|number_format(0, ',', '&nbsp;')|raw }}&nbsp;€</td>
                 <td>{{ ('interest-rate-index_' ~ offer.rate.indexType)|trans }}</td>
                 <td>{{ offer.rate.margin|localizednumberwithprecision(2) }}&nbsp;%</td>
-                <td>{{ offer.oneTimeFeeTotalRate|localizednumberwithprecision(2) }}&nbsp;%</td>
+                {#<td>{{ offer.oneTimeFeeTotalRate|localizednumberwithprecision(2) }}&nbsp;%</td>
                 <td data-toggle="tooltip" title="{% if offer.recurringFeeTotalRate > 0 %}soit {{ (offer.recurringFeeTotalRate * (offer.amount / 100) / 100)|localizednumber }}&nbsp;€{% endif %}">
                     {{ offer.recurringFeeTotalRate|localizednumberwithprecision(2) }}&nbsp;%
-                </td>
+                </td>#}
                 <td>{% if offer.isAgent %} Oui {% else %} Non {% endif %}</td>
                 {% if canChangeBidStatus is defined and canChangeBidStatus == true and displayAction == true %}
                     <td>

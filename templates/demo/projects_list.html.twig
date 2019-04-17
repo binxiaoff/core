@@ -39,7 +39,7 @@
                                     </div><!-- /.project-list-filter -->
                                     <div class="project-list-item-period project-list-filter{% if sortType == 'period' %} ui-sortable-current ui-sortable-direction-{{ sortDirection }} {% endif %}">
                                         <a href="{{ path(app.request.attributes.get('_route'), {'page': currentPage, 'sortType': 'period', sortDirection: sortParameter}) }}">
-                                            <span class="label">Maturité</span>
+                                            <span class="label">Durée</span>
                                             <span class="project-list-filter-order"></span>
                                         </a>
                                     </div><!-- /.project-list-filter -->
@@ -67,7 +67,7 @@
                                                 </div>
                                             </div>
                                             <div class="project-list-item-amount">
-                                                {{ project.amount|localizednumber }}&nbsp;€
+                                                {{ project.amount|number_format(0, ',', '&nbsp;')|raw }}&nbsp;€
                                             </div>
                                             <div class="project-list-item-period">
                                                 {% transchoice(project.period / 12) with {'%duration%': project.period / 12} %} demo-project-request_simulator-duration-select-option {% endtranschoice %}

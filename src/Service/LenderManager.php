@@ -2,14 +2,13 @@
 
 namespace Unilend\Service;
 
+use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
-use Unilend\Entity\{Clients, ClientVigilanceStatusHistory, Echeanciers, Loans, Projects, Settings, VigilanceRule, Wallet, WalletType};
+use Exception;
+use InvalidArgumentException;
+use Unilend\Entity\{ClientVigilanceStatusHistory, Clients, Echeanciers, Loans, Settings, VigilanceRule, Wallet, WalletType};
 use Unilend\Service\Simulator\EntityManager as EntityManagerSimulator;
 
-/**
- * Class LenderManager
- * @package Unilend\Service
- */
 class LenderManager
 {
     /** @var EntityManagerSimulator */
@@ -40,57 +39,14 @@ class LenderManager
     /**
      * @param Clients $client
      *
-     * @return int
-     * @throws \Exception
-     */
-    public function getDiversificationLevel(Clients $client)
-    {
-        if (false === $client->isLender()) {
-            throw new \Exception('Client ' . $client->getIdClient() . ' is not a Lender');
-        }
-
-        $wallet               = $this->entityManager->getRepository(Wallet::class)->getWalletByType($client, WalletType::LENDER);
-        $projectsRepository   = $this->entityManager->getRepository(Projects::class);
-        $numberOfCompanies    = $projectsRepository->countCompaniesLenderInvestedIn($wallet->getId());
-        $diversificationLevel = 0;
-
-        if ($numberOfCompanies === 0) {
-            $diversificationLevel = 0;
-        }
-
-        if ($numberOfCompanies >= 1 && $numberOfCompanies <= 19) {
-            $diversificationLevel = 1;
-        }
-
-        if ($numberOfCompanies >= 20 && $numberOfCompanies <= 49) {
-            $diversificationLevel = 2;
-        }
-
-        if ($numberOfCompanies >= 50 && $numberOfCompanies <= 79) {
-            $diversificationLevel = 3;
-        }
-
-        if ($numberOfCompanies >= 80 && $numberOfCompanies <= 119) {
-            $diversificationLevel = 4;
-        }
-
-        if ($numberOfCompanies >= 120) {
-            $diversificationLevel = 5;
-        }
-
-        return $diversificationLevel;
-    }
-
-    /**
-     * @param Clients $client
+     * @throws Exception
      *
      * @return bool
-     * @throws \Exception
      */
     public function hasTransferredLoans(Clients $client)
     {
         if (false === $client->isLender()) {
-            throw new \Exception('Client ' . $client->getIdClient() . ' is not a Lender');
+            throw new Exception(sprintf('Client %s is not a Lender', $client->getIdClient()));
         }
 
         /** @var \transfer $transfer */
@@ -103,23 +59,25 @@ class LenderManager
                 return true;
             }
         }
+
         return false;
     }
 
     /**
-     * Retrieve pattern that lender must use in bank transfer label
+     * Retrieve pattern that lender must use in bank transfer label.
      *
      * @param Clients $client
      *
+     * @throws Exception
+     *
      * @return string
-     * @throws \Exception
      */
     public function getLenderPattern(Clients $client)
     {
         $wallet = $this->entityManager->getRepository(Wallet::class)->getWalletByType($client, WalletType::LENDER);
 
         if (null === $wallet) {
-            throw new \Exception('Client ' . $client->getIdClient() . ' is not a Lender');
+            throw new Exception(sprintf('Client %s is not a Lender', $client->getIdClient()));
         }
 
         return $wallet->getWireTransferPattern();
@@ -128,13 +86,14 @@ class LenderManager
     /**
      * @param Clients $client
      *
-     * @return null|string
-     * @throws \Exception
+     * @throws Exception
+     *
+     * @return string|null
      */
     public function getLossRate(Clients $client)
     {
         if (false === $client->isLender()) {
-            throw new \Exception('Client ' . $client->getIdClient() . ' is not a Lender');
+            throw new Exception(sprintf('Client %s is not a Lender', $client->getIdClient()));
         }
 
         $wallet                      = $this->entityManager->getRepository(Wallet::class)->getWalletByType($client, WalletType::LENDER);
@@ -144,9 +103,7 @@ class LenderManager
         $remainingDueCapital         = round(bcdiv($lostAmount, 100, 3), 2);
         $sumOfLoans                  = $loansRepository->sumLoansOfProjectsInRepayment($wallet);
 
-        $lossRate = $sumOfLoans > 0 ? bcmul(round(bcdiv($remainingDueCapital, $sumOfLoans, 3), 2), 100) : null;
-
-        return $lossRate;
+        return $sumOfLoans > 0 ? bcmul(round(bcdiv($remainingDueCapital, $sumOfLoans, 3), 2), 100) : null;
     }
 
     /**
@@ -160,16 +117,19 @@ class LenderManager
             case Clients::TYPE_PERSON:
             case Clients::TYPE_PERSON_FOREIGNER:
                 $settingName = 'Liste deroulante origine des fonds';
+
                 break;
             default:
                 $settingName = 'Liste deroulante origine des fonds societe';
+
                 break;
         }
 
         $fundsOriginList = $this->entityManager
             ->getRepository(Settings::class)
             ->findOneBy(['type' => $settingName])
-            ->getValue();
+            ->getValue()
+        ;
         $fundsOriginList = explode(';', $fundsOriginList);
 
         return array_combine(range(1, count($fundsOriginList)), array_values($fundsOriginList));
@@ -179,11 +139,13 @@ class LenderManager
      * @param Clients $client
      *
      * @return bool
+     *
+     * @throws Exception
      */
     public function needUpdatePersonalData(Clients $client): bool
     {
         if (false === $client->isLender()) {
-            throw new \InvalidArgumentException('Client ' . $client->getIdClient() . ' is not a Lender');
+            throw new InvalidArgumentException(sprintf('Client %s is not a Lender', $client->getIdClient()));
         }
 
         $clientVigilanceStatus = $this->entityManager->getRepository(ClientVigilanceStatusHistory::class)->findOneBy(['client' => $client], ['added' => 'DESC', 'id' => 'DESC']);
@@ -194,8 +156,8 @@ class LenderManager
         }
 
         $personalDataUpdated = $client->getPersonalDataUpdated() ?? $client->getAdded();
-        $interval            = $personalDataUpdated->diff(new \DateTime());
-        $intervalInMonths     = $interval->y * 12 + $interval->m;
+        $interval            = $personalDataUpdated->diff(new DateTime());
+        $intervalInMonths    = $interval->y * 12 + $interval->m;
 
         if (VigilanceRule::VIGILANCE_STATUS_HIGH === $currentVigilanceStatus) {
             $needUpdatePersonalData = $intervalInMonths >= 6;

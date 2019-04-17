@@ -64,34 +64,47 @@
                     <div class="row margin-20-t">
                         <div class="row{% if projectAttachments|length %} col-lg-9 col-md-9 col-sm-9{% endif %}">
                             <dl class="col-lg-6 col-md-6">
+                                <dt>Montant</dt>
+                                <dd>{{ project.amount|number_format(0, ',', '&nbsp;')|raw }}&nbsp;€</dd>
+                            </dl>
+                            <dl class="col-lg-6 col-md-6">
+                                <dt>Durée</dt>
+                                <dd>{% transchoice(project.period / 12) with {'%duration%': project.period / 12} %} demo-project-request_simulator-duration-select-option {% endtranschoice %}</dd>
+                            </dl>
+                            <dl class="col-lg-6 col-md-6">
+                                <dt>Loi d‘amortissement</dt>
+                                <dd>{{ ('amortization-name_' ~ product.idRepaymentType.label)|trans }}</dd>
+                            </dl>
+                            <dl class="col-lg-6 col-md-6">
+                                <dt>Périodicité</dt>
+                                <dd>{{ ('periodicity_' ~ product.idRepaymentType.periodicity ~ '-months')|trans }}</dd>
+                            </dl>
+                            <dl class="col-lg-6 col-md-6">
                                 <dt>Date de dépôt</dt>
                                 <dd>{{ project.added|date('d/m/Y') }}</dd>
                             </dl>
                             <dl class="col-lg-6 col-md-6">
-                                <dt>Montant</dt>
-                                <dd>{{ project.amount|localizednumber }}&nbsp;€</dd>
+                                <dt>Date butoir de réponse</dt>
+                                <dd>{{ project.datePublication|date('d/m/Y') }}</dd>
                             </dl>
                             <dl class="col-lg-6 col-md-6">
-                                <dt>Maturité</dt>
-                                <dd>{% transchoice(project.period / 12) with {'%duration%': project.period / 12} %} demo-project-request_simulator-duration-select-option {% endtranschoice %}</dd>
+                                <dt>Date de mise à disposition</dt>
+                                <dd>{{ project.dateRetrait|date('d/m/Y') }}</dd>
                             </dl>
                             <dl class="col-lg-6 col-md-6">
-                                <dt>Type de financement</dt>
-                                <dd>{{ ('product-name_' ~ product.label)|trans }}</dd>
+                                <dt>Date de 1<sup>ère</sup> échéance</dt>
+                                <dd>{{ project.dateFunded|date('d/m/Y') }}</dd>
                             </dl>
                             <dl class="col-lg-6 col-md-6">
-                                <dt>Participants</dt>
+                                <dt>Structuration</dt>
                                 <dd>
                                     <div>Arrangeur : {% if arranger.0 is defined %} {{ arranger.0.company.name }} {% else %} non défini {% endif %}</div>
                                     <div>RUN : {% if run.0 is defined %} {{ run.0.company.name }} {% else %} non défini {% endif %}</div>
                                 </dd>
                             </dl>
                             <dl class="col-lg-6 col-md-6">
-                                <dt>Notations</dt>
-                                <dd>
-                                    <div>Projet : {% if project.natureProject %}{{ project.natureProject }}{% else %}N/A{% endif %}</div>
-                                    <div>Emprunteur : {% if project.objectifLoan %}{{ project.objectifLoan }}{% else %}N/A{% endif %}</div>
-                                </dd>
+                                <dt>Notation</dt>
+                                <dd>{% if project.natureProject %}{{ project.natureProject }}{% else %}N/A{% endif %}</dd>
                             </dl>
                         </div>
                         {% if projectAttachments|length %}

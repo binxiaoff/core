@@ -40,14 +40,14 @@
                                     <dt>Montant</dt>
                                     <dd data-fee-reference-amount>
                                         {% if isEditable %}
-                                            <a href="#" id="amount" class="editable" data-type="text" data-inputclass="input-field">{{ project.amount|localizednumber }}</a>&nbsp;€
+                                            <a href="#" id="amount" class="editable" data-type="text" data-inputclass="input-field">{{ project.amount|number_format(0, ',', '&nbsp;')|raw }}</a>&nbsp;€
                                         {% else %}
-                                            {{ project.amount|localizednumber }}&nbsp;€
+                                            {{ project.amount|number_format(0, ',', '&nbsp;')|raw }}&nbsp;€
                                         {% endif %}
                                     </dd>
                                 </dl>
                                 <dl class="col-md-6 col-lg-6">
-                                    <dt>Maturité</dt>
+                                    <dt>Durée</dt>
                                     <dd>
                                         {% if isEditable %}
                                             <a href="#" id="duration" data-type="select">
@@ -61,14 +61,60 @@
                             </div>
                             <div class="row columns-with-space margin-10-t">
                                 <dl class="col-md-6 col-lg-6">
+                                    <dt>Loi d‘amortissement</dt>
+                                    <dd>
+                                        {% if isEditable %}
+                                            <a href="#" id="amortization" data-type="select">
+                                                {% if product %}{{ ('amortization-name_' ~ product.idRepaymentType.label)|trans }}{% endif %}
+                                            </a>
+                                        {% elseif product %}
+                                            {{ ('amortization-name_' ~ product.idRepaymentType.label)|trans }}
+                                        {% else %}
+                                            N/A
+                                        {% endif %}
+                                    </dd>
+                                </dl>
+                                <dl class="col-md-6 col-lg-6">
+                                    <dt>Périodicité</dt>
+                                    <dd>
+                                        {% if isEditable %}
+                                            <a href="#" id="periodicity" data-type="select">
+                                                {% if product.idRepaymentType.periodicity %}{{ ('periodicity_' ~ product.idRepaymentType.periodicity ~ '-months')|trans }}{% endif %}
+                                            </a>
+                                        {% elseif product.idRepaymentType.periodicity %}
+                                            {{ ('periodicity_' ~ product.idRepaymentType.periodicity ~ '-months')|trans }}
+                                        {% else %}
+                                            N/A
+                                        {% endif %}
+                                    </dd>
+                                </dl>
+                            </div>
+                            <div class="row columns-with-space margin-10-t">
+                                <dl class="col-md-6 col-lg-6">
                                     <dt>Date de dépôt</dt>
                                     <dd>{{ project.added|localizeddate('short', 'short') }}</dd>
                                 </dl>
                                 <dl class="col-md-6 col-lg-6">
+                                    <dt>Date butoir de réponse</dt>
+                                    <dd>
+                                        {% if isEditable %}
+                                            <a href="#" id="response-date" class="editable" data-type="text" data-pk="{{ project.idProject }}" data-inputclass="input-field">
+                                                {% if project.datePublication %}{{ project.datePublication|localizeddate('short', 'none') }}{% endif %}
+                                            </a>
+                                        {% elseif project.datePublication %}
+                                            {{ project.datePublication|localizeddate('short', 'none') }}
+                                        {% else %}
+                                            N/A
+                                        {% endif %}
+                                    </dd>
+                                </dl>
+                            </div>
+                            <div class="row columns-with-space margin-10-t">
+                                <dl class="col-md-6 col-lg-6">
                                     <dt>Date de mise à disposition</dt>
                                     <dd>
                                         {% if isEditable %}
-                                            <a href="#" id="date" class="editable" data-type="text" data-pk="{{ project.idProject }}" data-inputclass="input-field">
+                                            <a href="#" id="release-date" class="editable" data-type="text" data-pk="{{ project.idProject }}" data-inputclass="input-field">
                                                 {% if project.dateRetrait %}{{ project.dateRetrait|localizeddate('short', 'none') }}{% endif %}
                                             </a>
                                         {% elseif project.dateRetrait %}
@@ -78,49 +124,33 @@
                                         {% endif %}
                                     </dd>
                                 </dl>
-                            </div>
-                            <div class="row columns-with-space margin-10-t">
                                 <dl class="col-md-6 col-lg-6">
-                                    <dt>Type de financement</dt>
+                                    <dt>Date de 1<sup>ère</sup> échéance</dt>
                                     <dd>
                                         {% if isEditable %}
-                                            <a href="#" id="product" data-type="select">
-                                                {% if product %}{{ ('product-name_' ~ product.label)|trans }}{% endif %}
+                                            <a href="#" id="first-payment-date" class="editable" data-type="text" data-pk="{{ project.idProject }}" data-inputclass="input-field">
+                                                {% if project.dateFunded %}{{ project.dateFunded|localizeddate('short', 'none') }}{% endif %}
                                             </a>
-                                        {% elseif product %}
-                                            {{ ('product-name_' ~ product.label)|trans }}
-                                        {% else %}
-                                            N/A
-                                        {% endif %}
-                                    </dd>
-                                </dl>
-                                <dl class="col-md-6 col-lg-6">
-                                    <dt>Taux de progressivité <small>(%)</small></dt>
-                                    <dd>
-                                        {% if isEditable %}
-                                            <a href="#" id="rate" class="editable" data-type="text" data-inputclass="input-field">
-                                                {% if project.interestRate %}{{ project.interestRate|localizednumber }}{% endif %}
-                                            </a>
-                                        {% elseif project.interestRate %}
-                                            {{ project.interestRate|localizednumber }}
+                                        {% elseif project.dateFunded %}
+                                            {{ project.dateFunded|localizeddate('short', 'none') }}
                                         {% else %}
                                             N/A
                                         {% endif %}
                                     </dd>
                                 </dl>
                             </div>
-                            <div class="row margin-10-t">
-                                <dt>Ce dossier fait l‘objet d‘une garantie collatérale</dt>
+                            {#<div class="row margin-10-t">
+                                <dt>Ce dossier fait déjà l‘objet d‘une demande de garantie auprès de FONCARIS</dt>
                                 <dd>
                                     {% if isEditable %}
-                                        <a href="#" id="guarantee" data-type="checklist" data-value="{{ project.balanceCount ? '1' : '' }}"></a>
-                                    {% elseif project.balanceCount %}
+                                        <a href="#" id="has-guarantee" data-type="checklist" data-value="{{ project.fondsPropresDeclaraClient ? '1' : '' }}"></a>
+                                    {% elseif project.fondsPropresDeclaraClient %}
                                         Oui
                                     {% else %}
                                         Non
                                     {% endif %}
                                 </dd>
-                            </div>
+                            </div>#}
                             <h4 class="h4 margin-20-t">
                                 Description
                                 {% if isEditable %}
@@ -145,7 +175,7 @@
                         <div class="panel-content">
                             <ul>
                                 <li><a href="#article-scoring">Notations</a></li>
-                                <li><a href="#article-fees">Frais / commissions</a></li>
+                                {#<li><a href="#article-fees">Frais / commissions</a></li>#}
                                 <li><a href="#article-visibility">Visibilité</a></li>
                                 {% if project.status >= constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_ONLINE') %}
                                     <li><a href="#article-bids">Offres de participation</a></li>
@@ -164,7 +194,7 @@
                                     <a href="{{ path('demo_project_publish', {'hash': project.hash}) }}" class="btn-primary btn-shape-xs margin-10-t" style="width: 100%;">Proposer au financement</a>
                                 {% endif %}
                                 {% if project.status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_ONLINE') %}
-                                    <a href="{{ path('demo_project_fund', {'hash': project.hash}) }}" class="btn-primary btn-shape-xs margin-10-t" style="width: 100%;">Mettre fin à la période de financement</a>
+                                    <a href="{{ path('demo_project_fund', {'hash': project.hash}) }}" class="btn-primary btn-shape-xs margin-10-t" style="width: 100%;">Clôturer la syndication</a>
                                 {% endif %}
                                 {% if project.status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_FUNDED') %}
                                     <a href="{{ path('demo_project_sign', {'hash': project.hash}) }}" class="btn-primary btn-shape-xs margin-10-t" style="width: 100%;">Signer les contrats</a>
@@ -184,15 +214,9 @@
             <article class="dashboard-tab-pane margin-20-t" id="article-scoring">
                 <div class="panel">
                     <fieldset>
-                        <h4 class="h4">Notations</h4>
+                        <h4 class="h4">Notation</h4>
                         <div class="row row-multi-col-computer scoring">
-                            <dl class="col-md-2 col-lg-2">
-                                <dt>&nbsp;</dt>
-                                <dd>Responsable</dd>
-                                <dd>Notation</dd>
-                                <dd>Analyse</dd>
-                            </dl>
-                            <dl class="col-md-5 col-lg-5">
+                            <dl class="col-md-4 col-lg-4">
                                 <dt>Arrangeur</dt>
                                 <dd>
                                     {% if isEditable %}
@@ -205,30 +229,8 @@
                                         N/A
                                     {% endif %}
                                 </dd>
-                                <dd>
-                                    {% if isProjectScoringEditable %}
-                                        <a href="#" class="editable" id="arranger-scoring" data-type="text" data-inputclass="input-field">
-                                            {% if project.natureProject is not empty %}
-                                                {{ project.natureProject }}
-                                            {% endif %}
-                                        </a>
-                                    {% elseif project.natureProject is not empty %}
-                                        {{ project.natureProject }}
-                                    {% else %}
-                                        N/A
-                                    {% endif %}
-                                </dd>
-                                <dd class="risk-analysis-container">
-                                    {% if isProjectScoringEditable %}
-                                        <a href="#" id="arranger-risk-analysis" class="editable" data-type="textarea" data-inputclass="input-field">{{ project.presentationCompany }}</a>
-                                    {% elseif project.presentationCompany is not empty %}
-                                        {{ project.presentationCompany|nl2br }}
-                                    {% else %}
-                                        N/A
-                                    {% endif %}
-                                </dd>
                             </dl>
-                            <dl class="col-md-5 col-lg-5">
+                            <dl class="col-md-4 col-lg-4">
                                 <dt>RUN</dt>
                                 <dd>
                                     {% if isEditable %}
@@ -243,24 +245,18 @@
                                         N/A
                                     {% endif %}
                                 </dd>
+                            </dl>
+                            <dl class="col-md-4 col-lg-4">
+                                <dt>Note</dt>
                                 <dd>
-                                    {% if isBorrowerScoringEditable %}
-                                        <a href="#" class="editable" id="run-scoring" data-type="text" data-inputclass="input-field">
-                                            {% if project.objectifLoan is not empty %}
-                                                {{ project.objectifLoan }}
+                                    {% if isScoringEditable %}
+                                        <a href="#" class="editable" id="scoring" data-type="text" data-inputclass="input-field">
+                                            {% if project.natureProject is not empty %}
+                                                {{ project.natureProject }}
                                             {% endif %}
                                         </a>
-                                    {% elseif project.objectifLoan is not empty %}
-                                        {{ project.objectifLoan }}
-                                    {% else %}
-                                        N/A
-                                    {% endif %}
-                                </dd>
-                                <dd class="risk-analysis-container">
-                                    {% if isBorrowerScoringEditable %}
-                                        <a href="#" id="run-risk-analysis" class="editable" data-type="textarea" data-inputclass="input-field">{{ project.meansRepayment }}</a>
-                                    {% elseif project.meansRepayment is not empty %}
-                                        {{ project.meansRepayment|nl2br }}
+                                    {% elseif project.natureProject is not empty %}
+                                        {{ project.natureProject }}
                                     {% else %}
                                         N/A
                                     {% endif %}
@@ -270,7 +266,7 @@
                     </fieldset>
                 </div>
             </article><!-- /.dashboard-tab-pane -->
-            <article class="dashboard-tab-pane margin-20-t" id="article-fees">
+            {#<article class="dashboard-tab-pane margin-20-t" id="article-fees">
                 <div class="panel">
                     <h4 class="h4">Frais / commissions</h4>
                     {% if project.projectPercentFees is not empty %}
@@ -300,7 +296,7 @@
                     {% set feesTemplate = include('demo/partials/fees/new_project_fees.html.twig') %}
                     <div class="row row-multi-col-computer fees" data-prototype="{{ feesTemplate|e('html_attr') }}"></div>
                 </div>
-            </article><!-- /.dashboard-tab-pane -->
+            </article><!-- /.dashboard-tab-pane -->#}
             <article class="dashboard-tab-pane margin-20-t" id="article-visibility">
                 <div class="panel">
                     <form action="{{ path('demo_project_visibility', {'hash': project.hash}) }}" method="post">
@@ -311,24 +307,40 @@
                             </div>
                             <div class="row">
                                 <label>
-                                    <input id="visibility-all" type="checkbox">
-                                    Tout sélectionner
+                                    <input id="visibility-crca" type="checkbox">
+                                    Caisses régionales
                                 </label>
                                 <label>
-                                    <input id="visibility-crca" type="checkbox">
-                                    Caisses régionales Crédit Agricole
+                                    <input type="checkbox">
+                                    Amicale de l’Ouest
+                                </label>
+                                <label>
+                                    <input type="checkbox">
+                                    Amicale du Sud
+                                </label>
+                                <label>
+                                    <input type="checkbox">
+                                    Amicale du Centre
+                                </label>
+                                <label>
+                                    <input type="checkbox">
+                                    Amicale Nord & Est
+                                </label>
+                                <label>
+                                    <input type="checkbox" value="45">
+                                    LCL
                                 </label>
                             </div>
                             <hr>
                         {% endif %}
                         <div class="row">
-                            {% set lendersByColumn = (potentialLenders|length / 3)|round(0, 'ceil') %}
+                            {% set lendersByColumn = (regionalBanks|length / 3)|round(0, 'ceil') %}
                             <div class="col-lg-4 col-md-4">
-                                {% for lender in runs %}
+                                {% for lender in regionalBanks %}
                                     {% if loop.index <= lendersByColumn %}
                                         <div>
                                             <label>
-                                                <input type="checkbox" name="visibility[]" value="{{ lender.idCompany }}" class="visibility-bank{% if 'CA ' == lender.name|slice(0, 3) %} visibility-bank-crca{% endif %}"
+                                                <input type="checkbox" name="visibility[]" value="{{ lender.idCompany }}" class="visibility-bank visibility-bank-crca"
                                                     {% if lender.idCompany in visibility %} checked{% endif %}
                                                     {% if
                                                         false == isEditable
@@ -342,11 +354,11 @@
                                 {% endfor %}
                             </div>
                             <div class="col-lg-4 col-md-4">
-                                {% for lender in runs %}
+                                {% for lender in regionalBanks %}
                                     {% if loop.index > lendersByColumn and loop.index <= 2 * lendersByColumn %}
                                         <div>
                                             <label>
-                                                <input type="checkbox" name="visibility[]" value="{{ lender.idCompany }}" class="visibility-bank{% if 'CA ' == lender.name|slice(0, 3) %} visibility-bank-crca{% endif %}"
+                                                <input type="checkbox" name="visibility[]" value="{{ lender.idCompany }}" class="visibility-bank visibility-bank-crca"
                                                     {% if lender.idCompany in visibility %} checked{% endif %}
                                                     {% if
                                                         false == isEditable
@@ -360,11 +372,11 @@
                                 {% endfor %}
                             </div>
                             <div class="col-lg-4 col-md-4">
-                                {% for lender in runs %}
+                                {% for lender in regionalBanks %}
                                     {% if loop.index > 2 * lendersByColumn %}
                                         <div>
                                             <label>
-                                                <input type="checkbox" name="visibility[]" value="{{ lender.idCompany }}" class="visibility-bank{% if 'CA ' == lender.name|slice(0, 3) %} visibility-bank-crca{% endif %}"
+                                                <input type="checkbox" name="visibility[]" value="{{ lender.idCompany }}" class="visibility-bank visibility-bank-crca"
                                                     {% if lender.idCompany in visibility %} checked{% endif %}
                                                     {% if
                                                         false == isEditable
@@ -379,7 +391,7 @@
                             </div>
                         </div>
                         {% if isEditable %}
-                            <div class="text-align-right">
+                            <div class="row margin-20-t text-align-right">
                                 <button type="submit" class="btn-primary btn-shape-xs" data-spinnerbutton>Modifier la visibilité</button>
                             </div>
                        {% endif %}
@@ -638,13 +650,25 @@
                 ]
             }))
 
-            $('#product').editable(Object.assign(editableConfig, {
-                value: '{{ project.idProduct }}',
+            $('#amortization').editable(Object.assign(editableConfig, {
+                value: '{{ product.idRepaymentType.label }}',
                 source: [
                     {value: '', text: ''},
-                    {% for productId, productLabel in products %}
-                    {value: '{{ productId }}', text: '{{ productLabel|e('js') }}'},
-                    {% endfor %}
+                    {value: '{{ constant('Unilend\\Entity\\RepaymentType::REPAYMENT_TYPE_FIXED_PAYMENT') }}', text: 'Échéances constantes'},
+                    {value: '{{ constant('Unilend\\Entity\\RepaymentType::REPAYMENT_TYPE_FIXED_CAPITAL') }}', text: 'Capital constant'},
+                    {value: '{{ constant('Unilend\\Entity\\RepaymentType::REPAYMENT_TYPE_DEFERRED') }}', text: 'Différé'},
+                    {value: '{{ constant('Unilend\\Entity\\RepaymentType::REPAYMENT_TYPE_IN_FINE') }}', text: 'In fine'},
+                ]
+            }))
+
+            $('#periodicity').editable(Object.assign(editableConfig, {
+                value: '{{ product.idRepaymentType.periodicity }}',
+                source: [
+                    {value: '', text: ''},
+                    {value: '1', text: 'Mensuel'},
+                    {value: '3', text: 'Trimestriel'},
+                    {value: '6', text: 'Semestriel'},
+                    {value: '12', text: 'Annuel'},
                 ]
             }))
 
@@ -674,17 +698,13 @@
                 ]
             }))
 
-            $('#guarantee').editable(Object.assign(editableConfig, {
+            $('#has-guarantee').editable(Object.assign(editableConfig, {
                 placement: 'right',
                 source: [
                     {value: 1, text: 'Oui'}
                 ],
                 emptytext: 'Non'
             }))
-
-            $('#visibility-all').on('change', function () {
-                $('.visibility-bank').not(':disabled').prop('checked', $(this).is(':checked'))
-            })
 
             $('#visibility-crca').on('change', function () {
                 $('.visibility-bank-crca').not(':disabled').prop('checked', $(this).is(':checked'))

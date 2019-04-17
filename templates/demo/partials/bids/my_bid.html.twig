@@ -6,8 +6,8 @@
             <th>Montant</th>
             <th>Taux de référence</th>
             <th>Marge</th>
-            <th>Commission ponctuelle</th>
-            <th>Commission récurrente</th>
+            {#<th>Commission ponctuelle</th>
+            <th>Commission récurrente</th>#}
             <th>Souhaite être agent</th>
             {% if bid.status == constant('Unilend\\Entity\\Bids::STATUS_PENDING') %}
                 <th style="width: 60px;">&nbsp;</th>
@@ -17,13 +17,13 @@
         <tbody>
         <tr>
             <td>{% if bid.status == 0 %} En cours {% elseif bid.status == 1 %} Accepté {% else %} Refusé {% endif %}</td>
-            <td>{{ (bid.amount / 100)|localizednumber }}&nbsp;€</td>
+            <td>{{ (bid.amount / 100)|number_format(0, ',', '&nbsp;')|raw }}&nbsp;€</td>
             <td>{{ ('interest-rate-index_' ~ bid.rate.indexType)|trans }}</td>
             <td>{{ bid.rate.margin|localizednumberwithprecision(2) }}&nbsp;%</td>
-            <td>{{ bid.oneTimeFeeTotalRate|localizednumberwithprecision(2) }}&nbsp;%</td>
+            {#<td>{{ bid.oneTimeFeeTotalRate|localizednumberwithprecision(2) }}&nbsp;%</td>
             <td data-toggle="tooltip" title="{% if bid.recurringFeeTotalRate > 0 %}soit {{ (bid.recurringFeeTotalRate * (bid.amount / 100) / 100)|localizednumber }}&nbsp;€{% endif %}">
                 {{ bid.recurringFeeTotalRate|localizednumberwithprecision(2) }}&nbsp;%
-            </td>
+            </td>#}
             <td>{% if bid.isAgent %}Oui{% else %}Non{% endif %}</td>
             {% if bid.status == constant('Unilend\\Entity\\Bids::STATUS_PENDING') %}
                 <td>
@@ -58,11 +58,11 @@
             {{ form_widget(form.agent) }} {{ form_label(form.agent) }}
         </div>
     </fieldset>
-    <fieldset class="simulator-pane-inner" style="margin-top: 20px;">
+    {#<fieldset class="simulator-pane-inner" style="margin-top: 20px;">
         <legend>Frais / Commission</legend>
         {% set feesTemplate = include('demo/partials/fees/new_bid_fees.html.twig') %}
         <div class="row fees" data-prototype="{{ feesTemplate|e('html_attr') }}"></div>
-    </fieldset>
+    </fieldset>#}
     <footer class="simulator-pane-inner actions bg-p1 c-bg5 text-align-right">
         <button type="submit" class="btn-continue btn-alternate" data-spinnerbutton>
             Valider
