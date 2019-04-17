@@ -24,14 +24,30 @@ class IntlExtension extends BaseIntlExtension
 
     /**
      * @param string|int|float $number
+     * @param mixed            $style
+     * @param mixed            $type
+     * @param mixed|null       $locale
      *
      * @throws SyntaxError
      *
      * @return bool|string
      */
-    public function localizedNumberFilter($number)
+    public function localizedNumberFilter($number, $style = 'decimal', $type = 'default', $locale = null)
     {
-        $formatter = twig_get_number_formatter(null, 'decimal');
+        static $typeValues = [
+            'default'  => NumberFormatter::TYPE_DEFAULT,
+            'int32'    => NumberFormatter::TYPE_INT32,
+            'int64'    => NumberFormatter::TYPE_INT64,
+            'double'   => NumberFormatter::TYPE_DOUBLE,
+            'currency' => NumberFormatter::TYPE_CURRENCY,
+        ];
+
+        $formatter = twig_get_number_formatter($locale, $style);
+
+        if (!isset($typeValues[$type])) {
+            throw new SyntaxError(sprintf('The type "%s" does not exist. Known types are: "%s"', $type, implode('", "', array_keys($typeValues))));
+        }
+
         $formatter->setSymbol(NumberFormatter::GROUPING_SEPARATOR_SYMBOL, html_entity_decode('&nbsp;'));
 
         return $formatter->format($number, NumberFormatter::TYPE_DEFAULT);
