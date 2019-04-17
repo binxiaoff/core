@@ -50,8 +50,6 @@ class DemoController extends AbstractController
      *
      * @param UserInterface|Clients|null $user
      *
-     * @throws NonUniqueResultException
-     *
      * @return Response
      */
     public function loans(?UserInterface $user): Response

@@ -31,7 +31,7 @@
             </div><!-- /.form-project-create-nav -->
         </div>
         <div class="dashboard-tabs-content tab-content">
-            <div class="row columns-with-space">
+            <div class="row">
                 <article class="dashboard-tab-pane col-lg-8 col-md-8">
                     <div class="panel" data-equal-height>
                         <div class="panel-content">
@@ -40,9 +40,9 @@
                                     <dt>Montant</dt>
                                     <dd data-fee-reference-amount>
                                         {% if isEditable %}
-                                            <a href="#" id="amount" class="editable" data-type="text" data-inputclass="input-field">{{ project.amount|number_format(0, ',', '&nbsp;')|raw }}</a>&nbsp;€
+                                            <a href="#" id="amount" class="editable" data-type="text" data-inputclass="input-field">{{ project.amount|localizednumber }}</a>&nbsp;€
                                         {% else %}
-                                            {{ project.amount|number_format(0, ',', '&nbsp;')|raw }}&nbsp;€
+                                            {{ project.amount|localizednumber }}&nbsp;€
                                         {% endif %}
                                     </dd>
                                 </dl>
@@ -169,9 +169,9 @@
                         </div><!-- /.panel-content -->
                     </div><!-- /.panel -->
                 </article><!-- /.dashboard-tab-pane -->
-                <article class="dashboard-tab-pane col-lg-4 col-md-4">
+                <article class="dashboard-tab-pane col-lg-4 col-md-4" style="border-left: solid 2px #eceaed;">
                     <div class="panel" style="position: relative;" data-equal-height>
-                        <h4 class="h4">Actions</h4>
+                        <h3 class="margin-10-t">Actions</h3>
                         <div class="panel-content">
                             <ul>
                                 <li><a href="#article-scoring">Notations</a></li>
@@ -211,10 +211,10 @@
                     </div><!-- /.panel -->
                 </article><!-- /.dashboard-tab-pane -->
             </div><!-- /.row -->
-            <article class="dashboard-tab-pane margin-20-t" id="article-scoring">
+            <article class="dashboard-tab-pane" id="article-scoring">
                 <div class="panel">
                     <fieldset>
-                        <h4 class="h4">Notation</h4>
+                        <h3 class="margin-10-t">Notation</h3>
                         <div class="row row-multi-col-computer scoring">
                             <dl class="col-md-4 col-lg-4">
                                 <dt>Arrangeur</dt>
@@ -266,9 +266,9 @@
                     </fieldset>
                 </div>
             </article><!-- /.dashboard-tab-pane -->
-            {#<article class="dashboard-tab-pane margin-20-t" id="article-fees">
+            {#<article class="dashboard-tab-pane" id="article-fees">
                 <div class="panel">
-                    <h4 class="h4">Frais / commissions</h4>
+                    <h3 class="margin-10-t">Frais / commissions</h3>
                     {% if project.projectPercentFees is not empty %}
                         <table class="table-myoffers">
                             <tbody>
@@ -297,10 +297,10 @@
                     <div class="row row-multi-col-computer fees" data-prototype="{{ feesTemplate|e('html_attr') }}"></div>
                 </div>
             </article><!-- /.dashboard-tab-pane -->#}
-            <article class="dashboard-tab-pane margin-20-t" id="article-visibility">
+            <article class="dashboard-tab-pane" id="article-visibility">
                 <div class="panel">
                     <form action="{{ path('demo_project_visibility', {'hash': project.hash}) }}" method="post">
-                        <h4 class="h4">Visibilité</h4>
+                        <h3 class="margin-10-t">Visibilité</h3>
                         {% if isEditable %}
                             <div class="row">
                                 <div class="message-info">Sélectionnez les entités qui auront la possibilité de se positionner pour le financement du projet. Une fois le projet en cours de financement, vous ne pourrez plus retirer d‘entité de la liste.</div>
@@ -399,20 +399,20 @@
                 </div>
             </article><!-- /.dashboard-tab-pane -->
             {% if project.status >= constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_ONLINE') %}
-                <article class="dashboard-tab-pane margin-20-t" id="article-bids">
+                <article class="dashboard-tab-pane" id="article-bids">
                     <div class="panel">
                         <div class="panel-content">
-                            <h4 class="h4">Offres de participation</h4>
+                            <h3 class="margin-10-t">Offres de participation</h3>
                             {% include 'demo/partials/bids/bids_list.html.twig' with {bids: project.bids} %}
                         </div><!-- /.project-single-content -->
                     </div>
                 </article><!-- /.dashboard-tab-pane -->
             {% endif %}
-            <article class="dashboard-tab-pane margin-20-t" id="article-documents">
+            <article class="dashboard-tab-pane" id="article-documents">
                 <div class="panel">
                     <form action="{{ path('demo_project_details_upload', {'hash': project.hash}) }}" method="post" enctype="multipart/form-data" data-formvalidation data-formvalidation-shownotifications="false">
                         <fieldset>
-                            <h4 class="h4">Documents</h4>
+                            <h3 class="margin-10-t">Documents</h3>
                             {% for projectAttachment in projectAttachments %}
                                 <div class="row">
                                     <span class="icon fa-file-u"></span>
@@ -463,9 +463,9 @@
                     </div><!-- /.ui-template-definition -->
                 </div>
             </article><!-- /.dashboard-tab-pane -->
-            <article class="dashboard-tab-pane margin-20-t" id="article-discussions">
+            <article class="dashboard-tab-pane" id="article-discussions">
                 <div class="panel" style="font-size: 16px;">
-                    <h4 class="h4">Discussions</h4>
+                    <h3 class="margin-10-t">Discussions</h3>
                     <div id="comments-container"></div>
                 </div>
             </article>

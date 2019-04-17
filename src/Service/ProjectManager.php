@@ -163,7 +163,8 @@ class ProjectManager
         $vatRate = $taxType->getRate() / 100;
 
         $commissionRateRepayment = round(bcdiv($repaymentCommissionRate, 100, 4), 2);
-        $commission              = ($financialCalculation->PMT($commissionRateRepayment / 12, $duration, -$amount) - $financialCalculation->PMT(0, $duration, -$amount)) * (1 + $vatRate);
+        $vatFreeCommission       = ($financialCalculation->PMT($commissionRateRepayment / 12, $duration, -$amount) - $financialCalculation->PMT(0, $duration, -$amount));
+        $commission              = $vatFreeCommission * (1 + $vatRate);
 
         return [
             'minimum' => round($financialCalculation->PMT($minimumRate / 100 / 12, $duration, -$amount) + $commission),
