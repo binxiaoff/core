@@ -1,6 +1,6 @@
 <?php
 
-namespace Unilend\Controller;
+namespace Unilend\Controller\Unilend;
 
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;

@@ -1,6 +1,6 @@
 <?php
 
-namespace Unilend\Controller;
+namespace Unilend\Controller\Unilend;
 
 use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;

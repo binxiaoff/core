@@ -1,6 +1,6 @@
 <?php
 
-namespace Unilend\Controller;
+namespace Unilend\Controller\Unilend;
 
 use Cache\Adapter\Memcache\MemcacheCachePool;
 use Knp\Snappy\GeneratorInterface;
