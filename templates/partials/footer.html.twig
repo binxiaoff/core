@@ -1,7 +1,5 @@
-{# Site Footer #}
-
 <footer>
-    {% if displayDisclaimer %}
+    {% if displayDisclaimer is defined and displayDisclaimer %}
         <div class="disclaimer">
             <div class="site-wrap">
                 {% trans %} footer_disclaimer {% endtrans %}

@@ -1,6 +1,6 @@
 <?php
 
-namespace Unilend\Controller\PartnerAccount;
+namespace Unilend\Controller\Unilend\PartnerAccount;
 
 use Psr\Log\InvalidArgumentException;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;

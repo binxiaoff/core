@@ -1,6 +1,6 @@
 <?php
 
-namespace Unilend\Controller;
+namespace Unilend\Controller\Unilend;
 
 use Knp\Snappy\GeneratorInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
