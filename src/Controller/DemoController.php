@@ -2,10 +2,14 @@
 
 namespace Unilend\Controller;
 
-use Doctrine\ORM\EntityManagerInterface;
+use DateTime;
+use Doctrine\DBAL\ConnectionException;
+use Doctrine\ORM\{EntityManagerInterface, NonUniqueResultException, OptimisticLockException};
+use Exception;
 use Psr\Log\LoggerInterface;
 use Ramsey\Uuid\Uuid;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
+use Swift_SwiftException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Filesystem\Exception\FileNotFoundException;
 use Symfony\Component\Filesystem\Filesystem;
@@ -13,8 +17,8 @@ use Symfony\Component\HttpFoundation\{JsonResponse, RedirectResponse, Request, R
 use Symfony\Component\Routing\{Annotation\Route, Router, RouterInterface};
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
-use Unilend\Entity\{Attachment, AttachmentType, Bids, Clients, Companies, FeeType, Loans, Partner, PartnerProduct, PercentFee, Product, ProjectAttachment, ProjectAttachmentType,
-    ProjectComment, ProjectParticipant, ProjectPercentFee, Projects, ProjectsStatus, Users, Wallet, WalletType};
+use Unilend\Entity\{Attachment, AttachmentType, Bids, Clients, Companies, CompanySector, FeeType, Loans, Partner, PartnerProduct, PercentFee, Product, ProjectAttachment,
+    ProjectAttachmentType, ProjectComment, ProjectParticipant, ProjectPercentFee, Projects, ProjectsStatus, RepaymentType, Users, Wallet, WalletType};
 use Unilend\Form\Lending\BidType;
 use Unilend\Repository\ProjectParticipantRepository;
 use Unilend\Service\Front\ProjectDisplayManager;
@@ -28,7 +32,6 @@ class DemoController extends AbstractController
 {
     /** @var EntityManagerInterface */
     private $entityManager;
-
     /** @var LoggerInterface */
     private $logger;
 
@@ -110,18 +113,7 @@ class DemoController extends AbstractController
 
             $template['projects']['lender']['inProgress'] = array_merge((array) $projectsInProgressBid, (array) $projectsInProgressNonSignedLoan);
 
-            $inProgressBidCount = $projectRepository->createQueryBuilder('p')
-                ->select('count(p)')
-                ->distinct()
-                ->innerJoin('p.bids', 'b')
-                ->where('b.wallet = :wallet')
-                ->andWhere('b.status = :pending')
-                ->setParameters(['wallet' => $wallet, 'pending' => Bids::STATUS_PENDING])
-                ->getQuery()
-                ->getSingleScalarResult()
-            ;
-
-            $inProgressCount = $inProgressBidCount + count($projectsInProgressNonSignedLoan);
+            $inProgressCount = count($template['projects']['lender']['inProgress']) + count($projectsInProgressNonSignedLoan);
 
             $template['projects']['lender']['inProgressCount'] = [
                 'pending' => $inProgressCount,
@@ -180,34 +172,17 @@ class DemoController extends AbstractController
     /**
      * @Route("/depot", name="demo_project_request", methods={"GET"})
      *
-     * @param ProjectManager      $projectManager
-     * @param TranslatorInterface $translator
+     * @param ProjectManager $projectManager
      *
      * @return Response
      */
-    public function projectRequest(ProjectManager $projectManager, TranslatorInterface $translator): Response
+    public function projectRequest(ProjectManager $projectManager): Response
     {
-        $arrangers           = [];
-        $partners            = $this->entityManager->getRepository(Partner::class)->findAll();
-        $companiesRepository = $this->entityManager->getRepository(Companies::class);
-
-        foreach ($partners as $partner) {
-            $company = $partner->getIdCompany();
-
-            if (false === isset($arrangers[$company->getIdCompany()])) {
-                $arrangers[$company->getIdCompany()] = $company->getName();
-            }
-        }
-
-        asort($arrangers);
-
         $template = [
             'loanPeriods'     => $projectManager->getPossibleProjectPeriods(),
-            'partners'        => $partners,
-            'products'        => $this->getProductsList($partners, $translator),
-            'arrangers'       => $arrangers,
-            'runs'            => $companiesRepository->findBy(['idCompany' => range(6, 45)], ['name' => 'ASC']),
+            'runs'            => $this->entityManager->getRepository(Companies::class)->findBy(['idCompany' => range(6, 45)], ['name' => 'ASC']),
             'attachmentTypes' => $this->entityManager->getRepository(ProjectAttachmentType::class)->getAttachmentTypes(),
+            'sectors'         => $this->entityManager->getRepository(CompanySector::class)->findBy([], ['idCompanySector' => 'ASC']),
         ];
 
         return $this->render('demo/project_request.html.twig', $template);
@@ -222,7 +197,7 @@ class DemoController extends AbstractController
      * @param AttachmentManager          $attachmentManager
      * @param DemoMailerManager          $mailerManager
      *
-     * @throws \Doctrine\DBAL\ConnectionException
+     * @throws ConnectionException
      *
      * @return RedirectResponse
      */
@@ -236,16 +211,20 @@ class DemoController extends AbstractController
         $borrowerId         = $request->request->get('borrower');
         $title              = $request->request->get('title');
         $description        = $request->request->get('description');
+        $sector             = $request->request->get('sector'); // @todo
         $amount             = $request->request->get('amount');
         $duration           = $request->request->get('duration');
-        $date               = $request->request->get('date');
-        $date               = $date ? \DateTime::createFromFormat('d/m/Y', $date)->setTime(0, 0, 0) : null;
+        $responseDate       = $request->request->get('response-date');
+        $responseDate       = $responseDate ? DateTime::createFromFormat('d/m/Y', $responseDate)->setTime(0, 0, 0) : null;
+        $releaseDate        = $request->request->get('release-date');
+        $releaseDate        = $releaseDate ? DateTime::createFromFormat('d/m/Y', $releaseDate)->setTime(0, 0, 0) : null;
+        $firstPaymentDate   = $request->request->get('first-payment-date');
+        $firstPaymentDate   = $firstPaymentDate ? DateTime::createFromFormat('d/m/Y', $firstPaymentDate)->setTime(0, 0, 0) : null;
         $partnerId          = $request->request->get('partner');
-        $productId          = $request->request->get('product');
-        $productId          = $productId ?: null;
-        $rate               = $request->request->get('rate');
-        $rate               = $rate ? (float) (str_replace(',', '.', $rate)) : null;
-        $guarantee          = $request->request->get('guarantee') ? 1 : 0;
+        $delay              = $request->request->get('delay');
+        $delay              = $delay ?: null;
+        $hasGuarantee       = $request->request->get('has-guarantee') ? 1 : 0;
+        $requestGuarantee   = $request->request->get('request-guarantee') ? 1 : 0;
         $arrangerId         = $request->request->get('arranger');
         $runId              = $request->request->get('run');
         $projectForm        = $request->request->get('project_type');
@@ -258,6 +237,14 @@ class DemoController extends AbstractController
             $companiesRepository = $this->entityManager->getRepository(Companies::class);
             $borrower            = $companiesRepository->find($borrowerId);
 
+            $repaymentType = $this->entityManager->getRepository(RepaymentType::class)->findOneBy([
+                'label'       => $request->request->get('amortization'),
+                'periodicity' => $request->request->get('periodicity'),
+            ]);
+            $product = $this->entityManager->getRepository(Product::class)->findOneBy(['idRepaymentType' => $repaymentType]);
+
+            // @todo request-type - primary: borrower = borrowerId, secondary: borrower = current user, target = borrowerId
+            // changes needed for displaying right borrower and whether it's primary/secondary syndication
             $project = new Projects();
             $project
                 ->setIdCompany($borrower)
@@ -269,12 +256,15 @@ class DemoController extends AbstractController
                 ->setCreateBo(false)
                 ->setStatus(ProjectsStatus::STATUS_REQUEST)
                 ->setIdPartner($partner)
-                ->setIdProduct($productId)
+                ->setIdProduct($product->getIdProduct())
                 ->setIdCompanySubmitter($user->getCompany())
                 ->setIdClientSubmitter($user)
-                ->setDateRetrait($date)
-                ->setInterestRate($rate)
-                ->setBalanceCount($guarantee)
+                ->setDatePublication($responseDate)
+                ->setDateRetrait($releaseDate)
+                ->setDateFunded($firstPaymentDate)
+                ->setCaDeclaraClient($delay)
+                ->setFondsPropresDeclaraClient($hasGuarantee)
+                ->setResultatExploitationDeclaraClient($requestGuarantee)
             ;
 
             if ($arrangerId && $arranger = $companiesRepository->find($arrangerId)) {
@@ -311,7 +301,7 @@ class DemoController extends AbstractController
 
             try {
                 $mailerManager->sendProjectRequest($project);
-            } catch (\Swift_SwiftException $exception) {
+            } catch (Swift_SwiftException $exception) {
                 $this->logger->error('An error occurred while sending project request email. Message: ' . $exception->getMessage(), [
                     'class'    => __CLASS__,
                     'function' => __FUNCTION__,
@@ -321,7 +311,7 @@ class DemoController extends AbstractController
             }
 
             return $this->redirectToRoute('demo_project_details', ['hash' => $project->getHash()]);
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
             $this->entityManager->getConnection()->rollBack();
 
             $this->logger->error('An error occurred while creating project. Message: ' . $exception->getMessage(), [
@@ -358,16 +348,16 @@ class DemoController extends AbstractController
             return $this->redirectToRoute('demo_loans');
         }
 
-        /** @var Partner $partner */
-        $partner   = $project->getIdPartner();
-        $arrangers = [];
-        $arranger  = $project->getArrangerParticipant();
-        $arranger  = $arranger instanceof ProjectParticipant ? $arranger->getCompany() : null;
-        $run       = $project->getRunParticipant();
-        $run       = $run instanceof ProjectParticipant ? $run->getCompany() : null;
+        $arranger = $project->getArrangerParticipant();
+        $arranger = $arranger instanceof ProjectParticipant ? $arranger->getCompany() : null;
+        $run      = $project->getRunParticipant();
+        $run      = $run instanceof ProjectParticipant ? $run->getCompany() : null;
 
-        $arrangers[$partner->getIdCompany()->getIdCompany()] = $partner->getIdCompany()->getName();
-        $arrangers[$user->getCompany()->getIdCompany()]      = $user->getCompany()->getName();
+        $arrangers = [
+            $user->getCompany()->getIdCompany() => $user->getCompany()->getName(),
+            3                                   => 'CA-CIB',
+            4                                   => 'Unifergie',
+        ];
 
         if ($arranger instanceof Companies) {
             $arrangers[$arranger->getIdCompany()] = $arranger->getName();
@@ -376,7 +366,7 @@ class DemoController extends AbstractController
         asort($arrangers);
 
         $companyRepository = $this->entityManager->getRepository(Companies::class);
-        $regionalBanks     = $companyRepository->findBy(['idCompany' => range(6, 45)], ['name' => 'ASC']);
+        $regionalBanks     = $companyRepository->findBy(['idCompany' => range(6, 44)], ['name' => 'ASC']);
 
         $visibility = [];
         /** @var ProjectParticipant $projectParticipant */
@@ -390,15 +380,15 @@ class DemoController extends AbstractController
         $projectAttachmentTypeRepository = $this->entityManager->getRepository(ProjectAttachmentType::class);
         $productRepository               = $this->entityManager->getRepository(Product::class);
         $template                        = [
-            'loanPeriods'      => $projectManager->getPossibleProjectPeriods(),
-            'products'         => $this->getProductsList([$project->getIdPartner()], $translator),
-            'arranger'         => $arranger,
-            'arrangers'        => $arrangers,
-            'run'              => $run,
-            'runs'             => $regionalBanks,
-            'potentialLenders' => $regionalBanks,
-            'visibility'       => $visibility,
-            'projectStatus'    => [
+            'loanPeriods'   => $projectManager->getPossibleProjectPeriods(),
+            'products'      => $this->getProductsList([$project->getIdPartner()], $translator),
+            'arranger'      => $arranger,
+            'arrangers'     => $arrangers,
+            'run'           => $run,
+            'runs'          => $regionalBanks,
+            'regionalBanks' => $regionalBanks,
+            'visibility'    => $visibility,
+            'projectStatus' => [
                 ProjectsStatus::STATUS_REQUEST,
                 ProjectsStatus::STATUS_REVIEW,
                 ProjectsStatus::STATUS_ONLINE,
@@ -407,14 +397,13 @@ class DemoController extends AbstractController
                 ProjectsStatus::STATUS_REPAYMENT,
                 ProjectsStatus::STATUS_REPAID,
             ],
-            'project'                   => $project,
-            'product'                   => $project->getIdProduct() ? $productRepository->find($project->getIdProduct()) : null,
-            'attachmentTypes'           => $projectAttachmentTypeRepository->getAttachmentTypes(),
-            'projectAttachments'        => $projectAttachmentRepository->findBy(['idProject' => $project], ['added' => 'DESC']),
-            'isEditable'                => $projectManager->isEditable($project),
-            'isProjectScoringEditable'  => $projectManager->isProjectScoringEditable($project, $user),
-            'isBorrowerScoringEditable' => $projectManager->isBorrowerScoringEditable($project, $user),
-            'canChangeBidStatus'        => true,
+            'project'            => $project,
+            'product'            => $project->getIdProduct() ? $productRepository->find($project->getIdProduct()) : null,
+            'attachmentTypes'    => $projectAttachmentTypeRepository->getAttachmentTypes(),
+            'projectAttachments' => $projectAttachmentRepository->findBy(['idProject' => $project], ['added' => 'DESC']),
+            'isEditable'         => $projectManager->isEditable($project),
+            'isScoringEditable'  => $projectManager->isScoringEditable($project, $user),
+            'canChangeBidStatus' => true,
         ];
 
         return $this->render('demo/project_request_details.html.twig', $template);
@@ -431,7 +420,7 @@ class DemoController extends AbstractController
      * @param AttachmentManager          $attachmentManager
      * @param UserInterface|Clients|null $user
      *
-     * @throws \Doctrine\ORM\OptimisticLockException
+     * @throws OptimisticLockException
      *
      * @return RedirectResponse
      */
@@ -667,8 +656,8 @@ class DemoController extends AbstractController
      * @param ProjectStatusManager $projectStatusManager
      * @param DemoMailerManager    $mailerManager
      *
-     * @throws \Doctrine\ORM\NonUniqueResultException
-     * @throws \Doctrine\ORM\OptimisticLockException
+     * @throws NonUniqueResultException
+     * @throws OptimisticLockException
      *
      * @return Response
      */
@@ -730,7 +719,7 @@ class DemoController extends AbstractController
                 case ProjectsStatus::STATUS_ONLINE:
                     try {
                         $mailerManager->sendProjectPublication($project);
-                    } catch (\Swift_SwiftException $exception) {
+                    } catch (Swift_SwiftException $exception) {
                         $this->logger->error('An error occurred while sending project publication email. Message: ' . $exception->getMessage(), [
                             'class'    => __CLASS__,
                             'function' => __FUNCTION__,
@@ -743,7 +732,7 @@ class DemoController extends AbstractController
                 case ProjectsStatus::STATUS_FUNDED:
                     try {
                         $mailerManager->sendProjectFundingEnd($project);
-                    } catch (\Swift_SwiftException $exception) {
+                    } catch (Swift_SwiftException $exception) {
                         $this->logger->error('An error occurred while sending project publication email. Message: ' . $exception->getMessage(), [
                             'class'    => __CLASS__,
                             'function' => __FUNCTION__,
@@ -836,6 +825,8 @@ class DemoController extends AbstractController
      * @param ProjectManager    $projectManager
      * @param DemoMailerManager $mailerManager
      *
+     * @throws Exception
+     *
      * @return Response
      */
     public function projectUpdate(Request $request, string $hash, ProjectManager $projectManager, DemoMailerManager $mailerManager): Response
@@ -886,48 +877,65 @@ class DemoController extends AbstractController
                 $outputValue = $project->getPeriod() / 12;
 
                 break;
-            case 'product':
-                $product = $this->entityManager->getRepository(Product::class)->find($value);
+            case 'amortization':
+                /** @var RepaymentType $currentRepaymentType */
+                $currentRepaymentType = $this->entityManager->getRepository(Product::class)->find($project->getIdProduct())->getIdRepaymentType();
+                $repaymentType        = $this->entityManager->getRepository(RepaymentType::class)->findOneBy([
+                    'label'       => $value,
+                    'periodicity' => $currentRepaymentType->getPeriodicity(),
+                ]);
+                $product = $this->entityManager->getRepository(Product::class)->findOneBy(['idRepaymentType' => $repaymentType]);
                 $product = $product ? $product->getIdProduct() : null;
                 $project->setIdProduct($product);
                 $this->entityManager->flush($project);
 
-                $outputValue = $project->getIdProduct();
+                $outputValue = $repaymentType->getLabel();
 
                 break;
-            case 'rate':
-                if ('' === $value) {
-                    $value = null;
-                } else {
-                    $value = str_replace(',', '.', $value);
-                    $value = (float) preg_replace('/[^0-9.]/', '', $value);
-                }
-                $project->setInterestRate($value);
+            case 'periodicity':
+                /** @var RepaymentType $currentRepaymentType */
+                $currentRepaymentType = $this->entityManager->getRepository(Product::class)->find($value)->getIdRepaymentType();
+                $repaymentType        = $this->entityManager->getRepository(RepaymentType::class)->findOneBy([
+                    'label'       => $currentRepaymentType->getLabel(),
+                    'periodicity' => $value,
+                ]);
+                $product = $this->entityManager->getRepository(Product::class)->findOneBy(['idRepaymentType' => $repaymentType]);
+                $product = $product ? $product->getIdProduct() : null;
+                $project->setIdProduct($product);
                 $this->entityManager->flush($project);
 
-                $formatter   = new \NumberFormatter('fr_FR', \NumberFormatter::DEFAULT_STYLE);
-                $outputValue = $formatter->format($project->getInterestRate());
+                $outputValue = $repaymentType->getPeriodicity();
 
                 break;
-            case 'date':
+            case 'response-date':
+            case 'release-date':
+            case 'first-payment-date':
                 if ($value && 1 === preg_match('#^[0-9]{2}/[0-9]{2}/[0-9]{4}$#', $value)) {
-                    $value = \DateTime::createFromFormat('d/m/Y', $value)->setTime(0, 0, 0);
+                    $value = DateTime::createFromFormat('d/m/Y', $value)->setTime(0, 0, 0);
                 } else {
                     $value = null;
                 }
-                $project->setDateRetrait($value);
+
+                switch ($field) {
+                    case 'response-date':
+                        $project->setDatePublication($value);
+
+                        break;
+                    case 'release-date':
+                        $project->setDateRetrait($value);
+
+                        break;
+                    case 'first-payment-date':
+                        $project->setDateFunded($value);
+
+                        break;
+                }
+
                 $this->entityManager->flush($project);
 
                 if ($value) {
                     $outputValue = $value->format('d/m/Y');
                 }
-
-                break;
-            case 'guarantee':
-                $project->setBalanceCount(empty($value) ? 0 : 1);
-                $this->entityManager->flush($project);
-
-                $outputValue = $project->getBalanceCount();
 
                 break;
             case 'description':
@@ -973,15 +981,15 @@ class DemoController extends AbstractController
                 $outputValue = $runCompany ? $runCompany->getIdCompany() : null;
 
                 break;
-            case 'arranger-scoring':
+            case 'scoring':
                 $value = $value ?: null;
                 $project->setNatureProject($value);
                 $this->entityManager->flush($project);
 
                 try {
-                    $mailerManager->sendArrangerScoringChanged($project);
-                } catch (\Swift_SwiftException $exception) {
-                    $this->logger->error('An error occurred while sending arranger scoring email. Message: ' . $exception->getMessage(), [
+                    $mailerManager->sendScoringUpdated($project);
+                } catch (Swift_SwiftException $exception) {
+                    $this->logger->error('An error occurred while sending scoring update email. Message: ' . $exception->getMessage(), [
                         'class'    => __CLASS__,
                         'function' => __FUNCTION__,
                         'file'     => $exception->getFile(),
@@ -990,41 +998,6 @@ class DemoController extends AbstractController
                 }
 
                 $outputValue = $project->getNatureProject();
-
-                break;
-            case 'arranger-risk-analysis':
-                $value = $value ?: null;
-                $project->setPresentationCompany($value);
-                $this->entityManager->flush($project);
-
-                $outputValue = $project->getPresentationCompany();
-
-                break;
-            case 'run-scoring':
-                $value = $value ?: null;
-                $project->setObjectifLoan($value);
-                $this->entityManager->flush($project);
-
-                try {
-                    $mailerManager->sendRunScoringChanged($project);
-                } catch (\Swift_SwiftException $exception) {
-                    $this->logger->error('An error occurred while sending RUN scoring email. Message: ' . $exception->getMessage(), [
-                        'class'    => __CLASS__,
-                        'function' => __FUNCTION__,
-                        'file'     => $exception->getFile(),
-                        'line'     => $exception->getLine(),
-                    ]);
-                }
-
-                $outputValue = $project->getObjectifLoan();
-
-                break;
-            case 'run-risk-analysis':
-                $value = $value ?: null;
-                $project->setMeansRepayment($value);
-                $this->entityManager->flush($project);
-
-                $outputValue = $project->getMeansRepayment();
 
                 break;
         }
@@ -1126,7 +1099,7 @@ class DemoController extends AbstractController
 
             try {
                 $mailerManager->sendBidSubmitted($bid);
-            } catch (\Swift_SwiftException $exception) {
+            } catch (Swift_SwiftException $exception) {
                 $this->logger->error('An error occurred while sending submitted bid email. Message: ' . $exception->getMessage(), [
                     'class'    => __CLASS__,
                     'function' => __FUNCTION__,
@@ -1134,6 +1107,8 @@ class DemoController extends AbstractController
                     'line'     => $exception->getLine(),
                 ]);
             }
+
+            return $this->redirectToRoute('demo_lender_project_details', ['slug' => $project->getSlug()]);
         }
 
         return $this->render('demo/project.html.twig', [
@@ -1169,7 +1144,7 @@ class DemoController extends AbstractController
             if (in_array($status, [Bids::STATUS_ACCEPTED, Bids::STATUS_REJECTED])) {
                 try {
                     $mailerManager->sendBidAcceptedRejected($bid);
-                } catch (\Swift_SwiftException $exception) {
+                } catch (Swift_SwiftException $exception) {
                     $this->logger->error('An error occurred while sending accepted/rejected bid email. Message: ' . $exception->getMessage(), [
                         'class'    => __CLASS__,
                         'function' => __FUNCTION__,
@@ -1194,12 +1169,12 @@ class DemoController extends AbstractController
     }
 
     /**
+     * @Route("/project/{hash}/fees/add", name="demo_add_project_fees", methods={"POST"}, requirements={"hash": "[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}"})
+     *
      * @param Request $request
      * @param string  $hash
      *
      * @return JsonResponse
-     *
-     * @Route("/project/{hash}/fees/add", name="demo_add_project_fees", methods={"POST"}, requirements={"hash": "[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}"})
      */
     public function addProjectFees(Request $request, string $hash): JsonResponse
     {
@@ -1321,7 +1296,7 @@ class DemoController extends AbstractController
      * @param Clients           $user
      * @param AttachmentManager $attachmentManager
      *
-     * @throws \Doctrine\ORM\OptimisticLockException
+     * @throws OptimisticLockException
      */
     private function uploadDocuments(Request $request, Projects $project, Clients $user, AttachmentManager $attachmentManager): void
     {

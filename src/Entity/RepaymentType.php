@@ -3,38 +3,34 @@
 namespace Unilend\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Unilend\Entity\Traits\Timestampable;
 
 /**
- * RepaymentType
- *
- * @ORM\Table(name="repayment_type")
+ * @ORM\Table(name="repayment_type", uniqueConstraints={@ORM\UniqueConstraint(columns={"label", "periodicity"})})
  * @ORM\Entity
  */
 class RepaymentType
 {
-    const REPAYMENT_TYPE_AMORTIZATION = 'amortization_schedule';
-    const REPAYMENT_TYPE_DEFERRED     = 'deferred_schedule';
+    use Timestampable;
+
+    public const REPAYMENT_TYPE_FIXED_CAPITAL = 'fixed_capital';
+    public const REPAYMENT_TYPE_FIXED_PAYMENT = 'fixed_payment';
+    public const REPAYMENT_TYPE_DEFERRED      = 'deferred';
+    public const REPAYMENT_TYPE_IN_FINE       = 'in_fine';
 
     /**
      * @var string
      *
-     * @ORM\Column(name="label", type="string", length=191, unique=true)
+     * @ORM\Column(name="label", type="string", length=191)
      */
     private $label;
 
     /**
-     * @var \DateTime
+     * @var int
      *
-     * @ORM\Column(name="added", type="datetime")
+     * @ORM\Column(name="periodicity", type="integer")
      */
-    private $added;
-
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="updated", type="datetime")
-     */
-    private $updated;
+    private $periodicity;
 
     /**
      * @var int
@@ -45,16 +41,12 @@ class RepaymentType
      */
     private $idRepaymentType;
 
-
-
     /**
-     * Set label
-     *
      * @param string $label
      *
      * @return RepaymentType
      */
-    public function setLabel($label)
+    public function setLabel(string $label): RepaymentType
     {
         $this->label = $label;
 
@@ -62,69 +54,37 @@ class RepaymentType
     }
 
     /**
-     * Get label
-     *
      * @return string
      */
-    public function getLabel()
+    public function getLabel(): string
     {
         return $this->label;
     }
 
     /**
-     * Set added
-     *
-     * @param \DateTime $added
+     * @param int $periodicity
      *
      * @return RepaymentType
      */
-    public function setAdded($added)
+    public function setPeriodicity(int $periodicity): RepaymentType
     {
-        $this->added = $added;
+        $this->periodicity = $periodicity;
 
         return $this;
     }
 
     /**
-     * Get added
-     *
-     * @return \DateTime
+     * @return int
      */
-    public function getAdded()
+    public function getPeriodicity(): int
     {
-        return $this->added;
+        return $this->periodicity;
     }
 
     /**
-     * Set updated
-     *
-     * @param \DateTime $updated
-     *
-     * @return RepaymentType
+     * @return int
      */
-    public function setUpdated($updated)
-    {
-        $this->updated = $updated;
-
-        return $this;
-    }
-
-    /**
-     * Get updated
-     *
-     * @return \DateTime
-     */
-    public function getUpdated()
-    {
-        return $this->updated;
-    }
-
-    /**
-     * Get idRepaymentType
-     *
-     * @return integer
-     */
-    public function getIdRepaymentType()
+    public function getIdRepaymentType(): int
     {
         return $this->idRepaymentType;
     }

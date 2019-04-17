@@ -3,6 +3,9 @@
 namespace Unilend\Service;
 
 use Doctrine\ORM\EntityManagerInterface;
+use NumberFormatter;
+use Swift_Mailer;
+use Swift_RfcComplianceException;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Unilend\Entity\{Bids, Clients, Projects};
@@ -10,14 +13,14 @@ use Unilend\SwiftMailer\TemplateMessageProvider;
 
 class DemoMailerManager
 {
-    const RECIPIENT_TYPE_ARRANGER  = 'arranger';
-    const RECIPIENT_TYPE_LENDERS   = 'lenders';
-    const RECIPIENT_TYPE_RUN       = 'run';
-    const RECIPIENT_TYPE_SUBMITTER = 'submitter';
+    public const RECIPIENT_TYPE_ARRANGER  = 'arranger';
+    public const RECIPIENT_TYPE_LENDERS   = 'lenders';
+    public const RECIPIENT_TYPE_RUN       = 'run';
+    public const RECIPIENT_TYPE_SUBMITTER = 'submitter';
 
     /** @var TemplateMessageProvider */
     private $messageProvider;
-    /** @var \Swift_Mailer */
+    /** @var Swift_Mailer */
     private $mailer;
     /** @var EntityManagerInterface */
     private $entityManager;
@@ -28,19 +31,18 @@ class DemoMailerManager
 
     /**
      * @param TemplateMessageProvider $messageProvider
-     * @param \Swift_Mailer           $mailer
+     * @param Swift_Mailer            $mailer
      * @param EntityManagerInterface  $entityManager
      * @param RouterInterface         $router
      * @param TranslatorInterface     $translator
      */
     public function __construct(
         TemplateMessageProvider $messageProvider,
-        \Swift_Mailer $mailer,
+        Swift_Mailer $mailer,
         EntityManagerInterface $entityManager,
         RouterInterface $router,
         TranslatorInterface $translator
-    )
-    {
+    ) {
         $this->messageProvider = $messageProvider;
         $this->mailer          = $mailer;
         $this->entityManager   = $entityManager;
@@ -50,12 +52,14 @@ class DemoMailerManager
 
     /**
      * @param Projects $project
+     *
+     * @throws Swift_RfcComplianceException
+     *
      * @return int
-     * @throws \Swift_RfcComplianceException
      */
     public function sendProjectRequest(Projects $project): int
     {
-        $formatter = new \NumberFormatter('fr_FR', \NumberFormatter::DEFAULT_STYLE);
+        $formatter = new NumberFormatter('fr_FR', NumberFormatter::DEFAULT_STYLE);
         $keywords  = [
             'firstName'  => '',
             'projectUrl' => $this->router->generate('demo_project_details', ['hash' => $project->getHash()], RouterInterface::ABSOLUTE_URL),
@@ -63,15 +67,15 @@ class DemoMailerManager
             'amount'     => $formatter->format($project->getAmount()),
             'duration'   => $this->translator->trans('demo-project-request_simulator-duration-select-option', [
                 '%count%'    => $project->getPeriod() / 12,
-                '%duration%' => $project->getPeriod() / 12
-            ])
+                '%duration%' => $project->getPeriod() / 12,
+            ]),
         ];
 
         $sent       = 0;
         $recipients = $this->getProjectRecipients($project, [
             self::RECIPIENT_TYPE_ARRANGER,
             self::RECIPIENT_TYPE_RUN,
-            self::RECIPIENT_TYPE_SUBMITTER
+            self::RECIPIENT_TYPE_SUBMITTER,
         ]);
 
         foreach ($recipients as $recipient) {
@@ -89,46 +93,25 @@ class DemoMailerManager
 
     /**
      * @param Projects $project
+     *
+     * @throws Swift_RfcComplianceException
+     *
      * @return int
-     * @throws \Swift_RfcComplianceException
      */
-    public function sendArrangerScoringChanged(Projects $project): int
-    {
-        return $this->sendProjectScoringChanged($project, 'arrangeur', $project->getNatureProject());
-    }
-
-    /**
-     * @param Projects $project
-     * @return int
-     * @throws \Swift_RfcComplianceException
-     */
-    public function sendRunScoringChanged(Projects $project): int
-    {
-        return $this->sendProjectScoringChanged($project, 'RUN', $project->getObjectifLoan());
-    }
-
-    /**
-     * @param Projects $project
-     * @param string   $name
-     * @param string   $value
-     * @return int
-     * @throws \Swift_RfcComplianceException
-     */
-    private function sendProjectScoringChanged(Projects $project, string $name, string $value): int
+    public function sendScoringUpdated(Projects $project): int
     {
         $keywords = [
             'firstName'    => '',
             'projectUrl'   => $this->router->generate('demo_project_details', ['hash' => $project->getHash()], RouterInterface::ABSOLUTE_URL),
             'projectName'  => $project->getIdCompany()->getName() . ' / ' . $project->getTitle(),
-            'scoringName'  => $name,
-            'scoringValue' => $value
+            'scoringValue' => $project->getNatureProject(),
         ];
 
         $sent       = 0;
         $recipients = $this->getProjectRecipients($project, [
             self::RECIPIENT_TYPE_ARRANGER,
             self::RECIPIENT_TYPE_RUN,
-            self::RECIPIENT_TYPE_SUBMITTER
+            self::RECIPIENT_TYPE_SUBMITTER,
         ]);
 
         foreach ($recipients as $recipient) {
@@ -146,15 +129,17 @@ class DemoMailerManager
 
     /**
      * @param Projects $project
+     *
+     * @throws Swift_RfcComplianceException
+     *
      * @return int
-     * @throws \Swift_RfcComplianceException
      */
     public function sendProjectPublication(Projects $project): int
     {
         $keywords = [
             'firstName'   => '',
             'projectUrl'  => $this->router->generate('demo_lender_project_details', ['slug' => $project->getSlug()], RouterInterface::ABSOLUTE_URL),
-            'projectName' => $project->getIdCompany()->getName() . ' / ' . $project->getTitle()
+            'projectName' => $project->getIdCompany()->getName() . ' / ' . $project->getTitle(),
         ];
 
         $sent       = 0;
@@ -162,7 +147,7 @@ class DemoMailerManager
             self::RECIPIENT_TYPE_ARRANGER,
             self::RECIPIENT_TYPE_LENDERS,
             self::RECIPIENT_TYPE_RUN,
-            self::RECIPIENT_TYPE_SUBMITTER
+            self::RECIPIENT_TYPE_SUBMITTER,
         ]);
 
         foreach ($recipients as $recipient) {
@@ -180,12 +165,14 @@ class DemoMailerManager
 
     /**
      * @param Bids $bid
+     *
+     * @throws Swift_RfcComplianceException
+     *
      * @return int
-     * @throws \Swift_RfcComplianceException
      */
     public function sendBidSubmitted(Bids $bid): int
     {
-        $formatter = new \NumberFormatter('fr_FR', \NumberFormatter::DEFAULT_STYLE);
+        $formatter = new NumberFormatter('fr_FR', NumberFormatter::DEFAULT_STYLE);
         $project   = $bid->getProject();
         $keywords  = [
             'firstName'     => '',
@@ -195,13 +182,13 @@ class DemoMailerManager
             'bidAmount'     => $formatter->format($bid->getAmount()),
             'bidRateIndex'  => $bid->getRate()->getIndexType(),
             'bidMarginRate' => $formatter->format($bid->getRate()->getMargin()),
-            'bidAgent'      => $bid->isAgent() ? 'oui' : 'non'
+            'bidAgent'      => $bid->isAgent() ? 'oui' : 'non',
         ];
 
         $sent       = 0;
         $recipients = $this->getProjectRecipients($project, [
             self::RECIPIENT_TYPE_ARRANGER,
-            self::RECIPIENT_TYPE_SUBMITTER
+            self::RECIPIENT_TYPE_SUBMITTER,
         ]);
 
         foreach ($recipients as $recipient) {
@@ -219,8 +206,10 @@ class DemoMailerManager
 
     /**
      * @param Bids $bid
+     *
+     * @throws Swift_RfcComplianceException
+     *
      * @return int
-     * @throws \Swift_RfcComplianceException
      */
     public function sendBidAcceptedRejected(Bids $bid): int
     {
@@ -231,11 +220,11 @@ class DemoMailerManager
         }
 
         $project  = $bid->getProject();
-        $mailType = $bid->getStatus() === Bids::STATUS_ACCEPTED ? 'bid-accepted' : 'bid-rejected';
+        $mailType = Bids::STATUS_ACCEPTED === $bid->getStatus() ? 'bid-accepted' : 'bid-rejected';
         $message  = $this->messageProvider->newMessage($mailType, [
             'firstName'   => $recipient->getPrenom(),
             'projectUrl'  => $this->router->generate('demo_lender_project_details', ['slug' => $project->getSlug()], RouterInterface::ABSOLUTE_URL),
-            'projectName' => $project->getIdCompany()->getName() . ' / ' . $project->getTitle()
+            'projectName' => $project->getIdCompany()->getName() . ' / ' . $project->getTitle(),
         ]);
 
         $message->setTo($recipient->getEmail());
@@ -245,8 +234,10 @@ class DemoMailerManager
 
     /**
      * @param Projects $project
+     *
+     * @throws Swift_RfcComplianceException
+     *
      * @return int
-     * @throws \Swift_RfcComplianceException
      */
     public function sendProjectFundingEnd(Projects $project): int
     {
@@ -254,14 +245,14 @@ class DemoMailerManager
             'firstName'    => '',
             'projectUrl'   => $this->router->generate('demo_project_details', ['hash' => $project->getHash()], RouterInterface::ABSOLUTE_URL),
             'projectName'  => $project->getIdCompany()->getName() . ' / ' . $project->getTitle(),
-            'signatureUrl' => ''
+            'signatureUrl' => '',
         ];
 
         $sent         = 0;
         $recipients   = $this->getProjectRecipients($project, [self::RECIPIENT_TYPE_ARRANGER]);
         $acceptedBids = $this->entityManager->getRepository(Bids::class)->findBy([
             'project' => $project,
-            'status'  => Bids::STATUS_ACCEPTED
+            'status'  => Bids::STATUS_ACCEPTED,
         ]);
 
         foreach ($acceptedBids as $acceptedBid) {
@@ -284,6 +275,7 @@ class DemoMailerManager
     /**
      * @param Projects $project
      * @param array    $types
+     *
      * @return Clients[]
      */
     private function getProjectRecipients(Projects $project, array $types): array
@@ -296,22 +288,26 @@ class DemoMailerManager
                     if ($arranger = $project->getRunParticipant()) {
                         $recipients[$arranger->getCompany()->getIdClientOwner()->getIdClient()] = $arranger->getCompany()->getIdClientOwner();
                     }
+
                     break;
                 case self::RECIPIENT_TYPE_LENDERS:
                     $lenders = $project->getLenders();
                     foreach ($lenders as $lender) {
                         $recipients[$lender->getIdClientOwner()->getIdClient()] = $lender->getIdClientOwner();
                     }
+
                     break;
                 case self::RECIPIENT_TYPE_RUN:
                     if ($run = $project->getArrangerParticipant()) {
                         $recipients[$run->getCompany()->getIdClientOwner()->getIdClient()] = $run->getCompany()->getIdClientOwner();
                     }
+
                     break;
                 case self::RECIPIENT_TYPE_SUBMITTER:
                     if ($submitter = $project->getIdClientSubmitter()) {
                         $recipients[$submitter->getIdClient()] = $submitter;
                     }
+
                     break;
             }
         }

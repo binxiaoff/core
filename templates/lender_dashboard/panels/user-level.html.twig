@@ -1,6 +1,7 @@
 {# Panel - User Level #}
 {% embed 'lender_account/dashboard_panel.html.twig' %}
-    {% set lenderDiversificationLevel = lenderDiversificationLevel(app.user) %}
+{#    {% set lenderDiversificationLevel = lenderDiversificationLevel(app.user) %}#}
+    {% set lenderDiversificationLevel = 0 %}
     {% block panelAttributes %} id="user-level" data-userlevel="{{ lenderDiversificationLevel }}" {% endblock %}
     {% block panelClassNames %} dashboard-panel dashboard-userlevel ui-draggable {% if panelInfo.hidden == true %} ui-dashboard-panel-hidden {% endif %} col-lg-6 col-md-6 col-sm-8 col-xs-4 ui-user-level-0 {% endblock %}
     {% block panelTitle %}{{ 'lender-dashboard-user-level_title'|trans }}{% endblock %}
