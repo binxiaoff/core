@@ -61,7 +61,7 @@ class SignatureController extends AbstractController
             return $this->redirectToRoute('demo_loans');
         }
 
-        $documentContent = file_get_contents($staticPath . '../../sous_participation.pdf');
+        $documentContent = file_get_contents($staticPath . 'sous_participation.pdf');
         $url             = $signature->createSignatureRequest(
             $project->getIdClientSubmitter(),
             'Signature de votre contrat de sous-participation',
