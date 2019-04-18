@@ -6,7 +6,7 @@ parameters:
     # End of to delete
     sonata_cache.servers:
         -
-            domain: www.local.unilend.fr
+            domain: '%env(HOST_DEFAULT_URL)%'
             ip: 192.168.110.12
             port: 443
     dbal_wrapper_class: Unilend\Doctrine\DBAL\Connection
