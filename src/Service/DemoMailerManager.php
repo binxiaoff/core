@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Unilend\Service;
 
 use Doctrine\ORM\EntityManagerInterface;
@@ -8,7 +10,7 @@ use Swift_Mailer;
 use Swift_RfcComplianceException;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
-use Unilend\Entity\{Bids, Clients, Projects};
+use Unilend\Entity\{Bids, Clients, Loans, Projects};
 use Unilend\SwiftMailer\TemplateMessageProvider;
 
 class DemoMailerManager
@@ -242,27 +244,29 @@ class DemoMailerManager
     public function sendProjectFundingEnd(Projects $project): int
     {
         $keywords = [
-            'firstName'    => '',
-            'projectUrl'   => $this->router->generate('demo_project_details', ['hash' => $project->getHash()], RouterInterface::ABSOLUTE_URL),
-            'projectName'  => $project->getIdCompany()->getName() . ' / ' . $project->getTitle(),
-            'signatureUrl' => '',
+            'firstName'   => '',
+            'projectUrl'  => $this->router->generate('demo_project_details', ['hash' => $project->getHash()], RouterInterface::ABSOLUTE_URL),
+            'projectName' => $project->getIdCompany()->getName() . ' / ' . $project->getTitle(),
         ];
 
-        $sent         = 0;
-        $recipients   = $this->getProjectRecipients($project, [self::RECIPIENT_TYPE_ARRANGER]);
-        $acceptedBids = $this->entityManager->getRepository(Bids::class)->findBy([
+        $sent  = 0;
+        $loans = $this->entityManager->getRepository(Loans::class)->findBy([
             'project' => $project,
-            'status'  => Bids::STATUS_ACCEPTED,
+            'status'  => Loans::STATUS_PENDING,
         ]);
 
-        foreach ($acceptedBids as $acceptedBid) {
-            $recipients[$acceptedBid->getWallet()->getIdClient()->getIdClient()] = $acceptedBid->getWallet()->getIdClient();
-        }
+        foreach ($loans as $loan) {
+            $recipient = $loan->getWallet()->getIdClient();
 
-        foreach ($recipients as $recipient) {
             if (false === empty($recipient->getEmail())) {
-                $keywords['firstName'] = $recipient->getPrenom();
-                $message               = $this->messageProvider->newMessage('project-funding-end', $keywords);
+                $keywords['firstName']    = $recipient->getPrenom();
+                $keywords['signatureUrl'] = $this->router->generate(
+                    'demo_sign_contracts',
+                    ['hash' => $project->getHash(), 'loanId' => $loan->getIdLoan()],
+                    RouterInterface::ABSOLUTE_URL
+                );
+
+                $message = $this->messageProvider->newMessage('project-funding-end', $keywords);
                 $message->setTo($recipient->getEmail());
 
                 $sent += $this->mailer->send($message);

@@ -44,10 +44,9 @@ final class Version20190313144455 extends AbstractMigration
                                    ('fr_FR', 'lending-form', 'recurring', 'Récurrent', NOW(), null),
                                    ('fr_FR', 'lending-form', 'commission', 'Commission', NOW(), null);");
         $this->addSql('ALTER TABLE bids CHANGE rate_type rate_index_type VARCHAR(20) NOT NULL');
-        $this->addSql('ALTER TABLE bids ADD agent TINYINT(1) NOT NULL');
+        $this->addSql('ALTER TABLE bids ADD agent TINYINT(1) NOT NULL AFTER status');
         $this->addSql('ALTER TABLE loans CHANGE rate_type rate_index_type VARCHAR(20) NOT NULL');
-        $this->addSql('ALTER TABLE loans ADD agent TINYINT(1) NOT NULL');
-
+        $this->addSql('ALTER TABLE loans ADD agent TINYINT(1) NOT NULL AFTER status');
     }
 
     /**

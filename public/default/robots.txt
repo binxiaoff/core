@@ -1,5 +1,2 @@
 User-agent: *
-Allow: /
-Disallow: /projets-a-financer/*/asc
-Disallow: /projets-a-financer/*/desc
-Disallow: /search
+Disallow: /
