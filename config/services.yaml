@@ -33,7 +33,6 @@ parameters:
     mapbox.token: ''
     security.bcrypt.cost: 13
     translation_cache_path: '%kernel.cache_dir%/translations'
-    env(docusign_private_key): '%kernel.root_dir%/../config/docusign_private_key'
 
 services:
     _defaults:
@@ -182,7 +181,7 @@ services:
     Unilend\Service\ElectronicSignature:
         $integratorKey: '%env(DOCUSIGN_INTEGRATOR_KEY)%'
         $userId: '%env(DOCUSIGN_USER_ID)%'
-        $privateKey: '%env(file:docusign_private_key)%'
+        $privateKey: '%env(file:DOCUSIGN_PRIVATE_KEY)%'
         $accountHost: '%env(DOCUSIGN_ACCOUNT_HOST)%'
         $apiHost: '%env(DOCUSIGN_API_HOST)%'
         $testEmail: '%env(DOCUSIGN_TEST_EMAIL)%'
