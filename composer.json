@@ -11,7 +11,7 @@
     }
   },
   "require": {
-    "php": ">=7.1.11",
+    "php": ">=7.3.4",
     "ext-bcmath": "*",
     "ext-curl": "*",
     "ext-openssl": "^7.1",
