@@ -10,9 +10,9 @@ use DocuSign\eSign\{ApiClient, ApiException, Configuration};
 use Lcobucci\JWT\Builder;
 use Lcobucci\JWT\Signer\Rsa\Sha256;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Component\HttpFoundation\{Request, RequestStack, Session\SessionInterface};
 use Symfony\Contracts\HttpClient\Exception\ExceptionInterface;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Unilend\Entity\Clients;
 
 /**
@@ -58,6 +58,8 @@ class ElectronicSignature
     private $userId;
     /** @var string */
     private $privateKey;
+    /** @var HttpClientInterface */
+    private $httpClient;
     /** @var string */
     private $accountHost;
     /** @var string */
@@ -70,19 +72,21 @@ class ElectronicSignature
     private $testEmail;
 
     /**
-     * @param string          $integratorKey
-     * @param string          $userId
-     * @param string          $privateKey
-     * @param string          $accountHost
-     * @param string          $apiHost
-     * @param RequestStack    $requestStack
-     * @param LoggerInterface $logger
-     * @param string|null     $testEmail
+     * @param string              $integratorKey
+     * @param string              $userId
+     * @param string              $privateKey
+     * @param HttpClientInterface $httpClient
+     * @param string              $accountHost
+     * @param string              $apiHost
+     * @param RequestStack        $requestStack
+     * @param LoggerInterface     $logger
+     * @param string|null         $testEmail
      */
     public function __construct(
         string $integratorKey,
         string $userId,
         string $privateKey,
+        HttpClientInterface $httpClient,
         string $accountHost,
         string $apiHost,
         RequestStack $requestStack,
@@ -92,6 +96,7 @@ class ElectronicSignature
         $this->integratorKey = $integratorKey;
         $this->userId        = $userId;
         $this->privateKey    = $privateKey;
+        $this->httpClient    = $httpClient;
         $this->accountHost   = $accountHost;
         $this->apiHost       = $apiHost;
         $this->requestStack  = $requestStack;
@@ -188,8 +193,7 @@ class ElectronicSignature
             $host = explode('/v2', $host);
             $host = $host[0];
 
-            $configuration = $this->getConfiguration();
-            $configuration->setHost($host);
+            $configuration = $this->createConfiguration($host);
 
             $apiClient   = new ApiClient($configuration);
             $envelopeApi = new EnvelopesApi($apiClient);
@@ -231,8 +235,7 @@ class ElectronicSignature
      */
     private function getLoginAccount(): ?LoginAccount
     {
-        $configuration = $this->getConfiguration();
-        $configuration->setHost($this->getLoginAccountEndpoint());
+        $configuration = $this->createConfiguration($this->getLoginAccountEndpoint());
 
         $apiClient         = new ApiClient($configuration);
         $authenticationApi = new AuthenticationApi($apiClient);
@@ -251,15 +254,18 @@ class ElectronicSignature
     }
 
     /**
+     * @param string $host
+     *
      * @return Configuration
      */
-    private function getConfiguration(): Configuration
+    private function createConfiguration(string $host): Configuration
     {
-        $accessToken   = $this->getAccessToken();
+        $accessToken   = $this->createAccessToken();
         $configuration = new Configuration();
         $configuration
             ->addDefaultHeader('Authorization', 'Bearer ' . $accessToken)
             ->setAccessToken($accessToken)
+            ->setHost($host)
         ;
 
         return $configuration;
@@ -268,7 +274,7 @@ class ElectronicSignature
     /**
      * @return string|null
      */
-    private function getAccessToken(): ?string
+    private function createAccessToken(): ?string
     {
         $session      = $this->getSession();
         $sessionToken = $session->get(self::SESSION_TOKEN_KEY);
@@ -291,7 +297,7 @@ class ElectronicSignature
         ;
 
         try {
-            $response = HttpClient::create()->request(Request::METHOD_POST, $this->getOAuthEndpoint(), [
+            $response = $this->httpClient->request(Request::METHOD_POST, $this->getOAuthEndpoint(), [
                 'body' => [
                     'grant_type' => 'urn:ietf:params:oauth:grant-type:jwt-bearer',
                     'assertion'  => (string) $token,

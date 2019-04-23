@@ -262,7 +262,7 @@ class DemoMailerManager
                 $keywords['firstName']    = $recipient->getPrenom();
                 $keywords['signatureUrl'] = $this->router->generate(
                     'demo_sign_contracts',
-                    ['hash' => $project->getHash(), 'loanId' => $loan->getIdLoan()],
+                    ['project' => $project->getHash(), 'loan' => $loan->getIdLoan()],
                     RouterInterface::ABSOLUTE_URL
                 );
 

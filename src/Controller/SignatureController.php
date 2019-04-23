@@ -6,7 +6,7 @@ namespace Unilend\Controller;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\{ParamConverter, Security};
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\{RedirectResponse, Request, Response};
 use Symfony\Component\Routing\{Annotation\Route, Router, RouterInterface};
@@ -35,10 +35,12 @@ class SignatureController extends AbstractController
     }
 
     /**
-     * @Route("/signature/{hash}/{loanId}", name="demo_sign_contracts", requirements={"hash": "[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}", "loanId": "\d+"})
+     * @Route("/signature/{project}/{loan}", name="demo_sign_contracts", requirements={"project": "[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}", "loan": "\d+"})
      *
-     * @param string                     $hash
-     * @param int                        $loanId
+     * @ParamConverter("project", options={"mapping": {"project": "hash"}})
+     *
+     * @param Projects                   $project
+     * @param Loans                      $loan
      * @param ElectronicSignature        $signature
      * @param UserInterface|Clients|null $client
      * @param string                     $staticPath
@@ -47,16 +49,13 @@ class SignatureController extends AbstractController
      * @return RedirectResponse
      */
     public function signContracts(
-        string $hash,
-        int $loanId,
+        Projects $project,
+        Loans $loan,
         ElectronicSignature $signature,
         ?UserInterface $client,
         string $staticPath,
         RouterInterface $router
     ): RedirectResponse {
-        $project = $this->entityManager->getRepository(Projects::class)->findOneBy(['hash' => $hash]);
-        $loan    = $this->entityManager->getRepository(Loans::class)->find($loanId);
-
         if (null === $project || null === $loan || $loan->getProject() !== $project || $loan->getWallet()->getIdClient() !== $client) {
             return $this->redirectToRoute('demo_loans');
         }
@@ -70,7 +69,7 @@ class SignatureController extends AbstractController
             'pdf',
             '330',
             '520',
-            $router->generate('demo_signature_confirmation', ['hash' => $project->getHash(), 'loanId' => $loanId], Router::ABSOLUTE_URL)
+            $router->generate('demo_signature_confirmation', ['project' => $project->getHash(), 'loan' => $loan->getIdLoan()], Router::ABSOLUTE_URL)
         );
 
         // @todo save envelope ID relation with loan in DB
@@ -80,22 +79,21 @@ class SignatureController extends AbstractController
 
     /**
      * @Route(
-     *     "/signature/confirmation/{hash}/{loanId}", name="demo_signature_confirmation",
-     *     requirements={"hash": "[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}", "loanId": "\d+"}
+     *     "/signature/confirmation/{project}/{loan}", name="demo_signature_confirmation",
+     *     requirements={"project": "[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}", "loan": "\d+"}
      * )
      *
-     * @param string                     $hash
-     * @param int                        $loanId
+     * @ParamConverter("project", options={"mapping": {"project": "hash"}})
+     *
+     * @param Projects                   $project
+     * @param Loans                      $loan
      * @param Request                    $request
      * @param UserInterface|Clients|null $client
      *
      * @return Response
      */
-    public function signatureConfirmation(string $hash, int $loanId, Request $request, ?UserInterface $client): Response
+    public function signatureConfirmation(Projects $project, Loans $loan, Request $request, ?UserInterface $client): Response
     {
-        $project = $this->entityManager->getRepository(Projects::class)->findOneBy(['hash' => $hash]);
-        $loan    = $this->entityManager->getRepository(Loans::class)->find($loanId);
-
         if (null === $project || null === $loan || $loan->getProject() !== $project || $loan->getWallet()->getIdClient() !== $client) {
             return $this->redirectToRoute('demo_loans');
         }
