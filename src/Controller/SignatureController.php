@@ -56,7 +56,7 @@ class SignatureController extends AbstractController
         string $staticPath,
         RouterInterface $router
     ): RedirectResponse {
-        if (null === $project || null === $loan || $loan->getProject() !== $project || $loan->getWallet()->getIdClient() !== $client) {
+        if ($loan->getProject() !== $project || $loan->getWallet()->getIdClient() !== $client) {
             return $this->redirectToRoute('demo_loans');
         }
 
@@ -94,7 +94,7 @@ class SignatureController extends AbstractController
      */
     public function signatureConfirmation(Projects $project, Loans $loan, Request $request, ?UserInterface $client): Response
     {
-        if (null === $project || null === $loan || $loan->getProject() !== $project || $loan->getWallet()->getIdClient() !== $client) {
+        if ($loan->getProject() !== $project || $loan->getWallet()->getIdClient() !== $client) {
             return $this->redirectToRoute('demo_loans');
         }
 
