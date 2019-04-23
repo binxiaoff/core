@@ -79,6 +79,7 @@
                                         {% set offer = project.bids.first %}
                                     {% endif %}
                                     {% set duration = (project.period / 12)|round %}
+                                    {% set amount = (offer.amount / 100)|round %}
                                     <tr id="lender-bid"
                                         class="table-projects-item {% if loop.index is divisible by(2) %}even{% else %}odd{% endif %}"
                                         data-hash="{{ project.hash }}"
@@ -86,16 +87,16 @@
                                         data-sortable-title="{{ project.title|e('html_attr') }}"
                                         data-sortable-project-amount="{{ project.amount }}"
                                         data-sortable-duration="{{ duration }}"
-                                        data-sortable-bid-amount="{{ offer.amount }}"
+                                        data-sortable-bid-amount="{{ amount }}"
                                         data-sortable-rate="{{ offer.rate.margin }}"
                                         data-sortable-status="{{ offer.status }}">
                                         <td class="table-projects-item-partner">
                                             {% include 'demo/partials/bubble.html.twig' with {'partner': project.idPartner.label} %}
                                         </td>
                                         <td class="table-projects-item-title">{{ project.title }}</td>
-                                        <td class="table-projects-item-project-amount">{{ project.amount|localizednumber }} €</td>
+                                        <td class="table-projects-item-project-amount">{{ project.amount|localizednumberwithprecision(0) }} €</td>
                                         <td class="table-projects-item-duration">{{ duration }} ans</td>
-                                        <td class="table-projects-item-bid-amount">{{ offer.amount|localizednumber }}&nbsp;€</td>
+                                        <td class="table-projects-item-bid-amount">{{ amount|localizednumberwithprecision(0) }}&nbsp;€</td>
                                         <td class="table-projects-item-rate">{{ offer.rate.margin|localizednumberwithprecision(2) }}&nbsp;%</td>
                                         <td class="table-projects-item-status">
                                             {% if offer.status == 0 %} En cours {% elseif offer.status == 1 %} Accepté {% else %} Refusé {% endif %}
@@ -190,6 +191,7 @@
                                 {% for project in projects.lender.active %}
                                     {% set loan = project.loans.first %}
                                     {% set duration = (project.period / 12)|round %}
+                                    {% set amount = (loan.amount / 100)|round %}
                                     <tr id="lender-bid-{{ loan.idLoan }}"
                                         class="table-projects-item {% if loop.index is divisible by(2) %}even{% else %}odd{% endif %}"
                                         data-hash="{{ project.hash }}"
@@ -197,15 +199,15 @@
                                         data-sortable-title="{{ project.title|e('html_attr') }}"
                                         data-sortable-project-amount="{{ project.amount }}"
                                         data-sortable-duration="{{ duration }}"
-                                        data-sortable-loan-amount="{{ loan.amount }}"
+                                        data-sortable-loan-amount="{{ amount }}"
                                         data-sortable-rate="{{ loan.rate.margin }}">
                                         <td class="table-projects-item-partner">
                                             {% include 'demo/partials/bubble.html.twig' with {'partner': project.idPartner.label} %}
                                         </td>
                                         <td class="table-projects-item-title">{{ project.title }}</td>
-                                        <td class="table-projects-item-project-amount">{{ project.amount|localizednumber }}&nbsp;€</td>
+                                        <td class="table-projects-item-project-amount">{{ project.amount|localizednumberwithprecision(0) }}&nbsp;€</td>
                                         <td class="table-projects-item-duration">{{ duration }} ans</td>
-                                        <td class="table-projects-item-loan-amount">{{ loan.amount|localizednumber }}&nbsp;€</td>
+                                        <td class="table-projects-item-loan-amount">{{ amount|localizednumberwithprecision(0) }}&nbsp;€</td>
                                         <td class="table-projects-item-rate">{{ loan.rate.margin|localizednumberwithprecision(2) }}&nbsp;%</td>
                                         <td class="table-projects-item-end-date">{{ project.added|date_modify("+" ~ duration ~ 'year')|date("d/m/Y") }}</td>
                                         <td class="table-projects-item-status">
@@ -317,6 +319,7 @@
                                 {% for project in projects.lender.finished %}
                                     {% set loan = project.loans.first %}
                                     {% set duration = (project.period / 12)|round %}
+                                    {% set amount = (loan.amount / 100)|round %}
                                     <tr id="lender-bid-{{ loan.idLoan }}"
                                         class="table-projects-item {% if loop.index is divisible by(2) %}even{% else %}odd{% endif %}"
                                         data-hash="{{ project.hash }}"
@@ -324,15 +327,15 @@
                                         data-sortable-title="{{ project.title|e('html_attr') }}"
                                         data-sortable-project-amount="{{ project.amount }}"
                                         data-sortable-duration="{{ duration }}"
-                                        data-sortable-loan-amount="{{ loan.amount }}"
+                                        data-sortable-loan-amount="{{ amount }}"
                                         data-sortable-rate="{{ loan.rate.margin }}">
                                         <td class="table-projects-item-partner">
                                             {% include 'demo/partials/bubble.html.twig' with {'partner': project.idPartner.label} %}
                                         </td>
                                         <td class="table-projects-item-title">{{ project.title }}</td>
-                                        <td class="table-projects-item-project-amount">{{ project.amount|localizednumber }}&nbsp;€</td>
+                                        <td class="table-projects-item-project-amount">{{ project.amount|localizednumberwithprecision(0) }}&nbsp;€</td>
                                         <td class="table-projects-item-duration">{{ duration }} ans</td>
-                                        <td class="table-projects-item-loan-amount">{{ loan.amount|localizednumber }}&nbsp;€</td>
+                                        <td class="table-projects-item-loan-amount">{{ amount|localizednumberwithprecision(0) }}&nbsp;€</td>
                                         <td class="table-projects-item-rate">{{ loan.rate.margin|localizednumberwithprecision(2) }}&nbsp;%</td>
                                         <td class="table-projects-item-status">
                                             {% set status = project.status %}
@@ -370,6 +373,8 @@
                                 {% endfor %}
                                 {% for project in projects.lender.masked %}
                                     {% set loan = project.loans.first %}
+                                    {% set duration = (project.period / 12)|round %}
+                                    {% set amount = (loan.amount / 100)|round %}
                                     <tr id="lender-bid-{{ loan.idLoan }}"
                                         class="table-projects-item {% if loop.index is divisible by(2) %}even{% else %}odd{% endif %}"
                                         data-hash="{{ project.hash }}"
@@ -377,15 +382,15 @@
                                         data-sortable-title="{{ project.title|e('html_attr') }}"
                                         data-sortable-project-amount="{{ project.amount }}"
                                         data-sortable-duration="{{ duration }}"
-                                        data-sortable-loan-amount="{{ loan.amount }}"
+                                        data-sortable-loan-amount="{{ amount }}"
                                         data-sortable-rate="{{ loan.rate.margin }}">
                                         <td class="table-projects-item-partner">
                                             {% include 'demo/partials/bubble.html.twig' with {'partner': project.idPartner.label} %}
                                         </td>
                                         <td class="table-projects-item-title">{{ project.title }}</td>
-                                        <td class="table-projects-item-project-amount">{{ project.amount|localizednumber }}&nbsp;€</td>
+                                        <td class="table-projects-item-project-amount">{{ project.amount|localizednumberwithprecision(0) }}&nbsp;€</td>
                                         <td class="table-projects-item-duration">{{ duration }} ans</td>
-                                        <td class="table-projects-item-loan-amount">{{ loan.amount|localizednumber }}&nbsp;€</td>
+                                        <td class="table-projects-item-loan-amount">{{ amount|localizednumberwithprecision(0) }}&nbsp;€</td>
                                         <td class="table-projects-item-rate">{{ loan.rate.margin|localizednumberwithprecision(2) }}&nbsp;%</td>
                                         <td class="table-projects-item-status">Prêt refusé</td>
                                         <td class="table-actions">

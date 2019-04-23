@@ -65,7 +65,7 @@
                                             {% endif %}
                                             <span class="label">{{ data.name }}</span>
                                         </dt>
-                                        <dd style="text-align: right">{{ data.y|number_format(0, ',', '&nbsp;')|raw }}&nbsp;€</dd>
+                                        <dd style="text-align: right">{{ data.y|localizednumberwithprecision(0) }}&nbsp;€</dd>
                                     </div>
                                 {% endfor %}
                             </dl>
