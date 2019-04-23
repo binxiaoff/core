@@ -7,46 +7,59 @@ namespace Unilend\Service;
 use DocuSign\eSign\Api\{AuthenticationApi, AuthenticationApi\LoginOptions, EnvelopesApi};
 use DocuSign\eSign\Model\{Document, EnvelopeDefinition, LoginAccount, LoginInformation, RecipientEmailNotification, RecipientViewRequest, Recipients, SignHere, Signer, Tabs};
 use DocuSign\eSign\{ApiClient, ApiException, Configuration};
-use Lcobucci\JWT\{Builder, Signer\Rsa\Sha256};
+use Lcobucci\JWT\Builder;
+use Lcobucci\JWT\Signer\Rsa\Sha256;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Component\HttpFoundation\{Request, RequestStack, Session\SessionInterface};
 use Symfony\Contracts\HttpClient\Exception\ExceptionInterface;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Unilend\Entity\Clients;
 
-// @todo webhooks: https://developers.docusign.com/esign-rest-api/code-examples/webhook-status
+/**
+ * @todo webhooks: https://developers.docusign.com/esign-rest-api/code-examples/webhook-status
+ */
 class ElectronicSignature
 {
-    const SESSION_TOKEN_KEY = 'DocuSignToken';
+    public const SESSION_TOKEN_KEY = 'DocuSignToken';
 
-    const RECIPIENT_STATUS_DRAFT          = 'created';
-    const RECIPIENT_STATUS_SENT           = 'sent';
-    const RECIPIENT_STATUS_DELIVERED      = 'delivered';
-    const RECIPIENT_STATUS_SIGNED         = 'signed';
-    const RECIPIENT_STATUS_DECLINED       = 'declined';
-    const RECIPIENT_STATUS_COMPLETED      = 'completed';
-    const RECIPIENT_STATUS_FAX_PENDING    = 'faxpending';
-    const RECIPIENT_STATUS_AUTO_RESPONDED = 'autoresponded';
+    public const RECIPIENT_STATUS_DRAFT          = 'created';
+    public const RECIPIENT_STATUS_SENT           = 'sent';
+    public const RECIPIENT_STATUS_DELIVERED      = 'delivered';
+    public const RECIPIENT_STATUS_SIGNED         = 'signed';
+    public const RECIPIENT_STATUS_DECLINED       = 'declined';
+    public const RECIPIENT_STATUS_COMPLETED      = 'completed';
+    public const RECIPIENT_STATUS_FAX_PENDING    = 'faxpending';
+    public const RECIPIENT_STATUS_AUTO_RESPONDED = 'autoresponded';
 
-    const ENVELOPE_STATUS_VOIDED     = 'voided';
-    const ENVELOPE_STATUS_CREATED    = 'created';
-    const ENVELOPE_STATUS_DELETED    = 'deleted';
-    const ENVELOPE_STATUS_SENT       = 'sent';
-    const ENVELOPE_STATUS_DELIVERED  = 'delivered';
-    const ENVELOPE_STATUS_SIGNED     = 'signed';
-    const ENVELOPE_STATUS_COMPLETED  = 'completed';
-    const ENVELOPE_STATUS_DECLINED   = 'declined';
-    const ENVELOPE_STATUS_TIMED_OUT  = 'timedOut';
-    const ENVELOPE_STATUS_PROCESSING = 'processing';
+    public const ENVELOPE_STATUS_VOIDED     = 'voided';
+    public const ENVELOPE_STATUS_CREATED    = 'created';
+    public const ENVELOPE_STATUS_DELETED    = 'deleted';
+    public const ENVELOPE_STATUS_SENT       = 'sent';
+    public const ENVELOPE_STATUS_DELIVERED  = 'delivered';
+    public const ENVELOPE_STATUS_SIGNED     = 'signed';
+    public const ENVELOPE_STATUS_COMPLETED  = 'completed';
+    public const ENVELOPE_STATUS_DECLINED   = 'declined';
+    public const ENVELOPE_STATUS_TIMED_OUT  = 'timedOut';
+    public const ENVELOPE_STATUS_PROCESSING = 'processing';
 
-    /** @var HttpClient */
-    private $httpClient;
+    public const RECIPIENT_ACTION_CANCEL           = 'cancel';
+    public const RECIPIENT_ACTION_DECLINE          = 'decline';
+    public const RECIPIENT_ACTION_EXCEPTION        = 'exception';
+    public const RECIPIENT_ACTION_FAX_PENDING      = 'fax_pending';
+    public const RECIPIENT_ACTION_ID_CHECK_FAILED  = 'id_check_failed';
+    public const RECIPIENT_ACTION_SESSION_TIMEOUT  = 'session_timeout';
+    public const RECIPIENT_ACTION_SIGNING_COMPLETE = 'signing_complete';
+    public const RECIPIENT_ACTION_TTL_EXPIRED      = 'ttl_expired';
+    public const RECIPIENT_ACTION_VIEWING_COMPLETE = 'viewing_complete';
+
     /** @var string */
     private $integratorKey;
     /** @var string */
     private $userId;
     /** @var string */
     private $privateKey;
+    /** @var HttpClientInterface */
+    private $httpClient;
     /** @var string */
     private $accountHost;
     /** @var string */
@@ -55,23 +68,35 @@ class ElectronicSignature
     private $requestStack;
     /** @var LoggerInterface */
     private $logger;
-    /** @var null|string */
+    /** @var string|null */
     private $testEmail;
 
+    /**
+     * @param string              $integratorKey
+     * @param string              $userId
+     * @param string              $privateKey
+     * @param HttpClientInterface $httpClient
+     * @param string              $accountHost
+     * @param string              $apiHost
+     * @param RequestStack        $requestStack
+     * @param LoggerInterface     $logger
+     * @param string|null         $testEmail
+     */
     public function __construct(
         string $integratorKey,
         string $userId,
         string $privateKey,
+        HttpClientInterface $httpClient,
         string $accountHost,
         string $apiHost,
         RequestStack $requestStack,
         LoggerInterface $logger,
         ?string $testEmail = null
     ) {
-        $this->httpClient    = HttpClient::create();
         $this->integratorKey = $integratorKey;
         $this->userId        = $userId;
         $this->privateKey    = $privateKey;
+        $this->httpClient    = $httpClient;
         $this->accountHost   = $accountHost;
         $this->apiHost       = $apiHost;
         $this->requestStack  = $requestStack;
@@ -91,7 +116,7 @@ class ElectronicSignature
      * @param string  $signatureOffsetY
      * @param string  $returnUrl
      *
-     * @return null|string
+     * @return string|null
      */
     public function createSignatureRequest(
         Clients $signerClient,
@@ -104,8 +129,7 @@ class ElectronicSignature
         string $returnUrl
     ): ?string {
         try {
-            $configuration = $this->getConfiguration();
-            $loginAccount  = $this->getLoginAccount($configuration);
+            $loginAccount = $this->getLoginAccount();
 
             if (null === $loginAccount) {
                 return null;
@@ -169,7 +193,7 @@ class ElectronicSignature
             $host = explode('/v2', $host);
             $host = $host[0];
 
-            $configuration->setHost($host);
+            $configuration = $this->createConfiguration($host);
 
             $apiClient   = new ApiClient($configuration);
             $envelopeApi = new EnvelopesApi($apiClient);
@@ -205,15 +229,13 @@ class ElectronicSignature
     }
 
     /**
-     * @param Configuration $configuration
-     *
      * @throws ApiException
      *
-     * @return null|LoginAccount
+     * @return LoginAccount|null
      */
-    private function getLoginAccount(Configuration $configuration): ?LoginAccount
+    private function getLoginAccount(): ?LoginAccount
     {
-        $configuration->setHost($this->getApiEndpoint());
+        $configuration = $this->createConfiguration($this->getLoginAccountEndpoint());
 
         $apiClient         = new ApiClient($configuration);
         $authenticationApi = new AuthenticationApi($apiClient);
@@ -231,20 +253,28 @@ class ElectronicSignature
         return null;
     }
 
-    private function getConfiguration(): Configuration
+    /**
+     * @param string $host
+     *
+     * @return Configuration
+     */
+    private function createConfiguration(string $host): Configuration
     {
-        $accessToken   = $this->getAccessToken();
+        $accessToken   = $this->createAccessToken();
         $configuration = new Configuration();
         $configuration
             ->addDefaultHeader('Authorization', 'Bearer ' . $accessToken)
             ->setAccessToken($accessToken)
-            ->setHost($this->getAccountEndpoint())
+            ->setHost($host)
         ;
 
         return $configuration;
     }
 
-    private function getAccessToken(): ?string
+    /**
+     * @return string|null
+     */
+    private function createAccessToken(): ?string
     {
         $session      = $this->getSession();
         $sessionToken = $session->get(self::SESSION_TOKEN_KEY);
@@ -267,7 +297,7 @@ class ElectronicSignature
         ;
 
         try {
-            $response = $this->httpClient->request(Request::METHOD_POST, $this->getAccountEndpoint(), [
+            $response = $this->httpClient->request(Request::METHOD_POST, $this->getOAuthEndpoint(), [
                 'body' => [
                     'grant_type' => 'urn:ietf:params:oauth:grant-type:jwt-bearer',
                     'assertion'  => (string) $token,
@@ -289,16 +319,25 @@ class ElectronicSignature
         return null;
     }
 
-    private function getAccountEndpoint(): string
+    /**
+     * @return string
+     */
+    private function getOAuthEndpoint(): string
     {
         return 'https://' . $this->accountHost . '/oauth/token';
     }
 
-    private function getApiEndpoint(): string
+    /**
+     * @return string
+     */
+    private function getLoginAccountEndpoint(): string
     {
         return 'https://' . $this->apiHost . '/restapi';
     }
 
+    /**
+     * @return SessionInterface|null
+     */
     private function getSession(): ?SessionInterface
     {
         $request = $this->requestStack->getCurrentRequest();

@@ -14,16 +14,15 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Filesystem\Exception\FileNotFoundException;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\{JsonResponse, RedirectResponse, Request, Response};
-use Symfony\Component\Routing\{Annotation\Route, Router, RouterInterface};
+use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\User\UserInterface;
-use Symfony\Contracts\Translation\TranslatorInterface;
-use Unilend\Entity\{Attachment, AttachmentType, Bids, Clients, Companies, CompanySector, FeeType, Loans, Partner, PartnerProduct, PercentFee, Product, ProjectAttachment,
+use Unilend\Entity\{AcceptedBids, Attachment, AttachmentType, Bids, Clients, Companies, CompanySector, FeeType, Loans, Partner, PercentFee, Product, ProjectAttachment,
     ProjectAttachmentType, ProjectComment, ProjectParticipant, ProjectPercentFee, Projects, ProjectsStatus, RepaymentType, Users, Wallet, WalletType};
 use Unilend\Form\Lending\BidType;
 use Unilend\Repository\ProjectParticipantRepository;
 use Unilend\Service\Front\ProjectDisplayManager;
 use Unilend\Service\WebServiceClient\InseeManager;
-use Unilend\Service\{AttachmentManager, DemoMailerManager, ElectronicSignature, ProjectManager, ProjectStatusManager};
+use Unilend\Service\{AttachmentManager, DemoMailerManager, ProjectManager, ProjectStatusManager};
 
 /**
  * @Security("is_granted('ROLE_USER')")
@@ -330,17 +329,12 @@ class DemoController extends AbstractController
      *
      * @param string                     $hash
      * @param ProjectManager             $projectManager
-     * @param TranslatorInterface        $translator
      * @param UserInterface|Clients|null $user
      *
      * @return Response
      */
-    public function projectDetails(
-        string $hash,
-        ProjectManager $projectManager,
-        TranslatorInterface $translator,
-        ?UserInterface $user
-    ): Response {
+    public function projectDetails(string $hash, ProjectManager $projectManager, ?UserInterface $user): Response
+    {
         $projectRepository = $this->entityManager->getRepository(Projects::class);
         $project           = $projectRepository->findOneBy(['hash' => $hash]);
 
@@ -381,7 +375,6 @@ class DemoController extends AbstractController
         $productRepository               = $this->entityManager->getRepository(Product::class);
         $template                        = [
             'loanPeriods'   => $projectManager->getPossibleProjectPeriods(),
-            'products'      => $this->getProductsList([$project->getIdPartner()], $translator),
             'arranger'      => $arranger,
             'arrangers'     => $arrangers,
             'run'           => $run,
@@ -470,7 +463,9 @@ class DemoController extends AbstractController
                 if (empty($roles)) {
                     $project->removeProjectParticipants($projectParticipant);
                     $this->entityManager->flush($project);
-                } else {
+                }
+
+                if (false === empty($roles)) {
                     $projectParticipant->setRoles($roles);
                     $this->entityManager->flush($projectParticipant);
                 }
@@ -656,6 +651,7 @@ class DemoController extends AbstractController
      * @param ProjectStatusManager $projectStatusManager
      * @param DemoMailerManager    $mailerManager
      *
+     * @throws ConnectionException
      * @throws NonUniqueResultException
      * @throws OptimisticLockException
      *
@@ -730,6 +726,8 @@ class DemoController extends AbstractController
 
                     break;
                 case ProjectsStatus::STATUS_FUNDED:
+                    $this->closeProject($project);
+
                     try {
                         $mailerManager->sendProjectFundingEnd($project);
                     } catch (Swift_SwiftException $exception) {
@@ -1227,47 +1225,6 @@ class DemoController extends AbstractController
     }
 
     /**
-     * @Route("/signature/{hash}", name="demo_sign_contracts", requirements={"hash": "[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}"})
-     *
-     * @param string              $hash
-     * @param ElectronicSignature $signature
-     * @param string              $staticPath
-     * @param RouterInterface     $router
-     *
-     * @return RedirectResponse
-     */
-    public function signContracts(string $hash, ElectronicSignature $signature, string $staticPath, RouterInterface $router): RedirectResponse
-    {
-        $project = $this->entityManager->getRepository(Projects::class)->findOneBy(['hash' => $hash]);
-        $url     = $signature->createSignatureRequest(
-            $project->getIdClientSubmitter(),
-            'Signature de votre convention de participation',
-            'Convention de participation',
-            base64_encode(file_get_contents($staticPath . '../admin/demo/operations.pdf')),
-            'pdf',
-            450,
-            700,
-            $router->generate('demo_signature_confirmation', ['hash' => $project->getHash()], Router::ABSOLUTE_URL)
-        );
-
-        return new RedirectResponse($url);
-    }
-
-    /**
-     * @Route("/signature/confirmation/{hash}", name="demo_signature_confirmation", requirements={"hash": "[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}"})
-     *
-     * @param string $hash
-     *
-     * @return Response
-     */
-    public function signatureConfirmation(string $hash): Response
-    {
-        // @todo check event status
-        // event=signing_complete
-        return $this->render('demo/signature_confirmation.html.twig');
-    }
-
-    /**
      * @param Projects[] $projects
      *
      * @return array
@@ -1375,25 +1332,62 @@ class DemoController extends AbstractController
     }
 
     /**
-     * @param array               $partners
-     * @param TranslatorInterface $translator
+     * @param Projects $project
      *
-     * @return array
+     * @throws ConnectionException
      */
-    private function getProductsList(array $partners, TranslatorInterface $translator): array
+    private function closeProject(Projects $project): void
     {
-        $partnerProducts = $this->entityManager->getRepository(PartnerProduct::class)->findBy(['idPartner' => $partners]);
+        $bids = $this->entityManager->getRepository(Bids::class)->findBy([
+            'project' => $project,
+            'status'  => [Bids::STATUS_ACCEPTED, Bids::STATUS_PENDING],
+        ]);
+        $product               = $this->entityManager->getRepository(Product::class)->find($project->getIdProduct());
+        $contract              = $product->getProductContract()[0]->getIdContract();
+        $acceptedBidRepository = $this->entityManager->getRepository(AcceptedBids::class);
 
-        foreach ($partnerProducts as $partnerProduct) {
-            $productId = $partnerProduct->getIdProduct()->getIdProduct();
+        $this->entityManager->getConnection()->beginTransaction();
 
-            if (false === isset($products[$productId])) {
-                $products[$productId] = $translator->trans('product-name_' . $partnerProduct->getIdProduct()->getLabel());
+        try {
+            foreach ($bids as $bid) {
+                $acceptedBid = $acceptedBidRepository->findOneBy(['idBid' => $bid]);
+
+                if (null !== $acceptedBid) {
+                    $this->logger->error('Bid #' . $bid->getIdBid() . ' has already been converted to loan');
+                    continue;
+                }
+
+                $bid->setStatus(Bids::STATUS_ACCEPTED);
+
+                $loan = new Loans();
+                $loan
+                    ->setWallet($bid->getWallet())
+                    ->setProject($project)
+                    ->setIdTypeContract($contract)
+                    ->setAmount($bid->getAmount())
+                    ->setRate($bid->getRate())
+                    ->setAgent($bid->isAgent())
+                    ->setStatus(Loans::STATUS_PENDING)
+                ;
+
+                $this->entityManager->persist($loan);
+
+                $acceptedBid = new AcceptedBids();
+                $acceptedBid
+                    ->setIdBid($bid)
+                    ->setIdLoan($loan)
+                    ->setAmount($bid->getAmount())
+                ;
+
+                $this->entityManager->persist($acceptedBid);
+                $this->entityManager->flush([$bid, $loan, $acceptedBid]);
+
+                unset($bid, $loan, $acceptedBid);
             }
+
+            $this->entityManager->getConnection()->commit();
+        } catch (ConnectionException $exception) {
+            $this->entityManager->getConnection()->rollBack();
         }
-
-        asort($products);
-
-        return $products;
     }
 }

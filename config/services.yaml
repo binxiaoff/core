@@ -178,10 +178,15 @@ services:
         $client: '@eight_points_guzzle.client.google_recaptcha'
         $secret: '%env(GOOGLE_RECAPTCHA_SECRET)%'
 
+    docusign.http_client:
+        class: 'Symfony\Contracts\HttpClient\HttpClientInterface'
+        factory: ['Symfony\Component\HttpClient\HttpClient', create]
+
     Unilend\Service\ElectronicSignature:
         $integratorKey: '%env(DOCUSIGN_INTEGRATOR_KEY)%'
         $userId: '%env(DOCUSIGN_USER_ID)%'
         $privateKey: '%env(file:DOCUSIGN_PRIVATE_KEY)%'
+        $httpClient: '@docusign.http_client'
         $accountHost: '%env(DOCUSIGN_ACCOUNT_HOST)%'
         $apiHost: '%env(DOCUSIGN_API_HOST)%'
         $testEmail: '%env(DOCUSIGN_TEST_EMAIL)%'

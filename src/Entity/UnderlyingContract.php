@@ -4,18 +4,20 @@ namespace Unilend\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
+use Unilend\Entity\Traits\Timestampable;
 
 /**
- * UnderlyingContract
- *
  * @ORM\Table(name="underlying_contract")
  * @ORM\Entity
  */
 class UnderlyingContract
 {
-    const CONTRACT_IFP     = 'ifp';
-    const CONTRACT_BDC     = 'bon_de_caisse';
-    const CONTRACT_MINIBON = 'minibon';
+    use Timestampable;
+
+    public const CONTRACT_IFP                = 'ifp';
+    public const CONTRACT_BDC                = 'bon_de_caisse';
+    public const CONTRACT_MINIBON            = 'minibon';
+    public const CONTRACT_SOUS_PARTICIPATION = 'sous_participation';
 
     /**
      * @var string
@@ -34,23 +36,9 @@ class UnderlyingContract
     /**
      * @var string
      *
-     * @ORM\Column(name="block_slug", type="string", length=191)
+     * @ORM\Column(name="block_slug", type="string", length=191, nullable=true)
      */
     private $blockSlug;
-
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="added", type="datetime")
-     */
-    private $added;
-
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="updated", type="datetime", nullable=true)
-     */
-    private $updated;
 
     /**
      * @var int
@@ -69,22 +57,19 @@ class UnderlyingContract
     private $productContract;
 
     /**
-     * Constructor
+     * UnderlyingContract constructor.
      */
     public function __construct()
     {
         $this->productContract = new ArrayCollection();
     }
 
-
     /**
-     * Set label
-     *
      * @param string $label
      *
      * @return UnderlyingContract
      */
-    public function setLabel($label)
+    public function setLabel(string $label): UnderlyingContract
     {
         $this->label = $label;
 
@@ -92,23 +77,19 @@ class UnderlyingContract
     }
 
     /**
-     * Get label
-     *
      * @return string
      */
-    public function getLabel()
+    public function getLabel(): string
     {
         return $this->label;
     }
 
     /**
-     * Set documentTemplate
-     *
      * @param string $documentTemplate
      *
      * @return UnderlyingContract
      */
-    public function setDocumentTemplate($documentTemplate)
+    public function setDocumentTemplate(string $documentTemplate): UnderlyingContract
     {
         $this->documentTemplate = $documentTemplate;
 
@@ -116,23 +97,19 @@ class UnderlyingContract
     }
 
     /**
-     * Get documentTemplate
-     *
      * @return string
      */
-    public function getDocumentTemplate()
+    public function getDocumentTemplate(): string
     {
         return $this->documentTemplate;
     }
 
     /**
-     * Set blockSlug
-     *
      * @param string $blockSlug
      *
      * @return UnderlyingContract
      */
-    public function setBlockSlug($blockSlug)
+    public function setBlockSlug(string $blockSlug): UnderlyingContract
     {
         $this->blockSlug = $blockSlug;
 
@@ -140,69 +117,17 @@ class UnderlyingContract
     }
 
     /**
-     * Get blockSlug
-     *
      * @return string
      */
-    public function getBlockSlug()
+    public function getBlockSlug(): string
     {
         return $this->blockSlug;
     }
 
     /**
-     * Set added
-     *
-     * @param \DateTime $added
-     *
-     * @return UnderlyingContract
+     * @return int
      */
-    public function setAdded($added)
-    {
-        $this->added = $added;
-
-        return $this;
-    }
-
-    /**
-     * Get added
-     *
-     * @return \DateTime
-     */
-    public function getAdded()
-    {
-        return $this->added;
-    }
-
-    /**
-     * Set updated
-     *
-     * @param \DateTime $updated
-     *
-     * @return UnderlyingContract
-     */
-    public function setUpdated($updated)
-    {
-        $this->updated = $updated;
-
-        return $this;
-    }
-
-    /**
-     * Get updated
-     *
-     * @return \DateTime
-     */
-    public function getUpdated()
-    {
-        return $this->updated;
-    }
-
-    /**
-     * Get idContract
-     *
-     * @return integer
-     */
-    public function getIdContract()
+    public function getIdContract(): int
     {
         return $this->idContract;
     }
@@ -210,7 +135,7 @@ class UnderlyingContract
     /**
      * @return ProductUnderlyingContract[]
      */
-    public function getProductContract(): array
+    public function getProductContract(): iterable
     {
         return $this->productContract;
     }
