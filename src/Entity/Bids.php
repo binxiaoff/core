@@ -4,11 +4,9 @@ namespace Unilend\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
-use Unilend\Entity\Traits\{ConstantsAware, Lendable, Timestampable};
+use Unilend\Entity\Traits\{ConstantsAware, LendableTrait, Timestampable};
 
 /**
- * Bids
- *
  * @ORM\Table(name="bids", indexes={@ORM\Index(name="idprojectstatus", columns={"id_project", "status"})})
  * @ORM\Entity(repositoryClass="Unilend\Repository\BidsRepository")
  * @ORM\HasLifecycleCallbacks
@@ -16,21 +14,21 @@ use Unilend\Entity\Traits\{ConstantsAware, Lendable, Timestampable};
  */
 class Bids
 {
-    use Lendable;
+    use LendableTrait;
     use Timestampable;
     use ConstantsAware;
 
-    const STATUS_PENDING                      = 0;
-    const STATUS_ACCEPTED                     = 1;
-    const STATUS_REJECTED                     = 2;
-    const STATUS_TEMPORARILY_REJECTED_AUTOBID = 3;
+    public const STATUS_PENDING                      = 0;
+    public const STATUS_ACCEPTED                     = 1;
+    public const STATUS_REJECTED                     = 2;
+    public const STATUS_TEMPORARILY_REJECTED_AUTOBID = 3;
 
     /**
      * @var \Unilend\Entity\Autobid|null
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\Autobid")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_autobid", referencedColumnName="id_autobid")
+     *     @ORM\JoinColumn(name="id_autobid", referencedColumnName="id_autobid")
      * })
      */
     private $idAutobid;
@@ -58,6 +56,9 @@ class Bids
      */
     private $bidPercentFees;
 
+    /**
+     * Bids constructor.
+     */
     public function __construct()
     {
         $this->bidPercentFees = new ArrayCollection();
@@ -65,8 +66,6 @@ class Bids
     }
 
     /**
-     * Set Autobid
-     *
      * @param Autobid|null $autobid
      *
      * @return Bids
@@ -79,8 +78,6 @@ class Bids
     }
 
     /**
-     * Get Autobid
-     *
      * @return Autobid|null
      */
     public function getAutobid(): ?Autobid
@@ -89,8 +86,6 @@ class Bids
     }
 
     /**
-     * Set ordre
-     *
      * @param int|null $ordre
      *
      * @return Bids
@@ -103,8 +98,6 @@ class Bids
     }
 
     /**
-     * Get ordre
-     *
      * @return int|null
      */
     public function getOrdre(): ?int
@@ -113,8 +106,6 @@ class Bids
     }
 
     /**
-     * Get idBid
-     *
      * @return int|null
      */
     public function getIdBid(): ?int

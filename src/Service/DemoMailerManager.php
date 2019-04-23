@@ -182,7 +182,6 @@ class DemoMailerManager
             'bidAmount'     => $formatter->format($bid->getAmount()),
             'bidRateIndex'  => $bid->getRate()->getIndexType(),
             'bidMarginRate' => $formatter->format($bid->getRate()->getMargin()),
-            'bidAgent'      => $bid->isAgent() ? 'oui' : 'non',
         ];
 
         $sent       = 0;
