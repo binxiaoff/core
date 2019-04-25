@@ -462,7 +462,7 @@ class BeneficialOwnerManager
                         $this->createProjectBeneficialOwnerDeclaration($universign->getIdProject(), $universign->getIdProject()->getIdCompany()->getIdClientOwner());
                         break;
                     case UniversignEntityInterface::STATUS_SIGNED:
-                        if (ProjectsStatus::STATUS_REPAYMENT > $universign->getIdProject()->getStatus()) {
+                        if (ProjectsStatus::STATUS_CONTRACTS_SIGNED > $universign->getIdProject()->getStatus()) {
                             $universign->setStatus(UniversignEntityInterface::STATUS_ARCHIVED);
                             $this->entityManager->flush($universign);
                             $this->createProjectBeneficialOwnerDeclaration($universign->getIdProject(), $universign->getIdProject()->getIdCompany()->getIdClientOwner());

@@ -358,7 +358,7 @@ class ajaxController extends bootstrap
                 ]);
                 return;
 
-            } elseif ($_POST['etape'] == 4.1 && $project->status <= ProjectsStatus::STATUS_REQUEST) {
+            } elseif ($_POST['etape'] == 4.1 && $project->status <= ProjectsStatus::STATUS_REQUESTED) {
                 if (false === empty($_POST['target_ratings']) && false === empty($project->id_target_company)) {
                     /** @var \company_rating_history $targetCompanyRatingHistory */
                     $targetCompanyRatingHistory   = $this->loadData('company_rating_history');
@@ -689,7 +689,7 @@ class ajaxController extends bootstrap
         }
 
         if (
-            $project->getStatus() !== ProjectsStatus::STATUS_REQUEST
+            $project->getStatus() !== ProjectsStatus::STATUS_REQUESTED
             || $this->userEntity !== $project->getIdAnalyste()
         ) {
             echo json_encode([
@@ -737,7 +737,7 @@ class ajaxController extends bootstrap
         $projectStatusManager = $this->get('unilend.service.project_status_manager');
 
         if ($_POST['status'] == 1) {
-            $projectStatusManager->addProjectStatus($this->userEntity, ProjectsStatus::STATUS_REQUEST, $project);
+            $projectStatusManager->addProjectStatus($this->userEntity, ProjectsStatus::STATUS_REQUESTED, $project);
         } elseif ($_POST['status'] == 2) {
             $rejectionReasons = $entityManager->getRepository(ProjectRejectionReason::class)
                 ->findBy(['idRejection' => $_POST['rejection_reason']]);
@@ -798,7 +798,7 @@ class ajaxController extends bootstrap
         }
 
         if (
-            $project->getStatus() !== ProjectsStatus::STATUS_REQUEST
+            $project->getStatus() !== ProjectsStatus::STATUS_REQUESTED
             || false === $userManager->isGrantedManagement($this->userEntity)
         ) {
             echo json_encode([
@@ -893,7 +893,7 @@ class ajaxController extends bootstrap
             $entityManager->persist($projectCommentEntity);
             $entityManager->flush($projectCommentEntity);
 
-            $projectStatusManager->addProjectStatus($this->userEntity, ProjectsStatus::STATUS_REQUEST, $project);
+            $projectStatusManager->addProjectStatus($this->userEntity, ProjectsStatus::STATUS_REQUESTED, $project);
         }
 
         if (

@@ -24,7 +24,7 @@ class StatisticsController extends Controller
         $entityManager      = $this->get('doctrine.orm.entity_manager');
         $partnerManager     = $this->get('unilend.service.partner_manager');
         $projectsRepository = $entityManager->getRepository(Projects::class);
-        $statusList         = [ProjectsStatus::STATUS_REVIEW, ProjectsStatus::STATUS_REPAYMENT];
+        $statusList         = [ProjectsStatus::STATUS_REVIEW, ProjectsStatus::STATUS_CONTRACTS_SIGNED];
         $template           = [
             'timeAxis' => [],
             'graph'    => [

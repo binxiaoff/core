@@ -74,7 +74,7 @@ class ProjectRequestController extends Controller
                 $partnerCompany = $partnerRole->getIdCompany();
             }
 
-            $project = $projectRequestManager->newProject($frontUser, $partnerManager->getPartner($partnerUser), ProjectsStatus::STATUS_REQUEST, $amount, null, null, null, null, $duration);
+            $project = $projectRequestManager->newProject($frontUser, $partnerManager->getPartner($partnerUser), ProjectsStatus::STATUS_REQUESTED, $amount, null, null, null, null, $duration);
             $project
                 ->setIdClientSubmitter($partnerUser)
                 ->setIdCompanySubmitter($partnerCompany);
@@ -128,7 +128,7 @@ class ProjectRequestController extends Controller
             return $project;
         }
 
-        if ($project->getStatus() > ProjectsStatus::STATUS_REQUEST) {
+        if ($project->getStatus() > ProjectsStatus::STATUS_REQUESTED) {
             return $this->redirectToRoute('partner_project_request_details', ['hash' => $project->getHash()]);
         }
 
@@ -469,7 +469,7 @@ class ProjectRequestController extends Controller
         }
 
         $projectStatusManager = $this->get('unilend.service.project_status_manager');
-        $projectStatusManager->addProjectStatus(Users::USER_ID_FRONT, ProjectsStatus::STATUS_ONLINE, $project);
+        $projectStatusManager->addProjectStatus(Users::USER_ID_FRONT, ProjectsStatus::STATUS_PUBLISHED, $project);
 
         return $this->redirectToRoute('partner_projects_list');
     }
@@ -497,13 +497,13 @@ class ProjectRequestController extends Controller
             return $project;
         }
 
-        if ($project->getStatus() === ProjectsStatus::STATUS_REQUEST) {
+        if ($project->getStatus() === ProjectsStatus::STATUS_REQUESTED) {
             /** @var \projects $projectData */
             $projectData = $this->get('unilend.service.entity_manager')->getRepository('projects');
             $projectData->get($project->getIdProject());
 
             $projectStatusManager = $this->get('unilend.service.project_status_manager');
-            $projectStatusManager->addProjectStatus(Users::USER_ID_FRONT, ProjectsStatus::STATUS_REQUEST, $projectData);
+            $projectStatusManager->addProjectStatus(Users::USER_ID_FRONT, ProjectsStatus::STATUS_REQUESTED, $projectData);
         }
 
         return $this->redirectToRoute('partner_project_request_details', ['hash' => $project->getHash()]);

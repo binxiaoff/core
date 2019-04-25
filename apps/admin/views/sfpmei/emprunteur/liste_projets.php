@@ -26,13 +26,13 @@
                         <td>
                             <?php if ($this->projects_pouvoir->get($project['id_project'], 'id_project')) : ?>
                                 <a href="<?= $this->lurl ?>/protected/pouvoir_project/<?= $this->projects_pouvoir->name ?>">POUVOIR</a>
-                            <?php elseif ($project['status'] > ProjectsStatus::STATUS_CONTRACTS) : ?>
+                            <?php elseif ($project['status'] > ProjectsStatus::STATUS_FUNDED) : ?>
                                 <a href="/emprunteurs/link_ligthbox/pouvoir/<?= $project['id_project'] ?>" class="thickbox cboxElement">POUVOIR</a>
                             <?php endif; ?>
                             &nbsp;&nbsp;
                             <?php if ($this->clients_mandats->get($this->clients->id_client, 'id_project = ' . $project['id_project'] . ' AND status = ' . \Unilend\Entity\UniversignEntityInterface::STATUS_SIGNED . ' AND id_client')) : ?>
                                 <a href="<?= $this->lurl ?>/protected/mandats/<?= $this->clients_mandats->name ?>">MANDAT</a>
-                            <?php elseif ($project['status'] > ProjectsStatus::STATUS_CONTRACTS) : ?>
+                            <?php elseif ($project['status'] > ProjectsStatus::STATUS_FUNDED) : ?>
                                 <a href="/emprunteurs/link_ligthbox/mandat/<?= $project['id_project'] ?>" class="thickbox cboxElement">MANDAT</a>
                             <?php endif; ?>
                         </td>

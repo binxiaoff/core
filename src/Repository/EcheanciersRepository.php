@@ -38,7 +38,7 @@ class EcheanciersRepository extends ServiceEntityRepository
             ->innerJoin(CompanyStatus::class, 'cs', Join::WITH, 'cs.id = c.idStatus')
             ->where('e.idLender = :idLender')
             ->andWhere('e.status = ' . Echeanciers::STATUS_PENDING)
-            ->andWhere('cs.label IN (:companyStatus) OR (p.status = ' . ProjectsStatus::STATUS_LOSS . ' AND DATEDIFF(NOW(), e.dateEcheance) > ' . UnilendStats::DAYS_AFTER_LAST_PROBLEM_STATUS_FOR_STATISTIC_LOSS . ')')
+            ->andWhere('cs.label IN (:companyStatus) OR (p.status = ' . ProjectsStatus::STATUS_LOST . ' AND DATEDIFF(NOW(), e.dateEcheance) > ' . UnilendStats::DAYS_AFTER_LAST_PROBLEM_STATUS_FOR_STATISTIC_LOSS . ')')
             ->setParameter('idLender', $idLender)
             ->setParameter('companyStatus', $companyStatus, Connection::PARAM_STR_ARRAY);
 
@@ -248,13 +248,13 @@ class EcheanciersRepository extends ServiceEntityRepository
                     AND e.date_echeance >= NOW()
                     AND IF(
                         (cs.label IN (:companyStatus)
-                        OR p.status = ' . ProjectsStatus::STATUS_LOSS . '
-                        OR (p.status = ' . ProjectsStatus::STATUS_LOSS . '
+                        OR p.status = ' . ProjectsStatus::STATUS_LOST . '
+                        OR (p.status = ' . ProjectsStatus::STATUS_LOST . '
                             AND DATEDIFF(NOW(), (
                                 SELECT psh2.added
                                 FROM projects_status_history psh2
                                 INNER JOIN projects_status ps2 ON psh2.id_project_status = ps2.id_project_status
-                                WHERE ps2.status = ' . ProjectsStatus::STATUS_LOSS . '
+                                WHERE ps2.status = ' . ProjectsStatus::STATUS_LOST . '
                                     AND psh2.id_project = e.id_project
                                 ORDER BY psh2.added DESC, psh2.id_project_status_history DESC
                                 LIMIT 1
@@ -340,7 +340,7 @@ class EcheanciersRepository extends ServiceEntityRepository
 
         return $this->getEntityManager()->getConnection()->executeQuery($query, [
             'endDate' => $end->format('Y-m-d H:i:s'),
-            'status'  => [ProjectsStatus::STATUS_REPAYMENT, ProjectsStatus::STATUS_LOSS],
+            'status'  => [ProjectsStatus::STATUS_CONTRACTS_SIGNED, ProjectsStatus::STATUS_LOST],
             'inBonis' => CompanyStatus::STATUS_IN_BONIS,
             'pending' => Echeanciers::STATUS_PENDING
         ], [

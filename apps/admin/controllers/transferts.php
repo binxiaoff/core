@@ -599,7 +599,7 @@ class transfertsController extends bootstrap
                 die;
             }
 
-            if ($project->getStatus() != ProjectsStatus::STATUS_CONTRACTS) {
+            if ($project->getStatus() != ProjectsStatus::STATUS_FUNDED) {
                 $_SESSION['freeow']['title']   = 'Déblocage des fonds impossible';
                 $_SESSION['freeow']['message'] = 'Le projet n\'est pas fundé';
                 header('Location: ' . $this->lurl . '/transferts/deblocage/');
@@ -693,7 +693,7 @@ class transfertsController extends bootstrap
                 $proxy->setStatusRemb(ProjectsPouvoir::STATUS_REPAYMENT_VALIDATED);
                 $entityManager->flush($proxy);
 
-                $projectStatusManager->addProjectStatus($this->userEntity, ProjectsStatus::STATUS_REPAYMENT, $project);
+                $projectStatusManager->addProjectStatus($this->userEntity, ProjectsStatus::STATUS_CONTRACTS_SIGNED, $project);
 
                 $allAcceptedBids = $acceptedBids->getDistinctBids($project->getIdProject());
                 $lastLoans       = array();
@@ -755,7 +755,7 @@ class transfertsController extends bootstrap
         }
 
         $this->projects = [];
-        $projects       = $entityManager->getRepository(Projects::class)->findBy(['status' => ProjectsStatus::STATUS_CONTRACTS]);
+        $projects       = $entityManager->getRepository(Projects::class)->findBy(['status' => ProjectsStatus::STATUS_FUNDED]);
         foreach ($projects as $index => $project) {
             $this->projects[$index]['project'] = $project;
             $mandate                 = $entityManager->getRepository(ClientsMandats::class)->findOneBy([
@@ -873,7 +873,7 @@ class transfertsController extends bootstrap
 
             /** @var \loans $loans */
             $loans                 = $this->loadData('loans');
-            $loansInRepayment      = $loans->getLoansForProjectsWithStatus($originalWallet->getId(), [ProjectsStatus::STATUS_CONTRACTS, ProjectsStatus::STATUS_REPAYMENT, ProjectsStatus::STATUS_LOSS]);
+            $loansInRepayment      = $loans->getLoansForProjectsWithStatus($originalWallet->getId(), [ProjectsStatus::STATUS_FUNDED, ProjectsStatus::STATUS_CONTRACTS_SIGNED, ProjectsStatus::STATUS_LOST]);
             $originalClientBalance = $originalWallet->getAvailableBalance();
 
             if (isset($_POST['succession_check'])) {

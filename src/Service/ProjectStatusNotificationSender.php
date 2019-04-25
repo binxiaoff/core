@@ -161,7 +161,7 @@ class ProjectStatusNotificationSender
 
         /** @var \projects_status_history $projectStatusHistory */
         $projectStatusHistory = $this->entityManagerSimulator->getRepository('projects_status_history');
-        $fundingDate          = $projectStatusHistory->select('id_project = ' . $project->getIdProject() . ' AND id_project_status = (SELECT id_project_status FROM projects_status WHERE status = ' . ProjectsStatus::STATUS_REPAYMENT . ')', 'added ASC, id_project_status_history ASC', 0, 1);
+        $fundingDate          = $projectStatusHistory->select('id_project = ' . $project->getIdProject() . ' AND id_project_status = (SELECT id_project_status FROM projects_status WHERE status = ' . ProjectsStatus::STATUS_CONTRACTS_SIGNED . ')', 'added ASC, id_project_status_history ASC', 0, 1);
         $fundingDate          = strtotime($fundingDate[0]['added']);
 
         $settingsRepository  = $this->entityManager->getRepository(Settings::class);
@@ -217,7 +217,7 @@ class ProjectStatusNotificationSender
         ];
 
         switch ($project->getStatus()) {
-            case ProjectsStatus::STATUS_LOSS:
+            case ProjectsStatus::STATUS_LOST:
                 $this->sendProjectLossNotificationToLenders($project, $keywords);
                 break;
         }

@@ -62,7 +62,7 @@ class Ekomi
             return false;
         }
 
-        $projectStatus        = $this->entityManager->getRepository(ProjectsStatus::class)->findOneBy(['status' => ProjectsStatus::STATUS_CONTRACTS]);
+        $projectStatus        = $this->entityManager->getRepository(ProjectsStatus::class)->findOneBy(['status' => ProjectsStatus::STATUS_FUNDED]);
         $projectStatusHistory = $this->entityManager->getRepository(ProjectsStatusHistory::class)->findOneBy([
             'idProjectStatus' => $projectStatus,
             'idProject'       => $project->getIdProject()

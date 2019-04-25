@@ -313,7 +313,7 @@ EOF
 
                         $operationManager->provisionBorrowerWallet($reception);
 
-                        if ($project->getStatus() === ProjectsStatus::STATUS_REPAYMENT) {
+                        if ($project->getStatus() === ProjectsStatus::STATUS_CONTRACTS_SIGNED) {
                             $user = $entityManager->getRepository(Users::class)->find(Users::USER_ID_CRON);
                             $projectPaymentManager->pay($reception, $user);
                         }
@@ -370,7 +370,7 @@ EOF
 
         $operationManager->provisionBorrowerWallet($reception);
 
-        if ($project->getStatus() === ProjectsStatus::STATUS_REPAYMENT) {
+        if ($project->getStatus() === ProjectsStatus::STATUS_CONTRACTS_SIGNED) {
             $user = $entityManager->getRepository(Users::class)->find(Users::USER_ID_CRON);
             $projectPaymentManager->pay($reception, $user);
         }

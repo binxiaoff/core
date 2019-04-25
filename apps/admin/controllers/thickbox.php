@@ -90,7 +90,7 @@ class thickboxController extends bootstrap
         $this->projectId = $this->params[0];
 
         switch ($this->params[1]) {
-            case ProjectsStatus::STATUS_LOSS:
+            case ProjectsStatus::STATUS_LOST:
                 /** @var \Symfony\Component\Translation\TranslatorInterface $translator */
                 $translator                 = $this->get('translator');
                 $this->sInfoStatusChange    = trim($translator->trans('projet_info-passage-statut-probleme'));

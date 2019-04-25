@@ -73,10 +73,10 @@ class QueriesMonthlyReportingSfpmeiCommand extends ContainerAwareCommand
         $lenderWithdrawIndicators             = $operationRepository->getLenderWithdrawIndicatorsBetweenDates($startDate, $endDate);
 
         $fundingIndicators                    = [
-            'totalAmount'     => $projectRepository->getIndicatorBetweenDates('SUM(p.amount) AS amount', $startDate, $endDate, ProjectsStatus::STATUS_REPAYMENT)['amount'],
-            'number'          => $projectRepository->getIndicatorBetweenDates('COUNT(p.id_project) AS number', $startDate, $endDate, ProjectsStatus::STATUS_REPAYMENT)['number'],
-            'avgPeriod'       => $projectRepository->getIndicatorBetweenDates('AVG(p.period) AS avgPeriod', $startDate, $endDate, ProjectsStatus::STATUS_REPAYMENT)['avgPeriod'],
-            'avgInterestRate' => $projectRepository->getIndicatorBetweenDates('AVG(p.interest_rate) AS avgInterestRate', $startDate, $endDate, ProjectsStatus::STATUS_REPAYMENT)['avgInterestRate']
+            'totalAmount'     => $projectRepository->getIndicatorBetweenDates('SUM(p.amount) AS amount', $startDate, $endDate, ProjectsStatus::STATUS_CONTRACTS_SIGNED)['amount'],
+            'number'          => $projectRepository->getIndicatorBetweenDates('COUNT(p.id_project) AS number', $startDate, $endDate, ProjectsStatus::STATUS_CONTRACTS_SIGNED)['number'],
+            'avgPeriod'       => $projectRepository->getIndicatorBetweenDates('AVG(p.period) AS avgPeriod', $startDate, $endDate, ProjectsStatus::STATUS_CONTRACTS_SIGNED)['avgPeriod'],
+            'avgInterestRate' => $projectRepository->getIndicatorBetweenDates('AVG(p.interest_rate) AS avgInterestRate', $startDate, $endDate, ProjectsStatus::STATUS_CONTRACTS_SIGNED)['avgInterestRate']
         ];
         $projectsInRepayment                  = $projectRepository->findProjectsInRepaymentAtDate($endDate);
         $remainingDueCapitalRunningRepayments = $operationRepository->getRemainingDueCapitalForProjects($endDate, array_column($projectsInRepayment, 'id_project'));
@@ -92,7 +92,7 @@ class QueriesMonthlyReportingSfpmeiCommand extends ContainerAwareCommand
         $projectsInCollectiveProceeding       = $projectRepository->findProjectsHavingHadCompanyStatusInCollectiveProceeding(new \DateTime('January 2013'), $endDate);
         $companiesInCollectiveProceeding      = $companiesRepository->getCountCompaniesInCollectiveProceedingBetweenDates($startDate, $endDate);
         $newlyRiskAnalysisProjects            = $entityManager->getRepository(ProjectsStatusHistory::class)->getCountProjectsInRiskReviewBetweenDates($startDate, $endDate);
-        $newlyPresentedProjects               = $projectRepository->getIndicatorBetweenDates('COUNT(p.id_project) AS newProjects', $startDate, $endDate, ProjectsStatus::STATUS_ONLINE)['newProjects'];
+        $newlyPresentedProjects               = $projectRepository->getIndicatorBetweenDates('COUNT(p.id_project) AS newProjects', $startDate, $endDate, ProjectsStatus::STATUS_PUBLISHED)['newProjects'];
         $totalNewLenders                      = $clientStatusHistoryRepository->countLendersValidatedBetweenDatesByType($startDate, $endDate, [
             Clients::TYPE_PERSON,
             Clients::TYPE_PERSON_FOREIGNER,

@@ -36,11 +36,11 @@ class ProjectDisplayManager
     private $cachePool;
     /** @var array */
     const STATUS_DISPLAYABLE = [
-        ProjectsStatus::STATUS_ONLINE,
-        ProjectsStatus::STATUS_CONTRACTS,
-        ProjectsStatus::STATUS_REPAYMENT,
+        ProjectsStatus::STATUS_PUBLISHED,
+        ProjectsStatus::STATUS_FUNDED,
+        ProjectsStatus::STATUS_CONTRACTS_SIGNED,
         ProjectsStatus::STATUS_FINISHED,
-        ProjectsStatus::STATUS_LOSS
+        ProjectsStatus::STATUS_LOST
     ];
 
     /**
@@ -160,9 +160,9 @@ class ProjectDisplayManager
                 'longitude' => $company->getIdAddress() ? (float) $company->getIdAddress()->getLongitude() : ''
             ],
             'status'               => $project->status,
-            'finished'             => ($project->status > ProjectsStatus::STATUS_ONLINE || $end < $now),
+            'finished'             => ($project->status > ProjectsStatus::STATUS_PUBLISHED || $end < $now),
             'averageRate'          => round($project->getAverageInterestRate(), 1),
-            'fundingDuration'      => (ProjectsStatus::STATUS_ONLINE > $project->status) ? '' : $this->getFundingDurationTranslation($project),
+            'fundingDuration'      => (ProjectsStatus::STATUS_PUBLISHED > $project->status) ? '' : $this->getFundingDurationTranslation($project),
             'daysLeft'             => $daysLeft
         ];
 
@@ -191,7 +191,7 @@ class ProjectDisplayManager
 
         $projectData['minRate']      = (float) $projectRateSettings['rate_min'];
         $projectData['maxRate']      = (float) $projectRateSettings['rate_min'];
-        $projectData['totalLenders'] = (ProjectsStatus::STATUS_ONLINE >= $project->status) ? $bids->countLendersOnProject($project->id_project) : $loans->getNbPreteurs($project->id_project);
+        $projectData['totalLenders'] = (ProjectsStatus::STATUS_PUBLISHED >= $project->status) ? $bids->countLendersOnProject($project->id_project) : $loans->getNbPreteurs($project->id_project);
 
         if ($alreadyFunded >= $project->amount) {
             $projectData['costFunded']    = $project->amount;
@@ -230,17 +230,17 @@ class ProjectDisplayManager
         }
 
         $now = new \DateTime('NOW');
-        if ($projectData['endDate'] <= $now && $projectData['status'] == ProjectsStatus::STATUS_ONLINE) {
+        if ($projectData['endDate'] <= $now && $projectData['status'] == ProjectsStatus::STATUS_PUBLISHED) {
             $projectData['projectPending'] = true;
         }
 
-        if (in_array($projectData['status'], [ProjectsStatus::STATUS_FINISHED, ProjectsStatus::STATUS_LOSS])) {
+        if (in_array($projectData['status'], [ProjectsStatus::STATUS_FINISHED, ProjectsStatus::STATUS_LOST])) {
             $lastStatusHistory             = $projectStatusHistory->select('id_project = ' . $project->id_project, 'added DESC, id_project_status_history DESC', 0, 1);
             $lastStatusHistory             = array_shift($lastStatusHistory);
             $projectData['dateLastStatus'] = date('d/m/Y', strtotime($lastStatusHistory['added']));
         }
 
-        if (ProjectsStatus::STATUS_ONLINE <= $projectData['status']) {
+        if (ProjectsStatus::STATUS_PUBLISHED <= $projectData['status']) {
             $rateSummary     = [];
             $bidsSummary     = $this->projectManager->getBidsSummary($project);
             $bidsCount       = array_sum(array_column($bidsSummary, 'bidsCount'));
@@ -444,7 +444,7 @@ class ProjectDisplayManager
      */
     public function getVisibility(Projects $project, ?Clients $client = null): string
     {
-        if ($project->getStatus() < ProjectsStatus::STATUS_ONLINE) {
+        if ($project->getStatus() < ProjectsStatus::STATUS_PUBLISHED) {
             return self::VISIBILITY_NONE;
         }
 

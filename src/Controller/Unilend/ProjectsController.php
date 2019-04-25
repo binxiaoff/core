@@ -154,7 +154,7 @@ class ProjectsController extends Controller
 
         $productRepository = $entityManager->getRepository(Product::class);
         $products          = $productRepository->findAvailableProductsByClient($client);
-        $projects          = $projectRepository->findBy(['status' => ProjectsStatus::STATUS_ONLINE, 'idProduct' => $products]);
+        $projects          = $projectRepository->findBy(['status' => ProjectsStatus::STATUS_PUBLISHED, 'idProduct' => $products]);
 
         $template['projectsInFunding'] = count($projects);
         $template['pagination']        = $this->pagination($page, $limit, $client);
@@ -290,7 +290,7 @@ class ProjectsController extends Controller
                 'bids' => $lenderAccountDisplayManager->getBidsForProject($project->id_project, $client)
             ];
 
-            if ($project->status >= ProjectsStatus::STATUS_CONTRACTS) {
+            if ($project->status >= ProjectsStatus::STATUS_FUNDED) {
                 $template['project']['lender']['loans'] = $lenderAccountDisplayManager->getLoansForProject($project->id_project, $client);
             }
 
@@ -316,7 +316,7 @@ class ProjectsController extends Controller
             if (
                 in_array($client->getType(), [Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER])
                 && empty($template['project']['lender']['bids']['count'])
-                && ProjectsStatus::STATUS_ONLINE <= $project->status
+                && ProjectsStatus::STATUS_PUBLISHED <= $project->status
             ) {
                 $template['suggestAutolend'] = true;
             }
@@ -361,7 +361,7 @@ class ProjectsController extends Controller
 
         $template['conditions'] = [
             'visibility'           => $visibility,
-            'bids'                 => isset($template['project']['bids']) && $template['project']['status'] == ProjectsStatus::STATUS_ONLINE,
+            'bids'                 => isset($template['project']['bids']) && $template['project']['status'] == ProjectsStatus::STATUS_PUBLISHED,
             'myBids'               => isset($template['project']['lender']) && $template['project']['lender']['bids']['count'] > 0,
             'finance'              => ProjectDisplayManager::VISIBILITY_FULL === $visibility,
             'canBid'               => ProjectDisplayManager::VISIBILITY_FULL === $visibility
@@ -397,7 +397,7 @@ class ProjectsController extends Controller
         $projectEntity         = $entityManager->getRepository(Projects::class)->find($project->id_project);
 
         if (
-            $project->status >= ProjectsStatus::STATUS_REVIEW && $project->status < ProjectsStatus::STATUS_ONLINE
+            $project->status >= ProjectsStatus::STATUS_REVIEW && $project->status < ProjectsStatus::STATUS_PUBLISHED
             || ProjectDisplayManager::VISIBILITY_NONE !== $projectDisplayManager->getVisibility($projectEntity, $client)
             || $this->get('security.authorization_checker')->isGranted('IS_AUTHENTICATED_FULLY') && 28002 == $project->id_project
         ) {
@@ -828,7 +828,7 @@ class ProjectsController extends Controller
         if ($project->get($projectId, 'id_project')) {
             $translator = $this->get('translator');
 
-            if ($project->status == ProjectsStatus::STATUS_ONLINE) {
+            if ($project->status == ProjectsStatus::STATUS_PUBLISHED) {
                 ob_start();
                 echo "\xEF\xBB\xBF";
                 echo '"N°";"' . $translator->trans('preteur-projets_taux-dinteret') . '";"' . $translator->trans('preteur-projets_montant') . '";"' . $translator->trans('preteur-projets_statuts') . '"' . PHP_EOL;
@@ -1101,7 +1101,7 @@ class ProjectsController extends Controller
         /** @var GeneratorInterface $snappy */
         $snappy = $this->get('knp_snappy.pdf');
 
-        if ($project->status >= ProjectsStatus::STATUS_ONLINE) {
+        if ($project->status >= ProjectsStatus::STATUS_PUBLISHED) {
             $outputFile = $this->getParameter('path.user') . 'dirs/' . $filename;
             $snappy->generateFromHtml($html, $outputFile, $options, true);
         }

@@ -229,7 +229,7 @@ class dossiersController extends bootstrap
             $projectStatusManager   = $this->get('unilend.service.project_status_manager');
             $this->statusReasonText = $projectStatusManager->getStatusReasonByProject($this->projectEntity);
 
-            if ($this->projects->status == ProjectsStatus::STATUS_CONTRACTS) {
+            if ($this->projects->status == ProjectsStatus::STATUS_FUNDED) {
                 $proxy       = $this->projects_pouvoir->select('id_project = ' . $this->projects->id_project);
                 $this->proxy = empty($proxy) ? [] : $proxy[0];
 
@@ -534,10 +534,10 @@ class dossiersController extends bootstrap
                 if (
                     false === empty($_POST['commercial'])
                     && $_POST['commercial'] != $this->projects->id_commercial
-                    && $this->projects->status < ProjectsStatus::STATUS_REQUEST
+                    && $this->projects->status < ProjectsStatus::STATUS_REQUESTED
                 ) {
                     if (ProjectsStatus::STATUS_CANCELLED != $this->projects->status) {
-                        $_POST['status'] = ProjectsStatus::STATUS_REQUEST;
+                        $_POST['status'] = ProjectsStatus::STATUS_REQUESTED;
                     }
 
                     $latitude  = (float) $this->companies->latitude;
@@ -559,9 +559,9 @@ class dossiersController extends bootstrap
                 if (
                     false === empty($_POST['analyste'])
                     && $_POST['analyste'] != $this->projects->id_analyste
-                    && $this->projects->status < ProjectsStatus::STATUS_REQUEST
+                    && $this->projects->status < ProjectsStatus::STATUS_REQUESTED
                 ) {
-                    $_POST['status'] = ProjectsStatus::STATUS_REQUEST;
+                    $_POST['status'] = ProjectsStatus::STATUS_REQUESTED;
                 }
 
                 if ($this->projects->create_bo && empty($this->clients->source) && isset($_POST['source'])) {
@@ -582,7 +582,7 @@ class dossiersController extends bootstrap
                 $this->projects->id_company_submitter = empty($_POST['company_submitter']) ? null : $_POST['company_submitter'];
                 $this->projects->id_client_submitter  = empty($_POST['client_submitter']) ? null : $_POST['client_submitter'];
 
-                if ($this->projects->status <= ProjectsStatus::STATUS_REQUEST) {
+                if ($this->projects->status <= ProjectsStatus::STATUS_REQUESTED) {
                     $this->projects->id_project_need = $_POST['need'];
                     $this->projects->period          = $_POST['duree'];
                     $this->projects->amount          = $this->ficelle->cleanFormatedNumber($_POST['montant']);
@@ -667,7 +667,7 @@ class dossiersController extends bootstrap
                 if (
                     isset($_POST['date_retrait'], $_POST['date_retrait_heure'], $_POST['date_retrait_minute'])
                     && 1 === preg_match('#[0-9]{2}/[0-9]{2}/[0-9]{8}#', $_POST['date_retrait'] . $_POST['date_retrait_heure'] . $_POST['date_retrait_minute'])
-                    && $this->projects->status <= ProjectsStatus::STATUS_ONLINE
+                    && $this->projects->status <= ProjectsStatus::STATUS_PUBLISHED
                 ) {
                     $endOfPublicationDate = \DateTime::createFromFormat('d/m/YHi', $_POST['date_retrait'] . $_POST['date_retrait_heure'] . $_POST['date_retrait_minute']);
 
@@ -901,7 +901,7 @@ class dossiersController extends bootstrap
 
     private function transferFunds(Projects $project)
     {
-        if ($project->getStatus() >= ProjectsStatus::STATUS_REPAYMENT) {
+        if ($project->getStatus() >= ProjectsStatus::STATUS_CONTRACTS_SIGNED) {
             /** @var \Doctrine\ORM\EntityManager $entityManager */
             $entityManager = $this->get('doctrine.orm.entity_manager');
             /** @var \Unilend\Service\ProjectManager $projectManager */
@@ -924,7 +924,7 @@ class dossiersController extends bootstrap
         $userManager = $this->get('unilend.service.back_office_user_manager');
 
         return (
-            $this->projects->status <= ProjectsStatus::STATUS_CONTRACTS
+            $this->projects->status <= ProjectsStatus::STATUS_FUNDED
             && false === empty($this->projects->id_product)
             && $userManager->isGrantedManagement($this->userEntity)
         );
@@ -1033,7 +1033,7 @@ class dossiersController extends bootstrap
             }
         }
 
-        if ($this->request->request->getBoolean('send_email') || ProjectsStatus::STATUS_LOSS === $this->request->request->getInt('problematic_status')) {
+        if ($this->request->request->getBoolean('send_email') || ProjectsStatus::STATUS_LOST === $this->request->request->getInt('problematic_status')) {
             try {
                 $projectStatusNotificationSender->sendProblemStatusNotificationsToLenders($project);
             } catch (\Exception $exception) {
@@ -1352,13 +1352,13 @@ class dossiersController extends bootstrap
                 }
 
                 $company = $entityManager->getRepository(Companies::class)->findOneBy(['idClientOwner' => $clientEntity]);
-                $project = $projectRequestManager->createProjectByCompany($this->userEntity, $company, $defaultPartner, ProjectsStatus::STATUS_REQUEST);
+                $project = $projectRequestManager->createProjectByCompany($this->userEntity, $company, $defaultPartner, ProjectsStatus::STATUS_REQUESTED);
                 $this->users_history->histo(7, 'dossier create', $this->userEntity->getIdUser(), serialize(['id_project' => $project->getIdProject()]));
 
                 header('Location: ' . $this->lurl . '/dossiers/add/' . $project->getIdProject());
                 exit;
             } elseif (isset($this->params[0]) && 'nouveau' === $this->params[0]) {
-                $project = $projectRequestManager->newProject($this->userEntity, $defaultPartner, ProjectsStatus::STATUS_REQUEST);
+                $project = $projectRequestManager->newProject($this->userEntity, $defaultPartner, ProjectsStatus::STATUS_REQUESTED);
                 $this->users_history->histo(7, 'dossier create', $this->userEntity->getIdUser(), serialize(['id_project' => $project->getIdProject()]));
 
                 header('Location: ' . $this->lurl . '/dossiers/add/' . $project->getIdProject());
@@ -1368,7 +1368,7 @@ class dossiersController extends bootstrap
                 && 'siren' === $this->params[0]
                 && 1 === preg_match('/^[0-9]{9}$/', $this->params[1])
             ) {
-                $project = $projectRequestManager->newProject($this->userEntity, $defaultPartner, ProjectsStatus::STATUS_REQUEST, null, $this->params[1]);
+                $project = $projectRequestManager->newProject($this->userEntity, $defaultPartner, ProjectsStatus::STATUS_REQUESTED, null, $this->params[1]);
                 $this->users_history->histo(7, 'dossier create', $this->userEntity->getIdUser(), serialize(['id_project' => $project->getIdProject()]));
 
                 /** @var ProjectRequestManager $projectRequestManager */
@@ -1638,7 +1638,7 @@ class dossiersController extends bootstrap
         $this->earlyRepaymentPossible = true;
         $this->displayActionButton    = $displayActionButton;
 
-        if ($this->projects->status >= ProjectsStatus::STATUS_REPAYMENT) {
+        if ($this->projects->status >= ProjectsStatus::STATUS_CONTRACTS_SIGNED) {
             if ($this->projects->status == ProjectsStatus::STATUS_FINISHED) {
                 $this->message                = '<div style="color:green;">Remboursement anticipé effectué</div>';
                 $this->earlyRepaymentPossible = false;
@@ -1950,7 +1950,7 @@ class dossiersController extends bootstrap
         $projectStatusManager = $this->get('unilend.service.project_status_manager');
 
         if (isset($this->params[1]) && 'resume' === $this->params[1] && ProjectsStatus::STATUS_REVIEW == $this->projects->status) {
-            $projectStatusManager->addProjectStatus($this->userEntity, ProjectsStatus::STATUS_REQUEST, $this->projects);
+            $projectStatusManager->addProjectStatus($this->userEntity, ProjectsStatus::STATUS_REQUESTED, $this->projects);
 
             header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->projects->id_project);
             die;
@@ -2166,7 +2166,7 @@ class dossiersController extends bootstrap
 
             /** @var \Unilend\Service\ProjectStatusManager $projectStatusManager */
             $projectStatusManager = $this->get('unilend.service.project_status_manager');
-            $projectStatusManager->addProjectStatus($this->userEntity, ProjectsStatus::STATUS_REQUEST, $this->projects);
+            $projectStatusManager->addProjectStatus($this->userEntity, ProjectsStatus::STATUS_REQUESTED, $this->projects);
 
             header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->projects->id_project);
             die;

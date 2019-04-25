@@ -1811,7 +1811,7 @@ class Projects
      */
     public function isOnline(): bool
     {
-        return $this->getStatus() === ProjectsStatus::STATUS_ONLINE && (null === $this->getEndDate() || new \DateTime() < $this->getEndDate());
+        return $this->getStatus() === ProjectsStatus::STATUS_PUBLISHED && (null === $this->getEndDate() || new \DateTime() < $this->getEndDate());
     }
 
     /**

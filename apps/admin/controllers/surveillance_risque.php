@@ -65,8 +65,8 @@ class surveillance_risqueController extends bootstrap
             ProjectsStatus::SALES_TEAM_UPCOMING_STATUS,
             ProjectsStatus::SALES_TEAM,
             ProjectsStatus::RISK_TEAM,
-            ProjectsStatus::STATUS_REPAYMENT,
-            ProjectsStatus::STATUS_LOSS
+            ProjectsStatus::STATUS_CONTRACTS_SIGNED,
+            ProjectsStatus::STATUS_LOST
         ];
         $formattedEvents                  = [];
 
@@ -84,7 +84,7 @@ class surveillance_risqueController extends bootstrap
                     ];
                 }
 
-                if ($event['status'] >= ProjectsStatus::STATUS_REPAYMENT) {
+                if ($event['status'] >= ProjectsStatus::STATUS_CONTRACTS_SIGNED) {
                     $event['remainingDueCapital'] = $operationRepository->getRemainingDueCapitalForProjects(new \DateTime('NOW'), [$event['id_project']]);
                 }
 

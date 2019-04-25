@@ -105,7 +105,7 @@ class SlackManager
             $title = $company->getSiren();
         }
 
-        if ($project->getStatus() >= ProjectsStatus::STATUS_ONLINE) {
+        if ($project->getStatus() >= ProjectsStatus::STATUS_PUBLISHED) {
             return '*<' . $this->frontUrl . '/projects/detail/' . $project->getSlug() . '|' . $title . '>* (<' . $backUrl . '|' . $project->getIdProject() . '>)';
         }
 

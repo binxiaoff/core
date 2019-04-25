@@ -125,14 +125,14 @@ class projects extends projects_crud
             ->setParameter('projectId', $this->id_project);
 
         switch ($this->status) {
-            case ProjectsStatus::STATUS_CONTRACTS:
-            case ProjectsStatus::STATUS_REPAYMENT:
+            case ProjectsStatus::STATUS_FUNDED:
+            case ProjectsStatus::STATUS_CONTRACTS_SIGNED:
             case ProjectsStatus::STATUS_FINISHED:
-            case ProjectsStatus::STATUS_LOSS:
+            case ProjectsStatus::STATUS_LOST:
                 $queryBuilder
                     ->from('loans');
                 break;
-            case ProjectsStatus::STATUS_ONLINE:
+            case ProjectsStatus::STATUS_PUBLISHED:
                 $queryBuilder
                     ->from('bids')
                     ->andWhere('status IN (:status)')
@@ -151,7 +151,7 @@ class projects extends projects_crud
             trigger_error('Interest rate should be saved in DB for project ' . $this->id_project, E_USER_WARNING);
         }
 
-        if ($cache && $this->status != ProjectsStatus::STATUS_REQUEST) {
+        if ($cache && $this->status != ProjectsStatus::STATUS_REQUESTED) {
             $cacheTime         = CacheKeys::VERY_SHORT_TIME;
             $cacheKey          = md5(__METHOD__);
             $queryCacheProfile = new QueryCacheProfile($cacheTime, $cacheKey);
@@ -258,7 +258,7 @@ class projects extends projects_crud
               INNER JOIN (SELECT id_project, MIN(date_echeance_emprunteur) AS date_echeance_emprunteur FROM echeanciers_emprunteur WHERE (capital + interets + commission + tva - paid_capital - paid_interest - paid_commission_vat_incl) > 0 GROUP BY id_project) min_unpaid ON min_unpaid.id_project = p.id_project
               INNER JOIN echeanciers_emprunteur prev ON prev.id_project = p.id_project AND prev.date_echeance_emprunteur = min_unpaid.date_echeance_emprunteur
               INNER JOIN echeanciers_emprunteur next ON next.id_project = p.id_project AND next.ordre = prev.ordre + 1 AND next.status_emprunteur = ' . EcheanciersEmprunteur::STATUS_PENDING . '
-            WHERE p.status = ' . ProjectsStatus::STATUS_LOSS . '
+            WHERE p.status = ' . ProjectsStatus::STATUS_LOST . '
                   AND DATE(next.date_echeance_emprunteur) = DATE(ADDDATE(NOW(), INTERVAL 7 DAY))'
         );
         while ($aRecord = $this->bdd->fetch_assoc($rResult)) {
@@ -308,7 +308,7 @@ class projects extends projects_crud
                     SELECT l.id_loan, l.amount, l.rate, l.added, p.id_project, p.period
                     FROM loans l
                     INNER JOIN projects p ON p.id_project = l.id_project
-                    WHERE p.status >= ' . ProjectsStatus::STATUS_CONTRACTS . '
+                    WHERE p.status >= ' . ProjectsStatus::STATUS_FUNDED . '
                         AND p.status != ' . ProjectsStatus::STATUS_CANCELLED . $whereRisk . $whereDurationMin . $whereDurationMax . $wherePublished . '
                 ) t
                 GROUP BY t.id_project
@@ -339,7 +339,7 @@ class projects extends projects_crud
                           INNER JOIN projects p ON p.id_project = l.id_project
                           INNER JOIN projects_status ps ON ps.status = p.status
                           WHERE l.status = ' . Loans::STATUS_ACCEPTED . '
-                            AND p.status > ' . ProjectsStatus::STATUS_ONLINE . '
+                            AND p.status > ' . ProjectsStatus::STATUS_PUBLISHED . '
                             AND p.date_fin BETWEEN "' . $oDateFrom->format('Y-m-d H:i:s') . '" AND "' . $oDateTo->format('Y-m-d H:i:s') . '"
                           GROUP BY l.id_loan
                        ) t
@@ -413,7 +413,7 @@ class projects extends projects_crud
                   loans.amount
                 FROM projects p
                    INNER JOIN loans ON p.id_project = loans.id_project
-                WHERE p.status >= ' . ProjectsStatus::STATUS_REPAYMENT . '
+                WHERE p.status >= ' . ProjectsStatus::STATUS_CONTRACTS_SIGNED . '
                 ORDER BY p.date_fin DESC
                 LIMIT :limit
             ) AS last_loans';
@@ -444,7 +444,7 @@ class projects extends projects_crud
     {
         $query     = 'SELECT ROUND(AVG(amount), 0)
                     FROM projects
-                    WHERE status >= ' . ProjectsStatus::STATUS_REPAYMENT;
+                    WHERE status >= ' . ProjectsStatus::STATUS_CONTRACTS_SIGNED;
         $statement = $this->bdd->executeQuery($query);
 
         return $statement->fetchColumn(0);
@@ -593,7 +593,7 @@ class projects extends projects_crud
         $query = 'SELECT count(projects.id_project)
                     FROM projects
                     WHERE ROUND(TIMESTAMPDIFF(SECOND, date_publication, date_funded)/120) <= 24
-                    AND date_funded >= :startDate AND status >= ' . ProjectsStatus::STATUS_CONTRACTS;
+                    AND date_funded >= :startDate AND status >= ' . ProjectsStatus::STATUS_FUNDED;
 
         $statement = $this->bdd->executeQuery($query, $bind, $type);
 
@@ -607,7 +607,7 @@ class projects extends projects_crud
 
         $query = 'SELECT count(projects.id_project)
                     FROM projects
-                    WHERE date_funded >= :startDate AND status >=' . ProjectsStatus::STATUS_CONTRACTS;
+                    WHERE date_funded >= :startDate AND status >=' . ProjectsStatus::STATUS_FUNDED;
 
         $statement = $this->bdd->executeQuery($query, $bind, $type);
 
@@ -651,12 +651,12 @@ class projects extends projects_crud
                         SELECT ' . $cohortSelect . ' AS date_range
                         FROM projects_status_history
                         INNER JOIN projects_status ON projects_status_history.id_project_status = projects_status.id_project_status
-                        WHERE  projects_status.status = ' . ProjectsStatus::STATUS_REPAYMENT . '
+                        WHERE  projects_status.status = ' . ProjectsStatus::STATUS_CONTRACTS_SIGNED . '
                           AND projects.id_project = projects_status_history.id_project
                         ORDER BY projects_status_history.added ASC, id_project_status_history ASC LIMIT 1
                       ) AS cohort
                        FROM projects
-                    WHERE projects.status >= ' . ProjectsStatus::STATUS_REPAYMENT . '
+                    WHERE projects.status >= ' . ProjectsStatus::STATUS_CONTRACTS_SIGNED . '
                     GROUP BY cohort';
 
         $statement = $this->bdd->executeQuery($query);
@@ -674,8 +674,8 @@ class projects extends projects_crud
     public function getDataForBDFDeclaration(\DateTime $declarationDate, array $contractType): array
     {
         $bind = [
-            'statusRepayment'                  => ProjectsStatus::STATUS_REPAYMENT,
-            'statusProblem'                    => ProjectsStatus::STATUS_LOSS,
+            'statusRepayment'                  => ProjectsStatus::STATUS_CONTRACTS_SIGNED,
+            'statusProblem'                    => ProjectsStatus::STATUS_LOST,
             'loanAccepted'                     => Loans::STATUS_ACCEPTED,
             'declarationLastDay'               => $declarationDate->format('Y-m-t'),
             'inBonis'                          => CompanyStatus::STATUS_IN_BONIS,
@@ -685,8 +685,8 @@ class projects extends projects_crud
                 CompanyStatus::STATUS_COMPULSORY_LIQUIDATION,
             ],
             'projectStatusList'                => [
-                ProjectsStatus::STATUS_REPAYMENT,
-                ProjectsStatus::STATUS_LOSS
+                ProjectsStatus::STATUS_CONTRACTS_SIGNED,
+                ProjectsStatus::STATUS_LOST
             ],
             'clientTypePerson'                 => [
                 Clients::TYPE_PERSON,
@@ -835,7 +835,7 @@ class projects extends projects_crud
               (SELECT ps.status FROM projects_status ps LEFT JOIN projects_status_history psh ON (ps.id_project_status = psh.id_project_status) WHERE psh.id_project = p.id_project ORDER BY psh.added DESC, psh.id_project_status_history DESC LIMIT 1) AS status
             FROM projects p
             WHERE p.display = ' . ProjectsEntity::DISPLAY_YES . ' AND p.title LIKE :search
-            HAVING status >= ' . ProjectsStatus::STATUS_ONLINE . '
+            HAVING status >= ' . ProjectsStatus::STATUS_PUBLISHED . '
             ORDER BY p.title ASC';
 
         /** @var \Doctrine\DBAL\Statement $statement */
@@ -925,7 +925,7 @@ class projects extends projects_crud
             ->leftJoin('p', 'projects_notes', 'pn', 'p.id_project = pn.id_project')
             ->leftJoin('p', 'project_need', 'need', 'p.id_project_need = need.id_project_need')
             ->where('p.status IN (:riskStatus)')
-            ->setParameter('waitingAnalystStatus', ProjectsStatus::STATUS_REQUEST)
+            ->setParameter('waitingAnalystStatus', ProjectsStatus::STATUS_REQUESTED)
             ->setParameter('riskStatus', ProjectsStatus::RISK_TEAM, Connection::PARAM_INT_ARRAY)
             ->addOrderBy('status', 'ASC')
             ->addOrderBy('risk_status_duration', 'DESC');

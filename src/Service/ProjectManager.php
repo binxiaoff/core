@@ -384,7 +384,7 @@ class ProjectManager
      */
     public function isEditable(Projects $project): bool
     {
-        return $project->getStatus() < ProjectsStatus::STATUS_ONLINE;
+        return $project->getStatus() < ProjectsStatus::STATUS_PUBLISHED;
     }
 
     /**

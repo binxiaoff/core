@@ -71,27 +71,27 @@ class ProjectStatusManager
         $paymentScheduleRepository = $this->entityManager->getRepository(EcheanciersEmprunteur::class);
 
         switch ($project->getStatus()) {
-            case ProjectsStatus::STATUS_LOSS:
+            case ProjectsStatus::STATUS_LOST:
                 if (0 < $paymentScheduleRepository->getOverdueScheduleCount($project)) {
-                    $possibleStatus = [ProjectsStatus::STATUS_LOSS];
+                    $possibleStatus = [ProjectsStatus::STATUS_LOST];
                     break;
                 }
-                $possibleStatus = [ProjectsStatus::STATUS_LOSS, ProjectsStatus::STATUS_REPAYMENT];
+                $possibleStatus = [ProjectsStatus::STATUS_LOST, ProjectsStatus::STATUS_CONTRACTS_SIGNED];
                 break;
             case ProjectsStatus::STATUS_FINISHED:
                 return [];
             default:
-                if ($project->getStatus() < ProjectsStatus::STATUS_REPAYMENT) {
+                if ($project->getStatus() < ProjectsStatus::STATUS_CONTRACTS_SIGNED) {
                     return [];
                 }
                 $possibleStatus = ProjectsStatus::AFTER_REPAYMENT;
 
-                $key = array_search(ProjectsStatus::STATUS_LOSS, $possibleStatus);
+                $key = array_search(ProjectsStatus::STATUS_LOST, $possibleStatus);
                 if (false !== $key) {
                     unset($possibleStatus[$key]);
                 }
 
-                $key = array_search(ProjectsStatus::STATUS_REPAYMENT, $possibleStatus);
+                $key = array_search(ProjectsStatus::STATUS_CONTRACTS_SIGNED, $possibleStatus);
                 if (0 < $paymentScheduleRepository->getOverdueScheduleCount($project) && false !== $key) {
                     unset($possibleStatus[$key]);
                 }
@@ -234,7 +234,7 @@ class ProjectStatusManager
         }
 
         if (
-            $projectStatus === ProjectsStatus::STATUS_REPAYMENT
+            $projectStatus === ProjectsStatus::STATUS_CONTRACTS_SIGNED
             && 0 < $this->entityManager->getRepository(EcheanciersEmprunteur::class)->getOverdueScheduleCount($projectEntity)
         ) {
             return;
@@ -320,7 +320,7 @@ class ProjectStatusManager
                     $abandonReason    = $this->entityManager->getRepository(ProjectAbandonReason::class)
                         ->findBy(['label' => ProjectAbandonReason::OTHER_PROJECT_OF_SAME_COMPANY_REJECTED]);
                     $previousProjects = $this->entityManager->getRepository(Projects::class)
-                        ->findBySiren($project->getIdCompany()->getSiren(), [ProjectsStatus::STATUS_CANCELLED, ProjectsStatus::STATUS_REQUEST, ProjectsStatus::STATUS_REVIEW], $project->getAdded());
+                        ->findBySiren($project->getIdCompany()->getSiren(), [ProjectsStatus::STATUS_CANCELLED, ProjectsStatus::STATUS_REQUESTED, ProjectsStatus::STATUS_REVIEW], $project->getAdded());
 
                     foreach ($previousProjects as $previousProject) {
                         $this->abandonProject($previousProject, $abandonReason, $user);
@@ -340,7 +340,7 @@ class ProjectStatusManager
                 }
                 $this->mailerManager->sendProjectOnlineToBorrower($project);
                 break;
-            case ProjectsStatus::STATUS_LOSS:
+            case ProjectsStatus::STATUS_LOST:
                 $this->projectRepaymentTaskManager->disableAutomaticRepayment($project, $user);
                 break;
         }

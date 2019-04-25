@@ -777,7 +777,7 @@ class MailerManager
 
                         $oProject->get($aMailNotification['id_project']);
 
-                        if (ProjectsStatus::STATUS_ONLINE == $oProject->status) {
+                        if (ProjectsStatus::STATUS_PUBLISHED == $oProject->status) {
                             $sProjectsListHTML .= '
                                 <tr>
                                     <td class="td">

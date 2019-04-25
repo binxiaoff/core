@@ -351,9 +351,9 @@ class StatisticsManager
         /** @var \projects_status_history $projectStatusHistory */
         $projectStatusHistory = $this->entityManagerSimulator->getRepository('projects_status_history');
         /** @var array $countByStatus */
-        $countByStatus = $projectStatusHistory->countProjectsHavingHadStatus([ProjectsStatus::STATUS_ONLINE]);
+        $countByStatus = $projectStatusHistory->countProjectsHavingHadStatus([ProjectsStatus::STATUS_PUBLISHED]);
         /** @var string $percentageOfAcceptedProjects */
-        $percentageOfAcceptedProjects = bcmul(bcdiv($countByStatus[ProjectsStatus::STATUS_ONLINE], $numberOfProjectRequests, 4), 100, 2);
+        $percentageOfAcceptedProjects = bcmul(bcdiv($countByStatus[ProjectsStatus::STATUS_PUBLISHED], $numberOfProjectRequests, 4), 100, 2);
 
         return $percentageOfAcceptedProjects;
     }
