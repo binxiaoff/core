@@ -188,7 +188,7 @@ class bootstrap extends Controller
                 ],
                 [
                     'title' => 'Remboursements',
-                    'uri'   => 'dossiers/' . ProjectsStatus::STATUS_FUNDED . ',' . ProjectsStatus::STATUS_REPAYMENT . ',' . ProjectsStatus::STATUS_REPAID
+                    'uri'   => 'dossiers/' . ProjectsStatus::STATUS_CONTRACTS . ',' . ProjectsStatus::STATUS_REPAYMENT . ',' . ProjectsStatus::STATUS_FINISHED
                 ],
                 [
                     'title' => 'Erreurs remboursements',

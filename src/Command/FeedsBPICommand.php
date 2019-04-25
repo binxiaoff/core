@@ -44,10 +44,10 @@ class FeedsBPICommand extends ContainerAwareCommand
 
         $projectStatus = [
             ProjectsStatus::STATUS_ONLINE,
-            ProjectsStatus::STATUS_FUNDED,
+            ProjectsStatus::STATUS_CONTRACTS,
             ProjectsStatus::STATUS_CANCELLED,
             ProjectsStatus::STATUS_REPAYMENT,
-            ProjectsStatus::STATUS_REPAID,
+            ProjectsStatus::STATUS_FINISHED,
             ProjectsStatus::STATUS_LOSS
         ];
 
@@ -201,8 +201,8 @@ class FeedsBPICommand extends ContainerAwareCommand
             case ProjectsStatus::STATUS_ONLINE:
             case ProjectsStatus::STATUS_LOSS:
             case ProjectsStatus::STATUS_REPAYMENT:
-            case ProjectsStatus::STATUS_REPAID:
-            case ProjectsStatus::STATUS_FUNDED:
+            case ProjectsStatus::STATUS_FINISHED:
+            case ProjectsStatus::STATUS_CONTRACTS:
                 return 'OUI';
             case ProjectsStatus::STATUS_CANCELLED:
                 return 'NON';

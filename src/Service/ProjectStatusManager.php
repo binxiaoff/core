@@ -78,7 +78,7 @@ class ProjectStatusManager
                 }
                 $possibleStatus = [ProjectsStatus::STATUS_LOSS, ProjectsStatus::STATUS_REPAYMENT];
                 break;
-            case ProjectsStatus::STATUS_REPAID:
+            case ProjectsStatus::STATUS_FINISHED:
                 return [];
             default:
                 if ($project->getStatus() < ProjectsStatus::STATUS_REPAYMENT) {

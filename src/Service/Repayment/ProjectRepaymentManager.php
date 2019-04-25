@@ -129,7 +129,7 @@ class ProjectRepaymentManager
         $pendingRepaymentSchedule = $this->entityManager->getRepository(Echeanciers::class)
             ->findByProject($projectRepaymentTask->getIdProject(), null, null, [Echeanciers::STATUS_PENDING, Echeanciers::STATUS_PARTIALLY_REPAID], null, null, 0, 1);
         if (0 === count($pendingRepaymentSchedule)) {
-            $this->projectStatusManager->addProjectStatus($userId, ProjectsStatus::STATUS_REPAID, $projectRepaymentTask->getIdProject());
+            $this->projectStatusManager->addProjectStatus($userId, ProjectsStatus::STATUS_FINISHED, $projectRepaymentTask->getIdProject());
             $this->projectRepaymentNotificationSender->sendInternalNotificationEndOfRepayment($projectRepaymentTask->getIdProject());
             $this->projectRepaymentNotificationSender->sendClientNotificationEndOfRepayment($projectRepaymentTask->getIdProject());
         }

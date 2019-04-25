@@ -33,7 +33,7 @@
 
                         {# Always render the first... #}
                         <li role="presentation" class="{% if pagination.currentIndex == 1 %}current{% endif %}">
-                            <a href="{{ path('projects_list', { 'page' : 1, 'sortType' : sortType, 'sortDirection' : sortDirection}) }}">1</a>
+                            <a href="{{ path('projects_list', {'page': 1, 'sortType': sortType, 'sortDirection': sortDirection}) }}">1</a>
                         </li>
 
                         {# Render inbetween numbers #}

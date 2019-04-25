@@ -45,130 +45,6 @@ class DemoController extends AbstractController
     }
 
     /**
-     * @Route("/portefeuille", name="demo_loans")
-     *
-     * @param UserInterface|Clients|null $user
-     *
-     * @return Response
-     */
-    public function loans(?UserInterface $user): Response
-    {
-        $template = [
-            'projects' => [],
-        ];
-
-        $projectRepository = $this->entityManager->getRepository(Projects::class);
-
-        if ($user->isBorrower() || $user->isPartner()) {
-            $template['projects']['borrower'] = $this->groupByStatusAndSort(
-                $projectRepository->createQueryBuilder('p')
-                    ->distinct()
-                    ->where('p.idCompany = :userCompany')
-                    ->orWhere('p.idCompanySubmitter = :userCompany')
-                    ->setParameter('userCompany', $user->getCompany())
-                    ->getQuery()
-                    ->getResult()
-            );
-        }
-
-        if ($user->isBorrower() || $user->isPartner()) {
-            $template['projects']['submitter'] = $this->groupByStatusAndSort(
-                $projectRepository->createQueryBuilder('p')
-                    ->distinct()
-                    ->innerJoin('p.projectParticipants', 'pp')
-                    ->where('pp.company = :userCompany')
-                    ->andWhere('JSON_CONTAINS(pp.roles, :roleArranger) = 1 OR JSON_CONTAINS(pp.roles, :roleRun) = 1')
-                    ->setParameter('userCompany', $user->getCompany())
-                    ->setParameter('roleArranger', json_encode([ProjectParticipant::COMPANY_ROLE_ARRANGER]))
-                    ->setParameter('roleRun', json_encode([ProjectParticipant::COMPANY_ROLE_RUN]))
-                    ->getQuery()
-                    ->getResult()
-            );
-        }
-
-        if ($user->isLender()) {
-            $wallet = $this->entityManager->getRepository(Wallet::class)->getWalletByType($user, WalletType::LENDER);
-
-            // En cours (HOT)
-            $projectsInProgressBid = $projectRepository->createQueryBuilder('p')
-                ->distinct()
-                ->innerJoin('p.bids', 'b')
-                ->where('b.wallet = :wallet')
-                ->andWhere('p.status = :online')
-                ->setParameters(['wallet' => $wallet, 'online' => ProjectsStatus::STATUS_ONLINE])
-                ->getQuery()
-                ->getResult()
-            ;
-
-            $projectsInProgressNonSignedLoan = $projectRepository->createQueryBuilder('p')
-                ->distinct()
-                ->innerJoin('p.loans', 'l')
-                ->where('l.wallet = :wallet')
-                ->andWhere('l.status = :pending')
-                ->setParameters(['wallet' => $wallet, 'pending' => Loans::STATUS_PENDING])
-                ->getQuery()
-                ->getResult()
-            ;
-
-            $template['projects']['lender']['inProgress'] = array_merge((array) $projectsInProgressBid, (array) $projectsInProgressNonSignedLoan);
-
-            $inProgressCount = count($template['projects']['lender']['inProgress']) + count($projectsInProgressNonSignedLoan);
-
-            $template['projects']['lender']['inProgressCount'] = [
-                'pending' => $inProgressCount,
-                'refused' => count($template['projects']['lender']['inProgress']) - $inProgressCount,
-            ];
-
-            // Actifs (COLD)
-            $projectsActive = $projectRepository->createQueryBuilder('p')
-                ->innerJoin('p.loans', 'l')
-                ->where('l.wallet = :wallet')
-                ->andWhere('l.status = :accepted')
-                ->andWhere('p.status in (:active)')
-                ->setParameters([
-                    'wallet'   => $wallet,
-                    'accepted' => Loans::STATUS_ACCEPTED,
-                    'active'   => [ProjectsStatus::STATUS_FUNDED, ProjectsStatus::STATUS_SIGNED, ProjectsStatus::STATUS_REPAYMENT],
-                ])
-                ->getQuery()
-                ->getResult()
-            ;
-
-            $template['projects']['lender']['active'] = $projectsActive;
-
-            // Terminés
-            $projectsFinished = $projectRepository->createQueryBuilder('p')
-                ->innerJoin('p.loans', 'l')
-                ->where('l.wallet = :wallet')
-                ->andWhere('l.status = :accepted')
-                ->andWhere('p.status in (:finished)')
-                ->setParameters([
-                    'wallet'   => $wallet,
-                    'accepted' => Loans::STATUS_ACCEPTED,
-                    'finished' => [ProjectsStatus::STATUS_LOSS, ProjectsStatus::STATUS_REPAID, ProjectsStatus::STATUS_CANCELLED],
-                ])
-                ->getQuery()
-                ->getResult()
-            ;
-
-            $template['projects']['lender']['finished'] = $projectsFinished;
-
-            $projectsMasked = $projectRepository->createQueryBuilder('p')
-                ->innerJoin('p.loans', 'l')
-                ->where('l.wallet = :wallet')
-                ->andWhere('l.status = :refused')
-                ->setParameters(['wallet' => $wallet, 'refused' => Loans::STATUS_REJECTED])
-                ->getQuery()
-                ->getResult()
-            ;
-
-            $template['projects']['lender']['masked'] = $projectsMasked;
-        }
-
-        return $this->render('demo/loans.html.twig', $template);
-    }
-
-    /**
      * @Route("/depot", name="demo_project_request", methods={"GET"})
      *
      * @param ProjectManager $projectManager
@@ -339,7 +215,7 @@ class DemoController extends AbstractController
         $project           = $projectRepository->findOneBy(['hash' => $hash]);
 
         if (null === $project) {
-            return $this->redirectToRoute('demo_loans');
+            return $this->redirectToRoute('wallet');
         }
 
         $arranger = $project->getArrangerParticipant();
@@ -383,12 +259,11 @@ class DemoController extends AbstractController
             'visibility'    => $visibility,
             'projectStatus' => [
                 ProjectsStatus::STATUS_REQUEST,
-                ProjectsStatus::STATUS_REVIEW,
                 ProjectsStatus::STATUS_ONLINE,
-                ProjectsStatus::STATUS_FUNDED,
-                ProjectsStatus::STATUS_SIGNED,
+                ProjectsStatus::STATUS_CONTRACTS,
+                ProjectsStatus::STATUS_SIGNATURE,
                 ProjectsStatus::STATUS_REPAYMENT,
-                ProjectsStatus::STATUS_REPAID,
+                ProjectsStatus::STATUS_FINISHED,
             ],
             'project'            => $project,
             'product'            => $project->getIdProduct() ? $productRepository->find($project->getIdProduct()) : null,
@@ -423,7 +298,7 @@ class DemoController extends AbstractController
         $project           = $projectRepository->findOneBy(['hash' => $hash]);
 
         if (null === $project) {
-            return $this->redirectToRoute('demo_loans');
+            return $this->redirectToRoute('wallet');
         }
 
         $this->uploadDocuments($request, $project, $user, $attachmentManager);
@@ -445,7 +320,7 @@ class DemoController extends AbstractController
         $project           = $projectRepository->findOneBy(['hash' => $hash]);
 
         if (null === $project) {
-            return $this->redirectToRoute('demo_loans');
+            return $this->redirectToRoute('wallet');
         }
 
         $visibility = $request->request->get('visibility');
@@ -620,7 +495,7 @@ class DemoController extends AbstractController
         $projectAttachment           = $projectAttachmentRepository->find($idProjectAttachment);
 
         if (null === $project || null === $projectAttachment || $project !== $projectAttachment->getProject()) {
-            return $this->redirectToRoute('demo_loans');
+            return $this->redirectToRoute('wallet');
         }
 
         /** @var Attachment $attachment */
@@ -638,7 +513,6 @@ class DemoController extends AbstractController
 
     /**
      * @Route("/projet/abandon/{hash}", name="demo_project_abandon", requirements={"hash": "[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}"})
-     * @Route("/projet/revue/{hash}", name="demo_project_review", requirements={"hash": "[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}"})
      * @Route("/projet/financement/{hash}", name="demo_project_publish", requirements={"hash": "[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}"})
      * @Route("/projet/finance/{hash}", name="demo_project_fund", requirements={"hash": "[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}"})
      * @Route("/projet/signature/{hash}", name="demo_project_sign", requirements={"hash": "[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}"})
@@ -678,20 +552,16 @@ class DemoController extends AbstractController
                 $status = ProjectsStatus::STATUS_CANCELLED;
 
                 break;
-            case 'demo_project_review':
-                $status = ProjectsStatus::STATUS_REVIEW;
-
-                break;
             case 'demo_project_publish':
                 $status = ProjectsStatus::STATUS_ONLINE;
 
                 break;
             case 'demo_project_fund':
-                $status = ProjectsStatus::STATUS_FUNDED;
+                $status = ProjectsStatus::STATUS_CONTRACTS;
 
                 break;
             case 'demo_project_sign':
-                $status = ProjectsStatus::STATUS_SIGNED;
+                $status = ProjectsStatus::STATUS_SIGNATURE;
 
                 break;
             case 'demo_project_repay':
@@ -699,7 +569,7 @@ class DemoController extends AbstractController
 
                 break;
             case 'demo_project_repaid':
-                $status = ProjectsStatus::STATUS_REPAID;
+                $status = ProjectsStatus::STATUS_FINISHED;
 
                 break;
             case 'demo_project_loss':
@@ -725,7 +595,7 @@ class DemoController extends AbstractController
                     }
 
                     break;
-                case ProjectsStatus::STATUS_FUNDED:
+                case ProjectsStatus::STATUS_CONTRACTS:
                     $this->closeProject($project);
 
                     try {
@@ -833,7 +703,7 @@ class DemoController extends AbstractController
         $project           = $projectRepository->findOneBy(['hash' => $hash]);
 
         if (false === $project instanceof Projects) {
-            return $this->redirectToRoute('demo_loans');
+            return $this->redirectToRoute('wallet');
         }
 
         if (false === $projectManager->isEditable($project)) {
@@ -1222,29 +1092,6 @@ class DemoController extends AbstractController
         }
 
         return $this->redirectToRoute('demo_project_details', ['hash' => $project->getHash()]);
-    }
-
-    /**
-     * @param Projects[] $projects
-     *
-     * @return array
-     */
-    private function groupByStatusAndSort(array $projects)
-    {
-        $groupedProjects = [];
-        $statuses        = $this->entityManager->getRepository(ProjectsStatus::class)->findBy([], ['status' => 'ASC']);
-
-        foreach ($statuses as $status) {
-            $groupedProjects[$status->getStatus()] = [];
-        }
-
-        foreach ($projects as $project) {
-            $groupedProjects[$project->getStatus()][] = $project;
-        }
-
-        ksort($groupedProjects);
-
-        return $groupedProjects;
     }
 
     /**

@@ -290,7 +290,7 @@ class ProjectsController extends Controller
                 'bids' => $lenderAccountDisplayManager->getBidsForProject($project->id_project, $client)
             ];
 
-            if ($project->status >= ProjectsStatus::STATUS_FUNDED) {
+            if ($project->status >= ProjectsStatus::STATUS_CONTRACTS) {
                 $template['project']['lender']['loans'] = $lenderAccountDisplayManager->getLoansForProject($project->id_project, $client);
             }
 

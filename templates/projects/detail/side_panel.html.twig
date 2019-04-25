@@ -35,7 +35,7 @@
                 </div><!-- /.project-single-duration -->
             </div>
 
-            {% if project.status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_REPAID') %}
+            {% if project.status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_FINISHED') %}
                 <p>
                     {% if project.isCloseOutNetting %}
                         {% trans with {'%dateLastRepayment%': project.dateLastStatus} %} project-detail_project-collected-message {% endtrans %}
@@ -55,7 +55,7 @@
             {% elseif project.status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_LOSS') %}
                 <p>{% trans with {'%date%': project.dateLastStatus} %} project-detail_side-bar-lost-message {% endtrans %}</p>
                 {% include 'projects/detail/login_form.html.twig' %}
-            {% elseif project.status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_FUNDED') or project.status >= constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_REPAYMENT') %}
+            {% elseif project.status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_CONTRACTS') or project.status >= constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_REPAYMENT') %}
                 <p>
                     {% trans with {
                         '%numberLenders%' : project.totalLenders|localizednumber,

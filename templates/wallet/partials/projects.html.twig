@@ -9,18 +9,16 @@
                         <div class="row">
                             {% set statusLabel = '' %}
                             {% if status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_REQUEST') %}
-                                {% set statusLabel = 'À compléter' %}
-                            {% elseif status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_REVIEW') %}
-                                {% set statusLabel = 'En cours de revue' %}
+                                {% set statusLabel = 'Dépôt' %}
                             {% elseif status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_ONLINE') %}
                                 {% set statusLabel = 'En cours de financement' %}
-                            {% elseif status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_FUNDED') %}
-                                {% set statusLabel = 'En attente de signature' %}
-                            {% elseif status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_SIGNED') %}
-                                {% set statusLabel = 'Signé' %}
+                            {% elseif status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_CONTRACTS') %}
+                                {% set statusLabel = 'Contractualisation' %}
+                            {% elseif status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_SIGNATURE') %}
+                                {% set statusLabel = 'Signature' %}
                             {% elseif status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_REPAYMENT') %}
                                 {% set statusLabel = 'En cours de remboursement' %}
-                            {% elseif status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_REPAID') %}
+                            {% elseif status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_FINISHED') %}
                                 {% set statusLabel = 'Terminé' %}
                             {% elseif status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_LOSS') %}
                                 {% set statusLabel = 'Défaut' %}
@@ -79,13 +77,13 @@
                                         data-sortable-duration="{{ project.period / 12 }}"
                                         data-row-url="{{ path('demo_project_details', {'hash': project.hash}) }}">
                                         <td class="table-projects-item-partner">
-                                            {% include 'demo/partials/bubble.html.twig' with {'partner': project.idPartner.label} %}
+                                            {% include 'partials/market_bubble.html.twig' with {'partner': project.idPartner.label} %}
                                         </td>
                                         <td class="table-projects-item-title">{{ project.idCompany.name }}<br>{{ project.title }}</td>
                                         <td class="table-projects-item-amount">{{ project.amount|localizednumberwithprecision(0) }}&nbsp;€</td>
                                         <td class="table-projects-item-duration">{% transchoice(project.period / 12) with {'%duration%': project.period / 12} %} demo-project-request_simulator-duration-select-option {% endtranschoice %}</td>
                                         <td class="table-actions">
-                                            {% if status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_FUNDED') %}
+                                            {% if status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_CONTRACTS') %}
                                                 <a href="{{ path('demo_project_signing', {'hash': project.hash}) }}" role="button" class="btn-default" title="Signer les contrats" data-toggle="tooltip"><span class="icon fa-pen-u16"></span></a>
                                             {% endif %}
                                             <a href="{{ path('demo_project_details', {'hash': project.hash}) }}" role="button" class="btn-default" title="Voir le détail" data-toggle="tooltip"><span class="icon fa-view-u16"></span></a>

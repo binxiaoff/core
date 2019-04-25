@@ -120,7 +120,7 @@ class bank_accountController extends bootstrap
         foreach ($companies as $company) {
             $projects = $entityManager->getRepository(Projects::class)->findBy(['idCompany' => $company]);
             foreach ($projects as $project) {
-                if ($project->getStatus() === ProjectsStatus::STATUS_REPAID) {
+                if ($project->getStatus() === ProjectsStatus::STATUS_FINISHED) {
                     continue;
                 }
                 $mandates = $project->getMandates();

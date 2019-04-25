@@ -373,7 +373,7 @@ class dashboardController extends bootstrap
                     ProjectsStatus::STATUS_REQUEST,
                     ProjectsStatus::STATUS_REVIEW,
                     ProjectsStatus::STATUS_ONLINE,
-                    ProjectsStatus::STATUS_FUNDED
+                    ProjectsStatus::STATUS_CONTRACTS
                 ]
             ], ['status' => 'ASC']);
             $statusAllCount         = $this->countByStatus($countableStatus);
@@ -406,7 +406,7 @@ class dashboardController extends bootstrap
             ];
 
             $statusColor = [
-                ProjectsStatus::STATUS_FUNDED  => '#94EB86',
+                ProjectsStatus::STATUS_CONTRACTS  => '#94EB86',
                 ProjectsStatus::STATUS_ONLINE  => '#26ABE6',
                 ProjectsStatus::STATUS_REVIEW  => '#163380',
                 ProjectsStatus::STATUS_REQUEST => '#F15C5E'
@@ -415,8 +415,8 @@ class dashboardController extends bootstrap
             $delays = [
                 [
                     'label' => 'Financé',
-                    'color' => $statusColor[ProjectsStatus::STATUS_FUNDED],
-                    'data'  => $this->getDelayByStatus(ProjectsStatus::STATUS_FUNDED, $borrowingMotives, $threeMonthsAgo, $today)
+                    'color' => $statusColor[ProjectsStatus::STATUS_CONTRACTS],
+                    'data'  => $this->getDelayByStatus(ProjectsStatus::STATUS_CONTRACTS, $borrowingMotives, $threeMonthsAgo, $today)
                 ],
                 [
                     'label' => 'Financement en cours',
@@ -438,8 +438,8 @@ class dashboardController extends bootstrap
             $delaysOfAYearAgo = [
                 [
                     'label' => 'Financé (N-1)',
-                    'color' => $statusColor[ProjectsStatus::STATUS_FUNDED],
-                    'data'  => $this->getDelayByStatus(ProjectsStatus::STATUS_FUNDED, $borrowingMotives, $oneYearThreeMonthsAgo, $oneYearAgo)
+                    'color' => $statusColor[ProjectsStatus::STATUS_CONTRACTS],
+                    'data'  => $this->getDelayByStatus(ProjectsStatus::STATUS_CONTRACTS, $borrowingMotives, $oneYearThreeMonthsAgo, $oneYearAgo)
                 ],
                 [
                     'label' => 'Financement en cours (N-1)',

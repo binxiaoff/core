@@ -37,9 +37,9 @@ class ProjectDisplayManager
     /** @var array */
     const STATUS_DISPLAYABLE = [
         ProjectsStatus::STATUS_ONLINE,
-        ProjectsStatus::STATUS_FUNDED,
+        ProjectsStatus::STATUS_CONTRACTS,
         ProjectsStatus::STATUS_REPAYMENT,
-        ProjectsStatus::STATUS_REPAID,
+        ProjectsStatus::STATUS_FINISHED,
         ProjectsStatus::STATUS_LOSS
     ];
 
@@ -234,7 +234,7 @@ class ProjectDisplayManager
             $projectData['projectPending'] = true;
         }
 
-        if (in_array($projectData['status'], [ProjectsStatus::STATUS_REPAID, ProjectsStatus::STATUS_LOSS])) {
+        if (in_array($projectData['status'], [ProjectsStatus::STATUS_FINISHED, ProjectsStatus::STATUS_LOSS])) {
             $lastStatusHistory             = $projectStatusHistory->select('id_project = ' . $project->id_project, 'added DESC, id_project_status_history DESC', 0, 1);
             $lastStatusHistory             = array_shift($lastStatusHistory);
             $projectData['dateLastStatus'] = date('d/m/Y', strtotime($lastStatusHistory['added']));

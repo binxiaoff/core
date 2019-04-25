@@ -84,7 +84,7 @@ class ProjectEarlyRepaymentManager
             $this->entityManager->getRepository(EcheanciersEmprunteur::class)->earlyPayAllPendingSchedules($projectRepaymentTask->getIdWireTransferIn());
             $this->projectRepaymentNotificationSender->createEarlyRepaymentEmail($projectRepaymentTask->getIdWireTransferIn());
 
-            $this->projectStatusManager->addProjectStatus($idUser, ProjectsStatus::STATUS_REPAID, $project);
+            $this->projectStatusManager->addProjectStatus($idUser, ProjectsStatus::STATUS_FINISHED, $project);
 
             $loans = $this->entityManager->getRepository(Loans::class)->findBy(['idProject' => $project]);
 

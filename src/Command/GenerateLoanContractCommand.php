@@ -36,7 +36,7 @@ EOF
         $projects      = $entityManager->getRepository(Projects::class)->findBy([
             'status' => [
                 ProjectsStatus::STATUS_REPAYMENT,
-                ProjectsStatus::STATUS_REPAID,
+                ProjectsStatus::STATUS_FINISHED,
                 ProjectsStatus::STATUS_LOSS
             ]
         ]);

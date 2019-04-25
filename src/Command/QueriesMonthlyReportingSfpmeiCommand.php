@@ -82,8 +82,8 @@ class QueriesMonthlyReportingSfpmeiCommand extends ContainerAwareCommand
         $remainingDueCapitalRunningRepayments = $operationRepository->getRemainingDueCapitalForProjects($endDate, array_column($projectsInRepayment, 'id_project'));
         $repaymentsInMonth                    = $repaymentRepository->findRepaidRepaymentsBetweenDates($startDate, $endDate);
         $sumRepaymentsInMonth                 = $repaymentRepository->getSumRepaidRepaymentsBetweenDates($startDate, $endDate);
-        $repaidProjects                       = $projectRepository->findProjectsHavingHadStatusBetweenDates(ProjectsStatus::STATUS_REPAID, $startDate, $endDate);
-        $earlyRepaidProjects                  = $projectRepository->findProjectsHavingHadStatusBetweenDates(ProjectsStatus::STATUS_REPAID, $startDate, $endDate);
+        $repaidProjects                       = $projectRepository->findProjectsHavingHadStatusBetweenDates(ProjectsStatus::STATUS_FINISHED, $startDate, $endDate);
+        $earlyRepaidProjects                  = $projectRepository->findProjectsHavingHadStatusBetweenDates(ProjectsStatus::STATUS_FINISHED, $startDate, $endDate);
         $rejectWireTransfersIn                = $wireTransferInRepository->getRejectedDirectDebitIndicatorsBetweenDates($startDate, $endDate);
         $regularizationWireTransfers          = $wireTransferInRepository->getBorrowerProvisionRegularizationIndicatorsBetweenDates($startDate, $endDate);
         $lateRepayments                       = $entityManager->getRepository(Echeanciers::class)->getLateRepaymentIndicators($endDate);

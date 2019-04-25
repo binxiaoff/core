@@ -38,7 +38,7 @@ class ProjectsListController extends Controller
         $pending           = $projectRepository->getPartnerProjects($companies, [ProjectsStatus::STATUS_REQUEST], $submitter);
         $ready             = $projectRepository->getPartnerProjects($companies, [ProjectsStatus::STATUS_REVIEW], $submitter);
         $online            = $projectRepository->getPartnerProjects($companies, [ProjectsStatus::STATUS_ONLINE], $submitter);
-        $funded            = $projectRepository->getPartnerProjects($companies, [ProjectsStatus::STATUS_FUNDED, ProjectsStatus::STATUS_REPAYMENT, ProjectsStatus::STATUS_REPAID, ProjectsStatus::STATUS_LOSS], $submitter);
+        $funded            = $projectRepository->getPartnerProjects($companies, [ProjectsStatus::STATUS_CONTRACTS, ProjectsStatus::STATUS_REPAYMENT, ProjectsStatus::STATUS_FINISHED, ProjectsStatus::STATUS_LOSS], $submitter);
         $cancelled         = $projectRepository->getPartnerProjects($companies, [ProjectsStatus::STATUS_CANCELLED], $submitter);
 
         return $this->render('/partner_account/projects_list.html.twig', [

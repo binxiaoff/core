@@ -55,7 +55,7 @@ class societeController extends bootstrap
         $this->render(null, [
             'company'                   => $company,
             'numberOngoingProjects'     => $projectsRepository->getCountProjectsByStatusAndSiren(array_merge(ProjectsStatus::SALES_TEAM, ProjectsStatus::RISK_TEAM), $company->getSiren()),
-            'numberRepaidProjects'      => $projectsRepository->getCountProjectsByStatusAndSiren([ProjectsStatus::STATUS_REPAID], $company->getSiren()),
+            'numberRepaidProjects'      => $projectsRepository->getCountProjectsByStatusAndSiren([ProjectsStatus::STATUS_FINISHED], $company->getSiren()),
             'numberProjectsInRepayment' => $projectsRepository->getCountProjectsByStatusAndSiren([ProjectsStatus::STATUS_REPAYMENT], $company->getSiren()),
             'numberAbandonedProjects'   => $projectsRepository->getCountProjectsByStatusAndSiren([ProjectsStatus::STATUS_CANCELLED], $company->getSiren()),
             'numberRejectedProjects'    => $projectsRepository->getCountProjectsByStatusAndSiren([ProjectsStatus::STATUS_CANCELLED], $company->getSiren()),
@@ -214,7 +214,7 @@ class societeController extends bootstrap
 
         $finalProjectStatus = [
             ProjectsStatus::STATUS_CANCELLED,
-            ProjectsStatus::STATUS_REPAID,
+            ProjectsStatus::STATUS_FINISHED,
             ProjectsStatus::STATUS_LOSS
         ];
 
@@ -266,11 +266,11 @@ class societeController extends bootstrap
             case ProjectsStatus::STATUS_REVIEW:
                 return '#aae3c9';
             case ProjectsStatus::STATUS_ONLINE:
-            case ProjectsStatus::STATUS_FUNDED:
+            case ProjectsStatus::STATUS_CONTRACTS:
                 return '#6ea8dc';
             case ProjectsStatus::STATUS_REPAYMENT:
                 return '#1b88db';
-            case ProjectsStatus::STATUS_REPAID:
+            case ProjectsStatus::STATUS_FINISHED:
                 return '#4fa8b0';
             case ProjectsStatus::STATUS_LOSS:
                 break;

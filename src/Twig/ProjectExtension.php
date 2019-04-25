@@ -90,7 +90,7 @@ class ProjectExtension extends AbstractExtension
         $scheduledAmount           = 0;
         $paymentScheduleRepository = $this->entityManager->getRepository(EcheanciersEmprunteur::class);
 
-        if ($project->getStatus() !== ProjectsStatus::STATUS_REPAID) {
+        if ($project->getStatus() !== ProjectsStatus::STATUS_FINISHED) {
             $schedule = $paymentScheduleRepository->findOneBy(['idProject' => $project]);
 
             if ($schedule) {
@@ -111,7 +111,7 @@ class ProjectExtension extends AbstractExtension
         $paymentScheduleRepository = $this->entityManager->getRepository(EcheanciersEmprunteur::class);
         $nextScheduledDate         = new \DateTime();
 
-        if ($project->getStatus() !== ProjectsStatus::STATUS_REPAID) {
+        if ($project->getStatus() !== ProjectsStatus::STATUS_FINISHED) {
             $nextRepayment = $paymentScheduleRepository->findOneBy(
                 ['idProject' => $project, 'statusEmprunteur' => EcheanciersEmprunteur::STATUS_PENDING],
                 ['dateEcheanceEmprunteur' => 'ASC']

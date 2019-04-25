@@ -262,8 +262,8 @@ class loans extends loans_crud
         $query .= ' ORDER BY ' . (null === $order ? 'maxAdded DESC' : $order);
 
         $statement = $this->bdd->executeQuery($query, [
-                'repaidStatus'  => [ProjectsStatus::STATUS_REPAID],
-                'fundedStatus'  => [ProjectsStatus::STATUS_ONLINE, ProjectsStatus::STATUS_FUNDED],
+                'repaidStatus'  => [ProjectsStatus::STATUS_FINISHED],
+                'fundedStatus'  => [ProjectsStatus::STATUS_ONLINE, ProjectsStatus::STATUS_CONTRACTS],
                 'idLender'      => $idLender,
                 'year'          => $year
             ], [

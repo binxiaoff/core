@@ -229,7 +229,7 @@ class dossiersController extends bootstrap
             $projectStatusManager   = $this->get('unilend.service.project_status_manager');
             $this->statusReasonText = $projectStatusManager->getStatusReasonByProject($this->projectEntity);
 
-            if ($this->projects->status == ProjectsStatus::STATUS_FUNDED) {
+            if ($this->projects->status == ProjectsStatus::STATUS_CONTRACTS) {
                 $proxy       = $this->projects_pouvoir->select('id_project = ' . $this->projects->id_project);
                 $this->proxy = empty($proxy) ? [] : $proxy[0];
 
@@ -924,7 +924,7 @@ class dossiersController extends bootstrap
         $userManager = $this->get('unilend.service.back_office_user_manager');
 
         return (
-            $this->projects->status <= ProjectsStatus::STATUS_FUNDED
+            $this->projects->status <= ProjectsStatus::STATUS_CONTRACTS
             && false === empty($this->projects->id_product)
             && $userManager->isGrantedManagement($this->userEntity)
         );
@@ -1508,7 +1508,7 @@ class dossiersController extends bootstrap
             ];
         }
 
-        if (ProjectsStatus::STATUS_REPAID === $loan->getProject()->getStatus()) {
+        if (ProjectsStatus::STATUS_FINISHED === $loan->getProject()->getStatus()) {
             $earlyRepaymentAmount = $repaymentScheduleRepository->getEarlyRepaidCapitalByLoan($loan);
             $earlyRepaymentDate   = $repaymentScheduleRepository->findOneBy(['idLoan' => $loan, 'statusRa' => Echeanciers::IS_EARLY_REPAID])->getDateEcheanceReel();
             $earlyRepayment       = [
@@ -1564,7 +1564,7 @@ class dossiersController extends bootstrap
             return $payment;
         }, $payments);
 
-        if (ProjectsStatus::STATUS_REPAID === $project->getStatus()) {
+        if (ProjectsStatus::STATUS_FINISHED === $project->getStatus()) {
             $repaymentTask = $entityManager->getRepository(ProjectRepaymentTask::class)->findOneBy(
                 ['idProject' => $project, 'type' => ProjectRepaymentTask::TYPE_EARLY, 'status' => ProjectRepaymentTask::STATUS_REPAID],
                 ['repayAt' => 'DESC']
@@ -1639,7 +1639,7 @@ class dossiersController extends bootstrap
         $this->displayActionButton    = $displayActionButton;
 
         if ($this->projects->status >= ProjectsStatus::STATUS_REPAYMENT) {
-            if ($this->projects->status == ProjectsStatus::STATUS_REPAID) {
+            if ($this->projects->status == ProjectsStatus::STATUS_FINISHED) {
                 $this->message                = '<div style="color:green;">Remboursement anticipé effectué</div>';
                 $this->earlyRepaymentPossible = false;
 

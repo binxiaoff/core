@@ -464,7 +464,7 @@ class ProjectsRepository extends ServiceEntityRepository
                 $query,
                 [
                     'end'           => $end->format('Y-m-d H:i:s'),
-                    'projectStatus' => [ProjectsStatus::STATUS_REPAID, ProjectsStatus::STATUS_LOSS]
+                    'projectStatus' => [ProjectsStatus::STATUS_FINISHED, ProjectsStatus::STATUS_LOSS]
                 ], [
                     'end'           => PDO::PARAM_STR,
                     'projectStatus' => Connection::PARAM_INT_ARRAY
@@ -1511,9 +1511,9 @@ class ProjectsRepository extends ServiceEntityRepository
             ->setParameter('projectId', $project->getIdProject());
 
         switch ($project->getStatus()) {
-            case ProjectsStatus::STATUS_FUNDED:
+            case ProjectsStatus::STATUS_CONTRACTS:
             case ProjectsStatus::STATUS_REPAYMENT:
-            case ProjectsStatus::STATUS_REPAID:
+            case ProjectsStatus::STATUS_FINISHED:
             case ProjectsStatus::STATUS_LOSS:
                 $queryBuilder
                     ->from('loans', 't');

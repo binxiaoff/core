@@ -152,7 +152,7 @@ trait CompanyChecker
             if (null === $usedProduct || Product::PRODUCT_BLEND !== $usedProduct->getLabel()) {
                 continue;
             }
-            if ($project->getStatus() === ProjectsStatus::STATUS_REPAID) {
+            if ($project->getStatus() === ProjectsStatus::STATUS_FINISHED) {
                 continue;
             } elseif ($project->getStatus() === ProjectsStatus::STATUS_CANCELLED) {
                 $lastStatus = $projectStatusHistoryRepository->findStatusFirstOccurrence($project, $project->getStatus());

@@ -125,15 +125,14 @@ class projects extends projects_crud
             ->setParameter('projectId', $this->id_project);
 
         switch ($this->status) {
-            case ProjectsStatus::STATUS_FUNDED:
+            case ProjectsStatus::STATUS_CONTRACTS:
             case ProjectsStatus::STATUS_REPAYMENT:
-            case ProjectsStatus::STATUS_REPAID:
+            case ProjectsStatus::STATUS_FINISHED:
             case ProjectsStatus::STATUS_LOSS:
                 $queryBuilder
                     ->from('loans');
                 break;
             case ProjectsStatus::STATUS_ONLINE:
-            case ProjectsStatus::STATUS_REVIEW:
                 $queryBuilder
                     ->from('bids')
                     ->andWhere('status IN (:status)')
@@ -152,7 +151,7 @@ class projects extends projects_crud
             trigger_error('Interest rate should be saved in DB for project ' . $this->id_project, E_USER_WARNING);
         }
 
-        if ($cache && $this->status != ProjectsStatus::STATUS_REVIEW) {
+        if ($cache && $this->status != ProjectsStatus::STATUS_REQUEST) {
             $cacheTime         = CacheKeys::VERY_SHORT_TIME;
             $cacheKey          = md5(__METHOD__);
             $queryCacheProfile = new QueryCacheProfile($cacheTime, $cacheKey);
@@ -309,7 +308,7 @@ class projects extends projects_crud
                     SELECT l.id_loan, l.amount, l.rate, l.added, p.id_project, p.period
                     FROM loans l
                     INNER JOIN projects p ON p.id_project = l.id_project
-                    WHERE p.status >= ' . ProjectsStatus::STATUS_FUNDED . '
+                    WHERE p.status >= ' . ProjectsStatus::STATUS_CONTRACTS . '
                         AND p.status != ' . ProjectsStatus::STATUS_CANCELLED . $whereRisk . $whereDurationMin . $whereDurationMax . $wherePublished . '
                 ) t
                 GROUP BY t.id_project
@@ -594,7 +593,7 @@ class projects extends projects_crud
         $query = 'SELECT count(projects.id_project)
                     FROM projects
                     WHERE ROUND(TIMESTAMPDIFF(SECOND, date_publication, date_funded)/120) <= 24
-                    AND date_funded >= :startDate AND status >= ' . ProjectsStatus::STATUS_FUNDED;
+                    AND date_funded >= :startDate AND status >= ' . ProjectsStatus::STATUS_CONTRACTS;
 
         $statement = $this->bdd->executeQuery($query, $bind, $type);
 
@@ -608,7 +607,7 @@ class projects extends projects_crud
 
         $query = 'SELECT count(projects.id_project)
                     FROM projects
-                    WHERE date_funded >= :startDate AND status >=' . ProjectsStatus::STATUS_FUNDED;
+                    WHERE date_funded >= :startDate AND status >=' . ProjectsStatus::STATUS_CONTRACTS;
 
         $statement = $this->bdd->executeQuery($query, $bind, $type);
 

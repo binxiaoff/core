@@ -29,7 +29,7 @@
         <div id="top" class="site">
             {% block siteHeader %}
                 {% if app.user is defined and is_granted(constant('\\Unilend\\Entity\\Clients::ROLE_USER')) %}
-                    {% include 'demo/_connected_header.html.twig' %}
+                    {% include 'partials/header_connected.html.twig' %}
                 {% else %}
                     {% include 'partials/header.html.twig' %}
                 {%  endif %}

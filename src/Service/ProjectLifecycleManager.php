@@ -391,7 +391,7 @@ class ProjectLifecycleManager
     {
         $this->projectStatusManager->addProjectStatus(Users::USER_ID_CRON, ProjectsStatus::STATUS_ONLINE, $project);
         $this->reBidAutoBidDeeply($project, true);
-        $this->projectStatusManager->addProjectStatus(Users::USER_ID_CRON, ProjectsStatus::STATUS_FUNDED, $project);
+        $this->projectStatusManager->addProjectStatus(Users::USER_ID_CRON, ProjectsStatus::STATUS_CONTRACTS, $project);
         $this->acceptBids($project);
 
         $contractTypes = array_column($this->productManager->getAvailableContracts($project->getIdProduct()), 'label');
@@ -684,7 +684,7 @@ class ProjectLifecycleManager
         /** @var \echeanciers $oRepaymentSchedule */
         $oRepaymentSchedule = $this->entityManagerSimulator->getRepository('echeanciers');
 
-        if ($project->getStatus() === ProjectsStatus::STATUS_FUNDED) {
+        if ($project->getStatus() === ProjectsStatus::STATUS_CONTRACTS) {
             $lLoans = $oLoan->select('id_project = ' . $project->getIdProject());
 
             $iLoanNbTotal   = count($lLoans);
@@ -745,7 +745,7 @@ class ProjectLifecycleManager
         /** @var \echeanciers $repaymentScheduleEntity */
         $repaymentScheduleEntity = $this->entityManagerSimulator->getRepository('echeanciers');
 
-        if ($project->getStatus() === ProjectsStatus::STATUS_FUNDED) {
+        if ($project->getStatus() === ProjectsStatus::STATUS_CONTRACTS) {
             $loans               = $loanEntity->select('id_project = ' . $project->getIdProject());
             $loansCount          = count($loans);
             $processedLoansCount = 0;

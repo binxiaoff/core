@@ -1014,7 +1014,7 @@ use Unilend\Entity\{AttachmentType, Companies, ProjectsStatus, UnderlyingContrac
                                         </select>&nbsp;m
                                     <?php else : ?>
                                         <?= $this->formatDate($this->projects->date_retrait, 'd/m/Y H:i') ?>
-                                        <?php if ($this->projects->status < ProjectsStatus::STATUS_FUNDED) : ?>
+                                        <?php if ($this->projects->status < ProjectsStatus::STATUS_CONTRACTS) : ?>
                                             &nbsp;&nbsp;&nbsp;<a href="<?= $this->lurl ?>/thickbox/pop_up_edit_date_retrait/<?= $this->projects->id_project ?>" class="thickbox btn_link ">Modifier</a>
                                         <?php endif; ?>
                                     <?php endif; ?>
@@ -1043,13 +1043,13 @@ use Unilend\Entity\{AttachmentType, Companies, ProjectsStatus, UnderlyingContrac
                                     </div>
                                 </td>
                             </tr>
-                        <?php elseif ($this->projects->status == ProjectsStatus::STATUS_FUNDED) : ?>
+                        <?php elseif ($this->projects->status == ProjectsStatus::STATUS_CONTRACTS) : ?>
                             <tr>
                                 <th><label for="upload_pouvoir">Pouvoir</label></th>
                                 <td><input type="file" name="upload_pouvoir" id="upload_pouvoir"></td>
                             </tr>
                         <?php endif; ?>
-                        <?php if ($this->projects->status == ProjectsStatus::STATUS_FUNDED) : ?>
+                        <?php if ($this->projects->status == ProjectsStatus::STATUS_CONTRACTS) : ?>
                             <tr>
                                 <th><label for="pret_refuse">Prêt refusé</label></th>
                                 <td>

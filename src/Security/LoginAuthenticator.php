@@ -2,13 +2,13 @@
 
 namespace Unilend\Security;
 
-use Doctrine\ORM\{EntityManagerInterface, OptimisticLockException};
+use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\{Cookie, RedirectResponse, Request};
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
-use Symfony\Component\Security\Core\Encoder\{EncoderAwareInterface, UserPasswordEncoderInterface};
-use Symfony\Component\Security\Core\Exception\{AccountExpiredException, AuthenticationException, BadCredentialsException, CustomUserMessageAuthenticationException, DisabledException, LockedException, UsernameNotFoundException};
+use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
+use Symfony\Component\Security\Core\Exception\{AccountExpiredException, AuthenticationException, CustomUserMessageAuthenticationException, DisabledException, LockedException, UsernameNotFoundException};
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Security\Core\User\{UserInterface, UserProviderInterface};
 use Symfony\Component\Security\Csrf\{CsrfToken, CsrfTokenManagerInterface};
@@ -16,15 +16,15 @@ use Symfony\Component\Security\Guard\Authenticator\AbstractFormLoginAuthenticato
 use Symfony\Component\Security\Http\Session\SessionAuthenticationStrategyInterface;
 use Symfony\Component\Security\Http\Util\TargetPathTrait;
 use Unilend\Entity\{Clients, ClientsStatus, LoginLog, Settings};
-use Unilend\Service\{CIPManager, GoogleRecaptchaManager, LenderManager};
 use Unilend\Service\Front\LoginHistoryLogger;
+use Unilend\Service\{CIPManager, GoogleRecaptchaManager, LenderManager};
 
 class LoginAuthenticator extends AbstractFormLoginAuthenticator
 {
     use TargetPathTrait;
 
-    const COOKIE_NO_CF               = 'uld-nocf';
-    const SESSION_NAME_LOGIN_CAPTCHA = 'displayLoginCaptcha';
+    public const COOKIE_NO_CF               = 'uld-nocf';
+    public const SESSION_NAME_LOGIN_CAPTCHA = 'displayLoginCaptcha';
 
     /** @var UserPasswordEncoderInterface */
     private $securityPasswordEncoder;
@@ -70,8 +70,7 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
         CIPManager $cipManager,
         LoggerInterface $logger,
         LoginHistoryLogger $loginHistoryLogger
-    )
-    {
+    ) {
         $this->securityPasswordEncoder = $securityPasswordEncoder;
         $this->router                  = $router;
         $this->entityManager           = $entityManager;
@@ -85,49 +84,7 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
     }
 
     /**
-     * @param Request       $request
-     * @param UserInterface $user
-     *
-     * @return mixed|string
-     */
-    protected function getDefaultSuccessRedirectUrl(Request $request, UserInterface $user)
-    {
-        $targetPath = $request->get('_target_path');
-
-        if ($targetPath) {
-            $targetPath = $this->removeHost($targetPath);
-
-            return $targetPath;
-        }
-
-        return $this->router->generate('demo_loans');
-
-        // Borrower only
-        if ([Clients::ROLE_BORROWER] === array_values(array_intersect($user->getRoles(), [Clients::ROLE_BORROWER, Clients::ROLE_ARRANGER, Clients::ROLE_LENDER]))) {
-            return $this->router->generate('collpub_loans');
-        }
-
-        if (in_array('ROLE_BORROWER', $user->getRoles())) {
-            return $this->router->generate('borrower_account_projects');
-        }
-
-        if (in_array('ROLE_PARTNER', $user->getRoles())) {
-            return $this->router->generate('partner_home');
-        }
-
-        return $this->router->generate('home');
-    }
-
-    /**
-     * @inheritDoc
-     */
-    protected function getLoginUrl()
-    {
-        return $this->router->generate('login');
-    }
-
-    /**
-     * @inheritDoc
+     * {@inheritdoc}
      */
     public function getCredentials(Request $request): array
     {
@@ -148,12 +105,12 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
             'password'       => $password,
             'csrfToken'      => $csrfToken,
             'captchaCode'    => $captchaCode,
-            'captchaDisplay' => $displayCaptcha
+            'captchaDisplay' => $displayCaptcha,
         ];
     }
 
     /**
-     * @inheritDoc
+     * {@inheritdoc}
      */
     public function getUser($credentials, UserProviderInterface $userProvider)
     {
@@ -162,11 +119,12 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
         } catch (UsernameNotFoundException $exception) {
             throw new CustomUserMessageAuthenticationException('login-unknown');
         }
+
         return $user;
     }
 
     /**
-     * @inheritDoc
+     * {@inheritdoc}
      */
     public function checkCredentials($credentials, UserInterface $user)
     {
@@ -188,7 +146,7 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, $providerKey)
     {
@@ -236,7 +194,7 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
     }
 
     /**
-     * @inheritDoc
+     * {@inheritdoc}
      */
     public function onAuthenticationFailure(Request $request, AuthenticationException $exception)
     {
@@ -258,10 +216,11 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
             $failuresBeforeCaptcha = $this->entityManager
                 ->getRepository(Settings::class)
                 ->findOneBy(['type' => 'Echecs login avant affichage captcha'])
-                ->getValue();
-            $loginLogRepository    = $this->entityManager->getRepository(LoginLog::class);
-            $previousFailures      = $loginLogRepository->countLastFailuresByIp($request->server->get('REMOTE_ADDR'), new \DateInterval('PT10M'));
-            $displayCaptcha        = $previousFailures + 1 >= $failuresBeforeCaptcha;
+                ->getValue()
+            ;
+            $loginLogRepository = $this->entityManager->getRepository(LoginLog::class);
+            $previousFailures   = $loginLogRepository->countLastFailuresByIp($request->server->get('REMOTE_ADDR'), new \DateInterval('PT10M'));
+            $displayCaptcha     = $previousFailures + 1 >= $failuresBeforeCaptcha;
 
             $request->getSession()->set(Security::AUTHENTICATION_ERROR, $exception);
             $request->getSession()->set(self::SESSION_NAME_LOGIN_CAPTCHA, $displayCaptcha);
@@ -275,11 +234,43 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
                 'server'       => exec('hostname'),
                 'token'        => $this->getCredentials($request)['csrfToken'],
                 'tries'        => $previousFailures,
-                'REMOTE_ADDR'  => $request->server->get('REMOTE_ADDR')
+                'REMOTE_ADDR'  => $request->server->get('REMOTE_ADDR'),
             ]);
         }
 
         return new RedirectResponse($this->getLoginUrl());
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function supports(Request $request): bool
+    {
+        return '/login-check' === $request->getPathInfo();
+    }
+
+    /**
+     * @param Request $request
+     *
+     * @return string
+     */
+    protected function getDefaultSuccessRedirectUrl(Request $request): string
+    {
+        $targetPath = $request->get('_target_path');
+
+        if ($targetPath) {
+            return $this->removeHost($targetPath);
+        }
+
+        return $this->router->generate('wallet');
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function getLoginUrl()
+    {
+        return $this->router->generate('login');
     }
 
     /**
@@ -303,21 +294,21 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
     }
 
     /**
-     * Remove the host part from URL to avoid the external redirection
+     * Remove the host part from URL to avoid the external redirection.
      *
-     * @param $target
+     * @param mixed $target
      *
      * @return string
      */
     private function removeHost($target)
     {
         // handle protocol-relative URLs that parse_url() doesn't like
-        if (substr($target, 0, 2) === '//') {
+        if ('//' === mb_substr($target, 0, 2)) {
             $target = 'proto:' . $target;
         }
 
         $parsedUrl = parse_url($target);
-        $path      = isset($parsedUrl['path']) ? $parsedUrl['path'] : '/';
+        $path      = $parsedUrl['path'] ?? '/';
         $query     = isset($parsedUrl['query']) ? '?' . $parsedUrl['query'] : '';
         $fragment  = isset($parsedUrl['fragment']) ? '#' . $parsedUrl['fragment'] : '';
 
@@ -335,7 +326,7 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
     {
         $targetPath = $this->getTargetPath($request->getSession(), $providerKey);
 
-        if (! $targetPath) {
+        if (!$targetPath) {
             $targetPath = $this->getDefaultSuccessRedirectUrl($request, $client);
         }
 
@@ -343,22 +334,16 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
             switch ($client->getIdClientStatusHistory()->getIdStatus()->getId()) {
                 case ClientsStatus::STATUS_CREATION:
                     $targetPath = $this->router->generate('lender_subscription_documents', ['clientHash' => $client->getHash()]);
+
                     break;
                 case ClientsStatus::STATUS_COMPLETENESS:
                 case ClientsStatus::STATUS_COMPLETENESS_REMINDER:
                     $targetPath = $this->router->generate('lender_completeness');
+
                     break;
             }
         }
 
         return $targetPath;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function supports(Request $request): bool
-    {
-        return $request->getPathInfo() == '/login-check';
     }
 }

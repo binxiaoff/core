@@ -693,7 +693,7 @@ class BorrowerAccountController extends Controller
         $entityManager = $this->get('doctrine.orm.entity_manager');
 
         $company             = $entityManager->getRepository(Companies::class)->findOneBy(['idClientOwner' => $client]);
-        $statusPostFunding   = array_merge([ProjectsStatus::STATUS_FUNDED], ProjectsStatus::AFTER_REPAYMENT);
+        $statusPostFunding   = array_merge([ProjectsStatus::STATUS_CONTRACTS], ProjectsStatus::AFTER_REPAYMENT);
         $projectsPostFunding = $entityManager->getRepository(Projects::class)->findByCompany($company, $statusPostFunding);
 
         return $projectsPostFunding;

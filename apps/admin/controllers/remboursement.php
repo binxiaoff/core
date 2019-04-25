@@ -476,7 +476,7 @@ class remboursementController extends bootstrap
                     'plannedRepaymentTasks'      => $plannedRepaymentTasks,
                     'lenderCount'                => $entityManager->getRepository(Loans::class)->getLenderNumber($project),
                     'paymentSchedules'           => $paymentSchedules,
-                    'repaymentProjectStatus'     => ProjectsStatus::STATUS_FUNDED . ',' . ProjectsStatus::STATUS_REPAYMENT . ',' . ProjectsStatus::STATUS_REPAID
+                    'repaymentProjectStatus'     => ProjectsStatus::STATUS_CONTRACTS . ',' . ProjectsStatus::STATUS_REPAYMENT . ',' . ProjectsStatus::STATUS_FINISHED
                 ];
 
                 $this->render(null, $templateData);

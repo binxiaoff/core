@@ -129,7 +129,7 @@
                             <td>&nbsp;</td>
                         <?php endif; ?>
                         <td<?= $rowspan ?>><?= $this->formatDate($loan['debut'], 'd/m/Y') ?></td>
-                        <?php if ($loan['project_status'] == ProjectsStatus::STATUS_REPAID) : ?>
+                        <?php if ($loan['project_status'] == ProjectsStatus::STATUS_FINISHED) : ?>
                             <td<?= $rowspan ?>>Remboursé le <?= $this->formatDate($loan['final_repayment_date'], 'd/m/Y') ?></td>
                         <?php else : ?>
                             <td<?= $rowspan ?>><?= $this->formatDate($loan['fin'], 'd/m/Y') ?></td>

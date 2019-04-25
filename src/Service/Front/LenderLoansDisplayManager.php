@@ -33,9 +33,9 @@ class LenderLoansDisplayManager
     ];
 
     const LOAN_STATUS_FILTER = [
-        'pending'        => [ProjectsStatus::STATUS_ONLINE, ProjectsStatus::STATUS_FUNDED],
+        'pending'        => [ProjectsStatus::STATUS_ONLINE, ProjectsStatus::STATUS_CONTRACTS],
         'repayment'      => [ProjectsStatus::STATUS_REPAYMENT],
-        'repaid'         => [ProjectsStatus::STATUS_REPAID],
+        'repaid'         => [ProjectsStatus::STATUS_FINISHED],
         'late-repayment' => [ProjectsStatus::STATUS_LOSS],
         'incidents'      => [ProjectsStatus::STATUS_LOSS],
         'loss'           => [ProjectsStatus::STATUS_LOSS]
@@ -104,7 +104,7 @@ class LenderLoansDisplayManager
                 'isCloseOutNetting'        => false
             ];
 
-            if (in_array($projectLoans['project_status'], [ProjectsStatus::STATUS_ONLINE, ProjectsStatus::STATUS_FUNDED])) {
+            if (in_array($projectLoans['project_status'], [ProjectsStatus::STATUS_ONLINE, ProjectsStatus::STATUS_CONTRACTS])) {
                 if (false === empty($statusFilter) && false === in_array($loanStatusInfo['status'], self::LOAN_STATUS_AGGREGATE[$statusFilter])) {
                     continue;
                 }
@@ -268,7 +268,7 @@ class LenderLoansDisplayManager
                 $loanData['numberOfLoansInDebt']    = in_array($project->getIdProject(), $projectsInDept) ? $projectLoans['nb_loan'] : 0;
 
                 $lenderProjectLoans[] = $loanData;
-            } elseif (in_array($projectLoans['project_status'], [ProjectsStatus::STATUS_ONLINE, ProjectsStatus::STATUS_FUNDED])) {
+            } elseif (in_array($projectLoans['project_status'], [ProjectsStatus::STATUS_ONLINE, ProjectsStatus::STATUS_CONTRACTS])) {
                 $lenderProjectLoans[] = $loanData;
             }
         }
@@ -305,7 +305,7 @@ class LenderLoansDisplayManager
                         break;
                 }
                 break;
-            case ProjectsStatus::STATUS_REPAID:
+            case ProjectsStatus::STATUS_FINISHED:
                 $statusToDisplay = self::LOAN_STATUS_DISPLAY_COMPLETED;
                 if (null === $project->getCloseOutNettingDate()) {
                     $loanStatusLabel = $this->translator->trans('lender-operations_detailed-loan-status-label-repaid');
@@ -314,7 +314,7 @@ class LenderLoansDisplayManager
                 }
                 break;
             case ProjectsStatus::STATUS_ONLINE:
-            case ProjectsStatus::STATUS_FUNDED:
+            case ProjectsStatus::STATUS_CONTRACTS:
                 $statusToDisplay = self::LOAN_STATUS_DISPLAY_PENDING;
                 $loanStatusLabel = $this->translator->trans('lender-operations_detailed-loan-status-label-pending');
                 break;

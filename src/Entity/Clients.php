@@ -38,16 +38,18 @@ class Clients implements UserInterface, EquatableInterface
     public const TITLE_MISTER    = 'M.';
     public const TITLE_UNDEFINED = '';
 
-    public const ROLE_USER     = 'ROLE_USER';
-    public const ROLE_LENDER   = 'ROLE_LENDER';
-    public const ROLE_BORROWER = 'ROLE_BORROWER';
-    public const ROLE_ARRANGER = 'ROLE_ARRANGER';
-    public const ROLE_RUN      = 'ROLE_RUN';
+    public const ROLE_USER      = 'ROLE_USER';
+    public const ROLE_LENDER    = 'ROLE_LENDER';
+    public const ROLE_BORROWER  = 'ROLE_BORROWER';
+    public const ROLE_SUBMITTER = 'ROLE_SUBMITTER';
+    public const ROLE_ARRANGER  = 'ROLE_ARRANGER';
+    public const ROLE_RUN       = 'ROLE_RUN';
 
     public const ROLES = [
         self::ROLE_USER,
         self::ROLE_LENDER,
         self::ROLE_BORROWER,
+        self::ROLE_SUBMITTER,
         self::ROLE_ARRANGER,
         self::ROLE_RUN,
     ];
@@ -268,7 +270,7 @@ class Clients implements UserInterface, EquatableInterface
     private $clientsAddresses;
 
     /**
-     * @var ClientAddress
+     * @var ClientAddress|null
      *
      * @ORM\OneToOne(targetEntity="Unilend\Entity\ClientAddress")
      * @ORM\JoinColumn(name="id_address", referencedColumnName="id")
@@ -276,7 +278,7 @@ class Clients implements UserInterface, EquatableInterface
     private $idAddress;
 
     /**
-     * @var ClientAddress
+     * @var ClientAddress|null
      *
      * @ORM\OneToOne(targetEntity="Unilend\Entity\ClientAddress")
      * @ORM\JoinColumn(name="id_postal_address", referencedColumnName="id")
@@ -785,6 +787,14 @@ class Clients implements UserInterface, EquatableInterface
     /**
      * @return bool
      */
+    public function isLender(): bool
+    {
+        return $this->hasRole(self::ROLE_LENDER);
+    }
+
+    /**
+     * @return bool
+     */
     public function isBorrower(): bool
     {
         return $this->hasRole(self::ROLE_BORROWER);
@@ -793,9 +803,9 @@ class Clients implements UserInterface, EquatableInterface
     /**
      * @return bool
      */
-    public function isLender(): bool
+    public function isSubmitter(): bool
     {
-        return $this->hasRole(self::ROLE_LENDER);
+        return $this->hasRole(self::ROLE_SUBMITTER);
     }
 
     /**

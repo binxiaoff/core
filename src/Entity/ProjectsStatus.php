@@ -1,60 +1,25 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Unilend\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * ProjectsStatus
- *
  * @ORM\Table(name="projects_status")
  * @ORM\Entity
  */
 class ProjectsStatus
 {
-    const STATUS_REQUEST   = 10;
-    const STATUS_REVIEW    = 20;
-    const STATUS_ONLINE    = 30;
-    const STATUS_FUNDED    = 40;
-    const STATUS_SIGNED    = 50;
-    const STATUS_REPAYMENT = 60;
-    const STATUS_REPAID    = 70;
-    const STATUS_LOSS      = 80;
-    const STATUS_CANCELLED = 100;
-
-    const UNEXPECTED_RESPONSE = 'unexpected_response_from_';
-
-    const AFTER_REPAYMENT = [
-        self::STATUS_REPAYMENT,
-        self::STATUS_REPAID,
-        self::STATUS_LOSS
-    ];
-
-    /**
-     * List of project status when project should be assigned to a commercial
-     * @var array
-     */
-    const SALES_TEAM = [
-        self::STATUS_REQUEST,
-        self::STATUS_REVIEW
-    ];
-
-    /**
-     * List of project status when project is considered as part of the risk team pipe
-     * @var array
-     */
-    const RISK_TEAM = [
-        self::STATUS_REQUEST,
-        self::STATUS_REVIEW
-    ];
-
-    /**
-     * List of project status when project is considered as part of the commercial team pipe
-     * @var array
-     */
-    const SALES_TEAM_UPCOMING_STATUS = [
-        self::STATUS_REQUEST
-    ];
+    public const STATUS_REQUEST   = 10;
+    public const STATUS_ONLINE    = 20;
+    public const STATUS_CONTRACTS = 30;
+    public const STATUS_SIGNATURE = 40;
+    public const STATUS_REPAYMENT = 50;
+    public const STATUS_FINISHED  = 60;
+    public const STATUS_LOSS      = 70;
+    public const STATUS_CANCELLED = 100;
 
     /**
      * @var string
@@ -80,59 +45,25 @@ class ProjectsStatus
     private $idProjectStatus;
 
     /**
-     * Set label
-     *
-     * @param string $label
-     *
-     * @return ProjectsStatus
-     */
-    public function setLabel($label)
-    {
-        $this->label = $label;
-
-        return $this;
-    }
-
-    /**
-     * Get label
-     *
      * @return string
      */
-    public function getLabel()
+    public function getLabel(): string
     {
         return $this->label;
     }
 
     /**
-     * Set status
-     *
-     * @param integer $status
-     *
-     * @return ProjectsStatus
+     * @return int
      */
-    public function setStatus($status)
-    {
-        $this->status = $status;
-
-        return $this;
-    }
-
-    /**
-     * Get status
-     *
-     * @return integer
-     */
-    public function getStatus()
+    public function getStatus(): int
     {
         return $this->status;
     }
 
     /**
-     * Get idProjectStatus
-     *
-     * @return integer
+     * @return int
      */
-    public function getIdProjectStatus()
+    public function getIdProjectStatus(): int
     {
         return $this->idProjectStatus;
     }

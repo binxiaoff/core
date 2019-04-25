@@ -40,8 +40,8 @@
 
 {% block pageScripts %}
     <script>
-        {% include 'demo/partials/fees/fees.js.twig' %}
-        {% include 'demo/partials/bids/actions.js.twig' %}
+        {% include 'partials/fees/fees.js.twig' %}
+        {% include 'partials/bids/actions.js.twig' %}
     </script>
 {% endblock %}
 
@@ -53,7 +53,7 @@
                     <div class="row">
                         <div class="project-single-details">
                             <div class="pull-right">
-                                {% include 'demo/partials/bubble.html.twig' with {'partner': project.idPartner.label} %}
+                                {% include 'partials/market_bubble.html.twig' with {'partner': project.idPartner.label} %}
                             </div>
                             <h1 class="project-single-title">{{ project.idCompany.name }}</h1>
                             <span style="font-weight: 400; margin-top: 1em; margin-bottom: 1em; font-size: xx-large; color: #787679;">{{ project.title }}</span>
@@ -135,7 +135,7 @@
                     </header>
                 </div><!-- /.section-tabs-nav -->
                 <div class="section-tabs-content tab-content">
-                    {% include 'demo/partials/bids/my_bid.html.twig' %}
+                    {% include 'partials/bids/my_bid.html.twig' %}
                 </div><!-- /.section-tabs-content -->
             </div><!-- /.panel -->
         </article>
@@ -147,7 +147,7 @@
                     </header>
                 </div><!-- /.section-tabs-nav -->
                 <div class="section-tabs-content tab-content">
-                    {% include 'demo/partials/bids/bids_list.html.twig' %}
+                    {% include 'partials/bids/bids_list.html.twig' %}
                 </div><!-- /.section-tabs-content -->
             </div><!-- /.panel -->
         </article><!-- /.dashboard-tab-pane -->
