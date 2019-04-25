@@ -19,8 +19,7 @@ use URLify;
  * @ORM\Table(name="clients", indexes={
  *     @ORM\Index(columns={"hash"}),
  *     @ORM\Index(columns={"email"}),
- *     @ORM\Index(columns={"last_name"}),
- *     @ORM\Index(columns={"id_client_status_history"})
+ *     @ORM\Index(columns={"last_name"})
  * })
  * @ORM\Entity(repositoryClass="Unilend\Repository\ClientsRepository")
  * @ORM\HasLifecycleCallbacks
@@ -38,18 +37,18 @@ class Clients implements UserInterface, EquatableInterface
     public const TITLE_MISTER    = 'M.';
     public const TITLE_UNDEFINED = '';
 
-    public const ROLE_USER     = 'ROLE_USER';
-    public const ROLE_LENDER   = 'ROLE_LENDER';
-    public const ROLE_BORROWER = 'ROLE_BORROWER';
-    public const ROLE_ARRANGER = 'ROLE_ARRANGER';
-    public const ROLE_RUN      = 'ROLE_RUN';
+    public const ROLE_USER           = 'ROLE_USER';
+    public const ROLE_LENDER         = 'ROLE_LENDER';
+    public const ROLE_BORROWER       = 'ROLE_BORROWER';
+    public const ROLE_PARTNER        = 'ROLE_PARTNER';
+    public const ROLE_DEBT_COLLECTOR = 'ROLE_DEBT_COLLECTOR';
 
     public const ROLES = [
         self::ROLE_USER,
         self::ROLE_LENDER,
         self::ROLE_BORROWER,
-        self::ROLE_ARRANGER,
-        self::ROLE_RUN,
+        self::ROLE_PARTNER,
+        self::ROLE_DEBT_COLLECTOR,
     ];
 
     /**
@@ -801,17 +800,17 @@ class Clients implements UserInterface, EquatableInterface
     /**
      * @return bool
      */
-    public function isArranger(): bool
+    public function isPartner(): bool
     {
-        return $this->hasRole(self::ROLE_ARRANGER);
+        return $this->hasRole(self::ROLE_PARTNER);
     }
 
     /**
      * @return bool
      */
-    public function isRun(): bool
+    public function isDebtCollector(): bool
     {
-        return $this->hasRole(self::ROLE_RUN);
+        return $this->hasRole(self::ROLE_DEBT_COLLECTOR);
     }
 
     /**

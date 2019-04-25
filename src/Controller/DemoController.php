@@ -59,111 +59,105 @@ class DemoController extends AbstractController
 
         $projectRepository = $this->entityManager->getRepository(Projects::class);
 
-        if ($user->isBorrower() || $user->isPartner()) {
-            $template['projects']['borrower'] = $this->groupByStatusAndSort(
-                $projectRepository->createQueryBuilder('p')
-                    ->distinct()
-                    ->where('p.idCompany = :userCompany')
-                    ->orWhere('p.idCompanySubmitter = :userCompany')
-                    ->setParameter('userCompany', $user->getCompany())
-                    ->getQuery()
-                    ->getResult()
-            );
-        }
-
-        if ($user->isBorrower() || $user->isPartner()) {
-            $template['projects']['submitter'] = $this->groupByStatusAndSort(
-                $projectRepository->createQueryBuilder('p')
-                    ->distinct()
-                    ->innerJoin('p.projectParticipants', 'pp')
-                    ->where('pp.company = :userCompany')
-                    ->andWhere('JSON_CONTAINS(pp.roles, :roleArranger) = 1 OR JSON_CONTAINS(pp.roles, :roleRun) = 1')
-                    ->setParameter('userCompany', $user->getCompany())
-                    ->setParameter('roleArranger', json_encode([ProjectParticipant::COMPANY_ROLE_ARRANGER]))
-                    ->setParameter('roleRun', json_encode([ProjectParticipant::COMPANY_ROLE_RUN]))
-                    ->getQuery()
-                    ->getResult()
-            );
-        }
-
-        if ($user->isLender()) {
-            $wallet = $this->entityManager->getRepository(Wallet::class)->getWalletByType($user, WalletType::LENDER);
-
-            // En cours (HOT)
-            $projectsInProgressBid = $projectRepository->createQueryBuilder('p')
+        $template['projects']['borrower'] = $this->groupByStatusAndSort(
+            $projectRepository->createQueryBuilder('p')
                 ->distinct()
-                ->innerJoin('p.bids', 'b')
-                ->where('b.wallet = :wallet')
-                ->andWhere('p.status = :online')
-                ->setParameters(['wallet' => $wallet, 'online' => ProjectsStatus::STATUS_ONLINE])
+                ->where('p.idCompany = :userCompany')
+                ->orWhere('p.idCompanySubmitter = :userCompany')
+                ->setParameter('userCompany', $user->getCompany())
                 ->getQuery()
                 ->getResult()
-            ;
+        );
 
-            $projectsInProgressNonSignedLoan = $projectRepository->createQueryBuilder('p')
+        $template['projects']['submitter'] = $this->groupByStatusAndSort(
+            $projectRepository->createQueryBuilder('p')
                 ->distinct()
-                ->innerJoin('p.loans', 'l')
-                ->where('l.wallet = :wallet')
-                ->andWhere('l.status = :pending')
-                ->setParameters(['wallet' => $wallet, 'pending' => Loans::STATUS_PENDING])
+                ->innerJoin('p.projectParticipants', 'pp')
+                ->where('pp.company = :userCompany')
+                ->andWhere('JSON_CONTAINS(pp.roles, :roleArranger) = 1 OR JSON_CONTAINS(pp.roles, :roleRun) = 1')
+                ->setParameter('userCompany', $user->getCompany())
+                ->setParameter('roleArranger', json_encode([ProjectParticipant::COMPANY_ROLE_ARRANGER]))
+                ->setParameter('roleRun', json_encode([ProjectParticipant::COMPANY_ROLE_RUN]))
                 ->getQuery()
                 ->getResult()
-            ;
+        );
 
-            $template['projects']['lender']['inProgress'] = array_merge((array) $projectsInProgressBid, (array) $projectsInProgressNonSignedLoan);
+        $wallet = $this->entityManager->getRepository(Wallet::class)->getWalletByType($user, WalletType::LENDER);
 
-            $inProgressCount = count($template['projects']['lender']['inProgress']) + count($projectsInProgressNonSignedLoan);
+        // En cours (HOT)
+        $projectsInProgressBid = $projectRepository->createQueryBuilder('p')
+            ->distinct()
+            ->innerJoin('p.bids', 'b')
+            ->where('b.wallet = :wallet')
+            ->andWhere('p.status = :online')
+            ->setParameters(['wallet' => $wallet, 'online' => ProjectsStatus::STATUS_ONLINE])
+            ->getQuery()
+            ->getResult()
+        ;
 
-            $template['projects']['lender']['inProgressCount'] = [
-                'pending' => $inProgressCount,
-                'refused' => count($template['projects']['lender']['inProgress']) - $inProgressCount,
-            ];
+        $projectsInProgressNonSignedLoan = $projectRepository->createQueryBuilder('p')
+            ->distinct()
+            ->innerJoin('p.loans', 'l')
+            ->where('l.wallet = :wallet')
+            ->andWhere('l.status = :pending')
+            ->setParameters(['wallet' => $wallet, 'pending' => Loans::STATUS_PENDING])
+            ->getQuery()
+            ->getResult()
+        ;
 
-            // Actifs (COLD)
-            $projectsActive = $projectRepository->createQueryBuilder('p')
-                ->innerJoin('p.loans', 'l')
-                ->where('l.wallet = :wallet')
-                ->andWhere('l.status = :accepted')
-                ->andWhere('p.status in (:active)')
-                ->setParameters([
-                    'wallet'   => $wallet,
-                    'accepted' => Loans::STATUS_ACCEPTED,
-                    'active'   => [ProjectsStatus::STATUS_FUNDED, ProjectsStatus::STATUS_SIGNED, ProjectsStatus::STATUS_REPAYMENT],
-                ])
-                ->getQuery()
-                ->getResult()
-            ;
+        $template['projects']['lender']['inProgress'] = array_merge((array) $projectsInProgressBid, (array) $projectsInProgressNonSignedLoan);
 
-            $template['projects']['lender']['active'] = $projectsActive;
+        $inProgressCount = count($template['projects']['lender']['inProgress']) + count($projectsInProgressNonSignedLoan);
 
-            // Terminés
-            $projectsFinished = $projectRepository->createQueryBuilder('p')
-                ->innerJoin('p.loans', 'l')
-                ->where('l.wallet = :wallet')
-                ->andWhere('l.status = :accepted')
-                ->andWhere('p.status in (:finished)')
-                ->setParameters([
-                    'wallet'   => $wallet,
-                    'accepted' => Loans::STATUS_ACCEPTED,
-                    'finished' => [ProjectsStatus::STATUS_LOSS, ProjectsStatus::STATUS_REPAID, ProjectsStatus::STATUS_CANCELLED],
-                ])
-                ->getQuery()
-                ->getResult()
-            ;
+        $template['projects']['lender']['inProgressCount'] = [
+            'pending' => $inProgressCount,
+            'refused' => count($template['projects']['lender']['inProgress']) - $inProgressCount,
+        ];
 
-            $template['projects']['lender']['finished'] = $projectsFinished;
+        // Actifs (COLD)
+        $projectsActive = $projectRepository->createQueryBuilder('p')
+            ->innerJoin('p.loans', 'l')
+            ->where('l.wallet = :wallet')
+            ->andWhere('l.status = :accepted')
+            ->andWhere('p.status in (:active)')
+            ->setParameters([
+                'wallet'   => $wallet,
+                'accepted' => Loans::STATUS_ACCEPTED,
+                'active'   => [ProjectsStatus::STATUS_FUNDED, ProjectsStatus::STATUS_SIGNED, ProjectsStatus::STATUS_REPAYMENT],
+            ])
+            ->getQuery()
+            ->getResult()
+        ;
 
-            $projectsMasked = $projectRepository->createQueryBuilder('p')
-                ->innerJoin('p.loans', 'l')
-                ->where('l.wallet = :wallet')
-                ->andWhere('l.status = :refused')
-                ->setParameters(['wallet' => $wallet, 'refused' => Loans::STATUS_REJECTED])
-                ->getQuery()
-                ->getResult()
-            ;
+        $template['projects']['lender']['active'] = $projectsActive;
 
-            $template['projects']['lender']['masked'] = $projectsMasked;
-        }
+        // Terminés
+        $projectsFinished = $projectRepository->createQueryBuilder('p')
+            ->innerJoin('p.loans', 'l')
+            ->where('l.wallet = :wallet')
+            ->andWhere('l.status = :accepted')
+            ->andWhere('p.status in (:finished)')
+            ->setParameters([
+                'wallet'   => $wallet,
+                'accepted' => Loans::STATUS_ACCEPTED,
+                'finished' => [ProjectsStatus::STATUS_LOSS, ProjectsStatus::STATUS_REPAID, ProjectsStatus::STATUS_CANCELLED],
+            ])
+            ->getQuery()
+            ->getResult()
+        ;
+
+        $template['projects']['lender']['finished'] = $projectsFinished;
+
+        $projectsMasked = $projectRepository->createQueryBuilder('p')
+            ->innerJoin('p.loans', 'l')
+            ->where('l.wallet = :wallet')
+            ->andWhere('l.status = :refused')
+            ->setParameters(['wallet' => $wallet, 'refused' => Loans::STATUS_REJECTED])
+            ->getQuery()
+            ->getResult()
+        ;
+
+        $template['projects']['lender']['masked'] = $projectsMasked;
 
         return $this->render('demo/loans.html.twig', $template);
     }
