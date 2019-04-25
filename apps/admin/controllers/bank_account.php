@@ -159,7 +159,7 @@ class bank_accountController extends bootstrap
                     }
 
                     $keywords = [
-                        'firstName'         => $client->getPrenom(),
+                        'firstName'         => $client->getFirstName(),
                         'monthlyAmount'     => $this->ficelle->formatNumber($monthlyPayment),
                         'companyName'       => $company->getName(),
                         'mandateLink'       => $this->furl . '/pdf/mandat/' . $client->getHash() . '/' . $project->getIdProject(),

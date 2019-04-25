@@ -405,7 +405,7 @@ class dossiersController extends bootstrap
                             /** @var \Unilend\Entity\Wallet $wallet */
                             $wallet   = $loan->getWallet();
                             $keywords = [
-                                'firstName'         => $wallet->getIdClient()->getPrenom(),
+                                'firstName'         => $wallet->getIdClient()->getFirstName(),
                                 'loanAmount'        => $this->ficelle->formatNumber($loan->getAmount() / 100, 0),
                                 'companyName'       => $this->companies->name,
                                 'otherLendersCount' => $lendersCount - 1,
@@ -2225,7 +2225,7 @@ class dossiersController extends bootstrap
 
         if ($result && false === empty($client->getEmail())) {
             $keywords = [
-                'firstName' => $client->getPrenom()
+                'firstName' => $client->getFirstName()
             ];
 
             /** @var \Unilend\SwiftMailer\TemplateMessage $message */

@@ -21,7 +21,7 @@
                                 <a href="{{ path('borrower_account_projects') }}">{{ app.user.initials }}</a>
                             </div><!-- /.profile-avatar -->
 
-                            <div class="profile-name">{% trans with {'%firstName%' : app.user.getPrenom()} %} borrower-header_greeting {% endtrans %}</div>
+                            <div class="profile-name">{% trans with {'%firstName%' : app.user.getFirstName()} %} borrower-header_greeting {% endtrans %}</div>
 
                             <div class="profile-balance">
                                 <span>{% trans with {'%balance%' : walletBalance(app.user)|localizedcurrency('EUR')} %} header-connected_balance {% endtrans %}</span>

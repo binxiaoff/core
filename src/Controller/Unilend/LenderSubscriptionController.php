@@ -45,8 +45,8 @@ class LenderSubscriptionController extends Controller
             $landingPageData = $this->get('session')->get('landingPageData');
             $this->get('session')->remove('landingPageData');
             $client
-                ->setNom($landingPageData['prospect_name'])
-                ->setPrenom($landingPageData['prospect_first_name'])
+                ->setLastName($landingPageData['prospect_name'])
+                ->setFirstName($landingPageData['prospect_first_name'])
                 ->setEmail($landingPageData['prospect_email'])
                 ->setRoles([Clients::ROLE_LENDER]);
 
@@ -145,7 +145,7 @@ class LenderSubscriptionController extends Controller
         $addressManager         = $this->get('unilend.service.address_manager');
         $lenderValidatorManager = $this->get('unilend.service.lender_validation_manager');
 
-        if (false === $lenderValidatorManager->validateAge($client->getNaissance())) {
+        if (false === $lenderValidatorManager->validateAge($client->getDateOfBirth())) {
             $form->get('client')->get('naissance')->addError(new FormError($translator->trans('lender-subscription_personal-information-error-age')));
         }
 
@@ -160,30 +160,30 @@ class LenderSubscriptionController extends Controller
         }
 
         $countryCheck = true;
-        if (null === $entityManager->getRepository(Nationalites::class)->find($client->getIdNationalite())) {
+        if (null === $entityManager->getRepository(Nationalites::class)->find($client->getIdNationality())) {
             $countryCheck = false;
             $form->get('client')->get('idNationalite')->addError(new FormError($translator->trans('lender-subscription_personal-information-error-wrong-nationality')));
         }
-        if (null === $entityManager->getRepository(Pays::class)->find($client->getIdPaysNaissance())) {
+        if (null === $entityManager->getRepository(Pays::class)->find($client->getIdBirthCountry())) {
             $countryCheck = false;
             $form->get('client')->get('idNationalite')->addError(new FormError($translator->trans('lender-subscription_personal-information-error-wrong-birth-country')));
         }
 
-        if (Pays::COUNTRY_FRANCE == $client->getIdPaysNaissance() && empty($client->getInseeBirth())) {
+        if (Pays::COUNTRY_FRANCE == $client->getIdBirthCountry() && empty($client->getInseeBirth())) {
             $countryCheck = false;
             $form->get('client')->get('villeNaissance')->addError(new FormError($translator->trans('lender-subscription_personal-information-error-wrong-birth-place')));
         }
 
         if ($countryCheck) {
-            if (Pays::COUNTRY_FRANCE == $client->getIdPaysNaissance() && false === empty($client->getInseeBirth())) {
+            if (Pays::COUNTRY_FRANCE == $client->getIdBirthCountry() && false === empty($client->getInseeBirth())) {
                 $cityByInsee = $entityManager->getRepository(Villes::class)->findOneBy(['insee' => $client->getInseeBirth()]);
 
                 if (null !== $cityByInsee) {
-                    $client->setVilleNaissance($cityByInsee->getVille());
+                    $client->setBirthCity($cityByInsee->getVille());
                 }
 
             } else {
-                $country        = $entityManager->getRepository(Pays::class)->find($client->getIdPaysNaissance());
+                $country        = $entityManager->getRepository(Pays::class)->find($client->getIdBirthCountry());
                 $inseeCountries = $this->get('unilend.service.entity_manager')->getRepository('insee_pays');
                 if (null !== $country && $inseeCountries->getByCountryIso(trim($country->getIso()))) {
                     $client->setInseeBirth($inseeCountries->COG);
@@ -207,15 +207,15 @@ class LenderSubscriptionController extends Controller
         }
 
         if ($isValidCaptcha && $form->isValid()) {
-            $clientType        = ($client->getIdPaysNaissance() == NationalitesV2::NATIONALITY_FRENCH) ? Clients::TYPE_PERSON : Clients::TYPE_PERSON_FOREIGNER;
+            $clientType        = ($client->getIdBirthCountry() == NationalitesV2::NATIONALITY_FRENCH) ? Clients::TYPE_PERSON : Clients::TYPE_PERSON_FOREIGNER;
             $password          = $this->get('security.password_encoder')->encodePassword($client, $client->getPassword());
-            $slug              = $ficelle->generateSlug($client->getPrenom() . '-' . $client->getNom());
+            $slug              = $ficelle->generateSlug($client->getFirstName() . '-' . $client->getLastName());
             $newsletterConsent = $client->getOptin1() ? Clients::NEWSLETTER_OPT_IN_ENROLLED : Clients::NEWSLETTER_OPT_IN_NOT_ENROLLED;
 
             $client
                 ->setPassword($password)
                 ->setType($clientType)
-                ->setIdLangue('fr')
+                ->setIdLanguage('fr')
                 ->setSlug($slug)
                 ->setStatusInscriptionPreteur(1)
                 ->setEtapeInscriptionPreteur(Clients::SUBSCRIPTION_STEP_PERSONAL_INFORMATION)
@@ -310,10 +310,10 @@ class LenderSubscriptionController extends Controller
         if ($isValidCaptcha && $form->isValid()) {
             $clientType = $form->get('mainAddress')->get('idCountry')->getData() === Pays::COUNTRY_FRANCE ? Clients::TYPE_LEGAL_ENTITY : Clients::TYPE_LEGAL_ENTITY_FOREIGNER;
             $password   = $this->get('security.password_encoder')->encodePassword($client, $client->getPassword());
-            $slug       = $ficelle->generateSlug($client->getPrenom() . '-' . $client->getNom());
+            $slug       = $ficelle->generateSlug($client->getFirstName() . '-' . $client->getLastName());
 
             $client
-                ->setIdLangue('fr')
+                ->setIdLanguage('fr')
                 ->setSlug($slug)
                 ->setPassword($password)
                 ->setStatusInscriptionPreteur(1)
@@ -500,7 +500,7 @@ class LenderSubscriptionController extends Controller
      */
     private function sendSubscriptionStartConfirmationEmail(Clients $client): void
     {
-        $keywords = ['firstName' => $client->getPrenom()];
+        $keywords = ['firstName' => $client->getFirstName()];
         $message  = $this->get('unilend.swiftmailer.message_provider')->newMessage('confirmation-inscription-preteur', $keywords);
 
         try {
@@ -938,7 +938,6 @@ class LenderSubscriptionController extends Controller
         if (false !== $paidAmountInCent) {
             $clientHistory = new ClientsHistory();
             $clientHistory->setIdClient($client);
-            $clientHistory->setType(ClientsHistory::TYPE_CLIENT_LENDER);
             $clientHistory->setStatus(ClientsHistory::STATUS_ACTION_ACCOUNT_CREATION);
 
             $entityManager->persist($clientHistory);
@@ -978,7 +977,7 @@ class LenderSubscriptionController extends Controller
                 return $this->redirectToRoute('projects_list');
             }
 
-            if ($authorizationChecker->isGranted(Clients::ROLE_PARTNER)) {
+            if ($authorizationChecker->isGranted(Clients::ROLE_ARRANGER)) {
                 return $this->redirectToRoute('partner_home');
             }
         } elseif (null !== $clientHash) {
@@ -1182,7 +1181,7 @@ class LenderSubscriptionController extends Controller
     private function sendFinalizedSubscriptionConfirmationEmail(Clients $client): void
     {
         $keywords = [
-            'firstName' => $client->getPrenom(),
+            'firstName' => $client->getFirstName(),
         ];
 
         $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('confirmation-inscription-preteur-etape-3', $keywords);

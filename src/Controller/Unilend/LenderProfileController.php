@@ -998,7 +998,7 @@ class LenderProfileController extends Controller
     private function sendPasswordModificationEmail(Clients $client): void
     {
         $keywords = [
-            'firstName'     => $client->getPrenom(),
+            'firstName'     => $client->getFirstName(),
             'password'      => '',
             'lenderPattern' => $this->get('doctrine.orm.entity_manager')
                 ->getRepository(Wallet::class)

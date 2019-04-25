@@ -228,7 +228,7 @@ class parrainageController extends bootstrap
                 $this->sendAjaxResponse(false, null, ['Ce client n\'est pas un prêteur']);
             }
 
-            $this->sendAjaxResponse(true, ['idClient' => $client->getIdClient(), 'lastName' => $client->getNom(), 'firstName' => $client->getPrenom()]);
+            $this->sendAjaxResponse(true, ['idClient' => $client->getIdClient(), 'lastName' => $client->getLastName(), 'firstName' => $client->getFirstName()]);
         }
     }
 

@@ -137,9 +137,9 @@ class LenderProfileFormsHandler
         if (
             false === in_array(AttachmentType::CNI_PASSPORTE, array_keys($newAttachments))
             && (
-                $unattachedClient->getIdNationalite() !== $client->getIdNationalite()
-                || $unattachedClient->getCivilite() !== $client->getCivilite()
-                || $unattachedClient->getPrenom() !== $client->getPrenom()
+                $unattachedClient->getIdNationality() !== $client->getIdNationality()
+                || $unattachedClient->getTitle() !== $client->getTitle()
+                || $unattachedClient->getFirstName() !== $client->getFirstName()
             )
         ) {
             $form->addError(new FormError($this->translator->trans('lender-profile_information-tab-identity-section-change-ID-warning-message')));
@@ -731,8 +731,8 @@ class LenderProfileFormsHandler
         }
 
         $message = $this->messageProvider->newMessage('notification-changement-email-preteur', [
-            'firstName'     => $client->getPrenom(),
-            'lastName'      => $client->getNom(),
+            'firstName'     => $client->getFirstName(),
+            'lastName'      => $client->getLastName(),
             'lenderPattern' => $wallet->getWireTransferPattern()
         ]);
 

@@ -144,7 +144,7 @@ EOF
                     }
                 }
 
-                $fiscalAndLocationData['birth_country'] = (0 == $client->getIdPaysNaissance()) ? Pays::COUNTRY_FRANCE : $client->getIdPaysNaissance();
+                $fiscalAndLocationData['birth_country'] = (0 == $client->getIdBirthCountry()) ? Pays::COUNTRY_FRANCE : $client->getIdBirthCountry();
                 $birthCountry                           = $countryRepository->find($fiscalAndLocationData['birth_country']);
                 $fiscalAndLocationData['isoBirth']      = null !== $birthCountry ? $birthCountry->getIso() : '';
 
@@ -160,9 +160,9 @@ EOF
                         $fiscalAndLocationData['inseeBirth'] = '00000';
                     }
                 } else {
-                    $fiscalAndLocationData['birthPlace'] = $client->getVilleNaissance();
+                    $fiscalAndLocationData['birthPlace'] = $client->getBirthCity();
                     if (empty($client->getInseeBirth())) {
-                        $cityList = $locationManager->getCities($client->getVilleNaissance(), true);
+                        $cityList = $locationManager->getCities($client->getBirthCity(), true);
                         if (1 < count($cityList)) {
                             $fiscalAndLocationData['inseeBirth'] = 'Doublon ville de naissance';
                         } elseif (1 === count($cityList)) {
@@ -229,11 +229,11 @@ EOF
         return [
             $client->getIdClient(),
             $wallet->getWireTransferPattern(),
-            $client->getNom(),
-            $client->getCivilite(),
-            ($client->getCivilite() === Clients::TITLE_MISS) ? $client->getNom() : '',
-            $client->getPrenom(),
-            $client->getNaissance()->format('d/m/Y'),
+            $client->getLastName(),
+            $client->getTitle(),
+            ($client->getTitle() === Clients::TITLE_MISS) ? $client->getLastName() : '',
+            $client->getFirstName(),
+            $client->getDateOfBirth()->format('d/m/Y'),
             empty($client->getInseeBirth()) ? substr($fiscalAndLocationData['inseeBirth'], 0, 2) : substr($client->getInseeBirth(), 0, 2),
             empty($client->getInseeBirth()) ? $fiscalAndLocationData['inseeBirth'] : $client->getInseeBirth(),
             $fiscalAndLocationData['birthPlace'],
@@ -247,7 +247,7 @@ EOF
             $fiscalAndLocationData['city'],
             $fiscalAndLocationData['isoBirth'],
             $fiscalAndLocationData['deductedAtSource'],
-            $client->getTelephone(),
+            $client->getPhone(),
             '',
             '',
             '',

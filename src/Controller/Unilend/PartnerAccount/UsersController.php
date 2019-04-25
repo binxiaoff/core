@@ -193,12 +193,12 @@ class UsersController extends Controller
 
         $client = new Clients();
         $client
-            ->setNom($request->request->get('lastname'))
-            ->setPrenom($request->request->get('firstname'))
+            ->setLastName($request->request->get('lastname'))
+            ->setFirstName($request->request->get('firstname'))
             ->setEmail($request->request->get('email'))
-            ->setTelephone($request->request->get('phone'))
-            ->setIdLangue('fr')
-            ->setRoles([Clients::ROLE_PARTNER]);
+            ->setPhone($request->request->get('phone'))
+            ->setIdLanguage('fr')
+            ->setRoles([Clients::ROLE_ARRANGER]);
 
         $companyClient = new CompanyClient();
         $companyClient
@@ -302,8 +302,8 @@ class UsersController extends Controller
 
                 if (false === $error) {
                     $client->setPassword($password);
-                    $client->setSecreteQuestion(filter_var($formData['question'], FILTER_SANITIZE_STRING));
-                    $client->setSecreteReponse(md5($formData['answer']));
+                    $client->setSecurityQuestion(filter_var($formData['question'], FILTER_SANITIZE_STRING));
+                    $client->setSecurityAnswer(md5($formData['answer']));
 
                     $entityManager->persist($client);
 

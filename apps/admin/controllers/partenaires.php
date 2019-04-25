@@ -432,13 +432,13 @@ class partenairesController extends bootstrap
                 $data         = ClientsStatus::STATUS_VALIDATED === $clientStatus ? 'active' : 'inactive';
             } else {
                 $data = [
-                    $companyClient->getIdClient()->getNom(),
-                    $companyClient->getIdClient()->getPrenom(),
+                    $companyClient->getIdClient()->getLastName(),
+                    $companyClient->getIdClient()->getFirstName(),
                     $companyClient->getIdClient()->getEmail(),
                     $companyClient->getIdCompany()->getIdCompany(),
-                    $companyClient->getIdClient()->getTelephone(),
+                    $companyClient->getIdClient()->getPhone(),
                     $companyClient->getRole() === 'ROLE_PARTNER_ADMIN' ? 'admin' : 'agent',
-                    $companyClient->getIdClient()->getLastlogin() ? $companyClient->getIdClient()->getLastlogin()->format('d/m/Y') : ''
+                    $companyClient->getIdClient()->getLastLogin() ? $companyClient->getIdClient()->getLastLogin()->format('d/m/Y') : ''
                 ];
             }
         }
@@ -682,7 +682,7 @@ class partenairesController extends bootstrap
             ->generateTemporaryLink($companyClient->getIdClient(), TemporaryLinksLogin::PASSWORD_TOKEN_LIFETIME_MEDIUM);
 
         $keywords = [
-            'firstName'    => $companyClient->getIdClient()->getPrenom(),
+            'firstName'    => $companyClient->getIdClient()->getFirstName(),
             'login'        => $companyClient->getIdClient()->getEmail(),
             'passwordLink' => $this->furl . '/partenaire/securite/' . $token
         ];
@@ -763,15 +763,15 @@ class partenairesController extends bootstrap
         if (empty($errors)) {
             if (null === $companyClient->getIdClient()) {
                 $client = new Clients();
-                $client->setIdLangue('fr');
-                $client->setRoles([Clients::ROLE_PARTNER]);
+                $client->setIdLanguage('fr');
+                $client->setRoles([Clients::ROLE_ARRANGER]);
 
                 $companyClient->setIdClient($client);
             }
-            $companyClient->getIdClient()->setNom($lastName);
-            $companyClient->getIdClient()->setPrenom($firstName);
+            $companyClient->getIdClient()->setLastName($lastName);
+            $companyClient->getIdClient()->setFirstName($firstName);
             $companyClient->getIdClient()->setEmail($email);
-            $companyClient->getIdClient()->setTelephone($phone);
+            $companyClient->getIdClient()->setPhone($phone);
             $companyClient->setIdCompany($agency);
             $companyClient->setRole('admin' === $role ? 'ROLE_PARTNER_ADMIN' : 'ROLE_PARTNER_USER');
         }

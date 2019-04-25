@@ -52,8 +52,8 @@ class ContactController extends Controller
                 $keywords           = [
                     '[staticUrl]' => $this->get('assets.packages')->getUrl(''),
                     '[partner]'   => $this->get('unilend.service.partner_manager')->getPartner($client)->getIdCompany()->getName(),
-                    '[firstname]' => $client->getPrenom(),
-                    '[lastname]'  => $client->getNom(),
+                    '[firstname]' => $client->getFirstName(),
+                    '[lastname]'  => $client->getLastName(),
                     '[email]'     => $formData['email'],
                     '[phone]'     => $formData['phone'],
                     '[message]'   => $formData['message']

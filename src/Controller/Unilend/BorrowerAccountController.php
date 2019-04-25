@@ -636,8 +636,8 @@ class BorrowerAccountController extends Controller
                 if (false === $error) {
                     $client
                         ->setPassword($password)
-                        ->setSecreteQuestion(filter_var($formData['question'], FILTER_SANITIZE_STRING))
-                        ->setSecreteReponse(md5($formData['answer']));
+                        ->setSecurityQuestion(filter_var($formData['question'], FILTER_SANITIZE_STRING))
+                        ->setSecurityAnswer(md5($formData['answer']));
                     $entityManager->flush($client);
 
                     return $this->redirectToRoute('login');

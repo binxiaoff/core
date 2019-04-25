@@ -320,7 +320,7 @@ class ClientStatusManager
      */
     private function needsToBeSuspendedByClientData(Clients $client): bool
     {
-        if ($client->getUsPerson() || NationalitesV2::NATIONALITY_OTHER === $client->getIdNationalite()) {
+        if (NationalitesV2::NATIONALITY_OTHER === $client->getIdNationality()) {
             return true;
         }
 

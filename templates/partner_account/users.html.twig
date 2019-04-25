@@ -39,7 +39,7 @@
                             {% for user in onlineUsers %}
                                 <tr class="table-users-item {% if loop.index is divisible by(2) %}even{% else %}odd{% endif %}" data-user-id="{{ user.client.hash }}">
                                     <td class="table-users-item-name">
-                                        <span class="first-name">{{ user.client.prenom }}</span> <span class="last-name">{{ user.client.nom }}</span>
+                                        <span class="first-name">{{ user.client.firstName }}</span> <span class="last-name">{{ user.client.lastName }}</span>
                                     </td>
                                     <td class="table-users-item-entity">{{ user.entity.name }}</td>
                                     <td class="table-users-item-role">
@@ -78,7 +78,7 @@
                             {% for user in offlineUsers %}
                                 <tr class="table-users-item ui-table-users-item-inactive {% if loop.index is divisible by(2) %}even{% else %}odd{% endif %}" data-user-id="{{ user.client.hash }}">
                                     <td class="table-users-item-name">
-                                        <span class="first-name">{{ user.client.prenom }}</span> <span class="last-name">{{ user.client.nom }}</span>
+                                        <span class="first-name">{{ user.client.firstName }}</span> <span class="last-name">{{ user.client.lastName }}</span>
                                     </td>
                                     <td class="table-users-item-entity">{{ user.entity.name }}</td>
                                     <td class="table-users-item-role">

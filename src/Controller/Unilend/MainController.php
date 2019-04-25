@@ -40,7 +40,7 @@ class MainController extends Controller
     public function homeAction(?UserInterface $client): Response
     {
         if ($client instanceof Clients) {
-            return $this->redirectToRoute('demo_loans');
+            return $this->redirectToRoute('wallet');
         }
 
         return $this->redirectToRoute('login');

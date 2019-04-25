@@ -144,7 +144,7 @@ class ElectronicSignature
             ;
 
             $recipientNotification = new RecipientEmailNotification();
-            $recipientNotification->setSupportedLanguage($signerClient->getIdLangue());
+            $recipientNotification->setSupportedLanguage($signerClient->getIdLanguage());
 
             // Example of signature with auto placement (https://developers.docusign.com/esign-rest-api/guides/concepts/tabs#anchoring-tabs)
 //            $signaturePosition = new SignHere();
@@ -169,7 +169,7 @@ class ElectronicSignature
 
             $signer = new Signer();
             $signer
-                ->setName($signerClient->getPrenom() . ' ' . $signerClient->getNom())
+                ->setName($signerClient->getFirstName() . ' ' . $signerClient->getLastName())
                 ->setEmail($this->testEmail ?: $signerClient->getEmail())
                 ->setRecipientId($signerClient->getIdClient())
                 ->setClientUserId($signerClient->getIdClient()) // if set, email is not sent by DocuSign

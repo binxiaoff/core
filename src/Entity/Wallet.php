@@ -268,11 +268,11 @@ class Wallet
      */
     public function setWireTransferPattern()
     {
-        if ($this->getIdClient() instanceof Clients && $this->getIdClient()->getNom() && $this->getIdClient()->getPrenom()) {
+        if ($this->getIdClient() instanceof Clients && $this->getIdClient()->getLastName() && $this->getIdClient()->getFirstName()) {
             $this->wireTransferPattern = mb_strtoupper(
                 str_pad($this->getIdClient()->getIdClient(), 6, 0, STR_PAD_LEFT) .
-                substr(\URLify::downcode($this->getIdClient()->getPrenom()), 0, 1) .
-                \URLify::downcode($this->getIdClient()->getNom())
+                substr(\URLify::downcode($this->getIdClient()->getFirstName()), 0, 1) .
+                \URLify::downcode($this->getIdClient()->getLastName())
             );
         }
 

@@ -267,7 +267,7 @@ class SecurityController extends Controller
 
         return $this->render('security/password_forgotten.html.twig', [
             'token'          => $securityToken,
-            'secretQuestion' => $temporaryLink->getIdClient()->getSecreteQuestion()
+            'secretQuestion' => $temporaryLink->getIdClient()->getSecurityQuestion()
         ]);
     }
 
@@ -306,7 +306,7 @@ class SecurityController extends Controller
         if (empty($request->request->get('client_new_password_confirmation'))) {
             $this->addFlash('passwordErrors', $translator->trans('common-validator_missing-new-password-confirmation'));
         }
-        if (empty($request->request->get('client_secret_answer')) || md5($request->request->get('client_secret_answer')) !== $client->getSecreteReponse()) {
+        if (empty($request->request->get('client_secret_answer')) || md5($request->request->get('client_secret_answer')) !== $client->getSecurityAnswer()) {
             $this->addFlash('passwordErrors', $translator->trans('common-validator_secret-answer-invalid'));
         }
 
@@ -379,7 +379,7 @@ class SecurityController extends Controller
     private function sendPasswordModificationEmail(Clients $client)
     {
         $keywords = [
-            'firstName'     => $client->getPrenom(),
+            'firstName'     => $client->getFirstName(),
             'password'      => '',
             'lenderPattern' => $this->get('unilend.service.lender_manager')->getLenderPattern($client)
         ];

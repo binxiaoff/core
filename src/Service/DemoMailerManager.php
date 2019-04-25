@@ -82,7 +82,7 @@ class DemoMailerManager
 
         foreach ($recipients as $recipient) {
             if (false === empty($recipient->getEmail())) {
-                $keywords['firstName'] = $recipient->getPrenom();
+                $keywords['firstName'] = $recipient->getFirstName();
                 $message               = $this->messageProvider->newMessage('project-new', $keywords);
                 $message->setTo($recipient->getEmail());
 
@@ -118,7 +118,7 @@ class DemoMailerManager
 
         foreach ($recipients as $recipient) {
             if (false === empty($recipient->getEmail())) {
-                $keywords['firstName'] = $recipient->getPrenom();
+                $keywords['firstName'] = $recipient->getFirstName();
                 $message               = $this->messageProvider->newMessage('project-scoring', $keywords);
                 $message->setTo($recipient->getEmail());
 
@@ -154,7 +154,7 @@ class DemoMailerManager
 
         foreach ($recipients as $recipient) {
             if (false === empty($recipient->getEmail())) {
-                $keywords['firstName'] = $recipient->getPrenom();
+                $keywords['firstName'] = $recipient->getFirstName();
                 $message               = $this->messageProvider->newMessage('project-publication', $keywords);
                 $message->setTo($recipient->getEmail());
 
@@ -195,7 +195,7 @@ class DemoMailerManager
 
         foreach ($recipients as $recipient) {
             if (false === empty($recipient->getEmail())) {
-                $keywords['firstName'] = $recipient->getPrenom();
+                $keywords['firstName'] = $recipient->getFirstName();
                 $message               = $this->messageProvider->newMessage('bid-new', $keywords);
                 $message->setTo($recipient->getEmail());
 
@@ -224,7 +224,7 @@ class DemoMailerManager
         $project  = $bid->getProject();
         $mailType = Bids::STATUS_ACCEPTED === $bid->getStatus() ? 'bid-accepted' : 'bid-rejected';
         $message  = $this->messageProvider->newMessage($mailType, [
-            'firstName'   => $recipient->getPrenom(),
+            'firstName'   => $recipient->getFirstName(),
             'projectUrl'  => $this->router->generate('demo_lender_project_details', ['slug' => $project->getSlug()], RouterInterface::ABSOLUTE_URL),
             'projectName' => $project->getIdCompany()->getName() . ' / ' . $project->getTitle(),
         ]);
@@ -259,7 +259,7 @@ class DemoMailerManager
             $recipient = $loan->getWallet()->getIdClient();
 
             if (false === empty($recipient->getEmail())) {
-                $keywords['firstName']    = $recipient->getPrenom();
+                $keywords['firstName']    = $recipient->getFirstName();
                 $keywords['signatureUrl'] = $this->router->generate(
                     'demo_sign_contracts',
                     ['project' => $project->getHash(), 'loan' => $loan->getIdLoan()],

@@ -3,14 +3,14 @@
 namespace Unilend\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
-use Unilend\Entity\Traits\TimestampableAddedOnly;
+use Unilend\Entity\Traits\TimestampableAddedOnlyTrait;
 
 /**
  * @ORM\Entity
  */
 class InterestRateIndexType
 {
-    use TimestampableAddedOnly;
+    use TimestampableAddedOnlyTrait;
 
     const TYPE_FIXED_RATE = 1;
 

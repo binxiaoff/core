@@ -275,11 +275,11 @@ class BeneficialOwnerManager
     {
         if (empty($idClient)) {
             $owner = new Clients();
-            $owner->setPrenom($firstName)
-                ->setNom($lastName)
-                ->setNaissance($birthday)
-                ->setVilleNaissance($birthPlace)
-                ->setIdPaysNaissance($idBirthCountry);
+            $owner->setFirstName($firstName)
+                ->setLastName($lastName)
+                ->setDateOfBirth($birthday)
+                ->setBirthCity($birthPlace)
+                ->setIdBirthCountry($idBirthCountry);
 
             $this->entityManager->persist($owner);
 
@@ -294,24 +294,24 @@ class BeneficialOwnerManager
                 throw new \Exception('The client with id ' . $idClient . ' does not exist and can not be used as beneficial Owner');
             }
 
-            if (empty($owner->getPrenom())) {
-                $owner->setPrenom($firstName);
+            if (empty($owner->getFirstName())) {
+                $owner->setFirstName($firstName);
             }
 
-            if (empty($owner->getNom())) {
-                $owner->setNom($lastName);
+            if (empty($owner->getLastName())) {
+                $owner->setLastName($lastName);
             }
 
-            if (empty($owner->getNaissance())) {
-                $owner->setNaissance($birthday);
+            if (empty($owner->getDateOfBirth())) {
+                $owner->setDateOfBirth($birthday);
             }
 
-            if (empty($owner->getVilleNaissance())) {
-                $owner->setVilleNaissance($birthPlace);
+            if (empty($owner->getBirthCity())) {
+                $owner->setBirthCity($birthPlace);
             }
 
-            if (empty($owner->getIdPaysNaissance())) {
-                $owner->setIdPaysNaissance($idBirthCountry);
+            if (empty($owner->getIdBirthCountry())) {
+                $owner->setIdBirthCountry($idBirthCountry);
             }
 
             $ownerAddress = $this->entityManager->getRepository(ClientsAdresses::class)->findOneBy(['idClient' => $owner]);

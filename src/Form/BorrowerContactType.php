@@ -39,12 +39,12 @@ class BorrowerContactType extends AbstractType
         $email     = '';
 
         if ($this->borrower instanceof Clients && $this->borrower->isBorrower()) {
-            $lastName  = $this->borrower->getNom();
-            $firstName = $this->borrower->getPrenom();
+            $lastName  = $this->borrower->getLastName();
+            $firstName = $this->borrower->getFirstName();
 
             $company = $this->entityManager->getRepository(Companies::class)->findOneBy(['idClientOwner' => $this->borrower]);
             if ($company) {
-                $mobile = empty($this->borrower->getMobile()) ? $this->borrower->getTelephone() : $this->borrower->getMobile();
+                $mobile = empty($this->borrower->getMobile()) ? $this->borrower->getPhone() : $this->borrower->getMobile();
                 $email  = empty($this->borrower->getEmail()) ? $company->getEmailDirigeant() : $this->borrower->getEmail();
             }
         }

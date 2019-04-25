@@ -232,11 +232,11 @@ class ProjectRequestController extends Controller
         }
 
         $contact   = $project->getIdCompany()->getIdClientOwner();
-        $title     = $values['contact']['title'] ?? $contact->getCivilite();
-        $lastName  = $values['contact']['lastname'] ?? $contact->getNom();
-        $firstName = $values['contact']['firstname'] ?? $contact->getPrenom();
+        $title     = $values['contact']['title'] ?? $contact->getTitle();
+        $lastName  = $values['contact']['lastname'] ?? $contact->getLastName();
+        $firstName = $values['contact']['firstname'] ?? $contact->getFirstName();
         $email     = $values['contact']['email'] ?? $this->removeEmailSuffix($contact->getEmail());
-        $mobile    = $values['contact']['mobile'] ?? $contact->getTelephone();
+        $mobile    = $values['contact']['mobile'] ?? $contact->getPhone();
         $function  = $values['contact']['function'] ?? $contact->getFonction();
 
         try {
@@ -262,9 +262,9 @@ class ProjectRequestController extends Controller
         }
 
         $contactInList = false;
-        if ($contact->getNom() && false === empty($template['activeExecutives'])) {
+        if ($contact->getLastName() && false === empty($template['activeExecutives'])) {
             foreach ($template['activeExecutives'] as $executive) {
-                if (mb_strtolower($executive['firstName'] . $executive['lastName']) === mb_strtolower($contact->getPrenom() . $contact->getNom())) {
+                if (mb_strtolower($executive['firstName'] . $executive['lastName']) === mb_strtolower($contact->getFirstName() . $contact->getLastName())) {
                     $contactInList = true;
                     break;
                 }
@@ -283,11 +283,11 @@ class ProjectRequestController extends Controller
                     'function'  => $function
                 ],
                 'otherContact' => [
-                    'title'     => false === $contactInList ? $contact->getCivilite() : '',
-                    'lastName'  => false === $contactInList ? $contact->getNom() : '',
-                    'firstName' => false === $contactInList ? $contact->getPrenom() : '',
+                    'title'     => false === $contactInList ? $contact->getTitle() : '',
+                    'lastName'  => false === $contactInList ? $contact->getLastName() : '',
+                    'firstName' => false === $contactInList ? $contact->getFirstName() : '',
                     'email'     => false === $contactInList ? $this->removeEmailSuffix($contact->getEmail()) : '',
-                    'mobile'    => false === $contactInList ? $contact->getTelephone() : '',
+                    'mobile'    => false === $contactInList ? $contact->getPhone() : '',
                     'function'  => false === $contactInList ? $contact->getFonction() : ''
                 ],
                 'project'      => [
@@ -729,11 +729,11 @@ class ProjectRequestController extends Controller
             'errors' => isset($session['errors']) ? $session['errors'] : [],
             'values' => [
                 'contact' => [
-                    'civility'  => isset($values['contact']['civility']) ? $values['contact']['civility'] : $project->getIdCompany()->getIdClientOwner()->getCivilite(),
-                    'lastname'  => isset($values['contact']['lastname']) ? $values['contact']['lastname'] : $project->getIdCompany()->getIdClientOwner()->getNom(),
-                    'firstname' => isset($values['contact']['firstname']) ? $values['contact']['firstname'] : $project->getIdCompany()->getIdClientOwner()->getPrenom(),
+                    'civility'  => isset($values['contact']['civility']) ? $values['contact']['civility'] : $project->getIdCompany()->getIdClientOwner()->getTitle(),
+                    'lastname'  => isset($values['contact']['lastname']) ? $values['contact']['lastname'] : $project->getIdCompany()->getIdClientOwner()->getLastName(),
+                    'firstname' => isset($values['contact']['firstname']) ? $values['contact']['firstname'] : $project->getIdCompany()->getIdClientOwner()->getFirstName(),
                     'email'     => isset($values['contact']['email']) ? $values['contact']['email'] : $this->removeEmailSuffix($project->getIdCompany()->getIdClientOwner()->getEmail()),
-                    'mobile'    => isset($values['contact']['mobile']) ? $values['contact']['mobile'] : $project->getIdCompany()->getIdClientOwner()->getTelephone(),
+                    'mobile'    => isset($values['contact']['mobile']) ? $values['contact']['mobile'] : $project->getIdCompany()->getIdClientOwner()->getPhone(),
                     'function'  => isset($values['contact']['function']) ? $values['contact']['function'] : $project->getIdCompany()->getIdClientOwner()->getFonction()
                 ],
                 'project' => [
@@ -895,11 +895,11 @@ class ProjectRequestController extends Controller
             'form'    => [
                 'errors' => isset($session['errors']) ? $session['errors'] : [],
                 'values' => [
-                    'civility'  => isset($values['civility']) ? $values['civility'] : $project->getIdCompany()->getIdClientOwner()->getCivilite(),
-                    'lastname'  => isset($values['lastname']) ? $values['lastname'] : $project->getIdCompany()->getIdClientOwner()->getNom(),
-                    'firstname' => isset($values['firstname']) ? $values['firstname'] : $project->getIdCompany()->getIdClientOwner()->getPrenom(),
+                    'civility'  => isset($values['civility']) ? $values['civility'] : $project->getIdCompany()->getIdClientOwner()->getTitle(),
+                    'lastname'  => isset($values['lastname']) ? $values['lastname'] : $project->getIdCompany()->getIdClientOwner()->getLastName(),
+                    'firstname' => isset($values['firstname']) ? $values['firstname'] : $project->getIdCompany()->getIdClientOwner()->getFirstName(),
                     'email'     => isset($values['email']) ? $values['email'] : $this->removeEmailSuffix($project->getIdCompany()->getIdClientOwner()->getEmail()),
-                    'mobile'    => isset($values['mobile']) ? $values['mobile'] : $project->getIdCompany()->getIdClientOwner()->getTelephone(),
+                    'mobile'    => isset($values['mobile']) ? $values['mobile'] : $project->getIdCompany()->getIdClientOwner()->getPhone(),
                     'function'  => isset($values['function']) ? $values['function'] : $project->getIdCompany()->getIdClientOwner()->getFonction()
                 ]
             ],
@@ -1182,7 +1182,7 @@ class ProjectRequestController extends Controller
     {
         $client   = $project->getIdCompany()->getIdClientOwner();
         $keywords = [
-            'firstName'           => $client->getPrenom(),
+            'firstName'           => $client->getFirstName(),
             'companyName'         => $project->getIdCompany()->getName(),
             'continueRequestLink' => $this->generateUrl('project_request_recovery', ['hash' => $project->getHash()], UrlGeneratorInterface::ABSOLUTE_URL),
         ];
@@ -1368,12 +1368,12 @@ class ProjectRequestController extends Controller
 
         $client
             ->setEmail($email)
-            ->setCivilite($formOfAddress)
-            ->setPrenom($firstName)
-            ->setNom($lastName)
+            ->setTitle($formOfAddress)
+            ->setFirstName($firstName)
+            ->setLastName($lastName)
             ->setFonction($position)
-            ->setTelephone($mobilePhone)
-            ->setIdLangue('fr')
+            ->setPhone($mobilePhone)
+            ->setIdLanguage('fr')
             ->setSlug($ficelle->generateSlug($firstName . '-' . $lastName));
 
         $company

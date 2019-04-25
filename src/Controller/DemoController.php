@@ -1287,7 +1287,7 @@ class DemoController extends AbstractController
             'created'                 => $comment->getAdded()->format('c'),
             'modified'                => $comment->getUpdated() ? $comment->getUpdated()->format('c') : $comment->getAdded()->format('c'),
             'content'                 => $comment->getContent(),
-            'fullname'                => $comment->getClient()->getPrenom() . ' ' . $comment->getClient()->getNom(),
+            'fullname'                => $comment->getClient()->getFirstName() . ' ' . $comment->getClient()->getLastName(),
             'created_by_current_user' => true,
         ]);
     }

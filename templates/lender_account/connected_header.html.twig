@@ -37,7 +37,7 @@
                                 </a><!-- /.profile-notifications -->
                             {% endif %}
 
-                            <div class="profile-name"><a href="{{ path('lender_dashboard') }}" class="c-t1">{% trans with {'%firstName%' : app.user.getPrenom()} %} header-connected_greeting {% endtrans %}</a></div>
+                            <div class="profile-name"><a href="{{ path('lender_dashboard') }}" class="c-t1">{% trans with {'%firstName%' : app.user.getFirstName()} %} header-connected_greeting {% endtrans %}</a></div>
 
                             <div class="profile-balance">
                                 <a href="{{ path('lender_wallet_deposit') }}">{% trans with {'%balance%' : walletBalance(app.user)|localizedcurrency('EUR')} %} header-connected_balance {% endtrans %}</a>

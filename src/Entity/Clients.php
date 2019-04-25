@@ -1,67 +1,56 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Unilend\Entity;
 
+use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
-use Hashids\Hashids;
+use Exception;
 use Ramsey\Uuid\Exception\UnsatisfiedDependencyException;
 use Ramsey\Uuid\Uuid;
-use Symfony\Component\Security\Core\Encoder\EncoderAwareInterface;
 use Symfony\Component\Security\Core\User\{EquatableInterface, UserInterface};
 use Symfony\Component\Validator\Constraints as Assert;
+use Unilend\Entity\Traits\Timestampable;
+use URLify;
 
 /**
- * Clients
- *
  * @ORM\Table(name="clients", indexes={
- *     @ORM\Index(name="hash", columns={"hash"}),
- *     @ORM\Index(name="email", columns={"email"}),
- *     @ORM\Index(name="idx_client_nom", columns={"nom"}),
- *     @ORM\Index(name="idx_clients_id_client_status_history", columns={"id_client_status_history"})})
+ *     @ORM\Index(columns={"hash"}),
+ *     @ORM\Index(columns={"email"}),
+ *     @ORM\Index(columns={"last_name"}),
+ *     @ORM\Index(columns={"id_client_status_history"})
+ * })
  * @ORM\Entity(repositoryClass="Unilend\Repository\ClientsRepository")
  * @ORM\HasLifecycleCallbacks
  */
-class Clients implements UserInterface, EquatableInterface, EncoderAwareInterface
+class Clients implements UserInterface, EquatableInterface
 {
-    const TYPE_PERSON                 = 1;
-    const TYPE_LEGAL_ENTITY           = 2;
-    const TYPE_PERSON_FOREIGNER       = 3;
-    const TYPE_LEGAL_ENTITY_FOREIGNER = 4;
+    use Timestampable;
 
-    const SUBSCRIPTION_STEP_PERSONAL_INFORMATION = 1;
-    const SUBSCRIPTION_STEP_DOCUMENTS            = 2;
-    const SUBSCRIPTION_STEP_MONEY_DEPOSIT        = 3;
+    public const TYPE_PERSON                 = 1;
+    public const TYPE_LEGAL_ENTITY           = 2;
+    public const TYPE_PERSON_FOREIGNER       = 3;
+    public const TYPE_LEGAL_ENTITY_FOREIGNER = 4;
 
-    const TITLE_MISS      = 'Mme';
-    const TITLE_MISTER    = 'M.';
-    const TITLE_UNDEFINED = '';
+    public const TITLE_MISS      = 'Mme';
+    public const TITLE_MISTER    = 'M.';
+    public const TITLE_UNDEFINED = '';
 
-    const NEWSLETTER_OPT_IN_ENROLLED     = 1;
-    const NEWSLETTER_OPT_IN_NOT_ENROLLED = 2;
+    public const ROLE_USER     = 'ROLE_USER';
+    public const ROLE_LENDER   = 'ROLE_LENDER';
+    public const ROLE_BORROWER = 'ROLE_BORROWER';
+    public const ROLE_ARRANGER = 'ROLE_ARRANGER';
+    public const ROLE_RUN      = 'ROLE_RUN';
 
-    /** Legacy welcome offer before separating them and adding types */
-    const ORIGIN_WELCOME_OFFER      = 1;
-    const ORIGIN_WELCOME_OFFER_HOME = 2;
-    const ORIGIN_WELCOME_OFFER_LP   = 3;
-
-    const ROLE_USER           = 'ROLE_USER';
-    const ROLE_LENDER         = 'ROLE_LENDER';
-    const ROLE_BORROWER       = 'ROLE_BORROWER';
-    const ROLE_PARTNER        = 'ROLE_PARTNER';
-    const ROLE_PARTNER_ADMIN  = 'ROLE_PARTNER_ADMIN';
-    const ROLE_PARTNER_USER   = 'ROLE_PARTNER_USER';
-    const ROLE_DEBT_COLLECTOR = 'ROLE_DEBT_COLLECTOR';
-
-    const ROLES = [
+    public const ROLES = [
         self::ROLE_USER,
         self::ROLE_LENDER,
         self::ROLE_BORROWER,
-        self::ROLE_PARTNER,
-        self::ROLE_DEBT_COLLECTOR
+        self::ROLE_ARRANGER,
+        self::ROLE_RUN,
     ];
-
-    const PASSWORD_ENCODER_MD5 = 'md5';
 
     /**
      * @var string
@@ -73,45 +62,46 @@ class Clients implements UserInterface, EquatableInterface, EncoderAwareInterfac
     /**
      * @var string
      *
-     * @ORM\Column(name="id_langue", type="string", length=5)
+     * @ORM\Column(name="id_language", type="string", length=2)
      */
-    private $idLangue = 'fr';
+    private $idLanguage = 'fr';
 
     /**
      * @var string
      *
-     * @ORM\Column(name="civilite", type="string", nullable=true)
+     * @ORM\Column(name="title", type="string", nullable=true)
      */
-    private $civilite;
+    private $title;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="nom", type="string", length=191, nullable=true)
+     * @ORM\Column(name="last_name", type="string", length=191, nullable=true)
      *
-     * @Assert\NotBlank()
+     * @Assert\NotBlank
      * @Assert\Length(min=2)
      * @Assert\Regex(pattern="/[^A-zÀ-ÿ\s\-\'']+/i", match=false)
      */
-    private $nom;
+    private $lastName;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="nom_usage", type="string", length=191, nullable=true)
+     * @ORM\Column(name="preferred_name", type="string", length=191, nullable=true)
+     *
      * @Assert\Regex(pattern="/[^A-zÀ-ÿ\s\-\'']+/i", match=false, groups={"lender_person"})
      */
-    private $nomUsage;
+    private $preferredName;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="prenom", type="string", length=191, nullable=true)
+     * @ORM\Column(name="first_name", type="string", length=191, nullable=true)
      *
      * @Assert\Length(min=2)
      * @Assert\Regex(pattern="/[^A-zÀ-ÿ\s\-\'']+/i", match=false)
      */
-    private $prenom;
+    private $firstName;
 
     /**
      * @var string
@@ -121,40 +111,30 @@ class Clients implements UserInterface, EquatableInterface, EncoderAwareInterfac
     private $slug;
 
     /**
-     * @var string
+     * @var DateTime
      *
-     * @ORM\Column(name="fonction", type="string", length=191, nullable=true)
-     *
-     * @Assert\Length(min=2, groups={"lender_legal_entity"})
-     * @Assert\Regex(pattern="/[^A-zÀ-ÿ\s\-]+/i", match=false, groups={"lender_legal_entity"})
-     */
-    private $fonction;
-
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="naissance", type="date", nullable=true)
+     * @ORM\Column(name="date_of_birth", type="date", nullable=true)
      *
      * @Assert\Date(groups={"lender_person"})
      */
-    private $naissance;
+    private $dateOfBirth;
 
     /**
      * @var int
      *
-     * @ORM\Column(name="id_pays_naissance", type="integer", nullable=true)
+     * @ORM\Column(name="id_birth_country", type="integer", nullable=true)
      *
      * @Assert\NotBlank(groups={"lender_person"})
      * @Assert\Length(min=1, max=3, groups={"lender_person"})
      */
-    private $idPaysNaissance;
+    private $idBirthCountry;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="ville_naissance", type="string", length=191, nullable=true)
+     * @ORM\Column(name="birth_city", type="string", length=191, nullable=true)
      */
-    private $villeNaissance;
+    private $birthCity;
 
     /**
      * @var string
@@ -168,29 +148,22 @@ class Clients implements UserInterface, EquatableInterface, EncoderAwareInterfac
     /**
      * @var int
      *
-     * @ORM\Column(name="id_nationalite", type="integer", nullable=true)
+     * @ORM\Column(name="id_nationaliy", type="integer", nullable=true)
      *
      * @Assert\NotBlank(groups={"lender_person"})
      * @Assert\Length(min=1, max=3, groups={"lender_person"})
      */
-    private $idNationalite;
-
-    /**
-     * @var bool
-     *
-     * @ORM\Column(name="us_person", type="boolean", nullable=true)
-     */
-    private $usPerson;
+    private $idNationality;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="telephone", type="string", length=191, nullable=true)
+     * @ORM\Column(name="phone", type="string", length=191, nullable=true)
      *
      * @Assert\Regex(pattern="/[^0-9\s\-\+]/", match=false)
      * @Assert\Length(min=10)
      */
-    private $telephone;
+    private $phone;
 
     /**
      * @var string
@@ -207,8 +180,8 @@ class Clients implements UserInterface, EquatableInterface, EncoderAwareInterfac
      *
      * @ORM\Column(name="email", type="string", length=191, nullable=true)
      *
-     * @Assert\NotBlank()
-     * @Assert\Email()
+     * @Assert\NotBlank
+     * @Assert\Email
      */
     private $email;
 
@@ -222,17 +195,16 @@ class Clients implements UserInterface, EquatableInterface, EncoderAwareInterfac
     /**
      * @var string
      *
-     * @ORM\Column(name="secrete_question", type="string", length=191, nullable=true)
+     * @ORM\Column(name="security_question", type="string", length=191, nullable=true)
      */
-    private $secreteQuestion;
+    private $securityQuestion;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="secrete_reponse", type="string", length=191, nullable=true)
-     *
+     * @ORM\Column(name="security_answer", type="string", length=191, nullable=true)
      */
-    private $secreteReponse;
+    private $securityAnswer;
 
     /**
      * @var int
@@ -242,118 +214,28 @@ class Clients implements UserInterface, EquatableInterface, EncoderAwareInterfac
     private $type;
 
     /**
-     * @var int
-     *
-     * @ORM\Column(name="funds_origin", type="smallint", nullable=true)
-     */
-    private $fundsOrigin;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="funds_origin_detail", type="string", nullable=true)
-     */
-    private $fundsOriginDetail;
-
-    /**
-     * @var int
-     *
-     * @ORM\Column(name="etape_inscription_preteur", type="smallint", nullable=true)
-     */
-    private $etapeInscriptionPreteur;
-
-    /**
-     * @var int
-     *
-     * @ORM\Column(name="status_inscription_preteur", type="smallint", nullable=true)
-     */
-    private $statusInscriptionPreteur;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="source", type="string", length=191, nullable=true)
-     */
-    private $source;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="source2", type="string", length=191, nullable=true)
-     */
-    private $source2;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="source3", type="string", length=191, nullable=true)
-     */
-    private $source3;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="slug_origine", type="string", length=191, nullable=true)
-     */
-    private $slugOrigine;
-
-    /**
-     * @var int
-     *
-     * @ORM\Column(name="origine", type="smallint", nullable=true)
-     */
-    private $origine;
-
-    /**
-     * @var int
-     *
-     * @ORM\Column(name="optin1", type="smallint", nullable=true)
-     */
-    private $optin1;
-
-    /**
-     * @var int
-     *
-     * @ORM\Column(name="optin2", type="smallint", nullable=true)
-     */
-    private $optin2;
-
-    /**
      * @var ClientsStatusHistory
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\ClientsStatusHistory")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_client_status_history", referencedColumnName="id")
+     *     @ORM\JoinColumn(name="id_client_status_history", referencedColumnName="id")
      * })
      */
     private $idClientStatusHistory;
 
     /**
-     * @var \DateTime
+     * @var DateTime
+     *
      * @ORM\Column(name="personal_data_updated", type="datetime", nullable=true)
      */
     private $personalDataUpdated;
 
     /**
-     * @var \DateTime
+     * @var DateTime
      *
-     * @ORM\Column(name="added", type="datetime")
+     * @ORM\Column(name="last_login", type="datetime", nullable=true)
      */
-    private $added;
-
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="updated", type="datetime", nullable=true)
-     */
-    private $updated;
-
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="lastlogin", type="datetime", nullable=true)
-     */
-    private $lastlogin;
+    private $lastLogin;
 
     /**
      * @var int
@@ -379,14 +261,7 @@ class Clients implements UserInterface, EquatableInterface, EncoderAwareInterfac
     private $wallets;
 
     /**
-     * @var string
-     *
-     * @ORM\Column(name="sponsor_code", type="string", length=50, nullable=true)
-     */
-    private $sponsorCode;
-
-    /**
-     * @var ClientsAdresses[];
+     * @var ClientsAdresses[]
      *
      * @ORM\OneToMany(targetEntity="Unilend\Entity\ClientsAdresses", mappedBy="idClient")
      */
@@ -416,11 +291,6 @@ class Clients implements UserInterface, EquatableInterface, EncoderAwareInterfac
     private $staff;
 
     /**
-     * @var bool
-     */
-    private $userOnlyDefaultEncoder;
-
-    /**
      * @var array
      *
      * @ORM\Column(type="json")
@@ -438,13 +308,11 @@ class Clients implements UserInterface, EquatableInterface, EncoderAwareInterfac
     }
 
     /**
-     * Set hash
-     *
      * @param string $hash
      *
      * @return Clients
      */
-    public function setHash($hash)
+    public function setHash(string $hash): Clients
     {
         $this->hash = $hash;
 
@@ -452,267 +320,203 @@ class Clients implements UserInterface, EquatableInterface, EncoderAwareInterfac
     }
 
     /**
-     * Get hash
-     *
      * @return string
      */
-    public function getHash()
+    public function getHash(): string
     {
         return $this->hash;
     }
 
     /**
-     * Set idLangue
-     *
-     * @param string $idLangue
+     * @param string $idLanguage
      *
      * @return Clients
      */
-    public function setIdLangue($idLangue)
+    public function setIdLanguage(string $idLanguage): Clients
     {
-        $this->idLangue = $idLangue;
+        $this->idLanguage = $idLanguage;
 
         return $this;
     }
 
     /**
-     * Get idLangue
-     *
      * @return string
      */
-    public function getIdLangue()
+    public function getIdLanguage(): string
     {
-        return $this->idLangue;
+        return $this->idLanguage;
     }
 
     /**
-     * Set civilite
-     *
-     * @param string $civilite
+     * @param string|null $title
      *
      * @return Clients
      */
-    public function setCivilite($civilite)
+    public function setTitle(?string $title): Clients
     {
-        $this->civilite = $civilite;
+        $this->title = $title;
 
         return $this;
     }
 
     /**
-     * Get civilite
-     *
-     * @return string
+     * @return string|null
      */
-    public function getCivilite()
+    public function getTitle(): ?string
     {
-        return $this->civilite;
+        return $this->title;
     }
 
     /**
-     * Set nom
-     *
-     * @param string $nom
+     * @param string|null $lastName
      *
      * @return Clients
      */
-    public function setNom($nom)
+    public function setLastName(?string $lastName): Clients
     {
-        $this->nom = $this->normalizeName($nom);
+        $this->lastName = $this->normalizeName($lastName);
 
         return $this;
     }
 
     /**
-     * Get nom
-     *
-     * @return string
+     * @return string|null
      */
-    public function getNom()
+    public function getLastName(): ?string
     {
-        return $this->nom;
+        return $this->lastName;
     }
 
     /**
-     * Set nomUsage
-     *
-     * @param string $nomUsage
+     * @param string|null $preferredName
      *
      * @return Clients
      */
-    public function setNomUsage($nomUsage)
+    public function setPreferredName(?string $preferredName): Clients
     {
-        if (empty($nomUsage)) {
-            $this->nomUsage = '';
-        } else {
-            $this->nomUsage = $this->normalizeName($nomUsage);
+        $this->preferredName = '';
+
+        if (false === empty($preferredName)) {
+            $this->preferredName = $this->normalizeName($preferredName);
         }
 
         return $this;
     }
 
     /**
-     * Get nomUsage
-     *
-     * @return string
+     * @return string|null
      */
-    public function getNomUsage()
+    public function getPreferredName(): ?string
     {
-        return $this->nomUsage;
+        return $this->preferredName;
     }
 
     /**
-     * Set prenom
-     *
-     * @param string $prenom
+     * @param string|null $firstName
      *
      * @return Clients
      */
-    public function setPrenom($prenom)
+    public function setFirstName(?string $firstName): Clients
     {
-        $this->prenom = $this->normalizeName($prenom);
+        $this->firstName = $this->normalizeName($firstName);
 
         return $this;
     }
 
     /**
-     * Get prenom
-     *
-     * @return string
+     * @return string|null
      */
-    public function getPrenom()
+    public function getFirstName(): ?string
     {
-        return $this->prenom;
+        return $this->firstName;
     }
 
     /**
-     * Set slug
-     *
-     * @param string $slug
+     * @param string|null $slug
      *
      * @return Clients
      */
-    public function setSlug($slug)
+    public function setSlug(?string $slug): Clients
     {
-        $this->slug = \URLify::filter($slug);
+        $this->slug = URLify::filter($slug);
 
         return $this;
     }
 
     /**
-     * Get slug
-     *
-     * @return string
+     * @return string|null
      */
-    public function getSlug()
+    public function getSlug(): ?string
     {
         return $this->slug;
     }
 
     /**
-     * Set fonction
-     *
-     * @param string $fonction
+     * @param DateTime|null $dateOfBirth
      *
      * @return Clients
      */
-    public function setFonction($fonction)
+    public function setDateOfBirth(?DateTime $dateOfBirth): Clients
     {
-        $this->fonction = $fonction;
+        $this->dateOfBirth = $dateOfBirth;
 
         return $this;
     }
 
     /**
-     * Get fonction
-     *
-     * @return string
+     * @return DateTime|null
      */
-    public function getFonction()
+    public function getDateOfBirth(): ?DateTime
     {
-        return $this->fonction;
+        return $this->dateOfBirth;
     }
 
     /**
-     * Set naissance
-     *
-     * @param \DateTime $naissance
+     * @param int|null $idBirthCountry
      *
      * @return Clients
      */
-    public function setNaissance($naissance)
+    public function setIdBirthCountry(?int $idBirthCountry): Clients
     {
-        $this->naissance = $naissance;
+        $this->idBirthCountry = $idBirthCountry;
 
         return $this;
     }
 
     /**
-     * Get naissance
-     *
-     * @return \DateTime
+     * @return int|null
      */
-    public function getNaissance()
+    public function getIdBirthCountry(): ?int
     {
-        return $this->naissance;
+        return $this->idBirthCountry;
     }
 
     /**
-     * Set idPaysNaissance
-     *
-     * @param integer $idPaysNaissance
+     * @param string|null $birthCity
      *
      * @return Clients
      */
-    public function setIdPaysNaissance($idPaysNaissance)
+    public function setBirthCity(?string $birthCity): Clients
     {
-        $this->idPaysNaissance = $idPaysNaissance;
+        $this->birthCity = $birthCity;
 
         return $this;
     }
 
     /**
-     * Get idPaysNaissance
-     *
-     * @return integer
+     * @return string|null
      */
-    public function getIdPaysNaissance()
+    public function getBirthCity(): ?string
     {
-        return $this->idPaysNaissance;
+        return $this->birthCity;
     }
 
     /**
-     * Set villeNaissance
-     *
-     * @param string $villeNaissance
+     * @param string|null $inseeBirth
      *
      * @return Clients
      */
-    public function setVilleNaissance($villeNaissance)
-    {
-        $this->villeNaissance = $villeNaissance;
-
-        return $this;
-    }
-
-    /**
-     * Get villeNaissance
-     *
-     * @return string
-     */
-    public function getVilleNaissance()
-    {
-        return $this->villeNaissance;
-    }
-
-    /**
-     * Set inseeBirth
-     *
-     * @param string $inseeBirth
-     *
-     * @return Clients
-     */
-    public function setInseeBirth($inseeBirth)
+    public function setInseeBirth(?string $inseeBirth): Clients
     {
         $this->inseeBirth = $inseeBirth;
 
@@ -720,91 +524,59 @@ class Clients implements UserInterface, EquatableInterface, EncoderAwareInterfac
     }
 
     /**
-     * Get inseeBirth
-     *
-     * @return string
+     * @return string|null
      */
-    public function getInseeBirth()
+    public function getInseeBirth(): ?string
     {
         return $this->inseeBirth;
     }
 
     /**
-     * Set idNationalite
-     *
-     * @param integer $idNationalite
+     * @param int|null $idNationality
      *
      * @return Clients
      */
-    public function setIdNationalite($idNationalite)
+    public function setIdNationality(?int $idNationality): Clients
     {
-        $this->idNationalite = $idNationalite;
+        $this->idNationality = $idNationality;
 
         return $this;
     }
 
     /**
-     * Get idNationalite
-     *
-     * @return integer
+     * @return int|null
      */
-    public function getIdNationalite()
+    public function getIdNationality(): ?int
     {
-        return $this->idNationalite;
+        return $this->idNationality;
     }
 
     /**
-     * @return null|bool
-     */
-    public function getUsPerson(): ?bool
-    {
-        return $this->usPerson;
-    }
-
-    /**
-     * @param bool $usPerson
+     * @param string|null $phone
      *
      * @return Clients
      */
-    public function setUsPerson(bool $usPerson): Clients
+    public function setPhone(?string $phone): Clients
     {
-        $this->usPerson = $usPerson;
+        $this->phone = $this->cleanPhoneNumber($phone);
 
         return $this;
     }
 
     /**
-     * Set telephone
-     *
-     * @param string $telephone
-     *
-     * @return Clients
+     * @return string|null
      */
-    public function setTelephone($telephone)
+    public function getPhone(): ?string
     {
-        $this->telephone = $this->cleanPhoneNumber($telephone);
-
-        return $this;
+        return $this->phone;
     }
 
     /**
-     * Get telephone
-     *
-     * @return string
-     */
-    public function getTelephone()
-    {
-        return $this->telephone;
-    }
-
-    /**
-     * Set mobile
-     *
-     * @param string $mobile
+     * @param string|null $mobile
      *
      * @return Clients
      */
-    public function setMobile($mobile)
+    public function setMobile(?string $mobile): Clients
     {
         $this->mobile = $this->cleanPhoneNumber($mobile);
 
@@ -812,23 +584,19 @@ class Clients implements UserInterface, EquatableInterface, EncoderAwareInterfac
     }
 
     /**
-     * Get mobile
-     *
-     * @return string
+     * @return string|null
      */
-    public function getMobile()
+    public function getMobile(): ?string
     {
         return $this->mobile;
     }
 
     /**
-     * Set email
-     *
-     * @param string $email
+     * @param string|null $email
      *
      * @return Clients
      */
-    public function setEmail($email)
+    public function setEmail(?string $email): Clients
     {
         $this->email = $email;
 
@@ -836,23 +604,19 @@ class Clients implements UserInterface, EquatableInterface, EncoderAwareInterfac
     }
 
     /**
-     * Get email
-     *
-     * @return string
+     * @return string|null
      */
-    public function getEmail()
+    public function getEmail(): ?string
     {
         return $this->email;
     }
 
     /**
-     * Set password
-     *
-     * @param string $password
+     * @param string|null $password
      *
      * @return Clients
      */
-    public function setPassword($password)
+    public function setPassword(?string $password): Clients
     {
         $this->password = $password;
 
@@ -860,71 +624,59 @@ class Clients implements UserInterface, EquatableInterface, EncoderAwareInterfac
     }
 
     /**
-     * Get password
-     *
-     * @return string
+     * @return string|null
      */
-    public function getPassword()
+    public function getPassword(): ?string
     {
         return $this->password;
     }
 
     /**
-     * Set secreteQuestion
-     *
-     * @param string $secreteQuestion
+     * @param string|null $securityQuestion
      *
      * @return Clients
      */
-    public function setSecreteQuestion($secreteQuestion)
+    public function setSecurityQuestion(?string $securityQuestion): Clients
     {
-        $this->secreteQuestion = $secreteQuestion;
+        $this->securityQuestion = $securityQuestion;
 
         return $this;
     }
 
     /**
-     * Get secreteQuestion
-     *
-     * @return string
+     * @return string|null
      */
-    public function getSecreteQuestion()
+    public function getSecurityQuestion(): ?string
     {
-        return $this->secreteQuestion;
+        return $this->securityQuestion;
     }
 
     /**
-     * Set secreteReponse
-     *
-     * @param string $secreteReponse
+     * @param string|null $securityAnswer
      *
      * @return Clients
      */
-    public function setSecreteReponse($secreteReponse)
+    public function setSecurityAnswer(?string $securityAnswer): Clients
     {
-        $this->secreteReponse = md5($secreteReponse);
+        $this->securityAnswer = md5($securityAnswer);
 
         return $this;
     }
 
     /**
-     * Get secreteReponse
-     *
-     * @return string
+     * @return string|null
      */
-    public function getSecreteReponse()
+    public function getSecurityAnswer(): ?string
     {
-        return $this->secreteReponse;
+        return $this->securityAnswer;
     }
 
     /**
-     * Set type
-     *
-     * @param integer $type
+     * @param int|null $type
      *
      * @return Clients
      */
-    public function setType($type)
+    public function setType(?int $type): Clients
     {
         $this->type = $type;
 
@@ -932,235 +684,15 @@ class Clients implements UserInterface, EquatableInterface, EncoderAwareInterfac
     }
 
     /**
-     * Get type
-     *
-     * @return integer
+     * @return int|null
      */
-    public function getType()
+    public function getType(): ?int
     {
         return $this->type;
     }
 
     /**
-     * Set etapeInscriptionPreteur
-     *
-     * @param integer $etapeInscriptionPreteur
-     *
-     * @return Clients
-     */
-    public function setEtapeInscriptionPreteur($etapeInscriptionPreteur)
-    {
-        $this->etapeInscriptionPreteur = $etapeInscriptionPreteur;
-
-        return $this;
-    }
-
-    /**
-     * Get etapeInscriptionPreteur
-     *
-     * @return integer
-     */
-    public function getEtapeInscriptionPreteur()
-    {
-        return $this->etapeInscriptionPreteur;
-    }
-
-    /**
-     * Set statusInscriptionPreteur
-     *
-     * @param integer $statusInscriptionPreteur
-     *
-     * @return Clients
-     */
-    public function setStatusInscriptionPreteur($statusInscriptionPreteur)
-    {
-        $this->statusInscriptionPreteur = $statusInscriptionPreteur;
-
-        return $this;
-    }
-
-    /**
-     * Get statusInscriptionPreteur
-     *
-     * @return integer
-     */
-    public function getStatusInscriptionPreteur()
-    {
-        return $this->statusInscriptionPreteur;
-    }
-
-    /**
-     * Set source
-     *
-     * @param string $source
-     *
-     * @return Clients
-     */
-    public function setSource($source)
-    {
-        $this->source = $source;
-
-        return $this;
-    }
-
-    /**
-     * Get source
-     *
-     * @return string
-     */
-    public function getSource()
-    {
-        return $this->source;
-    }
-
-    /**
-     * Set source2
-     *
-     * @param string $source2
-     *
-     * @return Clients
-     */
-    public function setSource2($source2)
-    {
-        $this->source2 = $source2;
-
-        return $this;
-    }
-
-    /**
-     * Get source2
-     *
-     * @return string
-     */
-    public function getSource2()
-    {
-        return $this->source2;
-    }
-
-    /**
-     * Set source3
-     *
-     * @param string $source3
-     *
-     * @return Clients
-     */
-    public function setSource3($source3)
-    {
-        $this->source3 = $source3;
-
-        return $this;
-    }
-
-    /**
-     * Get source3
-     *
-     * @return string
-     */
-    public function getSource3()
-    {
-        return $this->source3;
-    }
-
-    /**
-     * Set slugOrigine
-     *
-     * @param string $slugOrigine
-     *
-     * @return Clients
-     */
-    public function setSlugOrigine($slugOrigine)
-    {
-        $this->slugOrigine = $slugOrigine;
-
-        return $this;
-    }
-
-    /**
-     * Get slugOrigine
-     *
-     * @return string
-     */
-    public function getSlugOrigine()
-    {
-        return $this->slugOrigine;
-    }
-
-    /**
-     * Set origine
-     *
-     * @param integer $origine
-     *
-     * @return Clients
-     */
-    public function setOrigine($origine)
-    {
-        $this->origine = $origine;
-
-        return $this;
-    }
-
-    /**
-     * Get origine
-     *
-     * @return integer
-     */
-    public function getOrigine()
-    {
-        return $this->origine;
-    }
-
-    /**
-     * Set optin1
-     *
-     * @param integer $optin1
-     *
-     * @return Clients
-     */
-    public function setOptin1($optin1)
-    {
-        $this->optin1 = $optin1;
-
-        return $this;
-    }
-
-    /**
-     * Get optin1
-     *
-     * @return integer
-     */
-    public function getOptin1()
-    {
-        return $this->optin1;
-    }
-
-    /**
-     * Set optin2
-     *
-     * @param integer $optin2
-     *
-     * @return Clients
-     */
-    public function setOptin2($optin2)
-    {
-        $this->optin2 = $optin2;
-
-        return $this;
-    }
-
-    /**
-     * Get optin2
-     *
-     * @return integer
-     */
-    public function getOptin2()
-    {
-        return $this->optin2;
-    }
-
-    /**
-     * Set idClientsStatusHistory
-     *
-     * @param ClientsStatusHistory $idClientStatusHistory
+     * @param ClientsStatusHistory|null $idClientStatusHistory
      *
      * @return Clients
      */
@@ -1172,9 +704,7 @@ class Clients implements UserInterface, EquatableInterface, EncoderAwareInterfac
     }
 
     /**
-     * Get idClientsStatusHistory
-     *
-     * @return ClientsStatusHistory
+     * @return ClientsStatusHistory|null
      */
     public function getIdClientStatusHistory(): ?ClientsStatusHistory
     {
@@ -1182,83 +712,29 @@ class Clients implements UserInterface, EquatableInterface, EncoderAwareInterfac
     }
 
     /**
-     * Set added
-     *
-     * @param \DateTime $added
+     * @param DateTime|null $lastLogin
      *
      * @return Clients
      */
-    public function setAdded($added)
+    public function setLastLogin(?DateTime $lastLogin): Clients
     {
-        $this->added = $added;
+        $this->lastLogin = $lastLogin;
 
         return $this;
     }
 
     /**
-     * Get added
-     *
-     * @return \DateTime
+     * @return DateTime|null
      */
-    public function getAdded()
+    public function getLastLogin(): ?DateTime
     {
-        return $this->added;
+        return $this->lastLogin;
     }
 
     /**
-     * Set updated
-     *
-     * @param \DateTime $updated
-     *
-     * @return Clients
+     * @return int
      */
-    public function setUpdated($updated)
-    {
-        $this->updated = $updated;
-
-        return $this;
-    }
-
-    /**
-     * Get updated
-     *
-     * @return \DateTime
-     */
-    public function getUpdated()
-    {
-        return $this->updated;
-    }
-
-    /**
-     * Set lastlogin
-     *
-     * @param \DateTime $lastlogin
-     *
-     * @return Clients
-     */
-    public function setLastlogin($lastlogin)
-    {
-        $this->lastlogin = $lastlogin;
-
-        return $this;
-    }
-
-    /**
-     * Get lastlogin
-     *
-     * @return \DateTime
-     */
-    public function getLastlogin()
-    {
-        return $this->lastlogin;
-    }
-
-    /**
-     * Get idClient
-     *
-     * @return integer
-     */
-    public function getIdClient()
+    public function getIdClient(): int
     {
         return $this->idClient;
     }
@@ -1266,27 +742,9 @@ class Clients implements UserInterface, EquatableInterface, EncoderAwareInterfac
     /**
      * @ORM\PrePersist
      */
-    public function setAddedValue()
+    public function setHashValue(): void
     {
-        if (!$this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
-            $this->added = new \DateTime();
-        }
-    }
-
-    /**
-     * @ORM\PreUpdate
-     */
-    public function setUpdatedValue()
-    {
-        $this->updated = new \DateTime();
-    }
-
-    /**
-     * @ORM\PrePersist
-     */
-    public function setHashValue()
-    {
-        if (is_null($this->hash)) {
+        if (null === $this->hash) {
             try {
                 $this->hash = $this->generateHash();
             } catch (UnsatisfiedDependencyException $exception) {
@@ -1296,106 +754,11 @@ class Clients implements UserInterface, EquatableInterface, EncoderAwareInterfac
     }
 
     /**
-     * @param $name
-     *
-     * @return string
-     */
-    private function normalizeName($name)
-    {
-        $name = strtolower($name);
-
-        $pos = strrpos($name, '-');
-        if ($pos === false) {
-            return ucwords($name);
-        } else {
-            $tabName = explode('-', $name);
-            $newName = '';
-            $i       = 0;
-            foreach ($tabName as $name) {
-                $newName .= ($i == 0 ? '' : '-') . ucwords($name);
-                $i++;
-            }
-
-            return $newName;
-        }
-    }
-
-    /**
-     * @param string $number
-     *
-     * @return string
-     */
-    private function cleanPhoneNumber($number)
-    {
-        return str_replace([' ', '.'], '', $number);
-    }
-
-    /**
-     * Get fundsOrigin
-     *
-     * @return integer
-     */
-    public function getFundsOrigin()
-    {
-        return $this->fundsOrigin;
-    }
-
-    /**
-     * Set fundsOrigin
-     *
-     * @param int $fundsOrigin
-     *
-     * @return Clients
-     */
-    public function setFundsOrigin($fundsOrigin)
-    {
-        $this->fundsOrigin = $fundsOrigin;
-
-        return $this;
-    }
-
-    /**
-     * Get fundsOriginDetail
-     *
-     * @return string
-     */
-    public function getFundsOriginDetail()
-    {
-        return $this->fundsOriginDetail;
-    }
-
-    /**
-     * Set fundsOriginDetail
-     *
-     * @param string $fundsOriginDetail
-     *
-     * @return Clients
-     */
-    public function setFundsOriginDetail($fundsOriginDetail)
-    {
-        $this->fundsOriginDetail = $fundsOriginDetail;
-
-        return $this;
-    }
-
-    /**
-     * @return string
-     */
-    private function generateHash()
-    {
-        $uuid4 = Uuid::uuid4();
-
-        return $uuid4->toString();
-    }
-
-    /**
-     * Get client attachments
-     *
-     * @param boolean $includeArchived
+     * @param bool $includeArchived
      *
      * @return Attachment[]
      */
-    public function getAttachments($includeArchived = false)
+    public function getAttachments($includeArchived = false): iterable
     {
         if (false === $includeArchived) {
             $attachments = [];
@@ -1412,18 +775,14 @@ class Clients implements UserInterface, EquatableInterface, EncoderAwareInterfac
     }
 
     /**
-     * Get wallets
-     *
      * @return Wallet[]
      */
-    public function getWallets()
+    public function getWallets(): iterable
     {
         return $this->wallets;
     }
 
     /**
-     * Check whether client has a borrower wallet or not
-     *
      * @return bool
      */
     public function isBorrower(): bool
@@ -1432,8 +791,6 @@ class Clients implements UserInterface, EquatableInterface, EncoderAwareInterfac
     }
 
     /**
-     * Check whether client has a lender wallet or not
-     *
      * @return bool
      */
     public function isLender(): bool
@@ -1442,88 +799,33 @@ class Clients implements UserInterface, EquatableInterface, EncoderAwareInterfac
     }
 
     /**
-     * Check whether client has a partner wallet or not
-     *
      * @return bool
      */
-    public function isPartner(): bool
+    public function isArranger(): bool
     {
-        return $this->hasRole(self::ROLE_PARTNER);
-    }
-
-    /**
-     * Check whether client has a debt collector wallet or not
-     *
-     * @return bool
-     */
-    public function isDebtCollector(): bool
-    {
-        return $this->hasRole(self::ROLE_DEBT_COLLECTOR);
+        return $this->hasRole(self::ROLE_ARRANGER);
     }
 
     /**
      * @return bool
      */
-    public function isNaturalPerson()
+    public function isRun(): bool
+    {
+        return $this->hasRole(self::ROLE_RUN);
+    }
+
+    /**
+     * @return bool
+     */
+    public function isNaturalPerson(): bool
     {
         return in_array($this->type, [self::TYPE_PERSON, self::TYPE_PERSON_FOREIGNER]);
     }
 
     /**
-     * @return string
-     */
-    public function getSponsorCode()
-    {
-        return $this->sponsorCode;
-    }
-
-    /**
-     * @param string $sponsorCode
-     *
-     * @return Clients
-     */
-    public function setSponsorCode($sponsorCode = null)
-    {
-        $this->sponsorCode = $sponsorCode;
-
-        return $this;
-    }
-
-    /**
-     * @ORM\PreUpdate()
-     */
-    public function setSponsorCodeValue()
-    {
-        if (
-            empty($this->sponsorCode)
-            && in_array($this->type, [self::TYPE_PERSON, self::TYPE_PERSON_FOREIGNER, self::TYPE_LEGAL_ENTITY, self::TYPE_LEGAL_ENTITY_FOREIGNER])
-        ) {
-            $this->sponsorCode = $this->createSponsorCode();
-        }
-    }
-
-    //@todo once sponsor codes are repaired this method should be private
-
-    /**
-     * @return null|string
-     */
-    public function createSponsorCode()
-    {
-        if (false === empty($this->nom)) {
-            $lastName = \URLify::filter($this->nom);
-            $lastName = str_replace('-', '', $lastName);
-            $hashId   = new Hashids('', 6);
-
-            return $hashId->encode($this->idClient) . ucfirst(strtolower($lastName));
-        }
-
-        return null;
-    }
-
-    /**
      * @return ClientsAdresses[]
      */
-    public function getClientsAddresses()
+    public function getClientsAddresses(): iterable
     {
         return $this->clientsAddresses;
     }
@@ -1533,7 +835,7 @@ class Clients implements UserInterface, EquatableInterface, EncoderAwareInterfac
      *
      * @return Clients
      */
-    public function setClientsAddresses($clientsAddresses)
+    public function setClientsAddresses(iterable $clientsAddresses): Clients
     {
         $this->clientsAddresses = $clientsAddresses;
 
@@ -1553,7 +855,7 @@ class Clients implements UserInterface, EquatableInterface, EncoderAwareInterfac
     }
 
     /**
-     * @param null|ClientAddress $idAddress
+     * @param ClientAddress|null $idAddress
      *
      * @return Clients
      */
@@ -1577,7 +879,7 @@ class Clients implements UserInterface, EquatableInterface, EncoderAwareInterfac
     }
 
     /**
-     * @param null|ClientAddress $idPostalAddress
+     * @param ClientAddress|null $idPostalAddress
      *
      * @return Clients
      */
@@ -1589,22 +891,24 @@ class Clients implements UserInterface, EquatableInterface, EncoderAwareInterfac
     }
 
     /**
-     * @return \DateTime|null
+     * @return DateTime|null
      */
-    public function getPersonalDataUpdated(): ?\DateTime
+    public function getPersonalDataUpdated(): ?DateTime
     {
         return $this->personalDataUpdated;
     }
 
     /**
-     * @param \DateTime|null $personalDataUpdated
+     * @param DateTime|null $personalDataUpdated
+     *
+     * @throws Exception
      *
      * @return Clients
      */
-    public function setPersonalDataUpdated(?\DateTime $personalDataUpdated = null): Clients
+    public function setPersonalDataUpdated(?DateTime $personalDataUpdated = null): Clients
     {
         if (null === $personalDataUpdated) {
-            $personalDataUpdated = new \DateTime();
+            $personalDataUpdated = new DateTime();
         }
 
         $this->personalDataUpdated = $personalDataUpdated;
@@ -1639,7 +943,7 @@ class Clients implements UserInterface, EquatableInterface, EncoderAwareInterfac
      */
     public function getInitials(): string
     {
-        return mb_substr($this->getPrenom(), 0, 1) . mb_substr($this->getNom(), 0, 1);
+        return mb_substr($this->getFirstName() ?? '', 0, 1) . mb_substr($this->getLastName() ?? '', 0, 1);
     }
 
     /**
@@ -1653,58 +957,9 @@ class Clients implements UserInterface, EquatableInterface, EncoderAwareInterfac
     /**
      * @return bool
      */
-    public function isGrantedLenderRead(): bool
-    {
-        return $this->isInStatus(ClientsStatus::GRANTED_LENDER_ACCOUNT_READ);
-    }
-
-    /**
-     * @return bool
-     *
-     */
-    public function isGrantedLenderDeposit(): bool
-    {
-        return $this->isInStatus(ClientsStatus::GRANTED_LENDER_DEPOSIT);
-    }
-
-    /**
-     * @return bool
-     */
-    public function isGrantedLenderWithdraw(): bool
-    {
-        return $this->isInStatus(ClientsStatus::GRANTED_LENDER_WITHDRAW);
-    }
-
-    /**
-     * @return bool
-     */
-    public function isGreantedLenderSponsorship(): bool
-    {
-        return $this->isInStatus(ClientsStatus::GRANTED_LENDER_SPONSORSHIP);
-    }
-
-    /**
-     * @return bool
-     */
     public function isValidated(): bool
     {
         return $this->isInStatus([ClientsStatus::STATUS_VALIDATED]);
-    }
-
-    /**
-     * @return bool
-     */
-    public function isInCompleteness(): bool
-    {
-        return $this->isInStatus([ClientsStatus::STATUS_COMPLETENESS, ClientsStatus::STATUS_COMPLETENESS_REMINDER]);
-    }
-
-    /**
-     * @return bool
-     */
-    public function isInSubscription(): bool
-    {
-        return $this->isInStatus([ClientsStatus::STATUS_CREATION]);
     }
 
     /**
@@ -1716,30 +971,7 @@ class Clients implements UserInterface, EquatableInterface, EncoderAwareInterfac
     }
 
     /**
-     * @param array $status
-     *
-     * @return bool
-     */
-    private function isInStatus(array $status): bool
-    {
-        return $this->getIdClientStatusHistory() && in_array($this->getIdClientStatusHistory()->getIdStatus()->getId(), $status);
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getEncoderName(): ?string
-    {
-        if (true !== $this->userOnlyDefaultEncoder && 1 === preg_match('/^[0-9a-f]{32}$/', $this->password)) {
-            return self::PASSWORD_ENCODER_MD5;
-        }
-
-        // For other users, use the default encoder
-        return null;
-    }
-
-    /**
-     * @inheritDoc
+     * {@inheritdoc}
      */
     public function isEqualTo(UserInterface $user): bool
     {
@@ -1763,7 +995,7 @@ class Clients implements UserInterface, EquatableInterface, EncoderAwareInterfac
     }
 
     /**
-     * @inheritDoc
+     * {@inheritdoc}
      */
     public function getRoles(): array
     {
@@ -1787,6 +1019,104 @@ class Clients implements UserInterface, EquatableInterface, EncoderAwareInterfac
     }
 
     /**
+     * @param string $role
+     *
+     * @return bool
+     */
+    public function hasRole(string $role): bool
+    {
+        return in_array($role, $this->getRoles());
+    }
+
+    /**
+     * Reset roles.
+     */
+    public function resetRoles(): void
+    {
+        $this->roles = [];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getSalt(): string
+    {
+        return ''; // Since we use the BCrypt password encoder, the salt will be ignored. The auto-generated one is always the best.
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getUsername(): string
+    {
+        return $this->getEmail();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function eraseCredentials(): void
+    {
+        // Not yet Implemented
+    }
+
+    /**
+     * @param string $name
+     *
+     * @return string
+     */
+    private function normalizeName(string $name): string
+    {
+        $name = mb_strtolower($name);
+
+        $pos = mb_strrpos($name, '-');
+        if (false === $pos) {
+            return ucwords($name);
+        }
+        $tabName = explode('-', $name);
+        $newName = '';
+        $i       = 0;
+        foreach ($tabName as $name) {
+            $newName .= (0 == $i ? '' : '-') . ucwords($name);
+            ++$i;
+        }
+
+        return $newName;
+    }
+
+    /**
+     * @param string $number
+     *
+     * @return string
+     */
+    private function cleanPhoneNumber(string $number): string
+    {
+        return str_replace([' ', '.'], '', $number);
+    }
+
+    /**
+     * @throws Exception
+     *
+     * @return string
+     */
+    private function generateHash(): string
+    {
+        $uuid4 = Uuid::uuid4();
+
+        return $uuid4->toString();
+    }
+
+    /**
+     * @param array $status
+     *
+     * @return bool
+     */
+    private function isInStatus(array $status): bool
+    {
+        return $this->getIdClientStatusHistory() && in_array($this->getIdClientStatusHistory()->getIdStatus()->getId(), $status);
+    }
+
+    /**
      * @param array $roles
      *
      * @return array
@@ -1800,52 +1130,5 @@ class Clients implements UserInterface, EquatableInterface, EncoderAwareInterfac
         }
 
         return $roles;
-    }
-
-    /**
-     * @param string $role
-     *
-     * @return bool
-     */
-    public function hasRole(string $role): bool
-    {
-        return in_array($role, $this->getRoles());
-    }
-
-    public function resetRoles(): void
-    {
-        $this->roles = [];
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getSalt(): string
-    {
-        return ''; // Since we use the BCrypt password encoder, the salt will be ignored. The auto-generated one is always the best.
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getUsername(): string
-    {
-        return $this->getEmail();
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function eraseCredentials(): void
-    {
-        // Not yet Implemented
-    }
-
-    /**
-     * For backwards compatibility (for the user who has already MD5 encoded password), we force the user to use the default encoder (which is BCrypt), even though his/her encoder is MD5
-     */
-    public function useDefaultEncoder(): void
-    {
-        $this->userOnlyDefaultEncoder = true;
     }
 }

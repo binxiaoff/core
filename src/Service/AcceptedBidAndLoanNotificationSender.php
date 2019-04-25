@@ -275,11 +275,11 @@ class AcceptedBidAndLoanNotificationSender
         }
 
         return [
-            'firstName'                         => $wallet->getIdClient()->getPrenom(),
-            'companyName'                       => $companyName,
-            'multiBidsDisclaimer'               => $multiBidsDisclaimer ?? '',
-            'multiBidsExplanation'              => $multiBidsExplanation ?? '',
-            'lenderPattern'                     => $wallet->getWireTransferPattern()
+            'firstName'            => $wallet->getIdClient()->getFirstName(),
+            'companyName'          => $companyName,
+            'multiBidsDisclaimer'  => $multiBidsDisclaimer ?? '',
+            'multiBidsExplanation' => $multiBidsExplanation ?? '',
+            'lenderPattern'        => $wallet->getWireTransferPattern()
         ];
     }
 

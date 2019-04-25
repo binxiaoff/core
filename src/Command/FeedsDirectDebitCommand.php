@@ -104,8 +104,8 @@ class FeedsDirectDebitCommand extends ContainerAwareCommand
                 'mandateDate'      => $mandate->getUpdated()->format('Y-m-d'),
                 'debitBic'         => $borrowerDirectDebit->getBic(),
                 'debitIban'        => $borrowerDirectDebit->getIban(),
-                'lastname'         => str_replace(array('"', '\'', '\\', '>', '<', '&'), '', $client->getNom()),
-                'firstname'        => str_replace(array('"', '\'', '\\', '>', '<', '&'), '', $client->getPrenom()),
+                'lastname'         => str_replace(array('"', '\'', '\\', '>', '<', '&'), '', $client->getLastName()),
+                'firstname'        => str_replace(array('"', '\'', '\\', '>', '<', '&'), '', $client->getFirstName()),
                 'reference'        => $borrowerDirectDebit->getMotif()
             ]);
 

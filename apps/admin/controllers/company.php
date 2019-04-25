@@ -204,10 +204,10 @@ class companyController extends bootstrap
         try {
             $this->client
                 ->setEmail($email)
-                ->setIdLangue('fr')
-                ->setCivilite($title)
-                ->setNom($name)
-                ->setPrenom($firstName);
+                ->setIdLanguage('fr')
+                ->setTitle($title)
+                ->setLastName($name)
+                ->setFirstName($firstName);
 
             if (false === $entityManager->contains($this->client)) {
                 $entityManager->persist($this->client);

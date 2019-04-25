@@ -722,7 +722,7 @@ class LenderOperationsController extends Controller
         }
 
         foreach ($data as $index => $row) {
-            $data[$index]['status'] = ($row['datetime'] > $client->getLastlogin()) ? 'unread' : 'read';
+            $data[$index]['status'] = ($row['datetime'] > $client->getLastLogin()) ? 'unread' : 'read';
         }
         return $data;
     }

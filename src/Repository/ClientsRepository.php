@@ -764,8 +764,8 @@ class ClientsRepository extends ServiceEntityRepository
             ->where('LOWER(c.nom) LIKE LOWER(:lastname)')
             ->andWhere('LOWER(c.prenom) LIKE LOWER(:firstname)')
             ->andWhere('cc.idCompany = :company')
-            ->setParameter('lastname', $companyClient->getIdClient()->getNom())
-            ->setParameter('firstname', $companyClient->getIdClient()->getPrenom())
+            ->setParameter('lastname', $companyClient->getIdClient()->getLastName())
+            ->setParameter('firstname', $companyClient->getIdClient()->getFirstName())
             ->setParameter('company', $companyClient->getIdCompany()->getIdCompany())
             ->getQuery()
             ->getSingleScalarResult();

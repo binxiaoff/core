@@ -443,7 +443,7 @@ EOF
                                 $clients_gestion_mails_notif->update();
 
                                 $keywords = [
-                                    'firstName'        => $client->getPrenom(),
+                                    'firstName'        => $client->getFirstName(),
                                     'depositAmount'    => $numberFormatter->format(round(bcdiv($reception->getMontant(), 100, 4), 2)),
                                     'availableBalance' => $numberFormatter->format((float) $wallet->getAvailableBalance()),
                                     'lenderPattern'    => $wallet->getWireTransferPattern(),

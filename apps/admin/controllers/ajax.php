@@ -1149,7 +1149,7 @@ class ajaxController extends bootstrap
 
             if ($sendBorrowerEmail && $client && false === empty($client->getEmail())) {
                 $keywords = [
-                    'firstName' => $client->getPrenom()
+                    'firstName' => $client->getFirstName()
                 ];
 
                 /** @var \Unilend\SwiftMailer\TemplateMessage $message */
