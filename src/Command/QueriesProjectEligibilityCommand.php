@@ -18,7 +18,8 @@ class QueriesProjectEligibilityCommand extends ContainerAwareCommand
     {
         $this
             ->setName('queries:project_eligibility')
-            ->setDescription('Extract eligibility of projects');
+            ->setDescription('Extract eligibility of projects')
+        ;
     }
 
     /**
@@ -27,7 +28,7 @@ class QueriesProjectEligibilityCommand extends ContainerAwareCommand
     protected function execute(InputInterface $input, OutputInterface $output): void
     {
         $filePath = $this->getContainer()->getParameter('path.protected') . '/queries/' . 'projects_eligibility.xlsx';
-        $header   = $header = [
+        $header   = [
             'ID projet',
             'Date de dépôt',
             'Raison sociale',
@@ -49,7 +50,7 @@ class QueriesProjectEligibilityCommand extends ContainerAwareCommand
             'RCS',
             'NAF',
             'Statut projet',
-            'Tronc commun'
+            'Tronc commun',
         ];
 
         try {
@@ -60,7 +61,7 @@ class QueriesProjectEligibilityCommand extends ContainerAwareCommand
                 'class'    => __CLASS__,
                 'function' => __FUNCTION__,
                 'file'     => $exception->getFile(),
-                'line'     => $exception->getLine()
+                'line'     => $exception->getLine(),
             ]);
         }
     }
@@ -80,7 +81,7 @@ class QueriesProjectEligibilityCommand extends ContainerAwareCommand
             CompanyRating::TYPE_ALTARES_SCORE_20,
             CompanyRating::TYPE_EULER_HERMES_TRAFFIC_LIGHT,
             CompanyRating::TYPE_EULER_HERMES_GRADE,
-            CompanyRating::TYPE_INFOLEGALE_SCORE
+            CompanyRating::TYPE_INFOLEGALE_SCORE,
         ];
 
         $extraction        = [];
@@ -94,7 +95,7 @@ class QueriesProjectEligibilityCommand extends ContainerAwareCommand
             $ratings     = $companyRatingRepository->getRatingsByTypeAndHistory($project->getIdCompanyRatingHistory(), $ratingTypes);
 
             $source = '';
-            if ($company->getIdClientOwner() && false === $project->getCreateBo() && false === empty($company->getIdClientOwner()->getSource())) {
+            if ($company->getIdClientOwner() && false === $project->isCreateBo() && false === empty($company->getIdClientOwner()->getSource())) {
                 $source = $company->getIdClientOwner()->getSource();
             }
 
@@ -130,7 +131,7 @@ class QueriesProjectEligibilityCommand extends ContainerAwareCommand
                 'is_rcs'           => empty($company->getRcs()) ? 'Non' : 'Oui',
                 'naf'              => $company->getCodeNaf(),
                 'status'           => isset($indexedProjectStatus[$project->getStatus()]) ? $indexedProjectStatus[$project->getStatus()] : '',
-                'common_check'     => $projectEligibilityAssessment->getStatus() ? 'OK' : $projectEligibilityAssessment->getIdRule()->getLabel()
+                'common_check'     => $projectEligibilityAssessment->getStatus() ? 'OK' : $projectEligibilityAssessment->getIdRule()->getLabel(),
             ];
         }
 
@@ -154,6 +155,7 @@ class QueriesProjectEligibilityCommand extends ContainerAwareCommand
             ->openToFile($filePath)
             ->addRow($header)
             ->addRows($data)
-            ->close();
+            ->close()
+        ;
     }
 }

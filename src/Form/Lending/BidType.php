@@ -1,14 +1,21 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Unilend\Form\Lending;
 
-use Symfony\Component\Form\{AbstractType, Extension\Core\Type\CheckboxType, Extension\Core\Type\CollectionType, Extension\Core\Type\MoneyType, FormBuilderInterface};
+use Symfony\Component\Form\Extension\Core\Type\{CollectionType, MoneyType};
+use Symfony\Component\Form\{AbstractType, FormBuilderInterface};
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Unilend\Entity\Bids;
 
 class BidType extends AbstractType
 {
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    /**
+     * @param FormBuilderInterface $builder
+     * @param array                $options
+     */
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder->add('amount', MoneyType::class, [
             'label'   => 'lending-form_amount',
@@ -23,18 +30,21 @@ class BidType extends AbstractType
                 'allow_delete'  => true,
                 'by_reference'  => false,
             ])
-            ->add('agent', CheckboxType::class, [
-                'label'    => 'Je souhaite être agent',
-                'required' => false,
-            ]);
+        ;
     }
 
-    public function configureOptions(OptionsResolver $resolver)
+    /**
+     * @param OptionsResolver $resolver
+     */
+    public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefault('data_class', Bids::class);
     }
 
-    public function getBlockPrefix()
+    /**
+     * @return string
+     */
+    public function getBlockPrefix(): string
     {
         return 'bid_type';
     }
