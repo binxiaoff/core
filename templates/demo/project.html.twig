@@ -68,8 +68,8 @@
                                 <dd>{{ project.amount|localizednumber }}&nbsp;€</dd>
                             </dl>
                             <dl class="col-lg-6 col-md-6">
-                                <dt>Durée</dt>
-                                <dd>{% transchoice(project.period / 12) with {'%duration%': project.period / 12} %} demo-project-request_simulator-duration-select-option {% endtranschoice %}</dd>
+                                <dt>Maturité</dt>
+                                <dd>{{ project.period }} mois</dd>
                             </dl>
                             <dl class="col-lg-6 col-md-6">
                                 <dt>Loi d‘amortissement</dt>

@@ -47,14 +47,11 @@ class DemoController extends AbstractController
     /**
      * @Route("/depot", name="demo_project_request", methods={"GET"})
      *
-     * @param ProjectManager $projectManager
-     *
      * @return Response
      */
-    public function projectRequest(ProjectManager $projectManager): Response
+    public function projectRequest(): Response
     {
         $template = [
-            'loanPeriods'     => $projectManager->getPossibleProjectPeriods(),
             'runs'            => $this->entityManager->getRepository(Companies::class)->findBy(['idCompany' => range(6, 45)], ['name' => 'ASC']),
             'attachmentTypes' => $this->entityManager->getRepository(ProjectAttachmentType::class)->getAttachmentTypes(),
             'sectors'         => $this->entityManager->getRepository(CompanySector::class)->findBy([], ['idCompanySector' => 'ASC']),
@@ -250,7 +247,6 @@ class DemoController extends AbstractController
         $projectAttachmentTypeRepository = $this->entityManager->getRepository(ProjectAttachmentType::class);
         $productRepository               = $this->entityManager->getRepository(Product::class);
         $template                        = [
-            'loanPeriods'   => $projectManager->getPossibleProjectPeriods(),
             'arranger'      => $arranger,
             'arrangers'     => $arrangers,
             'run'           => $run,
@@ -739,10 +735,10 @@ class DemoController extends AbstractController
                 break;
             case 'duration':
                 $value = (int) $value;
-                $project->setPeriod($value * 12);
+                $project->setPeriod($value);
                 $this->entityManager->flush($project);
 
-                $outputValue = $project->getPeriod() / 12;
+                $outputValue = $project->getPeriod();
 
                 break;
             case 'amortization':
@@ -1201,6 +1197,7 @@ class DemoController extends AbstractController
 
                 if (null !== $acceptedBid) {
                     $this->logger->error('Bid #' . $bid->getIdBid() . ' has already been converted to loan');
+
                     continue;
                 }
 
