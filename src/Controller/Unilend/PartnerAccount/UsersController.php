@@ -71,7 +71,7 @@ class UsersController extends Controller
                         ->generateTemporaryLink($client, TemporaryLinksLogin::PASSWORD_TOKEN_LIFETIME_MEDIUM);
 
                     $keywords = [
-                        'firstName'    => $client->getPrenom(),
+                        'firstName'    => $client->getFirstName(),
                         'login'        => $client->getEmail(),
                         'passwordLink' => $this->generateUrl('partner_security', ['securityToken' => $token], UrlGeneratorInterface::ABSOLUTE_URL)
                     ];

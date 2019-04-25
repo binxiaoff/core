@@ -353,13 +353,13 @@ class UniversignController extends Controller
             $bankAccount        = $wireTransferOut->getBankAccount();
             $destinationCompany = $entityManager->getRepository(Companies::class)->findOneBy(['idClientOwner' => $bankAccount->getIdClient()->getIdClient()]);
             $pdfContent         = $this->renderView('/pdf/wire_transfer_out/borrower_request_third_party.html.twig', [
-                'companyManagerName'      => $companyManager->getNom(),
-                'companyManagerFirstName' => $companyManager->getPrenom(),
+                'companyManagerName'      => $companyManager->getLastName(),
+                'companyManagerFirstName' => $companyManager->getFirstName(),
                 'companyManagerFunction'  => $companyManager->getFonction(),
                 'companyName'             => $company->getName(),
                 'amount'                  => $this->get('currency_formatter')->formatCurrency(bcdiv($wireTransferOut->getMontant(), 100, 4), 'EUR'),
-                'destinationName'         => $bankAccount->getIdClient()->getNom(),
-                'destinationFirstName'    => $bankAccount->getIdClient()->getPrenom(),
+                'destinationName'         => $bankAccount->getIdClient()->getLastName(),
+                'destinationFirstName'    => $bankAccount->getIdClient()->getFirstName(),
                 'destinationCompanyName'  => $destinationCompany->getName(),
                 'iban'                    => $bankAccount->getIban(),
             ]);

@@ -761,7 +761,7 @@ use Unilend\Entity\{AttachmentType, Companies, ProjectsStatus, UnderlyingContrac
                                 <select id="client-submitter-select" class="select" name="client_submitter">
                                     <option value="0"></option>
                                     <?php foreach ($this->submitters as $submitter) : ?>
-                                        <option value="<?= $submitter->getIdClient() ?>"<?php if ($submitter === $this->projectEntity->getIdClientSubmitter()) : ?> selected<?php endif; ?>><?= $submitter->getPrenom() ?> <?= $submitter->getNom() ?></option>
+                                        <option value="<?= $submitter->getIdClient() ?>"<?php if ($submitter === $this->projectEntity->getIdClientSubmitter()) : ?> selected<?php endif; ?>><?= $submitter->getFirstName() ?> <?= $submitter->getLastName() ?></option>
                                     <?php endforeach; ?>
                                 </select>
                             </td>

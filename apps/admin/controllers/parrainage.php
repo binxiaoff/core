@@ -409,11 +409,11 @@ class parrainageController extends bootstrap
             $sponseeValidationDate = $entityManager->getRepository(ClientsStatusHistory::class)->getFirstClientValidation($sponsee->getIdClient());
             $sponsorshipData       = [
                 'idClientSponsor'                => $sponsor->getIdClient(),
-                'lastNameSponsor'                => $sponsor->getNom(),
-                'firstNameSponsor'               => $sponsor->getPrenom(),
+                'lastNameSponsor'                => $sponsor->getLastName(),
+                'firstNameSponsor'               => $sponsor->getFirstName(),
                 'idClientSponsee'                => $sponsee->getIdClient(),
-                'lastNameSponsee'                => $sponsee->getNom(),
-                'firstNameSponsee'               => $sponsee->getPrenom(),
+                'lastNameSponsee'                => $sponsee->getLastName(),
+                'firstNameSponsee'               => $sponsee->getFirstName(),
                 'subscriptionSponsee'            => $sponsee->getAdded()->format('d/m/Y'),
                 'sponseeValidationDate'          => null !== $sponseeValidationDate ? $sponseeValidationDate->getAdded()->format('d/m/Y') : 'pas encore validé',
                 'sponseeHasReceivedWelcomeOffer' => $this->get('unilend.service.welcome_offer_manager')->clientHasReceivedWelcomeOffer($sponsee)

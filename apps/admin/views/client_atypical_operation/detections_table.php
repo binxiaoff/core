@@ -35,7 +35,7 @@
                     <?php endif; ?>
                 </span>
             </td>
-            <td><?= $atypicalOperation->getClient()->getPrenom() . ' ' . $atypicalOperation->getClient()->getNom() ?></td>
+            <td><?= $atypicalOperation->getClient()->getFirstName() . ' ' . $atypicalOperation->getClient()->getLastName() ?></td>
             <td><?= $atypicalOperation->getRule()->getName() ?></td>
             <td><?= $this->translator->trans('client-vigilance_status-' . $atypicalOperation->getRule()->getVigilanceStatus()) ?></td>
             <td><?= $atypicalOperation->getAtypicalValue() ?></td>

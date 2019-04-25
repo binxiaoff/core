@@ -1,21 +1,21 @@
 <div class="row">
     <div class="form-group col-md-3">
-        <input type="radio" name="civilite" id="civilite1" <?= (null !== $this->client->getCivilite() && $this->client->getCivilite() == 'Mme' ? 'checked' : '') ?> value="Mme"> <label for="civilite1">Madame</label>
-        <input type="radio" name="civilite" id="civilite2" <?= (null !== $this->client->getCivilite() && $this->client->getCivilite() == 'M.' ? 'checked' : '') ?> value="M."> <label for="civilite2">Monsieur</label>
+        <input type="radio" name="civilite" id="civilite1" <?= (null !== $this->client->getTitle() && $this->client->getTitle() == 'Mme' ? 'checked' : '') ?> value="Mme"> <label for="civilite1">Madame</label>
+        <input type="radio" name="civilite" id="civilite2" <?= (null !== $this->client->getTitle() && $this->client->getTitle() == 'M.' ? 'checked' : '') ?> value="M."> <label for="civilite2">Monsieur</label>
     </div>
 </div>
 <div class="row">
     <div class="form-group col-md-3">
         <label for="nom-famille">Nom de famille</label>
-        <input type="text" name="nom-famille" id="nom-famille" class="form-control" value="<?= $this->client->getNom() ?? '' ?>">
+        <input type="text" name="nom-famille" id="nom-famille" class="form-control" value="<?= $this->client->getLastName() ?? '' ?>">
     </div>
     <div class="form-group col-md-3">
         <label for="nom-usage">Nom d'usage</label>
-        <input type="text" name="nom-usage" id="nom-usage" class="form-control" value="<?= $this->client->getNomUsage() ?? '' ?>">
+        <input type="text" name="nom-usage" id="nom-usage" class="form-control" value="<?= $this->client->getPreferredName() ?? '' ?>">
     </div>
     <div class="form-group col-md-3">
         <label for="prenom">Prénom</label>
-        <input type="text" name="prenom" id="prenom" class="form-control" value="<?= $this->client->getPrenom() ?? '' ?>">
+        <input type="text" name="prenom" id="prenom" class="form-control" value="<?= $this->client->getFirstName() ?? '' ?>">
     </div>
 </div>
 <div class="row">
@@ -35,7 +35,7 @@
 <div class="row">
     <div class="form-group col-md-3">
         <label for="naissance">Naissance</label>
-        <input type="text" id="naissance" name="naissance" class="form-control" value="<?= null !== $this->client->getNaissance() ? $this->client->getNaissance()->format('d/m/Y') : '' ?>"/>
+        <input type="text" id="naissance" name="naissance" class="form-control" value="<?= null !== $this->client->getDateOfBirth() ? $this->client->getDateOfBirth()->format('d/m/Y') : '' ?>"/>
     </div>
     <div class="form-group col-md-3">
         <label for="com-naissance">Commune de naissance</label>

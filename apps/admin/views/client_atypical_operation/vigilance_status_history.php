@@ -22,7 +22,7 @@
                     <?php endif; ?>
                 </span>
             </td>
-            <td><?= $vigilanceStatus->getClient()->getPrenom() . ' ' . $vigilanceStatus->getClient()->getNom() ?></td>
+            <td><?= $vigilanceStatus->getClient()->getFirstName() . ' ' . $vigilanceStatus->getClient()->getLastName() ?></td>
             <td><?= $this->translator->trans('client-vigilance_status-' . $vigilanceStatus->getVigilanceStatus()) ?></td>
             <td>
                 <?php if (\Unilend\Entity\Users::USER_ID_CRON === $vigilanceStatus->getIdUser()->getIdUser()) : ?>

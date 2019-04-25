@@ -771,7 +771,7 @@ class dossiersController extends bootstrap
                 $this->submitters[] = $this->projectEntity->getIdClientSubmitter();
             }
             usort($this->submitters, function ($first, $second) {
-                return strcasecmp($first->getPrenom(), $second->getPrenom());
+                return strcasecmp($first->getFirstName(), $second->getFirstName());
             });
 
             if (false === empty($this->projects->risk) && false === empty($this->projects->period) && $this->projects->status >= ProjectsStatus::STATUS_REVIEW) {

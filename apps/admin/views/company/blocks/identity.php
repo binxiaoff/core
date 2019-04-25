@@ -8,7 +8,7 @@
             <th><label for="siren">SIREN*</label></th>
             <td><input type="text" name="siren" id="siren" class="input_large" value="<?= $this->siren ?>" required></td>
             <td colspan="2">
-                <?php if (empty($this->client->getNom())) : ?>
+                <?php if (empty($this->client->getLastName())) : ?>
                     <button name="fetch" id="fetch" class="btn">Remplir les champs par WS externe</button>
                 <? endif; ?>
             </td>
@@ -20,15 +20,15 @@
         <tr>
             <th>Civilite</th>
             <td colspan="3">
-                <input type="radio" name="title" id="title1" <?= $this->client->getCivilite() === 'Mme' ? 'checked' : '' ?> value="Mme"> <label for="title1">Madame</label>
-                <input type="radio" name="title" id="title2" <?= $this->client->getCivilite() === 'M.' ? 'checked' : '' ?> value="M."> <label for="title2">Monsieur</label>
+                <input type="radio" name="title" id="title1" <?= $this->client->getTitle() === 'Mme' ? 'checked' : '' ?> value="Mme"> <label for="title1">Madame</label>
+                <input type="radio" name="title" id="title2" <?= $this->client->getTitle() === 'M.' ? 'checked' : '' ?> value="M."> <label for="title2">Monsieur</label>
             </td>
         </tr>
         <tr>
             <th><label for="name">Nom *</label></th>
-            <td><input type="text" name="name" id="name" class="input_large" value="<?= $this->client->getNom() ?>" required></td>
+            <td><input type="text" name="name" id="name" class="input_large" value="<?= $this->client->getLastName() ?>" required></td>
             <th><label for="firstName">Prénom *</label></th>
-            <td><input type="text" name="firstName" id="firstName" class="input_large" value="<?= $this->client->getPrenom() ?>" required></td>
+            <td><input type="text" name="firstName" id="firstName" class="input_large" value="<?= $this->client->getFirstName() ?>" required></td>
         </tr>
         <tr>
             <th><label for="email">Email *</label></th>

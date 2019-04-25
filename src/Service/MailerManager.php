@@ -422,7 +422,7 @@ class MailerManager
             if ($bid->getAutobid()) {
                 $keyWords = [
                     'lenderPattern' => $bid->getWallet()->getWireTransferPattern(),
-                    'firstName'     => $bid->getWallet()->getIdClient()->getPrenom(),
+                    'firstName'     => $bid->getWallet()->getIdClient()->getFirstName(),
                     'companyName'   => $bid->getProject()->getIdCompany()->getName(),
                 ];
 
@@ -446,7 +446,7 @@ class MailerManager
             } else {
                 $keyWords = [
                     'lenderPattern' => $bid->getWallet()->getWireTransferPattern(),
-                    'firstName'     => $bid->getWallet()->getIdClient()->getPrenom(),
+                    'firstName'     => $bid->getWallet()->getIdClient()->getFirstName(),
                     'companyName'   => $bid->getProject()->getIdCompany()->getName(),
                     'bidAmount'     => $this->oFicelle->formatNumber($bid->getAmount() / 100, 0),
                     'bidRate'       => $this->oFicelle->formatNumber($bid->getRate()->getMargin(), 1),

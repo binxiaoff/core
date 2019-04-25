@@ -117,10 +117,10 @@
     <?php else : ?>
         <div><?= $this->clientStatusMessage ?></div>
         <?php if ($this->client->isNaturalPerson()) : ?>
-            <h1><span class="fa fa-user-o"></span> <?= $this->client->getPrenom() ?> <?= $this->client->getNom() ?></h1>
+            <h1><span class="fa fa-user-o"></span> <?= $this->client->getFirstName() ?> <?= $this->client->getLastName() ?></h1>
         <?php else : ?>
             <h1><span class="fa fa-briefcase"></span> <?= $this->companies->name ?></h1>
-            <h2>Représentant légal : <?= $this->client->getPrenom() ?> <?= $this->client->getNom() ?></h2>
+            <h2>Représentant légal : <?= $this->client->getFirstName() ?> <?= $this->client->getLastName() ?></h2>
         <?php endif; ?>
         <div class="btnDroite">
             <a href="<?= $this->lurl ?>/preteurs/bids/<?= $this->clients->id_client ?>" class="btn-primary">Enchères</a>
@@ -137,13 +137,13 @@
             </tr>
             <tr>
                 <th>Prénom</th>
-                <td><?= $this->client->getPrenom() ?></td>
+                <td><?= $this->client->getFirstName() ?></td>
                 <th><?php if (false === empty($this->firstValidation)) : ?>Date de 1ère validation<?php endif; ?></th>
                 <td><?php if (false === empty($this->firstValidation)) : ?><?= $this->firstValidation->getAdded()->format('d/m/Y') ?><?php endif; ?></td>
             </tr>
             <tr>
                 <th>Nom</th>
-                <td><?= $this->client->getNom() ?></td>
+                <td><?= $this->client->getLastName() ?></td>
                 <th>Source</th>
                 <td><?= $this->client->getSource() ?></td>
             </tr>

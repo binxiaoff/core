@@ -152,7 +152,7 @@ class SecurityController extends Controller
             case WalletType::LENDER:
                 $mailType = 'mot-de-passe-oublie';
                 $keywords = [
-                    'firstName'     => $client->getPrenom(),
+                    'firstName'     => $client->getFirstName(),
                     'login'         => $client->getEmail(),
                     'passwordLink'  => $this->generateUrl('define_new_password', ['securityToken' => $token], UrlGeneratorInterface::ABSOLUTE_URL),
                     'lenderPattern' => $wallet->getWireTransferPattern()
@@ -161,7 +161,7 @@ class SecurityController extends Controller
             case WalletType::BORROWER:
                 $mailType = 'mot-de-passe-oublie-emprunteur';
                 $keywords = [
-                    'firstName'            => $client->getPrenom(),
+                    'firstName'            => $client->getFirstName(),
                     'temporaryToken'       => $token,
                     'borrowerServiceEmail' => $entityManager->getRepository(Settings::class)->findOneBy(['type' => 'Adresse emprunteur'])->getValue()
                 ];
@@ -169,7 +169,7 @@ class SecurityController extends Controller
             case WalletType::PARTNER:
                 $mailType = 'mot-de-passe-oublie-partenaire';
                 $keywords = [
-                    'firstName'     => $client->getPrenom(),
+                    'firstName'     => $client->getFirstName(),
                     'login'         => $client->getEmail(),
                     'passwordLink'  => $this->generateUrl('define_new_password', ['securityToken' => $token], UrlGeneratorInterface::ABSOLUTE_URL),
                     'lenderPattern' => $wallet->getWireTransferPattern()

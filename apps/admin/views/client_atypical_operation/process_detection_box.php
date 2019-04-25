@@ -57,7 +57,7 @@
     <h1 style="text-align: center"><?= $this->title ?></h1>
     <ul>
         <li>
-            <b>Client: </b><?= $this->client->getPrenom() . ' ' . $this->client->getNom() ?>
+            <b>Client: </b><?= $this->client->getFirstName() . ' ' . $this->client->getLastName() ?>
         </li>
         <?php if (isset($this->currentVigilanceStatusId)) : ?>
             <li>

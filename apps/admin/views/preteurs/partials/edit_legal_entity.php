@@ -124,18 +124,18 @@ use Unilend\Entity\Companies;
     <h2>Contact</h2>
     <div class="row">
         <div class="form-group col-md-12">
-            <input <?= (null !== $this->client->getCivilite() && $this->client->getCivilite() == 'Mme' ? 'checked' : '') ?> type="radio" name="civilite_e" id="civilite_e1" value="Mme">
+            <input <?= (null !== $this->client->getTitle() && $this->client->getTitle() == 'Mme' ? 'checked' : '') ?> type="radio" name="civilite_e" id="civilite_e1" value="Mme">
             <label for="civilite_e1">Madame</label>
-            <input <?= (null !== $this->client->getCivilite() && $this->client->getCivilite() == 'M.' ? 'checked' : '') ?> type="radio" name="civilite_e" id="civilite_e2" value="M.">
+            <input <?= (null !== $this->client->getTitle() && $this->client->getTitle() == 'M.' ? 'checked' : '') ?> type="radio" name="civilite_e" id="civilite_e2" value="M.">
             <label for="civilite_e2">Monsieur</label>
         </div>
         <div class="form-group col-md-3">
             <label for="nom_e">Nom</label>
-            <input type="text" name="nom_e" id="nom_e" value="<?= $this->client->getNom() ?? '' ?>" class="form-control">
+            <input type="text" name="nom_e" id="nom_e" value="<?= $this->client->getLastName() ?? '' ?>" class="form-control">
         </div>
         <div class="form-group col-md-3">
             <label for="prenom_e">Prénom</label>
-            <input type="text" name="prenom_e" id="prenom_e" value="<?= $this->client->getPrenom() ?? '' ?>" class="form-control">
+            <input type="text" name="prenom_e" id="prenom_e" value="<?= $this->client->getFirstName() ?? '' ?>" class="form-control">
         </div>
         <div class="form-group col-md-6">
             <label for="fonction_e">Fonction</label>

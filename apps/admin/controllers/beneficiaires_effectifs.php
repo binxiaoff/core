@@ -268,7 +268,7 @@ class beneficiaires_effectifsController extends bootstrap
                 $errors[] = 'Le client ID ' . $clientId . ' n\'existe pas';
             }
 
-            if (false === empty($owner->getNaissance()) && $owner->getNaissance() != $birthday) {
+            if (false === empty($owner->getDateOfBirth()) && $owner->getDateOfBirth() != $birthday) {
                 $errors[] = 'La date de naissance du client enregistrée en base et la date de naissance saisie ne correspondent pas';
             }
 

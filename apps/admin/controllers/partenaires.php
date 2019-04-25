@@ -1142,7 +1142,7 @@ class partenairesController extends bootstrap
         foreach ($entityManager->getRepository(CompanyClient::class)->findBy(['idCompany' => $agency->getIdCompany()]) as $user) {
             $users[] = [
                 'id'   => $user->getIdClient()->getIdClient(),
-                'name' => $user->getIdClient()->getPrenom() . ' ' . $user->getIdClient()->getNom()
+                'name' => $user->getIdClient()->getFirstName() . ' ' . $user->getIdClient()->getLastName()
             ];
         }
         usort($users, function($first, $second) {
@@ -1180,7 +1180,7 @@ class partenairesController extends bootstrap
                 $companyClient           = $companyClientRepository->find($this->params[1]);
                 $submitter               = $companyClient->getIdClient();
                 $partner                 = $partnerRepository->findOneBy(['idCompany' => $companyClient->getIdCompany()->getIdParentCompany()]);
-                $name                    = $submitter->getPrenom() . ' ' . $submitter->getNom();
+                $name                    = $submitter->getFirstName() . ' ' . $submitter->getLastName();
                 break;
             default:
                 header('Location: ' . $this->lurl . '/partenaires');
