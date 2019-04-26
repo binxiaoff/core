@@ -112,26 +112,31 @@
                                     Montant
                                     <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span>
                                 </label>
-                                <input id="input-amount" type="text" step="any" name="amount" class="input-field"
-                                       data-formvalidation-input
-                                       data-formvalidation-type="integer"
-                                       data-formvalidation-required="true"
-                                       data-fee-reference-amount>
+                                <div class="input-group set-right">
+                                    <input id="input-amount" type="text" step="any" name="amount" class="input-field"
+                                           data-formvalidation-input
+                                           data-formvalidation-type="integer"
+                                           data-formvalidation-required="true"
+                                           data-fee-reference-amount>
+                                    <div class="btn-group">
+                                        <label for="filter-start">€</label>
+                                    </div><!-- /.btn-group -->
+                                </div>
                             </div><!-- /.form-field -->
                             <div class="form-field col-lg-6 col-md-6">
                                 <label for="input-duration">
-                                    Durée
+                                    Maturité
                                     <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span>
                                 </label>
-                                <select id="input-duration" name="duration" class="input-field"
-                                        data-formvalidation-input
-                                        data-formvalidation-type="integer"
-                                        data-formvalidation-required="true">
-                                    <option value=""></option>
-                                    {% for period in loanPeriods %}
-                                        <option value="{{ period }}">{% transchoice(period) with {'%duration%': period} %} demo-project-request_simulator-duration-select-option {% endtranschoice %}</option>
-                                    {% endfor %}
-                                </select>
+                                <div class="input-group set-right">
+                                    <input id="input-duration" type="text" name="duration" class="input-field"
+                                           data-formvalidation-input
+                                           data-formvalidation-type="integer"
+                                           data-formvalidation-required="true">
+                                    <div class="btn-group">
+                                        <label for="filter-start">mois</label>
+                                    </div><!-- /.btn-group -->
+                                </div>
                             </div><!-- /.form-field -->
                         </div>
                         <div class="row row-multi-col-computer">
