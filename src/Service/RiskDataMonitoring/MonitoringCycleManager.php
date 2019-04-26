@@ -10,7 +10,7 @@ class MonitoringCycleManager
 {
     const LONG_TERM_MONITORING_EXCLUDED_PROJECTS_STATUS = [
         ProjectsStatus::STATUS_CANCELLED,
-        ProjectsStatus::STATUS_REPAID
+        ProjectsStatus::STATUS_FINISHED
     ];
 
     const LONG_TERM_MONITORING_EXCLUDED_COMPANY_STATUS = [

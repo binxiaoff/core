@@ -30,7 +30,7 @@ class MainController extends AbstractController
     public function home(?UserInterface $client): Response
     {
         if ($client instanceof Clients) {
-            return $this->redirectToRoute('demo_loans');
+            return $this->redirectToRoute('wallet');
         }
 
         return $this->redirectToRoute('login');

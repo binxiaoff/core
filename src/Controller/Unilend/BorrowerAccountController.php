@@ -663,7 +663,7 @@ class BorrowerAccountController extends Controller
     {
         $entityManager      = $this->get('doctrine.orm.entity_manager');
         $company            = $entityManager->getRepository(Companies::class)->findOneBy(['idClientOwner' => $client]);
-        $statusPreFunding   = [ProjectsStatus::STATUS_REQUEST, ProjectsStatus::STATUS_REVIEW];
+        $statusPreFunding   = [ProjectsStatus::STATUS_REQUESTED, ProjectsStatus::STATUS_REVIEW];
         $projectsPreFunding = $entityManager->getRepository(Projects::class)->findByCompany($company, $statusPreFunding);
 
         return $projectsPreFunding;
@@ -678,7 +678,7 @@ class BorrowerAccountController extends Controller
     {
         $entityManager   = $this->get('doctrine.orm.entity_manager');
         $company         = $entityManager->getRepository(Companies::class)->findOneBy(['idClientOwner' => $client]);
-        $projectsFunding = $entityManager->getRepository(Projects::class)->findByCompany($company, [ProjectsStatus::STATUS_ONLINE]);
+        $projectsFunding = $entityManager->getRepository(Projects::class)->findByCompany($company, [ProjectsStatus::STATUS_PUBLISHED]);
 
         return $projectsFunding;
     }

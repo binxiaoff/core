@@ -141,7 +141,7 @@ class companies extends companies_crud
             INNER JOIN projects_status ps ON ps.status = p.status
             LEFT JOIN users sales_person ON p.id_commercial = sales_person.id_user
             LEFT JOIN users analysts ON p.id_analyste = analysts.id_user
-            WHERE p.status >= ' . ProjectsStatus::STATUS_ONLINE . ' AND current_company.id_company = ' . $this->id_company . '
+            WHERE p.status >= ' . ProjectsStatus::STATUS_PUBLISHED . ' AND current_company.id_company = ' . $this->id_company . '
 
             UNION
 
@@ -152,7 +152,7 @@ class companies extends companies_crud
             INNER JOIN projects_status ps ON ps.status = p.status
             LEFT JOIN users sales_person ON p.id_commercial = sales_person.id_user
             LEFT JOIN users analysts ON p.id_analyste = analysts.id_user
-            WHERE p.status >= ' . ProjectsStatus::STATUS_REQUEST . ' AND p.status < ' . ProjectsStatus::STATUS_ONLINE . ' AND current_company.id_company = ' . $this->id_company . '
+            WHERE p.status >= ' . ProjectsStatus::STATUS_REQUESTED . ' AND p.status < ' . ProjectsStatus::STATUS_PUBLISHED . ' AND current_company.id_company = ' . $this->id_company . '
 
             UNION
 
@@ -163,7 +163,7 @@ class companies extends companies_crud
             INNER JOIN projects_status ps ON ps.status = p.status
             LEFT JOIN users sales_person ON p.id_commercial = sales_person.id_user
             LEFT JOIN users analysts ON p.id_analyste = analysts.id_user
-            WHERE p.status < ' . ProjectsStatus::STATUS_REQUEST . ' AND current_company.id_company = ' . $this->id_company . '
+            WHERE p.status < ' . ProjectsStatus::STATUS_REQUESTED . ' AND current_company.id_company = ' . $this->id_company . '
             ORDER BY `rank` ASC, added DESC'
         );
         while ($record = $this->bdd->fetch_assoc($result)) {
@@ -284,7 +284,7 @@ class companies extends companies_crud
                  SELECT ' . $cohortSelect . ' AS date_range
                  FROM projects_status_history
                    INNER JOIN projects_status ON projects_status_history.id_project_status = projects_status.id_project_status
-                 WHERE  projects_status.status = ' . ProjectsStatus::STATUS_REPAYMENT . '
+                 WHERE  projects_status.status = ' . ProjectsStatus::STATUS_CONTRACTS_SIGNED . '
                         AND projects.id_project = projects_status_history.id_project
                  ORDER BY projects_status_history.added ASC, id_project_status_history ASC LIMIT 1
                ) AS cohort
@@ -294,14 +294,14 @@ class companies extends companies_crud
             WHERE projects.status IN (:projectStatus)
                AND cs.label IN (:companyStatus)
                OR
-               (projects.status = ' . ProjectsStatus::STATUS_LOSS . ' AND
+               (projects.status = ' . ProjectsStatus::STATUS_LOST . ' AND
                 DATEDIFF(NOW(),
                          (
                           SELECT psh2.added
                           FROM projects_status_history psh2
                             INNER JOIN projects_status ps2 ON psh2.id_project_status = ps2.id_project_status
                           WHERE
-                            ps2.status = ' . ProjectsStatus::STATUS_LOSS . '
+                            ps2.status = ' . ProjectsStatus::STATUS_LOST . '
                             AND psh2.id_project = projects.id_project
                           ORDER BY psh2.added DESC, psh2.id_project_status_history DESC
                           LIMIT 1
@@ -313,7 +313,7 @@ class companies extends companies_crud
             $query,
             [
                 'companyStatus' => [CompanyStatus::STATUS_PRECAUTIONARY_PROCESS, CompanyStatus::STATUS_RECEIVERSHIP, CompanyStatus::STATUS_COMPULSORY_LIQUIDATION],
-                'projectStatus' => [ProjectsStatus::STATUS_REPAYMENT, ProjectsStatus::STATUS_LOSS]
+                'projectStatus' => [ProjectsStatus::STATUS_CONTRACTS_SIGNED, ProjectsStatus::STATUS_LOST]
             ],
             [
                 'companyStatus' => Connection::PARAM_STR_ARRAY,
@@ -346,12 +346,12 @@ class companies extends companies_crud
                         SELECT ' . $cohortSelect . ' AS date_range
                         FROM projects_status_history
                         INNER JOIN projects_status ON projects_status_history.id_project_status = projects_status.id_project_status
-                        WHERE  projects_status.status = ' . ProjectsStatus::STATUS_REPAYMENT . '
+                        WHERE  projects_status.status = ' . ProjectsStatus::STATUS_CONTRACTS_SIGNED . '
                           AND projects.id_project = projects_status_history.id_project
                         ORDER BY projects_status_history.added ASC, id_project_status_history ASC LIMIT 1
                       ) AS cohort
                        FROM projects
-                    WHERE projects.status >= ' . ProjectsStatus::STATUS_REPAYMENT . '
+                    WHERE projects.status >= ' . ProjectsStatus::STATUS_CONTRACTS_SIGNED . '
                     GROUP BY cohort';
 
         $statement = $this->bdd->executeQuery($query);

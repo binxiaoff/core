@@ -17,17 +17,17 @@
                 {% endif %}
             </small>
             <div class="bubble pull-right">
-                {% include 'demo/partials/bubble.html.twig' with {'partner': project.idPartner.label} %}
+                {% include 'partials/market_bubble.html.twig' with {'partner': project.idPartner.label} %}
             </div>
         </h4>
         <div class="row dashboard-tab-pane">
             <div id="project-breadcrumb" class="form-project-create-nav tab-nav">
-                <div class="{% if project.status > constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_REQUEST') %}complete{% else %}active{% endif %}">Dépôt</div>
-                <div class="{% if project.status > constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_REVIEW') %}complete{% elseif project.status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_REVIEW') %}active{% endif %}">Arrangement</div>
-                <div class="{% if project.status > constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_ONLINE') %}complete{% elseif project.status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_ONLINE') %}active{% endif %}">Financement</div>
-                <div class="{% if project.status > constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_FUNDED') %}complete{% elseif project.status in [constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_FUNDED'), constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_SIGNED')] %}active{% endif %}">Signature</div>
-                <div class="{% if project.status > constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_REPAYMENT') %}complete{% elseif project.status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_REPAYMENT') %}active{% endif %}">Remboursement</div>
-                <div class="{% if project.status in [constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_REPAID'), constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_LOSS')] %}complete{% endif %}">Terminé</div>
+                <div class="{% if project.status > constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_REQUESTED') %}complete{% else %}active{% endif %}">Dépôt</div>
+                <div class="{% if project.status > constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_PUBLISHED') %}complete{% elseif project.status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_PUBLISHED') %}active{% endif %}">Financement</div>
+                <div class="{% if project.status > constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_FUNDED') %}complete{% elseif project.status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_FUNDED') %}active{% endif %}">Contractualisation</div>
+                <div class="{% if project.status > constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_CONTRACTS_REDACTED') %}complete{% elseif project.status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_CONTRACTS_REDACTED') %}active{% endif %}">Signature</div>
+                <div class="{% if project.status > constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_CONTRACTS_SIGNED') %}complete{% elseif project.status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_CONTRACTS_SIGNED') %}active{% endif %}">Remboursement</div>
+                <div class="{% if project.status in [constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_FINISHED'), constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_LOST')] %}complete{% endif %}">Terminé</div>
             </div><!-- /.form-project-create-nav -->
         </div>
         <div class="dashboard-tabs-content tab-content">
@@ -177,7 +177,7 @@
                                 <li><a href="#article-scoring">Notation</a></li>
                                 {#<li><a href="#article-fees">Frais / commissions</a></li>#}
                                 <li><a href="#article-visibility">Visibilité</a></li>
-                                {% if project.status >= constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_ONLINE') %}
+                                {% if project.status >= constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_PUBLISHED') %}
                                     <li><a href="#article-bids">Offres de participation</a></li>
                                 {% endif %}
                                 <li><a href="#article-documents">Documents</a></li>
@@ -187,22 +187,19 @@
                                 {% if project.status <= constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_FUNDED') %}
                                     <a href="{{ path('demo_project_abandon', {'hash': project.hash}) }}" class="btn-default btn-shape-xs margin-10-t" style="width: 100%;">Abandonner le dossier</a>
                                 {% endif %}
-                                {% if project.status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_REQUEST') %}
-                                    <a href="{{ path('demo_project_review', {'hash': project.hash}) }}" class="btn-primary btn-shape-xs margin-10-t" style="width: 100%;">Passer à l‘analyse</a>
-                                {% endif %}
-                                {% if project.status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_REVIEW') %}
+                                {% if project.status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_REQUESTED') %}
                                     <a href="{{ path('demo_project_publish', {'hash': project.hash}) }}" class="btn-primary btn-shape-xs margin-10-t" style="width: 100%;">Proposer au financement</a>
                                 {% endif %}
-                                {% if project.status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_ONLINE') %}
+                                {% if project.status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_PUBLISHED') %}
                                     <a href="{{ path('demo_project_fund', {'hash': project.hash}) }}" class="btn-primary btn-shape-xs margin-10-t" style="width: 100%;">Clôturer la syndication</a>
                                 {% endif %}
                                 {% if project.status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_FUNDED') %}
                                     <a href="{{ path('demo_project_sign', {'hash': project.hash}) }}" class="btn-primary btn-shape-xs margin-10-t" style="width: 100%;">Signer les contrats</a>
                                 {% endif %}
-                                {% if project.status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_SIGNED') %}
+                                {% if project.status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_CONTRACTS_REDACTED') %}
                                     <a href="{{ path('demo_project_repay', {'hash': project.hash}) }}" class="btn-primary btn-shape-xs margin-10-t" style="width: 100%;">Commencer le remboursement</a>
                                 {% endif %}
-                                {% if project.status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_REPAYMENT') %}
+                                {% if project.status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_CONTRACTS_SIGNED') %}
                                     <a href="{{ path('demo_project_repaid', {'hash': project.hash}) }}" class="btn-primary btn-shape-xs margin-10-t" style="width: 100%;">Mettre fin au remboursement</a>
                                     <a href="{{ path('demo_project_loss', {'hash': project.hash}) }}" class="btn-primary btn-shape-xs margin-10-t" style="width: 100%;">Passer en perte</a>
                                 {% endif %}
@@ -293,7 +290,7 @@
                         <div class="message-info">Vous n‘avez aucun frais associé à votre dossier.</div>
                     {% endif %}
                     <h5 class="h4 margin-20-t">Ajouter des frais ou commissions</h5>
-                    {% set feesTemplate = include('demo/partials/fees/new_project_fees.html.twig') %}
+                    {% set feesTemplate = include('partials/fees/new_project_fees.html.twig') %}
                     <div class="row row-multi-col-computer fees" data-prototype="{{ feesTemplate|e('html_attr') }}"></div>
                 </div>
             </article><!-- /.dashboard-tab-pane -->#}
@@ -398,12 +395,12 @@
                     </form>
                 </div>
             </article><!-- /.dashboard-tab-pane -->
-            {% if project.status >= constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_ONLINE') %}
+            {% if project.status >= constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_PUBLISHED') %}
                 <article class="dashboard-tab-pane" id="article-bids">
                     <div class="panel">
                         <div class="panel-content">
                             <h3 class="margin-10-t">Offres de participation</h3>
-                            {% include 'demo/partials/bids/bids_list.html.twig' with {bids: project.bids} %}
+                            {% include 'partials/bids/bids_list.html.twig' with {bids: project.bids} %}
                         </div><!-- /.project-single-content -->
                     </div>
                 </article><!-- /.dashboard-tab-pane -->
@@ -618,8 +615,8 @@
     <script src="{{ asset('js/vendor/jquery-comments/jquery-comments.min.js', 'gulp') }}"></script>
     <script src="{{ asset('js/vendor/jquery.poshytip.min.js', 'gulp') }}"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/x-editable/1.5.0/jquery-editable/js/jquery-editable-poshytip.js"></script>
-    <script>{% include 'demo/partials/bids/actions.js.twig' %}</script>
-    <script>{% include 'demo/partials/fees/fees.js.twig' %}</script>
+    <script>{% include 'partials/bids/actions.js.twig' %}</script>
+    <script>{% include 'partials/fees/fees.js.twig' %}</script>
     <script>
         $(function () {
             $.fn.editable.defaults.mode = 'inline'

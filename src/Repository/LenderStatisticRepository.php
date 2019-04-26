@@ -54,7 +54,7 @@ class LenderStatisticRepository extends ServiceEntityRepository
             WHERE
                 l.id_wallet = :idWallet
                 AND e.status = ' . Echeanciers::STATUS_PENDING . '
-                AND p.status = ' . ProjectsStatus::STATUS_REPAYMENT . '
+                AND p.status = ' . ProjectsStatus::STATUS_CONTRACTS_SIGNED . '
 
         UNION ALL
 
@@ -69,7 +69,7 @@ class LenderStatisticRepository extends ServiceEntityRepository
             WHERE
               l.id_wallet = :idWallet
               AND e.status = ' . Echeanciers::STATUS_PENDING . '
-              AND p.status = ' . ProjectsStatus::STATUS_LOSS . '
+              AND p.status = ' . ProjectsStatus::STATUS_LOST . '
               AND (p.close_out_netting_date IS NULL OR p.close_out_netting_date = \'0000-00-00\')
               AND cs.label = :inBonis
         
@@ -84,7 +84,7 @@ class LenderStatisticRepository extends ServiceEntityRepository
                         FROM projects_status_history psh2
                         INNER JOIN projects_status ps2 ON psh2.id_project_status = ps2.id_project_status
                         WHERE
-                            ps2.status = ' . ProjectsStatus::STATUS_LOSS . '
+                            ps2.status = ' . ProjectsStatus::STATUS_LOST . '
                             AND psh2.id_project = e.id_project
                         ORDER BY psh2.added DESC, psh2.id_project_status_history DESC
                         LIMIT 1
@@ -99,7 +99,7 @@ class LenderStatisticRepository extends ServiceEntityRepository
             WHERE
                 l.id_wallet = :idWallet
                 AND e.status = ' . Echeanciers::STATUS_PENDING . '
-                AND p.status = ' . ProjectsStatus::STATUS_LOSS . '
+                AND p.status = ' . ProjectsStatus::STATUS_LOST . '
                 AND (p.close_out_netting_date IS NOT NULL AND p.close_out_netting_date != \'0000-00-00\')
                 AND cs.label = :inBonis
 
@@ -116,7 +116,7 @@ class LenderStatisticRepository extends ServiceEntityRepository
             WHERE
                 l.id_wallet = :idWallet
                 AND e.status = ' . Echeanciers::STATUS_PENDING . '
-                AND p.status >= ' . ProjectsStatus::STATUS_REPAYMENT . '
+                AND p.status >= ' . ProjectsStatus::STATUS_CONTRACTS_SIGNED . '
                 AND cs.label IN (:companyStatusInProceeding)
 
         UNION ALL

@@ -152,7 +152,7 @@ trait CompanyChecker
             if (null === $usedProduct || Product::PRODUCT_BLEND !== $usedProduct->getLabel()) {
                 continue;
             }
-            if ($project->getStatus() === ProjectsStatus::STATUS_REPAID) {
+            if ($project->getStatus() === ProjectsStatus::STATUS_FINISHED) {
                 continue;
             } elseif ($project->getStatus() === ProjectsStatus::STATUS_CANCELLED) {
                 $lastStatus = $projectStatusHistoryRepository->findStatusFirstOccurrence($project, $project->getStatus());
@@ -196,7 +196,7 @@ trait CompanyChecker
             if (null === $usedProduct || Product::PRODUCT_BLEND === $usedProduct->getLabel()) {
                 continue;
             }
-            $lastIncidentStatus = $projectStatusHistoryRepository->findStatusLastOccurrence($project, [ProjectsStatus::STATUS_LOSS]);
+            $lastIncidentStatus = $projectStatusHistoryRepository->findStatusLastOccurrence($project, [ProjectsStatus::STATUS_LOST]);
 
             if ($lastIncidentStatus && $lastIncidentStatus->getAdded()->diff(new \DateTime())->days <= $noUnilendIncidentSince[0]) {
                 return false;
@@ -235,7 +235,7 @@ trait CompanyChecker
             if (null === $usedProduct || Product::PRODUCT_BLEND !== $usedProduct->getLabel()) {
                 continue;
             }
-            $lastIncidentStatus = $projectStatusHistoryRepository->findStatusLastOccurrence($project, [ProjectsStatus::STATUS_LOSS]);
+            $lastIncidentStatus = $projectStatusHistoryRepository->findStatusLastOccurrence($project, [ProjectsStatus::STATUS_LOST]);
 
             if ($lastIncidentStatus && $lastIncidentStatus->getAdded()->diff(new \DateTime())->days <= $noBlendIncidentSince[0]) {
                 return false;

@@ -57,7 +57,7 @@ class SignatureController extends AbstractController
         RouterInterface $router
     ): RedirectResponse {
         if ($loan->getProject() !== $project || $loan->getWallet()->getIdClient() !== $client) {
-            return $this->redirectToRoute('demo_loans');
+            return $this->redirectToRoute('wallet');
         }
 
         $documentContent = file_get_contents($staticPath . 'sous_participation.pdf');
@@ -95,7 +95,7 @@ class SignatureController extends AbstractController
     public function signatureConfirmation(Projects $project, Loans $loan, Request $request, ?UserInterface $client): Response
     {
         if ($loan->getProject() !== $project || $loan->getWallet()->getIdClient() !== $client) {
-            return $this->redirectToRoute('demo_loans');
+            return $this->redirectToRoute('wallet');
         }
 
         switch ($request->query->get('event')) {

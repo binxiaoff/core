@@ -3,9 +3,9 @@
 use Unilend\Entity\ProjectsStatus;
 
 ?>
-<?php if ($this->projects->status >= ProjectsStatus::STATUS_REQUEST || $this->projects_status_history->projectHasHadStatus($this->projects->id_project, ProjectsStatus::STATUS_REQUEST)) : ?>
+<?php if ($this->projects->status >= ProjectsStatus::STATUS_REQUESTED || $this->projects_status_history->projectHasHadStatus($this->projects->id_project, ProjectsStatus::STATUS_REQUESTED)) : ?>
     <?php $isRiskUser = $this->get('unilend.service.back_office_user_manager')->isUserGroupRisk($this->userEntity); ?>
-    <?php $isEditable = $this->projects->status == ProjectsStatus::STATUS_REQUEST && $this->get('unilend.service.back_office_user_manager')->isUserGroupManagement($this->userEntity); ?>
+    <?php $isEditable = $this->projects->status == ProjectsStatus::STATUS_REQUESTED && $this->get('unilend.service.back_office_user_manager')->isUserGroupManagement($this->userEntity); ?>
     <div id="content_etape7">
         <a class="tab_title" id="section-risk-comity" href="#section-risk-comity">7. Comité risque</a>
         <div class="tab_content<?php if ($isRiskUser) : ?> expand<?php endif; ?>" id="etape7">

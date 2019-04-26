@@ -16,9 +16,9 @@
                         {% endif %}
                         <li role="presentation"
                             {% if active == 'borrower' %} class="active"{% endif %}
-                            title="Dossiers déposés pour votre compte ou que vous avez déposé pour le compte d‘un de vos clients" data-toggle="tooltip" data-placement="bottom"
+                            title="Dossiers de syndication de vos crédits" data-toggle="tooltip" data-placement="bottom"
                             data-equal-width>
-                            <a href="#tab-borrower" role="tab" data-toggle="tab">Dossiers déposés</a>
+                            <a href="#tab-borrower" role="tab" data-toggle="tab">Syndications</a>
                         </li>
                     {% endif %}
                     {% if projects.submitter is defined %}
@@ -27,9 +27,20 @@
                         {% endif %}
                         <li role="presentation"
                             {% if active == 'submitter' %} class="active"{% endif %}
+                            title="Dossiers que vous avez déposé" data-toggle="tooltip" data-placement="bottom"
+                            data-equal-width>
+                            <a href="#tab-submitter" role="tab" data-toggle="tab">Dépôts</a>
+                        </li>
+                    {% endif %}
+                    {% if projects.arrangerRun is defined %}
+                        {% if active is not defined %}
+                            {% set active = 'arrangerRun' %}
+                        {% endif %}
+                        <li role="presentation"
+                            {% if active == 'arrangerRun' %} class="active"{% endif %}
                             title="Dossiers sur lesquels vous intervenez en tant qu‘arrangeur ou RUN" data-toggle="tooltip" data-placement="bottom"
                             data-equal-width>
-                            <a href="#tab-submitter" role="tab" data-toggle="tab">Arrangements et notation</a>
+                            <a href="#tab-arrangerRun" role="tab" data-toggle="tab">Arrangements et notations</a>
                         </li>
                     {% endif %}
                     {% if projects.lender is defined %}
@@ -40,7 +51,7 @@
                             {% if active == 'lender' %} class="active"{% endif %}
                             title="Dossiers sur lesquels vous avez fait au moins une offre de participation en tant que prêteur" data-toggle="tooltip" data-placement="bottom"
                             data-equal-width>
-                            <a href="#tab-lender" role="tab" data-toggle="tab">Syndications souscrites</a>
+                            <a href="#tab-lender" role="tab" data-toggle="tab">Souscriptions</a>
                         </li>
                     {% endif %}
                 </ul>
@@ -49,13 +60,16 @@
 
         <div class="dashboard-tabs-content tab-content">
             {% if projects.borrower is defined %}
-                {% include 'demo/partials/projects.html.twig' with {'projectsType': 'borrower', 'active': active|default('borrower')} %}
+                {% include 'wallet/partials/projects.html.twig' with {'projectsType': 'borrower', 'active': active|default('borrower')} %}
             {% endif %}
             {% if projects.submitter is defined %}
-                {% include 'demo/partials/projects.html.twig' with {'projectsType': 'submitter', 'active': active|default('submitter')} %}
+                {% include 'wallet/partials/projects.html.twig' with {'projectsType': 'submitter', 'active': active|default('submitter')} %}
+            {% endif %}
+            {% if projects.arrangerRun is defined %}
+                {% include 'wallet/partials/projects.html.twig' with {'projectsType': 'arrangerRun', 'active': active|default('arrangerRun')} %}
             {% endif %}
             {% if projects.lender is defined %}
-                {% include 'demo/partials/lender.html.twig' with {'active': active|default('lender')} %}
+                {% include 'wallet/partials/lender.html.twig' with {'active': active|default('lender')} %}
             {% endif %}
         </div><!-- /.dashboard-tabs-content -->
     </section><!-- /.dashboard-tabs -->

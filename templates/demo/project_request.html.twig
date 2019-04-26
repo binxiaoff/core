@@ -250,7 +250,7 @@
                     {# Waiting for precise explanations on that precise #}
                     {#<article class="request-form-panel panel collapse">
                         <h3>Frais / Commission</h3>
-                        {% set feesTemplate = include('demo/partials/fees/new_project_fees.html.twig') %}
+                        {% set feesTemplate = include('partials/fees/new_project_fees.html.twig') %}
                         <div class="row row-multi-col-computer fees"
                              data-prototype="{{ feesTemplate|e('html_attr') }}"></div>
                     </article>#}
@@ -389,6 +389,6 @@
             })
         })
 
-        {% include 'demo/partials/fees/fees.js.twig' %}
+        {% include 'partials/fees/fees.js.twig' %}
     </script>
 {% endblock %}

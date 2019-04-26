@@ -45,7 +45,7 @@ class ProjectsRepository extends ServiceEntityRepository
 
         $statement = $this->getEntityManager()->getConnection()->executeCacheQuery(
             $query,
-            ['walletId' => $lenderId, 'status' => ProjectsStatus::STATUS_REPAYMENT],
+            ['walletId' => $lenderId, 'status' => ProjectsStatus::STATUS_CONTRACTS_SIGNED],
             ['walletId' => PDO::PARAM_INT, 'status' => PDO::PARAM_INT],
             new QueryCacheProfile(CacheKeys::SHORT_TIME, md5(__METHOD__))
         );
@@ -83,7 +83,7 @@ class ProjectsRepository extends ServiceEntityRepository
         $query = $this->_em->createNativeQuery($sql, $rsm);
         $query->setParameters([
             'borrower_withdraw' => OperationType::BORROWER_WITHDRAW,
-            'repayment'         => ProjectsStatus::STATUS_REPAYMENT,
+            'repayment'         => ProjectsStatus::STATUS_CONTRACTS_SIGNED,
             'funds_commission'  => Factures::TYPE_COMMISSION_FUNDS,
             'date'              => $dateTime,
         ]);
@@ -425,7 +425,7 @@ class ProjectsRepository extends ServiceEntityRepository
         $result = $this->getEntityManager()->getConnection()
             ->executeQuery($query, [
                 'collectiveProceeding' => [CompanyStatus::STATUS_PRECAUTIONARY_PROCESS, CompanyStatus::STATUS_RECEIVERSHIP, CompanyStatus::STATUS_COMPULSORY_LIQUIDATION],
-                'projectStatus'        => ProjectsStatus::STATUS_LOSS,
+                'projectStatus'        => ProjectsStatus::STATUS_LOST,
                 'start'                => $start->format('Y-m-d H:i:s'),
                 'end'                  => $end->format('Y-m-d H:i:s')
             ], [
@@ -455,7 +455,7 @@ class ProjectsRepository extends ServiceEntityRepository
                                   FROM projects_status_history psh_max
                                   GROUP BY id_project) t ON t.max_id_project_status_history = psh.id_project_status_history
                       INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
-                    WHERE psh.added <= :end AND ps.status >= ' . ProjectsStatus::STATUS_REPAYMENT . '
+                    WHERE psh.added <= :end AND ps.status >= ' . ProjectsStatus::STATUS_CONTRACTS_SIGNED . '
                     AND ps.status NOT IN (:projectStatus)';
 
         $result = $this->getEntityManager()
@@ -464,7 +464,7 @@ class ProjectsRepository extends ServiceEntityRepository
                 $query,
                 [
                     'end'           => $end->format('Y-m-d H:i:s'),
-                    'projectStatus' => [ProjectsStatus::STATUS_REPAID, ProjectsStatus::STATUS_LOSS]
+                    'projectStatus' => [ProjectsStatus::STATUS_FINISHED, ProjectsStatus::STATUS_LOST]
                 ], [
                     'end'           => PDO::PARAM_STR,
                     'projectStatus' => Connection::PARAM_INT_ARRAY
@@ -518,7 +518,7 @@ class ProjectsRepository extends ServiceEntityRepository
             ->where('p.idCompany = :companyId')
             ->setParameter('companyId', $companyId)
             ->andWhere('p.status IN (:projectStatus)')
-            ->setParameter('projectStatus', [ProjectsStatus::STATUS_REPAYMENT, ProjectsStatus::STATUS_LOSS]);
+            ->setParameter('projectStatus', [ProjectsStatus::STATUS_CONTRACTS_SIGNED, ProjectsStatus::STATUS_LOST]);
 
         return $queryBuilder->getQuery()->getResult();
     }
@@ -540,7 +540,7 @@ class ProjectsRepository extends ServiceEntityRepository
             ->andWhere('ee.statusEmprunteur IN (:paymentStatus)')
             ->setParameter('paymentStatus', [EcheanciersEmprunteur::STATUS_PENDING, EcheanciersEmprunteur::STATUS_PARTIALLY_PAID])
             ->andWhere('p.status IN (:projectStatus)')
-            ->setParameter('projectStatus', [ProjectsStatus::STATUS_REPAYMENT, ProjectsStatus::STATUS_LOSS])
+            ->setParameter('projectStatus', [ProjectsStatus::STATUS_CONTRACTS_SIGNED, ProjectsStatus::STATUS_LOST])
             ->groupBy('p.idProject');
 
         return $queryBuilder->getQuery()->getResult(AbstractQuery::HYDRATE_ARRAY);
@@ -582,7 +582,7 @@ class ProjectsRepository extends ServiceEntityRepository
               AVG(l.rate) AS amount, ( ' . $this->getCohortQuery($groupFirstYears) . ' ) AS cohort
             FROM projects p
               INNER JOIN loans l ON p.id_project = l.id_project
-            WHERE p.status >= ' . ProjectsStatus::STATUS_REPAYMENT;
+            WHERE p.status >= ' . ProjectsStatus::STATUS_CONTRACTS_SIGNED;
 
         if (null !== $date) {
             $date->setTime(23, 59, 59);
@@ -593,7 +593,7 @@ class ProjectsRepository extends ServiceEntityRepository
                       SELECT added
                       FROM projects_status_history psh
                         INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
-                      WHERE ps.status = ' . ProjectsStatus::STATUS_REPAYMENT . '
+                      WHERE ps.status = ' . ProjectsStatus::STATUS_CONTRACTS_SIGNED . '
                         AND psh.id_project = l.id_project
                       ORDER BY added ASC
                       LIMIT 1
@@ -623,7 +623,7 @@ class ProjectsRepository extends ServiceEntityRepository
               AVG(l.rate) AS averageRate
             FROM projects p
               INNER JOIN loans l ON p.id_project = l.id_project
-            WHERE p.status >= ' . ProjectsStatus::STATUS_REPAYMENT;
+            WHERE p.status >= ' . ProjectsStatus::STATUS_CONTRACTS_SIGNED;
 
         if (null !== $date) {
             $date->setTime(23, 59, 59);
@@ -634,7 +634,7 @@ class ProjectsRepository extends ServiceEntityRepository
                       SELECT added
                       FROM projects_status_history psh
                         INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
-                      WHERE ps.status = ' . ProjectsStatus::STATUS_REPAYMENT . '
+                      WHERE ps.status = ' . ProjectsStatus::STATUS_CONTRACTS_SIGNED . '
                         AND psh.id_project = l.id_project
                       ORDER BY added ASC
                       LIMIT 1
@@ -665,7 +665,7 @@ class ProjectsRepository extends ServiceEntityRepository
               l.id_project
             FROM projects p
               INNER JOIN loans l ON p.id_project = l.id_project
-            WHERE p.status >= ' . ProjectsStatus::STATUS_REPAYMENT;
+            WHERE p.status >= ' . ProjectsStatus::STATUS_CONTRACTS_SIGNED;
 
         if (null !== $date) {
             $date->setTime(23, 59, 59);
@@ -676,7 +676,7 @@ class ProjectsRepository extends ServiceEntityRepository
                       SELECT added
                       FROM projects_status_history psh
                         INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
-                      WHERE ps.status = ' . ProjectsStatus::STATUS_REPAYMENT . '
+                      WHERE ps.status = ' . ProjectsStatus::STATUS_CONTRACTS_SIGNED . '
                         AND psh.id_project = l.id_project
                       ORDER BY added ASC
                       LIMIT 1
@@ -708,7 +708,7 @@ class ProjectsRepository extends ServiceEntityRepository
             SELECT
               AVG(p.period) AS amount, ( ' . $this->getCohortQuery($groupFirstYears) . ' ) AS cohort
             FROM projects p
-            WHERE p.status >= ' . ProjectsStatus::STATUS_REPAYMENT;
+            WHERE p.status >= ' . ProjectsStatus::STATUS_CONTRACTS_SIGNED;
 
         if (null !== $date) {
             $date->setTime(23, 59, 59);
@@ -719,7 +719,7 @@ class ProjectsRepository extends ServiceEntityRepository
                       SELECT added
                       FROM projects_status_history psh
                         INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
-                      WHERE ps.status = ' . ProjectsStatus::STATUS_REPAYMENT . '
+                      WHERE ps.status = ' . ProjectsStatus::STATUS_CONTRACTS_SIGNED . '
                         AND psh.id_project = p.id_project
                       ORDER BY added ASC
                       LIMIT 1
@@ -748,7 +748,7 @@ class ProjectsRepository extends ServiceEntityRepository
           SELECT
             AVG(p.period) AS averagePeriod
           FROM projects p
-          WHERE p.status >= ' . ProjectsStatus::STATUS_REPAYMENT;
+          WHERE p.status >= ' . ProjectsStatus::STATUS_CONTRACTS_SIGNED;
 
         if (null !== $date) {
             $date->setTime(23, 59, 59);
@@ -759,7 +759,7 @@ class ProjectsRepository extends ServiceEntityRepository
                       SELECT added
                       FROM projects_status_history psh
                         INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
-                      WHERE ps.status = ' . ProjectsStatus::STATUS_REPAYMENT . '
+                      WHERE ps.status = ' . ProjectsStatus::STATUS_CONTRACTS_SIGNED . '
                         AND psh.id_project = p.id_project
                       ORDER BY added ASC
                       LIMIT 1
@@ -789,7 +789,7 @@ class ProjectsRepository extends ServiceEntityRepository
               p.amount,
               p.id_project
             FROM projects p
-            WHERE p.status >= ' . ProjectsStatus::STATUS_REPAYMENT;
+            WHERE p.status >= ' . ProjectsStatus::STATUS_CONTRACTS_SIGNED;
 
         if (null !== $date) {
             $date->setTime(23, 59, 59);
@@ -800,7 +800,7 @@ class ProjectsRepository extends ServiceEntityRepository
                       SELECT added
                       FROM projects_status_history psh
                         INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
-                      WHERE ps.status = ' . ProjectsStatus::STATUS_REPAYMENT . '
+                      WHERE ps.status = ' . ProjectsStatus::STATUS_CONTRACTS_SIGNED . '
                         AND psh.id_project = p.id_project
                       ORDER BY added ASC
                       LIMIT 1
@@ -834,7 +834,7 @@ class ProjectsRepository extends ServiceEntityRepository
               p.amount,
               p.id_project
             FROM projects p
-            WHERE p.status >= ' . ProjectsStatus::STATUS_REPAYMENT;
+            WHERE p.status >= ' . ProjectsStatus::STATUS_CONTRACTS_SIGNED;
 
         if (null !== $date) {
             $date->setTime(23, 59, 59);
@@ -845,7 +845,7 @@ class ProjectsRepository extends ServiceEntityRepository
                       SELECT added
                       FROM projects_status_history psh
                         INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
-                      WHERE ps.status = ' . ProjectsStatus::STATUS_REPAYMENT . '
+                      WHERE ps.status = ' . ProjectsStatus::STATUS_CONTRACTS_SIGNED . '
                         AND psh.id_project = p.id_project
                       ORDER BY added ASC
                       LIMIT 1
@@ -883,7 +883,7 @@ class ProjectsRepository extends ServiceEntityRepository
         return 'SELECT ' . $cohortSelect . ' AS date_range
                 FROM projects_status_history psh
                   INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
-                WHERE ps.status = ' . ProjectsStatus::STATUS_REPAYMENT . ' AND p.id_project = psh.id_project
+                WHERE ps.status = ' . ProjectsStatus::STATUS_CONTRACTS_SIGNED . ' AND p.id_project = psh.id_project
                 GROUP BY psh.id_project';
     }
 
@@ -904,7 +904,7 @@ class ProjectsRepository extends ServiceEntityRepository
             INNER JOIN echeanciers_emprunteur ON echeanciers_emprunteur.id_project = p.id_project 
             INNER JOIN companies c ON c.id_company = p.id_company
             INNER JOIN company_status cs ON cs.id = c.id_status
-            WHERE p.status >= ' . ProjectsStatus::STATUS_REPAYMENT . '
+            WHERE p.status >= ' . ProjectsStatus::STATUS_CONTRACTS_SIGNED . '
                 AND (
                     SELECT lender_payment_status.status
                     FROM echeanciers lender_payment_status
@@ -919,14 +919,14 @@ class ProjectsRepository extends ServiceEntityRepository
                 ) < NOW()
                 AND IF((
                     cs.label IN (:companyStatus)
-                    OR p.status = ' . ProjectsStatus::STATUS_LOSS . '
+                    OR p.status = ' . ProjectsStatus::STATUS_LOST . '
                     OR (
-                        p.status = ' . ProjectsStatus::STATUS_LOSS . '
+                        p.status = ' . ProjectsStatus::STATUS_LOST . '
                         AND DATEDIFF(NOW(), (
                             SELECT psh2.added
                             FROM projects_status_history psh2
                             INNER JOIN projects_status ps2 ON psh2.id_project_status = ps2.id_project_status
-                            WHERE ps2.status = ' . ProjectsStatus::STATUS_LOSS . ' AND psh2.id_project = echeanciers_emprunteur.id_project
+                            WHERE ps2.status = ' . ProjectsStatus::STATUS_LOST . ' AND psh2.id_project = echeanciers_emprunteur.id_project
                             ORDER BY psh2.added DESC, psh2.id_project_status_history DESC
                             LIMIT 1
                         )) > ' . UnilendStats::DAYS_AFTER_LAST_PROBLEM_STATUS_FOR_STATISTIC_LOSS . '
@@ -962,7 +962,7 @@ class ProjectsRepository extends ServiceEntityRepository
                 SELECT added 
                 FROM projects_status_history
                   INNER JOIN projects_status ON projects_status_history.id_project_status = projects_status.id_project_status
-                WHERE status = ' . ProjectsStatus::STATUS_REPAYMENT . '
+                WHERE status = ' . ProjectsStatus::STATUS_CONTRACTS_SIGNED . '
                  AND projects_status_history.id_project = p.id_project
                 ORDER BY added, id_project_status_history ASC
                 LIMIT 1
@@ -972,7 +972,7 @@ class ProjectsRepository extends ServiceEntityRepository
               p.amount,
               (' . $this->getCohortQuery($groupFirstYears) . ') AS cohort
             FROM projects p
-            WHERE p.status >= ' . ProjectsStatus::STATUS_REPAYMENT . '
+            WHERE p.status >= ' . ProjectsStatus::STATUS_CONTRACTS_SIGNED . '
             GROUP BY p.id_project';
 
         if (null !== $date) {
@@ -984,7 +984,7 @@ class ProjectsRepository extends ServiceEntityRepository
                       SELECT added
                       FROM projects_status_history psh
                         INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
-                      WHERE ps.status = ' . ProjectsStatus::STATUS_REPAYMENT . '
+                      WHERE ps.status = ' . ProjectsStatus::STATUS_CONTRACTS_SIGNED . '
                         AND psh.id_project = p.id_project
                       ORDER BY added ASC
                       LIMIT 1
@@ -1026,7 +1026,7 @@ class ProjectsRepository extends ServiceEntityRepository
                 SELECT added 
                 FROM projects_status_history
                   INNER JOIN projects_status ON projects_status_history.id_project_status = projects_status.id_project_status
-                WHERE status = ' . ProjectsStatus::STATUS_REPAYMENT . '
+                WHERE status = ' . ProjectsStatus::STATUS_CONTRACTS_SIGNED . '
                  AND projects_status_history.id_project = p.id_project
                 ORDER BY added, id_project_status_history ASC
                 LIMIT 1
@@ -1035,7 +1035,7 @@ class ProjectsRepository extends ServiceEntityRepository
               p.id_project,
               p.amount
              FROM projects p
-             WHERE p.status >= ' . ProjectsStatus::STATUS_REPAYMENT . '
+             WHERE p.status >= ' . ProjectsStatus::STATUS_CONTRACTS_SIGNED . '
              GROUP BY p.id_project';
 
         if (null !== $date) {
@@ -1047,7 +1047,7 @@ class ProjectsRepository extends ServiceEntityRepository
                       SELECT added
                       FROM projects_status_history psh
                         INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
-                      WHERE ps.status = ' . ProjectsStatus::STATUS_REPAYMENT . '
+                      WHERE ps.status = ' . ProjectsStatus::STATUS_CONTRACTS_SIGNED . '
                         AND psh.id_project = p.id_project
                       ORDER BY added ASC
                       LIMIT 1
@@ -1128,9 +1128,9 @@ class ProjectsRepository extends ServiceEntityRepository
             ->executeQuery(
                 $query, [
                 'sentStatus'      => ProjectsStatus::STATUS_REVIEW,
-                'repaymentStatus' => ProjectsStatus::STATUS_REPAYMENT,
+                'repaymentStatus' => ProjectsStatus::STATUS_CONTRACTS_SIGNED,
                 'rejectionStatus' => ProjectsStatus::STATUS_CANCELLED,
-                'problemStatus'   => ProjectsStatus::STATUS_LOSS,
+                'problemStatus'   => ProjectsStatus::STATUS_LOST,
                 'submitterId'     => $submitterId
             ], [
                 'sentStatus'      => PDO::PARAM_INT,
@@ -1396,9 +1396,9 @@ class ProjectsRepository extends ServiceEntityRepository
                ) AS upcoming_con
         ';
         $params    = [
-            'statusFunding'              => ProjectsStatus::STATUS_ONLINE,
+            'statusFunding'              => ProjectsStatus::STATUS_PUBLISHED,
             'repaid'                     => Echeanciers::STATUS_REPAID,
-            'projectStatus'              => [ProjectsStatus::STATUS_REPAYMENT, ProjectsStatus::STATUS_LOSS],
+            'projectStatus'              => [ProjectsStatus::STATUS_CONTRACTS_SIGNED, ProjectsStatus::STATUS_LOST],
             'emptyDate'                  => '0000-00-00',
             'companyStatus'              => [CompanyStatus::STATUS_IN_BONIS, CompanyStatus::STATUS_COMPULSORY_LIQUIDATION],
             'fundingChangeDate'          => DebtCollectionMissionManager::DEBT_COLLECTION_CONDITION_CHANGE_DATE,
@@ -1442,7 +1442,7 @@ class ProjectsRepository extends ServiceEntityRepository
             ->andWhere('p.status IN (:projectStatus)')
             ->setParameter('siren', $siren)
             ->setParameter('project', $project)
-            ->setParameter('projectStatus', [ProjectsStatus::STATUS_REPAYMENT, ProjectsStatus::STATUS_LOSS]);
+            ->setParameter('projectStatus', [ProjectsStatus::STATUS_CONTRACTS_SIGNED, ProjectsStatus::STATUS_LOST]);
 
         return array_column($queryBuilder->getQuery()->getArrayResult(), 'idProject');
     }
@@ -1479,7 +1479,7 @@ class ProjectsRepository extends ServiceEntityRepository
         $queryBuilder
             ->where('p.status = :status')
             ->andWhere('p.datePublication <= NOW()')
-            ->setParameter('status', ProjectsStatus::STATUS_ONLINE);
+            ->setParameter('status', ProjectsStatus::STATUS_PUBLISHED);
 
         if ($limit) {
             $queryBuilder->setMaxResults($limit);
@@ -1512,13 +1512,13 @@ class ProjectsRepository extends ServiceEntityRepository
 
         switch ($project->getStatus()) {
             case ProjectsStatus::STATUS_FUNDED:
-            case ProjectsStatus::STATUS_REPAYMENT:
-            case ProjectsStatus::STATUS_REPAID:
-            case ProjectsStatus::STATUS_LOSS:
+            case ProjectsStatus::STATUS_CONTRACTS_SIGNED:
+            case ProjectsStatus::STATUS_FINISHED:
+            case ProjectsStatus::STATUS_LOST:
                 $queryBuilder
                     ->from('loans', 't');
                 break;
-            case ProjectsStatus::STATUS_ONLINE:
+            case ProjectsStatus::STATUS_PUBLISHED:
             case ProjectsStatus::STATUS_REVIEW:
                 $queryBuilder
                     ->from('bids', 't')
@@ -1636,7 +1636,7 @@ class ProjectsRepository extends ServiceEntityRepository
                     'p.status != :incompleteProjectStatus'
                 )
             )
-            ->setParameter('incompleteProjectStatus', ProjectsStatus::STATUS_REQUEST);
+            ->setParameter('incompleteProjectStatus', ProjectsStatus::STATUS_REQUESTED);
 
         $statement = $queryBuilder->execute();
         $projects  = $statement->fetchAll(\PDO::FETCH_ASSOC);
@@ -1650,7 +1650,7 @@ class ProjectsRepository extends ServiceEntityRepository
      */
     public function getProjectsInRepaymentWithPendingMandate(): array
     {
-        $queryBuilder = $this->getSaleProjectsQuery([ProjectsStatus::STATUS_REPAYMENT]);
+        $queryBuilder = $this->getSaleProjectsQuery([ProjectsStatus::STATUS_CONTRACTS_SIGNED]);
         $queryBuilder
             ->innerJoin('p', 'clients_mandats', 'cm', 'cm.id_project = p.id_project')
             ->andWhere('cm.status = :pending')
@@ -1669,7 +1669,7 @@ class ProjectsRepository extends ServiceEntityRepository
      */
     public function getProjectsWithFundsToRelease(): array
     {
-        $queryBuilder = $this->getSaleProjectsQuery([ProjectsStatus::STATUS_REPAYMENT]);
+        $queryBuilder = $this->getSaleProjectsQuery([ProjectsStatus::STATUS_CONTRACTS_SIGNED]);
         $queryBuilder
             ->innerJoin('p', 'projects_pouvoir', 'pp', 'pp.id_project = p.id_project')
             ->leftJoin('p', 'virements', 'v', 'p.id_project = v.id_project AND v.type = :borrower')
@@ -1909,7 +1909,7 @@ class ProjectsRepository extends ServiceEntityRepository
         $queryBuilder
             ->select('p')
             ->innerJoin(ProjectSearch::class, 's', Join::WITH, 'p.idProject = s.idProject')
-            ->where('p.status >= ' . ProjectsStatus::STATUS_ONLINE)
+            ->where('p.status >= ' . ProjectsStatus::STATUS_PUBLISHED)
             ->setFirstResult($offset)
             ->setMaxResults($limit);
 

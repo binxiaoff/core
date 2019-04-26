@@ -230,8 +230,8 @@ class sfpmeiController extends bootstrap
                 $this->hideDecoration();
                 $this->setView('preteur/portefeuille');
 
-                $statusOK = [ProjectsStatus::STATUS_ONLINE, ProjectsStatus::STATUS_FUNDED, ProjectsStatus::STATUS_REPAYMENT, ProjectsStatus::STATUS_REPAID];
-                $statusKO = [ProjectsStatus::STATUS_LOSS, ProjectsStatus::STATUS_CANCELLED];
+                $statusOK = [ProjectsStatus::STATUS_PUBLISHED, ProjectsStatus::STATUS_FUNDED, ProjectsStatus::STATUS_CONTRACTS_SIGNED, ProjectsStatus::STATUS_FINISHED];
+                $statusKO = [ProjectsStatus::STATUS_LOST, ProjectsStatus::STATUS_CANCELLED];
 
                 $this->lenderIRR                = $entityManager->getRepository(LenderStatistic::class)->findOneBy(['idWallet' => $this->wallet, 'typeStat' => LenderStatistic::TYPE_STAT_IRR], ['added' => 'DESC']);
                 $this->projectsCount            = $this->loans->getProjectsCount($this->wallet->getId());

@@ -129,7 +129,7 @@ class CompaniesRepository extends ServiceEntityRepository
             ->andWhere('cs.label != :inBonis')
             ->setParameter('inBonis', CompanyStatus::STATUS_IN_BONIS)
             ->andWhere('ps.status = :projectStatus')
-            ->setParameter('projectStatus', ProjectsStatus::STATUS_LOSS);
+            ->setParameter('projectStatus', ProjectsStatus::STATUS_LOST);
 
         return $queryBuilder->getQuery()->getSingleScalarResult() > 0;
     }
@@ -191,7 +191,7 @@ class CompaniesRepository extends ServiceEntityRepository
             ->where('cs.label != :inBonis')
             ->orWhere('p.status IN (:finalStatus)')
             ->setParameter('inBonis', CompanyStatus::STATUS_IN_BONIS)
-            ->setParameter('finalStatus', [ProjectsStatus::STATUS_REPAID, ProjectsStatus::STATUS_CANCELLED]);
+            ->setParameter('finalStatus', [ProjectsStatus::STATUS_FINISHED, ProjectsStatus::STATUS_CANCELLED]);
 
         return $queryBuilder->getQuery()->getResult();
     }

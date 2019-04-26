@@ -72,7 +72,7 @@ class InvoiceManager
     public function generateProjectFundsCommissionInvoice(Factures $invoice)
     {
         $projectStatusHistoryRepository      = $this->entityManager->getRepository(ProjectsStatusHistory::class);
-        $repaymentStatus                     = $this->entityManager->getRepository(ProjectsStatus::class)->findOneBy(['status' => ProjectsStatus::STATUS_REPAYMENT]);
+        $repaymentStatus                     = $this->entityManager->getRepository(ProjectsStatus::class)->findOneBy(['status' => ProjectsStatus::STATUS_CONTRACTS_SIGNED]);
         $projectsStatusHistoryFirstRepayment = $projectStatusHistoryRepository->findStatusFirstOccurrence($invoice->getIdProject(), $repaymentStatus);
 
         $this->generateInvoice($invoice, $projectsStatusHistoryFirstRepayment->getAdded());

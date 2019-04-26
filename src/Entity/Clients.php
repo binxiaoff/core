@@ -267,7 +267,7 @@ class Clients implements UserInterface, EquatableInterface
     private $clientsAddresses;
 
     /**
-     * @var ClientAddress
+     * @var ClientAddress|null
      *
      * @ORM\OneToOne(targetEntity="Unilend\Entity\ClientAddress")
      * @ORM\JoinColumn(name="id_address", referencedColumnName="id")
@@ -275,7 +275,7 @@ class Clients implements UserInterface, EquatableInterface
     private $idAddress;
 
     /**
-     * @var ClientAddress
+     * @var ClientAddress|null
      *
      * @ORM\OneToOne(targetEntity="Unilend\Entity\ClientAddress")
      * @ORM\JoinColumn(name="id_postal_address", referencedColumnName="id")
@@ -784,17 +784,17 @@ class Clients implements UserInterface, EquatableInterface
     /**
      * @return bool
      */
-    public function isBorrower(): bool
+    public function isLender(): bool
     {
-        return $this->hasRole(self::ROLE_BORROWER);
+        return $this->hasRole(self::ROLE_LENDER);
     }
 
     /**
      * @return bool
      */
-    public function isLender(): bool
+    public function isBorrower(): bool
     {
-        return $this->hasRole(self::ROLE_LENDER);
+        return $this->hasRole(self::ROLE_BORROWER);
     }
 
     /**

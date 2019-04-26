@@ -103,8 +103,8 @@ class CompanyManager
                 $companyProjects = $this->entityManager->getRepository(Projects::class)->findFundedButNotRepaidProjectsByCompany($company);
 
                 foreach ($companyProjects as $project) {
-                    if (ProjectsStatus::STATUS_LOSS !== $project->getStatus()) {
-                        $this->projectStatusManager->addProjectStatus($user, ProjectsStatus::STATUS_LOSS, $project);
+                    if (ProjectsStatus::STATUS_LOST !== $project->getStatus()) {
+                        $this->projectStatusManager->addProjectStatus($user, ProjectsStatus::STATUS_LOST, $project);
                     }
 
                     $directDebitEntity = $this->entityManager->getRepository(Prelevements::class);

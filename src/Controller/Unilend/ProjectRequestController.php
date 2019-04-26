@@ -100,7 +100,7 @@ class ProjectRequestController extends Controller
             }
             $user = $entityManager->getRepository(Users::class)->find(Users::USER_ID_FRONT);
 
-            $project = $projectRequestManager->newProject($user, $partner, ProjectsStatus::STATUS_REQUEST, $amount, $siren, $siret, $companyName, $email, $duration, $reason);
+            $project = $projectRequestManager->newProject($user, $partner, ProjectsStatus::STATUS_REQUESTED, $amount, $siren, $siret, $companyName, $email, $duration, $reason);
 
             $client = $project->getIdCompany()->getIdClientOwner();
             $request->getSession()->set(DataLayerCollector::SESSION_KEY_CLIENT_EMAIL, $client->getEmail());
@@ -1267,7 +1267,7 @@ class ProjectRequestController extends Controller
                     return $this->redirectToRoute(self::PAGE_ROUTE_END, ['hash' => $hash]);
                 }
                 break;
-            case ProjectsStatus::STATUS_REQUEST:
+            case ProjectsStatus::STATUS_REQUESTED:
                 if ($route !== self::PAGE_ROUTE_CONTACT && empty($request->getSession()->get('partnerProjectRequest'))) {
                     return $this->redirectToRoute(self::PAGE_ROUTE_CONTACT, ['hash' => $hash]);
                 } elseif ($route !== self::PAGE_ROUTE_PARTNER && false === empty($request->getSession()->get('partnerProjectRequest'))) {

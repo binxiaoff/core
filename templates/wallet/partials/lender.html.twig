@@ -91,7 +91,7 @@
                                         data-sortable-rate="{{ offer.rate.margin }}"
                                         data-sortable-status="{{ offer.status }}">
                                         <td class="table-projects-item-partner">
-                                            {% include 'demo/partials/bubble.html.twig' with {'partner': project.idPartner.label} %}
+                                            {% include 'partials/market_bubble.html.twig' with {'partner': project.idPartner.label} %}
                                         </td>
                                         <td class="table-projects-item-title">{{ project.title }}</td>
                                         <td class="table-projects-item-project-amount">{{ project.amount|localizednumberwithprecision(0) }} €</td>
@@ -202,7 +202,7 @@
                                         data-sortable-loan-amount="{{ amount }}"
                                         data-sortable-rate="{{ loan.rate.margin }}">
                                         <td class="table-projects-item-partner">
-                                            {% include 'demo/partials/bubble.html.twig' with {'partner': project.idPartner.label} %}
+                                            {% include 'partials/market_bubble.html.twig' with {'partner': project.idPartner.label} %}
                                         </td>
                                         <td class="table-projects-item-title">{{ project.title }}</td>
                                         <td class="table-projects-item-project-amount">{{ project.amount|localizednumberwithprecision(0) }}&nbsp;€</td>
@@ -213,21 +213,19 @@
                                         <td class="table-projects-item-status">
                                             {% set status = project.status %}
                                             {% set statusLabel = '' %}
-                                            {% if status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_REQUEST') %}
-                                                {% set statusLabel = 'À compléter' %}
-                                            {% elseif status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_REVIEW') %}
-                                                {% set statusLabel = 'En cours de revue' %}
-                                            {% elseif status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_ONLINE') %}
+                                            {% if status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_REQUESTED') %}
+                                                {% set statusLabel = 'Dépôt' %}
+                                            {% elseif status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_PUBLISHED') %}
                                                 {% set statusLabel = 'En cours de financement' %}
                                             {% elseif status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_FUNDED') %}
-                                                {% set statusLabel = 'En attente de signature' %}
-                                            {% elseif status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_SIGNED') %}
-                                                {% set statusLabel = 'Signé' %}
-                                            {% elseif status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_REPAYMENT') %}
+                                                {% set statusLabel = 'Contractualisation' %}
+                                            {% elseif status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_CONTRACTS_REDACTED') %}
+                                                {% set statusLabel = 'Signature' %}
+                                            {% elseif status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_CONTRACTS_SIGNED') %}
                                                 {% set statusLabel = 'En cours de remboursement' %}
-                                            {% elseif status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_REPAID') %}
+                                            {% elseif status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_FINISHED') %}
                                                 {% set statusLabel = 'Terminé' %}
-                                            {% elseif status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_LOSS') %}
+                                            {% elseif status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_LOST') %}
                                                 {% set statusLabel = 'Défaut' %}
                                             {% elseif status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_CANCELLED') %}
                                                 {% set statusLabel = 'Annulé' %}
@@ -330,7 +328,7 @@
                                         data-sortable-loan-amount="{{ amount }}"
                                         data-sortable-rate="{{ loan.rate.margin }}">
                                         <td class="table-projects-item-partner">
-                                            {% include 'demo/partials/bubble.html.twig' with {'partner': project.idPartner.label} %}
+                                            {% include 'partials/market_bubble.html.twig' with {'partner': project.idPartner.label} %}
                                         </td>
                                         <td class="table-projects-item-title">{{ project.title }}</td>
                                         <td class="table-projects-item-project-amount">{{ project.amount|localizednumberwithprecision(0) }}&nbsp;€</td>
@@ -340,21 +338,19 @@
                                         <td class="table-projects-item-status">
                                             {% set status = project.status %}
                                             {% set statusLabel = '' %}
-                                            {% if status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_REQUEST') %}
-                                                {% set statusLabel = 'À compléter' %}
-                                            {% elseif status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_REVIEW') %}
-                                                {% set statusLabel = 'En cours de revue' %}
-                                            {% elseif status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_ONLINE') %}
+                                            {% if status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_REQUESTED') %}
+                                                {% set statusLabel = 'Dépôt' %}
+                                            {% elseif status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_PUBLISHED') %}
                                                 {% set statusLabel = 'En cours de financement' %}
                                             {% elseif status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_FUNDED') %}
-                                                {% set statusLabel = 'En attente de signature' %}
-                                            {% elseif status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_SIGNED') %}
-                                                {% set statusLabel = 'Signé' %}
-                                            {% elseif status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_REPAYMENT') %}
+                                                {% set statusLabel = 'Contractualisation' %}
+                                            {% elseif status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_CONTRACTS_REDACTED') %}
+                                                {% set statusLabel = 'Signature' %}
+                                            {% elseif status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_CONTRACTS_SIGNED') %}
                                                 {% set statusLabel = 'En cours de remboursement' %}
-                                            {% elseif status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_REPAID') %}
+                                            {% elseif status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_FINISHED') %}
                                                 {% set statusLabel = 'Terminé' %}
-                                            {% elseif status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_LOSS') %}
+                                            {% elseif status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_LOST') %}
                                                 {% set statusLabel = 'Défaut' %}
                                             {% elseif status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_CANCELLED') %}
                                                 {% set statusLabel = 'Annulé' %}
@@ -385,7 +381,7 @@
                                         data-sortable-loan-amount="{{ amount }}"
                                         data-sortable-rate="{{ loan.rate.margin }}">
                                         <td class="table-projects-item-partner">
-                                            {% include 'demo/partials/bubble.html.twig' with {'partner': project.idPartner.label} %}
+                                            {% include 'partials/market_bubble.html.twig' with {'partner': project.idPartner.label} %}
                                         </td>
                                         <td class="table-projects-item-title">{{ project.title }}</td>
                                         <td class="table-projects-item-project-amount">{{ project.amount|localizednumberwithprecision(0) }}&nbsp;€</td>

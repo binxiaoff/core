@@ -693,7 +693,7 @@ class transfertsController extends bootstrap
                 $proxy->setStatusRemb(ProjectsPouvoir::STATUS_REPAYMENT_VALIDATED);
                 $entityManager->flush($proxy);
 
-                $projectStatusManager->addProjectStatus($this->userEntity, ProjectsStatus::STATUS_REPAYMENT, $project);
+                $projectStatusManager->addProjectStatus($this->userEntity, ProjectsStatus::STATUS_CONTRACTS_SIGNED, $project);
 
                 $allAcceptedBids = $acceptedBids->getDistinctBids($project->getIdProject());
                 $lastLoans       = array();
@@ -873,7 +873,7 @@ class transfertsController extends bootstrap
 
             /** @var \loans $loans */
             $loans                 = $this->loadData('loans');
-            $loansInRepayment      = $loans->getLoansForProjectsWithStatus($originalWallet->getId(), [ProjectsStatus::STATUS_FUNDED, ProjectsStatus::STATUS_REPAYMENT, ProjectsStatus::STATUS_LOSS]);
+            $loansInRepayment      = $loans->getLoansForProjectsWithStatus($originalWallet->getId(), [ProjectsStatus::STATUS_FUNDED, ProjectsStatus::STATUS_CONTRACTS_SIGNED, ProjectsStatus::STATUS_LOST]);
             $originalClientBalance = $originalWallet->getAvailableBalance();
 
             if (isset($_POST['succession_check'])) {

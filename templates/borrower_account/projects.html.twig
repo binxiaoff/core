@@ -42,7 +42,7 @@
                                     </thead>
                                         <tbody>
                                         {% for project in pre_funding_projects %}
-                                            {% if project.getStatus() == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_REQUEST') %}
+                                            {% if project.getStatus() == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_REQUESTED') %}
                                                 {% set project_status_label = 'waiting-for-documents' %}
                                             {% else %}
                                                 {% set project_status_label = 'waiting-for-being-on-line' %}

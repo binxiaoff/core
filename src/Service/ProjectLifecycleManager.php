@@ -181,7 +181,7 @@ class ProjectLifecycleManager
 
         $this->insertNewProjectEmails($project);
 
-        $this->projectStatusManager->addProjectStatus(Users::USER_ID_CRON, ProjectsStatus::STATUS_ONLINE, $project);
+        $this->projectStatusManager->addProjectStatus(Users::USER_ID_CRON, ProjectsStatus::STATUS_PUBLISHED, $project);
     }
 
     /**
@@ -191,7 +191,7 @@ class ProjectLifecycleManager
      */
     public function publish(Projects $project): void
     {
-        $this->projectStatusManager->addProjectStatus(Users::USER_ID_CRON, ProjectsStatus::STATUS_ONLINE, $project);
+        $this->projectStatusManager->addProjectStatus(Users::USER_ID_CRON, ProjectsStatus::STATUS_PUBLISHED, $project);
 
         $this->insertNewProjectNotification($project);
 
@@ -288,7 +288,7 @@ class ProjectLifecycleManager
             case ProjectsStatus::STATUS_REVIEW:
                 $this->bidAllAutoBid($project);
                 break;
-            case ProjectsStatus::STATUS_ONLINE:
+            case ProjectsStatus::STATUS_PUBLISHED:
                 $this->reBidAutoBid($project, true);
                 break;
         }
@@ -389,7 +389,7 @@ class ProjectLifecycleManager
      */
     public function buildLoans(Projects $project): void
     {
-        $this->projectStatusManager->addProjectStatus(Users::USER_ID_CRON, ProjectsStatus::STATUS_ONLINE, $project);
+        $this->projectStatusManager->addProjectStatus(Users::USER_ID_CRON, ProjectsStatus::STATUS_PUBLISHED, $project);
         $this->reBidAutoBidDeeply($project, true);
         $this->projectStatusManager->addProjectStatus(Users::USER_ID_CRON, ProjectsStatus::STATUS_FUNDED, $project);
         $this->acceptBids($project);

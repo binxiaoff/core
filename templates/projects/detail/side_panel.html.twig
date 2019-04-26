@@ -14,7 +14,7 @@
                     </div><!-- /.ui-progressbar -->
                 </div><!-- /.project-single-cost-progress -->
 
-                {% if project.status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_ONLINE') %}
+                {% if project.status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_PUBLISHED') %}
                     <div class="project-single-cost-amount">
                         <div class="project-single-cost-amount-funded">{% transchoice project.costFunded with {'%costFunded%' : project.costFunded|localizednumber} %} project-detail_already-bid-amount {% endtranschoice %}</div>
                     </div><!-- /.project-single-cost-amount -->
@@ -35,7 +35,7 @@
                 </div><!-- /.project-single-duration -->
             </div>
 
-            {% if project.status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_REPAID') %}
+            {% if project.status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_FINISHED') %}
                 <p>
                     {% if project.isCloseOutNetting %}
                         {% trans with {'%dateLastRepayment%': project.dateLastStatus} %} project-detail_project-collected-message {% endtrans %}
@@ -52,10 +52,10 @@
                     </p>
                 {% endif %}
                 {% include 'projects/detail/login_form.html.twig' %}
-            {% elseif project.status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_LOSS') %}
+            {% elseif project.status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_LOST') %}
                 <p>{% trans with {'%date%': project.dateLastStatus} %} project-detail_side-bar-lost-message {% endtrans %}</p>
                 {% include 'projects/detail/login_form.html.twig' %}
-            {% elseif project.status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_FUNDED') or project.status >= constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_REPAYMENT') %}
+            {% elseif project.status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_FUNDED') or project.status >= constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_CONTRACTS_SIGNED') %}
                 <p>
                     {% trans with {
                         '%numberLenders%' : project.totalLenders|localizednumber,

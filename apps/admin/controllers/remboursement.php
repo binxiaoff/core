@@ -176,7 +176,7 @@ class remboursementController extends bootstrap
                         $projectRepaymentTaskManager->enableAutomaticRepayment($project, $this->userEntity);
                         /** @var \Unilend\Service\ProjectStatusManager $projectStatusManager */
                         $projectStatusManager = $this->get('unilend.service.project_status_manager');
-                        $projectStatusManager->addProjectStatus($this->userEntity, ProjectsStatus::STATUS_REPAYMENT, $project);
+                        $projectStatusManager->addProjectStatus($this->userEntity, ProjectsStatus::STATUS_CONTRACTS_SIGNED, $project);
                     }
 
                 } catch (Exception $exception) {
@@ -392,7 +392,7 @@ class remboursementController extends bootstrap
             $latePaymentData = [];
             $project         = $projectRepository->find($projectId);
 
-            if (null !== $project && $project->getStatus() >= ProjectsStatus::STATUS_REPAYMENT) {
+            if (null !== $project && $project->getStatus() >= ProjectsStatus::STATUS_CONTRACTS_SIGNED) {
                 /** @var \Unilend\Service\ProjectManager $projectManager */
                 $projectManager = $this->get('unilend.service.project_manager');
                 /** @var \Unilend\Service\ProjectCloseOutNettingManager $projectCloseOutNettingManager */
@@ -476,7 +476,7 @@ class remboursementController extends bootstrap
                     'plannedRepaymentTasks'      => $plannedRepaymentTasks,
                     'lenderCount'                => $entityManager->getRepository(Loans::class)->getLenderNumber($project),
                     'paymentSchedules'           => $paymentSchedules,
-                    'repaymentProjectStatus'     => ProjectsStatus::STATUS_FUNDED . ',' . ProjectsStatus::STATUS_REPAYMENT . ',' . ProjectsStatus::STATUS_REPAID
+                    'repaymentProjectStatus'     => ProjectsStatus::STATUS_FUNDED . ',' . ProjectsStatus::STATUS_CONTRACTS_SIGNED . ',' . ProjectsStatus::STATUS_FINISHED
                 ];
 
                 $this->render(null, $templateData);
@@ -514,7 +514,7 @@ class remboursementController extends bootstrap
                 $this->sendAjaxResponse(false, null, ['paramètres invalides.']);
             }
 
-            if (ProjectsStatus::STATUS_LOSS == $project->getStatus()) {
+            if (ProjectsStatus::STATUS_LOST == $project->getStatus()) {
                 $this->sendAjaxResponse(false, null, ['Un projet en statut problème ne peut pas être mis en remboursement automatique']);
             }
 
