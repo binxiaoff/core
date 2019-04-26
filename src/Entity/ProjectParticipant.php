@@ -1,11 +1,11 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Unilend\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
-use Unilend\Entity\Traits\Roleable;
-use Unilend\Entity\Traits\Timestampable;
+use Unilend\Entity\Traits\{Roleable, Timestampable};
 
 /**
  * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(columns={"id_project", "id_company"})})
@@ -18,14 +18,13 @@ class ProjectParticipant
     use Timestampable;
 
     // Use COMPANY_ prefix to distinguish it from Symfony user's roles
-    const COMPANY_ROLE_ARRANGER = 'COMPANY_ROLE_ARRANGER'; // The company who arranges a loan syndication.
-    const COMPANY_ROLE_AGENT    = 'COMPANY_ROLE_AGENT'; // The company who ensures the smooth running of repayment process after the project is funded.
-    const COMPANY_ROLE_RUN      = 'COMPANY_ROLE_RUN'; // The abbreviation of Responsable Unique de Notation, who gives a note on the borrower.
-    const COMPANY_ROLE_LENDER   = 'COMPANY_ROLE_LENDER';
+    public const COMPANY_ROLE_ARRANGER = 'COMPANY_ROLE_ARRANGER'; // The company who arranges a loan syndication.
+    public const COMPANY_ROLE_RUN      = 'COMPANY_ROLE_RUN'; // The abbreviation of Responsable Unique de Notation, who gives a note on the borrower.
+    public const COMPANY_ROLE_LENDER   = 'COMPANY_ROLE_LENDER';
 
-    const ROLE_DEFAULT = self::COMPANY_ROLE_LENDER;
+    public const ROLE_DEFAULT = self::COMPANY_ROLE_LENDER;
 
-    const ALL_ROLES = [self::COMPANY_ROLE_ARRANGER, self::COMPANY_ROLE_AGENT, self::COMPANY_ROLE_RUN, self::COMPANY_ROLE_LENDER];
+    public const ALL_ROLES = [self::COMPANY_ROLE_ARRANGER, self::COMPANY_ROLE_RUN, self::COMPANY_ROLE_LENDER];
 
     /**
      * @var int
@@ -41,7 +40,7 @@ class ProjectParticipant
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\Projects", inversedBy="projectParticipants")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_project", referencedColumnName="id_project", nullable=false)
+     *     @ORM\JoinColumn(name="id_project", referencedColumnName="id_project", nullable=false)
      * })
      */
     private $project;
@@ -51,7 +50,7 @@ class ProjectParticipant
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\Companies", inversedBy="projectParticipants")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_company", referencedColumnName="id_company", nullable=false)
+     *     @ORM\JoinColumn(name="id_company", referencedColumnName="id_company", nullable=false)
      * })
      */
     private $company;
@@ -104,6 +103,9 @@ class ProjectParticipant
         return $this;
     }
 
+    /**
+     * @return bool
+     */
     public function isArranger(): bool
     {
         return in_array(self::COMPANY_ROLE_ARRANGER, $this->getRoles());
