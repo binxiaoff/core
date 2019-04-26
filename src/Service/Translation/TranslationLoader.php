@@ -11,7 +11,8 @@ use Unilend\Repository\TranslationsRepository;
 
 class TranslationLoader implements LoaderInterface
 {
-    const SECTION_SEPARATOR = '_';
+    public const SECTION_SEPARATOR        = '.';
+    public const LEGACY_SECTION_SEPARATOR = '_';
 
     /** @var TranslationsRepository */
     private $translationRepository;
@@ -29,16 +30,7 @@ class TranslationLoader implements LoaderInterface
     }
 
     /**
-     * Loads a locale.
-     *
-     * @param mixed  $resource A resource
-     * @param string $locale   A locale
-     * @param string $domain   The domain
-     *
-     * @return MessageCatalogue A MessageCatalogue instance
-     *
-     * @throws NotFoundResourceException when the resource cannot be found
-     * @throws InvalidResourceException  when the resource cannot be loaded
+     * {@inheritdoc}
      */
     public function load($resource, $locale, $domain = 'messages')
     {
@@ -47,6 +39,7 @@ class TranslationLoader implements LoaderInterface
         /** @var Translations $translation */
         foreach ($this->translationRepository->findBy(['locale' => $this->defaultLocale]) as $translation) {
             $catalogue->set($translation->getSection() . self::SECTION_SEPARATOR . $translation->getName(), $translation->getTranslation(), $domain);
+            $catalogue->set($translation->getSection() . self::LEGACY_SECTION_SEPARATOR . $translation->getName(), $translation->getTranslation(), $domain);
         }
 
         return $catalogue;

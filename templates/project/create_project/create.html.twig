@@ -1,0 +1,164 @@
+{% extends 'layouts/_page_with_side_bar.html.twig' %}
+
+{% set page = {
+    id: 'project-creation',
+    classNames: ''
+} %}
+
+{% block dashboardContent %}
+    {{ form_start(form) }}
+    <section class="dashboard-tabs tabs">
+        <div class="dashboard-tabs-content tab-content">
+            <div id="form-container" class="dashboard-tab-pane">
+                <article class="panel">
+                    <header class="panel-header">
+                        <h2 class="margin-10-t">{% trans %} demo-project-request_title {% endtrans %}</h2>
+                    </header>
+                    <section class="text-align-center collapse in">
+                        <button type="button" class="btn-default" data-request-type="primary"
+                                data-toggle="collapse" data-target=".request-form-panel" data-parent="#form-container"
+                                style="padding: 30px; margin: 30px 60px;">
+                            <span class="icon fa-user" style="font-size: 36px;"></span><br>
+                            Syndication primaire<br>
+                            <small>pour un client</small>
+                        </button>
+                        <button type="button" class="btn-default" data-request-type="secondary"
+                                data-toggle="collapse" data-target=".request-form-panel" data-parent="#form-container"
+                                style="padding: 30px; margin: 30px 60px;">
+                            <span class="icon fa-refresh" style="font-size: 36px;"></span><br>
+                            Syndication silencieuse<br>
+                            <small>d‘un encours client</small>
+                        </button>
+                    </section>
+                    <section class="request-form-panel collapse">
+                        <div class="row row-multi-col-computer">
+
+                            <div class="form-field col-lg-4 col-md-4">
+                                {{ form_row(form.title, {'attr': {
+                                    'data-formvalidation-input': null,
+                                    'data-formvalidation-type': 'string',
+                                    'data-formvalidation-required': 'true',
+                                }}) }}
+                            </div><!-- /.form-field -->
+                            <div class="form-field col-lg-4 col-md-4">
+                                {{ form_row(form.borrowerCompany, {'attr': {
+                                    'data-formvalidation-input': null,
+                                    'data-formvalidation-required': 'true',
+                                }}) }}
+                            </div><!-- /.form-field -->
+                            <div class="form-field col-lg-4 col-md-4">
+                                {{ form_row(form.marketSegment, {'attr': {
+                                    'data-formvalidation-input': null,
+                                    'data-formvalidation-required': 'true',
+                                }}) }}
+                            </div><!-- /.form-field -->
+                        </div>
+
+                        <div class="row row-multi-col-computer">
+                            <div class="form-field col-lg-6 col-md-6">
+                                {{ form_row(form.replyDeadline) }}
+                            </div><!-- /.form-field -->
+                            <div class="form-field col-lg-6 col-md-6">
+                                {{ form_row(form.expectedClosingDate) }}
+                            </div><!-- /.form-field -->
+                        </div><!-- /.row -->
+
+                        <div class="row">
+                            <div class="form-field">
+                                {{ form_row(form.description, {'attr': {
+                                    'row': 10,
+                                    'data-formvalidation-input': null,
+                                    'data-formvalidation-type': 'string',
+                                    'data-formvalidation-required': 'true',
+                                }}) }}
+                            </div>
+                        </div><!-- /.row -->
+
+                    </section><!-- /.request-form-panel -->
+                </article><!-- /.panel -->
+                <article class="request-form-panel panel collapse">
+                    <div class="form-validation-notifications"></div>
+                    <button type="submit" class="btn-continue btn-primary pull-right" data-spinnerbutton>
+                        Déposer le dossier
+                    </button>
+                </article>
+            </div><!-- /.dashboard-tab-pane -->
+        </div><!-- /.dashboard-tabs-content -->
+    </section><!-- /.dashboard-tabs -->
+    {{ form_end(form) }}
+{% endblock %}
+
+{% block pageHeadScripts %}
+    <style>
+        fieldset {
+            border: 1px solid #eceaed;
+        }
+
+        legend {
+            color: #2bc9af;
+            font-size: 20px;
+            font-weight: 400;
+            padding: 0 5px;
+        }
+
+        .form-field .select2-container--default .select2-selection--single,
+        .form-field .select2-container--default .select2-selection--single .select2-selection__rendered,
+        .form-field .select2-container--default .select2-selection--single .select2-selection__arrow {
+            height: 40px;
+        }
+
+        .form-field .select2-container--default .select2-selection--single .select2-selection__rendered {
+            line-height: 40px;
+        }
+    </style>
+{% endblock %}
+
+{% block pageScripts %}
+    <script>
+        $(function () {
+            $('[data-request-type]').on('click', function () {
+                $('#request-type').val($(this).attr('data-request-type'))
+            })
+
+            $('#has-guarantee, #request-guarantee').on('change', function () {
+                var checked = this.value === 'true'
+                var $siblingLabel = $(this).parent().siblings('label')
+
+                $siblingLabel.slideToggle(checked, function () {
+                    if (checked) {
+                        $siblingLabel.find('input').prop('checked', false)
+                    }
+                })
+            })
+
+            $('#input-borrower').select2({
+                ajax: {
+                    url: '{{ path('demo_borrower_search_form') }}',
+                    dataType: 'json',
+                    type: 'POST',
+                    cache: true,
+                    processResults: function (response) {
+                        if (response.success) {
+                            return {
+                                results: [{
+                                    id: response.id,
+                                    text: response.name
+                                }]
+                            }
+                        }
+
+                        return {
+                            results: []
+                        }
+                    }
+                },
+                language: 'fr',
+                minimumInputLength: 9,
+                maximumInputLength: 9,
+                placeholder: 'Veuillez saisir un numéro de SIREN'
+            })
+        })
+
+        {% include 'demo/partials/fees/fees.js.twig' %}
+    </script>
+{% endblock %}

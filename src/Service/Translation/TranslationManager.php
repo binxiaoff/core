@@ -63,7 +63,7 @@ class TranslationManager
         $translation = $this->entityManager->getRepository(Translations::class)->findOneBy(['section' => $section, 'name' => $name]);
 
         if (null === $translation) {
-            throw new \InvalidArgumentException('There is not translation for section ' . $section . ' and name ' . $name);
+            throw new \InvalidArgumentException(sprintf('There is not translation for section %s and name %s', $section, $name));
         }
 
         return stripcslashes($translation->getTranslation());
@@ -85,7 +85,8 @@ class TranslationManager
             ->setLocale($this->defaultLocale)
             ->setSection($section)
             ->setName($name)
-            ->setTranslation($text);
+            ->setTranslation($text)
+        ;
 
         $this->entityManager->persist($translation);
 
@@ -123,7 +124,7 @@ class TranslationManager
         $translation = $this->entityManager->getRepository(Translations::class)->findOneBy(['section' => $section, 'name' => $name]);
 
         if (null === $translation) {
-            throw new \InvalidArgumentException('There is not translation for section ' . $section . ' and name ' . $name);
+            throw new \InvalidArgumentException(sprintf('There is not translation for section %s and name %s', $section, $name));
         }
 
         $translation->setTranslation($text);
@@ -143,12 +144,14 @@ class TranslationManager
         $translationCatalogue   = $this->translator->getCatalogue($locale);
         $allTranslation         = $translationCatalogue->all();
         $section                = $section . TranslationLoader::SECTION_SEPARATOR;
-        $length                 = strlen($section);
+        $legacySection          = $section . TranslationLoader::LEGACY_SECTION_SEPARATOR;
+        $length                 = mb_strlen($section); // Same length as legacy
 
         foreach ($allTranslation as $domain => $translations) {
             foreach ($translations as $label => $translation) {
-                if (substr($label, 0, $length) === $section) {
-                    $translationLabelWithoutSection                          = substr($label, $length);
+                $partOfLabel = mb_substr($label, 0, $length);
+                if ($partOfLabel === $section || $partOfLabel === $legacySection) {
+                    $translationLabelWithoutSection                          = mb_substr($label, $length);
                     $translationsForSection[$translationLabelWithoutSection] = $translation;
                 }
             }
@@ -157,6 +160,9 @@ class TranslationManager
         return $translationsForSection;
     }
 
+    /**
+     * Delete the translations directory in cache.
+     */
     public function flush()
     {
         $this->symfonyCache->flush(['translations']);

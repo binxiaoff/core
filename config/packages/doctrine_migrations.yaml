@@ -4,3 +4,4 @@ doctrine_migrations:
     namespace: DoctrineMigrations
     organize_migrations: BY_YEAR
     column_length: 30
+    all_or_nothing: true

@@ -3,29 +3,15 @@
 namespace Unilend\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Unilend\Entity\Traits\Timestampable;
 
 /**
- * ProjectAttachment
- *
- * @ORM\Table(name="project_attachment", indexes={@ORM\Index(name="id_project", columns={"id_project"}), @ORM\Index(name="id_attachment", columns={"id_attachment"})})
  * @ORM\Entity(repositoryClass="Unilend\Repository\ProjectAttachmentRepository")
  * @ORM\HasLifecycleCallbacks
  */
 class ProjectAttachment
 {
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="added", type="datetime")
-     */
-    private $added;
-
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="updated", type="datetime", nullable=true)
-     */
-    private $updated;
+    use Timestampable;
 
     /**
      * @var int
@@ -37,148 +23,70 @@ class ProjectAttachment
     private $id;
 
     /**
-     * @var \Unilend\Entity\Projects
+     * @var Project
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Projects", inversedBy="attachments")
+     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Project", inversedBy="attachments")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_project", referencedColumnName="id_project", nullable=false)
+     *     @ORM\JoinColumn(name="id_project", nullable=false)
      * })
      */
-    private $idProject;
+    private $project;
 
     /**
-     * @var \Unilend\Entity\Attachment
+     * @var Attachment
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\Attachment")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_attachment", referencedColumnName="id", nullable=false)
+     *     @ORM\JoinColumn(name="id_attachment", nullable=false)
      * })
      */
-    private $idAttachment;
-
-
+    private $attachment;
 
     /**
-     * Set added
-     *
-     * @param \DateTime $added
-     *
-     * @return ProjectAttachment
+     * @return int|null
      */
-    public function setAdded(\DateTime $added): ProjectAttachment
-    {
-        $this->added = $added;
-
-        return $this;
-    }
-
-    /**
-     * Get added
-     *
-     * @return \DateTime
-     */
-    public function getAdded(): \DateTime
-    {
-        return $this->added;
-    }
-
-    /**
-     * Set updated
-     *
-     * @param \DateTime|null $updated
-     *
-     * @return ProjectAttachment
-     */
-    public function setUpdated(?\DateTime $updated): ProjectAttachment
-    {
-        $this->updated = $updated;
-
-        return $this;
-    }
-
-    /**
-     * Get updated
-     *
-     * @return \DateTime|null
-     */
-    public function getUpdated(): ?\DateTime
-    {
-        return $this->updated;
-    }
-
-    /**
-     * Get id
-     *
-     * @return int
-     */
-    public function getId(): int
+    public function getId(): ?int
     {
         return $this->id;
     }
 
     /**
-     * Set idProject
-     *
-     * @param Projects $idProject
+     * @param Project $project
      *
      * @return ProjectAttachment
      */
-    public function setProject(Projects $idProject = null): ProjectAttachment
+    public function setProject(Project $project): ProjectAttachment
     {
-        $this->idProject = $idProject;
+        $this->project = $project;
 
         return $this;
     }
 
     /**
-     * Get idProject
-     *
-     * @return Projects
+     * @return Project|null
      */
-    public function getProject(): Projects
+    public function getProject(): ?Project
     {
-        return $this->idProject;
+        return $this->project;
     }
 
     /**
-     * Set idAttachment
-     *
-     * @param Attachment $idAttachment
+     * @param Attachment $attachment
      *
      * @return ProjectAttachment
      */
-    public function setAttachment(Attachment $idAttachment): ProjectAttachment
+    public function setAttachment(Attachment $attachment): ProjectAttachment
     {
-        $this->idAttachment = $idAttachment;
+        $this->attachment = $attachment;
 
         return $this;
     }
 
     /**
-     * Get idAttachment
-     *
-     * @return Attachment
+     * @return Attachment|null
      */
-    public function getAttachment(): Attachment
+    public function getAttachment(): ?Attachment
     {
-        return $this->idAttachment;
-    }
-
-    /**
-     * @ORM\PrePersist
-     */
-    public function setAddedValue(): void
-    {
-        if (! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
-            $this->added = new \DateTime();
-        }
-    }
-
-    /**
-     * @ORM\PreUpdate
-     */
-    public function setUpdatedValue(): void
-    {
-        $this->updated = new \DateTime();
+        return $this->attachment;
     }
 }
