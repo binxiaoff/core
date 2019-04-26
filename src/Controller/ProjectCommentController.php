@@ -2,7 +2,7 @@
 
 namespace Unilend\Controller;
 
-use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\{ORMException, OptimisticLockException};
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -17,17 +17,6 @@ use Unilend\Repository\ProjectCommentRepository;
  */
 class ProjectCommentController extends AbstractController
 {
-    /** @var EntityManagerInterface */
-    private $entityManager;
-
-    /**
-     * @param EntityManagerInterface $entityManager
-     */
-    public function __construct(EntityManagerInterface $entityManager)
-    {
-        $this->entityManager = $entityManager;
-    }
-
     /**
      * @Route("/project/comment/{project}", name="project_comment_add", requirements={"project": "[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}"})
      *
@@ -37,6 +26,9 @@ class ProjectCommentController extends AbstractController
      * @param ProjectCommentRepository   $projectCommentRepository
      * @param Request                    $request
      * @param UserInterface|Clients|null $user
+     *
+     * @throws ORMException
+     * @throws OptimisticLockException
      *
      * @return Response
      */
@@ -72,8 +64,7 @@ class ProjectCommentController extends AbstractController
                 ->setVisibility(ProjectComment::VISIBILITY_ALL)
             ;
 
-            $this->entityManager->persist($comment);
-            $this->entityManager->flush($comment);
+            $projectCommentRepository->save($comment);
 
             return $this->render('project_comment/response.json.twig', ['comment' => $comment], new JsonResponse());
         }
@@ -124,7 +115,7 @@ class ProjectCommentController extends AbstractController
 
         if ($content) {
             $comment->setContent($content);
-            $this->entityManager->flush($comment);
+            $projectCommentRepository->save($comment);
 
             return $this->render('project_comment/response.json.twig', ['comment' => $comment], new JsonResponse());
         }
