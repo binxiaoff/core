@@ -1023,16 +1023,6 @@ class DemoController extends AbstractController
     }
 
     /**
-     * @Route("/reporting", name="demo_statistics")
-     *
-     * @return Response
-     */
-    public function reporting(): Response
-    {
-        return $this->render('demo/reporting.html.twig');
-    }
-
-    /**
      * @Route("/project/{hash}/fees/add", name="demo_add_project_fees", methods={"POST"}, requirements={"hash": "[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}"})
      *
      * @param Request $request

@@ -1,0 +1,16 @@
+{% extends 'demo/_layout.html.twig' %}
+
+{% set page = {
+    id: 'demo-reporting',
+    classNames: ''
+} %}
+
+{% block dashboardContent %}
+    <section class="dashboard-panels-content">
+        {% include 'reporting/partials/category.html.twig' %}
+        {% include 'reporting/partials/region.html.twig' %}
+        {% include 'reporting/partials/canal.html.twig' %}
+        {% include 'reporting/partials/operation.html.twig' %}
+        {% include 'reporting/partials/risk.html.twig' %}
+    </section><!-- /.dashboard-tabs -->
+{% endblock %}
