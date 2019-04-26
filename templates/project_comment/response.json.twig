@@ -1,0 +1,9 @@
+{
+    "id": {{ comment.id }},
+    "parent": {{ comment.parent is not empty ? comment.parent.id : 'null' }},
+    "created": "{{ comment.added|date('c') }}",
+    "modified": "{{ comment.updated is not empty ? comment.updated|date('c') : comment.added|date('c') }}",
+    "content": "{{ comment.content|e('js') }}",
+    "fullname": "{{ (comment.client.firstName ~ ' ' ~ comment.client.lastName)|e('js') }}",
+    "created_by_current_user": true
+}
