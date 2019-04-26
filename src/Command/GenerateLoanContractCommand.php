@@ -35,9 +35,9 @@ EOF
         $entityManager = $this->getContainer()->get('doctrine.orm.entity_manager');
         $projects      = $entityManager->getRepository(Projects::class)->findBy([
             'status' => [
-                ProjectsStatus::STATUS_REPAYMENT,
+                ProjectsStatus::STATUS_CONTRACTS_SIGNED,
                 ProjectsStatus::STATUS_FINISHED,
-                ProjectsStatus::STATUS_LOSS
+                ProjectsStatus::STATUS_LOST
             ]
         ]);
 

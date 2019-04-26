@@ -39,7 +39,7 @@ class LoansRepository extends ServiceEntityRepository
 
         $statement = $this->getEntityManager()->getConnection()->executeCacheQuery(
             $query,
-            ['walletId' => $wallet->getId(), 'loanStatus' => Loans::STATUS_ACCEPTED, 'projectStatus' => ProjectsStatus::STATUS_REPAYMENT],
+            ['walletId' => $wallet->getId(), 'loanStatus' => Loans::STATUS_ACCEPTED, 'projectStatus' => ProjectsStatus::STATUS_CONTRACTS_SIGNED],
             ['walletId' => \PDO::PARAM_INT, 'loanStatus' => \PDO::PARAM_INT, 'projectStatus' => \PDO::PARAM_INT],
             new QueryCacheProfile(CacheKeys::SHORT_TIME, __FUNCTION__)
         );
@@ -189,7 +189,7 @@ class LoansRepository extends ServiceEntityRepository
             ->andWhere('l.status = :accepted')
             ->setParameter('accepted', Loans::STATUS_ACCEPTED)
             ->andWhere('p.status >= :repayment')
-            ->setParameter('repayment', ProjectsStatus::STATUS_REPAYMENT);
+            ->setParameter('repayment', ProjectsStatus::STATUS_CONTRACTS_SIGNED);
 
         return $queryBuilder->getQuery()->getSingleScalarResult();
     }

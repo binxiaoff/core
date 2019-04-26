@@ -181,7 +181,7 @@ class ProjectLifecycleManager
 
         $this->insertNewProjectEmails($project);
 
-        $this->projectStatusManager->addProjectStatus(Users::USER_ID_CRON, ProjectsStatus::STATUS_ONLINE, $project);
+        $this->projectStatusManager->addProjectStatus(Users::USER_ID_CRON, ProjectsStatus::STATUS_PUBLISHED, $project);
     }
 
     /**
@@ -191,7 +191,7 @@ class ProjectLifecycleManager
      */
     public function publish(Projects $project): void
     {
-        $this->projectStatusManager->addProjectStatus(Users::USER_ID_CRON, ProjectsStatus::STATUS_ONLINE, $project);
+        $this->projectStatusManager->addProjectStatus(Users::USER_ID_CRON, ProjectsStatus::STATUS_PUBLISHED, $project);
 
         $this->insertNewProjectNotification($project);
 
@@ -288,7 +288,7 @@ class ProjectLifecycleManager
             case ProjectsStatus::STATUS_REVIEW:
                 $this->bidAllAutoBid($project);
                 break;
-            case ProjectsStatus::STATUS_ONLINE:
+            case ProjectsStatus::STATUS_PUBLISHED:
                 $this->reBidAutoBid($project, true);
                 break;
         }
@@ -389,9 +389,9 @@ class ProjectLifecycleManager
      */
     public function buildLoans(Projects $project): void
     {
-        $this->projectStatusManager->addProjectStatus(Users::USER_ID_CRON, ProjectsStatus::STATUS_ONLINE, $project);
+        $this->projectStatusManager->addProjectStatus(Users::USER_ID_CRON, ProjectsStatus::STATUS_PUBLISHED, $project);
         $this->reBidAutoBidDeeply($project, true);
-        $this->projectStatusManager->addProjectStatus(Users::USER_ID_CRON, ProjectsStatus::STATUS_CONTRACTS, $project);
+        $this->projectStatusManager->addProjectStatus(Users::USER_ID_CRON, ProjectsStatus::STATUS_FUNDED, $project);
         $this->acceptBids($project);
 
         $contractTypes = array_column($this->productManager->getAvailableContracts($project->getIdProduct()), 'label');
@@ -684,7 +684,7 @@ class ProjectLifecycleManager
         /** @var \echeanciers $oRepaymentSchedule */
         $oRepaymentSchedule = $this->entityManagerSimulator->getRepository('echeanciers');
 
-        if ($project->getStatus() === ProjectsStatus::STATUS_CONTRACTS) {
+        if ($project->getStatus() === ProjectsStatus::STATUS_FUNDED) {
             $lLoans = $oLoan->select('id_project = ' . $project->getIdProject());
 
             $iLoanNbTotal   = count($lLoans);
@@ -745,7 +745,7 @@ class ProjectLifecycleManager
         /** @var \echeanciers $repaymentScheduleEntity */
         $repaymentScheduleEntity = $this->entityManagerSimulator->getRepository('echeanciers');
 
-        if ($project->getStatus() === ProjectsStatus::STATUS_CONTRACTS) {
+        if ($project->getStatus() === ProjectsStatus::STATUS_FUNDED) {
             $loans               = $loanEntity->select('id_project = ' . $project->getIdProject());
             $loansCount          = count($loans);
             $processedLoansCount = 0;

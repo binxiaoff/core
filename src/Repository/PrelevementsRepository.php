@@ -123,7 +123,7 @@ class PrelevementsRepository extends ServiceEntityRepository
             ->andWhere('pre.type = :borrower')
             ->andWhere('DATE(ee.dateEcheanceEmprunteur) = :date')
             ->setParameters([
-                'repayment' => ProjectsStatus::STATUS_REPAYMENT,
+                'repayment' => ProjectsStatus::STATUS_CONTRACTS_SIGNED,
                 'pending'   => EcheanciersEmprunteur::STATUS_PENDING,
                 'borrower'  => Prelevements::CLIENT_TYPE_BORROWER,
                 'date'      => (new \DateTime('+' . $daysInterval . ' days'))->format('Y-m-d')

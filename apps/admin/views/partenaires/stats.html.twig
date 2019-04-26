@@ -165,7 +165,7 @@
                         <div class="block-content">
                             <ul class="nav nav-pills nav-stacked push" data-toggle="tabs">
                                 {% for projectStatus in projectsCountSortedByStatus %}
-                                    <li{% if projectStatus.status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_REQUEST') %} class="active"{% endif %}>
+                                    <li{% if projectStatus.status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_REQUESTED') %} class="active"{% endif %}>
                                         <a href="#project-status-{{ projectStatus.status }}" data-project-status="{{ projectStatus.status }}">
                                             <span class="badge pull-right">{{ projectStatus.statusCount }}</span>
                                             <span class="project-status-label">{{ projectStatus.statusLabel }}</span>
@@ -178,21 +178,21 @@
                 </div>
                 <div class="col-lg-9">
                     <div class="block">
-                        <div class="block-header{% if projectsCountSortedByStatus[constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_REQUEST')] is not defined %} hidden{% endif %}">
+                        <div class="block-header{% if projectsCountSortedByStatus[constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_REQUESTED')] is not defined %} hidden{% endif %}">
                             <h3 class="block-title">
-                                {% if projectsCountSortedByStatus[constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_REQUEST')] is defined %}Traitement commercial{% endif %}
+                                {% if projectsCountSortedByStatus[constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_REQUESTED')] is defined %}Traitement commercial{% endif %}
                             </h3>
                         </div>
                         <div class="block-content tab-content">
-                            {% if projectsCountSortedByStatus[constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_REQUEST')] is not defined %}
+                            {% if projectsCountSortedByStatus[constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_REQUESTED')] is not defined %}
                                 <div role="tabpanel" class="tab-pane active">
                                     <div class="push-15">Cliquez sur un statut pour voir la liste des projets correspondant</div>
                                 </div>
                             {% endif %}
                             {% for projectStatus in projectsCountSortedByStatus %}
-                                <div role="tabpanel" class="tab-pane{% if projectStatus.status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_REQUEST') %} loaded active{% endif %}" id="project-status-{{ projectStatus.status }}">
+                                <div role="tabpanel" class="tab-pane{% if projectStatus.status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_REQUESTED') %} loaded active{% endif %}" id="project-status-{{ projectStatus.status }}">
                                     <div class="projects-list">
-                                        {% if projectStatus.status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_REQUEST') %}
+                                        {% if projectStatus.status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_REQUESTED') %}
                                             {% include 'partenaires/projects_list.html.twig' %}
                                         {% endif %}
                                     </div>

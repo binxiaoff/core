@@ -55,7 +55,7 @@ class LenderDashboardController extends Controller
         $products = $entityManager->getRepository(Product::class)->findAvailableProductsByClient($wallet->getIdClient());
 
         $ongoingProjects = $projectRepository->findByWithCustomSort(
-            ['status' => ProjectsStatus::STATUS_ONLINE, 'idProduct' => $products],
+            ['status' => ProjectsStatus::STATUS_PUBLISHED, 'idProduct' => $products],
             [ProjectsRepository::SORT_FIELD_END => 'ASC'],
             30,
             0,
@@ -78,7 +78,7 @@ class LenderDashboardController extends Controller
                     'amount'           => $project->getAmount(),
                     'publication_date' => $project->getDatePublication(),
                     'days_left'        => $project->getDateRetrait()->diff(new \DateTime('NOW'))->days,
-                    'finished'         => $project->getStatus() > ProjectsStatus::STATUS_ONLINE || $project->getDateRetrait() < new \DateTime('NOW'),
+                    'finished'         => $project->getStatus() > ProjectsStatus::STATUS_PUBLISHED || $project->getDateRetrait() < new \DateTime('NOW'),
                     'end_date'         => $project->getDateRetrait(),
                     'pending_bids'     => $bid->getBidsByStatus(Bids::STATUS_PENDING, $project->getIdProject(), $wallet->getId()),
                 ];
@@ -94,7 +94,7 @@ class LenderDashboardController extends Controller
                 'risk'            => $project->getRisk(),
                 'average_rate'    => $projectRepository->getAverageInterestRate($project),
                 'bid_count'       => count($bid->getBidsByStatus(Bids::STATUS_PENDING, $project->getIdProject())),
-                'finished'        => $project->getStatus() > ProjectsStatus::STATUS_ONLINE || $project->getDateRetrait() < new \DateTime('NOW'),
+                'finished'        => $project->getStatus() > ProjectsStatus::STATUS_PUBLISHED || $project->getDateRetrait() < new \DateTime('NOW'),
                 'end_date'        => $project->getDateRetrait(),
             ];
         }

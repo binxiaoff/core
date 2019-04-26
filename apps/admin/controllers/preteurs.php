@@ -1240,8 +1240,8 @@ class preteursController extends bootstrap
             /** @var LenderStatistic $lastIRR */
             $this->IRR = $lenderStatisticsRepository->findOneBy(['idWallet' => $wallet, 'typeStat' => LenderStatistic::TYPE_STAT_IRR], ['added' => 'DESC']);
 
-            $statusOk                = [ProjectsStatus::STATUS_ONLINE, ProjectsStatus::STATUS_CONTRACTS, ProjectsStatus::STATUS_REPAYMENT, ProjectsStatus::STATUS_FINISHED];
-            $statusKo                = [ProjectsStatus::STATUS_LOSS, ProjectsStatus::STATUS_CANCELLED];
+            $statusOk                = [ProjectsStatus::STATUS_PUBLISHED, ProjectsStatus::STATUS_FUNDED, ProjectsStatus::STATUS_CONTRACTS_SIGNED, ProjectsStatus::STATUS_FINISHED];
+            $statusKo                = [ProjectsStatus::STATUS_LOST, ProjectsStatus::STATUS_CANCELLED];
             $this->projectsPublished = $this->projects->countProjectsSinceLendersubscription($this->clients->id_client, array_merge($statusOk, $statusKo));
             $this->problProjects     = $this->projects->countProjectsByStatusAndLender($wallet->getId(), $statusKo);
             $this->totalProjects     = $this->loans->getProjectsCount($wallet->getId());

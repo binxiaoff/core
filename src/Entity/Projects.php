@@ -2,17 +2,13 @@
 
 namespace Unilend\Entity;
 
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
-use Doctrine\Common\Collections\Criteria;
+use Doctrine\Common\Collections\{ArrayCollection, Collection, Criteria};
 use Doctrine\ORM\Mapping as ORM;
 use Ramsey\Uuid\Exception\UnsatisfiedDependencyException;
 use Ramsey\Uuid\Uuid;
 use Unilend\Entity\Traits\Timestampable;
 
 /**
- * Projects
- *
  * @ORM\Table(name="projects", indexes={
  *     @ORM\Index(name="id_company", columns={"id_company"}),
  *     @ORM\Index(name="slug", columns={"slug"}),
@@ -31,28 +27,28 @@ class Projects
 {
     use Timestampable;
 
-    const AUTO_REPAYMENT_ON  = 0;
-    const AUTO_REPAYMENT_OFF = 1;
+    public const AUTO_REPAYMENT_ON  = 0;
+    public const AUTO_REPAYMENT_OFF = 1;
 
-    const DISPLAY_YES = 0;
-    const DISPLAY_NO  = 1;
+    public const DISPLAY_YES = 0;
+    public const DISPLAY_NO  = 1;
 
     // project rating mapping (letter to start)
-    const RISK_A = 5;
-    const RISK_B = 4.5;
-    const RISK_C = 4;
-    const RISK_D = 3.5;
-    const RISK_E = 3;
-    const RISK_F = 2.5;
-    const RISK_G = 2;
-    const RISK_H = 1.5;
-    const RISK_I = 1;
-    const RISK_J = 0;
+    public const RISK_A = 5;
+    public const RISK_B = 4.5;
+    public const RISK_C = 4;
+    public const RISK_D = 3.5;
+    public const RISK_E = 3;
+    public const RISK_F = 2.5;
+    public const RISK_G = 2;
+    public const RISK_H = 1.5;
+    public const RISK_I = 1;
+    public const RISK_J = 0;
 
-    const DEFAULT_COMMISSION_RATE_FUNDS     = 4;
-    const DEFAULT_COMMISSION_RATE_REPAYMENT = 1;
+    public const DEFAULT_COMMISSION_RATE_FUNDS     = 4;
+    public const DEFAULT_COMMISSION_RATE_REPAYMENT = 1;
 
-    const PROJECT_PHOTO_PATH = 'public/default/images/dyn/projets/source/';
+    public const PROJECT_PHOTO_PATH = 'public/default/images/dyn/projets/source/';
 
     /**
      * @var string
@@ -69,21 +65,21 @@ class Projects
     private $slug;
 
     /**
-     * @var \Unilend\Entity\Companies
+     * @var Companies
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\Companies")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_company", referencedColumnName="id_company", nullable=false)
+     *     @ORM\JoinColumn(name="id_company", referencedColumnName="id_company", nullable=false)
      * })
      */
     private $idCompany;
 
     /**
-     * @var \Unilend\Entity\Companies
+     * @var Companies
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\Companies")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_target_company", referencedColumnName="id_company")
+     *     @ORM\JoinColumn(name="id_target_company", referencedColumnName="id_company")
      * })
      */
     private $idTargetCompany;
@@ -159,21 +155,21 @@ class Projects
     private $meansRepayment;
 
     /**
-     * @var \Unilend\Entity\Users
+     * @var Users
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\Users")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_analyste", referencedColumnName="id_user")
+     *     @ORM\JoinColumn(name="id_analyste", referencedColumnName="id_user")
      * })
      */
     private $idAnalyste;
 
     /**
-     * @var \Unilend\Entity\Users
+     * @var Users
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\Users")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_commercial", referencedColumnName="id_user")
+     *     @ORM\JoinColumn(name="id_commercial", referencedColumnName="id_user")
      * })
      */
     private $idCommercial;
@@ -291,31 +287,31 @@ class Projects
     private $idRate;
 
     /**
-     * @var \Unilend\Entity\Partner
+     * @var Partner
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\Partner")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_partner", referencedColumnName="id", nullable=false)
+     *     @ORM\JoinColumn(name="id_partner", referencedColumnName="id", nullable=false)
      * })
      */
     private $idPartner;
 
     /**
-     * @var \Unilend\Entity\Companies
+     * @var Companies
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\Companies")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_company_submitter", referencedColumnName="id_company")
+     *     @ORM\JoinColumn(name="id_company_submitter", referencedColumnName="id_company")
      * })
      */
     private $idCompanySubmitter;
 
     /**
-     * @var \Unilend\Entity\Clients
+     * @var Clients
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\Clients")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_client_submitter", referencedColumnName="id_client")
+     *     @ORM\JoinColumn(name="id_client_submitter", referencedColumnName="id_client")
      * })
      */
     private $idClientSubmitter;
@@ -376,17 +372,18 @@ class Projects
      *
      * @ORM\OneToMany(targetEntity="Unilend\Entity\ClientsMandats", mappedBy="idProject")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_project", referencedColumnName="id_project")
+     *     @ORM\JoinColumn(name="id_project", referencedColumnName="id_project")
      * })
      */
     private $mandates;
 
     /**
      * @deprecated
+     *
      * @var ProjectsComments[]
      *
      * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectsComments", mappedBy="idProject")
-     * @ORM\OrderBy({"added" = "DESC"})
+     * @ORM\OrderBy({"added": "DESC"})
      */
     private $memos;
 
@@ -402,7 +399,7 @@ class Projects
      *
      * @ORM\OneToMany(targetEntity="Unilend\Entity\Factures", mappedBy="idProject")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_project", referencedColumnName="id_project")
+     *     @ORM\JoinColumn(name="id_project", referencedColumnName="id_project")
      * })
      */
     private $invoices;
@@ -432,7 +429,7 @@ class Projects
      * @var Bids[]|ArrayCollection
      *
      * @ORM\OneToMany(targetEntity="Unilend\Entity\Bids", mappedBy="project")
-     * @ORM\OrderBy({"added" = "DESC"})
+     * @ORM\OrderBy({"added": "DESC"})
      */
     private $bids;
 
@@ -454,7 +451,7 @@ class Projects
      * @var ProjectComment[]|ArrayCollection
      *
      * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectComment", mappedBy="project")
-     * @ORM\OrderBy({"added" = "DESC"})
+     * @ORM\OrderBy({"added": "DESC"})
      */
     private $comments;
 
@@ -475,8 +472,6 @@ class Projects
     }
 
     /**
-     * Set hash
-     *
      * @param string $hash
      *
      * @return Projects
@@ -489,8 +484,6 @@ class Projects
     }
 
     /**
-     * Get hash
-     *
      * @return string
      */
     public function getHash()
@@ -499,8 +492,6 @@ class Projects
     }
 
     /**
-     * Set slug
-     *
      * @param string $slug
      *
      * @return Projects
@@ -513,8 +504,6 @@ class Projects
     }
 
     /**
-     * Get slug
-     *
      * @return string
      */
     public function getSlug()
@@ -523,8 +512,6 @@ class Projects
     }
 
     /**
-     * Set idCompany
-     *
      * @param Companies $idCompany
      *
      * @return Projects
@@ -537,8 +524,6 @@ class Projects
     }
 
     /**
-     * Get idCompany
-     *
      * @return Companies
      */
     public function getIdCompany()
@@ -547,8 +532,6 @@ class Projects
     }
 
     /**
-     * Set idTargetCompany
-     *
      * @param Companies $idTargetCompany
      *
      * @return Projects
@@ -561,8 +544,6 @@ class Projects
     }
 
     /**
-     * Get idTargetCompany
-     *
      * @return Companies
      */
     public function getIdTargetCompany()
@@ -571,8 +552,6 @@ class Projects
     }
 
     /**
-     * Set amount
-     *
      * @param float $amount
      *
      * @return Projects
@@ -585,8 +564,6 @@ class Projects
     }
 
     /**
-     * Get amount
-     *
      * @return float
      */
     public function getAmount()
@@ -595,9 +572,7 @@ class Projects
     }
 
     /**
-     * Set period
-     *
-     * @param integer $period
+     * @param int $period
      *
      * @return Projects
      */
@@ -609,9 +584,7 @@ class Projects
     }
 
     /**
-     * Get period
-     *
-     * @return integer
+     * @return int
      */
     public function getPeriod()
     {
@@ -619,8 +592,6 @@ class Projects
     }
 
     /**
-     * Set title
-     *
      * @param string $title
      *
      * @return Projects
@@ -633,8 +604,6 @@ class Projects
     }
 
     /**
-     * Get title
-     *
      * @return string
      */
     public function getTitle()
@@ -643,9 +612,7 @@ class Projects
     }
 
     /**
-     * Set idBorrowingMotive
-     *
-     * @param integer $idBorrowingMotive
+     * @param int $idBorrowingMotive
      *
      * @return Projects
      */
@@ -657,9 +624,7 @@ class Projects
     }
 
     /**
-     * Get idBorrowingMotive
-     *
-     * @return integer
+     * @return int
      */
     public function getIdBorrowingMotive()
     {
@@ -667,8 +632,6 @@ class Projects
     }
 
     /**
-     * Set photoProjet
-     *
      * @param string $photoProjet
      *
      * @return Projects
@@ -681,8 +644,6 @@ class Projects
     }
 
     /**
-     * Get photoProjet
-     *
      * @return string
      */
     public function getPhotoProjet()
@@ -691,8 +652,6 @@ class Projects
     }
 
     /**
-     * Set description
-     *
      * @param string $description
      *
      * @return Projects
@@ -705,8 +664,6 @@ class Projects
     }
 
     /**
-     * Get description
-     *
      * @return string
      */
     public function getDescription()
@@ -715,8 +672,6 @@ class Projects
     }
 
     /**
-     * Set natureProject
-     *
      * @param string $natureProject
      *
      * @return Projects
@@ -729,8 +684,6 @@ class Projects
     }
 
     /**
-     * Get natureProject
-     *
      * @return string
      */
     public function getNatureProject()
@@ -739,8 +692,6 @@ class Projects
     }
 
     /**
-     * Set objectifLoan
-     *
      * @param string $objectifLoan
      *
      * @return Projects
@@ -753,8 +704,6 @@ class Projects
     }
 
     /**
-     * Get objectifLoan
-     *
      * @return string
      */
     public function getObjectifLoan()
@@ -763,8 +712,6 @@ class Projects
     }
 
     /**
-     * Set presentationCompany
-     *
      * @param string $presentationCompany
      *
      * @return Projects
@@ -777,8 +724,6 @@ class Projects
     }
 
     /**
-     * Get presentationCompany
-     *
      * @return string
      */
     public function getPresentationCompany()
@@ -787,8 +732,6 @@ class Projects
     }
 
     /**
-     * Set meansRepayment
-     *
      * @param string $meansRepayment
      *
      * @return Projects
@@ -801,8 +744,6 @@ class Projects
     }
 
     /**
-     * Get meansRepayment
-     *
      * @return string
      */
     public function getMeansRepayment()
@@ -811,8 +752,6 @@ class Projects
     }
 
     /**
-     * Set idAnalyste
-     *
      * @param Users $idAnalyste
      *
      * @return Projects
@@ -825,8 +764,6 @@ class Projects
     }
 
     /**
-     * Get idAnalyste
-     *
      * @return Users
      */
     public function getIdAnalyste()
@@ -835,8 +772,6 @@ class Projects
     }
 
     /**
-     * Set idCommercial
-     *
      * @param Users $idCommercial
      *
      * @return Projects
@@ -849,8 +784,6 @@ class Projects
     }
 
     /**
-     * Get idCommercial
-     *
      * @return Users
      */
     public function getIdCommercial()
@@ -859,8 +792,6 @@ class Projects
     }
 
     /**
-     * Set datePublication
-     *
      * @param \DateTime $datePublication
      *
      * @return Projects
@@ -873,8 +804,6 @@ class Projects
     }
 
     /**
-     * Get datePublication
-     *
      * @return \DateTime
      */
     public function getDatePublication()
@@ -883,8 +812,6 @@ class Projects
     }
 
     /**
-     * Set dateFunded
-     *
      * @param \DateTime $dateFunded
      *
      * @return Projects
@@ -897,8 +824,6 @@ class Projects
     }
 
     /**
-     * Get dateFunded
-     *
      * @return \DateTime
      */
     public function getDateFunded()
@@ -907,8 +832,6 @@ class Projects
     }
 
     /**
-     * Set dateRetrait
-     *
      * @param \DateTime $dateRetrait
      *
      * @return Projects
@@ -921,8 +844,6 @@ class Projects
     }
 
     /**
-     * Get dateRetrait
-     *
      * @return \DateTime
      */
     public function getDateRetrait()
@@ -931,8 +852,6 @@ class Projects
     }
 
     /**
-     * Set dateFin
-     *
      * @param \DateTime $dateFin
      *
      * @return Projects
@@ -945,8 +864,6 @@ class Projects
     }
 
     /**
-     * Get dateFin
-     *
      * @return \DateTime
      */
     public function getDateFin()
@@ -955,9 +872,7 @@ class Projects
     }
 
     /**
-     * Set idDernierBilan
-     *
-     * @param integer $idDernierBilan
+     * @param int $idDernierBilan
      *
      * @return Projects
      */
@@ -969,9 +884,7 @@ class Projects
     }
 
     /**
-     * Get idDernierBilan
-     *
-     * @return integer
+     * @return int
      */
     public function getIdDernierBilan()
     {
@@ -979,9 +892,7 @@ class Projects
     }
 
     /**
-     * Set balanceCount
-     *
-     * @param integer $balanceCount
+     * @param int $balanceCount
      *
      * @return Projects
      */
@@ -993,9 +904,7 @@ class Projects
     }
 
     /**
-     * Get balanceCount
-     *
-     * @return integer
+     * @return int
      */
     public function getBalanceCount()
     {
@@ -1003,9 +912,7 @@ class Projects
     }
 
     /**
-     * Set idCompanyRatingHistory
-     *
-     * @param integer $idCompanyRatingHistory
+     * @param int $idCompanyRatingHistory
      *
      * @return Projects
      */
@@ -1017,9 +924,7 @@ class Projects
     }
 
     /**
-     * Get idCompanyRatingHistory
-     *
-     * @return integer
+     * @return int
      */
     public function getIdCompanyRatingHistory()
     {
@@ -1027,9 +932,7 @@ class Projects
     }
 
     /**
-     * Set idProjectNeed
-     *
-     * @param integer $idProjectNeed
+     * @param int $idProjectNeed
      *
      * @return Projects
      */
@@ -1041,9 +944,7 @@ class Projects
     }
 
     /**
-     * Get idProjectNeed
-     *
-     * @return integer
+     * @return int
      */
     public function getIdProjectNeed()
     {
@@ -1051,8 +952,6 @@ class Projects
     }
 
     /**
-     * Set createBo
-     *
      * @param bool $createBo
      *
      * @return Projects
@@ -1065,18 +964,14 @@ class Projects
     }
 
     /**
-     * Get createBo
-     *
      * @return bool
      */
-    public function getCreateBo()
+    public function isCreateBo()
     {
         return $this->createBo;
     }
 
     /**
-     * Set risk
-     *
      * @param string $risk
      *
      * @return Projects
@@ -1089,8 +984,6 @@ class Projects
     }
 
     /**
-     * Get risk
-     *
      * @return string
      */
     public function getRisk()
@@ -1099,8 +992,6 @@ class Projects
     }
 
     /**
-     * Set fondsPropresDeclaraClient
-     *
      * @param float $fondsPropresDeclaraClient
      *
      * @return Projects
@@ -1113,8 +1004,6 @@ class Projects
     }
 
     /**
-     * Get fondsPropresDeclaraClient
-     *
      * @return float
      */
     public function getFondsPropresDeclaraClient()
@@ -1123,8 +1012,6 @@ class Projects
     }
 
     /**
-     * Set resultatExploitationDeclaraClient
-     *
      * @param float $resultatExploitationDeclaraClient
      *
      * @return Projects
@@ -1137,8 +1024,6 @@ class Projects
     }
 
     /**
-     * Get resultatExploitationDeclaraClient
-     *
      * @return float
      */
     public function getResultatExploitationDeclaraClient()
@@ -1147,8 +1032,6 @@ class Projects
     }
 
     /**
-     * Set caDeclaraClient
-     *
      * @param float $caDeclaraClient
      *
      * @return Projects
@@ -1161,8 +1044,6 @@ class Projects
     }
 
     /**
-     * Get caDeclaraClient
-     *
      * @return float
      */
     public function getCaDeclaraClient()
@@ -1171,9 +1052,7 @@ class Projects
     }
 
     /**
-     * Set rembAuto
-     *
-     * @param integer $rembAuto
+     * @param int $rembAuto
      *
      * @return Projects
      */
@@ -1185,9 +1064,7 @@ class Projects
     }
 
     /**
-     * Get rembAuto
-     *
-     * @return integer
+     * @return int
      */
     public function getRembAuto()
     {
@@ -1195,9 +1072,7 @@ class Projects
     }
 
     /**
-     * Set display
-     *
-     * @param integer $display
+     * @param int $display
      *
      * @return Projects
      */
@@ -1209,9 +1084,7 @@ class Projects
     }
 
     /**
-     * Get display
-     *
-     * @return integer
+     * @return int
      */
     public function getDisplay()
     {
@@ -1219,9 +1092,7 @@ class Projects
     }
 
     /**
-     * Set idRate
-     *
-     * @param integer $idRate
+     * @param int $idRate
      *
      * @return Projects
      */
@@ -1233,9 +1104,7 @@ class Projects
     }
 
     /**
-     * Get idRate
-     *
-     * @return integer
+     * @return int
      */
     public function getIdRate()
     {
@@ -1243,8 +1112,6 @@ class Projects
     }
 
     /**
-     * Set idPartner
-     *
      * @param Partner $idPartner
      *
      * @return Projects
@@ -1257,8 +1124,6 @@ class Projects
     }
 
     /**
-     * Get idPartner
-     *
      * @return Partner
      */
     public function getIdPartner()
@@ -1267,8 +1132,6 @@ class Projects
     }
 
     /**
-     * Set idCompanySubmitter
-     *
      * @param Companies|null $idCompanySubmitter
      *
      * @return Projects
@@ -1281,8 +1144,6 @@ class Projects
     }
 
     /**
-     * Get idCompanySubmitter
-     *
      * @return Companies|null
      */
     public function getIdCompanySubmitter(): ?Companies
@@ -1291,8 +1152,6 @@ class Projects
     }
 
     /**
-     * Set idClientSubmitter
-     *
      * @param Clients|null $idClientSubmitter
      *
      * @return Projects
@@ -1305,8 +1164,6 @@ class Projects
     }
 
     /**
-     * Get idClientSubmitter
-     *
      * @return Clients|null
      */
     public function getIdClientSubmitter(): ?Clients
@@ -1315,8 +1172,6 @@ class Projects
     }
 
     /**
-     * Set commissionRateFunds
-     *
      * @param string $commissionRateFunds
      *
      * @return Projects
@@ -1329,8 +1184,6 @@ class Projects
     }
 
     /**
-     * Get commissionRateFunds
-     *
      * @return string
      */
     public function getCommissionRateFunds()
@@ -1339,8 +1192,6 @@ class Projects
     }
 
     /**
-     * Set commissionRateRepayment
-     *
      * @param string $commissionRateRepayment
      *
      * @return Projects
@@ -1353,8 +1204,6 @@ class Projects
     }
 
     /**
-     * Get commissionRateRepayment
-     *
      * @return string
      */
     public function getCommissionRateRepayment()
@@ -1363,9 +1212,7 @@ class Projects
     }
 
     /**
-     * Set idProduct
-     *
-     * @param integer $idProduct
+     * @param int $idProduct
      *
      * @return Projects
      */
@@ -1377,9 +1224,7 @@ class Projects
     }
 
     /**
-     * Get idProduct
-     *
-     * @return integer
+     * @return int
      */
     public function getIdProduct()
     {
@@ -1387,9 +1232,7 @@ class Projects
     }
 
     /**
-     * Get idProject
-     *
-     * @return integer
+     * @return int
      */
     public function getIdProject()
     {
@@ -1397,9 +1240,7 @@ class Projects
     }
 
     /**
-     * Set status
-     *
-     * @param integer $status
+     * @param int $status
      *
      * @return Projects
      */
@@ -1411,8 +1252,6 @@ class Projects
     }
 
     /**
-     * Get status
-     *
      * @return int
      */
     public function getStatus()
@@ -1421,8 +1260,6 @@ class Projects
     }
 
     /**
-     * Set interest rate
-     *
      * @param float $interestRate
      *
      * @return Projects
@@ -1435,8 +1272,6 @@ class Projects
     }
 
     /**
-     * Get interestRate
-     *
      * @return float|null
      */
     public function getInterestRate(): ?float
@@ -1445,8 +1280,6 @@ class Projects
     }
 
     /**
-     * Get project attachments
-     *
      * @return ProjectAttachment[]
      */
     public function getAttachments()
@@ -1455,8 +1288,6 @@ class Projects
     }
 
     /**
-     * Get project mandates
-     *
      * @return ClientsMandats[]
      */
     public function getMandates()
@@ -1469,7 +1300,6 @@ class Projects
 
     /**
      * @deprecated
-     * Get project memos
      *
      * @return ArrayCollection|ProjectsComments[]
      */
@@ -1483,7 +1313,6 @@ class Projects
 
     /**
      * @deprecated
-     * Get project public memos
      *
      * @return ArrayCollection|ProjectsComments[]
      */
@@ -1491,7 +1320,8 @@ class Projects
     {
         $criteria = Criteria::create()
             ->where(Criteria::expr()->eq('public', true))
-            ->orderBy(['added' => Criteria::DESC]);
+            ->orderBy(['added' => Criteria::DESC])
+        ;
 
         return $this->memos->matching($criteria);
     }
@@ -1517,7 +1347,7 @@ class Projects
      */
     public function getCloseOutNettingDate()
     {
-        /** @todo to be removed when projects is fully under doctrine */
+        // @todo to be removed when projects is fully under doctrine
         if (null !== $this->closeOutNettingDate && $this->closeOutNettingDate->getTimestamp() < 0) {
             $this->closeOutNettingDate = null;
         }
@@ -1549,7 +1379,8 @@ class Projects
 
         if (false === $includeArchived) {
             $criteria = Criteria::create()
-                ->where(Criteria::expr()->isNull('archived'));
+                ->where(Criteria::expr()->isNull('archived'))
+            ;
         }
 
         if ($sort) {
@@ -1567,7 +1398,8 @@ class Projects
     public function getAmicableDebtCollectionMissions($includeArchived = false)
     {
         $criteria = Criteria::create()
-            ->where(Criteria::expr()->eq('type', DebtCollectionMission::TYPE_AMICABLE));
+            ->where(Criteria::expr()->eq('type', DebtCollectionMission::TYPE_AMICABLE))
+        ;
 
         if (false === $includeArchived) {
             $criteria->andWhere(Criteria::expr()->isNull('archived'));
@@ -1584,7 +1416,8 @@ class Projects
     public function getLitigationDebtCollectionMissions($includeArchived = false)
     {
         $criteria = Criteria::create()
-            ->where(Criteria::expr()->eq('type', DebtCollectionMission::TYPE_LITIGATION));
+            ->where(Criteria::expr()->eq('type', DebtCollectionMission::TYPE_LITIGATION))
+        ;
 
         if (false === $includeArchived) {
             $criteria->andWhere(Criteria::expr()->isNull('archived'));
@@ -1594,73 +1427,17 @@ class Projects
     }
 
     /**
-     * @return string
-     */
-    private function generateHash()
-    {
-        $uuid4 = Uuid::uuid4();
-
-        return $uuid4->toString();
-    }
-
-    /**
      * @ORM\PrePersist
      */
     public function setHashValue()
     {
-        if (is_null($this->hash)) {
+        if (null === $this->hash) {
             try {
                 $this->hash = $this->generateHash();
             } catch (UnsatisfiedDependencyException $exception) {
                 $this->hash = md5(uniqid());
             }
         }
-    }
-
-    /**
-     * @param string $role
-     *
-     * @return bool
-     */
-    private function hasRole(string $role): bool
-    {
-        foreach ($this->getProjectParticipants() as $projectParticipant) {
-            if ($projectParticipant->hasRole($role)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * @param Companies $company
-     * @param string    $role
-     */
-    private function addProjectParticipant(Companies $company, string $role): void
-    {
-        if (false === $this->isUniqueRole($role) || false === $this->hasRole($role)) {
-            $projectParticipants = $this->getProjectParticipants($company);
-
-            if ($projectParticipants->count()) {
-                $projectParticipant = $projectParticipants->first();
-            } else {
-                $projectParticipant = (new ProjectParticipant())->setCompany($company)->setProject($this);
-            }
-
-            $projectParticipant->addRoles([$role]);
-            $this->projectParticipants->add($projectParticipant);
-        }
-    }
-
-    /**
-     * @param string $role
-     *
-     * @return bool
-     */
-    private function isUniqueRole(string $role): bool
-    {
-        return in_array($role, [ProjectParticipant::COMPANY_ROLE_ARRANGER, ProjectParticipant::COMPANY_ROLE_AGENT, ProjectParticipant::COMPANY_ROLE_RUN]);
     }
 
     /**
@@ -1671,18 +1448,6 @@ class Projects
     public function addArranger(Companies $company): Projects
     {
         $this->addProjectParticipant($company, ProjectParticipant::COMPANY_ROLE_ARRANGER);
-
-        return $this;
-    }
-
-    /**
-     * @param Companies $company
-     *
-     * @return Projects
-     */
-    public function addAgent(Companies $company): Projects
-    {
-        $this->addProjectParticipant($company, ProjectParticipant::COMPANY_ROLE_AGENT);
 
         return $this;
     }
@@ -1752,14 +1517,6 @@ class Projects
     /**
      * @return ProjectParticipant|null
      */
-    public function getAgentParticipant(): ?ProjectParticipant
-    {
-        return $this->getParticipant(ProjectParticipant::COMPANY_ROLE_AGENT);
-    }
-
-    /**
-     * @return ProjectParticipant|null
-     */
     public function getRunParticipant(): ?ProjectParticipant
     {
         return $this->getParticipant(ProjectParticipant::COMPANY_ROLE_RUN);
@@ -1782,22 +1539,6 @@ class Projects
     }
 
     /**
-     * @param string $role
-     *
-     * @return ProjectParticipant|null
-     */
-    private function getParticipant(string $role): ?ProjectParticipant
-    {
-        foreach ($this->getProjectParticipants() as $projectParticipant) {
-            if ($projectParticipant->hasRole($role)) {
-                return $projectParticipant;
-            }
-        }
-
-        return null;
-    }
-
-    /**
      * @return \DateTime|null
      */
     public function getEndDate(): ?\DateTime
@@ -1806,12 +1547,13 @@ class Projects
     }
 
     /**
-     * @return bool
      * @throws \Exception
+     *
+     * @return bool
      */
     public function isOnline(): bool
     {
-        return $this->getStatus() === ProjectsStatus::STATUS_ONLINE && (null === $this->getEndDate() || new \DateTime() < $this->getEndDate());
+        return ProjectsStatus::STATUS_PUBLISHED === $this->getStatus() && (null === $this->getEndDate() || new \DateTime() < $this->getEndDate());
     }
 
     /**
@@ -1882,5 +1624,79 @@ class Projects
     public function getComments(): iterable
     {
         return $this->comments;
+    }
+
+    /**
+     * @throws \Exception
+     *
+     * @return string
+     */
+    private function generateHash()
+    {
+        $uuid4 = Uuid::uuid4();
+
+        return $uuid4->toString();
+    }
+
+    /**
+     * @param string $role
+     *
+     * @return bool
+     */
+    private function hasRole(string $role): bool
+    {
+        foreach ($this->getProjectParticipants() as $projectParticipant) {
+            if ($projectParticipant->hasRole($role)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * @param Companies $company
+     * @param string    $role
+     */
+    private function addProjectParticipant(Companies $company, string $role): void
+    {
+        if (false === $this->isUniqueRole($role) || false === $this->hasRole($role)) {
+            $projectParticipants = $this->getProjectParticipants($company);
+
+            if ($projectParticipants->count()) {
+                $projectParticipant = $projectParticipants->first();
+            } else {
+                $projectParticipant = (new ProjectParticipant())->setCompany($company)->setProject($this);
+            }
+
+            $projectParticipant->addRoles([$role]);
+            $this->projectParticipants->add($projectParticipant);
+        }
+    }
+
+    /**
+     * @param string $role
+     *
+     * @return bool
+     */
+    private function isUniqueRole(string $role): bool
+    {
+        return in_array($role, [ProjectParticipant::COMPANY_ROLE_ARRANGER, ProjectParticipant::COMPANY_ROLE_RUN]);
+    }
+
+    /**
+     * @param string $role
+     *
+     * @return ProjectParticipant|null
+     */
+    private function getParticipant(string $role): ?ProjectParticipant
+    {
+        foreach ($this->getProjectParticipants() as $projectParticipant) {
+            if ($projectParticipant->hasRole($role)) {
+                return $projectParticipant;
+            }
+        }
+
+        return null;
     }
 }

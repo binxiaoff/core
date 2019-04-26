@@ -58,7 +58,7 @@ class ProjectCloseOutNettingManager
             throw new \Exception('The project (id: ' . $project->getIdProject() . ') has already been declined.');
         }
 
-        if ($project->getStatus() < ProjectsStatus::STATUS_LOSS) {
+        if ($project->getStatus() < ProjectsStatus::STATUS_LOST) {
             throw new \Exception('The project (id: ' . $project->getIdProject() . ') has status ' . $project->getStatus() . '. You cannot decline the repayment schedules.');
         }
 
@@ -96,7 +96,7 @@ class ProjectCloseOutNettingManager
             'status'    => ProjectRepaymentTask::STATUS_PLANNED
         ]);
 
-        return null === $project->getCloseOutNettingDate() && $project->getStatus() >= ProjectsStatus::STATUS_LOSS && null === $projectRepaymentTask;
+        return null === $project->getCloseOutNettingDate() && $project->getStatus() >= ProjectsStatus::STATUS_LOST && null === $projectRepaymentTask;
     }
 
     /**

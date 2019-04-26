@@ -115,7 +115,7 @@ class MainController extends Controller
         $template['projectAmountMin']  = $projectManager->getMinProjectAmount();
         $template['borrowingMotives']  = $this->get('doctrine.orm.entity_manager')->getRepository(BorrowingMotive::class)->findBy([], ['rank' => 'ASC']);
         $template['projects'] = $projectDisplayManager->getProjectsList(
-            [ProjectsStatus::STATUS_ONLINE],
+            [ProjectsStatus::STATUS_PUBLISHED],
             [ProjectsRepository::SORT_FIELD_END => 'DESC']
         );
 
@@ -227,7 +227,7 @@ class MainController extends Controller
         $partner = $this->get('unilend.service.partner_manager')->getDefaultPartner();
 
         try {
-            $project = $projectRequestManager->newProject($user, $partner, ProjectsStatus::STATUS_REQUEST, $amount, $siren, $siret, $companyName, $email, $period, $borrowingMotive);
+            $project = $projectRequestManager->newProject($user, $partner, ProjectsStatus::STATUS_REQUESTED, $amount, $siren, $siret, $companyName, $email, $period, $borrowingMotive);
 
             return $this->json([
                 'success' => true,

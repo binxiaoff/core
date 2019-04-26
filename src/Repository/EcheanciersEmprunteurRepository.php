@@ -122,7 +122,7 @@ class EcheanciersEmprunteurRepository extends ServiceEntityRepository
             ->andWhere('cs.label = :inBonis')
             ->andWhere('f.idFacture IS NULL')
             ->setParameter('today', (new \DateTime())->format('Y-m-d'))
-            ->setParameter('status', [ProjectsStatus::STATUS_REPAYMENT, ProjectsStatus::STATUS_LOSS])
+            ->setParameter('status', [ProjectsStatus::STATUS_CONTRACTS_SIGNED, ProjectsStatus::STATUS_LOST])
             ->setParameter('inBonis', CompanyStatus::STATUS_IN_BONIS)
             ->setParameter('emptyDate', '0000-00-00')
             ->setMaxResults($limit);
@@ -206,7 +206,7 @@ class EcheanciersEmprunteurRepository extends ServiceEntityRepository
             $cohortSelect = 'LEFT(projects_status_history.added, 4)';
         }
 
-        $bind = ['repayment' => ProjectsStatus::STATUS_REPAYMENT];
+        $bind = ['repayment' => ProjectsStatus::STATUS_CONTRACTS_SIGNED];
 
         $query = 'SELECT SUM(echeanciers_emprunteur.interets)/100 AS amount,
                   (

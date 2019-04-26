@@ -133,7 +133,7 @@ class WalletRepository extends ServiceEntityRepository
             ->innerJoin(Projects::class, 'p', Join::WITH, 'e.idProject = p.idProject')
             ->where('e.dateEcheance < :now')
             ->andWhere('e.status = ' . Echeanciers::STATUS_PENDING)
-            ->andWhere('p.status = ' . ProjectsStatus::STATUS_LOSS);
+            ->andWhere('p.status = ' . ProjectsStatus::STATUS_LOST);
 
         $subQuery = $this->getEntityManager()->createQueryBuilder()
             ->add('select', 'MAX(ls.added)')

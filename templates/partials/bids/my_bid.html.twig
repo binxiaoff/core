@@ -8,7 +8,6 @@
             <th>Marge</th>
             {#<th>Commission ponctuelle</th>
             <th>Commission récurrente</th>#}
-            <th>Souhaite être agent</th>
             {% if bid.status == constant('Unilend\\Entity\\Bids::STATUS_PENDING') %}
                 <th style="width: 60px;">&nbsp;</th>
             {% endif %}
@@ -24,7 +23,6 @@
             <td data-toggle="tooltip" title="{% if bid.recurringFeeTotalRate > 0 %}soit {{ (bid.recurringFeeTotalRate * (bid.amount / 100) / 100)|localizednumber }}&nbsp;€{% endif %}">
                 {{ bid.recurringFeeTotalRate|localizednumberwithprecision(2) }}&nbsp;%
             </td>#}
-            <td>{% if bid.isAgent %}Oui{% else %}Non{% endif %}</td>
             {% if bid.status == constant('Unilend\\Entity\\Bids::STATUS_PENDING') %}
                 <td>
                     <button class="btn-default btn-shape-xxs"
@@ -51,11 +49,6 @@
             <div class="col-lg-4 col-md-4 col-sm-4">
                 {{ form_row(form.rate.margin) }}
             </div>
-        </div>
-    </fieldset>
-    <fieldset class="simulator-pane-inner" style="margin-top: 20px;">
-        <div class="row">
-            {{ form_widget(form.agent) }} {{ form_label(form.agent) }}
         </div>
     </fieldset>
     {#<fieldset class="simulator-pane-inner" style="margin-top: 20px;">

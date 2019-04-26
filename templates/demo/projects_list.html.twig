@@ -70,7 +70,7 @@
                                     {{ project.period }} mois
                                 </div>
                                 <div class="project-list-item-stats">
-                                    {% if project.status <= constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_ONLINE') %}
+                                    {% if project.status <= constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_PUBLISHED') %}
                                         {{ project.presentationCompany|localizednumber }}&nbsp;%
                                     {% else %}
                                         100 %

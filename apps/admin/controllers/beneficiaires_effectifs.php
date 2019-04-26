@@ -52,7 +52,7 @@ class beneficiaires_effectifsController extends bootstrap
             $existingDeclarations = $entityManager->getRepository(ProjectBeneficialOwnerUniversign::class)->findAllDeclarationsForCompany($company);
 
             if (empty($existingDeclarations)) {
-                foreach ($entityManager->getRepository(Projects::class)->findBy(['status' => ProjectsStatus::STATUS_CONTRACTS, 'idCompany' => $company->getIdCompany()]) as $project) {
+                foreach ($entityManager->getRepository(Projects::class)->findBy(['status' => ProjectsStatus::STATUS_FUNDED, 'idCompany' => $company->getIdCompany()]) as $project) {
                     $existingDeclarations[] = $this->get('unilend.service.beneficial_owner_manager')->addProjectBeneficialOwnerDeclaration($currentDeclaration, $project);
                 }
             }

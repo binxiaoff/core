@@ -5,11 +5,9 @@ namespace Unilend\Entity;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityNotFoundException;
 use Doctrine\ORM\Mapping as ORM;
-use Unilend\Entity\Traits\{Lendable, Timestampable};
+use Unilend\Entity\Traits\{LendableTrait, Timestampable};
 
 /**
- * Loans
- *
  * @ORM\Table(name="loans", indexes={
  *     @ORM\Index(name="status", columns={"status"}),
  *     @ORM\Index(name="idx_loans_added", columns={"added"})
@@ -20,19 +18,19 @@ use Unilend\Entity\Traits\{Lendable, Timestampable};
  */
 class Loans
 {
-    use Lendable;
+    use LendableTrait;
     use Timestampable;
 
-    const STATUS_PENDING  = 2;
-    const STATUS_ACCEPTED = 0;
-    const STATUS_REJECTED = 1;
+    public const STATUS_PENDING  = 2;
+    public const STATUS_ACCEPTED = 0;
+    public const STATUS_REJECTED = 1;
 
     /**
-     * @var \Unilend\Entity\LoanTransfer|null
+     * @var LoanTransfer|null
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\LoanTransfer")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_transfer", referencedColumnName="id_loan_transfer")
+     *     @ORM\JoinColumn(name="id_transfer", referencedColumnName="id_loan_transfer")
      * })
      */
     private $idTransfer;
@@ -54,21 +52,21 @@ class Loans
     private $idLoan;
 
     /**
-     * @var \Unilend\Entity\UnderlyingContract
+     * @var UnderlyingContract
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\UnderlyingContract")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_type_contract", referencedColumnName="id_contract", nullable=false)
+     *     @ORM\JoinColumn(name="id_type_contract", referencedColumnName="id_contract", nullable=false)
      * })
      */
     private $idTypeContract;
 
     /**
-     * @var \Unilend\Entity\AcceptationsLegalDocs|null
+     * @var AcceptationsLegalDocs|null
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\AcceptationsLegalDocs")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_acceptation_legal_doc", referencedColumnName="id_acceptation")
+     *     @ORM\JoinColumn(name="id_acceptation_legal_doc", referencedColumnName="id_acceptation")
      * })
      */
     private $idAcceptationLegalDoc;
@@ -80,6 +78,9 @@ class Loans
      */
     private $loanPercentFees;
 
+    /**
+     * Loans constructor.
+     */
     public function __construct()
     {
         $this->loanPercentFees = new ArrayCollection();
@@ -103,7 +104,7 @@ class Loans
      */
     public function getIdTransfer(): ?LoanTransfer
     {
-        /** @todo to be removed when it is fully under doctrine */
+        // @todo to be removed when it is fully under doctrine
         if (null !== $this->idTransfer) {
             try {
                 $this->idTransfer->getIdTransfer();
@@ -136,7 +137,7 @@ class Loans
     }
 
     /**
-     * @return integer
+     * @return int
      */
     public function getIdLoan(): int
     {
@@ -200,7 +201,8 @@ class Loans
     {
         $loanPercentFee = (new LoanPercentFee())
             ->setLoan($this)
-            ->setPercentFee($percentFee);
+            ->setPercentFee($percentFee)
+        ;
 
         if (!$this->loanPercentFees->contains($loanPercentFee)) {
             $this->loanPercentFees->add($loanPercentFee);

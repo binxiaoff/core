@@ -12,14 +12,14 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class ProjectsStatus
 {
-    public const STATUS_REQUEST   = 10;
-    public const STATUS_ONLINE    = 20;
-    public const STATUS_CONTRACTS = 30;
-    public const STATUS_SIGNATURE = 40;
-    public const STATUS_REPAYMENT = 50;
-    public const STATUS_FINISHED  = 60;
-    public const STATUS_LOSS      = 70;
-    public const STATUS_CANCELLED = 100;
+    public const STATUS_REQUESTED          = 10;
+    public const STATUS_PUBLISHED          = 20;
+    public const STATUS_FUNDED             = 30;
+    public const STATUS_CONTRACTS_REDACTED = 40;
+    public const STATUS_CONTRACTS_SIGNED   = 50;
+    public const STATUS_FINISHED           = 60;
+    public const STATUS_LOST               = 70;
+    public const STATUS_CANCELLED          = 100;
 
     /**
      * @var string

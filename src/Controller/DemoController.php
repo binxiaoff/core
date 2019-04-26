@@ -126,7 +126,7 @@ class DemoController extends AbstractController
                 ->setPeriod($duration * 12)
                 ->setDescription($description)
                 ->setCreateBo(false)
-                ->setStatus(ProjectsStatus::STATUS_REQUEST)
+                ->setStatus(ProjectsStatus::STATUS_REQUESTED)
                 ->setIdPartner($partner)
                 ->setIdProduct($product->getIdProduct())
                 ->setIdCompanySubmitter($user->getCompany())
@@ -254,11 +254,11 @@ class DemoController extends AbstractController
             'regionalBanks' => $regionalBanks,
             'visibility'    => $visibility,
             'projectStatus' => [
-                ProjectsStatus::STATUS_REQUEST,
-                ProjectsStatus::STATUS_ONLINE,
-                ProjectsStatus::STATUS_CONTRACTS,
-                ProjectsStatus::STATUS_SIGNATURE,
-                ProjectsStatus::STATUS_REPAYMENT,
+                ProjectsStatus::STATUS_REQUESTED,
+                ProjectsStatus::STATUS_PUBLISHED,
+                ProjectsStatus::STATUS_FUNDED,
+                ProjectsStatus::STATUS_CONTRACTS_REDACTED,
+                ProjectsStatus::STATUS_CONTRACTS_SIGNED,
                 ProjectsStatus::STATUS_FINISHED,
             ],
             'project'            => $project,
@@ -549,19 +549,19 @@ class DemoController extends AbstractController
 
                 break;
             case 'demo_project_publish':
-                $status = ProjectsStatus::STATUS_ONLINE;
+                $status = ProjectsStatus::STATUS_PUBLISHED;
 
                 break;
             case 'demo_project_fund':
-                $status = ProjectsStatus::STATUS_CONTRACTS;
+                $status = ProjectsStatus::STATUS_FUNDED;
 
                 break;
             case 'demo_project_sign':
-                $status = ProjectsStatus::STATUS_SIGNATURE;
+                $status = ProjectsStatus::STATUS_CONTRACTS_REDACTED;
 
                 break;
             case 'demo_project_repay':
-                $status = ProjectsStatus::STATUS_REPAYMENT;
+                $status = ProjectsStatus::STATUS_CONTRACTS_SIGNED;
 
                 break;
             case 'demo_project_repaid':
@@ -569,7 +569,7 @@ class DemoController extends AbstractController
 
                 break;
             case 'demo_project_loss':
-                $status = ProjectsStatus::STATUS_LOSS;
+                $status = ProjectsStatus::STATUS_LOST;
 
                 break;
         }
@@ -578,7 +578,7 @@ class DemoController extends AbstractController
             $projectStatusManager->addProjectStatus(Users::USER_ID_FRONT, $status, $project);
 
             switch ($status) {
-                case ProjectsStatus::STATUS_ONLINE:
+                case ProjectsStatus::STATUS_PUBLISHED:
                     try {
                         $mailerManager->sendProjectPublication($project);
                     } catch (Swift_SwiftException $exception) {
@@ -591,7 +591,7 @@ class DemoController extends AbstractController
                     }
 
                     break;
-                case ProjectsStatus::STATUS_CONTRACTS:
+                case ProjectsStatus::STATUS_FUNDED:
                     $this->closeProject($project);
 
                     try {

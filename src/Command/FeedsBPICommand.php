@@ -43,12 +43,12 @@ class FeedsBPICommand extends ContainerAwareCommand
         $loans = $entityManagerSimulator->getRepository('loans');
 
         $projectStatus = [
-            ProjectsStatus::STATUS_ONLINE,
-            ProjectsStatus::STATUS_CONTRACTS,
+            ProjectsStatus::STATUS_PUBLISHED,
+            ProjectsStatus::STATUS_FUNDED,
             ProjectsStatus::STATUS_CANCELLED,
-            ProjectsStatus::STATUS_REPAYMENT,
+            ProjectsStatus::STATUS_CONTRACTS_SIGNED,
             ProjectsStatus::STATUS_FINISHED,
-            ProjectsStatus::STATUS_LOSS
+            ProjectsStatus::STATUS_LOST
         ];
 
         $hostUrl  = $this->getContainer()->getParameter('router.request_context.scheme') . '://' . getenv('HOST_DEFAULT_URL');
@@ -72,7 +72,7 @@ class FeedsBPICommand extends ContainerAwareCommand
                 continue;
             }
 
-            if ($project->getStatus() === ProjectsStatus::STATUS_ONLINE) {
+            if ($project->getStatus() === ProjectsStatus::STATUS_PUBLISHED) {
                 $totalBids = $bids->sum('id_project = ' . $project->getIdProject() . ' AND status = ' . Bids::STATUS_PENDING, 'amount') / 100;
             } else {
                 $totalBids = $bids->sum('id_project = ' . $project->getIdProject() . ' AND status = ' . Bids::STATUS_ACCEPTED, 'amount') / 100;
@@ -198,11 +198,11 @@ class FeedsBPICommand extends ContainerAwareCommand
     private function getBPISuccess(int $status): string
     {
         switch ($status) {
-            case ProjectsStatus::STATUS_ONLINE:
-            case ProjectsStatus::STATUS_LOSS:
-            case ProjectsStatus::STATUS_REPAYMENT:
+            case ProjectsStatus::STATUS_PUBLISHED:
+            case ProjectsStatus::STATUS_LOST:
+            case ProjectsStatus::STATUS_CONTRACTS_SIGNED:
             case ProjectsStatus::STATUS_FINISHED:
-            case ProjectsStatus::STATUS_CONTRACTS:
+            case ProjectsStatus::STATUS_FUNDED:
                 return 'OUI';
             case ProjectsStatus::STATUS_CANCELLED:
                 return 'NON';

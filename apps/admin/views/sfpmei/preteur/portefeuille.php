@@ -114,7 +114,7 @@
                         <td class="text-nowrap"><?= $this->ficelle->formatNumber($loan['rate'], 1) ?> %</td>
                         <?php if ($loan['nb_loan'] == 1) : ?>
                             <td>
-                                <?php if ($loan['project_status'] >= ProjectsStatus::STATUS_REPAYMENT) : ?>
+                                <?php if ($loan['project_status'] >= ProjectsStatus::STATUS_CONTRACTS_SIGNED) : ?>
                                     <a href="<?= $this->lurl ?>/protected/contrat/<?= $this->clients->hash ?>/<?= $loan['id_loan_if_one_loan'] ?>">
                                         <?php $this->contract->get($loan['id_type_contract']); ?>
                                         <?= $this->translator->trans('contract-type-label_' . $this->contract->label) ?>
@@ -154,7 +154,7 @@
                                 <td class="text-nowrap text-right"><?= $this->ficelle->formatNumber($subLoan['amount'] / 100, 0) ?> €</td>
                                 <td class="text-nowrap"><?= $this->ficelle->formatNumber($subLoan['rate'], 1) ?> %</td>
                                 <td>
-                                    <?php if ($loan['project_status'] >= ProjectsStatus::STATUS_REPAYMENT) : ?>
+                                    <?php if ($loan['project_status'] >= ProjectsStatus::STATUS_CONTRACTS_SIGNED) : ?>
                                         <a href="<?= $this->lurl ?>/protected/contrat/<?= $this->clients->hash ?>/<?= $subLoan['id_loan'] ?>">
                                             <?php $this->contract->get($subLoan['id_type_contract']); ?>
                                             <?= $this->translator->trans('contract-type-label_' . $this->contract->label) ?>

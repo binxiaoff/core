@@ -305,7 +305,7 @@ use Unilend\Entity\{Projects, ProjectsStatus};
                             <td>non</td>
                         <?php endif; ?>
                         <?php if ($this->hasRepaymentAccess) : ?>
-                            <?php if ($project->getStatus() >= ProjectsStatus::STATUS_REPAYMENT) : ?>
+                            <?php if ($project->getStatus() >= ProjectsStatus::STATUS_CONTRACTS_SIGNED) : ?>
                                 <td><?= Projects::AUTO_REPAYMENT_ON === $project->getRembAuto() ? 'oui' : 'non' ?></td>
                                 <td align="center">
                                     <a href="<?= $this->lurl ?>/remboursement/projet/<?= $project->getIdProject() ?>">

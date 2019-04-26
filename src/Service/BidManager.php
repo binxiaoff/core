@@ -242,7 +242,7 @@ class BidManager
      */
     private function checkProjectStatus(Bids $bid): void
     {
-        if (false === in_array($bid->getProject()->getStatus(), [ProjectsStatus::STATUS_REVIEW, ProjectsStatus::STATUS_ONLINE])) {
+        if (false === in_array($bid->getProject()->getStatus(), [ProjectsStatus::STATUS_REVIEW, ProjectsStatus::STATUS_PUBLISHED])) {
             if ($this->logger instanceof LoggerInterface) {
                 $this->logger->warning('Project status is not valid for bidding', [
                     'project_id'     => $bid->getProject()->getIdProject(),
