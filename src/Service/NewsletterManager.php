@@ -86,8 +86,8 @@ class NewsletterManager
 //                'email_type'       => 'html',
 //                'status'           => $mailChimpStatus,
 //                'merge_fields'     => [
-//                    'FNAME' => $client->getPrenom(),
-//                    'LNAME' => $client->getNom(),
+//                    'FNAME' => $client->getFirstName(),
+//                    'LNAME' => $client->getLastName(),
 //                ],
 //                'ip_signup'        => $ipAddress,
 //                'timestamp_signup' => date('Y-m-d H:i:s'),

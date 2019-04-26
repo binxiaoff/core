@@ -119,7 +119,7 @@ class ProjectsEarlyRefundEmailCommand extends ContainerAwareCommand
                         $loan->get($projectLender['id_loan'], 'id_loan');
 
                         $keywords = [
-                            'firstName'        => $client->getPrenom(),
+                            'firstName'        => $client->getFirstName(),
                             'repaymentAmount'  => $currencyFormatter->formatCurrency($lenderRemainingCapital, 'EUR'),
                             'companyName'      => $company->name,
                             'paidInterests'    => $numberFormatter->format((float) $lenderRepaymentSchedule->getRepaidInterests([

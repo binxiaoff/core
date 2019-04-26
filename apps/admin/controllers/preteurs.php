@@ -432,7 +432,7 @@ class preteursController extends bootstrap
             $this->setClientVigilanceStatusData();
 
             try {
-                $this->duplicateAccounts = $entityManager->getRepository(Clients::class)->getDuplicatesByName($this->client->getNom(), $this->client->getPrenom(), $this->client->getNaissance());
+                $this->duplicateAccounts = $entityManager->getRepository(Clients::class)->getDuplicatesByName($this->client->getLastName(), $this->client->getFirstName(), $this->client->getDateOfBirth());
             } catch (\Doctrine\DBAL\DBALException $exception) {
                 $this->duplicateAccounts = [];
                 $logger->error('An exception occurred while trying to look for a duplicated client accounts. id_client: ' . $this->client->getIdClient() . ' Exception message: ' . $exception->getMessage(), [
@@ -490,19 +490,19 @@ class preteursController extends bootstrap
 
                     try {
                         $this->client
-                            ->setCivilite($_POST['civilite'])
-                            ->setNom($this->ficelle->majNom($_POST['nom-famille']))
-                            ->setNomUsage($this->ficelle->majNom($_POST['nom-usage']))
-                            ->setPrenom($this->ficelle->majNom($_POST['prenom']))
+                            ->setTitle($_POST['civilite'])
+                            ->setLastName($this->ficelle->majNom($_POST['nom-famille']))
+                            ->setPreferredName($this->ficelle->majNom($_POST['nom-usage']))
+                            ->setFirstName($this->ficelle->majNom($_POST['prenom']))
                             ->setEmail($email)
-                            ->setTelephone(str_replace(' ', '', $_POST['phone']))
+                            ->setPhone(str_replace(' ', '', $_POST['phone']))
                             ->setMobile(str_replace(' ', '', $_POST['mobile']))
-                            ->setVilleNaissance($_POST['com-naissance'])
+                            ->setBirthCity($_POST['com-naissance'])
                             ->setInseeBirth($_POST['insee_birth'])
-                            ->setNaissance($birthday)
-                            ->setIdPaysNaissance($_POST['id_pays_naissance'])
-                            ->setIdNationalite($_POST['nationalite'])
-                            ->setIdLangue('fr')
+                            ->setDateOfBirth($birthday)
+                            ->setIdBirthCountry($_POST['id_pays_naissance'])
+                            ->setIdNationality($_POST['nationalite'])
+                            ->setIdLanguage('fr')
                             ->setType($type);
 
                         /** @var ClientAuditer $clientAuditer */
@@ -569,13 +569,13 @@ class preteursController extends bootstrap
                         }
 
                         $this->client
-                            ->setCivilite($_POST['civilite_e'])
-                            ->setNom($this->ficelle->majNom($_POST['nom_e']))
-                            ->setPrenom($this->ficelle->majNom($_POST['prenom_e']))
+                            ->setTitle($_POST['civilite_e'])
+                            ->setLastName($this->ficelle->majNom($_POST['nom_e']))
+                            ->setFirstName($this->ficelle->majNom($_POST['prenom_e']))
                             ->setFonction($_POST['fonction_e'])
                             ->setEmail($email)
                             ->setMobile(str_replace(' ', '', $_POST['phone_e']))
-                            ->setIdLangue('fr')
+                            ->setIdLanguage('fr')
                             ->setType(Clients::TYPE_LEGAL_ENTITY);
 
                         /** @var ClientAuditer $clientAuditer */
@@ -1292,7 +1292,7 @@ class preteursController extends bootstrap
     private function sendEmailClosedAccount(Clients $client)
     {
         $keywords = [
-            'firstName' => $client->getPrenom()
+            'firstName' => $client->getFirstName()
         ];
 
         /** @var \Unilend\SwiftMailer\TemplateMessage $message */
@@ -1319,7 +1319,7 @@ class preteursController extends bootstrap
         $timeCreate    = empty($this->statusHistory[0]) ? $client->getAdded() : $this->statusHistory[0]->getAdded();
         $dateFormatter = new \IntlDateFormatter($this->getParameter('locale'), \IntlDateFormatter::LONG, \IntlDateFormatter::NONE);
         $keywords      = [
-            'firstName'        => $client->getPrenom(),
+            'firstName'        => $client->getFirstName(),
             'modificationDate' => $dateFormatter->format($timeCreate),
             'content'          => $_SESSION['content_email_completude'][$client->getIdClient()],
             'uploadLink'       => $this->furl . '/profile/documents',

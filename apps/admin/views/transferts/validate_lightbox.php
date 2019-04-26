@@ -30,7 +30,7 @@ $beneficiaryCompany = $this->companyRepository->findOneBy(['idClientOwner' => $b
                 <td><?= $this->wireTransferOut->getTransferAt() === null ? 'Dès validation' : $this->wireTransferOut->getTransferAt()->format('d/m/Y') ?></td>
                 <td>
                     <?= $beneficiaryCompany->getName() ?>
-                    <?= ' (' . $bankAccount->getIdClient()->getPrenom() . ' ' . $bankAccount->getIdClient()->getNom() . ')' ?>
+                    <?= ' (' . $bankAccount->getIdClient()->getFirstName() . ' ' . $bankAccount->getIdClient()->getLastName() . ')' ?>
                 </td>
                 <td><?= $this->wireTransferOut->getMotif() ?></td>
                 <td><?= $this->currencyFormatter->formatCurrency(bcdiv($this->wireTransferOut->getMontant(), 100, 4), 'EUR'); ?></td>

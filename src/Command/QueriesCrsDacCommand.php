@@ -127,7 +127,7 @@ class QueriesCrsDacCommand extends ContainerAwareCommand
         $amountInvested              = $operationRepository->sumDebitOperationsByTypeUntil($wallet, [OperationType::LENDER_LOAN], null, $lastDayOfTheYear);
         $firstValidation             = $clientStatusHistoryRepository->getFirstClientValidation($client);
         $fiscalCountryIso            = $lenderImpositionRepository->getFiscalIsoAtDate($wallet, $lastDayOfTheYear);
-        $nationalityCountry          = $entityManager->getRepository(Nationalites::class)->find($client->getIdNationalite());
+        $nationalityCountry          = $entityManager->getRepository(Nationalites::class)->find($client->getIdNationality());
         $grossInterest               = $operationRepository->sumCreditOperationsByTypeAndYear($wallet, [OperationType::GROSS_INTEREST_REPAYMENT], null, $lastDayOfTheYear->format('Y'));
         $grossInterestRegularization = $operationRepository->sumDebitOperationsByTypeAndYear($wallet, [OperationType::GROSS_INTEREST_REPAYMENT_REGULARIZATION], null, $lastDayOfTheYear->format('Y'));
         $yearlyGrossInterest         = round(bcsub($grossInterest, $grossInterestRegularization, 4), 2);
@@ -138,16 +138,16 @@ class QueriesCrsDacCommand extends ContainerAwareCommand
         }
 
         $activeSheet->setCellValue('A' . $row, $client->getIdClient());
-        $activeSheet->setCellValue('B' . $row, $client->getNaissance()->format('Y-m-d'));
-        $activeSheet->setCellValue('C' . $row, $client->getVilleNaissance());
+        $activeSheet->setCellValue('B' . $row, $client->getDateOfBirth()->format('Y-m-d'));
+        $activeSheet->setCellValue('C' . $row, $client->getBirthCity());
         $activeSheet->setCellValue('D' . $row, null !== $nationalityCountry ? $nationalityCountry->get : '');
         $activeSheet->setCellValue('E' . $row, $firstValidation instanceof \DateTime ? $firstValidation->getAdded()->format('Y-m-d') : '');
         $activeSheet->setCellValue('F' . $row, $client->getIdClientStatusHistory()->getIdStatus()->getId());
         $activeSheet->setCellValue('G' . $row, $client->isNaturalPerson() ? 'Physique' : 'Morale');
         $activeSheet->setCellValue('H' . $row, $client->isNaturalPerson() ? '' : $company->getName());
-        $activeSheet->setCellValue('I' . $row, $client->getNom());
-        $activeSheet->setCellValue('J' . $row, $client->getNomUsage());
-        $activeSheet->setCellValue('K' . $row, $client->getPrenom());
+        $activeSheet->setCellValue('I' . $row, $client->getLastName());
+        $activeSheet->setCellValue('J' . $row, $client->getPreferredName());
+        $activeSheet->setCellValue('K' . $row, $client->getFirstName());
         $activeSheet->setCellValue('L' . $row, null === $clientAddress ? '' : $clientAddress->getAddress());
         $activeSheet->setCellValue('M' . $row, null === $clientAddress ? '' : $clientAddress->getCity());
         $activeSheet->setCellValue('N' . $row, null === $clientAddress ? '' : $clientAddress->getZip());

@@ -76,7 +76,7 @@ class recouvreurController extends bootstrap
                 && WalletType::DEBT_COLLECTOR === $debtCollectorWallet->getIdType()->getLabel()
             ) {
                 try {
-                    $fileName = 'honoraires_' . $debtCollectorWallet->getIdClient()->getNom() . '_rec-' . $wireTransfer->getIdReception() . '_' . date('d-m-Y') . '.xlsx';
+                    $fileName = 'honoraires_' . $debtCollectorWallet->getIdClient()->getLastName() . '_rec-' . $wireTransfer->getIdReception() . '_' . date('d-m-Y') . '.xlsx';
 
                     header('Content-Type: application/force-download; charset=utf-8');
                     header('Content-Disposition: attachment;filename=' . $fileName);

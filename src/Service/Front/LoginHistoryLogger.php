@@ -41,7 +41,7 @@ class LoginHistoryLogger
     {
         try {
             $now = new \DateTime('NOW');
-            $client->setLastlogin($now);
+            $client->setLastLogin($now);
             try {
                 $this->entityManager->flush($client);
             } catch (\Exception $exception) {
@@ -52,20 +52,6 @@ class LoginHistoryLogger
                     'file'      => $exception->getFile(),
                     'line'      => $exception->getLine()
                 ]);
-            }
-
-            $isLender   = $client->isLender();
-            $isBorrower = $client->isBorrower();
-            $isPartner  = $client->isPartner();
-
-            if ($isLender && $isBorrower) {
-                $type = ClientsHistory::TYPE_CLIENT_LENDER_BORROWER;
-            } elseif ($isLender) {
-                $type = ClientsHistory::TYPE_CLIENT_LENDER;
-            } elseif ($isBorrower) {
-                $type = ClientsHistory::TYPE_CLIENT_BORROWER;
-            } elseif ($isPartner) {
-                $type = ClientsHistory::TYPE_CLIENT_PARTNER;
             }
 
             $userAgentEntity = null;
@@ -88,7 +74,6 @@ class LoginHistoryLogger
             $clientHistory = new ClientsHistory();
             $clientHistory
                 ->setIdClient($client)
-                ->setType($type)
                 ->setStatus(ClientsHistory::STATUS_ACTION_LOGIN)
                 ->setIp($ip)
                 ->setIdUserAgent($userAgentEntity)

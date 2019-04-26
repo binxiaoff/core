@@ -95,15 +95,15 @@ use Unilend\Entity\{Companies, CompanyStatus, ProjectsStatus, UniversignEntityIn
         <div class="row">
             <div class="col-md-6">
                 <h1>Emprunteur</h1>
-                <h2 id="borrower-name"><?= $this->clientEntity->getPrenom() ?> <?= $this->clientEntity->getNom() ?></h2>
+                <h2 id="borrower-name"><?= $this->clientEntity->getFirstName() ?> <?= $this->clientEntity->getLastName() ?></h2>
                 <div class="row">
                     <div class="form-group col-md-6">
                         <label for="nom">Nom</label>
-                        <input type="text" name="nom" id="nom" value="<?= $this->clientEntity->getNom() ?>" class="form-control">
+                        <input type="text" name="nom" id="nom" value="<?= $this->clientEntity->getLastName() ?>" class="form-control">
                     </div>
                     <div class="form-group col-md-6">
                         <label for="prenom">Prénom</label>
-                        <input type="text" name="prenom" id="prenom" value="<?= $this->clientEntity->getPrenom() ?>" class="form-control">
+                        <input type="text" name="prenom" id="prenom" value="<?= $this->clientEntity->getFirstName() ?>" class="form-control">
                     </div>
                 </div>
                 <div class="row">
@@ -207,7 +207,7 @@ use Unilend\Entity\{Companies, CompanyStatus, ProjectsStatus, UniversignEntityIn
         <?php endif; ?>
         <a role="button" class="btn-primary" href="<?= $this->lurl ?>/beneficiaires_effectifs/<?= $this->companyEntity->getIdCompany() ?>">Bénéficiaires effectifs</a>
         <?php if ($this->clientEntity->isValidated()) : ?>
-            <?php if (empty($this->clientEntity->getSecreteQuestion()) && empty($this->clientEntity->getSecreteReponse())) : ?>
+            <?php if (empty($this->clientEntity->getSecurityQuestion()) && empty($this->clientEntity->getSecurityAnswer())) : ?>
                 <a role="button" class="btn-primary" href="javascript:send_email_borrower_area('<?= $this->clientEntity->getIdClient() ?>', 'open');">Ouvrir l'espace emprunteur</a>
             <?php else : ?>
                 <a role="button" class="btn-primary" href="javascript:send_email_borrower_area('<?= $this->clientEntity->getIdClient() ?>', 'initialize')">Réinitialiser l'espace emprunteur</a>

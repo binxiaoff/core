@@ -111,7 +111,7 @@ class EmailBorrowerCompletenessReminderCommand extends ContainerAwareCommand
                                 }
 
                                 $keywords = [
-                                    'firstName'                  => $client->getPrenom(),
+                                    'firstName'                  => $client->getFirstName(),
                                     'requestDate'                => strftime('%d %B %Y', $oSubmissionDate->getTimestamp()),
                                     'companyName'                => $company->getName(),
                                     'continueRequestLink'        => $sUrl . '/depot_de_dossier/reprise/' . $project->getHash(),

@@ -291,7 +291,7 @@ class LenderCIPController extends Controller
 
         $pdfFooter             = $this->renderView('/pdf/cip/footer.html.twig');
         $content['advice']     = $this->getFormattedAdvice($client);
-        $content['clientName'] = $client->getPrenom();
+        $content['clientName'] = $client->getFirstName();
         $pdfContent            = $this->renderView('/pdf/cip/advice.html.twig', $content);
 
         $evaluation            = $cipManager->getCurrentEvaluation($client);
@@ -323,7 +323,7 @@ class LenderCIPController extends Controller
         /** @var Wallet $wallet */
         $wallet   = $this->get('doctrine.orm.entity_manager')->getRepository(Wallet::class)->getWalletByType($client, WalletType::LENDER);
         $keywords = [
-            'firstName'     => $client->getPrenom(),
+            'firstName'     => $client->getFirstName(),
             'advice'        => str_replace('h5', 'p', $this->getFormattedAdvice($client)),
             'advicePdfLink' => $this->generateUrl('pdf_cip', ['clientHash' => $client->getHash()], UrlGeneratorInterface::ABSOLUTE_URL),
             'lenderPattern' => $wallet->getWireTransferPattern()

@@ -79,7 +79,7 @@ if (empty($this->wireTransferOuts)) : ?>
                     <td><?= $wireTransferOut->getTransferAt() === null ? 'Dès validation' : $wireTransferOut->getTransferAt()->format('d/m/Y') ?></td>
                     <td>
                         <?= $beneficiaryCompany->getName() ?>
-                        <?= ' (' . $bankAccount->getIdClient()->getPrenom() . ' ' . $bankAccount->getIdClient()->getNom() . ')' ?>
+                        <?= ' (' . $bankAccount->getIdClient()->getFirstName() . ' ' . $bankAccount->getIdClient()->getLastName() . ')' ?>
                     </td>
                     <td><?= $wireTransferOut->getMotif() ?></td>
                     <td><?= $this->currencyFormatter->formatCurrency(bcdiv($wireTransferOut->getMontant(), 100, 4), 'EUR'); ?></td>

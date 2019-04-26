@@ -582,9 +582,9 @@ class UniversignManager
         ];
 
         $signer = [
-            'firstname'    => new Value($client->getPrenom(), 'string'),
-            'lastname'     => new Value($client->getNom(), 'string'),
-            'phoneNum'     => new Value(str_replace(' ', '', $client->getTelephone()), 'string'),
+            'firstname'    => new Value($client->getFirstName(), 'string'),
+            'lastname'     => new Value($client->getLastName(), 'string'),
+            'phoneNum'     => new Value(str_replace(' ', '', $client->getPhone()), 'string'),
             'emailAddress' => new Value($client->getEmail(), 'string')
         ];
 

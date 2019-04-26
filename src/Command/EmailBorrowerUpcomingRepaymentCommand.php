@@ -44,7 +44,7 @@ class EmailBorrowerUpcomingRepaymentCommand extends ContainerAwareCommand
             $clientEmail = $company->getEmailDirigeant();
             if ((empty($firstName) || empty($clientEmail))) {
                 if ($company->getIdClientOwner() instanceof Clients && false === empty($company->getIdClientOwner()->getEmail())) {
-                    $firstName   = $company->getIdClientOwner()->getPrenom();
+                    $firstName   = $company->getIdClientOwner()->getFirstName();
                     $clientEmail = $company->getIdClientOwner()->getEmail();
                 } else {
                     $this->getContainer()->get('monolog.logger.console')

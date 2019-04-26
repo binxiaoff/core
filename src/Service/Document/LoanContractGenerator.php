@@ -329,9 +329,9 @@ class LoanContractGenerator implements DocumentGeneratorInterface
 
         $lenderData = [
             'isNaturalPerson' => $client->isNaturalPerson(),
-            'firstName'       => $client->getPrenom(),
-            'lastName'        => $client->getNom(),
-            'birthDate'       => $client->getNaissance()->format('d/m/Y'),
+            'firstName'       => $client->getFirstName(),
+            'lastName'        => $client->getLastName(),
+            'birthDate'       => $client->getDateOfBirth()->format('d/m/Y'),
             'address'         => [
                 'address' => $address->getAddress(),
                 'zip'     => $address->getZip(),

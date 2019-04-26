@@ -587,8 +587,8 @@ class pdfController extends bootstrap
             }
 
             $lenderList[] = [
-                'name'      => $client->isNaturalPerson() ? $client->getNom() : $lenderCompany->getName(),
-                'firstName' => $client->isNaturalPerson() ? $client->getPrenom() : $lenderCompany->getSiren(),
+                'name'      => $client->isNaturalPerson() ? $client->getLastName() : $lenderCompany->getName(),
+                'firstName' => $client->isNaturalPerson() ? $client->getFirstName() : $lenderCompany->getSiren(),
                 'address'   => null !== $lenderAddress ? $lenderAddress->getAddress() : '',
                 'zip'       => null !== $lenderAddress ? $lenderAddress->getZip() : '',
                 'city'      => null !== $lenderAddress ? $lenderAddress->getCity() : '',
@@ -771,7 +771,7 @@ class pdfController extends bootstrap
                 exit;
             }
 
-            $this->nomPreteur     = $client->isNaturalPerson() ? $client->getPrenom() . ' ' . $client->getNom() : $lenderCompany->getName();
+            $this->nomPreteur     = $client->isNaturalPerson() ? $client->getFirstName() . ' ' . $client->getLastName() : $lenderCompany->getName();
             $this->adressePreteur = $lenderAddress->getAddress();
             $this->cpPreteur      = $lenderAddress->getZip();
             $this->villePreteur   = $lenderAddress->getCity();

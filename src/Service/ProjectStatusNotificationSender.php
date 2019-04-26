@@ -172,7 +172,7 @@ class ProjectStatusNotificationSender
 
         $keywords = $keywords + [
                 'companyName'                => $company->getName(),
-                'directorName'               => (empty($clientOwner->getCivilite()) ? 'M.' : $clientOwner->getCivilite()) . ' ' . $clientOwner->getNom(),
+                'directorName'               => (empty($clientOwner->getTitle()) ? 'M.' : $clientOwner->getTitle()) . ' ' . $clientOwner->getLastName(),
                 'projectAmount'              => $this->numberFormatter->format($project->getAmount()),
                 'fundingDate'                => strftime('%B %G', $fundingDate),
                 'lendersCount'               => $loans->getNbPreteurs($project->getIdProject()),
@@ -390,7 +390,7 @@ class ProjectStatusNotificationSender
                     $clientsGestionMailsNotif->create();
 
                     $lenderKeywords = $keywords + [
-                            'firstName'         => $wallet->getIdClient()->getPrenom(),
+                            'firstName'         => $wallet->getIdClient()->getFirstName(),
                             'loansAmount'       => $this->numberFormatter->format($loansAmount),
                             'companyName'       => $project->getIdCompany()->getName(),
                             'repaidAmount'      => $this->currencyFormatter->formatCurrency($netRepayment, 'EUR'),

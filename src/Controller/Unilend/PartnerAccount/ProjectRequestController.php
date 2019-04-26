@@ -230,11 +230,11 @@ class ProjectRequestController extends Controller
 
         $request->getSession()->remove('partnerProjectRequest');
 
-        $title     = $values['contact']['title'] ?? $client->getCivilite();
-        $lastName  = $values['contact']['lastName'] ?? $client->getNom();
-        $firstName = $values['contact']['firstName'] ?? $client->getPrenom();
+        $title     = $values['contact']['title'] ?? $client->getTitle();
+        $lastName  = $values['contact']['lastName'] ?? $client->getLastName();
+        $firstName = $values['contact']['firstName'] ?? $client->getFirstName();
         $email     = $values['contact']['email'] ?? $this->removeEmailSuffix($client->getEmail());
-        $mobile    = $values['contact']['mobile'] ?? $client->getTelephone();
+        $mobile    = $values['contact']['mobile'] ?? $client->getPhone();
         $function  = $values['contact']['function'] ?? $client->getFonction();
         // If one (last name) of these fields is empty, we can consider that all the field is empty
         $firstExecutiveFound = $template['activeExecutives'][0] ?? null;
@@ -246,9 +246,9 @@ class ProjectRequestController extends Controller
         }
 
         $contactInList = false;
-        if ($client->getNom() && false === empty($template['activeExecutives'])) {
+        if ($client->getLastName() && false === empty($template['activeExecutives'])) {
             foreach ($template['activeExecutives'] as $executive) {
-                if (mb_strtolower($executive['firstName'] . $executive['lastName']) === mb_strtolower($client->getPrenom() . $client->getNom())) {
+                if (mb_strtolower($executive['firstName'] . $executive['lastName']) === mb_strtolower($client->getFirstName() . $client->getLastName())) {
                     $contactInList = true;
                     break;
                 }
@@ -267,11 +267,11 @@ class ProjectRequestController extends Controller
                     'function'  => $function
                 ],
                 'otherContact' => [
-                    'title'     => false === $contactInList ? $client->getCivilite() : '',
-                    'lastName'  => false === $contactInList ? $client->getNom() : '',
-                    'firstName' => false === $contactInList ? $client->getPrenom() : '',
+                    'title'     => false === $contactInList ? $client->getTitle() : '',
+                    'lastName'  => false === $contactInList ? $client->getLastName() : '',
+                    'firstName' => false === $contactInList ? $client->getFirstName() : '',
                     'email'     => false === $contactInList ? $this->removeEmailSuffix($client->getEmail()) : '',
-                    'mobile'    => false === $contactInList ? $client->getTelephone() : '',
+                    'mobile'    => false === $contactInList ? $client->getPhone() : '',
                     'function'  => false === $contactInList ? $client->getFonction() : ''
                 ],
                 'project'      => [
@@ -383,13 +383,13 @@ class ProjectRequestController extends Controller
         }
 
         if ($title) {
-            $client->setCivilite($title);
+            $client->setTitle($title);
         }
         if ($lastName) {
-            $client->setNom($lastName);
+            $client->setLastName($lastName);
         }
         if ($firstName) {
-            $client->setPrenom($firstName);
+            $client->setFirstName($firstName);
         }
         if ($email) {
             $duplicates = $clientRepository->findGrantedLoginAccountsByEmail($email);
@@ -414,7 +414,7 @@ class ProjectRequestController extends Controller
             $entityManager->flush($project->getIdCompany());
         }
         if ($mobile) {
-            $client->setTelephone($mobile);
+            $client->setPhone($mobile);
         }
         if ($function) {
             $client->setFonction($function);

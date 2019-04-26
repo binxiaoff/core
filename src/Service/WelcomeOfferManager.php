@@ -217,7 +217,7 @@ class WelcomeOfferManager
     {
         $wallet   = $this->entityManager->getRepository(Wallet::class)->getWalletByType($client, WalletType::LENDER);
         $keyWords = [
-            'firstName'          => $client->getPrenom(),
+            'firstName'          => $client->getFirstName(),
             'welcomeOfferAmount' => $this->numberFormatter->format($welcomeOffer->getMontant() / 100),
             'validityInMonth'    => $this->getWelcomeOfferValidityInMonth(),
             'lenderPattern'      => $wallet->getWireTransferPattern()

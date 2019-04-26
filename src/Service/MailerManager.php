@@ -133,7 +133,7 @@ class MailerManager
 
         if (null !== $bid) {
             $keywords = [
-                'firstName'     => $bid->getWallet()->getIdClient()->getPrenom(),
+                'firstName'     => $bid->getWallet()->getIdClient()->getFirstName(),
                 'companyName'   => $bid->getProject()->getIdCompany()->getName(),
                 'projectName'   => $bid->getProject()->getTitle(),
                 'bidAmount'     => $this->oFicelle->formatNumber($bid->getAmount() / 100, 0),
@@ -179,7 +179,7 @@ class MailerManager
             if ($wallet->getIdClient()->isGrantedLogin()) {
                 $keywords = [
                     'companyName'   => $bid->getProject()->getIdCompany()->getName(),
-                    'firstName'     => $wallet->getIdClient()->getPrenom(),
+                    'firstName'     => $wallet->getIdClient()->getFirstName(),
                     'bidDate'       => strftime('%d %B %G', $bid->getAdded()->getTimestamp()),
                     'bidAmount'     => $this->oFicelle->formatNumber($bid->getAmount() / 100, 0),
                     'bidRate'       => $this->oFicelle->formatNumber($bid->getRate()->getMargin()),
@@ -235,7 +235,7 @@ class MailerManager
             $projectRepository   = $this->entityManager->getRepository(Projects::class);
             $averageInterestRate = $projectRepository->getAverageInterestRate($project);
             $keywords            = [
-                'firstName'         => $borrower->getPrenom(),
+                'firstName'         => $borrower->getFirstName(),
                 'averageRate'       => $this->oFicelle->formatNumber($averageInterestRate, 1),
                 'remainingDuration' => $this->diffFromNowForHumans($project->getDateRetrait()),
             ];
@@ -422,7 +422,7 @@ class MailerManager
             if ($bid->getAutobid()) {
                 $keyWords = [
                     'lenderPattern' => $bid->getWallet()->getWireTransferPattern(),
-                    'firstName'     => $bid->getWallet()->getIdClient()->getPrenom(),
+                    'firstName'     => $bid->getWallet()->getIdClient()->getFirstName(),
                     'companyName'   => $bid->getProject()->getIdCompany()->getName(),
                 ];
 
@@ -446,7 +446,7 @@ class MailerManager
             } else {
                 $keyWords = [
                     'lenderPattern' => $bid->getWallet()->getWireTransferPattern(),
-                    'firstName'     => $bid->getWallet()->getIdClient()->getPrenom(),
+                    'firstName'     => $bid->getWallet()->getIdClient()->getFirstName(),
                     'companyName'   => $bid->getProject()->getIdCompany()->getName(),
                     'bidAmount'     => $this->oFicelle->formatNumber($bid->getAmount() / 100, 0),
                     'bidRate'       => $this->oFicelle->formatNumber($bid->getRate()->getMargin(), 1),
@@ -509,7 +509,7 @@ class MailerManager
 
         if ($borrower->isValidated()) {
             $keywords = [
-                'firstName' => $borrower->getPrenom(),
+                'firstName' => $borrower->getFirstName(),
             ];
 
             $message = $this->messageProvider->newMessage('emprunteur-dossier-funding-ko', $keywords);
@@ -596,7 +596,7 @@ class MailerManager
 
         if ($wallet->getIdClient()->isGrantedLogin()) {
             $keyWords = [
-                'firstName'              => $wallet->getIdClient()->getPrenom(),
+                'firstName'              => $wallet->getIdClient()->getFirstName(),
                 'autolendActivationTime' => $this->getActivationTime($wallet->getIdClient()->getIdClient())->format('G\hi'),
                 'lenderPattern'          => $wallet->getWireTransferPattern(),
             ];
@@ -624,7 +624,7 @@ class MailerManager
                 $mailClient = $company->getEmailDirigeant();
             } else {
                 $client     = $company->getIdClientOwner();
-                $firstName  = $client->getPrenom();
+                $firstName  = $client->getFirstName();
                 $mailClient = $client->getEmail();
             }
 
@@ -1279,7 +1279,7 @@ class MailerManager
                         . '/document-de-pret">cette page</a>. ';
 
                     $keyWords = [
-                        'firstName'               => $wallet->getIdClient()->getPrenom(),
+                        'firstName'               => $wallet->getIdClient()->getFirstName(),
                         'acceptedLoans'           => $sLoansListHTML,
                         'content'                 => $sContent,
                         'loanGroupingExplication' => $wallet->getIdClient()->isNaturalPerson() ? $explication : '',
@@ -1540,7 +1540,7 @@ class MailerManager
                     }
 
                     $keywords = [
-                        'firstName'      => $wallet->getIdClient()->getPrenom(),
+                        'firstName'      => $wallet->getIdClient()->getFirstName(),
                         'content'        => $sContent,
                         'repayments'     => $sRepaymentsListHTML,
                         'earlyRepayment' => $earlyRepaymentContent,
@@ -1716,7 +1716,7 @@ class MailerManager
         ;
 
         $variables = [
-            'firstName'                  => $client->getPrenom(),
+            'firstName'                  => $client->getFirstName(),
             'activationLink'             => $this->sFUrl . $this->router->generate('partner_security', ['securityToken' => $token]),
             'borrowerServicePhoneNumber' => $this->settingsRepository->findOneBy(['type' => 'Téléphone emprunteur'])->getValue(),
             'borrowerServiceEmail'       => $this->settingsRepository->findOneBy(['type' => 'Adresse emprunteur'])->getValue(),
@@ -1748,7 +1748,7 @@ class MailerManager
         $mailType = 'signature-universign-de-cgv';
         $client   = $termsOfSale->getIdProject()->getIdCompany()->getIdClientOwner();
         $keywords = [
-            'firstName'                  => $client->getPrenom(),
+            'firstName'                  => $client->getFirstName(),
             'amount'                     => $this->oFicelle->formatNumber($termsOfSale->getIdProject()->getAmount(), 0),
             'companyName'                => $termsOfSale->getIdProject()->getIdCompany()->getName(),
             'universignTosLink'          => $this->sFUrl . $termsOfSale->getUrlPath(),
@@ -1794,7 +1794,7 @@ class MailerManager
             ;
 
             $keywords = [
-                'firstName'            => $client->getPrenom(),
+                'firstName'            => $client->getFirstName(),
                 'temporaryToken'       => $token,
                 'borrowerServiceEmail' => $this->entityManager->getRepository(Settings::class)->findOneBy(['type' => 'Adresse emprunteur'])->getValue(),
             ];

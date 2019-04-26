@@ -376,7 +376,7 @@ class LenderWalletController extends Controller
         $numberFormatter = $this->get('number_formatter');
 
         $keywords = [
-            'firstName'     => $wallet->getIdClient()->getPrenom(),
+            'firstName'     => $wallet->getIdClient()->getFirstName(),
             'amount'        => $numberFormatter->format($amount),
             'balance'       => $numberFormatter->format($wallet->getAvailableBalance()),
             'lenderPattern' => $wallet->getWireTransferPattern()

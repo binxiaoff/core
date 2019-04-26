@@ -31,7 +31,7 @@ class PartnerContactType extends AbstractType
      */
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
-        $phone  = $this->user->getTelephone();
+        $phone  = $this->user->getPhone();
         $email  = $this->user->getEmail();
 
         $builder

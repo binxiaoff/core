@@ -275,7 +275,7 @@ class dashboardController extends bootstrap
             if (null === $projectRequestManager->checkProjectRisk($project, $this->userEntity->getIdUser())) {
                 $status = ProjectsStatus::STATUS_REQUEST;
 
-                if ($project->getIdCompany() && $project->getIdCompany()->getIdClientOwner() && false === empty($project->getIdCompany()->getIdClientOwner()->getTelephone())) {
+                if ($project->getIdCompany() && $project->getIdCompany()->getIdClientOwner() && false === empty($project->getIdCompany()->getIdClientOwner()->getPhone())) {
                     $status = ProjectsStatus::STATUS_REVIEW;
                 }
 
@@ -315,7 +315,7 @@ class dashboardController extends bootstrap
             /** @var TemplateMessageProvider $messageProvider */
             $messageProvider = $this->get('unilend.swiftmailer.message_provider');
             /** @var \Unilend\SwiftMailer\TemplateMessage $message */
-            $message = $messageProvider->newMessage('emprunteur-dossier-rejete', ['firstName' => $company->getIdClientOwner()->getPrenom()]);
+            $message = $messageProvider->newMessage('emprunteur-dossier-rejete', ['firstName' => $company->getIdClientOwner()->getFirstName()]);
 
             try {
                 $message->setTo($company->getIdClientOwner()->getEmail());

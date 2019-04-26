@@ -67,12 +67,12 @@ class TaxManager
         $foreigner = 0;
 
         if (
-            $client->getIdNationalite() === NationalitesV2::NATIONALITY_FRENCH
+            $client->getIdNationality() === NationalitesV2::NATIONALITY_FRENCH
             && $client->getIdAddress()->getIdCountry()->getIdPays() !== Pays::COUNTRY_FRANCE
         ) {
             $foreigner = 1;
         } elseif (
-            $client->getIdNationalite() !== NationalitesV2::NATIONALITY_FRENCH
+            $client->getIdNationality() !== NationalitesV2::NATIONALITY_FRENCH
             && $client->getIdAddress()->getIdCountry()->getIdPays() !== Pays::COUNTRY_FRANCE
         ) {
             $foreigner = 2;

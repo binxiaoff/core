@@ -145,8 +145,8 @@ class ProjectsListController extends Controller
                 'status'     => $project->getStatus(),
                 'date'       => $project->getAdded(),
                 'submitter'  => [
-                    'firstName' => $project->getIdClientSubmitter() && $project->getIdClientSubmitter()->getIdClient() ? $project->getIdClientSubmitter()->getPrenom() : '',
-                    'lastName'  => $project->getIdClientSubmitter() && $project->getIdClientSubmitter()->getIdClient() ? $project->getIdClientSubmitter()->getNom() : '',
+                    'firstName' => $project->getIdClientSubmitter() && $project->getIdClientSubmitter()->getIdClient() ? $project->getIdClientSubmitter()->getFirstName() : '',
+                    'lastName'  => $project->getIdClientSubmitter() && $project->getIdClientSubmitter()->getIdClient() ? $project->getIdClientSubmitter()->getLastName() : '',
                     'entity'    => $project->getIdCompanySubmitter()->getName()
                 ],
                 'motive'     => $project->getIdBorrowingMotive() ? $translator->trans('borrowing-motive_motive-' . $project->getIdBorrowingMotive()) : '',
@@ -208,7 +208,7 @@ class ProjectsListController extends Controller
     {
         $entityManager                  = $this->get('doctrine.orm.entity_manager');
         $projectStatusRepositoryHistory = $entityManager->getRepository(ProjectsStatusHistory::class);
-        $lastLoginDate                  = $client->getLastlogin();
+        $lastLoginDate                  = $client->getLastLogin();
         $notes                          = $project->getPublicMemos();
 
         return (

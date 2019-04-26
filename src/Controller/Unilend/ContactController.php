@@ -89,8 +89,8 @@ class ContactController extends Controller
         }
 
         $formData = [
-            'firstname' => $client->getPrenom(),
-            'lastname'  => $client->getNom(),
+            'firstname' => $client->getFirstName(),
+            'lastname'  => $client->getLastName(),
             'phone'     => $client->getMobile(),
             'email'     => $client->getEmail(),
             'company'   => empty($company) ? '' : $company->getName(),

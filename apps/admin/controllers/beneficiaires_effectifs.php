@@ -268,7 +268,7 @@ class beneficiaires_effectifsController extends bootstrap
                 $errors[] = 'Le client ID ' . $clientId . ' n\'existe pas';
             }
 
-            if (false === empty($owner->getNaissance()) && $owner->getNaissance() != $birthday) {
+            if (false === empty($owner->getDateOfBirth()) && $owner->getDateOfBirth() != $birthday) {
                 $errors[] = 'La date de naissance du client enregistrée en base et la date de naissance saisie ne correspondent pas';
             }
 
@@ -357,23 +357,23 @@ class beneficiaires_effectifsController extends bootstrap
         $birthCountry = $request->request->getInt('birth_country');
 
         if (CompanyBeneficialOwnerDeclaration::STATUS_PENDING !== $owner->getIdDeclaration()->getStatus()) {
-            if ($owner->getIdClient()->getNom() !== $lastName) {
+            if ($owner->getIdClient()->getLastName() !== $lastName) {
                 $errors[] = 'Le nom du bénéficiaire effectif ne peut pas être modifié';
             }
 
-            if ($owner->getIdClient()->getPrenom() !== $firstName) {
+            if ($owner->getIdClient()->getFirstName() !== $firstName) {
                 $errors[] = 'Le prénom du bénéficiaire effectif ne peut pas être modifié';
             }
 
-            if ($owner->getIdClient()->getNaissance()->format('d/m/Y') !== $birthDate) {
+            if ($owner->getIdClient()->getDateOfBirth()->format('d/m/Y') !== $birthDate) {
                 $errors[] = 'La date de naissance du bénéficiaire effectif ne peut pas être modifié';
             }
 
-            if ($owner->getIdClient()->getVilleNaissance() !== $birthPlace) {
+            if ($owner->getIdClient()->getBirthCity() !== $birthPlace) {
                 $errors[] = 'Le lieu de naissance du bénéficiaire effectif ne peut pas être modifié';
             }
 
-            if ($owner->getIdClient()->getIdPaysNaissance() !== $birthCountry) {
+            if ($owner->getIdClient()->getIdBirthCountry() !== $birthCountry) {
                 $errors[] = 'Le pays de naissance du bénéficiaire effectif ne peut pas être modifié';
             }
 
@@ -431,11 +431,11 @@ class beneficiaires_effectifsController extends bootstrap
         }
 
         $owner->getIdClient()
-            ->setNom($lastName)
-            ->setPrenom($firstName)
-            ->setNaissance($birthday)
-            ->setIdPaysNaissance($birthCountry)
-            ->setVilleNaissance($birthPlace);
+            ->setLastName($lastName)
+            ->setFirstName($firstName)
+            ->setDateOfBirth($birthday)
+            ->setIdBirthCountry($birthCountry)
+            ->setBirthCity($birthPlace);
 
         $clientAddress = $entityManager->getRepository(ClientsAdresses::class)->findOneBy(['idClient' => $owner->getIdClient()]);
         $clientAddress->setIdPaysFiscal($countryOfResidence);
@@ -538,20 +538,20 @@ class beneficiaires_effectifsController extends bootstrap
         $passport      = $entityManager->getRepository(Attachment::class)->findOneClientAttachmentByType($owner->getIdClient(), $passportType);
 
         $responseData = [
-            'last_name'        => $owner->getIdClient()->getNom(),
-            'first_name'       => $owner->getIdClient()->getPrenom(),
+            'last_name'        => $owner->getIdClient()->getLastName(),
+            'first_name'       => $owner->getIdClient()->getFirstName(),
             'type'             => null === $owner->getIdType() ? null : $owner->getIdType()->getId(),
             'percentage'       => $owner->getPercentageDetained() == 0 ? '' : $owner->getPercentageDetained(),
-            'birth_date'       => $owner->getIdClient()->getNaissance()->format('d/m/Y'),
-            'birth_place'      => $owner->getIdClient()->getVilleNaissance(),
-            'birth_country'    => $owner->getIdClient()->getIdPaysNaissance(),
+            'birth_date'       => $owner->getIdClient()->getDateOfBirth()->format('d/m/Y'),
+            'birth_place'      => $owner->getIdClient()->getBirthCity(),
+            'birth_country'    => $owner->getIdClient()->getIdBirthCountry(),
             'country'          => $clientAddress->getIdPaysFiscal(),
             'id_card_passport' => '<a href="' . $this->lurl . '/viewer/client/' . $owner->getIdClient()->getIdClient() . '/' . $passport->getId() . '" target="_blank">' . $passport->getOriginalName() . '</a>'
         ];
 
         if ($formatForView) {
             $countriesRepository = $entityManager->getRepository(Pays::class);
-            $birthCountry        = $countriesRepository->find($owner->getIdClient()->getIdPaysNaissance());
+            $birthCountry        = $countriesRepository->find($owner->getIdClient()->getIdBirthCountry());
             $country             = $countriesRepository->find($clientAddress->getIdPaysFiscal());
 
             $responseData['id']            = $owner->getId();

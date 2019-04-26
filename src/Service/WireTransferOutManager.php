@@ -212,11 +212,11 @@ class WireTransferOutManager
                 ], UrlGeneratorInterface::ABSOLUTE_PATH);
 
                 $keywords = [
-                    'firstName'       => $wireTransferOut->getClient()->getPrenom(),
+                    'firstName'       => $wireTransferOut->getClient()->getFirstName(),
                     'remainingFunds'  => $this->currencyFormatter->formatCurrency($restFunds, 'EUR'),
                     'amount'          => $this->currencyFormatter->formatCurrency(bcdiv($wireTransferOut->getMontant(), 100, 4), 'EUR'),
                     'iban'            => chunk_split($bankAccount->getIban(), 4, ' '),
-                    'bankAccountName' => $bankAccount->getIdClient()->getPrenom() . ' ' . $bankAccount->getIdClient()->getNom(),
+                    'bankAccountName' => $bankAccount->getIdClient()->getFirstName() . ' ' . $bankAccount->getIdClient()->getLastName(),
                     'universignLink'  => $this->frontUrl . $universignLink
                 ];
 

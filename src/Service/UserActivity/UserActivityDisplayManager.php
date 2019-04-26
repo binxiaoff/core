@@ -51,7 +51,7 @@ class UserActivityDisplayManager
                     'city'        => $login['city'],
                     'country'     => $login['fr'],
                     'browserName' => $login['browser_name'],
-                    'date'        => $this->getLoginTimeSentence(new \DateTime($login['added']), $client->getLastlogin(), $isCurrentUserAgent)
+                    'date'        => $this->getLoginTimeSentence(new \DateTime($login['added']), $client->getLastLogin(), $isCurrentUserAgent)
                 ];
             }
         } catch (\Exception $exception) {

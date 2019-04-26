@@ -289,7 +289,7 @@ class ClientDataHistoryManager
         }
 
         $keywords = [
-            'firstName'               => $client->getPrenom(),
+            'firstName'               => $client->getFirstName(),
             'lenderPattern'           => $wireTransferPattern,
             'modifiedData'            => $modifiedData,
             'modifiedAttachmentTitle' => null === $attachmentLabels ? null : $this->translator->trans('lender-modification-email_modified-attachment-title'),
@@ -320,7 +320,7 @@ class ClientDataHistoryManager
             }
         }
 
-        if (empty($client->getPrenom())) {
+        if (empty($client->getFirstName())) {
             $this->logger->error('Could not fill client first name keyword for email "' . $templateName . '". ', [
                 'id_client' => $client->getIdClient(),
                 'class'     => __CLASS__,

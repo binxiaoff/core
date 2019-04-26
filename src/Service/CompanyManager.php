@@ -146,7 +146,7 @@ class CompanyManager
 
             $client
                 ->setEmail($email)
-                ->setIdLangue('fr')
+                ->setIdLanguage('fr')
                 ->setRoles([Clients::ROLE_BORROWER]);
 
             $this->entityManager->persist($client);
@@ -201,7 +201,7 @@ class CompanyManager
         $this->entityManager->getConnection()->beginTransaction();
         try {
             $clientEntity
-                ->setIdLangue('fr')
+                ->setIdLanguage('fr')
                 ->setRoles([Clients::ROLE_BORROWER]);
 
             $this->entityManager->persist($clientEntity);

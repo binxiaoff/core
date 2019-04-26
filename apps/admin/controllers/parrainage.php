@@ -228,7 +228,7 @@ class parrainageController extends bootstrap
                 $this->sendAjaxResponse(false, null, ['Ce client n\'est pas un prêteur']);
             }
 
-            $this->sendAjaxResponse(true, ['idClient' => $client->getIdClient(), 'lastName' => $client->getNom(), 'firstName' => $client->getPrenom()]);
+            $this->sendAjaxResponse(true, ['idClient' => $client->getIdClient(), 'lastName' => $client->getLastName(), 'firstName' => $client->getFirstName()]);
         }
     }
 
@@ -409,11 +409,11 @@ class parrainageController extends bootstrap
             $sponseeValidationDate = $entityManager->getRepository(ClientsStatusHistory::class)->getFirstClientValidation($sponsee->getIdClient());
             $sponsorshipData       = [
                 'idClientSponsor'                => $sponsor->getIdClient(),
-                'lastNameSponsor'                => $sponsor->getNom(),
-                'firstNameSponsor'               => $sponsor->getPrenom(),
+                'lastNameSponsor'                => $sponsor->getLastName(),
+                'firstNameSponsor'               => $sponsor->getFirstName(),
                 'idClientSponsee'                => $sponsee->getIdClient(),
-                'lastNameSponsee'                => $sponsee->getNom(),
-                'firstNameSponsee'               => $sponsee->getPrenom(),
+                'lastNameSponsee'                => $sponsee->getLastName(),
+                'firstNameSponsee'               => $sponsee->getFirstName(),
                 'subscriptionSponsee'            => $sponsee->getAdded()->format('d/m/Y'),
                 'sponseeValidationDate'          => null !== $sponseeValidationDate ? $sponseeValidationDate->getAdded()->format('d/m/Y') : 'pas encore validé',
                 'sponseeHasReceivedWelcomeOffer' => $this->get('unilend.service.welcome_offer_manager')->clientHasReceivedWelcomeOffer($sponsee)

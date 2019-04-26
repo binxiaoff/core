@@ -335,7 +335,7 @@ class client_atypical_operationController extends bootstrap
             $coleIndex = 0;
             $opData    = [
                 $row->getClient()->getIdClient(),
-                $row->getClient()->getPrenom() . ' ' . $row->getClient()->getNom(),
+                $row->getClient()->getFirstName() . ' ' . $row->getClient()->getLastName(),
                 $row->getRule()->getName(),
                 $translator->trans('client-vigilance_status-' . $row->getRule()->getVigilanceStatus()),
                 $row->getAtypicalValue(),

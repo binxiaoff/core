@@ -6,7 +6,7 @@ use Doctrine\ORM\Mapping as ORM;
 
 trait Timestampable
 {
-    use TimestampableAddedOnly;
+    use TimestampableAddedOnlyTrait;
 
     /**
      * @var \DateTime|null

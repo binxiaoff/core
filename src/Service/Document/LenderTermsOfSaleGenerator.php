@@ -221,11 +221,11 @@ class LenderTermsOfSaleGenerator implements DocumentGeneratorInterface
         }
 
         return [
-            '[Civilite]'            => $accepted->getIdClient()->getCivilite(),
-            '[Prenom]'              => $accepted->getIdClient()->getPrenom(),
-            '[Nom]'                 => $accepted->getIdClient()->getNom(),
-            '[date]'                => $accepted->getIdClient()->getNaissance()->format('d/m/Y'),
-            '[ville_naissance]'     => $accepted->getIdClient()->getVilleNaissance(),
+            '[Civilite]'            => $accepted->getIdClient()->getTitle(),
+            '[Prenom]'              => $accepted->getIdClient()->getFirstName(),
+            '[Nom]'                 => $accepted->getIdClient()->getLastName(),
+            '[date]'                => $accepted->getIdClient()->getDateOfBirth()->format('d/m/Y'),
+            '[ville_naissance]'     => $accepted->getIdClient()->getBirthCity(),
             '[adresse_fiscale]'     => $clientAddress instanceof ClientAddress ? $clientAddress->getAddress() . ', ' . $clientAddress->getZip() . ', ' . $clientAddress->getCity() . ', ' . $clientAddress->getIdCountry()->getFr() : '',
             '[date_validation_cgv]' => 'Sign&eacute; &eacute;lectroniquement le ' . $accepted->getAdded()->format('d/m/Y')
         ];
@@ -252,10 +252,10 @@ class LenderTermsOfSaleGenerator implements DocumentGeneratorInterface
         }
 
         return [
-            '[Civilite]'            => $accepted->getIdClient()->getCivilite(),
-            '[Prenom]'              => $accepted->getIdClient()->getPrenom(),
-            '[Nom]'                 => $accepted->getIdClient()->getNom(),
-            '[Fonction]'            => $accepted->getIdClient()->getFonction(),
+            '[Civilite]'            => $accepted->getIdClient()->getTitle(),
+            '[Prenom]'              => $accepted->getIdClient()->getFirstName(),
+            '[Nom]'                 => $accepted->getIdClient()->getLastName(),
+            '[Fonction]'            => '',
             '[Raison_sociale]'      => $company->getName(),
             '[SIREN]'               => $company->getSiren(),
             '[adresse_fiscale]'     => $companyAddress instanceof CompanyAddress ? $companyAddress->getAddress() . ', ' . $companyAddress->getZip() . ', ' . $companyAddress->getCity() . ', ' . $companyAddress->getIdCountry()->getFr() : '',

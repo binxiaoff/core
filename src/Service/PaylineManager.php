@@ -319,7 +319,7 @@ class PaylineManager
             $emailNotification->setImmediatement(1);
 
             $message = $this->messageProvider->newMessage('preteur-alimentation-cb', [
-                'firstName'     => $backPayline->getWallet()->getIdClient()->getPrenom(),
+                'firstName'     => $backPayline->getWallet()->getIdClient()->getFirstName(),
                 'amount'        => $this->currencyFormatter->formatCurrency($amount, 'EUR'),
                 'balance'       => $this->currencyFormatter->formatCurrency((float) $backPayline->getWallet()->getAvailableBalance(), 'EUR'),
                 'lenderPattern' => $backPayline->getWallet()->getWireTransferPattern()

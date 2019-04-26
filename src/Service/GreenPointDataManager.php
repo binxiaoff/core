@@ -63,7 +63,7 @@ class GreenPointDataManager
      */
     private function getIdentityData(Attachment $attachment): array
     {
-        return array_merge($this->getCommonClientData($attachment), ['date_naissance' => $attachment->getClient()->getNaissance()->format('d/m/Y')]);
+        return array_merge($this->getCommonClientData($attachment), ['date_naissance' => $attachment->getClient()->getDateOfBirth()->format('d/m/Y')]);
     }
 
     /**
@@ -125,8 +125,8 @@ class GreenPointDataManager
             'dossier'  => $attachment->getClient()->getIdClient(),
             'document' => $attachment->getId(),
             'detail'   => GreenPointManager::DETAIL_TRUE,
-            'nom'      => $attachment->getClient()->getNom() . ($attachment->getClient()->getNomUsage() ? '|' . $attachment->getClient()->getNomUsage() : ''),
-            'prenom'   => $attachment->getClient()->getPrenom()
+            'nom'      => $attachment->getClient()->getLastName() . ($attachment->getClient()->getPreferredName() ? '|' . $attachment->getClient()->getPreferredName() : ''),
+            'prenom'   => $attachment->getClient()->getFirstName()
         ];
     }
 

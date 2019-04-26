@@ -1126,7 +1126,7 @@ class ProjectLifecycleManager
                                 'line'       => $exception->getLine()
                             ]);
                         }
-                        $keywords['firstName']     = $wallet->getIdClient()->getPrenom();
+                        $keywords['firstName']     = $wallet->getIdClient()->getFirstName();
                         $keywords['lenderPattern'] = $wallet->getWireTransferPattern();
                         $message                   = $this->messageProvider->newMessage($mailType, $commonKeywords + $keywords);
                         try {

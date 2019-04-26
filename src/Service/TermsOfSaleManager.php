@@ -193,7 +193,7 @@ class TermsOfSaleManager
             throw new \Exception('Invalid client email', self::EXCEPTION_CODE_INVALID_EMAIL);
         }
 
-        if (empty($client->getTelephone()) || false === $stringManager->isMobilePhoneNumber($client->getTelephone())) {
+        if (empty($client->getPhone()) || false === $stringManager->isMobilePhoneNumber($client->getPhone())) {
             throw new \Exception('Invalid client mobile phone number', self::EXCEPTION_CODE_INVALID_PHONE_NUMBER);
         }
 

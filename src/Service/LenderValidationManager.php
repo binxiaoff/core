@@ -195,7 +195,7 @@ class LenderValidationManager
     private function getDuplicatedAccounts(Clients $client): array
     {
         $existingClient = $this->entityManager->getRepository(Clients::class)
-            ->getDuplicatesByName($client->getNom(), $client->getPrenom(), $client->getNaissance());
+            ->getDuplicatesByName($client->getLastName(), $client->getFirstName(), $client->getDateOfBirth());
         $existingClient = array_column($existingClient, 'id_client', 'id_client');
 
         if (isset($existingClient[$client->getIdClient()])) {
@@ -252,7 +252,7 @@ class LenderValidationManager
     {
         $wallet   = $this->entityManager->getRepository(Wallet::class)->getWalletByType($client, WalletType::LENDER);
         $keywords = [
-            'firstName'     => $client->getPrenom(),
+            'firstName'     => $client->getFirstName(),
             'lenderPattern' => $wallet->getWireTransferPattern()
         ];
 

@@ -100,7 +100,7 @@ class project_rate_settingsController extends bootstrap
 
                 if (false === empty($badSettings)) {
                     $keywords = [
-                        'firstName'            => $wallet->getIdClient()->getPrenom(),
+                        'firstName'            => $wallet->getIdClient()->getFirstName(),
                         'autolendSettingsLink' => $this->furl . '/profile/autolend#parametrage',
                         'lenderPattern'        => $wallet->getWireTransferPattern()
                     ];

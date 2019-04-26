@@ -229,9 +229,9 @@ class SponsorshipManager
     {
         $wallet   = $this->entityManager->getRepository(Wallet::class)->getWalletByType($sponsorship->getIdClientSponsor(), WalletType::LENDER);
         $keywords = [
-            'sponsorFirstName' => $sponsorship->getIdClientSponsor()->getPrenom(),
-            'sponseeFirstName' => $sponsorship->getIdClientSponsee()->getPrenom(),
-            'sponseeLastName'  => $sponsorship->getIdClientSponsee()->getNom(),
+            'sponsorFirstName' => $sponsorship->getIdClientSponsor()->getFirstName(),
+            'sponseeFirstName' => $sponsorship->getIdClientSponsee()->getFirstName(),
+            'sponseeLastName'  => $sponsorship->getIdClientSponsee()->getLastName(),
             'lenderPattern'    => $wallet->getWireTransferPattern(),
             'amount'           => $this->numberFormatter->format((float) $sponsorship->getIdCampaign()->getAmountSponsor()),
         ];
@@ -258,7 +258,7 @@ class SponsorshipManager
     {
         $wallet   = $this->entityManager->getRepository(Wallet::class)->getWalletByType($sponsorship->getIdClientSponsor(), WalletType::LENDER);
         $keyWords = [
-            'sponseeFirstName' => $sponsorship->getIdClientSponsee()->getPrenom(),
+            'sponseeFirstName' => $sponsorship->getIdClientSponsee()->getFirstName(),
             'amount'           => $this->numberFormatter->format((float) $sponsorship->getIdCampaign()->getAmountSponsee()),
             'validityDays'     => $sponsorship->getIdCampaign()->getValidityDays(),
             'lenderPattern'    => $wallet->getWireTransferPattern()
@@ -368,8 +368,8 @@ class SponsorshipManager
         $currentCampaign = $this->getCurrentSponsorshipCampaign();
 
         $keyWords = [
-            'sponsorFirstName' => $sponsor->getPrenom(),
-            'sponsorLastName'  => $sponsor->getNom(),
+            'sponsorFirstName' => $sponsor->getFirstName(),
+            'sponsorLastName'  => $sponsor->getLastName(),
             'sponseeNames'     => $sponseeNames,
             'sponsorMessage'   => $message,
             'link'             => $this->router->generate('lender_sponsorship_redirect', ['sponsorCode' => $sponsor->getSponsorCode()], UrlGeneratorInterface::ABSOLUTE_URL),
@@ -398,9 +398,9 @@ class SponsorshipManager
     {
         $wallet          = $this->entityManager->getRepository(Wallet::class)->getWalletByType($sponsorship->getIdClientSponsor(), WalletType::LENDER);
         $keyWords = [
-            'sponsorFirstName' => $sponsorship->getIdClientSponsor()->getPrenom(),
-            'sponseeFirstName' => $sponsorship->getIdClientSponsee()->getPrenom(),
-            'sponseeLastName'  => $sponsorship->getIdClientSponsee()->getNom(),
+            'sponsorFirstName' => $sponsorship->getIdClientSponsor()->getFirstName(),
+            'sponseeFirstName' => $sponsorship->getIdClientSponsee()->getFirstName(),
+            'sponseeLastName'  => $sponsorship->getIdClientSponsee()->getLastName(),
             'lenderPattern'    => $wallet->getWireTransferPattern()
         ];
 
@@ -426,7 +426,7 @@ class SponsorshipManager
     {
         $wallet          = $this->entityManager->getRepository(Wallet::class)->getWalletByType($sponsor, WalletType::LENDER);
         $keyWords        = [
-            'sponsorFirstName' => $sponsor->getPrenom(),
+            'sponsorFirstName' => $sponsor->getFirstName(),
             'lenderPattern'    => $wallet->getWireTransferPattern()
         ];
 
@@ -451,8 +451,8 @@ class SponsorshipManager
     private function sendInternalMaxSponseeNotification(Clients $sponsor): void
     {
         $keyWords = [
-            'sponsorFirstName' => $sponsor->getPrenom(),
-            'sponsorLastName'  => $sponsor->getNom(),
+            'sponsorFirstName' => $sponsor->getFirstName(),
+            'sponsorLastName'  => $sponsor->getLastName(),
             'sponsorClientId'  => $sponsor->getIdClient(),
             'year'             => date('Y')
         ];
@@ -701,7 +701,7 @@ class SponsorshipManager
         }
 
         $sponsor = $this->entityManager->getRepository(Clients::class)->findClientByOldSponsorCode(str_pad($sponsorCode, 6, STR_PAD_LEFT));
-        if (null !== $sponsor && $sponsorCode == substr($sponsor->getHash(), 0, 6) . $sponsor->getNom()) {
+        if (null !== $sponsor && $sponsorCode == substr($sponsor->getHash(), 0, 6) . $sponsor->getLastName()) {
             return $sponsor;
         }
 

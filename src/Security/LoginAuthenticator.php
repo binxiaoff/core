@@ -103,7 +103,7 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
         return $this->router->generate('demo_loans');
 
         // Borrower only
-        if ([Clients::ROLE_BORROWER] === array_values(array_intersect($user->getRoles(), [Clients::ROLE_BORROWER, Clients::ROLE_PARTNER, Clients::ROLE_LENDER]))) {
+        if ([Clients::ROLE_BORROWER] === array_values(array_intersect($user->getRoles(), [Clients::ROLE_BORROWER, Clients::ROLE_ARRANGER, Clients::ROLE_LENDER]))) {
             return $this->router->generate('collpub_loans');
         }
 
@@ -188,7 +188,7 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, $providerKey)
     {
@@ -196,28 +196,6 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
 
         /** @var Clients $client */
         $client = $token->getUser();
-
-        // Force to use the default password encoder if it's legacy
-        if ($client instanceof EncoderAwareInterface && Clients::PASSWORD_ENCODER_MD5 === $client->getEncoderName()) {
-            $client->useDefaultEncoder();
-            try {
-                $client->setPassword($this->securityPasswordEncoder->encodePassword($client, $this->getCredentials($request)['password']));
-            } catch (BadCredentialsException $exception) {
-                // hack for the old password which cannot pass the security check in encodePassword()
-                $client->setPassword(password_hash($this->getCredentials($request)['password'], PASSWORD_DEFAULT));
-            }
-            try {
-                $this->entityManager->flush($client);
-            } catch (OptimisticLockException $exception) {
-                $this->logger->warning('Cannot save the re-encoded password. Error: ' . $exception->getMessage(), [
-                    'id_client' => $client->getIdClient(),
-                    'class'     => __CLASS__,
-                    'function'  => __FUNCTION__,
-                    'file'      => $exception->getFile(),
-                    'line'      => $exception->getLine()
-                ]);
-            }
-        }
 
         $this->loginHistoryLogger->saveSuccessfulLogin($client, $request->getClientIp(), $request->headers->get('User-Agent'));
         $this->sessionStrategy->onAuthentication($request, $token);

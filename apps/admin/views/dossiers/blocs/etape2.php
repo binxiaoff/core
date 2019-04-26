@@ -327,7 +327,7 @@
                 <td><input type="text" name="fonction_etape2" id="fonction_etape2" class="input_large" value="<?= $this->clients->fonction ?>"></td>
                 <?php if ($this->projectEntity->getIdClientSubmitter() && $this->projectEntity->getIdClientSubmitter()->getIdClient()) : ?>
                     <th style="background-color: #ececec;">Nom</th>
-                    <td style="background-color: #ececec;"><?= $this->projectEntity->getIdClientSubmitter()->getPrenom() ?> <?= $this->projectEntity->getIdClientSubmitter()->getNom() ?></td>
+                    <td style="background-color: #ececec;"><?= $this->projectEntity->getIdClientSubmitter()->getFirstName() ?> <?= $this->projectEntity->getIdClientSubmitter()->getLastName() ?></td>
                 <?php else : ?>
                     <td colspan="2"></td>
                 <?php endif; ?>

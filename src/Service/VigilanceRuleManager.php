@@ -99,8 +99,8 @@ class VigilanceRuleManager
     {
         foreach ($clients as $client) {
             try {
-                $comment           = 'Le client avait ' . $client->getNaissance()->diff($client->getAdded())->y . ' ans à son inscription';
-                $atypicalOperation = $this->clientVigilanceStatusManager->addClientAtypicalOperation($vigilanceRule, $client, $client->getNaissance()->diff($client->getAdded())->y, null, $comment);
+                $comment           = 'Le client avait ' . $client->getDateOfBirth()->diff($client->getAdded())->y . ' ans à son inscription';
+                $atypicalOperation = $this->clientVigilanceStatusManager->addClientAtypicalOperation($vigilanceRule, $client, $client->getDateOfBirth()->diff($client->getAdded())->y, null, $comment);
                 $this->clientVigilanceStatusManager->upgradeClientVigilanceStatusHistory($client, $vigilanceRule->getVigilanceStatus(), Users::USER_ID_CRON, $atypicalOperation, $comment);
             } catch (\Exception $exception) {
                 $this->logger->error(

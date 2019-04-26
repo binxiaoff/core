@@ -92,7 +92,7 @@ class FeedsBankTransferCommand extends ContainerAwareCommand
                 } elseif ($client->isDebtCollector()) {
                     $recipientIban = $bankAccount->getIban();
                     $recipientBic  = $bankAccount->getBic();
-                    $recipientName = $client->getNom();
+                    $recipientName = $client->getLastName();
                 } elseif ($client->isLender()) {
                     $wallet  = $entityManager->getRepository(Wallet::class)->getWalletByType($client->getIdClient(), WalletType::LENDER);
                     $balance = $wallet->getAvailableBalance();
@@ -106,7 +106,7 @@ class FeedsBankTransferCommand extends ContainerAwareCommand
                         $company       = $entityManager->getRepository(Companies::class)->findOneBy(['idClientOwner' => $pendingBankTransfer->getClient()->getIdClient()]);
                         $recipientName = $company->getName();
                     } else {
-                        $recipientName = $client->getNom() . ' ' . $client->getPrenom();
+                        $recipientName = $client->getLastName() . ' ' . $client->getFirstName();
                     }
                 } else {
                     $logger->warning(
