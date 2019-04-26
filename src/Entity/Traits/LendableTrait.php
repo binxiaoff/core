@@ -5,17 +5,16 @@ namespace Unilend\Entity\Traits;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Entity\Embeddable\LendingRate;
-use Unilend\Entity\Projects;
-use Unilend\Entity\Wallet;
+use Unilend\Entity\{Projects, Wallet};
 
-trait Lendable
+trait LendableTrait
 {
     /**
      * @var int
      *
      * @ORM\Column(type="integer")
      *
-     * @Assert\NotBlank()
+     * @Assert\NotBlank
      */
     protected $amount;
 
@@ -24,7 +23,7 @@ trait Lendable
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\Projects")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_project", referencedColumnName="id_project", nullable=false)
+     *     @ORM\JoinColumn(name="id_project", referencedColumnName="id_project", nullable=false)
      * })
      */
     protected $project;
@@ -34,7 +33,7 @@ trait Lendable
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\Wallet")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_wallet", referencedColumnName="id", nullable=false)
+     *     @ORM\JoinColumn(name="id_wallet", referencedColumnName="id", nullable=false)
      * })
      */
     protected $wallet;
@@ -54,12 +53,8 @@ trait Lendable
     protected $rate;
 
     /**
-     * @var bool
-     *
-     * @ORM\Column(type="boolean")
+     * Init trait.
      */
-    protected $agent;
-
     public function traitInit(): void
     {
         $this->rate = new LendingRate();
@@ -161,26 +156,6 @@ trait Lendable
     public function setRate(LendingRate $rate): self
     {
         $this->rate = $rate;
-
-        return $this;
-    }
-
-    /**
-     * @return bool|null
-     */
-    public function isAgent(): ?bool
-    {
-        return $this->agent;
-    }
-
-    /**
-     * @param bool $agent
-     *
-     * @return Lendable
-     */
-    public function setAgent(bool $agent): self
-    {
-        $this->agent = $agent;
 
         return $this;
     }
