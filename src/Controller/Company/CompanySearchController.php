@@ -19,7 +19,7 @@ use Unilend\Service\WebServiceClient\InseeManager;
 class CompanySearchController extends AbstractController
 {
     /**
-     * @Route("/societe/search/", name="company_search_by_siren", methods={"GET"})
+     * @Route("/societe/search", name="company_search_by_siren", methods={"GET"})
      *
      * @param Request                $request
      * @param InseeManager           $inseeManager
@@ -29,9 +29,9 @@ class CompanySearchController extends AbstractController
      */
     public function companySearch(Request $request, InseeManager $inseeManager, EntityManagerInterface $entityManager): JsonResponse
     {
-        $siren = $request->request->get('siren');
+        $siren = $request->query->get('term');
 
-        if (1 !== preg_match('/^[0-9]{9}$/', $siren)) {
+        if (false === empty($siren) && 1 !== preg_match('/^[0-9]{9}$/', $siren)) {
             return $this->json([
                 'success' => false,
                 'error'   => 'Invalid parameters',

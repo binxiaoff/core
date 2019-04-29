@@ -1,8 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Unilend\Entity\Traits;
 
-trait ConstantsAware
+trait ConstantsAwareTrait
 {
     /**
      * @param string|null $prefix
@@ -21,8 +23,8 @@ trait ConstantsAware
         if ($constants && null !== $prefix) {
             $constants = array_filter(
                 $constants,
-                function($key) use ($prefix) {
-                    return $prefix === substr($key, 0, strlen($prefix));
+                function ($key) use ($prefix) {
+                    return $prefix === mb_substr($key, 0, mb_strlen($prefix));
                 },
                 ARRAY_FILTER_USE_KEY
             );

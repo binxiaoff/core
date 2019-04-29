@@ -5,12 +5,11 @@ declare(strict_types=1);
 namespace Unilend\Form\Project;
 
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
-use Symfony\Component\Form\AbstractType;
-use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\Form\{AbstractType, FormBuilderInterface};
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Unilend\Entity\MarketSegment;
 use Unilend\Entity\Project;
-use Unilend\Form\Company\CompanySearchType;
+use Unilend\Form\Company\CompanyAutocompleteType;
 
 class ProjectCreationType extends AbstractType
 {
@@ -22,14 +21,25 @@ class ProjectCreationType extends AbstractType
     {
         $builder
             ->add('title', null, ['label' => 'project-form.title'])
-            ->add('borrowerCompany', CompanySearchType::class, ['label' => 'project-form.borrower-company'])
+            ->add('borrowerCompany', CompanyAutocompleteType::class, ['label' => 'project-form.borrower-company'])
             ->add('marketSegment', EntityType::class, [
                 'label' => 'project-form.market-segment',
                 'class' => MarketSegment::class,
             ])
-            ->add('replyDeadline', null, ['label' => 'project-form.replay-deadline', 'widget' => 'single_text'])
-            ->add('expectedClosingDate', null, ['label' => 'project-form.expected-closing-date', 'widget' => 'single_text'])
-            ->add('description', null, ['label' => 'project-form.description'])
+            ->add('replyDeadline', null, [
+                'label'  => 'project-form.replay-deadline',
+                'widget' => 'single_text',
+                'input'  => 'datetime_immutable',
+            ])
+            ->add('expectedClosingDate', null, [
+                'label'  => 'project-form.expected-closing-date',
+                'widget' => 'single_text',
+                'input'  => 'datetime_immutable',
+            ])
+            ->add('description', null, [
+                'label' => 'project-form.description',
+                'attr'  => ['row' => 10],
+            ])
         ;
     }
 

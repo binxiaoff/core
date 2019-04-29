@@ -1,35 +1,36 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Unilend\Entity\Embeddable;
 
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
-use Unilend\Entity\Traits\ConstantsAware;
+use Unilend\Entity\Traits\ConstantsAwareTrait;
 
 /**
  * @ORM\Embeddable
  */
 class LendingRate
 {
-    use ConstantsAware;
+    use ConstantsAwareTrait;
 
-    const INDEX_FIXED   = 'FIXED';
-    const INDEX_EURIBOR = 'EURIBOR';
-    const INDEX_EONIA   = 'EONIA';
-    const INDEX_SONIA   = 'SONIA';
-    const INDEX_LIBOR   = 'LIBOR';
-    const INDEX_CHFTOIS = 'CHFTOIS';
-    const INDEX_FFER    = 'FFER';
+    public const INDEX_FIXED   = 'FIXED';
+    public const INDEX_EURIBOR = 'EURIBOR';
+    public const INDEX_EONIA   = 'EONIA';
+    public const INDEX_SONIA   = 'SONIA';
+    public const INDEX_LIBOR   = 'LIBOR';
+    public const INDEX_CHFTOIS = 'CHFTOIS';
+    public const INDEX_FFER    = 'FFER';
 
-    const MARGIN_SCALE = 2;
+    public const MARGIN_SCALE = 2;
 
     /**
      * @var string
      *
      * @ORM\Column(length=20)
      *
-     * @Assert\NotBlank()
+     * @Assert\NotBlank
      */
     private $indexType;
 
@@ -40,9 +41,8 @@ class LendingRate
      *
      * @ORM\Column(type="decimal", precision=4, scale=2)
      *
-     * @Assert\NotBlank()
+     * @Assert\NotBlank
      * @Assert\Range(min="0.01", max="99.99")
-     *
      */
     private $margin;
 

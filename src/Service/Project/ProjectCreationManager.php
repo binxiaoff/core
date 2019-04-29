@@ -1,40 +1,50 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Unilend\Service\Project;
 
-use Doctrine\ORM\EntityManagerInterface;
-use Unilend\Entity\{Clients, Project};
+use Doctrine\Common\Persistence\ManagerRegistry;
+use Unilend\Entity\{Clients, Project, ProjectStatusHistory, ProjectsStatus};
 
 class ProjectCreationManager
 {
     /**
-     * @var EntityManagerInterface
+     * @var ManagerRegistry
      */
-    private $entityManager;
+    private $managerRegistry;
 
     /**
      * ProjectCreationManager constructor.
      *
-     * @param EntityManagerInterface $entityManager
+     * @param ManagerRegistry $managerRegistry
      */
-    public function __construct(EntityManagerInterface $entityManager)
+    public function __construct(ManagerRegistry $managerRegistry)
     {
-        $this->entityManager = $entityManager;
+        $this->managerRegistry = $managerRegistry;
     }
 
     /**
      * @param Project $project
      * @param Clients $submitter
      */
-    public function handleCreation(Project $project, Clients $submitter)
+    public function handleBlamableCreation(Project $project, Clients $submitter)
     {
-        if (false === $this->entityManager->contains($project)) {
-            $project->setSubmitterClient($submitter)
-                ->setSubmitterCompany($submitter->getCompany())
-            ;
-            $this->entityManager->persist($project);
-        }
+        $entityManager = $this->managerRegistry->getManagerForClass(get_class($project));
 
-        $this->entityManager->flush();
+        $projectStatusHistory = (new ProjectStatusHistory())
+            ->setStatus(ProjectsStatus::STATUS_REQUESTED)
+            ->setAddedBy($submitter)
+        ;
+
+        $project->setSubmitterClient($submitter)
+            ->setSubmitterCompany($submitter->getCompany())
+            ->addProjectStatusHistory($projectStatusHistory)
+        ;
+
+        $project->setLastProjectStatusHistory($projectStatusHistory);
+
+        $entityManager->persist($project);
+        $entityManager->flush();
     }
 }

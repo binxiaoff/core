@@ -12,7 +12,7 @@
             <div id="form-container" class="dashboard-tab-pane">
                 <article class="panel">
                     <header class="panel-header">
-                        <h2 class="margin-10-t">{% trans %} demo-project-request_title {% endtrans %}</h2>
+                        <h2 class="margin-10-t">{% trans %} project-request.title {% endtrans %}</h2>
                     </header>
                     <section class="text-align-center collapse in">
                         <button type="button" class="btn-default" data-request-type="primary"
@@ -31,8 +31,8 @@
                         </button>
                     </section>
                     <section class="request-form-panel collapse">
-                        <div class="row row-multi-col-computer">
 
+                        <div class="row row-multi-col-computer">
                             <div class="form-field col-lg-4 col-md-4">
                                 {{ form_row(form.title, {'attr': {
                                     'data-formvalidation-input': null,
@@ -66,7 +66,6 @@
                         <div class="row">
                             <div class="form-field">
                                 {{ form_row(form.description, {'attr': {
-                                    'row': 10,
                                     'data-formvalidation-input': null,
                                     'data-formvalidation-type': 'string',
                                     'data-formvalidation-required': 'true',
@@ -79,7 +78,7 @@
                 <article class="request-form-panel panel collapse">
                     <div class="form-validation-notifications"></div>
                     <button type="submit" class="btn-continue btn-primary pull-right" data-spinnerbutton>
-                        Déposer le dossier
+                        {% trans %} project-request.confirmation-button {% endtrans %}
                     </button>
                 </article>
             </div><!-- /.dashboard-tab-pane -->
@@ -131,18 +130,19 @@
                 })
             })
 
-            $('#input-borrower').select2({
+            var $companyField = $('#project_creation_type_borrowerCompany')
+            $companyField.select2({
                 ajax: {
-                    url: '{{ path('demo_borrower_search_form') }}',
+                    url: $companyField.data('autocomplete-url'),
                     dataType: 'json',
-                    type: 'POST',
+                    type: 'GET',
                     cache: true,
                     processResults: function (response) {
                         if (response.success) {
                             return {
                                 results: [{
-                                    id: response.id,
-                                    text: response.name
+                                    id: response.data.id,
+                                    text: response.data.name
                                 }]
                             }
                         }
@@ -159,6 +159,6 @@
             })
         })
 
-        {% include 'demo/partials/fees/fees.js.twig' %}
+        {% include 'partials/fees/fees.js.twig' %}
     </script>
 {% endblock %}

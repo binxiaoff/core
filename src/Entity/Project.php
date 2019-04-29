@@ -126,19 +126,26 @@ class Project
     private $expectedClosingDate;
 
     /**
-     * @var int
+     * @var ProjectStatusHistory|null
      *
-     * @ORM\OneToOne(targetEntity="Unilend\Entity\ProjectsStatusHistory")
+     * @ORM\OneToOne(targetEntity="Unilend\Entity\ProjectStatusHistory")
      * @ORM\JoinColumns({
-     *     @ORM\JoinColumn(name="id_project_status_history", referencedColumnName="id_project_status_history")
+     *     @ORM\JoinColumn(name="id_project_status_history")
      * })
      */
     private $lastProjectStatusHistory;
 
     /**
+     * @var ArrayCollection|ProjectStatusHistory[]
+     *
+     * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectStatusHistory", mappedBy="project", cascade={"persist"}, orphanRemoval=true)
+     */
+    private $projectStatusHistories;
+
+    /**
      * @var ProjectAttachment[]
      *
-     * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectAttachment", mappedBy="idProject")
+     * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectAttachment", mappedBy="project")
      */
     private $attachments;
 
@@ -184,10 +191,11 @@ class Project
      */
     public function __construct()
     {
-        $this->attachments         = new ArrayCollection();
-        $this->projectParticipants = new ArrayCollection();
-        $this->projectPercentFees  = new ArrayCollection();
-        $this->comments            = new ArrayCollection();
+        $this->attachments            = new ArrayCollection();
+        $this->projectParticipants    = new ArrayCollection();
+        $this->projectPercentFees     = new ArrayCollection();
+        $this->comments               = new ArrayCollection();
+        $this->projectStatusHistories = new ArrayCollection();
     }
 
     /**
@@ -381,18 +389,6 @@ class Project
      *
      * @return Project
      */
-    public function addAgent(Companies $company): Project
-    {
-        $this->addProjectParticipant($company, ProjectParticipant::COMPANY_ROLE_AGENT);
-
-        return $this;
-    }
-
-    /**
-     * @param Companies $company
-     *
-     * @return Project
-     */
     public function addRun(Companies $company): Project
     {
         $this->addProjectParticipant($company, ProjectParticipant::COMPANY_ROLE_RUN);
@@ -448,14 +444,6 @@ class Project
     public function getArrangerParticipant(): ?ProjectParticipant
     {
         return $this->getParticipant(ProjectParticipant::COMPANY_ROLE_ARRANGER);
-    }
-
-    /**
-     * @return ProjectParticipant|null
-     */
-    public function getAgentParticipant(): ?ProjectParticipant
-    {
-        return $this->getParticipant(ProjectParticipant::COMPANY_ROLE_AGENT);
     }
 
     /**
@@ -573,9 +561,9 @@ class Project
     }
 
     /**
-     * @return DateTimeImmutable
+     * @return DateTimeImmutable|null
      */
-    public function getReplyDeadline(): DateTimeImmutable
+    public function getReplyDeadline(): ?DateTimeImmutable
     {
         return $this->replyDeadline;
     }
@@ -593,9 +581,9 @@ class Project
     }
 
     /**
-     * @return DateTimeImmutable
+     * @return DateTimeImmutable|null
      */
-    public function getExpectedClosingDate(): DateTimeImmutable
+    public function getExpectedClosingDate(): ?DateTimeImmutable
     {
         return $this->expectedClosingDate;
     }
@@ -613,21 +601,37 @@ class Project
     }
 
     /**
-     * @return int
+     * @return ProjectStatusHistory|null
      */
-    public function getLastProjectStatusHistory(): int
+    public function getLastProjectStatusHistory(): ?ProjectStatusHistory
     {
         return $this->lastProjectStatusHistory;
     }
 
     /**
-     * @param int $lastProjectStatusHistory
+     * @param ProjectStatusHistory $lastProjectStatusHistory
      *
      * @return Project
      */
-    public function setLastProjectStatusHistory(int $lastProjectStatusHistory): Project
+    public function setLastProjectStatusHistory(ProjectStatusHistory $lastProjectStatusHistory): Project
     {
         $this->lastProjectStatusHistory = $lastProjectStatusHistory;
+
+        return $this;
+    }
+
+    /**
+     * @param ProjectStatusHistory $projectStatusHistory
+     *
+     * @return $this
+     */
+    public function addProjectStatusHistory(ProjectStatusHistory $projectStatusHistory): Project
+    {
+        $projectStatusHistory->setProject($this);
+
+        if (false === $this->projectStatusHistories->contains($projectStatusHistory)) {
+            $this->projectStatusHistories->add($projectStatusHistory);
+        }
 
         return $this;
     }
@@ -692,7 +696,7 @@ class Project
      */
     private function isUniqueRole(string $role): bool
     {
-        return in_array($role, [ProjectParticipant::COMPANY_ROLE_ARRANGER, ProjectParticipant::COMPANY_ROLE_AGENT, ProjectParticipant::COMPANY_ROLE_RUN]);
+        return in_array($role, [ProjectParticipant::COMPANY_ROLE_ARRANGER, ProjectParticipant::COMPANY_ROLE_RUN]);
     }
 
     /**

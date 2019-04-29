@@ -50,7 +50,7 @@ class CreateProjectController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             /** @var Project $project */
             $project = $form->getData();
-            $projectCreationManager->handleCreation($project, $client);
+            $projectCreationManager->handleBlamableCreation($project, $client);
 
             return $this->redirectToRoute('project_creation_success');
         }
