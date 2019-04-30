@@ -2,15 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Form\Lending;
+namespace Unilend\Form\Tranche;
 
-use Symfony\Component\Form\AbstractType;
-use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\Form\{AbstractType, FormBuilderInterface};
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Unilend\Entity\BidPercentFee;
+use Unilend\Entity\TranchePercentFee;
 use Unilend\Form\Fee\PercentFeeType;
 
-class BidPercentFeeType extends AbstractType
+class TranchePercentFeeType extends AbstractType
 {
     /**
      * {@inheritdoc}
@@ -25,7 +24,7 @@ class BidPercentFeeType extends AbstractType
      */
     public function configureOptions(OptionsResolver $resolver)
     {
-        $resolver->setDefault('data_class', BidPercentFee::class);
+        $resolver->setDefault('data_class', TranchePercentFee::class);
     }
 
     /**
@@ -33,6 +32,6 @@ class BidPercentFeeType extends AbstractType
      */
     public function getBlockPrefix()
     {
-        return 'bid_percent_fee_type';
+        return 'tranche_percent_fee_type';
     }
 }

@@ -6,8 +6,10 @@ namespace Unilend\Form\Tranche;
 
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use Symfony\Component\Form\Extension\Core\Type\CollectionType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Unilend\Entity\Embeddable\NullableLendingRate;
 use Unilend\Entity\Tranche;
 use Unilend\Form\Lending\LendingRateType;
 use Unilend\Form\MoneyType;
@@ -30,7 +32,7 @@ class TrancheEditType extends AbstractType
             ])
             ->add('duration', null, ['label' => 'tranche-form.maturity'])
             ->add('money', MoneyType::class)
-            ->add('rate', LendingRateType::class)
+            ->add('rate', LendingRateType::class, ['data_class' => NullableLendingRate::class])
             ->add('capitalPeriodicity', null, ['label' => 'tranche-form.capital-periodicity'])
             ->add('interestPeriodicity', null, ['label' => 'tranche-form.interest-periodicity'])
             ->add('expectedReleasingDate', null, [
@@ -42,6 +44,16 @@ class TrancheEditType extends AbstractType
                 'label'  => 'tranche-form.expected-starting-date',
                 'widget' => 'single_text',
                 'input'  => 'datetime_immutable',
+            ])
+            ->add('tranchePercentFees', CollectionType::class, [
+                'label'         => false,
+                'entry_type'    => TranchePercentFeeType::class,
+                'entry_options' => ['label' => false],
+                'allow_add'     => true,
+                'allow_delete'  => true,
+                'by_reference'  => false,
+                'prototype'     => true,
+                'attr'          => ['class' => 'tranche-percent-fees'],
             ])
         ;
     }

@@ -398,7 +398,7 @@ class Project
      *
      * @return Project
      */
-    public function addArranger(Companies $company): Project
+    public function setArranger(Companies $company): Project
     {
         $this->addProjectParticipant($company, ProjectParticipant::COMPANY_ROLE_ARRANGER);
 
@@ -410,7 +410,7 @@ class Project
      *
      * @return Project
      */
-    public function addRun(Companies $company): Project
+    public function setRun(Companies $company): Project
     {
         $this->addProjectParticipant($company, ProjectParticipant::COMPANY_ROLE_RUN);
 
@@ -462,7 +462,7 @@ class Project
     /**
      * @return ProjectParticipant|null
      */
-    public function getArrangerParticipant(): ?ProjectParticipant
+    public function getArranger(): ?ProjectParticipant
     {
         return $this->getParticipant(ProjectParticipant::COMPANY_ROLE_ARRANGER);
     }
@@ -470,7 +470,7 @@ class Project
     /**
      * @return ProjectParticipant|null
      */
-    public function getRunParticipant(): ?ProjectParticipant
+    public function getRun(): ?ProjectParticipant
     {
         return $this->getParticipant(ProjectParticipant::COMPANY_ROLE_RUN);
     }

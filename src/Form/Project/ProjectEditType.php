@@ -8,10 +8,10 @@ use Doctrine\Common\Persistence\ManagerRegistry;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use Symfony\Component\Form\Extension\Core\Type\CollectionType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Unilend\Entity\{Companies, MarketSegment, Project};
-use Unilend\Form\CollectionWidgetType;
 use Unilend\Form\Company\CompanyAutocompleteType;
 use Unilend\Form\DataTransformer\IdentityTransformer;
 use Unilend\Form\Traits\ConstantsToChoicesTrait;
@@ -63,15 +63,15 @@ class ProjectEditType extends AbstractType
                 'label' => 'project-form.description',
                 'attr'  => ['row' => 10],
             ])
-            ->add('tranches', CollectionWidgetType::class, [
+            ->add('tranches', CollectionType::class, [
                 'label'         => false,
                 'entry_type'    => TrancheEditType::class,
                 'entry_options' => ['label' => false],
                 'allow_add'     => true,
                 'allow_delete'  => true,
                 'by_reference'  => false,
-                'block_prefix'  => 'project_tranche_collection',
                 'prototype'     => true,
+                'attr'          => ['class' => 'tranches'],
             ])
             ->add('foncarisGuarantee', ChoiceType::class, [
                 'label'   => 'project-form.foncaris-guarantee',

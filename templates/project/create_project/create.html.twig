@@ -70,15 +70,11 @@
                                 'data-formvalidation-required': 'true',
                             }}) }}
                         </div><!-- /.row -->
-
+                        <div class="row row-multi-col-computer">
+                            {{ form_row(form.foncarisGuarantee) }}
+                        </div>
                     </section><!-- /.request-form-panel -->
                 </article><!-- /.panel -->
-
-                <article class="request-form-panel panel collapse">
-                    <div class="row row-multi-col-computer">
-                        {{ form_row(form.foncarisGuarantee) }}
-                    </div>
-                </article>
 
                 <article class="request-form-panel panel collapse">
                     <h3>{% trans %} project-request.tranches {% endtrans %}</h3>
@@ -96,7 +92,6 @@
                         </div>
                     </div>
                 </article>
-
 
                 <article class="request-form-panel panel collapse">
                     <div class="form-validation-notifications"></div>

@@ -1,3 +1,17 @@
+{%- block collection_row -%}
+    {% if prototype is defined %}
+        {% set prototype_markup = form_row(prototype) %}
+        {% set data_prototype_name = form.vars.form.vars.prototype.vars.name|default('__name_product_item_type_config___') %}
+        {% set attr = form.vars.attr|merge({
+            'data-prototype': prototype_markup,
+            'data-prototype-name': data_prototype_name
+        })|merge(attr) %}
+    {% endif %}
+    <div {% for attrname,attrvalue in attr %} {{ attrname }}="{{ attrvalue }}"{% endfor %}>
+    {{ block('collection_widget') }}
+    </div>
+{%- endblock collection_row -%}
+
 {% block project_tranche_type_row %}
     <div class="row row-multi-col-computer">
         <div class="col-lg-6 col-md-6">
@@ -40,21 +54,22 @@
             {{ form_row(form.expectedStartingDate) }}
         </div>
     </div>
+    <div class="row row-multi-col-computer">
+        {% trans %} tranche-form.fees {% endtrans %}
+        {{ form_row(form.tranchePercentFees) }}
+    </div>
 {% endblock project_tranche_type_row %}
 
-{% block project_tranche_collection_row %}
-    {% spaceless %}
-        {% if prototype is defined %}
-            {% set prototype_markup = form_row(prototype) %}
-            {% set data_prototype_name = form.vars.form.vars.prototype.vars.name|default('__name_product_item_type_config___') %}
-            {% set attrs = form.vars.attr|merge({
-                'data-prototype': prototype_markup,
-                'data-prototype-name': data_prototype_name
-            })|merge(attr) %}
-        {% endif %}
-        {% set attrs = attrs|merge({ 'class': (attrs.class|default('') ~ ' tranches')|trim }) %}
-        <div {% for attrname,attrvalue in attrs %} {{ attrname }}="{{ attrvalue }}"{% endfor %}>
-        {{ block('form_widget') }}
+{% block tranche_percent_fee_type_row %}
+    <div class="row row-multi-col-computer">
+        <div class="form-field col-lg-6 col-md-6">
+            {{ form_row(form.percentFee.type) }}
+            <div class="row">
+                {{ form_row(form.percentFee.isRecurring) }}
+            </div>
         </div>
-    {% endspaceless %}
-{% endblock project_tranche_collection_row %}
+        <div class="form-field col-lg-6 col-md-6">
+            {{ form_row(form.percentFee.rate) }}
+        </div>
+    </div>
+{% endblock tranche_percent_fee_type_row %}
