@@ -3,7 +3,7 @@
 namespace Unilend\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
-use Unilend\Entity\Traits\Timestampable;
+use Unilend\Entity\Traits\TimestampableTrait;
 
 /**
  * @ORM\Entity(repositoryClass="Unilend\Repository\ProjectAttachmentRepository")
@@ -11,7 +11,7 @@ use Unilend\Entity\Traits\Timestampable;
  */
 class ProjectAttachment
 {
-    use Timestampable;
+    use TimestampableTrait;
 
     /**
      * @var int

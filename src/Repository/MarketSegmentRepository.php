@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Unilend\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Symfony\Bridge\Doctrine\RegistryInterface;
+use Doctrine\Common\Persistence\ManagerRegistry;
 use Unilend\Entity\MarketSegment;
 
 class MarketSegmentRepository extends ServiceEntityRepository
@@ -13,10 +13,10 @@ class MarketSegmentRepository extends ServiceEntityRepository
     /**
      * MarketSegmentRepository constructor.
      *
-     * @param RegistryInterface $registry
+     * @param ManagerRegistry $managerRegistry
      */
-    public function __construct(RegistryInterface $registry)
+    public function __construct(ManagerRegistry $managerRegistry)
     {
-        parent::__construct($registry, MarketSegment::class);
+        parent::__construct($managerRegistry, MarketSegment::class);
     }
 }

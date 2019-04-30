@@ -73,7 +73,7 @@
 {%- endblock form_label -%}
 
 {%- block widget_attributes -%}
-    {% set attr = attr|merge({class: 'input-field ' ~ (attr.class|default(''))|trim}) %}
+    {% set attr = attr|merge({'class': (attr.class|default('') ~ ' input-field')|trim}) %}
     {{ parent() }}
 {%- endblock widget_attributes -%}
 

@@ -33,48 +33,71 @@
                     <section class="request-form-panel collapse">
 
                         <div class="row row-multi-col-computer">
-                            <div class="form-field col-lg-4 col-md-4">
+                            <div class="col-lg-4 col-md-4">
                                 {{ form_row(form.title, {'attr': {
                                     'data-formvalidation-input': null,
                                     'data-formvalidation-type': 'string',
                                     'data-formvalidation-required': 'true',
                                 }}) }}
-                            </div><!-- /.form-field -->
-                            <div class="form-field col-lg-4 col-md-4">
+                            </div>
+                            <div class="col-lg-4 col-md-4">
                                 {{ form_row(form.borrowerCompany, {'attr': {
                                     'data-formvalidation-input': null,
                                     'data-formvalidation-required': 'true',
                                 }}) }}
-                            </div><!-- /.form-field -->
-                            <div class="form-field col-lg-4 col-md-4">
+                            </div>
+                            <div class="col-lg-4 col-md-4">
                                 {{ form_row(form.marketSegment, {'attr': {
                                     'data-formvalidation-input': null,
                                     'data-formvalidation-required': 'true',
                                 }}) }}
-                            </div><!-- /.form-field -->
+                            </div>
                         </div>
 
                         <div class="row row-multi-col-computer">
-                            <div class="form-field col-lg-6 col-md-6">
+                            <div class="col-lg-6 col-md-6">
                                 {{ form_row(form.replyDeadline) }}
-                            </div><!-- /.form-field -->
-                            <div class="form-field col-lg-6 col-md-6">
+                            </div>
+                            <div class="col-lg-6 col-md-6">
                                 {{ form_row(form.expectedClosingDate) }}
-                            </div><!-- /.form-field -->
+                            </div>
                         </div><!-- /.row -->
 
-                        <div class="row">
-                            <div class="form-field">
-                                {{ form_row(form.description, {'attr': {
-                                    'data-formvalidation-input': null,
-                                    'data-formvalidation-type': 'string',
-                                    'data-formvalidation-required': 'true',
-                                }}) }}
-                            </div>
+                        <div class="row row-multi-col-computer">
+                            {{ form_row(form.description, {'attr': {
+                                'data-formvalidation-input': null,
+                                'data-formvalidation-type': 'string',
+                                'data-formvalidation-required': 'true',
+                            }}) }}
                         </div><!-- /.row -->
 
                     </section><!-- /.request-form-panel -->
                 </article><!-- /.panel -->
+
+                <article class="request-form-panel panel collapse">
+                    <div class="row row-multi-col-computer">
+                        {{ form_row(form.foncarisGuarantee) }}
+                    </div>
+                </article>
+
+                <article class="request-form-panel panel collapse">
+                    <h3>{% trans %} project-request.tranches {% endtrans %}</h3>
+                    {{ form_row(form.tranches) }}
+                </article>
+
+                <article class="request-form-panel panel collapse">
+                    <h3>{% trans %} project-request.structuration {% endtrans %}</h3>
+                    <div class="row row-multi-col-computer">
+                        <div class="col-lg-6 col-md-6">
+                            {{ form_row(form.arranger) }}
+                        </div>
+                        <div class="col-lg-6 col-md-6">
+                            {{ form_row(form.run) }}
+                        </div>
+                    </div>
+                </article>
+
+
                 <article class="request-form-panel panel collapse">
                     <div class="form-validation-notifications"></div>
                     <button type="submit" class="btn-continue btn-primary pull-right" data-spinnerbutton>
@@ -160,5 +183,6 @@
         })
 
         {% include 'partials/fees/fees.js.twig' %}
+        {% include 'partials/tranche/edit_tranches.js.twig' %}
     </script>
 {% endblock %}

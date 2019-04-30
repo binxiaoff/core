@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Unilend\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
-use Unilend\Entity\Traits\{Roleable, Timestampable};
+use Unilend\Entity\Traits\{Roleable, TimestampableTrait};
 
 /**
  * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(columns={"id_project", "id_company"})})
@@ -15,7 +15,7 @@ use Unilend\Entity\Traits\{Roleable, Timestampable};
 class ProjectParticipant
 {
     use Roleable;
-    use Timestampable;
+    use TimestampableTrait;
 
     // Use COMPANY_ prefix to distinguish it from Symfony user's roles
     public const COMPANY_ROLE_ARRANGER = 'COMPANY_ROLE_ARRANGER'; // The company who arranges a loan syndication.

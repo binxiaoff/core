@@ -10,7 +10,8 @@ use Doctrine\ORM\Mapping as ORM;
 use Exception;
 use Ramsey\Uuid\Uuid;
 use Symfony\Component\Validator\Constraints as Assert;
-use Unilend\Entity\Traits\Timestampable;
+use Unilend\Entity\Traits\ConstantsAwareTrait;
+use Unilend\Entity\Traits\TimestampableTrait;
 use URLify;
 
 /**
@@ -23,7 +24,12 @@ use URLify;
  */
 class Project
 {
-    use Timestampable;
+    use TimestampableTrait;
+    use ConstantsAwareTrait;
+
+    public const FONCARIS_GUARANTEE_NO_NEED            = 0;
+    public const FONCARIS_GUARANTEE_NEED               = 1;
+    public const FONCARIS_GUARANTEE_ALREADY_GUARANTEED = 2;
 
     /**
      * @var int
@@ -37,7 +43,7 @@ class Project
     /**
      * @var string
      *
-     * @ORM\Column(length=191)
+     * @ORM\Column(length=36)
      */
     private $hash;
 
@@ -126,6 +132,13 @@ class Project
     private $expectedClosingDate;
 
     /**
+     * @var int
+     *
+     * @ORM\Column(type="smallint")
+     */
+    private $foncarisGuarantee;
+
+    /**
      * @var ProjectStatusHistory|null
      *
      * @ORM\OneToOne(targetEntity="Unilend\Entity\ProjectStatusHistory")
@@ -187,6 +200,13 @@ class Project
     private $comments;
 
     /**
+     * @var Tranche[]|ArrayCollection
+     *
+     * @ORM\OneToMany(targetEntity="Unilend\Entity\Tranche", mappedBy="project", cascade={"persist"}, orphanRemoval=true)
+     */
+    private $tranches;
+
+    /**
      * Project constructor.
      */
     public function __construct()
@@ -196,6 +216,7 @@ class Project
         $this->projectPercentFees     = new ArrayCollection();
         $this->comments               = new ArrayCollection();
         $this->projectStatusHistories = new ArrayCollection();
+        $this->tranches               = new ArrayCollection();
     }
 
     /**
@@ -634,6 +655,78 @@ class Project
         }
 
         return $this;
+    }
+
+    /**
+     * @return ArrayCollection|ProjectStatusHistory[]
+     */
+    public function getProjectStatusHistories(): iterable
+    {
+        return $this->projectStatusHistories;
+    }
+
+    /**
+     * @param Tranche $tranche
+     *
+     * @return Project
+     */
+    public function addTranche(Tranche $tranche): Project
+    {
+        $tranche->setProject($this);
+
+        if (false === $this->tranches->contains($tranche)) {
+            $this->tranches->add($tranche);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @param Tranche $tranche
+     *
+     * @return Project
+     */
+    public function removeTranche(Tranche $tranche): Project
+    {
+        $this->projectParticipants->removeElement($tranche);
+
+        return $this;
+    }
+
+    /**
+     * @return Tranche[]|ArrayCollection
+     */
+    public function getTranches(): iterable
+    {
+        return $this->tranches;
+    }
+
+    /**
+     * @return int|null
+     */
+    public function getFoncarisGuarantee(): ?int
+    {
+        return $this->foncarisGuarantee;
+    }
+
+    /**
+     * @param int $foncarisGuarantee
+     *
+     * @return Project
+     */
+    public function setFoncarisGuarantee(int $foncarisGuarantee): Project
+    {
+        $this->foncarisGuarantee = $foncarisGuarantee;
+
+        return $this;
+    }
+
+    /**
+     * @return array
+     */
+    public static function getFoncarisGuaranteeOptions(): array
+    {
+        return self::getConstants('FONCARIS_GUARANTEE_');
     }
 
     /**

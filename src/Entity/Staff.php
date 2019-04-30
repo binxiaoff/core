@@ -3,7 +3,7 @@
 namespace Unilend\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
-use Unilend\Entity\Traits\{Roleable, Timestampable};
+use Unilend\Entity\Traits\{Roleable, TimestampableTrait};
 
 /**
  * @ORM\Entity
@@ -12,14 +12,14 @@ use Unilend\Entity\Traits\{Roleable, Timestampable};
 class Staff
 {
     use Roleable;
-    use Timestampable;
+    use TimestampableTrait;
 
     /**
      * @deprecated Just for backward compatibility. Later, we will define a new role list for staff.
      */
-    const STAFF_ROLE_OWNER = 'STAFF_ROLE_OWNER';
+    public const STAFF_ROLE_OWNER = 'STAFF_ROLE_OWNER';
 
-    const ALL_ROLES = [self::STAFF_ROLE_OWNER];
+    public const ALL_ROLES = [self::STAFF_ROLE_OWNER];
 
     /**
      * @var int
@@ -35,7 +35,7 @@ class Staff
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\Companies", inversedBy="staff")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_company", referencedColumnName="id_company", nullable=false)
+     *     @ORM\JoinColumn(name="id_company", referencedColumnName="id_company", nullable=false)
      * })
      */
     private $company;
@@ -45,7 +45,7 @@ class Staff
      *
      * @ORM\OneToOne(targetEntity="Unilend\Entity\Clients", inversedBy="staff")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_client", referencedColumnName="id_client", nullable=false)
+     *     @ORM\JoinColumn(name="id_client", referencedColumnName="id_client", nullable=false)
      * })
      */
     private $client;

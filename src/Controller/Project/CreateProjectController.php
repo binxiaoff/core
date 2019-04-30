@@ -11,7 +11,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Unilend\Entity\Clients;
 use Unilend\Entity\Project;
-use Unilend\Form\Project\ProjectCreationType;
+use Unilend\Form\Project\ProjectEditType;
 use Unilend\Repository\{CompaniesRepository, CompanySectorRepository, ProjectAttachmentTypeRepository};
 use Unilend\Service\Project\ProjectCreationManager;
 use Unilend\Service\ProjectManager;
@@ -43,7 +43,7 @@ class CreateProjectController extends AbstractController
         CompanySectorRepository $companySectorRepository,
         ?UserInterface $client
     ) {
-        $form = $this->createForm(ProjectCreationType::class);
+        $form = $this->createForm(ProjectEditType::class);
 
         $form->handleRequest($request);
 
