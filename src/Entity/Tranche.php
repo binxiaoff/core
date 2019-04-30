@@ -37,7 +37,7 @@ class Tranche
     /**
      * @var Project
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Project")
+     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Project", inversedBy="tranches")
      * @ORM\JoinColumns({
      *     @ORM\JoinColumn(name="id_project", nullable=false)
      * })
