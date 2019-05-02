@@ -1210,7 +1210,6 @@ class DemoController extends AbstractController
                     ->setIdTypeContract($contract)
                     ->setAmount($bid->getAmount())
                     ->setRate($bid->getRate())
-                    ->setAgent($bid->isAgent())
                     ->setStatus(Loans::STATUS_PENDING)
                 ;
 
