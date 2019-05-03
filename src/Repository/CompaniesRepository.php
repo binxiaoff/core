@@ -4,13 +4,18 @@ namespace Unilend\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
-use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\DBAL\Connection;
+use Doctrine\ORM\Query\Expr\Join;
 use Unilend\Entity\{Companies, CompanyStatus, CompanyStatusHistory, Operation, OperationType, Projects, ProjectsStatus, ProjectsStatusHistory, RiskDataMonitoring, Wallet};
 use Unilend\Service\RiskDataMonitoring\MonitoringCycleManager;
 
 class CompaniesRepository extends ServiceEntityRepository
 {
+    /**
+     * CompaniesRepository constructor.
+     *
+     * @param ManagerRegistry $registry
+     */
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Companies::class);
@@ -23,9 +28,10 @@ class CompaniesRepository extends ServiceEntityRepository
      */
     public function getLegalEntitiesByCumulativeDepositAmount($maxDepositAmount)
     {
-        $operationType = $this->getEntityManager()->getRepository(OperationType::class);;
-        $queryBuilder  = $this->createQueryBuilder('c')
-             ->select('IDENTITY(c.idClientOwner) AS idClient, c.capital, SUM(o.amount) AS depositAmount, GROUP_CONCAT(o.id) AS operation')
+        $operationType = $this->getEntityManager()->getRepository(OperationType::class);
+
+        $queryBuilder = $this->createQueryBuilder('c')
+            ->select('IDENTITY(c.idClientOwner) AS idClient, c.capital, SUM(o.amount) AS depositAmount, GROUP_CONCAT(o.id) AS operation')
             ->innerJoin(Wallet::class, 'w', Join::WITH, 'c.idClientOwner = w.idClient')
             ->innerJoin(Operation::class, 'o', Join::WITH, 'o.idWalletCreditor = w.id')
             ->where('o.idType = :operation_type')
@@ -33,7 +39,8 @@ class CompaniesRepository extends ServiceEntityRepository
             ->groupBy('o.idWalletCreditor')
             ->having('depositAmount >= c.capital')
             ->andHaving('depositAmount >= :max_deposit_amount')
-            ->setParameter('max_deposit_amount', $maxDepositAmount);
+            ->setParameter('max_deposit_amount', $maxDepositAmount)
+        ;
 
         return $queryBuilder->getQuery()->getResult();
     }
@@ -52,7 +59,8 @@ class CompaniesRepository extends ServiceEntityRepository
             ->innerJoin(Projects::class, 'p', Join::WITH, 'p.idCompany = c.idCompany')
             ->innerJoin(RiskDataMonitoring::class, 'rdm', Join::WITH, 'c.siren = rdm.siren')
             ->where('c.siren = :siren')
-            ->setParameter('siren', $siren);
+            ->setParameter('siren', $siren)
+        ;
 
         if ($ongoing) {
             $queryBuilder->andWhere('rdm.end IS NULL');
@@ -60,7 +68,8 @@ class CompaniesRepository extends ServiceEntityRepository
 
         if (null !== $provider) {
             $queryBuilder->andWhere('rdm.provider = :provider')
-                ->setParameter('provider', $provider);
+                ->setParameter('provider', $provider)
+            ;
         }
 
         return $queryBuilder->getQuery()->getResult();
@@ -70,8 +79,9 @@ class CompaniesRepository extends ServiceEntityRepository
      * @param \DateTime $start
      * @param \DateTime $end
      *
-     * @return array
      * @throws \Doctrine\DBAL\DBALException
+     *
+     * @return array
      */
     public function getCountCompaniesInCollectiveProceedingBetweenDates(\DateTime $start, \DateTime $end)
     {
@@ -81,7 +91,7 @@ class CompaniesRepository extends ServiceEntityRepository
         $status = [
             CompanyStatus::STATUS_PRECAUTIONARY_PROCESS,
             CompanyStatus::STATUS_COMPULSORY_LIQUIDATION,
-            CompanyStatus::STATUS_RECEIVERSHIP
+            CompanyStatus::STATUS_RECEIVERSHIP,
         ];
 
         $query = 'SELECT COUNT(DISTINCT(csh.id_company))
@@ -94,42 +104,44 @@ class CompaniesRepository extends ServiceEntityRepository
                     cs.label IN (:status)
                     AND csh.added BETWEEN :start AND :end';
 
-        $result = $this->getEntityManager()->getConnection()
+        return $this->getEntityManager()->getConnection()
             ->executeQuery($query, [
                 'status' => $status,
                 'start'  => $start->format('Y-m-d H:i:s'),
-                'end'    => $end->format('Y-m-d H:i:s')
+                'end'    => $end->format('Y-m-d H:i:s'),
             ], [
                 'status' => Connection::PARAM_STR_ARRAY,
                 'start'  => \PDO::PARAM_STR,
-                'end'    => \PDO::PARAM_STR
-            ])->fetchAll();
-
-        return $result;
+                'end'    => \PDO::PARAM_STR,
+            ])
+            ->fetchAll()
+            ;
     }
 
     /**
      * @param string $siren
      *
-     * @return bool
      * @throws \Doctrine\ORM\NoResultException
      * @throws \Doctrine\ORM\NonUniqueResultException
+     *
+     * @return bool
      */
     public function isProblematicCompany($siren)
     {
         $queryBuilder = $this->createQueryBuilder('c')
             ->select('COUNT(c.idCompany)')
-            ->innerJoin(CompanyStatusHistory::class, 'csh', Join::WITH,  'csh.idCompany = c.idCompany')
-            ->innerJoin(Projects::class, 'p', Join::WITH,  'p.idCompany = c.idCompany')
-            ->innerJoin(ProjectsStatusHistory::class, 'psh', Join::WITH,  'psh.idProject = p.idProject')
-            ->innerJoin(CompanyStatus::class, 'cs', Join::WITH,  'cs.id = csh.idStatus')
-            ->innerJoin(ProjectsStatus::class, 'ps', Join::WITH,  'ps.idProjectStatus = psh.idProjectStatus')
+            ->innerJoin(CompanyStatusHistory::class, 'csh', Join::WITH, 'csh.idCompany = c.idCompany')
+            ->innerJoin(Projects::class, 'p', Join::WITH, 'p.idCompany = c.idCompany')
+            ->innerJoin(ProjectsStatusHistory::class, 'psh', Join::WITH, 'psh.idProject = p.idProject')
+            ->innerJoin(CompanyStatus::class, 'cs', Join::WITH, 'cs.id = csh.idStatus')
+            ->innerJoin(ProjectsStatus::class, 'ps', Join::WITH, 'ps.idProjectStatus = psh.idProjectStatus')
             ->where('c.siren = :siren')
             ->setParameter('siren', $siren)
             ->andWhere('cs.label != :inBonis')
             ->setParameter('inBonis', CompanyStatus::STATUS_IN_BONIS)
             ->andWhere('ps.status = :projectStatus')
-            ->setParameter('projectStatus', ProjectsStatus::STATUS_LOST);
+            ->setParameter('projectStatus', ProjectsStatus::STATUS_LOST)
+        ;
 
         return $queryBuilder->getQuery()->getSingleScalarResult() > 0;
     }
@@ -137,9 +149,10 @@ class CompaniesRepository extends ServiceEntityRepository
     /**
      * @param Companies $company
      *
-     * @return int
      * @throws \Doctrine\ORM\NoResultException
      * @throws \Doctrine\ORM\NonUniqueResultException
+     *
+     * @return int
      */
     public function countDuplicatesByNameAndParent(Companies $company): int
     {
@@ -148,9 +161,10 @@ class CompaniesRepository extends ServiceEntityRepository
             ->where('LOWER(co.name) LIKE LOWER(:name)')
             ->andWhere('co.idParentCompany = :parent')
             ->setParameter('name', $company->getName())
-            ->setParameter('parent', $company->getIdParentCompany())
+            ->setParameter('parent', $company->getParent())
             ->getQuery()
-            ->getSingleScalarResult();
+            ->getSingleScalarResult()
+        ;
     }
 
     /**
@@ -162,7 +176,8 @@ class CompaniesRepository extends ServiceEntityRepository
             ->createQueryBuilder()
             ->select('rdm2')
             ->leftJoin(RiskDataMonitoring::class, 'rdm2')
-            ->where('rdm2.siren = co.siren')      ;
+            ->where('rdm2.siren = co.siren')
+        ;
 
         $queryBuilder = $this->createQueryBuilder('co');
         $queryBuilder->select('DISTINCT co.siren')
@@ -173,7 +188,8 @@ class CompaniesRepository extends ServiceEntityRepository
             ->andWhere('co.siren != \'\'')
             ->andWhere('co.siren IS NOT NULL')
             ->setParameter('excludedStatus', MonitoringCycleManager::LONG_TERM_MONITORING_EXCLUDED_PROJECTS_STATUS)
-            ->setParameter('firstProjectStatus', ProjectsStatus::STATUS_CANCELLED);
+            ->setParameter('firstProjectStatus', ProjectsStatus::STATUS_CANCELLED)
+        ;
 
         return $queryBuilder->getQuery()->getResult();
     }
@@ -191,14 +207,16 @@ class CompaniesRepository extends ServiceEntityRepository
             ->where('cs.label != :inBonis')
             ->orWhere('p.status IN (:finalStatus)')
             ->setParameter('inBonis', CompanyStatus::STATUS_IN_BONIS)
-            ->setParameter('finalStatus', [ProjectsStatus::STATUS_FINISHED, ProjectsStatus::STATUS_CANCELLED]);
+            ->setParameter('finalStatus', [ProjectsStatus::STATUS_FINISHED, ProjectsStatus::STATUS_CANCELLED])
+        ;
 
         return $queryBuilder->getQuery()->getResult();
     }
 
     /**
-     * @return array
      * @throws \Doctrine\DBAL\DBALException
+     *
+     * @return array
      */
     public function getSirenWithActiveProjectsAndNoMonitoring()
     {
@@ -220,22 +238,24 @@ class CompaniesRepository extends ServiceEntityRepository
         return $this->getEntityManager()
             ->getConnection()
             ->executeQuery($query, [
-                'completeRequest' => ProjectsStatus::STATUS_REVIEW,
+                'completeRequest' => ProjectsStatus::STATUS_REQUESTED,
                 'projectStatus'   => MonitoringCycleManager::LONG_TERM_MONITORING_EXCLUDED_PROJECTS_STATUS,
-                'companyStatus'   => MonitoringCycleManager::LONG_TERM_MONITORING_EXCLUDED_COMPANY_STATUS
+                'companyStatus'   => MonitoringCycleManager::LONG_TERM_MONITORING_EXCLUDED_COMPANY_STATUS,
             ], [
                 'completeRequest' => \PDO::PARAM_INT,
                 'projectStatus'   => Connection::PARAM_INT_ARRAY,
-                'companyStatus'   => Connection::PARAM_STR_ARRAY
+                'companyStatus'   => Connection::PARAM_STR_ARRAY,
             ])
-            ->fetchAll();
+            ->fetchAll()
+        ;
     }
 
     /**
      * @param string $provider
      *
-     * @return array
      * @throws \Doctrine\DBAL\DBALException
+     *
+     * @return array
      */
     public function getSirenWithActiveProjectsAndNoMonitoringByProvider(string $provider)
     {
@@ -258,15 +278,16 @@ class CompaniesRepository extends ServiceEntityRepository
             ->getConnection()
             ->executeQuery($query, [
                 'provider'        => $provider,
-                'completeRequest' => ProjectsStatus::STATUS_REVIEW,
+                'completeRequest' => ProjectsStatus::STATUS_REQUESTED,
                 'projectStatus'   => MonitoringCycleManager::LONG_TERM_MONITORING_EXCLUDED_PROJECTS_STATUS,
-                'companyStatus'   => MonitoringCycleManager::LONG_TERM_MONITORING_EXCLUDED_COMPANY_STATUS
+                'companyStatus'   => MonitoringCycleManager::LONG_TERM_MONITORING_EXCLUDED_COMPANY_STATUS,
             ], [
                 'provider'        => \PDO::PARAM_STR,
                 'completeRequest' => \PDO::PARAM_INT,
                 'projectStatus'   => Connection::PARAM_INT_ARRAY,
-                'companyStatus'   => Connection::PARAM_STR_ARRAY
+                'companyStatus'   => Connection::PARAM_STR_ARRAY,
             ])
-            ->fetchAll();
+            ->fetchAll()
+        ;
     }
 }

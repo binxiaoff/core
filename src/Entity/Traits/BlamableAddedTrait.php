@@ -7,7 +7,7 @@ namespace Unilend\Entity\Traits;
 use Doctrine\ORM\Mapping as ORM;
 use Unilend\Entity\Clients;
 
-trait BlamableAddedOnlyTrait
+trait BlamableAddedTrait
 {
     /**
      * @var Clients

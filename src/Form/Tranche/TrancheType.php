@@ -15,7 +15,7 @@ use Unilend\Form\Lending\LendingRateType;
 use Unilend\Form\MoneyType;
 use Unilend\Form\Traits\ConstantsToChoicesTrait;
 
-class TrancheEditType extends AbstractType
+class TrancheType extends AbstractType
 {
     use ConstantsToChoicesTrait;
 
@@ -32,7 +32,10 @@ class TrancheEditType extends AbstractType
             ])
             ->add('duration', null, ['label' => 'tranche-form.maturity'])
             ->add('money', MoneyType::class)
-            ->add('rate', LendingRateType::class, ['data_class' => NullableLendingRate::class])
+            ->add('rate', LendingRateType::class, [
+                'data_class' => NullableLendingRate::class,
+                'required'   => false,
+            ])
             ->add('capitalPeriodicity', null, ['label' => 'tranche-form.capital-periodicity'])
             ->add('interestPeriodicity', null, ['label' => 'tranche-form.interest-periodicity'])
             ->add('expectedReleasingDate', null, [

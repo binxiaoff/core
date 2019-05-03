@@ -25,7 +25,8 @@ class PartnerManager
     {
         return $this->entityManager
             ->getRepository(Partner::class)
-            ->findOneBy(['label' => Partner::PARTNER_CALS_LABEL]);
+            ->findOneBy(['label' => Partner::PARTNER_CALS_LABEL])
+        ;
     }
 
     /**
@@ -51,7 +52,7 @@ class PartnerManager
     /**
      * @param Clients $client
      *
-     * @return null|Partner
+     * @return Partner|null
      */
     public function getPartner(Clients $client): ?Partner
     {
@@ -61,8 +62,8 @@ class PartnerManager
 
         $rootCompany = $client->getCompany();
 
-        while ($rootCompany->getIdParentCompany() && $rootCompany->getIdParentCompany()->getIdCompany()) {
-            $rootCompany = $rootCompany->getIdParentCompany();
+        while ($rootCompany->getParent() && $rootCompany->getParent()->getIdCompany()) {
+            $rootCompany = $rootCompany->getParent();
         }
 
         return $this->entityManager->getRepository(Partner::class)->findOneBy(['idCompany' => $rootCompany->getIdCompany()]);
@@ -80,7 +81,7 @@ class PartnerManager
         $company     = $partnerRole->getIdCompany();
         $branches    = [];
 
-        if (in_array(Clients::ROLE_PARTNER_ADMIN, $partnerUser->getRoles())) {
+        if (in_array(Clients::ROLE_PARTNER, $partnerUser->getRoles())) {
             $branches = $this->getBranches($company);
         }
 
@@ -102,7 +103,7 @@ class PartnerManager
     {
         $branches = $this->entityManager->getRepository(Companies::class)->findBy(['idParentCompany' => $rootCompany]);
 
-        foreach($branches as $company) {
+        foreach ($branches as $company) {
             $branches = array_merge($branches, $this->getBranches($company));
         }
 

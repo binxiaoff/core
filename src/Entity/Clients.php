@@ -248,7 +248,7 @@ class Clients implements UserInterface, EquatableInterface
     /**
      * @var Attachment[]
      *
-     * @ORM\OneToMany(targetEntity="Unilend\Entity\Attachment", mappedBy="idClient")
+     * @ORM\OneToMany(targetEntity="Unilend\Entity\Attachment", mappedBy="owner")
      */
     private $attachments;
 

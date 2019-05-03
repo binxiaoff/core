@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Unilend\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
-use Unilend\Entity\Traits\{BlamableAddedOnlyTrait, ConstantsAwareTrait, TimestampableAddedOnlyTrait};
+use Unilend\Entity\Traits\{BlamableAddedTrait, ConstantsAwareTrait, TimestampableAddedOnlyTrait};
 
 /**
  * @ORM\Table(indexes={@ORM\Index(columns={"status"})})
@@ -16,7 +16,7 @@ class ProjectStatusHistory
 {
     use ConstantsAwareTrait;
     use TimestampableAddedOnlyTrait;
-    use BlamableAddedOnlyTrait;
+    use BlamableAddedTrait;
 
     public const STATUS_REQUESTED          = 10;
     public const STATUS_PUBLISHED          = 20;

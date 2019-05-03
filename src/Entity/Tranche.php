@@ -139,8 +139,9 @@ class Tranche
      */
     public function __construct()
     {
-        $this->money = new Money();
-        $this->rate  = new NullableLendingRate();
+        $this->money              = new Money();
+        $this->rate               = new NullableLendingRate();
+        $this->tranchePercentFees = new ArrayCollection();
     }
 
     /**

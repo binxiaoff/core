@@ -22,12 +22,14 @@ class LendingRateType extends AbstractType
     {
         $builder
             ->add('indexType', ChoiceType::class, [
-                'label'   => 'lending-form.index-type',
-                'choices' => $this->getChoicesFromConstants(LendingRate::getIndexes(), 'interest-rate-index'),
+                'label'    => 'lending-form.index-type',
+                'required' => $options['required'],
+                'choices'  => $this->getChoicesFromConstants(LendingRate::getIndexes(), 'interest-rate-index'),
             ])
             ->add('margin', NumberType::class, [
-                'label' => 'lending-form.margin',
-                'scale' => LendingRate::MARGIN_SCALE,
+                'label'    => 'lending-form.margin',
+                'required' => $options['required'],
+                'scale'    => LendingRate::MARGIN_SCALE,
             ])
         ;
     }
@@ -37,7 +39,10 @@ class LendingRateType extends AbstractType
      */
     public function configureOptions(OptionsResolver $resolver)
     {
-        $resolver->setDefault('data_class', LendingRate::class);
+        $resolver->setDefaults([
+            'data_class' => LendingRate::class,
+            'required'   => false,
+        ]);
     }
 
     /**

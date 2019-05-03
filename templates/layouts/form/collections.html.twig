@@ -62,14 +62,29 @@
 
 {% block tranche_percent_fee_type_row %}
     <div class="row row-multi-col-computer">
-        <div class="form-field col-lg-6 col-md-6">
+        <div class="col-lg-6 col-md-6">
             {{ form_row(form.percentFee.type) }}
             <div class="row">
                 {{ form_row(form.percentFee.isRecurring) }}
             </div>
         </div>
-        <div class="form-field col-lg-6 col-md-6">
+        <div class="col-lg-6 col-md-6">
             {{ form_row(form.percentFee.rate) }}
         </div>
     </div>
 {% endblock tranche_percent_fee_type_row %}
+
+
+{% block project_attachment_type_row %}
+    <div class="row row-multi-col-computer">
+        <div class="col-lg-4 col-md-4">
+            {{ form_row(form.attachment.type) }}
+        </div>
+        <div class="col-lg-4 col-md-4">
+            {{ form_row(form.attachment.description) }}
+        </div>
+        <div class="col-lg-4 col-md-4">
+            {{ form_row(form.attachment.file) }}
+        </div>
+    </div>
+{% endblock project_attachment_type_row %}

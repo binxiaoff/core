@@ -33,6 +33,15 @@ class Companies
     public const CLIENT_STATUS_EXTERNAL_COUNSEL_OTHER         = 3;
     public const CLIENT_STATUS_EXTERNAL_COUNSEL_BANKER        = 4;
 
+    public const COMPANY_ID_CACIB     = 3;
+    public const COMPANY_ID_UNIFERGIE = 4;
+    public const COMPANY_ID_CASA      = 5;
+    public const COMPANY_ID_LCL       = 45;
+
+    public const COMPANY_ELIGIBLE_ARRANGER       = [self::COMPANY_ID_CACIB, self::COMPANY_ID_UNIFERGIE];
+    public const COMPANY_ELIGIBLE_RUN            = [self::COMPANY_ID_LCL];
+    public const COMPANY_SUBSIDIARY_ELIGIBLE_RUN = [self::COMPANY_ID_CASA];
+
     /**
      * @var \Unilend\Entity\CompanyStatus
      *
@@ -301,7 +310,7 @@ class Companies
      *     @ORM\JoinColumn(name="id_parent_company", referencedColumnName="id_company")
      * })
      */
-    private $idParentCompany;
+    private $parent;
 
     /**
      * @var CompanyAddress
@@ -340,6 +349,14 @@ class Companies
     {
         $this->staff               = new ArrayCollection();
         $this->projectParticipants = new ArrayCollection();
+    }
+
+    /**
+     * @return string
+     */
+    public function __toString(): string
+    {
+        return $this->getName();
     }
 
     /**
@@ -1164,13 +1181,13 @@ class Companies
     /**
      * Set idParentCompany.
      *
-     * @param Companies $idParentCompany
+     * @param Companies $parent
      *
      * @return Companies
      */
-    public function setIdParentCompany(Companies $idParentCompany = null)
+    public function setParent(Companies $parent = null)
     {
-        $this->idParentCompany = $idParentCompany;
+        $this->parent = $parent;
 
         return $this;
     }
@@ -1180,9 +1197,9 @@ class Companies
      *
      * @return Companies
      */
-    public function getIdParentCompany()
+    public function getParent()
     {
-        return $this->idParentCompany;
+        return $this->parent;
     }
 
     /**

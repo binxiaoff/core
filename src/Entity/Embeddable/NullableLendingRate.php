@@ -20,7 +20,7 @@ class NullableLendingRate extends LendingRate
      *
      * @ORM\Column(length=20, nullable=true)
      */
-    private $indexType;
+    protected $indexType;
 
     /**
      * The margin to be added on the indexed rate.
@@ -29,7 +29,7 @@ class NullableLendingRate extends LendingRate
      *
      * @ORM\Column(type="decimal", precision=4, scale=2, nullable=true)
      *
-     * @Assert\Range(min="0.01", max="99.99")
+     * @Assert\Range(min="0", max="99.99")
      */
-    private $margin;
+    protected $margin;
 }

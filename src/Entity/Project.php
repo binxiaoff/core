@@ -158,9 +158,9 @@ class Project
     /**
      * @var ProjectAttachment[]
      *
-     * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectAttachment", mappedBy="project")
+     * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectAttachment", mappedBy="project", cascade={"persist"}, orphanRemoval=true)
      */
-    private $attachments;
+    private $projectAttachments;
 
     /**
      * @var ProjectParticipant[]
@@ -211,12 +211,22 @@ class Project
      */
     public function __construct()
     {
-        $this->attachments            = new ArrayCollection();
+        $this->projectAttachments     = new ArrayCollection();
         $this->projectParticipants    = new ArrayCollection();
         $this->projectPercentFees     = new ArrayCollection();
         $this->comments               = new ArrayCollection();
         $this->projectStatusHistories = new ArrayCollection();
         $this->tranches               = new ArrayCollection();
+    }
+
+    /**
+     * Get idProject.
+     *
+     * @return int
+     */
+    public function getId(): int
+    {
+        return $this->id;
     }
 
     /**
@@ -237,6 +247,20 @@ class Project
     public function getHash()
     {
         return $this->hash;
+    }
+
+    /**
+     * @ORM\PrePersist
+     */
+    public function setHashValue()
+    {
+        if (null === $this->hash) {
+            try {
+                $this->hash = $this->generateHash();
+            } catch (Exception $e) {
+                $this->hash = md5(uniqid());
+            }
+        }
     }
 
     /**
@@ -360,205 +384,51 @@ class Project
     }
 
     /**
-     * Get idProject.
-     *
-     * @return int
+     * @return ProjectStatusHistory|null
      */
-    public function getId(): int
+    public function getLastProjectStatusHistory(): ?ProjectStatusHistory
     {
-        return $this->id;
+        return $this->lastProjectStatusHistory;
     }
 
     /**
-     * Get project attachments.
-     *
-     * @return ProjectAttachment[]
-     */
-    public function getAttachments(): iterable
-    {
-        return $this->attachments;
-    }
-
-    /**
-     * @ORM\PrePersist
-     */
-    public function setHashValue()
-    {
-        if (null === $this->hash) {
-            try {
-                $this->hash = $this->generateHash();
-            } catch (Exception $e) {
-                $this->hash = md5(uniqid());
-            }
-        }
-    }
-
-    /**
-     * @param Companies $company
+     * @param ProjectStatusHistory $lastProjectStatusHistory
      *
      * @return Project
      */
-    public function setArranger(Companies $company): Project
+    public function setLastProjectStatusHistory(ProjectStatusHistory $lastProjectStatusHistory): Project
     {
-        $this->addProjectParticipant($company, ProjectParticipant::COMPANY_ROLE_ARRANGER);
+        $this->lastProjectStatusHistory = $lastProjectStatusHistory;
 
         return $this;
     }
 
     /**
-     * @param Companies $company
+     * @return int|null
+     */
+    public function getFoncarisGuarantee(): ?int
+    {
+        return $this->foncarisGuarantee;
+    }
+
+    /**
+     * @param int $foncarisGuarantee
      *
      * @return Project
      */
-    public function setRun(Companies $company): Project
+    public function setFoncarisGuarantee(int $foncarisGuarantee): Project
     {
-        $this->addProjectParticipant($company, ProjectParticipant::COMPANY_ROLE_RUN);
+        $this->foncarisGuarantee = $foncarisGuarantee;
 
         return $this;
     }
 
     /**
-     * @param Companies[] $companies
-     *
-     * @return Project
+     * @return array
      */
-    public function addLenders(array $companies): Project
+    public static function getFoncarisGuaranteeOptions(): array
     {
-        foreach ($companies as $company) {
-            $this->addProjectParticipant($company, ProjectParticipant::COMPANY_ROLE_LENDER);
-        }
-
-        return $this;
-    }
-
-    /**
-     * @param ProjectParticipant $projectParticipant
-     *
-     * @return Project
-     */
-    public function removeProjectParticipants(ProjectParticipant $projectParticipant): Project
-    {
-        $this->projectParticipants->removeElement($projectParticipant);
-
-        return $this;
-    }
-
-    /**
-     * @param Companies|null $companies
-     *
-     * @return ProjectParticipant[]|Collection
-     */
-    public function getProjectParticipants(?Companies $companies = null): iterable
-    {
-        $criteria = new Criteria();
-
-        if ($companies) {
-            $criteria->where(Criteria::expr()->eq('company', $companies));
-        }
-
-        return $this->projectParticipants->matching($criteria);
-    }
-
-    /**
-     * @return ProjectParticipant|null
-     */
-    public function getArranger(): ?ProjectParticipant
-    {
-        return $this->getParticipant(ProjectParticipant::COMPANY_ROLE_ARRANGER);
-    }
-
-    /**
-     * @return ProjectParticipant|null
-     */
-    public function getRun(): ?ProjectParticipant
-    {
-        return $this->getParticipant(ProjectParticipant::COMPANY_ROLE_RUN);
-    }
-
-    /**
-     * @return Companies[]
-     */
-    public function getLenders(): iterable
-    {
-        $lenders = [];
-
-        foreach ($this->getProjectParticipants() as $projectParticipant) {
-            if ($projectParticipant->hasRole(ProjectParticipant::COMPANY_ROLE_LENDER)) {
-                $lenders[] = $projectParticipant->getCompany();
-            }
-        }
-
-        return $lenders;
-    }
-
-    /**
-     * @param int|null $status
-     *
-     * @return Bids[]|ArrayCollection
-     */
-    public function getBids(?int $status = null): iterable
-    {
-        $criteria = new Criteria();
-
-        if (null !== $status) {
-            $criteria->where(Criteria::expr()->eq('status', $status));
-        }
-
-        return $this->bids->matching($criteria);
-    }
-
-    /**
-     * @return Loans[]|ArrayCollection
-     */
-    public function getLoans(): iterable
-    {
-        return $this->loans;
-    }
-
-    /**
-     * @param ProjectPercentFee $projectPercentFee
-     *
-     * @return Project
-     */
-    public function addProjectPercentFee(ProjectPercentFee $projectPercentFee): Project
-    {
-        $projectPercentFee->setProject($this);
-
-        if (false === $this->projectPercentFees->contains($projectPercentFee)) {
-            $this->projectPercentFees->add($projectPercentFee);
-        }
-
-        return $this;
-    }
-
-    /**
-     * @param ProjectPercentFee $projectPercentFee
-     *
-     * @return Project
-     */
-    public function removeProjectPercentFee(ProjectPercentFee $projectPercentFee): Project
-    {
-        if ($this->projectPercentFees->contains($projectPercentFee)) {
-            $this->projectPercentFees->removeElement($projectPercentFee);
-        }
-
-        return $this;
-    }
-
-    /**
-     * @return iterable|ProjectPercentFee[]
-     */
-    public function getProjectPercentFees(): iterable
-    {
-        return $this->projectPercentFees;
-    }
-
-    /**
-     * @return ProjectComment[]|ArrayCollection
-     */
-    public function getComments(): iterable
-    {
-        return $this->comments;
+        return self::getConstants('FONCARIS_GUARANTEE_');
     }
 
     /**
@@ -622,23 +492,236 @@ class Project
     }
 
     /**
-     * @return ProjectStatusHistory|null
+     * Get project attachments.
+     *
+     * @return ProjectAttachment[]
      */
-    public function getLastProjectStatusHistory(): ?ProjectStatusHistory
+    public function getProjectAttachments(): iterable
     {
-        return $this->lastProjectStatusHistory;
+        return $this->projectAttachments;
     }
 
     /**
-     * @param ProjectStatusHistory $lastProjectStatusHistory
+     * @param ProjectAttachment $projectAttachment
      *
      * @return Project
      */
-    public function setLastProjectStatusHistory(ProjectStatusHistory $lastProjectStatusHistory): Project
+    public function addProjectAttachment(ProjectAttachment $projectAttachment): Project
     {
-        $this->lastProjectStatusHistory = $lastProjectStatusHistory;
+        $projectAttachment->setProject($this);
+
+        if (false === $this->projectAttachments->contains($projectAttachment)) {
+            $this->projectAttachments->add($projectAttachment);
+        }
 
         return $this;
+    }
+
+    /**
+     * @param ProjectAttachment $projectAttachment
+     *
+     * @return Project
+     */
+    public function removeProjectAttachment(ProjectAttachment $projectAttachment): Project
+    {
+        $this->projectAttachments->removeElement($projectAttachment);
+
+        return $this;
+    }
+
+    /**
+     * @return ProjectParticipant[]|Collection
+     */
+    public function getProjectParticipants(): iterable
+    {
+        return $this->projectParticipants;
+    }
+
+    /**
+     * @param Companies $company
+     * @param string    $role
+     *
+     * @return Project
+     */
+    public function addProjectParticipant(Companies $company, string $role): Project
+    {
+        if ($this->isUniqueRole($role)) {
+            /** @var ProjectParticipant $projectParticipant */
+            $projectParticipantToDelete = $this->getParticipantsByRole($role)->first();
+
+            if ($projectParticipantToDelete && $company !== $projectParticipantToDelete->getCompany()) {
+                $projectParticipantToDelete->removeRole($role);
+            }
+        }
+
+        $projectParticipant = $this->getProjectParticipantByCompany($company);
+
+        if (null === $projectParticipant) {
+            $projectParticipant = (new ProjectParticipant())
+                ->setCompany($company)
+                ->setProject($this)
+            ;
+        }
+
+        $projectParticipant->addRoles([$role]);
+
+        if (false === $this->projectParticipants->contains($projectParticipant)) {
+            $this->projectParticipants->add($projectParticipant);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @param ProjectParticipant $projectParticipant
+     *
+     * @return Project
+     */
+    public function removeProjectParticipant(ProjectParticipant $projectParticipant): Project
+    {
+        $this->projectParticipants->removeElement($projectParticipant);
+
+        return $this;
+    }
+
+    /**
+     * @param Companies $company
+     *
+     * @return Project
+     */
+    public function setArranger(Companies $company): Project
+    {
+        $this->addProjectParticipant($company, ProjectParticipant::COMPANY_ROLE_ARRANGER);
+
+        return $this;
+    }
+
+    /**
+     * @param Companies $company
+     *
+     * @return Project
+     */
+    public function setRun(Companies $company): Project
+    {
+        $this->addProjectParticipant($company, ProjectParticipant::COMPANY_ROLE_RUN);
+
+        return $this;
+    }
+
+    /**
+     * @param Companies[] $companies
+     *
+     * @return Project
+     */
+    public function addLenders(array $companies): Project
+    {
+        foreach ($companies as $company) {
+            $this->addProjectParticipant($company, ProjectParticipant::COMPANY_ROLE_LENDER);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return ProjectParticipant|null
+     */
+    public function getArranger(): ?ProjectParticipant
+    {
+        return $this->getParticipantsByRole(ProjectParticipant::COMPANY_ROLE_ARRANGER)->first() ?: null;
+    }
+
+    /**
+     * @return ProjectParticipant|null
+     */
+    public function getRun(): ?ProjectParticipant
+    {
+        return $this->getParticipantsByRole(ProjectParticipant::COMPANY_ROLE_RUN)->first() ?: null;
+    }
+
+    /**
+     * @return Companies[]
+     */
+    public function getLenders(): iterable
+    {
+        return $this->getParticipantsByRole(ProjectParticipant::COMPANY_ROLE_LENDER);
+    }
+
+    /**
+     * @param int|null $status
+     *
+     * @return Bids[]|ArrayCollection
+     */
+    public function getBids(?int $status = null): iterable
+    {
+        $criteria = new Criteria();
+
+        if (null !== $status) {
+            $criteria->where(Criteria::expr()->eq('status', $status));
+        }
+
+        return $this->bids->matching($criteria);
+    }
+
+    /**
+     * @return Loans[]|ArrayCollection
+     */
+    public function getLoans(): iterable
+    {
+        return $this->loans;
+    }
+
+    /**
+     * @return iterable|ProjectPercentFee[]
+     */
+    public function getProjectPercentFees(): iterable
+    {
+        return $this->projectPercentFees;
+    }
+
+    /**
+     * @param ProjectPercentFee $projectPercentFee
+     *
+     * @return Project
+     */
+    public function addProjectPercentFee(ProjectPercentFee $projectPercentFee): Project
+    {
+        $projectPercentFee->setProject($this);
+
+        if (false === $this->projectPercentFees->contains($projectPercentFee)) {
+            $this->projectPercentFees->add($projectPercentFee);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @param ProjectPercentFee $projectPercentFee
+     *
+     * @return Project
+     */
+    public function removeProjectPercentFee(ProjectPercentFee $projectPercentFee): Project
+    {
+        if ($this->projectPercentFees->contains($projectPercentFee)) {
+            $this->projectPercentFees->removeElement($projectPercentFee);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return ProjectComment[]|ArrayCollection
+     */
+    public function getComments(): iterable
+    {
+        return $this->comments;
+    }
+
+    /**
+     * @return ArrayCollection|ProjectStatusHistory[]
+     */
+    public function getProjectStatusHistories(): iterable
+    {
+        return $this->projectStatusHistories;
     }
 
     /**
@@ -658,11 +741,23 @@ class Project
     }
 
     /**
-     * @return ArrayCollection|ProjectStatusHistory[]
+     * @param ProjectStatusHistory $projectStatusHistory
+     *
+     * @return Project
      */
-    public function getProjectStatusHistories(): iterable
+    public function removeProjectStatusHistory(ProjectStatusHistory $projectStatusHistory): Project
     {
-        return $this->projectStatusHistories;
+        $this->projectStatusHistories->removeElement($projectStatusHistory);
+
+        return $this;
+    }
+
+    /**
+     * @return Tranche[]|ArrayCollection
+     */
+    public function getTranches(): iterable
+    {
+        return $this->tranches;
     }
 
     /**
@@ -694,42 +789,6 @@ class Project
     }
 
     /**
-     * @return Tranche[]|ArrayCollection
-     */
-    public function getTranches(): iterable
-    {
-        return $this->tranches;
-    }
-
-    /**
-     * @return int|null
-     */
-    public function getFoncarisGuarantee(): ?int
-    {
-        return $this->foncarisGuarantee;
-    }
-
-    /**
-     * @param int $foncarisGuarantee
-     *
-     * @return Project
-     */
-    public function setFoncarisGuarantee(int $foncarisGuarantee): Project
-    {
-        $this->foncarisGuarantee = $foncarisGuarantee;
-
-        return $this;
-    }
-
-    /**
-     * @return array
-     */
-    public static function getFoncarisGuaranteeOptions(): array
-    {
-        return self::getConstants('FONCARIS_GUARANTEE_');
-    }
-
-    /**
      * @throws Exception
      *
      * @return string
@@ -746,65 +805,46 @@ class Project
      *
      * @return bool
      */
-    private function hasRole(string $role): bool
-    {
-        foreach ($this->getProjectParticipants() as $projectParticipant) {
-            if ($projectParticipant->hasRole($role)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * @param Companies $company
-     * @param string    $role
-     */
-    private function addProjectParticipant(Companies $company, string $role): void
-    {
-        if (false === $this->isUniqueRole($role) || false === $this->hasRole($role)) {
-            $projectParticipants = $this->getProjectParticipants($company);
-
-            if ($projectParticipants->count()) {
-                $projectParticipant = $projectParticipants->first();
-            }
-
-            if (empty($projectParticipant)) {
-                $projectParticipant = (new ProjectParticipant())
-                    ->setCompany($company)
-                    ->setProject($this)
-                ;
-            }
-
-            $projectParticipant->addRoles([$role]);
-            $this->projectParticipants->add($projectParticipant);
-        }
-    }
-
-    /**
-     * @param string $role
-     *
-     * @return bool
-     */
     private function isUniqueRole(string $role): bool
     {
         return in_array($role, [ProjectParticipant::COMPANY_ROLE_ARRANGER, ProjectParticipant::COMPANY_ROLE_RUN]);
     }
 
     /**
-     * @param string $role
+     * @param Companies $companies
      *
      * @return ProjectParticipant|null
      */
-    private function getParticipant(string $role): ?ProjectParticipant
+    private function getProjectParticipantByCompany(Companies $companies): ?ProjectParticipant
     {
+        $criteria = new Criteria();
+        $criteria->where(Criteria::expr()->eq('company', $companies));
+
+        // A company can only have one participant on a project.
+        return $this->projectParticipants->matching($criteria)->first() ?: null;
+    }
+
+    /**
+     * @param string $role
+     *
+     * @return ProjectParticipant[]|ArrayCollection
+     */
+    private function getParticipantsByRole(string $role): ?iterable
+    {
+        $isUniqueRole = $this->isUniqueRole($role);
+
+        $projectParticipants = new ArrayCollection();
+
+        // Ugly foreach on the participants (hopefully we don't have many participants on a project), as the Criteria doesn't support the json syntax.
         foreach ($this->getProjectParticipants() as $projectParticipant) {
             if ($projectParticipant->hasRole($role)) {
-                return $projectParticipant;
+                $projectParticipants->add($projectParticipant);
+                if ($isUniqueRole) {
+                    break;
+                }
             }
         }
 
-        return null;
+        return $projectParticipants;
     }
 }

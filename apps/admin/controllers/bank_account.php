@@ -22,6 +22,7 @@ class bank_accountController extends bootstrap
                 $attachmentManager = $this->get('unilend.service.attachment_manager');
                 /** @var \Unilend\Service\BankAccountManager $bankAccountManager */
                 $bankAccountManager = $this->get('unilend.service.bank_account_manager');
+
                 try {
                     $file = new File($attachmentManager->getFullPath($this->attachment));
                     if (in_array($file->getMimeType(), ['image/jpeg', 'image/gif', 'image/png', 'image/bmp'])) { // The 4 formats supported by most of the web browser
@@ -41,7 +42,7 @@ class bank_accountController extends bootstrap
                         . $this->request->request->get('iban7');
                     if (trim($iban) && $this->request->request->get('bic')) {
                         try {
-                            $bankAccountManager->saveBankInformation($this->attachment->getClient(), $_POST['bic'], $iban, $this->attachment);
+                            $bankAccountManager->saveBankInformation($this->attachment->getOwner(), $_POST['bic'], $iban, $this->attachment);
                         } catch (Exception $exception) {
                             $_SESSION['freeow']['title']   = 'Erreur RIB';
                             $_SESSION['freeow']['message'] = $exception->getMessage();
@@ -74,8 +75,9 @@ class bank_accountController extends bootstrap
         if ($this->request->isMethod('POST') && $this->request->request->get('id_bank_account')) {
             /** @var \Doctrine\ORM\EntityManager $entityManager */
             $entityManager = $this->get('doctrine.orm.entity_manager');
-            /** @var BankAccount $bankAccount */
+            // @var BankAccount $bankAccount
             $entityManager->beginTransaction();
+
             try {
                 $bankAccount = $entityManager->getRepository(BankAccount::class)->find($this->request->request->get('id_bank_account'));
                 if ($bankAccount) {
@@ -120,13 +122,13 @@ class bank_accountController extends bootstrap
         foreach ($companies as $company) {
             $projects = $entityManager->getRepository(Projects::class)->findBy(['idCompany' => $company]);
             foreach ($projects as $project) {
-                if ($project->getStatus() === ProjectsStatus::STATUS_FINISHED) {
+                if (ProjectsStatus::STATUS_FINISHED === $project->getStatus()) {
                     continue;
                 }
                 $mandates = $project->getMandates();
                 if (false === empty($mandates)) {
                     foreach ($mandates as $mandate) {
-                        if ($mandate->getStatus() === UniversignEntityInterface::STATUS_ARCHIVED) {
+                        if (UniversignEntityInterface::STATUS_ARCHIVED === $mandate->getStatus()) {
                             continue;
                         }
                         $nouveauNom    = str_replace('mandat', 'mandat-' . $mandate->getId(), $mandate->getName());
@@ -163,7 +165,7 @@ class bank_accountController extends bootstrap
                         'monthlyAmount'     => $this->ficelle->formatNumber($monthlyPayment),
                         'companyName'       => $company->getName(),
                         'mandateLink'       => $this->furl . '/pdf/mandat/' . $client->getHash() . '/' . $project->getIdProject(),
-                        'nextRepaymentDate' => $nextDirectDebit->getDateEcheanceEmprunteur()->format('d/m/Y')
+                        'nextRepaymentDate' => $nextDirectDebit->getDateEcheanceEmprunteur()->format('d/m/Y'),
                     ];
 
                     /** @var \Unilend\SwiftMailer\TemplateMessage $message */

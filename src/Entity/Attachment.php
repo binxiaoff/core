@@ -1,74 +1,76 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Unilend\Entity;
 
+use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
+use Unilend\Entity\Traits\{BlamableAddedTrait, BlamableArchivedTrait, BlamableUpdatedTrait, TimestampableTrait};
 
 /**
- * Attachment
- *
- * @ORM\Table(name="attachment", indexes={@ORM\Index(name="fk_attachment_id_type", columns={"id_type"}), @ORM\Index(name="id_client", columns={"id_client"})})
  * @ORM\Entity(repositoryClass="Unilend\Repository\AttachmentRepository")
  * @ORM\HasLifecycleCallbacks
  */
 class Attachment
 {
+    use TimestampableTrait;
+    use BlamableAddedTrait;
+    use BlamableArchivedTrait;
+    use BlamableUpdatedTrait;
+
     /**
      * @var string
      *
-     * @ORM\Column(name="path", type="string", length=191)
+     * @ORM\Column(length=191)
      */
     private $path;
 
     /**
-     * @var \DateTime
+     * @var DateTimeImmutable
      *
-     * @ORM\Column(name="added", type="datetime")
-     */
-    private $added;
-
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="updated", type="datetime", nullable=true)
-     */
-    private $updated;
-
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="archived", type="datetime", nullable=true)
+     * @ORM\Column(type="datetime_immutable", nullable=true)
      */
     private $archived;
 
     /**
      * @var int
      *
-     * @ORM\Column(name="id", type="integer")
+     * @ORM\Column(type="integer")
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="IDENTITY")
      */
     private $id;
 
     /**
-     * @var \Unilend\Entity\AttachmentType
+     * @var AttachmentType
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\AttachmentType")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_type", referencedColumnName="id", nullable=false)
+     *     @ORM\JoinColumn(name="id_type", nullable=false)
      * })
      */
-    private $idType;
+    private $type;
 
     /**
-     * @var \Unilend\Entity\Clients
+     * @var Clients
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\Clients", inversedBy="attachments")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_client", referencedColumnName="id_client", nullable=false)
+     *     @ORM\JoinColumn(name="id_owner", referencedColumnName="id_client")
      * })
      */
-    private $idClient;
+    private $owner;
+
+    /**
+     * @var Companies
+     *
+     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Companies")
+     * @ORM\JoinColumns({
+     *     @ORM\JoinColumn(name="id_company_owner", referencedColumnName="id_company")
+     * })
+     */
+    private $companyOwner;
 
     /**
      * @var GreenpointAttachment
@@ -87,19 +89,23 @@ class Attachment
     /**
      * @var string
      *
-     * @ORM\Column(name="original_name", type="string", length=191, nullable=true)
+     * @ORM\Column(length=191)
      */
     private $originalName;
 
+    /**
+     * @var string
+     *
+     * @ORM\Column(length=191, nullable=true)
+     */
+    private $description;
 
     /**
-     * Set path
-     *
      * @param string $path
      *
      * @return Attachment
      */
-    public function setPath($path)
+    public function setPath(string $path): Attachment
     {
         $this->path = $path;
 
@@ -107,71 +113,19 @@ class Attachment
     }
 
     /**
-     * Get path
-     *
      * @return string
      */
-    public function getPath()
+    public function getPath(): string
     {
         return $this->path;
     }
 
     /**
-     * Set added
-     *
-     * @param \DateTime $added
+     * @param DateTimeImmutable $archived
      *
      * @return Attachment
      */
-    public function setAdded($added)
-    {
-        $this->added = $added;
-
-        return $this;
-    }
-
-    /**
-     * Get added
-     *
-     * @return \DateTime
-     */
-    public function getAdded()
-    {
-        return $this->added;
-    }
-
-    /**
-     * Set updated
-     *
-     * @param \DateTime $updated
-     *
-     * @return Attachment
-     */
-    public function setUpdated($updated)
-    {
-        $this->updated = $updated;
-
-        return $this;
-    }
-
-    /**
-     * Get updated
-     *
-     * @return \DateTime
-     */
-    public function getUpdated()
-    {
-        return $this->updated;
-    }
-
-    /**
-     * Set archived
-     *
-     * @param \DateTime $archived
-     *
-     * @return Attachment
-     */
-    public function setArchived($archived)
+    public function setArchived(DateTimeImmutable $archived): Attachment
     {
         $this->archived = $archived;
 
@@ -179,19 +133,15 @@ class Attachment
     }
 
     /**
-     * Get archived
-     *
-     * @return \DateTime
+     * @return DateTimeImmutable
      */
-    public function getArchived()
+    public function getArchived(): DateTimeImmutable
     {
         return $this->archived;
     }
 
     /**
-     * Get id
-     *
-     * @return integer
+     * @return int
      */
     public function getId()
     {
@@ -199,99 +149,67 @@ class Attachment
     }
 
     /**
-     * Set idType
-     *
-     * @param \Unilend\Entity\AttachmentType $idType
+     * @param AttachmentType $type
      *
      * @return Attachment
      */
-    public function setType(AttachmentType $idType = null)
+    public function setType(AttachmentType $type)
     {
-        $this->idType = $idType;
+        $this->type = $type;
 
         return $this;
     }
 
     /**
-     * Get idType
-     *
-     * @return \Unilend\Entity\AttachmentType
+     * @return AttachmentType|null
      */
-    public function getType()
+    public function getType(): ?AttachmentType
     {
-        return $this->idType;
+        return $this->type;
     }
 
     /**
-     * Set idClient
-     *
-     * @param \Unilend\Entity\Clients $idClient
+     * @param Clients|null $owner
      *
      * @return Attachment
      */
-    public function setClient(Clients $idClient = null)
+    public function setOwner(?Clients $owner)
     {
-        $this->idClient = $idClient;
+        $this->owner = $owner;
 
         return $this;
     }
 
     /**
-     * Get idClient
-     *
-     * @return \Unilend\Entity\Clients
+     * @return Clients
      */
-    public function getClient()
+    public function getOwner(): Clients
     {
-        return $this->idClient;
+        return $this->owner;
     }
 
     /**
-     * @ORM\PrePersist
-     */
-    public function setAddedValue()
-    {
-        if (! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
-            $this->added = new \DateTime();
-        }
-    }
-
-    /**
-     * @ORM\PreUpdate
-     */
-    public function setUpdatedValue()
-    {
-        $this->updated = new \DateTime();
-    }
-
-    /**
-     * Get greenpointAttachment
-     *
      * @return GreenpointAttachment
      */
-    public function getGreenpointAttachment()
+    public function getGreenpointAttachment(): GreenpointAttachment
     {
         return $this->greenpointAttachment;
     }
 
     /**
-     * Get bankAccount
-     *
      * @return BankAccount
      */
-    public function getBankAccount()
+    public function getBankAccount(): BankAccount
     {
         return $this->bankAccount;
     }
 
     /**
-     * Set originalName
-     *
      * @param string $originalName
      *
      * @return Attachment
      */
-    public function setOriginalName($originalName)
+    public function setOriginalName(string $originalName)
     {
         $this->originalName = $originalName;
 
@@ -299,12 +217,50 @@ class Attachment
     }
 
     /**
-     * Get originalName
-     *
-     * @return string
+     * @return string|null
      */
-    public function getOriginalName()
+    public function getOriginalName(): ?string
     {
         return $this->originalName;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getDescription(): ?string
+    {
+        return $this->description;
+    }
+
+    /**
+     * @param string|null $description
+     *
+     * @return Attachment
+     */
+    public function setDescription(?string $description): Attachment
+    {
+        $this->description = $description;
+
+        return $this;
+    }
+
+    /**
+     * @return Companies|null
+     */
+    public function getCompanyOwner(): ?Companies
+    {
+        return $this->companyOwner;
+    }
+
+    /**
+     * @param Companies|null $companyOwner
+     *
+     * @return Attachment
+     */
+    public function setCompanyOwner(?Companies $companyOwner): Attachment
+    {
+        $this->companyOwner = $companyOwner;
+
+        return $this;
     }
 }

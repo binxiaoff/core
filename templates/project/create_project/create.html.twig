@@ -70,14 +70,16 @@
                                 'data-formvalidation-required': 'true',
                             }}) }}
                         </div><!-- /.row -->
-                        <div class="row row-multi-col-computer">
-                            {{ form_row(form.foncarisGuarantee) }}
-                        </div>
                     </section><!-- /.request-form-panel -->
                 </article><!-- /.panel -->
 
                 <article class="request-form-panel panel collapse">
-                    <h3>{% trans %} project-request.tranches {% endtrans %}</h3>
+                    <h3>{% trans %} project-request.guarantee-section-title {% endtrans %}</h3>
+                    {{ form_row(form.foncarisGuarantee, {label: false}) }}
+                </article>
+
+                <article class="request-form-panel panel collapse">
+                    <h3>{% trans %} project-request.tranches-section-title {% endtrans %}</h3>
                     {{ form_row(form.tranches) }}
                 </article>
 
@@ -91,6 +93,11 @@
                             {{ form_row(form.run) }}
                         </div>
                     </div>
+                </article>
+
+                <article class="request-form-panel panel collapse">
+                    <h3>{% trans %} project-request.attachments-section-title {% endtrans %}</h3>
+                    {{ form_row(form.projectAttachments) }}
                 </article>
 
                 <article class="request-form-panel panel collapse">
@@ -179,5 +186,6 @@
 
         {% include 'partials/fees/fees.js.twig' %}
         {% include 'partials/tranche/edit_tranches.js.twig' %}
+        {% include 'partials/attachment/add_attachment.js.twig' %}
     </script>
 {% endblock %}

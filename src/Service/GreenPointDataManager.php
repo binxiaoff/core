@@ -4,8 +4,8 @@ namespace Unilend\Service;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
-use Unilend\Entity\{AddressType, Attachment, AttachmentType, ClientAddress, Companies, CompanyAddress, GreenpointAttachment, GreenpointAttachmentDetail};
 use Unilend\Entity\External\GreenPoint\{HousingCertificate, Identity, Rib};
+use Unilend\Entity\{AddressType, Attachment, AttachmentType, ClientAddress, Companies, CompanyAddress, GreenpointAttachment, GreenpointAttachmentDetail};
 use Unilend\Service\WebServiceClient\GreenPointManager;
 
 class GreenPointDataManager
@@ -26,18 +26,18 @@ class GreenPointDataManager
         EntityManagerInterface $entityManager,
         LoggerInterface $logger,
         AttachmentManager $attachmentManager
-    )
-    {
-        $this->entityManager      = $entityManager;
-        $this->logger             = $logger;
-        $this->attachmentManager  = $attachmentManager;
+    ) {
+        $this->entityManager     = $entityManager;
+        $this->logger            = $logger;
+        $this->attachmentManager = $attachmentManager;
     }
 
     /**
      * @param Attachment $attachment
      *
-     * @return array
      * @throws \Exception
+     *
+     * @return array
      */
     public function getGreenPointData(Attachment $attachment): array
     {
@@ -51,92 +51,19 @@ class GreenPointDataManager
             case AttachmentType::JUSTIFICATIF_DOMICILE:
             case AttachmentType::ATTESTATION_HEBERGEMENT_TIERS:
                 return $this->getAddressData($attachment);
-            default :
+            default:
                 return [];
         }
-    }
-
-    /**
-     * @param Attachment $attachment
-     *
-     * @return array
-     */
-    private function getIdentityData(Attachment $attachment): array
-    {
-        return array_merge($this->getCommonClientData($attachment), ['date_naissance' => $attachment->getClient()->getDateOfBirth()->format('d/m/Y')]);
-    }
-
-    /**
-     * @param Attachment $attachment
-     *
-     * @return array
-     */
-    private function getBankAccountData(Attachment $attachment): array
-    {
-        $bankAccount = $attachment->getBankAccount();
-        if (null === $bankAccount) {
-            throw new \InvalidArgumentException('Attachment has no bank account');
-        }
-
-        return array_merge(
-            $this->getCommonClientData($attachment), [
-            'iban' => $bankAccount->getIban(),
-            'bic'  => $bankAccount->getBic()
-        ]);
-    }
-
-    /**
-     * @param Attachment $attachment
-     *
-     * @return array
-     * @throws \Exception
-     */
-    private function getAddressData(Attachment $attachment): array
-    {
-        if ($attachment->getClient()->isNaturalPerson()) {
-            $address = $this->entityManager->getRepository(ClientAddress::class)->findLastModifiedNotArchivedAddressByType($attachment->getClient(), AddressType::TYPE_MAIN_ADDRESS);
-        } else {
-            $company = $this->entityManager->getRepository(Companies::class)->findOneBy(['idClientOwner' => $attachment->getClient()]);
-            $address = $this->entityManager->getRepository(CompanyAddress::class)->findLastModifiedNotArchivedAddressByType($company, AddressType::TYPE_MAIN_ADDRESS);
-        }
-
-        if (null === $address) {
-            throw new \Exception('Client/Company has no last modified address');
-        }
-
-        return array_merge(
-            $this->getCommonClientData($attachment), [
-            'adresse'     => $address->getAddress(),
-            'code_postal' => $address->getZip(),
-            'ville'       => $address->getCity(),
-            'pays'        => strtoupper($address->getIdCountry()->getFr())
-        ]);
-    }
-
-    /**
-     * @param Attachment $attachment
-     *
-     * @return array
-     */
-    private function getCommonClientData(Attachment $attachment): array
-    {
-        return [
-            'files'    => fopen($this->attachmentManager->getFullPath($attachment), 'r'),
-            'dossier'  => $attachment->getClient()->getIdClient(),
-            'document' => $attachment->getId(),
-            'detail'   => GreenPointManager::DETAIL_TRUE,
-            'nom'      => $attachment->getClient()->getLastName() . ($attachment->getClient()->getPreferredName() ? '|' . $attachment->getClient()->getPreferredName() : ''),
-            'prenom'   => $attachment->getClient()->getFirstName()
-        ];
     }
 
     /**
      * @param Attachment                      $attachment
      * @param Identity|Rib|HousingCertificate $response
      *
-     * @return GreenpointAttachment
      * @throws \Doctrine\ORM\ORMException
      * @throws \Doctrine\ORM\OptimisticLockException
+     *
+     * @return GreenpointAttachment
      */
     public function updateGreenPointData(Attachment $attachment, $response): GreenpointAttachment
     {
@@ -154,9 +81,89 @@ class GreenPointDataManager
     /**
      * @param Attachment $attachment
      *
-     * @return GreenpointAttachment
+     * @return array
+     */
+    private function getIdentityData(Attachment $attachment): array
+    {
+        return array_merge($this->getCommonClientData($attachment), ['date_naissance' => $attachment->getOwner()->getDateOfBirth()->format('d/m/Y')]);
+    }
+
+    /**
+     * @param Attachment $attachment
+     *
+     * @return array
+     */
+    private function getBankAccountData(Attachment $attachment): array
+    {
+        $bankAccount = $attachment->getBankAccount();
+        if (null === $bankAccount) {
+            throw new \InvalidArgumentException('Attachment has no bank account');
+        }
+
+        return array_merge(
+            $this->getCommonClientData($attachment),
+            [
+                'iban' => $bankAccount->getIban(),
+                'bic'  => $bankAccount->getBic(),
+            ]
+        );
+    }
+
+    /**
+     * @param Attachment $attachment
+     *
+     * @throws \Exception
+     *
+     * @return array
+     */
+    private function getAddressData(Attachment $attachment): array
+    {
+        if ($attachment->getOwner()->isNaturalPerson()) {
+            $address = $this->entityManager->getRepository(ClientAddress::class)->findLastModifiedNotArchivedAddressByType($attachment->getOwner(), AddressType::TYPE_MAIN_ADDRESS);
+        } else {
+            $company = $this->entityManager->getRepository(Companies::class)->findOneBy(['idClientOwner' => $attachment->getOwner()]);
+            $address = $this->entityManager->getRepository(CompanyAddress::class)->findLastModifiedNotArchivedAddressByType($company, AddressType::TYPE_MAIN_ADDRESS);
+        }
+
+        if (null === $address) {
+            throw new \Exception('Client/Company has no last modified address');
+        }
+
+        return array_merge(
+            $this->getCommonClientData($attachment),
+            [
+                'adresse'     => $address->getAddress(),
+                'code_postal' => $address->getZip(),
+                'ville'       => $address->getCity(),
+                'pays'        => mb_strtoupper($address->getIdCountry()->getFr()),
+            ]
+        );
+    }
+
+    /**
+     * @param Attachment $attachment
+     *
+     * @return array
+     */
+    private function getCommonClientData(Attachment $attachment): array
+    {
+        return [
+            'files'    => fopen($this->attachmentManager->getFullPath($attachment), 'rb'),
+            'dossier'  => $attachment->getOwner()->getIdClient(),
+            'document' => $attachment->getId(),
+            'detail'   => GreenPointManager::DETAIL_TRUE,
+            'nom'      => $attachment->getOwner()->getLastName() . ($attachment->getOwner()->getPreferredName() ? '|' . $attachment->getOwner()->getPreferredName() : ''),
+            'prenom'   => $attachment->getOwner()->getFirstName(),
+        ];
+    }
+
+    /**
+     * @param Attachment $attachment
+     *
      * @throws \Doctrine\ORM\ORMException
      * @throws \Doctrine\ORM\OptimisticLockException
+     *
+     * @return GreenpointAttachment
      */
     private function createGreenpointAttachment(Attachment $attachment): GreenpointAttachment
     {
@@ -173,9 +180,10 @@ class GreenPointDataManager
      * @param Attachment                      $attachment
      * @param Identity|Rib|HousingCertificate $response
      *
-     * @return GreenpointAttachment
      * @throws \Doctrine\ORM\ORMException
      * @throws \Doctrine\ORM\OptimisticLockException
+     *
+     * @return GreenpointAttachment
      */
     private function updateGreenpointAttachment(Attachment $attachment, $response): GreenpointAttachment
     {
@@ -191,7 +199,8 @@ class GreenPointDataManager
 
         $greenPointAttachment
             ->setValidationStatus($response->getStatus())
-            ->setValidationStatusLabel($response->getStatusLabel());
+            ->setValidationStatusLabel($response->getStatusLabel())
+        ;
 
         $this->entityManager->flush($greenPointAttachment);
 
@@ -220,10 +229,10 @@ class GreenPointDataManager
         }
 
         if ($response instanceof Rib) {
-           $this->setRibDetail($greenPointAttachmentDetail, $response);
+            $this->setRibDetail($greenPointAttachmentDetail, $response);
         }
 
-        if ($response instanceof HousingCertificate){
+        if ($response instanceof HousingCertificate) {
             $this->setHousingCertificateDetail($greenPointAttachmentDetail, $response);
         }
 
@@ -250,7 +259,8 @@ class GreenPointDataManager
             ->setIdentityBirthdate($identity->getBirthday())
             ->setIdentityDocumentNumber($identity->getDocumentNumber())
             ->setIdentityDocumentTypeId($identity->getType())
-            ->setIdentityCivility($identity->getGender());
+            ->setIdentityCivility($identity->getGender())
+        ;
     }
 
     /**
@@ -263,7 +273,8 @@ class GreenPointDataManager
             ->setDocumentType(GreenPointManager::TYPE_RIB)
             ->setBankDetailsIban($rib->getIban())
             ->setBankDetailsBic($rib->getBic())
-            ->setBankDetailsUrl($rib->getUrl());
+            ->setBankDetailsUrl($rib->getUrl())
+        ;
     }
 
     /**
@@ -277,6 +288,7 @@ class GreenPointDataManager
             ->setAddressAddress($housingCertificate->getAddress())
             ->setAddressPostalCode($housingCertificate->getZip())
             ->setAddressCity($housingCertificate->getCity())
-            ->setAddressCountry($housingCertificate->getCountry());
+            ->setAddressCountry($housingCertificate->getCountry())
+        ;
     }
 }

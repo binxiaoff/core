@@ -5,7 +5,7 @@ namespace Unilend\Repository;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\Query\Expr\Join;
-use Unilend\Entity\{Attachment, AttachmentType, ProjectAttachment, ProjectAttachmentType, ProjectAttachmentTypeCategory, Projects};
+use Unilend\Entity\{Attachment, AttachmentType, Project, ProjectAttachment, ProjectAttachmentType, ProjectAttachmentTypeCategory};
 
 class ProjectAttachmentRepository extends ServiceEntityRepository
 {
@@ -20,7 +20,7 @@ class ProjectAttachmentRepository extends ServiceEntityRepository
     }
 
     /**
-     * @param Projects|int       $project
+     * @param Project|int        $project
      * @param AttachmentType|int $attachmentType
      *
      * @return ProjectAttachment[]
@@ -42,7 +42,7 @@ class ProjectAttachmentRepository extends ServiceEntityRepository
     }
 
     /**
-     * @param Projects|int $project
+     * @param Project|int $project
      *
      * @return array
      */

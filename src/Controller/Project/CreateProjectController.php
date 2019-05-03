@@ -4,17 +4,19 @@ declare(strict_types=1);
 
 namespace Unilend\Controller\Project;
 
+use Exception;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\{Request, Response};
+use Symfony\Component\Form\FormInterface;
+use Symfony\Component\HttpFoundation\{File\UploadedFile, Request, Response};
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Unilend\Entity\Attachment;
 use Unilend\Entity\Clients;
 use Unilend\Entity\Project;
-use Unilend\Form\Project\ProjectEditType;
-use Unilend\Repository\{CompaniesRepository, CompanySectorRepository, ProjectAttachmentTypeRepository};
+use Unilend\Form\Project\ProjectType;
+use Unilend\Service\AttachmentManager;
 use Unilend\Service\Project\ProjectCreationManager;
-use Unilend\Service\ProjectManager;
 
 /**
  * @Security("is_granted('ROLE_USER')")
@@ -24,43 +26,47 @@ class CreateProjectController extends AbstractController
     /**
      * @Route("/projet/depot", name="create_project", methods={"GET", "POST"})
      *
-     * @param Request                         $request
-     * @param ProjectManager                  $projectManager
-     * @param ProjectCreationManager          $projectCreationManager
-     * @param CompaniesRepository             $companiesRepository
-     * @param ProjectAttachmentTypeRepository $projectAttachmentTypeRepository
-     * @param CompanySectorRepository         $companySectorRepository
-     * @param UserInterface|Clients|null      $client
+     * @param Request                    $request
+     * @param ProjectCreationManager     $projectCreationManager
+     * @param UserInterface|Clients|null $client
+     * @param AttachmentManager          $attachmentManager
+     *
+     * @throws Exception
      *
      * @return Response
      */
     public function create(
         Request $request,
-        ProjectManager $projectManager,
         ProjectCreationManager $projectCreationManager,
-        CompaniesRepository $companiesRepository,
-        ProjectAttachmentTypeRepository $projectAttachmentTypeRepository,
-        CompanySectorRepository $companySectorRepository,
-        ?UserInterface $client
+        ?UserInterface $client,
+        AttachmentManager $attachmentManager
     ) {
-        $form = $this->createForm(ProjectEditType::class);
+        $form = $this->createForm(ProjectType::class);
 
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
             /** @var Project $project */
-            $project = $form->getData();
+            $project                = $form->getData();
+            $projectAttachmentForms = $form->get('projectAttachments');
+            /** @var FormInterface $projectAttachmentForm */
+            foreach ($projectAttachmentForms as $projectAttachmentForm) {
+                $attachmentForm = $projectAttachmentForm->get('attachment');
+                /** @var Attachment $attachment */
+                $attachment = $attachmentForm->getData();
+                /** @var UploadedFile $uploadedFile */
+                $uploadedFile = $attachmentForm->get('file')->getData();
+                $companyOwner = $project->getBorrowerCompany();
+                $attachmentManager->upload(null, $companyOwner, $client, null, $attachment, $uploadedFile);
+            }
+
             $projectCreationManager->handleBlamableCreation($project, $client);
 
             return $this->redirectToRoute('project_creation_success');
         }
 
         return $this->render('project/create_project/create.html.twig', [
-            'loanPeriods'     => $projectManager->getPossibleProjectPeriods(),
-            'runs'            => $companiesRepository->findBy(['idCompany' => range(6, 45)], ['name' => 'ASC']),
-            'attachmentTypes' => $projectAttachmentTypeRepository->getAttachmentTypes(),
-            'sectors'         => $companySectorRepository->findBy([], ['idCompanySector' => 'ASC']),
-            'form'            => $form->createView(),
+            'form' => $form->createView(),
         ]);
     }
 

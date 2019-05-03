@@ -32,7 +32,7 @@ class LendingRate
      *
      * @Assert\NotBlank
      */
-    private $indexType;
+    protected $indexType;
 
     /**
      * The margin to be added on the indexed rate.
@@ -42,9 +42,9 @@ class LendingRate
      * @ORM\Column(type="decimal", precision=4, scale=2)
      *
      * @Assert\NotBlank
-     * @Assert\Range(min="0.01", max="99.99")
+     * @Assert\Range(min="0", max="99.99")
      */
-    private $margin;
+    protected $margin;
 
     /**
      * @return string|null

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Unilend\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
-use Unilend\Entity\Traits\{Roleable, TimestampableTrait};
+use Unilend\Entity\Traits\{RoleableTrait, TimestampableTrait};
 
 /**
  * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(columns={"id_project", "id_company"})})
@@ -14,7 +14,10 @@ use Unilend\Entity\Traits\{Roleable, TimestampableTrait};
  */
 class ProjectParticipant
 {
-    use Roleable;
+    use RoleableTrait {
+        removeRole as public baseRemoveRole;
+    }
+
     use TimestampableTrait;
 
     // Use COMPANY_ prefix to distinguish it from Symfony user's roles
@@ -107,5 +110,21 @@ class ProjectParticipant
     public function isArranger(): bool
     {
         return in_array(self::COMPANY_ROLE_ARRANGER, $this->getRoles());
+    }
+
+    /**
+     * @param string $role
+     *
+     * @return $this
+     */
+    public function removeRole(string $role)
+    {
+        $this->baseRemoveRole($role);
+
+        if (0 === count($this->roles)) {
+            $this->setProject(null);
+        }
+
+        return $this;
     }
 }

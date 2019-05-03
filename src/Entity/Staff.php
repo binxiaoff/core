@@ -3,7 +3,7 @@
 namespace Unilend\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
-use Unilend\Entity\Traits\{Roleable, TimestampableTrait};
+use Unilend\Entity\Traits\{RoleableTrait, TimestampableTrait};
 
 /**
  * @ORM\Entity
@@ -11,7 +11,7 @@ use Unilend\Entity\Traits\{Roleable, TimestampableTrait};
  */
 class Staff
 {
-    use Roleable;
+    use RoleableTrait;
     use TimestampableTrait;
 
     /**
