@@ -16,10 +16,11 @@ $addAttachmentButton.on('click', function () {
 
 function addAttachmentForm($attachmentCollectionHolder, $addAttachmentButton) {
     var prototype = $attachmentCollectionHolder.data('prototype');
+    var prototypeName = $attachmentCollectionHolder.data('prototype-name');
     var index = $attachmentCollectionHolder.data('index');
     var newForm = prototype;
 
-    newForm = newForm.replace(/__name__/g, index);
+    newForm = newForm.replace(new RegExp(prototypeName, 'g'), index);
 
     $attachmentCollectionHolder.data('index', index + 1);
 

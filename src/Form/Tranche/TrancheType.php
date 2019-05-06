@@ -49,14 +49,15 @@ class TrancheType extends AbstractType
                 'input'  => 'datetime_immutable',
             ])
             ->add('tranchePercentFees', CollectionType::class, [
-                'label'         => false,
-                'entry_type'    => TranchePercentFeeType::class,
-                'entry_options' => ['label' => false],
-                'allow_add'     => true,
-                'allow_delete'  => true,
-                'by_reference'  => false,
-                'prototype'     => true,
-                'attr'          => ['class' => 'tranche-percent-fees'],
+                'label'          => false,
+                'entry_type'     => TranchePercentFeeType::class,
+                'entry_options'  => ['label' => false],
+                'allow_add'      => true,
+                'allow_delete'   => true,
+                'by_reference'   => false,
+                'prototype'      => true,
+                'prototype_name' => '__tranche_percent_fees__',
+                'attr'           => ['class' => 'tranche-percent-fees'],
             ])
         ;
     }

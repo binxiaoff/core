@@ -45,10 +45,11 @@ $validFeeButton.find('button').on('click', function () {
 {% endif %}
 function addFeeForm($collectionHolder, $buttons, $validFeeButton) {
     var prototype = $collectionHolder.data('prototype');
+    var prototypeName = $attachmentCollectionHolder.data('prototype-name');
     var index = $collectionHolder.data('index');
     var newForm = prototype;
 
-    newForm = newForm.replace(/__name__/g, index);
+    newForm = newForm.replace(new RegExp(prototypeName, 'g'), index);
 
     $collectionHolder.data('index', index + 1);
 

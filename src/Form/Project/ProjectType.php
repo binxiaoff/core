@@ -79,14 +79,15 @@ class ProjectType extends AbstractType
                 'attr'  => ['row' => 10],
             ])
             ->add('tranches', CollectionType::class, [
-                'label'         => false,
-                'entry_type'    => TrancheType::class,
-                'entry_options' => ['label' => false],
-                'allow_add'     => true,
-                'allow_delete'  => true,
-                'by_reference'  => false,
-                'prototype'     => true,
-                'attr'          => ['class' => 'tranches'],
+                'label'          => false,
+                'entry_type'     => TrancheType::class,
+                'entry_options'  => ['label' => false],
+                'allow_add'      => true,
+                'allow_delete'   => true,
+                'by_reference'   => false,
+                'prototype'      => true,
+                'prototype_name' => '__tranche__',
+                'attr'           => ['class' => 'tranches'],
             ])
             ->add('foncarisGuarantee', ChoiceType::class, [
                 'label'   => 'project-form.foncaris-guarantee',

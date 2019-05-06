@@ -16,10 +16,11 @@ $addTrancheButton.on('click', function () {
 
 function addTrancheForm($trancheCollectionHolder, $addTrancheButton) {
     var prototype = $trancheCollectionHolder.data('prototype');
+    var prototypeName = $trancheCollectionHolder.data('prototype-name');
     var index = $trancheCollectionHolder.data('index');
     var newForm = prototype;
 
-    newForm = newForm.replace(/__name__/g, index);
+    newForm = newForm.replace(new RegExp(prototypeName, 'g'), index);
 
     $trancheCollectionHolder.data('index', index + 1);
 
@@ -54,10 +55,11 @@ function initTranchePercentFeeForm()
 
 function addTranchePercentFeeForm($tranchePercentFeeCollectionHolder, $addTranchePercentFeeButton) {
     var prototype = $tranchePercentFeeCollectionHolder.data('prototype');
+    var prototypeName = $tranchePercentFeeCollectionHolder.data('prototype-name');
     var index = $tranchePercentFeeCollectionHolder.data('index');
     var newForm = prototype;
 
-    newForm = newForm.replace(/__name__/g, index);
+    newForm = newForm.replace(new RegExp(prototypeName, 'g'), index);
 
     $tranchePercentFeeCollectionHolder.data('index', index + 1);
 
