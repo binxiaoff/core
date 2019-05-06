@@ -14,7 +14,7 @@ final class Version20190425125334 extends AbstractMigration
 {
     public function getDescription(): string
     {
-        return '';
+        return 'CALS-104 add new table market_segment, project';
     }
 
     public function up(Schema $schema): void

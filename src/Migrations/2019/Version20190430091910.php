@@ -14,7 +14,7 @@ final class Version20190430091910 extends AbstractMigration
 {
     public function getDescription(): string
     {
-        return '';
+        return 'CALS-104 creat new table tranche';
     }
 
     public function up(Schema $schema): void

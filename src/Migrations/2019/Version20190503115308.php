@@ -14,7 +14,7 @@ final class Version20190503115308 extends AbstractMigration
 {
     public function getDescription(): string
     {
-        return '';
+        return 'CALS-104 add new fields to attachment';
     }
 
     public function up(Schema $schema): void

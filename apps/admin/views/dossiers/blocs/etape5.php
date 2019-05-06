@@ -121,19 +121,19 @@
             <?php $currentCategory = null; ?>
             <?php /** @var \Unilend\Entity\ProjectAttachmentType $attachmentType */ ?>
             <?php foreach ($this->attachmentTypes as $attachmentType) : ?>
-                <?php if ($attachmentType->getIdCategory()->getId() !== $currentCategory) : ?>
-                    <?php $currentCategory = $attachmentType->getIdCategory()->getId(); ?>
+                <?php if ($attachmentType->getCategory()->getId() !== $currentCategory) : ?>
+                    <?php $currentCategory = $attachmentType->getCategory()->getId(); ?>
                     <tr class="attachment-category">
                         <th colspan="3">
-                            <?= $attachmentType->getIdCategory()->getName() ?>
-                            <?php if (isset($this->projectAttachmentsCountByCategory[$attachmentType->getIdCategory()->getId()])) : ?>
-                                (<?= $this->projectAttachmentsCountByCategory[$attachmentType->getIdCategory()->getId()] ?>)
+                            <?= $attachmentType->getCategory()->getName() ?>
+                            <?php if (isset($this->projectAttachmentsCountByCategory[$attachmentType->getCategory()->getId()])) : ?>
+                                (<?= $this->projectAttachmentsCountByCategory[$attachmentType->getCategory()->getId()] ?>)
                             <?php endif; ?>
                         </th>
                     </tr>
                 <?php endif; ?>
 
-                <tr<?php if (in_array($attachmentType->getIdType()->getId(), $this->mandatoryAttachmentTypes)) : ?> class="highlighted"<?php endif; ?>>
+                <tr<?php if (in_array($attachmentType->getAttachmentType()->getId(), $this->mandatoryAttachmentTypes)) : ?> class="highlighted"<?php endif; ?>>
                     <td>
                         <?= $attachmentType->getName() ?>
                         <?php if ($attachmentType->getMaxItems() > 1) : ?>
@@ -141,9 +141,9 @@
                         <?php endif; ?>
                     </td>
                     <td>
-                        <?php if (isset($this->projectAttachmentsByType[$attachmentType->getIdType()->getId()])) : ?>
+                        <?php if (isset($this->projectAttachmentsByType[$attachmentType->getAttachmentType()->getId()])) : ?>
                             <?php /** @var \Unilend\Entity\ProjectAttachment $projectAttachment */ ?>
-                            <?php foreach ($this->projectAttachmentsByType[$attachmentType->getIdType()->getId()] as $projectAttachment) : ?>
+                            <?php foreach ($this->projectAttachmentsByType[$attachmentType->getAttachmentType()->getId()] as $projectAttachment) : ?>
                                 <div class="attachment-file">
                                     <a class="attachment-remove" href="<?= $this->lurl ?>/attachment/remove_project/<?= $projectAttachment->getId() ?>">
                                         <img src="<?= $this->surl ?>/images/admin/delete.png" alt="Supprimer">
@@ -153,15 +153,15 @@
                                     </a>
                                 </div>
                             <?php endforeach; ?>
-                            <?php unset($this->projectAttachmentsByType[$attachmentType->getIdType()->getId()]); ?>
+                            <?php unset($this->projectAttachmentsByType[$attachmentType->getAttachmentType()->getId()]); ?>
                         <?php endif; ?>
                     </td>
                     <td>
                         <!-- Ajouter la ligne dans la colonne fichier si chargement OK -->
-                        <form id="upload-form-<?= $attachmentType->getIdType()->getId() ?>" class="dropzone" action="<?= $this->lurl ?>/attachment/upload_project" method="post"
+                        <form id="upload-form-<?= $attachmentType->getAttachmentType()->getId() ?>" class="dropzone" action="<?= $this->lurl ?>/attachment/upload_project" method="post"
                               data-dz-maxfiles="<?= $attachmentType->getMaxItems() ?>">
                             <input type="hidden" name="id_project" value="<?= $this->projectEntity->getIdProject() ?>">
-                            <input type="hidden" name="id_attachment" value="<?= $attachmentType->getIdType()->getId() ?>">
+                            <input type="hidden" name="id_attachment" value="<?= $attachmentType->getAttachmentType()->getId() ?>">
                         </form>
                     </td>
                 </tr>

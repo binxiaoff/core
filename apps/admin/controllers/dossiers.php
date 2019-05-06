@@ -804,7 +804,7 @@ class dossiersController extends bootstrap
                     continue;
                 }
 
-                $categoryId = $attachmentTypes[$attachmentTypeId]->getIdCategory()->getId();
+                $categoryId = $attachmentTypes[$attachmentTypeId]->getCategory()->getId();
 
                 if (false === isset($this->projectAttachmentsCountByCategory[$categoryId])) {
                     $this->projectAttachmentsCountByCategory[$categoryId] = 0;

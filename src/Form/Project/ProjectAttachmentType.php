@@ -17,7 +17,10 @@ class ProjectAttachmentType extends AbstractType
      */
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
-        $builder->add('attachment', AttachmentType::class, ['label' => false]);
+        $builder->add('attachment', AttachmentType::class, [
+            'label'      => false,
+            'type_class' => \Unilend\Entity\ProjectAttachmentType::class,
+        ]);
     }
 
     /**

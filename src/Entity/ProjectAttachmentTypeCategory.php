@@ -3,14 +3,12 @@
 namespace Unilend\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Unilend\Entity\Interfaces\EntityAttachmentTypeCategoryInterface;
 
 /**
- * ProjectAttachmentTypeCategory
- *
- * @ORM\Table(name="project_attachment_type_category")
  * @ORM\Entity
  */
-class ProjectAttachmentTypeCategory
+class ProjectAttachmentTypeCategory implements EntityAttachmentTypeCategoryInterface
 {
     /**
      * @var string
@@ -42,11 +40,7 @@ class ProjectAttachmentTypeCategory
      */
     private $id;
 
-
-
     /**
-     * Set label
-     *
      * @param string $label
      *
      * @return ProjectAttachmentTypeCategory
@@ -59,8 +53,6 @@ class ProjectAttachmentTypeCategory
     }
 
     /**
-     * Get label
-     *
      * @return string
      */
     public function getLabel(): string
@@ -69,8 +61,6 @@ class ProjectAttachmentTypeCategory
     }
 
     /**
-     * Set name
-     *
      * @param string|null $name
      *
      * @return ProjectAttachmentTypeCategory
@@ -83,8 +73,6 @@ class ProjectAttachmentTypeCategory
     }
 
     /**
-     * Get name
-     *
      * @return string|null
      */
     public function getName(): ?string
@@ -93,8 +81,6 @@ class ProjectAttachmentTypeCategory
     }
 
     /**
-     * Set rank
-     *
      * @param int $rank
      *
      * @return ProjectAttachmentTypeCategory
@@ -107,8 +93,6 @@ class ProjectAttachmentTypeCategory
     }
 
     /**
-     * Get rank
-     *
      * @return int
      */
     public function getRank(): int
@@ -117,8 +101,6 @@ class ProjectAttachmentTypeCategory
     }
 
     /**
-     * Get id
-     *
      * @return int
      */
     public function getId(): int
