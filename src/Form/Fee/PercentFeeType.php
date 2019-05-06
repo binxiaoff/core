@@ -20,8 +20,12 @@ class PercentFeeType extends AbstractType
     {
         $builder
             ->add('type', EntityType::class, [
-                'label' => 'percent-fee-form.type',
-                'class' => FeeType::class,
+                'label'        => 'percent-fee-form.type',
+                'class'        => FeeType::class,
+                'choice_label' => function (FeeType $feeType, $key, $value) {
+                    return 'fee-type.' . $feeType->getLabel();
+                },
+                'choice_translation_domain' => true,
             ])
             ->add('rate', NumberType::class, [
                 'label' => 'percent-fee-form.rate',

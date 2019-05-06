@@ -39,14 +39,6 @@ class FeeType
     private $isRecurring;
 
     /**
-     * @return string
-     */
-    public function __toString(): string
-    {
-        return $this->getLabel();
-    }
-
-    /**
      * @return int
      */
     public function getId(): int

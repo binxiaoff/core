@@ -24,14 +24,6 @@ class MarketSegment
     private $label;
 
     /**
-     * @return string|null
-     */
-    public function __toString()
-    {
-        return $this->getLabel();
-    }
-
-    /**
      * @return int|null
      */
     public function getId(): ?int

@@ -9,12 +9,9 @@ use Symfony\Component\Form\Extension\Core\Type\{ChoiceType, NumberType};
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Unilend\Entity\Embeddable\LendingRate;
-use Unilend\Form\Traits\ConstantsToChoicesTrait;
 
 class LendingRateType extends AbstractType
 {
-    use ConstantsToChoicesTrait;
-
     /**
      * {@inheritdoc}
      */
@@ -22,9 +19,12 @@ class LendingRateType extends AbstractType
     {
         $builder
             ->add('indexType', ChoiceType::class, [
-                'label'    => 'lending-form.index-type',
-                'required' => $options['required'],
-                'choices'  => $this->getChoicesFromConstants(LendingRate::getIndexes(), 'interest-rate-index'),
+                'label'        => 'lending-form.index-type',
+                'required'     => $options['required'],
+                'choices'      => LendingRate::getIndexes(),
+                'choice_label' => function ($option, string $key, string $value) {
+                    return 'interest-rate-index.' . mb_strtolower($key);
+                },
             ])
             ->add('margin', NumberType::class, [
                 'label'    => 'lending-form.margin',

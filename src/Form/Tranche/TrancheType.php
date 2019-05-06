@@ -13,12 +13,9 @@ use Unilend\Entity\Embeddable\NullableLendingRate;
 use Unilend\Entity\Tranche;
 use Unilend\Form\Lending\LendingRateType;
 use Unilend\Form\MoneyType;
-use Unilend\Form\Traits\ConstantsToChoicesTrait;
 
 class TrancheType extends AbstractType
 {
-    use ConstantsToChoicesTrait;
-
     /**
      * {@inheritdoc}
      */
@@ -27,8 +24,11 @@ class TrancheType extends AbstractType
         $builder
             ->add('name', null, ['label' => 'tranche-form.name'])
             ->add('repaymentType', ChoiceType::class, [
-                'label'   => 'tranche-form.repayment-type',
-                'choices' => $this->getChoicesFromConstants(Tranche::getRepaymentTypes(), 'repayment-type'),
+                'label'        => 'tranche-form.repayment-type',
+                'choices'      => Tranche::getRepaymentTypes(),
+                'choice_label' => function ($option, string $key, string $value) {
+                    return 'repayment-type.' . mb_strtolower($key);
+                },
             ])
             ->add('duration', null, ['label' => 'tranche-form.maturity'])
             ->add('money', MoneyType::class)
@@ -42,11 +42,13 @@ class TrancheType extends AbstractType
                 'label'  => 'tranche-form.expected-releasing-date',
                 'widget' => 'single_text',
                 'input'  => 'datetime_immutable',
+                'attr'   => ['class' => 'ui-has-datepicker'],
             ])
             ->add('expectedStartingDate', null, [
                 'label'  => 'tranche-form.expected-starting-date',
                 'widget' => 'single_text',
                 'input'  => 'datetime_immutable',
+                'attr'   => ['class' => 'ui-has-datepicker'],
             ])
             ->add('tranchePercentFees', CollectionType::class, [
                 'label'          => false,

@@ -8,23 +8,16 @@ use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\EntityRepository;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
-use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
-use Symfony\Component\Form\Extension\Core\Type\CollectionType;
-use Symfony\Component\Form\Extension\Core\Type\DateType;
-use Symfony\Component\Form\Extension\Core\Type\TextareaType;
-use Symfony\Component\Form\Extension\Core\Type\TextType;
+use Symfony\Component\Form\Extension\Core\Type\{ChoiceType, CollectionType, DateType, TextType, TextareaType};
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Unilend\Entity\{Clients, Companies, MarketSegment, Project};
 use Unilend\Form\Company\CompanyAutocompleteType;
-use Unilend\Form\Traits\ConstantsToChoicesTrait;
 use Unilend\Form\Tranche\TrancheType;
 
 class ProjectType extends AbstractType
 {
-    use ConstantsToChoicesTrait;
-
     /**
      * @var ManagerRegistry
      */
@@ -59,8 +52,12 @@ class ProjectType extends AbstractType
             ->add('title', TextType::class, ['label' => 'project-form.title'])
             ->add('borrowerCompany', CompanyAutocompleteType::class, ['label' => 'project-form.borrower-company'])
             ->add('marketSegment', EntityType::class, [
-                'label' => 'project-form.market-segment',
-                'class' => MarketSegment::class,
+                'label'        => 'project-form.market-segment',
+                'choice_label' => function (MarketSegment $marketSegment, $key, $value) {
+                    return 'market-segment.' . $marketSegment->getLabel();
+                },
+                'class'                     => MarketSegment::class,
+                'choice_translation_domain' => true,
             ])
             ->add('replyDeadline', DateType::class, [
                 'label'  => 'project-form.replay-deadline',
@@ -90,8 +87,11 @@ class ProjectType extends AbstractType
                 'attr'           => ['class' => 'tranches'],
             ])
             ->add('foncarisGuarantee', ChoiceType::class, [
-                'label'   => 'project-form.foncaris-guarantee',
-                'choices' => $this->getChoicesFromConstants(Project::getFoncarisGuaranteeOptions(), 'foncaris-guarantee'),
+                'label'        => 'project-form.foncaris-guarantee',
+                'choices'      => Project::getFoncarisGuaranteeOptions(),
+                'choice_label' => function ($option, string $key, string $value) {
+                    return 'foncaris-guarantee.' . mb_strtolower($key);
+                },
             ])
             ->add('arranger', EntityType::class, [
                 'label'         => 'project-form.arranger',
