@@ -19,7 +19,7 @@ use Symfony\Component\Security\Core\User\UserInterface;
 use Unilend\Entity\{AcceptedBids, Attachment, AttachmentType, Bids, Clients, Companies, CompanySector, FeeType, Loans, Partner, PercentFee, Product, ProjectAttachment,
     ProjectAttachmentType, ProjectComment, ProjectParticipant, ProjectPercentFee, Projects, ProjectsStatus, RepaymentType, Users, Wallet, WalletType};
 use Unilend\Form\Lending\BidType;
-use Unilend\Repository\ProjectParticipantRepository;
+use Unilend\Repository\{ProjectAttachmentRepository, ProjectParticipantRepository};
 use Unilend\Service\Front\ProjectDisplayManager;
 use Unilend\Service\WebServiceClient\InseeManager;
 use Unilend\Service\{AttachmentManager, DemoMailerManager, ProjectManager, ProjectStatusManager};
@@ -200,14 +200,19 @@ class DemoController extends AbstractController
     /**
      * @Route("/projet/{hash}", name="demo_project_details", methods={"GET"}, requirements={"hash": "[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}"})
      *
-     * @param string                     $hash
-     * @param ProjectManager             $projectManager
-     * @param UserInterface|Clients|null $user
+     * @param string                      $hash
+     * @param ProjectManager              $projectManager
+     * @param ProjectAttachmentRepository $projectAttachmentRepository
+     * @param UserInterface|Clients|null  $user
      *
      * @return Response
      */
-    public function projectDetails(string $hash, ProjectManager $projectManager, ?UserInterface $user): Response
-    {
+    public function projectDetails(
+        string $hash,
+        ProjectManager $projectManager,
+        ProjectAttachmentRepository $projectAttachmentRepository,
+        ?UserInterface $user
+    ): Response {
         $projectRepository = $this->entityManager->getRepository(Projects::class);
         $project           = $projectRepository->findOneBy(['hash' => $hash]);
 
@@ -243,7 +248,6 @@ class DemoController extends AbstractController
             }
         }
 
-        $projectAttachmentRepository     = $this->entityManager->getRepository(ProjectAttachment::class);
         $projectAttachmentTypeRepository = $this->entityManager->getRepository(ProjectAttachmentType::class);
         $productRepository               = $this->entityManager->getRepository(Product::class);
         $template                        = [
@@ -261,13 +265,14 @@ class DemoController extends AbstractController
                 ProjectsStatus::STATUS_CONTRACTS_SIGNED,
                 ProjectsStatus::STATUS_FINISHED,
             ],
-            'project'            => $project,
-            'product'            => $project->getIdProduct() ? $productRepository->find($project->getIdProduct()) : null,
-            'attachmentTypes'    => $projectAttachmentTypeRepository->getAttachmentTypes(),
-            'projectAttachments' => $projectAttachmentRepository->findBy(['idProject' => $project], ['added' => 'DESC']),
-            'isEditable'         => $projectManager->isEditable($project),
-            'isScoringEditable'  => $projectManager->isScoringEditable($project, $user),
-            'canChangeBidStatus' => true,
+            'project'              => $project,
+            'product'              => $project->getIdProduct() ? $productRepository->find($project->getIdProduct()) : null,
+            'attachmentTypes'      => $projectAttachmentTypeRepository->getAttachmentTypes(),
+            'projectAttachments'   => $projectAttachmentRepository->getAttachmentsWithoutSignature($project),
+            'signatureAttachments' => $projectAttachmentRepository->getAttachmentsWithSignature($project),
+            'isEditable'           => $projectManager->isEditable($project),
+            'isScoringEditable'    => $projectManager->isScoringEditable($project, $user),
+            'canChangeBidStatus'   => true,
         ];
 
         return $this->render('demo/project_request_details.html.twig', $template);
@@ -1210,7 +1215,6 @@ class DemoController extends AbstractController
                     ->setIdTypeContract($contract)
                     ->setAmount($bid->getAmount())
                     ->setRate($bid->getRate())
-                    ->setAgent($bid->isAgent())
                     ->setStatus(Loans::STATUS_PENDING)
                 ;
 

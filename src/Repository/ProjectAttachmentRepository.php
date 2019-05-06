@@ -1,14 +1,19 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Unilend\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\Query\Expr\Join;
-use Unilend\Entity\{Attachment, AttachmentType, ProjectAttachment, ProjectAttachmentType, ProjectAttachmentTypeCategory, Projects};
+use Unilend\Entity\{Attachment, AttachmentType, ProjectAttachment, ProjectAttachmentSignature, ProjectAttachmentType, ProjectAttachmentTypeCategory, Projects};
 
 class ProjectAttachmentRepository extends ServiceEntityRepository
 {
+    /**
+     * @param ManagerRegistry $registry
+     */
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, ProjectAttachment::class);
@@ -30,7 +35,8 @@ class ProjectAttachmentRepository extends ServiceEntityRepository
             ->setParameter(':project', $project)
             ->setParameter(':attachmentType', $attachmentType)
             ->addOrderBy('a.added', 'DESC')
-            ->addOrderBy('a.id', 'DESC');
+            ->addOrderBy('a.id', 'DESC')
+        ;
 
         return $queryBuilder->getQuery()->getResult();
     }
@@ -54,7 +60,8 @@ class ProjectAttachmentRepository extends ServiceEntityRepository
             ->orderBy('cat.rank', 'ASC')
             ->addOrderBy('pat.rank', 'ASC')
             ->addOrderBy('a.added', 'ASC')
-            ->setParameter(':project', $project);
+            ->setParameter(':project', $project)
+        ;
 
         $attachments = $queryBuilder->getQuery()->getResult();
 
@@ -69,10 +76,48 @@ class ProjectAttachmentRepository extends ServiceEntityRepository
             ->andWhere($queryBuilder->expr()->isNull('pat.id'))
             ->orderBy('at.label', 'ASC')
             ->addOrderBy('a.added', 'ASC')
-            ->setParameter(':project', $project);
+            ->setParameter(':project', $project)
+        ;
 
         $legacy = $queryBuilder->getQuery()->getResult();
 
         return array_merge($attachments, $legacy);
+    }
+
+    /**
+     * @param Projects $project
+     *
+     * @return array
+     */
+    public function getAttachmentsWithoutSignature(Projects $project): array
+    {
+        $queryBuilder = $this->createQueryBuilder('pa');
+        $queryBuilder
+            ->leftJoin(ProjectAttachmentSignature::class, 's', Join::WITH, 'pa.id = s.projectAttachment')
+            ->where('pa.idProject = :project')
+            ->andWhere($queryBuilder->expr()->isNull('s.id'))
+            ->setParameter('project', $project)
+            ->orderBy('pa.added', 'ASC')
+        ;
+
+        return $queryBuilder->getQuery()->getResult();
+    }
+
+    /**
+     * @param Projects $project
+     *
+     * @return array
+     */
+    public function getAttachmentsWithSignature(Projects $project): array
+    {
+        $queryBuilder = $this->createQueryBuilder('pa');
+        $queryBuilder
+            ->innerJoin(ProjectAttachmentSignature::class, 's', Join::WITH, 'pa.id = s.projectAttachment')
+            ->where('pa.idProject = :project')
+            ->setParameter('project', $project)
+            ->orderBy('pa.added', 'ASC')
+        ;
+
+        return $queryBuilder->getQuery()->getResult();
     }
 }

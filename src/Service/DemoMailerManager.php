@@ -10,7 +10,7 @@ use Swift_Mailer;
 use Swift_RfcComplianceException;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
-use Unilend\Entity\{Bids, Clients, Loans, Projects};
+use Unilend\Entity\{Bids, Clients, Loans, ProjectAttachmentSignature, Projects};
 use Unilend\SwiftMailer\TemplateMessageProvider;
 
 class DemoMailerManager
@@ -244,7 +244,7 @@ class DemoMailerManager
     {
         $keywords = [
             'firstName'   => '',
-            'projectUrl'  => $this->router->generate('demo_project_details', ['hash' => $project->getHash()], RouterInterface::ABSOLUTE_URL),
+            'projectUrl'  => $this->router->generate('demo_lender_project_details', ['slug' => $project->getSlug()], RouterInterface::ABSOLUTE_URL),
             'projectName' => $project->getIdCompany()->getName() . ' / ' . $project->getTitle(),
         ];
 
@@ -258,12 +258,7 @@ class DemoMailerManager
             $recipient = $loan->getWallet()->getIdClient();
 
             if (false === empty($recipient->getEmail())) {
-                $keywords['firstName']    = $recipient->getFirstName();
-                $keywords['signatureUrl'] = $this->router->generate(
-                    'demo_sign_contracts',
-                    ['project' => $project->getHash(), 'loan' => $loan->getIdLoan()],
-                    RouterInterface::ABSOLUTE_URL
-                );
+                $keywords['firstName'] = $recipient->getFirstName();
 
                 $message = $this->messageProvider->newMessage('project-funding-end', $keywords);
                 $message->setTo($recipient->getEmail());
@@ -273,6 +268,29 @@ class DemoMailerManager
         }
 
         return $sent;
+    }
+
+    /**
+     * @param ProjectAttachmentSignature $signature
+     *
+     * @throws Swift_RfcComplianceException
+     *
+     * @return int
+     */
+    public function sendElectronicSignature(ProjectAttachmentSignature $signature): int
+    {
+        $projectAttachment = $signature->getProjectAttachment();
+        $project           = $projectAttachment->getProject();
+        $keywords          = [
+            'firstName'    => $signature->getSignatory()->getFirstName(),
+            'projectName'  => $project->getIdCompany()->getName() . ' / ' . $project->getTitle(),
+            'signatureUrl' => $this->router->generate('signature_sign', ['projectAttachment' => $projectAttachment->getId()], RouterInterface::ABSOLUTE_URL),
+        ];
+
+        $message = $this->messageProvider->newMessage('document-signature', $keywords);
+        $message->setTo($signature->getSignatory()->getEmail());
+
+        return $this->mailer->send($message);
     }
 
     /**

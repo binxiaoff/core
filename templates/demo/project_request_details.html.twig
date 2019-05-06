@@ -179,6 +179,7 @@
                                     <li><a href="#article-bids">Offres de participation</a></li>
                                 {% endif %}
                                 <li><a href="#article-documents">Documents</a></li>
+                                <li><a href="#article-electronic-signature">Signature électronique</a></li>
                                 <li><a href="#article-discussions">Discussions</a></li>
                             </ul>
                             <div class="row" style="position: absolute; bottom: 30px; left: 30px; right: 30px;">
@@ -409,12 +410,13 @@
                         <fieldset>
                             <h3 class="margin-10-t">Documents</h3>
                             {% for projectAttachment in projectAttachments %}
+                                {% set attachment = projectAttachment.attachment %}
                                 <div class="row">
                                     <span class="icon fa-file-u"></span>
                                     <a href="{{ path('demo_project_document', {'hash': project.hash, 'idProjectAttachment': projectAttachment.id}) }}">
-                                        {{ projectAttachment.attachment.originalName }}
+                                        {{ attachment.originalName }}
                                     </a>
-                                    <small>({{ projectAttachment.attachment.added|localizeddate('short', 'short') }})</small>
+                                    <small>({{ attachment.added|localizeddate('short', 'short') }})</small>
                                 </div>
                             {% else %}
                                 <div class="message-info">Vous n‘avez aucun document associé à votre dossier.</div>
@@ -429,7 +431,7 @@
                                         <input type="text" name="filename[file]" placeholder="Nom du fichier" class="input-field">
                                     </div>
                                     <div class="col-lg-4 col-md-4">
-                                        <div class="custom-input-file" id="form-file" data-fileattach data-fileattach-inputname="file" data-fileattach-maxfiles="1" data-fileattach-filetypes="pdf jpg jpeg png doc docx" data-formvalidation-required='input[type="file"][name="file[0]"]' aria-labelledby="form-extrafiles-document-file-label"></div><!-- /.ui-fileattach -->
+                                        <div class="custom-input-file" id="form-file" data-fileattach data-fileattach-inputname="file" data-fileattach-maxfiles="1" data-fileattach-filetypes="*" data-formvalidation-required='input[type="file"][name="file[0]"]' aria-labelledby="form-extrafiles-document-file-label"></div><!-- /.ui-fileattach -->
                                     </div>
                                 </div>
                             </div><!-- /.form-extrafiles-list -->
@@ -452,10 +454,69 @@
                                 <input type="text" name="filename[extra__NUM__]" placeholder="Nom du fichier" class="input-field">
                             </div>
                             <div class="col-lg-4 col-md-4">
-                                <div class="custom-input-file" id="form-file" data-fileattach data-fileattach-inputname="extra__NUM__" data-fileattach-maxfiles="1" data-fileattach-filetypes="pdf jpg jpeg png doc docx" data-formvalidation-required='input[type="file"][name="file[0]"]' aria-labelledby="form-extrafiles-document-file-label"></div><!-- /.ui-fileattach -->
+                                <div class="custom-input-file" id="form-file" data-fileattach data-fileattach-inputname="extra__NUM__" data-fileattach-maxfiles="1" data-fileattach-filetypes="*" data-formvalidation-required='input[type="file"][name="file[0]"]' aria-labelledby="form-extrafiles-document-file-label"></div><!-- /.ui-fileattach -->
                             </div>
                         </div>
                     </div><!-- /.ui-template-definition -->
+                </div>
+            </article><!-- /.dashboard-tab-pane -->
+            <article class="dashboard-tab-pane" id="article-electronic-signature">
+                <div class="panel">
+                    <h3 class="margin-10-t">Signature électronique</h3>
+                    {% if signatureAttachments is not empty %}
+                        <table class="table" style="table-layout: auto;">
+                            <thead>
+                            <tr>
+                                <th>Document</th>
+                                <th>Signataire</th>
+                                <th>Entité</th>
+                                <th class="text-align-center">Statut</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% set attachment = null %}
+                            {% for signatureAttachment in signatureAttachments %}
+                                {% for signature in signatureAttachment.signatures %}
+                                    <tr{% if loop.parent.loop.index % 2 == 0 %} class="alt"{% endif %}>
+                                        {% if signatureAttachment.attachment != attachment %}
+                                            {% set attachment = signatureAttachment.attachment %}
+                                            <td rowspan="{{ signatureAttachment.signatures|length }}">
+                                                <a href="{{ path('demo_project_document', {'hash': project.hash, 'idProjectAttachment': signatureAttachment.id}) }}">
+                                                    {{ attachment.originalName }}
+                                                </a>
+                                                <br>
+                                                <small>({{ attachment.added|localizeddate('short', 'short') }})</small>
+                                            </td>
+                                        {% endif %}
+                                        {% set signatory = signature.signatory %}
+                                        <td>{{ signatory.firstName }} {{ signatory.lastName }}</td>
+                                        <td>{{ signatory.company.name }}</td>
+                                        <td class="text-align-center">
+                                            {% set iconName = 'fa-clock-u' %}
+                                            {% set iconColor = '#f7941e' %}
+                                            {% set tooltipText = 'En attente de signature' %}
+
+                                            {% if signature.status == constant('\\Unilend\\Entity\\ProjectAttachmentSignature::STATUS_SIGNED') %}
+                                                {% set iconName = 'fa-check-u' %}
+                                                {% set iconColor = '#00a14b' %}
+                                                {% set tooltipText = 'Signé' %}
+                                            {% elseif signature.status == constant('\\Unilend\\Entity\\ProjectAttachmentSignature::STATUS_REFUSED') %}
+                                                {% set iconName = 'fa-refused-u' %}
+                                                {% set iconColor = '#ed1c24' %}
+                                                {% set tooltipText = 'Refusé' %}
+                                            {% endif %}
+                                            <span class="icon {{ iconName }}" style="color: {{ iconColor }};" title="{{ tooltipText|e }}" data-toggle="tooltip"></span>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            {% endfor %}
+                                </tr>
+                            </tbody>
+                        </table>
+                    {% endif %}
+                    <div class="text-align-right margin-20-t">
+                        <button type="button" class="btn-primary btn-shape-xs" data-modal-toggle="#document-signature-dialog">Faire signer un nouveau document</button>
+                    </div>
                 </div>
             </article><!-- /.dashboard-tab-pane -->
             <article class="dashboard-tab-pane" id="article-discussions">
@@ -466,6 +527,10 @@
             </article>
         </div><!-- /.dashboard-tabs-content -->
     </section><!-- /.dashboard-tabs -->
+{% endblock %}
+
+{% block modals %}
+    {% include 'signature/partials/popup_document_upload.html.twig' %}
 {% endblock %}
 
 {% block pageHeadScripts %}

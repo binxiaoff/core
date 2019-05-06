@@ -230,7 +230,7 @@ class TermsOfSaleController extends Controller
         $newsletterOptIn = true;
 
         if (null !== $client) {
-            $newsletterOptIn = empty($client->getOptin1());
+            $newsletterOptIn = false; //empty($client->getOptin1());
 
             if ($request->isMethod(Request::METHOD_GET)) {
                 $elementSlug = 'tos-new';

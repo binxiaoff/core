@@ -5,13 +5,29 @@ namespace Unilend\Repository;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\Query\Expr\Join;
+use Doctrine\ORM\{ORMException, OptimisticLockException};
 use Unilend\Entity\{Attachment, AttachmentType, Clients, ProjectAttachment, Projects};
 
 class AttachmentRepository extends ServiceEntityRepository
 {
+    /**
+     * @param ManagerRegistry $registry
+     */
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Attachment::class);
+    }
+
+    /**
+     * @param Attachment $attachment
+     *
+     * @throws ORMException
+     * @throws OptimisticLockException
+     */
+    public function save(Attachment $attachment)
+    {
+        $this->_em->persist($attachment);
+        $this->_em->flush();
     }
 
     /**

@@ -1,31 +1,21 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Unilend\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
+use Unilend\Entity\Traits\Timestampable;
 
 /**
- * ProjectAttachment
- *
- * @ORM\Table(name="project_attachment", indexes={@ORM\Index(name="id_project", columns={"id_project"}), @ORM\Index(name="id_attachment", columns={"id_attachment"})})
+ * @ORM\Table(name="project_attachment")
  * @ORM\Entity(repositoryClass="Unilend\Repository\ProjectAttachmentRepository")
  * @ORM\HasLifecycleCallbacks
  */
 class ProjectAttachment
 {
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="added", type="datetime")
-     */
-    private $added;
-
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="updated", type="datetime", nullable=true)
-     */
-    private $updated;
+    use Timestampable;
 
     /**
      * @var int
@@ -37,78 +27,41 @@ class ProjectAttachment
     private $id;
 
     /**
-     * @var \Unilend\Entity\Projects
+     * @var Projects
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\Projects", inversedBy="attachments")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_project", referencedColumnName="id_project", nullable=false)
+     *     @ORM\JoinColumn(name="id_project", referencedColumnName="id_project", nullable=false)
      * })
      */
     private $idProject;
 
     /**
-     * @var \Unilend\Entity\Attachment
+     * @var Attachment
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\Attachment")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_attachment", referencedColumnName="id", nullable=false)
+     *     @ORM\JoinColumn(name="id_attachment", referencedColumnName="id", nullable=false)
      * })
      */
     private $idAttachment;
 
-
+    /**
+     * @var ProjectAttachmentSignature[]
+     *
+     * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectAttachmentSignature", mappedBy="projectAttachment")
+     */
+    private $signatures;
 
     /**
-     * Set added
-     *
-     * @param \DateTime $added
-     *
-     * @return ProjectAttachment
+     * ProjectAttachment constructor.
      */
-    public function setAdded(\DateTime $added): ProjectAttachment
+    public function __construct()
     {
-        $this->added = $added;
-
-        return $this;
+        $this->signatures = new ArrayCollection();
     }
 
     /**
-     * Get added
-     *
-     * @return \DateTime
-     */
-    public function getAdded(): \DateTime
-    {
-        return $this->added;
-    }
-
-    /**
-     * Set updated
-     *
-     * @param \DateTime|null $updated
-     *
-     * @return ProjectAttachment
-     */
-    public function setUpdated(?\DateTime $updated): ProjectAttachment
-    {
-        $this->updated = $updated;
-
-        return $this;
-    }
-
-    /**
-     * Get updated
-     *
-     * @return \DateTime|null
-     */
-    public function getUpdated(): ?\DateTime
-    {
-        return $this->updated;
-    }
-
-    /**
-     * Get id
-     *
      * @return int
      */
     public function getId(): int
@@ -117,13 +70,11 @@ class ProjectAttachment
     }
 
     /**
-     * Set idProject
-     *
      * @param Projects $idProject
      *
      * @return ProjectAttachment
      */
-    public function setProject(Projects $idProject = null): ProjectAttachment
+    public function setProject(Projects $idProject): ProjectAttachment
     {
         $this->idProject = $idProject;
 
@@ -131,8 +82,6 @@ class ProjectAttachment
     }
 
     /**
-     * Get idProject
-     *
      * @return Projects
      */
     public function getProject(): Projects
@@ -141,8 +90,6 @@ class ProjectAttachment
     }
 
     /**
-     * Set idAttachment
-     *
      * @param Attachment $idAttachment
      *
      * @return ProjectAttachment
@@ -155,8 +102,6 @@ class ProjectAttachment
     }
 
     /**
-     * Get idAttachment
-     *
      * @return Attachment
      */
     public function getAttachment(): Attachment
@@ -165,20 +110,10 @@ class ProjectAttachment
     }
 
     /**
-     * @ORM\PrePersist
+     * @return ProjectAttachmentSignature[]
      */
-    public function setAddedValue(): void
+    public function getSignatures(): iterable
     {
-        if (! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
-            $this->added = new \DateTime();
-        }
-    }
-
-    /**
-     * @ORM\PreUpdate
-     */
-    public function setUpdatedValue(): void
-    {
-        $this->updated = new \DateTime();
+        return $this->signatures;
     }
 }

@@ -18,7 +18,7 @@ use Unilend\Entity\Clients;
 /**
  * @todo webhooks: https://developers.docusign.com/esign-rest-api/code-examples/webhook-status
  */
-class ElectronicSignature
+class ElectronicSignatureManager
 {
     public const SESSION_TOKEN_KEY = 'DocuSignToken';
 
@@ -116,7 +116,7 @@ class ElectronicSignature
      * @param string  $signatureOffsetY
      * @param string  $returnUrl
      *
-     * @return string|null
+     * @return array|null
      */
     public function createSignatureRequest(
         Clients $signerClient,
@@ -127,7 +127,7 @@ class ElectronicSignature
         string $signatureOffsetX,
         string $signatureOffsetY,
         string $returnUrl
-    ): ?string {
+    ): ?array {
         try {
             $loginAccount = $this->getLoginAccount();
 
@@ -210,11 +210,16 @@ class ElectronicSignature
                 ->setEmail($this->testEmail ?: $signer->getEmail())
             ;
 
-            return $envelopeApi->createRecipientView(
+            $viewUrl = $envelopeApi->createRecipientView(
                 $loginAccount->getAccountId(),
                 $envelope->getEnvelopeId(),
                 $recipientViewRequest
-            )->getUrl();
+            );
+
+            return [
+                'envelope' => $envelope->getEnvelopeId(),
+                'url'      => $viewUrl->getUrl(),
+            ];
         } catch (ApiException $exception) {
             $this->logger->error('Unable to send electronic signature email with error: ' . $exception->getMessage(), [
                 'response' => $exception->getResponseBody(),
