@@ -6,7 +6,7 @@ namespace Unilend\Entity;
 
 use Doctrine\Common\Collections\{ArrayCollection, Criteria};
 use Doctrine\ORM\Mapping as ORM;
-use Unilend\Entity\Traits\Timestampable;
+use Unilend\Entity\Traits\TimestampableTrait;
 
 /**
  * @ORM\Table(name="product")
@@ -14,7 +14,7 @@ use Unilend\Entity\Traits\Timestampable;
  */
 class Product
 {
-    use Timestampable;
+    use TimestampableTrait;
 
     public const STATUS_OFFLINE  = 0; // Unavailable in FO
     public const STATUS_ONLINE   = 1; // available both in FO and BO

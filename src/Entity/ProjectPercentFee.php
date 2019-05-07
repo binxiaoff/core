@@ -23,17 +23,17 @@ class ProjectPercentFee
      *
      * @ORM\OneToOne(targetEntity="Unilend\Entity\PercentFee", cascade={"persist", "remove"})
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_percent_fee", referencedColumnName="id", nullable=false)
+     *     @ORM\JoinColumn(name="id_percent_fee", nullable=false)
      * })
      */
     private $percentFee;
 
     /**
-     * @var Projects
+     * @var Project
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Projects", inversedBy="projectPercentFees")
+     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Project", inversedBy="projectPercentFees")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_project", referencedColumnName="id_project", nullable=false)
+     *     @ORM\JoinColumn(name="id_project", nullable=false)
      * })
      */
     private $project;
@@ -47,19 +47,19 @@ class ProjectPercentFee
     }
 
     /**
-     * @return Projects
+     * @return Project
      */
-    public function getProject(): Projects
+    public function getProject(): Project
     {
         return $this->project;
     }
 
     /**
-     * @param Projects $project
+     * @param Project $project
      *
      * @return ProjectPercentFee
      */
-    public function setProject(Projects $project): ProjectPercentFee
+    public function setProject(Project $project): ProjectPercentFee
     {
         $this->project = $project;
 

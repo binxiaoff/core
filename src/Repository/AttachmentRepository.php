@@ -9,6 +9,9 @@ use Unilend\Entity\{Attachment, AttachmentType, Clients, ProjectAttachment, Proj
 
 class AttachmentRepository extends ServiceEntityRepository
 {
+    /**
+     * @param ManagerRegistry $registry
+     */
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Attachment::class);
@@ -18,16 +21,18 @@ class AttachmentRepository extends ServiceEntityRepository
      * @param Projects|int       $project
      * @param AttachmentType|int $attachmentType
      *
-     * @return Attachment|null
      * @throws \Doctrine\ORM\NonUniqueResultException
+     *
+     * @return Attachment|null
      */
     public function getProjectAttachmentByType($project, $attachmentType)
     {
         $queryBuilder = $this->createQueryBuilder('a');
         $queryBuilder->innerJoin(ProjectAttachment::class, 'pa', Join::WITH, 'a.id = pa.idAttachment')
-           ->where('pa.idProject = :project')
-           ->andWhere('a.idType = :attachmentType')
-           ->setParameters(['project' => $project, 'attachmentType' => $attachmentType]);
+            ->where('pa.idProject = :project')
+            ->andWhere('a.idType = :attachmentType')
+            ->setParameters(['project' => $project, 'attachmentType' => $attachmentType])
+        ;
 
         return $queryBuilder->getQuery()->getOneOrNullResult();
     }
@@ -43,15 +48,16 @@ class AttachmentRepository extends ServiceEntityRepository
         return $this->getEntityManager()->getRepository(Attachment::class)->findOneBy([
             'idClient' => $client,
             'idType'   => $attachmentType,
-            'archived' => null
+            'archived' => null,
         ]);
     }
 
     /**
      * @param Attachment $attachment
      *
-     * @return Attachment|null
      * @throws \Doctrine\ORM\NonUniqueResultException
+     *
+     * @return Attachment|null
      */
     public function findPreviousNotArchivedAttachment(Attachment $attachment)
     {
@@ -61,12 +67,13 @@ class AttachmentRepository extends ServiceEntityRepository
             ->andWhere('a.archived IS NOT NULL')
             ->andWhere('a.id != :idAttachment')
             ->andWhere('a.added < :added')
-            ->setParameter('idClient', $attachment->getClient())
+            ->setParameter('idClient', $attachment->getClientOwner())
             ->setParameter('idType', $attachment->getType())
             ->setParameter('idAttachment', $attachment->getId())
             ->setParameter('added', $attachment->getAdded())
             ->orderBy('a.added', 'DESC')
-            ->setMaxResults(1);
+            ->setMaxResults(1)
+        ;
 
         return $queryBuilder->getQuery()->getOneOrNullResult();
     }

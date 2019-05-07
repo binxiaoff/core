@@ -1,10 +1,11 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Unilend\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
-use Unilend\Entity\Traits\Timestampable;
+use Unilend\Entity\Traits\TimestampableTrait;
 
 /**
  * @ORM\Entity
@@ -12,7 +13,7 @@ use Unilend\Entity\Traits\Timestampable;
  */
 class FeeType
 {
-    use Timestampable;
+    use TimestampableTrait;
 
     /**
      * @var int
@@ -83,10 +84,5 @@ class FeeType
         $this->isRecurring = $isRecurring;
 
         return $this;
-    }
-
-    public function __toString()
-    {
-        return $this->getLabel();
     }
 }

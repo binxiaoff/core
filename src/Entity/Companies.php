@@ -5,40 +5,49 @@ namespace Unilend\Entity;
 use Doctrine\Common\Collections\{ArrayCollection, Collection, Criteria};
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
-use Unilend\Entity\Traits\Timestampable;
+use Unilend\Entity\Traits\TimestampableTrait;
 
 /**
- * Companies
+ * Companies.
  *
  * @ORM\Entity(repositoryClass="Unilend\Repository\CompaniesRepository")
  * @ORM\HasLifecycleCallbacks
  */
 class Companies
 {
-    use Timestampable;
+    use TimestampableTrait;
 
-    const INVALID_SIREN_EMPTY  = '000000000';
-    const NAF_CODE_NO_ACTIVITY = '0000Z';
+    public const INVALID_SIREN_EMPTY  = '000000000';
+    public const NAF_CODE_NO_ACTIVITY = '0000Z';
 
-    const SAME_ADDRESS_FOR_POSTAL_AND_FISCAL      = 1;
-    const DIFFERENT_ADDRESS_FOR_POSTAL_AND_FISCAL = 0;
+    public const SAME_ADDRESS_FOR_POSTAL_AND_FISCAL      = 1;
+    public const DIFFERENT_ADDRESS_FOR_POSTAL_AND_FISCAL = 0;
 
-    const CLIENT_STATUS_MANAGER             = 1;
-    const CLIENT_STATUS_DELEGATION_OF_POWER = 2;
-    const CLIENT_STATUS_EXTERNAL_CONSULTANT = 3;
+    public const CLIENT_STATUS_MANAGER             = 1;
+    public const CLIENT_STATUS_DELEGATION_OF_POWER = 2;
+    public const CLIENT_STATUS_EXTERNAL_CONSULTANT = 3;
 
     /** Warning, these constants are also setting , but added as constants for more clarity in the code*/
-    const CLIENT_STATUS_EXTERNAL_COUNSEL_ACCOUNTANT    = 1;
-    const CLIENT_STATUS_EXTERNAL_COUNSEL_CREDIT_BROKER = 2;
-    const CLIENT_STATUS_EXTERNAL_COUNSEL_OTHER         = 3;
-    const CLIENT_STATUS_EXTERNAL_COUNSEL_BANKER        = 4;
+    public const CLIENT_STATUS_EXTERNAL_COUNSEL_ACCOUNTANT    = 1;
+    public const CLIENT_STATUS_EXTERNAL_COUNSEL_CREDIT_BROKER = 2;
+    public const CLIENT_STATUS_EXTERNAL_COUNSEL_OTHER         = 3;
+    public const CLIENT_STATUS_EXTERNAL_COUNSEL_BANKER        = 4;
+
+    public const COMPANY_ID_CACIB     = 3;
+    public const COMPANY_ID_UNIFERGIE = 4;
+    public const COMPANY_ID_CASA      = 5;
+    public const COMPANY_ID_LCL       = 45;
+
+    public const COMPANY_ELIGIBLE_ARRANGER       = [self::COMPANY_ID_CACIB, self::COMPANY_ID_UNIFERGIE];
+    public const COMPANY_ELIGIBLE_RUN            = [self::COMPANY_ID_LCL];
+    public const COMPANY_SUBSIDIARY_ELIGIBLE_RUN = [self::COMPANY_ID_CASA];
 
     /**
      * @var \Unilend\Entity\CompanyStatus
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\CompanyStatus")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_status", referencedColumnName="id")
+     *     @ORM\JoinColumn(name="id_status", referencedColumnName="id")
      * })
      */
     private $idStatus;
@@ -55,7 +64,7 @@ class Companies
      *
      * @ORM\Column(name="name", type="text", length=16777215, nullable=true)
      *
-     * @Assert\NotBlank()
+     * @Assert\NotBlank
      */
     private $name;
 
@@ -64,7 +73,7 @@ class Companies
      *
      * @ORM\Column(name="forme", type="string", length=191, nullable=true)
      *
-     * @Assert\NotBlank()
+     * @Assert\NotBlank
      */
     private $forme;
 
@@ -80,7 +89,7 @@ class Companies
      *
      * @ORM\Column(name="siren", type="string", length=15, nullable=true)
      *
-     * @Assert\NotBlank()
+     * @Assert\NotBlank
      * @Assert\Length(min=9, max=14)
      */
     private $siren;
@@ -125,7 +134,7 @@ class Companies
      *
      * @ORM\Column(name="capital", type="float", precision=10, scale=0, nullable=true)
      *
-     * @Assert\NotBlank()
+     * @Assert\NotBlank
      * @Assert\Type(type="numeric")
      */
     private $capital;
@@ -298,10 +307,10 @@ class Companies
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\Companies")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_parent_company", referencedColumnName="id_company")
+     *     @ORM\JoinColumn(name="id_parent_company", referencedColumnName="id_company")
      * })
      */
-    private $idParentCompany;
+    private $parent;
 
     /**
      * @var CompanyAddress
@@ -333,6 +342,9 @@ class Companies
      */
     private $projectParticipants;
 
+    /**
+     * Companies constructor.
+     */
     public function __construct()
     {
         $this->staff               = new ArrayCollection();
@@ -340,13 +352,21 @@ class Companies
     }
 
     /**
+     * @return string
+     */
+    public function __toString(): string
+    {
+        return $this->getName();
+    }
+
+    /**
      * @param Clients|null $client
      *
      * @return Companies
+     *
      * @deprecated use $this->addStaff() instead
      *
      * Set idClientOwner
-     *
      */
     public function setIdClientOwner(Clients $client = null)
     {
@@ -359,10 +379,10 @@ class Companies
 
     /**
      * @return Clients|null
+     *
      * @deprecated use $this->getStaff() instead
      *
      * Get idClientOwner
-     *
      */
     public function getIdClientOwner()
     {
@@ -376,7 +396,7 @@ class Companies
     }
 
     /**
-     * Set emailFacture
+     * Set emailFacture.
      *
      * @param string $emailFacture
      *
@@ -390,7 +410,7 @@ class Companies
     }
 
     /**
-     * Get emailFacture
+     * Get emailFacture.
      *
      * @return string
      */
@@ -400,7 +420,7 @@ class Companies
     }
 
     /**
-     * Set name
+     * Set name.
      *
      * @param string $name
      *
@@ -414,7 +434,7 @@ class Companies
     }
 
     /**
-     * Get name
+     * Get name.
      *
      * @return string
      */
@@ -424,7 +444,7 @@ class Companies
     }
 
     /**
-     * Set forme
+     * Set forme.
      *
      * @param string $forme
      *
@@ -438,7 +458,7 @@ class Companies
     }
 
     /**
-     * Get forme
+     * Get forme.
      *
      * @return string
      */
@@ -448,7 +468,7 @@ class Companies
     }
 
     /**
-     * Set siren
+     * Set siren.
      *
      * @param string $siren
      *
@@ -462,7 +482,7 @@ class Companies
     }
 
     /**
-     * Get siren
+     * Get siren.
      *
      * @return string
      */
@@ -472,7 +492,7 @@ class Companies
     }
 
     /**
-     * Set siret
+     * Set siret.
      *
      * @param string $siret
      *
@@ -486,7 +506,7 @@ class Companies
     }
 
     /**
-     * Get siret
+     * Get siret.
      *
      * @return string
      */
@@ -496,9 +516,9 @@ class Companies
     }
 
     /**
-     * Set execicesComptables
+     * Set execicesComptables.
      *
-     * @param integer $execicesComptables
+     * @param int $execicesComptables
      *
      * @return Companies
      */
@@ -510,9 +530,9 @@ class Companies
     }
 
     /**
-     * Get execicesComptables
+     * Get execicesComptables.
      *
-     * @return integer
+     * @return int
      */
     public function getExecicesComptables()
     {
@@ -520,7 +540,7 @@ class Companies
     }
 
     /**
-     * Set rcs
+     * Set rcs.
      *
      * @param string $rcs
      *
@@ -534,7 +554,7 @@ class Companies
     }
 
     /**
-     * Get rcs
+     * Get rcs.
      *
      * @return string
      */
@@ -544,7 +564,7 @@ class Companies
     }
 
     /**
-     * Set tribunalCom
+     * Set tribunalCom.
      *
      * @param string $tribunalCom
      *
@@ -558,7 +578,7 @@ class Companies
     }
 
     /**
-     * Get tribunalCom
+     * Get tribunalCom.
      *
      * @return string
      */
@@ -568,7 +588,7 @@ class Companies
     }
 
     /**
-     * Set activite
+     * Set activite.
      *
      * @param string $activite
      *
@@ -582,7 +602,7 @@ class Companies
     }
 
     /**
-     * Get activite
+     * Get activite.
      *
      * @return string
      */
@@ -592,7 +612,7 @@ class Companies
     }
 
     /**
-     * Set capital
+     * Set capital.
      *
      * @param float $capital
      *
@@ -606,7 +626,7 @@ class Companies
     }
 
     /**
-     * Get capital
+     * Get capital.
      *
      * @return float
      */
@@ -616,7 +636,7 @@ class Companies
     }
 
     /**
-     * Set dateCreation
+     * Set dateCreation.
      *
      * @param \DateTime $dateCreation
      *
@@ -630,13 +650,13 @@ class Companies
     }
 
     /**
-     * Get dateCreation
+     * Get dateCreation.
      *
      * @return \DateTime
      */
     public function getDateCreation()
     {
-        /** @todo to be removed when projects is fully under doctrine */
+        // @todo to be removed when projects is fully under doctrine
         if (null !== $this->dateCreation && $this->dateCreation->getTimestamp() < 0) {
             return null;
         }
@@ -645,7 +665,7 @@ class Companies
     }
 
     /**
-     * Set adresse1
+     * Set adresse1.
      *
      * @param string $adresse1
      *
@@ -659,7 +679,7 @@ class Companies
     }
 
     /**
-     * Get adresse1
+     * Get adresse1.
      *
      * @return string
      */
@@ -669,7 +689,7 @@ class Companies
     }
 
     /**
-     * Set adresse2
+     * Set adresse2.
      *
      * @param string $adresse2
      *
@@ -683,7 +703,7 @@ class Companies
     }
 
     /**
-     * Get adresse2
+     * Get adresse2.
      *
      * @return string
      */
@@ -693,7 +713,7 @@ class Companies
     }
 
     /**
-     * Set zip
+     * Set zip.
      *
      * @param string $zip
      *
@@ -707,7 +727,7 @@ class Companies
     }
 
     /**
-     * Get zip
+     * Get zip.
      *
      * @return string
      */
@@ -717,7 +737,7 @@ class Companies
     }
 
     /**
-     * Set city
+     * Set city.
      *
      * @param string $city
      *
@@ -731,7 +751,7 @@ class Companies
     }
 
     /**
-     * Get city
+     * Get city.
      *
      * @return string
      */
@@ -741,9 +761,9 @@ class Companies
     }
 
     /**
-     * Set idPays
+     * Set idPays.
      *
-     * @param integer $idPays
+     * @param int $idPays
      *
      * @return Companies
      */
@@ -755,9 +775,9 @@ class Companies
     }
 
     /**
-     * Get idPays
+     * Get idPays.
      *
-     * @return integer
+     * @return int
      */
     public function getIdPays()
     {
@@ -765,7 +785,7 @@ class Companies
     }
 
     /**
-     * Set latitude
+     * Set latitude.
      *
      * @param float $latitude
      *
@@ -779,7 +799,7 @@ class Companies
     }
 
     /**
-     * Get latitude
+     * Get latitude.
      *
      * @return float
      */
@@ -789,7 +809,7 @@ class Companies
     }
 
     /**
-     * Set longitude
+     * Set longitude.
      *
      * @param float $longitude
      *
@@ -803,7 +823,7 @@ class Companies
     }
 
     /**
-     * Get longitude
+     * Get longitude.
      *
      * @return float
      */
@@ -813,7 +833,7 @@ class Companies
     }
 
     /**
-     * Set phone
+     * Set phone.
      *
      * @param string $phone
      *
@@ -827,7 +847,7 @@ class Companies
     }
 
     /**
-     * Get phone
+     * Get phone.
      *
      * @return string
      */
@@ -837,9 +857,9 @@ class Companies
     }
 
     /**
-     * Set statusAdresseCorrespondance
+     * Set statusAdresseCorrespondance.
      *
-     * @param integer $statusAdresseCorrespondance
+     * @param int $statusAdresseCorrespondance
      *
      * @return Companies
      */
@@ -851,9 +871,9 @@ class Companies
     }
 
     /**
-     * Get statusAdresseCorrespondance
+     * Get statusAdresseCorrespondance.
      *
-     * @return integer
+     * @return int
      */
     public function getStatusAdresseCorrespondance()
     {
@@ -861,9 +881,9 @@ class Companies
     }
 
     /**
-     * Set statusClient
+     * Set statusClient.
      *
-     * @param integer $statusClient
+     * @param int $statusClient
      *
      * @return Companies
      */
@@ -875,9 +895,9 @@ class Companies
     }
 
     /**
-     * Get statusClient
+     * Get statusClient.
      *
-     * @return integer
+     * @return int
      */
     public function getStatusClient()
     {
@@ -885,9 +905,9 @@ class Companies
     }
 
     /**
-     * Set statusConseilExterneEntreprise
+     * Set statusConseilExterneEntreprise.
      *
-     * @param integer $statusConseilExterneEntreprise
+     * @param int $statusConseilExterneEntreprise
      *
      * @return Companies
      */
@@ -899,9 +919,9 @@ class Companies
     }
 
     /**
-     * Get statusConseilExterneEntreprise
+     * Get statusConseilExterneEntreprise.
      *
-     * @return integer
+     * @return int
      */
     public function getStatusConseilExterneEntreprise()
     {
@@ -909,7 +929,7 @@ class Companies
     }
 
     /**
-     * Set preciserConseilExterneEntreprise
+     * Set preciserConseilExterneEntreprise.
      *
      * @param string $preciserConseilExterneEntreprise
      *
@@ -923,7 +943,7 @@ class Companies
     }
 
     /**
-     * Get preciserConseilExterneEntreprise
+     * Get preciserConseilExterneEntreprise.
      *
      * @return string
      */
@@ -933,7 +953,7 @@ class Companies
     }
 
     /**
-     * Set civiliteDirigeant
+     * Set civiliteDirigeant.
      *
      * @param string $civiliteDirigeant
      *
@@ -947,7 +967,7 @@ class Companies
     }
 
     /**
-     * Get civiliteDirigeant
+     * Get civiliteDirigeant.
      *
      * @return string
      */
@@ -957,7 +977,7 @@ class Companies
     }
 
     /**
-     * Set nomDirigeant
+     * Set nomDirigeant.
      *
      * @param string $nomDirigeant
      *
@@ -971,7 +991,7 @@ class Companies
     }
 
     /**
-     * Get nomDirigeant
+     * Get nomDirigeant.
      *
      * @return string
      */
@@ -981,7 +1001,7 @@ class Companies
     }
 
     /**
-     * Set prenomDirigeant
+     * Set prenomDirigeant.
      *
      * @param string $prenomDirigeant
      *
@@ -995,7 +1015,7 @@ class Companies
     }
 
     /**
-     * Get prenomDirigeant
+     * Get prenomDirigeant.
      *
      * @return string
      */
@@ -1005,7 +1025,7 @@ class Companies
     }
 
     /**
-     * Set fonctionDirigeant
+     * Set fonctionDirigeant.
      *
      * @param string $fonctionDirigeant
      *
@@ -1019,7 +1039,7 @@ class Companies
     }
 
     /**
-     * Get fonctionDirigeant
+     * Get fonctionDirigeant.
      *
      * @return string
      */
@@ -1029,7 +1049,7 @@ class Companies
     }
 
     /**
-     * Set emailDirigeant
+     * Set emailDirigeant.
      *
      * @param string $emailDirigeant
      *
@@ -1043,7 +1063,7 @@ class Companies
     }
 
     /**
-     * Get emailDirigeant
+     * Get emailDirigeant.
      *
      * @return string
      */
@@ -1053,7 +1073,7 @@ class Companies
     }
 
     /**
-     * Set phoneDirigeant
+     * Set phoneDirigeant.
      *
      * @param string $phoneDirigeant
      *
@@ -1067,7 +1087,7 @@ class Companies
     }
 
     /**
-     * Get phoneDirigeant
+     * Get phoneDirigeant.
      *
      * @return string
      */
@@ -1077,9 +1097,9 @@ class Companies
     }
 
     /**
-     * Set sector
+     * Set sector.
      *
-     * @param integer $sector
+     * @param int $sector
      *
      * @return Companies
      */
@@ -1091,9 +1111,9 @@ class Companies
     }
 
     /**
-     * Get sector
+     * Get sector.
      *
-     * @return integer
+     * @return int
      */
     public function getSector()
     {
@@ -1101,7 +1121,7 @@ class Companies
     }
 
     /**
-     * Set risk
+     * Set risk.
      *
      * @param string $risk
      *
@@ -1115,7 +1135,7 @@ class Companies
     }
 
     /**
-     * Get risk
+     * Get risk.
      *
      * @return string
      */
@@ -1125,7 +1145,7 @@ class Companies
     }
 
     /**
-     * Set codeNaf
+     * Set codeNaf.
      *
      * @param string $codeNaf
      *
@@ -1139,7 +1159,7 @@ class Companies
     }
 
     /**
-     * Get codeNaf
+     * Get codeNaf.
      *
      * @return string
      */
@@ -1149,9 +1169,9 @@ class Companies
     }
 
     /**
-     * Get idCompany
+     * Get idCompany.
      *
-     * @return integer
+     * @return int
      */
     public function getIdCompany()
     {
@@ -1159,27 +1179,27 @@ class Companies
     }
 
     /**
-     * Set idParentCompany
+     * Set idParentCompany.
      *
-     * @param Companies $idParentCompany
+     * @param Companies $parent
      *
      * @return Companies
      */
-    public function setIdParentCompany(Companies $idParentCompany = null)
+    public function setParent(Companies $parent = null)
     {
-        $this->idParentCompany = $idParentCompany;
+        $this->parent = $parent;
 
         return $this;
     }
 
     /**
-     * Get idParentCompany
+     * Get idParentCompany.
      *
      * @return Companies
      */
-    public function getIdParentCompany()
+    public function getParent()
     {
-        return $this->idParentCompany;
+        return $this->parent;
     }
 
     /**
@@ -1199,7 +1219,7 @@ class Companies
     }
 
     /**
-     * @return null|CompanyStatus
+     * @return CompanyStatus|null
      */
     public function getIdStatus()
     {
@@ -1219,107 +1239,67 @@ class Companies
     }
 
     /**
-     * @param $name
-     *
-     * @return string
-     */
-    private function normalizeName($name)
-    {
-        $name = strtolower($name);
-
-        $pos = strrpos($name, '-');
-        if ($pos === false) {
-            return ucwords($name);
-        } else {
-            $tabName = explode('-', $name);
-            $newName = '';
-            $i       = 0;
-            foreach ($tabName as $name) {
-                $newName .= ($i == 0 ? '' : '-') . ucwords($name);
-                $i++;
-            }
-
-            return $newName;
-        }
-    }
-
-    /**
-     * @param string $number
-     *
-     * @return string
-     */
-    private function cleanPhoneNumber($number)
-    {
-        return str_replace([' ', '.'], '', $number);
-    }
-
-    private function cleanCapital($capital)
-    {
-        return str_replace([' ', '.'], '', $capital);
-    }
-
-    /**
      * @ORM\PreFlush
      */
     public function setSectorAccordingToNaf()
     {
-        if ($this->codeNaf == self::NAF_CODE_NO_ACTIVITY) {
+        if (self::NAF_CODE_NO_ACTIVITY === $this->codeNaf) {
             return;
         }
 
-        if (in_array(substr($this->codeNaf, 0, 2), ['01', '02', '03'])) {
+        if (in_array(mb_substr($this->codeNaf, 0, 2), ['01', '02', '03'])) {
             $this->sector = 1;
         }
 
-        if (in_array(substr($this->codeNaf, 0, 2), ['10', '11'])) {
+        if (in_array(mb_substr($this->codeNaf, 0, 2), ['10', '11'])) {
             $this->sector = 2;
         }
 
-        if (in_array(substr($this->codeNaf, 0, 2), ['41', '42', '43', '71'])) {
+        if (in_array(mb_substr($this->codeNaf, 0, 2), ['41', '42', '43', '71'])) {
             $this->sector = 3;
         }
 
-        if (in_array(substr($this->codeNaf, 0, 2), ['45', '46', '47', '95'])) {
+        if (in_array(mb_substr($this->codeNaf, 0, 2), ['45', '46', '47', '95'])) {
             $this->sector = 4;
         }
 
-        if (in_array(substr($this->codeNaf, 0, 2), ['59', '60', '90', '91'])) {
+        if (in_array(mb_substr($this->codeNaf, 0, 2), ['59', '60', '90', '91'])) {
             $this->sector = 6;
         }
 
-        if (in_array(substr($this->codeNaf, 0, 2), ['55'])) {
+        if (in_array(mb_substr($this->codeNaf, 0, 2), ['55'])) {
             $this->sector = 7;
         }
 
-        if (in_array(substr($this->codeNaf, 0, 2), ['16', '17', '18', '19', '20', '22', '23', '24', '25', '26', '27', '28', '29', '30', '31', '32', '33', '35', '36'])) {
+        if (in_array(mb_substr($this->codeNaf, 0, 2), ['16', '17', '18', '19', '20', '22', '23', '24', '25', '26', '27', '28', '29', '30', '31', '32', '33', '35', '36'])) {
             $this->sector = 8;
         }
 
-        if (in_array(substr($this->codeNaf, 0, 2), ['61', '62', '63'])) {
+        if (in_array(mb_substr($this->codeNaf, 0, 2), ['61', '62', '63'])) {
             $this->sector = 9;
         }
 
-        if (in_array(substr($this->codeNaf, 0, 2), ['21', '75', '86'])) {
+        if (in_array(mb_substr($this->codeNaf, 0, 2), ['21', '75', '86'])) {
             $this->sector = 10;
         }
 
-        if (in_array(substr($this->codeNaf, 0, 2), ['56'])) {
+        if (in_array(mb_substr($this->codeNaf, 0, 2), ['56'])) {
             $this->sector = 11;
         }
 
-        if (in_array(substr($this->codeNaf, 0, 2), ['58', '65', '66', '68', '69', '70', '73', '74', '77', '78', '79', '80', '81', '82', '96', '97'])) {
+        if (in_array(mb_substr($this->codeNaf, 0, 2), ['58', '65', '66', '68', '69', '70', '73', '74', '77', '78', '79', '80', '81', '82', '96', '97'])) {
             $this->sector = 12;
         }
 
-        if (in_array(substr($this->codeNaf, 0, 2), ['13', '14', '15'])) {
+        if (in_array(mb_substr($this->codeNaf, 0, 2), ['13', '14', '15'])) {
             $this->sector = 13;
         }
 
-        if (in_array(substr($this->codeNaf, 0, 2), ['49', '50', '51', '52', '53'])) {
+        if (in_array(mb_substr($this->codeNaf, 0, 2), ['49', '50', '51', '52', '53'])) {
             $this->sector = 14;
         }
 
-        if (in_array(substr($this->codeNaf, 0, 2), ['05', '06', '07', '08', '09', '12', '37', '38', '39', '64', '72', '84', '85', '87', '88', '92', '93', '94', '98', '99'])) {
+        if (in_array(mb_substr($this->codeNaf, 0, 2), ['05', '06', '07', '08', '09', '12', '37', '38', '39', '64', '72', '84', '85', '87', '88', '92', '93', '94', '98', '99'])) {
             $this->sector = 15;
         }
     }
@@ -1330,7 +1310,12 @@ class Companies
     public function checkCompanyNameCreation()
     {
         if (is_numeric($this->name) || 0 === strcasecmp($this->name, 'Monsieur') || 0 === strcasecmp($this->name, 'Madame')) {
-            trigger_error('An invalid company name "' . $this->name . '" detected for siren : ' . $this->siren . '- trace : ' . serialize(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 5)), E_USER_WARNING);
+            trigger_error(sprintf(
+                'An invalid company name "%s" detected for siren : %s - trace : %s',
+                $this->name,
+                $this->siren,
+                serialize(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 5))
+            ), E_USER_WARNING);
         }
     }
 
@@ -1347,7 +1332,7 @@ class Companies
     }
 
     /**
-     * @param null|CompanyAddress $idAddress
+     * @param CompanyAddress|null $idAddress
      *
      * @return Companies
      */
@@ -1371,7 +1356,7 @@ class Companies
     }
 
     /**
-     * @param null|CompanyAddress $idPostalAddress
+     * @param CompanyAddress|null $idPostalAddress
      *
      * @return Companies
      */
@@ -1460,5 +1445,49 @@ class Companies
         }
 
         return false;
+    }
+
+    /**
+     * @param string $name
+     *
+     * @return string
+     */
+    private function normalizeName(string $name): string
+    {
+        $name = mb_strtolower($name);
+
+        $pos = mb_strrpos($name, '-');
+        if (false === $pos) {
+            return ucwords($name);
+        }
+        $tabName = explode('-', $name);
+        $newName = '';
+        $i       = 0;
+        foreach ($tabName as $name) {
+            $newName .= (0 === $i ? '' : '-') . ucwords($name);
+            ++$i;
+        }
+
+        return $newName;
+    }
+
+    /**
+     * @param string $number
+     *
+     * @return string
+     */
+    private function cleanPhoneNumber($number)
+    {
+        return str_replace([' ', '.'], '', $number);
+    }
+
+    /**
+     * @param string $capital
+     *
+     * @return mixed
+     */
+    private function cleanCapital($capital)
+    {
+        return str_replace([' ', '.'], '', $capital);
     }
 }

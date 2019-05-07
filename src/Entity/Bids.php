@@ -4,7 +4,7 @@ namespace Unilend\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
-use Unilend\Entity\Traits\{ConstantsAware, LendableTrait, Timestampable};
+use Unilend\Entity\Traits\{ConstantsAwareTrait, LendableTrait, TimestampableTrait};
 
 /**
  * @ORM\Table(name="bids", indexes={@ORM\Index(name="idprojectstatus", columns={"id_project", "status"})})
@@ -15,8 +15,8 @@ use Unilend\Entity\Traits\{ConstantsAware, LendableTrait, Timestampable};
 class Bids
 {
     use LendableTrait;
-    use Timestampable;
-    use ConstantsAware;
+    use TimestampableTrait;
+    use ConstantsAwareTrait;
 
     public const STATUS_PENDING                      = 0;
     public const STATUS_ACCEPTED                     = 1;

@@ -3,14 +3,13 @@
 namespace Unilend\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Unilend\Entity\Interfaces\EntityAttachmentTypeCategoryInterface;
+use Unilend\Entity\Interfaces\EntityAttachmentTypeInterface;
 
 /**
- * ProjectAttachmentType
- *
- * @ORM\Table(name="project_attachment_type")
  * @ORM\Entity(repositoryClass="Unilend\Repository\ProjectAttachmentTypeRepository")
  */
-class ProjectAttachmentType
+class ProjectAttachmentType implements EntityAttachmentTypeInterface
 {
     /**
      * @var int
@@ -47,34 +46,22 @@ class ProjectAttachmentType
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\ProjectAttachmentTypeCategory")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_category", referencedColumnName="id")
+     *     @ORM\JoinColumn(name="id_category", referencedColumnName="id")
      * })
      */
-    private $idCategory;
+    private $category;
 
     /**
      * @var AttachmentType
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Entity\AttachmentType")
+     * @ORM\ManyToOne(targetEntity="Unilend\Entity\attachmentType")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_type", referencedColumnName="id", nullable=false, unique=true)
+     *     @ORM\JoinColumn(name="id_type", referencedColumnName="id", nullable=false, unique=true)
      * })
      */
-    private $idType;
+    private $attachmentType;
 
     /**
-     * Column only used to index results in "getAttachmentTypes" method of repository, no getter/setter necessary
-     * @var int
-     *
-     * @ORM\Column(name="id_type", type="integer")
-     */
-    private $type;
-
-
-
-    /**
-     * Set rank
-     *
      * @param int $rank
      *
      * @return ProjectAttachmentType
@@ -87,8 +74,6 @@ class ProjectAttachmentType
     }
 
     /**
-     * Get rank
-     *
      * @return int
      */
     public function getRank(): int
@@ -97,8 +82,6 @@ class ProjectAttachmentType
     }
 
     /**
-     * Set maxItems
-     *
      * @param int|null $maxItems
      *
      * @return ProjectAttachmentType
@@ -111,8 +94,6 @@ class ProjectAttachmentType
     }
 
     /**
-     * Get maxItems
-     *
      * @return int|null
      */
     public function getMaxItems(): ?int
@@ -121,8 +102,6 @@ class ProjectAttachmentType
     }
 
     /**
-     * Set name
-     *
      * @param string|null $name
      *
      * @return ProjectAttachmentType
@@ -135,8 +114,6 @@ class ProjectAttachmentType
     }
 
     /**
-     * Get name
-     *
      * @return string|null
      */
     public function getName(): ?string
@@ -145,8 +122,6 @@ class ProjectAttachmentType
     }
 
     /**
-     * Get id
-     *
      * @return int
      */
     public function getId(): int
@@ -155,50 +130,43 @@ class ProjectAttachmentType
     }
 
     /**
-     * Set idCategory
-     *
-     * @param ProjectAttachmentTypeCategory|null $idCategory
+     * @param ProjectAttachmentTypeCategory|null $category
      *
      * @return ProjectAttachmentType
      */
-    public function setIdCategory(?ProjectAttachmentTypeCategory $idCategory): ProjectAttachmentType
+    public function setCategory(?ProjectAttachmentTypeCategory $category): ProjectAttachmentType
     {
-        $this->idCategory = $idCategory;
+        $this->category = $category;
 
         return $this;
     }
 
     /**
-     * Get idCategory
-     *
-     * @return ProjectAttachmentTypeCategory|null
+     * @return EntityAttachmentTypeCategoryInterface|null
      */
-    public function getIdCategory(): ?ProjectAttachmentTypeCategory
+    public function getCategory(): ?EntityAttachmentTypeCategoryInterface
     {
-        return $this->idCategory;
+        return $this->category;
     }
 
     /**
-     * Set idType
-     *
-     * @param AttachmentType $idType
+     * @param AttachmentType $attachmentType
      *
      * @return ProjectAttachmentType
      */
-    public function setIdType(AttachmentType $idType): ProjectAttachmentType
+    public function setAttachmentType(AttachmentType $attachmentType): ProjectAttachmentType
     {
-        $this->idType = $idType;
+        $this->attachmentType = $attachmentType;
 
         return $this;
     }
 
     /**
-     * Get idType
      *
      * @return AttachmentType
      */
-    public function getIdType(): AttachmentType
+    public function getAttachmentType(): AttachmentType
     {
-        return $this->idType;
+        return $this->attachmentType;
     }
 }

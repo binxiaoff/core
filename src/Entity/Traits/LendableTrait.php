@@ -1,11 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Unilend\Entity\Traits;
 
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
-use Unilend\Entity\Embeddable\LendingRate;
-use Unilend\Entity\{Projects, Wallet};
+use Unilend\Entity\{Embeddable\LendingRate, Project, Wallet};
 
 trait LendableTrait
 {
@@ -19,11 +20,11 @@ trait LendableTrait
     protected $amount;
 
     /**
-     * @var Projects
+     * @var Project
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Projects")
+     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Project")
      * @ORM\JoinColumns({
-     *     @ORM\JoinColumn(name="id_project", referencedColumnName="id_project", nullable=false)
+     *     @ORM\JoinColumn(name="id_project", nullable=false)
      * })
      */
     protected $project;
@@ -33,7 +34,7 @@ trait LendableTrait
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\Wallet")
      * @ORM\JoinColumns({
-     *     @ORM\JoinColumn(name="id_wallet", referencedColumnName="id", nullable=false)
+     *     @ORM\JoinColumn(name="id_wallet", nullable=false)
      * })
      */
     protected $wallet;
@@ -53,7 +54,7 @@ trait LendableTrait
     protected $rate;
 
     /**
-     * Init trait.
+     * Initialize the trait.
      */
     public function traitInit(): void
     {
@@ -81,19 +82,19 @@ trait LendableTrait
     }
 
     /**
-     * @return Projects
+     * @return Project
      */
-    public function getProject(): Projects
+    public function getProject(): Project
     {
         return $this->project;
     }
 
     /**
-     * @param Projects $project
+     * @param Project $project
      *
      * @return self
      */
-    public function setProject(Projects $project): self
+    public function setProject(Project $project): self
     {
         $this->project = $project;
 

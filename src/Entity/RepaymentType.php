@@ -3,7 +3,7 @@
 namespace Unilend\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
-use Unilend\Entity\Traits\Timestampable;
+use Unilend\Entity\Traits\TimestampableTrait;
 
 /**
  * @ORM\Table(name="repayment_type", uniqueConstraints={@ORM\UniqueConstraint(columns={"label", "periodicity"})})
@@ -11,7 +11,7 @@ use Unilend\Entity\Traits\Timestampable;
  */
 class RepaymentType
 {
-    use Timestampable;
+    use TimestampableTrait;
 
     public const REPAYMENT_TYPE_FIXED_CAPITAL = 'fixed_capital';
     public const REPAYMENT_TYPE_FIXED_PAYMENT = 'fixed_payment';

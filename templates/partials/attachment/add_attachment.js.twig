@@ -1,0 +1,34 @@
+var $attachmentCollectionHolder = $('div.attachments');
+
+var $addAttachmentButton = $(
+    '<a href="javascript:;" class="btn-default btn-shape-sq-md margin-10-t">' +
+    '    <span class="icon fa-plus-u16 c-t2"></span>' +
+    '</a>'
+);
+
+$attachmentCollectionHolder.append($addAttachmentButton);
+
+$attachmentCollectionHolder.data('index', $attachmentCollectionHolder.find(':input').length);
+
+$addAttachmentButton.on('click', function () {
+    addAttachmentForm($attachmentCollectionHolder, $addAttachmentButton);
+});
+
+function addAttachmentForm($attachmentCollectionHolder, $addAttachmentButton) {
+    var prototype = $attachmentCollectionHolder.data('prototype');
+    var prototypeName = $attachmentCollectionHolder.data('prototype-name');
+    var index = $attachmentCollectionHolder.data('index');
+    var newForm = prototype;
+
+    newForm = newForm.replace(new RegExp(prototypeName, 'g'), index);
+
+    $attachmentCollectionHolder.data('index', index + 1);
+
+    var $newFormDiv = $('<div class="form-field-multi file-upload-extra row row-multi-col-computer"></div>').append(newForm);
+    $newFormDiv.find('[data-fileattach]').uiFileAttach()
+    $addAttachmentButton.before($newFormDiv);
+    var $removeFormButton = $newFormDiv.find(`[class='ui-fileattach-remove-btn']`);
+    $removeFormButton.on('click', function () {
+        $newFormDiv.remove();
+    });
+}

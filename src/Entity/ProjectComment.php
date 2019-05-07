@@ -1,9 +1,11 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Unilend\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
-use Unilend\Entity\Traits\Timestampable;
+use Unilend\Entity\Traits\TimestampableTrait;
 
 /**
  * @ORM\Entity
@@ -11,9 +13,9 @@ use Unilend\Entity\Traits\Timestampable;
  */
 class ProjectComment
 {
-    use Timestampable;
+    use TimestampableTrait;
 
-    const VISIBILITY_ALL = 1;
+    public const VISIBILITY_ALL = 1;
 
     /**
      * @var int
@@ -85,6 +87,7 @@ class ProjectComment
 
     /**
      * @param ProjectComment|null $parent
+     *
      * @return ProjectComment
      */
     public function setParent(?ProjectComment $parent): ProjectComment
@@ -104,6 +107,7 @@ class ProjectComment
 
     /**
      * @param Projects $project
+     *
      * @return ProjectComment
      */
     public function setProject(Projects $project): ProjectComment
@@ -123,6 +127,7 @@ class ProjectComment
 
     /**
      * @param Clients $client
+     *
      * @return ProjectComment
      */
     public function setClient(Clients $client): ProjectComment
@@ -142,6 +147,7 @@ class ProjectComment
 
     /**
      * @param string $content
+     *
      * @return ProjectComment
      */
     public function setContent(string $content): ProjectComment
@@ -161,6 +167,7 @@ class ProjectComment
 
     /**
      * @param int $visibility
+     *
      * @return ProjectComment
      */
     public function setVisibility(int $visibility): ProjectComment

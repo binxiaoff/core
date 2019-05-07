@@ -6,7 +6,7 @@ use Doctrine\Common\Collections\{ArrayCollection, Collection, Criteria};
 use Doctrine\ORM\Mapping as ORM;
 use Ramsey\Uuid\Exception\UnsatisfiedDependencyException;
 use Ramsey\Uuid\Uuid;
-use Unilend\Entity\Traits\Timestampable;
+use Unilend\Entity\Traits\TimestampableTrait;
 
 /**
  * @ORM\Table(name="projects", indexes={
@@ -25,7 +25,7 @@ use Unilend\Entity\Traits\Timestampable;
  */
 class Projects
 {
-    use Timestampable;
+    use TimestampableTrait;
 
     public const AUTO_REPAYMENT_ON  = 0;
     public const AUTO_REPAYMENT_OFF = 1;

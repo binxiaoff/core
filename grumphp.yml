@@ -8,5 +8,8 @@ parameters:
             allow_risky: true
             config: .php_cs
         phpcs: ~
-        phpmd: ~
+        phpmd:
+            exclude:
+                - /(.*)src\/Migrations\/(.*)/
+            ruleset: ['phpmd.xml']
         phpstan: ~
