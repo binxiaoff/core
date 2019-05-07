@@ -12,8 +12,8 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\{RedirectResponse, Request, Response};
 use Symfony\Component\Routing\{Annotation\Route, Router, RouterInterface};
 use Symfony\Component\Security\Core\User\UserInterface;
-use Unilend\Entity\{AttachmentType, Clients, Project, ProjectAttachment, ProjectAttachmentSignature};
-use Unilend\Repository\{AttachmentTypeRepository, CompaniesRepository, ProjectAttachmentSignatureRepository};
+use Unilend\Entity\{Attachment, AttachmentSignature, AttachmentType, Clients, Project};
+use Unilend\Repository\{AttachmentSignatureRepository, AttachmentTypeRepository, CompaniesRepository};
 use Unilend\Service\{AttachmentManager, DemoMailerManager, ElectronicSignatureManager};
 
 /**
@@ -22,14 +22,14 @@ use Unilend\Service\{AttachmentManager, DemoMailerManager, ElectronicSignatureMa
 class SignatureController extends AbstractController
 {
     /**
-     * @Route("/signature/{projectAttachment}", name="signature_sign", requirements={"projectAttachment": "\d+"})
+     * @Route("/signature/{attachment}", name="signature_sign", requirements={"attachment": "\d+"})
      *
-     * @param ProjectAttachment                    $projectAttachment
-     * @param UserInterface|Clients|null           $user
-     * @param ProjectAttachmentSignatureRepository $signatureRepository
-     * @param ElectronicSignatureManager           $signatureManager
-     * @param AttachmentManager                    $attachmentManager
-     * @param RouterInterface                      $router
+     * @param Attachment                    $attachment
+     * @param UserInterface|Clients|null    $user
+     * @param AttachmentSignatureRepository $signatureRepository
+     * @param ElectronicSignatureManager    $signatureManager
+     * @param AttachmentManager             $attachmentManager
+     * @param RouterInterface               $router
      *
      * @throws OptimisticLockException
      * @throws ORMException
@@ -37,33 +37,33 @@ class SignatureController extends AbstractController
      * @return RedirectResponse
      */
     public function sign(
-        ProjectAttachment $projectAttachment,
+        Attachment $attachment,
         ?UserInterface $user,
-        ProjectAttachmentSignatureRepository $signatureRepository,
+        AttachmentSignatureRepository $signatureRepository,
         ElectronicSignatureManager $signatureManager,
         AttachmentManager $attachmentManager,
         RouterInterface $router
     ): RedirectResponse {
-        /** @var ProjectAttachmentSignature $signature */
+        /** @var AttachmentSignature $signature */
         $signature = $signatureRepository->findOneBy([
-            'projectAttachment' => $projectAttachment,
-            'signatory'         => $user,
+            'attachment' => $attachment,
+            'signatory'  => $user,
         ]);
 
         if (null === $signature) {
             return $this->redirectToRoute('wallet');
         }
 
-        $documentContent  = file_get_contents($attachmentManager->getFullPath($projectAttachment->getAttachment()));
+        $documentContent  = file_get_contents($attachmentManager->getFullPath($attachment));
         $signatureRequest = $signatureManager->createSignatureRequest(
             $user,
             'Signature électronique de votre document',
-            $projectAttachment->getAttachment()->getOriginalName(),
+            $attachment->getOriginalName(),
             base64_encode($documentContent),
             'pdf',
             '330',
             '520',
-            $router->generate('signature_confirmation', ['projectAttachment' => $projectAttachment->getId()], Router::ABSOLUTE_URL)
+            $router->generate('signature_confirmation', ['attachment' => $attachment->getId()], Router::ABSOLUTE_URL)
         );
 
         $signature->setDocusignEnvelopeId((int) $signatureRequest['envelope']);
@@ -73,12 +73,12 @@ class SignatureController extends AbstractController
     }
 
     /**
-     * @Route("/signature/confirmation/{projectAttachment}", name="signature_confirmation", requirements={"projectAttachment": "\d+"})
+     * @Route("/signature/confirmation/{attachment}", name="signature_confirmation", requirements={"attachment": "\d+"})
      *
-     * @param ProjectAttachment                    $projectAttachment
-     * @param UserInterface|Clients|null           $user
-     * @param ProjectAttachmentSignatureRepository $signatureRepository
-     * @param Request                              $request
+     * @param Attachment                    $attachment
+     * @param Request                       $request
+     * @param UserInterface|Clients|null    $user
+     * @param AttachmentSignatureRepository $signatureRepository
      *
      * @throws OptimisticLockException
      * @throws ORMException
@@ -86,15 +86,15 @@ class SignatureController extends AbstractController
      * @return Response
      */
     public function confirmation(
-        ProjectAttachment $projectAttachment,
+        Attachment $attachment,
+        Request $request,
         ?UserInterface $user,
-        ProjectAttachmentSignatureRepository $signatureRepository,
-        Request $request
+        AttachmentSignatureRepository $signatureRepository
     ): Response {
-        /** @var ProjectAttachmentSignature $signature */
+        /** @var AttachmentSignature $signature */
         $signature = $signatureRepository->findOneBy([
-            'projectAttachment' => $projectAttachment,
-            'signatory'         => $user,
+            'attachment' => $attachment,
+            'signatory'  => $user,
         ]);
 
         if (null === $signature) {
@@ -103,7 +103,7 @@ class SignatureController extends AbstractController
 
         switch ($request->query->get('event')) {
             case ElectronicSignatureManager::RECIPIENT_ACTION_SIGNING_COMPLETE:
-                $signature->setStatus(ProjectAttachmentSignature::STATUS_SIGNED);
+                $signature->setStatus(AttachmentSignature::STATUS_SIGNED);
                 $signatureRepository->save($signature);
 
                 break;
@@ -120,14 +120,14 @@ class SignatureController extends AbstractController
      *
      * @ParamConverter("project", options={"mapping": {"project": "hash"}})
      *
-     * @param Project                              $project
-     * @param Request                              $request
-     * @param UserInterface|Clients|null           $user
-     * @param AttachmentTypeRepository             $attachmentTypeRepository
-     * @param CompaniesRepository                  $companyRepository
-     * @param ProjectAttachmentSignatureRepository $signatureRepository
-     * @param AttachmentManager                    $attachmentManager
-     * @param DemoMailerManager                    $mailerManager
+     * @param Project                       $project
+     * @param Request                       $request
+     * @param UserInterface|Clients|null    $user
+     * @param AttachmentTypeRepository      $attachmentTypeRepository
+     * @param CompaniesRepository           $companyRepository
+     * @param AttachmentSignatureRepository $signatureRepository
+     * @param AttachmentManager             $attachmentManager
+     * @param DemoMailerManager             $mailerManager
      *
      * @throws Exception
      * @throws ORMException
@@ -142,7 +142,7 @@ class SignatureController extends AbstractController
         ?UserInterface $user,
         AttachmentTypeRepository $attachmentTypeRepository,
         CompaniesRepository $companyRepository,
-        ProjectAttachmentSignatureRepository $signatureRepository,
+        AttachmentSignatureRepository $signatureRepository,
         AttachmentManager $attachmentManager,
         DemoMailerManager $mailerManager
     ): Response {
@@ -166,21 +166,22 @@ class SignatureController extends AbstractController
             $attachmentType = $attachmentTypeRepository->find($request->request->get('filetype')['electronicSignature']);
 
             if ($attachmentType) {
-                $attachment        = $attachmentManager->upload($user, $user->getCompany(), $user, $attachmentType, null, $file, false, $fileName);
-                $projectAttachment = $attachmentManager->attachToProject($attachment, $project);
+                $attachment = $attachmentManager->upload($user, $user->getCompany(), $user, $attachmentType, null, $file, false, $fileName);
+
+                $attachmentManager->attachToProject($attachment, $project);
 
                 foreach ($signatoryCompanies as $signatoryCompanyId) {
                     $signatory = $companyRepository->find($signatoryCompanyId)->getIdClientOwner();
-                    $signature = new ProjectAttachmentSignature();
+                    $signature = new AttachmentSignature();
                     $signature
-                        ->setProjectAttachment($projectAttachment)
+                        ->setAttachment($attachment)
                         ->setSignatory($signatory)
-                        ->setStatus(ProjectAttachmentSignature::STATUS_PENDING)
+                        ->setStatus(AttachmentSignature::STATUS_PENDING)
                     ;
 
                     $signatureRepository->save($signature);
 
-                    $mailerManager->sendElectronicSignature($signature);
+                    $mailerManager->sendElectronicSignature($project, $signature);
                 }
             }
         }

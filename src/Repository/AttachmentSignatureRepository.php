@@ -7,27 +7,27 @@ namespace Unilend\Repository;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\{ORMException, OptimisticLockException};
-use Unilend\Entity\ProjectAttachmentSignature;
+use Unilend\Entity\AttachmentSignature;
 
-class ProjectAttachmentSignatureRepository extends ServiceEntityRepository
+class AttachmentSignatureRepository extends ServiceEntityRepository
 {
     /**
      * @param ManagerRegistry $registry
      */
     public function __construct(ManagerRegistry $registry)
     {
-        parent::__construct($registry, ProjectAttachmentSignature::class);
+        parent::__construct($registry, AttachmentSignature::class);
     }
 
     /**
-     * @param ProjectAttachmentSignature $projectAttachmentSignature
+     * @param AttachmentSignature $attachmentSignature
      *
      * @throws ORMException
      * @throws OptimisticLockException
      */
-    public function save(ProjectAttachmentSignature $projectAttachmentSignature)
+    public function save(AttachmentSignature $attachmentSignature)
     {
-        $this->_em->persist($projectAttachmentSignature);
+        $this->_em->persist($attachmentSignature);
         $this->_em->flush();
     }
 }

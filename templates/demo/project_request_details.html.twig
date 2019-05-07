@@ -476,11 +476,12 @@
                             <tbody>
                             {% set attachment = null %}
                             {% for signatureAttachment in signatureAttachments %}
-                                {% for signature in signatureAttachment.signatures %}
+                                {% set signatures = signatureAttachment.attachment.signatures %}
+                                {% for signature in signatures %}
                                     <tr{% if loop.parent.loop.index % 2 == 0 %} class="alt"{% endif %}>
                                         {% if signatureAttachment.attachment != attachment %}
                                             {% set attachment = signatureAttachment.attachment %}
-                                            <td rowspan="{{ signatureAttachment.signatures|length }}">
+                                            <td rowspan="{{ signatures|length }}">
                                                 <a href="{{ path('demo_project_document', {'hash': project.hash, 'idProjectAttachment': signatureAttachment.id}) }}">
                                                     {{ attachment.originalName }}
                                                 </a>
@@ -496,11 +497,11 @@
                                             {% set iconColor = '#f7941e' %}
                                             {% set tooltipText = 'En attente de signature' %}
 
-                                            {% if signature.status == constant('\\Unilend\\Entity\\ProjectAttachmentSignature::STATUS_SIGNED') %}
+                                            {% if signature.status == constant('\\Unilend\\Entity\\AttachmentSignature::STATUS_SIGNED') %}
                                                 {% set iconName = 'fa-check-u' %}
                                                 {% set iconColor = '#00a14b' %}
                                                 {% set tooltipText = 'Signé' %}
-                                            {% elseif signature.status == constant('\\Unilend\\Entity\\ProjectAttachmentSignature::STATUS_REFUSED') %}
+                                            {% elseif signature.status == constant('\\Unilend\\Entity\\AttachmentSignature::STATUS_REFUSED') %}
                                                 {% set iconName = 'fa-refused-u' %}
                                                 {% set iconColor = '#ed1c24' %}
                                                 {% set tooltipText = 'Refusé' %}

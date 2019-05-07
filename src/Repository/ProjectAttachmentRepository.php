@@ -7,7 +7,7 @@ namespace Unilend\Repository;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\Query\Expr\Join;
-use Unilend\Entity\{Attachment, AttachmentType, Project, ProjectAttachment, ProjectAttachmentSignature, ProjectAttachmentType, ProjectAttachmentTypeCategory};
+use Unilend\Entity\{Attachment, AttachmentSignature, AttachmentType, Project, ProjectAttachment, ProjectAttachmentType, ProjectAttachmentTypeCategory};
 
 class ProjectAttachmentRepository extends ServiceEntityRepository
 {
@@ -93,8 +93,8 @@ class ProjectAttachmentRepository extends ServiceEntityRepository
     {
         $queryBuilder = $this->createQueryBuilder('pa');
         $queryBuilder
-            ->leftJoin(ProjectAttachmentSignature::class, 's', Join::WITH, 'pa.id = s.projectAttachment')
-            ->where('pa.idProject = :project')
+            ->leftJoin(AttachmentSignature::class, 's', Join::WITH, 'pa.attachment = s.attachment')
+            ->where('pa.project = :project')
             ->andWhere($queryBuilder->expr()->isNull('s.id'))
             ->setParameter('project', $project)
             ->orderBy('pa.added', 'ASC')
@@ -112,8 +112,8 @@ class ProjectAttachmentRepository extends ServiceEntityRepository
     {
         $queryBuilder = $this->createQueryBuilder('pa');
         $queryBuilder
-            ->innerJoin(ProjectAttachmentSignature::class, 's', Join::WITH, 'pa.id = s.projectAttachment')
-            ->where('pa.idProject = :project')
+            ->innerJoin(AttachmentSignature::class, 's', Join::WITH, 'pa.attachment = s.attachment')
+            ->where('pa.project = :project')
             ->setParameter('project', $project)
             ->orderBy('pa.added', 'ASC')
         ;

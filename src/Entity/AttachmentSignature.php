@@ -11,7 +11,7 @@ use Unilend\Entity\Traits\TimestampableTrait;
  * @ORM\Entity
  * @ORM\HasLifecycleCallbacks
  */
-class ProjectAttachmentSignature
+class AttachmentSignature
 {
     use TimestampableTrait;
 
@@ -20,14 +20,14 @@ class ProjectAttachmentSignature
     public const STATUS_REFUSED = 2;
 
     /**
-     * @var ProjectAttachment
+     * @var Attachment
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Entity\ProjectAttachment", inversedBy="signatures")
+     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Attachment", inversedBy="signatures")
      * @ORM\JoinColumns({
-     *     @ORM\JoinColumn(name="id_project_attachment", referencedColumnName="id", nullable=false)
+     *     @ORM\JoinColumn(name="id_attachment", nullable=false)
      * })
      */
-    private $projectAttachment;
+    private $attachment;
 
     /**
      * @var Clients
@@ -63,31 +63,31 @@ class ProjectAttachmentSignature
     private $id;
 
     /**
-     * @param ProjectAttachment $projectAttachment
+     * @param Attachment $attachment
      *
-     * @return ProjectAttachmentSignature
+     * @return AttachmentSignature
      */
-    public function setProjectAttachment(ProjectAttachment $projectAttachment): ProjectAttachmentSignature
+    public function setAttachment(Attachment $attachment): AttachmentSignature
     {
-        $this->projectAttachment = $projectAttachment;
+        $this->attachment = $attachment;
 
         return $this;
     }
 
     /**
-     * @return ProjectAttachment
+     * @return Attachment|null
      */
-    public function getProjectAttachment(): ProjectAttachment
+    public function getAttachment(): ?Attachment
     {
-        return $this->projectAttachment;
+        return $this->attachment;
     }
 
     /**
      * @param Clients $signatory
      *
-     * @return ProjectAttachmentSignature
+     * @return AttachmentSignature
      */
-    public function setSignatory(Clients $signatory): ProjectAttachmentSignature
+    public function setSignatory(Clients $signatory): AttachmentSignature
     {
         $this->signatory = $signatory;
 
@@ -95,9 +95,9 @@ class ProjectAttachmentSignature
     }
 
     /**
-     * @return Clients
+     * @return Clients|null
      */
-    public function getSignatory(): Clients
+    public function getSignatory(): ?Clients
     {
         return $this->signatory;
     }
@@ -105,9 +105,9 @@ class ProjectAttachmentSignature
     /**
      * @param int|null $docusignEnvelopeId
      *
-     * @return ProjectAttachmentSignature
+     * @return AttachmentSignature
      */
-    public function setDocusignEnvelopeId(?int $docusignEnvelopeId): ProjectAttachmentSignature
+    public function setDocusignEnvelopeId(?int $docusignEnvelopeId): AttachmentSignature
     {
         $this->docusignEnvelopeId = $docusignEnvelopeId;
 
@@ -125,9 +125,9 @@ class ProjectAttachmentSignature
     /**
      * @param int $status
      *
-     * @return ProjectAttachmentSignature
+     * @return AttachmentSignature
      */
-    public function setStatus(int $status): ProjectAttachmentSignature
+    public function setStatus(int $status): AttachmentSignature
     {
         $this->status = $status;
 
@@ -135,17 +135,17 @@ class ProjectAttachmentSignature
     }
 
     /**
-     * @return int
+     * @return int|null
      */
-    public function getStatus(): int
+    public function getStatus(): ?int
     {
         return $this->status;
     }
 
     /**
-     * @return int
+     * @return int|null
      */
-    public function getId(): int
+    public function getId(): ?int
     {
         return $this->id;
     }

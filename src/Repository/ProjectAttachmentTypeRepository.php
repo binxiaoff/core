@@ -5,8 +5,7 @@ namespace Unilend\Repository;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\Query\Expr\Join;
-use Doctrine\ORM\Query\QueryException;
-use Unilend\Entity\{AttachmentType, ProjectAttachmentType, ProjectAttachmentTypeCategory};
+use Unilend\Entity\{ProjectAttachmentType, ProjectAttachmentTypeCategory};
 
 class ProjectAttachmentTypeRepository extends ServiceEntityRepository
 {
@@ -19,21 +18,17 @@ class ProjectAttachmentTypeRepository extends ServiceEntityRepository
     }
 
     /**
-     * @throws QueryException
-     *
      * @return ProjectAttachmentType[]
      */
     public function getAttachmentTypes(): array
     {
-        $queryBuilder = $this->createQueryBuilder('t');
+        $queryBuilder = $this->createQueryBuilder('t', 't.type');
         $queryBuilder
             ->innerJoin(ProjectAttachmentTypeCategory::class, 'c', Join::WITH, 't.category = c.id')
-            ->innerJoin(AttachmentType::class, 'at', Join::WITH, 't.attachmentType = at.id')
             ->orderBy('c.rank', 'ASC')
             ->addOrderBy('t.rank', 'ASC')
-//            ->indexBy('at', 'at.id')
         ;
-//var_dump($queryBuilder->getQuery()->getResult());die;
+
         return $queryBuilder->getQuery()->getResult();
     }
 }

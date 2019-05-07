@@ -10,7 +10,7 @@ use Swift_Mailer;
 use Swift_RfcComplianceException;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
-use Unilend\Entity\{Bids, Clients, Loans, ProjectAttachmentSignature, Projects};
+use Unilend\Entity\{AttachmentSignature, Bids, Clients, Loans, Project, Projects};
 use Unilend\SwiftMailer\TemplateMessageProvider;
 
 class DemoMailerManager
@@ -271,20 +271,19 @@ class DemoMailerManager
     }
 
     /**
-     * @param ProjectAttachmentSignature $signature
+     * @param Project             $project
+     * @param AttachmentSignature $signature
      *
      * @throws Swift_RfcComplianceException
      *
      * @return int
      */
-    public function sendElectronicSignature(ProjectAttachmentSignature $signature): int
+    public function sendElectronicSignature(Project $project, AttachmentSignature $signature): int
     {
-        $projectAttachment = $signature->getProjectAttachment();
-        $project           = $projectAttachment->getProject();
-        $keywords          = [
+        $keywords = [
             'firstName'    => $signature->getSignatory()->getFirstName(),
             'projectName'  => $project->getIdCompany()->getName() . ' / ' . $project->getTitle(),
-            'signatureUrl' => $this->router->generate('signature_sign', ['projectAttachment' => $projectAttachment->getId()], RouterInterface::ABSOLUTE_URL),
+            'signatureUrl' => $this->router->generate('signature_sign', ['attachment' => $signature->getAttachment()->getId()], RouterInterface::ABSOLUTE_URL),
         ];
 
         $message = $this->messageProvider->newMessage('document-signature', $keywords);

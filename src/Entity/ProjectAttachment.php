@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Unilend\Entity;
 
-use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use Unilend\Entity\Traits\TimestampableTrait;
 
@@ -44,21 +43,6 @@ class ProjectAttachment
      * })
      */
     private $attachment;
-
-    /**
-     * @var ProjectAttachmentSignature[]
-     *
-     * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectAttachmentSignature", mappedBy="projectAttachment")
-     */
-    private $signatures;
-
-    /**
-     * ProjectAttachment constructor.
-     */
-    public function __construct()
-    {
-        $this->signatures = new ArrayCollection();
-    }
 
     /**
      * @return int|null
@@ -106,13 +90,5 @@ class ProjectAttachment
     public function getAttachment(): ?Attachment
     {
         return $this->attachment;
-    }
-
-    /**
-     * @return ProjectAttachmentSignature[]
-     */
-    public function getSignatures(): iterable
-    {
-        return $this->signatures;
     }
 }
