@@ -17,7 +17,7 @@ use Symfony\Component\HttpFoundation\{JsonResponse, RedirectResponse, Request, R
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Unilend\Entity\{AcceptedBids, Attachment, AttachmentType, Bids, Clients, Companies, CompanySector, FeeType, Loans, Partner, PercentFee, Product, ProjectAttachment,
-    ProjectAttachmentType, ProjectComment, ProjectParticipant, ProjectPercentFee, Projects, ProjectsStatus, RepaymentType, Users, Wallet, WalletType};
+    ProjectAttachmentType, ProjectParticipant, ProjectPercentFee, Projects, ProjectsStatus, RepaymentType, Users, Wallet, WalletType};
 use Unilend\Form\Lending\BidType;
 use Unilend\Repository\ProjectParticipantRepository;
 use Unilend\Service\Front\ProjectDisplayManager;
@@ -83,7 +83,6 @@ class DemoController extends AbstractController
         $borrowerId         = $request->request->get('borrower');
         $title              = $request->request->get('title');
         $description        = $request->request->get('description');
-        $sector             = $request->request->get('sector'); // @todo
         $amount             = $request->request->get('amount');
         $duration           = $request->request->get('duration');
         $responseDate       = $request->request->get('response-date');
@@ -362,112 +361,6 @@ class DemoController extends AbstractController
         $this->entityManager->flush($project);
 
         return $this->redirectToRoute('demo_project_details', ['hash' => $project->getHash()]);
-    }
-
-    /**
-     * @Route("/project/comment/{hash}", name="demo_project_comment_add", requirements={"hash": "[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}"})
-     *
-     * @param string                     $hash
-     * @param Request                    $request
-     * @param UserInterface|Clients|null $user
-     *
-     * @return JsonResponse
-     */
-    public function projectCommentAdd(string $hash, Request $request, ?UserInterface $user): JsonResponse
-    {
-        $projectRepository = $this->entityManager->getRepository(Projects::class);
-        $project           = $projectRepository->findOneBy(['hash' => $hash]);
-
-        if (null === $project) {
-            return $this->json([
-                'error'   => true,
-                'message' => 'Invalid parameters',
-            ], Response::HTTP_BAD_REQUEST);
-        }
-
-        $userId = $request->request->filter('user', null, FILTER_VALIDATE_INT);
-
-        if ($userId !== $user->getIdClient()) {
-            return $this->json([
-                'error'   => true,
-                'message' => 'Invalid user ID',
-            ], Response::HTTP_BAD_REQUEST);
-        }
-
-        $content = $request->request->get('content');
-
-        if ($content) {
-            $parent  = $request->request->getInt('parent');
-            $parent  = $parent ? $this->entityManager->getRepository(ProjectComment::class)->find($parent) : null;
-            $comment = new ProjectComment();
-            $comment
-                ->setParent($parent)
-                ->setProject($project)
-                ->setClient($user)
-                ->setContent($content)
-                ->setVisibility(ProjectComment::VISIBILITY_ALL)
-            ;
-
-            $this->entityManager->persist($comment);
-            $this->entityManager->flush($comment);
-
-            return $this->getCommentResponse($comment);
-        }
-
-        return $this->json([
-            'error'   => true,
-            'message' => 'Unable to add comment',
-        ], Response::HTTP_BAD_REQUEST);
-    }
-
-    /**
-     * @Route("/project/comment", name="demo_project_comment_update")
-     *
-     * @param Request                    $request
-     * @param UserInterface|Clients|null $user
-     *
-     * @return JsonResponse
-     */
-    public function projectCommentUpdate(Request $request, ?UserInterface $user): JsonResponse
-    {
-        $commentId = $request->request->getInt('id');
-
-        if (empty($commentId)) {
-            return $this->json([
-                'error'   => true,
-                'message' => 'Invalid parameters',
-            ], Response::HTTP_BAD_REQUEST);
-        }
-
-        $comment = $this->entityManager->getRepository(ProjectComment::class)->find($commentId);
-
-        if (null === $comment) {
-            return $this->json([
-                'error'   => true,
-                'message' => 'Unknown comment',
-            ], Response::HTTP_BAD_REQUEST);
-        }
-
-        if ($comment->getClient() !== $user) {
-            return $this->json([
-                'error'   => true,
-                'message' => 'User cannot edit this comment',
-            ], Response::HTTP_FORBIDDEN);
-        }
-
-        $content = $request->request->get('content');
-
-        if ($content) {
-            $comment->setContent($content);
-            $this->entityManager->flush($comment);
-
-            return $this->getCommentResponse($comment);
-        }
-
-        return $this->json([
-            'error'   => true,
-            'message' => 'Invalid user ID',
-        ], Response::HTTP_BAD_REQUEST);
     }
 
     /**
@@ -1023,16 +916,6 @@ class DemoController extends AbstractController
     }
 
     /**
-     * @Route("/reporting", name="demo_statistics")
-     *
-     * @return Response
-     */
-    public function reporting(): Response
-    {
-        return $this->render('demo/reporting.html.twig');
-    }
-
-    /**
      * @Route("/project/{hash}/fees/add", name="demo_add_project_fees", methods={"POST"}, requirements={"hash": "[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}"})
      *
      * @param Request $request
@@ -1115,24 +998,6 @@ class DemoController extends AbstractController
                 $attachmentManager->attachToProject($attachment, $project);
             }
         }
-    }
-
-    /**
-     * @param ProjectComment $comment
-     *
-     * @return JsonResponse
-     */
-    private function getCommentResponse(ProjectComment $comment): JsonResponse
-    {
-        return $this->json([
-            'id'                      => $comment->getId(),
-            'parent'                  => $comment->getParent() ? $comment->getParent()->getId() : null,
-            'created'                 => $comment->getAdded()->format('c'),
-            'modified'                => $comment->getUpdated() ? $comment->getUpdated()->format('c') : $comment->getAdded()->format('c'),
-            'content'                 => $comment->getContent(),
-            'fullname'                => $comment->getClient()->getFirstName() . ' ' . $comment->getClient()->getLastName(),
-            'created_by_current_user' => true,
-        ]);
     }
 
     /**

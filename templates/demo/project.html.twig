@@ -6,6 +6,7 @@
 } %}
 
 {% block pageHeadScripts %}
+    {% include 'project_comment/styles.html.twig' %}
     <style>
         .bubble {
             display: inline-block;
@@ -39,6 +40,7 @@
 {% endblock %}
 
 {% block pageScripts %}
+    {% include 'project_comment/scripts.html.twig' %}
     <script>
         {% include 'partials/fees/fees.js.twig' %}
         {% include 'partials/bids/actions.js.twig' %}
@@ -151,5 +153,17 @@
                 </div><!-- /.section-tabs-content -->
             </div><!-- /.panel -->
         </article><!-- /.dashboard-tab-pane -->
-    </div>
+        <article class="dashboard-tab-pane" id="article-discussions">
+            <div class="panel" style="font-size: 16px;">
+                <div class="section-tabs-nav">
+                    <header>
+                        <h3 class="h3">Discussions</h3>
+                    </header>
+                </div><!-- /.section-tabs-nav -->
+                <div class="section-tabs-content tab-content">
+                    <div id="comments-container"></div>
+                </div><!-- /.section-tabs-content -->
+            </div><!-- /.panel -->
+        </article><!-- /.dashboard-tab-pane -->
+    </div><!-- /.dashboard-tabs-content -->
 {% endblock %}
