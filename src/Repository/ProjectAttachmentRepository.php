@@ -10,8 +10,6 @@ use Unilend\Entity\{Attachment, AttachmentType, Project, ProjectAttachment, Proj
 class ProjectAttachmentRepository extends ServiceEntityRepository
 {
     /**
-     * ProjectAttachmentRepository constructor.
-     *
      * @param ManagerRegistry $registry
      */
     public function __construct(ManagerRegistry $registry)

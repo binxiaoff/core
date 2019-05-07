@@ -85,7 +85,7 @@ class GreenPointDataManager
      */
     private function getIdentityData(Attachment $attachment): array
     {
-        return array_merge($this->getCommonClientData($attachment), ['date_naissance' => $attachment->getOwner()->getDateOfBirth()->format('d/m/Y')]);
+        return array_merge($this->getCommonClientData($attachment), ['date_naissance' => $attachment->getClientOwner()->getDateOfBirth()->format('d/m/Y')]);
     }
 
     /**
@@ -118,10 +118,12 @@ class GreenPointDataManager
      */
     private function getAddressData(Attachment $attachment): array
     {
-        if ($attachment->getOwner()->isNaturalPerson()) {
-            $address = $this->entityManager->getRepository(ClientAddress::class)->findLastModifiedNotArchivedAddressByType($attachment->getOwner(), AddressType::TYPE_MAIN_ADDRESS);
+        if ($attachment->getClientOwner()->isNaturalPerson()) {
+            $address = $this->entityManager->getRepository(ClientAddress::class)
+                ->findLastModifiedNotArchivedAddressByType($attachment->getClientOwner(), AddressType::TYPE_MAIN_ADDRESS)
+            ;
         } else {
-            $company = $this->entityManager->getRepository(Companies::class)->findOneBy(['idClientOwner' => $attachment->getOwner()]);
+            $company = $this->entityManager->getRepository(Companies::class)->findOneBy(['idClientOwner' => $attachment->getClientOwner()]);
             $address = $this->entityManager->getRepository(CompanyAddress::class)->findLastModifiedNotArchivedAddressByType($company, AddressType::TYPE_MAIN_ADDRESS);
         }
 
@@ -149,11 +151,12 @@ class GreenPointDataManager
     {
         return [
             'files'    => fopen($this->attachmentManager->getFullPath($attachment), 'rb'),
-            'dossier'  => $attachment->getOwner()->getIdClient(),
+            'dossier'  => $attachment->getClientOwner()->getIdClient(),
             'document' => $attachment->getId(),
             'detail'   => GreenPointManager::DETAIL_TRUE,
-            'nom'      => $attachment->getOwner()->getLastName() . ($attachment->getOwner()->getPreferredName() ? '|' . $attachment->getOwner()->getPreferredName() : ''),
-            'prenom'   => $attachment->getOwner()->getFirstName(),
+            'nom'      => $attachment->getClientOwner()->getLastName()
+                . ($attachment->getClientOwner()->getPreferredName() ? '|' . $attachment->getClientOwner()->getPreferredName() : ''),
+            'prenom' => $attachment->getClientOwner()->getFirstName(),
         ];
     }
 

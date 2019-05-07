@@ -9,6 +9,9 @@ use Unilend\Entity\{Attachment, AttachmentType, Clients, ProjectAttachment, Proj
 
 class AttachmentRepository extends ServiceEntityRepository
 {
+    /**
+     * @param ManagerRegistry $registry
+     */
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Attachment::class);
@@ -64,7 +67,7 @@ class AttachmentRepository extends ServiceEntityRepository
             ->andWhere('a.archived IS NOT NULL')
             ->andWhere('a.id != :idAttachment')
             ->andWhere('a.added < :added')
-            ->setParameter('idClient', $attachment->getOwner())
+            ->setParameter('idClient', $attachment->getClientOwner())
             ->setParameter('idType', $attachment->getType())
             ->setParameter('idAttachment', $attachment->getId())
             ->setParameter('added', $attachment->getAdded())

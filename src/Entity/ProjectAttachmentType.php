@@ -61,7 +61,7 @@ class ProjectAttachmentType implements EntityAttachmentTypeInterface
      */
     private $attachmentType;
 
-    /**     *
+    /**
      * @param int $rank
      *
      * @return ProjectAttachmentType

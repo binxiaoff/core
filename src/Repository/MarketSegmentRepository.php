@@ -11,8 +11,6 @@ use Unilend\Entity\MarketSegment;
 class MarketSegmentRepository extends ServiceEntityRepository
 {
     /**
-     * MarketSegmentRepository constructor.
-     *
      * @param ManagerRegistry $managerRegistry
      */
     public function __construct(ManagerRegistry $managerRegistry)

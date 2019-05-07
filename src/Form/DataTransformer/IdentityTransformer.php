@@ -11,19 +11,13 @@ use Symfony\Component\Form\Exception\TransformationFailedException;
 
 class IdentityTransformer implements DataTransformerInterface
 {
-    /**
-     * @var EntityManagerInterface
-     */
+    /** @var EntityManagerInterface */
     private $entityManager;
 
-    /**
-     * @var string
-     */
+    /** @var string */
     private $entityClass;
 
     /**
-     * AutocompleteModelTransformer constructor.
-     *
      * @param ManagerRegistry $managerRegistry
      * @param string          $entityClass
      */

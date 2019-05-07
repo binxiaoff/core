@@ -73,11 +73,11 @@ class ProjectParticipant
     }
 
     /**
-     * @param Project $project
+     * @param Project|null $project
      *
      * @return ProjectParticipant
      */
-    public function setProject(Project $project): ProjectParticipant
+    public function setProject(?Project $project): ProjectParticipant
     {
         $this->project = $project;
 

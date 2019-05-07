@@ -98,7 +98,7 @@ class Project
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\MarketSegment")
      * @ORM\JoinColumns({
-     *     @ORM\JoinColumn(name="id_market_segment", referencedColumnName="id")
+     *     @ORM\JoinColumn(name="id_market_segment", referencedColumnName="id", nullable=false)
      * })
      * @Assert\NotBlank
      */
@@ -116,7 +116,7 @@ class Project
     /**
      * @var DateTimeImmutable
      *
-     * @ORM\Column(type="date_immutable")
+     * @ORM\Column(type="date_immutable", nullable=true)
      *
      * @Assert\Date
      */
@@ -125,7 +125,7 @@ class Project
     /**
      * @var DateTimeImmutable
      *
-     * @ORM\Column(type="date_immutable")
+     * @ORM\Column(type="date_immutable", nullable=true)
      *
      * @Assert\Date
      */
@@ -134,7 +134,7 @@ class Project
     /**
      * @var int
      *
-     * @ORM\Column(type="smallint")
+     * @ORM\Column(type="smallint", nullable=true)
      */
     private $foncarisGuarantee;
 
@@ -146,7 +146,7 @@ class Project
      *     @ORM\JoinColumn(name="id_project_status_history")
      * })
      */
-    private $lastProjectStatusHistory;
+    private $currentProjectStatusHistory;
 
     /**
      * @var ArrayCollection|ProjectStatusHistory[]
@@ -220,8 +220,6 @@ class Project
     }
 
     /**
-     * Get idProject.
-     *
      * @return int
      */
     public function getId(): int
@@ -234,7 +232,7 @@ class Project
      *
      * @return Project
      */
-    public function setHash($hash)
+    public function setHash(string $hash): Project
     {
         $this->hash = $hash;
 
@@ -304,11 +302,11 @@ class Project
     }
 
     /**
-     * @param Companies|null $company
+     * @param Companies $company
      *
      * @return Project
      */
-    public function setSubmitterCompany(?Companies $company): Project
+    public function setSubmitterCompany(Companies $company): Project
     {
         $this->submitterCompany = $company;
 
@@ -324,11 +322,11 @@ class Project
     }
 
     /**
-     * @param Clients|null $client
+     * @param Clients $client
      *
      * @return Project
      */
-    public function setSubmitterClient(?Clients $client): Project
+    public function setSubmitterClient(Clients $client): Project
     {
         $this->submitterClient = $client;
 
@@ -386,21 +384,9 @@ class Project
     /**
      * @return ProjectStatusHistory|null
      */
-    public function getLastProjectStatusHistory(): ?ProjectStatusHistory
+    public function getCurrentProjectStatusHistory(): ?ProjectStatusHistory
     {
-        return $this->lastProjectStatusHistory;
-    }
-
-    /**
-     * @param ProjectStatusHistory $lastProjectStatusHistory
-     *
-     * @return Project
-     */
-    public function setLastProjectStatusHistory(ProjectStatusHistory $lastProjectStatusHistory): Project
-    {
-        $this->lastProjectStatusHistory = $lastProjectStatusHistory;
-
-        return $this;
+        return $this->currentProjectStatusHistory;
     }
 
     /**
@@ -412,11 +398,11 @@ class Project
     }
 
     /**
-     * @param int $foncarisGuarantee
+     * @param int|null $foncarisGuarantee
      *
      * @return Project
      */
-    public function setFoncarisGuarantee(int $foncarisGuarantee): Project
+    public function setFoncarisGuarantee(?int $foncarisGuarantee): Project
     {
         $this->foncarisGuarantee = $foncarisGuarantee;
 
@@ -460,11 +446,11 @@ class Project
     }
 
     /**
-     * @param DateTimeImmutable $replyDeadline
+     * @param DateTimeImmutable|null $replyDeadline
      *
      * @return Project
      */
-    public function setReplyDeadline(DateTimeImmutable $replyDeadline): Project
+    public function setReplyDeadline(?DateTimeImmutable $replyDeadline): Project
     {
         $this->replyDeadline = $replyDeadline;
 
@@ -480,11 +466,11 @@ class Project
     }
 
     /**
-     * @param DateTimeImmutable $expectedClosingDate
+     * @param DateTimeImmutable|null $expectedClosingDate
      *
      * @return Project
      */
-    public function setExpectedClosingDate(DateTimeImmutable $expectedClosingDate): Project
+    public function setExpectedClosingDate(?DateTimeImmutable $expectedClosingDate): Project
     {
         $this->expectedClosingDate = $expectedClosingDate;
 
@@ -492,8 +478,6 @@ class Project
     }
 
     /**
-     * Get project attachments.
-     *
      * @return ProjectAttachment[]
      */
     public function getProjectAttachments(): iterable
@@ -639,7 +623,7 @@ class Project
     }
 
     /**
-     * @return Companies[]
+     * @return ProjectParticipant[]|ArrayCollection
      */
     public function getLenders(): iterable
     {
@@ -727,7 +711,7 @@ class Project
     /**
      * @param ProjectStatusHistory $projectStatusHistory
      *
-     * @return $this
+     * @return Project
      */
     public function addProjectStatusHistory(ProjectStatusHistory $projectStatusHistory): Project
     {
@@ -735,6 +719,7 @@ class Project
 
         if (false === $this->projectStatusHistories->contains($projectStatusHistory)) {
             $this->projectStatusHistories->add($projectStatusHistory);
+            $this->setCurrentProjectStatusHistory($projectStatusHistory);
         }
 
         return $this;
@@ -784,6 +769,18 @@ class Project
     public function removeTranche(Tranche $tranche): Project
     {
         $this->projectParticipants->removeElement($tranche);
+
+        return $this;
+    }
+
+    /**
+     * @param ProjectStatusHistory $lastProjectStatusHistory
+     *
+     * @return Project
+     */
+    private function setCurrentProjectStatusHistory(ProjectStatusHistory $lastProjectStatusHistory): Project
+    {
+        $this->currentProjectStatusHistory = $lastProjectStatusHistory;
 
         return $this;
     }

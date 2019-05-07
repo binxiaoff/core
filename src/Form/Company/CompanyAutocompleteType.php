@@ -12,14 +12,10 @@ use Unilend\Form\AutocompleteType;
 
 class CompanyAutocompleteType extends AbstractType
 {
-    /**
-     * @var RouterInterface
-     */
+    /** @var RouterInterface */
     private $router;
 
     /**
-     * CompanyAutocompleteType constructor.
-     *
      * @param RouterInterface $router
      */
     public function __construct(RouterInterface $router)

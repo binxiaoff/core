@@ -174,7 +174,7 @@ class GreenPointValidationManager
 
         $this->handleGreenPointResponse($response, $attachment);
 
-        $this->saveClientKycStatus($attachment->getOwner());
+        $this->saveClientKycStatus($attachment->getClientOwner());
     }
 
     /**
@@ -191,15 +191,15 @@ class GreenPointValidationManager
         $clientStatusHistoryRepository = $this->entityManager->getRepository(ClientsStatusHistory::class);
 
         try {
-            $validationCount = $clientStatusHistoryRepository->getValidationsCount($attachment->getOwner()->getIdClient());
+            $validationCount = $clientStatusHistoryRepository->getValidationsCount($attachment->getClientOwner()->getIdClient());
         } catch (\Exception $exception) {
             $validationCount = 0;
-            $this->logger->warning('Could not check the validation count on id_client: ' . $attachment->getOwner()->getIdClient() . ' - Error: ' . $exception->getMessage(), [
+            $this->logger->warning('Could not check the validation count on id_client: ' . $attachment->getClientOwner()->getIdClient() . ' - Error: ' . $exception->getMessage(), [
                 'class'     => __CLASS__,
                 'function'  => __FUNCTION__,
                 'file'      => $exception->getFile(),
                 'line'      => $exception->getLine(),
-                'id_client' => $attachment->getOwner()->getIdClient(),
+                'id_client' => $attachment->getClientOwner()->getIdClient(),
             ]);
         }
 
@@ -266,7 +266,7 @@ class GreenPointValidationManager
             $addressAttachment = $this->entityManager->getRepository(ClientAddressAttachment::class)->findOneBy(['idAttachment' => $attachment]);
             if (null === $addressAttachment || null === $addressAttachment->getIdClientAddress()) {
                 $this->logger->error(
-                    'Lender housing certificate has no associated address - Client: ' . $attachment->getOwner()->getIdClient(),
+                    'Lender housing certificate has no associated address - Client: ' . $attachment->getClientOwner()->getIdClient(),
                     [
                         'class'    => __CLASS__,
                         'function' => __FUNCTION__,
@@ -290,11 +290,11 @@ class GreenPointValidationManager
             $bankAccountToValidate = $attachment->getBankAccount();
             if (null === $bankAccountToValidate) {
                 $this->logger->error(
-                    'Lender has no associated bank account - Client: ' . $attachment->getOwner()->getIdClient(),
+                    'Lender has no associated bank account - Client: ' . $attachment->getClientOwner()->getIdClient(),
                     [
                         'class'     => __CLASS__,
                         'function'  => __FUNCTION__,
-                        'id_client' => $attachment->getOwner()->getIdClient(),
+                        'id_client' => $attachment->getClientOwner()->getIdClient(),
                     ]
                 );
             } else {

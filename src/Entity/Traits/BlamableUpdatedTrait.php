@@ -13,7 +13,7 @@ trait BlamableUpdatedTrait
      * @var Clients|null
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\Clients")
-     * @ORM\JoinColumn(name="updatedBy", referencedColumnName="id_client")
+     * @ORM\JoinColumn(name="updated_by", referencedColumnName="id_client")
      */
     private $updatedBy;
 

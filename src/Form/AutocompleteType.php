@@ -12,14 +12,10 @@ use Unilend\Form\DataTransformer\IdentityTransformer;
 
 class AutocompleteType extends AbstractType
 {
-    /**
-     * @var ManagerRegistry
-     */
+    /** @var ManagerRegistry */
     private $managerRegistry;
 
     /**
-     * AutocompleteType constructor.
-     *
      * @param ManagerRegistry $managerRegistry
      */
     public function __construct(ManagerRegistry $managerRegistry)

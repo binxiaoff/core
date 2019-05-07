@@ -42,7 +42,7 @@ class bank_accountController extends bootstrap
                         . $this->request->request->get('iban7');
                     if (trim($iban) && $this->request->request->get('bic')) {
                         try {
-                            $bankAccountManager->saveBankInformation($this->attachment->getOwner(), $_POST['bic'], $iban, $this->attachment);
+                            $bankAccountManager->saveBankInformation($this->attachment->getClientOwner(), $_POST['bic'], $iban, $this->attachment);
                         } catch (Exception $exception) {
                             $_SESSION['freeow']['title']   = 'Erreur RIB';
                             $_SESSION['freeow']['message'] = $exception->getMessage();

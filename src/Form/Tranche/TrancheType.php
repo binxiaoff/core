@@ -7,6 +7,7 @@ namespace Unilend\Form\Tranche;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\CollectionType;
+use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Unilend\Entity\Embeddable\NullableLendingRate;
@@ -39,16 +40,20 @@ class TrancheType extends AbstractType
             ->add('capitalPeriodicity', null, ['label' => 'tranche-form.capital-periodicity'])
             ->add('interestPeriodicity', null, ['label' => 'tranche-form.interest-periodicity'])
             ->add('expectedReleasingDate', null, [
-                'label'  => 'tranche-form.expected-releasing-date',
-                'widget' => 'single_text',
-                'input'  => 'datetime_immutable',
-                'attr'   => ['class' => 'ui-has-datepicker'],
+                'label'    => 'tranche-form.expected-releasing-date',
+                'required' => false,
+                'widget'   => 'single_text',
+                'input'    => 'datetime_immutable',
+                'format'   => 'dd/MM/Y',
+                'attr'     => ['class' => 'ui-has-datepicker'],
             ])
             ->add('expectedStartingDate', null, [
-                'label'  => 'tranche-form.expected-starting-date',
-                'widget' => 'single_text',
-                'input'  => 'datetime_immutable',
-                'attr'   => ['class' => 'ui-has-datepicker'],
+                'label'    => 'tranche-form.expected-starting-date',
+                'required' => false,
+                'widget'   => 'single_text',
+                'input'    => 'datetime_immutable',
+                'format'   => 'dd/MM/Y',
+                'attr'     => ['class' => 'ui-has-datepicker'],
             ])
             ->add('tranchePercentFees', CollectionType::class, [
                 'label'          => false,

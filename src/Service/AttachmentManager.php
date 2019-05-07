@@ -92,7 +92,7 @@ class AttachmentManager
         }
         $attachment
             ->setPath($relativeUploadPathAndName)
-            ->setOwner($owner)
+            ->setClientOwner($owner)
             ->setCompanyOwner($companyOwner)
             ->setAddedBy($uploader)
             ->setOriginalName($uploadedFile->getClientOriginalName())
@@ -331,7 +331,7 @@ class AttachmentManager
         } catch (PhpSpreadsheetException $exception) {
             $this->logger->error('Unable to convert Excel file to PDF. Message: ' . $exception->getMessage(), [
                 'id_attachment' => $attachment->getId(),
-                'id_client'     => $attachment->getOwner()->getIdClient(),
+                'id_client'     => $attachment->getClientOwner()->getIdClient(),
                 'class'         => __CLASS__,
                 'function'      => __FUNCTION__,
                 'file'          => $exception->getFile(),

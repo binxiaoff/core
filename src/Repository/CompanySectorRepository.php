@@ -11,8 +11,6 @@ use Unilend\Entity\CompanySector;
 class CompanySectorRepository extends ServiceEntityRepository
 {
     /**
-     * CompanySectorRepository constructor.
-     *
      * @param ManagerRegistry $registry
      */
     public function __construct(ManagerRegistry $registry)

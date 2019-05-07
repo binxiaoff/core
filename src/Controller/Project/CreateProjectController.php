@@ -11,12 +11,10 @@ use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\{File\UploadedFile, Request, Response};
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\User\UserInterface;
-use Unilend\Entity\Attachment;
-use Unilend\Entity\Clients;
-use Unilend\Entity\Project;
+use Unilend\Entity\{Attachment, Clients, Project, ProjectStatusHistory, ProjectsStatus};
 use Unilend\Form\Project\ProjectType;
+use Unilend\Repository\ProjectRepository;
 use Unilend\Service\AttachmentManager;
-use Unilend\Service\Project\ProjectCreationManager;
 
 /**
  * @Security("is_granted('ROLE_USER')")
@@ -24,10 +22,10 @@ use Unilend\Service\Project\ProjectCreationManager;
 class CreateProjectController extends AbstractController
 {
     /**
-     * @Route("/projet/depot", name="create_project", methods={"GET", "POST"})
+     * @Route("/projet/depot", name="project_creation", methods={"GET", "POST"})
      *
      * @param Request                    $request
-     * @param ProjectCreationManager     $projectCreationManager
+     * @param ProjectRepository          $projectRepository
      * @param UserInterface|Clients|null $client
      * @param AttachmentManager          $attachmentManager
      *
@@ -37,7 +35,7 @@ class CreateProjectController extends AbstractController
      */
     public function create(
         Request $request,
-        ProjectCreationManager $projectCreationManager,
+        ProjectRepository $projectRepository,
         ?UserInterface $client,
         AttachmentManager $attachmentManager
     ) {
@@ -60,7 +58,18 @@ class CreateProjectController extends AbstractController
                 $attachmentManager->upload(null, $companyOwner, $client, null, $attachment, $uploadedFile);
             }
 
-            $projectCreationManager->handleBlamableCreation($project, $client);
+            $projectStatusHistory = (new ProjectStatusHistory())
+                ->setStatus(ProjectsStatus::STATUS_REQUESTED)
+                ->setAddedBy($client)
+            ;
+
+            $project
+                ->setSubmitterClient($client)
+                ->setSubmitterCompany($client->getCompany())
+                ->addProjectStatusHistory($projectStatusHistory)
+            ;
+
+            $projectRepository->save($project);
 
             return $this->redirectToRoute('project_creation_success');
         }

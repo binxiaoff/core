@@ -11,7 +11,7 @@ use Unilend\Entity\ProjectStatusHistory;
 class ProjectStatusHistoryRepository extends ServiceEntityRepository
 {
     /**
-     * {@inheritdoc}
+     * @param ManagerRegistry $registry
      */
     public function __construct(ManagerRegistry $registry)
     {

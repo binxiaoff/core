@@ -29,8 +29,6 @@ class ProjectType extends AbstractType
     private $tokenStorage;
 
     /**
-     * AutocompleteType constructor.
-     *
      * @param ManagerRegistry       $managerRegistry
      * @param TokenStorageInterface $tokenStorage
      */
@@ -60,16 +58,20 @@ class ProjectType extends AbstractType
                 'choice_translation_domain' => true,
             ])
             ->add('replyDeadline', DateType::class, [
-                'label'  => 'project-form.replay-deadline',
-                'widget' => 'single_text',
-                'input'  => 'datetime_immutable',
-                'attr'   => ['class' => 'ui-has-datepicker'],
+                'label'    => 'project-form.replay-deadline',
+                'required' => false,
+                'widget'   => 'single_text',
+                'input'    => 'datetime_immutable',
+                'format'   => 'dd/MM/Y',
+                'attr'     => ['class' => 'ui-has-datepicker'],
             ])
             ->add('expectedClosingDate', DateType::class, [
-                'label'  => 'project-form.expected-closing-date',
-                'widget' => 'single_text',
-                'input'  => 'datetime_immutable',
-                'attr'   => ['class' => 'ui-has-datepicker'],
+                'label'    => 'project-form.expected-closing-date',
+                'required' => false,
+                'widget'   => 'single_text',
+                'input'    => 'datetime_immutable',
+                'format'   => 'dd/MM/Y',
+                'attr'     => ['class' => 'ui-has-datepicker'],
             ])
             ->add('description', TextareaType::class, [
                 'label' => 'project-form.description',
@@ -88,6 +90,7 @@ class ProjectType extends AbstractType
             ])
             ->add('foncarisGuarantee', ChoiceType::class, [
                 'label'        => 'project-form.foncaris-guarantee',
+                'required'     => false,
                 'choices'      => Project::getFoncarisGuaranteeOptions(),
                 'choice_label' => function ($option, string $key, string $value) {
                     return 'foncaris-guarantee.' . mb_strtolower($key);

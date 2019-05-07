@@ -57,10 +57,10 @@ class Attachment
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\Clients", inversedBy="attachments")
      * @ORM\JoinColumns({
-     *     @ORM\JoinColumn(name="id_owner", referencedColumnName="id_client")
+     *     @ORM\JoinColumn(name="id_client_owner", referencedColumnName="id_client")
      * })
      */
-    private $owner;
+    private $clientOwner;
 
     /**
      * @var Companies
@@ -169,13 +169,13 @@ class Attachment
     }
 
     /**
-     * @param Clients|null $owner
+     * @param Clients|null $clientOwner
      *
      * @return Attachment
      */
-    public function setOwner(?Clients $owner)
+    public function setClientOwner(?Clients $clientOwner)
     {
-        $this->owner = $owner;
+        $this->clientOwner = $clientOwner;
 
         return $this;
     }
@@ -183,9 +183,9 @@ class Attachment
     /**
      * @return Clients
      */
-    public function getOwner(): Clients
+    public function getClientOwner(): Clients
     {
-        return $this->owner;
+        return $this->clientOwner;
     }
 
     /**

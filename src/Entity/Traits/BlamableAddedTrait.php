@@ -13,7 +13,7 @@ trait BlamableAddedTrait
      * @var Clients
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\Clients")
-     * @ORM\JoinColumn(name="addedBy", referencedColumnName="id_client", nullable=false)
+     * @ORM\JoinColumn(name="added_by", referencedColumnName="id_client", nullable=false)
      */
     private $addedBy;
 

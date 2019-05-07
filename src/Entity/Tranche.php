@@ -69,7 +69,7 @@ class Tranche
      *
      * @ORM\Column(type="smallint")
      *
-     * @Assert\Range(min="1", max="99")
+     * @Assert\Range(min="1")
      */
     private $duration;
 
@@ -80,7 +80,7 @@ class Tranche
      *
      * @ORM\Column(type="smallint")
      *
-     * @Assert\Range(min="1", max="99")
+     * @Assert\Range(min="1")
      */
     private $capitalPeriodicity;
 
@@ -91,7 +91,7 @@ class Tranche
      *
      * @ORM\Column(type="smallint")
      *
-     * @Assert\Range(min="1", max="99")
+     * @Assert\Range(min="1")
      */
     private $interestPeriodicity;
 
@@ -112,7 +112,7 @@ class Tranche
     /**
      * @var DateTimeImmutable
      *
-     * @ORM\Column(type="date_immutable")
+     * @ORM\Column(type="date_immutable", nullable=true)
      *
      * @Assert\Date
      */
@@ -121,7 +121,7 @@ class Tranche
     /**
      * @var DateTimeImmutable
      *
-     * @ORM\Column(type="date_immutable")
+     * @ORM\Column(type="date_immutable", nullable=true)
      *
      * @Assert\Date
      */
@@ -321,11 +321,11 @@ class Tranche
     }
 
     /**
-     * @param DateTimeImmutable $expectedReleasingDate
+     * @param DateTimeImmutable|null $expectedReleasingDate
      *
      * @return Tranche
      */
-    public function setExpectedReleasingDate(DateTimeImmutable $expectedReleasingDate): Tranche
+    public function setExpectedReleasingDate(?DateTimeImmutable $expectedReleasingDate): Tranche
     {
         $this->expectedReleasingDate = $expectedReleasingDate;
 
@@ -341,11 +341,11 @@ class Tranche
     }
 
     /**
-     * @param DateTimeImmutable $expectedStartingDate
+     * @param DateTimeImmutable|null $expectedStartingDate
      *
      * @return Tranche
      */
-    public function setExpectedStartingDate(DateTimeImmutable $expectedStartingDate): Tranche
+    public function setExpectedStartingDate(?DateTimeImmutable $expectedStartingDate): Tranche
     {
         $this->expectedStartingDate = $expectedStartingDate;
 

@@ -15,14 +15,10 @@ use Unilend\Repository\ProjectAttachmentTypeRepository;
 
 class AttachmentType extends AbstractType
 {
-    /**
-     * @var ProjectAttachmentTypeRepository
-     */
+    /** @var ProjectAttachmentTypeRepository */
     private $projectAttachmentTypeRepository;
 
-    /**
-     * @var AttachmentTypeRepository
-     */
+    /** @var AttachmentTypeRepository */
     private $attachmentTypeRepository;
 
     /**
@@ -65,8 +61,9 @@ class AttachmentType extends AbstractType
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefaults([
-            'data_class' => Attachment::class,
-            'type_class' => null,
+            'data_class'       => Attachment::class,
+            'type_class'       => null,
+            'allowed_file_ext' => 'pdf jpg jpeg png doc docx xls xlsx',
         ]);
     }
 
