@@ -1,36 +1,53 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Unilend\Form\Lending;
 
-use Symfony\Component\Form\{AbstractType, Extension\Core\Type\ChoiceType, Extension\Core\Type\NumberType, FormBuilderInterface};
+use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\{ChoiceType, NumberType};
+use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Unilend\Entity\Embeddable\LendingRate;
 
 class LendingRateType extends AbstractType
 {
+    /**
+     * {@inheritdoc}
+     */
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
-        $choices = [];
-        foreach (LendingRate::getIndexes() as $key => $value) {
-            $choices['interest-rate-index_' . $value] = $value;
-        }
-
         $builder
             ->add('indexType', ChoiceType::class, [
-                'label'   => 'lending-form_index-type',
-                'choices' => $choices,
+                'label'        => 'lending-form.index-type',
+                'required'     => $options['required'],
+                'choices'      => LendingRate::getIndexes(),
+                'choice_label' => function ($option, string $key, string $value) {
+                    return 'interest-rate-index.' . mb_strtolower($key);
+                },
             ])
             ->add('margin', NumberType::class, [
-                'label' => 'lending-form_margin',
-                'scale' => LendingRate::MARGIN_SCALE,
-            ]);
+                'label'    => 'lending-form.margin',
+                'required' => $options['required'],
+                'scale'    => LendingRate::MARGIN_SCALE,
+            ])
+        ;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function configureOptions(OptionsResolver $resolver)
     {
-        $resolver->setDefault('data_class', LendingRate::class);
+        $resolver->setDefaults([
+            'data_class' => LendingRate::class,
+            'required'   => false,
+        ]);
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function getBlockPrefix()
     {
         return 'lending_rate';

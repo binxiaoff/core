@@ -5,16 +5,15 @@ declare(strict_types=1);
 namespace Unilend\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
-use Unilend\Entity\Traits\Timestampable;
+use Unilend\Entity\Traits\TimestampableTrait;
 
 /**
- * @ORM\Table(name="project_attachment_signature")
  * @ORM\Entity
  * @ORM\HasLifecycleCallbacks
  */
 class ProjectAttachmentSignature
 {
-    use Timestampable;
+    use TimestampableTrait;
 
     public const STATUS_PENDING = 0;
     public const STATUS_SIGNED  = 1;

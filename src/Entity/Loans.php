@@ -5,7 +5,7 @@ namespace Unilend\Entity;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityNotFoundException;
 use Doctrine\ORM\Mapping as ORM;
-use Unilend\Entity\Traits\{LendableTrait, Timestampable};
+use Unilend\Entity\Traits\{LendableTrait, TimestampableTrait};
 
 /**
  * @ORM\Table(name="loans", indexes={
@@ -19,7 +19,7 @@ use Unilend\Entity\Traits\{LendableTrait, Timestampable};
 class Loans
 {
     use LendableTrait;
-    use Timestampable;
+    use TimestampableTrait;
 
     public const STATUS_PENDING  = 2;
     public const STATUS_ACCEPTED = 0;

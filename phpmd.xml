@@ -7,6 +7,10 @@
     <description>
         CALS rule set.
     </description>
+
+    <exclude-pattern>src/Migrations</exclude-pattern>
+    <exclude-pattern>tests</exclude-pattern>
+
     <!-- Clean code. -->
     <rule ref="rulesets/cleancode.xml"/>
     <!-- Code size.  -->
@@ -18,6 +22,7 @@
     <!-- Naming. -->
     <rule ref="rulesets/naming.xml">
         <exclude name="LongVariable" />
+        <exclude name="ShortVariable" />
     </rule>
     <!-- Unused code. -->
     <rule ref="rulesets/unusedcode.xml"/>

@@ -10,11 +10,11 @@
 
 {%- block form_widget_simple -%}
     {%- set type = type|default('text') -%}
-    <input class="input-field" type="{{ type }}" {{ block('widget_attributes') }} {% if value is not empty %}value="{{ value }}" {% endif %}/>
+    <input type="{{ type }}" {{ block('widget_attributes') }} {% if value is not empty %}value="{{ value }}" {% endif %}/>
 {%- endblock form_widget_simple -%}
 
 {%- block form_row -%}
-    <div class="form-field" >
+    <div class="form-field">
         {{- form_label(form) -}}
         {{- form_errors(form) -}}
         {{- form_widget(form) -}}
@@ -25,7 +25,7 @@
     {%- if required and placeholder is none and not placeholder_in_choices and not multiple and (attr.size is not defined or attr.size <= 1) -%}
         {% set required = false %}
     {%- endif -%}
-    <select class="input-field" {{ block('widget_attributes') }}{% if multiple %} multiple="multiple"{% endif %}>
+    <select {{ block('widget_attributes') }}{% if multiple %} multiple="multiple"{% endif %}>
         {%- if placeholder is not none -%}
             <option value=""{% if required and value is empty %} selected="selected"{% endif %}>{{ placeholder != '' ? (translation_domain is same as(false) ? placeholder : placeholder|trans({}, translation_domain)) }}</option>
         {%- endif -%}
@@ -42,7 +42,7 @@
 {%- endblock choice_widget_collapsed -%}
 
 {%- block textarea_widget -%}
-    <textarea class="input-field" {{ block('widget_attributes') }}>{{ value }}</textarea>
+    <textarea {{ block('widget_attributes') }}>{{ value }}</textarea>
 {%- endblock textarea_widget -%}
 
 {%- block form_label -%}
@@ -56,18 +56,60 @@
         {% if label is empty -%}
             {%- if label_format is not empty -%}
                 {% set label = label_format|replace({
-                '%name%': name,
-                '%id%': id,
+                    '%name%': name,
+                    '%id%': id,
                 }) %}
             {%- else -%}
                 {% set label = name|humanize %}
             {%- endif -%}
         {%- endif -%}
         <label{% for attrname, attrvalue in label_attr %} {{ attrname }}="{{ attrvalue }}"{% endfor %}>
-            {{ translation_domain is same as(false) ? label : label|trans({}, translation_domain) }}
+        {{ translation_domain is same as(false) ? label : label|trans({}, translation_domain) }}
         {% if required -%}
             <span class="field-required">*</span>
         {%- endif -%}
         </label>
     {%- endif -%}
 {%- endblock form_label -%}
+
+{%- block widget_attributes -%}
+    {% set attr = attr|merge({'class': (attr.class|default('') ~ ' input-field')|trim}) %}
+    {{ parent() }}
+{%- endblock widget_attributes -%}
+
+{% block autocomplete_widget %}
+    {% spaceless %}
+        {%- if required and placeholder is none and not placeholder_in_choices and not multiple and (attr.size is not defined or attr.size <= 1) -%}
+            {% set required = false %}
+        {%- endif -%}
+        <select {{ block('widget_attributes') }} data-placeholder="{{ form.vars.label|trans }}" data-autocomplete-url="{{ form.vars.url }}">
+            {%- if placeholder is not none -%}
+                <option value=""{% if required and value is empty %} selected="selected"{% endif %}>{{ placeholder != '' ? (translation_domain is same as(false) ? placeholder : placeholder|trans({}, translation_domain)) }}</option>
+            {%- endif -%}
+        </select>
+    {% endspaceless %}
+{% endblock autocomplete_widget %}
+
+
+{% block file_row %}
+        <div class="custom-input-file ui-fileattach ui-fileattach-single"
+             data-fileattach
+             data-fileattach-inputname="{{ form.vars.full_name }}"
+             data-fileattach-maxfiles="1"
+             data-fileattach-filetypes="pdf jpg jpeg png doc docx xls xlsx"
+        >
+        </div>
+{% endblock file_row %}
+
+{% block date_widget %}
+    {%- if widget == 'single_text' -%}
+        <div class="input-group set-right">
+            <input type="text" {{ block('widget_attributes') }} {% if value is not empty %}value="{{ value }}" {% endif %} autocomplete="off"/>
+            <div class="btn-group">
+                <label><span class="icon fa-calendar-u32 c-p1"></span></label>
+            </div><!-- /.btn-group -->
+        </div><!-- /.input-group -->
+    {%- else -%}
+        {{ parent() }}
+    {%- endif -%}
+{% endblock date_widget %}

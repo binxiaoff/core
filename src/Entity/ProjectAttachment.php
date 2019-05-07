@@ -6,16 +6,15 @@ namespace Unilend\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
-use Unilend\Entity\Traits\Timestampable;
+use Unilend\Entity\Traits\TimestampableTrait;
 
 /**
- * @ORM\Table(name="project_attachment")
  * @ORM\Entity(repositoryClass="Unilend\Repository\ProjectAttachmentRepository")
  * @ORM\HasLifecycleCallbacks
  */
 class ProjectAttachment
 {
-    use Timestampable;
+    use TimestampableTrait;
 
     /**
      * @var int
@@ -27,24 +26,24 @@ class ProjectAttachment
     private $id;
 
     /**
-     * @var Projects
+     * @var Project
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Projects", inversedBy="attachments")
+     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Project", inversedBy="projectAttachments")
      * @ORM\JoinColumns({
-     *     @ORM\JoinColumn(name="id_project", referencedColumnName="id_project", nullable=false)
+     *     @ORM\JoinColumn(name="id_project", nullable=false)
      * })
      */
-    private $idProject;
+    private $project;
 
     /**
      * @var Attachment
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\Attachment")
      * @ORM\JoinColumns({
-     *     @ORM\JoinColumn(name="id_attachment", referencedColumnName="id", nullable=false)
+     *     @ORM\JoinColumn(name="id_attachment", nullable=false)
      * })
      */
-    private $idAttachment;
+    private $attachment;
 
     /**
      * @var ProjectAttachmentSignature[]
@@ -62,51 +61,51 @@ class ProjectAttachment
     }
 
     /**
-     * @return int
+     * @return int|null
      */
-    public function getId(): int
+    public function getId(): ?int
     {
         return $this->id;
     }
 
     /**
-     * @param Projects $idProject
+     * @param Project $project
      *
      * @return ProjectAttachment
      */
-    public function setProject(Projects $idProject): ProjectAttachment
+    public function setProject(Project $project): ProjectAttachment
     {
-        $this->idProject = $idProject;
+        $this->project = $project;
 
         return $this;
     }
 
     /**
-     * @return Projects
+     * @return Project|null
      */
-    public function getProject(): Projects
+    public function getProject(): ?Project
     {
-        return $this->idProject;
+        return $this->project;
     }
 
     /**
-     * @param Attachment $idAttachment
+     * @param Attachment $attachment
      *
      * @return ProjectAttachment
      */
-    public function setAttachment(Attachment $idAttachment): ProjectAttachment
+    public function setAttachment(Attachment $attachment): ProjectAttachment
     {
-        $this->idAttachment = $idAttachment;
+        $this->attachment = $attachment;
 
         return $this;
     }
 
     /**
-     * @return Attachment
+     * @return Attachment|null
      */
-    public function getAttachment(): Attachment
+    public function getAttachment(): ?Attachment
     {
-        return $this->idAttachment;
+        return $this->attachment;
     }
 
     /**

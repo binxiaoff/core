@@ -4,7 +4,7 @@ namespace Unilend\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
-use Unilend\Entity\Traits\Timestampable;
+use Unilend\Entity\Traits\TimestampableTrait;
 
 /**
  * @ORM\Table(name="underlying_contract")
@@ -12,7 +12,7 @@ use Unilend\Entity\Traits\Timestampable;
  */
 class UnderlyingContract
 {
-    use Timestampable;
+    use TimestampableTrait;
 
     public const CONTRACT_IFP                = 'ifp';
     public const CONTRACT_BDC                = 'bon_de_caisse';

@@ -5,14 +5,15 @@ declare(strict_types=1);
 namespace Unilend\Controller;
 
 use Doctrine\ORM\{ORMException, OptimisticLockException};
+use Exception;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\{ParamConverter, Security};
 use Swift_RfcComplianceException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\{RedirectResponse, Request, Response};
 use Symfony\Component\Routing\{Annotation\Route, Router, RouterInterface};
 use Symfony\Component\Security\Core\User\UserInterface;
-use Unilend\Entity\{AttachmentType, Clients, ProjectAttachment, ProjectAttachmentSignature, Projects};
-use Unilend\Repository\{AttachmentRepository, AttachmentTypeRepository, CompaniesRepository, ProjectAttachmentSignatureRepository};
+use Unilend\Entity\{AttachmentType, Clients, Project, ProjectAttachment, ProjectAttachmentSignature};
+use Unilend\Repository\{AttachmentTypeRepository, CompaniesRepository, ProjectAttachmentSignatureRepository};
 use Unilend\Service\{AttachmentManager, DemoMailerManager, ElectronicSignatureManager};
 
 /**
@@ -24,10 +25,10 @@ class SignatureController extends AbstractController
      * @Route("/signature/{projectAttachment}", name="signature_sign", requirements={"projectAttachment": "\d+"})
      *
      * @param ProjectAttachment                    $projectAttachment
+     * @param UserInterface|Clients|null           $user
      * @param ProjectAttachmentSignatureRepository $signatureRepository
      * @param ElectronicSignatureManager           $signatureManager
      * @param AttachmentManager                    $attachmentManager
-     * @param UserInterface|Clients|null           $client
      * @param RouterInterface                      $router
      *
      * @throws OptimisticLockException
@@ -37,16 +38,16 @@ class SignatureController extends AbstractController
      */
     public function sign(
         ProjectAttachment $projectAttachment,
+        ?UserInterface $user,
         ProjectAttachmentSignatureRepository $signatureRepository,
         ElectronicSignatureManager $signatureManager,
         AttachmentManager $attachmentManager,
-        ?UserInterface $client,
         RouterInterface $router
     ): RedirectResponse {
         /** @var ProjectAttachmentSignature $signature */
         $signature = $signatureRepository->findOneBy([
             'projectAttachment' => $projectAttachment,
-            'signatory'         => $client,
+            'signatory'         => $user,
         ]);
 
         if (null === $signature) {
@@ -55,7 +56,7 @@ class SignatureController extends AbstractController
 
         $documentContent  = file_get_contents($attachmentManager->getFullPath($projectAttachment->getAttachment()));
         $signatureRequest = $signatureManager->createSignatureRequest(
-            $client,
+            $user,
             'Signature électronique de votre document',
             $projectAttachment->getAttachment()->getOriginalName(),
             base64_encode($documentContent),
@@ -75,25 +76,25 @@ class SignatureController extends AbstractController
      * @Route("/signature/confirmation/{projectAttachment}", name="signature_confirmation", requirements={"projectAttachment": "\d+"})
      *
      * @param ProjectAttachment                    $projectAttachment
+     * @param UserInterface|Clients|null           $user
      * @param ProjectAttachmentSignatureRepository $signatureRepository
      * @param Request                              $request
-     * @param UserInterface|Clients|null           $client
      *
-     * @throws ORMException
      * @throws OptimisticLockException
+     * @throws ORMException
      *
      * @return Response
      */
     public function confirmation(
         ProjectAttachment $projectAttachment,
+        ?UserInterface $user,
         ProjectAttachmentSignatureRepository $signatureRepository,
-        Request $request,
-        ?UserInterface $client
+        Request $request
     ): Response {
         /** @var ProjectAttachmentSignature $signature */
         $signature = $signatureRepository->findOneBy([
             'projectAttachment' => $projectAttachment,
-            'signatory'         => $client,
+            'signatory'         => $user,
         ]);
 
         if (null === $signature) {
@@ -119,16 +120,16 @@ class SignatureController extends AbstractController
      *
      * @ParamConverter("project", options={"mapping": {"project": "hash"}})
      *
-     * @param Projects                             $project
-     * @param AttachmentRepository                 $attachmentRepository
+     * @param Project                              $project
+     * @param Request                              $request
+     * @param UserInterface|Clients|null           $user
      * @param AttachmentTypeRepository             $attachmentTypeRepository
      * @param CompaniesRepository                  $companyRepository
      * @param ProjectAttachmentSignatureRepository $signatureRepository
      * @param AttachmentManager                    $attachmentManager
      * @param DemoMailerManager                    $mailerManager
-     * @param Request                              $request
-     * @param UserInterface|Clients|null           $user
      *
+     * @throws Exception
      * @throws ORMException
      * @throws OptimisticLockException
      * @throws Swift_RfcComplianceException
@@ -136,15 +137,14 @@ class SignatureController extends AbstractController
      * @return Response
      */
     public function upload(
-        Projects $project,
-        AttachmentRepository $attachmentRepository,
+        Project $project,
+        Request $request,
+        ?UserInterface $user,
         AttachmentTypeRepository $attachmentTypeRepository,
         CompaniesRepository $companyRepository,
         ProjectAttachmentSignatureRepository $signatureRepository,
         AttachmentManager $attachmentManager,
-        DemoMailerManager $mailerManager,
-        Request $request,
-        ?UserInterface $user
+        DemoMailerManager $mailerManager
     ): Response {
         $file               = $request->files->get('extraElectronicSignature');
         $fileType           = $request->request->get('filetype')['electronicSignature'];
@@ -166,12 +166,7 @@ class SignatureController extends AbstractController
             $attachmentType = $attachmentTypeRepository->find($request->request->get('filetype')['electronicSignature']);
 
             if ($attachmentType) {
-                $attachment = $attachmentManager->upload($user, $attachmentType, $file, false);
-
-                // @todo "original name" should be used for saving file name, not a label
-                $attachment->setOriginalName($fileName ?: $attachmentType->getLabel());
-                $attachmentRepository->save($attachment);
-
+                $attachment        = $attachmentManager->upload($user, $user->getCompany(), $user, $attachmentType, null, $file, false, $fileName);
                 $projectAttachment = $attachmentManager->attachToProject($attachment, $project);
 
                 foreach ($signatoryCompanies as $signatoryCompanyId) {

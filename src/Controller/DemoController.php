@@ -16,7 +16,7 @@ use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\{JsonResponse, RedirectResponse, Request, Response};
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\User\UserInterface;
-use Unilend\Entity\{AcceptedBids, Attachment, AttachmentType, Bids, Clients, Companies, CompanySector, FeeType, Loans, Partner, PercentFee, Product, ProjectAttachment,
+use Unilend\Entity\{AcceptedBids, Attachment, AttachmentType, Bids, Clients, Companies, CompanySector, FeeType, Loans, Partner, PercentFee, Product, Project, ProjectAttachment,
     ProjectAttachmentType, ProjectComment, ProjectParticipant, ProjectPercentFee, Projects, ProjectsStatus, RepaymentType, Users, Wallet, WalletType};
 use Unilend\Form\Lending\BidType;
 use Unilend\Repository\{ProjectAttachmentRepository, ProjectParticipantRepository};
@@ -213,7 +213,7 @@ class DemoController extends AbstractController
         ProjectAttachmentRepository $projectAttachmentRepository,
         ?UserInterface $user
     ): Response {
-        $projectRepository = $this->entityManager->getRepository(Projects::class);
+        $projectRepository = $this->entityManager->getRepository(Project::class);
         $project           = $projectRepository->findOneBy(['hash' => $hash]);
 
         if (null === $project) {
@@ -918,8 +918,8 @@ class DemoController extends AbstractController
      * @Route("/projets/details/lender/{slug}", name="demo_lender_project_details")
      *
      * @param string                       $slug
-     * @param UserInterface|Clients|null   $client
      * @param Request                      $request
+     * @param UserInterface|Clients|null   $user
      * @param ProjectParticipantRepository $projectParticipantRepository
      * @param ProjectDisplayManager        $projectDisplayManager
      * @param DemoMailerManager            $mailerManager
@@ -928,19 +928,19 @@ class DemoController extends AbstractController
      */
     public function projectDetailsForLender(
         string $slug,
-        ?UserInterface $client,
         Request $request,
+        ?UserInterface $user,
         ProjectParticipantRepository $projectParticipantRepository,
         ProjectDisplayManager $projectDisplayManager,
         DemoMailerManager $mailerManager
     ): Response {
         $project = $this->entityManager->getRepository(Projects::class)->findOneBy(['slug' => $slug, 'status' => ProjectDisplayManager::STATUS_DISPLAYABLE]);
 
-        if (ProjectDisplayManager::VISIBILITY_FULL !== $projectDisplayManager->getVisibility($project, $client)) {
+        if (ProjectDisplayManager::VISIBILITY_FULL !== $projectDisplayManager->getVisibility($project, $user)) {
             return $this->redirectToRoute('demo_projects_list');
         }
 
-        $wallet = $this->entityManager->getRepository(Wallet::class)->getWalletByType($client, WalletType::LENDER);
+        $wallet = $this->entityManager->getRepository(Wallet::class)->getWalletByType($user, WalletType::LENDER);
         $bid    = $this->entityManager->getRepository(Bids::class)->findOneBy([
             'wallet'  => $wallet,
             'project' => $project,
@@ -1040,12 +1040,12 @@ class DemoController extends AbstractController
     /**
      * @Route("/project/{hash}/fees/add", name="demo_add_project_fees", methods={"POST"}, requirements={"hash": "[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}"})
      *
-     * @param Request $request
      * @param string  $hash
+     * @param Request $request
      *
      * @return JsonResponse
      */
-    public function addProjectFees(Request $request, string $hash): JsonResponse
+    public function addProjectFees(string $hash, Request $request): JsonResponse
     {
         $projectForm        = $request->request->get('project_type');
         $projectPercentFees = empty($projectForm['projectPercentFees']) ? [] : $projectForm['projectPercentFees'];
@@ -1101,7 +1101,7 @@ class DemoController extends AbstractController
      * @param Clients           $user
      * @param AttachmentManager $attachmentManager
      *
-     * @throws OptimisticLockException
+     * @throws Exception
      */
     private function uploadDocuments(Request $request, Projects $project, Clients $user, AttachmentManager $attachmentManager): void
     {

@@ -12,7 +12,7 @@ use Ramsey\Uuid\Exception\UnsatisfiedDependencyException;
 use Ramsey\Uuid\Uuid;
 use Symfony\Component\Security\Core\User\{EquatableInterface, UserInterface};
 use Symfony\Component\Validator\Constraints as Assert;
-use Unilend\Entity\Traits\Timestampable;
+use Unilend\Entity\Traits\TimestampableTrait;
 use URLify;
 
 /**
@@ -26,7 +26,7 @@ use URLify;
  */
 class Clients implements UserInterface, EquatableInterface
 {
-    use Timestampable;
+    use TimestampableTrait;
 
     public const TYPE_PERSON                 = 1;
     public const TYPE_LEGAL_ENTITY           = 2;
@@ -248,7 +248,7 @@ class Clients implements UserInterface, EquatableInterface
     /**
      * @var Attachment[]
      *
-     * @ORM\OneToMany(targetEntity="Unilend\Entity\Attachment", mappedBy="idClient")
+     * @ORM\OneToMany(targetEntity="Unilend\Entity\Attachment", mappedBy="owner")
      */
     private $attachments;
 
@@ -1076,7 +1076,7 @@ class Clients implements UserInterface, EquatableInterface
         $newName = '';
         $i       = 0;
         foreach ($tabName as $name) {
-            $newName .= (0 == $i ? '' : '-') . ucwords($name);
+            $newName .= (0 === $i ? '' : '-') . ucwords($name);
             ++$i;
         }
 

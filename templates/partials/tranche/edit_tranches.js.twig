@@ -1,0 +1,77 @@
+var $trancheCollectionHolder = $('div.tranches');
+
+var $addTrancheButton = $(
+    '<a href="javascript:;" class="btn-default btn-shape-sq-md margin-10-t">' +
+    '    <span class="icon fa-plus-u16 c-t2"></span>' +
+    '</a>'
+);
+
+$trancheCollectionHolder.append($addTrancheButton);
+
+$trancheCollectionHolder.data('index', $trancheCollectionHolder.find(':input').length);
+
+$addTrancheButton.on('click', function () {
+    addTrancheForm($trancheCollectionHolder, $addTrancheButton);
+});
+
+function addTrancheForm($trancheCollectionHolder, $addTrancheButton) {
+    var prototype = $trancheCollectionHolder.data('prototype');
+    var prototypeName = $trancheCollectionHolder.data('prototype-name');
+    var index = $trancheCollectionHolder.data('index');
+    var newForm = prototype;
+
+    newForm = newForm.replace(new RegExp(prototypeName, 'g'), index);
+
+    $trancheCollectionHolder.data('index', index + 1);
+
+    var $newFormDiv = $('<div class="row row-multi-col-computer"></div>').append(newForm);
+
+    $newFormDiv.find('.ui-has-datepicker, [data-ui-datepicker]').uiPikaday();
+
+    $addTrancheButton.before($newFormDiv);
+    var $removeFormButton = $('<div class="form-field col-lg-2 col-md-2"><button type="button" class="btn-default btn-shape-xxs">' +  '{{ 'global-form.delete'|trans }}' + '</button></div>');
+    $newFormDiv.append($removeFormButton);
+
+    $removeFormButton.on('click', function () {
+        $newFormDiv.remove();
+    });
+    initTranchePercentFeeForm();
+}
+
+function initTranchePercentFeeForm()
+{
+    var $tranchePercentFeeCollectionHolder = $trancheCollectionHolder.find('div.tranche-percent-fees');
+    var $addTranchePercentFeeButton = $(
+        '<a href="javascript:;" class="btn-default btn-shape-sq-md margin-10-t">' +
+        '    <span class="icon fa-plus-u16 c-t2"></span>' +
+        '</a>'
+    );
+
+    $tranchePercentFeeCollectionHolder.append($addTranchePercentFeeButton);
+
+    $tranchePercentFeeCollectionHolder.data('index', $tranchePercentFeeCollectionHolder.find(':input').length);
+
+    $addTranchePercentFeeButton.on('click', function () {
+        addTranchePercentFeeForm($tranchePercentFeeCollectionHolder, $addTranchePercentFeeButton);
+    });
+}
+
+function addTranchePercentFeeForm($tranchePercentFeeCollectionHolder, $addTranchePercentFeeButton) {
+    var prototype = $tranchePercentFeeCollectionHolder.data('prototype');
+    var prototypeName = $tranchePercentFeeCollectionHolder.data('prototype-name');
+    var index = $tranchePercentFeeCollectionHolder.data('index');
+    var newForm = prototype;
+
+    newForm = newForm.replace(new RegExp(prototypeName, 'g'), index);
+
+    $tranchePercentFeeCollectionHolder.data('index', index + 1);
+
+    var $newFormDiv = $('<div class="row row-multi-col-computer"></div>').append(newForm);
+    $addTranchePercentFeeButton.before($newFormDiv);
+    var $removeFormButton = $('<div class="row"><div class="form-field col-lg-2 col-md-2"><button type="button" class="btn-default btn-shape-xxs">' + '{{ 'global-form.delete'|trans }}' + '</button></div></div>');
+    $newFormDiv.append($removeFormButton);
+
+    $removeFormButton.on('click', function () {
+        $newFormDiv.remove();
+    });
+}

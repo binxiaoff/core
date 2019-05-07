@@ -4,7 +4,7 @@ namespace Unilend\Entity\Traits;
 
 use Doctrine\ORM\Mapping as ORM;
 
-trait Roleable
+trait RoleableTrait
 {
     /**
      * @var array
@@ -52,6 +52,40 @@ trait Roleable
     }
 
     /**
+     * @param string $role
+     *
+     * @return bool
+     */
+    public function hasRole(string $role): bool
+    {
+        return in_array($role, $this->getRoles());
+    }
+
+    /**
+     * Reset roles.
+     */
+    public function resetRoles()
+    {
+        $this->roles = [];
+    }
+
+    /**
+     * @param string $role
+     *
+     * @return self
+     */
+    public function removeRole(string $role): self
+    {
+        $index = array_search($role, $this->roles, true);
+
+        if (false !== $index) {
+            unset($this->roles[$index]);
+        }
+
+        return $this;
+    }
+
+    /**
      * @param array $roles
      *
      * @return array
@@ -65,20 +99,5 @@ trait Roleable
         }
 
         return $roles;
-    }
-
-    /**
-     * @param string $role
-     *
-     * @return bool
-     */
-    public function hasRole(string $role): bool
-    {
-        return in_array($role, $this->getRoles());
-    }
-
-    public function resetRoles()
-    {
-        $this->roles = [];
     }
 }

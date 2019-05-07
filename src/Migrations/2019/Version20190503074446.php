@@ -45,8 +45,6 @@ CREATETABLE
         );
         $this->addSql('ALTER TABLE project_attachment_signature ADD CONSTRAINT FK_FEB360CDE2DB1026 FOREIGN KEY (id_project_attachment) REFERENCES project_attachment (id)');
         $this->addSql('ALTER TABLE project_attachment_signature ADD CONSTRAINT FK_FEB360CD2B0DC78F FOREIGN KEY (id_signatory) REFERENCES clients (id_client)');
-        $this->addSql('ALTER TABLE project_attachment RENAME INDEX id_project TO IDX_61F9A289F12E799E');
-        $this->addSql('ALTER TABLE project_attachment RENAME INDEX id_attachment TO IDX_61F9A289DCD5596C');
 
         $this->addSql('INSERT INTO translations (locale, section, name, translation, added) VALUES ("fr_FR", "mail-title", "document-signature", "Nouvelle demande de signature électronique", NOW())');
         $this->addSql(
@@ -914,8 +912,6 @@ UPDATEMAIL
         $this->abortIf('mysql' !== $this->connection->getDatabasePlatform()->getName(), 'Migration can only be executed safely on "mysql".');
 
         $this->addSql('DROP TABLE project_attachment_signature');
-        $this->addSql('ALTER TABLE project_attachment RENAME INDEX idx_61f9a289f12e799e TO id_project');
-        $this->addSql('ALTER TABLE project_attachment RENAME INDEX idx_61f9a289dcd5596c TO id_attachment');
 
         $this->addSql('DELETE FROM translations WHERE section = "mail-title" AND name = "document-signature"');
         $this->addSql('DELETE FROM mail_templates WHERE id_mail_template = 10');
