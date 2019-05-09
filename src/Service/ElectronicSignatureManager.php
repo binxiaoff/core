@@ -68,8 +68,8 @@ class ElectronicSignatureManager
     private $requestStack;
     /** @var LoggerInterface */
     private $logger;
-    /** @var string|null */
-    private $testEmail;
+    /** @var bool */
+    private $debug;
 
     /**
      * @param string              $integratorKey
@@ -80,7 +80,7 @@ class ElectronicSignatureManager
      * @param string              $apiHost
      * @param RequestStack        $requestStack
      * @param LoggerInterface     $logger
-     * @param string|null         $testEmail
+     * @param bool                $debug
      */
     public function __construct(
         string $integratorKey,
@@ -91,7 +91,7 @@ class ElectronicSignatureManager
         string $apiHost,
         RequestStack $requestStack,
         LoggerInterface $logger,
-        ?string $testEmail = null
+        bool $debug
     ) {
         $this->integratorKey = $integratorKey;
         $this->userId        = $userId;
@@ -101,7 +101,7 @@ class ElectronicSignatureManager
         $this->apiHost       = $apiHost;
         $this->requestStack  = $requestStack;
         $this->logger        = $logger;
-        $this->testEmail     = $testEmail;
+        $this->debug         = $debug;
     }
 
     /**
@@ -170,7 +170,7 @@ class ElectronicSignatureManager
             $signer = new Signer();
             $signer
                 ->setName($signerClient->getFirstName() . ' ' . $signerClient->getLastName())
-                ->setEmail($this->testEmail ?: $signerClient->getEmail())
+                ->setEmail($signerClient->getEmail())
                 ->setRecipientId($signerClient->getIdClient())
                 ->setClientUserId($signerClient->getIdClient()) // if set, email is not sent by DocuSign
                 ->setEmailNotification($recipientNotification)
@@ -180,6 +180,10 @@ class ElectronicSignatureManager
 
             $recipients = new Recipients();
             $recipients->setSigners([$signer]);
+
+            if ($this->debug) {
+                $emailSubject = '[DEMO] ' . $emailSubject;
+            }
 
             $envelopeDefinition = new EnvelopeDefinition();
             $envelopeDefinition
@@ -207,7 +211,7 @@ class ElectronicSignatureManager
                 ->setRecipientId($signer->getRecipientId())
                 ->setClientUserId($signer->getClientUserId())
                 ->setUserName($signer->getName())
-                ->setEmail($this->testEmail ?: $signer->getEmail())
+                ->setEmail($signer->getEmail())
             ;
 
             $viewUrl = $envelopeApi->createRecipientView(
