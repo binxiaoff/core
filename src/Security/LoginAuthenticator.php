@@ -158,6 +158,19 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
         $this->loginHistoryLogger->saveSuccessfulLogin($client, $request->getClientIp(), $request->headers->get('User-Agent'));
         $this->sessionStrategy->onAuthentication($request, $token);
 
+        $targetPath = $this->getTargetPath($request->getSession(), $providerKey);
+
+        if (!$targetPath) {
+            $targetPath = $this->getDefaultSuccessRedirectUrl($request, $client);
+        }
+
+        $response = new RedirectResponse($targetPath);
+
+        $cookie = new Cookie(self::COOKIE_NO_CF, 1);
+        $response->headers->setCookie($cookie);
+
+        return $response;
+
         try {
             $needUpdatePersonalData = $this->lenderManager->needUpdatePersonalData($client);
             $needCipEvaluation      = $this->cipManager->needReevaluation($client);

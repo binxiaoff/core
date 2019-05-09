@@ -9,6 +9,9 @@ use Unilend\Entity\{ProjectAttachmentType, ProjectAttachmentTypeCategory};
 
 class ProjectAttachmentTypeRepository extends ServiceEntityRepository
 {
+    /**
+     * @param ManagerRegistry $registry
+     */
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, ProjectAttachmentType::class);
@@ -21,9 +24,10 @@ class ProjectAttachmentTypeRepository extends ServiceEntityRepository
     {
         $queryBuilder = $this->createQueryBuilder('t', 't.type');
         $queryBuilder
-            ->innerJoin(ProjectAttachmentTypeCategory::class, 'c', Join::WITH, 't.idCategory = c.id')
+            ->innerJoin(ProjectAttachmentTypeCategory::class, 'c', Join::WITH, 't.category = c.id')
             ->orderBy('c.rank', 'ASC')
-            ->addOrderBy('t.rank', 'ASC');
+            ->addOrderBy('t.rank', 'ASC')
+        ;
 
         return $queryBuilder->getQuery()->getResult();
     }

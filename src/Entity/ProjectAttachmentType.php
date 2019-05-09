@@ -54,7 +54,7 @@ class ProjectAttachmentType implements EntityAttachmentTypeInterface
     /**
      * @var AttachmentType
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Entity\attachmentType")
+     * @ORM\ManyToOne(targetEntity="Unilend\Entity\AttachmentType")
      * @ORM\JoinColumns({
      *     @ORM\JoinColumn(name="id_type", referencedColumnName="id", nullable=false, unique=true)
      * })

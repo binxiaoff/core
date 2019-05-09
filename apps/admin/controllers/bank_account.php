@@ -75,7 +75,7 @@ class bank_accountController extends bootstrap
         if ($this->request->isMethod('POST') && $this->request->request->get('id_bank_account')) {
             /** @var \Doctrine\ORM\EntityManager $entityManager */
             $entityManager = $this->get('doctrine.orm.entity_manager');
-            // @var BankAccount $bankAccount
+            /** @var BankAccount $bankAccount */
             $entityManager->beginTransaction();
 
             try {

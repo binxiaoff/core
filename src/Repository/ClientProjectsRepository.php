@@ -6,7 +6,7 @@ namespace Unilend\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
-use Unilend\Entity\{Clients, ProjectParticipant, Projects};
+use Unilend\Entity\{Clients, Project, ProjectParticipant};
 
 class ClientProjectsRepository extends ServiceEntityRepository
 {
@@ -15,7 +15,7 @@ class ClientProjectsRepository extends ServiceEntityRepository
      */
     public function __construct(ManagerRegistry $registry)
     {
-        parent::__construct($registry, Projects::class);
+        parent::__construct($registry, Project::class);
     }
 
     /**
@@ -28,7 +28,7 @@ class ClientProjectsRepository extends ServiceEntityRepository
         return $this
             ->createQueryBuilder('p')
             ->distinct()
-            ->where('p.idCompany = :userCompany')
+            ->where('p.borrowerCompany = :userCompany')
             ->setParameter('userCompany', $user->getCompany())
             ->getQuery()
             ->getResult()
@@ -45,7 +45,7 @@ class ClientProjectsRepository extends ServiceEntityRepository
         return $this
             ->createQueryBuilder('p')
             ->distinct()
-            ->where('p.idCompanySubmitter = :userCompany')
+            ->where('p.submitterCompany = :userCompany')
             ->setParameter('userCompany', $user->getCompany())
             ->getQuery()
             ->getResult()

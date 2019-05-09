@@ -16,10 +16,10 @@ use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\{JsonResponse, RedirectResponse, Request, Response};
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\User\UserInterface;
-use Unilend\Entity\{AcceptedBids, Attachment, AttachmentType, Bids, Clients, Companies, CompanySector, FeeType, Loans, Partner, PercentFee, Product, ProjectAttachment,
+use Unilend\Entity\{AcceptedBids, Attachment, AttachmentType, Bids, Clients, Companies, CompanySector, FeeType, Loans, Partner, PercentFee, Product, Project, ProjectAttachment,
     ProjectAttachmentType, ProjectParticipant, ProjectPercentFee, Projects, ProjectsStatus, RepaymentType, Users, Wallet, WalletType};
 use Unilend\Form\Lending\BidType;
-use Unilend\Repository\ProjectParticipantRepository;
+use Unilend\Repository\{ProjectAttachmentRepository, ProjectParticipantRepository};
 use Unilend\Service\Front\ProjectDisplayManager;
 use Unilend\Service\WebServiceClient\InseeManager;
 use Unilend\Service\{AttachmentManager, DemoMailerManager, ProjectManager, ProjectStatusManager};
@@ -199,15 +199,20 @@ class DemoController extends AbstractController
     /**
      * @Route("/projet/{hash}", name="demo_project_details", methods={"GET"}, requirements={"hash": "[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}"})
      *
-     * @param string                     $hash
-     * @param ProjectManager             $projectManager
-     * @param UserInterface|Clients|null $user
+     * @param string                      $hash
+     * @param ProjectManager              $projectManager
+     * @param ProjectAttachmentRepository $projectAttachmentRepository
+     * @param UserInterface|Clients|null  $user
      *
      * @return Response
      */
-    public function projectDetails(string $hash, ProjectManager $projectManager, ?UserInterface $user): Response
-    {
-        $projectRepository = $this->entityManager->getRepository(Projects::class);
+    public function projectDetails(
+        string $hash,
+        ProjectManager $projectManager,
+        ProjectAttachmentRepository $projectAttachmentRepository,
+        ?UserInterface $user
+    ): Response {
+        $projectRepository = $this->entityManager->getRepository(Project::class);
         $project           = $projectRepository->findOneBy(['hash' => $hash]);
 
         if (null === $project) {
@@ -242,7 +247,6 @@ class DemoController extends AbstractController
             }
         }
 
-        $projectAttachmentRepository     = $this->entityManager->getRepository(ProjectAttachment::class);
         $projectAttachmentTypeRepository = $this->entityManager->getRepository(ProjectAttachmentType::class);
         $productRepository               = $this->entityManager->getRepository(Product::class);
         $template                        = [
@@ -260,13 +264,14 @@ class DemoController extends AbstractController
                 ProjectsStatus::STATUS_CONTRACTS_SIGNED,
                 ProjectsStatus::STATUS_FINISHED,
             ],
-            'project'            => $project,
-            'product'            => $project->getIdProduct() ? $productRepository->find($project->getIdProduct()) : null,
-            'attachmentTypes'    => $projectAttachmentTypeRepository->getAttachmentTypes(),
-            'projectAttachments' => $projectAttachmentRepository->findBy(['idProject' => $project], ['added' => 'DESC']),
-            'isEditable'         => $projectManager->isEditable($project),
-            'isScoringEditable'  => $projectManager->isScoringEditable($project, $user),
-            'canChangeBidStatus' => true,
+            'project'              => $project,
+            'product'              => $project->getIdProduct() ? $productRepository->find($project->getIdProduct()) : null,
+            'attachmentTypes'      => $projectAttachmentTypeRepository->getAttachmentTypes(),
+            'projectAttachments'   => $projectAttachmentRepository->getAttachmentsWithoutSignature($project),
+            'signatureAttachments' => $projectAttachmentRepository->getAttachmentsWithSignature($project),
+            'isEditable'           => $projectManager->isEditable($project),
+            'isScoringEditable'    => $projectManager->isScoringEditable($project, $user),
+            'canChangeBidStatus'   => true,
         ];
 
         return $this->render('demo/project_request_details.html.twig', $template);
@@ -806,8 +811,8 @@ class DemoController extends AbstractController
      * @Route("/projets/details/lender/{slug}", name="demo_lender_project_details")
      *
      * @param string                       $slug
-     * @param UserInterface|Clients|null   $client
      * @param Request                      $request
+     * @param UserInterface|Clients|null   $user
      * @param ProjectParticipantRepository $projectParticipantRepository
      * @param ProjectDisplayManager        $projectDisplayManager
      * @param DemoMailerManager            $mailerManager
@@ -816,19 +821,19 @@ class DemoController extends AbstractController
      */
     public function projectDetailsForLender(
         string $slug,
-        ?UserInterface $client,
         Request $request,
+        ?UserInterface $user,
         ProjectParticipantRepository $projectParticipantRepository,
         ProjectDisplayManager $projectDisplayManager,
         DemoMailerManager $mailerManager
     ): Response {
         $project = $this->entityManager->getRepository(Projects::class)->findOneBy(['slug' => $slug, 'status' => ProjectDisplayManager::STATUS_DISPLAYABLE]);
 
-        if (ProjectDisplayManager::VISIBILITY_FULL !== $projectDisplayManager->getVisibility($project, $client)) {
+        if (ProjectDisplayManager::VISIBILITY_FULL !== $projectDisplayManager->getVisibility($project, $user)) {
             return $this->redirectToRoute('demo_projects_list');
         }
 
-        $wallet = $this->entityManager->getRepository(Wallet::class)->getWalletByType($client, WalletType::LENDER);
+        $wallet = $this->entityManager->getRepository(Wallet::class)->getWalletByType($user, WalletType::LENDER);
         $bid    = $this->entityManager->getRepository(Bids::class)->findOneBy([
             'wallet'  => $wallet,
             'project' => $project,
@@ -918,12 +923,12 @@ class DemoController extends AbstractController
     /**
      * @Route("/project/{hash}/fees/add", name="demo_add_project_fees", methods={"POST"}, requirements={"hash": "[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}"})
      *
-     * @param Request $request
      * @param string  $hash
+     * @param Request $request
      *
      * @return JsonResponse
      */
-    public function addProjectFees(Request $request, string $hash): JsonResponse
+    public function addProjectFees(string $hash, Request $request): JsonResponse
     {
         $projectForm        = $request->request->get('project_type');
         $projectPercentFees = empty($projectForm['projectPercentFees']) ? [] : $projectForm['projectPercentFees'];
@@ -979,7 +984,7 @@ class DemoController extends AbstractController
      * @param Clients           $user
      * @param AttachmentManager $attachmentManager
      *
-     * @throws OptimisticLockException
+     * @throws Exception
      */
     private function uploadDocuments(Request $request, Projects $project, Clients $user, AttachmentManager $attachmentManager): void
     {

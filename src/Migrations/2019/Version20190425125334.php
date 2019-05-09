@@ -38,8 +38,7 @@ final class Version20190425125334 extends AbstractMigration
         $this->addSql('ALTER TABLE project_participant ADD CONSTRAINT FK_1F509CEAF12E799E FOREIGN KEY (id_project) REFERENCES project (id)');
         $this->addSql('ALTER TABLE project_attachment DROP FOREIGN KEY FK_61F9A289F12E799E');
         $this->addSql('ALTER TABLE project_attachment ADD CONSTRAINT FK_61F9A289F12E799E FOREIGN KEY (id_project) REFERENCES project (id)');
-        $this->addSql('ALTER TABLE project_attachment RENAME INDEX id_project TO IDX_61F9A289F12E799E');
-        $this->addSql('ALTER TABLE project_attachment RENAME INDEX id_attachment TO IDX_61F9A289DCD5596C');
+        $this->addSql('ALTER TABLE project_attachment RENAME INDEX IDX_61F9A289F12E799E TO IDX_61F9A289F12E799E');
         $this->addSql('ALTER TABLE loans DROP FOREIGN KEY FK_82C24DBCF12E799E');
         $this->addSql('ALTER TABLE loans ADD CONSTRAINT FK_82C24DBCF12E799E FOREIGN KEY (id_project) REFERENCES project (id)');
         $this->addSql('SET FOREIGN_KEY_CHECKS = 1');

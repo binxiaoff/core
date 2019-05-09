@@ -182,7 +182,7 @@ services:
         class: 'Symfony\Contracts\HttpClient\HttpClientInterface'
         factory: ['Symfony\Component\HttpClient\HttpClient', create]
 
-    Unilend\Service\ElectronicSignature:
+    Unilend\Service\ElectronicSignatureManager:
         $integratorKey: '%env(DOCUSIGN_INTEGRATOR_KEY)%'
         $userId: '%env(DOCUSIGN_USER_ID)%'
         $privateKey: '%env(file:DOCUSIGN_PRIVATE_KEY)%'

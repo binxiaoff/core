@@ -370,7 +370,6 @@ class dashboardController extends bootstrap
             $countableStatus        = $entityManager->getRepository(ProjectsStatus::class)->findBy([
                 'status' => [
                     ProjectsStatus::STATUS_REQUESTED,
-                    ProjectsStatus::STATUS_REVIEW,
                     ProjectsStatus::STATUS_PUBLISHED,
                     ProjectsStatus::STATUS_FUNDED
                 ]
@@ -407,7 +406,7 @@ class dashboardController extends bootstrap
             $statusColor = [
                 ProjectsStatus::STATUS_FUNDED    => '#94EB86',
                 ProjectsStatus::STATUS_PUBLISHED => '#26ABE6',
-                ProjectsStatus::STATUS_REVIEW    => '#163380',
+//                ProjectsStatus::STATUS_REVIEW    => '#163380',
                 ProjectsStatus::STATUS_REQUESTED => '#F15C5E'
             ];
 
@@ -422,11 +421,11 @@ class dashboardController extends bootstrap
                     'color' => $statusColor[ProjectsStatus::STATUS_PUBLISHED],
                     'data'  => $this->getDelayByStatus(ProjectsStatus::STATUS_PUBLISHED, $borrowingMotives, $threeMonthsAgo, $today)
                 ],
-                [
-                    'label' => 'Revue',
-                    'color' => $statusColor[ProjectsStatus::STATUS_REVIEW],
-                    'data'  => $this->getDelayByStatus(ProjectsStatus::STATUS_REVIEW, $borrowingMotives, $threeMonthsAgo, $today)
-                ],
+//                [
+//                    'label' => 'Revue',
+//                    'color' => $statusColor[ProjectsStatus::STATUS_REVIEW],
+//                    'data'  => $this->getDelayByStatus(ProjectsStatus::STATUS_REVIEW, $borrowingMotives, $threeMonthsAgo, $today)
+//                ],
                 [
                     'label' => 'Dépôt en cours',
                     'color' => $statusColor[ProjectsStatus::STATUS_REQUESTED],
@@ -445,11 +444,11 @@ class dashboardController extends bootstrap
                     'color' => $statusColor[ProjectsStatus::STATUS_PUBLISHED],
                     'data'  => $this->getDelayByStatus(ProjectsStatus::STATUS_PUBLISHED, $borrowingMotives, $oneYearThreeMonthsAgo, $oneYearAgo)
                 ],
-                [
-                    'label' => 'Revue (N-1)',
-                    'color' => $statusColor[ProjectsStatus::STATUS_REVIEW],
-                    'data'  => $this->getDelayByStatus(ProjectsStatus::STATUS_REVIEW, $borrowingMotives, $oneYearThreeMonthsAgo, $oneYearAgo)
-                ],
+//                [
+//                    'label' => 'Revue (N-1)',
+//                    'color' => $statusColor[ProjectsStatus::STATUS_REVIEW],
+//                    'data'  => $this->getDelayByStatus(ProjectsStatus::STATUS_REVIEW, $borrowingMotives, $oneYearThreeMonthsAgo, $oneYearAgo)
+//                ],
                 [
                     'label' => 'Dépôt en cours (N-1)',
                     'color' => $statusColor[ProjectsStatus::STATUS_REQUESTED],

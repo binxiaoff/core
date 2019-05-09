@@ -32,13 +32,13 @@ MARKETSEGMENT
             <<<'TRANSLATIONS'
             INSERT IGNORE INTO translations (locale, section, name, translation, added) 
             VALUES
-                   ('fr_FR', 'project-request', 'title', 'Déposer un projet', NOW()),
+                   ('fr_FR', 'project-request', 'title', 'Déposer un dossier', NOW()),
                    ('fr_FR', 'project-request', 'guarantee-section-title', 'Garantie', NOW()),
                    ('fr_FR', 'project-request', 'tranches-section-title', 'Tranches', NOW()),
                    ('fr_FR', 'project-request', 'structuration-section-title', 'Structuration', NOW()),
                    ('fr_FR', 'project-request', 'attachments-section-title', 'Documents', NOW()),
                    ('fr_FR', 'project-request', 'confirmation-button', 'Déposer le dossier', NOW()),
-                   ('fr_FR', 'market-segment', 'public_collectivity', 'Collectivité Publique', NOW()),
+                   ('fr_FR', 'market-segment', 'public_collectivity', 'Collectivités Publiques', NOW()),
                    ('fr_FR', 'market-segment', 'energy', 'Énergie', NOW()),
                    ('fr_FR', 'market-segment', 'corporate', 'Corporate', NOW()),
                    ('fr_FR', 'market-segment', 'lbo', 'LBO', NOW()),
@@ -48,12 +48,12 @@ MARKETSEGMENT
                    ('fr_FR', 'foncaris-guarantee', 'foncaris_guarantee_need', 'Faire une demande de garantie auprès de FONCARIS', NOW()),
                    ('fr_FR', 'foncaris-guarantee', 'foncaris_guarantee_already_guaranteed', 'Ce dossier fait déjà l‘objet d‘une demande de garantie auprès de FONCARIS', NOW()),
                    ('fr_FR', 'money-form', 'amount', 'Montant',  NOW()),
-                   ('fr_FR', 'money-form', 'currency', 'Devis', NOW()),
+                   ('fr_FR', 'money-form', 'currency', 'Devise', NOW()),
                    ('fr_FR', 'tranche-form', 'name', 'Titre', NOW()),
                    ('fr_FR', 'tranche-form', 'repayment-type', 'Type', NOW()),
                    ('fr_FR', 'tranche-form', 'maturity', 'Maturité', NOW()),
                    ('fr_FR', 'tranche-form', 'capital-periodicity', 'Périodicité de capital', NOW()),
-                   ('fr_FR', 'tranche-form', 'interest-periodicity', 'Périodicité d''intérêt', NOW()),
+                   ('fr_FR', 'tranche-form', 'interest-periodicity', 'Périodicité d‘intérêt', NOW()),
                    ('fr_FR', 'tranche-form', 'expected-releasing-date', 'Date de déblocage de fonds envisagée', NOW()),
                    ('fr_FR', 'tranche-form', 'expected-starting-date', 'Date de première échéance envisagée', NOW()),
                    ('fr_FR', 'tranche-form', 'fees', 'Frais liés à la tranche', NOW()),
@@ -82,7 +82,7 @@ MARKETSEGMENT
                    ('fr_FR', 'interest-rate-index', 'index_libor', 'LIBOR', NOW()),
                    ('fr_FR', 'interest-rate-index', 'index_chftois', 'CHFTOIS', NOW()),
                    ('fr_FR', 'interest-rate-index', 'index_ffer', 'FFER', NOW()),
-                   ('fr_FR', 'fee-type', 'arranging', 'Frais d''arrangement', NOW()),
+                   ('fr_FR', 'fee-type', 'arranging', 'Frais d‘arrangement', NOW()),
                    ('fr_FR', 'fee-type', 'repayment', 'Commission de remboursement', NOW()),
                    ('fr_FR', 'fee-type', 'non_drawing', 'Commission non tirage', NOW())
                    

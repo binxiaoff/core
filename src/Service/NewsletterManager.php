@@ -27,12 +27,11 @@ class NewsletterManager
     /**
      * @param EntityManagerInterface $entityManager
      * @param string                 $listId
-     * @param LoggerInterface $logger
+     * @param LoggerInterface        $logger
      */
     public function __construct(EntityManagerInterface $entityManager, string $listId, LoggerInterface $logger)
     {
         $this->entityManager = $entityManager;
-        $this->mailChimp     = $mailChimp;
         $this->listId        = $listId;
         $this->logger        = $logger;
     }

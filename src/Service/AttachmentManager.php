@@ -57,7 +57,7 @@ class AttachmentManager
     }
 
     /**
-     * @param Clients|null    $owner
+     * @param Clients|null    $clientOwner
      * @param Companies|null  $companyOwner
      * @param Clients         $uploader
      * @param AttachmentType  $attachmentType
@@ -71,7 +71,7 @@ class AttachmentManager
      * @return Attachment
      */
     public function upload(
-        ?Clients $owner,
+        ?Clients $clientOwner,
         ?Companies $companyOwner,
         Clients $uploader,
         ?AttachmentType $attachmentType,
@@ -80,19 +80,20 @@ class AttachmentManager
         bool $archivePreviousAttachments = true,
         ?string $description = null
     ): Attachment {
-        $uploadPathAndName         = $this->uploadFile($uploadedFile, $owner, $uploader);
+        $uploadPathAndName         = $this->uploadFile($uploadedFile, $clientOwner, $uploader);
         $relativeUploadPathAndName = str_replace($this->getUploadRootDir() . DIRECTORY_SEPARATOR, '', $uploadPathAndName);
 
         if ($archivePreviousAttachments) {
-            $this->archiveAttachments($owner, $uploader, $attachmentType ?? $attachment->getType());
+            $this->archiveAttachments($clientOwner, $uploader, $attachmentType ?? $attachment->getType());
         }
 
         if (null === $attachment) {
             $attachment = new Attachment();
         }
+
         $attachment
             ->setPath($relativeUploadPathAndName)
-            ->setClientOwner($owner)
+            ->setClientOwner($clientOwner)
             ->setCompanyOwner($companyOwner)
             ->setAddedBy($uploader)
             ->setOriginalName($uploadedFile->getClientOriginalName())
@@ -405,8 +406,7 @@ class AttachmentManager
     private function uploadFile(UploadedFile $uploadedFile, ?Clients $owner, Clients $uploader)
     {
         $uploadPath = $this->getUploadAbsolutePath($owner, $uploader);
-
-        $fileName = $this->generateFileName($uploadedFile, $uploadPath);
+        $fileName   = $this->generateFileName($uploadedFile, $uploadPath);
 
         $uploadedFile->move($uploadPath, $fileName);
 
@@ -414,19 +414,19 @@ class AttachmentManager
     }
 
     /**
-     * @param Clients|null   $owner
+     * @param Clients|null   $clientOwner
      * @param Clients        $archivedBy
      * @param AttachmentType $attachmentType
      *
      * @throws Exception
      */
-    private function archiveAttachments(?Clients $owner, Clients $archivedBy, AttachmentType $attachmentType)
+    private function archiveAttachments(?Clients $clientOwner, Clients $archivedBy, AttachmentType $attachmentType)
     {
         $attachmentsToArchive = [];
-        if ($owner) {
+        if ($clientOwner) {
             $attachmentsToArchive = $this->entityManager->getRepository(Attachment::class)
                 ->findBy([
-                    'owner'    => $owner,
+                    'owner'    => $clientOwner,
                     'type'     => $attachmentType,
                     'archived' => null,
                 ])

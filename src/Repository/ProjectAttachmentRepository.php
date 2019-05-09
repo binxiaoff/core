@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Unilend\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\Query\Expr\Join;
-use Unilend\Entity\{Attachment, AttachmentType, Project, ProjectAttachment, ProjectAttachmentType, ProjectAttachmentTypeCategory};
+use Unilend\Entity\{Attachment, AttachmentSignature, AttachmentType, Project, ProjectAttachment, ProjectAttachmentType, ProjectAttachmentTypeCategory};
 
 class ProjectAttachmentRepository extends ServiceEntityRepository
 {
@@ -80,5 +82,42 @@ class ProjectAttachmentRepository extends ServiceEntityRepository
         $legacy = $queryBuilder->getQuery()->getResult();
 
         return array_merge($attachments, $legacy);
+    }
+
+    /**
+     * @param Project $project
+     *
+     * @return array
+     */
+    public function getAttachmentsWithoutSignature(Project $project): array
+    {
+        $queryBuilder = $this->createQueryBuilder('pa');
+        $queryBuilder
+            ->leftJoin(AttachmentSignature::class, 's', Join::WITH, 'pa.attachment = s.attachment')
+            ->where('pa.project = :project')
+            ->andWhere($queryBuilder->expr()->isNull('s.id'))
+            ->setParameter('project', $project)
+            ->orderBy('pa.added', 'ASC')
+        ;
+
+        return $queryBuilder->getQuery()->getResult();
+    }
+
+    /**
+     * @param Project $project
+     *
+     * @return array
+     */
+    public function getAttachmentsWithSignature(Project $project): array
+    {
+        $queryBuilder = $this->createQueryBuilder('pa');
+        $queryBuilder
+            ->innerJoin(AttachmentSignature::class, 's', Join::WITH, 'pa.attachment = s.attachment')
+            ->where('pa.project = :project')
+            ->setParameter('project', $project)
+            ->orderBy('pa.added', 'ASC')
+        ;
+
+        return $queryBuilder->getQuery()->getResult();
     }
 }

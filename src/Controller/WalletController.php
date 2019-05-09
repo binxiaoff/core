@@ -38,13 +38,13 @@ class WalletController extends AbstractController
     /**
      * @Route("/portefeuille", name="wallet")
      *
+     * @param UserInterface|Clients|null $user
      * @param ProjectsRepository         $projectRepository
      * @param ClientProjectsRepository   $clientProjectsRepository
-     * @param UserInterface|Clients|null $user
      *
      * @return Response
      */
-    public function loans(ProjectsRepository $projectRepository, ClientProjectsRepository $clientProjectsRepository, ?UserInterface $user): Response
+    public function loans(?UserInterface $user, ProjectsRepository $projectRepository, ClientProjectsRepository $clientProjectsRepository): Response
     {
         $template = [
             'projects' => [

@@ -30,10 +30,10 @@
                                         <span class="label">Reporting</span>
                                     </a>
                                 </li>
-                                <li role="presentation" class="{% if app.request.get('_route') == 'demo_kyc' %} active{% endif %}">
-                                    <a href="{{ path('demo_kyc') }}">
+                                <li role="presentation" class="{% if app.request.get('_route') == 'demo_agency' %} active{% endif %}">
+                                    <a href="{{ path('demo_agency') }}">
                                         <span class="icon fa-check-u"></span>
-                                        <span class="label">KYC</span>
+                                        <span class="label">Agency</span>
                                     </a>
                                 </li>
                                 <li role="presentation" class="{% if app.request.get('_route') == 'demo_documents' %} active{% endif %}">

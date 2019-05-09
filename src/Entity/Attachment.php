@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Unilend\Entity;
 
 use DateTimeImmutable;
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use Unilend\Entity\Traits\{BlamableAddedTrait, BlamableArchivedTrait, BlamableUpdatedTrait, TimestampableTrait};
 
@@ -99,6 +100,21 @@ class Attachment
      * @ORM\Column(length=191, nullable=true)
      */
     private $description;
+
+    /**
+     * @var AttachmentSignature[]
+     *
+     * @ORM\OneToMany(targetEntity="AttachmentSignature", mappedBy="attachment")
+     */
+    private $signatures;
+
+    /**
+     * Attachment constructor.
+     */
+    public function __construct()
+    {
+        $this->signatures = new ArrayCollection();
+    }
 
     /**
      * @param string $path
@@ -262,5 +278,13 @@ class Attachment
         $this->companyOwner = $companyOwner;
 
         return $this;
+    }
+
+    /**
+     * @return AttachmentSignature[]
+     */
+    public function getSignatures(): iterable
+    {
+        return $this->signatures;
     }
 }
