@@ -53,7 +53,7 @@ function addFeeForm($collectionHolder, $buttons, $validFeeButton) {
 
     $collectionHolder.data('index', index + 1);
 
-    var $newFormDiv = $('<div class="row row-multi-col-computer"></div>').append(newForm);
+    var $newFormDiv = $('<div class="row row-multi-col"></div>').append(newForm);
     $buttons.before($newFormDiv);
 
     $validFeeButton.show();

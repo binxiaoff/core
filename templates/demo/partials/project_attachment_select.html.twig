@@ -2,14 +2,14 @@
     <option value="">Sélectionner le type de fichier</option>
     {% set attachmentCategory = 0 %}
     {% for attachmentType in attachmentTypes %}
-        {% if attachmentCategory != attachmentType.idCategory.id %}
+        {% if attachmentCategory != attachmentType.category.id %}
             {% if attachmentCategory != 0 %}
                 </optgroup>
             {% endif %}
-            {% set attachmentCategory = attachmentType.idCategory.id %}
-            <optgroup label="{{ attachmentType.idCategory.name }}">
+            {% set attachmentCategory = attachmentType.category.id %}
+            <optgroup label="{{ attachmentType.category.name }}">
         {% endif %}
-        <option value="{{ attachmentType.idType.id }}">{{ attachmentType.name }}</option>
+        <option value="{{ attachmentType.attachmentType.id }}">{{ attachmentType.name }}</option>
     {% endfor %}
     </optgroup>
 </select>

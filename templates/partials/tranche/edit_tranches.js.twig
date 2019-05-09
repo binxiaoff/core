@@ -24,23 +24,22 @@ function addTrancheForm($trancheCollectionHolder, $addTrancheButton) {
 
     $trancheCollectionHolder.data('index', index + 1);
 
-    var $newFormDiv = $('<div class="row row-multi-col-computer"></div>').append(newForm);
-
+    var $newFormDiv = $('<div class="row row-multi-col"></div>').append(newForm);
     $newFormDiv.find('.ui-has-datepicker, [data-ui-datepicker]').uiPikaday();
-
     $addTrancheButton.before($newFormDiv);
-    var $removeFormButton = $('<div class="form-field col-lg-2 col-md-2"><button type="button" class="btn-default btn-shape-xxs">' +  '{{ 'global-form.delete'|trans }}' + '</button></div>');
-    $newFormDiv.append($removeFormButton);
+
+    initTranchePercentFeeForm();
+
+    var $removeFormButton = $('<div class="row text-align-right"><button type="button" class="btn-default btn-shape-xxs">' +  '{% trans %} tranche-form.delete-row {% endtrans %}' + '</button></div>');
+    $newFormDiv.find('div:last').append($removeFormButton);
 
     $removeFormButton.on('click', function () {
         $newFormDiv.remove();
     });
-    initTranchePercentFeeForm();
 }
 
-function initTranchePercentFeeForm()
-{
-    var $tranchePercentFeeCollectionHolder = $trancheCollectionHolder.find('div.tranche-percent-fees');
+function initTranchePercentFeeForm() {
+    var $tranchePercentFeeCollectionHolder = $trancheCollectionHolder.find('div.tranche-percent-fees:last');
     var $addTranchePercentFeeButton = $(
         '<a href="javascript:;" class="btn-default btn-shape-sq-md margin-10-t">' +
         '    <span class="icon fa-plus-u16 c-t2"></span>' +
@@ -62,16 +61,21 @@ function addTranchePercentFeeForm($tranchePercentFeeCollectionHolder, $addTranch
     var index = $tranchePercentFeeCollectionHolder.data('index');
     var newForm = prototype;
 
-    newForm = newForm.replace(new RegExp(prototypeName, 'g'), index);
+    var $newForm = $(newForm.replace(new RegExp(prototypeName, 'g'), index));
 
     $tranchePercentFeeCollectionHolder.data('index', index + 1);
 
-    var $newFormDiv = $('<div class="row row-multi-col-computer"></div>').append(newForm);
+    var $removeFormButton = $('<div class="col-lg-2 col-md-2"><button type="button" class="btn-default btn-shape-xxs" style="margin-top: 45px;">' + '{% trans %} percent-fee-form.delete-row {% endtrans %}' + '</button></div>');
+    $newForm.append($removeFormButton)
+
+    var $newFormDiv = $('<div class="row row-multi-col"></div>').append($newForm);
     $addTranchePercentFeeButton.before($newFormDiv);
-    var $removeFormButton = $('<div class="row"><div class="form-field col-lg-2 col-md-2"><button type="button" class="btn-default btn-shape-xxs">' + '{{ 'global-form.delete'|trans }}' + '</button></div></div>');
-    $newFormDiv.append($removeFormButton);
 
     $removeFormButton.on('click', function () {
         $newFormDiv.remove();
     });
 }
+
+$ (function () {
+    addTrancheForm($trancheCollectionHolder, $addTrancheButton);
+})

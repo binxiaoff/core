@@ -166,7 +166,7 @@ textarea.input-field {
 // Select fields are white instead of grey
 select.input-field {
   @include input-size-default($single-line: true);
-  background-color: $c-white;
+  background-color: $c-bg3;
   border-color: $c-bg3;
   color: $c-t1;
 }

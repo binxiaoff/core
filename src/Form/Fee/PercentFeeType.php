@@ -26,6 +26,7 @@ class PercentFeeType extends AbstractType
                     return 'fee-type.' . $feeType->getLabel();
                 },
                 'choice_translation_domain' => true,
+                'placeholder'               => '',
             ])
             ->add('rate', NumberType::class, [
                 'label' => 'percent-fee-form.rate',

@@ -30,15 +30,25 @@ class TrancheType extends AbstractType
                 'choice_label' => function ($option, string $key, string $value) {
                     return 'repayment-type.' . mb_strtolower($key);
                 },
+                'placeholder' => '',
             ])
-            ->add('duration', null, ['label' => 'tranche-form.maturity'])
+            ->add('duration', null, [
+                'label' => 'tranche-form.maturity',
+                'attr'  => ['min' => 1],
+            ])
             ->add('money', MoneyType::class)
             ->add('rate', LendingRateType::class, [
                 'data_class' => NullableLendingRate::class,
                 'required'   => false,
             ])
-            ->add('capitalPeriodicity', null, ['label' => 'tranche-form.capital-periodicity'])
-            ->add('interestPeriodicity', null, ['label' => 'tranche-form.interest-periodicity'])
+            ->add('capitalPeriodicity', null, [
+                'label' => 'tranche-form.capital-periodicity',
+                'attr'  => ['min' => 1],
+            ])
+            ->add('interestPeriodicity', null, [
+                'label' => 'tranche-form.interest-periodicity',
+                'attr'  => ['min' => 1],
+            ])
             ->add('expectedReleasingDate', null, [
                 'label'    => 'tranche-form.expected-releasing-date',
                 'required' => false,

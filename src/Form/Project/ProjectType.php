@@ -56,6 +56,7 @@ class ProjectType extends AbstractType
                 },
                 'class'                     => MarketSegment::class,
                 'choice_translation_domain' => true,
+                'placeholder'               => '',
             ])
             ->add('replyDeadline', DateType::class, [
                 'label'    => 'project-form.replay-deadline',
@@ -75,7 +76,7 @@ class ProjectType extends AbstractType
             ])
             ->add('description', TextareaType::class, [
                 'label' => 'project-form.description',
-                'attr'  => ['row' => 10],
+                'attr'  => ['rows' => 6],
             ])
             ->add('tranches', CollectionType::class, [
                 'label'          => false,
@@ -102,9 +103,10 @@ class ProjectType extends AbstractType
                 'class'         => Companies::class,
                 'query_builder' => function (EntityRepository $entityRepository) use ($currentCompanyId) {
                     return $entityRepository->createQueryBuilder('c')
-                        ->where('c.idCompany in (:arrangersToSelect)')
+                        ->where('c.idCompany IN (:arrangersToSelect)')
                         ->setParameter('arrangersToSelect', array_merge(Companies::COMPANY_ELIGIBLE_ARRANGER, [$currentCompanyId]))
-                        ;
+                        ->orderBy('c.name', 'ASC')
+                    ;
                 },
             ])
             ->add('run', EntityType::class, [
@@ -113,10 +115,11 @@ class ProjectType extends AbstractType
                 'class'         => Companies::class,
                 'query_builder' => function (EntityRepository $entityRepository) {
                     return $entityRepository->createQueryBuilder('c')
-                        ->where('c.idCompany in (:runsToSelect)')
-                        ->orWhere('c.parent in (:runsParantToSelect)')
-                        ->setParameters(['runsToSelect' => Companies::COMPANY_ELIGIBLE_RUN, 'runsParantToSelect' => Companies::COMPANY_SUBSIDIARY_ELIGIBLE_RUN])
-                        ;
+                        ->where('c.idCompany IN (:runsToSelect)')
+                        ->orWhere('c.parent IN (:runsParentToSelect)')
+                        ->setParameters(['runsToSelect' => Companies::COMPANY_ELIGIBLE_RUN, 'runsParentToSelect' => Companies::COMPANY_SUBSIDIARY_ELIGIBLE_RUN])
+                        ->orderBy('c.name', 'ASC')
+                    ;
                 },
             ])
             ->add('projectAttachments', CollectionType::class, [

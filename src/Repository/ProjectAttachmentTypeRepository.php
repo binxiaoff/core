@@ -22,7 +22,7 @@ class ProjectAttachmentTypeRepository extends ServiceEntityRepository
      */
     public function getAttachmentTypes(): array
     {
-        $queryBuilder = $this->createQueryBuilder('t', 't.type');
+        $queryBuilder = $this->createQueryBuilder('t');
         $queryBuilder
             ->innerJoin(ProjectAttachmentTypeCategory::class, 'c', Join::WITH, 't.category = c.id')
             ->orderBy('c.rank', 'ASC')

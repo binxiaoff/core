@@ -33,10 +33,10 @@ class Companies
     public const CLIENT_STATUS_EXTERNAL_COUNSEL_OTHER         = 3;
     public const CLIENT_STATUS_EXTERNAL_COUNSEL_BANKER        = 4;
 
-    public const COMPANY_ID_CACIB     = 3;
-    public const COMPANY_ID_UNIFERGIE = 4;
-    public const COMPANY_ID_CASA      = 5;
-    public const COMPANY_ID_LCL       = 45;
+    public const COMPANY_ID_CASA      = 1;
+    public const COMPANY_ID_CACIB     = 2;
+    public const COMPANY_ID_UNIFERGIE = 3;
+    public const COMPANY_ID_LCL       = 43;
 
     public const COMPANY_ELIGIBLE_ARRANGER       = [self::COMPANY_ID_CACIB, self::COMPANY_ID_UNIFERGIE];
     public const COMPANY_ELIGIBLE_RUN            = [self::COMPANY_ID_LCL];

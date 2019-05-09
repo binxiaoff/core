@@ -7,76 +7,75 @@
             'data-prototype-name': data_prototype_name
         })|merge(attr) %}
     {% endif %}
-    <div {% for attrname,attrvalue in attr %} {{ attrname }}="{{ attrvalue }}"{% endfor %}>
+    <div{% for attrname, attrvalue in attr %} {{ attrname }}="{{ attrvalue }}"{% endfor %}>
     {{ block('collection_widget') }}
     </div>
 {%- endblock collection_row -%}
 
 {% block project_tranche_type_row %}
-    <div class="row row-multi-col-computer">
+    <div class="row row-multi-col">
         <div class="col-lg-6 col-md-6">
             {{ form_row(form.name) }}
         </div>
-        <div class="col-lg-6 col-md-6">
-            {{ form_row(form.repaymentType) }}
-        </div>
-    </div>
-    <div class="row row-multi-col-computer">
         <div class="col-lg-3 col-md-3">
             {{ form_row(form.money.amount) }}
         </div>
         <div class="col-lg-3 col-md-3">
             {{ form_row(form.money.currency) }}
         </div>
+    </div>
+    <div class="row row-multi-col">
+        <div class="col-lg-3 col-md-3">
+            {{ form_row(form.duration) }}
+        </div>
+        <div class="col-lg-3 col-md-3">
+            {{ form_row(form.repaymentType) }}
+        </div>
+        <div class="col-lg-3 col-md-3">
+            {{ form_row(form.capitalPeriodicity) }}
+        </div>
+        <div class="col-lg-3 col-md-3">
+            {{ form_row(form.interestPeriodicity) }}
+        </div>
+    </div>
+    <div class="row row-multi-col">
         <div class="col-lg-3 col-md-3">
             {{ form_row(form.rate.indexType) }}
         </div>
         <div class="col-lg-3 col-md-3">
             {{ form_row(form.rate.margin) }}
         </div>
-    </div>
-    <div class="row row-multi-col-computer">
-        <div class="col-lg-4 col-md-4">
-            {{ form_row(form.duration) }}
-        </div>
-        <div class="col-lg-4 col-md-4">
-            {{ form_row(form.capitalPeriodicity) }}
-        </div>
-        <div class="col-lg-4 col-md-4">
-            {{ form_row(form.interestPeriodicity) }}
-        </div>
-    </div>
-    <div class="row row-multi-col-computer">
-        <div class="col-lg-6 col-md-6">
+        <div class="col-lg-3 col-md-3">
             {{ form_row(form.expectedReleasingDate) }}
         </div>
-        <div class="col-lg-6 col-md-6">
+        <div class="col-lg-3 col-md-3">
             {{ form_row(form.expectedStartingDate) }}
         </div>
     </div>
-    <div class="row row-multi-col-computer">
-        {% trans %} tranche-form.fees {% endtrans %}
+    <div class="row row-multi-col">
+        <h5 class="h4">{% trans %} tranche-form.fees {% endtrans %}</h5>
         {{ form_row(form.tranchePercentFees) }}
     </div>
+    <hr>
 {% endblock project_tranche_type_row %}
 
 {% block tranche_percent_fee_type_row %}
-    <div class="row row-multi-col-computer">
-        <div class="col-lg-6 col-md-6">
+    <div class="row row-multi-col">
+        <div class="col-lg-4 col-md-4">
             {{ form_row(form.percentFee.type) }}
-            <div class="row">
-                {{ form_row(form.percentFee.isRecurring) }}
-            </div>
         </div>
-        <div class="col-lg-6 col-md-6">
+        <div class="col-lg-3 col-md-3">
             {{ form_row(form.percentFee.rate) }}
+        </div>
+        <div class="col-lg-3 col-md-3">
+            {{ form_row(form.percentFee.isRecurring) }}
         </div>
     </div>
 {% endblock tranche_percent_fee_type_row %}
 
 
 {% block project_attachment_type_row %}
-    <div class="row row-multi-col-computer">
+    <div class="row row-multi-col">
         <div class="col-lg-4 col-md-4">
             {{ form_row(form.attachment.type) }}
         </div>
