@@ -50,7 +50,7 @@ class SignatureController extends AbstractController
             'signatory'  => $user,
         ]);
 
-        if (null === $signature) {
+        if (null === $signature || AttachmentSignature::STATUS_PENDING !== $signature->getStatus()) {
             return $this->redirectToRoute('wallet');
         }
 
@@ -97,7 +97,7 @@ class SignatureController extends AbstractController
             'signatory'  => $user,
         ]);
 
-        if (null === $signature) {
+        if (null === $signature || AttachmentSignature::STATUS_PENDING !== $signature->getStatus()) {
             return $this->redirectToRoute('wallet');
         }
 
