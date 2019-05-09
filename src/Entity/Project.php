@@ -774,13 +774,13 @@ class Project
     }
 
     /**
-     * @param ProjectStatusHistory $lastProjectStatusHistory
+     * @param ProjectStatusHistory $currentProjectStatusHistory
      *
      * @return Project
      */
-    private function setCurrentProjectStatusHistory(ProjectStatusHistory $lastProjectStatusHistory): Project
+    private function setCurrentProjectStatusHistory(ProjectStatusHistory $currentProjectStatusHistory): Project
     {
-        $this->currentProjectStatusHistory = $lastProjectStatusHistory;
+        $this->currentProjectStatusHistory = $currentProjectStatusHistory;
 
         return $this;
     }

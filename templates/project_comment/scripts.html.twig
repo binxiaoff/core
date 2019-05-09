@@ -1,0 +1,105 @@
+{% if project is defined %}
+    <script src="{{ asset('js/vendor/jquery-comments/jquery-comments.min.js', 'gulp') }}"></script>
+    <script>
+        $(function () {
+            $('#comments-container').comments({
+                currentUserId: {{ app.user.idClient }},
+                textareaPlaceholderText: 'Ajouter un commentaire',
+                newestText: 'Récents',
+                oldestText: 'Anciens',
+                popularText: '',
+                attachmentsText: 'Documents',
+                sendText: 'Commenter',
+                replyText: 'Répondre',
+                editText: 'Éditer',
+                editedText: 'Modifié',
+                youText: 'Vous',
+                saveText: 'Enregistrer',
+                deleteText: 'Supprimer',
+                viewAllRepliesText: 'Voir toutes les réponse (__replyCount__)',
+                hideRepliesText: 'Masquer',
+                noCommentsText: 'Aucun commentaire',
+                noAttachmentsText: 'Aucun document',
+                attachmentDropText: 'Déposez vos fichiers ici',
+                highlightColor: '#2bc9af',
+                deleteButtonColor: '#eceaed',
+                enableReplying: true,
+                enableEditing: true,
+                enableUpvoting: false,
+                enableDeleting: false,
+                enableDeletingCommentWithReplies: false,
+                enableAttachments: false, // @todo may be interesting in the future
+                enableHashtags: false, // @todo may be interesting in the future
+                enablePinging: false, // @todo may be interesting in the future
+                enableNavigation: true,
+                postCommentOnEnter: false,
+                forceResponsive: false,
+                readOnly: false,
+                getComments: function(success, error) {
+                    let commentsArray = [{% for comment in project.comments %}{
+                        id: {{ comment.id }},
+                        parent: {% if comment.parent %}{{ comment.parent.id }}{% else %}null{% endif %},
+                        created: '{{ comment.added|date('c') }}',
+                        modified: '{% if comment.updated %}{{ comment.updated|date('c') }}{% else %}{{ comment.added|date('c') }}{% endif %}',
+                        content: '{{ comment.content|raw|e('js') }}',
+                        fullname: '{{ comment.client.firstName }} {{ comment.client.lastName }}',
+                        created_by_current_user: {% if app.user == comment.client %}true{% else %}false{% endif %}
+                    },{% endfor %}]
+                    success(commentsArray)
+                },
+                postComment: function(commentJSON, success, error) {
+                    let userId = this.currentUserId
+
+                    $.ajax({
+                        type: 'post',
+                        url: '{{ path('project_comment_add', {'project': project.hash}) }}',
+                        data: {
+                            user: userId,
+                            content: commentJSON.content,
+                            parent: commentJSON.parent
+                        },
+                        success: function(comment) {
+                            success(comment)
+                        },
+                        error: error
+                    })
+                },
+                putComment: function(commentJSON, success, error) {
+                    $.ajax({
+                        type: 'post',
+                        url: '{{ path('project_comment_update') }}',
+                        data: {
+                            id: commentJSON.id,
+                            content: commentJSON.content,
+                            parent: commentJSON.parent
+                        },
+                        success: function(comment) {
+                            success(comment)
+                        },
+                        error: error
+                    })
+                },
+                timeFormatter: function(time) {
+                    let date = new Date(time)
+                    return date.toLocaleDateString() + ' ' + ('0' + date.getHours()).slice(-2) + ':' + ('0' + date.getMinutes()).slice(-2)
+                },
+                defaultNavigationSortKey: 'newest',
+                roundProfilePictures: false,
+                textareaRows: 2,
+                textareaRowsOnFocus: 2,
+                textareaMaxRows: 5,
+                maxRepliesVisible: 20,
+                // getUsers: function(success, error) {
+                //     setTimeout(function() {
+                //         success(usersArray);
+                //     }, 500);
+                // },
+                // uploadAttachments: function(dataArray, success, error) {
+                //     setTimeout(function() {
+                //         success(dataArray);
+                //     }, 500);
+                // },
+            })
+        })
+    </script>
+{% endif %}

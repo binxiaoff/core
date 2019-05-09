@@ -458,7 +458,7 @@
                             </div>
                         </div>
                     </div><!-- /.ui-template-definition -->
-                </div>
+                </div><!-- /.panel -->
             </article><!-- /.dashboard-tab-pane -->
             <article class="dashboard-tab-pane" id="article-electronic-signature">
                 <div class="panel">
@@ -524,8 +524,8 @@
                 <div class="panel" style="font-size: 16px;">
                     <h3 class="margin-10-t">Discussions</h3>
                     <div id="comments-container"></div>
-                </div>
-            </article>
+                </div><!-- /.panel -->
+            </article><!-- /.dashboard-tab-pane -->
         </div><!-- /.dashboard-tabs-content -->
     </section><!-- /.dashboard-tabs -->
 {% endblock %}
@@ -535,8 +535,7 @@
 {% endblock %}
 
 {% block pageHeadScripts %}
-    <link href="{{ asset('js/vendor/jquery-comments/jquery-comments.css', 'gulp') }}" rel="stylesheet"/>
-    <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css" rel="stylesheet"/>
+    {% include 'project_comment/styles.html.twig' %}
     <link href="//cdnjs.cloudflare.com/ajax/libs/x-editable/1.5.0/jquery-editable/css/jquery-editable.css" rel="stylesheet"/>
     <link href="//cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.8.0/css/bootstrap-datepicker.min.css" rel="stylesheet"/>
     <style>
@@ -664,19 +663,11 @@
         .risk-analysis-container .editable-container .editable-input {
             width: 100%;
         }
-
-        #comments-container ul > li {
-            list-style: none;
-        }
-
-        #comments-container .control-row .delete {
-            display: none;
-        }
     </style>
 {% endblock %}
 
 {% block pageScripts %}
-    <script src="{{ asset('js/vendor/jquery-comments/jquery-comments.min.js', 'gulp') }}"></script>
+    {% include 'project_comment/scripts.html.twig' %}
     <script src="{{ asset('js/vendor/jquery.poshytip.min.js', 'gulp') }}"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/x-editable/1.5.0/jquery-editable/js/jquery-editable-poshytip.js"></script>
     <script>{% include 'partials/bids/actions.js.twig' %}</script>
@@ -763,105 +754,6 @@
             $('#visibility-crca').on('change', function () {
                 $('.visibility-bank-crca').not(':disabled').prop('checked', $(this).is(':checked'))
             })
-
-            $('#comments-container').comments({
-                currentUserId: {{ app.user.idClient }},
-                textareaPlaceholderText: 'Ajouter un commentaire',
-                newestText: 'Récents',
-                oldestText: 'Anciens',
-                popularText: '',
-                attachmentsText: 'Documents',
-                sendText: 'Commenter',
-                replyText: 'Répondre',
-                editText: 'Éditer',
-                editedText: 'Modifié',
-                youText: 'Vous',
-                saveText: 'Enregistrer',
-                deleteText: 'Supprimer',
-                viewAllRepliesText: 'Voir toutes les réponse (__replyCount__)',
-                hideRepliesText: 'Masquer',
-                noCommentsText: 'Aucun commentaire',
-                noAttachmentsText: 'Aucun document',
-                attachmentDropText: 'Déposez vos fichiers ici',
-                highlightColor: '#2bc9af',
-                deleteButtonColor: '#eceaed',
-                enableReplying: true,
-                enableEditing: true,
-                enableUpvoting: false,
-                enableDeleting: false,
-                enableDeletingCommentWithReplies: false,
-                enableAttachments: false, // @todo may be interesting in the future
-                enableHashtags: false, // @todo may be interesting in the future
-                enablePinging: false, // @todo may be interesting in the future
-                enableNavigation: true,
-                postCommentOnEnter: false,
-                forceResponsive: false,
-                readOnly: false,
-                getComments: function(success, error) {
-                    let commentsArray = [{% for comment in project.comments %}{
-                        id: {{ comment.id }},
-                        parent: {% if comment.parent %}{{ comment.parent.id }}{% else %}null{% endif %},
-                        created: '{{ comment.added|date('c') }}',
-                        modified: '{% if comment.updated %}{{ comment.updated|date('c') }}{% else %}{{ comment.added|date('c') }}{% endif %}',
-                        content: '{{ comment.content|raw|e('js') }}',
-                        fullname: '{{ comment.client.firstName }} {{ comment.client.lastName }}',
-                        created_by_current_user: {% if app.user == comment.client %}true{% else %}false{% endif %}
-                    },{% endfor %}]
-                    success(commentsArray)
-                },
-                postComment: function(commentJSON, success, error) {
-                    let userId = this.currentUserId
-
-                    $.ajax({
-                        type: 'post',
-                        url: '{{ path('demo_project_comment_add', {'hash': project.hash}) }}',
-                        data: {
-                            user: userId,
-                            content: commentJSON.content,
-                            parent: commentJSON.parent
-                        },
-                        success: function(comment) {
-                            success(comment)
-                        },
-                        error: error
-                    })
-                },
-                putComment: function(commentJSON, success, error) {
-                    $.ajax({
-                        type: 'post',
-                        url: '{{ path('demo_project_comment_update') }}',
-                        data: {
-                            id: commentJSON.id,
-                            content: commentJSON.content,
-                            parent: commentJSON.parent
-                        },
-                        success: function(comment) {
-                            success(comment)
-                        },
-                        error: error
-                    })
-                },
-                timeFormatter: function(time) {
-                    let date = new Date(time)
-                    return date.toLocaleDateString() + ' ' + ('0' + date.getHours()).slice(-2) + ':' + ('0' + date.getMinutes()).slice(-2)
-                },
-                defaultNavigationSortKey: 'newest',
-                roundProfilePictures: false,
-                textareaRows: 2,
-                textareaRowsOnFocus: 2,
-                textareaMaxRows: 5,
-                maxRepliesVisible: 20,
-                // getUsers: function(success, error) {
-                //     setTimeout(function() {
-                //         success(usersArray);
-                //     }, 500);
-                // },
-                // uploadAttachments: function(dataArray, success, error) {
-                //     setTimeout(function() {
-                //         success(dataArray);
-                //     }, 500);
-                // },
-            });
         })
     </script>
 {% endblock %}
