@@ -7,6 +7,8 @@ namespace Unilend\Entity;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
+ * @deprecated Use ProjectStatusHistory
+ *
  * @ORM\Table(name="projects_status")
  * @ORM\Entity
  */

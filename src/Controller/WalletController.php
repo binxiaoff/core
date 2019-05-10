@@ -11,9 +11,10 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\User\UserInterface;
-use Unilend\Entity\{Clients, Loans, Projects, ProjectsStatus, Wallet, WalletType};
-use Unilend\Repository\ClientProjectsRepository;
-use Unilend\Repository\ProjectsRepository;
+use Unilend\Entity\{Clients, Loans, Project, ProjectStatusHistory, WalletType};
+use Unilend\Repository\ClientProjectRepository;
+use Unilend\Repository\ProjectRepository;
+use Unilend\Repository\WalletRepository;
 
 /**
  * @Security("is_granted('ROLE_USER')")
@@ -38,32 +39,39 @@ class WalletController extends AbstractController
     /**
      * @Route("/portefeuille", name="wallet")
      *
+     * @param ProjectRepository          $projectRepository
+     * @param ClientProjectRepository    $clientProjectRepository
+     * @param WalletRepository           $walletRepository
      * @param UserInterface|Clients|null $user
-     * @param ProjectsRepository         $projectRepository
-     * @param ClientProjectsRepository   $clientProjectsRepository
      *
      * @return Response
      */
-    public function loans(?UserInterface $user, ProjectsRepository $projectRepository, ClientProjectsRepository $clientProjectsRepository): Response
-    {
+    public function loans(
+        ProjectRepository $projectRepository,
+        ClientProjectRepository $clientProjectRepository,
+        WalletRepository $walletRepository,
+        ?UserInterface $user
+    ): Response {
+        $statuses = ProjectStatusHistory::getAllProjectStatus();
         $template = [
             'projects' => [
-                'borrower'    => $this->groupByStatusAndSort($clientProjectsRepository->getBorrowerProjects($user)),
-                'submitter'   => $this->groupByStatusAndSort($clientProjectsRepository->getSubmitterProjects($user)),
-                'arrangerRun' => $this->groupByStatusAndSort($clientProjectsRepository->getArrangerRunProjects($user)),
+                'borrower'    => $this->groupByStatusAndSort($clientProjectRepository->getBorrowerProjects($user), $statuses),
+                'submitter'   => $this->groupByStatusAndSort($clientProjectRepository->getSubmitterProjects($user), $statuses),
+                'arrangerRun' => $this->groupByStatusAndSort($clientProjectRepository->getArrangerRunProjects($user), $statuses),
                 'lender'      => [],
             ],
         ];
 
-        $wallet = $this->entityManager->getRepository(Wallet::class)->getWalletByType($user, WalletType::LENDER);
+        $wallet = $walletRepository->getWalletByType($user, WalletType::LENDER);
 
         // En cours (HOT)
         $projectsInProgressBid = $projectRepository->createQueryBuilder('p')
             ->distinct()
             ->innerJoin('p.bids', 'b')
+            ->innerJoin('p.currentProjectStatusHistory', 'psh')
             ->where('b.wallet = :wallet')
-            ->andWhere('p.status = :online')
-            ->setParameters(['wallet' => $wallet, 'online' => ProjectsStatus::STATUS_PUBLISHED])
+            ->andWhere('psh.status = :online')
+            ->setParameters(['wallet' => $wallet, 'online' => ProjectStatusHistory::STATUS_PUBLISHED])
             ->getQuery()
             ->getResult()
         ;
@@ -90,13 +98,14 @@ class WalletController extends AbstractController
         // Actifs (COLD)
         $projectsActive = $projectRepository->createQueryBuilder('p')
             ->innerJoin('p.loans', 'l')
+            ->innerJoin('p.currentProjectStatusHistory', 'psh')
             ->where('l.wallet = :wallet')
             ->andWhere('l.status = :accepted')
-            ->andWhere('p.status IN (:active)')
+            ->andWhere('psh.status IN (:active)')
             ->setParameters([
                 'wallet'   => $wallet,
                 'accepted' => Loans::STATUS_ACCEPTED,
-                'active'   => [ProjectsStatus::STATUS_FUNDED, ProjectsStatus::STATUS_CONTRACTS_REDACTED, ProjectsStatus::STATUS_CONTRACTS_SIGNED],
+                'active'   => [ProjectStatusHistory::STATUS_FUNDED, ProjectStatusHistory::STATUS_CONTRACTS_REDACTED, ProjectStatusHistory::STATUS_CONTRACTS_SIGNED],
             ])
             ->getQuery()
             ->getResult()
@@ -107,13 +116,14 @@ class WalletController extends AbstractController
         // Terminés
         $projectsFinished = $projectRepository->createQueryBuilder('p')
             ->innerJoin('p.loans', 'l')
+            ->innerJoin('p.currentProjectStatusHistory', 'psh')
             ->where('l.wallet = :wallet')
             ->andWhere('l.status = :accepted')
-            ->andWhere('p.status IN (:finished)')
+            ->andWhere('psh.status IN (:finished)')
             ->setParameters([
                 'wallet'   => $wallet,
                 'accepted' => Loans::STATUS_ACCEPTED,
-                'finished' => [ProjectsStatus::STATUS_LOST, ProjectsStatus::STATUS_FINISHED, ProjectsStatus::STATUS_CANCELLED],
+                'finished' => [ProjectStatusHistory::STATUS_LOST, ProjectStatusHistory::STATUS_FINISHED, ProjectStatusHistory::STATUS_CANCELLED],
             ])
             ->getQuery()
             ->getResult()
@@ -136,21 +146,20 @@ class WalletController extends AbstractController
     }
 
     /**
-     * @param Projects[] $projects
+     * @param Project[] $projects
+     * @param array     $statuses
      *
      * @return array
      */
-    private function groupByStatusAndSort(array $projects)
+    private function groupByStatusAndSort(array $projects, array $statuses)
     {
-        $groupedProjects = [];
-        $statuses        = $this->entityManager->getRepository(ProjectsStatus::class)->findBy([], ['status' => 'ASC']);
-
-        foreach ($statuses as $status) {
-            $groupedProjects[$status->getStatus()] = [];
-        }
+        $groupedProjects = array_fill_keys($statuses, []);
 
         foreach ($projects as $project) {
-            $groupedProjects[$project->getStatus()][] = $project;
+            $lastStatus = $project->getCurrentProjectStatusHistory();
+            if ($lastStatus) {
+                $groupedProjects[$lastStatus->getStatus()][] = $project;
+            }
         }
 
         ksort($groupedProjects);

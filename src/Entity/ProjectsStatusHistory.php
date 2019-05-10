@@ -8,7 +8,7 @@ use Doctrine\Common\Collections\{
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * ProjectsStatusHistory
+ * @deprecated use ProjectStatusHistory
  *
  * @ORM\Table(name="projects_status_history", indexes={
  *     @ORM\Index(name="id_project_status", columns={"id_project_status"}),
@@ -33,7 +33,7 @@ class ProjectsStatusHistory
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\ProjectsStatus")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_project_status", referencedColumnName="id_project_status", nullable=false)
+     *     @ORM\JoinColumn(name="id_project_status", referencedColumnName="id_project_status", nullable=false)
      * })
      */
     private $idProjectStatus;

@@ -3,23 +3,29 @@
 namespace Unilend\Service;
 
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\NonUniqueResultException;
+use Doctrine\ORM\OptimisticLockException;
+use Doctrine\ORM\ORMException;
+use Exception;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Translation\TranslatorInterface;
-use Unilend\Entity\{EcheanciersEmprunteur, ProjectAbandonReason, ProjectRejectionReason, Projects, ProjectsStatus, ProjectsStatusHistory, ProjectStatusHistoryReason, Users};
+use Unilend\Entity\{Clients, EcheanciersEmprunteur, Project, ProjectAbandonReason, ProjectRejectionReason, ProjectStatusHistory, ProjectStatusHistoryReason, Projects,
+    ProjectsStatus, ProjectsStatusHistory, Users};
+use Unilend\Repository\ProjectRepository;
+use Unilend\Service\Front\UniversignManager;
 use Unilend\Service\Repayment\ProjectRepaymentTaskManager;
 use Unilend\Service\Simulator\EntityManager as EntityManagerSimulator;
-use Unilend\Service\Front\UniversignManager;
 
 class ProjectStatusManager
 {
+    /** @var LoggerInterface */
+    protected $logger;
     /** @var EntityManagerSimulator */
     private $entityManagerSimulator;
     /** @var EntityManagerInterface */
     private $entityManager;
     /** @var TranslatorInterface */
     private $translator;
-    /** @var LoggerInterface */
-    protected $logger;
     /** @var SlackManager */
     private $slackManager;
     /** @var UniversignManager */
@@ -28,6 +34,8 @@ class ProjectStatusManager
     private $projectRepaymentTaskManager;
     /** @var MailerManager */
     private $mailerManager;
+    /** @var ProjectRepository */
+    private $projectRepository;
 
     /**
      * @param EntityManagerSimulator      $entityManagerSimulator
@@ -38,6 +46,7 @@ class ProjectStatusManager
      * @param UniversignManager           $universignManager
      * @param ProjectRepaymentTaskManager $projectRepaymentTaskManager
      * @param MailerManager               $mailerManager
+     * @param ProjectRepository           $projectRepository
      */
     public function __construct(
         EntityManagerSimulator $entityManagerSimulator,
@@ -47,9 +56,9 @@ class ProjectStatusManager
         SlackManager $slackManager,
         UniversignManager $universignManager,
         ProjectRepaymentTaskManager $projectRepaymentTaskManager,
-        MailerManager $mailerManager
-    )
-    {
+        MailerManager $mailerManager,
+        ProjectRepository $projectRepository
+    ) {
         $this->entityManagerSimulator      = $entityManagerSimulator;
         $this->entityManager               = $entityManager;
         $this->translator                  = $translator;
@@ -58,10 +67,13 @@ class ProjectStatusManager
         $this->universignManager           = $universignManager;
         $this->projectRepaymentTaskManager = $projectRepaymentTaskManager;
         $this->mailerManager               = $mailerManager;
+        $this->projectRepository           = $projectRepository;
     }
 
     /**
      * @param Projects $project
+     *
+     * @throws NonUniqueResultException
      *
      * @return array
      */
@@ -74,9 +86,11 @@ class ProjectStatusManager
             case ProjectsStatus::STATUS_LOST:
                 if (0 < $paymentScheduleRepository->getOverdueScheduleCount($project)) {
                     $possibleStatus = [ProjectsStatus::STATUS_LOST];
+
                     break;
                 }
                 $possibleStatus = [ProjectsStatus::STATUS_LOST, ProjectsStatus::STATUS_CONTRACTS_SIGNED];
+
                 break;
             case ProjectsStatus::STATUS_FINISHED:
                 return [];
@@ -95,10 +109,162 @@ class ProjectStatusManager
                 if (0 < $paymentScheduleRepository->getOverdueScheduleCount($project) && false !== $key) {
                     unset($possibleStatus[$key]);
                 }
+
                 break;
         }
 
         return $projectStatus->findBy(['status' => $possibleStatus], ['status' => 'ASC']);
+    }
+
+    /**
+     * @param Projects $project
+     *
+     * @return array
+     */
+    public function getStatusReasonByProject(Projects $project): array
+    {
+        $reasonText        = [];
+        $reasonDescription = [];
+
+        $lastProjectStatusHistory = $this->entityManager->getRepository(ProjectsStatusHistory::class)
+            ->findOneBy(['idProject' => $project], ['added' => 'DESC', 'idProjectStatusHistory' => 'DESC'])
+        ;
+
+        switch ($project->getStatus()) {
+            case ProjectsStatus::STATUS_CANCELLED:
+                $reasonText[] = $this->getWsCallFailureReasonTranslation($lastProjectStatusHistory->getContent());
+
+                break;
+            case ProjectsStatus::STATUS_CANCELLED:
+                /** @var ProjectStatusHistoryReason[] $abandonReasons */
+                $abandonReasons = $lastProjectStatusHistory->getAbandonReasons();
+                foreach ($abandonReasons as $reason) {
+                    $reasonText[$reason->getIdAbandonReason()->getIdAbandon()]        = $reason->getIdAbandonReason()->getReason();
+                    $reasonDescription[$reason->getIdAbandonReason()->getIdAbandon()] = $reason->getIdAbandonReason()->getDescription();
+                }
+
+                break;
+            default:
+                /** @var ProjectStatusHistoryReason[] $rejectionReasons */
+                $rejectionReasons = $lastProjectStatusHistory->getRejectionReasons();
+
+                foreach ($rejectionReasons as $reason) {
+                    $reasonText[$reason->getIdRejectionReason()->getIdRejection()]        = $reason->getIdRejectionReason()->getReason();
+                    $reasonDescription[$reason->getIdRejectionReason()->getIdRejection()] = $reason->getIdRejectionReason()->getDescription();
+                }
+
+                break;
+        }
+
+        return ['reason' => $reasonText, 'description' => $reasonDescription];
+    }
+
+    /**
+     * @param string|null $reasonLabel
+     * @param string|null $type
+     *
+     * @return array
+     */
+    public function getStatusReasonByLabel(?string $reasonLabel = null, ?string $type = null): array
+    {
+        $reasonText        = null;
+        $reasonDescription = null;
+
+        if (
+            null !== $reasonLabel
+            && ProjectsStatus::UNEXPECTED_RESPONSE === mb_substr($reasonLabel, 0, mb_strlen(ProjectsStatus::UNEXPECTED_RESPONSE))
+        ) {
+            $reasonText = $this->getWsCallFailureReasonTranslation($reasonLabel);
+        } elseif (null !== $reasonLabel) {
+            $reason = null;
+            switch ($type) {
+                case 'rejection':
+                    $reason = $this->entityManager->getRepository(ProjectRejectionReason::class)->findOneBy(['label' => $reasonLabel]);
+
+                    break;
+                case 'abandon':
+                    $reason = $this->entityManager->getRepository(ProjectAbandonReason::class)->findOneBy(['label' => $reasonLabel]);
+
+                    break;
+            }
+
+            if (null !== $reason) {
+                $reasonText        = $reason->getReason();
+                $reasonDescription = $reason->getDescription();
+            }
+        }
+
+        return ['reason' => $reasonText, 'description' => $reasonDescription];
+    }
+
+    /**
+     * @param Clients $user
+     * @param int     $projectStatus
+     * @param Project $project
+     */
+    public function addProjectStatus(Clients $user, int $projectStatus, $project)
+    {
+        $projectStatusHistory = (new ProjectStatusHistory())
+            ->setStatus($projectStatus)
+            ->setAddedBy($user)
+        ;
+        $project->setProjectStatusHistory($projectStatusHistory);
+
+        try {
+            $this->projectRepository->save($project);
+        } catch (OptimisticLockException | ORMException $exception) {
+            $this->logger->critical(sprintf('An exception occurred while updating project status for project %s. Message: %s', $project->getId(), $exception->getMessage()), [
+                'file' => $exception->getFile(),
+                'line' => $exception->getLine(),
+            ]);
+        }
+    }
+
+    /**
+     * @param Projects|\projects       $project
+     * @param int                      $rejectionStatus
+     * @param ProjectRejectionReason[] $rejectionReasons
+     * @param Users|int                $user
+     *
+     * @throws Exception
+     *
+     * @return bool
+     */
+    public function rejectProject($project, int $rejectionStatus, array $rejectionReasons, $user): bool
+    {
+        $rejectionStatusList = [ProjectsStatus::STATUS_CANCELLED];
+
+        if (false === in_array($rejectionStatus, $rejectionStatusList)) {
+            throw new Exception(sprintf('Incorrect project status, expected values: %s', implode(', ', $rejectionStatusList)));
+        }
+
+        return $this->rejectOrAbandonProject($project, $rejectionStatus, $user, $rejectionReasons);
+    }
+
+    /**
+     * @param Projects|\projects     $project
+     * @param ProjectAbandonReason[] $abandonReasons
+     * @param Users|int              $user
+     * @param int                    $reminder
+     *
+     * @return bool
+     */
+    public function abandonProject($project, array $abandonReasons, $user, ?int $reminder = 0): bool
+    {
+        return $this->rejectOrAbandonProject($project, ProjectsStatus::STATUS_CANCELLED, $user, $abandonReasons, $reminder);
+    }
+
+    /**
+     * @return array
+     */
+    public function getIndexedProjectStatus(): array
+    {
+        $indexedStatus = [];
+        foreach ($this->entityManager->getRepository(ProjectsStatus::class)->findAll() as $status) {
+            $indexedStatus[$status->getStatus()] = $status->getLabel();
+        }
+
+        return $indexedStatus;
     }
 
     /**
@@ -137,155 +303,15 @@ class ProjectStatusManager
     }
 
     /**
-     * @param Projects $project
-     *
-     * @return array
-     */
-    public function getStatusReasonByProject(Projects $project): array
-    {
-        $reasonText        = [];
-        $reasonDescription = [];
-
-        $lastProjectStatusHistory = $this->entityManager->getRepository(ProjectsStatusHistory::class)
-            ->findOneBy(['idProject' => $project], ['added' => 'DESC', 'idProjectStatusHistory' => 'DESC']);
-
-        switch ($project->getStatus()) {
-            case ProjectsStatus::STATUS_CANCELLED:
-                $reasonText[] = $this->getWsCallFailureReasonTranslation($lastProjectStatusHistory->getContent());
-                break;
-            case ProjectsStatus::STATUS_CANCELLED:
-                /** @var ProjectStatusHistoryReason[] $abandonReasons */
-                $abandonReasons = $lastProjectStatusHistory->getAbandonReasons();
-                foreach ($abandonReasons as $reason) {
-                    $reasonText[$reason->getIdAbandonReason()->getIdAbandon()]        = $reason->getIdAbandonReason()->getReason();
-                    $reasonDescription[$reason->getIdAbandonReason()->getIdAbandon()] = $reason->getIdAbandonReason()->getDescription();
-                }
-                break;
-            default:
-                /** @var ProjectStatusHistoryReason[] $rejectionReasons */
-                $rejectionReasons = $lastProjectStatusHistory->getRejectionReasons();
-
-                foreach ($rejectionReasons as $reason) {
-                    $reasonText[$reason->getIdRejectionReason()->getIdRejection()]        = $reason->getIdRejectionReason()->getReason();
-                    $reasonDescription[$reason->getIdRejectionReason()->getIdRejection()] = $reason->getIdRejectionReason()->getDescription();
-                }
-                break;
-        }
-
-        return ['reason' => $reasonText, 'description' => $reasonDescription];
-    }
-
-    /**
-     * @param string|null $reasonLabel
-     * @param string|null $type
-     *
-     * @return array
-     */
-    public function getStatusReasonByLabel(?string $reasonLabel = null, ?string $type = null): array
-    {
-        $reasonText        = null;
-        $reasonDescription = null;
-
-        if (
-            null !== $reasonLabel
-            && ProjectsStatus::UNEXPECTED_RESPONSE === substr($reasonLabel, 0, strlen(ProjectsStatus::UNEXPECTED_RESPONSE))
-        ) {
-            $reasonText = $this->getWsCallFailureReasonTranslation($reasonLabel);
-        } elseif (null !== $reasonLabel) {
-            $reason = null;
-            switch ($type) {
-                case 'rejection':
-                    $reason = $this->entityManager->getRepository(ProjectRejectionReason::class)->findOneBy(['label' => $reasonLabel]);
-                    break;
-                case 'abandon':
-                    $reason = $this->entityManager->getRepository(ProjectAbandonReason::class)->findOneBy(['label' => $reasonLabel]);
-                    break;
-            }
-
-            if (null !== $reason) {
-                $reasonText        = $reason->getReason();
-                $reasonDescription = $reason->getDescription();
-            }
-        }
-
-        return ['reason' => $reasonText, 'description' => $reasonDescription];
-    }
-
-    /**
-     * @param Users|int          $user
-     * @param int                $projectStatus
-     * @param \projects|Projects $project
-     * @param int|null           $reminderNumber
-     * @param string|null        $content
-     *
-     * @throws \Doctrine\ORM\NonUniqueResultException
-     * @throws \Doctrine\ORM\OptimisticLockException
-     */
-    public function addProjectStatus($user, int $projectStatus, $project, ?int $reminderNumber = null, ?string $content = null)
-    {
-        if ($project instanceof \projects) {
-            $projectEntity = $this->entityManager->getRepository(Projects::class)->find($project->id_project);
-        } else {
-            $projectEntity = $project;
-        }
-
-        if (is_numeric($user)) {
-            $user = $this->entityManager->getRepository(Users::class)->find($user);
-        }
-
-        if (
-            $projectStatus === ProjectsStatus::STATUS_CONTRACTS_SIGNED
-            && 0 < $this->entityManager->getRepository(EcheanciersEmprunteur::class)->getOverdueScheduleCount($projectEntity)
-        ) {
-            return;
-        }
-
-        $originStatus = $projectEntity->getStatus();
-
-        try {
-            $projectStatusEntity   = $this->entityManager->getRepository(ProjectsStatus::class)->findOneBy(['status' => $projectStatus]);
-            $projectsStatusHistory = new ProjectsStatusHistory();
-            $projectsStatusHistory
-                ->setIdProject($projectEntity->getIdProject())
-                ->setIdProjectStatus($projectStatusEntity)
-                ->setIdUser($user->getIdUser())
-                ->setNumeroRelance($reminderNumber)
-                ->setContent($content);
-
-            $this->entityManager->persist($projectsStatusHistory);
-            $this->entityManager->flush($projectsStatusHistory);
-
-            if ($originStatus !== $projectStatus) {
-                $projectEntity->setStatus($projectStatus);
-                $this->entityManager->flush($projectEntity);
-            }
-
-            if ($project instanceof \projects) {
-                $project->status= $projectStatus;
-            }
-        } catch (\Exception $exception) {
-            $this->logger->critical('An exception occured while updating project status for project ' . $projectEntity->getIdProject() . '. Message: ' . $exception->getMessage(), [
-                'file' => $exception->getFile(),
-                'line' => $exception->getLine()
-            ]);
-        }
-
-        if ($originStatus != $projectStatus) {
-            $this->projectStatusUpdateTrigger($projectStatusEntity, $projectEntity, $user);
-        }
-    }
-
-    /**
      * @param ProjectsStatus $projectStatus
      * @param Projects       $project
      * @param Users          $user
      *
-     * @throws \Doctrine\ORM\OptimisticLockException
+     * @throws OptimisticLockException
      */
     private function projectStatusUpdateTrigger(ProjectsStatus $projectStatus, Projects $project, Users $user)
     {
         return;
-
         if ($project->getStatus() >= ProjectsStatus::STATUS_REVIEW) {
             $message = $this->slackManager->getProjectName($project) . ' passé en statut *' . $projectStatus->getLabel() . '*';
 
@@ -317,15 +343,22 @@ class ProjectStatusManager
         switch ($project->getStatus()) {
             case ProjectsStatus::STATUS_CANCELLED:
                 if (false === empty($project->getIdCompany()->getSiren())) {
-                    $abandonReason    = $this->entityManager->getRepository(ProjectAbandonReason::class)
-                        ->findBy(['label' => ProjectAbandonReason::OTHER_PROJECT_OF_SAME_COMPANY_REJECTED]);
+                    $abandonReason = $this->entityManager->getRepository(ProjectAbandonReason::class)
+                        ->findBy(['label' => ProjectAbandonReason::OTHER_PROJECT_OF_SAME_COMPANY_REJECTED])
+                    ;
                     $previousProjects = $this->entityManager->getRepository(Projects::class)
-                        ->findBySiren($project->getIdCompany()->getSiren(), [ProjectsStatus::STATUS_CANCELLED, ProjectsStatus::STATUS_REQUESTED, ProjectsStatus::STATUS_REVIEW], $project->getAdded());
+                        ->findBySiren(
+                            $project->getIdCompany()->getSiren(),
+                            [ProjectsStatus::STATUS_CANCELLED, ProjectsStatus::STATUS_REQUESTED, ProjectsStatus::STATUS_REVIEW],
+                            $project->getAdded()
+                        )
+                    ;
 
                     foreach ($previousProjects as $previousProject) {
                         $this->abandonProject($previousProject, $abandonReason, $user);
                     }
                 }
+
                 break;
             case ProjectsStatus::STATUS_REVIEW:
                 $company = $project->getIdCompany();
@@ -335,47 +368,17 @@ class ProjectStatusManager
                     $this->logger->error('Could not send "ouverture-espace-emprunteur-plein" email to the borrower. Either company or client is not found', [
                         'id_project' => $project->getIdProject(),
                         'class'      => __CLASS__,
-                        'function'   => __FUNCTION__
+                        'function'   => __FUNCTION__,
                     ]);
                 }
                 $this->mailerManager->sendProjectOnlineToBorrower($project);
+
                 break;
             case ProjectsStatus::STATUS_LOST:
                 $this->projectRepaymentTaskManager->disableAutomaticRepayment($project, $user);
+
                 break;
         }
-    }
-
-    /**
-     * @param Projects|\projects       $project
-     * @param int                      $rejectionStatus
-     * @param ProjectRejectionReason[] $rejectionReasons
-     * @param Users|int                $user
-     *
-     * @return bool
-     * @throws \Exception
-     */
-    public function rejectProject($project, int $rejectionStatus, array $rejectionReasons, $user): bool
-    {
-        $rejectionStatusList = [ProjectsStatus::STATUS_CANCELLED];
-
-        if (false === in_array($rejectionStatus, $rejectionStatusList)) {
-            throw new \Exception('Incorrect project status, expected values: ' . implode(', ', $rejectionStatusList));
-        }
-        return $this->rejectOrAbandonProject($project, $rejectionStatus, $user, $rejectionReasons);
-    }
-
-    /**
-     * @param Projects|\projects     $project
-     * @param ProjectAbandonReason[] $abandonReasons
-     * @param Users|int              $user
-     * @param int                    $reminder
-     *
-     * @return bool
-     */
-    public function abandonProject($project, array $abandonReasons, $user, ?int $reminder = 0): bool
-    {
-        return $this->rejectOrAbandonProject($project, ProjectsStatus::STATUS_CANCELLED, $user, $abandonReasons, $reminder);
     }
 
     /**
@@ -391,15 +394,15 @@ class ProjectStatusManager
     {
         if ($project instanceof \projects) {
             $project = $this->entityManager->getRepository(Projects::class)
-                ->find($project->id_project);
+                ->find($project->id_project)
+            ;
         }
 
         $this->entityManager->beginTransaction();
 
         try {
             $this->addProjectStatus($user, $projectStatus, $project, $reminder);
-        } catch (\Exception $exception) {
-
+        } catch (Exception $exception) {
             $this->entityManager->rollback();
 
             $this->logFailedProjectStatusChange($project, $reasons, 'An exception ocurred when calling self::addProjectStatus().', $exception);
@@ -408,7 +411,8 @@ class ProjectStatusManager
         }
 
         $lastProjectStatusHistory = $this->entityManager->getRepository(ProjectsStatusHistory::class)
-            ->findOneBy(['idProject' => $project], ['added' => 'DESC', 'idProjectStatusHistory' => 'DESC']);
+            ->findOneBy(['idProject' => $project], ['added' => 'DESC', 'idProjectStatusHistory' => 'DESC'])
+        ;
 
         if (null !== $lastProjectStatusHistory && $lastProjectStatusHistory->getIdProjectStatus()->getStatus() === $projectStatus) {
             try {
@@ -417,7 +421,7 @@ class ProjectStatusManager
                 $this->entityManager->commit();
 
                 return true;
-            } catch (\Exception $exception) {
+            } catch (Exception $exception) {
                 $action  = ProjectsStatus::STATUS_CANCELLED === $projectStatus ? 'abandon' : 'rejection';
                 $message = 'We could not save the project ' . $action . ' reasons.';
                 $this->logFailedProjectStatusChange($project, $reasons, $message, $exception);
@@ -435,26 +439,29 @@ class ProjectStatusManager
      * @param ProjectsStatusHistory $lastProjectStatusHistory
      * @param array                 $reasons
      *
-     * @throws \Exception
+     * @throws Exception
      */
     private function saveProjectStatusHistoryReasons(ProjectsStatusHistory $lastProjectStatusHistory, array $reasons): void
     {
         if (empty($reasons)) {
-            throw new \Exception('Cannot reject or abandon project without specifying reasons.');
+            throw new Exception('Cannot reject or abandon project without specifying reasons.');
         }
         $historyReasons = [];
 
         foreach ($reasons as $reason) {
             $projectStatusHistoryReason = new ProjectStatusHistoryReason();
             $projectStatusHistoryReason
-                ->setIdProjectStatusHistory($lastProjectStatusHistory);
+                ->setIdProjectStatusHistory($lastProjectStatusHistory)
+            ;
 
             if ($reason instanceof ProjectAbandonReason) {
                 $projectStatusHistoryReason
-                    ->setIdAbandonReason($reason);
+                    ->setIdAbandonReason($reason)
+                ;
             } elseif ($reason instanceof ProjectRejectionReason) {
                 $projectStatusHistoryReason
-                    ->setIdRejectionReason($reason);
+                    ->setIdRejectionReason($reason)
+                ;
             }
             $this->entityManager->persist($projectStatusHistoryReason);
             $historyReasons[] = $projectStatusHistoryReason;
@@ -466,9 +473,9 @@ class ProjectStatusManager
      * @param Projects        $project
      * @param array           $reasons
      * @param string          $errorMessage
-     * @param \Exception|null $exception
+     * @param Exception|null $exception
      */
-    private function logFailedProjectStatusChange(Projects $project, array $reasons, string $errorMessage, ?\Exception $exception = null): void
+    private function logFailedProjectStatusChange(Projects $project, array $reasons, string $errorMessage, ?Exception $exception = null): void
     {
         $reasonsId = [];
         foreach ($reasons as $reason) {
@@ -484,20 +491,7 @@ class ProjectStatusManager
             $action . '_reasons' => $reasonsId,
             'class'              => __CLASS__,
             'function'           => __FUNCTION__,
-            'exception'          => $exceptionInfo
+            'exception'          => $exceptionInfo,
         ]);
-    }
-
-    /**
-     * @return array
-     */
-    public function getIndexedProjectStatus(): array
-    {
-        $indexedStatus = [];
-        foreach ($this->entityManager->getRepository(ProjectsStatus::class)->findAll() as $status) {
-            $indexedStatus[$status->getStatus()] = $status->getLabel();
-        }
-
-        return $indexedStatus;
     }
 }

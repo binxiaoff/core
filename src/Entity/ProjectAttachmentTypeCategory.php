@@ -53,9 +53,9 @@ class ProjectAttachmentTypeCategory implements EntityAttachmentTypeCategoryInter
     }
 
     /**
-     * @return string
+     * @return string|null
      */
-    public function getLabel(): string
+    public function getLabel(): ?string
     {
         return $this->label;
     }
@@ -101,9 +101,9 @@ class ProjectAttachmentTypeCategory implements EntityAttachmentTypeCategoryInter
     }
 
     /**
-     * @return int
+     * @return int|null
      */
-    public function getId(): int
+    public function getId(): ?int
     {
         return $this->id;
     }

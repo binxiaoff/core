@@ -53,24 +53,18 @@ class DemoMailerManager
     }
 
     /**
-     * @param Projects $project
+     * @param Project $project
      *
      * @throws Swift_RfcComplianceException
      *
      * @return int
      */
-    public function sendProjectRequest(Projects $project): int
+    public function sendProjectRequest(Project $project): int
     {
-        $formatter = new NumberFormatter('fr_FR', NumberFormatter::DEFAULT_STYLE);
-        $keywords  = [
+        $keywords = [
             'firstName'  => '',
             'projectUrl' => $this->router->generate('demo_project_details', ['hash' => $project->getHash()], RouterInterface::ABSOLUTE_URL),
-            'borrower'   => $project->getIdCompany()->getName(),
-            'amount'     => $formatter->format($project->getAmount()),
-            'duration'   => $this->translator->trans('demo-project-request_simulator-duration-select-option', [
-                '%count%'    => $project->getPeriod() / 12,
-                '%duration%' => $project->getPeriod() / 12,
-            ]),
+            'borrower'   => $project->getBorrowerCompany()->getName(),
         ];
 
         $sent       = 0;
@@ -94,19 +88,19 @@ class DemoMailerManager
     }
 
     /**
-     * @param Projects $project
+     * @param Project $project
      *
      * @throws Swift_RfcComplianceException
      *
      * @return int
      */
-    public function sendScoringUpdated(Projects $project): int
+    public function sendScoringUpdated(Project $project): int
     {
         $keywords = [
             'firstName'    => '',
             'projectUrl'   => $this->router->generate('demo_project_details', ['hash' => $project->getHash()], RouterInterface::ABSOLUTE_URL),
-            'projectName'  => $project->getIdCompany()->getName() . ' / ' . $project->getTitle(),
-            'scoringValue' => $project->getNatureProject(),
+            'projectName'  => $project->getBorrowerCompany()->getName() . ' / ' . $project->getTitle(),
+            'scoringValue' => $project->getInternalRatingScore(),
         ];
 
         $sent       = 0;
@@ -130,18 +124,18 @@ class DemoMailerManager
     }
 
     /**
-     * @param Projects $project
+     * @param Project $project
      *
      * @throws Swift_RfcComplianceException
      *
      * @return int
      */
-    public function sendProjectPublication(Projects $project): int
+    public function sendProjectPublication(Project $project): int
     {
         $keywords = [
             'firstName'   => '',
             'projectUrl'  => $this->router->generate('demo_lender_project_details', ['slug' => $project->getSlug()], RouterInterface::ABSOLUTE_URL),
-            'projectName' => $project->getIdCompany()->getName() . ' / ' . $project->getTitle(),
+            'projectName' => $project->getBorrowerCompany()->getName() . ' / ' . $project->getTitle(),
         ];
 
         $sent       = 0;
@@ -179,7 +173,7 @@ class DemoMailerManager
         $keywords  = [
             'firstName'     => '',
             'projectUrl'    => $this->router->generate('demo_project_details', ['hash' => $project->getHash()], RouterInterface::ABSOLUTE_URL),
-            'projectName'   => $project->getIdCompany()->getName() . ' / ' . $project->getTitle(),
+            'projectName'   => $project->getBorrowerCompany()->getName() . ' / ' . $project->getTitle(),
             'bidderName'    => $bid->getWallet()->getIdClient()->getCompany()->getName(),
             'bidAmount'     => $formatter->format($bid->getAmount()),
             'bidRateIndex'  => $bid->getRate()->getIndexType(),
@@ -225,7 +219,7 @@ class DemoMailerManager
         $message  = $this->messageProvider->newMessage($mailType, [
             'firstName'   => $recipient->getFirstName(),
             'projectUrl'  => $this->router->generate('demo_lender_project_details', ['slug' => $project->getSlug()], RouterInterface::ABSOLUTE_URL),
-            'projectName' => $project->getIdCompany()->getName() . ' / ' . $project->getTitle(),
+            'projectName' => $project->getBorrowerCompany()->getName() . ' / ' . $project->getTitle(),
         ]);
 
         $message->setTo($recipient->getEmail());
@@ -234,18 +228,18 @@ class DemoMailerManager
     }
 
     /**
-     * @param Projects $project
+     * @param Project $project
      *
      * @throws Swift_RfcComplianceException
      *
      * @return int
      */
-    public function sendProjectFundingEnd(Projects $project): int
+    public function sendProjectFundingEnd(Project $project): int
     {
         $keywords = [
             'firstName'   => '',
             'projectUrl'  => $this->router->generate('demo_lender_project_details', ['slug' => $project->getSlug()], RouterInterface::ABSOLUTE_URL),
-            'projectName' => $project->getIdCompany()->getName() . ' / ' . $project->getTitle(),
+            'projectName' => $project->getBorrowerCompany()->getName() . ' / ' . $project->getTitle(),
         ];
 
         $sent  = 0;
@@ -282,7 +276,7 @@ class DemoMailerManager
     {
         $keywords = [
             'firstName'    => $signature->getSignatory()->getFirstName(),
-            'projectName'  => $project->getIdCompany()->getName() . ' / ' . $project->getTitle(),
+            'projectName'  => $project->getBorrowerCompany()->getName() . ' / ' . $project->getTitle(),
             'signatureUrl' => $this->router->generate('signature_sign', ['attachment' => $signature->getAttachment()->getId()], RouterInterface::ABSOLUTE_URL),
         ];
 
@@ -293,19 +287,19 @@ class DemoMailerManager
     }
 
     /**
-     * @param Projects $project
-     * @param array    $types
+     * @param Project $project
+     * @param array   $types
      *
      * @return Clients[]
      */
-    private function getProjectRecipients(Projects $project, array $types): array
+    private function getProjectRecipients(Project $project, array $types): array
     {
         $recipients = [];
 
         foreach ($types as $type) {
             switch ($type) {
                 case self::RECIPIENT_TYPE_ARRANGER:
-                    if ($arranger = $project->getRunParticipant()) {
+                    if ($arranger = $project->getArranger()) {
                         $recipients[$arranger->getCompany()->getIdClientOwner()->getIdClient()] = $arranger->getCompany()->getIdClientOwner();
                     }
 
@@ -313,18 +307,18 @@ class DemoMailerManager
                 case self::RECIPIENT_TYPE_LENDERS:
                     $lenders = $project->getLenders();
                     foreach ($lenders as $lender) {
-                        $recipients[$lender->getIdClientOwner()->getIdClient()] = $lender->getIdClientOwner();
+                        $recipients[$lender->getCompany()->getIdClientOwner()->getIdClient()] = $lender->getCompany()->getIdClientOwner();
                     }
 
                     break;
                 case self::RECIPIENT_TYPE_RUN:
-                    if ($run = $project->getArrangerParticipant()) {
+                    if ($run = $project->getRun()) {
                         $recipients[$run->getCompany()->getIdClientOwner()->getIdClient()] = $run->getCompany()->getIdClientOwner();
                     }
 
                     break;
                 case self::RECIPIENT_TYPE_SUBMITTER:
-                    if ($submitter = $project->getIdClientSubmitter()) {
+                    if ($submitter = $project->getSubmitterClient()) {
                         $recipients[$submitter->getIdClient()] = $submitter;
                     }
 

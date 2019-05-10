@@ -2,13 +2,24 @@
 
 namespace Unilend\Repository;
 
+use DateTime;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\DBALException;
 use Doctrine\ORM\Query\Expr\Join;
+use Doctrine\ORM\QueryBuilder;
+use PDO;
+use RuntimeException;
 use Unilend\Entity\{Companies, CompanyStatus, CompanyStatusHistory, Operation, OperationType, Projects, ProjectsStatus, ProjectsStatusHistory, RiskDataMonitoring, Wallet};
 use Unilend\Service\RiskDataMonitoring\MonitoringCycleManager;
 
+/**
+ * @method Companies|null find($id, $lockMode = null, $lockVersion = null)
+ * @method Companies|null findOneBy(array $criteria, array $orderBy = null)
+ * @method Companies[]    findAll()
+ * @method Companies[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
+ */
 class CompaniesRepository extends ServiceEntityRepository
 {
     /**
@@ -76,14 +87,14 @@ class CompaniesRepository extends ServiceEntityRepository
     }
 
     /**
-     * @param \DateTime $start
-     * @param \DateTime $end
+     * @param DateTime $start
+     * @param DateTime $end
      *
-     * @throws \Doctrine\DBAL\DBALException
+     * @throws DBALException
      *
      * @return array
      */
-    public function getCountCompaniesInCollectiveProceedingBetweenDates(\DateTime $start, \DateTime $end)
+    public function getCountCompaniesInCollectiveProceedingBetweenDates(DateTime $start, DateTime $end)
     {
         $start->setTime(0, 0, 0);
         $end->setTime(23, 59, 59);
@@ -105,15 +116,19 @@ class CompaniesRepository extends ServiceEntityRepository
                     AND csh.added BETWEEN :start AND :end';
 
         return $this->getEntityManager()->getConnection()
-            ->executeQuery($query, [
-                'status' => $status,
-                'start'  => $start->format('Y-m-d H:i:s'),
-                'end'    => $end->format('Y-m-d H:i:s'),
-            ], [
-                'status' => Connection::PARAM_STR_ARRAY,
-                'start'  => \PDO::PARAM_STR,
-                'end'    => \PDO::PARAM_STR,
-            ])
+            ->executeQuery(
+                $query,
+                [
+                    'status' => $status,
+                    'start'  => $start->format('Y-m-d H:i:s'),
+                    'end'    => $end->format('Y-m-d H:i:s'),
+                ],
+                [
+                    'status' => Connection::PARAM_STR_ARRAY,
+                    'start'  => PDO::PARAM_STR,
+                    'end'    => PDO::PARAM_STR,
+                ]
+            )
             ->fetchAll()
             ;
     }
@@ -214,7 +229,7 @@ class CompaniesRepository extends ServiceEntityRepository
     }
 
     /**
-     * @throws \Doctrine\DBAL\DBALException
+     * @throws DBALException
      *
      * @return array
      */
@@ -242,7 +257,7 @@ class CompaniesRepository extends ServiceEntityRepository
                 'projectStatus'   => MonitoringCycleManager::LONG_TERM_MONITORING_EXCLUDED_PROJECTS_STATUS,
                 'companyStatus'   => MonitoringCycleManager::LONG_TERM_MONITORING_EXCLUDED_COMPANY_STATUS,
             ], [
-                'completeRequest' => \PDO::PARAM_INT,
+                'completeRequest' => PDO::PARAM_INT,
                 'projectStatus'   => Connection::PARAM_INT_ARRAY,
                 'companyStatus'   => Connection::PARAM_STR_ARRAY,
             ])
@@ -253,7 +268,7 @@ class CompaniesRepository extends ServiceEntityRepository
     /**
      * @param string $provider
      *
-     * @throws \Doctrine\DBAL\DBALException
+     * @throws DBALException
      *
      * @return array
      */
@@ -282,12 +297,90 @@ class CompaniesRepository extends ServiceEntityRepository
                 'projectStatus'   => MonitoringCycleManager::LONG_TERM_MONITORING_EXCLUDED_PROJECTS_STATUS,
                 'companyStatus'   => MonitoringCycleManager::LONG_TERM_MONITORING_EXCLUDED_COMPANY_STATUS,
             ], [
-                'provider'        => \PDO::PARAM_STR,
-                'completeRequest' => \PDO::PARAM_INT,
+                'provider'        => PDO::PARAM_STR,
+                'completeRequest' => PDO::PARAM_INT,
                 'projectStatus'   => Connection::PARAM_INT_ARRAY,
                 'companyStatus'   => Connection::PARAM_STR_ARRAY,
             ])
             ->fetchAll()
         ;
+    }
+
+    /**
+     * @param Companies|null $currentCompany
+     * @param array          $orderBy
+     *
+     * @return Companies[]
+     */
+    public function findEligibleArrangers(?Companies $currentCompany, array $orderBy = []): iterable
+    {
+        return $this->createEligibleArrangersQB($currentCompany, $orderBy)->getQuery()->getResult();
+    }
+
+    /**
+     * @param Companies|null $currentCompany
+     * @param array          $orderBy
+     *
+     * @return QueryBuilder
+     */
+    public function createEligibleArrangersQB(?Companies $currentCompany, array $orderBy = []): QueryBuilder
+    {
+        $queryBuilder = $this->createQueryBuilder('c')
+            ->where('c.idCompany in (:arrangersToSelect)')
+            ->setParameter('arrangersToSelect', array_merge(Companies::COMPANY_ELIGIBLE_ARRANGER, [$currentCompany]))
+            ;
+
+        $this->handlerOrderBy($queryBuilder, $orderBy);
+
+        return $queryBuilder;
+    }
+
+    /**
+     * @param array $orderBy
+     *
+     * @return QueryBuilder
+     */
+    public function createEligibleRunQB(array $orderBy = [])
+    {
+        $queryBuilder = $this->createQueryBuilder('c')
+            ->where('c.idCompany in (:runsToSelect)')
+            ->orWhere('c.parent in (:runsParantToSelect)')
+            ->setParameters(['runsToSelect' => Companies::COMPANY_ELIGIBLE_RUN, 'runsParantToSelect' => Companies::COMPANY_SUBSIDIARY_ELIGIBLE_RUN])
+            ;
+
+        $this->handlerOrderBy($queryBuilder, $orderBy);
+
+        return $queryBuilder;
+    }
+
+    /**
+     * @param array $orderBy
+     *
+     * @return Companies[]
+     */
+    public function findRegionalBanks(array $orderBy = [])
+    {
+        $queryBuilder = $this->createQueryBuilder('c')->where('c.parent = :casa')->setParameter('casa', Companies::COMPANY_ID_CASA);
+
+        $this->handlerOrderBy($queryBuilder, $orderBy);
+
+        return $queryBuilder->getQuery()->getResult();
+    }
+
+    /**
+     * @param QueryBuilder $queryBuilder
+     * @param array        $orderBy
+     */
+    private function handlerOrderBy(QueryBuilder $queryBuilder, array $orderBy)
+    {
+        $aliases = $queryBuilder->getRootAliases();
+        if (!isset($aliases[0])) {
+            throw new RuntimeException('No alias was set before invoking getRootAlias().');
+        }
+        $alias = $aliases[0];
+
+        foreach ($orderBy as $sort => $order) {
+            $queryBuilder->addOrderBy($alias . '.' . $sort, $order);
+        }
     }
 }

@@ -66,12 +66,12 @@ class CreateProjectController extends AbstractController
             $project
                 ->setSubmitterClient($client)
                 ->setSubmitterCompany($client->getCompany())
-                ->addProjectStatusHistory($projectStatusHistory)
+                ->setProjectStatusHistory($projectStatusHistory)
             ;
 
             $projectRepository->save($project);
 
-            return $this->redirectToRoute('project_creation_success');
+            return $this->redirectToRoute('demo_project_details', ['hash' => $project->getHash()]);
         }
 
         return $this->render('project/create_project/create.html.twig', [

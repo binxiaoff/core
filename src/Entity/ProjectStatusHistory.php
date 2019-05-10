@@ -106,7 +106,7 @@ class ProjectStatusHistory
     /**
      * @return array
      */
-    private function getAllProjectStatus(): iterable
+    public static function getAllProjectStatus(): iterable
     {
         return self::getConstants('STATUS_');
     }

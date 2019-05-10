@@ -1,11 +1,15 @@
 {% set backgroundColor = '#787679' %}
-{% if partner == constant('\\Unilend\\Entity\\Partner::PARTNER_CALS_LABEL') %}
+{% if market == constant('\\Unilend\\Entity\\MarketSegment::MARKET_SEGMENT_LABEL_PUBLIC_COLLECTIVITY') %}
     {% set backgroundColor = '#5fc5d1' %}
-{% elseif partner == constant('\\Unilend\\Entity\\Partner::PARTNER_CACIB_COLLPUB_LABEL') %}
+{% elseif market == constant('\\Unilend\\Entity\\MarketSegment::MARKET_SEGMENT_LABEL_ENERGY') %}
     {% set backgroundColor = '#1b88db' %}
-{% elseif partner == constant('\\Unilend\\Entity\\Partner::PARTNER_CACIB_CORPORATE_LABEL') %}
+{% elseif market == constant('\\Unilend\\Entity\\MarketSegment::MARKET_SEGMENT_LABEL_CORPORATE') %}
     {% set backgroundColor = '#ffca2c' %}
-{% elseif partner == constant('\\Unilend\\Entity\\Partner::PARTNER_UNIFERGIE_LABEL') %}
+{% elseif market == constant('\\Unilend\\Entity\\MarketSegment::MARKET_SEGMENT_LABEL_LBO') %}
     {% set backgroundColor = '#f76965' %}
+{% elseif market == constant('\\Unilend\\Entity\\MarketSegment::MARKET_SEGMENT_LABEL_REAL_ESTATE_DEVELOPMENT') %}
+    {% set backgroundColor = '#A6D042' %}
+{% elseif market == constant('\\Unilend\\Entity\\MarketSegment::MARKET_SEGMENT_LABEL_INFRASTRUCTURE') %}
+    {% set backgroundColor = '#CF3A52' %}
 {% endif %}
-<span class="bubble" style="background-color: {{ backgroundColor }};">{{ ('partner-name_bubble-' ~ partner)|trans }}</span>
+<span class="bubble" style="background-color: {{ backgroundColor }};">{{ ('market-segment.' ~ market)|trans }}</span>

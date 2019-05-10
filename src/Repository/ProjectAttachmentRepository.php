@@ -29,8 +29,8 @@ class ProjectAttachmentRepository extends ServiceEntityRepository
     {
         $queryBuilder = $this->createQueryBuilder('pa');
         $queryBuilder
-            ->innerJoin(Attachment::class, 'a', Join::WITH, $queryBuilder->expr()->eq('pa.attachment', 'a.id'))
-            ->where($queryBuilder->expr()->eq('a.idType', ':attachmentType'))
+            ->innerJoin('pa.attachment', 'a')
+            ->where($queryBuilder->expr()->eq('a.type', ':attachmentType'))
             ->andWhere($queryBuilder->expr()->eq('pa.project', ':project'))
             ->setParameter(':project', $project)
             ->setParameter(':attachmentType', $attachmentType)

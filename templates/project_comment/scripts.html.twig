@@ -52,7 +52,7 @@
 
                     $.ajax({
                         type: 'post',
-                        url: '{{ path('project_comment_add', {'project': project.hash}) }}',
+                        url: '{{ path('project_comment_add', {'hash': project.hash}) }}',
                         data: {
                             user: userId,
                             content: commentJSON.content,

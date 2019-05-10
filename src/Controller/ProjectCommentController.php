@@ -5,13 +5,12 @@ declare(strict_types=1);
 namespace Unilend\Controller;
 
 use Doctrine\ORM\{ORMException, OptimisticLockException};
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\{JsonResponse, Request, Response};
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\User\UserInterface;
-use Unilend\Entity\{Clients, ProjectComment, Projects};
+use Unilend\Entity\{Clients, Project, ProjectComment, Projects};
 use Unilend\Repository\ProjectCommentRepository;
 
 /**
@@ -20,11 +19,9 @@ use Unilend\Repository\ProjectCommentRepository;
 class ProjectCommentController extends AbstractController
 {
     /**
-     * @Route("/project/comment/{project}", name="project_comment_add", requirements={"project": "[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}"})
+     * @Route("/project/comment/{hash}", name="project_comment_add", requirements={"project": "[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}"})
      *
-     * @ParamConverter("project", options={"mapping": {"project": "hash"}})
-     *
-     * @param Projects                   $project
+     * @param Project                    $project
      * @param ProjectCommentRepository   $projectCommentRepository
      * @param Request                    $request
      * @param UserInterface|Clients|null $user
@@ -34,24 +31,8 @@ class ProjectCommentController extends AbstractController
      *
      * @return Response
      */
-    public function add(Projects $project, ProjectCommentRepository $projectCommentRepository, Request $request, ?UserInterface $user): Response
+    public function add(Project $project, ProjectCommentRepository $projectCommentRepository, Request $request, ?UserInterface $user): Response
     {
-        if (null === $project) {
-            return $this->json([
-                'error'   => true,
-                'message' => 'Invalid parameters',
-            ], Response::HTTP_BAD_REQUEST);
-        }
-
-        $userId = $request->request->filter('user', null, FILTER_VALIDATE_INT);
-
-        if ($userId !== $user->getIdClient()) {
-            return $this->json([
-                'error'   => true,
-                'message' => 'Invalid user ID',
-            ], Response::HTTP_BAD_REQUEST);
-        }
-
         $content = $request->request->get('content');
 
         if ($content) {
@@ -83,6 +64,9 @@ class ProjectCommentController extends AbstractController
      * @param ProjectCommentRepository   $projectCommentRepository
      * @param Request                    $request
      * @param UserInterface|Clients|null $user
+     *
+     * @throws ORMException
+     * @throws OptimisticLockException
      *
      * @return Response
      */

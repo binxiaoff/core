@@ -175,7 +175,7 @@ class AttachmentManager
         $projectAttachmentRepository = $this->entityManager->getRepository(ProjectAttachment::class);
         $attached                    = $projectAttachmentRepository->getAttachedAttachmentsByType($project, $attachment->getType());
         $projectAttachmentType       = $this->entityManager->getRepository(ProjectAttachmentType::class)->findOneBy([
-            'idType' => $attachment->getType(),
+            'attachmentType' => $attachment->getType(),
         ])
         ;
 
@@ -190,7 +190,7 @@ class AttachmentManager
             $this->entityManager->flush([$attachmentToDetach->getAttachment(), $attachmentToDetach]);
         }
 
-        $projectAttachment = $projectAttachmentRepository->findOneBy(['idAttachment' => $attachment, 'idProject' => $project]);
+        $projectAttachment = $projectAttachmentRepository->findOneBy(['attachment' => $attachment, 'project' => $project]);
         if (null === $projectAttachment) {
             $projectAttachment = new ProjectAttachment();
             $projectAttachment

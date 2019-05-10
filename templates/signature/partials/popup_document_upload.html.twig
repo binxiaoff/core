@@ -36,21 +36,21 @@
                 </div>
             </div>
             <h4 class="h4">Destinataires</h4>
-            {% if arranger is not empty or run is not empty %}
+            {% if project.arranger is not empty or project.run is not empty %}
                 <div class="row">
-                    {% if arranger is not empty %}
+                    {% if project.arranger is not empty %}
                         <div class="col-lg-6 col-md-6">
                             <strong class="row">Arrangeur</strong>
                             <label class="row">
-                                <input type="checkbox" name="signatory[]" value="{{ arranger.idCompany }}"> {{ arranger.name }}
+                                <input type="checkbox" name="signatory[]" value="{{ project.arranger.company.idCompany }}"> {{ project.arranger.company.name }}
                             </label>
                         </div>
                     {% endif %}
-                    {% if run is not empty %}
+                    {% if project.run is not empty %}
                         <div class="col-lg-6 col-md-6">
                             <strong class="row">RUN</strong>
                             <label class="row">
-                                <input type="checkbox" name="signatory[]" value="{{ run.idCompany }}"> {{ run.name }}
+                                <input type="checkbox" name="signatory[]" value="{{ project.run.company.idCompany }}"> {{ project.run.company.name }}
                             </label>
                         </div>
                     {% endif %}
@@ -63,8 +63,8 @@
                 {% for participant in project.projectParticipants %}
                     {% if
                         participant.hasRole(constant('Unilend\\Entity\\ProjectParticipant::COMPANY_ROLE_LENDER'))
-                        and participant.company != arranger
-                        and participant.company != run
+                        and participant.company != project.arranger
+                        and participant.company != project.run
                     %}
                         <div class="col-lg-6 col-md-6">
                             <label>

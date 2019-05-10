@@ -90,7 +90,7 @@
                                         data-sortable-rate="{{ offer.rate.margin }}"
                                         data-sortable-status="{{ offer.status }}">
                                         <td class="table-projects-item-partner">
-                                            {% include 'partials/market_bubble.html.twig' with {'partner': project.idPartner.label} %}
+                                            {% include 'partials/market_bubble.html.twig' with {'market': project.marketSegment.label} %}
                                         </td>
                                         <td class="table-projects-item-title">{{ project.title }}</td>
                                         <td class="table-projects-item-project-amount">{{ project.amount|localizednumberwithprecision(0) }} €</td>
@@ -200,7 +200,7 @@
                                         data-sortable-loan-amount="{{ amount }}"
                                         data-sortable-rate="{{ loan.rate.margin }}">
                                         <td class="table-projects-item-partner">
-                                            {% include 'partials/market_bubble.html.twig' with {'partner': project.idPartner.label} %}
+                                            {% include 'partials/market_bubble.html.twig' with {'market': project.marketSegment.label} %}
                                         </td>
                                         <td class="table-projects-item-title">{{ project.title }}</td>
                                         <td class="table-projects-item-project-amount">{{ project.amount|localizednumberwithprecision(0) }}&nbsp;€</td>
@@ -325,7 +325,7 @@
                                         data-sortable-loan-amount="{{ amount }}"
                                         data-sortable-rate="{{ loan.rate.margin }}">
                                         <td class="table-projects-item-partner">
-                                            {% include 'partials/market_bubble.html.twig' with {'partner': project.idPartner.label} %}
+                                            {% include 'partials/market_bubble.html.twig' with {'market': project.marketSegment.label} %}
                                         </td>
                                         <td class="table-projects-item-title">{{ project.title }}</td>
                                         <td class="table-projects-item-project-amount">{{ project.amount|localizednumberwithprecision(0) }}&nbsp;€</td>
@@ -377,7 +377,7 @@
                                         data-sortable-loan-amount="{{ amount }}"
                                         data-sortable-rate="{{ loan.rate.margin }}">
                                         <td class="table-projects-item-partner">
-                                            {% include 'partials/market_bubble.html.twig' with {'partner': project.idPartner.label} %}
+                                            {% include 'partials/market_bubble.html.twig' with {'market': project.marketSegment.label} %}
                                         </td>
                                         <td class="table-projects-item-title">{{ project.title }}</td>
                                         <td class="table-projects-item-project-amount">{{ project.amount|localizednumberwithprecision(0) }}&nbsp;€</td>

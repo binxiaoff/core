@@ -8,7 +8,7 @@ use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Unilend\Entity\{Clients, Project, ProjectParticipant};
 
-class ClientProjectsRepository extends ServiceEntityRepository
+class ClientProjectRepository extends ServiceEntityRepository
 {
     /**
      * @param ManagerRegistry $registry

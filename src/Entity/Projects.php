@@ -9,6 +9,8 @@ use Ramsey\Uuid\Uuid;
 use Unilend\Entity\Traits\TimestampableTrait;
 
 /**
+ * @deprecated use Project
+ *
  * @ORM\Table(name="projects", indexes={
  *     @ORM\Index(name="id_company", columns={"id_company"}),
  *     @ORM\Index(name="slug", columns={"slug"}),

@@ -1,11 +1,13 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Unilend\Twig;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Twig\Extension\AbstractExtension;
 use Twig\TwigFunction;
-use Unilend\Entity\{Bids, EcheanciersEmprunteur, Projects, ProjectsStatus};
+use Unilend\Entity\{Bids, EcheanciersEmprunteur, Project, Projects, ProjectsStatus};
 use Unilend\Service\{AutoBidSettingsManager, ProjectManager};
 
 class ProjectExtension extends AbstractExtension
@@ -30,18 +32,19 @@ class ProjectExtension extends AbstractExtension
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getFunctions()
     {
-        return array(
+        return [
             new TwigFunction('projectFundingPercentage', [$this, 'getFundingPercentage']),
             new TwigFunction('projectAverageInterestRate', [$this, 'getAverageInterestRate']),
             new TwigFunction('projectEnded', [$this, 'getProjectEnded']),
             new TwigFunction('projectRepaymentScheduleAmount', [$this, 'getRepaymentScheduleAmount']),
             new TwigFunction('projectRemainingCapital', [$this, 'getRemainingCapital']),
             new TwigFunction('projectNextRepaymentScheduleAmount', [$this, 'getNextRepaymentScheduleAmount']),
-        );
+            new TwigFunction('projectAmount', [$this, 'getProjectAmount']),
+        ];
     }
 
     /**
@@ -90,11 +93,11 @@ class ProjectExtension extends AbstractExtension
         $scheduledAmount           = 0;
         $paymentScheduleRepository = $this->entityManager->getRepository(EcheanciersEmprunteur::class);
 
-        if ($project->getStatus() !== ProjectsStatus::STATUS_FINISHED) {
+        if (ProjectsStatus::STATUS_FINISHED !== $project->getStatus()) {
             $schedule = $paymentScheduleRepository->findOneBy(['idProject' => $project]);
 
             if ($schedule) {
-                $scheduledAmount = round(bcdiv(strval($schedule->getCapital() + $schedule->getInterets() + $schedule->getCommission() + $schedule->getTva()), '100', 4), 2);
+                $scheduledAmount = round(bcdiv((string) ($schedule->getCapital() + $schedule->getInterets() + $schedule->getCommission() + $schedule->getTva()), '100', 4), 2);
             }
         }
 
@@ -111,7 +114,7 @@ class ProjectExtension extends AbstractExtension
         $paymentScheduleRepository = $this->entityManager->getRepository(EcheanciersEmprunteur::class);
         $nextScheduledDate         = new \DateTime();
 
-        if ($project->getStatus() !== ProjectsStatus::STATUS_FINISHED) {
+        if (ProjectsStatus::STATUS_FINISHED !== $project->getStatus()) {
             $nextRepayment = $paymentScheduleRepository->findOneBy(
                 ['idProject' => $project, 'statusEmprunteur' => EcheanciersEmprunteur::STATUS_PENDING],
                 ['dateEcheanceEmprunteur' => 'ASC']

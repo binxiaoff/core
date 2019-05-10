@@ -122,7 +122,7 @@ class ProjectParticipant
         $this->baseRemoveRole($role);
 
         if (0 === count($this->roles)) {
-            $this->setProject(null);
+            $this->getProject()->removeProjectParticipant($this);
         }
 
         return $this;

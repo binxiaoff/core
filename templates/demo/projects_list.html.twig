@@ -55,7 +55,7 @@
                         {% for project in projects %}
                             <article class="project-list-item{% if false == project.isOnline %} ui-project-expired{% endif %}">
                                 <div class="project-list-item-category">
-                                    {% include 'partials/market_bubble.html.twig' with {'partner': project.idPartner.label} %}
+                                    {% include 'partials/market_bubble.html.twig' with {'market': project.marketSegment.label} %}
                                 </div>
                                 <div class="project-list-item-info">
                                     <h3 class="project-list-item-title"><a href="{{ path('demo_lender_project_details', {'slug': project.slug }) }}">{{ project.idCompany.name }}</a></h3>

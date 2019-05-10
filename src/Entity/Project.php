@@ -149,6 +149,13 @@ class Project
     private $currentProjectStatusHistory;
 
     /**
+     * @var string|null
+     *
+     * @ORM\Column(length=8, nullable=true)
+     */
+    private $internalRatingScore;
+
+    /**
      * @var ArrayCollection|ProjectStatusHistory[]
      *
      * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectStatusHistory", mappedBy="project", cascade={"persist"}, orphanRemoval=true)
@@ -268,7 +275,11 @@ class Project
      */
     public function setSlug()
     {
-        $this->slug = URLify::filter($this->title);
+        try {
+            $this->slug = URLify::filter($this->title) . '-' . mb_substr(Uuid::uuid4()->toString(), 0, 8);
+        } catch (Exception $e) {
+            $this->slug = URLify::filter($this->title) . '-' . mb_substr(uniqid(), 0, 8);
+        }
 
         return $this;
     }
@@ -478,6 +489,22 @@ class Project
     }
 
     /**
+     * @return string|null
+     */
+    public function getInternalRatingScore(): ?string
+    {
+        return $this->internalRatingScore;
+    }
+
+    /**
+     * @param string|null $internalRatingScore
+     */
+    public function setInternalRatingScore(?string $internalRatingScore): void
+    {
+        $this->internalRatingScore = $internalRatingScore;
+    }
+
+    /**
      * @return ProjectAttachment[]
      */
     public function getProjectAttachments(): iterable
@@ -530,7 +557,7 @@ class Project
     public function addProjectParticipant(Companies $company, string $role): Project
     {
         if ($this->isUniqueRole($role)) {
-            /** @var ProjectParticipant $projectParticipant */
+            /** @var ProjectParticipant $projectParticipantToDelete */
             $projectParticipantToDelete = $this->getParticipantsByRole($role)->first();
 
             if ($projectParticipantToDelete && $company !== $projectParticipantToDelete->getCompany()) {
@@ -607,6 +634,22 @@ class Project
     }
 
     /**
+     * @param Companies[] $companies
+     *
+     * @return Project
+     */
+    public function setLenders(array $companies): Project
+    {
+        foreach ($this->getLenders() as $lender) {
+            if (false === in_array($lender->getCompany(), $companies)) {
+                $lender->removeRole(ProjectParticipant::COMPANY_ROLE_LENDER);
+            }
+        }
+
+        return $this->addLenders($companies);
+    }
+
+    /**
      * @return ProjectParticipant|null
      */
     public function getArranger(): ?ProjectParticipant
@@ -628,6 +671,14 @@ class Project
     public function getLenders(): iterable
     {
         return $this->getParticipantsByRole(ProjectParticipant::COMPANY_ROLE_LENDER);
+    }
+
+    /**
+     * @return Companies[]|ArrayCollection
+     */
+    public function getLenderCompanies(): iterable
+    {
+        return $this->getCompaniesByRole(ProjectParticipant::COMPANY_ROLE_LENDER);
     }
 
     /**
@@ -713,26 +764,14 @@ class Project
      *
      * @return Project
      */
-    public function addProjectStatusHistory(ProjectStatusHistory $projectStatusHistory): Project
+    public function setProjectStatusHistory(ProjectStatusHistory $projectStatusHistory): Project
     {
         $projectStatusHistory->setProject($this);
 
-        if (false === $this->projectStatusHistories->contains($projectStatusHistory)) {
+        if (null === $this->currentProjectStatusHistory || $this->currentProjectStatusHistory->getStatus() !== $projectStatusHistory->getStatus()) {
             $this->projectStatusHistories->add($projectStatusHistory);
             $this->setCurrentProjectStatusHistory($projectStatusHistory);
         }
-
-        return $this;
-    }
-
-    /**
-     * @param ProjectStatusHistory $projectStatusHistory
-     *
-     * @return Project
-     */
-    public function removeProjectStatusHistory(ProjectStatusHistory $projectStatusHistory): Project
-    {
-        $this->projectStatusHistories->removeElement($projectStatusHistory);
 
         return $this;
     }
@@ -771,6 +810,32 @@ class Project
         $this->projectParticipants->removeElement($tranche);
 
         return $this;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isEditable(): bool
+    {
+        if ($this->getCurrentProjectStatusHistory()) {
+            return $this->getCurrentProjectStatusHistory()->getStatus() < ProjectStatusHistory::STATUS_PUBLISHED;
+        }
+
+        return true;
+    }
+
+    /**
+     * @param Clients $user
+     *
+     * @return bool
+     */
+    public function isScoringEditable(Clients $user): bool
+    {
+        return
+            $this->isEditable()
+            && $this->getRun()
+            && $this->getRun()->getCompany() === $user->getCompany()
+            ;
     }
 
     /**
@@ -826,7 +891,7 @@ class Project
      *
      * @return ProjectParticipant[]|ArrayCollection
      */
-    private function getParticipantsByRole(string $role): ?iterable
+    private function getParticipantsByRole(string $role): iterable
     {
         $isUniqueRole = $this->isUniqueRole($role);
 
@@ -843,5 +908,29 @@ class Project
         }
 
         return $projectParticipants;
+    }
+
+    /**
+     * @param string $role
+     *
+     * @return ProjectParticipant[]|ArrayCollection
+     */
+    private function getCompaniesByRole(string $role): iterable
+    {
+        $isUniqueRole = $this->isUniqueRole($role);
+
+        $companies = new ArrayCollection();
+
+        // Ugly foreach on the participants (hopefully we don't have many participants on a project), as the Criteria doesn't support the json syntax.
+        foreach ($this->getProjectParticipants() as $projectParticipant) {
+            if ($projectParticipant->hasRole($role)) {
+                $companies->add($projectParticipant->getCompany());
+                if ($isUniqueRole) {
+                    break;
+                }
+            }
+        }
+
+        return $companies;
     }
 }

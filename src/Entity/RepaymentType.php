@@ -6,6 +6,8 @@ use Doctrine\ORM\Mapping as ORM;
 use Unilend\Entity\Traits\TimestampableTrait;
 
 /**
+ * @deprecated see Tranche
+ *
  * @ORM\Table(name="repayment_type", uniqueConstraints={@ORM\UniqueConstraint(columns={"label", "periodicity"})})
  * @ORM\Entity
  */

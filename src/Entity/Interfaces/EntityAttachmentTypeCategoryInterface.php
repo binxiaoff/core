@@ -7,7 +7,12 @@ namespace Unilend\Entity\Interfaces;
 interface EntityAttachmentTypeCategoryInterface
 {
     /**
-     * @return string
+     * @return string|null
      */
-    public function getLabel(): string;
+    public function getLabel(): ?string;
+
+    /**
+     * @return int|null
+     */
+    public function getId(): ?int;
 }

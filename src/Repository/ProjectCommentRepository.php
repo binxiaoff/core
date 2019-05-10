@@ -9,6 +9,12 @@ use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\{ORMException, OptimisticLockException};
 use Unilend\Entity\ProjectComment;
 
+/**
+ * @method ProjectComment|null find($id, $lockMode = null, $lockVersion = null)
+ * @method ProjectComment|null findOneBy(array $criteria, array $orderBy = null)
+ * @method ProjectComment[]    findAll()
+ * @method ProjectComment[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
+ */
 class ProjectCommentRepository extends ServiceEntityRepository
 {
     /**

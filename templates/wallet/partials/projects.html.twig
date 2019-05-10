@@ -54,34 +54,20 @@
                                             Nom
                                         </span>
                                     </th>
-                                    <th class="table-projects-item-amount table-sortable-column" data-sortable-by="amount">
-                                        <span class="label" title="Montant" data-toggle="tooltip">
-                                            Montant
-                                        </span>
-                                    </th>
-                                    <th class="table-projects-item-duration table-sortable-column" data-sortable-by="duration">
-                                        <span class="label" title="Maturité" data-toggle="tooltip">
-                                            Maturité
-                                        </span>
-                                    </th>
                                     <th>&nbsp;</th>
                                 </tr>
                                 </thead>
                                 <tbody data-sortable-content>
                                 {% for project in statusProjects %}
-                                    <tr id="{{ projectsType }}-{{ project.idProject }}" class="table-projects-item {% if loop.index is divisible by(2) %}even{% else %}odd{% endif %}"
+                                    <tr id="{{ projectsType }}-{{ project.id }}" class="table-projects-item {% if loop.index is divisible by(2) %}even{% else %}odd{% endif %}"
                                         data-hash="{{ project.hash }}"
-                                        data-sortable-partner="{{ ('partner-name_bubble-' ~ project.idPartner.label)|trans }}"
-                                        data-sortable-title="{{ project.idCompany.name|e('html_attr') }}"
-                                        data-sortable-amount="{{ project.amount }}"
-                                        data-sortable-duration="{{ project.period }}"
+                                        data-sortable-partner="{{ ('partner-name_bubble-' ~ project.marketSegment.label)|trans }}"
+                                        data-sortable-title="{{ project.borrowerCompany.name|e('html_attr') }}"
                                         data-row-url="{{ path('demo_project_details', {'hash': project.hash}) }}">
                                         <td class="table-projects-item-partner">
-                                            {% include 'partials/market_bubble.html.twig' with {'partner': project.idPartner.label} %}
+                                            {% include 'partials/market_bubble.html.twig' with {'market': project.marketSegment.label} %}
                                         </td>
-                                        <td class="table-projects-item-title">{{ project.idCompany.name }}<br>{{ project.title }}</td>
-                                        <td class="table-projects-item-amount">{{ project.amount|localizednumberwithprecision(0) }}&nbsp;€</td>
-                                        <td class="table-projects-item-duration">{{ project.period }} mois</td>
+                                        <td class="table-projects-item-title">{{ project.borrowerCompany.name }}<br>{{ project.title }}</td>
                                         <td class="table-actions">
                                             {% if status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_FUNDED') %}
                                                 <a href="{{ path('demo_project_signing', {'hash': project.hash}) }}" role="button" class="btn-default" title="Signer les contrats" data-toggle="tooltip"><span class="icon fa-pen-u16"></span></a>

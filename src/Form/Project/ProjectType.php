@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Unilend\Form\Project;
 
 use Doctrine\Common\Persistence\ManagerRegistry;
-use Doctrine\ORM\EntityRepository;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\{ChoiceType, CollectionType, DateType, TextType, TextareaType};
@@ -15,17 +14,14 @@ use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInt
 use Unilend\Entity\{Clients, Companies, MarketSegment, Project};
 use Unilend\Form\Company\CompanyAutocompleteType;
 use Unilend\Form\Tranche\TrancheType;
+use Unilend\Repository\CompaniesRepository;
 
 class ProjectType extends AbstractType
 {
-    /**
-     * @var ManagerRegistry
-     */
+    /** @var ManagerRegistry */
     private $managerRegistry;
 
-    /**
-     * @var TokenStorageInterface
-     */
+    /** @var TokenStorageInterface */
     private $tokenStorage;
 
     /**
@@ -44,7 +40,7 @@ class ProjectType extends AbstractType
      */
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
-        $currentCompanyId = $this->getCurrentCompanyId();
+        $currentCompany = $this->getCurrentCompany();
 
         $builder
             ->add('title', TextType::class, ['label' => 'project-form.title'])
@@ -101,37 +97,19 @@ class ProjectType extends AbstractType
                 'label'         => 'project-form.arranger',
                 'required'      => false,
                 'class'         => Companies::class,
-                'query_builder' => function (EntityRepository $entityRepository) use ($currentCompanyId) {
-                    return $entityRepository->createQueryBuilder('c')
-                        ->where('c.idCompany IN (:arrangersToSelect)')
-                        ->setParameter('arrangersToSelect', array_merge(Companies::COMPANY_ELIGIBLE_ARRANGER, [$currentCompanyId]))
-                        ->orderBy('c.name', 'ASC')
-                    ;
+                'query_builder' => function (CompaniesRepository $companyRepository) use ($currentCompany) {
+                    return $companyRepository->createEligibleArrangersQB($currentCompany, ['name' => 'ASC']);
                 },
             ])
             ->add('run', EntityType::class, [
                 'label'         => 'project-form.run',
                 'required'      => false,
                 'class'         => Companies::class,
-                'query_builder' => function (EntityRepository $entityRepository) {
-                    return $entityRepository->createQueryBuilder('c')
-                        ->where('c.idCompany IN (:runsToSelect)')
-                        ->orWhere('c.parent IN (:runsParentToSelect)')
-                        ->setParameters(['runsToSelect' => Companies::COMPANY_ELIGIBLE_RUN, 'runsParentToSelect' => Companies::COMPANY_SUBSIDIARY_ELIGIBLE_RUN])
-                        ->orderBy('c.name', 'ASC')
-                    ;
+                'query_builder' => function (CompaniesRepository $companyRepository) {
+                    return $companyRepository->createEligibleRunQB(['name' => 'ASC']);
                 },
             ])
-            ->add('projectAttachments', CollectionType::class, [
-                'label'         => false,
-                'entry_type'    => ProjectAttachmentType::class,
-                'entry_options' => ['label' => false],
-                'allow_add'     => true,
-                'allow_delete'  => true,
-                'by_reference'  => false,
-                'prototype'     => true,
-                'attr'          => ['class' => 'attachments'],
-            ])
+            ->add('projectAttachments', ProjectAttachmentCollectionType::class)
         ;
     }
 
@@ -152,18 +130,18 @@ class ProjectType extends AbstractType
     }
 
     /**
-     * @return int|null
+     * @return Companies|null
      */
-    private function getCurrentCompanyId(): ?int
+    private function getCurrentCompany(): ?Companies
     {
-        $companyId = null;
+        $company = null;
         /** @var Clients $user */
         $user = $this->tokenStorage->getToken()->getUser();
 
         if ($user && $user->getCompany()) {
-            $companyId = $user->getCompany()->getIdCompany();
+            $company = $user->getCompany();
         }
 
-        return $companyId;
+        return $company;
     }
 }
