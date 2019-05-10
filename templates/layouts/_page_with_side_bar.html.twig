@@ -1,11 +1,11 @@
 {% extends 'layouts/_layout.html.twig' %}
 
 {% block siteContent %}
-    <article{% if page.id is not empty %} id="{{ page.id }}"{% endif %} class="dashboard{% if page.classNames is not empty %} {{ page.classNames }}{% endif %}">
+    <article class="dashboard">
         <div class="dashboard-inner">
             <div class="site-wrap">
                 <div class="col-menu">
-                    <a href="{{ path('demo_project_request') }}" class="btn-primary btn-shape-xs">
+                    <a href="{{ path('project_creation') }}" class="btn-primary btn-shape-xs">
                         <span class="icon fa-plus-u"></span>
                         Déposer un dossier
                     </a>

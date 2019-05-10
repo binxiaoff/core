@@ -9,26 +9,32 @@ use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\{FileType, TextType};
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Contracts\Translation\TranslatorInterface;
 use Unilend\Entity\{Attachment, AttachmentType as AttachmentTypeEntity, Interfaces\EntityAttachmentTypeInterface, ProjectAttachmentType};
-use Unilend\Repository\AttachmentTypeRepository;
-use Unilend\Repository\ProjectAttachmentTypeRepository;
+use Unilend\Repository\{AttachmentTypeRepository, ProjectAttachmentTypeRepository};
 
 class AttachmentType extends AbstractType
 {
     /** @var ProjectAttachmentTypeRepository */
     private $projectAttachmentTypeRepository;
-
     /** @var AttachmentTypeRepository */
     private $attachmentTypeRepository;
+    /** @var TranslatorInterface */
+    private $translator;
 
     /**
      * @param AttachmentTypeRepository        $attachmentTypeRepository
      * @param ProjectAttachmentTypeRepository $projectAttachmentTypeRepository
+     * @param TranslatorInterface             $translator
      */
-    public function __construct(AttachmentTypeRepository $attachmentTypeRepository, ProjectAttachmentTypeRepository $projectAttachmentTypeRepository)
-    {
+    public function __construct(
+        AttachmentTypeRepository $attachmentTypeRepository,
+        ProjectAttachmentTypeRepository $projectAttachmentTypeRepository,
+        TranslatorInterface $translator
+    ) {
         $this->projectAttachmentTypeRepository = $projectAttachmentTypeRepository;
         $this->attachmentTypeRepository        = $attachmentTypeRepository;
+        $this->translator                      = $translator;
     }
 
     /**
@@ -104,7 +110,7 @@ class AttachmentType extends AbstractType
         $options = [];
 
         foreach ($entityAttachmentTypes as $entityAttachmentType) {
-            $category             = sprintf('%s-%s.%s', $translationSection, 'category', $entityAttachmentType->getCategory()->getLabel());
+            $category             = $this->translator->trans(sprintf('%s-%s.%s', $translationSection, 'category', $entityAttachmentType->getCategory()->getLabel()));
             $options[$category][] = $entityAttachmentType->getAttachmentType();
         }
 
