@@ -252,15 +252,19 @@ class CompaniesRepository extends ServiceEntityRepository
 
         return $this->getEntityManager()
             ->getConnection()
-            ->executeQuery($query, [
-                'completeRequest' => ProjectsStatus::STATUS_REQUESTED,
-                'projectStatus'   => MonitoringCycleManager::LONG_TERM_MONITORING_EXCLUDED_PROJECTS_STATUS,
-                'companyStatus'   => MonitoringCycleManager::LONG_TERM_MONITORING_EXCLUDED_COMPANY_STATUS,
-            ], [
-                'completeRequest' => PDO::PARAM_INT,
-                'projectStatus'   => Connection::PARAM_INT_ARRAY,
-                'companyStatus'   => Connection::PARAM_STR_ARRAY,
-            ])
+            ->executeQuery(
+                $query,
+                [
+                    'completeRequest' => ProjectsStatus::STATUS_REQUESTED,
+                    'projectStatus'   => MonitoringCycleManager::LONG_TERM_MONITORING_EXCLUDED_PROJECTS_STATUS,
+                    'companyStatus'   => MonitoringCycleManager::LONG_TERM_MONITORING_EXCLUDED_COMPANY_STATUS,
+                ],
+                [
+                    'completeRequest' => PDO::PARAM_INT,
+                    'projectStatus'   => Connection::PARAM_INT_ARRAY,
+                    'companyStatus'   => Connection::PARAM_STR_ARRAY,
+                ]
+            )
             ->fetchAll()
         ;
     }
@@ -291,17 +295,21 @@ class CompaniesRepository extends ServiceEntityRepository
 
         return $this->getEntityManager()
             ->getConnection()
-            ->executeQuery($query, [
-                'provider'        => $provider,
-                'completeRequest' => ProjectsStatus::STATUS_REQUESTED,
-                'projectStatus'   => MonitoringCycleManager::LONG_TERM_MONITORING_EXCLUDED_PROJECTS_STATUS,
-                'companyStatus'   => MonitoringCycleManager::LONG_TERM_MONITORING_EXCLUDED_COMPANY_STATUS,
-            ], [
-                'provider'        => PDO::PARAM_STR,
-                'completeRequest' => PDO::PARAM_INT,
-                'projectStatus'   => Connection::PARAM_INT_ARRAY,
-                'companyStatus'   => Connection::PARAM_STR_ARRAY,
-            ])
+            ->executeQuery(
+                $query,
+                [
+                    'provider'        => $provider,
+                    'completeRequest' => ProjectsStatus::STATUS_REQUESTED,
+                    'projectStatus'   => MonitoringCycleManager::LONG_TERM_MONITORING_EXCLUDED_PROJECTS_STATUS,
+                    'companyStatus'   => MonitoringCycleManager::LONG_TERM_MONITORING_EXCLUDED_COMPANY_STATUS,
+                ],
+                [
+                    'provider'        => PDO::PARAM_STR,
+                    'completeRequest' => PDO::PARAM_INT,
+                    'projectStatus'   => Connection::PARAM_INT_ARRAY,
+                    'companyStatus'   => Connection::PARAM_STR_ARRAY,
+                ]
+            )
             ->fetchAll()
         ;
     }
@@ -326,7 +334,7 @@ class CompaniesRepository extends ServiceEntityRepository
     public function createEligibleArrangersQB(?Companies $currentCompany, array $orderBy = []): QueryBuilder
     {
         $queryBuilder = $this->createQueryBuilder('c')
-            ->where('c.idCompany in (:arrangersToSelect)')
+            ->where('c.idCompany IN (:arrangersToSelect)')
             ->setParameter('arrangersToSelect', array_merge(Companies::COMPANY_ELIGIBLE_ARRANGER, [$currentCompany]))
             ;
 
@@ -343,9 +351,9 @@ class CompaniesRepository extends ServiceEntityRepository
     public function createEligibleRunQB(array $orderBy = [])
     {
         $queryBuilder = $this->createQueryBuilder('c')
-            ->where('c.idCompany in (:runsToSelect)')
-            ->orWhere('c.parent in (:runsParantToSelect)')
-            ->setParameters(['runsToSelect' => Companies::COMPANY_ELIGIBLE_RUN, 'runsParantToSelect' => Companies::COMPANY_SUBSIDIARY_ELIGIBLE_RUN])
+            ->where('c.idCompany IN (:runsToSelect)')
+            ->orWhere('c.parent IN (:runsParentToSelect)')
+            ->setParameters(['runsToSelect' => Companies::COMPANY_ELIGIBLE_RUN, 'runsParentToSelect' => Companies::COMPANY_SUBSIDIARY_ELIGIBLE_RUN])
             ;
 
         $this->handlerOrderBy($queryBuilder, $orderBy);
