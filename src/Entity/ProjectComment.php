@@ -30,7 +30,7 @@ class ProjectComment
      * @var ProjectComment
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\ProjectComment", inversedBy="children")
-     * @ORM\JoinColumn(name="id_parent", referencedColumnName="id", onDelete="CASCADE")
+     * @ORM\JoinColumn(name="id_parent", referencedColumnName="id", onDelete="CASCADE", nullable=true)
      */
     private $parent;
 
@@ -40,10 +40,10 @@ class ProjectComment
     private $children;
 
     /**
-     * @var Projects
+     * @var Project
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Projects", inversedBy="comments")
-     * @ORM\JoinColumn(name="id_project", referencedColumnName="id_project", nullable=false)
+     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Project", inversedBy="comments")
+     * @ORM\JoinColumn(name="id_project", referencedColumnName="id", nullable=false)
      */
     private $project;
 
@@ -98,19 +98,19 @@ class ProjectComment
     }
 
     /**
-     * @return Projects
+     * @return Project
      */
-    public function getProject(): Projects
+    public function getProject(): Project
     {
         return $this->project;
     }
 
     /**
-     * @param Projects $project
+     * @param Project $project
      *
      * @return ProjectComment
      */
-    public function setProject(Projects $project): ProjectComment
+    public function setProject(Project $project): ProjectComment
     {
         $this->project = $project;
 
