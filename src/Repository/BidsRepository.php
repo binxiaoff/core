@@ -5,31 +5,54 @@ namespace Unilend\Repository;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\DBAL\Connection;
-use Doctrine\ORM\{NonUniqueResultException, NoResultException, Query\Expr\Join};
+use Doctrine\ORM\Query\Expr\Join;
+use Doctrine\ORM\{NonUniqueResultException, ORMException, OptimisticLockException};
 use Unilend\Entity\{Bids, Clients, Projects, Wallet};
 
+/**
+ * @method Bids|null find($id, $lockMode = null, $lockVersion = null)
+ * @method Bids|null findOneBy(array $criteria, array $orderBy = null)
+ * @method Bids[]    findAll()
+ * @method Bids[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
+ */
 class BidsRepository extends ServiceEntityRepository
 {
+    /**
+     * @param ManagerRegistry $registry
+     */
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Bids::class);
     }
 
     /**
+     * @param Bids $bid
+     *
+     * @throws ORMException
+     * @throws OptimisticLockException
+     */
+    public function save(Bids $bid)
+    {
+        $this->getEntityManager()->persist($bid);
+        $this->getEntityManager()->flush();
+    }
+
+    /**
      * @param array $criteria
      *
-     * @return mixed
-     * @throws NoResultException
      * @throws NonUniqueResultException
+     *
+     * @return mixed
      */
     public function countBy(array $criteria = [])
     {
-        $qb = $this->createQueryBuilder("b");
+        $qb = $this->createQueryBuilder('b');
         $qb->select('COUNT(b)');
         if (false === empty($criteria)) {
             foreach ($criteria as $field => $value) {
                 $qb->andWhere('b.' . $field . ' = :' . $field)
-                    ->setParameter($field, $value);
+                    ->setParameter($field, $value)
+                ;
             }
         }
         $query = $qb->getQuery();
@@ -42,9 +65,9 @@ class BidsRepository extends ServiceEntityRepository
      * @param \DateTime   $to
      * @param int|Clients $clientId
      *
-     * @return integer
-     * @throws NoResultException
      * @throws NonUniqueResultException
+     *
+     * @return int
      */
     public function countByClientInPeriod(\DateTime $from, \DateTime $to, $clientId)
     {
@@ -53,7 +76,8 @@ class BidsRepository extends ServiceEntityRepository
             ->innerJoin(Wallet::class, 'w', Join::WITH, 'w.id = b.wallet')
             ->where('b.added BETWEEN :fromDate AND :toDate')
             ->andWhere('w.idClient = :idClient')
-            ->setParameters(['fromDate' => $from, 'toDate' => $to, 'idClient' => $clientId]);
+            ->setParameters(['fromDate' => $from, 'toDate' => $to, 'idClient' => $clientId])
+        ;
 
         return $qb->getQuery()->getSingleScalarResult();
     }
@@ -62,9 +86,9 @@ class BidsRepository extends ServiceEntityRepository
      * @param Wallet    $wallet
      * @param \DateTime $date
      *
-     * @return integer
-     * @throws NoResultException
      * @throws NonUniqueResultException
+     *
+     * @return int
      */
     public function getManualBidCountByDateAndWallet(Wallet $wallet, \DateTime $date)
     {
@@ -74,7 +98,8 @@ class BidsRepository extends ServiceEntityRepository
             ->andWhere('b.idAutobid IS NULL')
             ->andWhere('b.added > :date')
             ->setParameter('wallet', $wallet)
-            ->setParameter('date', $date);
+            ->setParameter('date', $date)
+        ;
 
         return $queryBuilder->getQuery()->getSingleScalarResult();
     }
@@ -84,9 +109,9 @@ class BidsRepository extends ServiceEntityRepository
      * @param Projects|int $project
      * @param array        $status
      *
-     * @return integer
-     * @throws NoResultException
      * @throws NonUniqueResultException
+     *
+     * @return int
      */
     public function getSumByWalletAndProjectAndStatus($wallet, $project, array $status)
     {
@@ -97,7 +122,8 @@ class BidsRepository extends ServiceEntityRepository
             ->andWhere('b.status IN (:status)')
             ->setParameter('wallet', $wallet)
             ->setParameter('project', $project)
-            ->setParameter('status', $status);
+            ->setParameter('status', $status)
+        ;
 
         return $qb->getQuery()->getSingleScalarResult();
     }
@@ -106,9 +132,9 @@ class BidsRepository extends ServiceEntityRepository
      * @param Wallet|int $wallet
      * @param int        $status
      *
-     * @return mixed
-     * @throws NoResultException
      * @throws NonUniqueResultException
+     *
+     * @return mixed
      */
     public function getSumBidsForLenderAndStatus($wallet, int $status)
     {
@@ -117,7 +143,8 @@ class BidsRepository extends ServiceEntityRepository
             ->where('b.wallet = :wallet')
             ->andWhere('b.status = :status')
             ->setParameter('wallet', $wallet)
-            ->setParameter('status', $status);
+            ->setParameter('status', $status)
+        ;
 
         return $qb->getQuery()->getSingleScalarResult();
     }
@@ -126,8 +153,9 @@ class BidsRepository extends ServiceEntityRepository
      * @param Wallet|int   $lenderWallet
      * @param Projects|int $project
      *
-     * @return Bids|null
      * @throws NonUniqueResultException
+     *
+     * @return Bids|null
      */
     public function findFirstAutoBidByLenderAndProject($lenderWallet, $project)
     {
@@ -140,7 +168,8 @@ class BidsRepository extends ServiceEntityRepository
             ->orderBy('b.idBid', 'ASC')
             ->addOrderBy('b.added', 'ASC')
             ->setMaxResults(1)
-            ->setFirstResult(0);
+            ->setFirstResult(0)
+        ;
 
         return $queryBuilder->getQuery()->getOneOrNullResult();
     }
@@ -162,7 +191,8 @@ class BidsRepository extends ServiceEntityRepository
             ->andWhere('b.idAutobid IS NOT NULL')
             ->setMaxResults($limit)
             ->setFirstResult($offset)
-            ->setParameters(['project' => $project, 'status' => $status]);
+            ->setParameters(['project' => $project, 'status' => $status])
+        ;
 
         return $queryBuilder->getQuery()->getResult();
     }
@@ -170,9 +200,9 @@ class BidsRepository extends ServiceEntityRepository
     /**
      * @param Projects|int $project
      *
-     * @return float|null
-     * @throws NoResultException
      * @throws NonUniqueResultException
+     *
+     * @return float|null
      */
     public function getProjectMaxRate($project): ?float
     {
@@ -182,7 +212,8 @@ class BidsRepository extends ServiceEntityRepository
             ->where('b.project = :project')
             ->andWhere('b.status = :status')
             ->setParameter('project', $project)
-            ->setParameter('status', Bids::STATUS_PENDING);
+            ->setParameter('status', Bids::STATUS_PENDING)
+        ;
 
         return $queryBuilder->getQuery()->getSingleScalarResult();
     }
@@ -192,9 +223,9 @@ class BidsRepository extends ServiceEntityRepository
      * @param float|null   $rate
      * @param array        $status
      *
-     * @return float
-     * @throws NoResultException
      * @throws NonUniqueResultException
+     *
+     * @return float
      */
     public function getProjectTotalAmount($project, ?float $rate = null, array $status = []): float
     {
@@ -202,7 +233,8 @@ class BidsRepository extends ServiceEntityRepository
         $queryBuilder
             ->select('IFNULL(SUM(b.amount) / 100, 0)')
             ->where('b.project = :project')
-            ->setParameter('project', $project);
+            ->setParameter('project', $project)
+        ;
 
         if (false === empty($rate)) {
             $queryBuilder->andWhere('ROUND(b.rate, 1) = ROUND(:rate, 1)');

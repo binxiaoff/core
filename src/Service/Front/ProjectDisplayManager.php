@@ -2,21 +2,31 @@
 
 namespace Unilend\Service\Front;
 
+use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
+use Exception;
 use Psr\Cache\CacheItemPoolInterface;
-use Unilend\Entity\{Bids, Clients, ClientsStatus, Companies, Product, Projects, ProjectsStatus};
+use Unilend\CacheKeys;
+use Unilend\Entity\{Bids, Clients, ClientsStatus, Companies, Product, Project, ProjectStatusHistory, Projects, ProjectsStatus};
 use Unilend\Repository\ProjectsRepository;
-use Unilend\Service\{BidManager, CompanyBalanceSheetManager, ProjectManager};
 use Unilend\Service\Product\ProductManager;
 use Unilend\Service\Simulator\EntityManager as EntityManagerSimulator;
-use Unilend\CacheKeys;
+use Unilend\Service\{BidManager, CompanyBalanceSheetManager, ProjectManager};
 
 class ProjectDisplayManager
 {
-    const VISIBILITY_FULL                 = 'full';
-    const VISIBILITY_NOT_VALIDATED_LENDER = 'not_validated_lender';
-    const VISIBILITY_ANONYMOUS            = 'anonymous';
-    const VISIBILITY_NONE                 = 'none';
+    public const VISIBILITY_FULL                 = 'full';
+    public const VISIBILITY_NOT_VALIDATED_LENDER = 'not_validated_lender';
+    public const VISIBILITY_ANONYMOUS            = 'anonymous';
+    public const VISIBILITY_NONE                 = 'none';
+    /** @var array */
+    public const STATUS_DISPLAYABLE = [
+        ProjectsStatus::STATUS_PUBLISHED,
+        ProjectsStatus::STATUS_FUNDED,
+        ProjectsStatus::STATUS_CONTRACTS_SIGNED,
+        ProjectsStatus::STATUS_FINISHED,
+        ProjectsStatus::STATUS_LOST,
+    ];
 
     /** @var EntityManagerInterface */
     private $entityManager;
@@ -24,7 +34,7 @@ class ProjectDisplayManager
     private $entityManagerSimulator;
     /** @var ProjectManager */
     private $projectManager;
-    /** @var BidManager  */
+    /** @var BidManager */
     private $bidManager;
     /** @var LenderAccountDisplayManager */
     private $lenderAccountDisplayManager;
@@ -34,14 +44,6 @@ class ProjectDisplayManager
     private $productManager;
     /** @var CacheItemPoolInterface */
     private $cachePool;
-    /** @var array */
-    const STATUS_DISPLAYABLE = [
-        ProjectsStatus::STATUS_PUBLISHED,
-        ProjectsStatus::STATUS_FUNDED,
-        ProjectsStatus::STATUS_CONTRACTS_SIGNED,
-        ProjectsStatus::STATUS_FINISHED,
-        ProjectsStatus::STATUS_LOST
-    ];
 
     /**
      * @param EntityManagerInterface      $entityManager
@@ -62,8 +64,7 @@ class ProjectDisplayManager
         CompanyBalanceSheetManager $companyBalanceSheetManager,
         ProductManager $productManager,
         CacheItemPoolInterface $cachePool
-    )
-    {
+    ) {
         $this->entityManager               = $entityManager;
         $this->entityManagerSimulator      = $entityManagerSimulator;
         $this->projectManager              = $projectManager;
@@ -124,18 +125,20 @@ class ProjectDisplayManager
     /**
      * @param \projects $project
      *
+     * @throws Exception
+     *
      * @return array
      */
     public function getBaseData(\projects $project): array
     {
         $company = $this->entityManager->getRepository(Companies::class)->find($project->id_company);
 
-        $now      = new \DateTime('NOW');
+        $now      = new DateTime('NOW');
         $end      = $this->projectManager->getProjectEndDate($project);
         $daysLeft = $now->diff($end);
-        $daysLeft = $daysLeft->invert == 0 ? $daysLeft->days : 0;
+        $daysLeft = 0 == $daysLeft->invert ? $daysLeft->days : 0;
 
-        $projectData = [
+        return [
             'projectId'            => $project->id_project,
             'hash'                 => $project->hash,
             'slug'                 => $project->slug,
@@ -157,21 +160,19 @@ class ProjectDisplayManager
                 'zip'       => $company->getIdAddress() ? $company->getIdAddress()->getZip() : '',
                 'sectorId'  => $company->getSector(),
                 'latitude'  => $company->getIdAddress() ? (float) $company->getIdAddress()->getLatitude() : '',
-                'longitude' => $company->getIdAddress() ? (float) $company->getIdAddress()->getLongitude() : ''
+                'longitude' => $company->getIdAddress() ? (float) $company->getIdAddress()->getLongitude() : '',
             ],
-            'status'               => $project->status,
-            'finished'             => ($project->status > ProjectsStatus::STATUS_PUBLISHED || $end < $now),
-            'averageRate'          => round($project->getAverageInterestRate(), 1),
-            'fundingDuration'      => (ProjectsStatus::STATUS_PUBLISHED > $project->status) ? '' : $this->getFundingDurationTranslation($project),
-            'daysLeft'             => $daysLeft
+            'status'          => $project->status,
+            'finished'        => ($project->status > ProjectsStatus::STATUS_PUBLISHED || $end < $now),
+            'averageRate'     => round($project->getAverageInterestRate(), 1),
+            'fundingDuration' => (ProjectsStatus::STATUS_PUBLISHED > $project->status) ? '' : $this->getFundingDurationTranslation($project),
+            'daysLeft'        => $daysLeft,
         ];
-
-        return $projectData;
     }
 
     /**
-     * @param \projects     $project
-     * @param Clients|null  $client
+     * @param \projects    $project
+     * @param Clients|null $client
      *
      * @return array
      */
@@ -206,7 +207,7 @@ class ProjectDisplayManager
         $products  = $this->entityManager->getRepository(Product::class)->findAvailableProductsByClient($client);
         $neighbors = $this->entityManager->getRepository(Projects::class)->findNeighbors(
             $project->id_project,
-            ['status' => self::STATUS_DISPLAYABLE, 'idProduct' => $products],
+            ['status'                           => self::STATUS_DISPLAYABLE, 'idProduct' => $products],
             [ProjectsRepository::SORT_FIELD_END => 'DESC']
         );
 
@@ -217,7 +218,7 @@ class ProjectDisplayManager
             $projectData['navigation']['previous'] = [
                 'project' => $neighbors['previous'],
                 'slug'    => $neighbors['previous']->getSlug(),
-                'title'   => $neighbors['previous']->getTitle()
+                'title'   => $neighbors['previous']->getTitle(),
             ];
         }
 
@@ -225,12 +226,12 @@ class ProjectDisplayManager
             $projectData['navigation']['next'] = [
                 'project' => $neighbors['next'],
                 'slug'    => $neighbors['next']->getSlug(),
-                'title'   => $neighbors['next']->getTitle()
+                'title'   => $neighbors['next']->getTitle(),
             ];
         }
 
-        $now = new \DateTime('NOW');
-        if ($projectData['endDate'] <= $now && $projectData['status'] == ProjectsStatus::STATUS_PUBLISHED) {
+        $now = new DateTime('NOW');
+        if ($projectData['endDate'] <= $now && ProjectsStatus::STATUS_PUBLISHED == $projectData['status']) {
             $projectData['projectPending'] = true;
         }
 
@@ -247,7 +248,7 @@ class ProjectDisplayManager
             $bidsTotalAmount = array_sum(array_column($bidsSummary, 'totalAmount'));
 
             foreach (range($projectRateSettings['rate_max'], $projectRateSettings['rate_min'], 0.1) as $rate) {
-                $rate = (string) $rate; // Fix an issue with float array keys
+                $rate               = (string) $rate; // Fix an issue with float array keys
                 $rateSummary[$rate] = [
                     'rate'              => $rate,
                     'activeBidsCount'   => isset($bidsSummary[$rate]) ? (int) $bidsSummary[$rate]['activeBidsCount'] : 0,
@@ -261,7 +262,7 @@ class ProjectDisplayManager
             $projectData['bids'] = [
                 'summary'         => $rateSummary,
                 'averageAmount'   => $bidsCount > 0 ? round($bidsTotalAmount / $bidsCount, 2) : 0,
-                'activeBidsCount' => array_sum(array_column($bidsSummary, 'activeBidsCount'))
+                'activeBidsCount' => array_sum(array_column($bidsSummary, 'activeBidsCount')),
             ];
         }
 
@@ -272,7 +273,8 @@ class ProjectDisplayManager
 
     /**
      * @param \projects $project
-     * @param boolean   $excludeNonPositiveLines2035
+     * @param bool      $excludeNonPositiveLines2035
+     *
      * @return array
      */
     public function getProjectFinancialData(\projects $project, $excludeNonPositiveLines2035 = false)
@@ -292,7 +294,7 @@ class ProjectDisplayManager
 
                 foreach ($balanceSheets as $balanceSheet) {
                     $balanceSheetEntity->get($balanceSheet['id_bilan']);
-                    $finance[$balanceSheet['id_bilan']]                     = [
+                    $finance[$balanceSheet['id_bilan']] = [
                         'closingDate'   => $balanceSheet['cloture_exercice_fiscal'],
                         'monthDuration' => $balanceSheet['duree_exercice_fiscal'],
                         'assets'        => [],
@@ -305,7 +307,6 @@ class ProjectDisplayManager
 
                         if (null !== $previousBalanceSheetId) {
                             $finance[$previousBalanceSheetId]['income_statement']['details'][$label][1] = empty($value[0]) ? null : round(($finance[$previousBalanceSheetId]['income_statement']['details'][$label][0] - $finance[$balanceSheet['id_bilan']]['income_statement']['details'][$label][0]) / abs($finance[$balanceSheet['id_bilan']]['income_statement']['details'][$label][0]) * 100, 1);
-
                         }
                     }
 
@@ -317,7 +318,7 @@ class ProjectDisplayManager
                 $companyTaxFormType->get($lastBalanceTaxFormTypeId);
                 $lastBalanceTaxFormType = $companyTaxFormType->label;
 
-                if ($lastBalanceTaxFormType === \company_tax_form_type::FORM_2033) {
+                if (\company_tax_form_type::FORM_2033 === $lastBalanceTaxFormType) {
                     /** @var \companies_actif_passif $assetsDebtsEntity */
                     $assetsDebtsEntity = $this->entityManagerSimulator->getRepository('companies_actif_passif');
 
@@ -381,12 +382,13 @@ class ProjectDisplayManager
 
     /**
      * @param \projects $project
+     *
      * @return array
      */
     public function getFundingDurationTranslation(\projects $project)
     {
-        $startFundingPeriod = new \DateTime($project->date_publication);
-        $endFundingPeriod   = new \DateTime($project->date_funded);
+        $startFundingPeriod = new DateTime($project->date_publication);
+        $endFundingPeriod   = new DateTime($project->date_funded);
         $duration           = $startFundingPeriod->diff($endFundingPeriod);
 
         switch (true) {
@@ -394,29 +396,33 @@ class ProjectDisplayManager
                 $x           = $duration->d;
                 $y           = $duration->h;
                 $translation = 'day-hour';
+
                 break;
             case $duration->h > 0:
                 $x           = $duration->h;
                 $y           = $duration->i;
                 $translation = 'hour-minute';
+
                 break;
             case $duration->i > 0:
                 $x           = $duration->i;
                 $y           = $duration->s;
                 $translation = 'minute-second';
+
                 break;
             case $duration->s >= 0:
             default:
                 $x           = $duration->i;
                 $y           = max($duration->s, 1);
                 $translation = 'second';
+
                 break;
         }
 
         return [
             'translation' => $translation,
             'choice'      => (int) (($x >= 2 ? '1' : '0') . ($y >= 2 ? '1' : '0')),
-            'values'      => ['%x%' => $x, '%y%' => $y]
+            'values'      => ['%x%' => $x, '%y%' => $y],
         ];
     }
 
@@ -437,14 +443,14 @@ class ProjectDisplayManager
     }
 
     /**
-     * @param Projects      $project
-     * @param Clients|null  $client
+     * @param Project      $project
+     * @param Clients|null $client
      *
      * @return string
      */
-    public function getVisibility(Projects $project, ?Clients $client = null): string
+    public function getVisibility(Project $project, ?Clients $client = null): string
     {
-        if ($project->getStatus() < ProjectsStatus::STATUS_PUBLISHED) {
+        if ($project->getCurrentProjectStatusHistory()->getStatus() < ProjectStatusHistory::STATUS_PUBLISHED) {
             return self::VISIBILITY_NONE;
         }
 
@@ -452,36 +458,37 @@ class ProjectDisplayManager
             return self::VISIBILITY_NONE;
         }
 
-        if (in_array($client->getCompany(), [$project->getIdCompany(), $project->getIdCompanySubmitter()])) {
+        if (in_array($client->getCompany(), [$project->getBorrowerCompany(), $project->getSubmitterCompany()])) {
             return self::VISIBILITY_FULL;
         }
 
-        $projectParticipant = $project->getProjectParticipants($client->getCompany());
+        $projectParticipant = $project->getProjectParticipantByCompany($client->getCompany());
 
-        if ($projectParticipant->count()) {
+        if ($projectParticipant) {
             return self::VISIBILITY_FULL;
         }
 
         return self::VISIBILITY_NONE;
+        /*
+                $violations = $this->productManager->checkClientEligibility($client, $project);
 
-        $violations = $this->productManager->checkClientEligibility($client, $project);
-
-        if (0 < count($violations)) {
-            return self::VISIBILITY_NONE;
-        }
-
-        if (null !== $client) {
-            if ($client->isLender()) {
-                if (in_array($client->getIdClientStatusHistory()->getIdStatus()->getId(), [ClientsStatus::STATUS_MODIFICATION, ClientsStatus::STATUS_VALIDATED, ClientsStatus::STATUS_SUSPENDED])) {
-                    return self::VISIBILITY_FULL;
+                if (0 < count($violations)) {
+                    return self::VISIBILITY_NONE;
                 }
 
-                return self::VISIBILITY_NOT_VALIDATED_LENDER;
-            } elseif ($client->isBorrower() || $client->isPartner()) {
-                return self::VISIBILITY_FULL;
-            }
-        }
+                if (null !== $client) {
+                    if ($client->isLender()) {
+                        if (in_array($client->getIdClientStatusHistory()->getIdStatus()->getId(), [ClientsStatus::STATUS_MODIFICATION, ClientsStatus::STATUS_VALIDATED, ClientsStatus::STATUS_SUSPENDED])) {
+                            return self::VISIBILITY_FULL;
+                        }
 
-        return self::VISIBILITY_ANONYMOUS;
+                        return self::VISIBILITY_NOT_VALIDATED_LENDER;
+                    } elseif ($client->isBorrower() || $client->isPartner()) {
+                        return self::VISIBILITY_FULL;
+                    }
+                }
+
+                return self::VISIBILITY_ANONYMOUS;
+        */
     }
 }

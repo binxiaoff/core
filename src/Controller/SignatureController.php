@@ -6,7 +6,7 @@ namespace Unilend\Controller;
 
 use Doctrine\ORM\{ORMException, OptimisticLockException};
 use Exception;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\{ParamConverter, Security};
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Swift_RfcComplianceException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\{RedirectResponse, Request, Response};
@@ -16,9 +16,6 @@ use Unilend\Entity\{Attachment, AttachmentSignature, AttachmentType, Clients, Pr
 use Unilend\Repository\{AttachmentSignatureRepository, AttachmentTypeRepository, CompaniesRepository};
 use Unilend\Service\{AttachmentManager, DemoMailerManager, ElectronicSignatureManager};
 
-/**
- * @Security("is_granted('ROLE_USER')")
- */
 class SignatureController extends AbstractController
 {
     /**
@@ -152,12 +149,12 @@ class SignatureController extends AbstractController
         $signatoryCompanies = $request->request->get('signatory');
 
         if (false === is_array($signatoryCompanies)) {
-            return $this->redirectToRoute('demo_project_details', ['hash' => $project->getHash()]);
+            return $this->redirectToRoute('edit_project_details', ['hash' => $project->getHash()]);
         }
 
         foreach ($signatoryCompanies as $signatoryCompanyId) {
             if (false === is_numeric($signatoryCompanyId)) {
-                return $this->redirectToRoute('demo_project_details', ['hash' => $project->getHash()]);
+                return $this->redirectToRoute('edit_project_details', ['hash' => $project->getHash()]);
             }
         }
 
@@ -186,6 +183,6 @@ class SignatureController extends AbstractController
             }
         }
 
-        return $this->redirectToRoute('demo_project_details', ['hash' => $project->getHash()]);
+        return $this->redirectToRoute('edit_project_details', ['hash' => $project->getHash()]);
     }
 }

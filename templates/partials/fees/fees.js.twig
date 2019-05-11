@@ -16,7 +16,7 @@ var $validFeeButton = $(
     '</div>'
 )
 {% if project is defined %}
-if (window.location.pathname === '{{ path('demo_project_details', {hash: project.hash})|raw }}') {
+if (window.location.pathname === '{{ path('edit_project_details', {hash: project.hash})|raw }}') {
     $buttonHolder.append($validFeeButton);
 }
 {% endif %}
@@ -35,7 +35,7 @@ $addFeeButton.find('a').on('click', function () {
 $validFeeButton.find('button').on('click', function () {
     console.log($collectionHolder.find(':input').serialize());
     $.ajax({
-        url: '{{ path('demo_add_project_fees', {hash: project.hash}) }}',
+        url: '{{ path('project_fees_add', {hash: project.hash}) }}',
         method: 'POST',
         data: $collectionHolder.find(':input').serialize()
     }).done(function () {

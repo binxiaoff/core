@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Unilend\Controller\Project;
 
 use Exception;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\{File\UploadedFile, Request, Response};
@@ -16,9 +15,6 @@ use Unilend\Form\Project\ProjectType;
 use Unilend\Repository\ProjectRepository;
 use Unilend\Service\AttachmentManager;
 
-/**
- * @Security("is_granted('ROLE_USER')")
- */
 class CreateProjectController extends AbstractController
 {
     /**
@@ -71,7 +67,7 @@ class CreateProjectController extends AbstractController
 
             $projectRepository->save($project);
 
-            return $this->redirectToRoute('demo_project_details', ['hash' => $project->getHash()]);
+            return $this->redirectToRoute('edit_project_details', ['hash' => $project->getHash()]);
         }
 
         return $this->render('project/create_project/create.html.twig', [

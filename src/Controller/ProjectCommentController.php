@@ -5,17 +5,13 @@ declare(strict_types=1);
 namespace Unilend\Controller;
 
 use Doctrine\ORM\{ORMException, OptimisticLockException};
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\{JsonResponse, Request, Response};
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\User\UserInterface;
-use Unilend\Entity\{Clients, Project, ProjectComment, Projects};
+use Unilend\Entity\{Clients, Project, ProjectComment};
 use Unilend\Repository\ProjectCommentRepository;
 
-/**
- * @Security("is_granted('ROLE_USER')")
- */
 class ProjectCommentController extends AbstractController
 {
     /**

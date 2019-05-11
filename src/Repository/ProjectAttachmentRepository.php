@@ -9,6 +9,12 @@ use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\Query\Expr\Join;
 use Unilend\Entity\{Attachment, AttachmentSignature, AttachmentType, Project, ProjectAttachment, ProjectAttachmentType, ProjectAttachmentTypeCategory};
 
+/**
+ * @method ProjectAttachment|null find($id, $lockMode = null, $lockVersion = null)
+ * @method ProjectAttachment|null findOneBy(array $criteria, array $orderBy = null)
+ * @method ProjectAttachment[]    findAll()
+ * @method ProjectAttachment[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
+ */
 class ProjectAttachmentRepository extends ServiceEntityRepository
 {
     /**

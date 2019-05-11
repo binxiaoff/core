@@ -6,7 +6,6 @@ namespace Unilend\Controller;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -16,9 +15,6 @@ use Unilend\Repository\ClientProjectRepository;
 use Unilend\Repository\ProjectRepository;
 use Unilend\Repository\WalletRepository;
 
-/**
- * @Security("is_granted('ROLE_USER')")
- */
 class WalletController extends AbstractController
 {
     /** @var EntityManagerInterface */

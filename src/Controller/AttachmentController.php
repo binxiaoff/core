@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Unilend\Controller;
 
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
@@ -14,17 +16,12 @@ use Unilend\Service\AttachmentManager;
 class AttachmentController extends AbstractController
 {
     /**
-     * @Route(
-     *     "/document/{id}/{originalName}", name="document_download",
-     *     requirements={"id": "\d+", "originalName": ".+"}
-     * )
+     * @Route("/document/{id}/{originalName}", name="document_download", requirements={"id": "\d+", "originalName": ".+"})
      *
      * @ParamConverter("attachment", options={"mapping": {"id": "id", "originalName": "originalName"}})
      *
      * @param Attachment        $attachment
-     *
      * @param AttachmentManager $attachmentManager
-     *
      * @param Filesystem        $filesystem
      *
      * @return BinaryFileResponse

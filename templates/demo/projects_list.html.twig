@@ -1,4 +1,4 @@
-{% extends 'demo/_layout.html.twig' %}
+{% extends 'layouts/_page_with_side_bar.html.twig' %}
 
 {% set page = {
     id: 'demo-projects',
@@ -28,18 +28,6 @@
                                 <span class="project-list-filter-order"></span>
                             </a>
                         </div><!-- /.project-list-filter -->
-                        <div class="project-list-item-amount project-list-filter{% if sortType == 'amount' %} ui-sortable-current ui-sortable-direction-{{ sortDirection }} {% endif %}">
-                            <a href="{{ path(app.request.attributes.get('_route'), {'page': currentPage, 'sortType': 'amount', sortDirection: sortParameter}) }}">
-                                <span class="label">{% trans %} Montant {% endtrans %}</span>
-                                <span class="project-list-filter-order"></span>
-                            </a>
-                        </div><!-- /.project-list-filter -->
-                        <div class="project-list-item-period project-list-filter{% if sortType == 'period' %} ui-sortable-current ui-sortable-direction-{{ sortDirection }} {% endif %}">
-                            <a href="{{ path(app.request.attributes.get('_route'), {'page': currentPage, 'sortType': 'period', sortDirection: sortParameter}) }}">
-                                <span class="label">Maturité</span>
-                                <span class="project-list-filter-order"></span>
-                            </a>
-                        </div><!-- /.project-list-filter -->
                         <div class="project-list-item-funding project-list-filter{% if sortType == 'presentationCompany' %} ui-sortable-current ui-sortable-direction-{{ sortDirection }} {% endif %}">
                             <a href="{{ path(app.request.attributes.get('_route'), {'page': currentPage, 'sortType': 'presentationCompany', sortDirection: sortParameter}) }}">
                                 <span class="label">Pourcentage Financement</span>
@@ -58,26 +46,20 @@
                                     {% include 'partials/market_bubble.html.twig' with {'market': project.marketSegment.label} %}
                                 </div>
                                 <div class="project-list-item-info">
-                                    <h3 class="project-list-item-title"><a href="{{ path('demo_lender_project_details', {'slug': project.slug }) }}">{{ project.idCompany.name }}</a></h3>
+                                    <h3 class="project-list-item-title"><a href="{{ path('lender_project_details', {'slug': project.slug }) }}">{{ project.borrowerCompany.name }}</a></h3>
                                     <div class="project-list-item-description">
                                         <p>{{ project.title|striptags|raw|truncate(100) }}</p>
                                     </div>
                                 </div>
-                                <div class="project-list-item-amount">
-                                    {{ project.amount|localizednumberwithprecision(0) }}&nbsp;€
-                                </div>
-                                <div class="project-list-item-period">
-                                    {{ project.period }} mois
-                                </div>
                                 <div class="project-list-item-stats">
-                                    {% if project.status <= constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_PUBLISHED') %}
-                                        {{ project.presentationCompany|localizednumber }}&nbsp;%
+                                    {% if project.currentProjectStatusHistory.status <= constant('\\Unilend\\Entity\\ProjectStatusHistory::STATUS_PUBLISHED') %}
+                                        {{ 50|localizednumber }}&nbsp;%
                                     {% else %}
                                         100 %
                                     {% endif %}
                                 </div>
                                 <div class="project-list-item-view">
-                                    <a href="{{ path('demo_lender_project_details', {'slug': project.slug}) }}">
+                                    <a href="{{ path('lender_project_details', {'slug': project.slug}) }}">
                                         <span class="icon fa-angle-right"></span><span class="sr-only">{% trans %} project-list_view-project-label {% endtrans %}</span>
                                     </a>
                                 </div>
@@ -86,7 +68,7 @@
                     </div><!-- /.project-list-items -->
 
                     {% if showPagination %}
-                        {% include 'projects/list/pagination.html.twig' %}
+                        {% include '_unilend/projects/list/pagination.html.twig' %}
                     {% endif %}
                 </div><!-- /.panel-content.project-list-content -->
             </div><!-- /.panel -->

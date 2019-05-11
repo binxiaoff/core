@@ -59,7 +59,7 @@ class ProjectType extends AbstractType
                 'required' => false,
                 'widget'   => 'single_text',
                 'input'    => 'datetime_immutable',
-                'format'   => 'dd/MM/Y',
+                'format'   => 'dd/MM/yyyy',
                 'attr'     => ['class' => 'ui-has-datepicker'],
             ])
             ->add('expectedClosingDate', DateType::class, [
@@ -67,7 +67,7 @@ class ProjectType extends AbstractType
                 'required' => false,
                 'widget'   => 'single_text',
                 'input'    => 'datetime_immutable',
-                'format'   => 'dd/MM/Y',
+                'format'   => 'dd/MM/yyyy',
                 'attr'     => ['class' => 'ui-has-datepicker'],
             ])
             ->add('description', TextareaType::class, [

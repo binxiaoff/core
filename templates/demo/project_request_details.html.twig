@@ -1,4 +1,4 @@
-{% extends 'demo/_layout.html.twig' %}
+{% extends 'layouts/_page_with_side_bar.html.twig' %}
 
 {% set page = {
     id: 'demo-project-request-details',
@@ -129,24 +129,24 @@
                             </ul>
                             <div class="row" style="position: absolute; bottom: 30px; left: 30px; right: 30px;">
                                 {% if project.currentProjectStatusHistory.status <= constant('\\Unilend\\Entity\\ProjectStatusHistory::STATUS_FUNDED') %}
-                                    <a href="{{ path('demo_project_abandon', {'hash': project.hash}) }}" class="btn-default btn-shape-xs margin-10-t" style="width: 100%;">Abandonner le dossier</a>
+                                    <a href="{{ path('edit_project_status_abandon', {'hash': project.hash}) }}" class="btn-default btn-shape-xs margin-10-t" style="width: 100%;">Abandonner le dossier</a>
                                 {% endif %}
                                 {% if project.currentProjectStatusHistory.status == constant('\\Unilend\\Entity\\ProjectStatusHistory::STATUS_REQUESTED') %}
-                                    <a href="{{ path('demo_project_publish', {'hash': project.hash}) }}" class="btn-primary btn-shape-xs margin-10-t" style="width: 100%;">Proposer au financement</a>
+                                    <a href="{{ path('edit_project_status_publish', {'hash': project.hash}) }}" class="btn-primary btn-shape-xs margin-10-t" style="width: 100%;">Proposer au financement</a>
                                 {% endif %}
                                 {% if project.currentProjectStatusHistory.status == constant('\\Unilend\\Entity\\ProjectStatusHistory::STATUS_PUBLISHED') %}
-                                    <a href="{{ path('demo_project_fund', {'hash': project.hash}) }}" class="btn-primary btn-shape-xs margin-10-t" style="width: 100%;">Clôturer la syndication</a>
+                                    <a href="{{ path('edit_project_status_funded', {'hash': project.hash}) }}" class="btn-primary btn-shape-xs margin-10-t" style="width: 100%;">Clôturer la syndication</a>
                                 {% endif %}
                                 {% if project.currentProjectStatusHistory.status == constant('\\Unilend\\Entity\\ProjectStatusHistory::STATUS_FUNDED') %}
-                                    <a href="{{ path('demo_project_sign', {'hash': project.hash}) }}" class="btn-primary btn-shape-xs margin-10-t" style="width: 100%;">Signer les contrats</a>
+                                    <a href="{{ path('edit_project_status_contracts_redacted', {'hash': project.hash}) }}" class="btn-primary btn-shape-xs margin-10-t" style="width: 100%;">Signer les contrats</a>
                                 {% endif %}
                                 {% if project.currentProjectStatusHistory.status == constant('\\Unilend\\Entity\\ProjectStatusHistory::STATUS_CONTRACTS_REDACTED') %}
-                                    <a href="{{ path('demo_project_repay', {'hash': project.hash}) }}" class="btn-primary btn-shape-xs margin-10-t" style="width: 100%;">Commencer le remboursement</a>
+                                    <a href="{{ path('edit_project_status_signed', {'hash': project.hash}) }}" class="btn-primary btn-shape-xs margin-10-t" style="width: 100%;">Commencer le remboursement</a>
                                 {% endif %}
                                 {% if project.currentProjectStatusHistory.status == constant('\\Unilend\\Entity\\ProjectStatusHistory::STATUS_CONTRACTS_SIGNED') %}
-                                    <a href="{{ path('demo_project_repaid', {'hash': project.hash}) }}" class="btn-primary btn-shape-xs margin-10-t" style="width: 100%;">Mettre fin au
+                                    <a href="{{ path('edit_project_status_finished', {'hash': project.hash}) }}" class="btn-primary btn-shape-xs margin-10-t" style="width: 100%;">Mettre fin au
                                         remboursement</a>
-                                    <a href="{{ path('demo_project_loss', {'hash': project.hash}) }}" class="btn-primary btn-shape-xs margin-10-t" style="width: 100%;">Passer en perte</a>
+                                    <a href="{{ path('edit_project_status_lost', {'hash': project.hash}) }}" class="btn-primary btn-shape-xs margin-10-t" style="width: 100%;">Passer en perte</a>
                                 {% endif %}
                             </div>
                         </div><!-- /.panel-content -->
@@ -226,7 +226,7 @@
                                     <td>{{ projectPercentFee.percentFee.rate|localizednumberwithprecision(2) }}
                                         &nbsp;%{% if projectPercentFee.percentFee.isRecurring == false %}&nbsp;(soit {{ (projectPercentFee.percentFee.rate * project.amount / 100)|localizedcurrency('EUR') }}){% endif %}</td>
                                     <td>{% if projectPercentFee.percentFee.isRecurring %} Oui {% else %} Non {% endif %}</td>
-                                    <td><a href="{{ path('demo_remove_project_fees', {hash: project.hash, projectPercentFee: projectPercentFee.id}) }}">Annuler</a></td>
+                                    <td><a href="{{ path('project_fees_remove', {hash: project.hash, projectPercentFee: projectPercentFee.id}) }}">Annuler</a></td>
                                 </tr>
                             {% endfor %}
                             </tbody>
@@ -241,7 +241,7 @@
             </article><!-- /.dashboard-tab-pane -->#}
             <article class="dashboard-tab-pane" id="article-visibility">
                 <div class="panel">
-                    <form action="{{ path('demo_project_visibility', {'hash': project.hash}) }}" method="post">
+                    <form action="{{ path('edit_project_visibility', {'hash': project.hash}) }}" method="post">
                         <h3 class="margin-10-t">Visibilité</h3>
                         {% if project.isEditable %}
                             <div class="row">
@@ -594,7 +594,7 @@
 
             var editableConfig = {
                 pk: {{ project.id }},
-                url: '{{ path('demo_project_update', {'hash': project.hash}) }}',
+                url: '{{ path('edit_project_update', {'hash': project.hash}) }}',
                 success: function (response) {
                     if (response.newValue)
                         return {

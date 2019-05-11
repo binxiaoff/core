@@ -63,7 +63,7 @@ class DemoMailerManager
     {
         $keywords = [
             'firstName'  => '',
-            'projectUrl' => $this->router->generate('demo_project_details', ['hash' => $project->getHash()], RouterInterface::ABSOLUTE_URL),
+            'projectUrl' => $this->router->generate('edit_project_details', ['hash' => $project->getHash()], RouterInterface::ABSOLUTE_URL),
             'borrower'   => $project->getBorrowerCompany()->getName(),
         ];
 
@@ -98,7 +98,7 @@ class DemoMailerManager
     {
         $keywords = [
             'firstName'    => '',
-            'projectUrl'   => $this->router->generate('demo_project_details', ['hash' => $project->getHash()], RouterInterface::ABSOLUTE_URL),
+            'projectUrl'   => $this->router->generate('edit_project_details', ['hash' => $project->getHash()], RouterInterface::ABSOLUTE_URL),
             'projectName'  => $project->getBorrowerCompany()->getName() . ' / ' . $project->getTitle(),
             'scoringValue' => $project->getInternalRatingScore(),
         ];
@@ -134,7 +134,7 @@ class DemoMailerManager
     {
         $keywords = [
             'firstName'   => '',
-            'projectUrl'  => $this->router->generate('demo_lender_project_details', ['slug' => $project->getSlug()], RouterInterface::ABSOLUTE_URL),
+            'projectUrl'  => $this->router->generate('lender_project_details', ['slug' => $project->getSlug()], RouterInterface::ABSOLUTE_URL),
             'projectName' => $project->getBorrowerCompany()->getName() . ' / ' . $project->getTitle(),
         ];
 
@@ -172,7 +172,7 @@ class DemoMailerManager
         $project   = $bid->getProject();
         $keywords  = [
             'firstName'     => '',
-            'projectUrl'    => $this->router->generate('demo_project_details', ['hash' => $project->getHash()], RouterInterface::ABSOLUTE_URL),
+            'projectUrl'    => $this->router->generate('edit_project_details', ['hash' => $project->getHash()], RouterInterface::ABSOLUTE_URL),
             'projectName'   => $project->getBorrowerCompany()->getName() . ' / ' . $project->getTitle(),
             'bidderName'    => $bid->getWallet()->getIdClient()->getCompany()->getName(),
             'bidAmount'     => $formatter->format($bid->getAmount()),
@@ -218,7 +218,7 @@ class DemoMailerManager
         $mailType = Bids::STATUS_ACCEPTED === $bid->getStatus() ? 'bid-accepted' : 'bid-rejected';
         $message  = $this->messageProvider->newMessage($mailType, [
             'firstName'   => $recipient->getFirstName(),
-            'projectUrl'  => $this->router->generate('demo_lender_project_details', ['slug' => $project->getSlug()], RouterInterface::ABSOLUTE_URL),
+            'projectUrl'  => $this->router->generate('lender_project_details', ['slug' => $project->getSlug()], RouterInterface::ABSOLUTE_URL),
             'projectName' => $project->getBorrowerCompany()->getName() . ' / ' . $project->getTitle(),
         ]);
 
@@ -238,7 +238,7 @@ class DemoMailerManager
     {
         $keywords = [
             'firstName'   => '',
-            'projectUrl'  => $this->router->generate('demo_lender_project_details', ['slug' => $project->getSlug()], RouterInterface::ABSOLUTE_URL),
+            'projectUrl'  => $this->router->generate('lender_project_details', ['slug' => $project->getSlug()], RouterInterface::ABSOLUTE_URL),
             'projectName' => $project->getBorrowerCompany()->getName() . ' / ' . $project->getTitle(),
         ];
 

@@ -10,8 +10,8 @@ use Doctrine\DBAL\DBALException;
 use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\ORM\QueryBuilder;
 use PDO;
-use RuntimeException;
 use Unilend\Entity\{Companies, CompanyStatus, CompanyStatusHistory, Operation, OperationType, Projects, ProjectsStatus, ProjectsStatusHistory, RiskDataMonitoring, Wallet};
+use Unilend\Repository\Traits\OrderByHandlerTrait;
 use Unilend\Service\RiskDataMonitoring\MonitoringCycleManager;
 
 /**
@@ -22,6 +22,8 @@ use Unilend\Service\RiskDataMonitoring\MonitoringCycleManager;
  */
 class CompaniesRepository extends ServiceEntityRepository
 {
+    use OrderByHandlerTrait;
+
     /**
      * CompaniesRepository constructor.
      *
@@ -338,7 +340,7 @@ class CompaniesRepository extends ServiceEntityRepository
             ->setParameter('arrangersToSelect', array_merge(Companies::COMPANY_ELIGIBLE_ARRANGER, [$currentCompany]))
             ;
 
-        $this->handlerOrderBy($queryBuilder, $orderBy);
+        $this->handleOrderBy($queryBuilder, $orderBy);
 
         return $queryBuilder;
     }
@@ -356,7 +358,7 @@ class CompaniesRepository extends ServiceEntityRepository
             ->setParameters(['runsToSelect' => Companies::COMPANY_ELIGIBLE_RUN, 'runsParentToSelect' => Companies::COMPANY_SUBSIDIARY_ELIGIBLE_RUN])
             ;
 
-        $this->handlerOrderBy($queryBuilder, $orderBy);
+        $this->handleOrderBy($queryBuilder, $orderBy);
 
         return $queryBuilder;
     }
@@ -370,25 +372,8 @@ class CompaniesRepository extends ServiceEntityRepository
     {
         $queryBuilder = $this->createQueryBuilder('c')->where('c.parent = :casa')->setParameter('casa', Companies::COMPANY_ID_CASA);
 
-        $this->handlerOrderBy($queryBuilder, $orderBy);
+        $this->handleOrderBy($queryBuilder, $orderBy);
 
         return $queryBuilder->getQuery()->getResult();
-    }
-
-    /**
-     * @param QueryBuilder $queryBuilder
-     * @param array        $orderBy
-     */
-    private function handlerOrderBy(QueryBuilder $queryBuilder, array $orderBy)
-    {
-        $aliases = $queryBuilder->getRootAliases();
-        if (!isset($aliases[0])) {
-            throw new RuntimeException('No alias was set before invoking getRootAlias().');
-        }
-        $alias = $aliases[0];
-
-        foreach ($orderBy as $sort => $order) {
-            $queryBuilder->addOrderBy($alias . '.' . $sort, $order);
-        }
     }
 }

@@ -63,16 +63,16 @@
                                         data-hash="{{ project.hash }}"
                                         data-sortable-partner="{{ ('partner-name_bubble-' ~ project.marketSegment.label)|trans }}"
                                         data-sortable-title="{{ project.borrowerCompany.name|e('html_attr') }}"
-                                        data-row-url="{{ path('demo_project_details', {'hash': project.hash}) }}">
+                                        data-row-url="{{ path('edit_project_details', {'hash': project.hash}) }}">
                                         <td class="table-projects-item-partner">
                                             {% include 'partials/market_bubble.html.twig' with {'market': project.marketSegment.label} %}
                                         </td>
                                         <td class="table-projects-item-title">{{ project.borrowerCompany.name }}<br>{{ project.title }}</td>
                                         <td class="table-actions">
                                             {% if status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_FUNDED') %}
-                                                <a href="{{ path('demo_project_signing', {'hash': project.hash}) }}" role="button" class="btn-default" title="Signer les contrats" data-toggle="tooltip"><span class="icon fa-pen-u16"></span></a>
+                                                <a href="{{ path('edit_project_status_contracts_redacteding', {'hash': project.hash}) }}" role="button" class="btn-default" title="Signer les contrats" data-toggle="tooltip"><span class="icon fa-pen-u16"></span></a>
                                             {% endif %}
-                                            <a href="{{ path('demo_project_details', {'hash': project.hash}) }}" role="button" class="btn-default" title="Voir le détail" data-toggle="tooltip"><span class="icon fa-view-u16"></span></a>
+                                            <a href="{{ path('edit_project_details', {'hash': project.hash}) }}" role="button" class="btn-default" title="Voir le détail" data-toggle="tooltip"><span class="icon fa-view-u16"></span></a>
                                         </td>
                                     </tr>
                                 {% endfor %}

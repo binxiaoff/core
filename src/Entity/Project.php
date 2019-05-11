@@ -549,6 +549,20 @@ class Project
     }
 
     /**
+     * @param Companies $companies
+     *
+     * @return ProjectParticipant|null
+     */
+    public function getProjectParticipantByCompany(Companies $companies): ?ProjectParticipant
+    {
+        $criteria = new Criteria();
+        $criteria->where(Criteria::expr()->eq('company', $companies));
+
+        // A company can only have one participant on a project.
+        return $this->projectParticipants->matching($criteria)->first() ?: null;
+    }
+
+    /**
      * @param Companies $company
      * @param string    $role
      *
@@ -839,6 +853,17 @@ class Project
     }
 
     /**
+     * @throws Exception
+     *
+     * @return bool
+     */
+    public function isOnline(): bool
+    {
+        return ProjectStatusHistory::STATUS_PUBLISHED === $this->getCurrentProjectStatusHistory()->getStatus()
+            && (null === $this->getExpectedClosingDate() || new DateTimeImmutable() < $this->getExpectedClosingDate());
+    }
+
+    /**
      * @param ProjectStatusHistory $currentProjectStatusHistory
      *
      * @return Project
@@ -870,20 +895,6 @@ class Project
     private function isUniqueRole(string $role): bool
     {
         return in_array($role, [ProjectParticipant::COMPANY_ROLE_ARRANGER, ProjectParticipant::COMPANY_ROLE_RUN]);
-    }
-
-    /**
-     * @param Companies $companies
-     *
-     * @return ProjectParticipant|null
-     */
-    private function getProjectParticipantByCompany(Companies $companies): ?ProjectParticipant
-    {
-        $criteria = new Criteria();
-        $criteria->where(Criteria::expr()->eq('company', $companies));
-
-        // A company can only have one participant on a project.
-        return $this->projectParticipants->matching($criteria)->first() ?: null;
     }
 
     /**

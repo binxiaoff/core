@@ -1,7 +1,7 @@
 {% extends 'layouts/_layout.html.twig' %}
 
 {% block siteContent %}
-    <article class="dashboard">
+    <article{% if page is defined and page.id is defined %} id="{{ page.id }}"{% endif %} class="dashboard{% if page.classNames is defined %} {{ page.classNames }}{% endif %}">
         <div class="dashboard-inner">
             <div class="site-wrap">
                 <div class="col-menu">
@@ -12,14 +12,14 @@
                     <nav class="dashboard-nav margin-10-t">
                         {% block dashboardNav %}
                             <ul>
-                                <li role="presentation" class="{% if app.request.get('_route') in ['wallet', 'demo_project_details'] %} active{% endif %}">
+                                <li role="presentation" class="{% if app.request.get('_route') in ['wallet', 'edit_project_details'] %} active{% endif %}">
                                     <a href="{{ path('wallet') }}">
                                         <span class="icon fa-list-u"></span>
                                         <span class="label">Portefeuille</span>
                                     </a>
                                 </li>
-                                <li role="presentation" class="{% if app.request.get('_route') in ['demo_projects_list', 'demo_lender_project_details'] %} active{% endif %}">
-                                    <a href="{{ path('demo_projects_list') }}">
+                                <li role="presentation" class="{% if app.request.get('_route') in ['list_projects', 'lender_project_details'] %} active{% endif %}">
+                                    <a href="{{ path('list_projects') }}">
                                         <span class="icon fa-exchange-u"></span>
                                         <span class="label">Place de marché</span>
                                     </a>

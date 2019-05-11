@@ -1,4 +1,4 @@
-{% extends 'demo/_layout.html.twig' %}
+{% extends 'layouts/_page_with_side_bar.html.twig' %}
 
 {% set page = {
     id: 'demo-project-details',
@@ -57,7 +57,7 @@
                             <div class="pull-right">
                                 {% include 'partials/market_bubble.html.twig' with {'market': project.marketSegment.label} %}
                             </div>
-                            <h1 class="project-single-title">{{ project.idCompany.name }}</h1>
+                            <h1 class="project-single-title">{{ project.borrowerCompany.name }}</h1>
                             <span style="font-weight: 400; margin-top: 1em; margin-bottom: 1em; font-size: xx-large; color: #787679;">{{ project.title }}</span>
                         </div><!-- /.project-single-details -->
                     </div>
@@ -66,36 +66,16 @@
                     <div class="row margin-20-t">
                         <div class="row{% if projectAttachments|length %} col-lg-9 col-md-9 col-sm-9{% endif %}">
                             <dl class="col-lg-6 col-md-6">
-                                <dt>Montant</dt>
-                                <dd>{{ project.amount|localizednumber }}&nbsp;€</dd>
-                            </dl>
-                            <dl class="col-lg-6 col-md-6">
-                                <dt>Maturité</dt>
-                                <dd>{{ project.period }} mois</dd>
-                            </dl>
-                            <dl class="col-lg-6 col-md-6">
-                                <dt>Loi d‘amortissement</dt>
-                                <dd>{{ ('amortization-name_' ~ product.idRepaymentType.label)|trans }}</dd>
-                            </dl>
-                            <dl class="col-lg-6 col-md-6">
-                                <dt>Périodicité</dt>
-                                <dd>{{ ('periodicity_' ~ product.idRepaymentType.periodicity ~ '-months')|trans }}</dd>
-                            </dl>
-                            <dl class="col-lg-6 col-md-6">
                                 <dt>Date de dépôt</dt>
                                 <dd>{{ project.added|date('d/m/Y') }}</dd>
                             </dl>
                             <dl class="col-lg-6 col-md-6">
                                 <dt>Date butoir de réponse</dt>
-                                <dd>{{ project.datePublication|date('d/m/Y') }}</dd>
+                                <dd>{{ project.replyDeadline|date('d/m/Y') }}</dd>
                             </dl>
                             <dl class="col-lg-6 col-md-6">
-                                <dt>Date de mise à disposition</dt>
-                                <dd>{{ project.dateRetrait|date('d/m/Y') }}</dd>
-                            </dl>
-                            <dl class="col-lg-6 col-md-6">
-                                <dt>Date de 1<sup>ère</sup> échéance</dt>
-                                <dd>{{ project.dateFunded|date('d/m/Y') }}</dd>
+                                <dt>Date de closing envisagée</dt>
+                                <dd>{{ project.expectedClosingDate|date('d/m/Y') }}</dd>
                             </dl>
                             <dl class="col-lg-6 col-md-6">
                                 <dt>Structuration</dt>
@@ -106,7 +86,7 @@
                             </dl>
                             <dl class="col-lg-6 col-md-6">
                                 <dt>Notation</dt>
-                                <dd>{% if project.natureProject %}{{ project.natureProject }}{% else %}N/A{% endif %}</dd>
+                                <dd>{% if project.internalRatingScore %}{{ project.internalRatingScore }}{% else %}N/A{% endif %}</dd>
                             </dl>
                         </div>
                         {% if projectAttachments|length %}
