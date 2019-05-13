@@ -53,13 +53,11 @@ class LenderProjectController extends AbstractController
 
         $wallet = $walletRepository->getWalletByType($user, WalletType::LENDER);
 
-        $userPendingBids = [];
-        $bidForms        = [];
+        $bidForms = [];
+
         foreach ($project->getTranches() as $tranche) {
             $userBid = $tranche->getBids([Bids::STATUS_PENDING], $wallet)->first();
-            if ($userBid) {
-                $userPendingBids[] = $userBid;
-            } else {
+            if (!$userBid) {
                 $userBid = new Bids();
                 $userBid->setTranche($tranche)
                     ->setWallet($wallet)
@@ -68,6 +66,7 @@ class LenderProjectController extends AbstractController
                 $bidForms[$tranche->getId()] = $this->createForm(BidType::class, $userBid);
             }
         }
+
         foreach ($bidForms as $bidForm) {
             $bidForm->handleRequest($request);
 
