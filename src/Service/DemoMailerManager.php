@@ -169,7 +169,7 @@ class DemoMailerManager
     public function sendBidSubmitted(Bids $bid): int
     {
         $formatter = new NumberFormatter('fr_FR', NumberFormatter::DEFAULT_STYLE);
-        $project   = $bid->getTranche();
+        $project   = $bid->getTranche()->getProject();
         $keywords  = [
             'firstName'     => '',
             'projectUrl'    => $this->router->generate('edit_project_details', ['hash' => $project->getHash()], RouterInterface::ABSOLUTE_URL),
@@ -214,7 +214,7 @@ class DemoMailerManager
             return 0;
         }
 
-        $project  = $bid->getTranche();
+        $project  = $bid->getTranche()->getProject();
         $mailType = Bids::STATUS_ACCEPTED === $bid->getStatus() ? 'bid-accepted' : 'bid-rejected';
         $message  = $this->messageProvider->newMessage($mailType, [
             'firstName'   => $recipient->getFirstName(),

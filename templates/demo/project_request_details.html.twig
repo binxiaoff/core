@@ -353,7 +353,6 @@
                         <div class="panel-content">
                             <h3 class="margin-10-t">Offres de participation</h3>
                             {% for tranche in project.tranches %}
-                                <h4 class="margin-10-t">{{ tranche.name }}</h4>
                                 {% include 'partials/bids/bids_list.html.twig' with {tranche: tranche} %}
                             {% endfor %}
                         </div><!-- /.project-single-content -->

@@ -117,7 +117,9 @@
                     </header>
                 </div><!-- /.section-tabs-nav -->
                 <div class="section-tabs-content tab-content">
-                    {% include 'partials/bids/my_bid.html.twig' %}
+                    {% for tranche in project.tranches %}
+                        {% include 'partials/bids/my_bid.html.twig' with {tranche: tranche, wallet: wallet, form: bidForms[tranche.id].createView()|default(null)} %}
+                    {% endfor %}
                 </div><!-- /.section-tabs-content -->
             </div><!-- /.panel -->
         </article>
@@ -129,7 +131,9 @@
                     </header>
                 </div><!-- /.section-tabs-nav -->
                 <div class="section-tabs-content tab-content">
-                    {% include 'partials/bids/bids_list.html.twig' %}
+                    {% for tranche in project.tranches %}
+                        {% include 'partials/bids/bids_list.html.twig' with {tranche: tranche} %}
+                    {% endfor %}
                 </div><!-- /.section-tabs-content -->
             </div><!-- /.panel -->
         </article><!-- /.dashboard-tab-pane -->

@@ -12,7 +12,7 @@ use Symfony\Component\HttpFoundation\{Request, Response};
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Unilend\Entity\{Bids, Clients, Project, WalletType};
-use Unilend\Form\Lending\BidType;
+use Unilend\Form\Bid\BidType;
 use Unilend\Repository\{BidsRepository, ProjectAttachmentRepository, WalletRepository};
 use Unilend\Service\{DemoMailerManager, Front\ProjectDisplayManager};
 
@@ -52,46 +52,49 @@ class LenderProjectController extends AbstractController
         }
 
         $wallet = $walletRepository->getWalletByType($user, WalletType::LENDER);
-        $bid    = $bidsRepository->findOneBy([
-            'wallet'  => $wallet,
-            'project' => $project,
-            'status'  => [Bids::STATUS_PENDING, Bids::STATUS_ACCEPTED],
-        ])
-        ;
 
-        if (null === $bid && $wallet) {
-            $bid = new Bids();
-            $bid->setProject($project)
-                ->setWallet($wallet)
-                ->setStatus(Bids::STATUS_PENDING)
-            ;
-        }
-
-        $form = $this->createForm(BidType::class, $bid);
-        $form->handleRequest($request);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-            $bidsRepository->save($bid);
-
-            try {
-                $mailerManager->sendBidSubmitted($bid);
-            } catch (Swift_SwiftException $exception) {
-                $logger->error('An error occurred while sending submitted bid email. Message: ' . $exception->getMessage(), [
-                    'class'    => __CLASS__,
-                    'function' => __FUNCTION__,
-                    'file'     => $exception->getFile(),
-                    'line'     => $exception->getLine(),
-                ]);
+        $userPendingBids = [];
+        $bidForms        = [];
+        foreach ($project->getTranches() as $tranche) {
+            $userBid = $tranche->getBids([Bids::STATUS_PENDING], $wallet)->first();
+            if ($userBid) {
+                $userPendingBids[] = $userBid;
+            } else {
+                $userBid = new Bids();
+                $userBid->setTranche($tranche)
+                    ->setWallet($wallet)
+                    ->setStatus(Bids::STATUS_PENDING)
+                ;
+                $bidForms[$tranche->getId()] = $this->createForm(BidType::class, $userBid);
             }
+        }
+        foreach ($bidForms as $bidForm) {
+            $bidForm->handleRequest($request);
 
-            return $this->redirectToRoute('lender_project_details', ['slug' => $project->getSlug()]);
+            if ($bidForm->isSubmitted() && $bidForm->isValid()) {
+                /** @var Bids $bid */
+                $bid = $bidForm->getData();
+                $bidsRepository->save($bid);
+
+                try {
+                    $mailerManager->sendBidSubmitted($bid);
+                } catch (Swift_SwiftException $exception) {
+                    $logger->error('An error occurred while sending submitted bid email. Message: ' . $exception->getMessage(), [
+                        'class'    => __CLASS__,
+                        'function' => __FUNCTION__,
+                        'file'     => $exception->getFile(),
+                        'line'     => $exception->getLine(),
+                    ]);
+                }
+
+                return $this->redirectToRoute('lender_project_details', ['slug' => $project->getSlug()]);
+            }
         }
 
         return $this->render('demo/project.html.twig', [
             'project'            => $project,
             'wallet'             => $wallet,
-            'bid'                => $bid,
-            'form'               => $form->createView(),
+            'bidForms'           => $bidForms,
             'projectAttachments' => $projectAttachmentRepository->findBy(['project' => $project], ['added' => 'DESC']),
         ]);
     }
