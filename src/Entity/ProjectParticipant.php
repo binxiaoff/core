@@ -25,6 +25,8 @@ class ProjectParticipant
     public const COMPANY_ROLE_RUN      = 'COMPANY_ROLE_RUN'; // The abbreviation of Responsable Unique de Notation, who gives a note on the borrower.
     public const COMPANY_ROLE_LENDER   = 'COMPANY_ROLE_LENDER';
 
+    public const ROLE_DEFAULT = self::COMPANY_ROLE_LENDER;
+
     public const ALL_ROLES = [self::COMPANY_ROLE_ARRANGER, self::COMPANY_ROLE_RUN, self::COMPANY_ROLE_LENDER];
 
     /**

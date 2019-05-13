@@ -11,9 +11,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Unilend\Entity\{Clients, Loans, Project, ProjectStatusHistory, WalletType};
-use Unilend\Repository\ClientProjectRepository;
-use Unilend\Repository\ProjectRepository;
-use Unilend\Repository\WalletRepository;
+use Unilend\Repository\{ClientProjectRepository, ProjectRepository, WalletRepository};
 
 class WalletController extends AbstractController
 {

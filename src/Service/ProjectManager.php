@@ -6,7 +6,7 @@ use DateTime;
 use Doctrine\ORM\{EntityManagerInterface, NoResultException, NonUniqueResultException};
 use Exception;
 use Unilend\Entity\{Bids, Clients, CloseOutNettingPayment, CloseOutNettingRepayment, CompanyStatus, CompanyStatusHistory, Echeanciers, EcheanciersEmprunteur, Factures, Loans,
-    Projects, ProjectsStatus, Settings, TaxType, Virements};
+    Project, Projects, ProjectsStatus, Settings, TaxType, Virements};
 use Unilend\Service\Simulator\EntityManager as EntityManagerSimulator;
 
 class ProjectManager
@@ -378,27 +378,27 @@ class ProjectManager
     }
 
     /**
-     * @param Projects $project
+     * @param Project $project
      *
      * @return bool
      */
-    public function isEditable(Projects $project): bool
+    public function isEditable(Project $project): bool
     {
-        return $project->getStatus() < ProjectsStatus::STATUS_PUBLISHED;
+        return $project->getCurrentProjectStatusHistory()->getStatus() < ProjectsStatus::STATUS_PUBLISHED;
     }
 
     /**
-     * @param Projects $project
-     * @param Clients  $user
+     * @param Project $project
+     * @param Clients $user
      *
      * @return bool
      */
-    public function isScoringEditable(Projects $project, Clients $user): bool
+    public function isScoringEditable(Project $project, Clients $user): bool
     {
         return
             $this->isEditable($project)
-            && $project->getRunParticipant()
-            && $project->getRunParticipant()->getCompany() === $user->getCompany()
+            && $project->getRun()
+            && $project->getRun()->getCompany() === $user->getCompany()
         ;
     }
 

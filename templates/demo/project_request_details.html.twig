@@ -263,28 +263,24 @@
                             </div>
                             <div class="row">
                                 <label>
-                                    <input id="visibility-crca" type="checkbox">
+                                    <input type="checkbox" class="group-select" data-companies="4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42">
                                     Caisses régionales
                                 </label>
                                 <label>
-                                    <input type="checkbox">
-                                    Amicale de l’Ouest
+                                    <input type="checkbox" class="group-select" data-companies="10,11,12,14,26,42">
+                                    Amicale Centre
                                 </label>
                                 <label>
-                                    <input type="checkbox">
-                                    Amicale du Sud
-                                </label>
-                                <label>
-                                    <input type="checkbox">
-                                    Amicale du Centre
-                                </label>
-                                <label>
-                                    <input type="checkbox">
+                                    <input type="checkbox" class="group-select" data-companies="5,9,22,27,30,31,33,34">
                                     Amicale Nord & Est
                                 </label>
                                 <label>
-                                    <input type="checkbox" value="45">
-                                    LCL
+                                    <input type="checkbox" class="group-select" data-companies="6,8,15,16,18,19,21,23,24,28,29,41">
+                                    Amicale Ouest
+                                </label>
+                                <label>
+                                    <input type="checkbox" class="group-select" data-companies="4,7,13,17,20,25,32,35,36,37,38,39,40">
+                                    Amicale Sud
                                 </label>
                             </div>
                             <hr>
@@ -296,7 +292,7 @@
                                     {% if loop.index <= lendersByColumn %}
                                         <div>
                                             <label>
-                                                <input type="checkbox" name="visibility[]" value="{{ lender.idCompany }}" class="visibility-bank visibility-bank-crca"
+                                                <input type="checkbox" name="visibility[]" value="{{ lender.idCompany }}" class="visibility-bank"
                                                         {% if lender in project.lenderCompanies %} checked{% endif %}
                                                         {% if
                                                             false == project.isEditable
@@ -313,7 +309,7 @@
                                     {% if loop.index > lendersByColumn and loop.index <= 2 * lendersByColumn %}
                                         <div>
                                             <label>
-                                                <input type="checkbox" name="visibility[]" value="{{ lender.idCompany }}" class="visibility-bank visibility-bank-crca"
+                                                <input type="checkbox" name="visibility[]" value="{{ lender.idCompany }}" class="visibility-bank"
                                                         {% if lender in project.lenderCompanies %} checked{% endif %}
                                                         {% if
                                                             false == project.isEditable
@@ -330,7 +326,7 @@
                                     {% if loop.index > 2 * lendersByColumn %}
                                         <div>
                                             <label>
-                                                <input type="checkbox" name="visibility[]" value="{{ lender.idCompany }}" class="visibility-bank visibility-bank-crca"
+                                                <input type="checkbox" name="visibility[]" value="{{ lender.idCompany }}" class="visibility-bank"
                                                         {% if lender in project.lenderCompanies %} checked{% endif %}
                                                         {% if
                                                             false == project.isEditable
@@ -662,8 +658,14 @@
                 emptytext: 'Non'
             }))
 
-            $('#visibility-crca').on('change', function () {
-                $('.visibility-bank-crca').not(':disabled').prop('checked', $(this).is(':checked'))
+            $('.group-select').on('change', function () {
+                var $groupSelect = $(this)
+                var companies = $groupSelect.data('companies').split(',')
+                var checked = $groupSelect.is(':checked')
+
+                $.each(companies, function (index, value) {
+                    $('[value=' + value + '].visibility-bank').not(':disabled').prop('checked', checked)
+                })
             })
         })
     </script>
