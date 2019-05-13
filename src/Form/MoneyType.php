@@ -17,10 +17,14 @@ class MoneyType extends AbstractType
      */
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
-        $builder
-            ->add('amount', NumberType::class, ['label' => 'money-form.amount'])
-            ->add('currency', CurrencyType::class, ['label' => 'money-form.currency', 'preferred_choices' => ['EUR']])
-        ;
+        $builder->add('amount', NumberType::class, ['label' => 'money-form.amount']);
+
+        if (false === $options['disable_currency']) {
+            $builder->add('currency', CurrencyType::class, [
+                'label'             => 'money-form.currency',
+                'preferred_choices' => $options['preferred_currency'],
+            ]);
+        }
     }
 
     /**
@@ -36,6 +40,10 @@ class MoneyType extends AbstractType
      */
     public function configureOptions(OptionsResolver $resolver)
     {
-        $resolver->setDefaults(['data_class' => Money::class]);
+        $resolver->setDefaults([
+            'data_class'         => Money::class,
+            'preferred_currency' => ['EUR'],
+            'disable_currency'   => false,
+        ]);
     }
 }

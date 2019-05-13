@@ -64,6 +64,7 @@ class LenderProjectController extends AbstractController
                     ->setWallet($wallet)
                     ->setStatus(Bids::STATUS_PENDING)
                 ;
+                $userBid->getMoney()->setCurrency($tranche->getMoney()->getCurrency());
                 $bidForms[$tranche->getId()] = $this->createForm(BidType::class, $userBid);
             }
         }

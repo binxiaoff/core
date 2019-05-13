@@ -17,7 +17,7 @@
         {% for offer in bids %}
             <tr>
                 <td>{{ offer.wallet.idClient.company.name }}</td>
-                <td>{{ (offer.amount / 100)|localizednumberwithprecision(0) }}&nbsp;€</td>
+                <td>{{ offer.money.amount|localizedcurrencywithprecision(0, offer.money.currency) }}</td>
                 <td>{{ ('interest-rate-index_' ~ offer.rate.indexType)|trans }}</td>
                 <td>{{ offer.rate.margin|localizednumberwithprecision(2) }}&nbsp;%</td>
                 {#<td>{{ offer.oneTimeFeeTotalRate|localizednumberwithprecision(2) }}&nbsp;%</td>
