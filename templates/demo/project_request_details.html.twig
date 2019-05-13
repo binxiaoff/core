@@ -113,7 +113,7 @@
                     </div><!-- /.panel -->
                 </article><!-- /.dashboard-tab-pane -->
                 <article class="dashboard-tab-pane col-lg-4 col-md-4" style="border-left: solid 2px #eceaed;">
-                    <div class="panel" style="position: relative;" data-equal-height>
+                    <div class="panel" style="position: relative; min-height: 270px;" data-equal-height>
                         <h3 class="margin-10-t">Raccourcis</h3>
                         <div class="panel-content">
                             <ul>
@@ -369,7 +369,7 @@
                             <div class="row">
                                 <span class="icon fa-file-u"></span>
                                 <a href="{{ path('document_download', {'id': projectAttachment.attachment.id, 'originalName': projectAttachment.attachment.originalName}) }}">
-                                    {{ attachment.originalName }}
+                                    {{ attachment.description }}
                                 </a>
                                 <small>({{ attachment.added|localizeddate('short', 'short') }})</small>
                             </div>
@@ -408,7 +408,7 @@
                                             {% set attachment = signatureAttachment.attachment %}
                                             <td rowspan="{{ signatures|length }}">
                                                 <a href="{{ path('document_download', {'id': signatureAttachment.attachment.id, 'originalName': signatureAttachment.attachment.originalName}) }}">
-                                                    {{ attachment.originalName }}
+                                                    {{ attachment.description }}
                                                 </a>
                                                 <br>
                                                 <small>({{ attachment.added|localizeddate('short', 'short') }})</small>

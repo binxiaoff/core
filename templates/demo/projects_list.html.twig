@@ -9,68 +9,61 @@
     <div class="dashboard-tabs-content">
         <article class="dashboard-tab-pane">
             <div class="panel project-list">
-                <div class="panel-content project-list-content" style="margin-bottom: 0;">
-                    <div class="project-list-filters">
-                        {% if sortDirection == 'desc' %}
-                            {% set sortParameter = 'asc' %}
-                        {% else %}
-                            {% set sortParameter = 'desc' %}
-                        {% endif %}
-                        <div class="project-list-item-category project-list-filter{% if sortType == 'idPartner' %} ui-sortable-current ui-sortable-direction-{{ sortDirection }} {% endif %}">
-                            <a href="{{ path(app.request.attributes.get('_route'), {'page': currentPage, 'sortType': 'idPartner', sortDirection: sortParameter}) }}">
-                                <span class="label">Marché</span>
-                                <span class="project-list-filter-order"></span>
-                            </a>
-                        </div><!-- /.project-list-filter -->
-                        <div class="project-list-item-info project-list-filter{% if sortType == 'title' %} ui-sortable-current ui-sortable-direction-{{ sortDirection }} {% endif %}">
-                            <a href="{{ path(app.request.attributes.get('_route'), {'page': currentPage, 'sortType': 'title', sortDirection: sortParameter}) }}">
-                                <span class="label">Projet</span>
-                                <span class="project-list-filter-order"></span>
-                            </a>
-                        </div><!-- /.project-list-filter -->
-                        <div class="project-list-item-funding project-list-filter{% if sortType == 'presentationCompany' %} ui-sortable-current ui-sortable-direction-{{ sortDirection }} {% endif %}">
-                            <a href="{{ path(app.request.attributes.get('_route'), {'page': currentPage, 'sortType': 'presentationCompany', sortDirection: sortParameter}) }}">
-                                <span class="label">Pourcentage Financement</span>
-                                <span class="project-list-filter-order"></span>
-                            </a>
-                        </div><!-- /.project-list-filter -->
-                        <div class="project-list-item-view project-list-filter">
-                            <span class="label">&nbsp;</span>
-                        </div><!-- /.project-list-filter -->
-                    </div><!-- /.project-list-filters -->
+                {% if projects|length %}
+                    <div class="panel-content project-list-content" style="margin-bottom: 0;">
+                        <div class="project-list-filters">
+                            {% if sortDirection == 'desc' %}
+                                {% set sortParameter = 'asc' %}
+                            {% else %}
+                                {% set sortParameter = 'desc' %}
+                            {% endif %}
+                            <div class="project-list-item-category project-list-filter{% if sortType == 'idPartner' %} ui-sortable-current ui-sortable-direction-{{ sortDirection }} {% endif %}">
+                                <a href="{{ path(app.request.attributes.get('_route'), {'page': currentPage, 'sortType': 'idPartner', sortDirection: sortParameter}) }}">
+                                    <span class="label">Marché</span>
+                                    <span class="project-list-filter-order"></span>
+                                </a>
+                            </div><!-- /.project-list-filter -->
+                            <div class="project-list-item-info project-list-filter{% if sortType == 'title' %} ui-sortable-current ui-sortable-direction-{{ sortDirection }} {% endif %}">
+                                <a href="{{ path(app.request.attributes.get('_route'), {'page': currentPage, 'sortType': 'title', sortDirection: sortParameter}) }}">
+                                    <span class="label">Projet</span>
+                                    <span class="project-list-filter-order"></span>
+                                </a>
+                            </div><!-- /.project-list-filter -->
+                            <div class="project-list-item-view project-list-filter">
+                                <span class="label">&nbsp;</span>
+                            </div><!-- /.project-list-filter -->
+                        </div><!-- /.project-list-filters -->
 
-                    <div class="project-list-items">
-                        {% for project in projects %}
-                            <article class="project-list-item{% if false == project.isOnline %} ui-project-expired{% endif %}">
-                                <div class="project-list-item-category">
-                                    {% include 'partials/market_bubble.html.twig' with {'market': project.marketSegment.label} %}
-                                </div>
-                                <div class="project-list-item-info">
-                                    <h3 class="project-list-item-title"><a href="{{ path('lender_project_details', {'slug': project.slug }) }}">{{ project.borrowerCompany.name }}</a></h3>
-                                    <div class="project-list-item-description">
-                                        <p>{{ project.title|striptags|raw|truncate(100) }}</p>
+                        <div class="project-list-items">
+                            {% for project in projects %}
+                                <article class="project-list-item{% if false == project.isOnline %} ui-project-expired{% endif %}">
+                                    <div class="project-list-item-category">
+                                        {% include 'partials/market_bubble.html.twig' with {'market': project.marketSegment.label} %}
                                     </div>
-                                </div>
-                                <div class="project-list-item-stats">
-                                    {% if project.currentProjectStatusHistory.status <= constant('\\Unilend\\Entity\\ProjectStatusHistory::STATUS_PUBLISHED') %}
-                                        {{ 50|localizednumber }}&nbsp;%
-                                    {% else %}
-                                        100 %
-                                    {% endif %}
-                                </div>
-                                <div class="project-list-item-view">
-                                    <a href="{{ path('lender_project_details', {'slug': project.slug}) }}">
-                                        <span class="icon fa-angle-right"></span><span class="sr-only">{% trans %} project-list_view-project-label {% endtrans %}</span>
-                                    </a>
-                                </div>
-                            </article><!-- /.project-list-item -->
-                        {% endfor %}
-                    </div><!-- /.project-list-items -->
+                                    <div class="project-list-item-info">
+                                        <h3 class="project-list-item-title"><a href="{{ path('lender_project_details', {'slug': project.slug }) }}">{{ project.borrowerCompany.name }}</a></h3>
+                                        <div class="project-list-item-description">
+                                            <p>{{ project.title|striptags|raw|truncate(100) }}</p>
+                                        </div>
+                                    </div>
+                                    <div class="project-list-item-view">
+                                        <a href="{{ path('lender_project_details', {'slug': project.slug}) }}">
+                                            <span class="icon fa-angle-right"></span><span class="sr-only">{% trans %} project-list_view-project-label {% endtrans %}</span>
+                                        </a>
+                                    </div>
+                                </article><!-- /.project-list-item -->
+                            {% endfor %}
+                        </div><!-- /.project-list-items -->
 
-                    {% if showPagination %}
-                        {% include '_unilend/projects/list/pagination.html.twig' %}
-                    {% endif %}
-                </div><!-- /.panel-content.project-list-content -->
+                        {% if showPagination %}
+                            {% include 'demo/projects_pagination.html.twig' %}
+                        {% endif %}
+                    </div><!-- /.panel-content.project-list-content -->
+                {% else %}
+                    <div class="message-info" style="margin-bottom: 0;">
+                        Aucun projet de financement ne vous est proposé pour le moment.
+                    </div>
+                {% endif %}
             </div><!-- /.panel -->
         </article><!-- /.dashboard-tab-pane -->
     </div><!-- /.dashboard-tabs-content -->

@@ -5,8 +5,8 @@ namespace Unilend\Service;
 use DateTime;
 use Doctrine\ORM\{EntityManagerInterface, NoResultException, NonUniqueResultException};
 use Exception;
-use Unilend\Entity\{Bids, Clients, CloseOutNettingPayment, CloseOutNettingRepayment, CompanyStatus, CompanyStatusHistory, Echeanciers, EcheanciersEmprunteur, Factures, Loans,
-    Project, Projects, ProjectsStatus, Settings, TaxType, Virements};
+use Unilend\Entity\{Bids, CloseOutNettingPayment, CloseOutNettingRepayment, CompanyStatus, CompanyStatusHistory, Echeanciers, EcheanciersEmprunteur, Factures, Loans,
+    Projects, Settings, TaxType, Virements};
 use Unilend\Service\Simulator\EntityManager as EntityManagerSimulator;
 
 class ProjectManager
@@ -49,7 +49,6 @@ class ProjectManager
     /**
      * @param Projects $project
      *
-     * @throws NoResultException
      * @throws NonUniqueResultException
      *
      * @return bool
@@ -375,31 +374,6 @@ class ProjectManager
         }
 
         return ['expired' => $expired, 'to_expired' => $toExpire];
-    }
-
-    /**
-     * @param Project $project
-     *
-     * @return bool
-     */
-    public function isEditable(Project $project): bool
-    {
-        return $project->getCurrentProjectStatusHistory()->getStatus() < ProjectsStatus::STATUS_PUBLISHED;
-    }
-
-    /**
-     * @param Project $project
-     * @param Clients $user
-     *
-     * @return bool
-     */
-    public function isScoringEditable(Project $project, Clients $user): bool
-    {
-        return
-            $this->isEditable($project)
-            && $project->getRun()
-            && $project->getRun()->getCompany() === $user->getCompany()
-        ;
     }
 
     /**

@@ -59,7 +59,8 @@ class LenderProjectController extends AbstractController
             $userBid = $tranche->getBids([Bids::STATUS_PENDING], $wallet)->first();
             if (!$userBid) {
                 $userBid = new Bids();
-                $userBid->setTranche($tranche)
+                $userBid
+                    ->setTranche($tranche)
                     ->setWallet($wallet)
                     ->setStatus(Bids::STATUS_PENDING)
                 ;
@@ -94,7 +95,7 @@ class LenderProjectController extends AbstractController
             'project'            => $project,
             'wallet'             => $wallet,
             'bidForms'           => $bidForms,
-            'projectAttachments' => $projectAttachmentRepository->findBy(['project' => $project], ['added' => 'DESC']),
+            'projectAttachments' => $projectAttachmentRepository->getAttachmentsWithoutSignature($project, ['added' => 'DESC']),
         ]);
     }
 }

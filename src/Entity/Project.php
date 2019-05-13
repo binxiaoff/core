@@ -849,8 +849,7 @@ class Project
      */
     public function isOnline(): bool
     {
-        return ProjectStatusHistory::STATUS_PUBLISHED === $this->getCurrentProjectStatusHistory()->getStatus()
-            && (null === $this->getExpectedClosingDate() || new DateTimeImmutable() < $this->getExpectedClosingDate());
+        return ProjectStatusHistory::STATUS_PUBLISHED === $this->getCurrentProjectStatusHistory()->getStatus();
     }
 
     /**

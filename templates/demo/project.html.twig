@@ -80,8 +80,8 @@
                             <dl class="col-lg-6 col-md-6">
                                 <dt>Structuration</dt>
                                 <dd>
-                                    <div>Arrangeur : {% if arranger.0 is defined %} {{ arranger.0.company.name }} {% else %} non défini {% endif %}</div>
-                                    <div>RUN : {% if run.0 is defined %} {{ run.0.company.name }} {% else %} non défini {% endif %}</div>
+                                    <div>Arrangeur : {% if project.arranger is defined %} {{ project.arranger.company.name }} {% else %} non défini {% endif %}</div>
+                                    <div>RUN : {% if project.run is defined %} {{ project.run.company.name }} {% else %} non défini {% endif %}</div>
                                 </dd>
                             </dl>
                             <dl class="col-lg-6 col-md-6">
@@ -99,7 +99,7 @@
                                     <div class="row">
                                         <span class="icon fa-file-u"></span>
                                         <a href="{{ path('document_download', {'id': projectAttachment.attachment.id, 'originalName': projectAttachment.attachment.originalName}) }}">
-                                            {{ projectAttachment.attachment.originalName }}
+                                            {{ projectAttachment.attachment.description }}
                                         </a>
                                     </div>
                                 {% endfor %}

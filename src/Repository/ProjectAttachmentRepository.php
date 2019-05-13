@@ -91,11 +91,12 @@ class ProjectAttachmentRepository extends ServiceEntityRepository
     }
 
     /**
-     * @param Project $project
+     * @param Project    $project
+     * @param array|null $orderBy
      *
      * @return array
      */
-    public function getAttachmentsWithoutSignature(Project $project): array
+    public function getAttachmentsWithoutSignature(Project $project, ?array $orderBy = null): array
     {
         $queryBuilder = $this->createQueryBuilder('pa');
         $queryBuilder
@@ -103,8 +104,17 @@ class ProjectAttachmentRepository extends ServiceEntityRepository
             ->where('pa.project = :project')
             ->andWhere($queryBuilder->expr()->isNull('s.id'))
             ->setParameter('project', $project)
-            ->orderBy('pa.added', 'ASC')
         ;
+
+        if (null === $orderBy) {
+            $queryBuilder->orderBy('pa.added', 'ASC');
+        }
+
+        if ($orderBy) {
+            foreach ($orderBy as $field => $direction) {
+                $queryBuilder->addOrderBy('pa.' . $field, $direction);
+            }
+        }
 
         return $queryBuilder->getQuery()->getResult();
     }
