@@ -6,6 +6,7 @@ namespace Unilend\Entity;
 
 use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Criteria;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Entity\Embeddable\{Money, NullableLendingRate};
@@ -135,6 +136,21 @@ class Tranche
     private $tranchePercentFees;
 
     /**
+     * @var Bids[]|ArrayCollection
+     *
+     * @ORM\OneToMany(targetEntity="Unilend\Entity\Bids", mappedBy="tranche")
+     * @ORM\OrderBy({"added": "DESC"})
+     */
+    private $bids;
+
+    /**
+     * @var Loans[]|ArrayCollection
+     *
+     * @ORM\OneToMany(targetEntity="Unilend\Entity\Loans", mappedBy="tranche")
+     */
+    private $loans;
+
+    /**
      * Tranche constructor.
      */
     public function __construct()
@@ -142,6 +158,8 @@ class Tranche
         $this->money              = new Money();
         $this->rate               = new NullableLendingRate();
         $this->tranchePercentFees = new ArrayCollection();
+        $this->bids               = new ArrayCollection();
+        $this->loans              = new ArrayCollection();
     }
 
     /**
@@ -388,6 +406,35 @@ class Tranche
     public function getTranchePercentFees(): iterable
     {
         return $this->tranchePercentFees;
+    }
+
+    /**
+     * @param array|null  $status
+     * @param Wallet|null $wallet
+     *
+     * @return Bids[]|ArrayCollection
+     */
+    public function getBids(?array $status = null, ?Wallet $wallet = null): iterable
+    {
+        $criteria = new Criteria();
+
+        if (null !== $status) {
+            $criteria->andWhere(Criteria::expr()->in('status', $status));
+        }
+
+        if (null !== $wallet) {
+            $criteria->andWhere(Criteria::expr()->eq('wallet', $wallet));
+        }
+
+        return $this->bids->matching($criteria);
+    }
+
+    /**
+     * @return Loans[]|ArrayCollection
+     */
+    public function getLoans(): iterable
+    {
+        return $this->loans;
     }
 
     /**

@@ -153,6 +153,18 @@
                     </div><!-- /.panel -->
                 </article><!-- /.dashboard-tab-pane -->
             </div><!-- /.row -->
+            <article class="dashboard-tab-pane">
+                <div class="panel">
+                    <div class="panel-content">
+                        {{ form_start(trancheForm) }}
+                        {{ form_row(trancheForm.tranches) }}
+                        <div class="text-align-right">
+                            <button type="submit" class="btn-primary btn-shape-xs" data-spinnerbutton>Confirmer</button>
+                        </div>
+                        {{ form_end(trancheForm) }}
+                    </div><!-- /.panel-content -->
+                </div><!-- /.panel -->
+            </article><!-- /.dashboard-tab-pane -->
             <article class="dashboard-tab-pane" id="article-scoring">
                 <div class="panel">
                     <fieldset>
@@ -339,12 +351,15 @@
                     </form>
                 </div>
             </article><!-- /.dashboard-tab-pane -->
-            {% if project.currentProjectStatusHistory.status >= constant('\\Unilend\\Entity\\ProjectStatusHistory::STATUS_PUBLISHED') %}
+            {% if project.currentProjectStatusHistory.status >= constant('\\Unilend\\Entity\\ProjectStatusHistory::STATUS_PUBLISHED') and project.tranches|length > 0 %}
                 <article class="dashboard-tab-pane" id="article-bids">
                     <div class="panel">
                         <div class="panel-content">
                             <h3 class="margin-10-t">Offres de participation</h3>
-                            {% include 'partials/bids/bids_list.html.twig' with {bids: project.bids} %}
+                            {% for tranche in project.tranches %}
+                                <h4 class="margin-10-t">{{ tranche.name }}</h4>
+                                {% include 'partials/bids/bids_list.html.twig' with {tranche: tranche} %}
+                            {% endfor %}
                         </div><!-- /.project-single-content -->
                     </div>
                 </article><!-- /.dashboard-tab-pane -->
@@ -369,9 +384,9 @@
                         <h5 class="h4 margin-20-t">Ajouter des documents</h5>
                         {{ form_row(documentForm.projectAttachments) }}
                     </fieldset>
-                        <div class="text-align-right">
-                            <button type="submit" class="btn-primary btn-shape-xs" data-spinnerbutton>Charger</button>
-                        </div>
+                    <div class="text-align-right">
+                        <button type="submit" class="btn-primary btn-shape-xs" data-spinnerbutton>Charger</button>
+                    </div>
                     {{ form_end(documentForm) }}
                 </div><!-- /.panel -->
             </article><!-- /.dashboard-tab-pane -->
@@ -588,6 +603,7 @@
     <script>{% include 'partials/bids/actions.js.twig' %}</script>
     <script>{% include 'partials/fees/fees.js.twig' %}</script>
     <script>{% include 'partials/attachment/add_attachment.js.twig' %}</script>
+    <script>{% include 'partials/tranche/edit_tranches.js.twig' %}</script>
     <script>
         $(function () {
             $.fn.editable.defaults.mode = 'inline'

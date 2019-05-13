@@ -68,7 +68,7 @@ class DocumentController extends Controller
         return new BinaryFileResponse($filePath, 200, [
             'Content-Type'        => $loanContractGenerator->getContentType(),
             'Content-Length'      => filesize($filePath),
-            'Content-Disposition' => 'attachement; filename="CONTRAT-UNILEND-' . $loan->getProject()->getSlug() . '-' . $loan->getIdLoan() . '.pdf"'
+            'Content-Disposition' => 'attachement; filename="CONTRAT-UNILEND-' . $loan->getTranche()->getSlug() . '-' . $loan->getIdLoan() . '.pdf"'
         ]);
     }
 

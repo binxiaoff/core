@@ -82,7 +82,7 @@ class ProjectRepaymentNotificationSender
         $netRepayment   = $this->entityManager->getRepository(Operation::class)->getNetAmountByRepaymentScheduleId($repaymentSchedule);
 
         $keywords = [
-            'companyName'     => $repaymentSchedule->getIdLoan()->getProject()->getIdCompany()->getName(),
+            'companyName'     => $repaymentSchedule->getIdLoan()->getTranche()->getIdCompany()->getName(),
             'firstName'       => $lender->getFirstName(),
             'repaymentAmount' => $this->currencyFormatter->formatCurrency($netRepayment, 'EUR'),
             'lenderPattern'   => $lenderWallet->getWireTransferPattern()
@@ -177,7 +177,7 @@ class ProjectRepaymentNotificationSender
         $keywords = [
             'firstName'             => $lenderWallet->getIdClient()->getFirstName(),
             'netRepayment'          => $this->currencyFormatter->formatCurrency($netRepayment, 'EUR'),
-            'companyName'           => $repaymentSchedule->getIdLoan()->getProject()->getIdCompany()->getName(),
+            'companyName'           => $repaymentSchedule->getIdLoan()->getTranche()->getIdCompany()->getName(),
             'balance'               => $this->currencyFormatter->formatCurrency($lenderWallet->getAvailableBalance(), 'EUR'),
             'lenderPattern'         => $lenderWallet->getWireTransferPattern(),
             'loanDate'              => strftime('%A %d %B %G', $repaymentSchedule->getIdLoan()->getAdded()->getTimestamp()),

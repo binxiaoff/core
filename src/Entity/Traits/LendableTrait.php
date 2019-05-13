@@ -6,7 +6,7 @@ namespace Unilend\Entity\Traits;
 
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
-use Unilend\Entity\{Embeddable\LendingRate, Project, Wallet};
+use Unilend\Entity\{Embeddable\LendingRate, Tranche, Wallet};
 
 trait LendableTrait
 {
@@ -20,14 +20,14 @@ trait LendableTrait
     protected $amount;
 
     /**
-     * @var Project
+     * @var Tranche
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Project")
+     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Tranche")
      * @ORM\JoinColumns({
-     *     @ORM\JoinColumn(name="id_project", nullable=false)
+     *     @ORM\JoinColumn(name="id_tranche", nullable=false)
      * })
      */
-    protected $project;
+    protected $tranche;
 
     /**
      * @var Wallet
@@ -82,21 +82,21 @@ trait LendableTrait
     }
 
     /**
-     * @return Project
+     * @return Tranche
      */
-    public function getProject(): Project
+    public function getTranche(): Tranche
     {
-        return $this->project;
+        return $this->tranche;
     }
 
     /**
-     * @param Project $project
+     * @param Tranche $tranche
      *
      * @return self
      */
-    public function setProject(Project $project): self
+    public function setTranche(Tranche $tranche): self
     {
-        $this->project = $project;
+        $this->tranche = $tranche;
 
         return $this;
     }

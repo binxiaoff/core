@@ -28,7 +28,9 @@ function addTrancheForm($trancheCollectionHolder, $addTrancheButton) {
     $newFormDiv.find('.ui-has-datepicker, [data-ui-datepicker]').uiPikaday();
     $addTrancheButton.before($newFormDiv);
 
-    initTranchePercentFeeForm();
+    var $tranchePercentFeeCollectionHolder = $trancheCollectionHolder.find('div.tranche-percent-fees:last');
+
+    initTranchePercentFeeForm($tranchePercentFeeCollectionHolder);
 
     var $removeFormButton = $('<div class="row text-align-right"><button type="button" class="btn-default btn-shape-xxs">' +  '{% trans %} tranche-form.delete-row {% endtrans %}' + '</button></div>');
     $newFormDiv.find('div:last').append($removeFormButton);
@@ -38,8 +40,7 @@ function addTrancheForm($trancheCollectionHolder, $addTrancheButton) {
     });
 }
 
-function initTranchePercentFeeForm() {
-    var $tranchePercentFeeCollectionHolder = $trancheCollectionHolder.find('div.tranche-percent-fees:last');
+function initTranchePercentFeeForm($tranchePercentFeeCollectionHolder) {
     var $addTranchePercentFeeButton = $(
         '<a href="javascript:;" class="btn-default btn-shape-sq-sm">' +
         '    <span class="icon fa-plus-u16 c-t2"></span>' +
@@ -59,9 +60,8 @@ function addTranchePercentFeeForm($tranchePercentFeeCollectionHolder, $addTranch
     var prototype = $tranchePercentFeeCollectionHolder.data('prototype');
     var prototypeName = $tranchePercentFeeCollectionHolder.data('prototype-name');
     var index = $tranchePercentFeeCollectionHolder.data('index');
-    var newForm = prototype;
 
-    var $newForm = $(newForm.replace(new RegExp(prototypeName, 'g'), index));
+    var $newForm = $(prototype.replace(new RegExp(prototypeName, 'g'), index));
 
     $tranchePercentFeeCollectionHolder.data('index', index + 1);
 
@@ -77,5 +77,7 @@ function addTranchePercentFeeForm($tranchePercentFeeCollectionHolder, $addTranch
 }
 
 $ (function () {
-    addTrancheForm($trancheCollectionHolder, $addTrancheButton);
+    if ($trancheCollectionHolder.children('div').length === 0) {
+        addTrancheForm($trancheCollectionHolder, $addTrancheButton);
+    }
 })

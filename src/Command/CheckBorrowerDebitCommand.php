@@ -37,8 +37,8 @@ class CheckBorrowerDebitCommand extends ContainerAwareCommand
         $projectUrl = $scheme . '://' . $host . '/dossiers/edit/';
 
         foreach ($schedules as $repayment) {
-            if ($repayment->getIdLoan() && $repayment->getIdLoan()->getProject()) {
-                $project                      = $repayment->getIdLoan()->getProject();
+            if ($repayment->getIdLoan() && $repayment->getIdLoan()->getTranche()) {
+                $project                      = $repayment->getIdLoan()->getTranche();
                 $borrowerPayment              = $payment->findOneBy(['ordre' => $repayment->getOrdre(), 'idProject' => $project]);
                 $borrowerEffectivePaymentDate = 'N/A';
 

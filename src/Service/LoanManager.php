@@ -4,13 +4,9 @@ namespace Unilend\Service;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
-use Unilend\Entity\{AcceptationsLegalDocs, AcceptedBids, Clients, Embeddable\LendingRate, Loans, LoanTransfer, UnderlyingContract, UnderlyingContractAttributeType};
+use Unilend\Entity\{AcceptationsLegalDocs, AcceptedBids, Clients, Embeddable\LendingRate, LoanTransfer, Loans, UnderlyingContract, UnderlyingContractAttributeType};
 use Unilend\Service\Product\Contract\ContractAttributeManager;
 
-/**
- * Class LoanManager
- * @package Unilend\Service
- */
 class LoanManager
 {
     /** @var LoggerInterface */
@@ -28,7 +24,6 @@ class LoanManager
     {
         $this->entityManager            = $entityManager;
         $this->contractAttributeManager = $contractAttributeManager;
-
     }
 
     /**
@@ -45,8 +40,6 @@ class LoanManager
      * @param array              $acceptedBids
      * @param UnderlyingContract $contract
      *
-     * @throws \Doctrine\ORM\ORMException
-     * @throws \Doctrine\ORM\OptimisticLockException
      */
     public function create(array $acceptedBids, UnderlyingContract $contract): void
     {
@@ -54,7 +47,7 @@ class LoanManager
         $interests  = 0;
         /** @var AcceptedBids $acceptedBid */
         foreach ($acceptedBids as $acceptedBid) {
-            $interests  = round(bcadd($interests, bcmul($acceptedBid->getIdBid()->getRate()->getMargin(), $acceptedBid->getAmount(), 4), 4), 2);
+            $interests = round(bcadd($interests, bcmul($acceptedBid->getIdBid()->getRate()->getMargin(), $acceptedBid->getAmount(), 4), 4), 2);
             $loanAmount += $acceptedBid->getAmount();
         }
 
@@ -62,9 +55,8 @@ class LoanManager
             $contractAttrVars = $this->contractAttributeManager->getContractAttributesByType($contract, UnderlyingContractAttributeType::TOTAL_LOAN_AMOUNT_LIMITATION_IN_EURO);
             if (empty($contractAttrVars) || false === isset($contractAttrVars[0]) || false === is_numeric($contractAttrVars[0])) {
                 throw new \UnexpectedValueException('The IFP contract max amount is not set');
-            } else {
-                $IfpLoanAmountMax = $contractAttrVars[0];
             }
+            $IfpLoanAmountMax = $contractAttrVars[0];
 
             if (bccomp(round(bcdiv($loanAmount, 100, 4), 2), $IfpLoanAmountMax, 2) > 0) {
                 throw new \InvalidArgumentException('Sum of bids for client ' . $acceptedBids[0]->getIdBid()->getWallet()->getIdClient()->getIdClient() . ' exceeds maximum IFP amount.');
@@ -75,21 +67,24 @@ class LoanManager
 
         $currentAcceptedTermsOfSale = $this->entityManager
             ->getRepository(AcceptationsLegalDocs::class)
-            ->findOneBy(['idClient' => $acceptedBids[0]->getIdBid()->getWallet()->getIdClient()], ['added' => 'DESC']);
+            ->findOneBy(['idClient' => $acceptedBids[0]->getIdBid()->getWallet()->getIdClient()], ['added' => 'DESC'])
+        ;
 
         $lendingRate = (new LendingRate())
-            ->setType(LendingRate::INDEX_FIXED)
-            ->setMargin(round(bcdiv($interests, $loanAmount, 4), 1));
+            ->setIndexType(LendingRate::INDEX_FIXED)
+            ->setMargin(round(bcdiv($interests, $loanAmount, 4), 1))
+        ;
 
         $loan = new Loans();
         $loan
             ->setWallet($acceptedBids[0]->getIdBid()->getWallet())
-            ->setProject($acceptedBids[0]->getIdBid()->getProject())
+            ->setTranche($acceptedBids[0]->getIdBid()->getProject())
             ->setAmount($loanAmount)
             ->setRate($lendingRate)
             ->setStatus(Loans::STATUS_ACCEPTED)
-            ->setIdTypeContract($contract)
-            ->setIdAcceptationLegalDoc($currentAcceptedTermsOfSale);
+            ->setUnderlyingContract($contract)
+            ->setAcceptationLegalDoc($currentAcceptedTermsOfSale)
+        ;
 
         $this->entityManager->persist($loan);
         $this->entityManager->flush($loan);
@@ -112,7 +107,7 @@ class LoanManager
             $loan = $this->entityManager->getRepository(Loans::class)->find($loan->id_loan);
         }
 
-        $loanTransfer = $loan->getIdTransfer();
+        $loanTransfer = $loan->getTransfer();
         if ($loanTransfer) {
             return $loanTransfer->getIdTransfer()->getClientOrigin();
         }

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Form\Lending;
+namespace Unilend\Form\Bid;
 
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;

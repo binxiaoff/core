@@ -9,12 +9,12 @@ use Unilend\Entity\Traits\{LendableTrait, TimestampableTrait};
 
 /**
  * @ORM\Table(name="loans", indexes={
- *     @ORM\Index(name="status", columns={"status"}),
- *     @ORM\Index(name="idx_loans_added", columns={"added"})
+ *     @ORM\Index(columns={"id_tranche", "status"}),
+ *     @ORM\Index(columns={"added"})
  * })
  * @ORM\Entity(repositoryClass="Unilend\Repository\LoansRepository")
  * @ORM\HasLifecycleCallbacks
- * @ORM\AssociationOverrides({@ORM\AssociationOverride(name="project", inversedBy="loans")})
+ * @ORM\AssociationOverrides({@ORM\AssociationOverride(name="tranche", inversedBy="loans")})
  */
 class Loans
 {
@@ -33,7 +33,7 @@ class Loans
      *     @ORM\JoinColumn(name="id_transfer", referencedColumnName="id_loan_transfer")
      * })
      */
-    private $idTransfer;
+    private $transfer;
 
     /**
      * @var string|null
@@ -59,7 +59,7 @@ class Loans
      *     @ORM\JoinColumn(name="id_type_contract", referencedColumnName="id_contract", nullable=false)
      * })
      */
-    private $idTypeContract;
+    private $underlyingContract;
 
     /**
      * @var AcceptationsLegalDocs|null
@@ -69,7 +69,7 @@ class Loans
      *     @ORM\JoinColumn(name="id_acceptation_legal_doc", referencedColumnName="id_acceptation")
      * })
      */
-    private $idAcceptationLegalDoc;
+    private $acceptationLegalDoc;
 
     /**
      * @var LoanPercentFee[]|ArrayCollection
@@ -88,13 +88,13 @@ class Loans
     }
 
     /**
-     * @param LoanTransfer|null $idTransfer
+     * @param LoanTransfer|null $transfer
      *
      * @return Loans
      */
-    public function setIdTransfer(?LoanTransfer $idTransfer): Loans
+    public function setTransfer(?LoanTransfer $transfer): Loans
     {
-        $this->idTransfer = $idTransfer;
+        $this->transfer = $transfer;
 
         return $this;
     }
@@ -102,18 +102,14 @@ class Loans
     /**
      * @return LoanTransfer|null
      */
-    public function getIdTransfer(): ?LoanTransfer
+    public function getTransfer(): ?LoanTransfer
     {
         // @todo to be removed when it is fully under doctrine
-        if (null !== $this->idTransfer) {
-            try {
-                $this->idTransfer->getIdTransfer();
-            } catch (EntityNotFoundException $exception) {
-                $this->idTransfer = null;
-            }
+        if (null !== $this->transfer) {
+            $this->transfer->getIdTransfer();
         }
 
-        return $this->idTransfer;
+        return $this->transfer;
     }
 
     /**
@@ -145,13 +141,13 @@ class Loans
     }
 
     /**
-     * @param UnderlyingContract $idTypeContract
+     * @param UnderlyingContract $underlyingContract
      *
      * @return Loans
      */
-    public function setIdTypeContract(UnderlyingContract $idTypeContract): Loans
+    public function setUnderlyingContract(UnderlyingContract $underlyingContract): Loans
     {
-        $this->idTypeContract = $idTypeContract;
+        $this->underlyingContract = $underlyingContract;
 
         return $this;
     }
@@ -159,19 +155,19 @@ class Loans
     /**
      * @return UnderlyingContract
      */
-    public function getIdTypeContract(): UnderlyingContract
+    public function getUnderlyingContract(): UnderlyingContract
     {
-        return $this->idTypeContract;
+        return $this->underlyingContract;
     }
 
     /**
-     * @param AcceptationsLegalDocs|null $idAcceptationLegalDocs
+     * @param AcceptationsLegalDocs|null $acceptationLegalDoc
      *
      * @return Loans
      */
-    public function setIdAcceptationLegalDoc(?AcceptationsLegalDocs $idAcceptationLegalDocs): Loans
+    public function setAcceptationLegalDoc(?AcceptationsLegalDocs $acceptationLegalDoc): Loans
     {
-        $this->idAcceptationLegalDoc = $idAcceptationLegalDocs;
+        $this->acceptationLegalDoc = $acceptationLegalDoc;
 
         return $this;
     }
@@ -179,9 +175,9 @@ class Loans
     /**
      * @return AcceptationsLegalDocs|null
      */
-    public function getIdAcceptationLegalDoc(): ?AcceptationsLegalDocs
+    public function getAcceptationLegalDoc(): ?AcceptationsLegalDocs
     {
-        return $this->idAcceptationLegalDoc;
+        return $this->acceptationLegalDoc;
     }
 
     /**

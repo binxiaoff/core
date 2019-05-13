@@ -2,12 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Form\Lending;
+namespace Unilend\Form\Bid;
 
 use Symfony\Component\Form\Extension\Core\Type\{CollectionType, MoneyType};
 use Symfony\Component\Form\{AbstractType, FormBuilderInterface};
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Unilend\Entity\Bids;
+use Unilend\Form\Lending\LendingRateType;
 
 class BidType extends AbstractType
 {

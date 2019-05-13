@@ -1,6 +1,6 @@
-{% set pendingBids = project.bids(constant('Unilend\\Entity\\Bids::STATUS_PENDING')) %}
-{% set acceptedBids = project.bids(constant('Unilend\\Entity\\Bids::STATUS_ACCEPTED')) %}
-{% set refusedBids = project.bids(constant('Unilend\\Entity\\Bids::STATUS_REJECTED')) %}
+{% set pendingBids = tranche.bids([constant('Unilend\\Entity\\Bids::STATUS_PENDING')]) %}
+{% set acceptedBids = tranche.bids([constant('Unilend\\Entity\\Bids::STATUS_ACCEPTED')]) %}
+{% set refusedBids = tranche.bids([constant('Unilend\\Entity\\Bids::STATUS_REJECTED')]) %}
 
 {% if pendingBids|length > 0 %}
     <h4>En cours</h4>

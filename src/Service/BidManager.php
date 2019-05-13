@@ -106,7 +106,7 @@ class BidManager
         $bid = new Bids();
         $bid
             ->setWallet($wallet)
-            ->setProject($project)
+            ->setTranche($project)
             ->setAmount(bcmul($amount, 100))
             ->setRate($rate)
             ->setStatus(Bids::STATUS_PENDING)
@@ -198,7 +198,7 @@ class BidManager
         if (bccomp($bidAmount, $minimumAmount, 2) < 0) {
             if ($this->logger instanceof LoggerInterface) {
                 $this->logger->warning('Amount is less than the min amount for a bid', [
-                    'project_id' => $bid->getProject()->getIdProject(),
+                    'project_id' => $bid->getTranche()->getIdProject(),
                     'lender_id'  => $bid->getWallet()->getId(),
                     'amount'     => $bidAmount,
                     'rate'       => $bid->getRate()->getMargin()
@@ -216,7 +216,7 @@ class BidManager
      */
     private function checkRate(Bids $bid): void
     {
-        $projectRates = $this->getProjectRateRange($bid->getProject());
+        $projectRates = $this->getProjectRateRange($bid->getTranche());
 
         if (
             bccomp($bid->getRate()->getMargin(), $projectRates['rate_max'], 1) > 0
@@ -224,7 +224,7 @@ class BidManager
         ) {
             if ($this->logger instanceof LoggerInterface) {
                 $this->logger->warning('The rate is less than the min rate for a bid', [
-                    'project_id' => $bid->getProject()->getIdProject(),
+                    'project_id' => $bid->getTranche()->getIdProject(),
                     'lender_id'  => $bid->getWallet()->getId(),
                     'amount'     => $bid->getAmount() / 100,
                     'rate'       => $bid->getRate()->getMargin()
@@ -242,14 +242,14 @@ class BidManager
      */
     private function checkProjectStatus(Bids $bid): void
     {
-        if (false === in_array($bid->getProject()->getStatus(), [ProjectsStatus::STATUS_REVIEW, ProjectsStatus::STATUS_PUBLISHED])) {
+        if (false === in_array($bid->getTranche()->getStatus(), [ProjectsStatus::STATUS_REVIEW, ProjectsStatus::STATUS_PUBLISHED])) {
             if ($this->logger instanceof LoggerInterface) {
                 $this->logger->warning('Project status is not valid for bidding', [
-                    'project_id'     => $bid->getProject()->getIdProject(),
+                    'project_id'     => $bid->getTranche()->getIdProject(),
                     'lender_id'      => $bid->getWallet()->getId(),
                     'amount'         => $bid->getAmount() / 100,
                     'rate'           => $bid->getRate()->getMargin(),
-                    'project_status' => $bid->getProject()->getStatus()
+                    'project_status' => $bid->getTranche()->getStatus()
                 ]);
             }
 
@@ -265,12 +265,12 @@ class BidManager
     private function checkProjectDates(Bids $bid): void
     {
         $currentDate = new \DateTime();
-        $endDate     = $bid->getProject()->getDateFin() ?? $bid->getProject()->getDateRetrait();
+        $endDate     = $bid->getTranche()->getDateFin() ?? $bid->getTranche()->getDateRetrait();
 
         if ($currentDate > $endDate) {
             if ($this->logger instanceof LoggerInterface) {
                 $this->logger->warning('Project end date is passed for bidding', [
-                    'project_id'    => $bid->getProject()->getIdProject(),
+                    'project_id'    => $bid->getTranche()->getIdProject(),
                     'lender_id'     => $bid->getWallet()->getId(),
                     'amount'        => $bid->getAmount() / 100,
                     'rate'          => $bid->getRate()->getMargin(),
@@ -293,7 +293,7 @@ class BidManager
         if (false === $this->lenderManager->canBid($bid->getWallet()->getIdClient())) {
             if ($this->logger instanceof LoggerInterface) {
                 $this->logger->warning('lender cannot bid', [
-                    'project_id' => $bid->getProject()->getIdProject(),
+                    'project_id' => $bid->getTranche()->getIdProject(),
                     'lender_id'  => $bid->getWallet()->getId(),
                     'amount'     => $bid->getAmount() / 100,
                     'rate'       => $bid->getRate()->getMargin()
@@ -314,7 +314,7 @@ class BidManager
         if (false === $this->productManager->isBidEligible($bid)) {
             if ($this->logger instanceof LoggerInterface) {
                 $this->logger->warning('The Bid is not eligible for the project', [
-                    'project_id' => $bid->getProject()->getIdProject(),
+                    'project_id' => $bid->getTranche()->getIdProject(),
                     'lender_id'  => $bid->getWallet()->getId(),
                     'amount'     => $bid->getAmount() / 100,
                     'rate'       => $bid->getRate()->getMargin()
@@ -338,7 +338,7 @@ class BidManager
         if (bccomp($balance, $bidAmount, 2) < 0) {
             if ($this->logger instanceof LoggerInterface) {
                 $this->logger->warning('Lender\'s balance not enough for a bid', [
-                    'project_id' => $bid->getProject()->getIdProject(),
+                    'project_id' => $bid->getTranche()->getIdProject(),
                     'lender_id'  => $bid->getWallet()->getId(),
                     'amount'     => $bidAmount,
                     'rate'       => $bid->getRate()->getMargin(),
@@ -367,7 +367,7 @@ class BidManager
             // Do not log when placing initial autobids
             if (empty($bid->getAutobid())) {
                 $this->logger->warning('CIP validation is needed for a bid', [
-                    'project_id' => $bid->getProject()->getIdProject(),
+                    'project_id' => $bid->getTranche()->getIdProject(),
                     'lender_id'  => $bid->getWallet()->getId(),
                     'amount'     => $bid->getAmount() / 100,
                     'rate'       => $bid->getRate()->getMargin()
@@ -412,14 +412,14 @@ class BidManager
      */
     public function reBidAutoBidOrReject(Bids $bid, string $currentRate, ?int $bidOrder, bool $sendNotification = true): Bids
     {
-        $minimumProjectRate = (string) $this->getProjectRateRange($bid->getProject())['rate_min'];
+        $minimumProjectRate = (string) $this->getProjectRateRange($bid->getTranche())['rate_min'];
 
         if (
             bccomp($currentRate, $minimumProjectRate, 1) >= 0
             && bccomp($currentRate, $bid->getAutobid()->getRateMin(), 1) >= 0
         ) {
             if (null === $bidOrder) {
-                $bidOrder = $this->entityManager->getRepository(Bids::class)->countBy(['idProject' => $bid->getProject()->getIdProject()]);
+                $bidOrder = $this->entityManager->getRepository(Bids::class)->countBy(['idProject' => $bid->getTranche()->getIdProject()]);
                 $bidOrder++;
             }
 
@@ -499,7 +499,7 @@ class BidManager
                 $bid->getAutobid() !== null ? ClientsGestionTypeNotif::TYPE_AUTOBID_ACCEPTED_REJECTED_BID : ClientsGestionTypeNotif::TYPE_BID_REJECTED,
                 $bid->getWallet()->getIdClient()->getIdClient(),
                 'sendBidRejected',
-                $bid->getProject()->getIdProject(),
+                $bid->getTranche()->getIdProject(),
                 $bid->getAmount() / 100,
                 $bid->getIdBid(),
                 $walletBalanceHistory
@@ -584,7 +584,7 @@ class BidManager
             try {
                 $this->sponsorshipManager->attributeSponsorReward($bid->getWallet()->getIdClient());
             } catch (\Exception $exception) {
-                $this->logger->info('Sponsor reward could not be attributed for bid ' . $bid->getIdBid() . '. Reason: ' . $exception->getMessage(), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $bid->getProject()->getIdProject()]);
+                $this->logger->info('Sponsor reward could not be attributed for bid ' . $bid->getIdBid() . '. Reason: ' . $exception->getMessage(), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $bid->getTranche()->getIdProject()]);
             }
         }
     }

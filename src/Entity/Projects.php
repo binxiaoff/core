@@ -430,7 +430,7 @@ class Projects
     /**
      * @var Bids[]|ArrayCollection
      *
-     * @ORM\OneToMany(targetEntity="Unilend\Entity\Bids", mappedBy="project")
+     * @ORM\OneToMany(targetEntity="Unilend\Entity\Bids", mappedBy="tranche")
      * @ORM\OrderBy({"added": "DESC"})
      */
     private $bids;
@@ -438,7 +438,7 @@ class Projects
     /**
      * @var Loans[]|ArrayCollection
      *
-     * @ORM\OneToMany(targetEntity="Unilend\Entity\Loans", mappedBy="project")
+     * @ORM\OneToMany(targetEntity="Unilend\Entity\Loans", mappedBy="tranche")
      */
     private $loans;
 

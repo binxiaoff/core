@@ -83,7 +83,7 @@ class OperationManager
                 }
                 if ($item instanceof Loans) {
                     $operation->setLoan($item);
-                    $operation->setProject($item->getProject());
+                    $operation->setProject($item->getTranche());
                 }
                 if ($item instanceof EcheanciersEmprunteur) {
                     $operation->setPaymentSchedule($item);
@@ -92,7 +92,7 @@ class OperationManager
                 if ($item instanceof Echeanciers) {
                     $operation->setRepaymentSchedule($item);
                     $operation->setLoan($item->getIdLoan());
-                    $operation->setProject($item->getIdLoan()->getProject());
+                    $operation->setProject($item->getIdLoan()->getTranche());
                 }
                 if ($item instanceof Backpayline) {
                     $operation->setBackpayline($item);
@@ -105,7 +105,7 @@ class OperationManager
                 }
                 if ($item instanceof Virements) {
                     $operation->setWireTransferOut($item);
-                    $operation->setProject($item->getProject());
+                    $operation->setProject($item->getTranche());
                 }
                 if ($item instanceof Receptions) {
                     $operation->setWireTransferIn($item);
@@ -120,7 +120,7 @@ class OperationManager
                     $operation->setWireTransferIn($item->getIdTask()->getIdWireTransferIn());
                 }
                 if ($item instanceof Operation) {
-                    $operation->setProject($item->getProject())
+                    $operation->setProject($item->getTranche())
                         ->setBackpayline($item->getBackpayline())
                         ->setLoan($item->getLoan())
                         ->setPaymentSchedule($item->getPaymentSchedule())
@@ -187,7 +187,7 @@ class OperationManager
     {
         $operationType  = $this->entityManager->getRepository(OperationType::class)->findOneBy(['label' => OperationType::LENDER_LOAN]);
         $lenderWallet   = $loan->getWallet();
-        $borrowerWallet = $this->entityManager->getRepository(Wallet::class)->getWalletByType($loan->getProject()->getIdCompany()->getIdClientOwner(), WalletType::BORROWER);
+        $borrowerWallet = $this->entityManager->getRepository(Wallet::class)->getWalletByType($loan->getTranche()->getIdCompany()->getIdClientOwner(), WalletType::BORROWER);
         $amount         = round(bcdiv($loan->getAmount(), 100, 4), 2);
 
         $this->newOperation($amount, $operationType, null, $lenderWallet, $borrowerWallet, $loan);
@@ -422,7 +422,7 @@ class OperationManager
     {
         $loan           = $repaymentSchedule->getIdLoan();
         $lenderWallet   = $loan->getWallet();
-        $borrowerClient = $loan->getProject()->getIdCompany()->getIdClientOwner();
+        $borrowerClient = $loan->getTranche()->getIdCompany()->getIdClientOwner();
         $borrowerWallet = $this->entityManager->getRepository(Wallet::class)->getWalletByType($borrowerClient, WalletType::BORROWER);
 
         $this->repaymentGeneric($borrowerWallet, $lenderWallet, $amountCapital, $amountInterestGross, null, null, [$repaymentSchedule, $projectRepaymentTaskLog]);
@@ -442,7 +442,7 @@ class OperationManager
         $operationTypeRepository    = $this->entityManager->getRepository(OperationType::class);
         $operationSubTypeRepository = $this->entityManager->getRepository(OperationSubType::class);
 
-        $underlyingContract = $loan->getIdTypeContract();
+        $underlyingContract = $loan->getUnderlyingContract();
         $taxes              = $this->taxManager->getLenderRepaymentInterestTax($loan->getWallet()->getIdClient(), $amountInterestGross, new \DateTime(), $underlyingContract);
 
         foreach ($taxes as $type => $tax) {
@@ -534,7 +534,7 @@ class OperationManager
         $repaymentSchedule = $this->entityManagerSimulator->getRepository('echeanciers');
 
         $outstandingCapital = $repaymentSchedule->getOwedCapital(['id_loan' => $loan->getIdLoan()]);
-        $borrowerWallet     = $this->entityManager->getRepository(Wallet::class)->getWalletByType($loan->getProject()->getIdCompany()->getIdClientOwner(), WalletType::BORROWER);
+        $borrowerWallet     = $this->entityManager->getRepository(Wallet::class)->getWalletByType($loan->getTranche()->getIdCompany()->getIdClientOwner(), WalletType::BORROWER);
         $lenderWallet       = $loan->getWallet();
         $operationSubType   = $this->entityManager->getRepository(OperationSubType::class)->findOneBy(['label' => OperationSubType::CAPITAL_REPAYMENT_EARLY]);
 

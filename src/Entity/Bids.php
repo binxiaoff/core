@@ -7,10 +7,10 @@ use Doctrine\ORM\Mapping as ORM;
 use Unilend\Entity\Traits\{ConstantsAwareTrait, LendableTrait, TimestampableTrait};
 
 /**
- * @ORM\Table(name="bids", indexes={@ORM\Index(name="idprojectstatus", columns={"id_project", "status"})})
+ * @ORM\Table(name="bids", indexes={@ORM\Index(columns={"id_tranche", "status"})})
  * @ORM\Entity(repositoryClass="Unilend\Repository\BidsRepository")
  * @ORM\HasLifecycleCallbacks
- * @ORM\AssociationOverrides({@ORM\AssociationOverride(name="project", inversedBy="bids")})
+ * @ORM\AssociationOverrides({@ORM\AssociationOverride(name="tranche", inversedBy="bids")})
  */
 class Bids
 {
@@ -24,14 +24,14 @@ class Bids
     public const STATUS_TEMPORARILY_REJECTED_AUTOBID = 3;
 
     /**
-     * @var \Unilend\Entity\Autobid|null
+     * @var Autobid|null
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\Autobid")
      * @ORM\JoinColumns({
      *     @ORM\JoinColumn(name="id_autobid", referencedColumnName="id_autobid")
      * })
      */
-    private $idAutobid;
+    private $autobid;
 
     /**
      * @var int|null
@@ -72,7 +72,7 @@ class Bids
      */
     public function setAutobid(?Autobid $autobid): Bids
     {
-        $this->idAutobid = $autobid;
+        $this->autobid = $autobid;
 
         return $this;
     }
@@ -82,7 +82,7 @@ class Bids
      */
     public function getAutobid(): ?Autobid
     {
-        return $this->idAutobid;
+        return $this->autobid;
     }
 
     /**

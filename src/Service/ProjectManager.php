@@ -348,7 +348,7 @@ class ProjectManager
      */
     public function getCreditorClaimAmounts(Loans $loan)
     {
-        if ($loan->getProject()->getCloseOutNettingDate()) {
+        if ($loan->getTranche()->getCloseOutNettingDate()) {
             $closeOutNettingRepayment = $this->entityManager->getRepository(CloseOutNettingRepayment::class)->findOneBy(['idLoan' => $loan]);
             $remainingCapital         = round(bcsub($closeOutNettingRepayment->getCapital(), $closeOutNettingRepayment->getRepaidCapital(), 4), 2);
             $remainingInterest        = round(bcsub($closeOutNettingRepayment->getInterest(), $closeOutNettingRepayment->getRepaidInterest(), 4), 2);
@@ -362,7 +362,7 @@ class ProjectManager
             ];
             $companyStatusHistory = $this->entityManager
                 ->getRepository(CompanyStatusHistory::class)
-                ->findFirstHistoryByCompanyAndStatus($loan->getProject()->getIdCompany(), $collectiveProceedingStatus)
+                ->findFirstHistoryByCompanyAndStatus($loan->getTranche()->getIdCompany(), $collectiveProceedingStatus)
             ;
 
             $repaymentScheduleRepository = $this->entityManager->getRepository(Echeanciers::class);

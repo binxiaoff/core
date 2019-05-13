@@ -173,7 +173,7 @@ class LenderLoansDisplayManager
                 ];
 
                 foreach ($projectLoansDetails as $partialLoan) {
-                    (1 == $partialLoan->getIdTypeContract()->getIdContract()) ? $loanData['count']['bond']++ : $loanData['count']['contract']++;
+                    (1 == $partialLoan->getUnderlyingContract()->getIdContract()) ? $loanData['count']['bond']++ : $loanData['count']['contract']++;
 
                     $loans[] = [
                         'rate'      => round($partialLoan->getRate()->getMargin(), 1),
@@ -182,7 +182,7 @@ class LenderLoansDisplayManager
                             $projectLoans['project_status'],
                             $wallet->getIdClient()->getHash(),
                             $partialLoan->getIdLoan(),
-                            $partialLoan->getIdTypeContract(),
+                            $partialLoan->getUnderlyingContract(),
                             $projectsInDept,
                             $projectLoans['id_project'],
                             $loanData['count']['declaration']

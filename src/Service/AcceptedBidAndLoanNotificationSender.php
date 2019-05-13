@@ -295,15 +295,15 @@ class AcceptedBidAndLoanNotificationSender
 
         /** @var Loans $loan */
         foreach ($lenderLoans as $loan) {
-            if (null !== $loan->getProject() && null !== $loan->getIdTypeContract()) {
-                $firstRepayment = $repaymentRepository->findOneBy(['ordre' => 1, 'idProject' => $loan->getProject(), 'idLender' => $loan->getWallet()]);
+            if (null !== $loan->getTranche() && null !== $loan->getUnderlyingContract()) {
+                $firstRepayment = $repaymentRepository->findOneBy(['ordre' => 1, 'idProject' => $loan->getTranche(), 'idLender' => $loan->getWallet()]);
                 $amount         = round(bcdiv(bcadd($firstRepayment->getCapital(), $firstRepayment->getInterets(), 2), 100, 3), 2);
                 $loanDetails    .= '<tr>
                                     <td class="td text-center">' . $this->currencyFormatter->formatCurrency($loan->getAmount() / 100, 'EUR') . '</td>
                                     <td class="td text-center">' . $this->numberFormatter->format($loan->getRate()->getMargin()) . '&nbsp;%</td>
-                                    <td class="td text-center">' . $loan->getProject()->getPeriod() . ' mois</td>
+                                    <td class="td text-center">' . $loan->getTranche()->getPeriod() . ' mois</td>
                                     <td class="td text-center">' . $this->currencyFormatter->formatCurrency($amount, 'EUR') . '</td>
-                                    <td class="td text-center">' . $this->translator->trans('contract-type-label_' . $loan->getIdTypeContract()->getLabel()) . '</td></tr>';
+                                    <td class="td text-center">' . $this->translator->trans('contract-type-label_' . $loan->getUnderlyingContract()->getLabel()) . '</td></tr>';
             }
         }
 

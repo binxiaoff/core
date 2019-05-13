@@ -148,13 +148,13 @@ class LoanContractGenerator implements DocumentGeneratorInterface
             'loan'      => $this->getLoanData($loan),
             'borrower'  => $this->getBorrowerData($loan),
             'lender'    => $this->getLenderData($loan),
-            'project'   => $loan->getProject()->getNatureProject()
+            'project'   => $loan->getTranche()->getNatureProject()
         ];
 
-        if (UnderlyingContract::CONTRACT_BDC === $loan->getIdTypeContract()->getLabel()) {
-            if (false === empty($loan->getProject()->getIdDernierBilan())) {
+        if (UnderlyingContract::CONTRACT_BDC === $loan->getUnderlyingContract()->getLabel()) {
+            if (false === empty($loan->getTranche()->getIdDernierBilan())) {
                 $annualAccountsRepository = $this->entityManager->getRepository(CompaniesBilans::class);
-                $lastAnnualAccounts       = $annualAccountsRepository->find($loan->getProject()->getIdDernierBilan());
+                $lastAnnualAccounts       = $annualAccountsRepository->find($loan->getTranche()->getIdDernierBilan());
 
                 if (null !== $lastAnnualAccounts) {
                     $assetsDebtsRepository = $this->entityManager->getRepository(CompaniesActifPassif::class);
@@ -167,7 +167,7 @@ class LoanContractGenerator implements DocumentGeneratorInterface
             }
         }
 
-        $content = $this->twig->render('/pdf/contract/' . $loan->getIdTypeContract()->getDocumentTemplate() . '.html.twig', $template);
+        $content = $this->twig->render('/pdf/contract/' . $loan->getUnderlyingContract()->getDocumentTemplate() . '.html.twig', $template);
 
         $this->snappy->setOption('user-style-sheet', $this->staticPath . 'styles/default/pdf/style.css');
         $this->snappy->generateFromHtml($content, $this->getPath($loan), [], true);
@@ -199,14 +199,14 @@ class LoanContractGenerator implements DocumentGeneratorInterface
         $repaymentStatusHistory = $this->entityManager
             ->getRepository(ProjectsStatusHistory::class)
             ->findOneBy(
-                ['idProject' => $loan->getProject()->getIdProject(), 'idProjectStatus' => $repaymentStatus],
+                ['idProject' => $loan->getTranche()->getIdProject(), 'idProjectStatus' => $repaymentStatus],
                 ['added' => 'ASC', 'idProjectStatusHistory' => 'ASC']
             );
 
         $vatRate                    = $this->entityManager->getRepository(TaxType::class)->findOneBy(['idTaxType' => TaxType::TYPE_VAT]);
-        $fundsReleaseCommissionRate = round(bcdiv($loan->getProject()->getCommissionRateFunds(), 100, 4), 2);
-        $repaymentCommissionRate    = round(bcdiv($loan->getProject()->getCommissionRateRepayment(), 100, 4), 2);
-        $repaymentCommission        = \repayment::getRepaymentCommission($loanAmount, $loan->getProject()->getPeriod(), $repaymentCommissionRate, $vatRate->getRate());
+        $fundsReleaseCommissionRate = round(bcdiv($loan->getTranche()->getCommissionRateFunds(), 100, 4), 2);
+        $repaymentCommissionRate    = round(bcdiv($loan->getTranche()->getCommissionRateRepayment(), 100, 4), 2);
+        $repaymentCommission        = \repayment::getRepaymentCommission($loanAmount, $loan->getTranche()->getPeriod(), $repaymentCommissionRate, $vatRate->getRate());
         $fundsReleaseCommission     = bcmul($loanAmount, $fundsReleaseCommissionRate, 5);
         $borrowerFees               = bcadd($repaymentCommission['commission_total'], $fundsReleaseCommission, 5);
         $borrowerCost               = bcadd($borrowerFees, $interests, 5);
@@ -233,14 +233,14 @@ class LoanContractGenerator implements DocumentGeneratorInterface
      */
     private function getContentData(Loans $loan): array
     {
-        if (empty($loan->getIdTypeContract()->getBlockSlug())) {
+        if (empty($loan->getUnderlyingContract()->getBlockSlug())) {
             return [];
         }
 
         $content = [];
         $block   = $this->entityManager
             ->getRepository(Blocs::class)
-            ->findOneBy(['slug' => $loan->getIdTypeContract()->getBlockSlug()]);
+            ->findOneBy(['slug' => $loan->getUnderlyingContract()->getBlockSlug()]);
 
         $blockElements = $this->entityManager
             ->getRepository(BlocsElements::class)
@@ -263,7 +263,7 @@ class LoanContractGenerator implements DocumentGeneratorInterface
      */
     private function getBorrowerData(Loans $loan): array
     {
-        $company = $loan->getProject()->getIdCompany();
+        $company = $loan->getTranche()->getIdCompany();
 
         return [
             'siren'           => $company->getSiren(),
@@ -291,7 +291,7 @@ class LoanContractGenerator implements DocumentGeneratorInterface
     {
         $client = $loan->getWallet()->getIdClient();
 
-        if ($loan->getIdTransfer()) {
+        if ($loan->getTransfer()) {
             $client = $this->loanManager->getFirstOwner($loan);
         }
 

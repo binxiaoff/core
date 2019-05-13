@@ -63,7 +63,8 @@ class WalletController extends AbstractController
         // En cours (HOT)
         $projectsInProgressBid = $projectRepository->createQueryBuilder('p')
             ->distinct()
-            ->innerJoin('p.bids', 'b')
+            ->innerJoin('p.tranches', 't')
+            ->innerJoin('t.bids', 'b')
             ->innerJoin('p.currentProjectStatusHistory', 'psh')
             ->where('b.wallet = :wallet')
             ->andWhere('psh.status = :online')
@@ -74,7 +75,8 @@ class WalletController extends AbstractController
 
         $projectsInProgressNonSignedLoan = $projectRepository->createQueryBuilder('p')
             ->distinct()
-            ->innerJoin('p.loans', 'l')
+            ->innerJoin('p.tranches', 't')
+            ->innerJoin('t.loans', 'l')
             ->where('l.wallet = :wallet')
             ->andWhere('l.status = :pending')
             ->setParameters(['wallet' => $wallet, 'pending' => Loans::STATUS_PENDING])
@@ -93,7 +95,8 @@ class WalletController extends AbstractController
 
         // Actifs (COLD)
         $projectsActive = $projectRepository->createQueryBuilder('p')
-            ->innerJoin('p.loans', 'l')
+            ->innerJoin('p.tranches', 't')
+            ->innerJoin('t.loans', 'l')
             ->innerJoin('p.currentProjectStatusHistory', 'psh')
             ->where('l.wallet = :wallet')
             ->andWhere('l.status = :accepted')
@@ -111,7 +114,8 @@ class WalletController extends AbstractController
 
         // Terminés
         $projectsFinished = $projectRepository->createQueryBuilder('p')
-            ->innerJoin('p.loans', 'l')
+            ->innerJoin('p.tranches', 't')
+            ->innerJoin('t.loans', 'l')
             ->innerJoin('p.currentProjectStatusHistory', 'psh')
             ->where('l.wallet = :wallet')
             ->andWhere('l.status = :accepted')
@@ -128,7 +132,8 @@ class WalletController extends AbstractController
         $template['projects']['lender']['finished'] = $projectsFinished;
 
         $projectsMasked = $projectRepository->createQueryBuilder('p')
-            ->innerJoin('p.loans', 'l')
+            ->innerJoin('p.tranches', 't')
+            ->innerJoin('t.loans', 'l')
             ->where('l.wallet = :wallet')
             ->andWhere('l.status = :refused')
             ->setParameters(['wallet' => $wallet, 'refused' => Loans::STATUS_REJECTED])

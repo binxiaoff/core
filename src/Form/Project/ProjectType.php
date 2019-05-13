@@ -7,13 +7,13 @@ namespace Unilend\Form\Project;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
-use Symfony\Component\Form\Extension\Core\Type\{ChoiceType, CollectionType, DateType, TextType, TextareaType};
+use Symfony\Component\Form\Extension\Core\Type\{ChoiceType, DateType, TextType, TextareaType};
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Unilend\Entity\{Clients, Companies, MarketSegment, Project};
 use Unilend\Form\Company\CompanyAutocompleteType;
-use Unilend\Form\Tranche\TrancheType;
+use Unilend\Form\Tranche\TrancheTypeCollectionType;
 use Unilend\Repository\CompaniesRepository;
 
 class ProjectType extends AbstractType
@@ -74,17 +74,7 @@ class ProjectType extends AbstractType
                 'label' => 'project-form.description',
                 'attr'  => ['rows' => 6],
             ])
-            ->add('tranches', CollectionType::class, [
-                'label'          => false,
-                'entry_type'     => TrancheType::class,
-                'entry_options'  => ['label' => false],
-                'allow_add'      => true,
-                'allow_delete'   => true,
-                'by_reference'   => false,
-                'prototype'      => true,
-                'prototype_name' => '__tranche__',
-                'attr'           => ['class' => 'tranches'],
-            ])
+            ->add('tranches', TrancheTypeCollectionType::class)
             ->add('foncarisGuarantee', ChoiceType::class, [
                 'label'        => 'project-form.foncaris-guarantee',
                 'required'     => false,

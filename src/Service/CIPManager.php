@@ -656,7 +656,7 @@ class CIPManager
      */
     public function isCIPValidationNeeded(Bids $bid): bool
     {
-        $productContracts = $this->productManager->getAvailableContracts($bid->getProject()->getIdProduct());
+        $productContracts = $this->productManager->getAvailableContracts($bid->getTranche()->getIdProduct());
 
         if (false === in_array(UnderlyingContract::CONTRACT_MINIBON, array_column($productContracts, 'label'))) {
             return false;
@@ -670,7 +670,7 @@ class CIPManager
 
         $thresholdAmount = $this->getContractThresholdAmount();
         $lenderBids      = $this->entityManager->getRepository(Bids::class)
-            ->getSumByWalletAndProjectAndStatus($wallet, $bid->getProject()->getIdProject(), [Bids::STATUS_PENDING, Bids::STATUS_TEMPORARILY_REJECTED_AUTOBID]);
+            ->getSumByWalletAndProjectAndStatus($wallet, $bid->getTranche()->getIdProject(), [Bids::STATUS_PENDING, Bids::STATUS_TEMPORARILY_REJECTED_AUTOBID]);
         $totalAmount     = bcdiv($bid->getAmount(), 100, 2);
         $totalAmount     = bcadd($totalAmount, (string) $lenderBids, 2);
 

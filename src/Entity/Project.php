@@ -177,21 +177,6 @@ class Project
     private $projectParticipants;
 
     /**
-     * @var Bids[]|ArrayCollection
-     *
-     * @ORM\OneToMany(targetEntity="Unilend\Entity\Bids", mappedBy="project")
-     * @ORM\OrderBy({"added": "DESC"})
-     */
-    private $bids;
-
-    /**
-     * @var Loans[]|ArrayCollection
-     *
-     * @ORM\OneToMany(targetEntity="Unilend\Entity\Loans", mappedBy="project")
-     */
-    private $loans;
-
-    /**
      * @var ProjectPercentFee[]|ArrayCollection
      *
      * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectPercentFee", mappedBy="project", cascade={"persist"}, orphanRemoval=true)
@@ -696,30 +681,6 @@ class Project
     }
 
     /**
-     * @param int|null $status
-     *
-     * @return Bids[]|ArrayCollection
-     */
-    public function getBids(?int $status = null): iterable
-    {
-        $criteria = new Criteria();
-
-        if (null !== $status) {
-            $criteria->where(Criteria::expr()->eq('status', $status));
-        }
-
-        return $this->bids->matching($criteria);
-    }
-
-    /**
-     * @return Loans[]|ArrayCollection
-     */
-    public function getLoans(): iterable
-    {
-        return $this->loans;
-    }
-
-    /**
      * @return iterable|ProjectPercentFee[]
      */
     public function getProjectPercentFees(): iterable
@@ -824,6 +785,35 @@ class Project
         $this->projectParticipants->removeElement($tranche);
 
         return $this;
+    }
+
+    /**
+     * @param array|null  $status
+     * @param Wallet|null $wallet
+     *
+     * @return Bids[]|ArrayCollection
+     */
+    public function getBids(?array $status = null, ?Wallet $wallet = null): iterable
+    {
+        $bids = [];
+        foreach ($this->getTranches() as $tranche) {
+            $bids = array_merge($bids, $tranche->getBids($status, $wallet)->toArray());
+        }
+
+        return new ArrayCollection($bids);
+    }
+
+    /**
+     * @return Bids[]|ArrayCollection
+     */
+    public function getLoans(): iterable
+    {
+        $bids = [];
+        foreach ($this->getTranches() as $tranche) {
+            $bids = array_merge($bids, $tranche->getLoans()->toArray());
+        }
+
+        return new ArrayCollection($bids);
     }
 
     /**

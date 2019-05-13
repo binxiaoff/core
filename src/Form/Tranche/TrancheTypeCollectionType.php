@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Form\Project;
+namespace Unilend\Form\Tranche;
 
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CollectionType;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
-class ProjectAttachmentCollectionType extends AbstractType
+class TrancheTypeCollectionType extends AbstractType
 {
     /**
      * {@inheritdoc}
@@ -23,7 +23,7 @@ class ProjectAttachmentCollectionType extends AbstractType
      */
     public function getBlockPrefix()
     {
-        return 'project_attachments_collection';
+        return 'tranche_type_collection';
     }
 
     /**
@@ -32,14 +32,15 @@ class ProjectAttachmentCollectionType extends AbstractType
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefaults([
-            'label'         => false,
-            'entry_type'    => ProjectAttachmentType::class,
-            'entry_options' => ['label' => false],
-            'allow_add'     => true,
-            'allow_delete'  => true,
-            'by_reference'  => false,
-            'prototype'     => true,
-            'attr'          => ['class' => 'attachments'],
+            'label'          => false,
+            'entry_type'     => TrancheType::class,
+            'entry_options'  => ['label' => false],
+            'allow_add'      => true,
+            'allow_delete'   => true,
+            'by_reference'   => false,
+            'prototype'      => true,
+            'prototype_name' => '__tranche__',
+            'attr'           => ['class' => 'tranches'],
         ]);
     }
 }

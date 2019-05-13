@@ -174,7 +174,7 @@ class WalletManager
             if ($item instanceof Loans) {
                 $walletSnap->setLoan($item);
             }
-            $walletSnap->setProject($item->getProject());
+            $walletSnap->setProject($item->getTranche());
         }
         $this->entityManager->persist($walletSnap);
         $this->entityManager->flush($walletSnap);

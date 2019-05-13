@@ -40,7 +40,7 @@ class BidValidator
     {
         $violations = [];
 
-        $product = $this->entityManager->getRepository(Product::class)->find($bid->getProject()->getIdProduct());
+        $product = $this->entityManager->getRepository(Product::class)->find($bid->getTranche()->getIdProduct());
         $client  = $bid->getWallet()->getIdClient();
 
         if (false === $this->isEligibleForClientId($client, $product, $this->productAttributeManager)) {

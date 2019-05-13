@@ -927,7 +927,7 @@ class ProjectsController extends Controller
 
         $bid = new Bids();
         $bid
-            ->setProject($entityManager->getRepository(Projects::class)->find($project->id_project))
+            ->setTranche($entityManager->getRepository(Projects::class)->find($project->id_project))
             ->setWallet($wallet)
             ->setAmount($amount * 100)
             ->setRate($lendingRate);
@@ -936,7 +936,7 @@ class ProjectsController extends Controller
 
         if (false === empty($reasons)) {
             $pendingBidAmount = $entityManager->getRepository(Bids::class)
-                ->getSumByWalletAndProjectAndStatus($wallet, $bid->getProject(), [Bids::STATUS_PENDING]);
+                ->getSumByWalletAndProjectAndStatus($wallet, $bid->getTranche(), [Bids::STATUS_PENDING]);
 
             $product = $entityManagerSimulator->getRepository('product');
             $product->get($project->id_product);

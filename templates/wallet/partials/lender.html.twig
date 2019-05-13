@@ -82,10 +82,8 @@
                                     <tr id="lender-bid"
                                         class="table-projects-item {% if loop.index is divisible by(2) %}even{% else %}odd{% endif %}"
                                         data-hash="{{ project.hash }}"
-                                        data-sortable-partner="{{ ('partner-name_bubble-' ~ project.idPartner.label)|trans }}"
+                                        data-sortable-partner="{{ ('market-segment.' ~ project.marketSegment.label)|trans }}"
                                         data-sortable-title="{{ project.title|e('html_attr') }}"
-                                        data-sortable-project-amount="{{ project.amount }}"
-                                        data-sortable-duration="{{ project.period }}"
                                         data-sortable-bid-amount="{{ amount }}"
                                         data-sortable-rate="{{ offer.rate.margin }}"
                                         data-sortable-status="{{ offer.status }}">
@@ -93,8 +91,6 @@
                                             {% include 'partials/market_bubble.html.twig' with {'market': project.marketSegment.label} %}
                                         </td>
                                         <td class="table-projects-item-title">{{ project.title }}</td>
-                                        <td class="table-projects-item-project-amount">{{ project.amount|localizednumberwithprecision(0) }} €</td>
-                                        <td class="table-projects-item-duration">{{ project.period }} mois</td>
                                         <td class="table-projects-item-bid-amount">{{ amount|localizednumberwithprecision(0) }}&nbsp;€</td>
                                         <td class="table-projects-item-rate">{{ offer.rate.margin|localizednumberwithprecision(2) }}&nbsp;%</td>
                                         <td class="table-projects-item-status">
@@ -193,18 +189,14 @@
                                     <tr id="lender-bid-{{ loan.idLoan }}"
                                         class="table-projects-item {% if loop.index is divisible by(2) %}even{% else %}odd{% endif %}"
                                         data-hash="{{ project.hash }}"
-                                        data-sortable-partner="{{ ('partner-name_bubble-' ~ project.idPartner.label)|trans }}"
+                                        data-sortable-partner="{{ ('market-segment.' ~ project.marketSegment.label)|trans }}"
                                         data-sortable-title="{{ project.title|e('html_attr') }}"
-                                        data-sortable-project-amount="{{ project.amount }}"
-                                        data-sortable-duration="{{ project.period }}"
                                         data-sortable-loan-amount="{{ amount }}"
                                         data-sortable-rate="{{ loan.rate.margin }}">
                                         <td class="table-projects-item-partner">
                                             {% include 'partials/market_bubble.html.twig' with {'market': project.marketSegment.label} %}
                                         </td>
                                         <td class="table-projects-item-title">{{ project.title }}</td>
-                                        <td class="table-projects-item-project-amount">{{ project.amount|localizednumberwithprecision(0) }}&nbsp;€</td>
-                                        <td class="table-projects-item-duration">{{ project.period }} mois</td>
                                         <td class="table-projects-item-loan-amount">{{ amount|localizednumberwithprecision(0) }}&nbsp;€</td>
                                         <td class="table-projects-item-rate">{{ loan.rate.margin|localizednumberwithprecision(2) }}&nbsp;%</td>
                                         <td class="table-projects-item-end-date">{{ project.added|date_modify("+" ~ project.period ~ 'month')|date("d/m/Y") }}</td>
@@ -318,18 +310,14 @@
                                     <tr id="lender-bid-{{ loan.idLoan }}"
                                         class="table-projects-item {% if loop.index is divisible by(2) %}even{% else %}odd{% endif %}"
                                         data-hash="{{ project.hash }}"
-                                        data-sortable-partner="{{ ('partner-name_bubble-' ~ project.idPartner.label)|trans }}"
+                                        data-sortable-partner="{{ ('market-segment.' ~ project.marketSegment.label)|trans }}"
                                         data-sortable-title="{{ project.title|e('html_attr') }}"
-                                        data-sortable-project-amount="{{ project.amount }}"
-                                        data-sortable-duration="{{ project.period }}"
                                         data-sortable-loan-amount="{{ amount }}"
                                         data-sortable-rate="{{ loan.rate.margin }}">
                                         <td class="table-projects-item-partner">
                                             {% include 'partials/market_bubble.html.twig' with {'market': project.marketSegment.label} %}
                                         </td>
                                         <td class="table-projects-item-title">{{ project.title }}</td>
-                                        <td class="table-projects-item-project-amount">{{ project.amount|localizednumberwithprecision(0) }}&nbsp;€</td>
-                                        <td class="table-projects-item-duration">{{ project.period }} mois</td>
                                         <td class="table-projects-item-loan-amount">{{ amount|localizednumberwithprecision(0) }}&nbsp;€</td>
                                         <td class="table-projects-item-rate">{{ loan.rate.margin|localizednumberwithprecision(2) }}&nbsp;%</td>
                                         <td class="table-projects-item-status">
@@ -370,18 +358,14 @@
                                     <tr id="lender-bid-{{ loan.idLoan }}"
                                         class="table-projects-item {% if loop.index is divisible by(2) %}even{% else %}odd{% endif %}"
                                         data-hash="{{ project.hash }}"
-                                        data-sortable-partner="{{ ('partner-name_bubble-' ~ project.idPartner.label)|trans }}"
+                                        data-sortable-partner="{{ ('market-segment.' ~ project.marketSegment.label)|trans }}"
                                         data-sortable-title="{{ project.title|e('html_attr') }}"
-                                        data-sortable-project-amount="{{ project.amount }}"
-                                        data-sortable-duration="{{ project.period }}"
                                         data-sortable-loan-amount="{{ amount }}"
                                         data-sortable-rate="{{ loan.rate.margin }}">
                                         <td class="table-projects-item-partner">
                                             {% include 'partials/market_bubble.html.twig' with {'market': project.marketSegment.label} %}
                                         </td>
                                         <td class="table-projects-item-title">{{ project.title }}</td>
-                                        <td class="table-projects-item-project-amount">{{ project.amount|localizednumberwithprecision(0) }}&nbsp;€</td>
-                                        <td class="table-projects-item-duration">{{ project.period }} mois</td>
                                         <td class="table-projects-item-loan-amount">{{ amount|localizednumberwithprecision(0) }}&nbsp;€</td>
                                         <td class="table-projects-item-rate">{{ loan.rate.margin|localizednumberwithprecision(2) }}&nbsp;%</td>
                                         <td class="table-projects-item-status">Prêt refusé</td>

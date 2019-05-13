@@ -11,12 +11,14 @@ use Exception;
 use Psr\Log\LoggerInterface;
 use Swift_SwiftException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\{File\UploadedFile, Request, Response};
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Unilend\Entity\{AcceptedBids, Attachment, Bids, Clients, Loans, Project, ProjectStatusHistory, UnderlyingContract};
 use Unilend\Form\Project\ProjectAttachmentCollectionType;
+use Unilend\Form\Tranche\TrancheTypeCollectionType;
 use Unilend\Repository\{AcceptedBidsRepository, BidsRepository, CompaniesRepository, ProjectAttachmentRepository, ProjectAttachmentTypeRepository, ProjectRepository,
     UnderlyingContractRepository};
 use Unilend\Service\{AttachmentManager, DemoMailerManager, ProjectStatusManager};
@@ -51,12 +53,17 @@ class EditProjectController extends AbstractController
     ): Response {
         $regionalBanks = $companyRepository->findRegionalBanks(['name' => 'ASC']);
 
-        $documentForm = $this->createFormBuilder()
+        $documentForm = $this->get('form.factory')->createNamedBuilder('attachments')
             ->add('projectAttachments', ProjectAttachmentCollectionType::class)
+            ->getForm()
+        ;
+        $trancheForm = $this->get('form.factory')->createNamedBuilder('tranches', FormType::class, $project, ['data_class' => Project::class])
+            ->add('tranches', TrancheTypeCollectionType::class)
             ->getForm()
         ;
 
         $documentForm->handleRequest($request);
+        $trancheForm->handleRequest($request);
 
         if ($documentForm->isSubmitted() && $documentForm->isValid()) {
             $projectAttachmentForms = $documentForm->get('projectAttachments');
@@ -79,6 +86,13 @@ class EditProjectController extends AbstractController
             return $this->redirect($request->getUri());
         }
 
+        if ($trancheForm->isSubmitted() && $trancheForm->isValid()) {
+            $project = $trancheForm->getData();
+            $projectRepository->save($project);
+
+            return $this->redirect($request->getUri());
+        }
+
         $template = [
             'arrangers'            => $companyRepository->findEligibleArrangers($user->getCompany(), ['name' => 'ASC']),
             'runs'                 => $regionalBanks,
@@ -90,6 +104,7 @@ class EditProjectController extends AbstractController
             'signatureAttachments' => $projectAttachmentRepository->getAttachmentsWithSignature($project),
             'canChangeBidStatus'   => true,
             'documentForm'         => $documentForm->createView(),
+            'trancheForm'          => $trancheForm->createView(),
         ];
 
         return $this->render('demo/project_request_details.html.twig', $template);
@@ -358,8 +373,7 @@ class EditProjectController extends AbstractController
         $bids = $bidsRepository->findBy([
             'project' => $project,
             'status'  => [Bids::STATUS_ACCEPTED, Bids::STATUS_PENDING],
-        ])
-        ;
+        ]);
 
         $contract = $underlyingContractRepository->findOneBy(['label' => UnderlyingContract::CONTRACT_BDC]);
 
@@ -380,8 +394,8 @@ class EditProjectController extends AbstractController
                 $loan = new Loans();
                 $loan
                     ->setWallet($bid->getWallet())
-                    ->setProject($project)
-                    ->setIdTypeContract($contract)
+                    ->setTranche($bid->getTranche())
+                    ->setUnderlyingContract($contract)
                     ->setAmount($bid->getAmount())
                     ->setRate($bid->getRate())
                     ->setStatus(Loans::STATUS_PENDING)

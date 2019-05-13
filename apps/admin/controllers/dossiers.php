@@ -1472,8 +1472,8 @@ class dossiersController extends bootstrap
         $lenderCompanyName           = null;
         $earlyRepayment              = null;
         $owedCapital                 = round(bcdiv($loan->getAmount(), 100, 5), 2);
-        $projectStatus               = $entityManager->getRepository(ProjectsStatus::class)->findOneBy(['status' => $loan->getProject()->getStatus()]);
-        $companyStatus               = $entityManager->getRepository(CompanyStatusHistory::class)->findOneBy(['idCompany' => $loan->getProject()->getIdCompany()], ['added' => 'DESC'])->getIdStatus();
+        $projectStatus               = $entityManager->getRepository(ProjectsStatus::class)->findOneBy(['status' => $loan->getTranche()->getStatus()]);
+        $companyStatus               = $entityManager->getRepository(CompanyStatusHistory::class)->findOneBy(['idCompany' => $loan->getTranche()->getIdCompany()], ['added' => 'DESC'])->getIdStatus();
         $lenderCompany               = $entityManager->getRepository(Companies::class)->findOneBy(['idClientOwner' => $loan->getWallet()->getIdClient()]);
         $repaymentScheduleRepository = $entityManager->getRepository(Echeanciers::class);
         $repaymentEntities           = $repaymentScheduleRepository->findBy(['idLoan' => $loan, 'statusRa' => Echeanciers::IS_NOT_EARLY_REPAID]);
@@ -1508,7 +1508,7 @@ class dossiersController extends bootstrap
             ];
         }
 
-        if (ProjectsStatus::STATUS_FINISHED === $loan->getProject()->getStatus()) {
+        if (ProjectsStatus::STATUS_FINISHED === $loan->getTranche()->getStatus()) {
             $earlyRepaymentAmount = $repaymentScheduleRepository->getEarlyRepaidCapitalByLoan($loan);
             $earlyRepaymentDate   = $repaymentScheduleRepository->findOneBy(['idLoan' => $loan, 'statusRa' => Echeanciers::IS_EARLY_REPAID])->getDateEcheanceReel();
             $earlyRepayment       = [
@@ -1518,7 +1518,7 @@ class dossiersController extends bootstrap
         }
 
         $this->render(null, [
-            'project'           => $loan->getProject(),
+            'project'           => $loan->getTranche(),
             'projectStatus'     => $projectStatus,
             'companyStatus'     => $companyStatus,
             'loan'              => $loan,

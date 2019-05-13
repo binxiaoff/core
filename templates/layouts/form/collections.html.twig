@@ -1,7 +1,7 @@
 {%- block collection_row -%}
     {% if prototype is defined %}
         {% set prototype_markup = form_row(prototype) %}
-        {% set data_prototype_name = form.vars.form.vars.prototype.vars.name|default('__name_product_item_type_config___') %}
+        {% set data_prototype_name = form.vars.form.vars.prototype.vars.name|default('__name__') %}
         {% set attr = form.vars.attr|merge({
             'data-prototype': prototype_markup,
             'data-prototype-name': data_prototype_name

@@ -54,7 +54,7 @@ class TrancheType extends AbstractType
                 'required' => false,
                 'widget'   => 'single_text',
                 'input'    => 'datetime_immutable',
-                'format'   => 'dd/MM/Y',
+                'format'   => 'dd/MM/yyyy',
                 'attr'     => ['class' => 'ui-has-datepicker'],
             ])
             ->add('expectedStartingDate', null, [
@@ -62,7 +62,7 @@ class TrancheType extends AbstractType
                 'required' => false,
                 'widget'   => 'single_text',
                 'input'    => 'datetime_immutable',
-                'format'   => 'dd/MM/Y',
+                'format'   => 'dd/MM/yyyy',
                 'attr'     => ['class' => 'ui-has-datepicker'],
             ])
             ->add('tranchePercentFees', CollectionType::class, [

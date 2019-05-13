@@ -62,7 +62,7 @@ class ProjectRepaymentTaskManager
         int $repaymentType = ProjectRepaymentTask::TYPE_REGULAR
     ): bool
     {
-        $project  = $repaymentSchedule->getIdLoan()->getProject();
+        $project  = $repaymentSchedule->getIdLoan()->getTranche();
         $sequence = $repaymentSchedule->getOrdre();
 
         if (false === in_array($repaymentType, [ProjectRepaymentTask::TYPE_REGULAR, ProjectRepaymentTask::TYPE_LATE])) {

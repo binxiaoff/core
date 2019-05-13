@@ -26,7 +26,7 @@ trait BidChecker
             $isAutobid = true;
         }
 
-        $amountRestForBid = $this->getAmountLenderCanStillBid($bid->getWallet()->getIdClient(), $bid->getProject(), $contractManager, $entityManager, $isAutobid);
+        $amountRestForBid = $this->getAmountLenderCanStillBid($bid->getWallet()->getIdClient(), $bid->getTranche(), $contractManager, $entityManager, $isAutobid);
 
         if (null === $amountRestForBid) {
             return true;

@@ -134,8 +134,8 @@ class MailerManager
         if (null !== $bid) {
             $keywords = [
                 'firstName'     => $bid->getWallet()->getIdClient()->getFirstName(),
-                'companyName'   => $bid->getProject()->getIdCompany()->getName(),
-                'projectName'   => $bid->getProject()->getTitle(),
+                'companyName'   => $bid->getTranche()->getIdCompany()->getName(),
+                'projectName'   => $bid->getTranche()->getTitle(),
                 'bidAmount'     => $this->oFicelle->formatNumber($bid->getAmount() / 100, 0),
                 'bidRate'       => $this->oFicelle->formatNumber($bid->getRate()->getMargin(), 1),
                 'bidDate'       => strftime('%d %B %G', $bid->getAdded()->getTimestamp()),
@@ -178,7 +178,7 @@ class MailerManager
 
             if ($wallet->getIdClient()->isGrantedLogin()) {
                 $keywords = [
-                    'companyName'   => $bid->getProject()->getIdCompany()->getName(),
+                    'companyName'   => $bid->getTranche()->getIdCompany()->getName(),
                     'firstName'     => $wallet->getIdClient()->getFirstName(),
                     'bidDate'       => strftime('%d %B %G', $bid->getAdded()->getTimestamp()),
                     'bidAmount'     => $this->oFicelle->formatNumber($bid->getAmount() / 100, 0),
@@ -395,17 +395,17 @@ class MailerManager
              * Using the projects.data object is a workaround while projects has not been completely migrated on Doctrine Entity
              * and date_fin cannot be NULL
              */
-            $project->get($bid->getProject()->getIdProject());
+            $project->get($bid->getTranche()->getIdProject());
 
             $now = new \DateTime();
             /**
              * We use: new \DateTime($project->date_fin) instead of: $bid->getProject()->getDateFin() because
              * it seems like that the $bid->getProject() returns a not up-to-date entity data, while $project->date_fin is updated in another process.
              */
-            $endDate = '0000-00-00 00:00:00' === $project->date_fin ? $bid->getProject()->getDateRetrait() : new \DateTime($project->date_fin);
+            $endDate = '0000-00-00 00:00:00' === $project->date_fin ? $bid->getTranche()->getDateRetrait() : new \DateTime($project->date_fin);
 
             if (false === $endDate instanceof \DateTime) {
-                $datesUsed = ['endDate' => $endDate, 'date_fin' => $project->date_fin, 'getDateRetrait' => $bid->getProject()->getDateRetrait()];
+                $datesUsed = ['endDate' => $endDate, 'date_fin' => $project->date_fin, 'getDateRetrait' => $bid->getTranche()->getDateRetrait()];
                 $this->oLogger->warning(
                     'Could not determine the project end date using following values: '
                     . json_encode($datesUsed) . ' No mail will be sent to the client '
@@ -423,7 +423,7 @@ class MailerManager
                 $keyWords = [
                     'lenderPattern' => $bid->getWallet()->getWireTransferPattern(),
                     'firstName'     => $bid->getWallet()->getIdClient()->getFirstName(),
-                    'companyName'   => $bid->getProject()->getIdCompany()->getName(),
+                    'companyName'   => $bid->getTranche()->getIdCompany()->getName(),
                 ];
 
                 if (0 === bccomp($bid->getRate()->getMargin(), $projectRates['rate_min'], 1)) {
@@ -434,20 +434,20 @@ class MailerManager
                 } elseif ($endDate <= $now) {
                     $mailTemplate = 'preteur-autobid-ko-apres-fin-de-periode-projet';
                     $keyWords += [
-                        'projectLink' => $this->sFUrl . '/projects/detail/' . $bid->getProject()->getSlug(),
+                        'projectLink' => $this->sFUrl . '/projects/detail/' . $bid->getTranche()->getSlug(),
                     ];
                 } else {
                     $mailTemplate = 'preteur-autobid-ko';
                     $keyWords += [
                         'bidRemainingTime' => $interval,
-                        'projectLink'      => $this->sFUrl . '/projects/detail/' . $bid->getProject()->getSlug(),
+                        'projectLink'      => $this->sFUrl . '/projects/detail/' . $bid->getTranche()->getSlug(),
                     ];
                 }
             } else {
                 $keyWords = [
                     'lenderPattern' => $bid->getWallet()->getWireTransferPattern(),
                     'firstName'     => $bid->getWallet()->getIdClient()->getFirstName(),
-                    'companyName'   => $bid->getProject()->getIdCompany()->getName(),
+                    'companyName'   => $bid->getTranche()->getIdCompany()->getName(),
                     'bidAmount'     => $this->oFicelle->formatNumber($bid->getAmount() / 100, 0),
                     'bidRate'       => $this->oFicelle->formatNumber($bid->getRate()->getMargin(), 1),
                 ];
@@ -457,13 +457,13 @@ class MailerManager
                     $keyWords += [
                         'bidDate'          => $bid->getAdded()->format('%d %B %G'),
                         'bidTime'          => $bid->getAdded()->format('H\hi'),
-                        'projectLink'      => $this->sFUrl . '/projects/detail/' . $bid->getProject()->getSlug(),
+                        'projectLink'      => $this->sFUrl . '/projects/detail/' . $bid->getTranche()->getSlug(),
                         'projectsListLink' => $this->sFUrl . '/projects-a-financer',
                     ];
                 } elseif ($bidRepository->getProjectMaxRate($project->id_project) > $projectRates['rate_min']) {
                     $mailTemplate = 'preteur-bid-ko';
                     $keyWords += [
-                        'projectLink' => $this->sFUrl . '/projects/detail/' . $bid->getProject()->getSlug(),
+                        'projectLink' => $this->sFUrl . '/projects/detail/' . $bid->getTranche()->getSlug(),
                     ];
                 } else {
                     $mailTemplate = 'preteur-bid-ko-minimum-rate';

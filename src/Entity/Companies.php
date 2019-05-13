@@ -360,6 +360,14 @@ class Companies
     }
 
     /**
+     * @return int|null
+     */
+    public function getId(): ?int
+    {
+        return $this->getIdCompany();
+    }
+
+    /**
      * @param Clients|null $client
      *
      * @return Companies

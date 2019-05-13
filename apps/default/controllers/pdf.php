@@ -810,8 +810,8 @@ class pdfController extends bootstrap
 
         $clients->get($wallet->getIdClient()->getIdClient(), 'id_client');
 
-        $filePath      = $this->path . 'protected/pdf/declaration_de_creances/' . $loan->getProject()->getIdProject() . '/';
-        $filePath      = ($loan->getProject()->getIdProject() == '1456') ? $filePath : $filePath . $clients->id_client . '/';
+        $filePath      = $this->path . 'protected/pdf/declaration_de_creances/' . $loan->getTranche()->getIdProject() . '/';
+        $filePath      = ($loan->getTranche()->getIdProject() == '1456') ? $filePath : $filePath . $clients->id_client . '/';
         $filePath      = $filePath . 'declaration-de-creances' . '-' . $clients->hash . '-' . $loan->getIdLoan() . '.pdf';
         $namePdfClient = 'DECLARATION-DE-CREANCES-UNILEND-' . $clients->hash . '-' . $loan->getIdLoan();
 
@@ -839,7 +839,7 @@ class pdfController extends bootstrap
         /** @var \projects projects */
         $this->projects = $this->loadData('projects');
 
-        $this->projects->get($loan->getProject()->getIdProject());
+        $this->projects->get($loan->getTranche()->getIdProject());
         /** @var \echeanciers echeanciers */
         $this->echeanciers = $this->loadData('echeanciers');
         /** @var \projects_status_history projects_status_history */
@@ -933,7 +933,7 @@ class pdfController extends bootstrap
             $lastEcheance       = $this->echeanciers->select('id_lender = ' . $wallet->getId() . ' AND id_loan = ' . $loan->getIdLoan(), 'ordre DESC', 0, 1);
             $this->lastEcheance = date('d/m/Y', strtotime($lastEcheance[0]['date_echeance']));
 
-            $this->contract = $loan->getIdTypeContract();
+            $this->contract = $loan->getUnderlyingContract();
 
             $this->setDisplay('declaration_de_creances_html');
         } else {
