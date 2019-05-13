@@ -804,16 +804,16 @@ class Project
     }
 
     /**
-     * @return Bids[]|ArrayCollection
+     * @return Loans[]|ArrayCollection
      */
     public function getLoans(): iterable
     {
-        $bids = [];
+        $loans = [];
         foreach ($this->getTranches() as $tranche) {
-            $bids = array_merge($bids, $tranche->getLoans()->toArray());
+            $loans = array_merge($loans, $tranche->getLoans()->toArray());
         }
 
-        return new ArrayCollection($bids);
+        return new ArrayCollection($loans);
     }
 
     /**
