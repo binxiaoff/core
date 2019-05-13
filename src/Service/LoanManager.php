@@ -39,7 +39,6 @@ class LoanManager
     /**
      * @param array              $acceptedBids
      * @param UnderlyingContract $contract
-     *
      */
     public function create(array $acceptedBids, UnderlyingContract $contract): void
     {
@@ -47,7 +46,7 @@ class LoanManager
         $interests  = 0;
         /** @var AcceptedBids $acceptedBid */
         foreach ($acceptedBids as $acceptedBid) {
-            $interests = round(bcadd($interests, bcmul($acceptedBid->getIdBid()->getRate()->getMargin(), $acceptedBid->getAmount(), 4), 4), 2);
+            $interests = round(bcadd($interests, bcmul($acceptedBid->getBid()->getRate()->getMargin(), $acceptedBid->getAmount(), 4), 4), 2);
             $loanAmount += $acceptedBid->getAmount();
         }
 
@@ -91,7 +90,7 @@ class LoanManager
 
         /** @var AcceptedBids $acceptedBid */
         foreach ($acceptedBids as $acceptedBid) {
-            $acceptedBid->setIdLoan($loan);
+            $acceptedBid->setLoan($loan);
             $this->entityManager->flush($acceptedBid);
         }
     }

@@ -3,205 +3,126 @@
 namespace Unilend\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Unilend\Entity\Embeddable\Money;
+use Unilend\Entity\Traits\TimestampableTrait;
 
 /**
- * AcceptedBids
+ * AcceptedBids.
  *
- * @ORM\Table(name="accepted_bids", uniqueConstraints={@ORM\UniqueConstraint(name="unq_accepted_bids_id_bid_id_loan", columns={"id_bid", "id_loan"})}, indexes={@ORM\Index(name="idx_accepted_bids_id_loan", columns={"id_loan"}), @ORM\Index(name="idx_accepted_bids_id_bid", columns={"id_bid"})})
+ * @ORM\Table(name="accepted_bids", uniqueConstraints={@ORM\UniqueConstraint(columns={"id_bid", "id_loan"})})
  * @ORM\Entity(repositoryClass="Unilend\Repository\AcceptedBidsRepository")
  * @ORM\HasLifecycleCallbacks
  */
 class AcceptedBids
 {
+    use TimestampableTrait;
+
     /**
-     * @var \Unilend\Entity\Bids
+     * @var Bids
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\Bids")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_bid", referencedColumnName="id_bid", nullable=false)
+     *     @ORM\JoinColumn(name="id_bid", referencedColumnName="id_bid", nullable=false)
      * })
      */
-    private $idBid;
+    private $bid;
 
     /**
-     * @var \Unilend\Entity\Loans
+     * @var Loans
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\Loans")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_loan", referencedColumnName="id_loan")
+     *     @ORM\JoinColumn(name="id_loan", referencedColumnName="id_loan")
      * })
      */
-    private $idLoan;
+    private $loan;
+
+    /**
+     * @var Money
+     *
+     * @ORM\Embedded(class="Unilend\Entity\Embeddable\Money")
+     */
+    private $money;
 
     /**
      * @var int
      *
-     * @ORM\Column(name="amount", type="integer")
-     */
-    private $amount;
-
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="added", type="datetime")
-     */
-    private $added;
-
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="updated", type="datetime", nullable=true)
-     */
-    private $updated;
-
-    /**
-     * @var int
-     *
-     * @ORM\Column(name="id_accepted_bid", type="integer")
+     * @ORM\Column(name="id", type="integer")
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="IDENTITY")
      */
-    private $idAcceptedBid;
+    private $id;
 
-
+    public function __construct()
+    {
+        $this->money = new Money();
+    }
 
     /**
-     * Set idBid
-     *
-     * @param Bids $idBid
+     * @param Bids $bid
      *
      * @return AcceptedBids
      */
-    public function setIdBid(Bids $idBid) : AcceptedBids
+    public function setBid(Bids $bid): AcceptedBids
     {
-        $this->idBid = $idBid;
+        $this->bid = $bid;
 
         return $this;
     }
 
     /**
-     * Get idBid
-     *
      * @return Bids
      */
-    public function getIdBid() : Bids
+    public function getBid(): Bids
     {
-        return $this->idBid;
+        return $this->bid;
     }
 
     /**
-     * Set idLoan
-     *
-     * @param Loans|null $idLoan
+     * @param Loans|null $loan
      *
      * @return AcceptedBids
      */
-    public function setIdLoan(?Loans $idLoan) : AcceptedBids
+    public function setLoan(?Loans $loan): AcceptedBids
     {
-        $this->idLoan = $idLoan;
+        $this->loan = $loan;
 
         return $this;
     }
 
     /**
-     * Get idLoan
-     *
      * @return Loans
      */
-    public function getIdLoan() : Loans
+    public function getLoan(): Loans
     {
-        return $this->idLoan;
+        return $this->loan;
     }
 
     /**
-     * Set amount
-     *
-     * @param int $amount
+     * @return Money
+     */
+    public function getMoney(): Money
+    {
+        return $this->money;
+    }
+
+    /**
+     * @param Money $money
      *
      * @return AcceptedBids
      */
-    public function setAmount(int $amount) : AcceptedBids
+    public function setMoney(Money $money): AcceptedBids
     {
-        $this->amount = $amount;
+        $this->money = $money;
 
         return $this;
     }
 
     /**
-     * Get amount
-     *
      * @return int
      */
-    public function getAmount() : int
+    public function getId(): int
     {
-        return $this->amount;
-    }
-
-    /**
-     * Get idAcceptedBid
-     *
-     * @return int
-     */
-    public function getIdAcceptedBid() : int
-    {
-        return $this->idAcceptedBid;
-    }
-
-    /**
-     * @ORM\PrePersist
-     */
-    public function setAddedValue() : void
-    {
-        if (! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
-            $this->added = new \DateTime();
-        }
-    }
-
-    /**
-     * @ORM\PreUpdate
-     */
-    public function setUpdatedValue() : void
-    {
-        $this->updated = new \DateTime();
-    }
-
-    /**
-     * @return \DateTime
-     */
-    public function getAdded() : \DateTime
-    {
-        return $this->added;
-    }
-
-    /**
-     * @param \DateTime $added
-     *
-     * @return AcceptedBids
-     */
-    public function setAdded(\DateTime $added) : AcceptedBids
-    {
-        $this->added = $added;
-
-        return $this;
-    }
-
-    /**
-     * @return \DateTime
-     */
-    public function getUpdated() : \DateTime
-    {
-        return $this->updated;
-    }
-
-    /**
-     * @param \DateTime|null $updated
-     *
-     * @return AcceptedBids
-     */
-    public function setUpdated(?\DateTime $updated) : AcceptedBids
-    {
-        $this->updated = $updated;
-
-        return $this;
+        return $this->id;
     }
 }
