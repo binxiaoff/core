@@ -31,6 +31,11 @@ class LendingRateType extends AbstractType
                 'required' => $options['required'],
                 'scale'    => LendingRate::MARGIN_SCALE,
             ])
+            ->add('floor', NumberType::class, [
+                'label'    => 'lending-form.floor',
+                'required' => false,
+                'scale'    => LendingRate::MARGIN_SCALE,
+            ])
         ;
     }
 
