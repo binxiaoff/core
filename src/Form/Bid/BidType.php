@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Unilend\Form\Bid;
 
 use Symfony\Component\Form\Extension\Core\Type\{CollectionType, MoneyType};
-use Symfony\Component\Form\{AbstractType, FormBuilderInterface};
+use Symfony\Component\Form\{AbstractType, FormBuilderInterface, FormEvents};
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Unilend\Entity\Bids;
 use Unilend\Form\Lending\LendingRateType;
@@ -18,10 +18,7 @@ class BidType extends AbstractType
      */
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
-        $builder->add('amount', MoneyType::class, [
-            'label'   => 'lending-form_amount',
-            'divisor' => 100,
-        ])
+        $builder->add('money', \Unilend\Form\MoneyType::class, ['disable_currency' => true])
             ->add('rate', LendingRateType::class)
             ->add('bidPercentFees', CollectionType::class, [
                 'label'         => false,
