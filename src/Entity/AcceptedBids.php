@@ -7,8 +7,6 @@ use Unilend\Entity\Embeddable\Money;
 use Unilend\Entity\Traits\TimestampableTrait;
 
 /**
- * AcceptedBids.
- *
  * @ORM\Table(name="accepted_bids", uniqueConstraints={@ORM\UniqueConstraint(columns={"id_bid", "id_loan"})})
  * @ORM\Entity(repositoryClass="Unilend\Repository\AcceptedBidsRepository")
  * @ORM\HasLifecycleCallbacks
@@ -71,9 +69,9 @@ class AcceptedBids
     }
 
     /**
-     * @return Bids
+     * @return Bids|null
      */
-    public function getBid(): Bids
+    public function getBid(): ?Bids
     {
         return $this->bid;
     }
@@ -91,9 +89,9 @@ class AcceptedBids
     }
 
     /**
-     * @return Loans
+     * @return Loans|null
      */
-    public function getLoan(): Loans
+    public function getLoan(): ?Loans
     {
         return $this->loan;
     }
