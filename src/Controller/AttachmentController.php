@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\Controller;
 
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\{IsGranted, ParamConverter};
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Filesystem\Exception\FileNotFoundException;
 use Symfony\Component\Filesystem\Filesystem;
@@ -17,6 +17,8 @@ class AttachmentController extends AbstractController
 {
     /**
      * @Route("/document/{id}/{originalName}", name="document_download", requirements={"id": "\d+", "originalName": ".+"})
+     *
+     * @IsGranted("download", subject="attachment")
      *
      * @ParamConverter("attachment", options={"mapping": {"id": "id", "originalName": "originalName"}})
      *

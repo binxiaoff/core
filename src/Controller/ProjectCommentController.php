@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Unilend\Controller;
 
 use Doctrine\ORM\{ORMException, OptimisticLockException};
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\{JsonResponse, Request, Response};
 use Symfony\Component\Routing\Annotation\Route;
@@ -16,6 +17,8 @@ class ProjectCommentController extends AbstractController
 {
     /**
      * @Route("/project/comment/{hash}", name="project_comment_add", requirements={"project": "[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}"})
+     *
+     * @IsGranted("comment", subject="project")
      *
      * @param Project                    $project
      * @param ProjectCommentRepository   $projectCommentRepository
@@ -56,6 +59,8 @@ class ProjectCommentController extends AbstractController
 
     /**
      * @Route("/project/comment", name="project_comment_update")
+     *
+     * @IsGranted("comment", subject="project")
      *
      * @param ProjectCommentRepository   $projectCommentRepository
      * @param Request                    $request

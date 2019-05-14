@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Entity\Traits;
+namespace Unilend\Traits;
 
 trait ConstantsAwareTrait
 {

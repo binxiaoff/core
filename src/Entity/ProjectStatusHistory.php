@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace Unilend\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
-use Unilend\Entity\Traits\{BlamableAddedTrait, ConstantsAwareTrait, TimestampableAddedOnlyTrait};
+use Unilend\Entity\Traits\{BlamableAddedTrait, TimestampableAddedOnlyTrait};
+use Unilend\Traits\ConstantsAwareTrait;
 
 /**
  * @ORM\Table(indexes={@ORM\Index(columns={"status"})})

@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Unilend\Controller;
 
-use Doctrine\ORM\EntityManagerInterface;
-use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -15,21 +13,6 @@ use Unilend\Repository\{ClientProjectRepository, ProjectRepository, WalletReposi
 
 class WalletController extends AbstractController
 {
-    /** @var EntityManagerInterface */
-    private $entityManager;
-    /** @var LoggerInterface */
-    private $logger;
-
-    /**
-     * @param EntityManagerInterface $entityManager
-     * @param LoggerInterface        $logger
-     */
-    public function __construct(EntityManagerInterface $entityManager, LoggerInterface $logger)
-    {
-        $this->entityManager = $entityManager;
-        $this->logger        = $logger;
-    }
-
     /**
      * @Route("/portefeuille", name="wallet")
      *

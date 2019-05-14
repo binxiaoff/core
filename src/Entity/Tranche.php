@@ -10,7 +10,8 @@ use Doctrine\Common\Collections\Criteria;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Entity\Embeddable\{Money, NullableLendingRate};
-use Unilend\Entity\Traits\{ConstantsAwareTrait, TimestampableTrait};
+use Unilend\Entity\Traits\TimestampableTrait;
+use Unilend\Traits\ConstantsAwareTrait;
 
 /**
  * @ORM\Entity(repositoryClass="Unilend\Repository\TrancheRepository")

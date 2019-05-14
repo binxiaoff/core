@@ -9,6 +9,7 @@ use Doctrine\DBAL\ConnectionException;
 use Doctrine\ORM\{EntityManagerInterface, ORMException, OptimisticLockException};
 use Exception;
 use Psr\Log\LoggerInterface;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Swift_SwiftException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\Extension\Core\Type\FormType;
@@ -28,8 +29,10 @@ class EditProjectController extends AbstractController
     /**
      * @Route("/projet/{hash}", name="edit_project_details", methods={"GET", "POST"}, requirements={"hash": "[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}"})
      *
-     * @param Request                         $request
+     * @IsGranted("edit", subject="project")
+     *
      * @param Project                         $project
+     * @param Request                         $request
      * @param UserInterface|Clients|null      $user
      * @param CompaniesRepository             $companyRepository
      * @param ProjectRepository               $projectRepository
@@ -42,8 +45,8 @@ class EditProjectController extends AbstractController
      * @return Response
      */
     public function details(
-        Request $request,
         Project $project,
+        Request $request,
         ?UserInterface $user,
         CompaniesRepository $companyRepository,
         ProjectRepository $projectRepository,
@@ -113,6 +116,8 @@ class EditProjectController extends AbstractController
     /**
      * @Route("/projet/visibilite/{hash}", name="edit_project_visibility", requirements={"hash": "[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}"}, methods={"POST"})
      *
+     * @IsGranted("edit", subject="project")
+     *
      * @param Project             $project
      * @param Request             $request
      * @param CompaniesRepository $companyRepository
@@ -142,9 +147,11 @@ class EditProjectController extends AbstractController
      * @Route("/projet/rembourse/{hash}", name="edit_project_status_finished", requirements={"hash": "[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}"})
      * @Route("/projet/perte/{hash}", name="edit_project_status_lost", requirements={"hash": "[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}"})
      *
+     * @IsGranted("edit", subject="project")
+     *
+     * @param Project                      $project
      * @param Request                      $request
      * @param UserInterface|Clients|null   $user
-     * @param Project                      $project
      * @param ProjectStatusManager         $projectStatusManager
      * @param DemoMailerManager            $mailerManager
      * @param LoggerInterface              $logger
@@ -158,9 +165,9 @@ class EditProjectController extends AbstractController
      * @return Response
      */
     public function projectStatusUpdate(
+        Project $project,
         Request $request,
         ?UserInterface $user,
-        Project $project,
         ProjectStatusManager $projectStatusManager,
         DemoMailerManager $mailerManager,
         LoggerInterface $logger,
@@ -244,8 +251,10 @@ class EditProjectController extends AbstractController
     /**
      * @Route("/projet/update/{hash}", name="edit_project_update", requirements={"hash": "[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}"}, methods={"POST"})
      *
-     * @param Request             $request
+     * @IsGranted("edit", subject="project")
+     *
      * @param Project             $project
+     * @param Request             $request
      * @param DemoMailerManager   $mailerManager
      * @param CompaniesRepository $companyRepository
      * @param ProjectRepository   $projectRepository
@@ -257,8 +266,8 @@ class EditProjectController extends AbstractController
      * @return Response
      */
     public function update(
-        Request $request,
         Project $project,
+        Request $request,
         DemoMailerManager $mailerManager,
         CompaniesRepository $companyRepository,
         ProjectRepository $projectRepository,

@@ -10,8 +10,8 @@ use Doctrine\ORM\Mapping as ORM;
 use Exception;
 use Ramsey\Uuid\Uuid;
 use Symfony\Component\Validator\Constraints as Assert;
-use Unilend\Entity\Traits\ConstantsAwareTrait;
 use Unilend\Entity\Traits\TimestampableTrait;
+use Unilend\Traits\ConstantsAwareTrait;
 use URLify;
 
 /**
