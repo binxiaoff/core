@@ -2,12 +2,12 @@
 
 namespace Unilend\Service;
 
-use Doctrine\ORM\{EntityManagerInterface, EntityRepository, NonUniqueResultException, NoResultException, OptimisticLockException};
+use Doctrine\ORM\{EntityManagerInterface, EntityRepository, NoResultException, NonUniqueResultException, OptimisticLockException};
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\Translation\TranslatorInterface;
-use Unilend\Entity\{AcceptedBids, Autobid, Bids, BidsLogs, Clients, ClientsGestionNotifications, ClientsGestionTypeNotif, ClientsStatus, Notifications, Product, Projects, ProjectsStatus,
-    RepaymentType, Settings, TaxType, UnderlyingContract, UnderlyingContractAttributeType, Users, Wallet, WalletType};
+use Unilend\Entity\{AcceptedBids, Autobid, Bids, BidsLogs, Clients, ClientsGestionNotifications, ClientsGestionTypeNotif, ClientsStatus, Embeddable\Money, Notifications, Product,
+    Projects, ProjectsStatus, RepaymentType, Settings, TaxType, UnderlyingContract, UnderlyingContractAttributeType, Users, Wallet, WalletType};
 use Unilend\Service\Product\Contract\ContractAttributeManager;
 use Unilend\Service\Product\ProductManager;
 use Unilend\Service\Repayment\ProjectRepaymentScheduleManager;
@@ -83,7 +83,6 @@ class ProjectLifecycleManager
      * @param \NumberFormatter                $currencyFormatter
      * @param CIPManager                      $cipManager
      * @param ProjectRepaymentScheduleManager $projectRepaymentScheduleManager
-     *
      */
     public function __construct(
         EntityManagerSimulator $entityManagerSimulator,
@@ -107,8 +106,7 @@ class ProjectLifecycleManager
         \NumberFormatter $currencyFormatter,
         CIPManager $cipManager,
         ProjectRepaymentScheduleManager $projectRepaymentScheduleManager
-    )
-    {
+    ) {
         $this->entityManagerSimulator          = $entityManagerSimulator;
         $this->entityManager                   = $entityManager;
         $this->bidManager                      = $bidManager;
@@ -136,7 +134,6 @@ class ProjectLifecycleManager
      * @required
      *
      * @param LoggerInterface|null $logger
-     *
      */
     public function setLogger(?LoggerInterface $logger): void
     {
@@ -166,7 +163,7 @@ class ProjectLifecycleManager
         $projectEndDate   = $this->projectManager->getProjectEndDate($project);
         $isRateMinReached = $this->projectManager->isRateMinReached($project);
 
-        /**
+        /*
          * "dateFin" is set here in order to be sure that we always use the same date in rejected bid emails
          * These emails are sent during publishing process in "sendAcceptedOrRejectedBidNotifications"
          */
@@ -203,7 +200,7 @@ class ProjectLifecycleManager
                 'class'      => __CLASS__,
                 'function'   => __FUNCTION__,
                 'file'       => $exception->getFile(),
-                'line'       => $exception->getLine()
+                'line'       => $exception->getLine(),
             ]);
         }
     }
@@ -212,11 +209,11 @@ class ProjectLifecycleManager
      * @param Projects $project
      * @param bool     $sendNotification
      *
-     * @return int[]
-     *
      * @throws NoResultException
      * @throws NonUniqueResultException
      * @throws OptimisticLockException
+     *
+     * @return int[]
      */
     public function checkBids(Projects $project, bool $sendNotification): array
     {
@@ -263,7 +260,8 @@ class ProjectLifecycleManager
                 ->setNbBidsKo($definitivelyRejectedBids + $temporarilyRejectedBids)
                 ->setNbBidsEncours($bidRepository->countBy(['idProject' => $project, 'status' => Bids::STATUS_PENDING]))
                 ->setTotalBids($bidRepository->countBy(['idProject' => $project]))
-                ->setTotalBidsKo($bidRepository->countBy(['idProject' => $project, 'status' => Bids::STATUS_REJECTED]));
+                ->setTotalBidsKo($bidRepository->countBy(['idProject' => $project, 'status' => Bids::STATUS_REJECTED]))
+            ;
 
             $this->entityManager->persist($log);
             $this->entityManager->flush($log);
@@ -271,7 +269,7 @@ class ProjectLifecycleManager
 
         return [
             'definitivelyRejected' => $definitivelyRejectedBids,
-            'temporarilyRejected'  => $temporarilyRejectedBids
+            'temporarilyRejected'  => $temporarilyRejectedBids,
         ];
     }
 
@@ -287,95 +285,12 @@ class ProjectLifecycleManager
         switch ($project->getStatus()) {
             case ProjectsStatus::STATUS_REVIEW:
                 $this->bidAllAutoBid($project);
+
                 break;
             case ProjectsStatus::STATUS_PUBLISHED:
                 $this->reBidAutoBid($project, true);
+
                 break;
-        }
-    }
-
-    /**
-     * @param Projects $project
-     *
-     */
-    private function bidAllAutoBid(Projects $project): void
-    {
-        $globalSetting = $this->entityManager
-            ->getRepository(Settings::class)
-            ->findOneBy(['type' => Settings::TYPE_AUTOBID_GLOBAL_SWITCH]);
-
-        if (null === $globalSetting || empty($globalSetting->getValue())) {
-            return;
-        }
-
-        $rateRange         = $this->bidManager->getProjectRateRange($project);
-        $autoBidRepository = $this->entityManager->getRepository(Autobid::class);
-        $autoBidSettings   = $autoBidRepository->getAutobidsForProject($project);
-
-        foreach ($autoBidSettings as $autoBidSetting) {
-            try {
-                $this->bidManager->bid($autoBidSetting->getIdLender(), $project, $autoBidSetting->getAmount(), $rateRange['rate_max'], $autoBidSetting, false);
-            } catch (\Exception $exception) {
-                continue;
-            }
-        }
-
-        /** @var \bids $bid */
-        $bid = $this->entityManagerSimulator->getRepository('bids');
-        $bid->shuffleAutoBidOrder($project->getIdProject());
-    }
-
-    /**
-     * @param Projects $project
-     * @param bool     $sendNotification
-     *
-     * @throws NoResultException
-     * @throws NonUniqueResultException
-     * @throws OptimisticLockException
-     */
-    private function reBidAutoBid(Projects $project, bool $sendNotification): void
-    {
-        $rateStep = $this->entityManager->getRepository(Settings::class)
-            ->findOneBy(['type' => Settings::TYPE_AUTOBID_STEP])
-            ->getValue();
-
-        $bidRepository      = $this->entityManager->getRepository(Bids::class);
-        $currentRate        = bcsub($bidRepository->getProjectMaxRate($project), $rateStep, 1);
-        $bidOrder           = null;
-        $preCalculatedOrder = false;
-
-        if (ProjectsStatus::STATUS_REVIEW === $project->getStatus()) {
-            $preCalculatedOrder = true;
-            $bidOrder           = $bidRepository->countBy(['idProject' => $project]);
-            $bidOrder++;
-        }
-
-        while ($autoBids = $bidRepository->getAutoBids($project, Bids::STATUS_TEMPORARILY_REJECTED_AUTOBID)) {
-            foreach ($autoBids as $autoBid) {
-                $bid = $this->bidManager->reBidAutoBidOrReject($autoBid, $currentRate, $bidOrder, $sendNotification);
-
-                if ($preCalculatedOrder && Bids::STATUS_PENDING === $bid->getStatus()) {
-                    $bidOrder = $bid->getOrdre() + 1;
-                }
-            }
-        }
-    }
-
-    /**
-     * @param Projects $project
-     * @param bool     $sendNotification
-     *
-     * @throws NoResultException
-     * @throws NonUniqueResultException
-     * @throws OptimisticLockException
-     */
-    private function reBidAutoBidDeeply(Projects $project, bool $sendNotification): void
-    {
-        $rejectedBids = $this->checkBids($project, $sendNotification);
-
-        if (false === empty($rejectedBids['temporarilyRejected'])) {
-            $this->reBidAutoBid($project, $sendNotification);
-            $this->reBidAutoBidDeeply($project, $sendNotification);
         }
     }
 
@@ -411,6 +326,232 @@ class ProjectLifecycleManager
      *
      * @throws OptimisticLockException
      */
+    public function treatFundFailed(Projects $project): void
+    {
+        $bidRepository = $this->entityManager->getRepository(Bids::class);
+
+        $this->projectStatusManager->addProjectStatus(Users::USER_ID_CRON, ProjectsStatus::STATUS_CANCELLED, $project);
+
+        $bids         = $bidRepository->findBy(['idProject' => $project], ['rate' => 'ASC', 'ordre' => 'ASC']);
+        $iBidNbTotal  = $bidRepository->countBy(['idProject' => $project]);
+        $treatedBidNb = 0;
+
+        if ($this->logger instanceof LoggerInterface) {
+            $this->logger->debug($iBidNbTotal . ' bids in total (project ' . $project->getIdProject() . ')', [
+                'id_project' => $project->getIdProject(),
+                'class'      => __CLASS__,
+                'function'   => __FUNCTION__,
+            ]);
+        }
+
+        foreach ($bids as $bid) {
+            if ($bid) {
+                $this->bidManager->reject($bid, false);
+                ++$treatedBidNb;
+                if ($this->logger instanceof LoggerInterface) {
+                    $this->logger->debug($treatedBidNb . '/' . $iBidNbTotal . 'bids treated (project ' . $project->getIdProject() . ')', [
+                        'id_project' => $project->getIdProject(),
+                        'class'      => __CLASS__,
+                        'function'   => __FUNCTION__,
+                    ]);
+                }
+            }
+        }
+    }
+
+    /**
+     * @param Projects $project
+     *
+     * @throws \Exception
+     */
+    public function createRepaymentSchedule(Projects $project): void
+    {
+        $product = $this->entityManager->getRepository(Product::class)->find($project->getIdProduct());
+
+        if (null === $product) {
+            throw new \Exception('Invalid product ID ' . $project->getIdProduct() . ' found for project ID ' . $project->getIdProject());
+        }
+
+        if (null === $product->getIdRepaymentType()) {
+            throw new \Exception('Undefined repayment schedule type for product ID ' . $product->getIdProduct());
+        }
+
+        switch ($product->getIdRepaymentType()->getLabel()) {
+            case RepaymentType::REPAYMENT_TYPE_AMORTIZATION:
+                $this->createAmortizationRepaymentSchedule($project);
+
+                return;
+            case RepaymentType::REPAYMENT_TYPE_DEFERRED:
+                $this->createDeferredRepaymentSchedule($project);
+
+                return;
+            default:
+                throw new \Exception('Unknown repayment schedule type ' . $product->getIdRepaymentType()->getLabel());
+        }
+    }
+
+    /**
+     * @param Projects $project
+     *
+     * @throws \Exception
+     */
+    public function createPaymentSchedule(Projects $project): void
+    {
+        $product = $this->entityManager->getRepository(Product::class)->find($project->getIdProduct());
+
+        if (null === $product) {
+            throw new \Exception('Invalid product ID ' . $project->getIdProduct() . ' found for project ID ' . $project->getIdProject());
+        }
+
+        if (null === $product->getIdRepaymentType()) {
+            throw new \Exception('Undefined repayment schedule type for product ID ' . $product->getIdProduct());
+        }
+
+        switch ($product->getIdRepaymentType()->getLabel()) {
+            case RepaymentType::REPAYMENT_TYPE_AMORTIZATION:
+                $this->createAmortizationPaymentSchedule($project);
+
+                return;
+            case RepaymentType::REPAYMENT_TYPE_DEFERRED:
+                $this->createDeferredPaymentSchedule($project);
+
+                return;
+            default:
+                throw new \Exception('Unknown repayment schedule type ' . $product->getIdRepaymentType()->getLabel());
+        }
+    }
+
+    /**
+     * @param Projects $project
+     *
+     * @throws OptimisticLockException
+     * @throws \Exception
+     */
+    public function markAsFunded(Projects $project): void
+    {
+        if (empty($project->getDateFunded())) {
+            $funded    = new \DateTime();
+            $published = $project->getDatePublication();
+
+            if ($funded < $published) {
+                $funded = $published;
+            }
+
+            $project->setDateFunded($funded);
+
+            $this->entityManager->flush($project);
+
+            $this->mailerManager->sendFundedToStaff($project);
+        }
+    }
+
+    /**
+     * @param Projects $project
+     *
+     * @throws OptimisticLockException
+     */
+    public function saveInterestRate(Projects $project): void
+    {
+        $interestRate = $this->entityManager
+            ->getRepository(Projects::class)
+            ->getAverageInterestRate($project, false)
+        ;
+
+        $project->setInterestRate($interestRate);
+        $this->entityManager->flush($project);
+    }
+
+    /**
+     * @param Projects $project
+     */
+    private function bidAllAutoBid(Projects $project): void
+    {
+        $globalSetting = $this->entityManager
+            ->getRepository(Settings::class)
+            ->findOneBy(['type' => Settings::TYPE_AUTOBID_GLOBAL_SWITCH])
+        ;
+
+        if (null === $globalSetting || empty($globalSetting->getValue())) {
+            return;
+        }
+
+        $rateRange         = $this->bidManager->getProjectRateRange($project);
+        $autoBidRepository = $this->entityManager->getRepository(Autobid::class);
+        $autoBidSettings   = $autoBidRepository->getAutobidsForProject($project);
+
+        foreach ($autoBidSettings as $autoBidSetting) {
+            try {
+                $this->bidManager->bid($autoBidSetting->getIdLender(), $project, $autoBidSetting->getAmount(), $rateRange['rate_max'], $autoBidSetting, false);
+            } catch (\Exception $exception) {
+                continue;
+            }
+        }
+
+        /** @var \bids $bid */
+        $bid = $this->entityManagerSimulator->getRepository('bids');
+        $bid->shuffleAutoBidOrder($project->getIdProject());
+    }
+
+    /**
+     * @param Projects $project
+     * @param bool     $sendNotification
+     *
+     * @throws NoResultException
+     * @throws NonUniqueResultException
+     * @throws OptimisticLockException
+     */
+    private function reBidAutoBid(Projects $project, bool $sendNotification): void
+    {
+        $rateStep = $this->entityManager->getRepository(Settings::class)
+            ->findOneBy(['type' => Settings::TYPE_AUTOBID_STEP])
+            ->getValue()
+        ;
+
+        $bidRepository      = $this->entityManager->getRepository(Bids::class);
+        $currentRate        = bcsub($bidRepository->getProjectMaxRate($project), $rateStep, 1);
+        $bidOrder           = null;
+        $preCalculatedOrder = false;
+
+        if (ProjectsStatus::STATUS_REVIEW === $project->getStatus()) {
+            $preCalculatedOrder = true;
+            $bidOrder           = $bidRepository->countBy(['idProject' => $project]);
+            ++$bidOrder;
+        }
+
+        while ($autoBids = $bidRepository->getAutoBids($project, Bids::STATUS_TEMPORARILY_REJECTED_AUTOBID)) {
+            foreach ($autoBids as $autoBid) {
+                $bid = $this->bidManager->reBidAutoBidOrReject($autoBid, $currentRate, $bidOrder, $sendNotification);
+
+                if ($preCalculatedOrder && Bids::STATUS_PENDING === $bid->getStatus()) {
+                    $bidOrder = $bid->getOrdre() + 1;
+                }
+            }
+        }
+    }
+
+    /**
+     * @param Projects $project
+     * @param bool     $sendNotification
+     *
+     * @throws NoResultException
+     * @throws NonUniqueResultException
+     * @throws OptimisticLockException
+     */
+    private function reBidAutoBidDeeply(Projects $project, bool $sendNotification): void
+    {
+        $rejectedBids = $this->checkBids($project, $sendNotification);
+
+        if (false === empty($rejectedBids['temporarilyRejected'])) {
+            $this->reBidAutoBid($project, $sendNotification);
+            $this->reBidAutoBidDeeply($project, $sendNotification);
+        }
+    }
+
+    /**
+     * @param Projects $project
+     *
+     * @throws OptimisticLockException
+     */
     private function acceptBids(Projects $project): void
     {
         $bidBalance    = 0;
@@ -423,16 +564,18 @@ class ProjectLifecycleManager
         foreach ($bids as $bid) {
             if ($bid) {
                 if ($bidBalance < $project->getAmount()) {
-                    $bidAmount      = round(bcdiv($bid->getAmount(), 100, 4), 2);
-                    $bidBalance     = round(bcadd($bidBalance, $bidAmount, 4), 2);
-                    $acceptedAmount = null;
+                    $bidAmount     = $bid->getMoney()->getAmount();
+                    $bidBalance    = round(bcadd($bidBalance, $bidAmount, 4), 2);
+                    $acceptedMoney = null;
 
                     if ($bidBalance > $project->getAmount()) {
                         $cutAmount      = round(bcsub($bidBalance, $project->getAmount(), 4), 2);
                         $acceptedAmount = round(bcsub($bidAmount, $cutAmount, 4));
+                        $acceptedMoney  = new Money();
+                        $acceptedMoney->setAmount($acceptedAmount)->setCurrency($bid->getMoney()->getCurrency());
                     }
 
-                    $this->bidManager->accept($bid, $acceptedAmount);
+                    $this->bidManager->accept($bid, $acceptedMoney);
                 } else {
                     $this->bidManager->reject($bid, true);
                 }
@@ -441,7 +584,7 @@ class ProjectLifecycleManager
     }
 
     /**
-     * An alternative rule to build the loans that is IFP prioritized. Don't remove it, as it can be used one day. (Retired since 05/2018, ticket RUN-2991)
+     * An alternative rule to build the loans that is IFP prioritized. Don't remove it, as it can be used one day. (Retired since 05/2018, ticket RUN-2991).
      *
      * @param Projects $project
      *
@@ -478,9 +621,8 @@ class ProjectLifecycleManager
         $contractAttrVars = $this->contractAttributeManager->getContractAttributesByType($ifpContract, UnderlyingContractAttributeType::TOTAL_LOAN_AMOUNT_LIMITATION_IN_EURO);
         if (empty($contractAttrVars) || false === isset($contractAttrVars[0]) || false === is_numeric($contractAttrVars[0])) {
             throw new \UnexpectedValueException('The IFP contract max amount is not set');
-        } else {
-            $IfpLoanAmountMax = $contractAttrVars[0];
         }
+        $IfpLoanAmountMax = $contractAttrVars[0];
 
         $additionalContract = $this->entityManager->getRepository(UnderlyingContract::class)->findOneBy(['label' => $additionalContractLabel]);
         if (null === $additionalContract) {
@@ -499,18 +641,21 @@ class ProjectLifecycleManager
             foreach ($acceptedBids as $acceptedBid) {
                 if (false === $wallet->getIdClient()->isNaturalPerson()) {
                     $this->loanManager->create([$acceptedBid], $additionalContract);
+
                     continue;
                 }
 
                 $bidAmount = round(bcdiv($acceptedBid->getAmount(), 100, 4), 2);
                 if (true === $isIfpContract && bccomp(bcadd($loansLenderSum, $bidAmount, 2), $IfpLoanAmountMax, 2) <= 0) {
                     $loansLenderSum += $bidAmount;
-                    $ifpBids[]      = $acceptedBid;
+                    $ifpBids[] = $acceptedBid;
+
                     continue;
                 }
 
-                if (false === $isIfpContract || bccomp($loansLenderSum, $IfpLoanAmountMax) == 0) {
+                if (false === $isIfpContract || 0 == bccomp($loansLenderSum, $IfpLoanAmountMax)) {
                     $this->loanManager->create([$acceptedBid], $additionalContract);
+
                     continue;
                 }
 
@@ -594,7 +739,7 @@ class ProjectLifecycleManager
             $acceptedBidsForIfp = [];
 
             foreach ($acceptedBids as $acceptedBid) {
-                if (false === $wallet->getIdClient()->isNaturalPerson() || $this->cipManager->hasValidEvaluation($wallet->getIdClient(), $acceptedBid->getIdBid()->getAdded())) {
+                if (false === $wallet->getIdClient()->isNaturalPerson() || $this->cipManager->hasValidEvaluation($wallet->getIdClient(), $acceptedBid->getBid()->getAdded())) {
                     $this->loanManager->create([$acceptedBid], $miniBonContract);
                 } else {
                     $acceptedBidsForIfp[] = $acceptedBid;
@@ -609,73 +754,6 @@ class ProjectLifecycleManager
 
     /**
      * @param Projects $project
-     *
-     * @throws OptimisticLockException
-     */
-    public function treatFundFailed(Projects $project): void
-    {
-        $bidRepository = $this->entityManager->getRepository(Bids::class);
-
-        $this->projectStatusManager->addProjectStatus(Users::USER_ID_CRON, ProjectsStatus::STATUS_CANCELLED, $project);
-
-        $bids         = $bidRepository->findBy(['idProject' => $project], ['rate' => 'ASC', 'ordre' => 'ASC']);
-        $iBidNbTotal  = $bidRepository->countBy(['idProject' => $project]);
-        $treatedBidNb = 0;
-
-        if ($this->logger instanceof LoggerInterface) {
-            $this->logger->debug($iBidNbTotal . ' bids in total (project ' . $project->getIdProject() . ')', [
-                'id_project' => $project->getIdProject(),
-                'class'      => __CLASS__,
-                'function'   => __FUNCTION__
-            ]);
-        }
-
-        foreach ($bids as $bid) {
-            if ($bid) {
-                $this->bidManager->reject($bid, false);
-                $treatedBidNb++;
-                if ($this->logger instanceof LoggerInterface) {
-                    $this->logger->debug($treatedBidNb . '/' . $iBidNbTotal . 'bids treated (project ' . $project->getIdProject() . ')', [
-                        'id_project' => $project->getIdProject(),
-                        'class'      => __CLASS__,
-                        'function'   => __FUNCTION__
-                    ]);
-                }
-            }
-        }
-    }
-
-    /**
-     * @param Projects $project
-     *
-     * @throws \Exception
-     */
-    public function createRepaymentSchedule(Projects $project): void
-    {
-        $product = $this->entityManager->getRepository(Product::class)->find($project->getIdProduct());
-
-        if (null === $product) {
-            throw new \Exception('Invalid product ID ' . $project->getIdProduct() . ' found for project ID ' . $project->getIdProject());
-        }
-
-        if (null === $product->getIdRepaymentType()) {
-            throw new \Exception('Undefined repayment schedule type for product ID ' . $product->getIdProduct());
-        }
-
-        switch ($product->getIdRepaymentType()->getLabel()) {
-            case RepaymentType::REPAYMENT_TYPE_AMORTIZATION:
-                $this->createAmortizationRepaymentSchedule($project);
-                return;
-            case RepaymentType::REPAYMENT_TYPE_DEFERRED:
-                $this->createDeferredRepaymentSchedule($project);
-                return;
-            default:
-                throw new \Exception('Unknown repayment schedule type ' . $product->getIdRepaymentType()->getLabel());
-        }
-    }
-
-    /**
-     * @param Projects $project
      */
     private function createAmortizationRepaymentSchedule(Projects $project): void
     {
@@ -684,7 +762,7 @@ class ProjectLifecycleManager
         /** @var \echeanciers $oRepaymentSchedule */
         $oRepaymentSchedule = $this->entityManagerSimulator->getRepository('echeanciers');
 
-        if ($project->getStatus() === ProjectsStatus::STATUS_FUNDED) {
+        if (ProjectsStatus::STATUS_FUNDED === $project->getStatus()) {
             $lLoans = $oLoan->select('id_project = ' . $project->getIdProject());
 
             $iLoanNbTotal   = count($lLoans);
@@ -694,7 +772,7 @@ class ProjectLifecycleManager
                 $this->logger->info($iLoanNbTotal . ' in total (project ' . $project->getIdProject() . ')', [
                     'id_project' => $project->getIdProject(),
                     'class'      => __CLASS__,
-                    'function'   => __FUNCTION__
+                    'function'   => __FUNCTION__,
                 ]);
             }
 
@@ -717,18 +795,18 @@ class ProjectLifecycleManager
                         'date_echeance'            => $lenderRepaymentDate->format('Y-m-d H:i:00'),
                         'date_echeance_emprunteur' => $borrowerPaymentDate->format('Y-m-d H:i:00'),
                         'added'                    => date('Y-m-d H:i:s'),
-                        'updated'                  => date('Y-m-d H:i:s')
+                        'updated'                  => date('Y-m-d H:i:s'),
                     ];
                 }
                 $oRepaymentSchedule->multiInsert($aRepaymentSchedule);
 
-                $iTreatedLoanNb++;
+                ++$iTreatedLoanNb;
 
                 if ($this->logger instanceof LoggerInterface) {
                     $this->logger->info($iTreatedLoanNb . '/' . $iLoanNbTotal . ' loans treated. ' . $k . ' repayment schedules created (project ' . $project->getIdProject() . ' : ', [
                         'id_project' => $project->getIdProject(),
                         'class'      => __CLASS__,
-                        'function'   => __FUNCTION__
+                        'function'   => __FUNCTION__,
                     ]);
                 }
             }
@@ -745,7 +823,7 @@ class ProjectLifecycleManager
         /** @var \echeanciers $repaymentScheduleEntity */
         $repaymentScheduleEntity = $this->entityManagerSimulator->getRepository('echeanciers');
 
-        if ($project->getStatus() === ProjectsStatus::STATUS_FUNDED) {
+        if (ProjectsStatus::STATUS_FUNDED === $project->getStatus()) {
             $loans               = $loanEntity->select('id_project = ' . $project->getIdProject());
             $loansCount          = count($loans);
             $processedLoansCount = 0;
@@ -754,7 +832,7 @@ class ProjectLifecycleManager
                 $this->logger->info($loansCount . ' in total (project ' . $project->getIdProject() . ')', [
                     'id_project' => $project->getIdProject(),
                     'class'      => __CLASS__,
-                    'function'   => __FUNCTION__
+                    'function'   => __FUNCTION__,
                 ]);
             }
 
@@ -778,50 +856,21 @@ class ProjectLifecycleManager
                         'date_echeance'            => $lenderRepaymentDate->format('Y-m-d H:i:00'),
                         'date_echeance_emprunteur' => $borrowerPaymentDate->format('Y-m-d H:i:00'),
                         'added'                    => date('Y-m-d H:i:s'),
-                        'updated'                  => date('Y-m-d H:i:s')
+                        'updated'                  => date('Y-m-d H:i:s'),
                     ];
                 }
                 $repaymentScheduleEntity->multiInsert($repayments);
 
-                $processedLoansCount++;
+                ++$processedLoansCount;
 
                 if ($this->logger instanceof LoggerInterface) {
                     $this->logger->info($processedLoansCount . '/' . $loansCount . ' loans treated. ' . $order . ' repayment schedules created (project ' . $project->getIdProject() . ' : ', [
                         'id_project' => $project->getIdProject(),
                         'class'      => __CLASS__,
-                        'function'   => __FUNCTION__
+                        'function'   => __FUNCTION__,
                     ]);
                 }
             }
-        }
-    }
-
-    /**
-     * @param Projects $project
-     *
-     * @throws \Exception
-     */
-    public function createPaymentSchedule(Projects $project): void
-    {
-        $product = $this->entityManager->getRepository(Product::class)->find($project->getIdProduct());
-
-        if (null === $product) {
-            throw new \Exception('Invalid product ID ' . $project->getIdProduct() . ' found for project ID ' . $project->getIdProject());
-        }
-
-        if (null === $product->getIdRepaymentType()) {
-            throw new \Exception('Undefined repayment schedule type for product ID ' . $product->getIdProduct());
-        }
-
-        switch ($product->getIdRepaymentType()->getLabel()) {
-            case RepaymentType::REPAYMENT_TYPE_AMORTIZATION:
-                $this->createAmortizationPaymentSchedule($project);
-                return;
-            case RepaymentType::REPAYMENT_TYPE_DEFERRED:
-                $this->createDeferredPaymentSchedule($project);
-                return;
-            default:
-                throw new \Exception('Unknown repayment schedule type ' . $product->getIdRepaymentType()->getLabel());
         }
     }
 
@@ -849,7 +898,7 @@ class ProjectLifecycleManager
             $this->logger->debug($paymentsCount . ' borrower repayments in total (project ' . $project->getIdProject() . ')', [
                 'id_project' => $project->getIdProject(),
                 'class'      => __CLASS__,
-                'function'   => __FUNCTION__
+                'function'   => __FUNCTION__,
             ]);
         }
 
@@ -867,13 +916,13 @@ class ProjectLifecycleManager
             $paymentSchedule->date_echeance_emprunteur = $paymentDate->format('Y-m-d H:i:00');
             $paymentSchedule->create();
 
-            $processedPayments++;
+            ++$processedPayments;
 
             if ($this->logger instanceof LoggerInterface) {
                 $this->logger->info('Borrower repayment ' . $paymentSchedule->id_echeancier_emprunteur . ' created. ' . $processedPayments . '/' . $paymentsCount . 'treated (project ' . $project->getIdProject() . ')', [
                     'id_project' => $project->getIdProject(),
                     'class'      => __CLASS__,
-                    'function'   => __FUNCTION__
+                    'function'   => __FUNCTION__,
                 ]);
             }
         }
@@ -905,7 +954,7 @@ class ProjectLifecycleManager
             $this->logger->info($paymentsCount . ' borrower repayments in total (project ' . $project->getIdProject() . ')', [
                 'id_project' => $project->getIdProject(),
                 'class'      => __CLASS__,
-                'function'   => __FUNCTION__
+                'function'   => __FUNCTION__,
             ]);
         }
 
@@ -923,55 +972,16 @@ class ProjectLifecycleManager
             $borrowerPaymentSchedule->date_echeance_emprunteur = $paymentDate->format('Y-m-d H:i:00');
             $borrowerPaymentSchedule->create();
 
-            $processedPayments++;
+            ++$processedPayments;
 
             if ($this->logger instanceof LoggerInterface) {
                 $this->logger->info('Borrower repayment ' . $borrowerPaymentSchedule->id_echeancier_emprunteur . ' created. ' . $processedPayments . '/' . $paymentsCount . 'treated (project ' . $project->getIdProject() . ')', [
                     'id_project' => $project->getIdProject(),
                     'class'      => __CLASS__,
-                    'function'   => __FUNCTION__
+                    'function'   => __FUNCTION__,
                 ]);
             }
         }
-    }
-
-    /**
-     * @param Projects $project
-     *
-     * @throws OptimisticLockException
-     * @throws \Exception
-     */
-    public function markAsFunded(Projects $project): void
-    {
-        if (empty($project->getDateFunded())) {
-            $funded    = new \DateTime();
-            $published = $project->getDatePublication();
-
-            if ($funded < $published) {
-                $funded = $published;
-            }
-
-            $project->setDateFunded($funded);
-
-            $this->entityManager->flush($project);
-
-            $this->mailerManager->sendFundedToStaff($project);
-        }
-    }
-
-    /**
-     * @param Projects $project
-     *
-     * @throws OptimisticLockException
-     */
-    public function saveInterestRate(Projects $project): void
-    {
-        $interestRate = $this->entityManager
-            ->getRepository(Projects::class)
-            ->getAverageInterestRate($project, false);
-
-        $project->setInterestRate($interestRate);
-        $this->entityManager->flush($project);
     }
 
     /**
@@ -993,7 +1003,7 @@ class ProjectLifecycleManager
             'companyName'     => $project->getIdCompany()->getName(),
             'projectAmount'   => $this->numberFormatter->format($project->getAmount()),
             'projectDuration' => $project->getPeriod(),
-            'projectLink'     => $this->frontUrl . $this->router->generate('project_detail', ['projectSlug' => $project->getSlug()])
+            'projectLink'     => $this->frontUrl . $this->router->generate('project_detail', ['projectSlug' => $project->getSlug()]),
         ];
 
         /** @var \project_period $projectPeriodData */
@@ -1016,17 +1026,17 @@ class ProjectLifecycleManager
         $this->logger->info('Insert publication emails for project ' . $project->getIdProject(), [
             'id_project' => $project->getIdProject(),
             'class'      => __CLASS__,
-            'function'   => __FUNCTION__
+            'function'   => __FUNCTION__,
         ]);
 
         while ($lenders = $clientData->selectPreteursByStatus(ClientsStatus::STATUS_VALIDATED, 'c.id_client ASC', $offset, $limit)) {
             $emailsInserted = 0;
-            $offset         += $limit;
+            $offset += $limit;
 
             $this->logger->info('Lenders retrieved: ' . count($lenders), [
                 'id_project' => $project->getIdProject(),
                 'class'      => __CLASS__,
-                'function'   => __FUNCTION__
+                'function'   => __FUNCTION__,
             ]);
 
             foreach ($lenders as $lender) {
@@ -1040,6 +1050,7 @@ class ProjectLifecycleManager
 
                 if ($isClientEligible && $hasNewProjectOrAutobidNotificationSetting) {
                     $autolendSettingsAdvises = '';
+
                     try {
                         $hasAutolendOn = $this->autobidSettingsManager->isOn($wallet->getIdClient());
                     } catch (\Exception $exception) {
@@ -1048,7 +1059,7 @@ class ProjectLifecycleManager
                             'class'      => __CLASS__,
                             'function'   => __FUNCTION__,
                             'file'       => $exception->getFile(),
-                            'line'       => $exception->getLine()
+                            'line'       => $exception->getLine(),
                         ]);
                         /** Do not include any advice about autolend in the email */
                         $hasAutolendOn = null;
@@ -1062,8 +1073,9 @@ class ProjectLifecycleManager
                             'class'      => __CLASS__,
                             'function'   => __FUNCTION__,
                             'file'       => $exception->getFile(),
-                            'line'       => $exception->getLine()
+                            'line'       => $exception->getLine(),
                         ]);
+
                         continue;
                     }
 
@@ -1089,15 +1101,17 @@ class ProjectLifecycleManager
                                 switch ($autoBidsStatus[$wallet->getId()]) {
                                     case Autobid::STATUS_INACTIVE:
                                         $autolendSettingsAdvises = $this->translator->trans('email-nouveau-projet_autobid-setting-for-period-rate-off', ['%autolendUrl%' => $autolendUrl]);
+
                                         break;
                                     case Autobid::STATUS_ACTIVE:
                                         if (bccomp($wallet->getAvailableBalance(), $autoBidsAmount[$wallet->getId()]) < 0) {
                                             $autolendSettingsAdvises = $this->translator->trans('email-nouveau-projet_low-balance-for-autolend', ['%walletProvisionUrl%' => $walletDepositUrl]);
                                         }
                                         if (bccomp($autoBidsMinRate[$wallet->getId()], $projectRateRange['rate_max'], 2) > 0) {
-                                            $autolendMinRateTooHigh  = $this->translator->trans('email-nouveau-projet_autobid-min-rate-too-high', ['%autolendUrl%' => $autolendUrl]);
+                                            $autolendMinRateTooHigh = $this->translator->trans('email-nouveau-projet_autobid-min-rate-too-high', ['%autolendUrl%' => $autolendUrl]);
                                             $autolendSettingsAdvises .= empty($autolendSettingsAdvises) ? $autolendMinRateTooHigh : '<br>' . $autolendMinRateTooHigh;
                                         }
+
                                         break;
                                     default:
                                         break;
@@ -1116,19 +1130,21 @@ class ProjectLifecycleManager
                         try {
                             $this
                                 ->notificationManager
-                                ->createEmailNotification(ClientsGestionTypeNotif::TYPE_NEW_PROJECT, $wallet->getIdClient()->getIdClient(), null, null, $project->getIdProject(), null, true, $project->getDatePublication());
+                                ->createEmailNotification(ClientsGestionTypeNotif::TYPE_NEW_PROJECT, $wallet->getIdClient()->getIdClient(), null, null, $project->getIdProject(), null, true, $project->getDatePublication())
+                            ;
                         } catch (OptimisticLockException $exception) {
                             $this->logger->warning('Could not insert the new project email notification for client ' . $wallet->getIdClient()->getIdClient() . '. Exception: ' . $exception->getMessage(), [
                                 'id_project' => $project->getIdProject(),
                                 'class'      => __CLASS__,
                                 'function'   => __FUNCTION__,
                                 'file'       => $exception->getFile(),
-                                'line'       => $exception->getLine()
+                                'line'       => $exception->getLine(),
                             ]);
                         }
                         $keywords['firstName']     = $wallet->getIdClient()->getFirstName();
                         $keywords['lenderPattern'] = $wallet->getWireTransferPattern();
                         $message                   = $this->messageProvider->newMessage($mailType, $commonKeywords + $keywords);
+
                         try {
                             $message->setTo($lender['email']);
                             $message->setToSendAt($project->getDatePublication());
@@ -1136,15 +1152,17 @@ class ProjectLifecycleManager
                             ++$emailsInserted;
                         } catch (\Exception $exception) {
                             $this->logger->warning(
-                                'Could not insert email ' . $mailType . ' - Exception: ' . $exception->getMessage(), [
-                                'id_mail_template' => $message->getTemplateId(),
-                                'id_client'        => $wallet->getIdClient()->getIdClient(),
-                                'id_project'       => $project->getIdProject(),
-                                'class'            => __CLASS__,
-                                'function'         => __FUNCTION__,
-                                'file'             => $exception->getFile(),
-                                'line'             => $exception->getLine()
-                            ]);
+                                'Could not insert email ' . $mailType . ' - Exception: ' . $exception->getMessage(),
+                                [
+                                    'id_mail_template' => $message->getTemplateId(),
+                                    'id_client'        => $wallet->getIdClient()->getIdClient(),
+                                    'id_project'       => $project->getIdProject(),
+                                    'class'            => __CLASS__,
+                                    'function'         => __FUNCTION__,
+                                    'file'             => $exception->getFile(),
+                                    'line'             => $exception->getLine(),
+                                ]
+                            );
                         }
                     }
                 }
@@ -1152,7 +1170,7 @@ class ProjectLifecycleManager
             $this->logger->info('Number of emails inserted: ' . $emailsInserted, [
                 'id_project' => $project->getIdProject(),
                 'class'      => __CLASS__,
-                'function'   => __FUNCTION__
+                'function'   => __FUNCTION__,
             ]);
         }
     }
@@ -1167,14 +1185,13 @@ class ProjectLifecycleManager
         if (empty($content)) {
             return $content;
         }
-        $customAutolendContent = '
+
+        return '
             <table width="100%" border="1" cellspacing="0" cellpadding="5" bgcolor="d8b5ce" bordercolor="2bc9af">
                 <tr>
                     <td class="text-primary text-center">' . $content . '</td>
                 </tr>
             </table>';
-
-        return $customAutolendContent;
     }
 
     /**
@@ -1189,7 +1206,7 @@ class ProjectLifecycleManager
             [
                 'idClient'      => $client->getIdClient(),
                 'idNotif'       => [ClientsGestionTypeNotif::TYPE_NEW_PROJECT, ClientsGestionTypeNotif::TYPE_BID_PLACED],
-                'immediatement' => 1
+                'immediatement' => 1,
             ]
         );
 
@@ -1211,17 +1228,17 @@ class ProjectLifecycleManager
         $this->logger->info('Insert new project notification for project: ' . $project->getIdProject(), [
             'id_project' => $project->getIdProject(),
             'class'      => __CLASS__,
-            'function'   => __FUNCTION__
+            'function'   => __FUNCTION__,
         ]);
 
         while ($lenders = $clientData->selectPreteursByStatus(ClientsStatus::STATUS_VALIDATED, 'c.id_client ASC', $offset, $limit)) {
             $notificationsCount = 0;
-            $offset             += $limit;
+            $offset += $limit;
 
             $this->logger->info('Lenders retrieved: ' . count($lenders), [
                 'id_project' => $project->getIdProject(),
                 'class'      => __CLASS__,
-                'function'   => __FUNCTION__
+                'function'   => __FUNCTION__,
             ]);
 
             foreach ($lenders as $lender) {
@@ -1230,7 +1247,7 @@ class ProjectLifecycleManager
                 $newProjectNotification = null;
 
                 if ($isClientEligible) {
-                    $notificationsCount++;
+                    ++$notificationsCount;
                     $this->notificationManager->createNotification(Notifications::TYPE_NEW_PROJECT, $wallet->getIdClient()->getIdClient(), $project->getIdProject());
                 }
             }
@@ -1238,7 +1255,7 @@ class ProjectLifecycleManager
             $this->logger->info('Notifications inserted: ' . $notificationsCount, [
                 'id_project' => $project->getIdProject(),
                 'class'      => __CLASS__,
-                'function'   => __FUNCTION__
+                'function'   => __FUNCTION__,
             ]);
         }
     }
@@ -1262,7 +1279,7 @@ class ProjectLifecycleManager
                 $wallet = $walletRepository->find($bid['id_wallet']);
 
                 if (null !== $wallet && WalletType::LENDER === $wallet->getIdType()->getLabel()) {
-                    if ($bid['min_status'] == Bids::STATUS_PENDING) {
+                    if (Bids::STATUS_PENDING == $bid['min_status']) {
                         $this->notificationManager->createNotification(
                             Notifications::TYPE_BID_PLACED,
                             $wallet->getIdClient()->getIdClient(),
@@ -1270,7 +1287,7 @@ class ProjectLifecycleManager
                             $bid['amount'] / 100,
                             $bid['id_bid']
                         );
-                    } elseif ($bid['min_status'] == Bids::STATUS_REJECTED) {
+                    } elseif (Bids::STATUS_REJECTED == $bid['min_status']) {
                         $this->notificationManager->create(
                             Notifications::TYPE_BID_REJECTED,
                             ($bid['id_autobid'] > 0) ? ClientsGestionTypeNotif::TYPE_AUTOBID_ACCEPTED_REJECTED_BID : ClientsGestionTypeNotif::TYPE_BID_REJECTED,

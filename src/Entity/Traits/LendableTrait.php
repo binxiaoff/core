@@ -5,20 +5,10 @@ declare(strict_types=1);
 namespace Unilend\Entity\Traits;
 
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Validator\Constraints as Assert;
-use Unilend\Entity\{Embeddable\LendingRate, Tranche, Wallet};
+use Unilend\Entity\{Embeddable\LendingRate, Embeddable\Money, Tranche, Wallet};
 
 trait LendableTrait
 {
-    /**
-     * @var int
-     *
-     * @ORM\Column(type="integer")
-     *
-     * @Assert\NotBlank
-     */
-    protected $amount;
-
     /**
      * @var Tranche
      *
@@ -54,29 +44,37 @@ trait LendableTrait
     protected $rate;
 
     /**
+     * @var Money
+     *
+     * @ORM\Embedded(class="Unilend\Entity\Embeddable\Money")
+     */
+    private $money;
+
+    /**
      * Initialize the trait.
      */
     public function traitInit(): void
     {
-        $this->rate = new LendingRate();
+        $this->rate  = new LendingRate();
+        $this->money = new Money();
     }
 
     /**
-     * @return int|null
+     * @return Money
      */
-    public function getAmount(): ?int
+    public function getMoney(): Money
     {
-        return $this->amount;
+        return $this->money;
     }
 
     /**
-     * @param int $amount
+     * @param Money $money
      *
      * @return self
      */
-    public function setAmount(int $amount): self
+    public function setMoney(Money $money): self
     {
-        $this->amount = $amount;
+        $this->money = $money;
 
         return $this;
     }

@@ -204,7 +204,7 @@ class Tranche
      *
      * @return Tranche
      */
-    public function setName(string $name): self
+    public function setName(string $name): Tranche
     {
         $this->name = $name;
 
@@ -224,7 +224,7 @@ class Tranche
      *
      * @return Tranche
      */
-    public function setMoney(Money $money): self
+    public function setMoney(Money $money): Tranche
     {
         $this->money = $money;
 

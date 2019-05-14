@@ -1,7 +1,7 @@
 <?php
 
 
-namespace Unilend\Form\LenderSubscriptionProfile;
+namespace Unilend\Form\Unilend\LenderSubscriptionProfile;
 
 
 use Doctrine\ORM\EntityManagerInterface;

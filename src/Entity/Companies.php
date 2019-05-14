@@ -42,6 +42,8 @@ class Companies
     public const COMPANY_ELIGIBLE_RUN            = [self::COMPANY_ID_LCL];
     public const COMPANY_SUBSIDIARY_ELIGIBLE_RUN = [self::COMPANY_ID_CASA];
 
+    public const TRANSLATION_CREATION_IN_PROGRESS = 'creation-in-progress';
+
     /**
      * @var \Unilend\Entity\CompanyStatus
      *

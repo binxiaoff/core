@@ -19,6 +19,7 @@ class IntlExtension extends BaseIntlExtension
         return array_merge(parent::getFilters(), [
             new TwigFilter('localizednumber', [$this, 'localizedNumberFilter']),
             new TwigFilter('localizednumberwithprecision', [$this, 'localizedNumberWithPrecisionFilter']),
+            new TwigFilter('localizedcurrencywithprecision', [$this, 'localizedCurrencyWithPrecisionFilter']),
         ]);
     }
 
@@ -60,5 +61,25 @@ class IntlExtension extends BaseIntlExtension
         $formatter->setSymbol(NumberFormatter::GROUPING_SEPARATOR_SYMBOL, html_entity_decode('&nbsp;'));
 
         return $formatter->format($number, NumberFormatter::TYPE_DEFAULT);
+    }
+
+    /**
+     * @param string|int|float $number
+     * @param int              $fractionDigits
+     * @param null             $currency
+     * @param null             $locale
+     *
+     * @throws SyntaxError
+     *
+     * @return string
+     */
+    public function localizedCurrencyWithPrecisionFilter($number, int $fractionDigits, $currency = null, $locale = null)
+    {
+        $formatter = twig_get_number_formatter($locale, 'currency');
+        $formatter->setAttribute(NumberFormatter::MIN_FRACTION_DIGITS, $fractionDigits);
+        $formatter->setAttribute(NumberFormatter::MAX_FRACTION_DIGITS, $fractionDigits);
+        $formatter->setSymbol(NumberFormatter::GROUPING_SEPARATOR_SYMBOL, html_entity_decode('&nbsp;'));
+
+        return $formatter->formatCurrency($number, $currency);
     }
 }

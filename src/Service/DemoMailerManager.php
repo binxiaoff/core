@@ -175,7 +175,7 @@ class DemoMailerManager
             'projectUrl'    => $this->router->generate('edit_project_details', ['hash' => $project->getHash()], RouterInterface::ABSOLUTE_URL),
             'projectName'   => $project->getBorrowerCompany()->getName() . ' / ' . $project->getTitle(),
             'bidderName'    => $bid->getWallet()->getIdClient()->getCompany()->getName(),
-            'bidAmount'     => $formatter->format($bid->getAmount()),
+            'bidAmount'     => $formatter->format($bid->getMoney()->getAmount()),
             'bidRateIndex'  => $bid->getRate()->getIndexType(),
             'bidMarginRate' => $formatter->format($bid->getRate()->getMargin()),
         ];

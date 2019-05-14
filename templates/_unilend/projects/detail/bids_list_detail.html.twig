@@ -21,7 +21,7 @@
                 {% for bid in bids %}
                     <tr class="table-bids-detail-item bids-detail-by-rate {% if bid.status != 0 %} rejected-row {% endif %} {% if bid.userInvolved %} ui-current-user-involved {% endif %}"
                         data-sortable-detail-id="{{ bid.id }}"
-                        data-sortable-detail-amount="{{ bid.amount }}"
+                        data-sortable-detail-amount="{{ bid.money.amount }}"
                         data-sortable-detail-status="{{ bid.status }}">
                         <td class="table-bids-detail-item-id">{{ bid.id }}
                             {% if bid.autobid > 0 %}
@@ -29,7 +29,7 @@
                             {% endif %}
                         </td>
                         <td class="table-bids-detail-item-rate">{{ bid.rate|localizednumberwithprecision(1) }}%</td>
-                        <td class="table-bids-detail-item-amount">{{ bid.amount|localizednumber }}€</td>
+                        <td class="table-bids-detail-item-amount">{{ bid.money.amount|localizednumber }}€</td>
                         <td class="table-bids-detail-item-status">
                             {% if bid.status == 0 %}
                                 <span class="c-success">

@@ -405,7 +405,7 @@ class EditProjectController extends AbstractController
                     ->setWallet($bid->getWallet())
                     ->setTranche($bid->getTranche())
                     ->setUnderlyingContract($contract)
-                    ->setAmount($bid->getAmount())
+                    ->setMoney($bid->getMoney())
                     ->setRate($bid->getRate())
                     ->setStatus(Loans::STATUS_PENDING)
                 ;
@@ -414,9 +414,9 @@ class EditProjectController extends AbstractController
 
                 $acceptedBid = new AcceptedBids();
                 $acceptedBid
-                    ->setIdBid($bid)
-                    ->setIdLoan($loan)
-                    ->setAmount($bid->getAmount())
+                    ->setBid($bid)
+                    ->setLoan($loan)
+                    ->setMoney($bid->getMoney())
                 ;
 
                 $entityManager->persist($acceptedBid);

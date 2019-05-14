@@ -57,7 +57,7 @@ class Project
     /**
      * @var Companies
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Companies")
+     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Companies", cascade={"persist"})
      * @ORM\JoinColumns({
      *     @ORM\JoinColumn(name="id_borrower_company", referencedColumnName="id_company", nullable=false)
      * })
