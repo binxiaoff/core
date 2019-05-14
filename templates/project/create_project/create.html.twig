@@ -35,13 +35,16 @@
                                     'data-formvalidation-required': 'true',
                                 }}) }}
                             </div>
-                            <div class="col-lg-4 col-md-4">
+                            <div class="col-lg-3 col-md-3">
                                 {{ form_row(form.borrowerCompany, {'attr': {
                                     'data-formvalidation-input': null,
                                     'data-formvalidation-required': 'true',
                                 }}) }}
                             </div>
-                            <div class="col-lg-4 col-md-4">
+                            <div class="col-lg-3 col-md-3">
+                                {{ form_row(form.borrowerCompanyCreationInProgress) }}
+                            </div>
+                            <div class="col-lg-2 col-md-2">
                                 {{ form_row(form.marketSegment, {'attr': {
                                     'data-formvalidation-input': null,
                                     'data-formvalidation-required': 'true',
@@ -139,15 +142,14 @@
                 $('#request-type').val($(this).attr('data-request-type'))
             })
 
-            $('#has-guarantee, #request-guarantee').on('change', function () {
-                var checked = this.value === 'true'
-                var $siblingLabel = $(this).parent().siblings('label')
-
-                $siblingLabel.slideToggle(checked, function () {
-                    if (checked) {
-                        $siblingLabel.find('input').prop('checked', false)
-                    }
-                })
+            $('#project_creation_type_borrowerCompanyCreationInProgress').on('change', function () {
+                var $borrowerCompanyNameInput = $('#project_creation_type_borrowerCompany');
+                if (this.checked) {
+                    $borrowerCompanyNameInput.prop('disabled', true)
+                    $("#select2-project_creation_type_borrowerCompany-container").empty()
+                } else {
+                    $borrowerCompanyNameInput.prop('disabled', false)
+                }
             })
 
             var $companyField = $('#project_creation_type_borrowerCompany')

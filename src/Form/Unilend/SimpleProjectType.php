@@ -1,5 +1,5 @@
 <?php
-namespace Unilend\Form;
+namespace Unilend\Form\Unilend;
 
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;

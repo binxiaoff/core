@@ -1,6 +1,6 @@
 <?php
 
-namespace Unilend\Form\Components;
+namespace Unilend\Form\Unilend\Components;
 
 
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
@@ -8,7 +8,7 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Form\AbstractType;
 use Unilend\Service\LocationManager;
 
-class CountriesType extends AbstractType
+class NationalitiesType extends AbstractType
 {
     /** @var  LocationManager */
     private $locationManager;
@@ -27,10 +27,10 @@ class CountriesType extends AbstractType
      */
     public function configureOptions(OptionsResolver $resolver)
     {
-        $countryList = $this->locationManager->getCountries();
+        $nationalityList = $this->locationManager->getNationalities();
 
         $resolver->setDefaults([
-            'choices'  => array_flip($countryList),
+            'choices' => array_flip($nationalityList),
             'expanded' => false,
             'multiple' => false
         ]);
