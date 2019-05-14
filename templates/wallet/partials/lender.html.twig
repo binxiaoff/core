@@ -72,7 +72,7 @@
                                     {% else %}
                                         {% set offer = project.bids.first %}
                                     {% endif %}
-                                    {% set amount = (offer.amount / 100)|round %}
+                                    {% set amount = (offer.money.amount)|round %}
                                     <tr id="lender-bid"
                                         class="table-projects-item {% if loop.index is divisible by(2) %}even{% else %}odd{% endif %}"
                                         data-hash="{{ project.hash }}"
