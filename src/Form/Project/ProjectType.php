@@ -140,7 +140,7 @@ class ProjectType extends AbstractType
             return;
         }
 
-        if ($formEvent->getForm()->get('borrowerCompanyCreationInProgress')) {
+        if ($formEvent->getForm()->get('borrowerCompanyCreationInProgress')->getData()) {
             $project->setBorrowerCompany((new Companies())->setName($this->translator->trans('company.' . Companies::TRANSLATION_CREATION_IN_PROGRESS)));
 
             return;
