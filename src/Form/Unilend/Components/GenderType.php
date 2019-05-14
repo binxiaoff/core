@@ -1,7 +1,7 @@
 <?php
 
 
-namespace Unilend\Form\Components;
+namespace Unilend\Form\Unilend\Components;
 
 
 use Symfony\Component\Form\AbstractType;

@@ -1,6 +1,6 @@
 <?php
 
-namespace Unilend\Form;
+namespace Unilend\Form\Unilend;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Form\AbstractType;

@@ -1,21 +1,19 @@
 <?php
 
-namespace Unilend\Form;
+namespace Unilend\Form\Unilend\LenderSubscriptionProfile;
 
 use Symfony\Component\Form\AbstractType;
-use Symfony\Component\Form\Extension\Core\Type\PasswordType;
+use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\Extension\Core\Type\RepeatedType;
 use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Translation\TranslatorInterface;
 
-class ClientPasswordType extends AbstractType
+class ClientEmailType extends AbstractType
 {
     /** @var TranslatorInterface */
     private $translator;
 
-    /**
-     * @param TranslatorInterface $translator
-     */
     public function __construct(TranslatorInterface $translator)
     {
         $this->translator = $translator;
@@ -28,12 +26,21 @@ class ClientPasswordType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder
-            ->add('formerPassword', PasswordType::class)
-            ->add('password', RepeatedType::class, [
-                'type'            => PasswordType::class,
-                'invalid_message' => $this->translator->trans('common-validator_password-not-equal'),
+            ->add('email', RepeatedType::class, [
+                'type'            => EmailType::class,
+                'invalid_message' => $this->translator->trans('common-validator_email-address-invalid'),
                 'required'        => true
             ])
         ;
+    }
+
+    /**
+     * @param OptionsResolver $resolver
+     */
+    public function configureOptions(OptionsResolver $resolver)
+    {
+        $resolver->setDefaults([
+            'data_class' => 'Unilend\Entity\Clients'
+        ]);
     }
 }

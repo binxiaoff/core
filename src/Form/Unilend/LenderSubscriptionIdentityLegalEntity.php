@@ -1,6 +1,6 @@
 <?php
 
-namespace Unilend\Form;
+namespace Unilend\Form\Unilend;
 
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\{
@@ -9,10 +9,10 @@ use Symfony\Component\Form\Extension\Core\Type\{
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Form\LenderSubscriptionProfile\{
-    ClientAddressType, PersonType, SecurityQuestionType
+    CompanyAddressType, CompanyIdentityType, LegalEntityType, SecurityQuestionType
 };
 
-class LenderSubscriptionIdentityPerson extends AbstractType
+class LenderSubscriptionIdentityLegalEntity extends AbstractType
 {
     /** @var TranslatorInterface */
     private $translator;
@@ -31,12 +31,11 @@ class LenderSubscriptionIdentityPerson extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
-            ->add('client', PersonType::class, ['data' => $options['data']['client']])
-            ->add('mainAddress', ClientAddressType::class)
+            ->add('client', LegalEntityType::class, ['data' => $options['data']['client']])
+            ->add('company', CompanyIdentityType::class, ['data' => $options['data']['company']])
+            ->add('mainAddress', CompanyAddressType::class)
             ->add('samePostalAddress', CheckboxType::class)
-            ->add('housedByThirdPerson', CheckboxType::class, ['required' => false])
-            ->add('noUsPerson', CheckboxType::class, ['required' => false])
-            ->add('postalAddress', ClientAddressType::class)
+            ->add('postalAddress', CompanyAddressType::class)
             ->add('security', SecurityQuestionType::class, ['data' => $options['data']['client']])
             ->add('clientType', ChoiceType::class, [
                 'choices'  => [
@@ -45,7 +44,7 @@ class LenderSubscriptionIdentityPerson extends AbstractType
                 ],
                 'expanded' => true,
                 'multiple' => false,
-                'data'     => 'person'
+                'data'     => 'legalEntity'
             ])
             ->add('tos', CheckboxType::class);
     }
@@ -55,6 +54,6 @@ class LenderSubscriptionIdentityPerson extends AbstractType
      */
     public function getBlockPrefix()
     {
-        return 'form_person';
+        return 'form_legal_entity';
     }
 }

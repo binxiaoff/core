@@ -7,13 +7,16 @@ namespace Unilend\Form\Project;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
-use Symfony\Component\Form\Extension\Core\Type\{ChoiceType, DateType, TextType, TextareaType};
+use Symfony\Component\Form\Extension\Core\Type\{CheckboxType, ChoiceType, DateType, TextType, TextareaType};
 use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\Form\FormError;
+use Symfony\Component\Form\FormEvent;
+use Symfony\Component\Form\FormEvents;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 use Unilend\Entity\{Clients, Companies, MarketSegment, Project};
-use Unilend\Form\Company\CompanyAutocompleteType;
-use Unilend\Form\Tranche\TrancheTypeCollectionType;
+use Unilend\Form\{Company\CompanyAutocompleteType, Tranche\TrancheTypeCollectionType};
 use Unilend\Repository\CompaniesRepository;
 
 class ProjectType extends AbstractType
@@ -24,14 +27,19 @@ class ProjectType extends AbstractType
     /** @var TokenStorageInterface */
     private $tokenStorage;
 
+    /** @var TranslatorInterface */
+    private $translator;
+
     /**
      * @param ManagerRegistry       $managerRegistry
      * @param TokenStorageInterface $tokenStorage
+     * @param TranslatorInterface   $translator
      */
-    public function __construct(ManagerRegistry $managerRegistry, TokenStorageInterface $tokenStorage)
+    public function __construct(ManagerRegistry $managerRegistry, TokenStorageInterface $tokenStorage, TranslatorInterface $translator)
     {
         $this->managerRegistry = $managerRegistry;
         $this->tokenStorage    = $tokenStorage;
+        $this->translator      = $translator;
     }
 
     /**
@@ -45,6 +53,11 @@ class ProjectType extends AbstractType
         $builder
             ->add('title', TextType::class, ['label' => 'project-form.title'])
             ->add('borrowerCompany', CompanyAutocompleteType::class, ['label' => 'project-form.borrower-company'])
+            ->add('borrowerCompanyCreationInProgress', CheckboxType::class, [
+                'mapped'   => false,
+                'label'    => 'project-form.borrower-company-creation-in-progress',
+                'required' => false,
+            ])
             ->add('marketSegment', EntityType::class, [
                 'label'        => 'project-form.market-segment',
                 'choice_label' => function (MarketSegment $marketSegment, $key, $value) {
@@ -100,6 +113,7 @@ class ProjectType extends AbstractType
                 },
             ])
             ->add('projectAttachments', ProjectAttachmentCollectionType::class)
+            ->addEventListener(FormEvents::POST_SUBMIT, [$this, 'handleBorrowerCompany'])
         ;
     }
 
@@ -117,6 +131,26 @@ class ProjectType extends AbstractType
     public function getBlockPrefix()
     {
         return 'project_creation_type';
+    }
+
+    /**
+     * @param FormEvent $formEvent
+     */
+    public function handleBorrowerCompany(FormEvent $formEvent): void
+    {
+        /** @var Project $project */
+        $project = $formEvent->getData();
+        if ($project->getBorrowerCompany()) {
+            return;
+        }
+
+        if ($formEvent->getForm()->get('borrowerCompanyCreationInProgress')) {
+            $project->setBorrowerCompany((new Companies())->setName($this->translator->trans('company.' . Companies::TRANSLATION_CREATION_IN_PROGRESS)));
+
+            return;
+        }
+
+        $formEvent->getForm()->get('borrowerCompany')->addError(new FormError($this->translator->trans('project-form.borrower-company-required')));
     }
 
     /**

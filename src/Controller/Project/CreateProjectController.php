@@ -10,7 +10,7 @@ use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\{File\UploadedFile, Request, Response};
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\User\UserInterface;
-use Unilend\Entity\{Attachment, Clients, Project, ProjectStatusHistory, ProjectsStatus};
+use Unilend\Entity\{Attachment, Clients, Project, ProjectStatusHistory};
 use Unilend\Form\Project\ProjectType;
 use Unilend\Repository\ProjectRepository;
 use Unilend\Service\AttachmentManager;
@@ -55,7 +55,7 @@ class CreateProjectController extends AbstractController
             }
 
             $projectStatusHistory = (new ProjectStatusHistory())
-                ->setStatus(ProjectsStatus::STATUS_REQUESTED)
+                ->setStatus(ProjectStatusHistory::STATUS_REQUESTED)
                 ->setAddedBy($client)
             ;
 

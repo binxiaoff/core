@@ -1,6 +1,6 @@
 <?php
 
-namespace Unilend\Form\LenderSubscriptionProfile;
+namespace Unilend\Form\Unilend\LenderSubscriptionProfile;
 
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;

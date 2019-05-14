@@ -1,6 +1,6 @@
 <?php
 
-namespace Unilend\Form;
+namespace Unilend\Form\Unilend;
 
 use Symfony\Component\Form\{AbstractType, Extension\Core\Type\EmailType, Extension\Core\Type\RepeatedType, Extension\Core\Type\TextType, FormBuilderInterface};
 use Symfony\Component\OptionsResolver\OptionsResolver;
