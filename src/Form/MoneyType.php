@@ -8,9 +8,21 @@ use Symfony\Component\Form\Extension\Core\Type\{CurrencyType, NumberType};
 use Symfony\Component\Form\{AbstractType, FormBuilderInterface};
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Unilend\Entity\Embeddable\Money;
+use Unilend\Form\ViewTransformer\AmountTransformer;
 
 class MoneyType extends AbstractType
 {
+    /** @var AmountTransformer */
+    private $transformer;
+
+    /**
+     * @param AmountTransformer $transformer
+     */
+    public function __construct(AmountTransformer $transformer)
+    {
+        $this->transformer = $transformer;
+    }
+
     /**
      * {@inheritdoc}
      */
@@ -20,6 +32,8 @@ class MoneyType extends AbstractType
             'label' => 'money-form.amount',
             'attr'  => ['class' => 'amount'],
         ]);
+
+        $builder->get('amount')->addViewTransformer($this->transformer);
 
         if (false === $options['disable_currency']) {
             $builder->add('currency', CurrencyType::class, [
