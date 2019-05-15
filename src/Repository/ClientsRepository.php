@@ -4,27 +4,46 @@ namespace Unilend\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
-use Doctrine\DBAL\Connection;
-use Doctrine\DBAL\DBALException;
-use Doctrine\DBAL\Driver\Statement;
-use Doctrine\ORM\{AbstractQuery, NonUniqueResultException, NoResultException};
-use Doctrine\ORM\Query\Expr\Join;
-use Doctrine\ORM\Query\ResultSetMapping;
-use Doctrine\ORM\UnexpectedResultException;
+use Doctrine\DBAL\{Connection, DBALException, Driver\Statement};
+use Doctrine\ORM\Query\{Expr\Join, ResultSetMapping};
+use Doctrine\ORM\{AbstractQuery, NoResultException, NonUniqueResultException, ORMException, OptimisticLockException, UnexpectedResultException};
 use PDO;
-use Unilend\Entity\{AddressType, Attachment, AttachmentType, BankAccount, BeneficialOwner, ClientAddress, Clients, ClientsAdresses, ClientsStatus, ClientsStatusHistory,
-    Companies, CompanyClient, Loans, Operation, OperationType, GreenpointAttachment, Partner, Pays, Users, VigilanceRule, Wallet, WalletBalanceHistory, WalletType};
+use Unilend\Entity\{AddressType, Attachment, AttachmentType, BankAccount, BeneficialOwner, ClientAddress, Clients, ClientsAdresses, ClientsStatus, ClientsStatusHistory, Companies,
+    CompanyClient, GreenpointAttachment, Loans, Operation, OperationType, Partner, Pays, Users, VigilanceRule, Wallet, WalletBalanceHistory, WalletType};
 use Unilend\Service\{GreenPointValidationManager, LenderValidationManager};
 
+/**
+ * @method Clients|null find($id, $lockMode = null, $lockVersion = null)
+ * @method Clients|null findOneBy(array $criteria, array $orderBy = null)
+ * @method Clients[]    findAll()
+ * @method Clients[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
+ */
 class ClientsRepository extends ServiceEntityRepository
 {
+    /**
+     * @param ManagerRegistry $registry
+     */
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Clients::class);
     }
 
     /**
-     * @param integer|Clients $idClient
+     * @param Clients $client
+     *
+     * @throws ORMException
+     * @throws OptimisticLockException
+     */
+    public function save(Clients $client): void
+    {
+        $this->getEntityManager()->persist($client);
+        $this->getEntityManager()->flush();
+    }
+
+    /**
+     * @param int|Clients $idClient
+     *
+     * @throws NonUniqueResultException
      *
      * @return mixed
      */
@@ -36,13 +55,13 @@ class ClientsRepository extends ServiceEntityRepository
 
         $qb = $this->createQueryBuilder('c');
         $qb->select('co')
-           ->innerJoin(Companies::class, 'co', Join::WITH, 'c.idClient = co.idClientOwner')
-           ->where('c.idClient = :idClient')
-           ->setParameter('idClient', $idClient);
-        $query  = $qb->getQuery();
-        $result = $query->getOneOrNullResult();
+            ->innerJoin(Companies::class, 'co', Join::WITH, 'c.idClient = co.idClientOwner')
+            ->where('c.idClient = :idClient')
+            ->setParameter('idClient', $idClient)
+        ;
+        $query = $qb->getQuery();
 
-        return $result;
+        return $query->getOneOrNullResult();
     }
 
     /**
@@ -60,7 +79,8 @@ class ClientsRepository extends ServiceEntityRepository
         $queryBuilder
             ->select('COUNT(c)')
             ->where('c.email = :email')
-            ->setParameter('email', $email);
+            ->setParameter('email', $email)
+        ;
 
         $query = $queryBuilder->getQuery();
 
@@ -90,7 +110,8 @@ class ClientsRepository extends ServiceEntityRepository
             ->setParameter('birthDate', $birthDate)
             ->setParameter('added', $subscriptionDate)
             ->setParameter('lender', WalletType::LENDER)
-            ->setParameter('physicalPerson', [Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER], Connection::PARAM_INT_ARRAY);
+            ->setParameter('physicalPerson', [Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER], Connection::PARAM_INT_ARRAY)
+        ;
 
         return $qb->getQuery()->getResult();
     }
@@ -112,15 +133,16 @@ class ClientsRepository extends ServiceEntityRepository
         $operationType = $this->getEntityManager()->getRepository(OperationType::class);
 
         $qb = $this->createQueryBuilder('c')
-                   ->select($select)
-                   ->innerJoin(Wallet::class, 'w', Join::WITH, 'w.idClient = c.idClient')
-                   ->innerJoin(Operation::class, 'o', Join::WITH, 'o.idWalletCreditor = w.id')
-                   ->where('o.idType = :operation_type')
-                   ->setParameter('operation_type', $operationType->findOneBy(['label' => OperationType::LENDER_PROVISION]))
-                   ->andWhere('o.added >= :operation_date')
-                   ->setParameter('operation_date', $operationDateSince)
-                   ->having('depositAmount >= :operation_amount')
-                   ->setParameter('operation_amount', $amount);
+            ->select($select)
+            ->innerJoin(Wallet::class, 'w', Join::WITH, 'w.idClient = c.idClient')
+            ->innerJoin(Operation::class, 'o', Join::WITH, 'o.idWalletCreditor = w.id')
+            ->where('o.idType = :operation_type')
+            ->setParameter('operation_type', $operationType->findOneBy(['label' => OperationType::LENDER_PROVISION]))
+            ->andWhere('o.added >= :operation_date')
+            ->setParameter('operation_date', $operationDateSince)
+            ->having('depositAmount >= :operation_amount')
+            ->setParameter('operation_amount', $amount)
+        ;
 
         if (true === $sum) {
             $qb->groupBy('o.idWalletCreditor');
@@ -148,7 +170,8 @@ class ClientsRepository extends ServiceEntityRepository
             ->setParameter('fromDate', $fromDate)
             ->groupBy('c.idClient')
             ->having('nbRibChange >= :maxRibChange')
-            ->setParameter('maxRibChange', $maxRibChange);
+            ->setParameter('maxRibChange', $maxRibChange)
+        ;
 
         return $qb->getQuery()->getResult(AbstractQuery::HYDRATE_SCALAR);
     }
@@ -163,13 +186,14 @@ class ClientsRepository extends ServiceEntityRepository
     {
         $qb = $this->createQueryBuilder('c');
         $qb->select('c.idClient, p.fr AS countryLabel')
-           ->innerJoin(ClientAddress::class, 'ca', Join::WITH, 'c.idAddress = ca.id')
-           ->innerJoin(Pays::class, 'p', Join::WITH, 'p.idPays= ca.idCountry')
-           ->where('p.vigilanceStatus = :vigilance_status')
-           ->setParameter('vigilance_status', $vigilanceStatus)
-           ->andWhere('c.added >= :added_date OR ca.updated >= :updated_date')
-           ->setParameter('added_date', $date)
-           ->setParameter('updated_date', $date);
+            ->innerJoin(ClientAddress::class, 'ca', Join::WITH, 'c.idAddress = ca.id')
+            ->innerJoin(Pays::class, 'p', Join::WITH, 'p.idPays= ca.idCountry')
+            ->where('p.vigilanceStatus = :vigilance_status')
+            ->setParameter('vigilance_status', $vigilanceStatus)
+            ->andWhere('c.added >= :added_date OR ca.updated >= :updated_date')
+            ->setParameter('added_date', $date)
+            ->setParameter('updated_date', $date)
+        ;
 
         return $qb->getQuery()->getResult(AbstractQuery::HYDRATE_SCALAR);
     }
@@ -188,20 +212,22 @@ class ClientsRepository extends ServiceEntityRepository
             ->andWhere('wt.label = :lender')
             ->andWhere('c.usPerson IS NULL OR c.usPerson = 0')
             ->setParameter('status', GreenPointValidationManager::STATUS_TO_CHECK, Connection::PARAM_INT_ARRAY)
-            ->setParameter('lender', WalletType::LENDER);
+            ->setParameter('lender', WalletType::LENDER)
+        ;
 
         return $queryBuilder->getQuery()->getResult();
     }
 
     /**
      * If true only lenders activated at least once (active lenders)
-     * If false all online lender (Community)
+     * If false all online lender (Community).
      *
      * @param bool $onlyActive
      *
-     * @return int|null
      * @throws NonUniqueResultException
      * @throws NoResultException
+     *
+     * @return int|null
      */
     public function countLenders(bool $onlyActive = false): ?int
     {
@@ -214,7 +240,8 @@ class ClientsRepository extends ServiceEntityRepository
             ->where('wt.label = :lender')
             ->andWhere('csh.idStatus IN (:statusOnline)')
             ->setParameter('lender', WalletType::LENDER)
-            ->setParameter('statusOnline', ClientsStatus::GRANTED_LOGIN, Connection::PARAM_INT_ARRAY);
+            ->setParameter('statusOnline', ClientsStatus::GRANTED_LOGIN, Connection::PARAM_INT_ARRAY)
+        ;
 
         if ($onlyActive) {
             $queryBuilder->innerJoin(ClientsStatusHistory::class, 'valid', Join::WITH, 'valid.idClient = c.idClient AND valid.idStatus = ' . ClientsStatus::STATUS_VALIDATED);
@@ -227,9 +254,9 @@ class ClientsRepository extends ServiceEntityRepository
      * @param int[] $clientType
      * @param bool  $onlyActive
      *
-     * @return int|null
      * @throws NonUniqueResultException
-     * @throws NoResultException
+     *
+     * @return int|null
      */
     public function countLendersByClientType(array $clientType, bool $onlyActive = false): ?int
     {
@@ -244,7 +271,8 @@ class ClientsRepository extends ServiceEntityRepository
             ->andWhere('c.type IN (:types)')
             ->setParameter('lender', WalletType::LENDER)
             ->setParameter('statusOnline', ClientsStatus::GRANTED_LOGIN, Connection::PARAM_INT_ARRAY)
-            ->setParameter('types', $clientType, Connection::PARAM_INT_ARRAY);
+            ->setParameter('types', $clientType, Connection::PARAM_INT_ARRAY)
+        ;
 
         if ($onlyActive) {
             $queryBuilder->innerJoin(ClientsStatusHistory::class, 'valid', Join::WITH, 'valid.idClient = c.idClient AND valid.idStatus = ' . ClientsStatus::STATUS_VALIDATED);
@@ -254,8 +282,9 @@ class ClientsRepository extends ServiceEntityRepository
     }
 
     /**
-     * @return Statement
      * @throws DBALException
+     *
+     * @return Statement
      */
     public function getLendersSalesForce(): Statement
     {
@@ -336,10 +365,10 @@ class ClientsRepository extends ServiceEntityRepository
             LEFT JOIN pays ccountry ON c.id_pays_naissance = ccountry.id_pays
             LEFT JOIN pays acountry ON ca.id_country = acountry.id_pays
             LEFT JOIN nationalites_v2 nv2 ON c.id_nationalite = nv2.id_nationalite
-            LEFT JOIN loans l ON w.id = l.id_wallet and l.status = " . Loans::STATUS_ACCEPTED . "
+            LEFT JOIN loans l ON w.id = l.id_wallet and l.status = " . Loans::STATUS_ACCEPTED . '
             LEFT JOIN clients_status cs ON csh.id_status = cs.id
             LEFT JOIN prospects p ON p.email = c.email
-            WHERE csh.id_status IN (" . implode(',', ClientsStatus::GRANTED_LOGIN) . ")
+            WHERE csh.id_status IN (' . implode(',', ClientsStatus::GRANTED_LOGIN) . ")
               AND wt.label = '" . WalletType::LENDER . "' 
             GROUP BY c.id_client";
 
@@ -348,6 +377,8 @@ class ClientsRepository extends ServiceEntityRepository
 
     /**
      * @param array $status
+     *
+     * @throws DBALException
      *
      * @return array
      */
@@ -367,11 +398,10 @@ class ClientsRepository extends ServiceEntityRepository
             WHERE csh.id_status IN (:clientsStatus)
             ORDER BY FIELD(csh.id_status, :clientsStatus), c.added DESC';
 
-        $result = $this->getEntityManager()->getConnection()
+        return $this->getEntityManager()->getConnection()
             ->executeQuery($query, ['clientsStatus' => $status], ['clientsStatus' => Connection::PARAM_INT_ARRAY])
-            ->fetchAll(PDO::FETCH_ASSOC);
-
-        return $result;
+            ->fetchAll(PDO::FETCH_ASSOC)
+        ;
     }
 
     /**
@@ -380,9 +410,9 @@ class ClientsRepository extends ServiceEntityRepository
      * @param \DateTime $end
      * @param bool      $onlyActive
      *
-     * @return int|null
      * @throws NonUniqueResultException
-     * @throws NoResultException
+     *
+     * @return int|null
      */
     public function countLendersByClientTypeBetweenDates(array $clientType, \DateTime $start, \DateTime $end, bool $onlyActive = false): ?int
     {
@@ -403,7 +433,8 @@ class ClientsRepository extends ServiceEntityRepository
             ->setParameter('statusOnline', ClientsStatus::GRANTED_LOGIN, Connection::PARAM_INT_ARRAY)
             ->setParameter('types', $clientType, Connection::PARAM_INT_ARRAY)
             ->setParameter('start', $start->format('Y-m-d H:i:s'))
-            ->setParameter('end', $end->format('Y-m-d H:i:s'));
+            ->setParameter('end', $end->format('Y-m-d H:i:s'))
+        ;
 
         if ($onlyActive) {
             $queryBuilder->innerJoin(ClientsStatusHistory::class, 'valid', Join::WITH, 'valid.idClient = c.idClient AND valid.idStatus = ' . ClientsStatus::STATUS_VALIDATED);
@@ -414,15 +445,15 @@ class ClientsRepository extends ServiceEntityRepository
 
     /**
      * If true only lenders activated at least once (active lenders)
-     * If false all online lender (Community)
+     * If false all online lender (Community).
      *
      * @param \DateTime $start
      * @param \DateTime $end
      * @param bool      $onlyActive
      *
-     * @return int|null
-     * @throws NoResultException
      * @throws NonUniqueResultException
+     *
+     * @return int|null
      */
     public function countLendersBetweenDates(\DateTime $start, \DateTime $end, bool $onlyActive = false): ?int
     {
@@ -438,7 +469,8 @@ class ClientsRepository extends ServiceEntityRepository
             ->setParameter('lender', WalletType::LENDER)
             ->setParameter('statusOnline', ClientsStatus::GRANTED_LOGIN, Connection::PARAM_INT_ARRAY)
             ->setParameter('start', $start->format('Y-m-d H:i:s'))
-            ->setParameter('end', $end->format('Y-m-d H:i:s'));
+            ->setParameter('end', $end->format('Y-m-d H:i:s'))
+        ;
 
         if ($onlyActive) {
             $queryBuilder->innerJoin(ClientsStatusHistory::class, 'valid', Join::WITH, 'valid.idClient = c.idClient AND valid.idStatus = ' . ClientsStatus::STATUS_VALIDATED);
@@ -467,14 +499,16 @@ class ClientsRepository extends ServiceEntityRepository
             ->setParameter('lender', WalletType::LENDER)
             ->setParameter('onlineStatus', ClientsStatus::GRANTED_LOGIN, Connection::PARAM_INT_ARRAY)
             ->setParameter('validatedStatus', ClientsStatus::STATUS_VALIDATED)
-            ->setParameter('year', $year . '-12-31 23:59:59');
+            ->setParameter('year', $year . '-12-31 23:59:59')
+        ;
 
         return $queryBuilder->getQuery()->getResult();
     }
 
     /**
-     * @return array
      * @throws DBALException
+     *
+     * @return array
      */
     public function findAllClientsForLoiEckert(): array
     {
@@ -497,8 +531,8 @@ class ClientsRepository extends ServiceEntityRepository
             INNER JOIN clients_status_history csh ON c.id_client_status_history = csh.id
             INNER JOIN wallet w ON c.id_client = w.id_client
             INNER JOIN wallet_type wt ON w.id_type = wt.id AND wt.label = "' . WalletType::LENDER . '"
-            LEFT JOIN operation o_provision ON w.id = o_provision.id_wallet_creditor AND o_provision.id_type = (SELECT id FROM operation_type WHERE label = "'. OperationType::LENDER_PROVISION . '")
-            LEFT JOIN operation o_withdraw ON w.id = o_withdraw.id_wallet_debtor AND o_withdraw.id_type = (SELECT id FROM operation_type WHERE label = "'. OperationType::LENDER_WITHDRAW . '")
+            LEFT JOIN operation o_provision ON w.id = o_provision.id_wallet_creditor AND o_provision.id_type = (SELECT id FROM operation_type WHERE label = "' . OperationType::LENDER_PROVISION . '")
+            LEFT JOIN operation o_withdraw ON w.id = o_withdraw.id_wallet_debtor AND o_withdraw.id_type = (SELECT id FROM operation_type WHERE label = "' . OperationType::LENDER_WITHDRAW . '")
             LEFT JOIN clients_status_history csh_valid ON c.id_client = csh_valid.id_client AND csh_valid.id_status = ' . ClientsStatus::STATUS_VALIDATED . '
             WHERE csh_valid.id IS NOT NULL OR available_balance > 0
             GROUP BY c.id_client
@@ -507,7 +541,8 @@ class ClientsRepository extends ServiceEntityRepository
         return $this->getEntityManager()
             ->getConnection()
             ->executeQuery($query)
-            ->fetchAll(\PDO::FETCH_ASSOC);
+            ->fetchAll(\PDO::FETCH_ASSOC)
+        ;
     }
 
     /**
@@ -515,8 +550,9 @@ class ClientsRepository extends ServiceEntityRepository
      * @param string    $firstName
      * @param \DateTime $birthday
      *
-     * @return array
      * @throws DBALException
+     *
+     * @return array
      */
     public function getDuplicatesByName(string $lastName, string $firstName, \DateTime $birthday): array
     {
@@ -541,12 +577,11 @@ class ClientsRepository extends ServiceEntityRepository
               AND c.naissance = :birthday
               AND csh.id_status IN (' . implode(',', ClientsStatus::GRANTED_LOGIN) . ')';
 
-        $result = $this->getEntityManager()
+        return $this->getEntityManager()
             ->getConnection()
             ->executeQuery($query, ['lastName' => '%' . $lastName . '%', 'firstName' => '%' . $firstName . '%', 'birthday' => $birthday->format('Y-m-d')])
-            ->fetchAll(\PDO::FETCH_ASSOC);
-
-        return $result;
+            ->fetchAll(\PDO::FETCH_ASSOC)
+        ;
     }
 
     /**
@@ -568,17 +603,20 @@ class ClientsRepository extends ServiceEntityRepository
             ->leftJoin(Companies::class, 'co', Join::WITH, 'c.idClient = co.idClientOwner AND c.type IN (:companyType)')
             ->setParameter('lenderWalletType', WalletType::LENDER)
             ->setParameter('companyType', [Clients::TYPE_LEGAL_ENTITY, Clients::TYPE_LEGAL_ENTITY_FOREIGNER], Connection::PARAM_INT_ARRAY)
-            ->orderBy('c.added', 'DESC');
+            ->orderBy('c.added', 'DESC')
+        ;
 
         if (filter_var($search, FILTER_VALIDATE_INT)) {
             $queryBuilder
                 ->where('c.idClient = :search')
-                ->setParameter('search', $search . '%');
+                ->setParameter('search', $search . '%')
+            ;
         } else {
             $queryBuilder
                 ->where('c.nom LIKE :search')
                 ->orWhere('co.name LIKE :search')
-                ->setParameter('search', '%' . $search . '%');
+                ->setParameter('search', '%' . $search . '%')
+            ;
         }
 
         if (is_int($limit)) {
@@ -597,11 +635,19 @@ class ClientsRepository extends ServiceEntityRepository
      * @param string|null $siren
      * @param bool|null   $online
      *
-     * @return array
      * @throws DBALException
+     *
+     * @return array
      */
-    public function findLenders(?int $idClient = null, ?string $email = null, ?string $name = null, ?string $firstName = null, ?string $companyName = null, ?string $siren = null, ?bool $online = null): array
-    {
+    public function findLenders(
+        ?int $idClient = null,
+        ?string $email = null,
+        ?string $name = null,
+        ?string $firstName = null,
+        ?string $companyName = null,
+        ?string $siren = null,
+        ?bool $online = null
+    ): array {
         $query = '
             SELECT
               c.id_client AS id_client,
@@ -636,37 +682,37 @@ class ClientsRepository extends ServiceEntityRepository
             INNER JOIN clients_status_history csh ON c.id_client_status_history = csh.id
             INNER JOIN clients_status cs ON csh.id_status = cs.id
             LEFT JOIN companies co ON co.id_client_owner = c.id_client
-            WHERE 1' ;
+            WHERE 1';
 
         $parameters = [];
 
         if (null !== $idClient) {
-            $query                  .= ' AND c.id_client IN (:idClient)';
+            $query .= ' AND c.id_client IN (:idClient)';
             $parameters['idClient'] = $idClient;
         }
 
         if (null !== $email) {
-            $query               .= ' AND c.email LIKE :email';
+            $query .= ' AND c.email LIKE :email';
             $parameters['email'] = $email . '%';
         }
 
         if (null !== $name) {
-            $query              .= ' AND (c.nom LIKE :name OR c.nom_usage LIKE :name)';
+            $query .= ' AND (c.nom LIKE :name OR c.nom_usage LIKE :name)';
             $parameters['name'] = $name . '%';
         }
 
         if (null !== $firstName) {
-            $query                   .= ' AND c.prenom LIKE :firstName';
+            $query .= ' AND c.prenom LIKE :firstName';
             $parameters['firstName'] = $firstName . '%';
         }
 
         if (null !== $companyName) {
-            $query                     .= ' AND co.name LIKE :companyName';
+            $query .= ' AND co.name LIKE :companyName';
             $parameters['companyName'] = $companyName . '%';
         }
 
         if (null !== $siren) {
-            $query               .= ' AND co.siren = :siren';
+            $query .= ' AND co.siren = :siren';
             $parameters['siren'] = $siren;
         }
 
@@ -681,25 +727,29 @@ class ClientsRepository extends ServiceEntityRepository
         return $this->getEntityManager()
             ->getConnection()
             ->executeQuery($query, $parameters)
-            ->fetchAll(\PDO::FETCH_ASSOC);
+            ->fetchAll(\PDO::FETCH_ASSOC)
+        ;
     }
 
     /**
      * @param string $hashSegment
      *
-     * @return null|Clients
+     * @throws NonUniqueResultException
+     *
+     * @return Clients|null
      */
     public function findClientByOldSponsorCode($hashSegment)
     {
         $queryBuilder = $this->createQueryBuilder('c');
         $queryBuilder->where('c.hash LIKE :hashSegment')
-            ->setParameter('hashSegment', $hashSegment . '%');
+            ->setParameter('hashSegment', $hashSegment . '%')
+        ;
 
         return $queryBuilder->getQuery()->getOneOrNullResult();
     }
 
     /**
-     * Method to be deleted once the query does not return any results
+     * Method to be deleted once the query does not return any results.
      *
      * @param int $limit
      *
@@ -711,7 +761,8 @@ class ClientsRepository extends ServiceEntityRepository
         $resultSetMapping->addEntityResult(Clients::class, 'c')
             ->addFieldResult('c', 'id_client', 'idClient')
             ->addFieldResult('c', 'sponsor_code', 'sponsorCode')
-            ->addFieldResult('c', 'nom', 'nom');
+            ->addFieldResult('c', 'nom', 'nom')
+        ;
 
         $query = $this->_em->createNativeQuery('SELECT id_client, sponsor_code, nom FROM clients WHERE sponsor_code REGEXP "[^a-zA-Z0-9]" LIMIT :limit ', $resultSetMapping);
         $query->setParameter('limit', $limit);
@@ -727,7 +778,8 @@ class ClientsRepository extends ServiceEntityRepository
     public function findBeneficialOwnerByName($name)
     {
         $queryBuilder = $this->createQueryBuilder('c');
-        $queryBuilder->select('
+        $queryBuilder->select(
+            '
                 c.idClient,
                 c.nom,
                 c.prenom,
@@ -744,7 +796,8 @@ class ClientsRepository extends ServiceEntityRepository
             ->where('c.nom LIKE :name')
             ->andWhere('c.type NOT IN (:lenderTypes)')
             ->setParameter('name', '%' . $name . '%')
-            ->setParameter('lenderTypes', [Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER, Clients::TYPE_LEGAL_ENTITY, Clients::TYPE_LEGAL_ENTITY_FOREIGNER]);
+            ->setParameter('lenderTypes', [Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER, Clients::TYPE_LEGAL_ENTITY, Clients::TYPE_LEGAL_ENTITY_FOREIGNER])
+        ;
 
         return $queryBuilder->getQuery()->getResult();
     }
@@ -752,11 +805,11 @@ class ClientsRepository extends ServiceEntityRepository
     /**
      * @param CompanyClient $companyClient
      *
-     * @return int
      * @throws NonUniqueResultException
-     * @throws NoResultException
+     *
+     * @return int
      */
-    public function countDuplicatesByFullName(CompanyClient $companyClient) : int
+    public function countDuplicatesByFullName(CompanyClient $companyClient): int
     {
         return $this->createQueryBuilder('c')
             ->select('COUNT(c.idClient)')
@@ -768,7 +821,8 @@ class ClientsRepository extends ServiceEntityRepository
             ->setParameter('firstname', $companyClient->getIdClient()->getFirstName())
             ->setParameter('company', $companyClient->getIdCompany()->getIdCompany())
             ->getQuery()
-            ->getSingleScalarResult();
+            ->getSingleScalarResult()
+        ;
     }
 
     /**
@@ -776,10 +830,11 @@ class ClientsRepository extends ServiceEntityRepository
      *
      * @return array
      */
-    public function findDuplicatesByEmail(string $email) : array
+    public function findDuplicatesByEmail(string $email): array
     {
         $queryBuilder = $this->createQueryBuilder('c');
-        $queryBuilder->select('
+        $queryBuilder->select(
+            '
                 c.idClient,
                 c.email,
                 c.nom,
@@ -809,7 +864,8 @@ class ClientsRepository extends ServiceEntityRepository
             ->leftJoin(Partner::class, 'pa', Join::WITH, 'cp.idCompany = pa.idCompany')
             ->where('c.email LIKE :email')
             ->setParameter('email', $email . '%', \PDO::PARAM_STR)
-            ->groupBy('c.idClient');
+            ->groupBy('c.idClient')
+        ;
 
         return $queryBuilder->getQuery()->getResult();
     }
@@ -827,7 +883,8 @@ class ClientsRepository extends ServiceEntityRepository
             ->where('c.email = :email')
             ->andWhere('csh.idStatus IN (:status)')
             ->setParameter('email', $email, \PDO::PARAM_STR)
-            ->setParameter('status', ClientsStatus::GRANTED_LOGIN);
+            ->setParameter('status', ClientsStatus::GRANTED_LOGIN)
+        ;
 
         return $queryBuilder->getQuery()->getResult();
     }
@@ -846,7 +903,8 @@ class ClientsRepository extends ServiceEntityRepository
             ->where('c.hash = :hash')
             ->andWhere('csh.idStatus IN (:status)')
             ->setParameter('hash', $hash, \PDO::PARAM_STR)
-            ->setParameter('status', $status);
+            ->setParameter('status', $status)
+        ;
 
         try {
             return $queryBuilder->getQuery()->getOneOrNullResult();
@@ -860,8 +918,9 @@ class ClientsRepository extends ServiceEntityRepository
      * @param \DateTime $end
      * @param bool      $groupBySiren
      *
-     * @return array
      * @throws DBALException
+     *
+     * @return array
      */
     public function getBorrowersContactDetailsAndSource(\DateTime $start, \DateTime $end, bool $groupBySiren): array
     {
@@ -875,8 +934,7 @@ class ClientsRepository extends ServiceEntityRepository
                                 AND DATE(c2.added) BETWEEN :start AND :end
                         ) AS ChronologicalSources,' : '';
 
-        $query =
-            'SELECT
+        $query = 'SELECT
                 p.id_project,
                 com.id_client_owner,
                 ' . $countSiren . '
@@ -902,12 +960,14 @@ class ClientsRepository extends ServiceEntityRepository
         return $this->getEntityManager()
             ->getConnection()
             ->executeQuery($query, ['start' => $start->format('Y-m-d'), 'end' => $end->format('Y-m-d')])
-            ->fetchAll(\PDO::FETCH_ASSOC);
+            ->fetchAll(\PDO::FETCH_ASSOC)
+        ;
     }
 
     /**
-     * @return array
      * @throws DBALException
+     *
+     * @return array
      */
     public function getClientsToAutoValidate(): array
     {
@@ -922,7 +982,7 @@ class ClientsRepository extends ServiceEntityRepository
             'clientStatusSuspended'  => ClientsStatus::STATUS_SUSPENDED,
             'idUserFront'            => Users::USER_ID_FRONT,
             'mainAddressType'        => AddressType::TYPE_MAIN_ADDRESS,
-            'idCountryFr'            => Pays::COUNTRY_FRANCE
+            'idCountryFr'            => Pays::COUNTRY_FRANCE,
         ];
         $type = [
             'statusValid'            => PDO::PARAM_INT,
@@ -935,10 +995,10 @@ class ClientsRepository extends ServiceEntityRepository
             'clientStatusSuspended'  => PDO::PARAM_INT,
             'idUserFront'            => PDO::PARAM_INT,
             'mainAddressType'        => PDO::PARAM_STR,
-            'idCountryFr'            => PDO::PARAM_INT
+            'idCountryFr'            => PDO::PARAM_INT,
         ];
 
-        $query = "
+        $query = '
             SELECT
               c.id_client,
               ga_identity.id AS identity_attachment_id,
@@ -979,13 +1039,14 @@ class ClientsRepository extends ServiceEntityRepository
                          LIMIT 1
                        ) = :idCountryFr
               )
-              AND TIMESTAMPDIFF(YEAR, c.naissance, CURDATE()) < " . LenderValidationManager::MAX_AGE_AUTOMATIC_VALIDATION . "
-              AND last_cvsh.id_client IS NULL";
+              AND TIMESTAMPDIFF(YEAR, c.naissance, CURDATE()) < ' . LenderValidationManager::MAX_AGE_AUTOMATIC_VALIDATION . '
+              AND last_cvsh.id_client IS NULL';
 
         return $this
-                ->getEntityManager()
-                ->getConnection()
-                ->executeQuery($query, $bind, $type)
-                ->fetchAll(\PDO::FETCH_ASSOC);
+            ->getEntityManager()
+            ->getConnection()
+            ->executeQuery($query, $bind, $type)
+            ->fetchAll(\PDO::FETCH_ASSOC)
+        ;
     }
 }
