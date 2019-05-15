@@ -1,4 +1,4 @@
-<h4 class="h4 margin-20-t">{{ tranche.name }}</h4>
+<h4 class="margin-20-t">{{ tranche.name }}</h4>
 {% set bid = tranche.bids([constant('Unilend\\Entity\\Bids::STATUS_PENDING'), constant('Unilend\\Entity\\Bids::STATUS_ACCEPTED')], wallet).first %}
 {% if bid is not empty and bid.idBid %}
     <form action="#">
@@ -47,7 +47,10 @@
     <fieldset class="simulator-pane-inner" style="margin-top: 20px;">
         <div class="row row-multi-col-computer">
             <div class="col-lg-3 col-md-3 col-sm-3">
-                {{ form_row(form.money.amount, {attr: {'data-fee-reference-amount': ''}}) }}
+                {{ form_row(form.money.amount, {
+                    label_help: '(' ~ tranche.money.currency ~ ')',
+                    attr: {'data-fee-reference-amount': '', 'class': 'amount'}})
+                }}
             </div>
             <div class="col-lg-3 col-md-3 col-sm-3">
                 {{ form_row(form.rate.indexType) }}

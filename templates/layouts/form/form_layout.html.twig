@@ -65,6 +65,9 @@
         {%- endif -%}
         <label{% for attrname, attrvalue in label_attr %} {{ attrname }}="{{ attrvalue }}"{% endfor %}>
         {{ translation_domain is same as(false) ? label : label|trans({}, translation_domain) }}
+        {% if label_help is defined %}
+            <small>{{ translation_domain is same as(false) ? label_help : label_help|trans({}, translation_domain) }}</small>
+        {%- endif -%}
         {% if required -%}
             <span class="field-required">*</span>
         {%- endif -%}
