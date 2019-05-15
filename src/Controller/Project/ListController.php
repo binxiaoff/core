@@ -73,10 +73,9 @@ class ListController extends AbstractController
         $statuses = ProjectStatusHistory::getAllProjectStatus();
         $template = [
             'projects' => [
-                'borrower'    => $this->groupByStatusAndSort($clientProjectRepository->getBorrowerProjects($user), $statuses),
-                'submitter'   => $this->groupByStatusAndSort($clientProjectRepository->getSubmitterProjects($user), $statuses),
-                'arrangerRun' => $this->groupByStatusAndSort($clientProjectRepository->getArrangerRunProjects($user), $statuses),
-                'lender'      => [],
+                'borrowerSubmitter' => $this->groupByStatusAndSort($clientProjectRepository->getBorrowerSubmitterProjects($user), $statuses),
+                'arrangerRun'       => $this->groupByStatusAndSort($clientProjectRepository->getArrangerRunProjects($user), $statuses),
+                'lender'            => [],
             ],
         ];
 

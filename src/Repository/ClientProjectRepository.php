@@ -23,29 +23,13 @@ class ClientProjectRepository extends ServiceEntityRepository
      *
      * @return array
      */
-    public function getBorrowerProjects(Clients $user): array
+    public function getBorrowerSubmitterProjects(Clients $user): array
     {
         return $this
             ->createQueryBuilder('p')
             ->distinct()
             ->where('p.borrowerCompany = :userCompany')
-            ->setParameter('userCompany', $user->getCompany())
-            ->getQuery()
-            ->getResult()
-        ;
-    }
-
-    /**
-     * @param Clients $user
-     *
-     * @return array
-     */
-    public function getSubmitterProjects(Clients $user): array
-    {
-        return $this
-            ->createQueryBuilder('p')
-            ->distinct()
-            ->where('p.submitterCompany = :userCompany')
+            ->orWhere('p.submitterCompany = :userCompany')
             ->setParameter('userCompany', $user->getCompany())
             ->getQuery()
             ->getResult()

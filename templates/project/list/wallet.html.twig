@@ -5,26 +5,15 @@
         {% if projects|length > 1 %}
             <div class="dashboard-tabs-nav">
                 <ul class="nav nav-dashboard-tabs">
-                    {% if projects.borrower is defined %}
+                    {% if projects.borrowerSubmitter is defined %}
                         {% if active is not defined %}
-                            {% set active = 'borrower' %}
+                            {% set active = 'borrowerSubmitter' %}
                         {% endif %}
                         <li role="presentation"
-                            {% if active == 'borrower' %} class="active"{% endif %}
-                            title="Dossiers de syndication de vos crédits" data-toggle="tooltip" data-placement="bottom"
-                            data-equal-width>
-                            <a href="#tab-borrower" role="tab" data-toggle="tab">Syndications</a>
-                        </li>
-                    {% endif %}
-                    {% if projects.submitter is defined %}
-                        {% if active is not defined %}
-                            {% set active = 'submitter' %}
-                        {% endif %}
-                        <li role="presentation"
-                            {% if active == 'submitter' %} class="active"{% endif %}
+                            {% if active == 'borrowerSubmitter' %} class="active"{% endif %}
                             title="Dossiers que vous avez déposé" data-toggle="tooltip" data-placement="bottom"
                             data-equal-width>
-                            <a href="#tab-submitter" role="tab" data-toggle="tab">Dépôts</a>
+                            <a href="#tab-borrower-submitter" role="tab" data-toggle="tab">Dépôts</a>
                         </li>
                     {% endif %}
                     {% if projects.arrangerRun is defined %}
@@ -44,7 +33,7 @@
                         {% endif %}
                         <li role="presentation"
                             {% if active == 'lender' %} class="active"{% endif %}
-                            title="Dossiers sur lesquels vous avez fait au moins une offre de participation en tant que prêteur" data-toggle="tooltip" data-placement="bottom"
+                            title="Dossiers sur lesquels vous avez fait au moins une offre de participation" data-toggle="tooltip" data-placement="bottom"
                             data-equal-width>
                             <a href="#tab-lender" role="tab" data-toggle="tab">Souscriptions</a>
                         </li>
@@ -54,11 +43,8 @@
         {% endif %}
 
         <div class="dashboard-tabs-content tab-content">
-            {% if projects.borrower is defined %}
-                {% include 'project/list/partials/projects.html.twig' with {'projectsType': 'borrower', 'active': active|default('borrower')} %}
-            {% endif %}
-            {% if projects.submitter is defined %}
-                {% include 'project/list/partials/projects.html.twig' with {'projectsType': 'submitter', 'active': active|default('submitter')} %}
+            {% if projects.borrowerSubmitter is defined %}
+                {% include 'project/list/partials/projects.html.twig' with {'projectsType': 'borrowerSubmitter', 'active': active|default('submitter')} %}
             {% endif %}
             {% if projects.arrangerRun is defined %}
                 {% include 'project/list/partials/projects.html.twig' with {'projectsType': 'arrangerRun', 'active': active|default('arrangerRun')} %}
