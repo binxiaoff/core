@@ -8,7 +8,7 @@
             <th>Marge</th>
             {#<th>Commission ponctuelle</th>
             <th>Commission récurrente</th>#}
-            {% if canChangeBidStatus is defined and canChangeBidStatus == true and displayAction == true %}
+            {% if is_granted('manage_bids', project) and displayAction == true %}
                 <th style="width: 115px;">&nbsp;</th>
             {% endif %}
         </tr>
@@ -24,7 +24,7 @@
                 <td data-toggle="tooltip" title="{% if offer.recurringFeeTotalRate > 0 %}soit {{ (offer.recurringFeeTotalRate * (offer.amount / 100) / 100)|localizednumber }}&nbsp;€{% endif %}">
                     {{ offer.recurringFeeTotalRate|localizednumberwithprecision(2) }}&nbsp;%
                 </td>#}
-                {% if canChangeBidStatus is defined and canChangeBidStatus == true and displayAction == true %}
+                {% if is_granted('manage_bids', project) and displayAction == true %}
                     <td>
                         <button type="button" class="btn-default btn-shape-xxs"
                                 data-toggle="tooltip" title="Rejeter l‘offre"

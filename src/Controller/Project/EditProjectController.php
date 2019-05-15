@@ -105,7 +105,6 @@ class EditProjectController extends AbstractController
             'attachmentTypes'      => $projectAttachmentTypeRepository->getAttachmentTypes(),
             'projectAttachments'   => $projectAttachmentRepository->getAttachmentsWithoutSignature($project),
             'signatureAttachments' => $projectAttachmentRepository->getAttachmentsWithSignature($project),
-            'canChangeBidStatus'   => true,
             'documentForm'         => $documentForm->createView(),
             'trancheForm'          => $trancheForm->createView(),
         ];
