@@ -22,7 +22,7 @@ use Unilend\Entity\{AcceptedBids, Attachment, Bids, Clients, Loans, Project, Pro
 use Unilend\Form\Project\ProjectAttachmentCollectionType;
 use Unilend\Form\Tranche\TrancheTypeCollectionType;
 use Unilend\Repository\{AcceptedBidsRepository, BidsRepository, CompaniesRepository, ProjectAttachmentRepository, ProjectAttachmentTypeRepository, ProjectRepository,
-    UnderlyingContractRepository};
+    TrancheRepository, UnderlyingContractRepository};
 use Unilend\Security\Voter\ProjectVoter;
 use Unilend\Service\{AttachmentManager, DemoMailerManager, ProjectStatusManager};
 
@@ -156,6 +156,7 @@ class EditController extends AbstractController
      * @param ProjectStatusManager         $projectStatusManager
      * @param DemoMailerManager            $mailerManager
      * @param LoggerInterface              $logger
+     * @param TrancheRepository            $trancheRepository
      * @param BidsRepository               $bidsRepository
      * @param UnderlyingContractRepository $underlyingContractRepository
      * @param AcceptedBidsRepository       $acceptedBidRepository
@@ -172,6 +173,7 @@ class EditController extends AbstractController
         ProjectStatusManager $projectStatusManager,
         DemoMailerManager $mailerManager,
         LoggerInterface $logger,
+        TrancheRepository $trancheRepository,
         BidsRepository $bidsRepository,
         UnderlyingContractRepository $underlyingContractRepository,
         AcceptedBidsRepository $acceptedBidRepository,
@@ -229,7 +231,7 @@ class EditController extends AbstractController
 
                     break;
                 case ProjectStatusHistory::STATUS_FUNDED:
-                    $this->closeProject($project, $bidsRepository, $underlyingContractRepository, $acceptedBidRepository, $logger, $entityManager);
+                    $this->closeProject($project, $trancheRepository, $bidsRepository, $underlyingContractRepository, $acceptedBidRepository, $logger, $entityManager);
 
                     try {
                         $mailerManager->sendProjectFundingEnd($project);
@@ -373,6 +375,7 @@ class EditController extends AbstractController
 
     /**
      * @param Project                      $project
+     * @param TrancheRepository            $trancheRepository
      * @param BidsRepository               $bidsRepository
      * @param UnderlyingContractRepository $underlyingContractRepository
      * @param AcceptedBidsRepository       $acceptedBidRepository
@@ -383,14 +386,16 @@ class EditController extends AbstractController
      */
     private function closeProject(
         Project $project,
+        TrancheRepository $trancheRepository,
         BidsRepository $bidsRepository,
         UnderlyingContractRepository $underlyingContractRepository,
         AcceptedBidsRepository $acceptedBidRepository,
         LoggerInterface $logger,
         EntityManagerInterface $entityManager
     ): void {
-        $bids = $bidsRepository->findBy([
-            'project' => $project,
+        $tranches = $trancheRepository->findBy(['project' => $project]);
+        $bids     = $bidsRepository->findBy([
+            'tranche' => $tranches,
             'status'  => [Bids::STATUS_ACCEPTED, Bids::STATUS_PENDING],
         ]);
 

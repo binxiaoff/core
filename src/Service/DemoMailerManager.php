@@ -10,7 +10,7 @@ use Swift_Mailer;
 use Swift_RfcComplianceException;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
-use Unilend\Entity\{AttachmentSignature, Bids, Clients, Loans, Project, Projects};
+use Unilend\Entity\{AttachmentSignature, Bids, Clients, Loans, Project, Tranche};
 use Unilend\SwiftMailer\TemplateMessageProvider;
 
 class DemoMailerManager
@@ -242,9 +242,10 @@ class DemoMailerManager
             'projectName' => $project->getBorrowerCompany()->getName() . ' / ' . $project->getTitle(),
         ];
 
-        $sent  = 0;
-        $loans = $this->entityManager->getRepository(Loans::class)->findBy([
-            'project' => $project,
+        $sent     = 0;
+        $tranches = $this->entityManager->getRepository(Tranche::class)->findBy(['project' => $project]);
+        $loans    = $this->entityManager->getRepository(Loans::class)->findBy([
+            'tranche' => $tranches,
             'status'  => Loans::STATUS_PENDING,
         ]);
 
