@@ -363,13 +363,6 @@ class Projects
     private $interestRate;
 
     /**
-     * @var ProjectAttachment[]
-     *
-     * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectAttachment", mappedBy="idProject")
-     */
-    private $attachments;
-
-    /**
      * @var ClientsMandats[]
      *
      * @ORM\OneToMany(targetEntity="Unilend\Entity\ClientsMandats", mappedBy="idProject")
@@ -462,7 +455,6 @@ class Projects
      */
     public function __construct()
     {
-        $this->attachments            = new ArrayCollection();
         $this->mandates               = new ArrayCollection();
         $this->memos                  = new ArrayCollection();
         $this->wireTransferOuts       = new ArrayCollection();
@@ -1279,14 +1271,6 @@ class Projects
     public function getInterestRate(): ?float
     {
         return $this->interestRate;
-    }
-
-    /**
-     * @return ProjectAttachment[]
-     */
-    public function getAttachments()
-    {
-        return $this->attachments;
     }
 
     /**
