@@ -337,7 +337,7 @@ class EditProjectController extends AbstractController
 
                 break;
             case 'scoring':
-                if (false === $authorizationChecker->isGranted(ProjectVoter::ATTRIBUTE_SCORE, $project)) {
+                if (false === $authorizationChecker->isGranted(ProjectVoter::ATTRIBUTE_RATE, $project)) {
                     return (new Response())
                         ->setContent('Vous ne disposez pas des droits nécessaires pour modifier la notation. Seul le RUN peut modifier la notation.')
                         ->setStatusCode(Response::HTTP_FORBIDDEN)

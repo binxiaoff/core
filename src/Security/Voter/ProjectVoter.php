@@ -17,7 +17,7 @@ class ProjectVoter extends Voter
     public const ATTRIBUTE_VIEW         = 'view';
     public const ATTRIBUTE_EDIT         = 'edit';
     public const ATTRIBUTE_MANAGER_BIDS = 'manage_bids';
-    public const ATTRIBUTE_SCORE        = 'score';
+    public const ATTRIBUTE_RATE         = 'rate';
     public const ATTRIBUTE_BID          = 'bid';
     public const ATTRIBUTE_COMMENT      = 'comment';
 
@@ -58,8 +58,8 @@ class ProjectVoter extends Voter
                 return $this->canEdit($project, $user);
             case self::ATTRIBUTE_MANAGER_BIDS:
                 return $this->canManageBids($project, $user);
-            case self::ATTRIBUTE_SCORE:
-                return $this->canScore($project, $user);
+            case self::ATTRIBUTE_RATE:
+                return $this->canRate($project, $user);
             case self::ATTRIBUTE_BID:
                 return $this->canBid($project, $user);
             case self::ATTRIBUTE_COMMENT:
@@ -120,7 +120,7 @@ class ProjectVoter extends Voter
      *
      * @return bool
      */
-    private function canScore(Project $project, Clients $user): bool
+    private function canRate(Project $project, Clients $user): bool
     {
         return $user->getCompany() === $project->getRun()->getCompany();
     }
