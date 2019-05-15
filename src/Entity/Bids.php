@@ -4,7 +4,8 @@ namespace Unilend\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
-use Unilend\Entity\Traits\{ConstantsAwareTrait, LendableTrait, TimestampableTrait};
+use Unilend\Entity\Traits\{LendableTrait, TimestampableTrait};
+use Unilend\Traits\ConstantsAwareTrait;
 
 /**
  * @ORM\Table(name="bids", indexes={@ORM\Index(columns={"id_tranche", "status"})})

@@ -10,8 +10,8 @@ use Doctrine\ORM\Mapping as ORM;
 use Exception;
 use Ramsey\Uuid\Uuid;
 use Symfony\Component\Validator\Constraints as Assert;
-use Unilend\Entity\Traits\ConstantsAwareTrait;
 use Unilend\Entity\Traits\TimestampableTrait;
+use Unilend\Traits\ConstantsAwareTrait;
 use URLify;
 
 /**
@@ -826,20 +826,6 @@ class Project
         }
 
         return true;
-    }
-
-    /**
-     * @param Clients $user
-     *
-     * @return bool
-     */
-    public function isScoringEditable(Clients $user): bool
-    {
-        return
-            $this->isEditable()
-            && $this->getRun()
-            && $this->getRun()->getCompany() === $user->getCompany()
-            ;
     }
 
     /**

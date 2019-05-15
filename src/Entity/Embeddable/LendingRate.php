@@ -6,7 +6,7 @@ namespace Unilend\Entity\Embeddable;
 
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
-use Unilend\Entity\Traits\ConstantsAwareTrait;
+use Unilend\Traits\ConstantsAwareTrait;
 
 /**
  * @ORM\Embeddable

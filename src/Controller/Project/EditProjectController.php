@@ -9,18 +9,21 @@ use Doctrine\DBAL\ConnectionException;
 use Doctrine\ORM\{EntityManagerInterface, ORMException, OptimisticLockException};
 use Exception;
 use Psr\Log\LoggerInterface;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Swift_SwiftException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\{File\UploadedFile, Request, Response};
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Core\Authorization\AuthorizationChecker;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Unilend\Entity\{AcceptedBids, Attachment, Bids, Clients, Loans, Project, ProjectStatusHistory, UnderlyingContract};
 use Unilend\Form\Project\ProjectAttachmentCollectionType;
 use Unilend\Form\Tranche\TrancheTypeCollectionType;
 use Unilend\Repository\{AcceptedBidsRepository, BidsRepository, CompaniesRepository, ProjectAttachmentRepository, ProjectAttachmentTypeRepository, ProjectRepository,
     UnderlyingContractRepository};
+use Unilend\Security\Voter\ProjectVoter;
 use Unilend\Service\{AttachmentManager, DemoMailerManager, ProjectStatusManager};
 
 class EditProjectController extends AbstractController
@@ -28,8 +31,10 @@ class EditProjectController extends AbstractController
     /**
      * @Route("/projet/{hash}", name="edit_project_details", methods={"GET", "POST"}, requirements={"hash": "[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}"})
      *
-     * @param Request                         $request
+     * @IsGranted("edit", subject="project")
+     *
      * @param Project                         $project
+     * @param Request                         $request
      * @param UserInterface|Clients|null      $user
      * @param CompaniesRepository             $companyRepository
      * @param ProjectRepository               $projectRepository
@@ -42,8 +47,8 @@ class EditProjectController extends AbstractController
      * @return Response
      */
     public function details(
-        Request $request,
         Project $project,
+        Request $request,
         ?UserInterface $user,
         CompaniesRepository $companyRepository,
         ProjectRepository $projectRepository,
@@ -102,7 +107,6 @@ class EditProjectController extends AbstractController
             'attachmentTypes'      => $projectAttachmentTypeRepository->getAttachmentTypes(),
             'projectAttachments'   => $projectAttachmentRepository->getAttachmentsWithoutSignature($project),
             'signatureAttachments' => $projectAttachmentRepository->getAttachmentsWithSignature($project),
-            'canChangeBidStatus'   => true,
             'documentForm'         => $documentForm->createView(),
             'trancheForm'          => $trancheForm->createView(),
         ];
@@ -112,6 +116,8 @@ class EditProjectController extends AbstractController
 
     /**
      * @Route("/projet/visibilite/{hash}", name="edit_project_visibility", requirements={"hash": "[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}"}, methods={"POST"})
+     *
+     * @IsGranted("edit", subject="project")
      *
      * @param Project             $project
      * @param Request             $request
@@ -142,9 +148,11 @@ class EditProjectController extends AbstractController
      * @Route("/projet/rembourse/{hash}", name="edit_project_status_finished", requirements={"hash": "[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}"})
      * @Route("/projet/perte/{hash}", name="edit_project_status_lost", requirements={"hash": "[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}"})
      *
+     * @IsGranted("edit", subject="project")
+     *
+     * @param Project                      $project
      * @param Request                      $request
      * @param UserInterface|Clients|null   $user
-     * @param Project                      $project
      * @param ProjectStatusManager         $projectStatusManager
      * @param DemoMailerManager            $mailerManager
      * @param LoggerInterface              $logger
@@ -158,9 +166,9 @@ class EditProjectController extends AbstractController
      * @return Response
      */
     public function projectStatusUpdate(
+        Project $project,
         Request $request,
         ?UserInterface $user,
-        Project $project,
         ProjectStatusManager $projectStatusManager,
         DemoMailerManager $mailerManager,
         LoggerInterface $logger,
@@ -244,12 +252,15 @@ class EditProjectController extends AbstractController
     /**
      * @Route("/projet/update/{hash}", name="edit_project_update", requirements={"hash": "[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}"}, methods={"POST"})
      *
-     * @param Request             $request
-     * @param Project             $project
-     * @param DemoMailerManager   $mailerManager
-     * @param CompaniesRepository $companyRepository
-     * @param ProjectRepository   $projectRepository
-     * @param LoggerInterface     $logger
+     * @IsGranted("edit", subject="project")
+     *
+     * @param Project              $project
+     * @param Request              $request
+     * @param DemoMailerManager    $mailerManager
+     * @param CompaniesRepository  $companyRepository
+     * @param ProjectRepository    $projectRepository
+     * @param AuthorizationChecker $authorizationChecker
+     * @param LoggerInterface      $logger
      *
      * @throws ORMException
      * @throws OptimisticLockException
@@ -257,18 +268,19 @@ class EditProjectController extends AbstractController
      * @return Response
      */
     public function update(
-        Request $request,
         Project $project,
+        Request $request,
         DemoMailerManager $mailerManager,
         CompaniesRepository $companyRepository,
         ProjectRepository $projectRepository,
+        AuthorizationChecker $authorizationChecker,
         LoggerInterface $logger
     ): Response {
         if (false === $project->isEditable()) {
             return (new Response())
                 ->setContent('Le projet a déjà été publié, il ne peut plus être modifié')
                 ->setStatusCode(Response::HTTP_FORBIDDEN)
-                ;
+            ;
         }
 
         $field       = $request->request->get('name');
@@ -325,6 +337,13 @@ class EditProjectController extends AbstractController
 
                 break;
             case 'scoring':
+                if (false === $authorizationChecker->isGranted(ProjectVoter::ATTRIBUTE_RATE, $project)) {
+                    return (new Response())
+                        ->setContent('Vous ne disposez pas des droits nécessaires pour modifier la notation. Seul le RUN peut modifier la notation.')
+                        ->setStatusCode(Response::HTTP_FORBIDDEN)
+                    ;
+                }
+
                 $value = $value ?: null;
                 $project->setInternalRatingScore($value);
 

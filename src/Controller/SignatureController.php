@@ -6,7 +6,7 @@ namespace Unilend\Controller;
 
 use Doctrine\ORM\{ORMException, OptimisticLockException};
 use Exception;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\{IsGranted, ParamConverter};
 use Swift_RfcComplianceException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\{RedirectResponse, Request, Response};
@@ -20,6 +20,8 @@ class SignatureController extends AbstractController
 {
     /**
      * @Route("/signature/{attachment}", name="signature_sign", requirements={"attachment": "\d+"})
+     *
+     * @IsGranted("download", subject="attachment")
      *
      * @param Attachment                    $attachment
      * @param UserInterface|Clients|null    $user
@@ -72,6 +74,8 @@ class SignatureController extends AbstractController
     /**
      * @Route("/signature/confirmation/{attachment}", name="signature_confirmation", requirements={"attachment": "\d+"})
      *
+     * @IsGranted("download", subject="attachment")
+     *
      * @param Attachment                    $attachment
      * @param Request                       $request
      * @param UserInterface|Clients|null    $user
@@ -114,6 +118,8 @@ class SignatureController extends AbstractController
 
     /**
      * @Route("/signature/chargement/{project}", name="signature_upload", requirements={"project": "[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}"})
+     *
+     * @IsGranted("edit", subject="project")
      *
      * @ParamConverter("project", options={"mapping": {"project": "hash"}})
      *

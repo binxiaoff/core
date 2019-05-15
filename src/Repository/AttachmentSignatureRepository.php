@@ -9,6 +9,12 @@ use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\{ORMException, OptimisticLockException};
 use Unilend\Entity\AttachmentSignature;
 
+/**
+ * @method AttachmentSignature|null find($id, $lockMode = null, $lockVersion = null)
+ * @method AttachmentSignature|null findOneBy(array $criteria, array $orderBy = null)
+ * @method AttachmentSignature[]    findAll()
+ * @method AttachmentSignature[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
+ */
 class AttachmentSignatureRepository extends ServiceEntityRepository
 {
     /**
