@@ -829,20 +829,6 @@ class Project
     }
 
     /**
-     * @param Clients $user
-     *
-     * @return bool
-     */
-    public function isScoringEditable(Clients $user): bool
-    {
-        return
-            $this->isEditable()
-            && $this->getRun()
-            && $this->getRun()->getCompany() === $user->getCompany()
-            ;
-    }
-
-    /**
      * @throws Exception
      *
      * @return bool

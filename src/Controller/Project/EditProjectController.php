@@ -16,12 +16,14 @@ use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\{File\UploadedFile, Request, Response};
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Core\Authorization\AuthorizationChecker;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Unilend\Entity\{AcceptedBids, Attachment, Bids, Clients, Loans, Project, ProjectStatusHistory, UnderlyingContract};
 use Unilend\Form\Project\ProjectAttachmentCollectionType;
 use Unilend\Form\Tranche\TrancheTypeCollectionType;
 use Unilend\Repository\{AcceptedBidsRepository, BidsRepository, CompaniesRepository, ProjectAttachmentRepository, ProjectAttachmentTypeRepository, ProjectRepository,
     UnderlyingContractRepository};
+use Unilend\Security\Voter\ProjectVoter;
 use Unilend\Service\{AttachmentManager, DemoMailerManager, ProjectStatusManager};
 
 class EditProjectController extends AbstractController
@@ -252,12 +254,13 @@ class EditProjectController extends AbstractController
      *
      * @IsGranted("edit", subject="project")
      *
-     * @param Project             $project
-     * @param Request             $request
-     * @param DemoMailerManager   $mailerManager
-     * @param CompaniesRepository $companyRepository
-     * @param ProjectRepository   $projectRepository
-     * @param LoggerInterface     $logger
+     * @param Project              $project
+     * @param Request              $request
+     * @param DemoMailerManager    $mailerManager
+     * @param CompaniesRepository  $companyRepository
+     * @param ProjectRepository    $projectRepository
+     * @param AuthorizationChecker $authorizationChecker
+     * @param LoggerInterface      $logger
      *
      * @throws ORMException
      * @throws OptimisticLockException
@@ -270,13 +273,14 @@ class EditProjectController extends AbstractController
         DemoMailerManager $mailerManager,
         CompaniesRepository $companyRepository,
         ProjectRepository $projectRepository,
+        AuthorizationChecker $authorizationChecker,
         LoggerInterface $logger
     ): Response {
         if (false === $project->isEditable()) {
             return (new Response())
                 ->setContent('Le projet a déjà été publié, il ne peut plus être modifié')
                 ->setStatusCode(Response::HTTP_FORBIDDEN)
-                ;
+            ;
         }
 
         $field       = $request->request->get('name');
@@ -333,6 +337,13 @@ class EditProjectController extends AbstractController
 
                 break;
             case 'scoring':
+                if (false === $authorizationChecker->isGranted(ProjectVoter::ATTRIBUTE_SCORE, $project)) {
+                    return (new Response())
+                        ->setContent('Vous ne disposez pas des droits nécessaires pour modifier la notation. Seul le RUN peut modifier la notation.')
+                        ->setStatusCode(Response::HTTP_FORBIDDEN)
+                    ;
+                }
+
                 $value = $value ?: null;
                 $project->setInternalRatingScore($value);
 

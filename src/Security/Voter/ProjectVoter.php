@@ -16,8 +16,9 @@ class ProjectVoter extends Voter
 
     public const ATTRIBUTE_VIEW         = 'view';
     public const ATTRIBUTE_EDIT         = 'edit';
-    public const ATTRIBUTE_BID          = 'bid';
     public const ATTRIBUTE_MANAGER_BIDS = 'manage_bids';
+    public const ATTRIBUTE_SCORE        = 'score';
+    public const ATTRIBUTE_BID          = 'bid';
     public const ATTRIBUTE_COMMENT      = 'comment';
 
     /**
@@ -41,7 +42,7 @@ class ProjectVoter extends Voter
     /**
      * {@inheritdoc}
      */
-    protected function voteOnAttribute($attribute, $subject, TokenInterface $token): bool
+    protected function voteOnAttribute($attribute, $project, TokenInterface $token): bool
     {
         /** @var Clients $user */
         $user = $token->getUser();
@@ -50,9 +51,6 @@ class ProjectVoter extends Voter
             return false;
         }
 
-        /** @var Project $project */
-        $project = $subject;
-
         switch ($attribute) {
             case self::ATTRIBUTE_VIEW:
                 return $this->canView($project, $user);
@@ -60,6 +58,8 @@ class ProjectVoter extends Voter
                 return $this->canEdit($project, $user);
             case self::ATTRIBUTE_MANAGER_BIDS:
                 return $this->canManageBids($project, $user);
+            case self::ATTRIBUTE_SCORE:
+                return $this->canScore($project, $user);
             case self::ATTRIBUTE_BID:
                 return $this->canBid($project, $user);
             case self::ATTRIBUTE_COMMENT:
@@ -112,6 +112,17 @@ class ProjectVoter extends Voter
     private function canManageBids(Project $project, Clients $user): bool
     {
         return $user->getCompany() === $project->getArranger()->getCompany();
+    }
+
+    /**
+     * @param Project $project
+     * @param Clients $user
+     *
+     * @return bool
+     */
+    private function canScore(Project $project, Clients $user): bool
+    {
+        return $user->getCompany() === $project->getRun()->getCompany();
     }
 
     /**

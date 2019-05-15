@@ -61,7 +61,7 @@ class AttachmentVoter extends Voter
     /**
      * {@inheritdoc}
      */
-    protected function voteOnAttribute($attribute, $subject, TokenInterface $token): bool
+    protected function voteOnAttribute($attribute, $attachment, TokenInterface $token): bool
     {
         /** @var Clients $user */
         $user = $token->getUser();
@@ -69,9 +69,6 @@ class AttachmentVoter extends Voter
         if (false === $user instanceof Clients) {
             return false;
         }
-
-        /** @var Attachment $attachment */
-        $attachment = $subject;
 
         switch ($attribute) {
             case self::ATTRIBUTE_DOWNLOAD:
@@ -93,7 +90,10 @@ class AttachmentVoter extends Voter
             return true;
         }
 
-        $signature = $this->attachmentSignatureRepository->findOneBy(['signatory' => $user]);
+        $signature = $this->attachmentSignatureRepository->findOneBy([
+            'attachment' => $attachment,
+            'signatory'  => $user,
+        ]);
 
         if ($signature) {
             return true;
