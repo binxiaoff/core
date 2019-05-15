@@ -43,12 +43,13 @@ final class Version20190425125334 extends AbstractMigration
         $this->addSql('ALTER TABLE loans ADD CONSTRAINT FK_82C24DBCF12E799E FOREIGN KEY (id_project) REFERENCES project (id)');
         $this->addSql('SET FOREIGN_KEY_CHECKS = 1');
 
-        $this->addSql("INSERT INTO market_segment (id, label) VALUES (1, 'Collectivité Publique'),
-                (2, 'Énergie'),
-                (3, 'Corporate'),
-                (4, 'LBO'),
-                (5, 'Promotion immobilière'),
-                (6, 'Infrastructure')");
+        $this->addSql("INSERT INTO market_segment (id, label) VALUES
+          (1, 'public_collectivity'),
+          (2, 'energy'),
+          (3, 'corporate'),
+          (4, 'lbo'),
+          (5, 'real_estate_development'),
+          (6, 'infrastructure')");
     }
 
     public function down(Schema $schema): void

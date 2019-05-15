@@ -22,13 +22,6 @@ final class Version20190506125030 extends AbstractMigration
         $this->abortIf('mysql' !== $this->connection->getDatabasePlatform()->getName(), 'Migration can only be executed safely on \'mysql\'.');
 
         $this->addSql(
-            <<<'MARKETSEGMENT'
-            INSERT IGNORE INTO market_segment (id, label)
-              VALUES (1, 'public_collectivity'), (2, 'energy'), (3, 'corporate'), (4, 'lbo'), (5, 'real_estate_development'), (6, 'infrastructure');
-MARKETSEGMENT
-        );
-
-        $this->addSql(
             <<<'TRANSLATIONS'
             INSERT IGNORE INTO translations (locale, section, name, translation, added) 
             VALUES
