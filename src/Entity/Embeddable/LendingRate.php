@@ -47,6 +47,17 @@ class LendingRate
     protected $margin;
 
     /**
+     * Have floor = X. Floor the indexed rate + margin to X if it's lower than X.
+     *
+     * @var string
+     *
+     * @ORM\Column(type="decimal", precision=4, scale=2, nullable=true)
+     *
+     * @Assert\Range(min="-99.99", max="99.99")
+     */
+    protected $floor;
+
+    /**
      * @return string|null
      */
     public function getIndexType(): ?string
@@ -82,6 +93,26 @@ class LendingRate
     public function setMargin(string $margin): self
     {
         $this->margin = $margin;
+
+        return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getFloor(): ?string
+    {
+        return $this->floor;
+    }
+
+    /**
+     * @param string|null $floor
+     *
+     * @return self
+     */
+    public function setFloor(?string $floor): self
+    {
+        $this->floor = $floor;
 
         return $this;
     }

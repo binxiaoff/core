@@ -6,6 +6,7 @@
             <th>Montant</th>
             <th>Taux de référence</th>
             <th>Marge</th>
+            <th>Flooré à</th>
             {#<th>Commission ponctuelle</th>
             <th>Commission récurrente</th>#}
             {% if is_granted('manage_bids', project) and displayAction == true %}
@@ -20,6 +21,7 @@
                 <td>{{ offer.money.amount|localizedcurrencywithprecision(0, offer.money.currency) }}</td>
                 <td>{{ ('interest-rate-index_' ~ offer.rate.indexType)|trans }}</td>
                 <td>{{ offer.rate.margin|localizednumberwithprecision(2) }}&nbsp;%</td>
+                <td>{% if offer.rate.floor is same as(null) %}non défini{% else %}{{ offer.rate.floor|localizednumberwithprecision(2)|default('non défini') }}&nbsp;%{% endif %}</td>
                 {#<td>{{ offer.oneTimeFeeTotalRate|localizednumberwithprecision(2) }}&nbsp;%</td>
                 <td data-toggle="tooltip" title="{% if offer.recurringFeeTotalRate > 0 %}soit {{ (offer.recurringFeeTotalRate * (offer.amount / 100) / 100)|localizednumber }}&nbsp;€{% endif %}">
                     {{ offer.recurringFeeTotalRate|localizednumberwithprecision(2) }}&nbsp;%
