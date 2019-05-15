@@ -1,7 +1,7 @@
 {# Set this to 'person' to make included partials' JS UX functionality compatible with this form #}
 {% set idClientType = 'person' %}
 
-{% form_theme identityForm '/forms/fields.html.twig' %}
+{% form_theme identityForm '/_unilend/forms/fields.html.twig' %}
 
 {% do identityForm.housedByThirdPerson.setRendered %}
 

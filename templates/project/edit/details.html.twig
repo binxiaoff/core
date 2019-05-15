@@ -1,0 +1,671 @@
+{% extends 'layouts/_page_with_side_bar.html.twig' %}
+
+{% set page = {
+    id: 'demo-project-request-details',
+    classNames: ''
+} %}
+
+{% block dashboardContent %}
+    <section class="dashboard-tabs tabs">
+        <h4>
+            {{ project.borrowerCompany.name }}
+            <small>
+                {% if project.isEditable %}
+                    <a href="#" id="title" class="editable" data-type="text" data-inputclass="input-field">{{ project.title }}</a>
+                {% else %}
+                    {{ project.title }}
+                {% endif %}
+            </small>
+            <div class="bubble pull-right">
+                {% include 'partials/market_bubble.html.twig' with {'market': project.marketSegment.label} %}
+            </div>
+        </h4>
+        <div class="row dashboard-tab-pane">
+            <div id="project-breadcrumb" class="form-project-create-nav tab-nav">
+                <div class="{% if project.currentProjectStatusHistory.status > constant('\\Unilend\\Entity\\ProjectStatusHistory::STATUS_REQUESTED') %}complete{% else %}active{% endif %}">Dépôt</div>
+                <div class="{% if project.currentProjectStatusHistory.status > constant('\\Unilend\\Entity\\ProjectStatusHistory::STATUS_PUBLISHED') %}complete{% elseif project.currentProjectStatusHistory.status == constant('\\Unilend\\Entity\\ProjectStatusHistory::STATUS_PUBLISHED') %}active{% endif %}">
+                    Financement
+                </div>
+                <div class="{% if project.currentProjectStatusHistory.status > constant('\\Unilend\\Entity\\ProjectStatusHistory::STATUS_FUNDED') %}complete{% elseif project.currentProjectStatusHistory.status == constant('\\Unilend\\Entity\\ProjectStatusHistory::STATUS_FUNDED') %}active{% endif %}">
+                    Contractualisation
+                </div>
+                <div class="{% if project.currentProjectStatusHistory.status > constant('\\Unilend\\Entity\\ProjectStatusHistory::STATUS_CONTRACTS_REDACTED') %}complete{% elseif project.currentProjectStatusHistory.status == constant('\\Unilend\\Entity\\ProjectStatusHistory::STATUS_CONTRACTS_REDACTED') %}active{% endif %}">
+                    Signature
+                </div>
+                <div class="{% if project.currentProjectStatusHistory.status > constant('\\Unilend\\Entity\\ProjectStatusHistory::STATUS_CONTRACTS_SIGNED') %}complete{% elseif project.currentProjectStatusHistory.status == constant('\\Unilend\\Entity\\ProjectStatusHistory::STATUS_CONTRACTS_SIGNED') %}active{% endif %}">
+                    Remboursement
+                </div>
+                <div class="{% if project.currentProjectStatusHistory.status in [constant('\\Unilend\\Entity\\ProjectStatusHistory::STATUS_FINISHED'), constant('\\Unilend\\Entity\\ProjectStatusHistory::STATUS_LOST')] %}complete{% endif %}">
+                    Terminé
+                </div>
+            </div><!-- /.form-project-create-nav -->
+        </div>
+        <div class="dashboard-tabs-content tab-content">
+            <div class="row">
+                <article class="dashboard-tab-pane col-lg-8 col-md-8">
+                    <div class="panel" data-equal-height>
+                        <div class="panel-content">
+                            <div class="row columns-with-space margin-10-t">
+                                <dl class="col-md-6 col-lg-6">
+                                    <dt>Date de dépôt</dt>
+                                    <dd>{{ project.added|localizeddate('short', 'short') }}</dd>
+                                </dl>
+                                <dl class="col-md-6 col-lg-6">
+                                    <dt>Date butoir de réponse</dt>
+                                    <dd>
+                                        {% if project.isEditable %}
+                                            <a href="#" id="response-date" class="editable" data-type="text" data-pk="{{ project.id }}" data-inputclass="input-field">
+                                                {% if project.replyDeadline %}{{ project.replyDeadline|localizeddate('short', 'none') }}{% endif %}
+                                            </a>
+                                        {% elseif project.replyDeadline %}
+                                            {{ project.replyDeadline|localizeddate('short', 'none') }}
+                                        {% else %}
+                                            N/A
+                                        {% endif %}
+                                    </dd>
+                                </dl>
+                            </div>
+                            <div class="row columns-with-space margin-10-t">
+                                <dl class="col-md-6 col-lg-6">
+                                    <dt>Date de closing envisagée</dt>
+                                    <dd>
+                                        {% if project.isEditable %}
+                                            <a href="#" id="closing-date" class="editable" data-type="text" data-pk="{{ project.id }}" data-inputclass="input-field">
+                                                {% if project.expectedClosingDate %}{{ project.expectedClosingDate|localizeddate('short', 'none') }}{% endif %}
+                                            </a>
+                                        {% elseif project.expectedClosingDate %}
+                                            {{ project.expectedClosingDate|localizeddate('short', 'none') }}
+                                        {% else %}
+                                            N/A
+                                        {% endif %}
+                                    </dd>
+                                </dl>
+                            </div>
+
+                            {#<div class="row margin-10-t">
+                                <dt>Ce dossier fait déjà l‘objet d‘une demande de garantie auprès de FONCARIS</dt>
+                                <dd>
+                                    {% if project.isEditable %}
+                                        <a href="#" id="has-guarantee" data-type="checklist" data-value="{{ project.fondsPropresDeclaraClient ? '1' : '' }}"></a>
+                                    {% elseif project.fondsPropresDeclaraClient %}
+                                        Oui
+                                    {% else %}
+                                        Non
+                                    {% endif %}
+                                </dd>
+                            </div>#}
+                            <h4 class="h4 margin-20-t">
+                                Description
+                                {% if project.isEditable %}
+                                    <a href="#" id="edit-description"><span class="icon fa-edit-u32"></span></a>
+                                {% endif %}
+                            </h4>
+                            <div class="row description-container">
+                                <em>
+                                    {% if project.isEditable %}
+                                        <span href="#" id="description" class="editable" data-type="textarea" data-toggle="manual" data-inputclass="input-field">{{ project.description }}</span>
+                                    {% else %}
+                                        {{ project.description|nl2br }}
+                                    {% endif %}
+                                </em>
+                            </div>
+                        </div><!-- /.panel-content -->
+                    </div><!-- /.panel -->
+                </article><!-- /.dashboard-tab-pane -->
+                <article class="dashboard-tab-pane col-lg-4 col-md-4" style="border-left: solid 2px #eceaed;">
+                    <div class="panel" style="position: relative; min-height: 270px;" data-equal-height>
+                        <h3 class="margin-10-t">Raccourcis</h3>
+                        <div class="panel-content">
+                            <ul>
+                                <li><a href="#article-scoring">Notation</a></li>
+                                {#<li><a href="#article-fees">Frais / commissions</a></li>#}
+                                <li><a href="#article-visibility">Visibilité</a></li>
+                                {% if project.currentProjectStatusHistory.status >= constant('\\Unilend\\Entity\\ProjectStatusHistory::STATUS_PUBLISHED') %}
+                                    <li><a href="#article-bids">Offres de participation</a></li>
+                                {% endif %}
+                                <li><a href="#article-documents">Documents</a></li>
+                                <li><a href="#article-electronic-signature">Signature électronique</a></li>
+                                <li><a href="#article-discussions">Discussions</a></li>
+                            </ul>
+                            <div class="row" style="position: absolute; bottom: 30px; left: 30px; right: 30px;">
+                                {% if project.currentProjectStatusHistory.status <= constant('\\Unilend\\Entity\\ProjectStatusHistory::STATUS_FUNDED') %}
+                                    <a href="{{ path('edit_project_status_abandon', {'hash': project.hash}) }}" class="btn-default btn-shape-xs margin-10-t" style="width: 100%;">Abandonner le dossier</a>
+                                {% endif %}
+                                {% if project.currentProjectStatusHistory.status == constant('\\Unilend\\Entity\\ProjectStatusHistory::STATUS_REQUESTED') %}
+                                    <a href="{{ path('edit_project_status_publish', {'hash': project.hash}) }}" class="btn-primary btn-shape-xs margin-10-t" style="width: 100%;">Proposer au financement</a>
+                                {% endif %}
+                                {% if project.currentProjectStatusHistory.status == constant('\\Unilend\\Entity\\ProjectStatusHistory::STATUS_PUBLISHED') %}
+                                    <a href="{{ path('edit_project_status_funded', {'hash': project.hash}) }}" class="btn-primary btn-shape-xs margin-10-t" style="width: 100%;">Clôturer la syndication</a>
+                                {% endif %}
+                                {% if project.currentProjectStatusHistory.status == constant('\\Unilend\\Entity\\ProjectStatusHistory::STATUS_FUNDED') %}
+                                    <a href="{{ path('edit_project_status_contracts_redacted', {'hash': project.hash}) }}" class="btn-primary btn-shape-xs margin-10-t" style="width: 100%;">Signer les contrats</a>
+                                {% endif %}
+                                {% if project.currentProjectStatusHistory.status == constant('\\Unilend\\Entity\\ProjectStatusHistory::STATUS_CONTRACTS_REDACTED') %}
+                                    <a href="{{ path('edit_project_status_signed', {'hash': project.hash}) }}" class="btn-primary btn-shape-xs margin-10-t" style="width: 100%;">Commencer le remboursement</a>
+                                {% endif %}
+                                {% if project.currentProjectStatusHistory.status == constant('\\Unilend\\Entity\\ProjectStatusHistory::STATUS_CONTRACTS_SIGNED') %}
+                                    <a href="{{ path('edit_project_status_finished', {'hash': project.hash}) }}" class="btn-primary btn-shape-xs margin-10-t" style="width: 100%;">Mettre fin au
+                                        remboursement</a>
+                                    <a href="{{ path('edit_project_status_lost', {'hash': project.hash}) }}" class="btn-primary btn-shape-xs margin-10-t" style="width: 100%;">Passer en perte</a>
+                                {% endif %}
+                            </div>
+                        </div><!-- /.panel-content -->
+                    </div><!-- /.panel -->
+                </article><!-- /.dashboard-tab-pane -->
+            </div><!-- /.row -->
+            <article class="dashboard-tab-pane">
+                <div class="panel">
+                    <div class="panel-content">
+                        {{ form_start(trancheForm) }}
+                        {{ form_row(trancheForm.tranches) }}
+                        <div class="text-align-right">
+                            <button type="submit" class="btn-primary btn-shape-xs" data-spinnerbutton>Confirmer</button>
+                        </div>
+                        {{ form_end(trancheForm) }}
+                    </div><!-- /.panel-content -->
+                </div><!-- /.panel -->
+            </article><!-- /.dashboard-tab-pane -->
+            <article class="dashboard-tab-pane" id="article-scoring">
+                <div class="panel">
+                    <fieldset>
+                        <h3 class="margin-10-t">Notation</h3>
+                        <div class="row row-multi-col-computer scoring">
+                            <dl class="col-md-4 col-lg-4">
+                                <dt>Arrangeur</dt>
+                                <dd>
+                                    {% if project.isEditable %}
+                                        <a href="#" id="arranger" data-type="select">
+                                            {% if project.arranger %}{{ project.arranger.company.name }}{% endif %}
+                                        </a>
+                                    {% elseif project.arranger %}
+                                        {{ project.arranger.company.name }}
+                                    {% else %}
+                                        N/A
+                                    {% endif %}
+                                </dd>
+                            </dl>
+                            <dl class="col-md-4 col-lg-4">
+                                <dt>RUN</dt>
+                                <dd>
+                                    {% if project.isEditable %}
+                                        <a href="#" id="run" data-type="select">
+                                            {% if project.run %}
+                                                {{ project.run.company.name }}
+                                            {% endif %}
+                                        </a>
+                                    {% elseif project.run %}
+                                        {{ project.run.company.name }}
+                                    {% else %}
+                                        N/A
+                                    {% endif %}
+                                </dd>
+                            </dl>
+                            <dl class="col-md-4 col-lg-4">
+                                <dt>Note</dt>
+                                <dd>
+                                    {% if project.isEditable(app.user) and is_granted('rate', project) %}
+                                        <a href="#" class="editable" id="scoring" data-type="text" data-inputclass="input-field">
+                                            {% if project.internalRatingScore is not empty %}
+                                                {{ project.internalRatingScore }}
+                                            {% endif %}
+                                        </a>
+                                    {% elseif project.internalRatingScore is not empty %}
+                                        {{ project.internalRatingScore }}
+                                    {% else %}
+                                        N/A
+                                    {% endif %}
+                                </dd>
+                            </dl>
+                        </div>
+                    </fieldset>
+                </div>
+            </article><!-- /.dashboard-tab-pane -->
+            {#<article class="dashboard-tab-pane" id="article-fees">
+                <div class="panel">
+                    <h3 class="margin-10-t">Frais / commissions</h3>
+                    {% if project.projectPercentFees is not empty %}
+                        <table class="table-myoffers">
+                            <tbody>
+                            <tr class="my-offers-bid-row">
+                                <td>Type</td>
+                                <td>Taux</td>
+                                <td>Récurrent</td>
+                                <td></td>
+                            </tr>
+                            {% for projectPercentFee in project.projectPercentFees %}
+                                <tr>
+                                    <td>{{ ('fee-type_' ~ projectPercentFee.percentFee.type.label)|trans }}</td>
+                                    <td>{{ projectPercentFee.percentFee.rate|localizednumberwithprecision(2) }}
+                                        &nbsp;%{% if projectPercentFee.percentFee.isRecurring == false %}&nbsp;(soit {{ (projectPercentFee.percentFee.rate * project.amount / 100)|localizedcurrency('EUR') }}){% endif %}</td>
+                                    <td>{% if projectPercentFee.percentFee.isRecurring %} Oui {% else %} Non {% endif %}</td>
+                                    <td><a href="{{ path('project_fees_remove', {hash: project.hash, projectPercentFee: projectPercentFee.id}) }}">Annuler</a></td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table><!-- /.table-myoffers -->
+                    {% else %}
+                        <div class="message-info">Vous n‘avez aucun frais associé à votre dossier.</div>
+                    {% endif %}
+                    <h5 class="h4 margin-20-t">Ajouter des frais ou commissions</h5>
+                    {% set feesTemplate = include('project/partials/fees/new_project_fees.html.twig') %}
+                    <div class="row row-multi-col-computer fees" data-prototype="{{ feesTemplate|e('html_attr') }}"></div>
+                </div>
+            </article><!-- /.dashboard-tab-pane -->#}
+            <article class="dashboard-tab-pane" id="article-visibility">
+                <div class="panel">
+                    <form action="{{ path('edit_project_visibility', {'hash': project.hash}) }}" method="post">
+                        <h3 class="margin-10-t">Visibilité</h3>
+                        {% if project.isEditable %}
+                            <div class="row">
+                                <div class="message-info">Sélectionnez les entités qui auront la possibilité de se positionner pour le financement du projet. Une fois le projet en cours de
+                                    financement, vous ne pourrez plus retirer d‘entité de la liste.
+                                </div>
+                            </div>
+                            <div class="row">
+                                <label>
+                                    <input type="checkbox" class="group-select" data-companies="4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42">
+                                    Caisses régionales
+                                </label>
+                                <label>
+                                    <input type="checkbox" class="group-select" data-companies="10,11,12,14,26,42">
+                                    Amicale Centre
+                                </label>
+                                <label>
+                                    <input type="checkbox" class="group-select" data-companies="5,9,22,27,30,31,33,34">
+                                    Amicale Nord & Est
+                                </label>
+                                <label>
+                                    <input type="checkbox" class="group-select" data-companies="6,8,15,16,18,19,21,23,24,28,29,41">
+                                    Amicale Ouest
+                                </label>
+                                <label>
+                                    <input type="checkbox" class="group-select" data-companies="4,7,13,17,20,25,32,35,36,37,38,39,40">
+                                    Amicale Sud
+                                </label>
+                            </div>
+                            <hr>
+                        {% endif %}
+                        <div class="row">
+                            {% set lendersByColumn = (regionalBanks|length / 3)|round(0, 'ceil') %}
+                            <div class="col-lg-4 col-md-4">
+                                {% for lender in regionalBanks %}
+                                    {% if loop.index <= lendersByColumn %}
+                                        <div>
+                                            <label>
+                                                <input type="checkbox" name="visibility[]" value="{{ lender.idCompany }}" class="visibility-bank"
+                                                        {% if lender in project.lenderCompanies %} checked{% endif %}
+                                                        {% if
+                                                            false == project.isEditable
+                                                            or project.arranger is not empty and project.arranger.company == lender
+                                                            or project.run is not empty and project.run.company == lender %} disabled{% endif %}>
+                                                {{ lender.name }}
+                                            </label>
+                                        </div>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                            <div class="col-lg-4 col-md-4">
+                                {% for lender in regionalBanks %}
+                                    {% if loop.index > lendersByColumn and loop.index <= 2 * lendersByColumn %}
+                                        <div>
+                                            <label>
+                                                <input type="checkbox" name="visibility[]" value="{{ lender.idCompany }}" class="visibility-bank"
+                                                        {% if lender in project.lenderCompanies %} checked{% endif %}
+                                                        {% if
+                                                            false == project.isEditable
+                                                            or project.arranger is not empty and project.arranger.company == lender
+                                                            or project.run is not empty and project.run.company == lender %} disabled{% endif %}>
+                                                {{ lender.name }}
+                                            </label>
+                                        </div>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                            <div class="col-lg-4 col-md-4">
+                                {% for lender in regionalBanks %}
+                                    {% if loop.index > 2 * lendersByColumn %}
+                                        <div>
+                                            <label>
+                                                <input type="checkbox" name="visibility[]" value="{{ lender.idCompany }}" class="visibility-bank"
+                                                        {% if lender in project.lenderCompanies %} checked{% endif %}
+                                                        {% if
+                                                            false == project.isEditable
+                                                            or project.arranger is not empty and project.arranger.company == lender
+                                                            or project.run is not empty and project.run.company == lender %} disabled{% endif %}>
+                                                {{ lender.name }}
+                                            </label>
+                                        </div>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% if project.isEditable %}
+                            <div class="row margin-20-t text-align-right">
+                                <button type="submit" class="btn-primary btn-shape-xs" data-spinnerbutton>Modifier la visibilité</button>
+                            </div>
+                        {% endif %}
+                    </form>
+                </div>
+            </article><!-- /.dashboard-tab-pane -->
+            {% if project.currentProjectStatusHistory.status >= constant('\\Unilend\\Entity\\ProjectStatusHistory::STATUS_PUBLISHED') and project.tranches|length > 0 %}
+                <article class="dashboard-tab-pane" id="article-bids">
+                    <div class="panel">
+                        <div class="panel-content">
+                            <h3 class="margin-10-t">Offres de participation</h3>
+                            {% for tranche in project.tranches %}
+                                {% include 'project/partials/bids/bids_list.html.twig' with {tranche: tranche} %}
+                            {% endfor %}
+                        </div><!-- /.project-single-content -->
+                    </div>
+                </article><!-- /.dashboard-tab-pane -->
+            {% endif %}
+            <article class="dashboard-tab-pane" id="article-documents">
+                <div class="panel">
+                    {{ form_start(documentForm) }}
+                    <fieldset>
+                        <h3 class="margin-10-t">Documents</h3>
+                        {% for projectAttachment in projectAttachments %}
+                            {% set attachment = projectAttachment.attachment %}
+                            <div class="row">
+                                <span class="icon fa-file-u"></span>
+                                <a href="{{ path('document_download', {'id': projectAttachment.attachment.id, 'originalName': projectAttachment.attachment.originalName}) }}">
+                                    {{ attachment.description }}
+                                </a>
+                                <small>({{ attachment.added|localizeddate('short', 'short') }})</small>
+                            </div>
+                        {% else %}
+                            <div class="message-info">Vous n‘avez aucun document associé à votre dossier.</div>
+                        {% endfor %}
+                        <h5 class="h4 margin-20-t">Ajouter des documents</h5>
+                        {{ form_row(documentForm.projectAttachments) }}
+                    </fieldset>
+                    <div class="text-align-right">
+                        <button type="submit" class="btn-primary btn-shape-xs" data-spinnerbutton>Charger</button>
+                    </div>
+                    {{ form_end(documentForm) }}
+                </div><!-- /.panel -->
+            </article><!-- /.dashboard-tab-pane -->
+            <article class="dashboard-tab-pane" id="article-electronic-signature">
+                <div class="panel">
+                    <h3 class="margin-10-t">Signature électronique</h3>
+                    {% if signatureAttachments is not empty %}
+                        <table class="table" style="table-layout: auto;">
+                            <thead>
+                            <tr>
+                                <th>Document</th>
+                                <th>Signataire</th>
+                                <th>Entité</th>
+                                <th class="text-align-center">Statut</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% set attachment = null %}
+                            {% for signatureAttachment in signatureAttachments %}
+                                {% set signatures = signatureAttachment.attachment.signatures %}
+                                {% for signature in signatures %}
+                                    <tr{% if loop.parent.loop.index % 2 == 0 %} class="alt"{% endif %}>
+                                        {% if signatureAttachment.attachment != attachment %}
+                                            {% set attachment = signatureAttachment.attachment %}
+                                            <td rowspan="{{ signatures|length }}">
+                                                <a href="{{ path('document_download', {'id': signatureAttachment.attachment.id, 'originalName': signatureAttachment.attachment.originalName}) }}">
+                                                    {{ attachment.description }}
+                                                </a>
+                                                <br>
+                                                <small>({{ attachment.added|localizeddate('short', 'short') }})</small>
+                                            </td>
+                                        {% endif %}
+                                        {% set signatory = signature.signatory %}
+                                        <td>{{ signatory.firstName }} {{ signatory.lastName }}</td>
+                                        <td>{{ signatory.company.name }}</td>
+                                        <td class="text-align-center">
+                                            {% set iconName = 'fa-clock-u' %}
+                                            {% set iconColor = '#f7941e' %}
+                                            {% set tooltipText = 'En attente de signature' %}
+
+                                            {% if signature.status == constant('\\Unilend\\Entity\\AttachmentSignature::STATUS_SIGNED') %}
+                                                {% set iconName = 'fa-check-u' %}
+                                                {% set iconColor = '#00a14b' %}
+                                                {% set tooltipText = 'Signé' %}
+                                            {% elseif signature.status == constant('\\Unilend\\Entity\\AttachmentSignature::STATUS_REFUSED') %}
+                                                {% set iconName = 'fa-refused-u' %}
+                                                {% set iconColor = '#ed1c24' %}
+                                                {% set tooltipText = 'Refusé' %}
+                                            {% endif %}
+                                            <span class="icon {{ iconName }}" style="color: {{ iconColor }};" title="{{ tooltipText|e }}" data-toggle="tooltip"></span>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            {% endfor %}
+                            </tr>
+                            </tbody>
+                        </table>
+                    {% endif %}
+                    <div class="text-align-right margin-20-t">
+                        <button type="button" class="btn-primary btn-shape-xs" data-modal-toggle="#document-signature-dialog">Faire signer un nouveau document</button>
+                    </div>
+                </div>
+            </article><!-- /.dashboard-tab-pane -->
+            <article class="dashboard-tab-pane" id="article-discussions">
+                <div class="panel" style="font-size: 16px;">
+                    <h3 class="margin-10-t">Discussions</h3>
+                    <div id="comments-container"></div>
+                </div><!-- /.panel -->
+            </article><!-- /.dashboard-tab-pane -->
+        </div><!-- /.dashboard-tabs-content -->
+    </section><!-- /.dashboard-tabs -->
+{% endblock %}
+
+{% block modals %}
+    {% include 'attachment/signature/partials/popup_document_upload.html.twig' %}
+{% endblock %}
+
+{% block pageHeadScripts %}
+    {% include 'project/partials/comment/styles.html.twig' %}
+    <link href="//cdnjs.cloudflare.com/ajax/libs/x-editable/1.5.0/jquery-editable/css/jquery-editable.css" rel="stylesheet"/>
+    <link href="//cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.8.0/css/bootstrap-datepicker.min.css" rel="stylesheet"/>
+    <style>
+        a.editable-click {
+            color: #302a32 !important;
+            border-bottom: dashed 1px #302a32;
+        }
+
+        a.editable-click:hover {
+            border-bottom: dashed 1px #2bc9af;
+        }
+
+        h4 a.editable-click {
+            color: #2bc9af !important;
+            border-bottom: dashed 1px #2bc9af;
+        }
+
+        h4 a.editable-click:hover {
+            border-bottom: dashed 1px #302a32;
+        }
+
+        .description-container {
+            margin-bottom: -60px;
+        }
+
+        .description-container .editable-container.editable-inline,
+        .description-container .editable-input {
+            width: 100%;
+        }
+
+        .bubble {
+            display: inline-block;
+            border-radius: 12px;
+            padding: 3px 10px;
+            line-height: 18px;
+            color: #fbf9fb;
+            font-size: 13px;
+            font-weight: 900;
+        }
+
+        dt {
+            font-weight: 700;
+        }
+
+        dd {
+            font-size: 16px;
+        }
+
+        #project-breadcrumb {
+            text-align: center;
+            display: flex;
+            margin: 0 0 22px 0;
+        }
+
+        #project-breadcrumb div {
+            display: block;
+            flex: 1;
+            float: left;
+            height: 40px;
+            background: #c5eee4;
+            text-align: center;
+            padding: 10px 0 0 40px;
+            position: relative;
+            margin: 0 10px 0 0;
+            font-size: 16px;
+            text-decoration: none;
+            color: #fff;
+        }
+
+        #project-breadcrumb div:after {
+            content: "";
+            border-top: 25px solid transparent;
+            border-bottom: 25px solid transparent;
+            border-left: 25px solid #c5eee4;
+            position: absolute;
+            right: -25px;
+            top: 0;
+            z-index: 1;
+        }
+
+        #project-breadcrumb div:before {
+            content: "";
+            border-top: 25px solid transparent;
+            border-bottom: 25px solid transparent;
+            border-left: 25px solid #eceaed;
+            position: absolute;
+            left: 0;
+            top: 0;
+        }
+
+        #project-breadcrumb div:first-child {
+            padding-left: 22px;
+        }
+
+        #project-breadcrumb div:first-child:before {
+            display: none;
+        }
+
+        #project-breadcrumb div:last-child {
+            margin-right: 0;
+            padding-right: 26px;
+        }
+
+        #project-breadcrumb div:last-child:after {
+            display: none;
+        }
+
+        #project-breadcrumb div.active {
+            background: #2bc9af;
+        }
+
+        #project-breadcrumb div.active:after {
+            border-left-color: #2bc9af;
+        }
+
+        #project-breadcrumb div.complete {
+            background: #2ba48f;
+        }
+
+        #project-breadcrumb div.complete:after {
+            border-left-color: #2ba48f;
+        }
+
+        .risk-analysis-container .editable-container,
+        .risk-analysis-container .editable-container .editable-input {
+            width: 100%;
+        }
+    </style>
+{% endblock %}
+
+{% block pageScripts %}
+    {% include 'project/partials/comment/scripts.html.twig' %}
+    <script src="{{ asset('js/vendor/jquery.poshytip.min.js', 'gulp') }}"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/x-editable/1.5.0/jquery-editable/js/jquery-editable-poshytip.js"></script>
+    <script>{% include 'project/partials/bids/actions.js.twig' %}</script>
+    <script>{% include 'project/partials/fees/fees.js.twig' %}</script>
+    <script>{% include 'project/partials/attachment/add_attachment.js.twig' %}</script>
+    <script>{% include 'project/partials/tranche/edit_tranches.js.twig' %}</script>
+    <script>
+        $(function () {
+            $.fn.editable.defaults.mode = 'inline'
+
+            var editableConfig = {
+                pk: {{ project.id }},
+                url: '{{ path('edit_project_update', {'hash': project.hash}) }}',
+                success: function (response) {
+                    if (response.newValue)
+                        return {
+                            newValue: response.newValue
+                        }
+                },
+                onblur: 'submit',
+                showbuttons: false,
+                emptytext: 'Non défini'
+            }
+
+            $('.editable').editable(editableConfig)
+
+
+            $('#edit-description').on('click', function (event) {
+                event.stopPropagation()
+                event.preventDefault()
+                $('#description').editable('toggle')
+                $('#description').on('hidden', function () {
+                    $(window).trigger('resize')
+                })
+            })
+
+            $('#arranger').editable(Object.assign(editableConfig, {
+                value: '{% if project.arranger %}{{ project.arranger.company }}{% endif %}',
+                source: [
+                    {value: '', text: ''},
+                    {% for arranger in arrangers %}
+                    {value: {{ arranger.idCompany }}, text: '{{ arranger.name|e('js') }}'},
+                    {% endfor %}
+                ]
+            }))
+
+            $('#run').editable(Object.assign(editableConfig, {
+                value: '{% if project.run %}{{ project.run.company }}{% endif %}',
+                source: [
+                    {value: '', text: ''},
+                    {% for runCompany in runs %}
+                    {value: {{ runCompany.idCompany }}, text: '{{ runCompany.name|e('js') }}'},
+                    {% endfor %}
+                ]
+            }))
+
+            $('#has-guarantee').editable(Object.assign(editableConfig, {
+                placement: 'right',
+                source: [
+                    {value: 1, text: 'Oui'}
+                ],
+                emptytext: 'Non'
+            }))
+
+            $('.group-select').on('change', function () {
+                var $groupSelect = $(this)
+                var companies = $groupSelect.data('companies').split(',')
+                var checked = $groupSelect.is(':checked')
+
+                $.each(companies, function (index, value) {
+                    $('[value=' + value + '].visibility-bank').not(':disabled').prop('checked', checked)
+                })
+            })
+        })
+    </script>
+{% endblock %}

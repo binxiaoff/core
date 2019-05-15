@@ -5,7 +5,7 @@ id: 'user-preter-profile',
 classNames: 'user-preter-profile'
 } %}
 
-{% form_theme forms.identity '/forms/fields.html.twig' %}
+{% form_theme forms.identity '/_unilend/forms/fields.html.twig' %}
 {% if forms.identity.vars.valid == false %}
     {% set identityFormCollapse = 'in' %}
     {% set identityViewCollapse = '' %}
@@ -14,7 +14,7 @@ classNames: 'user-preter-profile'
     {% set identityViewCollapse = 'in' %}
 {% endif %}
 
-{% form_theme forms.mainAddress '/forms/fields.html.twig' %}
+{% form_theme forms.mainAddress '/_unilend/forms/fields.html.twig' %}
 {% if forms.mainAddress.vars.valid == false %}
     {% set fiscalAddressFormCollapse = 'in' %}
     {% set fiscalAddressViewCollapse = '' %}
@@ -24,7 +24,7 @@ classNames: 'user-preter-profile'
 {% endif %}
 
 {% if client.type in [constant('\\Unilend\\Entity\\Clients::TYPE_PERSON'), constant('\\Unilend\\Entity\\Clients::TYPE_PERSON_FOREIGNER')] %}
-    {% form_theme forms.contact '/forms/fields.html.twig' %}
+    {% form_theme forms.contact '/_unilend/forms/fields.html.twig' %}
     {% if forms.contact.vars.valid == false %}
         {% set contactFormCollapse = 'in' %}
         {% set contactViewCollapse = '' %}

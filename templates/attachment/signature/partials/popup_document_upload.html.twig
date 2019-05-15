@@ -1,0 +1,83 @@
+<div id="document-signature-dialog" data-modal data-modal-width="800" data-modal-minwidth="800" data-modal-maxwidth="800" data-modal-maxheight="1000" style="padding: 10px;">
+    <form action="{{ path('signature_upload', {'project': project.hash}) }}" method="post" enctype="multipart/form-data">
+        <div class="modal-header">
+            <h3 class="dialog-title">Chargement d‘un document à signer</h3>
+        </div>
+        <div class="modal-body">
+            <div class="form-field row" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="typedFile">
+                <div class="col-lg-4 col-md-4">
+                    <label for="filetype-electronicSignature">
+                        Type de document
+                        <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span>
+                    </label>
+                </div>
+                <div class="col-lg-8 col-md-8">
+                    {% include 'attachment/signature/partials/project_attachment_select.html.twig' with {'name': 'electronicSignature'} %}
+                </div>
+            </div>
+            <div class="form-field row" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="typedFile">
+                <div class="col-lg-4 col-md-4">
+                    <label for="filename-electronicSignature">Nom du document</label>
+                </div>
+                <div class="col-lg-8 col-md-8">
+                    <input id="filename-electronicSignature" type="text" name="filename[electronicSignature]" class="input-field">
+                </div>
+            </div>
+            <div class="form-field row" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="typedFile">
+                <div class="col-lg-4 col-md-4">
+                    <label for="filetype-electronicSignature">
+                        Fichier
+                        <small>(format PDF)</small>
+                        <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span>
+                    </label>
+                </div>
+                <div class="col-lg-8 col-md-8">
+                    <div class="custom-input-file" id="form-file" data-fileattach data-fileattach-inputname="extraElectronicSignature" data-fileattach-maxfiles="1" data-fileattach-filetypes="pdf" data-formvalidation-required='input[type="file"][name="file[electronicSignature]"]' aria-labelledby="form-extrafiles-document-file-label"></div><!-- /.ui-fileattach -->
+                </div>
+            </div>
+            <h4 class="h4">Destinataires</h4>
+            {% if project.arranger is not empty or project.run is not empty %}
+                <div class="row">
+                    {% if project.arranger is not empty %}
+                        <div class="col-lg-6 col-md-6">
+                            <strong class="row">Arrangeur</strong>
+                            <label class="row">
+                                <input type="checkbox" name="signatory[]" value="{{ project.arranger.company.idCompany }}"> {{ project.arranger.company.name }}
+                            </label>
+                        </div>
+                    {% endif %}
+                    {% if project.run is not empty %}
+                        <div class="col-lg-6 col-md-6">
+                            <strong class="row">RUN</strong>
+                            <label class="row">
+                                <input type="checkbox" name="signatory[]" value="{{ project.run.company.idCompany }}"> {{ project.run.company.name }}
+                            </label>
+                        </div>
+                    {% endif %}
+                </div>
+            {% endif %}
+            <div class="row">
+                <strong>Prêteur</strong>
+            </div>
+            <div class="row">
+                {% for participant in project.projectParticipants %}
+                    {% if
+                        participant.hasRole(constant('Unilend\\Entity\\ProjectParticipant::COMPANY_ROLE_LENDER'))
+                        and participant != project.arranger
+                        and participant != project.run
+                    %}
+                        <div class="col-lg-6 col-md-6">
+                            <label>
+                                <input type="checkbox" name="signatory[]" value="{{ participant.company.idCompany }}"> {{ participant.company.name }}
+                            </label>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+        <footer class="modal-footer">
+            <a href="javascript:;" class="btn-default btn-shape-xs" data-modal-doactioncancel>Annuler</a>
+            <button type="submit" class="btn-primary btn-shape-xs">Envoyer la demande de signature</button>
+        </footer>
+    </form>
+</div><!-- /#document-signature-dialog -->

@@ -5,7 +5,7 @@ id: 'user-preter-profile',
 classNames: 'user-preter-profile'
 } %}
 
-{% form_theme forms.securityPwd '/forms/fields.html.twig' %}
+{% form_theme forms.securityPwd '/_unilend/forms/fields.html.twig' %}
 {% if forms.securityPwd.vars.valid == false %}
     {% set pwdFormCollapse = 'in' %}
     {% set pwdViewCollapse = '' %}
@@ -14,7 +14,7 @@ classNames: 'user-preter-profile'
     {% set pwdViewCollapse = 'in' %}
 {% endif %}
 
-{% form_theme forms.securityQuestion '/forms/fields.html.twig' %}
+{% form_theme forms.securityQuestion '/_unilend/forms/fields.html.twig' %}
 {% if forms.securityQuestion.vars.valid == false %}
     {% set questionFormCollapse = 'in' %}
     {% set questionViewCollapse = '' %}
