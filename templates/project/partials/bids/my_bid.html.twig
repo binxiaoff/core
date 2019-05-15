@@ -49,17 +49,17 @@
             <div class="col-lg-3 col-md-3 col-sm-3">
                 {{ form_row(form.money.amount, {
                     label_help: '(' ~ tranche.money.currency ~ ')',
-                    attr: {'data-fee-reference-amount': '', 'class': 'amount'}})
+                    attr: {'data-fee-reference-amount': ''}})
                 }}
             </div>
             <div class="col-lg-3 col-md-3 col-sm-3">
                 {{ form_row(form.rate.indexType) }}
             </div>
             <div class="col-lg-3 col-md-3 col-sm-3">
-                {{ form_row(form.rate.margin) }}
+                {{ form_row(form.rate.floor) }}
             </div>
             <div class="col-lg-3 col-md-3 col-sm-3">
-                {{ form_row(form.rate.floor) }}
+                {{ form_row(form.rate.margin) }}
             </div>
         </div>
     </fieldset>

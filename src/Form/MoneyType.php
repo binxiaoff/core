@@ -16,7 +16,10 @@ class MoneyType extends AbstractType
      */
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
-        $builder->add('amount', NumberType::class, ['label' => 'money-form.amount']);
+        $builder->add('amount', NumberType::class, [
+            'label' => 'money-form.amount',
+            'attr'  => ['class' => 'amount'],
+        ]);
 
         if (false === $options['disable_currency']) {
             $builder->add('currency', CurrencyType::class, [
