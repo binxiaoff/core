@@ -16,7 +16,7 @@ use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\{File\UploadedFile, Request, Response};
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Security\Core\Authorization\AuthorizationChecker;
+use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Unilend\Entity\{AcceptedBids, Attachment, Bids, Clients, Loans, Project, ProjectStatusHistory, UnderlyingContract};
 use Unilend\Form\Project\ProjectAttachmentCollectionType;
@@ -275,7 +275,7 @@ class EditController extends AbstractController
         DemoMailerManager $mailerManager,
         CompaniesRepository $companyRepository,
         ProjectRepository $projectRepository,
-        AuthorizationChecker $authorizationChecker,
+        AuthorizationCheckerInterface $authorizationChecker,
         LoggerInterface $logger
     ): Response {
         if (false === $project->isEditable()) {

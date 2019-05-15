@@ -48,7 +48,7 @@ class CommentController extends AbstractController
 
             $projectCommentRepository->save($comment);
 
-            return $this->render('project/project_comment/response.json.twig', ['comment' => $comment], new JsonResponse());
+            return $this->render('project/comment/response.json.twig', ['comment' => $comment], new JsonResponse());
         }
 
         return $this->json([
