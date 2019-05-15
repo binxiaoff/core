@@ -9,6 +9,7 @@
                 <th>Montant</th>
                 <th>Taux de référence</th>
                 <th>Marge</th>
+                <th>Flooré à</th>
                 {#<th>Commission ponctuelle</th>
                 <th>Commission récurrente</th>#}
                 {% if bid.status == constant('Unilend\\Entity\\Bids::STATUS_PENDING') %}
@@ -22,6 +23,7 @@
                 <td>{{ bid.money.amount|localizedcurrencywithprecision(0, bid.money.currency) }}</td>
                 <td>{{ ('interest-rate-index_' ~ bid.rate.indexType)|trans }}</td>
                 <td>{{ bid.rate.margin|localizednumberwithprecision(2) }}&nbsp;%</td>
+                <td>{% if bid.rate.floor is same as(null) %}non défini{% else %}{{ bid.rate.floor|localizednumberwithprecision(2)|default('non défini') }}&nbsp;%{% endif %}</td>
                 {#<td>{{ bid.oneTimeFeeTotalRate|localizednumberwithprecision(2) }}&nbsp;%</td>
                 <td data-toggle="tooltip" title="{% if bid.recurringFeeTotalRate > 0 %}soit {{ (bid.recurringFeeTotalRate * (bid.amount / 100) / 100)|localizednumber }}&nbsp;€{% endif %}">
                     {{ bid.recurringFeeTotalRate|localizednumberwithprecision(2) }}&nbsp;%
@@ -44,14 +46,17 @@
     {{ form_start(form) }}
     <fieldset class="simulator-pane-inner" style="margin-top: 20px;">
         <div class="row row-multi-col-computer">
-            <div class="col-lg-4 col-md-4 col-sm-4">
+            <div class="col-lg-3 col-md-3 col-sm-3">
                 {{ form_row(form.money.amount, {attr: {'data-fee-reference-amount': ''}}) }}
             </div>
-            <div class="col-lg-4 col-md-4 col-sm-4">
+            <div class="col-lg-3 col-md-3 col-sm-3">
                 {{ form_row(form.rate.indexType) }}
             </div>
-            <div class="col-lg-4 col-md-4 col-sm-4">
+            <div class="col-lg-3 col-md-3 col-sm-3">
                 {{ form_row(form.rate.margin) }}
+            </div>
+            <div class="col-lg-3 col-md-3 col-sm-3">
+                {{ form_row(form.rate.floor) }}
             </div>
         </div>
     </fieldset>
