@@ -85,7 +85,7 @@ function openSiteSearch () {
   $html.addClass('ui-site-search-open')
 }
 
-function initAmountsCleave($element) {
+function initAmountCleave($element) {
   var amountClass = 'amount-' + Utility.randomString()
   $element.addClass(amountClass)
   var cleave = new Cleave('.' + amountClass, {numeral: true, delimiter: ' '})
