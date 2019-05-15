@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace Unilend\Form;
 
-use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\{CurrencyType, NumberType};
-use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\Form\{AbstractType, FormBuilderInterface};
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Unilend\Entity\Embeddable\Money;
 
@@ -17,7 +16,10 @@ class MoneyType extends AbstractType
      */
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
-        $builder->add('amount', NumberType::class, ['label' => 'money-form.amount']);
+        $builder->add('amount', NumberType::class, [
+            'label' => 'money-form.amount',
+            'attr'  => ['class' => 'amount'],
+        ]);
 
         if (false === $options['disable_currency']) {
             $builder->add('currency', CurrencyType::class, [

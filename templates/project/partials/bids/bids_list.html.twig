@@ -1,7 +1,7 @@
 {% set pendingBids = tranche.bids([constant('Unilend\\Entity\\Bids::STATUS_PENDING')]) %}
 {% set acceptedBids = tranche.bids([constant('Unilend\\Entity\\Bids::STATUS_ACCEPTED')]) %}
 {% set refusedBids = tranche.bids([constant('Unilend\\Entity\\Bids::STATUS_REJECTED')]) %}
-<h4 class="h4 margin-20-t">{{ tranche.name }}</h4>
+<h4 class="margin-20-t">{{ tranche.name }}</h4>
 {% if pendingBids|length > 0 %}
     <h5>En cours</h5>
     {% include 'project/partials/bids/bids_table.html.twig' with {bids: pendingBids, displayAction: true} %}

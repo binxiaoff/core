@@ -7,11 +7,17 @@
 
 var $ = require('jquery')
 var Utility = require('Utility')
+var Cleave = require('cleave.js')
 
 var $doc = $(document)
 var $html = $('html')
 var $body = $('body')
 var $win = $(window)
+
+$('.amount').each(function () {
+  var $element = $(this)
+  initAmountCleave($element)
+})
 
 // Site Search AutoComplete
 // @TODO if needed, reimplement
@@ -64,11 +70,25 @@ $doc
     cancelCloseSiteSearch()
   })
 
+  .on('DOMNodeInserted', function(event) {
+    var $amounts = $(event.target).find('.amount')
+    $amounts.each(function (event) {
+      var $element = $(this)
+      initAmountCleave($element)
+    })
+  })
+
 // -- Methods
 function openSiteSearch () {
   // @debug console.log('openSiteSearch')
   cancelCloseSiteSearch()
   $html.addClass('ui-site-search-open')
+}
+
+function initAmountsCleave($element) {
+  var amountClass = 'amount-' + Utility.randomString()
+  $element.addClass(amountClass)
+  var cleave = new Cleave('.' + amountClass, {numeral: true, delimiter: ' '})
 }
 
 function closeSiteSearch (timeout) {

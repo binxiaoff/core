@@ -34,6 +34,7 @@
     "browser-sync": "^2.26.3",
     "browserify": "^16.2.3",
     "browserify-shim": "^3.8.14",
+    "cleave.js": "^1.4.10",
     "clipboard": "^2.0.4",
     "datatables.net": "^1.10.19",
     "del": "^3.0.0",
