@@ -40,12 +40,10 @@
                                     'data-formvalidation-input': null,
                                     'data-formvalidation-required': 'true',
                                 }}) }}
-                                <div class="form-field">
+                                <div>
                                     {{ form_errors(form.borrowerCompanyCreationInProgress) }}
-                                    <label>
-                                        {{ form_widget(form.borrowerCompanyCreationInProgress, {attr: {style: 'width: inherit;'}}) }}
-                                        {{ form.borrowerCompanyCreationInProgress.vars.label|trans }}
-                                    </label>
+                                    {{ form_widget(form.borrowerCompanyCreationInProgress, {attr: {style: 'width: inherit;'}}) }}
+                                    {{ form_label(form.borrowerCompanyCreationInProgress) }}
                                 </div>
                             </div>
                             <div class="col-lg-4 col-md-4">
