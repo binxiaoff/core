@@ -32,7 +32,7 @@ class EditController extends AbstractController
     public function changeStatus(Request $request, BidsRepository $bidsRepository, DemoMailerManager $mailerManager, LoggerInterface $logger): JsonResponse
     {
         $bidId  = $request->request->get('bid');
-        $status = $request->request->get('status');
+        $status = $request->request->getInt('status');
         $bid    = $bidsRepository->find($bidId);
 
         if ($bid && in_array($status, $bid->getAllStatus())) {
