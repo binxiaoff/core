@@ -35,16 +35,20 @@
                                     'data-formvalidation-required': 'true',
                                 }}) }}
                             </div>
-                            <div class="col-lg-3 col-md-3">
+                            <div class="col-lg-4 col-md-4">
                                 {{ form_row(form.borrowerCompany, {'attr': {
                                     'data-formvalidation-input': null,
                                     'data-formvalidation-required': 'true',
                                 }}) }}
+                                <div class="form-field">
+                                    {{ form_errors(form.borrowerCompanyCreationInProgress) }}
+                                    <label>
+                                        {{ form_widget(form.borrowerCompanyCreationInProgress, {attr: {style: 'width: inherit;'}}) }}
+                                        {{ form.borrowerCompanyCreationInProgress.vars.label|trans }}
+                                    </label>
+                                </div>
                             </div>
-                            <div class="col-lg-3 col-md-3">
-                                {{ form_row(form.borrowerCompanyCreationInProgress) }}
-                            </div>
-                            <div class="col-lg-2 col-md-2">
+                            <div class="col-lg-4 col-md-4">
                                 {{ form_row(form.marketSegment, {'attr': {
                                     'data-formvalidation-input': null,
                                     'data-formvalidation-required': 'true',
