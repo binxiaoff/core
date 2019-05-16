@@ -1,7 +1,7 @@
 {% extends 'layouts/_page_with_side_bar.html.twig' %}
 
 {% block dashboardContent %}
-    {{ form_start(form) }}
+    {{ form_start(form, {attr: {novalidate: 'novalidate'}}) }}
     <section class="dashboard-tabs tabs">
         <div class="dashboard-tabs-content tab-content">
             <div id="form-container" class="dashboard-tab-pane">
@@ -9,24 +9,6 @@
                     <header class="panel-header">
                         <h2 class="margin-5-t">{% trans %} project-request.title {% endtrans %}</h2>
                     </header>
-                    <section class="text-align-center collapse in">
-                        <button type="button" class="btn-default" data-request-type="primary"
-                                data-toggle="collapse" data-target=".request-form-panel" data-parent="#form-container"
-                                style="padding: 30px; margin: 30px 60px;">
-                            <span class="icon fa-user" style="font-size: 36px;"></span><br>
-                            Syndication primaire<br>
-                            <small>pour un client</small>
-                        </button>
-                        <button type="button" class="btn-default" data-request-type="secondary"
-                                data-toggle="collapse" data-target=".request-form-panel" data-parent="#form-container"
-                                style="padding: 30px; margin: 30px 60px;">
-                            <span class="icon fa-refresh" style="font-size: 36px;"></span><br>
-                            Syndication silencieuse<br>
-                            <small>d‘un encours client</small>
-                        </button>
-                    </section>
-                    <section class="request-form-panel collapse">
-
                         <div class="row row-multi-col-computer">
                             <div class="col-lg-4 col-md-4">
                                 {{ form_row(form.title, {'attr': {
@@ -70,15 +52,14 @@
                                 'data-formvalidation-required': 'true',
                             }}) }}
                         </div><!-- /.row -->
-                    </section><!-- /.request-form-panel -->
                 </article><!-- /.panel -->
 
-                <article class="request-form-panel panel collapse">
+                <article class="request-form-panel panel">
                     <h3 class="margin-5-t">{% trans %} project-request.tranches-section-title {% endtrans %}</h3>
                     {{ form_row(form.tranches) }}
                 </article>
 
-                <article class="request-form-panel panel collapse">
+                <article class="request-form-panel panel">
                     <h3 class="margin-5-t">{% trans %} project-request.structuration-section-title {% endtrans %}</h3>
                     <div class="row row-multi-col-computer">
                         <div class="col-lg-6 col-md-6">
@@ -90,17 +71,17 @@
                     </div>
                 </article>
 
-                <article class="request-form-panel panel collapse">
+                <article class="request-form-panel panel">
                     <h3 class="margin-5-t">{% trans %} project-request.guarantee-section-title {% endtrans %}</h3>
                     {{ form_row(form.foncarisGuarantee, {label: false}) }}
                 </article>
 
-                <article class="request-form-panel panel collapse">
+                <article class="request-form-panel panel">
                     <h3 class="margin-5-t">{% trans %} project-request.attachments-section-title {% endtrans %}</h3>
                     {{ form_row(form.projectAttachments) }}
                 </article>
 
-                <article class="request-form-panel panel collapse">
+                <article class="request-form-panel panel">
                     <div class="form-validation-notifications"></div>
                     <button type="submit" class="btn-continue btn-primary pull-right" data-spinnerbutton>
                         {% trans %} project-request.confirmation-button {% endtrans %}

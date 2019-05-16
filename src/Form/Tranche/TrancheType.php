@@ -5,15 +5,13 @@ declare(strict_types=1);
 namespace Unilend\Form\Tranche;
 
 use Symfony\Component\Form\AbstractType;
-use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
-use Symfony\Component\Form\Extension\Core\Type\CollectionType;
-use Symfony\Component\Form\Extension\Core\Type\DateType;
+use Symfony\Component\Form\Extension\Core\Type\{ChoiceType, CollectionType};
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Validator\Constraints\Valid;
 use Unilend\Entity\Embeddable\NullableLendingRate;
 use Unilend\Entity\Tranche;
-use Unilend\Form\Lending\LendingRateType;
-use Unilend\Form\MoneyType;
+use Unilend\Form\{Lending\LendingRateType, MoneyType};
 
 class TrancheType extends AbstractType
 {
@@ -36,10 +34,13 @@ class TrancheType extends AbstractType
                 'label' => 'tranche-form.maturity',
                 'attr'  => ['min' => 1],
             ])
-            ->add('money', MoneyType::class)
+            ->add('money', MoneyType::class, ['constraints' => [new Valid()]])
             ->add('rate', LendingRateType::class, [
-                'data_class' => NullableLendingRate::class,
-                'required'   => false,
+                'data_class'        => NullableLendingRate::class,
+                'required'          => $options['rate_required'],
+                'validation_groups' => $options['rate_required'] ? ['non-nullable'] : null,
+                'empty_data'        => new NullableLendingRate(),
+                'constraints'       => [new Valid()],
             ])
             ->add('capitalPeriodicity', null, [
                 'label' => 'tranche-form.capital-periodicity',
@@ -67,6 +68,7 @@ class TrancheType extends AbstractType
             ])
             ->add('tranchePercentFees', CollectionType::class, [
                 'label'          => false,
+                'constraints'    => [new Valid()],
                 'entry_type'     => TranchePercentFeeType::class,
                 'entry_options'  => ['label' => false],
                 'allow_add'      => true,
@@ -87,6 +89,8 @@ class TrancheType extends AbstractType
         $resolver->setDefaults([
             'data_class' => Tranche::class,
         ]);
+
+        $resolver->setRequired(['rate_required']);
     }
 
     /**

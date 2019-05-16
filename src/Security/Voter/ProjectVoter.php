@@ -97,8 +97,8 @@ class ProjectVoter extends Voter
         }
 
         return in_array($user->getCompany(), [
-            $project->getArranger()->getCompany(),
-            $project->getRun()->getCompany(),
+            $project->getArranger() ? $project->getArranger()->getCompany() : null,
+            $project->getArranger() ? $project->getRun()->getCompany() : null,
             $project->getSubmitterCompany(),
         ]);
     }
@@ -111,7 +111,7 @@ class ProjectVoter extends Voter
      */
     private function canManageBids(Project $project, Clients $user): bool
     {
-        return $user->getCompany() === $project->getArranger()->getCompany();
+        return $project->getArranger() && $user->getCompany() === $project->getArranger()->getCompany();
     }
 
     /**
@@ -122,7 +122,7 @@ class ProjectVoter extends Voter
      */
     private function canRate(Project $project, Clients $user): bool
     {
-        return $user->getCompany() === $project->getRun()->getCompany();
+        return $project->getRun() && $user->getCompany() === $project->getRun()->getCompany();
     }
 
     /**

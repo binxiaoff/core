@@ -30,7 +30,7 @@ class LendingRate
      *
      * @ORM\Column(length=20)
      *
-     * @Assert\NotBlank
+     * @Assert\NotBlank(groups={"non-nullable"})
      */
     protected $indexType;
 
@@ -41,7 +41,7 @@ class LendingRate
      *
      * @ORM\Column(type="decimal", precision=4, scale=2)
      *
-     * @Assert\NotBlank
+     * @Assert\NotBlank(groups={"non-nullable"})
      * @Assert\Range(min="0", max="99.99")
      */
     protected $margin;

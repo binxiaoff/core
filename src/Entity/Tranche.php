@@ -72,6 +72,7 @@ class Tranche
      * @ORM\Column(type="smallint")
      *
      * @Assert\Range(min="1")
+     * @Assert\NotBlank
      */
     private $duration;
 
@@ -83,6 +84,7 @@ class Tranche
      * @ORM\Column(type="smallint")
      *
      * @Assert\Range(min="1")
+     * @Assert\NotBlank
      */
     private $capitalPeriodicity;
 
@@ -94,6 +96,7 @@ class Tranche
      * @ORM\Column(type="smallint")
      *
      * @Assert\Range(min="1")
+     * @Assert\NotBlank
      */
     private $interestPeriodicity;
 

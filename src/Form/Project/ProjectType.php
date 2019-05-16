@@ -10,6 +10,7 @@ use Symfony\Component\Form\Extension\Core\Type\{CheckboxType, ChoiceType, DateTy
 use Symfony\Component\Form\{AbstractType, FormBuilderInterface, FormError, FormEvent, FormEvents};
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
+use Symfony\Component\Validator\Constraints\Valid;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Unilend\Entity\{Clients, Companies, MarketSegment, Project};
 use Unilend\Form\{Company\CompanyAutocompleteType, Tranche\TrancheTypeCollectionType};
@@ -83,7 +84,10 @@ class ProjectType extends AbstractType
                 'label' => 'project-form.description',
                 'attr'  => ['rows' => 6],
             ])
-            ->add('tranches', TrancheTypeCollectionType::class)
+            ->add('tranches', TrancheTypeCollectionType::class, [
+                'constraints'   => [new Valid()],
+                'entry_options' => ['label' => false, 'rate_required' => Project::OPERATION_TYPE_SYNDICATION === (int) $options['operation_type']],
+            ])
             ->add('foncarisGuarantee', ChoiceType::class, [
                 'label'        => 'project-form.foncaris-guarantee',
                 'required'     => false,
@@ -108,8 +112,8 @@ class ProjectType extends AbstractType
                     return $companyRepository->createEligibleRunQB(['name' => 'ASC']);
                 },
             ])
-            ->add('projectAttachments', ProjectAttachmentCollectionType::class)
-            ->addEventListener(FormEvents::POST_SUBMIT, [$this, 'handleBorrowerCompany'])
+            ->add('projectAttachments', ProjectAttachmentCollectionType::class, ['constraints' => [new Valid()]])
+            ->addEventListener(FormEvents::POST_SUBMIT, [$this, 'handleCreationInProgressCompany'])
         ;
     }
 
@@ -119,6 +123,7 @@ class ProjectType extends AbstractType
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefault('data_class', Project::class);
+        $resolver->setRequired(['operation_type']);
     }
 
     /**
@@ -132,7 +137,7 @@ class ProjectType extends AbstractType
     /**
      * @param FormEvent $formEvent
      */
-    public function handleBorrowerCompany(FormEvent $formEvent): void
+    public function handleCreationInProgressCompany(FormEvent $formEvent): void
     {
         /** @var Project $project */
         $project = $formEvent->getData();

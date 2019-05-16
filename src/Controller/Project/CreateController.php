@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\Controller\Project;
 
-use Exception;
+use Doctrine\ORM\{ORMException, OptimisticLockException};
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\{File\UploadedFile, Request, Response};
@@ -18,24 +18,39 @@ use Unilend\Service\AttachmentManager;
 class CreateController extends AbstractController
 {
     /**
-     * @Route("/projet/depot", name="project_creation", methods={"GET", "POST"})
+     * @Route("/projet/depot/choice", name="project_creation_operation_choice", methods={"GET"})
+     *
+     * @return Response
+     */
+    public function choice(): Response
+    {
+        return $this->render('project/create/choice.html.twig');
+    }
+
+    /**
+     * @Route("/projet/depot/{operationType}", name="project_creation", methods={"GET", "POST"}, requirements={"operationType": "1|2"})
      *
      * @param Request                    $request
+     * @param string                     $operationType
      * @param ProjectRepository          $projectRepository
      * @param UserInterface|Clients|null $client
      * @param AttachmentManager          $attachmentManager
      *
-     * @throws Exception
+     * @throws ORMException
+     * @throws OptimisticLockException
      *
      * @return Response
      */
     public function create(
         Request $request,
+        string $operationType,
         ProjectRepository $projectRepository,
         ?UserInterface $client,
         AttachmentManager $attachmentManager
     ) {
-        $form = $this->createForm(ProjectType::class);
+        $project = (new Project())->setOperationType((int) $operationType);
+
+        $form = $this->createForm(ProjectType::class, $project, ['operation_type' => $operationType]);
 
         $form->handleRequest($request);
 
