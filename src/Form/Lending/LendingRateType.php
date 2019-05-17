@@ -45,8 +45,9 @@ class LendingRateType extends AbstractType
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefaults([
-            'data_class' => LendingRate::class,
-            'required'   => false,
+            'data_class'        => LendingRate::class,
+            'required'          => true,
+            'validation_groups' => ['non-nullable'],
         ]);
     }
 

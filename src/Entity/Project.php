@@ -31,6 +31,9 @@ class Project
     public const FONCARIS_GUARANTEE_NEED               = 1;
     public const FONCARIS_GUARANTEE_ALREADY_GUARANTEED = 2;
 
+    public const OPERATION_TYPE_ARRANGEMENT = 1;
+    public const OPERATION_TYPE_SYNDICATION = 2;
+
     /**
      * @var int
      *
@@ -154,6 +157,13 @@ class Project
      * @ORM\Column(length=8, nullable=true)
      */
     private $internalRatingScore;
+
+    /**
+     * @var int
+     *
+     * @ORM\Column(type="smallint", nullable=false)
+     */
+    private $operationType;
 
     /**
      * @var ArrayCollection|ProjectStatusHistory[]
@@ -487,6 +497,36 @@ class Project
     public function setInternalRatingScore(?string $internalRatingScore): void
     {
         $this->internalRatingScore = $internalRatingScore;
+    }
+
+    /**
+     * @return int|null
+     */
+    public function getOperationType(): ?int
+    {
+        return $this->operationType;
+    }
+
+    /**
+     * @param int $operationType
+     *
+     * @return Project
+     */
+    public function setOperationType(int $operationType): Project
+    {
+        if (in_array($operationType, $this->getAllOperationTypes())) {
+            $this->operationType = $operationType;
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return array
+     */
+    public function getAllOperationTypes(): array
+    {
+        return self::getConstants('OPERATION_TYPE_');
     }
 
     /**
