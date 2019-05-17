@@ -514,9 +514,19 @@ class Project
      */
     public function setOperationType(int $operationType): Project
     {
-        $this->operationType = $operationType;
+        if (in_array($operationType, $this->getAllOperationTypes())) {
+            $this->operationType = $operationType;
+        }
 
         return $this;
+    }
+
+    /**
+     * @return array
+     */
+    public function getAllOperationTypes(): array
+    {
+        return self::getConstants('OPERATION_TYPE_');
     }
 
     /**

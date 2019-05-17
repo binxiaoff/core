@@ -98,7 +98,7 @@ class ProjectVoter extends Voter
 
         return in_array($user->getCompany(), [
             $project->getArranger() ? $project->getArranger()->getCompany() : null,
-            $project->getArranger() ? $project->getRun()->getCompany() : null,
+            $project->getRun() ? $project->getRun()->getCompany() : null,
             $project->getSubmitterCompany(),
         ]);
     }
