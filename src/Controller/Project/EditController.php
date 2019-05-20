@@ -19,11 +19,11 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Validator\Constraints\Valid;
-use Unilend\Entity\{AcceptedBids, Attachment, Bids, Clients, Loans, Project, ProjectStatusHistory, UnderlyingContract};
+use Unilend\Entity\{AcceptedBids, Attachment, Bids, Clients, Loans, Project, ProjectStatusHistory, RegionalBank, UnderlyingContract};
 use Unilend\Form\Project\ProjectAttachmentCollectionType;
 use Unilend\Form\Tranche\TrancheTypeCollectionType;
 use Unilend\Repository\{AcceptedBidsRepository, BidsRepository, CompaniesRepository, ProjectAttachmentRepository, ProjectAttachmentTypeRepository, ProjectRepository,
-    TrancheRepository, UnderlyingContractRepository};
+    RegionalBankRepository, TrancheRepository, UnderlyingContractRepository};
 use Unilend\Security\Voter\ProjectVoter;
 use Unilend\Service\{AttachmentManager, DemoMailerManager, ProjectStatusManager};
 
@@ -41,9 +41,11 @@ class EditController extends AbstractController
      * @param ProjectRepository               $projectRepository
      * @param ProjectAttachmentRepository     $projectAttachmentRepository
      * @param ProjectAttachmentTypeRepository $projectAttachmentTypeRepository
+     * @param RegionalBankRepository          $regionalBankRepository
      * @param AttachmentManager               $attachmentManager
      *
-     * @throws Exception
+     * @throws ORMException
+     * @throws OptimisticLockException
      *
      * @return Response
      */
@@ -55,6 +57,7 @@ class EditController extends AbstractController
         ProjectRepository $projectRepository,
         ProjectAttachmentRepository $projectAttachmentRepository,
         ProjectAttachmentTypeRepository $projectAttachmentTypeRepository,
+        RegionalBankRepository $regionalBankRepository,
         AttachmentManager $attachmentManager
     ): Response {
         $regionalBanks = $companyRepository->findRegionalBanks(['name' => 'ASC']);
@@ -103,16 +106,21 @@ class EditController extends AbstractController
         }
 
         $template = [
-            'arrangers'            => $companyRepository->findEligibleArrangers($user->getCompany(), ['name' => 'ASC']),
-            'runs'                 => $regionalBanks,
-            'regionalBanks'        => $regionalBanks,
-            'projectStatus'        => ProjectStatusHistory::getAllProjectStatus(),
-            'project'              => $project,
-            'attachmentTypes'      => $projectAttachmentTypeRepository->getAttachmentTypes(),
-            'projectAttachments'   => $projectAttachmentRepository->getAttachmentsWithoutSignature($project),
-            'signatureAttachments' => $projectAttachmentRepository->getAttachmentsWithSignature($project),
-            'documentForm'         => $documentForm->createView(),
-            'trancheForm'          => $trancheForm->createView(),
+            'arrangers'                => $companyRepository->findEligibleArrangers($user->getCompany(), ['name' => 'ASC']),
+            'runs'                     => $regionalBanks,
+            'regionalBanks'            => $regionalBanks,
+            'regionalBankIds'          => $regionalBankRepository->getRegionalBankIds(null, ['c.name' => 'ASC']),
+            'centerRegionalBankIds'    => $regionalBankRepository->getRegionalBankIds(RegionalBank::FRIENDLY_GROUP_CENTER, ['c.name' => 'ASC']),
+            'northEastRegionalBankIds' => $regionalBankRepository->getRegionalBankIds(RegionalBank::FRIENDLY_GROUP_NORTH_EAST, ['c.name' => 'ASC']),
+            'westRegionalBankIds'      => $regionalBankRepository->getRegionalBankIds(RegionalBank::FRIENDLY_GROUP_WEST, ['c.name' => 'ASC']),
+            'southRegionalBankIds'     => $regionalBankRepository->getRegionalBankIds(RegionalBank::FRIENDLY_GROUP_SOUTH, ['c.name' => 'ASC']),
+            'projectStatus'            => ProjectStatusHistory::getAllProjectStatus(),
+            'project'                  => $project,
+            'attachmentTypes'          => $projectAttachmentTypeRepository->getAttachmentTypes(),
+            'projectAttachments'       => $projectAttachmentRepository->getAttachmentsWithoutSignature($project),
+            'signatureAttachments'     => $projectAttachmentRepository->getAttachmentsWithSignature($project),
+            'documentForm'             => $documentForm->createView(),
+            'trancheForm'              => $trancheForm->createView(),
         ];
 
         return $this->render('project/edit/details.html.twig', $template);
