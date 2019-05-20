@@ -18,6 +18,7 @@ use Symfony\Component\HttpFoundation\{File\UploadedFile, Request, Response};
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Validator\Constraints\Valid;
 use Unilend\Entity\{AcceptedBids, Attachment, Bids, Clients, Loans, Project, ProjectStatusHistory, UnderlyingContract};
 use Unilend\Form\Project\ProjectAttachmentCollectionType;
 use Unilend\Form\Tranche\TrancheTypeCollectionType;
@@ -63,7 +64,10 @@ class EditController extends AbstractController
             ->getForm()
         ;
         $trancheForm = $this->get('form.factory')->createNamedBuilder('tranches', FormType::class, $project, ['data_class' => Project::class])
-            ->add('tranches', TrancheTypeCollectionType::class)
+            ->add('tranches', TrancheTypeCollectionType::class, [
+                'constraints'   => [new Valid()],
+                'entry_options' => ['rate_required' => Project::OPERATION_TYPE_SYNDICATION === (int) $project->getOperationType()],
+            ])
             ->getForm()
         ;
 

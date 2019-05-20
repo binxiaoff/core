@@ -86,7 +86,7 @@ class ProjectType extends AbstractType
             ])
             ->add('tranches', TrancheTypeCollectionType::class, [
                 'constraints'   => [new Valid()],
-                'entry_options' => ['label' => false, 'rate_required' => Project::OPERATION_TYPE_SYNDICATION === (int) $options['operation_type']],
+                'entry_options' => ['rate_required' => Project::OPERATION_TYPE_SYNDICATION === $options['operation_type']],
             ])
             ->add('foncarisGuarantee', ChoiceType::class, [
                 'label'        => 'project-form.foncaris-guarantee',
