@@ -63,7 +63,11 @@
                     <h3 class="margin-5-t">{% trans %} project-request.structuration-section-title {% endtrans %}</h3>
                     <div class="row row-multi-col-computer">
                         <div class="col-lg-6 col-md-6">
-                            {{ form_row(form.arranger) }}
+                            {% set arrangerLabel = 'project-form.arranger' %}
+                            {% if constant('\\Unilend\\Entity\\Project::OPERATION_TYPE_SYNDICATION') == app.request.get('operationType') %}
+                                {% set arrangerLabel = 'project-form.lead_manager' %}
+                            {% endif %}
+                            {{ form_row(form.arranger, { 'label' : arrangerLabel }) }}
                         </div>
                         <div class="col-lg-6 col-md-6">
                             {{ form_row(form.run) }}
