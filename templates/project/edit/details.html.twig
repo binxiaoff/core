@@ -204,7 +204,7 @@
                                 <dt>Note</dt>
                                 <dd>
                                     {% if project.isEditable(app.user) and is_granted('rate', project) %}
-                                        <a href="#" class="editable" id="scoring" data-type="text" data-inputclass="input-field">
+                                        <a href="#" id="scoring" data-type="select">
                                             {% if project.internalRatingScore is not empty %}
                                                 {{ project.internalRatingScore }}
                                             {% endif %}
@@ -645,6 +645,16 @@
                     {value: '', text: ''},
                     {% for runCompany in runs %}
                     {value: {{ runCompany.idCompany }}, text: '{{ runCompany.name|e('js') }}'},
+                    {% endfor %}
+                ]
+            }))
+
+            $('#scoring').editable(Object.assign(editableConfig, {
+                value: '{% if project.internalRatingScore %}{{ project.internalRatingScore }}{% endif %}',
+                source: [
+                    {value: '', text: ''},
+                    {% for internalRatingScore in project.allInternalRatingScores %}
+                    {value: '{{ internalRatingScore|e('js') }}', text: '{{ internalRatingScore|e('js') }}'},
                     {% endfor %}
                 ]
             }))
