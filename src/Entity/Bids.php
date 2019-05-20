@@ -51,6 +51,13 @@ class Bids
     private $idBid;
 
     /**
+     * @var AcceptedBids[]|ArrayCollection
+     *
+     * @ORM\OneToMany(targetEntity="Unilend\Entity\AcceptedBids", mappedBy="bid", cascade={"persist"}, orphanRemoval=true)
+     */
+    private $acceptedBids;
+
+    /**
      * @var BidPercentFee[]|ArrayCollection
      *
      * @ORM\OneToMany(targetEntity="Unilend\Entity\BidPercentFee", mappedBy="bid", cascade={"persist"}, orphanRemoval=true)
@@ -62,6 +69,7 @@ class Bids
      */
     public function __construct()
     {
+        $this->acceptedBids   = new ArrayCollection();
         $this->bidPercentFees = new ArrayCollection();
         $this->traitInit();
     }
@@ -112,6 +120,14 @@ class Bids
     public function getIdBid(): ?int
     {
         return $this->idBid;
+    }
+
+    /**
+     * @return ArrayCollection|AcceptedBids[]
+     */
+    public function getAcceptedBids(): iterable
+    {
+        return $this->acceptedBids;
     }
 
     /**

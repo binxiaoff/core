@@ -1,49 +1,59 @@
-<form action="#">
-    <table class="table table-projects table-finance" style="table-layout: auto;">
-        <thead>
-        <tr class="my-offers-bid-row">
-            <th>Prêteur</th>
-            <th>Montant</th>
-            <th>Taux de référence</th>
-            <th>Marge</th>
-            <th>Flooré à</th>
-            {#<th>Commission ponctuelle</th>
-            <th>Commission récurrente</th>#}
+<table class="table table-projects table-finance" style="table-layout: auto;">
+    <thead>
+    <tr class="my-offers-bid-row">
+        <th>{% trans %} bids.table-column-lender {% endtrans %}</th>
+        <th>{% trans %} bids.table-column-amount {% endtrans %}</th>
+        <th>{% trans %} bids.table-column-index-rate {% endtrans %}</th>
+        <th>{% trans %} bids.table-column-rate-margin {% endtrans %}</th>
+        <th>{% trans %} bids.table-column-rate-floor {% endtrans %}</th>
+        {#<th>Commission ponctuelle</th>
+        <th>Commission récurrente</th>#}
+        {% if is_granted('manage_bids', project) and displayAction == true %}
+            <th style="width: 145px;">&nbsp;</th>
+        {% endif %}
+    </tr>
+    </thead>
+    <tbody>
+    {% for bid in bids %}
+        {% set offer = bid %}
+        {% if bid.status == constant('Unilend\\Entity\\Bids::STATUS_ACCEPTED') and bid.acceptedBids|length > 0 %}
+            {% set offer = bid.acceptedBids|first %}
+        {% endif %}
+        <tr>
+            <td>{{ bid.wallet.idClient.company.name }}</td>
+            <td>{{ offer.money.amount|localizedcurrencywithprecision(0, offer.money.currency) }}</td>
+            <td>{{ ('interest-rate-index_' ~ bid.rate.indexType)|trans }}</td>
+            <td>{{ bid.rate.margin|localizednumberwithprecision(2) }}&nbsp;%</td>
+            <td>{% if bid.rate.floor is same as(null) %}non défini{% else %}{{ bid.rate.floor|localizednumberwithprecision(2)|default('non défini') }}&nbsp;%{% endif %}</td>
+            {#<td>{{ offer.oneTimeFeeTotalRate|localizednumberwithprecision(2) }}&nbsp;%</td>
+            <td data-toggle="tooltip" title="{% if offer.recurringFeeTotalRate > 0 %}soit {{ (offer.recurringFeeTotalRate * (offer.amount / 100) / 100)|localizednumber }}&nbsp;€{% endif %}">
+                {{ offer.recurringFeeTotalRate|localizednumberwithprecision(2) }}&nbsp;%
+            </td>#}
             {% if is_granted('manage_bids', project) and displayAction == true %}
-                <th style="width: 115px;">&nbsp;</th>
-            {% endif %}
-        </tr>
-        </thead>
-        <tbody>
-        {% for offer in bids %}
-            <tr>
-                <td>{{ offer.wallet.idClient.company.name }}</td>
-                <td>{{ offer.money.amount|localizedcurrencywithprecision(0, offer.money.currency) }}</td>
-                <td>{{ ('interest-rate-index_' ~ offer.rate.indexType)|trans }}</td>
-                <td>{{ offer.rate.margin|localizednumberwithprecision(2) }}&nbsp;%</td>
-                <td>{% if offer.rate.floor is same as(null) %}non défini{% else %}{{ offer.rate.floor|localizednumberwithprecision(2)|default('non défini') }}&nbsp;%{% endif %}</td>
-                {#<td>{{ offer.oneTimeFeeTotalRate|localizednumberwithprecision(2) }}&nbsp;%</td>
-                <td data-toggle="tooltip" title="{% if offer.recurringFeeTotalRate > 0 %}soit {{ (offer.recurringFeeTotalRate * (offer.amount / 100) / 100)|localizednumber }}&nbsp;€{% endif %}">
-                    {{ offer.recurringFeeTotalRate|localizednumberwithprecision(2) }}&nbsp;%
-                </td>#}
-                {% if is_granted('manage_bids', project) and displayAction == true %}
-                    <td>
-                        <button type="button" class="btn-default btn-shape-xxs"
-                                data-toggle="tooltip" title="Rejeter l‘offre"
-                                data-action="refuse-bid" data-bid-id="{{ offer.idBid }}"
-                                data-spinnerbutton>
+                <td>
+                    <form action="{{ path('edit_bid_status') }}" method="post">
+                        <input type="hidden" name="bid" value="{{ offer.idBid }}">
+                        <button type="submit" name="status" value="{{ constant('Unilend\\Entity\\Bids::STATUS_REJECTED') }}"
+                                class="btn-default btn-shape-xxs"
+                                data-toggle="tooltip" title="{% trans %} bids.table-action-reject {% endtrans %}">
                             <span class="icon fa-rejected-u16"></span>
                         </button>
-                        <button type="button" class="btn-primary btn-shape-xxs"
-                                data-toggle="tooltip" title="Valider l‘offre"
-                                data-action="accept-bid" data-bid-id="{{ offer.idBid }}"
-                                data-spinnerbutton>
+                        <button type="button"
+                                class="btn-default btn-shape-xxs"
+                                data-toggle="tooltip" title="{% trans %} bids.table-action-modify {% endtrans %}"
+                                data-bid-action="modify" data-bid-id="{{ bid.idBid }}" data-bid-amount="{{ bid.money.amount|round }}"
+                                data-bid-formattedamount="{{ bid.money.amount|localizednumberwithprecision(0) }}" data-bid-currency="{{ bid.money.currency }}">
+                            <span class="icon fa-edit-u16"></span>
+                        </button>
+                        <button type="submit" name="status" value="{{ constant('Unilend\\Entity\\Bids::STATUS_ACCEPTED') }}"
+                                class="btn-primary btn-shape-xxs"
+                                data-toggle="tooltip" title="{% trans %} bids.table-action-accept {% endtrans %}">
                             <span class="icon fa-check-u16"></span>
                         </button>
-                    </td>
-                {% endif %}
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table><!-- /.table-myoffers -->
-</form>
+                    </form>
+                </td>
+            {% endif %}
+        </tr>
+    {% endfor %}
+    </tbody>
+</table><!-- /.table-myoffers -->

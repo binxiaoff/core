@@ -43,7 +43,6 @@
     {% include 'project/partials/comment/scripts.html.twig' %}
     <script>
         {% include 'project/partials/fees/fees.js.twig' %}
-        {% include 'project/partials/bids/actions.js.twig' %}
     </script>
 {% endblock %}
 
@@ -183,7 +182,7 @@
                 </div><!-- /.section-tabs-nav -->
                 <div class="section-tabs-content tab-content">
                     {% for tranche in project.tranches %}
-                        {% include 'project/partials/bids/bids_list.html.twig' with {tranche: tranche} %}
+                        {% include 'project/partials/bids/bids_list.html.twig' with {displayAction: false} %}
                     {% endfor %}
                 </div><!-- /.section-tabs-content -->
             </div><!-- /.panel -->

@@ -14,12 +14,12 @@ class ProjectVoter extends Voter
 {
     use ConstantsAwareTrait;
 
-    public const ATTRIBUTE_VIEW         = 'view';
-    public const ATTRIBUTE_EDIT         = 'edit';
-    public const ATTRIBUTE_MANAGER_BIDS = 'manage_bids';
-    public const ATTRIBUTE_RATE         = 'rate';
-    public const ATTRIBUTE_BID          = 'bid';
-    public const ATTRIBUTE_COMMENT      = 'comment';
+    public const ATTRIBUTE_VIEW        = 'view';
+    public const ATTRIBUTE_EDIT        = 'edit';
+    public const ATTRIBUTE_MANAGE_BIDS = 'manage_bids';
+    public const ATTRIBUTE_RATE        = 'rate';
+    public const ATTRIBUTE_BID         = 'bid';
+    public const ATTRIBUTE_COMMENT     = 'comment';
 
     /**
      * {@inheritdoc}
@@ -56,7 +56,7 @@ class ProjectVoter extends Voter
                 return $this->canView($project, $user);
             case self::ATTRIBUTE_EDIT:
                 return $this->canEdit($project, $user);
-            case self::ATTRIBUTE_MANAGER_BIDS:
+            case self::ATTRIBUTE_MANAGE_BIDS:
                 return $this->canManageBids($project, $user);
             case self::ATTRIBUTE_RATE:
                 return $this->canRate($project, $user);

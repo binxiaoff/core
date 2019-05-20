@@ -4,7 +4,7 @@
 <h4 class="margin-20-t">{{ tranche.name }}</h4>
 {% if pendingBids|length > 0 %}
     <h5>En cours</h5>
-    {% include 'project/partials/bids/bids_table.html.twig' with {bids: pendingBids, displayAction: true} %}
+    {% include 'project/partials/bids/bids_table.html.twig' with {bids: pendingBids, displayAction: displayAction|default(false)} %}
 {% else %}
     Aucune offre en cours pour le moment.
 {% endif %}

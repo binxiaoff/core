@@ -51,7 +51,7 @@ class ProjectRepository extends ServiceEntityRepository
         $queryBuilder = $this->createQueryBuilder('p');
         $queryBuilder
             ->innerJoin('p.currentProjectStatusHistory', 'cpsh')
-            ->where('cpsh.status in (:status)')
+            ->where('cpsh.status IN (:status)')
             ->setParameter('status', $status)
         ;
 
