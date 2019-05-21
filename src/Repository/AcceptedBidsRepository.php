@@ -3,16 +3,31 @@
 namespace Unilend\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\ORM\ NoResultException;
-use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\Common\Persistence\ManagerRegistry;
+use Doctrine\ORM\Query\Expr\Join;
+use Doctrine\ORM\{NonUniqueResultException, ORMException, OptimisticLockException};
 use Unilend\Entity\{AcceptedBids, Bids, Loans, Projects, Wallet};
 
 class AcceptedBidsRepository extends ServiceEntityRepository
 {
+    /**
+     * @param ManagerRegistry $registry
+     */
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, AcceptedBids::class);
+    }
+
+    /**
+     * @param AcceptedBids $acceptedBid
+     *
+     * @throws ORMException
+     * @throws OptimisticLockException
+     */
+    public function save(AcceptedBids $acceptedBid): void
+    {
+        $this->getEntityManager()->persist($acceptedBid);
+        $this->getEntityManager()->flush();
     }
 
     /**
@@ -30,7 +45,8 @@ class AcceptedBidsRepository extends ServiceEntityRepository
             ->andWhere('b.project = :project')
             ->orderBy('b.rate', 'DESC')
             ->setParameter('wallet', $wallet)
-            ->setParameter('project', $project);
+            ->setParameter('project', $project)
+        ;
 
         return $queryBuilder->getQuery()->getResult();
     }
@@ -38,8 +54,9 @@ class AcceptedBidsRepository extends ServiceEntityRepository
     /**
      * @param Loans|int $loan
      *
+     * @throws NonUniqueResultException
+     *
      * @return int
-     * @throws NoResultException
      */
     public function getCountAcceptedBidsByLoan($loan): int
     {
@@ -47,7 +64,8 @@ class AcceptedBidsRepository extends ServiceEntityRepository
         $queryBuilder
             ->select('COUNT(ab.idBid)')
             ->where('ab.idLoan = :loan')
-            ->setParameter('loan', $loan);
+            ->setParameter('loan', $loan)
+        ;
 
         return $queryBuilder->getQuery()->getSingleScalarResult();
     }
@@ -56,8 +74,9 @@ class AcceptedBidsRepository extends ServiceEntityRepository
      * @param Wallet|int   $wallet
      * @param Projects|int $project
      *
+     * @throws NonUniqueResultException
+     *
      * @return int
-     * @throws NoResultException
      */
     public function getDistinctBidsForLenderAndProject($wallet, $project): int
     {
@@ -68,7 +87,8 @@ class AcceptedBidsRepository extends ServiceEntityRepository
             ->where('l.wallet = :lender')
             ->andWhere('l.project = :project')
             ->setParameter('lender', $wallet)
-            ->setParameter('project', $project);
+            ->setParameter('project', $project)
+        ;
 
         return $queryBuilder->getQuery()->getSingleScalarResult();
     }

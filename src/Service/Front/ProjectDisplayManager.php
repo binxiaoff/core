@@ -21,11 +21,11 @@ class ProjectDisplayManager
     public const VISIBILITY_NONE                 = 'none';
     /** @var array */
     public const STATUS_DISPLAYABLE = [
-        ProjectsStatus::STATUS_PUBLISHED,
-        ProjectsStatus::STATUS_FUNDED,
-        ProjectsStatus::STATUS_CONTRACTS_SIGNED,
-        ProjectsStatus::STATUS_FINISHED,
-        ProjectsStatus::STATUS_LOST,
+        ProjectStatusHistory::STATUS_PUBLISHED,
+        ProjectStatusHistory::STATUS_FUNDED,
+        ProjectStatusHistory::STATUS_CONTRACTS_REDACTED,
+        ProjectStatusHistory::STATUS_CONTRACTS_SIGNED,
+        ProjectStatusHistory::STATUS_FINISHED,
     ];
 
     /** @var EntityManagerInterface */

@@ -20,6 +20,7 @@ use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Validator\Constraints\Valid;
 use Unilend\Entity\{AcceptedBids, Attachment, Bids, CaRegionalBank, Clients, Loans, Project, ProjectStatusHistory, UnderlyingContract};
+use Unilend\Form\Bid\PartialBid;
 use Unilend\Form\Project\ProjectAttachmentCollectionType;
 use Unilend\Form\Tranche\TrancheTypeCollectionType;
 use Unilend\Repository\{AcceptedBidsRepository, BidsRepository, CaRegionalBankRepository, CompaniesRepository, ProjectAttachmentRepository, ProjectAttachmentTypeRepository,
@@ -66,6 +67,7 @@ class EditController extends AbstractController
             ->add('projectAttachments', ProjectAttachmentCollectionType::class)
             ->getForm()
         ;
+
         $trancheForm = $this->get('form.factory')->createNamedBuilder('tranches', FormType::class, $project, ['data_class' => Project::class])
             ->add('tranches', TrancheTypeCollectionType::class, [
                 'constraints'   => [new Valid()],
@@ -73,6 +75,10 @@ class EditController extends AbstractController
             ])
             ->getForm()
         ;
+
+        $partialBidForm = $this->createForm(PartialBid::class, null, [
+            'action' => $this->generateUrl('edit_bid_partial'),
+        ]);
 
         $documentForm->handleRequest($request);
         $trancheForm->handleRequest($request);
@@ -121,6 +127,7 @@ class EditController extends AbstractController
             'signatureAttachments'     => $projectAttachmentRepository->getAttachmentsWithSignature($project),
             'documentForm'             => $documentForm->createView(),
             'trancheForm'              => $trancheForm->createView(),
+            'partialBidForm'           => $partialBidForm->createView(),
         ];
 
         return $this->render('project/edit/details.html.twig', $template);

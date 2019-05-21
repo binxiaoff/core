@@ -33,7 +33,7 @@ class ListController extends AbstractController
         $sortType      = $request->query->get('sortType', 'expectedClosingDate');
         $sort          = ['cpsh.status' => 'ASC', $sortType => $sortDirection];
         /** @var Project[] $projects */
-        $projects = $projectRepository->findByStatus([ProjectDisplayManager::STATUS_DISPLAYABLE], $sort);
+        $projects = $projectRepository->findByStatus(ProjectDisplayManager::STATUS_DISPLAYABLE, $sort);
 
         foreach ($projects as $index => $project) {
             if (ProjectDisplayManager::VISIBILITY_FULL !== $projectDisplayManager->getVisibility($project, $user)) {
