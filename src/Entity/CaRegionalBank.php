@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Unilend\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
-use Unilend\Entity\Traits\TimestampableTrait;
 use Unilend\Traits\ConstantsAwareTrait;
 
 /**
@@ -13,7 +12,6 @@ use Unilend\Traits\ConstantsAwareTrait;
  */
 class CaRegionalBank
 {
-    use TimestampableTrait;
     use ConstantsAwareTrait;
 
     public const FRIENDLY_GROUP_CENTER     = 1;
@@ -29,7 +27,7 @@ class CaRegionalBank
     private $id;
 
     /**
-     * @ORM\OneToOne(targetEntity="Unilend\Entity\Companies", cascade={"persist", "remove"})
+     * @ORM\OneToOne(targetEntity="Unilend\Entity\Companies", cascade={"persist"})
      * @ORM\JoinColumn(name="id_company", referencedColumnName="id_company", nullable=false)
      */
     private $company;
@@ -56,37 +54,11 @@ class CaRegionalBank
     }
 
     /**
-     * @param Companies $company
-     *
-     * @return CaRegionalBank
-     */
-    public function setCompany(Companies $company): self
-    {
-        $this->company = $company;
-
-        return $this;
-    }
-
-    /**
      * @return int|null
      */
     public function getFriendlyGroup(): ?int
     {
         return $this->friendlyGroup;
-    }
-
-    /**
-     * @param int $friendlyGroup
-     *
-     * @return CaRegionalBank
-     */
-    public function setFriendlyGroup(int $friendlyGroup): self
-    {
-        if (in_array($friendlyGroup, $this->getAllFriendlyGroups())) {
-            $this->friendlyGroup = $friendlyGroup;
-        }
-
-        return $this;
     }
 
     /**
