@@ -15,6 +15,7 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\Filesystem\{Exception\FileNotFoundException, Filesystem};
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Unilend\Entity\{Attachment, AttachmentType, Clients, Companies, Project, ProjectAttachment, ProjectAttachmentType, Transfer, TransferAttachment};
+use Unilend\Service\User\RealUserFinder;
 use URLify;
 
 class AttachmentManager
@@ -31,6 +32,8 @@ class AttachmentManager
     private $rootDirectory;
     /** @var LoggerInterface */
     private $logger;
+    /** @var RealUserFinder */
+    private $realUserFinder;
 
     /**
      * @param EntityManagerInterface $entityManager
@@ -39,6 +42,7 @@ class AttachmentManager
      * @param string                 $tmpDirectory
      * @param string                 $rootDirectory
      * @param LoggerInterface        $logger
+     * @param RealUserFinder         $realUserFinder
      */
     public function __construct(
         EntityManagerInterface $entityManager,
@@ -46,7 +50,8 @@ class AttachmentManager
         string $uploadRootDirectory,
         string $tmpDirectory,
         string $rootDirectory,
-        LoggerInterface $logger
+        LoggerInterface $logger,
+        RealUserFinder $realUserFinder
     ) {
         $this->entityManager       = $entityManager;
         $this->filesystem          = $filesystem;
@@ -54,6 +59,7 @@ class AttachmentManager
         $this->tmpDirectory        = $tmpDirectory;
         $this->rootDirectory       = $rootDirectory;
         $this->logger              = $logger;
+        $this->realUserFinder      = $realUserFinder;
     }
 
     /**
@@ -84,7 +90,7 @@ class AttachmentManager
         $relativeUploadPathAndName = str_replace($this->getUploadRootDir() . DIRECTORY_SEPARATOR, '', $uploadPathAndName);
 
         if ($archivePreviousAttachments) {
-            $this->archiveAttachments($clientOwner, $uploader, $attachmentType ?? $attachment->getType());
+            $this->archiveAttachments($clientOwner, $attachmentType ?? $attachment->getType());
         }
 
         if (null === $attachment) {
@@ -95,7 +101,7 @@ class AttachmentManager
             ->setPath($relativeUploadPathAndName)
             ->setClientOwner($clientOwner)
             ->setCompanyOwner($companyOwner)
-            ->setAddedBy($uploader)
+            ->setAddedByValue($this->realUserFinder)
             ->setOriginalName($uploadedFile->getClientOriginalName())
         ;
 
@@ -415,12 +421,11 @@ class AttachmentManager
 
     /**
      * @param Clients|null   $clientOwner
-     * @param Clients        $archivedBy
      * @param AttachmentType $attachmentType
      *
      * @throws Exception
      */
-    private function archiveAttachments(?Clients $clientOwner, Clients $archivedBy, AttachmentType $attachmentType)
+    private function archiveAttachments(?Clients $clientOwner, AttachmentType $attachmentType)
     {
         $attachmentsToArchive = [];
         if ($clientOwner) {
@@ -435,7 +440,7 @@ class AttachmentManager
             foreach ($attachmentsToArchive as $attachment) {
                 $attachment
                     ->setArchived(new DateTimeImmutable())
-                    ->setArchivedBy($archivedBy)
+                    ->setArchivedByValue($this->realUserFinder)
                 ;
             }
         }

@@ -40,3 +40,5 @@ doctrine:
                 dir: '%kernel.project_dir%/src/Entity'
                 prefix: 'Unilend\Entity'
                 alias: Unilend
+        hydrators:
+            HYDRATE_COLUMN: Unilend\Doctrine\ORM\ColumnHydrator

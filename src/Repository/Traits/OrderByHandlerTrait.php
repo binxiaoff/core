@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Unilend\Repository\Traits;
 
 use Doctrine\ORM\QueryBuilder;
@@ -21,8 +23,10 @@ trait OrderByHandlerTrait
 
         foreach ($orderBy as $sort => $order) {
             if (false === mb_strpos($sort, '.')) {
-                $queryBuilder->addOrderBy($alias . '.' . $sort, $order);
+                $sort = $alias . '.' . $sort;
             }
+
+            $queryBuilder->addOrderBy($sort, $order);
         }
     }
 }

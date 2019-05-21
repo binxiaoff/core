@@ -8,13 +8,14 @@ use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 use Exception;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\Translation\TranslatorInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 use Unilend\Entity\{Clients, EcheanciersEmprunteur, Project, ProjectAbandonReason, ProjectRejectionReason, ProjectStatusHistory, ProjectStatusHistoryReason, Projects,
     ProjectsStatus, ProjectsStatusHistory, Users};
 use Unilend\Repository\ProjectRepository;
 use Unilend\Service\Front\UniversignManager;
 use Unilend\Service\Repayment\ProjectRepaymentTaskManager;
 use Unilend\Service\Simulator\EntityManager as EntityManagerSimulator;
+use Unilend\Service\User\RealUserFinder;
 
 class ProjectStatusManager
 {
@@ -36,6 +37,8 @@ class ProjectStatusManager
     private $mailerManager;
     /** @var ProjectRepository */
     private $projectRepository;
+    /** @var RealUserFinder */
+    private $realUserFinder;
 
     /**
      * @param EntityManagerSimulator      $entityManagerSimulator
@@ -47,6 +50,7 @@ class ProjectStatusManager
      * @param ProjectRepaymentTaskManager $projectRepaymentTaskManager
      * @param MailerManager               $mailerManager
      * @param ProjectRepository           $projectRepository
+     * @param RealUserFinder              $realUserFinder
      */
     public function __construct(
         EntityManagerSimulator $entityManagerSimulator,
@@ -57,7 +61,8 @@ class ProjectStatusManager
         UniversignManager $universignManager,
         ProjectRepaymentTaskManager $projectRepaymentTaskManager,
         MailerManager $mailerManager,
-        ProjectRepository $projectRepository
+        ProjectRepository $projectRepository,
+        RealUserFinder $realUserFinder
     ) {
         $this->entityManagerSimulator      = $entityManagerSimulator;
         $this->entityManager               = $entityManager;
@@ -68,6 +73,7 @@ class ProjectStatusManager
         $this->projectRepaymentTaskManager = $projectRepaymentTaskManager;
         $this->mailerManager               = $mailerManager;
         $this->projectRepository           = $projectRepository;
+        $this->realUserFinder              = $realUserFinder;
     }
 
     /**
@@ -206,7 +212,7 @@ class ProjectStatusManager
     {
         $projectStatusHistory = (new ProjectStatusHistory())
             ->setStatus($projectStatus)
-            ->setAddedBy($user)
+            ->setAddedByValue($this->realUserFinder)
         ;
         $project->setProjectStatusHistory($projectStatusHistory);
 
@@ -470,9 +476,9 @@ class ProjectStatusManager
     }
 
     /**
-     * @param Projects        $project
-     * @param array           $reasons
-     * @param string          $errorMessage
+     * @param Projects       $project
+     * @param array          $reasons
+     * @param string         $errorMessage
      * @param Exception|null $exception
      */
     private function logFailedProjectStatusChange(Projects $project, array $reasons, string $errorMessage, ?Exception $exception = null): void

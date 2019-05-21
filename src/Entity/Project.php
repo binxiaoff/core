@@ -31,6 +31,25 @@ class Project
     public const FONCARIS_GUARANTEE_NEED               = 1;
     public const FONCARIS_GUARANTEE_ALREADY_GUARANTEED = 2;
 
+    public const OPERATION_TYPE_ARRANGEMENT = 1;
+    public const OPERATION_TYPE_SYNDICATION = 2;
+
+    public const INTERNAL_RATING_SCORE_A_PLUS  = 'A+';
+    public const INTERNAL_RATING_SCORE_A       = 'A';
+    public const INTERNAL_RATING_SCORE_B_PLUS  = 'B+';
+    public const INTERNAL_RATING_SCORE_B       = 'B';
+    public const INTERNAL_RATING_SCORE_C_PLUS  = 'C+';
+    public const INTERNAL_RATING_SCORE_C       = 'C';
+    public const INTERNAL_RATING_SCORE_C_MINUS = 'C-';
+    public const INTERNAL_RATING_SCORE_D_PLUS  = 'D+';
+    public const INTERNAL_RATING_SCORE_D       = 'D';
+    public const INTERNAL_RATING_SCORE_D_MINUS = 'D-';
+    public const INTERNAL_RATING_SCORE_E_PLUS  = 'E+';
+    public const INTERNAL_RATING_SCORE_E       = 'E';
+    public const INTERNAL_RATING_SCORE_E_MINUS = 'E-';
+    public const INTERNAL_RATING_SCORE_F       = 'F';
+    public const INTERNAL_RATING_SCORE_Z       = 'Z';
+
     /**
      * @var int
      *
@@ -154,6 +173,13 @@ class Project
      * @ORM\Column(length=8, nullable=true)
      */
     private $internalRatingScore;
+
+    /**
+     * @var int
+     *
+     * @ORM\Column(type="smallint", nullable=false)
+     */
+    private $operationType;
 
     /**
      * @var ArrayCollection|ProjectStatusHistory[]
@@ -486,7 +512,47 @@ class Project
      */
     public function setInternalRatingScore(?string $internalRatingScore): void
     {
-        $this->internalRatingScore = $internalRatingScore;
+        if (in_array($internalRatingScore, $this->getAllInternalRatingScores())) {
+            $this->internalRatingScore = $internalRatingScore;
+        }
+    }
+
+    /**
+     * @return array
+     */
+    public function getAllInternalRatingScores(): array
+    {
+        return self::getConstants('INTERNAL_RATING_SCORE_');
+    }
+
+    /**
+     * @return int|null
+     */
+    public function getOperationType(): ?int
+    {
+        return $this->operationType;
+    }
+
+    /**
+     * @param int $operationType
+     *
+     * @return Project
+     */
+    public function setOperationType(int $operationType): Project
+    {
+        if (in_array($operationType, $this->getAllOperationTypes())) {
+            $this->operationType = $operationType;
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return array
+     */
+    public function getAllOperationTypes(): array
+    {
+        return self::getConstants('OPERATION_TYPE_');
     }
 
     /**

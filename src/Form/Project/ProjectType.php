@@ -10,6 +10,7 @@ use Symfony\Component\Form\Extension\Core\Type\{CheckboxType, ChoiceType, DateTy
 use Symfony\Component\Form\{AbstractType, FormBuilderInterface, FormError, FormEvent, FormEvents};
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
+use Symfony\Component\Validator\Constraints\Valid;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Unilend\Entity\{Clients, Companies, MarketSegment, Project};
 use Unilend\Form\{Company\CompanyAutocompleteType, Tranche\TrancheTypeCollectionType};
@@ -47,15 +48,15 @@ class ProjectType extends AbstractType
         $currentCompany = $this->getCurrentCompany();
 
         $builder
-            ->add('title', TextType::class, ['label' => 'project-form.title'])
+            ->add('title', TextType::class, ['label' => 'project-form.title-label'])
             ->add('borrowerCompany', CompanyAutocompleteType::class, ['label' => 'project-form.borrower-company'])
             ->add('borrowerCompanyCreationInProgress', CheckboxType::class, [
                 'mapped'   => false,
-                'label'    => 'project-form.borrower-company-creation-in-progress',
+                'label'    => 'project-form.borrower-company-creation-in-progress-label',
                 'required' => false,
             ])
             ->add('marketSegment', EntityType::class, [
-                'label'        => 'project-form.market-segment',
+                'label'        => 'project-form.market-segment-label',
                 'choice_label' => function (MarketSegment $marketSegment, $key, $value) {
                     return 'market-segment.' . $marketSegment->getLabel();
                 },
@@ -64,7 +65,7 @@ class ProjectType extends AbstractType
                 'placeholder'               => '',
             ])
             ->add('replyDeadline', DateType::class, [
-                'label'    => 'project-form.replay-deadline',
+                'label'    => 'project-form.replay-deadline-label',
                 'required' => false,
                 'widget'   => 'single_text',
                 'input'    => 'datetime_immutable',
@@ -72,7 +73,7 @@ class ProjectType extends AbstractType
                 'attr'     => ['class' => 'ui-has-datepicker'],
             ])
             ->add('expectedClosingDate', DateType::class, [
-                'label'    => 'project-form.expected-closing-date',
+                'label'    => 'project-form.expected-closing-date-label',
                 'required' => false,
                 'widget'   => 'single_text',
                 'input'    => 'datetime_immutable',
@@ -80,12 +81,15 @@ class ProjectType extends AbstractType
                 'attr'     => ['class' => 'ui-has-datepicker'],
             ])
             ->add('description', TextareaType::class, [
-                'label' => 'project-form.description',
+                'label' => 'project-form.description-label',
                 'attr'  => ['rows' => 6],
             ])
-            ->add('tranches', TrancheTypeCollectionType::class)
+            ->add('tranches', TrancheTypeCollectionType::class, [
+                'constraints'   => [new Valid()],
+                'entry_options' => ['rate_required' => Project::OPERATION_TYPE_SYNDICATION === $options['operation_type']],
+            ])
             ->add('foncarisGuarantee', ChoiceType::class, [
-                'label'        => 'project-form.foncaris-guarantee',
+                'label'        => 'project-form.foncaris-guarantee-label',
                 'required'     => false,
                 'choices'      => Project::getFoncarisGuaranteeOptions(),
                 'choice_label' => function ($option, string $key, string $value) {
@@ -93,7 +97,7 @@ class ProjectType extends AbstractType
                 },
             ])
             ->add('arranger', EntityType::class, [
-                'label'         => 'project-form.arranger',
+                'label'         => 'project-form.arranger-label',
                 'required'      => false,
                 'class'         => Companies::class,
                 'query_builder' => function (CompaniesRepository $companyRepository) use ($currentCompany) {
@@ -101,15 +105,15 @@ class ProjectType extends AbstractType
                 },
             ])
             ->add('run', EntityType::class, [
-                'label'         => 'project-form.run',
+                'label'         => 'project-form.run-label',
                 'required'      => false,
                 'class'         => Companies::class,
                 'query_builder' => function (CompaniesRepository $companyRepository) {
                     return $companyRepository->createEligibleRunQB(['name' => 'ASC']);
                 },
             ])
-            ->add('projectAttachments', ProjectAttachmentCollectionType::class)
-            ->addEventListener(FormEvents::POST_SUBMIT, [$this, 'handleBorrowerCompany'])
+            ->add('projectAttachments', ProjectAttachmentCollectionType::class, ['constraints' => [new Valid()]])
+            ->addEventListener(FormEvents::POST_SUBMIT, [$this, 'handleCreationInProgressCompany'])
         ;
     }
 
@@ -119,6 +123,7 @@ class ProjectType extends AbstractType
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefault('data_class', Project::class);
+        $resolver->setRequired(['operation_type']);
     }
 
     /**
@@ -132,7 +137,7 @@ class ProjectType extends AbstractType
     /**
      * @param FormEvent $formEvent
      */
-    public function handleBorrowerCompany(FormEvent $formEvent): void
+    public function handleCreationInProgressCompany(FormEvent $formEvent): void
     {
         /** @var Project $project */
         $project = $formEvent->getData();

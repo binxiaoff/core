@@ -18,12 +18,13 @@ use Symfony\Component\HttpFoundation\{File\UploadedFile, Request, Response};
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
-use Unilend\Entity\{AcceptedBids, Attachment, Bids, Clients, Loans, Project, ProjectStatusHistory, UnderlyingContract};
+use Symfony\Component\Validator\Constraints\Valid;
+use Unilend\Entity\{AcceptedBids, Attachment, Bids, CaRegionalBank, Clients, Loans, Project, ProjectStatusHistory, UnderlyingContract};
 use Unilend\Form\Bid\PartialBid;
 use Unilend\Form\Project\ProjectAttachmentCollectionType;
 use Unilend\Form\Tranche\TrancheTypeCollectionType;
-use Unilend\Repository\{AcceptedBidsRepository, BidsRepository, CompaniesRepository, ProjectAttachmentRepository, ProjectAttachmentTypeRepository, ProjectRepository,
-    TrancheRepository, UnderlyingContractRepository};
+use Unilend\Repository\{AcceptedBidsRepository, BidsRepository, CaRegionalBankRepository, CompaniesRepository, ProjectAttachmentRepository, ProjectAttachmentTypeRepository,
+    ProjectRepository, TrancheRepository, UnderlyingContractRepository};
 use Unilend\Security\Voter\ProjectVoter;
 use Unilend\Service\{AttachmentManager, DemoMailerManager, ProjectStatusManager};
 
@@ -41,9 +42,11 @@ class EditController extends AbstractController
      * @param ProjectRepository               $projectRepository
      * @param ProjectAttachmentRepository     $projectAttachmentRepository
      * @param ProjectAttachmentTypeRepository $projectAttachmentTypeRepository
+     * @param CaRegionalBankRepository        $regionalBankRepository
      * @param AttachmentManager               $attachmentManager
      *
-     * @throws Exception
+     * @throws ORMException
+     * @throws OptimisticLockException
      *
      * @return Response
      */
@@ -55,6 +58,7 @@ class EditController extends AbstractController
         ProjectRepository $projectRepository,
         ProjectAttachmentRepository $projectAttachmentRepository,
         ProjectAttachmentTypeRepository $projectAttachmentTypeRepository,
+        CaRegionalBankRepository $regionalBankRepository,
         AttachmentManager $attachmentManager
     ): Response {
         $regionalBanks = $companyRepository->findRegionalBanks(['name' => 'ASC']);
@@ -65,7 +69,10 @@ class EditController extends AbstractController
         ;
 
         $trancheForm = $this->get('form.factory')->createNamedBuilder('tranches', FormType::class, $project, ['data_class' => Project::class])
-            ->add('tranches', TrancheTypeCollectionType::class)
+            ->add('tranches', TrancheTypeCollectionType::class, [
+                'constraints'   => [new Valid()],
+                'entry_options' => ['rate_required' => Project::OPERATION_TYPE_SYNDICATION === (int) $project->getOperationType()],
+            ])
             ->getForm()
         ;
 
@@ -105,17 +112,22 @@ class EditController extends AbstractController
         }
 
         $template = [
-            'arrangers'            => $companyRepository->findEligibleArrangers($user->getCompany(), ['name' => 'ASC']),
-            'runs'                 => $regionalBanks,
-            'regionalBanks'        => $regionalBanks,
-            'projectStatus'        => ProjectStatusHistory::getAllProjectStatus(),
-            'project'              => $project,
-            'attachmentTypes'      => $projectAttachmentTypeRepository->getAttachmentTypes(),
-            'projectAttachments'   => $projectAttachmentRepository->getAttachmentsWithoutSignature($project),
-            'signatureAttachments' => $projectAttachmentRepository->getAttachmentsWithSignature($project),
-            'documentForm'         => $documentForm->createView(),
-            'trancheForm'          => $trancheForm->createView(),
-            'partialBidForm'       => $partialBidForm->createView(),
+            'arrangers'                => $companyRepository->findEligibleArrangers($user->getCompany(), ['name' => 'ASC']),
+            'runs'                     => $regionalBanks,
+            'regionalBanks'            => $regionalBanks,
+            'regionalBankIds'          => $regionalBankRepository->getRegionalBankIds(null, ['c.name' => 'ASC']),
+            'centerRegionalBankIds'    => $regionalBankRepository->getRegionalBankIds(CaRegionalBank::FRIENDLY_GROUP_CENTER, ['c.name' => 'ASC']),
+            'northEastRegionalBankIds' => $regionalBankRepository->getRegionalBankIds(CaRegionalBank::FRIENDLY_GROUP_NORTH_EAST, ['c.name' => 'ASC']),
+            'westRegionalBankIds'      => $regionalBankRepository->getRegionalBankIds(CaRegionalBank::FRIENDLY_GROUP_WEST, ['c.name' => 'ASC']),
+            'southRegionalBankIds'     => $regionalBankRepository->getRegionalBankIds(CaRegionalBank::FRIENDLY_GROUP_SOUTH, ['c.name' => 'ASC']),
+            'projectStatus'            => ProjectStatusHistory::getAllProjectStatus(),
+            'project'                  => $project,
+            'attachmentTypes'          => $projectAttachmentTypeRepository->getAttachmentTypes(),
+            'projectAttachments'       => $projectAttachmentRepository->getAttachmentsWithoutSignature($project),
+            'signatureAttachments'     => $projectAttachmentRepository->getAttachmentsWithSignature($project),
+            'documentForm'             => $documentForm->createView(),
+            'trancheForm'              => $trancheForm->createView(),
+            'partialBidForm'           => $partialBidForm->createView(),
         ];
 
         return $this->render('project/edit/details.html.twig', $template);

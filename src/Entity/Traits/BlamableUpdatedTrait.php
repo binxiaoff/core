@@ -6,6 +6,7 @@ namespace Unilend\Entity\Traits;
 
 use Doctrine\ORM\Mapping as ORM;
 use Unilend\Entity\Clients;
+use Unilend\Service\User\RealUserFinder;
 
 trait BlamableUpdatedTrait
 {
@@ -23,6 +24,16 @@ trait BlamableUpdatedTrait
     public function getUpdatedBy(): ?Clients
     {
         return $this->updatedBy;
+    }
+
+    /**
+     * @param callable|RealUserFinder $realUserFinder
+     *
+     * @return self
+     */
+    public function setUpdatedByValue(callable $realUserFinder): self
+    {
+        return $this->setUpdatedBy($realUserFinder());
     }
 
     /**
