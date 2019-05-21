@@ -13,7 +13,7 @@ use Symfony\Component\Security\Core\User\UserInterface;
 use Unilend\Entity\{Attachment, Clients, Project, ProjectStatusHistory};
 use Unilend\Form\Project\ProjectType;
 use Unilend\Repository\ProjectRepository;
-use Unilend\Service\AttachmentManager;
+use Unilend\Service\{AttachmentManager, User\RealUserFinder};
 
 class CreateController extends AbstractController
 {
@@ -35,6 +35,7 @@ class CreateController extends AbstractController
      * @param ProjectRepository          $projectRepository
      * @param UserInterface|Clients|null $client
      * @param AttachmentManager          $attachmentManager
+     * @param RealUserFinder             $realUserFinder
      *
      * @throws ORMException
      * @throws OptimisticLockException
@@ -46,7 +47,8 @@ class CreateController extends AbstractController
         string $operationType,
         ProjectRepository $projectRepository,
         ?UserInterface $client,
-        AttachmentManager $attachmentManager
+        AttachmentManager $attachmentManager,
+        RealUserFinder $realUserFinder
     ) {
         $project = (new Project())->setOperationType((int) $operationType);
 
@@ -71,7 +73,7 @@ class CreateController extends AbstractController
 
             $projectStatusHistory = (new ProjectStatusHistory())
                 ->setStatus(ProjectStatusHistory::STATUS_REQUESTED)
-                ->setAddedBy($client)
+                ->setAddedByValue($realUserFinder)
             ;
 
             $project

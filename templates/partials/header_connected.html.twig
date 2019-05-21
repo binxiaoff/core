@@ -26,8 +26,11 @@
                             <div class="profile-balance">
                                 {{ app.user.company.name }}
                             </div><!-- /.profile-balance -->
-
-                            <a href="{{ path('logout') }}" class="profile-logout link"><span class="label">Se déconnecter</span></a>
+                            {% if is_granted('ROLE_PREVIOUS_ADMIN') %}
+                                <a href="{{ path('wallet', {'_switch_user': '_exit'}) }}">{% trans %}user-header.exit-impersonation {% endtrans %}</a>
+                            {% else %}
+                                <a href="{{ path('logout') }}" class="profile-logout link"><span class="label">{% trans %}user-header.logout {% endtrans %}</span></a>
+                            {% endif %}
 
                             <a href="{{ path('wallet') }}" class="site-user-mobile-menu-toggle">
                                 <span class="icon fa-ellipsis-v"></span>

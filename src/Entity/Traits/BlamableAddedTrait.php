@@ -6,6 +6,7 @@ namespace Unilend\Entity\Traits;
 
 use Doctrine\ORM\Mapping as ORM;
 use Unilend\Entity\Clients;
+use Unilend\Service\User\RealUserFinder;
 
 trait BlamableAddedTrait
 {
@@ -26,11 +27,21 @@ trait BlamableAddedTrait
     }
 
     /**
+     * @param callable|RealUserFinder $realUserFinder
+     *
+     * @return self
+     */
+    public function setAddedByValue(callable $realUserFinder): self
+    {
+        return $this->setAddedBy($realUserFinder());
+    }
+
+    /**
      * @param Clients $addedBy
      *
      * @return self
      */
-    public function setAddedBy(Clients $addedBy): self
+    private function setAddedBy(Clients $addedBy): self
     {
         $this->addedBy = $addedBy;
 
