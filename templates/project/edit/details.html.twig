@@ -171,7 +171,11 @@
                         <h3 class="margin-10-t">Notation</h3>
                         <div class="row row-multi-col-computer scoring">
                             <dl class="col-md-4 col-lg-4">
-                                <dt>Arrangeur</dt>
+                                {% set arrangerLabel = 'project-form.arranger-label' %}
+                                {% if constant('\\Unilend\\Entity\\Project::OPERATION_TYPE_SYNDICATION') == project.operationType %}
+                                    {% set arrangerLabel = 'project-form.lead-manager-label' %}
+                                {% endif %}
+                                <dt>{{ arrangerLabel|trans }}</dt>
                                 <dd>
                                     {% if project.isEditable %}
                                         <a href="#" id="arranger" data-type="select">
@@ -185,7 +189,7 @@
                                 </dd>
                             </dl>
                             <dl class="col-md-4 col-lg-4">
-                                <dt>RUN</dt>
+                                <dt>{% trans %} project-form.run-label {% endtrans %}</dt>
                                 <dd>
                                     {% if project.isEditable %}
                                         <a href="#" id="run" data-type="select">
@@ -263,23 +267,23 @@
                             </div>
                             <div class="row">
                                 <label>
-                                    <input type="checkbox" class="group-select" data-companies="4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42">
+                                    <input type="checkbox" class="group-select" data-companies="{{ regionalBankIds|join(',') }}">
                                     Caisses régionales
                                 </label>
                                 <label>
-                                    <input type="checkbox" class="group-select" data-companies="10,11,12,14,26,42">
+                                    <input type="checkbox" class="group-select" data-companies="{{ centerRegionalBankIds|join(',') }}">
                                     Amicale Centre
                                 </label>
                                 <label>
-                                    <input type="checkbox" class="group-select" data-companies="5,9,22,27,30,31,33,34">
+                                    <input type="checkbox" class="group-select" data-companies="{{ northEastRegionalBankIds|join(',') }}">
                                     Amicale Nord & Est
                                 </label>
                                 <label>
-                                    <input type="checkbox" class="group-select" data-companies="6,8,15,16,18,19,21,23,24,28,29,41">
+                                    <input type="checkbox" class="group-select" data-companies="{{ westRegionalBankIds|join(',') }}">
                                     Amicale Ouest
                                 </label>
                                 <label>
-                                    <input type="checkbox" class="group-select" data-companies="4,7,13,17,20,25,32,35,36,37,38,39,40">
+                                    <input type="checkbox" class="group-select" data-companies="{{ southRegionalBankIds|join(',') }}">
                                     Amicale Sud
                                 </label>
                             </div>
