@@ -21,7 +21,7 @@ use Unilend\Service\{BidManager, DemoMailerManager};
 class EditController extends AbstractController
 {
     /**
-     * @Route("/bid/status", name="edit_bid_status")
+     * @Route("/bid/status", name="edit_bid_status", methods={"POST"})
      *
      * @param Request           $request
      * @param BidManager        $bidManager
@@ -85,7 +85,7 @@ class EditController extends AbstractController
     }
 
     /**
-     * @Route("/bid/partial", name="edit_bid_partial")
+     * @Route("/bid/partial", name="edit_bid_partial", methods={"POST"})
      *
      * @param Request           $request
      * @param BidManager        $bidManager
