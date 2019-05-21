@@ -2,7 +2,7 @@
   "name": "unilend/site_project",
   "license": "proprietary",
   "type": "project",
-  "minimum-stability": "dev",
+  "minimum-stability": "beta",
   "autoload": {
     "psr-4": {
       "Unilend\\": "src/",
@@ -30,10 +30,10 @@
     "ekino/newrelic-bundle": "^2.0",
     "facile-it/doctrine-mysql-come-back": "^1.6",
     "gushphp/to-inline-style-email-bundle": "^1.4",
-    "hashids/hashids": "^3.0",
+    "hashids/hashids": "^4.0",
     "incenteev/composer-parameter-handler": "^2.0",
     "jbroadway/urlify": "^1.0",
-    "jms/serializer-bundle": "^2.2",
+    "jms/serializer-bundle": "^3.3",
     "knplabs/knp-snappy-bundle": "^1.5",
     "lcobucci/jwt": "^3.2",
     "mailjet/mailjet-apiv3-php": "^1.1",
@@ -64,7 +64,7 @@
     "symfony/flex": "^1.2",
     "symfony/form": "*",
     "symfony/framework-bundle": "*",
-    "symfony/http-client": "^4.3@dev",
+    "symfony/http-client": "*",
     "symfony/http-foundation": "*",
     "symfony/http-kernel": "*",
     "symfony/lock": "*",
@@ -92,9 +92,9 @@
     "friendsofphp/php-cs-fixer": "^2.14",
     "phpmd/phpmd": "^2.6",
     "phpro/grumphp": "^0.15.0",
-    "phpstan/phpstan-doctrine": "^0.11.2",
-    "phpstan/phpstan-phpunit": "0.11",
-    "phpstan/phpstan-symfony": "^0.11.3",
+    "phpstan/phpstan-doctrine": "^0.11",
+    "phpstan/phpstan-phpunit": "^0.11",
+    "phpstan/phpstan-symfony": "^0.11",
     "squizlabs/php_codesniffer": "^3.4",
     "symfony/browser-kit": "*",
     "symfony/debug-bundle": "*",
@@ -111,7 +111,7 @@
   },
   "scripts": {
     "auto-scripts": {
-      "doctrine:cache:clear-metadata -vvv": "symfony-cmd",
+      "doctrine:cache:clear-metadata": "symfony-cmd",
       "cache:clear": "symfony-cmd",
       "assets:install --symlink --relative %PUBLIC_DIR%": "symfony-cmd"
     },
