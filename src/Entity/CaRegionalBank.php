@@ -9,9 +9,9 @@ use Unilend\Entity\Traits\TimestampableTrait;
 use Unilend\Traits\ConstantsAwareTrait;
 
 /**
- * @ORM\Entity(repositoryClass="Unilend\Repository\RegionalBankRepository")
+ * @ORM\Entity(repositoryClass="Unilend\Repository\CaRegionalBankRepository")
  */
-class RegionalBank
+class CaRegionalBank
 {
     use TimestampableTrait;
     use ConstantsAwareTrait;
@@ -58,7 +58,7 @@ class RegionalBank
     /**
      * @param Companies $company
      *
-     * @return RegionalBank
+     * @return CaRegionalBank
      */
     public function setCompany(Companies $company): self
     {
@@ -78,7 +78,7 @@ class RegionalBank
     /**
      * @param int $friendlyGroup
      *
-     * @return RegionalBank
+     * @return CaRegionalBank
      */
     public function setFriendlyGroup(int $friendlyGroup): self
     {

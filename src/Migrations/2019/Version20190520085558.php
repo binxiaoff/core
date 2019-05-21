@@ -21,10 +21,10 @@ final class Version20190520085558 extends AbstractMigration
     {
         $this->abortIf('mysql' !== $this->connection->getDatabasePlatform()->getName(), 'Migration can only be executed safely on \'mysql\'.');
 
-        $this->addSql('CREATE TABLE regional_bank (id INT AUTO_INCREMENT NOT NULL, id_company INT NOT NULL, friendly_group INT NOT NULL, updated DATETIME DEFAULT NULL, added DATETIME NOT NULL, UNIQUE INDEX UNIQ_661B74A49122A03F (id_company), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ENGINE = InnoDB');
-        $this->addSql('ALTER TABLE regional_bank ADD CONSTRAINT FK_661B74A49122A03F FOREIGN KEY (id_company) REFERENCES companies (id_company)');
+        $this->addSql('CREATE TABLE ca_regional_bank (id INT AUTO_INCREMENT NOT NULL, id_company INT NOT NULL, friendly_group INT NOT NULL, updated DATETIME DEFAULT NULL, added DATETIME NOT NULL, UNIQUE INDEX UNIQ_661B74A49122A03F (id_company), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ENGINE = InnoDB');
+        $this->addSql('ALTER TABLE ca_regional_bank ADD CONSTRAINT FK_661B74A49122A03F FOREIGN KEY (id_company) REFERENCES companies (id_company)');
         $this->addSql('
-            INSERT INTO regional_bank (id_company, friendly_group, added)
+            INSERT INTO ca_regional_bank (id_company, friendly_group, added)
             VALUES
                    (4, 4, NOW()),
                    (5, 2, NOW()),
@@ -72,6 +72,6 @@ final class Version20190520085558 extends AbstractMigration
     {
         $this->abortIf('mysql' !== $this->connection->getDatabasePlatform()->getName(), 'Migration can only be executed safely on \'mysql\'.');
 
-        $this->addSql('DROP TABLE regional_bank');
+        $this->addSql('DROP TABLE ca_regional_bank');
     }
 }

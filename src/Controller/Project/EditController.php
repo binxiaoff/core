@@ -19,11 +19,11 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Validator\Constraints\Valid;
-use Unilend\Entity\{AcceptedBids, Attachment, Bids, Clients, Loans, Project, ProjectStatusHistory, RegionalBank, UnderlyingContract};
+use Unilend\Entity\{AcceptedBids, Attachment, Bids, CaRegionalBank, Clients, Loans, Project, ProjectStatusHistory, UnderlyingContract};
 use Unilend\Form\Project\ProjectAttachmentCollectionType;
 use Unilend\Form\Tranche\TrancheTypeCollectionType;
-use Unilend\Repository\{AcceptedBidsRepository, BidsRepository, CompaniesRepository, ProjectAttachmentRepository, ProjectAttachmentTypeRepository, ProjectRepository,
-    RegionalBankRepository, TrancheRepository, UnderlyingContractRepository};
+use Unilend\Repository\{AcceptedBidsRepository, BidsRepository, CaRegionalBankRepository, CompaniesRepository, ProjectAttachmentRepository, ProjectAttachmentTypeRepository,
+    ProjectRepository, TrancheRepository, UnderlyingContractRepository};
 use Unilend\Security\Voter\ProjectVoter;
 use Unilend\Service\{AttachmentManager, DemoMailerManager, ProjectStatusManager};
 
@@ -41,7 +41,7 @@ class EditController extends AbstractController
      * @param ProjectRepository               $projectRepository
      * @param ProjectAttachmentRepository     $projectAttachmentRepository
      * @param ProjectAttachmentTypeRepository $projectAttachmentTypeRepository
-     * @param RegionalBankRepository          $regionalBankRepository
+     * @param CaRegionalBankRepository        $regionalBankRepository
      * @param AttachmentManager               $attachmentManager
      *
      * @throws ORMException
@@ -57,7 +57,7 @@ class EditController extends AbstractController
         ProjectRepository $projectRepository,
         ProjectAttachmentRepository $projectAttachmentRepository,
         ProjectAttachmentTypeRepository $projectAttachmentTypeRepository,
-        RegionalBankRepository $regionalBankRepository,
+        CaRegionalBankRepository $regionalBankRepository,
         AttachmentManager $attachmentManager
     ): Response {
         $regionalBanks = $companyRepository->findRegionalBanks(['name' => 'ASC']);
@@ -110,10 +110,10 @@ class EditController extends AbstractController
             'runs'                     => $regionalBanks,
             'regionalBanks'            => $regionalBanks,
             'regionalBankIds'          => $regionalBankRepository->getRegionalBankIds(null, ['c.name' => 'ASC']),
-            'centerRegionalBankIds'    => $regionalBankRepository->getRegionalBankIds(RegionalBank::FRIENDLY_GROUP_CENTER, ['c.name' => 'ASC']),
-            'northEastRegionalBankIds' => $regionalBankRepository->getRegionalBankIds(RegionalBank::FRIENDLY_GROUP_NORTH_EAST, ['c.name' => 'ASC']),
-            'westRegionalBankIds'      => $regionalBankRepository->getRegionalBankIds(RegionalBank::FRIENDLY_GROUP_WEST, ['c.name' => 'ASC']),
-            'southRegionalBankIds'     => $regionalBankRepository->getRegionalBankIds(RegionalBank::FRIENDLY_GROUP_SOUTH, ['c.name' => 'ASC']),
+            'centerRegionalBankIds'    => $regionalBankRepository->getRegionalBankIds(CaRegionalBank::FRIENDLY_GROUP_CENTER, ['c.name' => 'ASC']),
+            'northEastRegionalBankIds' => $regionalBankRepository->getRegionalBankIds(CaRegionalBank::FRIENDLY_GROUP_NORTH_EAST, ['c.name' => 'ASC']),
+            'westRegionalBankIds'      => $regionalBankRepository->getRegionalBankIds(CaRegionalBank::FRIENDLY_GROUP_WEST, ['c.name' => 'ASC']),
+            'southRegionalBankIds'     => $regionalBankRepository->getRegionalBankIds(CaRegionalBank::FRIENDLY_GROUP_SOUTH, ['c.name' => 'ASC']),
             'projectStatus'            => ProjectStatusHistory::getAllProjectStatus(),
             'project'                  => $project,
             'attachmentTypes'          => $projectAttachmentTypeRepository->getAttachmentTypes(),

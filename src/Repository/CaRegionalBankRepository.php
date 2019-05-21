@@ -6,16 +6,16 @@ namespace Unilend\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Symfony\Bridge\Doctrine\RegistryInterface;
-use Unilend\Entity\RegionalBank;
+use Unilend\Entity\CaRegionalBank;
 use Unilend\Repository\Traits\OrderByHandlerTrait;
 
 /**
- * @method RegionalBank|null find($id, $lockMode = null, $lockVersion = null)
- * @method RegionalBank|null findOneBy(array $criteria, array $orderBy = null)
- * @method RegionalBank[]    findAll()
- * @method RegionalBank[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
+ * @method CaRegionalBank|null find($id, $lockMode = null, $lockVersion = null)
+ * @method CaRegionalBank|null findOneBy(array $criteria, array $orderBy = null)
+ * @method CaRegionalBank[]    findAll()
+ * @method CaRegionalBank[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
  */
-class RegionalBankRepository extends ServiceEntityRepository
+class CaRegionalBankRepository extends ServiceEntityRepository
 {
     use OrderByHandlerTrait;
 
@@ -24,7 +24,7 @@ class RegionalBankRepository extends ServiceEntityRepository
      */
     public function __construct(RegistryInterface $registry)
     {
-        parent::__construct($registry, RegionalBank::class);
+        parent::__construct($registry, CaRegionalBank::class);
     }
 
     /**
