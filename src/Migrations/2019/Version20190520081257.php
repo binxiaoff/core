@@ -21,16 +21,18 @@ final class Version20190520081257 extends AbstractMigration
     {
         // this up() migration is auto-generated, please modify it to your needs
         $this->abortIf('mysql' !== $this->connection->getDatabasePlatform()->getName(), 'Migration can only be executed safely on \'mysql\'.');
+        $this->addSql('UPDATE translations set name = CONCAT(name, \'-label\') WHERE section = \'project-form\'');
         $this->addSql('INSERT IGNORE INTO translations (locale, section, name, translation, added) VALUES
-                        (\'fr_FR\', \'project-form\', \'lead-manager\', \'Chef de file\', NOW())');
-        $this->addSql('UPDATE translations set translation = \'RUN emprunteur\' WHERE section = \'project-form\' AND name = \'run\'');
+                        (\'fr_FR\', \'project-form\', \'lead-manager-label\', \'Chef de file\', NOW())');
+        $this->addSql('UPDATE translations set translation = \'RUN emprunteur\' WHERE section = \'project-form\' AND name = \'run-label\'');
     }
 
     public function down(Schema $schema): void
     {
         /// this up() migration is auto-generated, please modify it to your needs
         $this->abortIf('mysql' !== $this->connection->getDatabasePlatform()->getName(), 'Migration can only be executed safely on \'mysql\'.');
-        $this->addSql('DELETE FROM translations WHERE section = \'project-form\' AND name = \'lead-manager\'');
-        $this->addSql('UPDATE translations set translation = \'RUN\' WHERE section = \'project-form\' AND name = \'run\'');
+        $this->addSql('DELETE FROM translations WHERE section = \'project-form\' AND name = \'lead-manager-label\'');
+        $this->addSql('UPDATE translations set translation = \'RUN\' WHERE section = \'project-form\' AND name = \'run-label\'');
+        $this->addSql('UPDATE translations set name = REPLACE(name, \'-label\', \'\') WHERE section = \'project-form\'');
     }
 }

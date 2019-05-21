@@ -79,13 +79,13 @@
                             </dl>
                             <dl class="col-lg-6 col-md-6">
                                 <dt>Structuration</dt>
-                                {% set arrangerLabel = 'project-form.arranger' %}
+                                {% set arrangerLabel = 'project-form.arranger-label' %}
                                 {% if constant('\\Unilend\\Entity\\Project::OPERATION_TYPE_SYNDICATION') == project.operationType %}
-                                    {% set arrangerLabel = 'project-form.lead-manager' %}
+                                    {% set arrangerLabel = 'project-form.lead-manager-label' %}
                                 {% endif %}
                                 <dd>
                                     <div>{{ arrangerLabel|trans }} : {% if project.arranger is defined %} {{ project.arranger.company.name }} {% else %} non défini {% endif %}</div>
-                                    <div>{% trans %} project-form.run {% endtrans %} : {% if project.run is defined %} {{ project.run.company.name }} {% else %} non défini {% endif %}</div>
+                                    <div>{% trans %} project-form.run-label {% endtrans %} : {% if project.run is defined %} {{ project.run.company.name }} {% else %} non défini {% endif %}</div>
                                 </dd>
                             </dl>
                             <dl class="col-lg-6 col-md-6">

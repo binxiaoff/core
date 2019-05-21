@@ -171,9 +171,9 @@
                         <h3 class="margin-10-t">Notation</h3>
                         <div class="row row-multi-col-computer scoring">
                             <dl class="col-md-4 col-lg-4">
-                                {% set arrangerLabel = 'project-form.arranger' %}
+                                {% set arrangerLabel = 'project-form.arranger-label' %}
                                 {% if constant('\\Unilend\\Entity\\Project::OPERATION_TYPE_SYNDICATION') == project.operationType %}
-                                    {% set arrangerLabel = 'project-form.lead-manager' %}
+                                    {% set arrangerLabel = 'project-form.lead-manager-label' %}
                                 {% endif %}
                                 <dt>{{ arrangerLabel|trans }}</dt>
                                 <dd>
@@ -189,7 +189,7 @@
                                 </dd>
                             </dl>
                             <dl class="col-md-4 col-lg-4">
-                                <dt>{% trans %} project-form.run {% endtrans %}</dt>
+                                <dt>{% trans %} project-form.run-label {% endtrans %}</dt>
                                 <dd>
                                     {% if project.isEditable %}
                                         <a href="#" id="run" data-type="select">
