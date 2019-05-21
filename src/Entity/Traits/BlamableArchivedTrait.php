@@ -6,6 +6,7 @@ namespace Unilend\Entity\Traits;
 
 use Doctrine\ORM\Mapping as ORM;
 use Unilend\Entity\Clients;
+use Unilend\Service\User\RealUserFinder;
 
 trait BlamableArchivedTrait
 {
@@ -26,11 +27,21 @@ trait BlamableArchivedTrait
     }
 
     /**
+     * @param callable|RealUserFinder $realUserFinder
+     *
+     * @return self
+     */
+    public function setArchivedByValue(callable $realUserFinder): self
+    {
+        return $this->setArchivedBy($realUserFinder());
+    }
+
+    /**
      * @param Clients|null $archivedBy
      *
      * @return self
      */
-    public function setArchivedBy(?Clients $archivedBy): self
+    private function setArchivedBy(?Clients $archivedBy): self
     {
         $this->archivedBy = $archivedBy;
 
