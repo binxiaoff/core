@@ -14,7 +14,7 @@ final class Version20190520085558 extends AbstractMigration
 {
     public function getDescription(): string
     {
-        return '';
+        return 'CALS-111 create CA regional banks';
     }
 
     public function up(Schema $schema): void

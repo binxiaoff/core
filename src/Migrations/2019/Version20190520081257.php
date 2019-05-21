@@ -22,7 +22,7 @@ final class Version20190520081257 extends AbstractMigration
         // this up() migration is auto-generated, please modify it to your needs
         $this->abortIf('mysql' !== $this->connection->getDatabasePlatform()->getName(), 'Migration can only be executed safely on \'mysql\'.');
         $this->addSql('INSERT IGNORE INTO translations (locale, section, name, translation, added) VALUES
-                        (\'fr_FR\', \'project-form\', \'lead_manager\', \'Chef de file\', NOW())');
+                        (\'fr_FR\', \'project-form\', \'lead-manager\', \'Chef de file\', NOW())');
         $this->addSql('UPDATE translations set translation = \'RUN emprunteur\' WHERE section = \'project-form\' AND name = \'run\'');
     }
 
@@ -30,7 +30,7 @@ final class Version20190520081257 extends AbstractMigration
     {
         /// this up() migration is auto-generated, please modify it to your needs
         $this->abortIf('mysql' !== $this->connection->getDatabasePlatform()->getName(), 'Migration can only be executed safely on \'mysql\'.');
-        $this->addSql('DELETE FROM translations WHERE section = \'project-form\' AND name = \'lead_manager\'');
+        $this->addSql('DELETE FROM translations WHERE section = \'project-form\' AND name = \'lead-manager\'');
         $this->addSql('UPDATE translations set translation = \'RUN\' WHERE section = \'project-form\' AND name = \'run\'');
     }
 }
