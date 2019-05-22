@@ -1,4 +1,3 @@
-<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.0/cookieconsent.min.css" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.0/cookieconsent.min.js"></script>
 <script>
     window.addEventListener("load", function(){
@@ -15,12 +14,10 @@
             },
             "position": "top",
             "content": {
-                "message": "En poursuivant votre navigation sur ce site, vous acceptez l’utilisation de cookies dans les conditions prévues par notre politique de confidentialité.",
-                "dismiss": "Accepter",
-                "allow": "Accepter",
-                "deny": "Refuser",
-                "link": "En savoir plus",
-                "href": "www.ca-lendingservices.com/politique-confidentialite"
+                "message": "{% trans %} cookie-consent.message {% endtrans %}",
+                "dismiss": "{% trans %} cookie-consent.dismiss-button {% endtrans %}",
+                "link": "{% trans %} cookie-consent.link-text {% endtrans %}",
+                "href": "/politique-confidentialite"
             }
         })});
 </script>
