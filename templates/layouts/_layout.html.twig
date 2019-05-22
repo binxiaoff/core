@@ -21,6 +21,7 @@
         <link rel="shortcut icon" href="{{ asset('favicons/favicon.ico', 'gulp') }}">
         <meta name="msapplication-config" content="{{ asset('favicons/browserconfig.xml', 'gulp') }}">
         <meta name="theme-color" content="#ffffff">
+        {% include 'layouts/_cookie_consent.html.twig' %}
 
         {% block pageHeadScripts %}{% endblock %}
     </head>
