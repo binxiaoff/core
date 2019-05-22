@@ -72,6 +72,7 @@
     "symfony/monolog-bundle": "^3.1",
     "symfony/options-resolver": "*",
     "symfony/orm-pack": "^1.0",
+    "symfony/doctrine-bridge": "4.2.8",
     "symfony/proxy-manager-bridge": "*",
     "symfony/routing": "*",
     "symfony/security": "*",
@@ -103,6 +104,15 @@
     "symfony/maker-bundle": "^1.0",
     "symfony/test-pack": "1.0.5",
     "symfony/web-profiler-bundle": "*"
+  },
+  "replace": {
+    "paragonie/random_compat": "2.*",
+    "symfony/polyfill-ctype": "*",
+    "symfony/polyfill-iconv": "*",
+    "symfony/polyfill-php72": "*",
+    "symfony/polyfill-php71": "*",
+    "symfony/polyfill-php70": "*",
+    "symfony/polyfill-php56": "*"
   },
   "config": {
     "preferred-install": {

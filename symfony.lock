@@ -401,9 +401,6 @@
     "ocramius/proxy-manager": {
         "version": "2.1.1"
     },
-    "paragonie/random_compat": {
-        "version": "v9.99.99"
-    },
     "pdepend/pdepend": {
         "version": "2.5.2"
     },
@@ -725,7 +722,7 @@
         ]
     },
     "symfony/mime": {
-        "version": "v4.3.0-beta1"
+        "version": "v4.3.0-beta2"
     },
     "symfony/monolog-bridge": {
         "version": "v4.2.5"
@@ -769,12 +766,6 @@
             "tests/.gitignore"
         ]
     },
-    "symfony/polyfill-ctype": {
-        "version": "v1.11.0"
-    },
-    "symfony/polyfill-iconv": {
-        "version": "v1.11.0"
-    },
     "symfony/polyfill-intl-icu": {
         "version": "v1.11.0"
     },
@@ -784,14 +775,8 @@
     "symfony/polyfill-mbstring": {
         "version": "v1.11.0"
     },
-    "symfony/polyfill-php70": {
-        "version": "v1.11.0"
-    },
-    "symfony/polyfill-php72": {
-        "version": "v1.11.0"
-    },
     "symfony/polyfill-php73": {
-        "version": "1.11-dev"
+        "version": "v1.11.0"
     },
     "symfony/process": {
         "version": "v4.2.5"
