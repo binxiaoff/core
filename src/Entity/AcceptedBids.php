@@ -18,7 +18,7 @@ class AcceptedBids
     /**
      * @var Bids
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Bids")
+     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Bids", inversedBy="acceptedBids")
      * @ORM\JoinColumns({
      *     @ORM\JoinColumn(name="id_bid", referencedColumnName="id_bid", nullable=false)
      * })
