@@ -11,6 +11,9 @@
             <!--[if lte IE 10]>
             <link rel="stylesheet" href="{{ asset('css/ie.css', 'gulp') }}" />
             <[endif]-->
+            {# Cookie consent #}
+            <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.0/cookieconsent.min.css" />
+            {# End of cookie consent #}
         {% endblock %}
 
         <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('favicons/apple-touch-icon.png', 'gulp') }}">
@@ -123,6 +126,7 @@
 
             <script type="text/javascript" src="{{ asset('js/dependencies.js', 'gulp') }}"></script>
             <script type="text/javascript" src="{{ asset('js/main.js', 'gulp') }}"></script>
+            {% include 'layouts/_cookie_consent.html.twig' %}
         {% endblock %}
 
         {% block pageScripts %}{% endblock %}
