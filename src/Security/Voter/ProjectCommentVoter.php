@@ -7,8 +7,7 @@ namespace Unilend\Security\Voter;
 use LogicException;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
-use Unilend\Entity\Clients;
-use Unilend\Entity\ProjectComment;
+use Unilend\Entity\{Clients, ProjectComment};
 use Unilend\Traits\ConstantsAwareTrait;
 
 class ProjectCommentVoter extends Voter
