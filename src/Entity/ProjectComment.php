@@ -5,9 +5,12 @@ declare(strict_types=1);
 namespace Unilend\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Gedmo\Mapping\Annotation as Gedmo;
 use Unilend\Entity\Traits\TimestampableTrait;
 
 /**
+ * @Gedmo\Loggable(logEntryClass="Unilend\Entity\Versioned\VersionedProjectComment")
+ *
  * @ORM\Entity
  * @ORM\HasLifecycleCallbacks
  */
@@ -59,6 +62,8 @@ class ProjectComment
      * @var string
      *
      * @ORM\Column(name="content", type="text", length=16777215)
+     *
+     * @Gedmo\Versioned
      */
     private $content;
 
@@ -66,6 +71,8 @@ class ProjectComment
      * @var int
      *
      * @ORM\Column(type="integer")
+     *
+     * @Gedmo\Versioned
      */
     private $visibility;
 
