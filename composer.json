@@ -29,6 +29,7 @@
     "eightpoints/guzzle-bundle": "^7.2",
     "ekino/newrelic-bundle": "^2.0",
     "facile-it/doctrine-mysql-come-back": "^1.6",
+    "friendsofsymfony/jsrouting-bundle": "^2.3",
     "gushphp/to-inline-style-email-bundle": "^1.4",
     "hashids/hashids": "^4.0",
     "incenteev/composer-parameter-handler": "^2.0",

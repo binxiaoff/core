@@ -216,6 +216,18 @@
             ".php_cs.dist"
         ]
     },
+    "friendsofsymfony/jsrouting-bundle": {
+        "version": "2.3",
+        "recipe": {
+            "repo": "github.com/symfony/recipes-contrib",
+            "branch": "master",
+            "version": "2.3",
+            "ref": "a9f2e49180f75cdc71ae279a929c4b2e0638de84"
+        },
+        "files": [
+            "config/routes/fos_js_routing.yaml"
+        ]
+    },
     "gedmo/doctrine-extensions": {
         "version": "v2.4.37"
     },
@@ -835,6 +847,9 @@
             "config/packages/security.yaml"
         ]
     },
+    "symfony/serializer": {
+        "version": "v4.3.0-beta2"
+    },
     "symfony/stopwatch": {
         "version": "v4.2.5"
     },
@@ -950,6 +965,9 @@
     },
     "whichbrowser/parser": {
         "version": "v2.0.37"
+    },
+    "willdurand/jsonp-callback-validator": {
+        "version": "v1.1.0"
     },
     "xynnn/google-tag-manager-bundle": {
         "version": "2.4.2"
