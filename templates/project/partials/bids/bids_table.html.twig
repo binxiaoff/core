@@ -21,7 +21,7 @@
         {% endif %}
         <tr>
             <td>{{ bid.wallet.idClient.company.name }}</td>
-            <td>{{ offer.money.amount|localizedcurrencywithprecision(0, offer.money.currency) }}</td>
+            <td>{{ offer.money.amount|localizedcurrency(offer.money.currency, null, false) }}</td>
             <td>{{ ('interest-rate-index_' ~ bid.rate.indexType)|trans }}</td>
             <td>{{ bid.rate.margin|localizednumberwithprecision(2) }}&nbsp;%</td>
             <td>{% if bid.rate.floor is same as(null) %}non défini{% else %}{{ bid.rate.floor|localizednumberwithprecision(2)|default('non défini') }}&nbsp;%{% endif %}</td>

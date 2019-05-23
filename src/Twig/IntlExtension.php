@@ -19,7 +19,7 @@ class IntlExtension extends BaseIntlExtension
         return array_merge(parent::getFilters(), [
             new TwigFilter('localizednumber', [$this, 'localizedNumberFilter']),
             new TwigFilter('localizednumberwithprecision', [$this, 'localizedNumberWithPrecisionFilter']),
-            new TwigFilter('localizedcurrencywithprecision', [$this, 'localizedCurrencyWithPrecisionFilter']),
+            new TwigFilter('localizedcurrency', [$this, 'calsLocalizedCurrencyFilter']),
         ]);
     }
 
@@ -65,20 +65,23 @@ class IntlExtension extends BaseIntlExtension
 
     /**
      * @param string|int|float $number
-     * @param int              $fractionDigits
-     * @param null             $currency
-     * @param null             $locale
+     * @param string|null      $currency
+     * @param string|null      $locale
+     * @param bool             $alwaysShowFraction
      *
      * @throws SyntaxError
      *
      * @return string
      */
-    public function localizedCurrencyWithPrecisionFilter($number, int $fractionDigits, $currency = null, $locale = null)
+    public function calsLocalizedCurrencyFilter($number, ?string $currency = null, ?string $locale = null, bool $alwaysShowFraction = true)
     {
         $formatter = twig_get_number_formatter($locale, 'currency');
-        $formatter->setAttribute(NumberFormatter::MIN_FRACTION_DIGITS, $fractionDigits);
-        $formatter->setAttribute(NumberFormatter::MAX_FRACTION_DIGITS, $fractionDigits);
         $formatter->setSymbol(NumberFormatter::GROUPING_SEPARATOR_SYMBOL, html_entity_decode('&nbsp;'));
+        // If it's a whole number
+        if (false === $alwaysShowFraction && 0.0 === fmod($number, 1)) {
+            $formatter->setAttribute(NumberFormatter::MIN_FRACTION_DIGITS, 0);
+            $formatter->setAttribute(NumberFormatter::MAX_FRACTION_DIGITS, 0);
+        }
 
         return $formatter->formatCurrency($number, $currency);
     }
