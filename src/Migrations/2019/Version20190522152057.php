@@ -14,7 +14,7 @@ final class Version20190522152057 extends AbstractMigration
 {
     public function getDescription(): string
     {
-        return '';
+        return 'CALS-145 create project comment audit table';
     }
 
     public function up(Schema $schema): void
