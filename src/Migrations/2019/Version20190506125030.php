@@ -23,7 +23,7 @@ final class Version20190506125030 extends AbstractMigration
 
         $this->addSql(
             <<<'TRANSLATIONS'
-            INSERT IGNORE INTO translations (locale, section, name, translation, added) 
+            INSERT INTO translations (locale, section, name, translation, added) 
             VALUES
                    ('fr_FR', 'project-request', 'title', 'Déposer un dossier', NOW()),
                    ('fr_FR', 'project-request', 'guarantee-section-title', 'Garantie', NOW()),

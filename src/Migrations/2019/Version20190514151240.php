@@ -25,7 +25,7 @@ final class Version20190514151240 extends AbstractMigration
         $this->addSql('ALTER TABLE bids ADD rate_floor NUMERIC(4, 2) DEFAULT NULL after rate_margin');
         $this->addSql('ALTER TABLE tranche ADD rate_floor NUMERIC(4, 2) DEFAULT NULL after rate_margin');
         $this->addSql('ALTER TABLE loans ADD rate_floor NUMERIC(4, 2) DEFAULT NULL after rate_margin');
-        $this->addSql('INSERT IGNORE INTO translations (locale, section, name, translation, added) VALUES (\'fr_FR\', \'lending-form\', \'floor\', \'Floorés à en %\', NOW())');
+        $this->addSql('INSERT INTO translations (locale, section, name, translation, added) VALUES (\'fr_FR\', \'lending-form\', \'floor\', \'Floorés à en %\', NOW())');
     }
 
     public function down(Schema $schema): void

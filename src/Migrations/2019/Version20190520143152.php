@@ -24,7 +24,7 @@ final class Version20190520143152 extends AbstractMigration
     {
         $this->addSql(
             <<<'INSERT'
-            INSERT IGNORE INTO translations (locale, section, name, translation, added) VALUES
+            INSERT INTO translations (locale, section, name, translation, added) VALUES
               ('fr_FR', 'bids', 'table-column-lender', 'Prêteur', NOW()),
               ('fr_FR', 'bids', 'table-column-amount', 'Montant', NOW()),
               ('fr_FR', 'bids', 'table-column-index-rate', 'Taux de référence', NOW()),

@@ -22,7 +22,7 @@ final class Version20190520081257 extends AbstractMigration
         // this up() migration is auto-generated, please modify it to your needs
         $this->abortIf('mysql' !== $this->connection->getDatabasePlatform()->getName(), 'Migration can only be executed safely on \'mysql\'.');
         $this->addSql('UPDATE translations set name = CONCAT(name, \'-label\') WHERE section = \'project-form\'');
-        $this->addSql('INSERT IGNORE INTO translations (locale, section, name, translation, added) VALUES
+        $this->addSql('INSERT INTO translations (locale, section, name, translation, added) VALUES
                         (\'fr_FR\', \'project-form\', \'lead-manager-label\', \'Chef de file\', NOW())');
         $this->addSql('UPDATE translations set translation = \'RUN emprunteur\' WHERE section = \'project-form\' AND name = \'run-label\'');
     }

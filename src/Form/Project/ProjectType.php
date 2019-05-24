@@ -49,7 +49,7 @@ class ProjectType extends AbstractType
 
         $builder
             ->add('title', TextType::class, ['label' => 'project-form.title-label'])
-            ->add('borrowerCompany', CompanyAutocompleteType::class, ['label' => 'project-form.borrower-company'])
+            ->add('borrowerCompany', CompanyAutocompleteType::class, ['label' => 'project-form.borrower-company-label'])
             ->add('borrowerCompanyCreationInProgress', CheckboxType::class, [
                 'mapped'   => false,
                 'label'    => 'project-form.borrower-company-creation-in-progress-label',

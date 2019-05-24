@@ -20,7 +20,7 @@ final class Version20190514081411 extends AbstractMigration
     public function up(Schema $schema): void
     {
         $this->addSql('
-        INSERT IGNORE INTO translations (locale, section, name, translation, added) VALUES
+        INSERT INTO translations (locale, section, name, translation, added) VALUES
         (\'fr_FR\', \'company\', \'creation-in-progress\', \'Société encore à immatriculer\', NOW()),
         (\'fr_FR\', \'project-form\', \'borrower-company-creation-in-progress\', \'Encore à immatriculer ?\', NOW()),
         (\'fr_FR\', \'project-form\', \'borrower-company-required\', \'Merci de saisir le SIREN de la contrepartie emprunteuse\', NOW())        

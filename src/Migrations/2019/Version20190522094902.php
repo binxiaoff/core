@@ -22,7 +22,7 @@ final class Version20190522094902 extends AbstractMigration
         $this->abortIf('mysql' !== $this->connection->getDatabasePlatform()->getName(), 'Migration can only be executed safely on \'mysql\'.');
 
         $this->addSql('
-            INSERT IGNORE INTO translations (locale, section, name, translation, added) VALUES
+            INSERT INTO translations (locale, section, name, translation, added) VALUES
             (\'fr_FR\', \'cookie-consent\', \'message\', \'En poursuivant votre navigation sur ce site, vous acceptez l’utilisation de cookies dans les conditions prévues par notre politique de confidentialité.\', NOW()),
             (\'fr_FR\', \'cookie-consent\', \'dismiss-button\', \'Accepter\', NOW()),
             (\'fr_FR\', \'cookie-consent\', \'link-text\', \'En savoir plus\', NOW())

@@ -27,8 +27,8 @@ final class Version20190313144455 extends AbstractMigration
      */
     public function up(Schema $schema): void
     {
-        $this->abortIf($this->connection->getDatabasePlatform()->getName() !== 'mysql', 'Migration can only be executed safely on \'mysql\'.');
-        $this->addSql("INSERT IGNORE INTO translations (locale, section, name, translation, added, updated)
+        $this->abortIf('mysql' !== $this->connection->getDatabasePlatform()->getName(), 'Migration can only be executed safely on \'mysql\'.');
+        $this->addSql("INSERT INTO translations (locale, section, name, translation, added, updated)
                             VALUES ('fr_FR', 'interest-rate-index', 'FIXED', 'Taux fixe', NOW(), null),
                                    ('fr_FR', 'interest-rate-index', 'EURIBOR', 'EURIBOR', NOW(), null),
                                    ('fr_FR', 'interest-rate-index', 'EONIA', 'EONIA', NOW(), null),
@@ -56,7 +56,7 @@ final class Version20190313144455 extends AbstractMigration
      */
     public function down(Schema $schema): void
     {
-        $this->abortIf($this->connection->getDatabasePlatform()->getName() !== 'mysql', 'Migration can only be executed safely on \'mysql\'.');
+        $this->abortIf('mysql' !== $this->connection->getDatabasePlatform()->getName(), 'Migration can only be executed safely on \'mysql\'.');
         $this->addSql("DELETE FROM translations WHERE section = 'interest-rate-index' AND name IN ('FIXED', 'EURIBOR', 'EONIA', 'SONIA', 'LIBOR', 'CHFTOIS', 'FFER');");
         $this->addSql("DELETE FROM translations WHERE section = 'lending-form' AND name IN ('amount', 'index-type', 'margin', 'fee-type', 'fee-rate', 'recurring', 'commission');");
         $this->addSql('ALTER TABLE bids CHANGE rate_indice rate_index_type VARCHAR(20) NOT NULL COLLATE utf8mb4_unicode_ci');

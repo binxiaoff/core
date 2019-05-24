@@ -27,7 +27,7 @@ final class Version20190515154415 extends AbstractMigration
         $this->addSql('ALTER TABLE project MODIFY operation_type SMALLINT NOT NULL');
 
         $this->addSql('
-            INSERT IGNORE INTO translations (locale, section, name, translation, added) VALUES
+            INSERT INTO translations (locale, section, name, translation, added) VALUES
             (\'fr_FR\', \'project-creation\', \'debt-arrangement\', \'Arrangement de dette<br><small>pour un client</small>\', NOW()),
             (\'fr_FR\', \'project-creation\', \'syndication\', \'Syndication<br><small>d‘un encours client</small>\', NOW())
         ');

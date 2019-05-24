@@ -21,7 +21,7 @@ final class Version20190520154800 extends AbstractMigration
 
         $this->addSql('UPDATE clients set roles = \'["ROLE_USER", "ROLE_LENDER", "ROLE_BORROWER", "ROLE_SUPER_ADMIN"]\'');
         $this->addSql('
-            INSERT IGNORE INTO translations (locale, section, name, translation, added) VALUES
+            INSERT INTO translations (locale, section, name, translation, added) VALUES
             (\'fr_FR\', \'user-header\', \'logout\', \'Se déconnecter\', NOW()),
             (\'fr_FR\', \'user-header\', \'exit-impersonation\', \'Quitter impersonation\', NOW())
         ');
