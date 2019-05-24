@@ -124,7 +124,7 @@
                     <div class="row margin-20-t">
                         <dl class="col-lg-4 col-md-4">
                             <dt>{% trans %} money-form.amount {% endtrans %}</dt>
-                            <dd>{{ tranche.money.amount|localizedcurrencywithprecision(0, tranche.money.currency) }}</dd>
+                            <dd>{{ tranche.money.amount|localizedcurrency(tranche.money.currency, null, false) }}</dd>
                         </dl>
                         <dl class="col-lg-8 col-md-8">
                             <dt>{% trans %} tranche-form.maturity {% endtrans %}</dt>
