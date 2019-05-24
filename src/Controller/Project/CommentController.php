@@ -16,7 +16,13 @@ use Unilend\Repository\ProjectCommentRepository;
 class CommentController extends AbstractController
 {
     /**
-     * @Route("/project/comment/{hash}", name="project_comment_add", requirements={"project": "[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}"})
+     * @Route(
+     *     "/project/{hash}/comment/add",
+     *     name="project_comment_add",
+     *     requirements={"hash": "[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}"},
+     *     methods={"POST"},
+     *     condition="request.isXmlHttpRequest()"
+     * )
      *
      * @IsGranted("comment", subject="project")
      *
@@ -58,58 +64,40 @@ class CommentController extends AbstractController
     }
 
     /**
-     * @Route("/project/comment", name="project_comment_update")
+     * @Route(
+     *     "/project/comment/{id}/update",
+     *     name="project_comment_update",
+     *     options={"expose": true},
+     *     requirements={"id": "\d+"},
+     *     methods={"PATCH"},
+     *     condition="request.isXmlHttpRequest()"
+     * )
      *
-     * @IsGranted("comment", subject="project")
+     * @IsGranted("edit", subject="projectComment")
      *
-     * @param ProjectCommentRepository   $projectCommentRepository
-     * @param Request                    $request
-     * @param UserInterface|Clients|null $user
+     * @param ProjectComment           $projectComment
+     * @param ProjectCommentRepository $projectCommentRepository
+     * @param Request                  $request
      *
      * @throws ORMException
      * @throws OptimisticLockException
      *
      * @return Response
      */
-    public function update(ProjectCommentRepository $projectCommentRepository, Request $request, ?UserInterface $user): Response
+    public function update(ProjectComment $projectComment, ProjectCommentRepository $projectCommentRepository, Request $request): Response
     {
-        $commentId = $request->request->getInt('id');
-
-        if (empty($commentId)) {
-            return $this->json([
-                'error'   => true,
-                'message' => 'Invalid parameters',
-            ], Response::HTTP_BAD_REQUEST);
-        }
-
-        $comment = $projectCommentRepository->find($commentId);
-
-        if (null === $comment) {
-            return $this->json([
-                'error'   => true,
-                'message' => 'Unknown comment',
-            ], Response::HTTP_BAD_REQUEST);
-        }
-
-        if ($comment->getClient() !== $user) {
-            return $this->json([
-                'error'   => true,
-                'message' => 'User cannot edit this comment',
-            ], Response::HTTP_FORBIDDEN);
-        }
-
         $content = $request->request->get('content');
 
         if ($content) {
-            $comment->setContent($content);
-            $projectCommentRepository->save($comment);
+            $projectComment->setContent($content);
+            $projectCommentRepository->save($projectComment);
 
-            return $this->render('project/comment/response.json.twig', ['comment' => $comment], new JsonResponse());
+            return $this->render('project/comment/response.json.twig', ['comment' => $projectComment], new JsonResponse());
         }
 
         return $this->json([
             'error'   => true,
-            'message' => 'Invalid user ID',
+            'message' => 'Content is empty',
         ], Response::HTTP_BAD_REQUEST);
     }
 }

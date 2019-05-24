@@ -51,7 +51,7 @@
                     let userId = this.currentUserId
 
                     $.ajax({
-                        type: 'post',
+                        method: 'POST',
                         url: '{{ path('project_comment_add', {'hash': project.hash}) }}',
                         data: {
                             user: userId,
@@ -66,13 +66,9 @@
                 },
                 putComment: function(commentJSON, success, error) {
                     $.ajax({
-                        type: 'post',
-                        url: '{{ path('project_comment_update') }}',
-                        data: {
-                            id: commentJSON.id,
-                            content: commentJSON.content,
-                            parent: commentJSON.parent
-                        },
+                        method: 'PATCH',
+                        url: Routing.generate('project_comment_update', { id: commentJSON.id }),
+                        data: {content: commentJSON.content},
                         success: function(comment) {
                             success(comment)
                         },

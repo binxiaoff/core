@@ -6,6 +6,9 @@
         "version": "2.1.0"
     },
     "beberlei/doctrineextensions": {
+        "version": "v1.2.1"
+    },
+    "behat/transliterator": {
         "version": "v1.2.0"
     },
     "box/spout": {
@@ -212,6 +215,21 @@
         "files": [
             ".php_cs.dist"
         ]
+    },
+    "friendsofsymfony/jsrouting-bundle": {
+        "version": "2.3",
+        "recipe": {
+            "repo": "github.com/symfony/recipes-contrib",
+            "branch": "master",
+            "version": "2.3",
+            "ref": "a9f2e49180f75cdc71ae279a929c4b2e0638de84"
+        },
+        "files": [
+            "config/routes/fos_js_routing.yaml"
+        ]
+    },
+    "gedmo/doctrine-extensions": {
+        "version": "v2.4.37"
     },
     "geoip2/geoip2": {
         "version": "v2.9.0"
@@ -569,6 +587,18 @@
             "phpcs.xml.dist"
         ]
     },
+    "stof/doctrine-extensions-bundle": {
+        "version": "1.2",
+        "recipe": {
+            "repo": "github.com/symfony/recipes-contrib",
+            "branch": "master",
+            "version": "1.2",
+            "ref": "6c1ceb662f8997085f739cd089bfbef67f245983"
+        },
+        "files": [
+            "config/packages/stof_doctrine_extensions.yaml"
+        ]
+    },
     "swiftmailer/swiftmailer": {
         "version": "v6.2.0"
     },
@@ -817,6 +847,9 @@
             "config/packages/security.yaml"
         ]
     },
+    "symfony/serializer": {
+        "version": "v4.3.0-beta2"
+    },
     "symfony/stopwatch": {
         "version": "v4.2.5"
     },
@@ -932,6 +965,9 @@
     },
     "whichbrowser/parser": {
         "version": "v2.0.37"
+    },
+    "willdurand/jsonp-callback-validator": {
+        "version": "v1.1.0"
     },
     "xynnn/google-tag-manager-bundle": {
         "version": "2.4.2"
