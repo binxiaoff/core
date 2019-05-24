@@ -65,7 +65,7 @@
                         <div class="col-lg-6 col-md-6">
                             {% set arrangerLabel = 'project-form.arranger-label' %}
                             {% if constant('\\Unilend\\Entity\\Project::OPERATION_TYPE_SYNDICATION') == app.request.get('operationType') %}
-                                {% set arrangerLabel = 'project-form.lead-manager' %}
+                                {% set arrangerLabel = 'project-form.lead-manager-label' %}
                             {% endif %}
                             {{ form_row(form.arranger, { 'label' : arrangerLabel }) }}
                         </div>
