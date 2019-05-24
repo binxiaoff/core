@@ -9,38 +9,9 @@ onExpireRecaptchaCallback = function () {
 }
 onloadRecaptchaCallback = function () {
     $('.g-recaptcha').each(function () {
-        if ('project-login-recaptcha' === this.id) {
-            var captcha = this
+        grecaptcha.render(this)
 
-            $.ajax({
-                type: 'GET',
-                url: '/security/recaptcha',
-                global: false,
-                async: false,
-                success: function (response) {
-                    if (response) {
-                        var $loginFormSubmitButton = $('#project-single-login-form').find('[type=submit]')
-                        $loginFormSubmitButton.prop('disabled', true)
-
-                        grecaptcha.render(captcha)
-
-                        var $recaptcha = $('#project-login-recaptcha')
-                        var containerWidth = $recaptcha.parent().width()
-                        var recaptchaWidth = $recaptcha.children().width()
-                        var scale = 1 - (recaptchaWidth - containerWidth) / recaptchaWidth
-
-                        if (scale < 1) {
-                            $recaptcha.css('transform', 'scale(' + scale + ')')
-                            $recaptcha.css('transform-origin', '0 0')
-                        }
-                    }
-                }
-            })
-        } else {
-            grecaptcha.render(this)
-
-            $(this).closest('.secure-form').find('[type=submit]').prop('disabled', true)
-        }
+        $(this).closest('.secure-form').find('[type=submit]').prop('disabled', true)
     })
 }
 
