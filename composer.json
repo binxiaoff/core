@@ -61,6 +61,7 @@
     "symfony/debug": "*",
     "symfony/dependency-injection": "*",
     "symfony/doctrine-bridge": "4.2.8",
+    "symfony/dotenv": "*",
     "symfony/event-dispatcher": "*",
     "symfony/filesystem": "*",
     "symfony/finder": "*",
@@ -102,7 +103,6 @@
     "squizlabs/php_codesniffer": "^3.4",
     "symfony/browser-kit": "*",
     "symfony/debug-bundle": "*",
-    "symfony/dotenv": "*",
     "symfony/maker-bundle": "^1.0",
     "symfony/test-pack": "1.0.5",
     "symfony/web-profiler-bundle": "*"
