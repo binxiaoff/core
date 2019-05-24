@@ -19,7 +19,7 @@ final class Version20190520154800 extends AbstractMigration
         // this up() migration is auto-generated, please modify it to your needs
         $this->abortIf('mysql' !== $this->connection->getDatabasePlatform()->getName(), 'Migration can only be executed safely on \'mysql\'.');
 
-        $this->addSql('UPDATE clients set roles = \'["ROLE_USER", "ROLE_LENDER", "ROLE_BORROWER", "ROLE_SUPER_ADMIN"]\'');
+        $this->addSql('UPDATE clients set roles = \'["ROLE_USER", "ROLE_LENDER", "ROLE_BORROWER", "ROLE_SUPER_ADMIN"]\' WHERE id_client = 1');
         $this->addSql('
             INSERT INTO translations (locale, section, name, translation, added) VALUES
             (\'fr_FR\', \'user-header\', \'logout\', \'Se déconnecter\', NOW()),
@@ -31,6 +31,6 @@ final class Version20190520154800 extends AbstractMigration
     {
         $this->abortIf('mysql' !== $this->connection->getDatabasePlatform()->getName(), 'Migration can only be executed safely on \'mysql\'.');
 
-        $this->addSql('UPDATE clients set roles = \'["ROLE_USER", "ROLE_LENDER", "ROLE_BORROWER"]\'');
+        $this->addSql('UPDATE clients set roles = \'["ROLE_USER", "ROLE_LENDER", "ROLE_BORROWER"]\' WHERE id_client = 1');
     }
 }
