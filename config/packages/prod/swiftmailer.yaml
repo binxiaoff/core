@@ -1,3 +1,4 @@
 swiftmailer:
-    spool:
-        type: db
+    transport: mailjet
+#    spool:
+#        type: db
