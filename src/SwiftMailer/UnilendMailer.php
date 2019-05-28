@@ -68,9 +68,9 @@ class UnilendMailer extends \Swift_Mailer
      */
     private function checkRecipients(TemplateMessage $message, array &$failedRecipients) : bool
     {
-        $toCount  = count($message->getTo());
-        $ccCount  = count($message->getCc());
-        $bccCount = count($message->getBcc());
+        $toCount  = $message->getTo() ? count($message->getTo()) : 0;
+        $ccCount  = $message->getCc() ? count($message->getCc()) : 0;
+        $bccCount = $message->getBcc() ? count($message->getBcc()) : 0;
 
         if (0 === $toCount + $ccCount + $bccCount) {
             return false;
