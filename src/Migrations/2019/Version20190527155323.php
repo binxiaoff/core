@@ -475,7 +475,8 @@ MAIL
      */
     public function down(Schema $schema): void
     {
-        $this->addSql('DELETE FROM translations WHERE section IN ("password-forgotten", "reset-password", "password-init", "common-validator")');
+        $this->addSql('DELETE FROM translations WHERE section IN ("reset-password", "password-init", "common-validator")');
+        $this->addSql('DELETE FROM translations WHERE section = "password-forgotten" AND name IN ("invalid-email-format-error-message", "invalid-security-token-error-message")');
         $this->addSql('DELETE FROM translations WHERE section = "mail-title" AND name = "forgotten-password"');
         $this->addSql('DELETE FROM mail_templates WHERE type = "forgotten-password"');
     }
