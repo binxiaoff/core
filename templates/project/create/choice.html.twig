@@ -9,11 +9,15 @@
                         <h2 class="margin-5-t">{% trans %} project-request.title {% endtrans %}</h2>
                     </header>
                     <section class="text-align-center collapse in">
-                        <a type="button" class="btn-default" href="{{ path('project_creation', {'operationType': constant('\\Unilend\\Entity\\Project::OPERATION_TYPE_ARRANGEMENT')}) }}" style="padding: 30px; margin: 30px 60px;">
+                        <a type="button" class="btn-default" data-equal-width
+                           href="{{ path('project_creation', {'operationType': constant('\\Unilend\\Entity\\Project::OPERATION_TYPE_ARRANGEMENT')}) }}"
+                           style="padding: 30px; margin: 30px 60px; width: 280px;">
                             <span class="icon fa-user" style="font-size: 36px;"></span><br>
                             {% trans %} project-creation.debt-arrangement {% endtrans %}
                         </a>
-                        <a type="button" class="btn-default" href="{{ path('project_creation', {'operationType': constant('\\Unilend\\Entity\\Project::OPERATION_TYPE_SYNDICATION')}) }}" style="padding: 30px; margin: 30px 60px;" >
+                        <a type="button" class="btn-default" data-equal-width
+                           href="{{ path('project_creation', {'operationType': constant('\\Unilend\\Entity\\Project::OPERATION_TYPE_SYNDICATION')}) }}"
+                           style="padding: 30px; margin: 30px 60px; width: 280px;">
                             <span class="icon fa-refresh" style="font-size: 36px;"></span><br>
                             {% trans %} project-creation.syndication {% endtrans %}
                         </a>
