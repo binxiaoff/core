@@ -8,6 +8,7 @@ use DateTime;
 use Doctrine\ORM\{ORMException, OptimisticLockException};
 use Exception;
 use Psr\Log\LoggerInterface;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Swift_RfcComplianceException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\{JsonResponse, Request, Response};
@@ -29,21 +30,17 @@ class PasswordController extends AbstractController
     /**
      * @Route("/mot-de-passe/initialisation/{securityToken}", name="password_init", requirements={"securityToken": "[0-9a-f]+"}, methods={"GET"})
      *
-     * @param string                        $securityToken
+     * @ParamConverter("temporaryLink", options={"mapping": {"securityToken": "token"}})
+     *
+     * @param TemporaryLinksLogin           $temporaryLink
      * @param TemporaryLinksLoginRepository $temporaryLinksLoginRepository
      *
      * @throws Exception
      *
      * @return Response
      */
-    public function init(string $securityToken, TemporaryLinksLoginRepository $temporaryLinksLoginRepository): Response
+    public function init(TemporaryLinksLogin $temporaryLink, TemporaryLinksLoginRepository $temporaryLinksLoginRepository): Response
     {
-        $temporaryLink = $temporaryLinksLoginRepository->findOneBy(['token' => $securityToken]);
-
-        if (null === $temporaryLink) {
-            return $this->redirectToRoute('home');
-        }
-
         $now         = new DateTime();
         $linkExpires = $temporaryLink->getExpires();
         $isValidLink = false;
@@ -63,13 +60,15 @@ class PasswordController extends AbstractController
             }
         }
 
-        return $this->render('security/password_init.html.twig', ['validLink' => $isValidLink, 'token' => $securityToken]);
+        return $this->render('security/password_init.html.twig', ['validLink' => $isValidLink, 'token' => $temporaryLink->getToken()]);
     }
 
     /**
      * @Route("/mot-de-passe/initialisation/{securityToken}", name="password_init_form", requirements={"securityToken": "[0-9a-f]+"}, methods={"POST"})
      *
-     * @param string                        $securityToken
+     * @ParamConverter("temporaryLink", options={"mapping": {"securityToken": "token"}})
+     *
+     * @param TemporaryLinksLogin           $temporaryLink
      * @param TemporaryLinksLoginRepository $temporaryLinksLoginRepository
      * @param ClientsRepository             $clientsRepository
      * @param Request                       $request
@@ -81,24 +80,18 @@ class PasswordController extends AbstractController
      * @return Response
      */
     public function initForm(
-        string $securityToken,
+        TemporaryLinksLogin $temporaryLink,
         TemporaryLinksLoginRepository $temporaryLinksLoginRepository,
         ClientsRepository $clientsRepository,
         Request $request,
         TranslatorInterface $translator,
         UserPasswordEncoderInterface $userPasswordEncoder
     ): Response {
-        $temporaryLink = $temporaryLinksLoginRepository->findOneBy(['token' => $securityToken]);
-
-        if (null === $temporaryLink) {
-            return $this->redirectToRoute('home');
-        }
-
         $now         = new DateTime();
         $linkExpires = $temporaryLink->getExpires();
 
         if ($linkExpires <= $now) {
-            return $this->redirectToRoute('password_init', ['securityToken' => $securityToken]);
+            return $this->redirectToRoute('password_init', ['securityToken' => $temporaryLink->getToken()]);
         }
 
         $client = $temporaryLink->getIdClient();
@@ -108,7 +101,7 @@ class PasswordController extends AbstractController
         }
 
         if (false === empty($client->getPassword())) {
-            return $this->redirectToRoute('password_init', ['securityToken' => $securityToken]);
+            return $this->redirectToRoute('password_init', ['securityToken' => $temporaryLink->getToken()]);
         }
 
         $password     = $request->request->get('password');
@@ -147,16 +140,18 @@ class PasswordController extends AbstractController
 
             $temporaryLink->setExpires($now);
             $temporaryLinksLoginRepository->save($temporaryLink);
+
+            return $this->redirectToRoute('login');
         }
 
-        return $this->redirectToRoute('password_init', ['securityToken' => $securityToken]);
+        return $this->redirectToRoute('password_init', ['securityToken' => $temporaryLink->getToken()]);
     }
 
     /**
      * In order not to disclose personal information (existence of account on the platform),
      * success message is always displayed, except for invalid email format or CSRF token.
      *
-     * @Route("/mot-de-passe", name="password_reset_request", methods={"POST"})
+     * @Route("/mot-de-passe", name="password_reset_request", methods={"POST"}, condition="request.isXmlHttpRequest()")
      *
      * @param Request                       $request
      * @param ClientsRepository             $clientsRepository
@@ -183,10 +178,6 @@ class PasswordController extends AbstractController
         TranslatorInterface $translator,
         LoggerInterface $logger
     ): Response {
-        if (false === $request->isXmlHttpRequest()) {
-            return new Response('not an ajax request');
-        }
-
         $email = $request->request->get('client_email');
 
         if (false === filter_var($email, FILTER_VALIDATE_EMAIL)) {
@@ -246,7 +237,9 @@ class PasswordController extends AbstractController
     /**
      * @Route("/mot-de-passe/{securityToken}", name="password_reset", requirements={"securityToken": "[a-z0-9]{32}"}, methods={"GET"})
      *
-     * @param string                        $securityToken
+     * @ParamConverter("temporaryLink", options={"mapping": {"securityToken": "token"}})
+     *
+     * @param TemporaryLinksLogin           $temporaryLink
      * @param TemporaryLinksLoginRepository $temporaryLinksLoginRepository
      * @param TranslatorInterface           $translator
      *
@@ -254,25 +247,23 @@ class PasswordController extends AbstractController
      *
      * @return Response
      */
-    public function reset(string $securityToken, TemporaryLinksLoginRepository $temporaryLinksLoginRepository, TranslatorInterface $translator): Response
+    public function reset(TemporaryLinksLogin $temporaryLink, TemporaryLinksLoginRepository $temporaryLinksLoginRepository, TranslatorInterface $translator): Response
     {
         if ($this->get('session')->getFlashBag()->has('passwordSuccess')) {
-            return $this->render('security/password_reset.html.twig', ['token' => $securityToken]);
+            return $this->render('security/password_reset.html.twig', ['token' => $temporaryLink->getToken()]);
         }
 
-        $temporaryLink = $temporaryLinksLoginRepository->findOneBy(['token' => $securityToken]);
-
-        if (null === $temporaryLink || $temporaryLink->getExpires() < new DateTime()) {
+        if ($temporaryLink->getExpires() < new DateTime()) {
             $this->addFlash('tokenError', $translator->trans('reset-password.invalid-link-error-message'));
 
-            return $this->render('security/password_reset.html.twig', ['token' => $securityToken]);
+            return $this->render('security/password_reset.html.twig', ['token' => $temporaryLink->getToken()]);
         }
 
         $temporaryLink->setAccessed(new DateTime());
         $temporaryLinksLoginRepository->save($temporaryLink);
 
         return $this->render('security/password_reset.html.twig', [
-            'token'          => $securityToken,
+            'token'          => $temporaryLink->getToken(),
             'secretQuestion' => $temporaryLink->getIdClient()->getSecurityQuestion(),
         ]);
     }
@@ -280,7 +271,9 @@ class PasswordController extends AbstractController
     /**
      * @Route("/mot-de-passe/{securityToken}", name="password_reset_form", requirements={"securityToken": "[a-z0-9]{32}"}, methods={"POST"})
      *
-     * @param string                        $securityToken
+     * @ParamConverter("temporaryLink", options={"mapping": {"securityToken": "token"}})
+     *
+     * @param TemporaryLinksLogin           $temporaryLink
      * @param Request                       $request
      * @param TemporaryLinksLoginRepository $temporaryLinksLoginRepository
      * @param ClientsRepository             $clientsRepository
@@ -296,7 +289,7 @@ class PasswordController extends AbstractController
      * @return Response
      */
     public function resetForm(
-        string $securityToken,
+        TemporaryLinksLogin $temporaryLink,
         Request $request,
         TemporaryLinksLoginRepository $temporaryLinksLoginRepository,
         ClientsRepository $clientsRepository,
@@ -305,12 +298,10 @@ class PasswordController extends AbstractController
         TranslatorInterface $translator,
         LoggerInterface $logger
     ): Response {
-        $temporaryLink = $temporaryLinksLoginRepository->findOneBy(['token' => $securityToken]);
-
-        if (null === $temporaryLink || $temporaryLink->getExpires() < new DateTime()) {
+        if ($temporaryLink->getExpires() < new DateTime()) {
             $this->addFlash('tokenError', $translator->trans('reset-password.invalid-link-error-message'));
 
-            return $this->redirectToRoute('password_reset', ['securityToken' => $securityToken]);
+            return $this->redirectToRoute('password_reset', ['securityToken' => $temporaryLink->getToken()]);
         }
 
         $temporaryLink->setAccessed(new DateTime());
@@ -375,7 +366,7 @@ class PasswordController extends AbstractController
             }
         }
 
-        return $this->redirectToRoute('password_reset', ['securityToken' => $securityToken]);
+        return $this->redirectToRoute('password_reset', ['securityToken' => $temporaryLink->getToken()]);
     }
 
     /**
