@@ -72,6 +72,8 @@
                    e.g. <a href="javascript:;" data-modal-toggle="#modal-tos">Open the TOS model</a> #}
             {% endblock %}
 
+            {% include 'partials/beta_disclaimer_modal.html.twig' %}
+
             {# Global site-wide modals can be placed here #}
             {% set tos_session_key = constant('Unilend\\Service\\TermsOfSaleManager::SESSION_KEY_TOS_ACCEPTED') %}
             {% if app.user
@@ -130,6 +132,7 @@
 
             {% include 'layouts/_cookie_consent.html.twig' %}
             {% include 'layouts/_fos_js_routing.html.twig' %}
+            {% include 'layouts/_beta_disclaimer.html.twig' %}
 
             {% if recaptchaKey is defined and recaptchaKey is not empty %}
                 <script src="https://www.google.com/recaptcha/api.js?onload=onloadRecaptchaCallback&render=explicit" async defer></script>
