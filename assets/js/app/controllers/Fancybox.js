@@ -4,7 +4,7 @@
 
 // Dependencies
 var $ = require('jquery')
-var videojs = require('videojs')
+// var videojs = require('videojs')
 
 var $doc = $(document)
 

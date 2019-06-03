@@ -55,8 +55,7 @@
 
                                     <div class="btn-controls">
                                         {% if displayLoginCaptcha is defined and displayLoginCaptcha %}
-                                            {% import '/partials/form_elements.html.twig' as forms %}
-                                            {{ forms.recaptcha(recaptchaKey) }}
+                                            {% include '/partials/recaptcha.html.twig' %}
                                         {% endif %}
                                         <button type="submit" class="btn-primary" data-spinnerbutton>{% trans %} connect-subscribe-page_login-box-connect-button {% endtrans %}</button>
                                     </div>

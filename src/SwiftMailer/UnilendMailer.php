@@ -3,7 +3,9 @@
 namespace Unilend\SwiftMailer;
 
 use Doctrine\ORM\EntityManagerInterface;
+use Exception;
 use Psr\Log\LoggerInterface;
+use Swift_RfcComplianceException;
 use Swift_Transport;
 use Unilend\Entity\MailTemplates;
 use Unilend\Entity\Settings;
@@ -28,16 +30,16 @@ class UnilendMailer extends \Swift_Mailer
         parent::__construct($transport);
     }
 
-
     /**
      * @param \Swift_Mime_SimpleMessage $message
-     * @param null|array                $failedRecipients
+     * @param array|null                $failedRecipients
+     *
+     * @throws Exception
+     * @throws Swift_RfcComplianceException
      *
      * @return int
-     * @throws \Exception
-     * @throws \Swift_RfcComplianceException
      */
-    public function send(\Swift_Mime_SimpleMessage $message, &$failedRecipients = null) : int
+    public function send(\Swift_Mime_SimpleMessage $message, &$failedRecipients = null): int
     {
         if ($message instanceof TemplateMessage) {
             $failedRecipients   = (array) $failedRecipients;
@@ -47,12 +49,12 @@ class UnilendMailer extends \Swift_Mailer
             if (false === empty($failedRecipients)) {
                 $this->logger->warning('Badly formatted recipient(s) removed from message. Concerned recipient(s) : ' . implode(', ', $failedRecipients), [
                     'templateType ' => $mailTemplate->getType(),
-                    'function'      => __METHOD__
+                    'function'      => __METHOD__,
                 ]);
             }
 
             if (false === $recipientsAreClean) {
-                throw new \Exception('Message has no recipient');
+                throw new Exception('Message has no recipient');
             }
         }
 
@@ -63,14 +65,15 @@ class UnilendMailer extends \Swift_Mailer
      * @param TemplateMessage $message
      * @param array           $failedRecipients
      *
+     * @throws Swift_RfcComplianceException
+     *
      * @return bool
-     * @throws \Swift_RfcComplianceException
      */
-    private function checkRecipients(TemplateMessage $message, array &$failedRecipients) : bool
+    private function checkRecipients(TemplateMessage $message, array &$failedRecipients): bool
     {
-        $toCount  = count($message->getTo());
-        $ccCount  = count($message->getCc());
-        $bccCount = count($message->getBcc());
+        $toCount  = is_array($message->getTo()) ? count($message->getTo()) : 0;
+        $ccCount  = is_array($message->getCc()) ? count($message->getCc()) : 0;
+        $bccCount = is_array($message->getBcc()) ? count($message->getBcc()) : 0;
 
         if (0 === $toCount + $ccCount + $bccCount) {
             return false;
@@ -122,14 +125,14 @@ class UnilendMailer extends \Swift_Mailer
      *
      * @return bool
      */
-    private function checkEmailAddress(string $email) : bool
+    private function checkEmailAddress(string $email): bool
     {
         $regex = $this->entityManager
             ->getRepository(Settings::class)
             ->findOneBy(['type' => 'Regex validation email'])
-            ->getValue();
+            ->getValue()
+        ;
 
         return 1 === preg_match($regex, $email);
     }
 }
-

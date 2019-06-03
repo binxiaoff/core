@@ -18,7 +18,7 @@ use Unilend\Service\{AttachmentManager, User\RealUserFinder};
 class CreateController extends AbstractController
 {
     /**
-     * @Route("/projet/depot/choice", name="project_creation_operation_choice", methods={"GET"})
+     * @Route("/projet/depot", name="project_creation_operation_choice", methods={"GET"})
      *
      * @return Response
      */

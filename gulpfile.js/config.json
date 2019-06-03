@@ -23,8 +23,6 @@
         "./assets/js/vendor/swiper/swiper.jquery.js",
         "./assets/js/vendor/jquery.fancybox.js",
         "./assets/js/vendor/jquery.fancybox-media.js",
-        "./assets/js/vendor/videojs/video.js",
-        "./assets/js/vendor/videojs/Youtube.js",
         "./assets/js/vendor/jquery.caret.js",
         "./assets/js/vendor/jquery.datatables.js",
         "./node_modules/select2/dist/js/select2.js",

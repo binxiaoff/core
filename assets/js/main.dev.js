@@ -19,7 +19,7 @@
 
 // Dependencies (some are Browserify aliases -- see package.json)
 var $ = require('jquery') // Gets the global (see package.json)
-var videojs = require('videojs') // Gets the global (see package.json)
+// var videojs = require('videojs') // Gets the global (see package.json)
 var svg4everybody = require('svg4everybody')
 var Swiper = require('Swiper')
 var Iban = require('iban')
@@ -85,7 +85,7 @@ var Modernizr = window.Modernizr
 
 // VideoJS
 // Running a modified version to customise the placement of items in the control bar
-videojs.options.flash.swf = '/assets/js/vendor/videojs/video-js.swf'
+// videojs.options.flash.swf = '/assets/js/vendor/videojs/video-js.swf'
 
 // Track the current breakpoints (also updated in updateWindow())
 var currentBreakpoint = window.currentBreakpoint = Utility.getActiveBreakpoints()
