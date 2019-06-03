@@ -541,7 +541,7 @@ class ClientsRepository extends ServiceEntityRepository
         return $this->getEntityManager()
             ->getConnection()
             ->executeQuery($query)
-            ->fetchAll(\PDO::FETCH_ASSOC)
+            ->fetchAll(PDO::FETCH_ASSOC)
         ;
     }
 
@@ -580,7 +580,7 @@ class ClientsRepository extends ServiceEntityRepository
         return $this->getEntityManager()
             ->getConnection()
             ->executeQuery($query, ['lastName' => '%' . $lastName . '%', 'firstName' => '%' . $firstName . '%', 'birthday' => $birthday->format('Y-m-d')])
-            ->fetchAll(\PDO::FETCH_ASSOC)
+            ->fetchAll(PDO::FETCH_ASSOC)
         ;
     }
 
@@ -727,7 +727,7 @@ class ClientsRepository extends ServiceEntityRepository
         return $this->getEntityManager()
             ->getConnection()
             ->executeQuery($query, $parameters)
-            ->fetchAll(\PDO::FETCH_ASSOC)
+            ->fetchAll(PDO::FETCH_ASSOC)
         ;
     }
 
@@ -863,7 +863,7 @@ class ClientsRepository extends ServiceEntityRepository
             ->leftJoin(Companies::class, 'cp', Join::WITH, 'coc.idParentCompany = cp.idCompany')
             ->leftJoin(Partner::class, 'pa', Join::WITH, 'cp.idCompany = pa.idCompany')
             ->where('c.email LIKE :email')
-            ->setParameter('email', $email . '%', \PDO::PARAM_STR)
+            ->setParameter('email', $email . '%', PDO::PARAM_STR)
             ->groupBy('c.idClient')
         ;
 
@@ -873,20 +873,22 @@ class ClientsRepository extends ServiceEntityRepository
     /**
      * @param string $email
      *
-     * @return Clients[]
+     * @throws NonUniqueResultException
+     *
+     * @return Clients|null
      */
-    public function findGrantedLoginAccountsByEmail(string $email): array
+    public function findGrantedLoginAccountByEmail(string $email): ?Clients
     {
         $queryBuilder = $this->createQueryBuilder('c');
         $queryBuilder
             ->innerJoin(ClientsStatusHistory::class, 'csh', Join::WITH, 'c.idClientStatusHistory = csh.id')
             ->where('c.email = :email')
             ->andWhere('csh.idStatus IN (:status)')
-            ->setParameter('email', $email, \PDO::PARAM_STR)
+            ->setParameter('email', $email, PDO::PARAM_STR)
             ->setParameter('status', ClientsStatus::GRANTED_LOGIN)
         ;
 
-        return $queryBuilder->getQuery()->getResult();
+        return $queryBuilder->getQuery()->getOneOrNullResult();
     }
 
     /**
@@ -902,7 +904,7 @@ class ClientsRepository extends ServiceEntityRepository
             ->innerJoin(ClientsStatusHistory::class, 'csh', Join::WITH, 'c.idClientStatusHistory = csh.id')
             ->where('c.hash = :hash')
             ->andWhere('csh.idStatus IN (:status)')
-            ->setParameter('hash', $hash, \PDO::PARAM_STR)
+            ->setParameter('hash', $hash, PDO::PARAM_STR)
             ->setParameter('status', $status)
         ;
 
@@ -960,7 +962,7 @@ class ClientsRepository extends ServiceEntityRepository
         return $this->getEntityManager()
             ->getConnection()
             ->executeQuery($query, ['start' => $start->format('Y-m-d'), 'end' => $end->format('Y-m-d')])
-            ->fetchAll(\PDO::FETCH_ASSOC)
+            ->fetchAll(PDO::FETCH_ASSOC)
         ;
     }
 
@@ -1046,7 +1048,7 @@ class ClientsRepository extends ServiceEntityRepository
             ->getEntityManager()
             ->getConnection()
             ->executeQuery($query, $bind, $type)
-            ->fetchAll(\PDO::FETCH_ASSOC)
+            ->fetchAll(PDO::FETCH_ASSOC)
         ;
     }
 }
