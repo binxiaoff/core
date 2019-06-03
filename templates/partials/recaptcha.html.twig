@@ -1,0 +1,3 @@
+{% if recaptchaKey is defined %}
+    <div class="g-recaptcha" data-sitekey="{{ recaptchaKey }}" data-callback="onSubmitRecaptchaCallback" data-expired-callback="onExpireRecaptchaCallback"></div>
+{% endif %}

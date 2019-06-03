@@ -2,14 +2,15 @@
 
 namespace Unilend\SwiftMailer;
 
-use Mailjet\Client;
-use Mailjet\Resources;
-use Mailjet\Response;
+use Mailjet\{Client, Resources, Response};
 use Psr\Log\LoggerInterface;
+use Swift_Events_EventDispatcher;
 use Swift_Events_EventListener;
+use Swift_Mime_SimpleMessage;
+use Swift_Transport;
 use Unilend\Entity\MailQueue;
 
-class MailjetTransport implements \Swift_Transport
+class MailjetTransport implements Swift_Transport
 {
     /** The event dispatching layer */
     private $eventDispatcher;
@@ -17,10 +18,15 @@ class MailjetTransport implements \Swift_Transport
     private $mailJetClient;
     /** @var array */
     private $spool = [];
-    /** @var  LoggerInterface */
+    /** @var LoggerInterface */
     private $logger;
 
-    public function __construct(\Swift_Events_EventDispatcher $dispatcher, Client $mailJetClient, LoggerInterface $logger)
+    /**
+     * @param Swift_Events_EventDispatcher $dispatcher
+     * @param Client                       $mailJetClient
+     * @param LoggerInterface              $logger
+     */
+    public function __construct(Swift_Events_EventDispatcher $dispatcher, Client $mailJetClient, LoggerInterface $logger)
     {
         $this->eventDispatcher = $dispatcher;
         $this->mailJetClient   = $mailJetClient;
@@ -28,30 +34,29 @@ class MailjetTransport implements \Swift_Transport
     }
 
     /**
-     * Tests if this Transport mechanism has started.
-     *
-     * @return bool
+     * {@inheritdoc}
      */
     public function isStarted()
     {
         return true;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function ping()
     {
     }
 
     /**
-     * Starts this Transport mechanism.
+     * {@inheritdoc}
      */
     public function start()
     {
     }
 
     /**
-     * Stops this Transport mechanism.
-     *
-     * @return Response
+     * {@inheritdoc}
      */
     public function stop()
     {
@@ -62,21 +67,16 @@ class MailjetTransport implements \Swift_Transport
     }
 
     /**
-     * @param \Swift_Mime_SimpleMessage $message
-     * @param string[]           $failedRecipients
-     *
-     * @return int
-     *
-     * @throws \Exception
+     * {@inheritdoc}
      */
-    public function send(\Swift_Mime_SimpleMessage $message, &$failedRecipients = null)
+    public function send(Swift_Mime_SimpleMessage $message, &$failedRecipients = null)
     {
         $replyTo = $message->getReplyTo();
         $body    = [
             'From'     => $this->convertEmailsToArray($message->getFrom())[0],
             'To'       => $this->convertEmailsToArray($message->getTo()),
             'Subject'  => $message->getSubject(),
-            'HTMLPart' => $message->getBody()
+            'HTMLPart' => $message->getBody(),
         ];
 
         if (method_exists($message, 'getQueueId') && null !== $message->getQueueId()) {
@@ -94,7 +94,7 @@ class MailjetTransport implements \Swift_Transport
                     $body['Attachments'][] = [
                         'ContentType'   => $matches['content_type'],
                         'Filename'      => $matches['file_name'],
-                        'Base64Content' => base64_encode($child->getBody())
+                        'Base64Content' => base64_encode($child->getBody()),
                     ];
                 }
             }
@@ -102,13 +102,14 @@ class MailjetTransport implements \Swift_Transport
 
         $this->spool[] = $body;
 
+        // CALS-171 Do not use spool for the moment
+        $this->stop();
+
         return 1;
     }
 
     /**
-     * Register a plugin.
-     *
-     * @param Swift_Events_EventListener $plugin
+     * {@inheritdoc}
      */
     public function registerPlugin(Swift_Events_EventListener $plugin)
     {
@@ -116,11 +117,32 @@ class MailjetTransport implements \Swift_Transport
     }
 
     /**
+     * @param MailQueue $mailQueue
+     * @param Response  $response
+     *
+     * @return int|null
+     */
+    public function getMessageId(MailQueue $mailQueue, Response $response)
+    {
+        $body = $response->getBody();
+
+        if (false === empty($body['Messages'])) {
+            foreach ($body['Messages'] as $message) {
+                if (isset($message['CustomID'], $message['To'][0]['MessageID']) && (int) $message['CustomID'] === $mailQueue->getIdQueue()) {
+                    return $message['To'][0]['MessageID'];
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * @param string|array $emails
      *
      * @return array
      */
-    private function convertEmailsToArray($emails) : array
+    private function convertEmailsToArray($emails): array
     {
         $formattedEmails = [];
 
@@ -141,7 +163,7 @@ class MailjetTransport implements \Swift_Transport
             }
 
             $formattedEmail = [
-                'Email' => $email
+                'Email' => $email,
             ];
 
             if (false === empty($name)) {
@@ -152,26 +174,5 @@ class MailjetTransport implements \Swift_Transport
         }
 
         return $formattedEmails;
-    }
-
-    /**
-     * @param MailQueue $mailQueue
-     * @param Response  $response
-     *
-     * @return null|integer
-     */
-    public function getMessageId(MailQueue $mailQueue, Response $response)
-    {
-        $body = $response->getBody();
-
-        if (false === empty($body['Messages'])) {
-            foreach ($body['Messages'] as $message) {
-                if (isset($message['CustomID'], $message['To'][0]['MessageID']) && $message['CustomID'] == $mailQueue->getIdQueue()) {
-                    return $message['To'][0]['MessageID'];
-                }
-            }
-        }
-
-        return null;
     }
 }

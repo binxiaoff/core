@@ -3,6 +3,7 @@
 <!--[if IE 9]><html lang="{{ app.request.locale }}" class="ie9 no-js"><![endif]-->
 <!--[if gt IE 9]><!--><html lang="{{ app.request.locale }}" class="no-js"><!--<![endif]-->
     <head>
+        {#{{ google_tag_manager_head() }}#}
         {% block cssFiles %}
             {% include 'partials/fonts_inline.html.twig' %}
             <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Cabin:400,700,400" media="all">
@@ -28,7 +29,7 @@
         {% block pageHeadScripts %}{% endblock %}
     </head>
     <body class="{% if app.user is defined and app.user is not empty %}{% if is_granted('ROLE_LENDER') %} ui-user-type-lender{% endif %}{% if is_granted('ROLE_BORROWER') %} ui-user-type-borrower{% endif %}{% else %} ui-no-user{% endif %}{% if bodyClassNames is defined %} {{ bodyClassNames }}{% endif %}">
-        {{ google_tag_manager_body() }}
+        {#{{ google_tag_manager_body() }}#}
         <div id="top" class="site">
             {% block siteHeader %}
                 {% if app.user is defined and is_granted(constant('\\Unilend\\Entity\\Clients::ROLE_USER')) %}
@@ -126,10 +127,17 @@
 
             <script type="text/javascript" src="{{ asset('js/dependencies.js', 'gulp') }}"></script>
             <script type="text/javascript" src="{{ asset('js/main.js', 'gulp') }}"></script>
+
             {% include 'layouts/_cookie_consent.html.twig' %}
             {% include 'layouts/_fos_js_routing.html.twig' %}
+
+            {% if recaptchaKey is defined and recaptchaKey is not empty %}
+                <script src="https://www.google.com/recaptcha/api.js?onload=onloadRecaptchaCallback&render=explicit" async defer></script>
+            {% endif %}
         {% endblock %}
 
         {% block pageScripts %}{% endblock %}
+
+        {#{{ google_tag_manager_body_end() }}#}
     </body>
 </html>

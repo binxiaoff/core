@@ -177,7 +177,7 @@ class Clients implements UserInterface, EquatableInterface
     /**
      * @var string
      *
-     * @ORM\Column(name="email", type="string", length=191, nullable=true)
+     * @ORM\Column(name="email", type="string", length=191, nullable=true, unique=true)
      *
      * @Assert\NotBlank
      * @Assert\Email
