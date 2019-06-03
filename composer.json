@@ -17,6 +17,7 @@
     "ext-openssl": "^7.1",
     "ext-pdo": "*",
     "ext-soap": "*",
+    "ext-zip": "*",
     "alcaeus/mongo-php-adapter": "^1.1",
     "azuyalabs/yasumi": "^2.0",
     "beberlei/doctrineextensions": "^1.0",

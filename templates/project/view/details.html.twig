@@ -95,7 +95,7 @@
                         {% if projectAttachments|length %}
                             <div class="col-lg-3 col-md-3">
                                 <span class="pull-right">
-                                    <a href="#" data-toggle="tooltip" title="Tout télécharger"><span class="icon fa-file-zip-o"></span></a>
+                                    <a href="{{ path('documents_project', {'slug': project.slug}) }}" data-toggle="tooltip" title="Télécharger tous les documents"><span class="icon fa-file-zip-o"></span></a>
                                 </span>
                                 <strong style="color: #2bc9af;">Documents</strong>
                                 {% for projectAttachment in projectAttachments %}

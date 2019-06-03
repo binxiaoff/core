@@ -94,7 +94,7 @@ class ProjectAttachmentRepository extends ServiceEntityRepository
      * @param Project    $project
      * @param array|null $orderBy
      *
-     * @return array
+     * @return ProjectAttachment[]
      */
     public function getAttachmentsWithoutSignature(Project $project, ?array $orderBy = null): array
     {
@@ -122,7 +122,7 @@ class ProjectAttachmentRepository extends ServiceEntityRepository
     /**
      * @param Project $project
      *
-     * @return array
+     * @return ProjectAttachment[]
      */
     public function getAttachmentsWithSignature(Project $project): array
     {
