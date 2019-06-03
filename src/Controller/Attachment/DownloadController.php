@@ -8,10 +8,12 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\{IsGranted, ParamConverter}
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Filesystem\Exception\FileNotFoundException;
 use Symfony\Component\Filesystem\Filesystem;
-use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Symfony\Component\HttpFoundation\{BinaryFileResponse, Response};
 use Symfony\Component\Routing\Annotation\Route;
-use Unilend\Entity\Attachment;
+use Unilend\Entity\{Attachment, Project};
+use Unilend\Repository\ProjectAttachmentRepository;
 use Unilend\Service\AttachmentManager;
+use ZipArchive;
 
 class DownloadController extends AbstractController
 {
@@ -39,5 +41,45 @@ class DownloadController extends AbstractController
         $fileName = $attachment->getOriginalName() ?? basename($attachment->getPath());
 
         return $this->file($path, $fileName);
+    }
+
+    /**
+     * @Route("/documents/{slug}", name="documents_project")
+     *
+     * @IsGranted("view", subject="project")
+     *
+     * @param Project                     $project
+     * @param ProjectAttachmentRepository $projectAttachmentRepository
+     * @param AttachmentManager           $attachmentManager
+     * @param string                      $sharedTemporaryPath
+     *
+     * @return Response
+     */
+    public function project(
+        Project $project,
+        ProjectAttachmentRepository $projectAttachmentRepository,
+        AttachmentManager $attachmentManager,
+        string $sharedTemporaryPath
+    ): Response {
+        $zip      = new ZipArchive();
+        $filename = $sharedTemporaryPath . $project->getSlug() . '.zip';
+
+        if (true === $zip->open($filename, ZipArchive::CREATE)) {
+            $projectAttachments = $projectAttachmentRepository->getAttachmentsWithoutSignature($project, ['added' => 'DESC']);
+
+            foreach ($projectAttachments as $projectAttachment) {
+                $attachment = $projectAttachment->getAttachment();
+                $zip->addFile($attachmentManager->getFullPath($attachment), $attachment->getOriginalName());
+            }
+
+            $zip->close();
+
+            $response = new BinaryFileResponse($filename);
+            $response->deleteFileAfterSend(true);
+
+            return $response;
+        }
+
+        return $this->redirectToRoute('lender_project_details', ['slug' => $project->getSlug()]);
     }
 }
