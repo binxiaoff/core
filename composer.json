@@ -2,7 +2,7 @@
   "name": "unilend/site_project",
   "license": "proprietary",
   "type": "project",
-  "minimum-stability": "beta",
+  "minimum-stability": "stable",
   "autoload": {
     "psr-4": {
       "Unilend\\": "src/",
@@ -127,7 +127,8 @@
     "auto-scripts": {
       "doctrine:cache:clear-metadata": "symfony-cmd",
       "cache:clear": "symfony-cmd",
-      "assets:install --symlink --relative %PUBLIC_DIR%": "symfony-cmd"
+      "assets:install --symlink --relative %PUBLIC_DIR%": "symfony-cmd",
+      "assets:install %PUBLIC_DIR%": "symfony-cmd"
     },
     "post-install-cmd": [
       "@auto-scripts"
