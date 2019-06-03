@@ -8,7 +8,8 @@ use Symfony\Component\HttpFoundation\{Cookie, RedirectResponse, Request};
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
-use Symfony\Component\Security\Core\Exception\{AccountExpiredException, AuthenticationException, CustomUserMessageAuthenticationException, DisabledException, LockedException, UsernameNotFoundException};
+use Symfony\Component\Security\Core\Exception\{AccountExpiredException, AuthenticationException, CustomUserMessageAuthenticationException, DisabledException, LockedException,
+    UsernameNotFoundException};
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Security\Core\User\{UserInterface, UserProviderInterface};
 use Symfony\Component\Security\Csrf\{CsrfToken, CsrfTokenManagerInterface};
@@ -161,7 +162,7 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
         $targetPath = $this->getTargetPath($request->getSession(), $providerKey);
 
         if (!$targetPath) {
-            $targetPath = $this->getDefaultSuccessRedirectUrl($request, $client);
+            $targetPath = $this->getDefaultSuccessRedirectUrl($request);
         }
 
         $response = new RedirectResponse($targetPath);
@@ -293,8 +294,6 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
      */
     private function isCaptchaValid(array $credentials)
     {
-        return true;
-
         if (isset($credentials['captchaDisplay']) && true === $credentials['captchaDisplay']) {
             if (false === isset($credentials['captchaCode'])) {
                 return false;
@@ -340,7 +339,7 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
         $targetPath = $this->getTargetPath($request->getSession(), $providerKey);
 
         if (!$targetPath) {
-            $targetPath = $this->getDefaultSuccessRedirectUrl($request, $client);
+            $targetPath = $this->getDefaultSuccessRedirectUrl($request);
         }
 
         if ($client->isLender()) {
