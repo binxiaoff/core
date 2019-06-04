@@ -12,8 +12,6 @@ parameters:
     dbal_wrapper_class: Unilend\Doctrine\DBAL\Connection
     dbal_driver_class: Facile\DoctrineMySQLComeBack\Doctrine\DBAL\Driver\PDOMySql\Driver
     locale: fr_FR
-    server1.memcache_host: 127.0.0.1
-    server1.memcache_port: 11211
     image_resize:
         projets:
             authorized:

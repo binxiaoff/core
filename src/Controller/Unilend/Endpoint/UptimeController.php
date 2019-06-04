@@ -6,7 +6,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Annotation\Route;
-use Cache\Adapter\Memcache\MemcacheCachePool;
+use Psr\Cache\CacheItemPoolInterface;
 use Unilend\Service\WebServiceClient\{AltaresManager, CodinfManager, EllisphereManager, EulerHermesManager, InfogreffeManager, InfolegaleManager};
 use Unilend\CacheKeys;
 
@@ -187,8 +187,8 @@ class UptimeController extends Controller
      */
     private function getPingdomIps()
     {
-        /** @var MemcacheCachePool $cachePool */
-        $cachePool  = $this->get('memcache.default');
+        /** @var CacheItemPoolInterface $cachePool */
+        $cachePool  = $this->get('cache.app');
         $cachedItem = $cachePool->getItem(__FUNCTION__);
 
         if (true === $cachedItem->isHit()) {

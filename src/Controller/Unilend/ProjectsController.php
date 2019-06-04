@@ -2,7 +2,7 @@
 
 namespace Unilend\Controller\Unilend;
 
-use Cache\Adapter\Memcache\MemcacheCachePool;
+use Psr\Cache\CacheItemPoolInterface;
 use Knp\Snappy\GeneratorInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\{Security, Template};
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
@@ -513,8 +513,8 @@ class ProjectsController extends Controller
             try {
                 $projectEntity  = $this->get('doctrine.orm.entity_manager')->getRepository(Projects::class)->find($projectId);
                 $bids           = $bidManager->bid($wallet, $projectEntity, $bidAmount, $rate);
-                /** @var MemcacheCachePool $oCachePool */
-                $oCachePool = $this->get('memcache.default');
+                /** @var CacheItemPoolInterface $oCachePool */
+                $oCachePool = $this->get('cache.app');
                 $oCachePool->deleteItem(\bids::CACHE_KEY_PROJECT_BIDS . '_' . $project->id_project);
                 $request->getSession()->set('bidResult', ['success' => true, 'message' => $translator->trans('project-detail_side-bar-bids-bid-placed-message')]);
             } catch (BidException $exception) {
@@ -573,7 +573,7 @@ class ProjectsController extends Controller
         $template               = [];
         $entityManagerSimulator = $this->get('unilend.service.entity_manager');
         $entityManager          = $this->get('doctrine.orm.entity_manager');
-        $oCachePool             = $this->get('memcache.default');
+        $oCachePool             = $this->get('cache.app');
         $oCachedItem            = $oCachePool->getItem(\bids::CACHE_KEY_PROJECT_BIDS . '_' . $projectId . '_' . $rate);
 
         if (true === $oCachedItem->isHit()) {
