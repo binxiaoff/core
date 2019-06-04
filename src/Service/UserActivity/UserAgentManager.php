@@ -4,7 +4,7 @@ namespace Unilend\Service\UserActivity;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
-use Unilend\Entity\{Clients, UserAgent as UserAgentEntity};
+use Unilend\Entity\{Clients, UserAgentHistory};
 use UserAgentParser\Model\UserAgent;
 use UserAgentParser\Provider\Chain;
 
@@ -33,36 +33,44 @@ class UserAgentManager
      * @param Clients     $client
      * @param string|null $userAgent
      *
-     * @return UserAgentEntity|null
      * @throws \Exception
+     *
+     * @return UserAgentHistory|null
      */
-    public function saveClientUserAgent(Clients $client, string $userAgent): ?UserAgentEntity
+    public function saveClientUserAgent(Clients $client, string $userAgent): ?UserAgentHistory
     {
         if ($parser = $this->parse($userAgent)) {
             $browser = $parser->getBrowser();
             $device  = $parser->getDevice();
 
-            $knownUserAgent = $this->entityManager->getRepository(UserAgent::class)
-                ->findOneBy(['idClient' => $client, 'browserName' => $browser->getName(), 'deviceModel' => $device->getModel(), 'deviceBrand' => $device->getBrand(), 'deviceType' => $device->getType()]);
+            $knownUserAgent = $this->entityManager->getRepository(UserAgentHistory::class)
+                ->findOneBy([
+                    'idClient'    => $client,
+                    'browserName' => $browser->getName(),
+                    'deviceModel' => $device->getModel(),
+                    'deviceBrand' => $device->getBrand(),
+                    'deviceType'  => $device->getType(),
+                ])
+            ;
 
             if ($knownUserAgent) {
                 return $knownUserAgent;
-            } else {
-                $newUserAgent = new UserAgentEntity();
-                $newUserAgent
-                    ->setIdClient($client)
-                    ->setBrowserName($browser->getName())
-                    ->setBrowserVersion($browser->getVersion()->getComplete())
-                    ->setDeviceModel($device->getModel())
-                    ->setDeviceBrand($device->getBrand())
-                    ->setDeviceType(strtolower($device->getType()))
-                    ->setUserAgentString($userAgent);
-
-                $this->entityManager->persist($newUserAgent);
-                $this->entityManager->flush($newUserAgent);
-
-                return $newUserAgent;
             }
+            $newUserAgent = new UserAgentHistory();
+            $newUserAgent
+                ->setIdClient($client)
+                ->setBrowserName($browser->getName())
+                ->setBrowserVersion($browser->getVersion()->getComplete())
+                ->setDeviceModel($device->getModel())
+                ->setDeviceBrand($device->getBrand())
+                ->setDeviceType(mb_strtolower($device->getType()))
+                ->setUserAgentString($userAgent)
+                ;
+
+            $this->entityManager->persist($newUserAgent);
+            $this->entityManager->flush($newUserAgent);
+
+            return $newUserAgent;
         }
 
         return null;
@@ -83,7 +91,7 @@ class UserAgentManager
                 'class'      => __CLASS__,
                 'function'   => __FUNCTION__,
                 'file'       => $exception->getFile(),
-                'line'       => $exception->getLine()
+                'line'       => $exception->getLine(),
             ]);
 
             return null;

@@ -2,7 +2,7 @@
   "name": "unilend/site_project",
   "license": "proprietary",
   "type": "project",
-  "minimum-stability": "beta",
+  "minimum-stability": "stable",
   "autoload": {
     "psr-4": {
       "Unilend\\": "src/",

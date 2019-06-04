@@ -5,7 +5,7 @@ namespace Unilend\Service\UserActivity;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Translation\TranslatorInterface;
-use Unilend\Entity\{Clients, ClientsHistory, UserAgent};
+use Unilend\Entity\{Clients, ClientsHistory, UserAgentHistory};
 
 class UserActivityDisplayManager
 {
@@ -37,12 +37,14 @@ class UserActivityDisplayManager
     public function getLoginHistory(Clients $client, ?string $currentRequestUserAgent): array
     {
         $result = [];
+
         try {
             $loginHistory = $this->entityManager->getRepository(ClientsHistory::class)
-                ->getRecentLoginHistoryAndDevices($client);
+                ->getRecentLoginHistoryAndDevices($client)
+            ;
 
             foreach ($loginHistory as $login) {
-                $historyUserAgent   = $this->entityManager->getRepository(UserAgent::class)->find($login['id_user_agent']);
+                $historyUserAgent   = $this->entityManager->getRepository(UserAgentHistory::class)->find($login['id_user_agent']);
                 $isCurrentUserAgent = 0 === strcmp($historyUserAgent->getUserAgentString(), $currentRequestUserAgent);
 
                 $result[] = [
@@ -51,7 +53,7 @@ class UserActivityDisplayManager
                     'city'        => $login['city'],
                     'country'     => $login['fr'],
                     'browserName' => $login['browser_name'],
-                    'date'        => $this->getLoginTimeSentence(new \DateTime($login['added']), $client->getLastLogin(), $isCurrentUserAgent)
+                    'date'        => $this->getLoginTimeSentence(new \DateTime($login['added']), $client->getLastLogin(), $isCurrentUserAgent),
                 ];
             }
         } catch (\Exception $exception) {
@@ -60,7 +62,7 @@ class UserActivityDisplayManager
                 'class'     => __CLASS__,
                 'function'  => __FUNCTION__,
                 'file'      => $exception->getFile(),
-                'line'      => $exception->getLine()
+                'line'      => $exception->getLine(),
             ]);
         }
 
@@ -76,16 +78,18 @@ class UserActivityDisplayManager
     {
         if (1 === preg_match('/mobile|phone/i', $deviceType)) {
             return 'mobile';
-        } elseif (1 === preg_match('/tablet/i', $deviceType)) {
+        }
+        if (1 === preg_match('/tablet/i', $deviceType)) {
             return 'tablet';
-        } elseif (1 === preg_match('/desktop/i', $deviceType)) {
+        }
+        if (1 === preg_match('/desktop/i', $deviceType)) {
             return 'desktop';
         }
 
         $this->logger->warning('Unable to detect either the device is "mobile", "tablet" or "desktop", returning default "desktop". Using needle: "' . $deviceType . '"', [
             'device_type' => $deviceType,
             'class'       => __CLASS__,
-            'function'    => __FUNCTION__
+            'function'    => __FUNCTION__,
         ]);
 
         return 'desktop';

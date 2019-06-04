@@ -3,20 +3,25 @@
 namespace Unilend\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Unilend\Entity\Traits\TimestampableAddedOnlyTrait;
 
 /**
- * @ORM\Table(name="user_agent", indexes={@ORM\Index(name="idx_user_agent_client_browser_device_model_brand_type", columns={"id_client", "browser_name", "device_model", "device_brand", "device_type"})})
+ * @ORM\Table(indexes={
+ *     @ORM\Index(name="idx_user_agent_client_browser_device_model_brand_type", columns={"id_client", "browser_name", "device_model", "device_brand", "device_type"})
+ * })
  * @ORM\Entity
  * @ORM\HasLifecycleCallbacks
  */
-class UserAgent
+class UserAgentHistory
 {
+    use TimestampableAddedOnlyTrait;
+
     /**
      * @var Clients
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\Clients")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_client", referencedColumnName="id_client", nullable=false)
+     *     @ORM\JoinColumn(name="id_client", referencedColumnName="id_client", nullable=false)
      * })
      */
     private $idClient;
@@ -64,13 +69,6 @@ class UserAgent
     private $userAgentString;
 
     /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="added", type="datetime")
-     */
-    private $added;
-
-    /**
      * @var int
      *
      * @ORM\Column(name="id", type="integer")
@@ -78,7 +76,6 @@ class UserAgent
      * @ORM\GeneratedValue(strategy="IDENTITY")
      */
     private $id;
-
 
     /**
      * @return Clients
@@ -91,9 +88,9 @@ class UserAgent
     /**
      * @param Clients $idClient
      *
-     * @return UserAgent
+     * @return UserAgentHistory
      */
-    public function setIdClient(Clients $idClient): UserAgent
+    public function setIdClient(Clients $idClient): UserAgentHistory
     {
         $this->idClient = $idClient;
 
@@ -111,9 +108,9 @@ class UserAgent
     /**
      * @param string|null $browserName
      *
-     * @return UserAgent
+     * @return UserAgentHistory
      */
-    public function setBrowserName(?string $browserName): UserAgent
+    public function setBrowserName(?string $browserName): UserAgentHistory
     {
         $this->browserName = $browserName;
 
@@ -131,9 +128,9 @@ class UserAgent
     /**
      * @param string|null $browserVersion
      *
-     * @return UserAgent
+     * @return UserAgentHistory
      */
-    public function setBrowserVersion(?string $browserVersion): UserAgent
+    public function setBrowserVersion(?string $browserVersion): UserAgentHistory
     {
         $this->browserVersion = $browserVersion;
 
@@ -151,9 +148,9 @@ class UserAgent
     /**
      * @param string|null $deviceModel
      *
-     * @return UserAgent
+     * @return UserAgentHistory
      */
-    public function setDeviceModel(?string $deviceModel): UserAgent
+    public function setDeviceModel(?string $deviceModel): UserAgentHistory
     {
         $this->deviceModel = $deviceModel;
 
@@ -171,9 +168,9 @@ class UserAgent
     /**
      * @param string|null $deviceBrand
      *
-     * @return UserAgent
+     * @return UserAgentHistory
      */
-    public function setDeviceBrand(?string $deviceBrand): UserAgent
+    public function setDeviceBrand(?string $deviceBrand): UserAgentHistory
     {
         $this->deviceBrand = $deviceBrand;
 
@@ -191,9 +188,9 @@ class UserAgent
     /**
      * @param string|null $deviceType
      *
-     * @return UserAgent
+     * @return UserAgentHistory
      */
-    public function setDeviceType(?string $deviceType): UserAgent
+    public function setDeviceType(?string $deviceType): UserAgentHistory
     {
         $this->deviceType = $deviceType;
 
@@ -211,31 +208,11 @@ class UserAgent
     /**
      * @param string $userAgentString
      *
-     * @return UserAgent
+     * @return UserAgentHistory
      */
-    public function setUserAgentString(string $userAgentString): UserAgent
+    public function setUserAgentString(string $userAgentString): UserAgentHistory
     {
         $this->userAgentString = $userAgentString;
-
-        return $this;
-    }
-
-    /**
-     * @return \DateTime
-     */
-    public function getAdded(): \DateTime
-    {
-        return $this->added;
-    }
-
-    /**
-     * @param \DateTime $added
-     *
-     * @return UserAgent
-     */
-    public function setAdded(\DateTime $added): UserAgent
-    {
-        $this->added = $added;
 
         return $this;
     }
@@ -246,15 +223,5 @@ class UserAgent
     public function getId(): int
     {
         return $this->id;
-    }
-
-    /**
-     * @ORM\PrePersist
-     */
-    public function setAddedValue(): void
-    {
-        if (! $this->added instanceof \DateTime || -1 > $this->getAdded()->getTimestamp()) {
-            $this->added = new \DateTime();
-        }
     }
 }
