@@ -7,10 +7,8 @@ use Unilend\Entity\Traits\TimestampableAddedOnlyTrait;
 
 /**
  * @ORM\Table(name="clients_history", indexes={
- *     @ORM\Index(name="id_client", columns={"id_client"}),
  *     @ORM\Index(name="idx_clients_history_ip", columns={"ip"}),
- *     @ORM\Index(name="idx_clients_history_added", columns={"added"}),
- *     @ORM\Index(name="idx_clients_history_id_user_agent", columns={"id_user_agent"})
+ *     @ORM\Index(name="idx_clients_history_added", columns={"added"})
  * })
  * @ORM\Entity(repositoryClass="Unilend\Repository\ClientsHistoryRepository")
  * @ORM\HasLifecycleCallbacks
@@ -61,14 +59,14 @@ class ClientsHistory
     private $city;
 
     /**
-     * @var UserAgent|null
+     * @var UserAgentHistory|null
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Entity\UserAgent")
+     * @ORM\ManyToOne(targetEntity="Unilend\Entity\UserAgentHistory")
      * @ORM\JoinColumns({
-     *     @ORM\JoinColumn(name="id_user_agent", referencedColumnName="id")
+     *     @ORM\JoinColumn(name="id_user_agent_history", referencedColumnName="id")
      * })
      */
-    private $idUserAgent;
+    private $userAgentHistory;
 
     /**
      * @var int
@@ -180,21 +178,21 @@ class ClientsHistory
     }
 
     /**
-     * @return UserAgent|null
+     * @return UserAgentHistory|null
      */
-    public function getIdUserAgent(): ?UserAgent
+    public function getUserAgentHistory(): ?UserAgentHistory
     {
-        return $this->idUserAgent;
+        return $this->userAgentHistory;
     }
 
     /**
-     * @param UserAgent $idUserAgent
+     * @param UserAgentHistory $userAgentHistory
      *
      * @return ClientsHistory
      */
-    public function setIdUserAgent(?UserAgent $idUserAgent): ClientsHistory
+    public function setUserAgentHistory(?UserAgentHistory $userAgentHistory): ClientsHistory
     {
-        $this->idUserAgent = $idUserAgent;
+        $this->userAgentHistory = $userAgentHistory;
 
         return $this;
     }

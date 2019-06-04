@@ -42,6 +42,7 @@ class LoginHistoryLogger
         try {
             $now = new \DateTime('NOW');
             $client->setLastLogin($now);
+
             try {
                 $this->entityManager->flush($client);
             } catch (\Exception $exception) {
@@ -50,21 +51,21 @@ class LoginHistoryLogger
                     'class'     => __CLASS__,
                     'function'  => __FUNCTION__,
                     'file'      => $exception->getFile(),
-                    'line'      => $exception->getLine()
+                    'line'      => $exception->getLine(),
                 ]);
             }
 
-            $userAgentEntity = null;
+            $userAgentHistory = null;
             if (null !== $userAgent) {
                 try {
-                    $userAgentEntity = $this->userAgentManager->saveClientUserAgent($client, $userAgent);
+                    $userAgentHistory = $this->userAgentManager->saveClientUserAgent($client, $userAgent);
                 } catch (\Exception $exception) {
-                    $userAgentEntity = null;
+                    $userAgentHistory = null;
                     $this->logger->error('An error occurred while trying to save user agent data. Exception: ' . $exception->getMessage(), [
                         'class'      => __CLASS__,
                         'function'   => __FUNCTION__,
                         'id_client'  => $client->getIdClient(),
-                        'user_agent' => $userAgentEntity,
+                        'user_agent' => $userAgentHistory,
                         'file'       => $exception->getFile(),
                         'line'       => $exception->getLine(),
                     ]);
@@ -76,8 +77,9 @@ class LoginHistoryLogger
                 ->setIdClient($client)
                 ->setStatus(ClientsHistory::STATUS_ACTION_LOGIN)
                 ->setIp($ip)
-                ->setIdUserAgent($userAgentEntity)
-                ->setAdded($now);
+                ->setUserAgentHistory($userAgentHistory)
+                ->setAdded($now)
+            ;
 
             $this->entityManager->persist($clientHistory);
             $this->entityManager->flush($clientHistory);
@@ -88,7 +90,7 @@ class LoginHistoryLogger
                 'id_client' => $client->getIdClient(),
                 'ip'        => $ip,
                 'file'      => $exception->getFile(),
-                'line'      => $exception->getLine()
+                'line'      => $exception->getLine(),
             ]);
         }
     }
@@ -107,7 +109,8 @@ class LoginHistoryLogger
             $loginLog
                 ->setPseudo($pseudo)
                 ->setIp($ip)
-                ->setRetour($message);
+                ->setRetour($message)
+            ;
 
             $this->entityManager->persist($loginLog);
             $this->entityManager->flush($loginLog);
@@ -120,7 +123,7 @@ class LoginHistoryLogger
                 'pseudo'   => $pseudo,
                 'ip'       => $ip,
                 'file'     => $exception->getFile(),
-                'line'     => $exception->getLine()
+                'line'     => $exception->getLine(),
             ]);
 
             return null;
