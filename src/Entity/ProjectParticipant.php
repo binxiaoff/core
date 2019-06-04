@@ -21,13 +21,23 @@ class ProjectParticipant
     use TimestampableTrait;
 
     // Use COMPANY_ prefix to distinguish it from Symfony user's roles
-    public const COMPANY_ROLE_ARRANGER = 'COMPANY_ROLE_ARRANGER'; // The company who arranges a loan syndication.
-    public const COMPANY_ROLE_RUN      = 'COMPANY_ROLE_RUN'; // The abbreviation of Responsable Unique de Notation, who gives a note on the borrower.
-    public const COMPANY_ROLE_LENDER   = 'COMPANY_ROLE_LENDER';
+    public const COMPANY_ROLE_ARRANGER         = 'COMPANY_ROLE_ARRANGER'; // The company who arranges a loan syndication.
+    public const COMPANY_ROLE_DEPUTY_ARRANGER  = 'COMPANY_ROLE_DEPUTY_ARRANGER';
+    public const COMPANY_ROLE_RUN              = 'COMPANY_ROLE_RUN'; // The abbreviation of Responsable Unique de Notation, who gives a note on the borrower.
+    public const COMPANY_ROLE_LENDER           = 'COMPANY_ROLE_LENDER';
+    public const COMPANY_ROLE_LOAN_OFFICER     = 'COMPANY_ROLE_LOAN_OFFICER';
+    public const COMPANY_ROLE_SECURITY_TRUSTEE = 'COMPANY_ROLE_SECURITY_TRUSTEE';
 
     public const ROLE_DEFAULT = self::COMPANY_ROLE_LENDER;
 
-    public const ALL_ROLES = [self::COMPANY_ROLE_ARRANGER, self::COMPANY_ROLE_RUN, self::COMPANY_ROLE_LENDER];
+    public const ALL_ROLES = [
+        self::COMPANY_ROLE_ARRANGER,
+        self::COMPANY_ROLE_DEPUTY_ARRANGER,
+        self::COMPANY_ROLE_RUN,
+        self::COMPANY_ROLE_LENDER,
+        self::COMPANY_ROLE_LOAN_OFFICER,
+        self::COMPANY_ROLE_SECURITY_TRUSTEE,
+    ];
 
     /**
      * @var int

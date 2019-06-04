@@ -67,16 +67,18 @@
                             <dl class="col-lg-6 col-md-6">
                                 <dt>Date de dépôt</dt>
                                 <dd>{{ project.added|date('d/m/Y') }}</dd>
+                                {% if project.replyDeadline is not empty %}
+                                    <dt>Date butoir de réponse</dt>
+                                    <dd>{{ project.replyDeadline|date('d/m/Y') }}</dd>
+                                {% endif %}
+                                {% if project.expectedClosingDate is not empty %}
+                                    <dt>Date de closing envisagée</dt>
+                                    <dd>{{ project.expectedClosingDate|date('d/m/Y') }}</dd>
+                                {% endif %}
                             </dl>
                             <dl class="col-lg-6 col-md-6">
-                                <dt>Date butoir de réponse</dt>
-                                <dd>{{ project.replyDeadline|date('d/m/Y') }}</dd>
-                            </dl>
-                            <dl class="col-lg-6 col-md-6">
-                                <dt>Date de closing envisagée</dt>
-                                <dd>{{ project.expectedClosingDate|date('d/m/Y') }}</dd>
-                            </dl>
-                            <dl class="col-lg-6 col-md-6">
+                                <dt>Notation</dt>
+                                <dd>{% if project.internalRatingScore %}{{ project.internalRatingScore }}{% else %}N/A{% endif %}</dd>
                                 <dt>Structuration</dt>
                                 {% set arrangerLabel = 'project-form.arranger-label' %}
                                 {% if constant('\\Unilend\\Entity\\Project::OPERATION_TYPE_SYNDICATION') == project.operationType %}
@@ -84,12 +86,17 @@
                                 {% endif %}
                                 <dd>
                                     <div>{{ arrangerLabel|trans }} : {% if project.arranger is defined %} {{ project.arranger.company.name }} {% else %} non défini {% endif %}</div>
+                                    {% if project.deputyArranger is defined %}
+                                        <div>{% trans %} project-form.deputy-arranger-label {% endtrans %} : {{ project.deputyArranger.company.name }}</div>
+                                    {% endif %}
                                     <div>{% trans %} project-form.run-label {% endtrans %} : {% if project.run is defined %} {{ project.run.company.name }} {% else %} non défini {% endif %}</div>
+                                    {% if project.loanOfficer is defined and (project.arranger is not defined or project.loanOfficer.company != project.arranger) %}
+                                        <div>{% trans %} project-form.loan-officer-label {% endtrans %} : {{ project.loanOfficer.company.name }}</div>
+                                    {% endif %}
+                                    {% if project.securityTrustee is defined and (project.arranger is not defined or project.securityTrustee.company != project.arranger) %}
+                                        <div>{% trans %} project-form.security-trustee-label {% endtrans %} : {{ project.securityTrustee.company.name }}</div>
+                                    {% endif %}
                                 </dd>
-                            </dl>
-                            <dl class="col-lg-6 col-md-6">
-                                <dt>Notation</dt>
-                                <dd>{% if project.internalRatingScore %}{{ project.internalRatingScore }}{% else %}N/A{% endif %}</dd>
                             </dl>
                         </div>
                         {% if projectAttachments|length %}

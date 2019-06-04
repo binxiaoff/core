@@ -104,12 +104,36 @@ class ProjectType extends AbstractType
                     return $companyRepository->createEligibleArrangersQB($currentCompany, ['name' => 'ASC']);
                 },
             ])
+            ->add('deputyArranger', EntityType::class, [
+                'label'         => 'project-form.deputy-arranger-label',
+                'required'      => false,
+                'class'         => Companies::class,
+                'query_builder' => function (CompaniesRepository $companyRepository) use ($currentCompany) {
+                    return $companyRepository->createEligibleArrangersQB($currentCompany, ['name' => 'ASC']);
+                },
+            ])
             ->add('run', EntityType::class, [
                 'label'         => 'project-form.run-label',
                 'required'      => false,
                 'class'         => Companies::class,
                 'query_builder' => function (CompaniesRepository $companyRepository) {
-                    return $companyRepository->createEligibleRunQB(['name' => 'ASC']);
+                    return $companyRepository->createEligibleRunAgentQB(['name' => 'ASC']);
+                },
+            ])
+            ->add('loanOfficer', EntityType::class, [
+                'label'         => 'project-form.loan-officer-label',
+                'required'      => false,
+                'class'         => Companies::class,
+                'query_builder' => function (CompaniesRepository $companyRepository) {
+                    return $companyRepository->createEligibleRunAgentQB(['name' => 'ASC']);
+                },
+            ])
+            ->add('securityTrustee', EntityType::class, [
+                'label'         => 'project-form.security-trustee-label',
+                'required'      => false,
+                'class'         => Companies::class,
+                'query_builder' => function (CompaniesRepository $companyRepository) {
+                    return $companyRepository->createEligibleRunAgentQB(['name' => 'ASC']);
                 },
             ])
             ->add('projectAttachments', ProjectAttachmentCollectionType::class, ['constraints' => [new Valid()]])

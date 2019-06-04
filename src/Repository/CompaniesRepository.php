@@ -350,7 +350,7 @@ class CompaniesRepository extends ServiceEntityRepository
      *
      * @return QueryBuilder
      */
-    public function createEligibleRunQB(array $orderBy = [])
+    public function createEligibleRunAgentQB(array $orderBy = [])
     {
         $queryBuilder = $this->createQueryBuilder('c')
             ->where('c.idCompany IN (:runsToSelect)')
