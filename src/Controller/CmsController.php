@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\Controller;
 
-use Cache\Adapter\Memcache\MemcacheCachePool;
+use Psr\Cache\CacheItemPoolInterface;
 use Psr\Cache\InvalidArgumentException as InvalidCacheArgumentException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\{RedirectResponse, Request, Response};
@@ -41,13 +41,13 @@ class CmsController extends AbstractController
     /**
      * @param Request                $request
      * @param EntityManagerSimulator $entityManagerSimulator
-     * @param MemcacheCachePool      $cachePool
+     * @param CacheItemPoolInterface $cachePool
      *
      * @throws InvalidCacheArgumentException
      *
      * @return Response
      */
-    public function cms(Request $request, EntityManagerSimulator $entityManagerSimulator, MemcacheCachePool $cachePool): Response
+    public function cms(Request $request, EntityManagerSimulator $entityManagerSimulator, CacheItemPoolInterface $cachePool): Response
     {
         $slug = mb_substr($request->attributes->get('routeDocument')->getPath(), 1);
 

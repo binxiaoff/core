@@ -58,7 +58,7 @@ class AutomaticLenderValidationCommand extends ContainerAwareCommand
     private function notifyMarketingOfDuplicate(Clients $client, array $duplicates): void
     {
         /** @var CacheItemPoolInterface $cachePool */
-        $cachePool = $this->getContainer()->get('memcache.default');
+        $cachePool = $this->getContainer()->get('cache.app');
 
         try {
             $cachedItem = $cachePool->getItem(CacheKeys::LENDER_DUPLICATE_NOTIFICATION . '_' . $client->getIdClient());

@@ -2,7 +2,7 @@
 
 namespace Unilend\Controller\Unilend;
 
-use Cache\Adapter\Memcache\MemcacheCachePool;
+use Psr\Cache\CacheItemPoolInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\{JsonResponse, RedirectResponse, Request, Response};
@@ -267,8 +267,8 @@ class MainController extends Controller
             throw new NotFoundHttpException('Page with slug ' . $slug . ' could not be found');
         }
 
-        /** @var MemcacheCachePool $cachePool */
-        $cachePool  = $this->get('memcache.default');
+        /** @var CacheItemPoolInterface $cachePool */
+        $cachePool  = $this->get('cache.app');
         $cachedItem = $cachePool->getItem('Home_Tree_Childs_Elements_' . $tree->id_tree);
 
         if (false === $cachedItem->isHit()) {

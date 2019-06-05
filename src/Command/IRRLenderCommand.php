@@ -35,7 +35,7 @@ EOF
         /** @var EntityManager $entityManager */
         $entityManager = $this->getContainer()->get('doctrine.orm.entity_manager');
 
-        $cachePool  = $this->getContainer()->get('memcache.default');
+        $cachePool  = $this->getContainer()->get('cache.app');
         $cachedItem = $cachePool->getItem(CacheKeys::LENDER_STAT_QUEUE_UPDATED);
         if (false === $cachedItem->isHit() ) {
             $this->addLendersToLenderStatisticQueue();
@@ -94,7 +94,7 @@ EOF
             }
         }
 
-        $cachePool  = $this->getContainer()->get('memcache.default');
+        $cachePool  = $this->getContainer()->get('cache.app');
         $cachedItem = $cachePool->getItem(CacheKeys::LENDER_STAT_QUEUE_UPDATED);
         $cachedItem->set(true)->expiresAfter(CacheKeys::LONG_TIME);
         $cachePool->save($cachedItem);
