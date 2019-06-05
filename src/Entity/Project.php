@@ -677,9 +677,45 @@ class Project
      *
      * @return Project
      */
+    public function setDeputyArranger(Companies $company): Project
+    {
+        $this->addProjectParticipant($company, ProjectParticipant::COMPANY_ROLE_DEPUTY_ARRANGER);
+
+        return $this;
+    }
+
+    /**
+     * @param Companies $company
+     *
+     * @return Project
+     */
     public function setRun(Companies $company): Project
     {
         $this->addProjectParticipant($company, ProjectParticipant::COMPANY_ROLE_RUN);
+
+        return $this;
+    }
+
+    /**
+     * @param Companies $company
+     *
+     * @return Project
+     */
+    public function setLoanOfficer(Companies $company): Project
+    {
+        $this->addProjectParticipant($company, ProjectParticipant::COMPANY_ROLE_LOAN_OFFICER);
+
+        return $this;
+    }
+
+    /**
+     * @param Companies $company
+     *
+     * @return Project
+     */
+    public function setSecurityTrustee(Companies $company): Project
+    {
+        $this->addProjectParticipant($company, ProjectParticipant::COMPANY_ROLE_SECURITY_TRUSTEE);
 
         return $this;
     }
@@ -715,19 +751,53 @@ class Project
     }
 
     /**
+     * @throws Exception
+     *
      * @return ProjectParticipant|null
      */
     public function getArranger(): ?ProjectParticipant
     {
-        return $this->getParticipantsByRole(ProjectParticipant::COMPANY_ROLE_ARRANGER)->first() ?: null;
+        return $this->getUniqueRoleParticipant(ProjectParticipant::COMPANY_ROLE_ARRANGER);
     }
 
     /**
+     * @throws Exception
+     *
+     * @return ProjectParticipant|null
+     */
+    public function getDeputyArranger(): ?ProjectParticipant
+    {
+        return $this->getUniqueRoleParticipant(ProjectParticipant::COMPANY_ROLE_DEPUTY_ARRANGER);
+    }
+
+    /**
+     * @throws Exception
+     *
      * @return ProjectParticipant|null
      */
     public function getRun(): ?ProjectParticipant
     {
-        return $this->getParticipantsByRole(ProjectParticipant::COMPANY_ROLE_RUN)->first() ?: null;
+        return $this->getUniqueRoleParticipant(ProjectParticipant::COMPANY_ROLE_RUN);
+    }
+
+    /**
+     * @throws Exception
+     *
+     * @return ProjectParticipant|null
+     */
+    public function getLoanOfficer(): ?ProjectParticipant
+    {
+        return $this->getUniqueRoleParticipant(ProjectParticipant::COMPANY_ROLE_LOAN_OFFICER);
+    }
+
+    /**
+     * @throws Exception
+     *
+     * @return ProjectParticipant|null
+     */
+    public function getSecurityTrustee(): ?ProjectParticipant
+    {
+        return $this->getUniqueRoleParticipant(ProjectParticipant::COMPANY_ROLE_SECURITY_TRUSTEE);
     }
 
     /**
@@ -935,7 +1005,13 @@ class Project
      */
     private function isUniqueRole(string $role): bool
     {
-        return in_array($role, [ProjectParticipant::COMPANY_ROLE_ARRANGER, ProjectParticipant::COMPANY_ROLE_RUN]);
+        return in_array($role, [
+            ProjectParticipant::COMPANY_ROLE_ARRANGER,
+            ProjectParticipant::COMPANY_ROLE_DEPUTY_ARRANGER,
+            ProjectParticipant::COMPANY_ROLE_RUN,
+            ProjectParticipant::COMPANY_ROLE_LOAN_OFFICER,
+            ProjectParticipant::COMPANY_ROLE_SECURITY_TRUSTEE,
+        ]);
     }
 
     /**
@@ -984,5 +1060,21 @@ class Project
         }
 
         return $companies;
+    }
+
+    /**
+     * @param string $role
+     *
+     * @throws Exception
+     *
+     * @return ProjectParticipant|null
+     */
+    private function getUniqueRoleParticipant(string $role): ?ProjectParticipant
+    {
+        if (false === $this->isUniqueRole($role)) {
+            throw new Exception(sprintf('Role "%s" is not unique. Cannot get project participant corresponding to the role.', $role));
+        }
+
+        return $this->getParticipantsByRole($role)->first() ?: null;
     }
 }

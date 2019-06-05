@@ -27,16 +27,25 @@ class ProjectType extends AbstractType
     /** @var TranslatorInterface */
     private $translator;
 
+    /** @var CompaniesRepository */
+    private $companyRepository;
+
     /**
      * @param ManagerRegistry       $managerRegistry
      * @param TokenStorageInterface $tokenStorage
      * @param TranslatorInterface   $translator
+     * @param CompaniesRepository   $companyRepository
      */
-    public function __construct(ManagerRegistry $managerRegistry, TokenStorageInterface $tokenStorage, TranslatorInterface $translator)
-    {
-        $this->managerRegistry = $managerRegistry;
-        $this->tokenStorage    = $tokenStorage;
-        $this->translator      = $translator;
+    public function __construct(
+        ManagerRegistry $managerRegistry,
+        TokenStorageInterface $tokenStorage,
+        TranslatorInterface $translator,
+        CompaniesRepository $companyRepository
+    ) {
+        $this->managerRegistry   = $managerRegistry;
+        $this->tokenStorage      = $tokenStorage;
+        $this->translator        = $translator;
+        $this->companyRepository = $companyRepository;
     }
 
     /**
@@ -45,7 +54,9 @@ class ProjectType extends AbstractType
      */
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
-        $currentCompany = $this->getCurrentCompany();
+        $currentCompany       = $this->getCurrentCompany();
+        $arrangerQueryBuilder = $this->companyRepository->createEligibleArrangersQB($currentCompany, ['name' => 'ASC']);
+        $runAgentQueryBuilder = $this->companyRepository->createEligibleRunAgentQB(['name' => 'ASC']);
 
         $builder
             ->add('title', TextType::class, ['label' => 'project-form.title-label'])
@@ -100,17 +111,31 @@ class ProjectType extends AbstractType
                 'label'         => 'project-form.arranger-label',
                 'required'      => false,
                 'class'         => Companies::class,
-                'query_builder' => function (CompaniesRepository $companyRepository) use ($currentCompany) {
-                    return $companyRepository->createEligibleArrangersQB($currentCompany, ['name' => 'ASC']);
-                },
+                'query_builder' => $arrangerQueryBuilder,
+            ])
+            ->add('deputyArranger', EntityType::class, [
+                'label'         => 'project-form.deputy-arranger-label',
+                'required'      => false,
+                'class'         => Companies::class,
+                'query_builder' => $arrangerQueryBuilder,
             ])
             ->add('run', EntityType::class, [
                 'label'         => 'project-form.run-label',
                 'required'      => false,
                 'class'         => Companies::class,
-                'query_builder' => function (CompaniesRepository $companyRepository) {
-                    return $companyRepository->createEligibleRunQB(['name' => 'ASC']);
-                },
+                'query_builder' => $runAgentQueryBuilder,
+            ])
+            ->add('loanOfficer', EntityType::class, [
+                'label'         => 'project-form.loan-officer-label',
+                'required'      => false,
+                'class'         => Companies::class,
+                'query_builder' => $runAgentQueryBuilder,
+            ])
+            ->add('securityTrustee', EntityType::class, [
+                'label'         => 'project-form.security-trustee-label',
+                'required'      => false,
+                'class'         => Companies::class,
+                'query_builder' => $runAgentQueryBuilder,
             ])
             ->add('projectAttachments', ProjectAttachmentCollectionType::class, ['constraints' => [new Valid()]])
             ->addEventListener(FormEvents::POST_SUBMIT, [$this, 'handleCreationInProgressCompany'])

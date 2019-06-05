@@ -350,11 +350,32 @@ class EditController extends AbstractController
                 $outputValue = $arrangerCompany ? $arrangerCompany->getIdCompany() : null;
 
                 break;
+            case 'deputy-arranger':
+                $deputyArrangerCompany = $companyRepository->find($value);
+                $project->setDeputyArranger($deputyArrangerCompany);
+
+                $outputValue = $deputyArrangerCompany ? $deputyArrangerCompany->getIdCompany() : null;
+
+                break;
             case 'run':
                 $runCompany = $companyRepository->find($value);
                 $project->setRun($runCompany);
 
                 $outputValue = $runCompany ? $runCompany->getIdCompany() : null;
+
+                break;
+            case 'loan-officer':
+                $loanOfficerCompany = $companyRepository->find($value);
+                $project->setLoanOfficer($loanOfficerCompany);
+
+                $outputValue = $loanOfficerCompany ? $loanOfficerCompany->getIdCompany() : null;
+
+                break;
+            case 'security-trustee':
+                $securityTrusteeCompany = $companyRepository->find($value);
+                $project->setSecurityTrustee($securityTrusteeCompany);
+
+                $outputValue = $securityTrusteeCompany ? $securityTrusteeCompany->getIdCompany() : null;
 
                 break;
             case 'scoring':
