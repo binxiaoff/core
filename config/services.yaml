@@ -5,10 +5,7 @@ parameters:
     ekomi.url: 'https://srr.ekomi.com/add-recipient'
     # End of to delete
     sonata_cache.servers:
-        -
-            domain: '%env(HOST_DEFAULT_URL)%'
-            ip: 192.168.110.12
-            port: 443
+        - { domain: '%env(INTERNAL_SERVER_DOMAIN_HOST1)%', ip: '%env(INTERNAL_SERVER_IP_HOST1)%', port: '%env(int:INTERNAL_SERVER_PORT_HOST1)%' }
     dbal_wrapper_class: Unilend\Doctrine\DBAL\Connection
     dbal_driver_class: Facile\DoctrineMySQLComeBack\Doctrine\DBAL\Driver\PDOMySql\Driver
     locale: fr_FR
