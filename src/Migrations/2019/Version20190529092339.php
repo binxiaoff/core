@@ -5,10 +5,13 @@ declare(strict_types=1);
 namespace DoctrineMigrations;
 
 use Doctrine\DBAL\Schema\Schema;
-use Doctrine\Migrations\AbstractMigration;
+use Unilend\Migrations\ContainerAwareMigration;
+use Unilend\Migrations\Traits\FlushTranslationCacheTrait;
 
-final class Version20190529092339 extends AbstractMigration
+final class Version20190529092339 extends ContainerAwareMigration
 {
+    use FlushTranslationCacheTrait;
+
     /**
      * @return string
      */

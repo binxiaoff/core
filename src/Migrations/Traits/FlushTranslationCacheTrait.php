@@ -2,12 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Migrations;
+namespace Unilend\Migrations\Traits;
 
 use Doctrine\DBAL\Schema\Schema;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
-abstract class AbstractMigrationWithTranslations extends ContainerAwareMigration
+trait FlushTranslationCacheTrait
 {
+    /** @var ContainerInterface */
+    protected $container;
+
     /**
      * @param Schema $schema
      */
