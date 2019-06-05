@@ -6,9 +6,9 @@ namespace DoctrineMigrations;
 
 use Doctrine\DBAL\DBALException;
 use Doctrine\DBAL\Schema\Schema;
-use Unilend\Migrations\TranslationMigration;
+use Unilend\Migrations\AbstractMigrationWithTranslations;
 
-final class Version20190604090235 extends TranslationMigration
+final class Version20190604090235 extends AbstractMigrationWithTranslations
 {
     /**
      * @return string
