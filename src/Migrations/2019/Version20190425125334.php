@@ -39,6 +39,7 @@ final class Version20190425125334 extends AbstractMigration
         $this->addSql('ALTER TABLE project_attachment DROP FOREIGN KEY FK_61F9A289F12E799E');
         $this->addSql('ALTER TABLE project_attachment ADD CONSTRAINT FK_61F9A289F12E799E FOREIGN KEY (id_project) REFERENCES project (id)');
         $this->addSql('ALTER TABLE project_attachment RENAME INDEX id_project TO IDX_61F9A289F12E799E');
+        $this->addSql('ALTER TABLE project_attachment RENAME INDEX id_attachment TO IDX_61F9A289DCD5596C');
         $this->addSql('ALTER TABLE loans DROP FOREIGN KEY FK_82C24DBCF12E799E');
         $this->addSql('ALTER TABLE loans ADD CONSTRAINT FK_82C24DBCF12E799E FOREIGN KEY (id_project) REFERENCES project (id)');
         $this->addSql('SET FOREIGN_KEY_CHECKS = 1');
@@ -72,7 +73,7 @@ final class Version20190425125334 extends AbstractMigration
         $this->addSql('ALTER TABLE project_attachment DROP FOREIGN KEY FK_61F9A289F12E799E');
         $this->addSql('ALTER TABLE project_attachment ADD CONSTRAINT FK_61F9A289F12E799E FOREIGN KEY (id_project) REFERENCES projects (id_project) ON UPDATE NO ACTION ON DELETE NO ACTION');
         $this->addSql('ALTER TABLE project_attachment RENAME INDEX idx_61f9a289f12e799e TO id_project');
-        $this->addSql('ALTER TABLE project_attachment RENAME INDEX idx_61f9a289dcd5596c TO id_attachment');
+        $this->addSql('ALTER TABLE project_attachment RENAME INDEX IDX_61F9A289DCD5596C TO id_attachment');
         $this->addSql('ALTER TABLE project_participant DROP FOREIGN KEY FK_1F509CEAF12E799E');
         $this->addSql('ALTER TABLE project_participant ADD CONSTRAINT FK_1F509CEAF12E799E FOREIGN KEY (id_project) REFERENCES projects (id_project) ON UPDATE NO ACTION ON DELETE NO ACTION');
         $this->addSql('ALTER TABLE project_percent_fee DROP FOREIGN KEY FK_F7D17EEFF12E799E');
