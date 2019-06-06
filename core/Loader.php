@@ -214,11 +214,10 @@ class Loader
             return self::$connection;
         }
 
-        // todo: replace it by ENV
-        $params = Yaml::parse(file_get_contents(dirname(__DIR__) . '/config/services.yaml'));
+        $params = Yaml::parseFile(dirname(__DIR__) . '/config/services.yaml');
 
         return self::$connection = DriverManager::getConnection([
-            'url' => getenv('DATABASE_URL') . '&driverClass=' . $params['parameters']['dbal_driver_class'] . '&wrapperClass=' . $params['parameters']['dbal_wrapper_class'],
+            'url' => $_SERVER['DATABASE_URL'] . '&driverClass=' . $params['parameters']['dbal_driver_class'] . '&wrapperClass=' . $params['parameters']['dbal_wrapper_class'],
         ]);
     }
 }
