@@ -2,25 +2,25 @@
 
 namespace Unilend\core;
 
-use Doctrine\Bundle\DoctrineBundle\ConnectionFactory;
-use Unilend\Doctrine\DBAL\Connection as UnilendConnection;
-use Doctrine\DBAL\Connection as DoctrineConnection;
+use Doctrine\DBAL\{Connection as DoctrineConnection, DBALException, DriverManager};
 use Symfony\Component\Yaml\Yaml;
+use Unilend\Doctrine\DBAL\Connection as UnilendConnection;
 
-/**
- * Class Loader
- * @package Unilend\core
- */
 class Loader
 {
+    /** @var DoctrineConnection */
+    private static $connection;
+
     /**
      * @param string                 $object
      * @param array                  $params
      * @param UnilendConnection|null $db
      *
-     * @return object|bool
-     * @internal You cannot call this method directly.
+     * @throws DBALException
      *
+     * @return object|bool
+     *
+     * @internal you cannot call this method directly
      */
     public static function loadData(string $object, array $params = [], ?UnilendConnection $db = null)
     {
@@ -34,28 +34,13 @@ class Loader
     }
 
     /**
-     * @return DoctrineConnection
-     */
-    private static function getConnection(): DoctrineConnection
-    {
-        // todo: replace it by ENV
-        $params = Yaml::parse(file_get_contents(dirname(__DIR__) . '/config/services.yaml'));
-
-        $connectionFactory = new ConnectionFactory([]);
-
-        return $connectionFactory->createConnection([
-            'url' => getenv('DATABASE_URL') . '&driverClass=' . $params['parameters']['dbal_driver_class'] . '&wrapperClass=' . $params['parameters']['dbal_wrapper_class'],
-        ]);
-    }
-
-    /**
      * @param string $object
      *
      * @return bool
      */
     public static function crudExists(string $object): bool
     {
-        $path = realpath(dirname(__FILE__) . '/..') . '/data/crud/' . $object . '.crud.php';
+        $path = realpath(__DIR__ . '/..') . '/data/crud/' . $object . '.crud.php';
 
         return file_exists($path);
     }
@@ -63,20 +48,21 @@ class Loader
     /**
      * @param string $table
      *
+     * @throws DBALException
+     *
      * @return bool
-     * @throws \Doctrine\DBAL\DBALException
      */
     public static function generateCrud(string $table): bool
     {
         $db     = self::getConnection();
-        $path   = realpath(dirname(__FILE__) . '/..') . '/';
+        $path   = realpath(__DIR__ . '/..') . '/';
         $result = $db->query('DESC ' . $table);
 
         if ($result) {
             $nb_cle = 0;
             while ($record = $db->fetch_assoc($result)) {
-                if ($record['Key'] == 'PRI') {
-                    $nb_cle++;
+                if ('PRI' === $record['Key']) {
+                    ++$nb_cle;
                 }
             }
 
@@ -92,55 +78,55 @@ class Loader
             $cvalues        = '';
             $id             = [];
             while ($record = $db->fetch_assoc($result)) {
-                $declaration    .= "    public \$" . $record['Field'] . ";\r\n";
-                $initialisation .= "        \$this->" . $record['Field'] . " = '';\r\n";
-                $remplissage    .= "            \$this->" . $record['Field'] . " = \$record['" . $record['Field'] . "'];\r\n";
-                $escapestring   .= "        \$this->" . $record['Field'] . " = \$this->bdd->escape_string(\$this->" . $record['Field'] . ");\r\n";
+                $declaration    .= '    public $' . $record['Field'] . ";\r\n";
+                $initialisation .= '        $this->' . $record['Field'] . " = '';\r\n";
+                $remplissage    .= '            $this->' . $record['Field'] . " = \$record['" . $record['Field'] . "'];\r\n";
+                $escapestring   .= '        $this->' . $record['Field'] . ' = $this->bdd->escape_string($this->' . $record['Field'] . ");\r\n";
 
-                if ($record['Key'] == 'PRI') {
+                if ('PRI' === $record['Key']) {
                     $id[] = $record['Field'];
                 }
-                if ($record['Key'] != 'PRI' && $record['Field'] != 'updated') {
-                    $updatefields .= "`" . $record['Field'] . "`=\"'.\$this->" . $record['Field'] . ".'\",";
-                } elseif ($record['Field'] == 'updated') {
-                    $updatefields .= "`" . $record['Field'] . "` = NOW(),";
+                if ('PRI' !== $record['Key'] && 'updated' !== $record['Field']) {
+                    $updatefields .= '`' . $record['Field'] . "`=\"'.\$this->" . $record['Field'] . ".'\",";
+                } elseif ('updated' === $record['Field']) {
+                    $updatefields .= '`' . $record['Field'] . '` = NOW(),';
                 }
 
-                if ($record['Field'] == 'slug') {
+                if ('slug' === $record['Field']) {
                     $slug = true;
                 }
 
                 //Si la clé primaire est unique, c'est un autoincrémente donc on l'exclus de la liste
-                if ($nb_cle == 1) {
-                    if ($record['Key'] != 'PRI') {
-                        $clist .= "`" . $record['Field'] . "`,";
+                if (1 === $nb_cle) {
+                    if ('PRI' !== $record['Key']) {
+                        $clist .= '`' . $record['Field'] . '`,';
                     }
 
-                    if ($record['Key'] != 'PRI' && $record['Field'] != 'updated' && $record['Field'] != 'added' && $record['Field'] != 'hash') {
+                    if ('PRI' !== $record['Key'] && 'updated' !== $record['Field'] && 'added' !== $record['Field'] && 'hash' !== $record['Field']) {
                         $cvalues .= "\"'.\$this->" . $record['Field'] . ".'\",";
-                    } elseif ($record['Field'] == 'updated' || $record['Field'] == 'added') {
-                        $cvalues .= "NOW(),";
-                    } elseif ($record['Field'] == 'hash') {
-                        $cvalues .= "MD5(UUID()),";
+                    } elseif ('updated' === $record['Field'] || 'added' === $record['Field']) {
+                        $cvalues .= 'NOW(),';
+                    } elseif ('hash' === $record['Field']) {
+                        $cvalues .= 'MD5(UUID()),';
                     }
                 } else {
-                    $clist .= "`" . $record['Field'] . "`,";
+                    $clist .= '`' . $record['Field'] . '`,';
 
-                    if ($record['Field'] != 'updated' && $record['Field'] != 'added' && $record['Field'] != 'hash') {
+                    if ('updated' !== $record['Field'] && 'added' !== $record['Field'] && 'hash' !== $record['Field']) {
                         $cvalues .= "\"'.\$this->" . $record['Field'] . ".'\",";
-                    } elseif ($record['Field'] == 'updated' || $record['Field'] == 'added') {
-                        $cvalues .= "NOW(),";
-                    } elseif ($record['Field'] == 'hash') {
-                        $cvalues .= "md5(UUID()),";
+                    } elseif ('updated' === $record['Field'] || 'added' === $record['Field']) {
+                        $cvalues .= 'NOW(),';
+                    } elseif ('hash' === $record['Field']) {
+                        $cvalues .= 'md5(UUID()),';
                     }
                 }
             }
 
-            $updatefields = substr($updatefields, 0, strlen($updatefields) - 1);
-            $clist        = substr($clist, 0, strlen($clist) - 1);
-            $cvalues      = substr($cvalues, 0, strlen($cvalues) - 1);
+            $updatefields = mb_substr($updatefields, 0, mb_strlen($updatefields) - 1);
+            $clist        = mb_substr($clist, 0, mb_strlen($clist) - 1);
+            $cvalues      = mb_substr($cvalues, 0, mb_strlen($cvalues) - 1);
 
-            if ($nb_cle == 1) {
+            if (1 === $nb_cle) {
                 $dao = file_get_contents($path . 'core/crud.sample.php');
 
                 if ($slug) {
@@ -180,7 +166,7 @@ class Loader
             $dao = str_replace('--classe--', $table . '_crud', $dao);
 
             touch($path . 'data/crud/' . $table . '.crud.php');
-            $c = fopen($path . 'data/crud/' . $table . '.crud.php', 'r+');
+            $c = fopen($path . 'data/crud/' . $table . '.crud.php', 'r+b');
 
             fputs($c, $dao);
             fclose($c);
@@ -199,7 +185,7 @@ class Loader
      */
     public static function loadLib($sLibrary, array $aParams = [])
     {
-        $sProjectPath = realpath(dirname(__FILE__) . '/..') . '/';
+        $sProjectPath = realpath(__DIR__ . '/..') . '/';
         $sClassPath   = '';
         $aPath        = explode('/', $sLibrary);
 
@@ -215,5 +201,23 @@ class Loader
         $sClassName = '\\' . $sLibrary;
 
         return new $sClassName($aParams);
+    }
+
+    /**
+     * @throws DBALException
+     *
+     * @return DoctrineConnection
+     */
+    private static function getConnection(): DoctrineConnection
+    {
+        if (self::$connection instanceof DoctrineConnection) {
+            return self::$connection;
+        }
+
+        $params = Yaml::parseFile(dirname(__DIR__) . '/config/services.yaml');
+
+        return self::$connection = DriverManager::getConnection([
+            'url' => $_SERVER['DATABASE_URL'] . '&driverClass=' . $params['parameters']['dbal_driver_class'] . '&wrapperClass=' . $params['parameters']['dbal_wrapper_class'],
+        ]);
     }
 }
