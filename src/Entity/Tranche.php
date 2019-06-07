@@ -16,16 +16,21 @@ use Unilend\Traits\ConstantsAwareTrait;
 /**
  * @ORM\Entity(repositoryClass="Unilend\Repository\TrancheRepository")
  * @ORM\HasLifecycleCallbacks
+ *
+ * Short explanations about loan facilities can be found at https://www.translegal.com/lesson/3263
  */
 class Tranche
 {
     use TimestampableTrait;
     use ConstantsAwareTrait;
 
-    public const REPAYMENT_TYPE_AMORTIZING_FIXED_PAYMENT = 'amortizing_fixed_payment';
-    public const REPAYMENT_TYPE_AMORTIZING_FIXED_CAPITAL = 'amortizing_fixed_capital';
-    public const REPAYMENT_TYPE_NON_AMORTIZING_IN_FINE   = 'non_amortizing_in_fine';
-    public const REPAYMENT_TYPE_REVOLVING_CREDIT         = 'revolving_credit';
+    public const LOAN_TYPE_TERM_LOAN        = 'term_loan';
+    public const LOAN_TYPE_REVOLVING_CREDIT = 'revolving_credit';
+    public const LOAN_TYPE_CAPEX            = 'capex';
+
+    public const REPAYMENT_TYPE_AMORTIZABLE = 'amortizable';
+    public const REPAYMENT_TYPE_BALLOON     = 'balloon';
+    public const REPAYMENT_TYPE_BULLET      = 'bullet';
 
     /**
      * @var int
@@ -54,6 +59,15 @@ class Tranche
      * @Assert\NotBlank
      */
     private $name;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(length=30)
+     *
+     * @Assert\NotBlank
+     */
+    private $loanType;
 
     /**
      * @var string
@@ -230,6 +244,26 @@ class Tranche
     public function setMoney(Money $money): Tranche
     {
         $this->money = $money;
+
+        return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getLoanType(): ?string
+    {
+        return $this->loanType;
+    }
+
+    /**
+     * @param string $loanType
+     *
+     * @return Tranche
+     */
+    public function setLoanType(string $loanType): Tranche
+    {
+        $this->loanType = $loanType;
 
         return $this;
     }
@@ -439,6 +473,14 @@ class Tranche
     public function getLoans(): iterable
     {
         return $this->loans;
+    }
+
+    /**
+     * @return array
+     */
+    public static function getLoanTypes(): array
+    {
+        return self::getConstants('LOAN_TYPE_');
     }
 
     /**

@@ -14,7 +14,7 @@
 
 {% block project_tranche_type_row %}
     <div class="row row-multi-col">
-        <div class="col-lg-6 col-md-6">
+        <div class="col-lg-3 col-md-3">
             {{ form_row(form.name) }}
         </div>
         <div class="col-lg-3 col-md-3">
@@ -23,30 +23,33 @@
         <div class="col-lg-3 col-md-3">
             {{ form_row(form.money.currency) }}
         </div>
+        <div class="col-lg-3 col-md-3">
+            {{ form_row(form.duration, {label_help: 'tranche-form.maturity-unit'}) }}
+        </div>
     </div>
     <div class="row row-multi-col">
         <div class="col-lg-3 col-md-3">
-            {{ form_row(form.duration) }}
+            {{ form_row(form.loanType) }}
         </div>
         <div class="col-lg-3 col-md-3">
             {{ form_row(form.repaymentType) }}
         </div>
         <div class="col-lg-3 col-md-3">
-            {{ form_row(form.capitalPeriodicity) }}
+            {{ form_row(form.capitalPeriodicity, {label_help: 'tranche-form.capital-periodicity-unit'}) }}
         </div>
         <div class="col-lg-3 col-md-3">
-            {{ form_row(form.interestPeriodicity) }}
+            {{ form_row(form.interestPeriodicity, {label_help: 'tranche-form.interest-periodicity-unit'}) }}
         </div>
     </div>
     <div class="row row-multi-col">
         <div class="col-lg-4 col-md-4">
-            {{ form_row(form.rate.indexType) }}
+            {{ form_row(form.rate.indexType, {attr: {class: 'tranche-rate-index'}}) }}
         </div>
         <div class="col-lg-4 col-md-4">
-            {{ form_row(form.rate.floor) }}
+            {{ form_row(form.rate.margin, {label_help: 'lending-form.margin-unit'}) }}
         </div>
-        <div class="col-lg-4 col-md-4">
-            {{ form_row(form.rate.margin) }}
+        <div class="col-lg-4 col-md-4 hidden">
+            {{ form_row(form.rate.floor, {label_help: 'lending-form.floor-unit', attr: {class: 'tranche-rate-floor'}}) }}
         </div>
     </div>
     <div class="row row-multi-col">

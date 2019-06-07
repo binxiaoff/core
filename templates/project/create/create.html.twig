@@ -177,6 +177,18 @@
                 maximumInputLength: 9,
                 placeholder: 'Veuillez saisir un numéro de SIREN'
             })
+
+            $(document).on('change', '.tranche-rate-index', function () {
+                let value = $(this).find('option:selected').val()
+                let noFloor = '{{ constant('Unilend\\Entity\\Embeddable\\LendingRate::INDEX_FIXED') }}' === value || '' === value
+
+                $(this)
+                    .parents('.tranches')
+                    .find('.tranche-rate-floor')
+                    .parents('.form-field')
+                    .parent()
+                    .toggleClass('hidden', noFloor)
+            })
         })
 
         {% include 'project/partials/fees/fees.js.twig' %}
