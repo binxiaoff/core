@@ -57,6 +57,7 @@
     "symfony/cache": "*",
     "symfony/config": "*",
     "symfony/console": "*",
+    "symfony/contracts": "^1.1",
     "symfony/debug": "*",
     "symfony/dependency-injection": "*",
     "symfony/doctrine-bridge": "4.2.8",
@@ -113,7 +114,11 @@
     "symfony/polyfill-php72": "*",
     "symfony/polyfill-php71": "*",
     "symfony/polyfill-php70": "*",
-    "symfony/polyfill-php56": "*"
+    "symfony/translation-contracts": "*",
+    "symfony/service-contracts": "*",
+    "symfony/event-dispatcher-contracts": "*",
+    "symfony/cache-contracts": "*",
+    "symfony/http-client-contracts": "*"
   },
   "config": {
     "preferred-install": {
