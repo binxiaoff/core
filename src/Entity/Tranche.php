@@ -26,7 +26,6 @@ class Tranche
 
     public const LOAN_TYPE_TERM_LOAN        = 'term_loan';
     public const LOAN_TYPE_REVOLVING_CREDIT = 'revolving_credit';
-    public const LOAN_TYPE_CAPEX            = 'capex';
 
     public const REPAYMENT_TYPE_AMORTIZABLE = 'amortizable';
     public const REPAYMENT_TYPE_BALLOON     = 'balloon';

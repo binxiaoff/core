@@ -53,7 +53,6 @@ VALUES
   ('fr_FR', 'lending-form', 'margin-unit', '(%)', NOW()),
   ('fr_FR', 'loan-type', 'term_loan', 'Term loan', NOW()),
   ('fr_FR', 'loan-type', 'revolving_credit', 'RCF', NOW()),
-  ('fr_FR', 'loan-type', 'capex', 'CAPEX', NOW()),
   ('fr_FR', 'repayment-type', 'amortizable', 'Amortissable', NOW()),
   ('fr_FR', 'repayment-type', 'balloon', 'Balloon', NOW()),
   ('fr_FR', 'repayment-type', 'bullet', 'Bullet', NOW())
@@ -91,7 +90,6 @@ VALUES
   ('fr_FR', 'repayment-type', 'repayment_type_amortizing_fixed_payment', 'Échéance fixe', NOW()),
   ('fr_FR', 'repayment-type', 'repayment_type_amortizing_fixed_capital', 'Capital fixe', NOW()),
   ('fr_FR', 'repayment-type', 'repayment_type_non_amortizing_in_fine', 'In Fine', NOW()),
-  ('fr_FR', 'repayment-type', 'repayment_type_revolving_credit', 'CAPEX', NOW())
 TRANSLATIONS
         );
     }
