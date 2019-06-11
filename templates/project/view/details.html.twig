@@ -85,15 +85,15 @@
                                     {% set arrangerLabel = 'project-form.lead-manager-label' %}
                                 {% endif %}
                                 <dd>
-                                    <div>{{ arrangerLabel|trans }} : {% if project.arranger is defined %} {{ project.arranger.company.name }} {% else %} non défini {% endif %}</div>
-                                    {% if project.deputyArranger is defined %}
+                                    <div>{{ arrangerLabel|trans }} : {% if project.arranger is not empty %} {{ project.arranger.company.name }} {% else %} non défini {% endif %}</div>
+                                    {% if project.deputyArranger is not empty %}
                                         <div>{% trans %} project-form.deputy-arranger-label {% endtrans %} : {{ project.deputyArranger.company.name }}</div>
                                     {% endif %}
-                                    <div>{% trans %} project-form.run-label {% endtrans %} : {% if project.run is defined %} {{ project.run.company.name }} {% else %} non défini {% endif %}</div>
-                                    {% if project.loanOfficer is defined and (project.arranger is not defined or project.loanOfficer.company != project.arranger) %}
+                                    <div>{% trans %} project-form.run-label {% endtrans %} : {% if project.run is not empty %} {{ project.run.company.name }} {% else %} non défini {% endif %}</div>
+                                    {% if project.loanOfficer is not empty and (project.arranger is empty or project.loanOfficer.company != project.arranger) %}
                                         <div>{% trans %} project-form.loan-officer-label {% endtrans %} : {{ project.loanOfficer.company.name }}</div>
                                     {% endif %}
-                                    {% if project.securityTrustee is defined and (project.arranger is not defined or project.securityTrustee.company != project.arranger) %}
+                                    {% if project.securityTrustee is not empty and (project.arranger is empty or project.securityTrustee.company != project.arranger) %}
                                         <div>{% trans %} project-form.security-trustee-label {% endtrans %} : {{ project.securityTrustee.company.name }}</div>
                                     {% endif %}
                                 </dd>
@@ -109,7 +109,7 @@
                                     <div class="row">
                                         <span class="icon fa-file-u"></span>
                                         <a href="{{ path('document_download', {'id': projectAttachment.attachment.id, 'originalName': projectAttachment.attachment.originalName}) }}">
-                                            {{ projectAttachment.attachment.description }}
+                                            {% if projectAttachment.attachment.description is not empty %}{{ projectAttachment.attachment.description }}{% else %}{{ projectAttachment.attachment.originalName }}{% endif %}
                                         </a>
                                     </div>
                                 {% endfor %}
@@ -129,39 +129,47 @@
                 </div>
                 <div class="panel-content">
                     <div class="row margin-20-t">
-                        <dl class="col-lg-4 col-md-4">
+                        <dl class="col-lg-3 col-md-3">
                             <dt>{% trans %} money-form.amount {% endtrans %}</dt>
                             <dd>{{ tranche.money.amount|localizedcurrency(tranche.money.currency, null, false) }}</dd>
                         </dl>
-                        <dl class="col-lg-8 col-md-8">
+                        <dl class="col-lg-3 col-md-3">
                             <dt>{% trans %} tranche-form.maturity {% endtrans %}</dt>
                             <dd>{{ tranche.duration|localizednumber }} mois</dd>
                         </dl>
-                        <dl class="col-lg-4 col-md-4">
-                            <dt>{% trans %} tranche-form.repayment-type {% endtrans %}</dt>
-                            <dd>{{ ('repayment-type.repayment_type_' ~ tranche.repaymentType)|trans }}</dd>
+                        <dl class="col-lg-3 col-md-3">
+                            <dt>{% trans %} tranche-form.loan-type {% endtrans %}</dt>
+                            <dd>{{ ('loan-type.' ~ tranche.loanType)|trans }}</dd>
                         </dl>
-                        <dl class="col-lg-4 col-md-4">
+                        <dl class="col-lg-3 col-md-3">
+                            <dt>{% trans %} tranche-form.repayment-type {% endtrans %}</dt>
+                            <dd>{{ ('repayment-type.' ~ tranche.repaymentType)|trans }}</dd>
+                        </dl>
+                        <dl class="col-lg-3 col-md-3">
                             <dt>{% trans %} tranche-form.capital-periodicity {% endtrans %}</dt>
                             <dd>{{ tranche.capitalPeriodicity }} mois</dd>
                         </dl>
-                        <dl class="col-lg-4 col-md-4">
+                        <dl class="col-lg-3 col-md-3">
                             <dt>{% trans %} tranche-form.interest-periodicity {% endtrans %}</dt>
                             <dd>{{ tranche.interestPeriodicity }} mois</dd>
                         </dl>
-                        <dl class="col-lg-4 col-md-4">
-                            <dt>{% trans %} lending-form.index-type {% endtrans %}</dt>
-                            <dd>{{ tranche.rate.indexType }}</dd>
-                        </dl>
-                        <dl class="col-lg-8 col-md-8">
-                            <dt>{% trans %} lending-form.margin {% endtrans %}</dt>
-                            <dd>{{ tranche.rate.margin|localizednumberwithprecision(2) }}</dd>
-                        </dl>
-                        <dl class="col-lg-4 col-md-4">
+                        {% if tranche.rate.indexType is not null %}
+                            <dl class="col-lg-3 col-md-3">
+                                <dt>{% trans %} lending-form.index-type {% endtrans %}</dt>
+                                <dd>{{ tranche.rate.indexType }}</dd>
+                            </dl>
+                            {% if tranche.rate.margin is not null %}
+                                <dl class="col-lg-3 col-md-3">
+                                    <dt>{% trans %} lending-form.margin {% endtrans %}</dt>
+                                    <dd>{{ tranche.rate.margin|localizednumberwithprecision(2) }}</dd>
+                                </dl>
+                            {% endif %}
+                        {% endif %}
+                        <dl class="col-lg-3 col-md-3">
                             <dt>{% trans %} tranche-form.expected-releasing-date {% endtrans %}</dt>
                             <dd>{{ tranche.expectedReleasingDate|localizeddate('short', 'none') }}</dd>
                         </dl>
-                        <dl class="col-lg-4 col-md-4">
+                        <dl class="col-lg-3 col-md-3">
                             <dt>{% trans %} tranche-form.expected-starting-date {% endtrans %}</dt>
                             <dd>{{ tranche.expectedStartingDate|localizeddate('short', 'none') }}</dd>
                         </dl>
