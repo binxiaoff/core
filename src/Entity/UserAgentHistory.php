@@ -17,16 +17,6 @@ class UserAgentHistory
     use TimestampableAddedOnlyTrait;
 
     /**
-     * @var Clients
-     *
-     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Clients")
-     * @ORM\JoinColumns({
-     *     @ORM\JoinColumn(name="id_client", referencedColumnName="id_client", nullable=false)
-     * })
-     */
-    private $idClient;
-
-    /**
      * @var string|null
      *
      * @ORM\Column(name="browser_name", type="string", length=48, nullable=true)
@@ -76,26 +66,6 @@ class UserAgentHistory
      * @ORM\GeneratedValue(strategy="IDENTITY")
      */
     private $id;
-
-    /**
-     * @return Clients
-     */
-    public function getIdClient(): Clients
-    {
-        return $this->idClient;
-    }
-
-    /**
-     * @param Clients $idClient
-     *
-     * @return UserAgentHistory
-     */
-    public function setIdClient(Clients $idClient): UserAgentHistory
-    {
-        $this->idClient = $idClient;
-
-        return $this;
-    }
 
     /**
      * @return string|null
