@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\Security\Voter;
 
+use Exception;
 use LogicException;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
@@ -73,6 +74,8 @@ class ProjectVoter extends Voter
      * @param Project $project
      * @param Clients $user
      *
+     * @throws Exception
+     *
      * @return bool
      */
     private function canView(Project $project, Clients $user): bool
@@ -88,6 +91,8 @@ class ProjectVoter extends Voter
      * @param Project $project
      * @param Clients $user
      *
+     * @throws Exception
+     *
      * @return bool
      */
     private function canEdit(Project $project, Clients $user): bool
@@ -98,6 +103,7 @@ class ProjectVoter extends Voter
 
         return in_array($user->getCompany(), [
             $project->getArranger() ? $project->getArranger()->getCompany() : null,
+            $project->getDeputyArranger() ? $project->getDeputyArranger()->getCompany() : null,
             $project->getRun() ? $project->getRun()->getCompany() : null,
             $project->getSubmitterCompany(),
         ]);
@@ -106,6 +112,8 @@ class ProjectVoter extends Voter
     /**
      * @param Project $project
      * @param Clients $user
+     *
+     * @throws Exception
      *
      * @return bool
      */
@@ -117,6 +125,8 @@ class ProjectVoter extends Voter
     /**
      * @param Project $project
      * @param Clients $user
+     *
+     * @throws Exception
      *
      * @return bool
      */
@@ -139,6 +149,8 @@ class ProjectVoter extends Voter
     /**
      * @param Project $project
      * @param Clients $user
+     *
+     * @throws Exception
      *
      * @return bool
      */
