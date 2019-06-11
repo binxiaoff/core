@@ -7,7 +7,7 @@ use Unilend\Entity\Traits\TimestampableAddedOnlyTrait;
 
 /**
  * @ORM\Table(indexes={
- *     @ORM\Index(name="idx_user_agent_client_browser_device_model_brand_type", columns={"id_client", "browser_name", "device_model", "device_brand", "device_type"})
+ *     @ORM\Index(name="idx_user_agent_browser_device_model_brand_type", columns={"browser_name", "device_model", "device_brand", "device_type"})
  * })
  * @ORM\Entity
  * @ORM\HasLifecycleCallbacks
