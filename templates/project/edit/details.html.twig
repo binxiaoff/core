@@ -153,8 +153,24 @@
                     </div><!-- /.panel -->
                 </article><!-- /.dashboard-tab-pane -->
             </div><!-- /.row -->
+
             <article class="dashboard-tab-pane">
                 <div class="panel">
+                    <h3 class="margin-10-t">{% trans %} project-edit.fees-section-title {% endtrans %}</h3>
+                    <div class="panel-content">
+                        {{ form_start(feesForm) }}
+                        {{ form_row(feesForm.projectFees) }}
+                        <div class="text-align-right">
+                            <button type="submit" class="btn-primary btn-shape-xs" data-spinnerbutton>Confirmer</button>
+                        </div>
+                        {{ form_end(feesForm) }}
+                    </div><!-- /.panel-content -->
+                </div><!-- /.panel -->
+            </article><!-- /.dashboard-tab-pane -->
+
+            <article class="dashboard-tab-pane">
+                <div class="panel">
+                    <h3 class="margin-10-t">Tranches</h3>
                     <div class="panel-content">
                         {{ form_start(trancheForm) }}
                         {{ form_row(trancheForm.tranches) }}
@@ -274,37 +290,6 @@
                     </fieldset>
                 </div>
             </article><!-- /.dashboard-tab-pane -->
-            {#<article class="dashboard-tab-pane" id="article-fees">
-                <div class="panel">
-                    <h3 class="margin-10-t">Frais / commissions</h3>
-                    {% if project.projectPercentFees is not empty %}
-                        <table class="table-myoffers">
-                            <tbody>
-                            <tr class="my-offers-bid-row">
-                                <td>Type</td>
-                                <td>Taux</td>
-                                <td>Récurrent</td>
-                                <td></td>
-                            </tr>
-                            {% for projectPercentFee in project.projectPercentFees %}
-                                <tr>
-                                    <td>{{ ('fee-type_' ~ projectPercentFee.percentFee.type.label)|trans }}</td>
-                                    <td>{{ projectPercentFee.percentFee.rate|localizednumberwithprecision(2) }}
-                                        &nbsp;%{% if projectPercentFee.percentFee.isRecurring == false %}&nbsp;(soit {{ (projectPercentFee.percentFee.rate * project.amount / 100)|localizedcurrency('EUR') }}){% endif %}</td>
-                                    <td>{% if projectPercentFee.percentFee.isRecurring %} Oui {% else %} Non {% endif %}</td>
-                                    <td><a href="{{ path('project_fees_remove', {hash: project.hash, projectPercentFee: projectPercentFee.id}) }}">Annuler</a></td>
-                                </tr>
-                            {% endfor %}
-                            </tbody>
-                        </table><!-- /.table-myoffers -->
-                    {% else %}
-                        <div class="message-info">Vous n‘avez aucun frais associé à votre dossier.</div>
-                    {% endif %}
-                    <h5 class="h4 margin-20-t">Ajouter des frais ou commissions</h5>
-                    {% set feesTemplate = include('project/partials/fees/new_project_fees.html.twig') %}
-                    <div class="row row-multi-col-computer fees" data-prototype="{{ feesTemplate|e('html_attr') }}"></div>
-                </div>
-            </article><!-- /.dashboard-tab-pane -->#}
             <article class="dashboard-tab-pane" id="article-visibility">
                 <div class="panel">
                     <form action="{{ path('edit_project_visibility', {'hash': project.hash}) }}" method="post">
@@ -665,7 +650,7 @@
     <script>
         $(function () {
             {% include 'project/partials/bids/actions.js.twig' %}
-            {% include 'project/partials/fees/fees.js.twig' %}
+            {% include 'project/partials/fees/edit_project_fees.js.twig' %}
             {% include 'project/partials/attachment/add_attachment.js.twig' %}
             {% include 'project/partials/tranche/edit_tranches.js.twig' %}
 

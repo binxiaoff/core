@@ -1,0 +1,74 @@
+var $projectFeeCollectionHolder = $('div.project-fees');
+
+initProjectFeeCollectionHolder($projectFeeCollectionHolder);
+
+function initProjectFeeCollectionHolder($projectFeeCollectionHolder) {
+    var $addProjectFeeButton = $(
+        '<div class="col-lg-6 col-md-6">' +
+        '    <a href="javascript:;" class="btn-default btn-shape-sq-md margin-10-t" data-action="ui-form-lending-fee-add">' +
+        '        <span class="icon fa-plus-u16 c-t2"></span>' +
+        '    </a>' +
+        '</div>'
+    );
+
+    $projectFeeCollectionHolder.append($addProjectFeeButton);
+    $projectFeeCollectionHolder.data('index', $projectFeeCollectionHolder.find(':input').length);
+
+    $addProjectFeeButton.find('a').on('click', function () {
+        addProjectFeeForm($projectFeeCollectionHolder, $addProjectFeeButton);
+    });
+}
+
+function addProjectFeeForm($projectFeeCollectionHolder, $addProjectFeeButton) {
+    var prototype = $projectFeeCollectionHolder.data('prototype');
+    var prototypeName = $projectFeeCollectionHolder.data('prototype-name');
+    var index = $projectFeeCollectionHolder.data('index');
+    var $newForm = $(prototype.replace(new RegExp(prototypeName, 'g'), index));
+
+    $addProjectFeeButton.before($newForm);
+    $projectFeeCollectionHolder.data('index', index + 1);
+
+    initProjectFeeForm($newForm);
+}
+
+function initProjectFeeForm ($projectFeeForm) {
+    var $removeFormButton = $projectFeeForm.find(`[data-action='ui-form-fee-remove']`);
+    $removeFormButton.on('click', function () {
+        $projectFeeForm.remove();
+    });
+
+    var $feeTypeSelector = $projectFeeForm.find(`[data-field="ui-form-fee-type"]`);
+
+    $feeTypeSelector.on('change', function () {
+        var selectedType = $(this).children("option:selected").val();
+        if (selectedType === '2') {
+            $projectFeeForm.find('input[type=checkbox]').prop("checked", true);
+        } else {
+            $projectFeeForm.find('input[type=checkbox]').prop("checked", false);
+        }
+    });
+
+    var $feeRateInput = $projectFeeForm.find("input[id$='_fee_rate']");
+
+    $feeRateInput.on('change keyup keydown focusout', function () {
+        $(this).parent().find('.rate-amount').remove();
+        if (false === $projectFeeForm.find('input[type=checkbox]').prop("checked") && $feeRateInput.val()) {
+            var referenceAmount = $(`[data-fee-reference-amount]`).val()
+            if (referenceAmount === "") {
+                referenceAmount = $(`[data-fee-reference-amount]`).text().replace(/[\n\r\s€]/g, '').replace(',', '.')
+                referenceAmount = parseFloat(referenceAmount);
+            }
+            var rate = $feeRateInput.val().replace(',', '.')
+            var rateAmount = rate * referenceAmount / 100
+            if (rateAmount > 0) {
+                $feeRateInput.after('<small class="help-text rate-amount" style="display: block;">soit ' + rateAmount.toFixed(2).replace('.', ',') + ' €</small>');
+            }
+        }
+    })
+}
+
+if ($projectFeeCollectionHolder.children('div').length > 0) {
+    $projectFeeCollectionHolder.children('div').each(function() {
+        initProjectFeeForm($(this));
+    })
+}

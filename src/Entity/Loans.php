@@ -3,7 +3,6 @@
 namespace Unilend\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\ORM\EntityNotFoundException;
 use Doctrine\ORM\Mapping as ORM;
 use Unilend\Entity\Traits\{LendableTrait, TimestampableTrait};
 
@@ -72,18 +71,18 @@ class Loans
     private $acceptationLegalDoc;
 
     /**
-     * @var LoanPercentFee[]|ArrayCollection
+     * @var LoanFee[]|ArrayCollection
      *
-     * @ORM\OneToMany(targetEntity="Unilend\Entity\LoanPercentFee", mappedBy="loan", cascade={"persist"}, orphanRemoval=true)
+     * @ORM\OneToMany(targetEntity="LoanFee", mappedBy="loan", cascade={"persist"}, orphanRemoval=true)
      */
-    private $loanPercentFees;
+    private $loanFees;
 
     /**
      * Loans constructor.
      */
     public function __construct()
     {
-        $this->loanPercentFees = new ArrayCollection();
+        $this->loanFees = new ArrayCollection();
         $this->traitInit();
     }
 
@@ -181,41 +180,38 @@ class Loans
     }
 
     /**
-     * @return iterable|LoanPercentFee[]
+     * @return iterable|LoanFee[]
      */
-    public function getLoanPercentFees(): iterable
+    public function getLoanFees(): iterable
     {
-        return $this->loanPercentFees;
+        return $this->loanFees;
     }
 
     /**
-     * @param PercentFee $percentFee
+     * @param LoanFee $loanFee
      *
      * @return Loans
      */
-    public function addPercentFee(PercentFee $percentFee): Loans
+    public function addLoanFee(LoanFee $loanFee): Loans
     {
-        $loanPercentFee = (new LoanPercentFee())
-            ->setLoan($this)
-            ->setPercentFee($percentFee)
-        ;
+        $loanFee->setLoan($this);
 
-        if (!$this->loanPercentFees->contains($loanPercentFee)) {
-            $this->loanPercentFees->add($loanPercentFee);
+        if (false === $this->loanFees->contains($loanFee)) {
+            $this->loanFees->add($loanFee);
         }
 
         return $this;
     }
 
     /**
-     * @param LoanPercentFee $loanPercentFee
+     * @param LoanFee $loanFee
      *
      * @return Loans
      */
-    public function removeLoanFee(LoanPercentFee $loanPercentFee): Loans
+    public function removeLoanFee(LoanFee $loanFee): Loans
     {
-        if ($this->loanPercentFees->contains($loanPercentFee)) {
-            $this->loanPercentFees->removeElement($loanPercentFee);
+        if ($this->loanFees->contains($loanFee)) {
+            $this->loanFees->removeElement($loanFee);
         }
 
         return $this;

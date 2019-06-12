@@ -12,77 +12,94 @@
     </div>
 {%- endblock collection_row -%}
 
-{% block project_tranche_type_row %}
+{%- block project_tranche_type_row -%}
     <div class="row row-multi-col">
-        <div class="col-lg-3 col-md-3">
-            {{ form_row(form.name) }}
+        <div class="row row-multi-col">
+            <div class="col-lg-3 col-md-3">
+                {{ form_row(form.name) }}
+            </div>
+            <div class="col-lg-3 col-md-3">
+                {{ form_row(form.money.amount) }}
+            </div>
+            <div class="col-lg-3 col-md-3">
+                {{ form_row(form.money.currency) }}
+            </div>
+            <div class="col-lg-3 col-md-3">
+                {{ form_row(form.duration, {label_help: 'tranche-form.maturity-unit'}) }}
+            </div>
         </div>
-        <div class="col-lg-3 col-md-3">
-            {{ form_row(form.money.amount) }}
+        <div class="row row-multi-col">
+            <div class="col-lg-3 col-md-3">
+                {{ form_row(form.loanType) }}
+            </div>
+            <div class="col-lg-3 col-md-3">
+                {{ form_row(form.repaymentType) }}
+            </div>
+            <div class="col-lg-3 col-md-3">
+                {{ form_row(form.capitalPeriodicity, {label_help: 'tranche-form.capital-periodicity-unit'}) }}
+            </div>
+            <div class="col-lg-3 col-md-3">
+                {{ form_row(form.interestPeriodicity, {label_help: 'tranche-form.interest-periodicity-unit'}) }}
+            </div>
         </div>
-        <div class="col-lg-3 col-md-3">
-            {{ form_row(form.money.currency) }}
+        <div class="row row-multi-col">
+            <div class="col-lg-4 col-md-4">
+                {{ form_row(form.rate.indexType, {attr: {class: 'tranche-rate-index'}}) }}
+            </div>
+            <div class="col-lg-4 col-md-4">
+                {{ form_row(form.rate.margin, {label_help: 'lending-form.margin-unit'}) }}
+            </div>
+            <div class="col-lg-4 col-md-4 hidden">
+                {{ form_row(form.rate.floor, {label_help: 'lending-form.floor-unit', attr: {class: 'tranche-rate-floor'}}) }}
+            </div>
         </div>
-        <div class="col-lg-3 col-md-3">
-            {{ form_row(form.duration, {label_help: 'tranche-form.maturity-unit'}) }}
+        <div class="row row-multi-col">
+            <div class="col-lg-6 col-md-6">
+                {{ form_row(form.expectedReleasingDate) }}
+            </div>
+            <div class="col-lg-6 col-md-6">
+                {{ form_row(form.expectedStartingDate) }}
+            </div>
         </div>
+        <div class="row row-multi-col">
+            <h5 class="h4">{% trans %} tranche-form.fees {% endtrans %}</h5>
+            {{ form_row(form.trancheFees) }}
+        </div>
+        <div class="row text-align-right">
+            <button data-action="ui-form-tranche-remove" type="button" class="btn-default btn-shape-xxs">{% trans %} tranche-form.delete-row {% endtrans %}</button>
+        </div>
+        <hr>
     </div>
-    <div class="row row-multi-col">
-        <div class="col-lg-3 col-md-3">
-            {{ form_row(form.loanType) }}
-        </div>
-        <div class="col-lg-3 col-md-3">
-            {{ form_row(form.repaymentType) }}
-        </div>
-        <div class="col-lg-3 col-md-3">
-            {{ form_row(form.capitalPeriodicity, {label_help: 'tranche-form.capital-periodicity-unit'}) }}
-        </div>
-        <div class="col-lg-3 col-md-3">
-            {{ form_row(form.interestPeriodicity, {label_help: 'tranche-form.interest-periodicity-unit'}) }}
-        </div>
-    </div>
-    <div class="row row-multi-col">
-        <div class="col-lg-4 col-md-4">
-            {{ form_row(form.rate.indexType, {attr: {class: 'tranche-rate-index'}}) }}
-        </div>
-        <div class="col-lg-4 col-md-4">
-            {{ form_row(form.rate.margin, {label_help: 'lending-form.margin-unit'}) }}
-        </div>
-        <div class="col-lg-4 col-md-4 hidden">
-            {{ form_row(form.rate.floor, {label_help: 'lending-form.floor-unit', attr: {class: 'tranche-rate-floor'}}) }}
-        </div>
-    </div>
-    <div class="row row-multi-col">
-        <div class="col-lg-6 col-md-6">
-            {{ form_row(form.expectedReleasingDate) }}
-        </div>
-        <div class="col-lg-6 col-md-6">
-            {{ form_row(form.expectedStartingDate) }}
-        </div>
-    </div>
-    <div class="row row-multi-col">
-        <h5 class="h4">{% trans %} tranche-form.fees {% endtrans %}</h5>
-        {{ form_row(form.tranchePercentFees) }}
-    </div>
-    <hr>
-{% endblock project_tranche_type_row %}
+{%- endblock project_tranche_type_row -%}
 
-{% block tranche_percent_fee_type_row %}
+{%- block fee_type_row -%}
     <div class="row row-multi-col">
-        <div class="col-lg-4 col-md-4">
-            {{ form_row(form.percentFee.type) }}
-        </div>
-        <div class="col-lg-3 col-md-3">
-            {{ form_row(form.percentFee.rate) }}
-        </div>
-        <div class="col-lg-3 col-md-3">
-            {{ form_row(form.percentFee.isRecurring) }}
+        <div class="row row-multi-col">
+            <div class="col-lg-4 col-md-4">
+                {{ form_row(form.fee.type) }}
+            </div>
+            <div class="col-lg-3 col-md-3">
+                {{ form_row(form.fee.rate) }}
+            </div>
+            <div class="col-lg-3 col-md-3">
+                {{ form_row(form.fee.isRecurring) }}
+            </div>
+            <div class="col-lg-2 col-md-2">
+                <button data-action="ui-form-fee-remove" type="button" class="btn-default btn-shape-xxs" style="margin-top: 45px;">{% trans %} fee-form.delete-row {% endtrans %}</button>
+            </div>
         </div>
     </div>
-{% endblock tranche_percent_fee_type_row %}
+{%- endblock fee_type_row -%}
 
+{%- block tranche_fee_type_row -%}
+    {{- block('fee_type_row') -}}
+{%- endblock tranche_fee_type_row -%}
 
-{% block project_attachment_type_row %}
+{%- block project_fee_type_row -%}
+    {{- block('fee_type_row') -}}
+{%- endblock project_fee_type_row -%}
+
+{%- block project_attachment_type_row -%}
     <div class="row row-multi-col">
         <div class="col-lg-4 col-md-4">
             {{ form_row(form.attachment.type) }}
@@ -94,4 +111,4 @@
             {{ form_row(form.attachment.file) }}
         </div>
     </div>
-{% endblock project_attachment_type_row %}
+{%- endblock project_attachment_type_row -%}

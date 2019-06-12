@@ -21,7 +21,7 @@ use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Validator\Constraints\Valid;
 use Unilend\Entity\{AcceptedBids, Attachment, Bids, CaRegionalBank, Clients, Loans, Project, ProjectStatusHistory, UnderlyingContract};
 use Unilend\Form\Bid\PartialBid;
-use Unilend\Form\Project\ProjectAttachmentCollectionType;
+use Unilend\Form\Project\{ProjectAttachmentCollectionType, ProjectFeeTypeCollectionType};
 use Unilend\Form\Tranche\TrancheTypeCollectionType;
 use Unilend\Repository\{AcceptedBidsRepository, BidsRepository, CaRegionalBankRepository, CompaniesRepository, ProjectAttachmentRepository, ProjectAttachmentTypeRepository,
     ProjectRepository, TrancheRepository, UnderlyingContractRepository};
@@ -76,12 +76,18 @@ class EditController extends AbstractController
             ->getForm()
         ;
 
+        $feesForm = $this->get('form.factory')->createNamedBuilder('fees', FormType::class, $project, ['data_class' => Project::class])
+            ->add('projectFees', ProjectFeeTypeCollectionType::class)
+            ->getForm()
+            ;
+
         $partialBidForm = $this->createForm(PartialBid::class, null, [
             'action' => $this->generateUrl('edit_bid_partial'),
         ]);
 
         $documentForm->handleRequest($request);
         $trancheForm->handleRequest($request);
+        $feesForm->handleRequest($request);
 
         if ($documentForm->isSubmitted() && $documentForm->isValid()) {
             $projectAttachmentForms = $documentForm->get('projectAttachments');
@@ -111,6 +117,13 @@ class EditController extends AbstractController
             return $this->redirect($request->getUri());
         }
 
+        if ($feesForm->isSubmitted() && $feesForm->isValid()) {
+            $project = $feesForm->getData();
+            $projectRepository->save($project);
+
+            return $this->redirect($request->getUri());
+        }
+
         $template = [
             'arrangers'                => $companyRepository->findEligibleArrangers($user->getCompany(), ['name' => 'ASC']),
             'runs'                     => $regionalBanks,
@@ -127,6 +140,7 @@ class EditController extends AbstractController
             'signatureAttachments'     => $projectAttachmentRepository->getAttachmentsWithSignature($project),
             'documentForm'             => $documentForm->createView(),
             'trancheForm'              => $trancheForm->createView(),
+            'feesForm'                 => $feesForm->createView(),
             'partialBidForm'           => $partialBidForm->createView(),
         ];
 

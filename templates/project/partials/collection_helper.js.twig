@@ -1,0 +1,42 @@
+function initCollectionDiv($collectionHolder) {
+    var $addButton = $(
+        '<a href="javascript:;" class="btn-default btn-shape-sq-md margin-10-t">' +
+        '    <span class="icon fa-plus-u16 c-t2"></span>' +
+        '</a>'
+    );
+
+    $collectionHolder.append($addButton);
+    $collectionHolder.data('index', $collectionHolder.find(':input').length);
+
+    $addButton.on('click', function () {
+        addForm($collectionHolder, $addButton);
+    });
+}
+
+function addForm($collectionHolder, $addButton, callBack) {
+    var prototype = $collectionHolder.data('prototype');
+    var prototypeName = $collectionHolder.data('prototype-name');
+    var index = $collectionHolder.data('index');
+    var $newForm = $(prototype.replace(new RegExp(prototypeName, 'g'), index));
+    var $newFormDiv = $('<div class="row row-multi-col"></div>').append($newForm);
+
+    $collectionHolder.data('index', index + 1);
+    $addButton.before($newFormDiv);
+
+    initForm($newFormDiv);
+
+    callBack();
+    var $trancheFeeCollectionHolder = $collectionHolder.find('div.tranche-fees:last');
+
+    initTrancheFeeCollectionDiv($trancheFeeCollectionHolder);
+}
+
+function initForm(formDiv) {
+    formDiv.find('.ui-has-datepicker, [data-ui-datepicker]').uiPikaday();
+
+    var $removeFormButton = $('<div class="row text-align-right"><button type="button" class="btn-default btn-shape-xxs">' +  '{% trans %} tranche-form.delete-row {% endtrans %}' + '</button></div>');
+    formDiv.find('div:last').append($removeFormButton);
+    $removeFormButton.on('click', function () {
+        formDiv.remove();
+    });
+}

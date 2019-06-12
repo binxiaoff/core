@@ -2,21 +2,24 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Form\Tranche;
+namespace Unilend\Form\Project;
 
 use Symfony\Component\Form\{AbstractType, FormBuilderInterface};
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Unilend\Entity\TranchePercentFee;
-use Unilend\Form\Fee\PercentFeeType;
+use Unilend\Entity\ProjectFee;
+use Unilend\Form\Fee\FeeType;
 
-class TranchePercentFeeType extends AbstractType
+class ProjectFeeType extends AbstractType
 {
     /**
      * {@inheritdoc}
      */
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
-        $builder->add('percentFee', PercentFeeType::class, ['label' => false]);
+        $builder->add('fee', FeeType::class, [
+            'label'    => false,
+            'fee_type' => ProjectFee::getAllFeeType(),
+        ]);
     }
 
     /**
@@ -24,7 +27,7 @@ class TranchePercentFeeType extends AbstractType
      */
     public function configureOptions(OptionsResolver $resolver)
     {
-        $resolver->setDefault('data_class', TranchePercentFee::class);
+        $resolver->setDefault('data_class', ProjectFee::class);
     }
 
     /**
@@ -32,6 +35,6 @@ class TranchePercentFeeType extends AbstractType
      */
     public function getBlockPrefix()
     {
-        return 'tranche_percent_fee_type';
+        return 'project_fee_type';
     }
 }

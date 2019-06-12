@@ -1,81 +1,95 @@
 var $trancheCollectionHolder = $('div.tranches');
 
 var $addTrancheButton = $(
-    '<a href="javascript:;" class="btn-default btn-shape-sq-md margin-10-t">' +
+    '<a data-action="ui-form-tranche-add" href="javascript:;" class="btn-default btn-shape-sq-md margin-10-t">' +
     '    <span class="icon fa-plus-u16 c-t2"></span>' +
     '</a>'
 );
 
-$trancheCollectionHolder.append($addTrancheButton);
+initTrancheCollectionHolder($trancheCollectionHolder);
 
-$trancheCollectionHolder.data('index', $trancheCollectionHolder.find(':input').length);
+function initTrancheCollectionHolder($trancheCollectionHolder) {
 
-$addTrancheButton.on('click', function () {
-    addTrancheForm($trancheCollectionHolder, $addTrancheButton);
-});
+    $trancheCollectionHolder.append($addTrancheButton);
+    $trancheCollectionHolder.data('index', $trancheCollectionHolder.find(':input').length);
+
+    $addTrancheButton.on('click', function () {
+        addTrancheForm($trancheCollectionHolder, $addTrancheButton);
+    });
+}
 
 function addTrancheForm($trancheCollectionHolder, $addTrancheButton) {
     var prototype = $trancheCollectionHolder.data('prototype');
     var prototypeName = $trancheCollectionHolder.data('prototype-name');
     var index = $trancheCollectionHolder.data('index');
-    var newForm = prototype;
-
-    newForm = newForm.replace(new RegExp(prototypeName, 'g'), index);
+    var $newForm = $(prototype.replace(new RegExp(prototypeName, 'g'), index));
 
     $trancheCollectionHolder.data('index', index + 1);
+    $addTrancheButton.before($newForm);
 
-    var $newFormDiv = $('<div class="row row-multi-col"></div>').append(newForm);
-    $newFormDiv.find('.ui-has-datepicker, [data-ui-datepicker]').uiPikaday();
-    $addTrancheButton.before($newFormDiv);
+    initTrancheForm($newForm);
 
-    var $tranchePercentFeeCollectionHolder = $trancheCollectionHolder.find('div.tranche-percent-fees:last');
+    var $trancheFeeCollectionHolder = $trancheCollectionHolder.find('div.tranche-fees:last');
 
-    initTranchePercentFeeForm($tranchePercentFeeCollectionHolder);
+    initTrancheFeeCollectionDiv($trancheFeeCollectionHolder);
+}
 
-    var $removeFormButton = $('<div class="row text-align-right"><button type="button" class="btn-default btn-shape-xxs">' +  '{% trans %} tranche-form.delete-row {% endtrans %}' + '</button></div>');
-    $newFormDiv.find('div:last').append($removeFormButton);
+function initTrancheForm($trancheForm) {
+    $trancheForm.find('.ui-has-datepicker, [data-ui-datepicker]').uiPikaday();
 
+    var $removeFormButton = $trancheForm.find(`[data-action='ui-form-tranche-remove']`);
     $removeFormButton.on('click', function () {
-        $newFormDiv.remove();
+        $trancheForm.remove();
     });
 }
 
-function initTranchePercentFeeForm($tranchePercentFeeCollectionHolder) {
-    var $addTranchePercentFeeButton = $(
+function initTrancheFeeCollectionDiv($trancheFeeCollectionHolder) {
+    var $addTrancheFeeButton = $(
         '<a href="javascript:;" class="btn-default btn-shape-sq-sm">' +
         '    <span class="icon fa-plus-u16 c-t2"></span>' +
         '</a>'
     );
 
-    $tranchePercentFeeCollectionHolder.append($addTranchePercentFeeButton);
+    $trancheFeeCollectionHolder.append($addTrancheFeeButton);
+    $trancheFeeCollectionHolder.data('index', $trancheFeeCollectionHolder.find(':input').length);
 
-    $tranchePercentFeeCollectionHolder.data('index', $tranchePercentFeeCollectionHolder.find(':input').length);
-
-    $addTranchePercentFeeButton.on('click', function () {
-        addTranchePercentFeeForm($tranchePercentFeeCollectionHolder, $addTranchePercentFeeButton);
+    $addTrancheFeeButton.on('click', function () {
+        addTrancheFeeForm($trancheFeeCollectionHolder, $addTrancheFeeButton);
     });
 }
 
-function addTranchePercentFeeForm($tranchePercentFeeCollectionHolder, $addTranchePercentFeeButton) {
-    var prototype = $tranchePercentFeeCollectionHolder.data('prototype');
-    var prototypeName = $tranchePercentFeeCollectionHolder.data('prototype-name');
-    var index = $tranchePercentFeeCollectionHolder.data('index');
-
+function addTrancheFeeForm($trancheFeeCollectionHolder, $addTrancheFeeButton) {
+    var prototype = $trancheFeeCollectionHolder.data('prototype');
+    var prototypeName = $trancheFeeCollectionHolder.data('prototype-name');
+    var index = $trancheFeeCollectionHolder.data('index');
     var $newForm = $(prototype.replace(new RegExp(prototypeName, 'g'), index));
 
-    $tranchePercentFeeCollectionHolder.data('index', index + 1);
+    $addTrancheFeeButton.before($newForm);
+    $trancheFeeCollectionHolder.data('index', index + 1);
 
-    var $removeFormButton = $('<div class="col-lg-2 col-md-2"><button type="button" class="btn-default btn-shape-xxs" style="margin-top: 45px;">' + '{% trans %} percent-fee-form.delete-row {% endtrans %}' + '</button></div>');
-    $newForm.append($removeFormButton)
+    initTrancheFeeForm($newForm);
+}
 
-    var $newFormDiv = $('<div class="row row-multi-col"></div>').append($newForm);
-    $addTranchePercentFeeButton.before($newFormDiv);
-
+function initTrancheFeeForm($trancheFeeForm) {
+    var $removeFormButton = $trancheFeeForm.find(`[data-action='ui-form-fee-remove']`);
     $removeFormButton.on('click', function () {
-        $newFormDiv.remove();
+        $trancheFeeForm.remove();
     });
 }
 
 if ($trancheCollectionHolder.children('div').length === 0) {
     addTrancheForm($trancheCollectionHolder, $addTrancheButton);
+} else {
+    $trancheCollectionHolder.children('div').each(function () {
+        initTrancheForm($(this));
+
+        var $trancheFeeCollectionHolder = $(this).find('div.tranche-fees:last');
+
+        if ($trancheFeeCollectionHolder.children('div').length > 0) {
+            initTrancheFeeCollectionDiv($trancheFeeCollectionHolder)
+            $trancheFeeCollectionHolder.children('div').each(function () {
+                initTrancheFeeForm($(this));
+            })
+        }
+    })
 }

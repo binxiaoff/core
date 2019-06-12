@@ -55,6 +55,11 @@
                 </article><!-- /.panel -->
 
                 <article class="request-form-panel panel">
+                    <h3 class="margin-5-t">{% trans %} project-request.fees-section-title {% endtrans %}</h3>
+                    {{ form_row(form.projectFees) }}
+                </article>
+
+                <article class="request-form-panel panel">
                     <h3 class="margin-5-t">{% trans %} project-request.tranches-section-title {% endtrans %}</h3>
                     {{ form_row(form.tranches) }}
                 </article>
@@ -190,7 +195,7 @@
                     .toggleClass('hidden', noFloor)
             })
 
-            {% include 'project/partials/fees/fees.js.twig' %}
+            {% include 'project/partials/fees/edit_project_fees.js.twig' %}
             {% include 'project/partials/tranche/edit_tranches.js.twig' %}
             {% include 'project/partials/attachment/add_attachment.js.twig' %}
         })
