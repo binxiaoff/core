@@ -143,7 +143,7 @@ class ProjectVoter extends Voter
      */
     private function canBid(Project $project, Clients $user): bool
     {
-        return in_array($user->getCompany(), $project->getLenderCompanies());
+        return in_array($user->getCompany(), $project->getLenderCompanies()->toArray());
     }
 
     /**
