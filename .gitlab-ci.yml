@@ -6,7 +6,6 @@ cache:
 before_script:
     - yarn install
     - npm run-script build
-    - composer self-update
     - composer install
 
 test:application:
