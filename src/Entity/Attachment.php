@@ -197,9 +197,9 @@ class Attachment
     }
 
     /**
-     * @return Clients
+     * @return Clients|null
      */
-    public function getClientOwner(): Clients
+    public function getClientOwner(): ?Clients
     {
         return $this->clientOwner;
     }

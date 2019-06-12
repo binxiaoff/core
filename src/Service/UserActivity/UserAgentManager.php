@@ -58,6 +58,7 @@ class UserAgentManager
             }
             $newUserAgent = new UserAgentHistory();
             $newUserAgent
+                ->setIdClient($client)
                 ->setBrowserName($browser->getName())
                 ->setBrowserVersion($browser->getVersion()->getComplete())
                 ->setDeviceModel($device->getModel())

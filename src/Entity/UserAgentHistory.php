@@ -7,7 +7,7 @@ use Unilend\Entity\Traits\TimestampableAddedOnlyTrait;
 
 /**
  * @ORM\Table(indexes={
- *     @ORM\Index(name="idx_user_agent_browser_device_model_brand_type", columns={"browser_name", "device_model", "device_brand", "device_type"})
+ *     @ORM\Index(columns={"id_client", "browser_name", "device_model", "device_brand", "device_type"})
  * })
  * @ORM\Entity
  * @ORM\HasLifecycleCallbacks
@@ -15,6 +15,16 @@ use Unilend\Entity\Traits\TimestampableAddedOnlyTrait;
 class UserAgentHistory
 {
     use TimestampableAddedOnlyTrait;
+
+    /**
+     * @var Clients
+     *
+     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Clients")
+     * @ORM\JoinColumns({
+     *     @ORM\JoinColumn(name="id_client", referencedColumnName="id_client", nullable=false)
+     * })
+     */
+    private $idClient;
 
     /**
      * @var string|null
@@ -66,6 +76,26 @@ class UserAgentHistory
      * @ORM\GeneratedValue(strategy="IDENTITY")
      */
     private $id;
+
+    /**
+     * @return Clients
+     */
+    public function getIdClient(): Clients
+    {
+        return $this->idClient;
+    }
+
+    /**
+     * @param Clients $idClient
+     *
+     * @return UserAgentHistory
+     */
+    public function setIdClient(Clients $idClient): UserAgentHistory
+    {
+        $this->idClient = $idClient;
+
+        return $this;
+    }
 
     /**
      * @return string|null
