@@ -21,6 +21,7 @@ class LendingRateType extends AbstractType
             ->add('indexType', ChoiceType::class, [
                 'label'        => 'lending-form.index-type',
                 'required'     => $options['required'],
+                'placeholder'  => '',
                 'choices'      => LendingRate::getIndexes(),
                 'choice_label' => function ($option, string $key, string $value) {
                     return 'interest-rate-index.' . mb_strtolower($key);

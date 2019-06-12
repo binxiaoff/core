@@ -42,7 +42,7 @@
                                         <span class="label">Base documentaire</span>
                                     </a>
                                 </li>
-                                <li role="presentation" class="{% if app.request.get('_route') == 'demo_notifications' %} active{% endif %}">
+                                {#<li role="presentation" class="{% if app.request.get('_route') == 'demo_notifications' %} active{% endif %}">
                                     <a href="{{ path('demo_notifications') }}">
                                         <span class="icon fa-bell-u"></span>
                                         <span class="label">
@@ -50,7 +50,7 @@
                                             <span data-usernotifications-unreadcount></span>
                                         </span>
                                     </a>
-                                </li>
+                                </li>#}
                                 <li role="presentation" class="{% if app.request.get('_route') == 'demo_help' %} active{% endif %}">
                                     <a href="{{ path('demo_help') }}">
                                         <span class="icon fa-question-circle-o"></span>

@@ -1,12 +1,25 @@
-$(function () {
-    $(document).on('click', '[data-bid-action="modify"]', function () {
-        var $bid = $(this)
-        var $modal = $('#bid-edition-dialog')
+$(document).on('click', '[data-bid-action="modify"]', function () {
+    var $bid = $(this)
+    var $modal = $('#bid-edition-dialog')
 
-        $modal.find('#bid_partial_id').val($bid.attr('data-bid-id'))
-        $modal.find('#bid_partial_amount').val($bid.attr('data-bid-amount'))
-        $modal.find('.bid-currency').text($bid.attr('data-bid-currency'))
-        $modal.find('.bid-formatted-amount').text($bid.attr('data-bid-formattedamount'))
-        $modal.uiModal('open')
+    $modal.find('#bid_partial_id').val($bid.attr('data-bid-id'))
+    $modal.find('#bid_partial_amount').val($bid.attr('data-bid-amount'))
+    $modal.find('.bid-currency').text($bid.attr('data-bid-currency'))
+    $modal.find('.bid-formatted-amount').text($bid.attr('data-bid-formattedamount'))
+    $modal.uiModal('open')
+})
+
+$(document).on('click', '[data-action="refuse-bid"]', function () {
+    var bidId = $(this).data('bid-id')
+
+    $.ajax({
+        url: '{{ path('edit_bid_status') }}',
+        method: 'POST',
+        data: {
+            bid: bidId,
+            status: {{ constant('Unilend\\Entity\\Bids::STATUS_REJECTED') }}
+        }
+    }).done(function () {
+        window.location.reload(false);
     })
 })
