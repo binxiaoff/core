@@ -1,14 +1,28 @@
 var $trancheCollectionHolder = $('div.tranches');
 
-var $addTrancheButton = $(
-    '<a data-action="ui-form-tranche-add" href="javascript:;" class="btn-default btn-shape-sq-md margin-10-t">' +
-    '    <span class="icon fa-plus-u16 c-t2"></span>' +
-    '</a>'
-);
-
 initTrancheCollectionHolder($trancheCollectionHolder);
 
+if ($trancheCollectionHolder.children('div').length > 0) {
+    $trancheCollectionHolder.children('div').each(function () {
+        initTrancheForm($(this));
+
+        var $trancheFeeCollectionHolder = $(this).find('div.tranche-fees:last');
+        if ($trancheFeeCollectionHolder.children('div').length > 0) {
+            initTrancheFeeCollectionDiv($trancheFeeCollectionHolder)
+            $trancheFeeCollectionHolder.children('div').each(function () {
+                initTrancheFeeForm($(this));
+            })
+        }
+    })
+}
+
 function initTrancheCollectionHolder($trancheCollectionHolder) {
+
+    var $addTrancheButton = $(
+        '<a data-action="ui-form-tranche-add" href="javascript:;" class="btn-default btn-shape-sq-md margin-10-t">' +
+        '    <span class="icon fa-plus-u16 c-t2"></span>' +
+        '</a>'
+    );
 
     $trancheCollectionHolder.append($addTrancheButton);
     $trancheCollectionHolder.data('index', $trancheCollectionHolder.find(':input').length);
@@ -16,6 +30,10 @@ function initTrancheCollectionHolder($trancheCollectionHolder) {
     $addTrancheButton.on('click', function () {
         addTrancheForm($trancheCollectionHolder, $addTrancheButton);
     });
+
+    if ($trancheCollectionHolder.children('div').length === 0) {
+        addTrancheForm($trancheCollectionHolder, $addTrancheButton);
+    }
 }
 
 function addTrancheForm($trancheCollectionHolder, $addTrancheButton) {
@@ -75,21 +93,4 @@ function initTrancheFeeForm($trancheFeeForm) {
     $removeFormButton.on('click', function () {
         $trancheFeeForm.remove();
     });
-}
-
-if ($trancheCollectionHolder.children('div').length === 0) {
-    addTrancheForm($trancheCollectionHolder, $addTrancheButton);
-} else {
-    $trancheCollectionHolder.children('div').each(function () {
-        initTrancheForm($(this));
-
-        var $trancheFeeCollectionHolder = $(this).find('div.tranche-fees:last');
-
-        if ($trancheFeeCollectionHolder.children('div').length > 0) {
-            initTrancheFeeCollectionDiv($trancheFeeCollectionHolder)
-            $trancheFeeCollectionHolder.children('div').each(function () {
-                initTrancheFeeForm($(this));
-            })
-        }
-    })
 }

@@ -2,6 +2,12 @@ var $projectFeeCollectionHolder = $('div.project-fees');
 
 initProjectFeeCollectionHolder($projectFeeCollectionHolder);
 
+if ($projectFeeCollectionHolder.children('div').length > 0) {
+    $projectFeeCollectionHolder.children('div').each(function() {
+        initProjectFeeForm($(this));
+    })
+}
+
 function initProjectFeeCollectionHolder($projectFeeCollectionHolder) {
     var $addProjectFeeButton = $(
         '<div class="col-lg-6 col-md-6">' +
@@ -11,8 +17,10 @@ function initProjectFeeCollectionHolder($projectFeeCollectionHolder) {
         '</div>'
     );
 
-    $projectFeeCollectionHolder.append($addProjectFeeButton);
-    $projectFeeCollectionHolder.data('index', $projectFeeCollectionHolder.find(':input').length);
+    $projectFeeCollectionHolder
+        .append($addProjectFeeButton)
+        .data('index', $projectFeeCollectionHolder.find(':input').length)
+    ;
 
     $addProjectFeeButton.find('a').on('click', function () {
         addProjectFeeForm($projectFeeCollectionHolder, $addProjectFeeButton);
@@ -64,11 +72,5 @@ function initProjectFeeForm ($projectFeeForm) {
                 $feeRateInput.after('<small class="help-text rate-amount" style="display: block;">soit ' + rateAmount.toFixed(2).replace('.', ',') + ' €</small>');
             }
         }
-    })
-}
-
-if ($projectFeeCollectionHolder.children('div').length > 0) {
-    $projectFeeCollectionHolder.children('div').each(function() {
-        initProjectFeeForm($(this));
     })
 }
