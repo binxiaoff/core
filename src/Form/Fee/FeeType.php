@@ -4,14 +4,13 @@ declare(strict_types=1);
 
 namespace Unilend\Form\Fee;
 
-use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
-use Symfony\Component\Form\Extension\Core\Type\{CheckboxType, NumberType};
+use Symfony\Component\Form\Extension\Core\Type\{CheckboxType, ChoiceType, NumberType};
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Unilend\Entity\{FeeType, PercentFee};
+use Unilend\Entity\Embeddable\Fee;
 
-class PercentFeeType extends AbstractType
+class FeeType extends AbstractType
 {
     /**
      * {@inheritdoc}
@@ -19,21 +18,22 @@ class PercentFeeType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder
-            ->add('type', EntityType::class, [
-                'label'        => 'percent-fee-form.type',
-                'class'        => FeeType::class,
-                'choice_label' => function (FeeType $feeType, $key, $value) {
-                    return 'fee-type.' . $feeType->getLabel();
+            ->add('type', ChoiceType::class, [
+                'label'        => 'fee-form.type',
+                'required'     => true,
+                'choices'      => $options['fee_type'],
+                'choice_label' => function ($choice, $key, $value) {
+                    return 'fee-type.' . mb_strtolower($key);
                 },
                 'choice_translation_domain' => true,
                 'placeholder'               => '',
             ])
             ->add('rate', NumberType::class, [
-                'label' => 'percent-fee-form.rate',
-                'scale' => 2,
+                'label' => 'fee-form.rate',
+                'scale' => Fee::RATE_SCALE,
             ])
             ->add('isRecurring', CheckboxType::class, [
-                'label'    => 'percent-fee-form.recurring',
+                'label'    => 'fee-form.recurring',
                 'required' => false,
             ])
         ;
@@ -44,7 +44,8 @@ class PercentFeeType extends AbstractType
      */
     public function configureOptions(OptionsResolver $resolver)
     {
-        $resolver->setDefault('data_class', PercentFee::class);
+        $resolver->setDefault('data_class', Fee::class);
+        $resolver->setRequired(['fee_type']);
     }
 
     /**
@@ -52,6 +53,6 @@ class PercentFeeType extends AbstractType
      */
     public function getBlockPrefix()
     {
-        return 'percent_fee_type';
+        return 'fee_type';
     }
 }

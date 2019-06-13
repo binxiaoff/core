@@ -436,11 +436,11 @@ class Projects
     private $loans;
 
     /**
-     * @var ProjectPercentFee[]|ArrayCollection
+     * @var ProjectFee[]|ArrayCollection
      *
-     * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectPercentFee", mappedBy="project", cascade={"persist"}, orphanRemoval=true)
+     * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectFee", mappedBy="project", cascade={"persist"}, orphanRemoval=true)
      */
-    private $projectPercentFees;
+    private $projectFees;
 
     /**
      * @var ProjectComment[]|ArrayCollection
@@ -461,7 +461,7 @@ class Projects
         $this->invoices               = new ArrayCollection();
         $this->debtCollectionMissions = new ArrayCollection();
         $this->projectParticipants    = new ArrayCollection();
-        $this->projectPercentFees     = new ArrayCollection();
+        $this->projectFees            = new ArrayCollection();
         $this->comments               = new ArrayCollection();
     }
 
@@ -1567,41 +1567,41 @@ class Projects
     }
 
     /**
-     * @param ProjectPercentFee $projectPercentFee
+     * @param ProjectFee $projectFee
      *
      * @return Projects
      */
-    public function addProjectPercentFee(ProjectPercentFee $projectPercentFee): Projects
+    public function addProjectFee(ProjectFee $projectFee): Projects
     {
-        $projectPercentFee->setProject($this);
+        $projectFee->setProject($this);
 
-        if (false === $this->projectPercentFees->contains($projectPercentFee)) {
-            $this->projectPercentFees->add($projectPercentFee);
+        if (false === $this->projectFees->contains($projectFee)) {
+            $this->projectFees->add($projectFee);
         }
 
         return $this;
     }
 
     /**
-     * @param ProjectPercentFee $projectPercentFee
+     * @param ProjectFee $projectFee
      *
      * @return Projects
      */
-    public function removeProjectPercentFee(ProjectPercentFee $projectPercentFee): Projects
+    public function removeProjectFee(ProjectFee $projectFee): Projects
     {
-        if ($this->projectPercentFees->contains($projectPercentFee)) {
-            $this->projectPercentFees->removeElement($projectPercentFee);
+        if ($this->projectFees->contains($projectFee)) {
+            $this->projectFees->removeElement($projectFee);
         }
 
         return $this;
     }
 
     /**
-     * @return iterable|ProjectPercentFee[]
+     * @return iterable|ProjectFee[]
      */
-    public function getProjectPercentFees(): iterable
+    public function getProjectFees(): iterable
     {
-        return $this->projectPercentFees;
+        return $this->projectFees;
     }
 
     /**

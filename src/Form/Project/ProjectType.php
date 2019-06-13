@@ -138,6 +138,7 @@ class ProjectType extends AbstractType
                 'query_builder' => $runAgentQueryBuilder,
             ])
             ->add('projectAttachments', ProjectAttachmentCollectionType::class, ['constraints' => [new Valid()]])
+            ->add('projectFees', ProjectFeeTypeCollectionType::class)
             ->addEventListener(FormEvents::POST_SUBMIT, [$this, 'handleCreationInProgressCompany'])
         ;
     }

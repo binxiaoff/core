@@ -1,27 +1,27 @@
 <div class="row row-multi-col-computer">
     <div class="form-field col-lg-6 col-md-6">
-        <label for="bid_type_bidPercentFees___name___percentFee_type" class="required">
+        <label for="bid_type_bidFees___name___fee_type" class="required">
             Type de frais / commission
             <span class="field-required">*</span>
         </label>
-        <select class="input-field" id="bid_type_bidPercentFees___name___percentFee_type" name="bid_type[bidPercentFees][__name__][percentFee][type]" data-field="ui-form-fee-type">
+        <select class="input-field" id="bid_type_bidFees___name___fee_type" name="bid_type[bidFees][__name__][fee][type]" data-field="ui-form-fee-type">
             <option></option>
             <option value="1">Commission de mise en place</option>
             <option value="2">Frais de gestion running</option>
         </select>
         <div class="row">
             <label>
-                <input type="checkbox" name="bid_type[bidPercentFees][__name__][percentFee][isRecurring]" value="1"/>
+                <input type="checkbox" name="bid_type[bidFees][__name__][fee][isRecurring]" value="1"/>
                 Récurrent
             </label>
         </div>
     </div>
     <div class="form-field col-lg-4 col-md-4">
-        <label for="bid_type_bidPercentFees___name___percentFee_rate" class="required">
+        <label for="bid_type_bidFees___name___fee_rate" class="required">
             Taux de frais / commission en %
             <span class="field-required">*</span>
         </label>
-        <input class="input-field" type="text" id="bid_type_bidPercentFees___name___percentFee_rate" name="bid_type[bidPercentFees][__name__][percentFee][rate]" required="required"/>
+        <input class="input-field" type="text" id="bid_type_bidFees___name___fee_rate" name="bid_type[bidFees][__name__][fee][rate]" required="required"/>
     </div>
     <div class="form-field col-lg-2 col-md-2">
         <button type="button" class="btn-default btn-shape-xxs" data-action="ui-form-lending-fee-remove" style="margin-top: 38px;">Supprimer</button>

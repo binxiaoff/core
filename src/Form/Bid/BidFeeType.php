@@ -7,17 +7,20 @@ namespace Unilend\Form\Bid;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Unilend\Entity\BidPercentFee;
-use Unilend\Form\Fee\PercentFeeType;
+use Unilend\Entity\BidFee;
+use Unilend\Form\Fee\FeeType;
 
-class BidPercentFeeType extends AbstractType
+class BidFeeType extends AbstractType
 {
     /**
      * {@inheritdoc}
      */
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
-        $builder->add('percentFee', PercentFeeType::class, ['label' => false]);
+        $builder->add('fee', FeeType::class, [
+            'label'    => false,
+            'fee_type' => [], // no fee for the moment.
+        ]);
     }
 
     /**
@@ -25,7 +28,7 @@ class BidPercentFeeType extends AbstractType
      */
     public function configureOptions(OptionsResolver $resolver)
     {
-        $resolver->setDefault('data_class', BidPercentFee::class);
+        $resolver->setDefault('data_class', BidFee::class);
     }
 
     /**
@@ -33,6 +36,6 @@ class BidPercentFeeType extends AbstractType
      */
     public function getBlockPrefix()
     {
-        return 'bid_percent_fee_type';
+        return 'bid_fee_type';
     }
 }

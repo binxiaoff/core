@@ -22,9 +22,9 @@ class BidType extends AbstractType
         $builder
             ->add('money', MoneyType::class, ['disable_currency' => true])
             ->add('rate', LendingRateType::class)
-            ->add('bidPercentFees', CollectionType::class, [
+            ->add('bidFees', CollectionType::class, [
                 'label'         => false,
-                'entry_type'    => BidPercentFeeType::class,
+                'entry_type'    => BidFeeType::class,
                 'entry_options' => ['label' => false],
                 'allow_add'     => true,
                 'allow_delete'  => true,

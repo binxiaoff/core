@@ -146,11 +146,11 @@ class Tranche
     private $expectedStartingDate;
 
     /**
-     * @var TranchePercentFee[]|ArrayCollection
+     * @var TrancheFee[]|ArrayCollection
      *
-     * @ORM\OneToMany(targetEntity="Unilend\Entity\TranchePercentFee", mappedBy="tranche", cascade={"persist"}, orphanRemoval=true)
+     * @ORM\OneToMany(targetEntity="Unilend\Entity\TrancheFee", mappedBy="tranche", cascade={"persist"}, orphanRemoval=true)
      */
-    private $tranchePercentFees;
+    private $trancheFees;
 
     /**
      * @var Bids[]|ArrayCollection
@@ -172,11 +172,11 @@ class Tranche
      */
     public function __construct()
     {
-        $this->money              = new Money();
-        $this->rate               = new NullableLendingRate();
-        $this->tranchePercentFees = new ArrayCollection();
-        $this->bids               = new ArrayCollection();
-        $this->loans              = new ArrayCollection();
+        $this->money       = new Money();
+        $this->rate        = new NullableLendingRate();
+        $this->trancheFees = new ArrayCollection();
+        $this->bids        = new ArrayCollection();
+        $this->loans       = new ArrayCollection();
     }
 
     /**
@@ -408,41 +408,41 @@ class Tranche
     }
 
     /**
-     * @param TranchePercentFee $tranchePercentFee
+     * @param TrancheFee $trancheFee
      *
      * @return Tranche
      */
-    public function addTranchePercentFee(TranchePercentFee $tranchePercentFee): Tranche
+    public function addTrancheFee(TrancheFee $trancheFee): Tranche
     {
-        $tranchePercentFee->setTranche($this);
+        $trancheFee->setTranche($this);
 
-        if (false === $this->tranchePercentFees->contains($tranchePercentFee)) {
-            $this->tranchePercentFees->add($tranchePercentFee);
+        if (false === $this->trancheFees->contains($trancheFee)) {
+            $this->trancheFees->add($trancheFee);
         }
 
         return $this;
     }
 
     /**
-     * @param TranchePercentFee $tranchePercentFee
+     * @param TrancheFee $trancheFee
      *
      * @return Tranche
      */
-    public function removeTranchePercentFee(TranchePercentFee $tranchePercentFee): Tranche
+    public function removeTrancheFee(TrancheFee $trancheFee): Tranche
     {
-        if ($this->tranchePercentFees->contains($tranchePercentFee)) {
-            $this->tranchePercentFees->removeElement($tranchePercentFee);
+        if ($this->trancheFees->contains($trancheFee)) {
+            $this->trancheFees->removeElement($trancheFee);
         }
 
         return $this;
     }
 
     /**
-     * @return iterable|TranchePercentFee[]
+     * @return iterable|TrancheFee[]
      */
-    public function getTranchePercentFees(): iterable
+    public function getTrancheFees(): iterable
     {
-        return $this->tranchePercentFees;
+        return $this->trancheFees;
     }
 
     /**

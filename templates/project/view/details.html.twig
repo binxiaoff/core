@@ -44,7 +44,6 @@
     <script>
         $(function () {
             {% include 'project/partials/bids/actions.js.twig' %}
-            {% include 'project/partials/fees/fees.js.twig' %}
 
             $(document).on('change', '.tranche-rate-index', function () {
                 let value = $(this).find('option:selected').val()

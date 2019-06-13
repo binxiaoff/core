@@ -74,17 +74,17 @@ class TrancheType extends AbstractType
                 'format'   => 'dd/MM/yyyy',
                 'attr'     => ['class' => 'ui-has-datepicker'],
             ])
-            ->add('tranchePercentFees', CollectionType::class, [
+            ->add('trancheFees', CollectionType::class, [
                 'label'          => false,
                 'constraints'    => [new Valid()],
-                'entry_type'     => TranchePercentFeeType::class,
+                'entry_type'     => TrancheFeeType::class,
                 'entry_options'  => ['label' => false],
                 'allow_add'      => true,
                 'allow_delete'   => true,
                 'by_reference'   => false,
                 'prototype'      => true,
-                'prototype_name' => '__tranche_percent_fees__',
-                'attr'           => ['class' => 'tranche-percent-fees'],
+                'prototype_name' => '__tranche_fees__',
+                'attr'           => ['class' => 'tranche-fees'],
             ])
         ;
     }

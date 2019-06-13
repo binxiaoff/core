@@ -58,19 +58,19 @@ class Bids
     private $acceptedBids;
 
     /**
-     * @var BidPercentFee[]|ArrayCollection
+     * @var BidFee[]|ArrayCollection
      *
-     * @ORM\OneToMany(targetEntity="Unilend\Entity\BidPercentFee", mappedBy="bid", cascade={"persist"}, orphanRemoval=true)
+     * @ORM\OneToMany(targetEntity="BidFee", mappedBy="bid", cascade={"persist"}, orphanRemoval=true)
      */
-    private $bidPercentFees;
+    private $bidFees;
 
     /**
      * Bids constructor.
      */
     public function __construct()
     {
-        $this->acceptedBids   = new ArrayCollection();
-        $this->bidPercentFees = new ArrayCollection();
+        $this->acceptedBids = new ArrayCollection();
+        $this->bidFees      = new ArrayCollection();
         $this->traitInit();
     }
 
@@ -131,41 +131,41 @@ class Bids
     }
 
     /**
-     * @param BidPercentFee $bidPercentFee
+     * @param BidFee $bidFee
      *
      * @return Bids
      */
-    public function addBidPercentFee(BidPercentFee $bidPercentFee): Bids
+    public function addBidFee(BidFee $bidFee): Bids
     {
-        $bidPercentFee->setBid($this);
+        $bidFee->setBid($this);
 
-        if (false === $this->bidPercentFees->contains($bidPercentFee)) {
-            $this->bidPercentFees->add($bidPercentFee);
+        if (false === $this->bidFees->contains($bidFee)) {
+            $this->bidFees->add($bidFee);
         }
 
         return $this;
     }
 
     /**
-     * @param BidPercentFee $bidPercentFee
+     * @param BidFee $bidFee
      *
      * @return Bids
      */
-    public function removeBidPercentFee(BidPercentFee $bidPercentFee): Bids
+    public function removeBidFee(BidFee $bidFee): Bids
     {
-        if ($this->bidPercentFees->contains($bidPercentFee)) {
-            $this->bidPercentFees->removeElement($bidPercentFee);
+        if ($this->bidFees->contains($bidFee)) {
+            $this->bidFees->removeElement($bidFee);
         }
 
         return $this;
     }
 
     /**
-     * @return iterable|BidPercentFee[]
+     * @return iterable|BidFee[]
      */
-    public function getBidPercentFees(): iterable
+    public function getBidFees(): iterable
     {
-        return $this->bidPercentFees;
+        return $this->bidFees;
     }
 
     /**
@@ -175,9 +175,9 @@ class Bids
     {
         $totalFeeRate = 0.00;
 
-        foreach ($this->getBidPercentFees() as $bidPercentFee) {
-            if (false === $bidPercentFee->getPercentFee()->isRecurring()) {
-                $totalFeeRate = round(bcadd($bidPercentFee->getPercentFee()->getRate(), $totalFeeRate, 3), 2);
+        foreach ($this->getBidFees() as $bidFee) {
+            if (false === $bidFee->getFee()->isRecurring()) {
+                $totalFeeRate = round(bcadd($bidFee->getFee()->getRate(), $totalFeeRate, 3), 2);
             }
         }
 
@@ -191,9 +191,9 @@ class Bids
     {
         $totalFeeRate = 0.00;
 
-        foreach ($this->getBidPercentFees() as $bidPercentFee) {
-            if ($bidPercentFee->getPercentFee()->isRecurring()) {
-                $totalFeeRate = round(bcadd($bidPercentFee->getPercentFee()->getRate(), $totalFeeRate, 3), 2);
+        foreach ($this->getBidFees() as $bidFee) {
+            if ($bidFee->getFee()->isRecurring()) {
+                $totalFeeRate = round(bcadd($bidFee->getFee()->getRate(), $totalFeeRate, 3), 2);
             }
         }
 

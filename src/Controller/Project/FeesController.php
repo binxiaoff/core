@@ -9,7 +9,7 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\{JsonResponse, RedirectResponse, Request};
 use Symfony\Component\Routing\Annotation\Route;
-use Unilend\Entity\{PercentFee, Project, ProjectPercentFee};
+use Unilend\Entity\{Embeddable\Fee, Project, ProjectFee};
 use Unilend\Repository\{FeeTypeRepository, ProjectRepository};
 
 class FeesController extends AbstractController
@@ -29,22 +29,21 @@ class FeesController extends AbstractController
      */
     public function addProjectFees(Project $project, Request $request, FeeTypeRepository $feeTypeRepository, ProjectRepository $projectRepository): JsonResponse
     {
-        $projectForm        = $request->request->get('project_type');
-        $projectPercentFees = empty($projectForm['projectPercentFees']) ? [] : $projectForm['projectPercentFees'];
+        $projectForm = $request->request->get('project_type');
+        $projectFees = empty($projectForm['projectFees']) ? [] : $projectForm['projectFees'];
 
-        if ($project && is_iterable($projectPercentFees)) {
-            foreach ($projectPercentFees as $fee) {
-                $percentFee = new PercentFee();
-                $type       = $feeTypeRepository->find($fee['percentFee']['type']);
-                $percentFee->setType($type)
-                    ->setRate(str_replace(',', '.', $fee['percentFee']['rate']))
-                    ->setIsRecurring((bool) empty($fee['percentFee']['isRecurring']) ? false : $fee['percentFee']['isRecurring'])
+        if ($project && is_iterable($projectFees)) {
+            foreach ($projectFees as $fee) {
+                $fee = new Fee();
+                $fee->setType($fee['fee']['type'])
+                    ->setRate(str_replace(',', '.', $fee['fee']['rate']))
+                    ->setIsRecurring((bool) empty($fee['fee']['isRecurring']) ? false : $fee['fee']['isRecurring'])
                 ;
 
-                $projectPercentFee = new ProjectPercentFee();
-                $projectPercentFee->setPercentFee($percentFee);
+                $projectFee = new ProjectFee();
+                $projectFee->setFee($fee);
 
-                $project->addProjectPercentFee($projectPercentFee);
+                $project->addProjectFee($projectFee);
             }
 
             $projectRepository->save($project);
@@ -55,25 +54,25 @@ class FeesController extends AbstractController
 
     /**
      * @Route(
-     *     "/project/{hash}/fees/remove/{projectPercentFee}", name="project_fees_remove",
+     *     "/project/{hash}/fees/remove/{projectFee}", name="project_fees_remove",
      *     requirements={"hash": "[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}"}
      * )
      *
      * @ParamConverter("attachment", options={"mapping": {"hash": "hash"}})
-     * @ParamConverter("projectPercentFee", options={"mapping": {"projectPercentFee": "id"}})
+     * @ParamConverter("projectFee", options={"mapping": {"projectFee": "id"}})
      *
      * @param Project           $project
-     * @param ProjectPercentFee $projectPercentFee
+     * @param ProjectFee        $projectFee
      * @param ProjectRepository $projectRepository
      *
-     * @throws ORMException
      * @throws OptimisticLockException
+     * @throws ORMException
      *
      * @return RedirectResponse
      */
-    public function removeProjectFees(Project $project, ProjectPercentFee $projectPercentFee, ProjectRepository $projectRepository): RedirectResponse
+    public function removeProjectFees(Project $project, ProjectFee $projectFee, ProjectRepository $projectRepository): RedirectResponse
     {
-        $project->removeProjectPercentFee($projectPercentFee);
+        $project->removeProjectFee($projectFee);
         $projectRepository->save($project);
 
         return $this->redirectToRoute('edit_project_details', ['hash' => $project->getHash()]);
