@@ -2,6 +2,7 @@
 
 namespace Unilend\Service\Front;
 
+use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Unilend\Entity\{Clients, ClientsHistory, LoginLog};
@@ -40,8 +41,7 @@ class LoginHistoryLogger
     public function saveSuccessfulLogin(Clients $client, ?string $ip, ?string $userAgent): void
     {
         try {
-            $now = new \DateTime('NOW');
-            $client->setLastLogin($now);
+            $client->setLastLogin(new DateTimeImmutable());
 
             try {
                 $this->entityManager->flush($client);
@@ -78,7 +78,6 @@ class LoginHistoryLogger
                 ->setStatus(ClientsHistory::STATUS_ACTION_LOGIN)
                 ->setIp($ip)
                 ->setUserAgentHistory($userAgentHistory)
-                ->setAdded($now)
             ;
 
             $this->entityManager->persist($clientHistory);
