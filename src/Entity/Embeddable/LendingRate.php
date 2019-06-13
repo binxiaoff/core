@@ -15,13 +15,16 @@ class LendingRate
 {
     use ConstantsAwareTrait;
 
-    public const INDEX_FIXED   = 'FIXED';
-    public const INDEX_EURIBOR = 'EURIBOR';
-    public const INDEX_EONIA   = 'EONIA';
-    public const INDEX_SONIA   = 'SONIA';
-    public const INDEX_LIBOR   = 'LIBOR';
-    public const INDEX_CHFTOIS = 'CHFTOIS';
-    public const INDEX_FFER    = 'FFER';
+    public const INDEX_FIXED             = 'FIXED';
+    public const INDEX_EURIBOR_1_MONTH   = 'EURIBOR_1_MONTH';
+    public const INDEX_EURIBOR_3_MONTHS  = 'EURIBOR_3_MONTHS';
+    public const INDEX_EURIBOR_6_MONTHS  = 'EURIBOR_6_MONTHS';
+    public const INDEX_EURIBOR_12_MONTHS = 'EURIBOR_12_MONTHS';
+    public const INDEX_EONIA             = 'EONIA';
+    public const INDEX_SONIA             = 'SONIA';
+    public const INDEX_LIBOR             = 'LIBOR';
+    public const INDEX_CHFTOIS           = 'CHFTOIS';
+    public const INDEX_FFER              = 'FFER';
 
     public const MARGIN_SCALE = 2;
 
