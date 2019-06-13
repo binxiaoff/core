@@ -10,11 +10,9 @@ if ($projectFeeCollectionHolder.children('div').length > 0) {
 
 function initProjectFeeCollectionHolder($projectFeeCollectionHolder) {
     var $addProjectFeeButton = $(
-        '<div class="col-lg-6 col-md-6">' +
-        '    <a href="javascript:;" class="btn-default btn-shape-sq-md margin-10-t" data-action="ui-form-lending-fee-add">' +
-        '        <span class="icon fa-plus-u16 c-t2"></span>' +
-        '    </a>' +
-        '</div>'
+        '<a href="javascript:;" class="btn-default btn-shape-sq-md margin-10-t">' +
+        '    <span class="icon fa-plus-u16 c-t2"></span>' +
+        '</a>'
     );
 
     $projectFeeCollectionHolder
@@ -22,7 +20,7 @@ function initProjectFeeCollectionHolder($projectFeeCollectionHolder) {
         .data('index', $projectFeeCollectionHolder.find(':input').length)
     ;
 
-    $addProjectFeeButton.find('a').on('click', function () {
+    $addProjectFeeButton.on('click', function () {
         addProjectFeeForm($projectFeeCollectionHolder, $addProjectFeeButton);
     });
 }
@@ -40,12 +38,12 @@ function addProjectFeeForm($projectFeeCollectionHolder, $addProjectFeeButton) {
 }
 
 function initProjectFeeForm ($projectFeeForm) {
-    var $removeFormButton = $projectFeeForm.find(`[data-action='ui-form-remove-fee']`);
+    var $removeFormButton = $projectFeeForm.find(`[data-action='remove-fee']`);
     $removeFormButton.on('click', function () {
         $projectFeeForm.remove();
     });
 
-    var $feeTypeSelector = $projectFeeForm.find(`[data-field="fee-type"]`);
+    var $feeTypeSelector = $projectFeeForm.find(`[data-fee-type]`);
 
     $feeTypeSelector.on('change', function () {
         var selectedType = $(this).children("option:selected").val();
