@@ -19,7 +19,7 @@ if ($trancheCollectionHolder.children('div').length > 0) {
 function initTrancheCollectionHolder($trancheCollectionHolder) {
 
     var $addTrancheButton = $(
-        '<a data-action="ui-form-tranche-add" href="javascript:;" class="btn-default btn-shape-sq-md margin-10-t">' +
+        '<a href="javascript:;" class="btn-default btn-shape-sq-md margin-10-t">' +
         '    <span class="icon fa-plus-u16 c-t2"></span>' +
         '</a>'
     );
@@ -55,7 +55,7 @@ function addTrancheForm($trancheCollectionHolder, $addTrancheButton) {
 function initTrancheForm($trancheForm) {
     $trancheForm.find('.ui-has-datepicker, [data-ui-datepicker]').uiPikaday();
 
-    var $removeFormButton = $trancheForm.find(`[data-action='ui-form-tranche-remove']`);
+    var $removeFormButton = $trancheForm.find(`[data-action='ui-form-remove-tranche']`);
     $removeFormButton.on('click', function () {
         $trancheForm.remove();
     });
@@ -89,7 +89,7 @@ function addTrancheFeeForm($trancheFeeCollectionHolder, $addTrancheFeeButton) {
 }
 
 function initTrancheFeeForm($trancheFeeForm) {
-    var $removeFormButton = $trancheFeeForm.find(`[data-action='ui-form-fee-remove']`);
+    var $removeFormButton = $trancheFeeForm.find(`[data-action='ui-form-remove-fee']`);
     $removeFormButton.on('click', function () {
         $trancheFeeForm.remove();
     });

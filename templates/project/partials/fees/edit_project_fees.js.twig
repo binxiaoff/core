@@ -40,12 +40,12 @@ function addProjectFeeForm($projectFeeCollectionHolder, $addProjectFeeButton) {
 }
 
 function initProjectFeeForm ($projectFeeForm) {
-    var $removeFormButton = $projectFeeForm.find(`[data-action='ui-form-fee-remove']`);
+    var $removeFormButton = $projectFeeForm.find(`[data-action='ui-form-remove-fee']`);
     $removeFormButton.on('click', function () {
         $projectFeeForm.remove();
     });
 
-    var $feeTypeSelector = $projectFeeForm.find(`[data-field="ui-form-fee-type"]`);
+    var $feeTypeSelector = $projectFeeForm.find(`[data-field="fee-type"]`);
 
     $feeTypeSelector.on('change', function () {
         var selectedType = $(this).children("option:selected").val();
@@ -58,14 +58,18 @@ function initProjectFeeForm ($projectFeeForm) {
 
     var $feeRateInput = $projectFeeForm.find("input[id$='_fee_rate']");
 
-    $feeRateInput.on('change keyup keydown focusout', function () {
+    $feeRateInput.on('focusout', function () {
         $(this).parent().find('.rate-amount').remove();
         if (false === $projectFeeForm.find('input[type=checkbox]').prop("checked") && $feeRateInput.val()) {
-            var referenceAmount = $(`[data-fee-reference-amount]`).val()
-            if (referenceAmount === "") {
-                referenceAmount = $(`[data-fee-reference-amount]`).text().replace(/[\n\r\s€]/g, '').replace(',', '.')
-                referenceAmount = parseFloat(referenceAmount);
-            }
+            var $referenceAmountInputs = $(`[data-fee-reference-amount]`)
+            var referenceAmount = 0;
+            $referenceAmountInputs.each(function () {
+                var amount = parseFloat($(this).val().replace(' ', '').replace(',', '.'));
+                if ($.isNumeric(amount)) {
+                    referenceAmount += amount;
+                }
+            });
+
             var rate = $feeRateInput.val().replace(',', '.')
             var rateAmount = rate * referenceAmount / 100
             if (rateAmount > 0) {

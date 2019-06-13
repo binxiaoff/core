@@ -19,7 +19,7 @@
                 {{ form_row(form.name) }}
             </div>
             <div class="col-lg-3 col-md-3">
-                {{ form_row(form.money.amount) }}
+                {{ form_row(form.money.amount, {attr: {'data-fee-reference-amount': ''}}) }}
             </div>
             <div class="col-lg-3 col-md-3">
                 {{ form_row(form.money.currency) }}
@@ -66,7 +66,7 @@
             {{ form_row(form.trancheFees) }}
         </div>
         <div class="row text-align-right">
-            <button data-action="ui-form-tranche-remove" type="button" class="btn-default btn-shape-xxs">{% trans %} tranche-form.delete-row {% endtrans %}</button>
+            <button data-action="ui-form-remove-tranche" type="button" class="btn-default btn-shape-xxs">{% trans %} tranche-form.delete-row {% endtrans %}</button>
         </div>
         <hr>
     </div>
@@ -85,7 +85,7 @@
                 {{ form_row(form.fee.isRecurring) }}
             </div>
             <div class="col-lg-2 col-md-2">
-                <button data-action="ui-form-fee-remove" type="button" class="btn-default btn-shape-xxs" style="margin-top: 45px;">{% trans %} fee-form.delete-row {% endtrans %}</button>
+                <button data-action="ui-form-remove-fee" type="button" class="btn-default btn-shape-xxs" style="margin-top: 45px;">{% trans %} fee-form.delete-row {% endtrans %}</button>
             </div>
         </div>
     </div>
