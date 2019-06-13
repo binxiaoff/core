@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Unilend\Entity;
 
 use DateTime;
+use DateTimeInterface;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
@@ -711,11 +712,11 @@ class Clients implements UserInterface, EquatableInterface
     }
 
     /**
-     * @param DateTime|null $lastLogin
+     * @param DateTimeInterface|null $lastLogin
      *
      * @return Clients
      */
-    public function setLastLogin(?DateTime $lastLogin): Clients
+    public function setLastLogin(?DateTimeInterface $lastLogin): Clients
     {
         $this->lastLogin = $lastLogin;
 

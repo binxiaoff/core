@@ -2,7 +2,7 @@
 
 namespace Unilend\Entity\Traits;
 
-use DateTime;
+use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 
 trait TimestampableTrait
@@ -10,18 +10,18 @@ trait TimestampableTrait
     use TimestampableAddedOnlyTrait;
 
     /**
-     * @var DateTime|null
+     * @var DateTimeImmutable|null
      *
-     * @ORM\Column(name="updated", type="datetime", nullable=true)
+     * @ORM\Column(name="updated", type="datetime_immutable", nullable=true)
      */
     protected $updated;
 
     /**
-     * @param DateTime|null $updated
+     * @param DateTimeImmutable|null $updated
      *
      * @return self
      */
-    public function setUpdated(?DateTime $updated): self
+    public function setUpdated(?DateTimeImmutable $updated): self
     {
         $this->updated = $updated;
 
@@ -29,9 +29,9 @@ trait TimestampableTrait
     }
 
     /**
-     * @return DateTime|null
+     * @return DateTimeImmutable|null
      */
-    public function getUpdated(): ?DateTime
+    public function getUpdated(): ?DateTimeImmutable
     {
         return $this->updated;
     }
@@ -41,6 +41,6 @@ trait TimestampableTrait
      */
     public function setUpdatedValue(): void
     {
-        $this->updated = new DateTime();
+        $this->updated = new DateTimeImmutable();
     }
 }
