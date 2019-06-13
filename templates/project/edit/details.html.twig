@@ -435,7 +435,7 @@
                             <div class="row">
                                 <span class="icon fa-file-u"></span>
                                 <a href="{{ path('document_download', {'id': projectAttachment.attachment.id, 'originalName': projectAttachment.attachment.originalName}) }}">
-                                    {{ attachment.description }}
+                                    {% if projectAttachment.attachment.description is not empty %}{{ projectAttachment.attachment.description }}{% else %}{{ projectAttachment.attachment.originalName }}{% endif %}
                                 </a>
                                 <small>({{ attachment.added|localizeddate('short', 'short') }})</small>
                             </div>

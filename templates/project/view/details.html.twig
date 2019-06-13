@@ -171,7 +171,7 @@
                         {% if tranche.rate.indexType is not null %}
                             <dl class="col-lg-3 col-md-3">
                                 <dt>{% trans %} lending-form.index-type {% endtrans %}</dt>
-                                <dd>{{ tranche.rate.indexType }}</dd>
+                                <dd>{{ ('interest-rate-index.index_' ~ tranche.rate.indexType|lower)|trans }}</dd>
                             </dl>
                             {% if tranche.rate.margin is not null %}
                                 <dl class="col-lg-3 col-md-3">

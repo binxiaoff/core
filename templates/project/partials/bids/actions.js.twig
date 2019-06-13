@@ -20,6 +20,6 @@ $(document).on('click', '[data-action="refuse-bid"]', function () {
             status: {{ constant('Unilend\\Entity\\Bids::STATUS_REJECTED') }}
         }
     }).done(function () {
-        window.location.reload(false);
+        window.location.reload();
     })
 })
