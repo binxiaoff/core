@@ -435,7 +435,7 @@
                             <div class="row">
                                 <span class="icon fa-file-u"></span>
                                 <a href="{{ path('document_download', {'id': projectAttachment.attachment.id, 'originalName': projectAttachment.attachment.originalName}) }}">
-                                    {{ attachment.description }}
+                                    {% if projectAttachment.attachment.description is not empty %}{{ projectAttachment.attachment.description }}{% else %}{{ projectAttachment.attachment.originalName }}{% endif %}
                                 </a>
                                 <small>({{ attachment.added|localizeddate('short', 'short') }})</small>
                             </div>
@@ -662,12 +662,13 @@
     {% include 'project/partials/comment/scripts.html.twig' %}
     <script src="{{ asset('js/vendor/jquery.poshytip.min.js', 'gulp') }}"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/x-editable/1.5.0/jquery-editable/js/jquery-editable-poshytip.js"></script>
-    <script>{% include 'project/partials/bids/actions.js.twig' %}</script>
-    <script>{% include 'project/partials/fees/fees.js.twig' %}</script>
-    <script>{% include 'project/partials/attachment/add_attachment.js.twig' %}</script>
-    <script>{% include 'project/partials/tranche/edit_tranches.js.twig' %}</script>
     <script>
         $(function () {
+            {% include 'project/partials/bids/actions.js.twig' %}
+            {% include 'project/partials/fees/fees.js.twig' %}
+            {% include 'project/partials/attachment/add_attachment.js.twig' %}
+            {% include 'project/partials/tranche/edit_tranches.js.twig' %}
+
             $.fn.editable.defaults.mode = 'inline'
 
             var editableConfig = {

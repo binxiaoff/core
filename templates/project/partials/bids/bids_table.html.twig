@@ -9,7 +9,7 @@
         {#<th>Commission ponctuelle</th>
         <th>Commission récurrente</th>#}
         {% if is_granted('manage_bids', project) and displayAction == true %}
-            <th style="width: 145px;">&nbsp;</th>
+            <th style="width: 160px;">&nbsp;</th>
         {% endif %}
     </tr>
     </thead>
@@ -22,7 +22,7 @@
         <tr>
             <td>{{ bid.wallet.idClient.company.name }}</td>
             <td>{{ offer.money.amount|localizedcurrency(offer.money.currency, null, false) }}</td>
-            <td>{{ ('interest-rate-index.' ~ bid.rate.indexType)|trans }}</td>
+            <td>{{ ('interest-rate-index.index_' ~ bid.rate.indexType|lower)|trans }}</td>
             <td>{{ bid.rate.margin|localizednumberwithprecision(2) }}&nbsp;%</td>
             <td>{% if bid.rate.floor is same as(null) %}non défini{% else %}{{ bid.rate.floor|localizednumberwithprecision(2)|default('non défini') }}&nbsp;%{% endif %}</td>
             {#<td>{{ offer.oneTimeFeeTotalRate|localizednumberwithprecision(2) }}&nbsp;%</td>

@@ -76,8 +76,6 @@ function addTranchePercentFeeForm($tranchePercentFeeCollectionHolder, $addTranch
     });
 }
 
-$ (function () {
-    if ($trancheCollectionHolder.children('div').length === 0) {
-        addTrancheForm($trancheCollectionHolder, $addTrancheButton);
-    }
-})
+if ($trancheCollectionHolder.children('div').length === 0) {
+    addTrancheForm($trancheCollectionHolder, $addTrancheButton);
+}

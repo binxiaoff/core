@@ -33,13 +33,12 @@ $addFeeButton.find('a').on('click', function () {
 
 {% if project is defined %}
 $validFeeButton.find('button').on('click', function () {
-    console.log($collectionHolder.find(':input').serialize());
     $.ajax({
         url: '{{ path('project_fees_add', {hash: project.hash}) }}',
         method: 'POST',
         data: $collectionHolder.find(':input').serialize()
     }).done(function () {
-        window.location.reload(false);
+        window.location.reload();
     })
 })
 {% endif %}

@@ -21,7 +21,7 @@
             <tr>
                 <td>{% if bid.status == 0 %} En cours {% elseif bid.status == 1 %} Accepté {% else %} Refusé {% endif %}</td>
                 <td>{{ bid.money.amount|localizedcurrency(bid.money.currency, null, false) }}</td>
-                <td>{{ ('interest-rate-index.' ~ bid.rate.indexType)|trans }}</td>
+                <td>{{ ('interest-rate-index.index_' ~ bid.rate.indexType|lower)|trans }}</td>
                 <td>{{ bid.rate.margin|localizednumberwithprecision(2) }}&nbsp;%</td>
                 <td>{% if bid.rate.floor is same as(null) %}non défini{% else %}{{ bid.rate.floor|localizednumberwithprecision(2)|default('non défini') }}&nbsp;%{% endif %}</td>
                 {#<td>{{ bid.oneTimeFeeTotalRate|localizednumberwithprecision(2) }}&nbsp;%</td>
@@ -53,13 +53,13 @@
                 }}
             </div>
             <div class="col-lg-3 col-md-3 col-sm-3">
-                {{ form_row(form.rate.indexType) }}
+                {{ form_row(form.rate.indexType, {attr: {class: 'tranche-rate-index'}}) }}
             </div>
             <div class="col-lg-3 col-md-3 col-sm-3">
-                {{ form_row(form.rate.floor) }}
+                {{ form_row(form.rate.margin, {label_help: 'lending-form.margin-unit'}) }}
             </div>
-            <div class="col-lg-3 col-md-3 col-sm-3">
-                {{ form_row(form.rate.margin) }}
+            <div class="col-lg-3 col-md-3 col-sm-3 hidden">
+                {{ form_row(form.rate.floor, {label_help: 'lending-form.floor-unit', attr: {class: 'tranche-rate-floor'}}) }}
             </div>
         </div>
     </fieldset>
