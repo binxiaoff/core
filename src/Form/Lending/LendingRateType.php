@@ -4,14 +4,25 @@ declare(strict_types=1);
 
 namespace Unilend\Form\Lending;
 
-use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\{ChoiceType, NumberType};
-use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\Form\{AbstractType, FormBuilderInterface, FormError, FormEvent, FormEvents};
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Contracts\Translation\TranslatorInterface;
 use Unilend\Entity\Embeddable\LendingRate;
 
 class LendingRateType extends AbstractType
 {
+    /** @var TranslatorInterface */
+    private $translator;
+
+    /**
+     * @param TranslatorInterface $translator
+     */
+    public function __construct(TranslatorInterface $translator)
+    {
+        $this->translator = $translator;
+    }
+
     /**
      * {@inheritdoc}
      */
@@ -37,7 +48,21 @@ class LendingRateType extends AbstractType
                 'required' => false,
                 'scale'    => LendingRate::MARGIN_SCALE,
             ])
+            ->addEventListener(FormEvents::SUBMIT, [$this, 'checkRateData'])
         ;
+    }
+
+    /**
+     * @param FormEvent $formEvent
+     */
+    public function checkRateData(FormEvent $formEvent): void
+    {
+        $form = $formEvent->getForm();
+        /** @var LendingRate $lendingRate */
+        $lendingRate = $formEvent->getData();
+        if ($lendingRate->getIndexType() && null === $lendingRate->getMargin()) {
+            $form->get('margin')->addError(new FormError($this->translator->trans('lending-rate-form.margin-required')));
+        }
     }
 
     /**

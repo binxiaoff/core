@@ -32,4 +32,28 @@ class NullableLendingRate extends LendingRate
      * @Assert\Range(min="0", max="99.99")
      */
     protected $margin;
+
+    /**
+     * @param string|null $indexType
+     *
+     * @return self
+     */
+    public function setIndexType(?string $indexType)
+    {
+        $this->indexType = $indexType;
+
+        return $this;
+    }
+
+    /**
+     * @param string|null $margin
+     *
+     * @return self
+     */
+    public function setMargin(?string $margin)
+    {
+        $this->margin = $margin;
+
+        return $this;
+    }
 }

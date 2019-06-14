@@ -65,7 +65,7 @@ class ViewController extends AbstractController
                     ->setStatus(Bids::STATUS_PENDING)
                 ;
                 $userBid->getMoney()->setCurrency($tranche->getMoney()->getCurrency());
-                $bidForms[$tranche->getId()] = $this->createForm(BidType::class, $userBid);
+                $bidForms[$tranche->getId()] = $this->get('form.factory')->createNamed('tranche_' . $tranche->getId(), BidType::class, $userBid);
             }
         }
 
@@ -75,6 +75,7 @@ class ViewController extends AbstractController
             if ($bidForm->isSubmitted() && $bidForm->isValid()) {
                 /** @var Bids $bid */
                 $bid = $bidForm->getData();
+
                 $bidsRepository->save($bid);
 
                 try {

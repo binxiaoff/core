@@ -33,6 +33,17 @@ class BidsRepository extends ServiceEntityRepository
      */
     public function save(Bids $bid)
     {
+        $trancheRate = $bid->getTranche()->getRate();
+        if ($trancheRate->getIndexType()) {
+            $bid->getRate()->setIndexType($trancheRate->getIndexType());
+        }
+        if ($trancheRate->getMargin()) {
+            $bid->getRate()->setMargin($trancheRate->getMargin());
+        }
+        if ($trancheRate->getFloor()) {
+            $bid->getRate()->setFloor($trancheRate->getFloor());
+        }
+
         $this->getEntityManager()->persist($bid);
         $this->getEntityManager()->flush();
     }

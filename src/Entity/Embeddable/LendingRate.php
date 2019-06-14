@@ -73,7 +73,7 @@ class LendingRate
      *
      * @return self
      */
-    public function setIndexType(string $indexType): self
+    public function setIndexType(string $indexType)
     {
         $this->indexType = $indexType;
 
@@ -93,7 +93,7 @@ class LendingRate
      *
      * @return self
      */
-    public function setMargin(string $margin): self
+    public function setMargin(string $margin)
     {
         $this->margin = $margin;
 

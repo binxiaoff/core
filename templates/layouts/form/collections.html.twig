@@ -44,13 +44,13 @@
         </div>
         <div class="row row-multi-col">
             <div class="col-lg-4 col-md-4">
-                {{ form_row(form.rate.indexType, {attr: {class: 'tranche-rate-index'}}) }}
+                {{ form_row(form.rate.indexType) }}
             </div>
             <div class="col-lg-4 col-md-4">
                 {{ form_row(form.rate.margin, {label_help: 'lending-form.margin-unit'}) }}
             </div>
             <div class="col-lg-4 col-md-4 hidden">
-                {{ form_row(form.rate.floor, {label_help: 'lending-form.floor-unit', attr: {class: 'tranche-rate-floor'}}) }}
+                {{ form_row(form.rate.floor, {label_help: 'lending-form.floor-unit'}) }}
             </div>
         </div>
         <div class="row row-multi-col">

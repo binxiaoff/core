@@ -5,6 +5,7 @@ initTrancheCollectionHolder($trancheCollectionHolder);
 if ($trancheCollectionHolder.children('div').length > 0) {
     $trancheCollectionHolder.children('div').each(function () {
         initTrancheForm($(this));
+        $(this).uiInitLendingRate('{{ constant('Unilend\\Entity\\Embeddable\\LendingRate::INDEX_FIXED') }}');
 
         var $trancheFeeCollectionHolder = $(this).find('div.tranche-fees:last');
         if ($trancheFeeCollectionHolder.children('div').length > 0) {
@@ -45,7 +46,10 @@ function addTrancheForm($trancheCollectionHolder, $addTrancheButton) {
     $trancheCollectionHolder.data('index', index + 1);
     $addTrancheButton.before($newForm);
 
+    $newForm.find('.ui-has-datepicker, [data-ui-datepicker]').uiPikaday();
+
     initTrancheForm($newForm);
+    $newForm.uiInitLendingRate();
 
     var $trancheFeeCollectionHolder = $trancheCollectionHolder.find('div.tranche-fees:last');
 
@@ -53,8 +57,6 @@ function addTrancheForm($trancheCollectionHolder, $addTrancheButton) {
 }
 
 function initTrancheForm($trancheForm) {
-    $trancheForm.find('.ui-has-datepicker, [data-ui-datepicker]').uiPikaday();
-
     var $removeFormButton = $trancheForm.find(`[data-action='remove-tranche']`);
     $removeFormButton.on('click', function () {
         $trancheForm.remove();
