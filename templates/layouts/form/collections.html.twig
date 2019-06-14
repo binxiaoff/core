@@ -91,6 +91,10 @@
     </div>
 {%- endblock fee_type_row -%}
 
+{%- block bid_fee_type_row -%}
+    {{- block('fee_type_row') -}}
+{%- endblock bid_fee_type_row -%}
+
 {%- block tranche_fee_type_row -%}
     {{- block('fee_type_row') -}}
 {%- endblock tranche_fee_type_row -%}
