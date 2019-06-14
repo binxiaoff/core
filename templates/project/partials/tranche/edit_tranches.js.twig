@@ -5,7 +5,7 @@ initTrancheCollectionHolder($trancheCollectionHolder);
 if ($trancheCollectionHolder.children('div').length > 0) {
     $trancheCollectionHolder.children('div').each(function () {
         initTrancheForm($(this));
-        $(this).uiInitLendingRate('{{ constant('Unilend\\Entity\\Embeddable\\LendingRate::INDEX_FIXED') }}');
+        $(this).uiInitLendingRate();
 
         var $trancheFeeCollectionHolder = $(this).find('div.tranche-fees:last');
         if ($trancheFeeCollectionHolder.children('div').length > 0) {

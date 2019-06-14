@@ -37,6 +37,13 @@ class LendingRateType extends AbstractType
                 'choice_label' => function ($option, string $key, string $value) {
                     return 'interest-rate-index.' . mb_strtolower($key);
                 },
+                'choice_attr' => function ($option, string $key, string $value) {
+                    if (LendingRate::INDEX_FIXED === $value) {
+                        return ['data-no-floor' => ''];
+                    }
+
+                    return [];
+                },
             ])
             ->add('margin', NumberType::class, [
                 'label'    => 'lending-form.margin',

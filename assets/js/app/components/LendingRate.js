@@ -1,28 +1,14 @@
-var $ = require('jquery')
-var $doc = $(document)
+let $ = require('jquery')
 
-$.fn.uiInitLendingRate = function (fixedIndexTypeConstant) {
-    var $rateMarginInput = this.find("[id$='_rate_margin']")
-    var $rateIndexTypeInput = this.find("[id$='_rate_indexType']")
-    var $rateFloorInput = this.find("[id$='_rate_floor']")
-    handleRateDisplaying($rateMarginInput, $rateIndexTypeInput, $rateFloorInput, fixedIndexTypeConstant)
-
-    $doc.on('change', $rateIndexTypeInput, function () {
-        handleRateDisplaying($rateMarginInput, $rateIndexTypeInput, $rateFloorInput, fixedIndexTypeConstant)
-    })
-}
-
-function handleRateDisplaying($rateMarginInput, $rateIndexTypeInput, $rateFloorInput, fixedIndexTypeConstant) {
+function handleRateDisplaying($rateMarginInput, $rateIndexTypeInput, $rateFloorInput) {
     if ($rateIndexTypeInput.length > 0) {
-        let selectedType = $rateIndexTypeInput.find('option:selected').val()
-        let noFloor = fixedIndexTypeConstant === selectedType || '' === selectedType
+        let selectedType = $rateIndexTypeInput.find('option:selected')
+        let noFloor = typeof selectedType.data('no-floor') !== 'undefined' || '' === selectedType.val()
 
-        $rateFloorInput
-            .parents('.form-field')
-            .parent()
-            .toggleClass('hidden', noFloor)
+        $rateFloorInput.toggleClass('hidden', noFloor)
+        $("label[for='" + $rateFloorInput.attr('id') + "']").toggleClass('hidden', noFloor)
 
-        if (selectedType) {
+        if (selectedType.val()) {
             $rateMarginInput.prop('disabled', false)
         } else {
             $rateMarginInput.prop('disabled', true)
@@ -30,4 +16,15 @@ function handleRateDisplaying($rateMarginInput, $rateIndexTypeInput, $rateFloorI
     } else {
         $rateMarginInput.prop('disabled', false)
     }
+}
+
+$.fn.uiInitLendingRate = function () {
+    let $rateMarginInput = this.find("[id$='_rate_margin']")
+    let $rateIndexTypeInput = this.find("[id$='_rate_indexType']")
+    let $rateFloorInput = this.find("[id$='_rate_floor']")
+    handleRateDisplaying($rateMarginInput, $rateIndexTypeInput, $rateFloorInput)
+
+    $rateIndexTypeInput.on('change', function () {
+        handleRateDisplaying($rateMarginInput, $rateIndexTypeInput, $rateFloorInput)
+    })
 }

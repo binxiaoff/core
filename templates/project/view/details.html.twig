@@ -48,7 +48,7 @@
             let $bidForms = $(`[data-my-bid]`)
             if ($bidForms.length > 0) {
                 $bidForms.each(function () {
-                    $(this).uiInitLendingRate('{{ constant('Unilend\\Entity\\Embeddable\\LendingRate::INDEX_FIXED') }}')
+                    $(this).uiInitLendingRate()
                 })
             }
         })
