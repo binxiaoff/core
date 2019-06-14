@@ -33,7 +33,7 @@ use Unilend\Entity\{
 use Unilend\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\SwiftMailer\{TemplateMessage, TemplateMessageProvider};
 
-class MailerManager
+class UnilendMailerManager
 {
     /** @var Settings */
     private $settingsRepository;
@@ -655,8 +655,8 @@ class MailerManager
                     'Could not send email: annonce-mise-en-ligne-emprunteur - Exception: ' . $exception->getMessage(),
                     ['id_mail_template' => $message->getTemplateId(), 'id_client' => $company->getIdClientOwner()->getIdClient(), 'class' => __CLASS__, 'function' => __FUNCTION__]
                 );
-            }
         }
+    }
     }
 
     /**

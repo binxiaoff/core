@@ -33,7 +33,7 @@ class AutoBidSettingsManager
     private $termsOfSaleManager;
     /** @var LoggerInterface */
     private $logger;
-    /** @var MailerManager */
+    /** @var UnilendMailerManager */
     private $mailerManager;
 
     /**
@@ -47,7 +47,7 @@ class AutoBidSettingsManager
      * @param ContractManager        $contractManager
      * @param TermsOfSaleManager     $termsOfSaleManager
      * @param LoggerInterface        $logger
-     * @param MailerManager          $mailerManager
+     * @param UnilendMailerManager   $mailerManager
      */
     public function __construct(
         EntityManagerSimulator $entityManagerSimulator,
@@ -60,7 +60,7 @@ class AutoBidSettingsManager
         ContractManager $contractManager,
         TermsOfSaleManager $termsOfSaleManager,
         LoggerInterface $logger,
-        MailerManager $mailerManager
+        UnilendMailerManager $mailerManager
     )
     {
         $this->entityManagerSimulator = $entityManagerSimulator;

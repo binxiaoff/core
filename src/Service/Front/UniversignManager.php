@@ -10,7 +10,7 @@ use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Entity\{BankAccount, Clients, ClientsMandats, CompanyBeneficialOwnerDeclaration, Prelevements, ProjectBeneficialOwnerUniversign, ProjectCgv, Projects, ProjectsPouvoir, Settings,
     UniversignEntityInterface, WireTransferOutUniversign};
-use Unilend\Service\{MailerManager, SlackManager, WireTransferOutManager};
+use Unilend\Service\{UnilendMailerManager, SlackManager, WireTransferOutManager};
 use Unilend\Controller\UniversignController;
 use Unilend\SwiftMailer\TemplateMessageProvider;
 
@@ -18,7 +18,7 @@ class UniversignManager
 {
     /** @var EntityManagerInterface */
     private $entityManager;
-    /** @var MailerManager */
+    /** @var UnilendMailerManager */
     private $mailerManager;
     /** @var Router */
     private $router;
@@ -41,7 +41,7 @@ class UniversignManager
 
     /**
      * @param EntityManagerInterface  $entityManager
-     * @param MailerManager           $mailerManager
+     * @param UnilendMailerManager    $mailerManager
      * @param RouterInterface         $router
      * @param LoggerInterface         $logger
      * @param TranslatorInterface     $translator
@@ -54,7 +54,7 @@ class UniversignManager
      */
     public function __construct(
         EntityManagerInterface $entityManager,
-        MailerManager $mailerManager,
+        UnilendMailerManager $mailerManager,
         RouterInterface $router,
         LoggerInterface $logger,
         TranslatorInterface $translator,

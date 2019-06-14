@@ -33,7 +33,7 @@ class ProjectStatusManager
     private $universignManager;
     /** @var ProjectRepaymentTaskManager */
     private $projectRepaymentTaskManager;
-    /** @var MailerManager */
+    /** @var UnilendMailerManager */
     private $mailerManager;
     /** @var ProjectRepository */
     private $projectRepository;
@@ -48,7 +48,7 @@ class ProjectStatusManager
      * @param SlackManager                $slackManager
      * @param UniversignManager           $universignManager
      * @param ProjectRepaymentTaskManager $projectRepaymentTaskManager
-     * @param MailerManager               $mailerManager
+     * @param UnilendMailerManager        $mailerManager
      * @param ProjectRepository           $projectRepository
      * @param RealUserFinder              $realUserFinder
      */
@@ -60,7 +60,7 @@ class ProjectStatusManager
         SlackManager $slackManager,
         UniversignManager $universignManager,
         ProjectRepaymentTaskManager $projectRepaymentTaskManager,
-        MailerManager $mailerManager,
+        UnilendMailerManager $mailerManager,
         ProjectRepository $projectRepository,
         RealUserFinder $realUserFinder
     ) {

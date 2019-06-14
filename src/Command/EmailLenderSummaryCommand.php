@@ -8,7 +8,7 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Unilend\Entity\ClientsGestionTypeNotif;
-use Unilend\Service\MailerManager;
+use Unilend\Service\UnilendMailerManager;
 use Unilend\Service\Simulator\EntityManager;
 
 class EmailLenderSummaryCommand extends ContainerAwareCommand
@@ -53,7 +53,7 @@ EOF
         $entityManager = $this->getContainer()->get('unilend.service.entity_manager');
         /** @var \clients_gestion_notifications $oCustomerNotificationSettings */
         $oCustomerNotificationSettings = $entityManager->getRepository('clients_gestion_notifications');
-        /** @var MailerManager $mailerManager */
+        /** @var UnilendMailerManager $mailerManager */
         $mailerManager = $this->getContainer()->get('unilend.service.email_manager');
         /** @var LoggerInterface $logger */
         $logger = $this->getContainer()->get('monolog.logger.console');

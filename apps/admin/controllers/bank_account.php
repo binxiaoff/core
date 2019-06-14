@@ -89,7 +89,7 @@ class bank_accountController extends bootstrap
                     if ($bankAccount->getIdClient()->isBorrower()) {
                         $this->updateMandat($bankAccount->getIdClient());
                     }
-                    /** @var \Unilend\Service\MailerManager $oMailerManager */
+                    /** @var \Unilend\Service\UnilendMailerManager $oMailerManager */
                     $oMailerManager = $this->get('unilend.service.email_manager');
                     $oMailerManager->sendIbanUpdateToStaff($bankAccount->getIdClient()->getIdClient(), $currentIban, $bankAccount->getIban());
 
