@@ -3,9 +3,12 @@
 namespace Unilend\Entity\Traits;
 
 use Doctrine\ORM\Mapping as ORM;
+use Unilend\Traits\ConstantsAwareTrait;
 
 trait RoleableTrait
 {
+    use ConstantsAwareTrait;
+
     /**
      * @var array
      *
@@ -86,6 +89,14 @@ trait RoleableTrait
     }
 
     /**
+     * @return array
+     */
+    protected function getAllRoles()
+    {
+        return self::getConstants('ROLE_');
+    }
+
+    /**
      * @param array $roles
      *
      * @return array
@@ -93,7 +104,7 @@ trait RoleableTrait
     private function filterRoles(array $roles): array
     {
         foreach ($roles as $index => $role) {
-            if (false === in_array($role, self::ALL_ROLES)) {
+            if (false === in_array($role, $this->getAllRoles())) {
                 unset($roles[$index]);
             }
         }

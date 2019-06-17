@@ -30,15 +30,6 @@ class ProjectParticipant
 
     public const ROLE_DEFAULT = self::COMPANY_ROLE_LENDER;
 
-    public const ALL_ROLES = [
-        self::COMPANY_ROLE_ARRANGER,
-        self::COMPANY_ROLE_DEPUTY_ARRANGER,
-        self::COMPANY_ROLE_RUN,
-        self::COMPANY_ROLE_LENDER,
-        self::COMPANY_ROLE_LOAN_OFFICER,
-        self::COMPANY_ROLE_SECURITY_TRUSTEE,
-    ];
-
     /**
      * @var int
      *
@@ -138,5 +129,13 @@ class ProjectParticipant
         }
 
         return $this;
+    }
+
+    /**
+     * @return array
+     */
+    protected function getAllRoles()
+    {
+        return self::getConstants('COMPANY_ROLE_');
     }
 }

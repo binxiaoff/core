@@ -19,8 +19,6 @@ class Staff
      */
     public const STAFF_ROLE_OWNER = 'STAFF_ROLE_OWNER';
 
-    public const ALL_ROLES = [self::STAFF_ROLE_OWNER];
-
     /**
      * @var int
      *
@@ -96,5 +94,13 @@ class Staff
         $this->client = $client;
 
         return $this;
+    }
+
+    /**
+     * @return array
+     */
+    protected function getAllRoles()
+    {
+        return self::getConstants('STAFF_ROLE_');
     }
 }
