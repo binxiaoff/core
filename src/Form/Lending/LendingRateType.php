@@ -4,14 +4,25 @@ declare(strict_types=1);
 
 namespace Unilend\Form\Lending;
 
-use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\{ChoiceType, NumberType};
-use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\Form\{AbstractType, FormBuilderInterface, FormError, FormEvent, FormEvents};
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Contracts\Translation\TranslatorInterface;
 use Unilend\Entity\Embeddable\LendingRate;
 
 class LendingRateType extends AbstractType
 {
+    /** @var TranslatorInterface */
+    private $translator;
+
+    /**
+     * @param TranslatorInterface $translator
+     */
+    public function __construct(TranslatorInterface $translator)
+    {
+        $this->translator = $translator;
+    }
+
     /**
      * {@inheritdoc}
      */
@@ -26,6 +37,13 @@ class LendingRateType extends AbstractType
                 'choice_label' => function ($option, string $key, string $value) {
                     return 'interest-rate-index.' . mb_strtolower($key);
                 },
+                'choice_attr' => function ($option, string $key, string $value) {
+                    if (LendingRate::INDEX_FIXED === $value) {
+                        return ['data-no-floor' => ''];
+                    }
+
+                    return [];
+                },
             ])
             ->add('margin', NumberType::class, [
                 'label'    => 'lending-form.margin',
@@ -37,7 +55,21 @@ class LendingRateType extends AbstractType
                 'required' => false,
                 'scale'    => LendingRate::MARGIN_SCALE,
             ])
+            ->addEventListener(FormEvents::SUBMIT, [$this, 'checkRateData'])
         ;
+    }
+
+    /**
+     * @param FormEvent $formEvent
+     */
+    public function checkRateData(FormEvent $formEvent): void
+    {
+        $form = $formEvent->getForm();
+        /** @var LendingRate $lendingRate */
+        $lendingRate = $formEvent->getData();
+        if ($lendingRate->getMargin() && null === $lendingRate->getIndexType()) {
+            $form->get('margin')->addError(new FormError($this->translator->trans('lending-rate-form.index-type-required')));
+        }
     }
 
     /**

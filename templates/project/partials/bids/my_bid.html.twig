@@ -45,7 +45,7 @@
 {% elseif project.isOnline and form is not empty %}
     {{ form_start(form) }}
     <fieldset class="simulator-pane-inner" style="margin-top: 20px;">
-        <div class="row row-multi-col-computer">
+        <div class="row row-multi-col-computer" data-my-bid>
             <div class="col-lg-3 col-md-3 col-sm-3">
                 {{ form_row(form.money.amount, {
                     label_help: '(' ~ tranche.money.currency ~ ')',
@@ -53,13 +53,28 @@
                 }}
             </div>
             <div class="col-lg-3 col-md-3 col-sm-3">
-                {{ form_row(form.rate.indexType, {attr: {class: 'tranche-rate-index'}}) }}
+                {% if tranche.rate.indexType %}
+                    <div class="form-field">
+                        <label>{% trans %} lending-form.index-type {% endtrans %}</label>
+                        <div>{{ tranche.rate.indexType }}</div>
+                    </div>
+                {% else %}
+                    {{ form_row(form.rate.indexType, {attr: {class: 'tranche-rate-index'}}) }}
+                {% endif %}
             </div>
             <div class="col-lg-3 col-md-3 col-sm-3">
-                {{ form_row(form.rate.margin, {label_help: 'lending-form.margin-unit'}) }}
+                {% if tranche.rate.margin %}
+                    {{ form_row(form.rate.margin, {label_help: 'lending-form.margin-unit', value: tranche.rate.margin, attr: {readonly: ''}}) }}
+                {% else %}
+                    {{ form_row(form.rate.margin, {label_help: 'lending-form.margin-unit'}) }}
+                {% endif %}
             </div>
-            <div class="col-lg-3 col-md-3 col-sm-3 hidden">
-                {{ form_row(form.rate.floor, {label_help: 'lending-form.floor-unit', attr: {class: 'tranche-rate-floor'}}) }}
+            <div class="col-lg-3 col-md-3 col-sm-3 {% if constant('Unilend\\Entity\\Embeddable\\LendingRate::INDEX_FIXED') == tranche.rate.indexType %} hide {% endif %}">
+                {% if tranche.rate.floor %}
+                    {{ form_row(form.rate.floor, {label_help: 'lending-form.floor-unit', value: tranche.rate.floor, attr: {class: 'tranche-rate-floor', readonly: ''}}) }}
+                {% else %}
+                    {{ form_row(form.rate.floor, {label_help: 'lending-form.floor-unit', attr: {class: 'tranche-rate-floor'}}) }}
+                {% endif %}
             </div>
         </div>
     </fieldset>

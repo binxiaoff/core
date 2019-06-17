@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Unilend\Form\Bid;
 
 use Symfony\Component\Form\Extension\Core\Type\CollectionType;
-use Symfony\Component\Form\{AbstractType, FormBuilderInterface};
+use Symfony\Component\Form\{AbstractType, FormBuilderInterface, FormEvent, FormEvents};
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Unilend\Entity\Bids;
 use Unilend\Form\Lending\LendingRateType;
@@ -30,7 +30,23 @@ class BidType extends AbstractType
                 'allow_delete'  => true,
                 'by_reference'  => false,
             ])
+            ->addEventListener(FormEvents::POST_SET_DATA, [$this, 'handleRateFieldsDisplaying'])
         ;
+    }
+
+    /**
+     * @param FormEvent $formEvent
+     */
+    public function handleRateFieldsDisplaying(FormEvent $formEvent): void
+    {
+        $form = $formEvent->getForm();
+        /** @var Bids $bid */
+        $bid = $formEvent->getData();
+        if ($bid->getTranche() && $trancheRate = $bid->getTranche()->getRate()) {
+            if ($trancheRate->getIndexType()) {
+                $form->get('rate')->remove('indexType');
+            }
+        }
     }
 
     /**

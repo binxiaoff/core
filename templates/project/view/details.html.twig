@@ -45,17 +45,12 @@
         $(function () {
             {% include 'project/partials/bids/actions.js.twig' %}
 
-            $(document).on('change', '.tranche-rate-index', function () {
-                let value = $(this).find('option:selected').val()
-                let noFloor = '{{ constant('Unilend\\Entity\\Embeddable\\LendingRate::INDEX_FIXED') }}' === value || '' === value
-
-                $(this)
-                    .parents('.row')
-                    .find('.tranche-rate-floor')
-                    .parents('.form-field')
-                    .parent()
-                    .toggleClass('hidden', noFloor)
-            })
+            let $bidForms = $('[data-my-bid]')
+            if ($bidForms.length > 0) {
+                $bidForms.each(function () {
+                    $(this).uiInitLendingRate()
+                })
+            }
         })
     </script>
 {% endblock %}
