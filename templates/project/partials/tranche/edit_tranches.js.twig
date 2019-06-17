@@ -8,7 +8,6 @@ $trancheCollectionHolder.uiInitCollectionHolder({
 if ($trancheCollectionHolder.children('div').length > 0) {
     $trancheCollectionHolder.children('div').each(function () {
         $(this).uiInitCollectionForm()
-        $(this).uiInitLendingRate()
 
         var $trancheFeeCollectionHolder = $(this).find('div.tranche-fees:last')
         $trancheFeeCollectionHolder.uiInitCollectionHolder()

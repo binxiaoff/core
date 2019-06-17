@@ -1,7 +1,8 @@
 let $ = require('jquery')
+var __ = require('__')
 
 let CollectionForm = function (options) {
-    let self = this;
+    let self = this
 
     self.options = {
         autoCreate: false,
@@ -21,7 +22,7 @@ let CollectionForm = function (options) {
         $collectionHolder.data('index', index + 1)
         $addButton.before($newForm)
 
-        return $newForm;
+        return $newForm
     }
 
     self.init = function ($newForm) {
@@ -35,9 +36,9 @@ let CollectionForm = function (options) {
 
     self.iniFeesHolder = function ($collectionHolder) {
         if (self.options.feeCollectionHolderSelector) {
-            let feeCollectionHolder = $collectionHolder.find(self.options.feeCollectionHolderSelector);
+            let feeCollectionHolder = $collectionHolder.find(self.options.feeCollectionHolderSelector)
             if (feeCollectionHolder.length > 0) {
-                feeCollectionHolder.uiInitCollectionHolder();
+                feeCollectionHolder.uiInitCollectionHolder()
             }
         }
     }
@@ -63,7 +64,7 @@ let CollectionForm = function (options) {
     self.initRemoveButton = function($newForm) {
         let $removeFormButton = $newForm.find(`[data-action='remove']`)
         $removeFormButton.on('click', function () {
-            if (confirm('Are you sure to hide')) {
+            if (confirm(__.__('Voulez-vous vraiment supprimer cet élément ?', 'delete-confirmation'))) {
                 $newForm.remove()
             }
         })
@@ -73,18 +74,18 @@ let CollectionForm = function (options) {
 
     self.initProjectFees = function($newForm) {
         if (false === self.options.initProjectFee) {
-            return self;
+            return self
         }
-        let $feeTypeSelector = $newForm.find(`[data-fee-type]`);
+        let $feeTypeSelector = $newForm.find(`[data-fee-type]`)
 
         $feeTypeSelector.on('change', function () {
-            let selectedType = $(this).children("option:selected").val();
+            let selectedType = $(this).children("option:selected").val()
             if (selectedType === '2') {
-                $newForm.find('input[type=checkbox]').prop("checked", true);
+                $newForm.find('input[type=checkbox]').prop("checked", true)
             } else {
-                $newForm.find('input[type=checkbox]').prop("checked", false);
+                $newForm.find('input[type=checkbox]').prop("checked", false)
             }
-        });
+        })
 
         let $feeRateInput = $newForm.find("input[id$='_fee_rate']")
 
@@ -140,9 +141,5 @@ $.fn.uiInitCollectionForm = function (options) {
     let self = this
     let collectionForm = new CollectionForm(options)
 
-    collectionForm.initRemoveButton(self)
-}
-
-$.fn.uiCollectionForm = function (options) {
-    return new CollectionForm(options)
+    collectionForm.init(self)
 }
