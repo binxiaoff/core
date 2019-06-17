@@ -45,7 +45,7 @@
         $(function () {
             {% include 'project/partials/bids/actions.js.twig' %}
 
-            let $bidForms = $(`[data-my-bid]`)
+            let $bidForms = $('[data-my-bid]')
             if ($bidForms.length > 0) {
                 $bidForms.each(function () {
                     $(this).uiInitLendingRate()

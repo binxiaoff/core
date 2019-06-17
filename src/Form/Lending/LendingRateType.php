@@ -67,8 +67,8 @@ class LendingRateType extends AbstractType
         $form = $formEvent->getForm();
         /** @var LendingRate $lendingRate */
         $lendingRate = $formEvent->getData();
-        if ($lendingRate->getIndexType() && null === $lendingRate->getMargin()) {
-            $form->get('margin')->addError(new FormError($this->translator->trans('lending-rate-form.margin-required')));
+        if ($lendingRate->getMargin() && null === $lendingRate->getIndexType()) {
+            $form->get('margin')->addError(new FormError($this->translator->trans('lending-rate-form.type-required')));
         }
     }
 

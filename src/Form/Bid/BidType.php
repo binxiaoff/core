@@ -30,14 +30,14 @@ class BidType extends AbstractType
                 'allow_delete'  => true,
                 'by_reference'  => false,
             ])
-            ->addEventListener(FormEvents::POST_SET_DATA, [$this, 'handleRateFields'])
+            ->addEventListener(FormEvents::POST_SET_DATA, [$this, 'handleRateFieldsDisplaying'])
         ;
     }
 
     /**
      * @param FormEvent $formEvent
      */
-    public function handleRateFields(FormEvent $formEvent): void
+    public function handleRateFieldsDisplaying(FormEvent $formEvent): void
     {
         $form = $formEvent->getForm();
         /** @var Bids $bid */
