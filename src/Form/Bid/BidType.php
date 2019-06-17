@@ -42,8 +42,8 @@ class BidType extends AbstractType
         $form = $formEvent->getForm();
         /** @var Bids $bid */
         $bid = $formEvent->getData();
-        if ($bid->getTranche() && $rate = $bid->getTranche()->getRate()) {
-            if ($rate->getIndexType()) {
+        if ($bid->getTranche() && $trancheRate = $bid->getTranche()->getRate()) {
+            if ($trancheRate->getIndexType()) {
                 $form->get('rate')->remove('indexType');
             }
         }
