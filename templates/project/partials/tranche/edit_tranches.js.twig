@@ -1,98 +1,21 @@
-var $trancheCollectionHolder = $('div.tranches');
+var $trancheCollectionHolder = $('div.tranches')
 
-initTrancheCollectionHolder($trancheCollectionHolder);
+$trancheCollectionHolder.uiInitCollectionHolder({
+    autoCreate: true,
+    feeCollectionHolderSelector: 'div.tranche-fees:last'
+})
 
 if ($trancheCollectionHolder.children('div').length > 0) {
     $trancheCollectionHolder.children('div').each(function () {
-        initTrancheForm($(this));
-        $(this).uiInitLendingRate();
+        $(this).uiInitCollectionForm()
+        $(this).uiInitLendingRate()
 
-        var $trancheFeeCollectionHolder = $(this).find('div.tranche-fees:last');
+        var $trancheFeeCollectionHolder = $(this).find('div.tranche-fees:last')
+        $trancheFeeCollectionHolder.uiInitCollectionHolder()
         if ($trancheFeeCollectionHolder.children('div').length > 0) {
-            initTrancheFeeCollectionDiv($trancheFeeCollectionHolder)
             $trancheFeeCollectionHolder.children('div').each(function () {
-                initTrancheFeeForm($(this));
+                $(this).uiInitCollectionForm()
             })
         }
     })
-}
-
-function initTrancheCollectionHolder($trancheCollectionHolder) {
-
-    var $addTrancheButton = $(
-        '<a href="javascript:;" class="btn-default btn-shape-sq-md margin-10-t">' +
-        '    <span class="icon fa-plus-u16 c-t2"></span>' +
-        '</a>'
-    );
-
-    $trancheCollectionHolder.append($addTrancheButton);
-    $trancheCollectionHolder.data('index', $trancheCollectionHolder.find(':input').length);
-
-    $addTrancheButton.on('click', function () {
-        addTrancheForm($trancheCollectionHolder, $addTrancheButton);
-    });
-
-    if ($trancheCollectionHolder.children('div').length === 0) {
-        addTrancheForm($trancheCollectionHolder, $addTrancheButton);
-    }
-}
-
-function addTrancheForm($trancheCollectionHolder, $addTrancheButton) {
-    var prototype = $trancheCollectionHolder.data('prototype');
-    var prototypeName = $trancheCollectionHolder.data('prototype-name');
-    var index = $trancheCollectionHolder.data('index');
-    var $newForm = $(prototype.replace(new RegExp(prototypeName, 'g'), index));
-
-    $trancheCollectionHolder.data('index', index + 1);
-    $addTrancheButton.before($newForm);
-
-    $newForm.find('.ui-has-datepicker, [data-ui-datepicker]').uiPikaday();
-
-    initTrancheForm($newForm);
-    $newForm.uiInitLendingRate();
-
-    var $trancheFeeCollectionHolder = $trancheCollectionHolder.find('div.tranche-fees:last');
-
-    initTrancheFeeCollectionDiv($trancheFeeCollectionHolder);
-}
-
-function initTrancheForm($trancheForm) {
-    var $removeFormButton = $trancheForm.find(`[data-action='remove-tranche']`);
-    $removeFormButton.on('click', function () {
-        $trancheForm.remove();
-    });
-}
-
-function initTrancheFeeCollectionDiv($trancheFeeCollectionHolder) {
-    var $addTrancheFeeButton = $(
-        '<a href="javascript:;" class="btn-default btn-shape-sq-sm">' +
-        '    <span class="icon fa-plus-u16 c-t2"></span>' +
-        '</a>'
-    );
-
-    $trancheFeeCollectionHolder.append($addTrancheFeeButton);
-    $trancheFeeCollectionHolder.data('index', $trancheFeeCollectionHolder.find(':input').length);
-
-    $addTrancheFeeButton.on('click', function () {
-        addTrancheFeeForm($trancheFeeCollectionHolder, $addTrancheFeeButton);
-    });
-}
-
-function addTrancheFeeForm($trancheFeeCollectionHolder, $addTrancheFeeButton) {
-    var prototype = $trancheFeeCollectionHolder.data('prototype');
-    var prototypeName = $trancheFeeCollectionHolder.data('prototype-name');
-    var index = $trancheFeeCollectionHolder.data('index');
-    var $newForm = $(prototype.replace(new RegExp(prototypeName, 'g'), index));
-
-    $addTrancheFeeButton.before($newForm);
-    $trancheFeeCollectionHolder.data('index', index + 1);
-
-    initTrancheFeeForm($newForm);
-}
-
-function initTrancheFeeForm($trancheFeeForm) {
-    var $removeFormButton = $trancheFeeForm.find(`[data-action='remove-fee']`);
-    $removeFormButton.on('click', function () {
-        $trancheFeeForm.remove();
-    });
 }
