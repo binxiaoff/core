@@ -667,7 +667,7 @@ class Project
      */
     public function setArranger(Companies $company): Project
     {
-        $this->addProjectParticipant($company, ProjectParticipant::COMPANY_ROLE_ARRANGER);
+        $this->addProjectParticipant($company, ProjectParticipant::ROLE_PROJECT_ARRANGER);
 
         return $this;
     }
@@ -679,7 +679,7 @@ class Project
      */
     public function setDeputyArranger(Companies $company): Project
     {
-        $this->addProjectParticipant($company, ProjectParticipant::COMPANY_ROLE_DEPUTY_ARRANGER);
+        $this->addProjectParticipant($company, ProjectParticipant::ROLE_PROJECT_DEPUTY_ARRANGER);
 
         return $this;
     }
@@ -691,7 +691,7 @@ class Project
      */
     public function setRun(Companies $company): Project
     {
-        $this->addProjectParticipant($company, ProjectParticipant::COMPANY_ROLE_RUN);
+        $this->addProjectParticipant($company, ProjectParticipant::ROLE_PROJECT_RUN);
 
         return $this;
     }
@@ -703,7 +703,7 @@ class Project
      */
     public function setLoanOfficer(Companies $company): Project
     {
-        $this->addProjectParticipant($company, ProjectParticipant::COMPANY_ROLE_LOAN_OFFICER);
+        $this->addProjectParticipant($company, ProjectParticipant::ROLE_PROJECT_LOAN_OFFICER);
 
         return $this;
     }
@@ -715,7 +715,7 @@ class Project
      */
     public function setSecurityTrustee(Companies $company): Project
     {
-        $this->addProjectParticipant($company, ProjectParticipant::COMPANY_ROLE_SECURITY_TRUSTEE);
+        $this->addProjectParticipant($company, ProjectParticipant::ROLE_PROJECT_SECURITY_TRUSTEE);
 
         return $this;
     }
@@ -728,7 +728,7 @@ class Project
     public function addLenders(array $companies): Project
     {
         foreach ($companies as $company) {
-            $this->addProjectParticipant($company, ProjectParticipant::COMPANY_ROLE_LENDER);
+            $this->addProjectParticipant($company, ProjectParticipant::ROLE_PROJECT_LENDER);
         }
 
         return $this;
@@ -743,7 +743,7 @@ class Project
     {
         foreach ($this->getLenders() as $lender) {
             if (false === in_array($lender->getCompany(), $companies)) {
-                $lender->removeRole(ProjectParticipant::COMPANY_ROLE_LENDER);
+                $lender->removeRole(ProjectParticipant::ROLE_PROJECT_LENDER);
             }
         }
 
@@ -757,7 +757,7 @@ class Project
      */
     public function getArranger(): ?ProjectParticipant
     {
-        return $this->getUniqueRoleParticipant(ProjectParticipant::COMPANY_ROLE_ARRANGER);
+        return $this->getUniqueRoleParticipant(ProjectParticipant::ROLE_PROJECT_ARRANGER);
     }
 
     /**
@@ -767,7 +767,7 @@ class Project
      */
     public function getDeputyArranger(): ?ProjectParticipant
     {
-        return $this->getUniqueRoleParticipant(ProjectParticipant::COMPANY_ROLE_DEPUTY_ARRANGER);
+        return $this->getUniqueRoleParticipant(ProjectParticipant::ROLE_PROJECT_DEPUTY_ARRANGER);
     }
 
     /**
@@ -777,7 +777,7 @@ class Project
      */
     public function getRun(): ?ProjectParticipant
     {
-        return $this->getUniqueRoleParticipant(ProjectParticipant::COMPANY_ROLE_RUN);
+        return $this->getUniqueRoleParticipant(ProjectParticipant::ROLE_PROJECT_RUN);
     }
 
     /**
@@ -787,7 +787,7 @@ class Project
      */
     public function getLoanOfficer(): ?ProjectParticipant
     {
-        return $this->getUniqueRoleParticipant(ProjectParticipant::COMPANY_ROLE_LOAN_OFFICER);
+        return $this->getUniqueRoleParticipant(ProjectParticipant::ROLE_PROJECT_LOAN_OFFICER);
     }
 
     /**
@@ -797,7 +797,7 @@ class Project
      */
     public function getSecurityTrustee(): ?ProjectParticipant
     {
-        return $this->getUniqueRoleParticipant(ProjectParticipant::COMPANY_ROLE_SECURITY_TRUSTEE);
+        return $this->getUniqueRoleParticipant(ProjectParticipant::ROLE_PROJECT_SECURITY_TRUSTEE);
     }
 
     /**
@@ -805,7 +805,7 @@ class Project
      */
     public function getLenders(): iterable
     {
-        return $this->getParticipantsByRole(ProjectParticipant::COMPANY_ROLE_LENDER);
+        return $this->getParticipantsByRole(ProjectParticipant::ROLE_PROJECT_LENDER);
     }
 
     /**
@@ -813,7 +813,7 @@ class Project
      */
     public function getLenderCompanies(): iterable
     {
-        return $this->getCompaniesByRole(ProjectParticipant::COMPANY_ROLE_LENDER);
+        return $this->getCompaniesByRole(ProjectParticipant::ROLE_PROJECT_LENDER);
     }
 
     /**
@@ -1006,11 +1006,11 @@ class Project
     private function isUniqueRole(string $role): bool
     {
         return in_array($role, [
-            ProjectParticipant::COMPANY_ROLE_ARRANGER,
-            ProjectParticipant::COMPANY_ROLE_DEPUTY_ARRANGER,
-            ProjectParticipant::COMPANY_ROLE_RUN,
-            ProjectParticipant::COMPANY_ROLE_LOAN_OFFICER,
-            ProjectParticipant::COMPANY_ROLE_SECURITY_TRUSTEE,
+            ProjectParticipant::ROLE_PROJECT_ARRANGER,
+            ProjectParticipant::ROLE_PROJECT_DEPUTY_ARRANGER,
+            ProjectParticipant::ROLE_PROJECT_RUN,
+            ProjectParticipant::ROLE_PROJECT_LOAN_OFFICER,
+            ProjectParticipant::ROLE_PROJECT_SECURITY_TRUSTEE,
         ]);
     }
 

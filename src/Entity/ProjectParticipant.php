@@ -15,20 +15,20 @@ use Unilend\Entity\Traits\{RoleableTrait, TimestampableTrait};
 class ProjectParticipant
 {
     use RoleableTrait {
-        removeRole as public baseRemoveRole;
+        removeRole as private baseRemoveRole;
     }
 
     use TimestampableTrait;
 
     // Use COMPANY_ prefix to distinguish it from Symfony user's roles
-    public const COMPANY_ROLE_ARRANGER         = 'COMPANY_ROLE_ARRANGER'; // The company who arranges a loan syndication.
-    public const COMPANY_ROLE_DEPUTY_ARRANGER  = 'COMPANY_ROLE_DEPUTY_ARRANGER';
-    public const COMPANY_ROLE_RUN              = 'COMPANY_ROLE_RUN'; // The abbreviation of Responsable Unique de Notation, who gives a note on the borrower.
-    public const COMPANY_ROLE_LENDER           = 'COMPANY_ROLE_LENDER';
-    public const COMPANY_ROLE_LOAN_OFFICER     = 'COMPANY_ROLE_LOAN_OFFICER';
-    public const COMPANY_ROLE_SECURITY_TRUSTEE = 'COMPANY_ROLE_SECURITY_TRUSTEE';
+    public const ROLE_PROJECT_ARRANGER         = 'ROLE_PROJECT_ARRANGER'; // The company who arranges a loan syndication.
+    public const ROLE_PROJECT_DEPUTY_ARRANGER  = 'ROLE_PROJECT_DEPUTY_ARRANGER';
+    public const ROLE_PROJECT_RUN              = 'ROLE_PROJECT_RUN'; // The abbreviation of Responsable Unique de Notation, who gives a note on the borrower.
+    public const ROLE_PROJECT_LENDER           = 'ROLE_PROJECT_LENDER';
+    public const ROLE_PROJECT_LOAN_OFFICER     = 'ROLE_PROJECT_LOAN_OFFICER';
+    public const ROLE_PROJECT_SECURITY_TRUSTEE = 'ROLE_PROJECT_SECURITY_TRUSTEE';
 
-    public const ROLE_DEFAULT = self::COMPANY_ROLE_LENDER;
+    public const ROLE_DEFAULT = self::ROLE_PROJECT_LENDER;
 
     /**
      * @var int
@@ -112,7 +112,7 @@ class ProjectParticipant
      */
     public function isArranger(): bool
     {
-        return in_array(self::COMPANY_ROLE_ARRANGER, $this->getRoles());
+        return in_array(self::ROLE_PROJECT_ARRANGER, $this->getRoles());
     }
 
     /**
@@ -129,13 +129,5 @@ class ProjectParticipant
         }
 
         return $this;
-    }
-
-    /**
-     * @return array
-     */
-    protected function getAllRoles()
-    {
-        return self::getConstants('COMPANY_ROLE_');
     }
 }

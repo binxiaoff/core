@@ -381,7 +381,7 @@ class Companies
     public function setIdClientOwner(Clients $client = null)
     {
         if ($client) {
-            $this->addStaff($client, Staff::STAFF_ROLE_OWNER);
+            $this->addStaff($client, Staff::ROLE_COMPANY_OWNER);
         }
 
         return $this;
@@ -397,7 +397,7 @@ class Companies
     public function getIdClientOwner()
     {
         foreach ($this->getStaff() as $staff) {
-            if ($staff->hasRole(Staff::STAFF_ROLE_OWNER)) {
+            if ($staff->hasRole(Staff::ROLE_COMPANY_OWNER)) {
                 return $staff->getClient();
             }
         }

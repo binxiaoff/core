@@ -17,7 +17,7 @@ class Staff
     /**
      * @deprecated Just for backward compatibility. Later, we will define a new role list for staff.
      */
-    public const STAFF_ROLE_OWNER = 'STAFF_ROLE_OWNER';
+    public const ROLE_COMPANY_OWNER = 'ROLE_COMPANY_OWNER';
 
     /**
      * @var int
@@ -94,13 +94,5 @@ class Staff
         $this->client = $client;
 
         return $this;
-    }
-
-    /**
-     * @return array
-     */
-    protected function getAllRoles()
-    {
-        return self::getConstants('STAFF_ROLE_');
     }
 }

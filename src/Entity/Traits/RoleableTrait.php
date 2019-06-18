@@ -77,7 +77,7 @@ trait RoleableTrait
      *
      * @return self
      */
-    public function removeRole(string $role): self
+    private function removeRole(string $role): self
     {
         $index = array_search($role, $this->roles, true);
 
@@ -91,7 +91,7 @@ trait RoleableTrait
     /**
      * @return array
      */
-    protected function getAllRoles()
+    private function getAllRoles()
     {
         return self::getConstants('ROLE_');
     }
