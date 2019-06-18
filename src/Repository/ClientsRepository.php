@@ -8,7 +8,7 @@ use Doctrine\DBAL\{Connection, DBALException, Driver\Statement};
 use Doctrine\ORM\Query\{Expr\Join, ResultSetMapping};
 use Doctrine\ORM\{AbstractQuery, NoResultException, NonUniqueResultException, ORMException, OptimisticLockException, UnexpectedResultException};
 use PDO;
-use Unilend\Entity\{AddressType, Attachment, AttachmentType, BankAccount, BeneficialOwner, ClientAddress, Clients, ClientsAdresses, ClientsStatus, ClientsStatusHistory, Companies,
+use Unilend\Entity\{AddressType, Attachment, AttachmentType, BankAccount, BeneficialOwner, ClientAddress, Clients, ClientsStatus, ClientsStatusHistory, Companies,
     CompanyClient, GreenpointAttachment, Loans, Operation, OperationType, Partner, Pays, Users, VigilanceRule, Wallet, WalletBalanceHistory, WalletType};
 use Unilend\Service\{GreenPointValidationManager, LenderValidationManager};
 
@@ -786,13 +786,13 @@ class ClientsRepository extends ServiceEntityRepository
                 c.naissance,
                 c.villeNaissance,
                 c.idPaysNaissance,
-                ca.idPaysFiscal,
+                IDENTITY(ca.idCountry),
                 a.id AS attachmentId,
                 a.originalName AS attachmentOriginalName,
                 a.path AS attachmentPath'
             )
             ->leftJoin(Attachment::class, 'a', Join::WITH, 'a.idClient = c.idClient AND a.idType = ' . AttachmentType::CNI_PASSPORTE)
-            ->leftJoin(ClientsAdresses::class, 'ca', Join::WITH, 'c.idClient = ca.idClient')
+            ->leftJoin('c.idAddress', 'ca')
             ->where('c.nom LIKE :name')
             ->andWhere('c.type NOT IN (:lenderTypes)')
             ->setParameter('name', '%' . $name . '%')

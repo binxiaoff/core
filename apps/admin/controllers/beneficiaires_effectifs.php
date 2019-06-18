@@ -2,8 +2,8 @@
 
 use Doctrine\ORM\EntityManager;
 use Symfony\Component\HttpFoundation\Request;
-use Unilend\Entity\{Attachment, AttachmentType, BeneficialOwner, BeneficialOwnerType, ClientsAdresses, CompanyBeneficialOwnerDeclaration, Pays, ProjectBeneficialOwnerUniversign, ProjectsStatus,
-    Zones};
+use Unilend\Entity\{Attachment, AttachmentType, BeneficialOwner, BeneficialOwnerType, ClientAddress, ClientsAdresses, CompanyBeneficialOwnerDeclaration, Pays,
+    ProjectBeneficialOwnerUniversign, ProjectsStatus, Zones};
 use Unilend\Repository\BeneficialOwnerRepository;
 use Unilend\Service\BeneficialOwnerManager;
 
@@ -75,15 +75,12 @@ class beneficiaires_effectifsController extends bootstrap
         $passportType = $entityManager->getRepository(AttachmentType::class)->find(AttachmentType::CNI_PASSPORTE);
         $passport     = $entityManager->getRepository(Attachment::class)->findOneClientAttachmentByType($company->getIdClientOwner(), $passportType);
 
-        $address = $entityManager->getRepository(ClientsAdresses::class)->findOneBy(['idClient' => $company->getIdClientOwner()]);
-        $fiscalCountryId = 0;
-        if ($address) {
-            $fiscalCountryId = $address->getIdPaysFiscal();
-        }
+        /** @var ClientAddress $companyOwnerAddress */
+        $companyOwnerAddress =$company->getIdClientOwner()->getIdAddress();
 
         $this->render(null, [
             'companyOwner'         => $company->getIdClientOwner(),
-            'companyOwnerAddress'  => $entityManager->getRepository(ClientsAdresses::class)->findBy(['idClient' => $company->getIdClientOwner()]),
+            'companyOwnerAddress'  => $companyOwnerAddress,
             'companyOwnerPassport' => null === $passport ? '' : '<a href="' . $this->lurl . '/attachment/download/id/' . $passport->getId() . '/file/' . urlencode($passport->getPath()) . '" target="_blank">' . $passport->getOriginalName() . '</a>',
             'beneficial_owners'    => $currentOwners,
             'countries'            => $countryList,
@@ -93,7 +90,7 @@ class beneficiaires_effectifsController extends bootstrap
             'projectDeclarations'  => $existingDeclarations,
             'emailStatusErrors'    => empty($emailStatusErrors) ? null : $emailStatusErrors,
             'emailStatusSuccess'   => empty($emailStatusSuccess) ? null : $emailStatusSuccess,
-            'fiscalCountryId'      => $fiscalCountryId
+            'fiscalCountryId'      => $companyOwnerAddress instanceof ClientAddress ? $companyOwnerAddress->getIdCountry()->getIdPays() : 0,
         ]);
     }
 
@@ -395,9 +392,9 @@ class beneficiaires_effectifsController extends bootstrap
             $errors[] = $checkBirthplace['error'];
         }
 
-        $countryOfResidence = $request->request->getInt('country');
-        if (empty($countryOfResidence)) {
-            $checkCountry = $this->validateLocations($countryOfResidence);
+        $countryOfResidenceId = $request->request->getInt('country');
+        if (empty($countryOfResidenceId)) {
+            $checkCountry = $this->validateLocations($countryOfResidenceId);
             if (false === $checkCountry['success']) {
                 $errors[] = $checkCountry['error'] . ' (pays de résidence)';
             }
@@ -437,8 +434,9 @@ class beneficiaires_effectifsController extends bootstrap
             ->setIdBirthCountry($birthCountry)
             ->setBirthCity($birthPlace);
 
-        $clientAddress = $entityManager->getRepository(ClientsAdresses::class)->findOneBy(['idClient' => $owner->getIdClient()]);
-        $clientAddress->setIdPaysFiscal($countryOfResidence);
+        $clientAddress = $owner->getIdClient()->getIdAddress();
+        $countryOfResidence = $entityManager->getRepository(Pays::class)->find($countryOfResidenceId);
+        $clientAddress->setIdCountry($countryOfResidence);
 
         $entityManager->flush([$owner->getIdClient(), $clientAddress]);
 
@@ -533,7 +531,7 @@ class beneficiaires_effectifsController extends bootstrap
         /** @var \Symfony\Component\Translation\TranslatorInterface $translator */
         $translator = $this->get('translator');
 
-        $clientAddress = $entityManager->getRepository(ClientsAdresses::class)->findOneBy(['idClient' => $owner->getIdClient()]);
+        $clientAddress = $owner->getIdClient()->getIdAddress();
         $passportType  = $entityManager->getRepository(AttachmentType::class)->find(AttachmentType::CNI_PASSPORTE);
         $passport      = $entityManager->getRepository(Attachment::class)->findOneClientAttachmentByType($owner->getIdClient(), $passportType);
 
@@ -545,7 +543,7 @@ class beneficiaires_effectifsController extends bootstrap
             'birth_date'       => $owner->getIdClient()->getDateOfBirth()->format('d/m/Y'),
             'birth_place'      => $owner->getIdClient()->getBirthCity(),
             'birth_country'    => $owner->getIdClient()->getIdBirthCountry(),
-            'country'          => $clientAddress->getIdPaysFiscal(),
+            'country'          => $clientAddress->getIdCountry()->getIdPays(),
             'id_card_passport' => '<a href="' . $this->lurl . '/viewer/client/' . $owner->getIdClient()->getIdClient() . '/' . $passport->getId() . '" target="_blank">' . $passport->getOriginalName() . '</a>'
         ];
 

@@ -8,16 +8,16 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Routing\RouterInterface;
 use Twig_Environment;
-use Unilend\Entity\{Attachment, AttachmentType, BeneficialOwner, BeneficialOwnerType, Clients, ClientsAdresses, Companies,
-    CompanyBeneficialOwnerDeclaration, ProjectBeneficialOwnerUniversign, Projects, ProjectsStatus, UniversignEntityInterface};
+use Unilend\Entity\{Attachment, AttachmentType, BeneficialOwner, BeneficialOwnerType, ClientAddress, Clients, Companies, CompanyBeneficialOwnerDeclaration, Pays,
+    ProjectBeneficialOwnerUniversign, Projects, ProjectsStatus, UniversignEntityInterface};
 use Unilend\Service\Front\UniversignManager;
 
 class BeneficialOwnerManager
 {
-    const MAX_NUMBER_BENEFICIAL_OWNERS_TYPE_SHAREHOLDER   = 4;
-    const MAX_NUMBER_BENEFICIAL_OWNERS_TYPE_LEGAL_MANAGER = 1;
+    public const MAX_NUMBER_BENEFICIAL_OWNERS_TYPE_SHAREHOLDER   = 4;
+    public const MAX_NUMBER_BENEFICIAL_OWNERS_TYPE_LEGAL_MANAGER = 1;
 
-    const BENEFICIAL_OWNER_DECLARATION_EXEMPTED_LEGAL_FORM_CODES = [1100, 1200, 1300, 1500, 1600, 1700, 1900];
+    public const BENEFICIAL_OWNER_DECLARATION_EXEMPTED_LEGAL_FORM_CODES = [1100, 1200, 1300, 1500, 1600, 1700, 1900];
 
     /** @var EntityManagerInterface */
     private $entityManager;
@@ -54,8 +54,7 @@ class BeneficialOwnerManager
         AttachmentManager $attachmentManager,
         LoggerInterface $logger,
         $protectedPath
-    )
-    {
+    ) {
         $this->entityManager     = $entityManager;
         $this->snappy            = $snappy;
         $this->twig              = $twig;
@@ -70,8 +69,9 @@ class BeneficialOwnerManager
      * @param CompanyBeneficialOwnerDeclaration $declaration
      * @param Projects                          $project
      *
-     * @return ProjectBeneficialOwnerUniversign
      * @throws \Exception
+     *
+     * @return ProjectBeneficialOwnerUniversign
      */
     public function addProjectBeneficialOwnerDeclaration(CompanyBeneficialOwnerDeclaration $declaration, Projects $project)
     {
@@ -83,7 +83,8 @@ class BeneficialOwnerManager
         $universign
             ->setIdDeclaration($declaration)
             ->setIdProject($project)
-            ->setStatus(UniversignEntityInterface::STATUS_PENDING);
+            ->setStatus(UniversignEntityInterface::STATUS_PENDING)
+        ;
 
         $universign->setName($this->getBeneficialOwnerDeclarationFileName($universign));
 
@@ -117,8 +118,9 @@ class BeneficialOwnerManager
      * @param Projects|\projects $project
      * @param Clients|\clients   $client
      *
-     * @return array
      * @throws \Exception
+     *
+     * @return array
      */
     public function createProjectBeneficialOwnerDeclaration($project, $client): array
     {
@@ -132,7 +134,7 @@ class BeneficialOwnerManager
 
         $defaultReturn = [
             'action' => 'redirect',
-            'url'    => $this->router->generate('home')
+            'url'    => $this->router->generate('home'),
         ];
 
         if (
@@ -145,12 +147,14 @@ class BeneficialOwnerManager
 
         $projectDeclaration = $this->entityManager
             ->getRepository(ProjectBeneficialOwnerUniversign::class)
-            ->findOneBy(['idProject' => $project, 'status' => [UniversignEntityInterface::STATUS_PENDING, UniversignEntityInterface::STATUS_SIGNED]], ['added' => 'DESC']);
+            ->findOneBy(['idProject' => $project, 'status' => [UniversignEntityInterface::STATUS_PENDING, UniversignEntityInterface::STATUS_SIGNED]], ['added' => 'DESC'])
+        ;
 
         if (null === $projectDeclaration) {
             $companyDeclaration = $this->entityManager
                 ->getRepository(CompanyBeneficialOwnerDeclaration::class)
-                ->findCurrentDeclarationByCompany($project->getIdCompany());
+                ->findCurrentDeclarationByCompany($project->getIdCompany())
+            ;
 
             if (null === $companyDeclaration) {
                 return $defaultReturn;
@@ -168,7 +172,7 @@ class BeneficialOwnerManager
             return [
                 'action' => 'read',
                 'path'   => $beneficialOwnerDeclarationPdfRoot . DIRECTORY_SEPARATOR . $beneficialOwnerDeclarationFileName,
-                'name'   => $beneficialOwnerDeclarationFileName
+                'name'   => $beneficialOwnerDeclarationFileName,
             ];
         }
 
@@ -180,14 +184,14 @@ class BeneficialOwnerManager
             if (null !== $projectDeclaration->getUrlUniversign()) {
                 return [
                     'action' => 'sign',
-                    'url'    => $projectDeclaration->getUrlUniversign()
+                    'url'    => $projectDeclaration->getUrlUniversign(),
                 ];
             }
 
             if ($this->universignManager->createBeneficialOwnerDeclaration($projectDeclaration)) {
                 return [
                     'action' => 'sign',
-                    'url'    => $projectDeclaration->getUrlUniversign()
+                    'url'    => $projectDeclaration->getUrlUniversign(),
                 ];
             }
         }
@@ -200,9 +204,9 @@ class BeneficialOwnerManager
      */
     public function generateProjectPdfFile(ProjectBeneficialOwnerUniversign $projectDeclaration)
     {
-        $template   = [
+        $template = [
             'owners'  => $this->getOwnerDataFromDeclaration($projectDeclaration->getIdDeclaration()),
-            'company' => $projectDeclaration->getIdProject()->getIdCompany()
+            'company' => $projectDeclaration->getIdProject()->getIdCompany(),
         ];
         $pdfContent = $this->twig->render('/pdf/beneficial_owner_declaration.html.twig', $template);
         $outputFile = $this->getBeneficialOwnerDeclarationPdfRoot() . DIRECTORY_SEPARATOR . $this->getBeneficialOwnerDeclarationFileName($projectDeclaration);
@@ -212,7 +216,7 @@ class BeneficialOwnerManager
             'margin-top'    => 20,
             'margin-right'  => 15,
             'margin-bottom' => 10,
-            'margin-left'   => 15
+            'margin-left'   => 15,
         ];
         $this->snappy->generateFromHtml($pdfContent, $outputFile, $options, true);
     }
@@ -224,10 +228,10 @@ class BeneficialOwnerManager
      */
     public function generateCompanyPdfFile(CompanyBeneficialOwnerDeclaration $declaration)
     {
-        $template   = [
+        $template = [
             'owners'     => $this->getOwnerDataFromDeclaration($declaration),
             'company'    => $declaration->getIdCompany(),
-            'disclaimer' => 'Ce document a pour but le contrôle de contenu et n\'est en aucun cas representatif de la mise en forme du document final.'
+            'disclaimer' => 'Ce document a pour but le contrôle de contenu et n\'est en aucun cas representatif de la mise en forme du document final.',
         ];
         $pdfContent = $this->twig->render('/pdf/beneficial_owner_declaration.html.twig', $template);
         $options    = [
@@ -236,7 +240,7 @@ class BeneficialOwnerManager
             'margin-top'    => 20,
             'margin-right'  => 15,
             'margin-bottom' => 10,
-            'margin-left'   => 15
+            'margin-left'   => 15,
         ];
 
         return $this->snappy->getOutputFromHtml($pdfContent, $options);
@@ -255,9 +259,9 @@ class BeneficialOwnerManager
      * @param string|null                       $percentage
      * @param int|null                          $idClient
      *
-     * @return BeneficialOwner
-     *
      * @throws \Exception
+     *
+     * @return BeneficialOwner
      */
     public function createBeneficialOwner(
         CompanyBeneficialOwnerDeclaration $declaration,
@@ -271,21 +275,23 @@ class BeneficialOwnerManager
         BeneficialOwnerType $type = null,
         $percentage = null,
         $idClient = null
-    )
-    {
+    ) {
         if (empty($idClient)) {
             $owner = new Clients();
             $owner->setFirstName($firstName)
                 ->setLastName($lastName)
                 ->setDateOfBirth($birthday)
                 ->setBirthCity($birthPlace)
-                ->setIdBirthCountry($idBirthCountry);
+                ->setIdBirthCountry($idBirthCountry)
+            ;
 
             $this->entityManager->persist($owner);
 
-            $ownerAddress = new ClientsAdresses();
-            $ownerAddress->setIdPaysFiscal($countryOfResidence)
-                ->setIdClient($owner);
+            $ownerAddress = new ClientAddress();
+            $country      = $this->entityManager->getRepository(Pays::class)->find($countryOfResidence);
+            $ownerAddress->setIdCountry($country)
+                ->setIdClient($owner)
+            ;
 
             $this->entityManager->persist($ownerAddress);
         } else {
@@ -314,11 +320,13 @@ class BeneficialOwnerManager
                 $owner->setIdBirthCountry($idBirthCountry);
             }
 
-            $ownerAddress = $this->entityManager->getRepository(ClientsAdresses::class)->findOneBy(['idClient' => $owner]);
+            $ownerAddress = $owner->getIdAddress();
             if (null === $ownerAddress) {
-                $ownerAddress = new ClientsAdresses();
-                $ownerAddress->setIdPaysFiscal($countryOfResidence)
-                    ->setIdClient($owner);
+                $ownerAddress = new ClientAddress();
+                $country      = $this->entityManager->getRepository(Pays::class)->find($countryOfResidence);
+                $ownerAddress->setIdCountry($country)
+                    ->setIdClient($owner)
+                ;
 
                 $this->entityManager->persist($ownerAddress);
             } else {
@@ -330,7 +338,8 @@ class BeneficialOwnerManager
         $beneficialOwner->setIdClient($owner)
             ->setIdDeclaration($declaration)
             ->setPercentageDetained($percentage)
-            ->setIdType($type);
+            ->setIdType($type)
+        ;
 
         $this->entityManager->persist($beneficialOwner);
         $this->entityManager->flush([$declaration, $owner, $ownerAddress, $beneficialOwner]);
@@ -349,8 +358,8 @@ class BeneficialOwnerManager
 
     /**
      * @param BeneficialOwner $owner
-     * @param null|string     $type
-     * @param null|string     $percentage
+     * @param string|null     $type
+     * @param string|null     $percentage
      *
      * @throws \Exception
      */
@@ -370,33 +379,17 @@ class BeneficialOwnerManager
                 throw new \Exception('An archived declaration should not be edited. idDeclaration : ' . $owner->getIdDeclaration()->getId() . ' idOwner: ' . $owner->getId());
             case CompanyBeneficialOwnerDeclaration::STATUS_PENDING:
                 $this->modifyOwnerInPendingDeclaration($owner, $ownerType, $percentage);
+
                 break;
             case CompanyBeneficialOwnerDeclaration::STATUS_VALIDATED:
                 $this->modifyOwnerInValidatedDeclaration($owner, $ownerType, $percentage);
+
                 break;
             default:
                 $this->logger->warning('CompanyBeneficialOwnerDeclaration status ' . $owner->getIdDeclaration()->getStatus() . ' is not supported.', ['idDeclaration' => $owner->getIdDeclaration()->getId(), 'class' => __CLASS__, 'function' => __FUNCTION__]);
+
                 break;
         }
-    }
-
-    /**
-     * @param BeneficialOwner          $owner
-     * @param BeneficialOwnerType|null $type
-     * @param string|null              $percentage
-     *
-     * @throws \Exception
-     */
-    private function modifyOwnerInPendingDeclaration(BeneficialOwner $owner, $type, $percentage)
-    {
-        $percentage = empty($percentage) ? null : $percentage;
-
-        $owner->setIdType($type)
-            ->setPercentageDetained($percentage);
-
-        $this->entityManager->flush($owner);
-
-        $this->modifyPendingCompanyDeclaration($owner->getIdDeclaration());
     }
 
     /**
@@ -426,65 +419,15 @@ class BeneficialOwnerManager
     }
 
     /**
-     * @param BeneficialOwner          $owner
-     * @param BeneficialOwnerType|null $type
-     * @param string|null              $percentage
-     *
-     * @throws \Exception
-     */
-    private function modifyOwnerInValidatedDeclaration($owner, $type, $percentage)
-    {
-        $currentDeclaration = $owner->getIdDeclaration();
-        $currentDeclaration->setStatus(CompanyBeneficialOwnerDeclaration::STATUS_ARCHIVED);
-        $this->entityManager->flush($currentDeclaration);
-
-        $newDeclaration = clone $currentDeclaration;
-        $newDeclaration->setStatus(CompanyBeneficialOwnerDeclaration::STATUS_PENDING);
-
-        $this->entityManager->persist($newDeclaration);
-
-        $newOwner = clone $owner;
-        $newOwner->setIdDeclaration($newDeclaration)
-            ->setIdType($type)
-            ->setPercentageDetained($percentage);
-        $this->entityManager->persist($newOwner);
-
-        $this->entityManager->flush([$owner, $newOwner, $newDeclaration]);
-
-        $projectDeclarations = $this->entityManager->getRepository(ProjectBeneficialOwnerUniversign::class)->findBy(['idDeclaration' => $currentDeclaration]);
-
-        if (false === empty($projectDeclarations)) {
-            foreach ($projectDeclarations as $universign) {
-                switch ($universign->getStatus()) {
-                    case UniversignEntityInterface::STATUS_PENDING:
-                        $universign->setStatus(UniversignEntityInterface::STATUS_CANCELED);
-                        $this->entityManager->flush($universign);
-                        $this->createProjectBeneficialOwnerDeclaration($universign->getIdProject(), $universign->getIdProject()->getIdCompany()->getIdClientOwner());
-                        break;
-                    case UniversignEntityInterface::STATUS_SIGNED:
-                        if (ProjectsStatus::STATUS_CONTRACTS_SIGNED > $universign->getIdProject()->getStatus()) {
-                            $universign->setStatus(UniversignEntityInterface::STATUS_ARCHIVED);
-                            $this->entityManager->flush($universign);
-                            $this->createProjectBeneficialOwnerDeclaration($universign->getIdProject(), $universign->getIdProject()->getIdCompany()->getIdClientOwner());
-                        }
-                        break;
-                    default:
-                        //no impact
-                        break;
-                }
-            }
-        }
-    }
-
-    /**
      * @param string $type
      *
-     * @return int
      * @throws \Exception
+     *
+     * @return int
      */
     public function getMaxNumbersAccordingToType($type)
     {
-        switch($type) {
+        switch ($type) {
             case BeneficialOwnerType::TYPE_LEGAL_MANAGER:
                 return self::MAX_NUMBER_BENEFICIAL_OWNERS_TYPE_LEGAL_MANAGER;
             case BeneficialOwnerType::TYPE_SHAREHOLDER:
@@ -533,12 +476,88 @@ class BeneficialOwnerManager
             $company = $this->entityManager->getRepository(Companies::class)->find($company);
         }
 
-        $currentDeclaration         = $this->entityManager->getRepository(CompanyBeneficialOwnerDeclaration::class)
-            ->findCurrentDeclarationByCompany($company);
+        $currentDeclaration = $this->entityManager->getRepository(CompanyBeneficialOwnerDeclaration::class)
+            ->findCurrentDeclarationByCompany($company)
+        ;
         $companyOwnerBeneficialOwner = $this->entityManager->getRepository(BeneficialOwner::class)
-            ->findOneBy(['idDeclaration' => $currentDeclaration, 'idClient' => $company->getIdClientOwner()]);
+            ->findOneBy(['idDeclaration' => $currentDeclaration, 'idClient' => $company->getIdClientOwner()])
+        ;
 
         return null !== $companyOwnerBeneficialOwner;
+    }
+
+    /**
+     * @param BeneficialOwner          $owner
+     * @param BeneficialOwnerType|null $type
+     * @param string|null              $percentage
+     *
+     * @throws \Exception
+     */
+    private function modifyOwnerInPendingDeclaration(BeneficialOwner $owner, $type, $percentage)
+    {
+        $percentage = empty($percentage) ? null : $percentage;
+
+        $owner->setIdType($type)
+            ->setPercentageDetained($percentage)
+        ;
+
+        $this->entityManager->flush($owner);
+
+        $this->modifyPendingCompanyDeclaration($owner->getIdDeclaration());
+    }
+
+    /**
+     * @param BeneficialOwner          $owner
+     * @param BeneficialOwnerType|null $type
+     * @param string|null              $percentage
+     *
+     * @throws \Exception
+     */
+    private function modifyOwnerInValidatedDeclaration($owner, $type, $percentage)
+    {
+        $currentDeclaration = $owner->getIdDeclaration();
+        $currentDeclaration->setStatus(CompanyBeneficialOwnerDeclaration::STATUS_ARCHIVED);
+        $this->entityManager->flush($currentDeclaration);
+
+        $newDeclaration = clone $currentDeclaration;
+        $newDeclaration->setStatus(CompanyBeneficialOwnerDeclaration::STATUS_PENDING);
+
+        $this->entityManager->persist($newDeclaration);
+
+        $newOwner = clone $owner;
+        $newOwner->setIdDeclaration($newDeclaration)
+            ->setIdType($type)
+            ->setPercentageDetained($percentage)
+        ;
+        $this->entityManager->persist($newOwner);
+
+        $this->entityManager->flush([$owner, $newOwner, $newDeclaration]);
+
+        $projectDeclarations = $this->entityManager->getRepository(ProjectBeneficialOwnerUniversign::class)->findBy(['idDeclaration' => $currentDeclaration]);
+
+        if (false === empty($projectDeclarations)) {
+            foreach ($projectDeclarations as $universign) {
+                switch ($universign->getStatus()) {
+                    case UniversignEntityInterface::STATUS_PENDING:
+                        $universign->setStatus(UniversignEntityInterface::STATUS_CANCELED);
+                        $this->entityManager->flush($universign);
+                        $this->createProjectBeneficialOwnerDeclaration($universign->getIdProject(), $universign->getIdProject()->getIdCompany()->getIdClientOwner());
+
+                        break;
+                    case UniversignEntityInterface::STATUS_SIGNED:
+                        if (ProjectsStatus::STATUS_CONTRACTS_SIGNED > $universign->getIdProject()->getStatus()) {
+                            $universign->setStatus(UniversignEntityInterface::STATUS_ARCHIVED);
+                            $this->entityManager->flush($universign);
+                            $this->createProjectBeneficialOwnerDeclaration($universign->getIdProject(), $universign->getIdProject()->getIdCompany()->getIdClientOwner());
+                        }
+
+                        break;
+                    default:
+                        //no impact
+                        break;
+                }
+            }
+        }
     }
 
     /**
@@ -550,10 +569,9 @@ class BeneficialOwnerManager
     {
         $owners = [];
         foreach ($declaration->getBeneficialOwners() as $owner) {
-            $clientAddress = $this->entityManager->getRepository(ClientsAdresses::class)->findOneBy(['idClient' => $owner->getIdClient()]);
-            $owners[]        = [
+            $owners[] = [
                 'owner'   => $owner,
-                'country' => $clientAddress->getIdPaysFiscal()
+                'country' => $owner->getIdClient()->getIdAddress()->getIdCountry()->getIdPays(),
             ];
         }
 

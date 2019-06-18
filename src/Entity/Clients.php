@@ -261,13 +261,6 @@ class Clients implements UserInterface, EquatableInterface
     private $wallets;
 
     /**
-     * @var ClientsAdresses[]
-     *
-     * @ORM\OneToMany(targetEntity="Unilend\Entity\ClientsAdresses", mappedBy="idClient")
-     */
-    private $clientsAddresses;
-
-    /**
      * @var ClientAddress|null
      *
      * @ORM\OneToOne(targetEntity="Unilend\Entity\ClientAddress")
@@ -302,9 +295,8 @@ class Clients implements UserInterface, EquatableInterface
      */
     public function __construct()
     {
-        $this->attachments      = new ArrayCollection();
-        $this->wallets          = new ArrayCollection();
-        $this->clientsAddresses = new ArrayCollection();
+        $this->attachments = new ArrayCollection();
+        $this->wallets     = new ArrayCollection();
     }
 
     /**
@@ -820,26 +812,6 @@ class Clients implements UserInterface, EquatableInterface
     public function isNaturalPerson(): bool
     {
         return in_array($this->type, [self::TYPE_PERSON, self::TYPE_PERSON_FOREIGNER]);
-    }
-
-    /**
-     * @return ClientsAdresses[]
-     */
-    public function getClientsAddresses(): iterable
-    {
-        return $this->clientsAddresses;
-    }
-
-    /**
-     * @param ClientsAdresses[] $clientsAddresses
-     *
-     * @return Clients
-     */
-    public function setClientsAddresses(iterable $clientsAddresses): Clients
-    {
-        $this->clientsAddresses = $clientsAddresses;
-
-        return $this;
     }
 
     /**
