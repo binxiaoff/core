@@ -36,16 +36,16 @@ let CollectionForm = function (options) {
 
     self.iniFeesHolder = function ($collectionHolder) {
         if (self.options.feeCollectionHolderSelector) {
-            let feeCollectionHolder = $collectionHolder.find(self.options.feeCollectionHolderSelector)
-            if (feeCollectionHolder.length > 0) {
-                feeCollectionHolder.uiInitCollectionHolder()
+            let $feeCollectionHolder = $collectionHolder.find(self.options.feeCollectionHolderSelector)
+            if ($feeCollectionHolder.length > 0) {
+                $feeCollectionHolder.uiInitCollectionHolder()
             }
         }
     }
 
     self.initLendingRate = function ($newForm) {
-        let lendingRateInputs = $newForm.find("[id$='_rate_margin'], [id$='_rate_indexType'], [id$='_rate_floor']")
-        if (lendingRateInputs.length === 3) {
+        let $lendingRateInputs = $newForm.find("[id$='_rate_margin'], [id$='_rate_indexType'], [id$='_rate_floor']")
+        if ($lendingRateInputs.length === 3) {
             $newForm.uiInitLendingRate()
         }
 
@@ -53,9 +53,9 @@ let CollectionForm = function (options) {
     }
 
     self.initDataPicker = function ($newForm) {
-        let dataPickerInputs = $newForm.find('.ui-has-datepicker, [data-ui-datepicker]')
-        if (dataPickerInputs.length > 0) {
-            dataPickerInputs.uiPikaday()
+        let $dataPickerInputs = $newForm.find('.ui-has-datepicker, [data-ui-datepicker]')
+        if ($dataPickerInputs.length > 0) {
+            $dataPickerInputs.uiPikaday()
         }
 
         return self
@@ -76,14 +76,14 @@ let CollectionForm = function (options) {
         if (false === self.options.initProjectFee) {
             return self
         }
-        let $feeTypeSelector = $newForm.find(`[data-fee-type]`)
+        let $feeTypeSelector = $newForm.find('[data-fee-type]')
 
         $feeTypeSelector.on('change', function () {
-            let selectedType = $(this).children("option:selected").val()
+            let selectedType = $(this).children('option:selected').val()
             if (selectedType === '2') {
-                $newForm.find('input[type=checkbox]').prop("checked", true)
+                $newForm.find('input[type=checkbox]').prop('checked', true)
             } else {
-                $newForm.find('input[type=checkbox]').prop("checked", false)
+                $newForm.find('input[type=checkbox]').prop('checked', false)
             }
         })
 
@@ -91,8 +91,8 @@ let CollectionForm = function (options) {
 
         $feeRateInput.on('focusout', function () {
             $(this).parent().find('.rate-amount').remove()
-            if (false === $newForm.find('input[type=checkbox]').prop("checked") && $feeRateInput.val()) {
-                let $referenceAmountInputs = $(`[data-fee-reference-amount]`)
+            if (false === $newForm.find('input[type=checkbox]').prop('checked') && $feeRateInput.val()) {
+                let $referenceAmountInputs = $('[data-fee-reference-amount]')
                 let referenceAmount = 0
                 $referenceAmountInputs.each(function () {
                     let amount = parseFloat($(this).val().replace(' ', '').replace(',', '.'))
@@ -104,7 +104,7 @@ let CollectionForm = function (options) {
                 let rate = $feeRateInput.val().replace(',', '.')
                 let rateAmount = rate * referenceAmount / 100
                 if (rateAmount > 0) {
-                    $feeRateInput.after('<small class="help-text rate-amount" style="display: block">soit ' + rateAmount.toFixed(2).replace('.', ',') + ' €</small>')
+                    $feeRateInput.after('<small class="help-text rate-amount" style="display: block">soit ' + __.formatNumber(rateAmount) + ' €</small>')
                 }
             }
         })
