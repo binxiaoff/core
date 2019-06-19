@@ -75,6 +75,7 @@ var Paginate = require('./app/components/Paginate')
 var DataTable = require('./app/components/DataTable')
 var Security = require('./app/components/Security')
 var LendingRate = require('./app/components/LendingRate')
+var CollectionForm = require('./app/components/CollectionForm')
 // @debug
 // CacheData.clearAll()
 
