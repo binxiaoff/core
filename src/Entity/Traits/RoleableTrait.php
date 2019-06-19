@@ -23,8 +23,8 @@ trait RoleableTrait
     {
         $roles = $this->roles;
 
-        if (defined('self::ROLE_DEFAULT')) {
-            $roles[] = self::ROLE_DEFAULT;
+        if (defined('self::DEFAULT_ROLE')) {
+            $roles[] = self::DEFAULT_ROLE;
         }
 
         return array_unique($roles);

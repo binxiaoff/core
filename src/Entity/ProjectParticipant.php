@@ -28,7 +28,7 @@ class ProjectParticipant
     public const ROLE_PROJECT_LOAN_OFFICER     = 'ROLE_PROJECT_LOAN_OFFICER';
     public const ROLE_PROJECT_SECURITY_TRUSTEE = 'ROLE_PROJECT_SECURITY_TRUSTEE';
 
-    public const ROLE_DEFAULT = self::ROLE_PROJECT_LENDER;
+    private const DEFAULT_ROLE = self::ROLE_PROJECT_LENDER;
 
     /**
      * @var int

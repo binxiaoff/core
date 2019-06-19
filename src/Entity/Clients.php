@@ -44,7 +44,7 @@ class Clients implements UserInterface, EquatableInterface
     public const ROLE_PARTNER        = 'ROLE_PARTNER';
     public const ROLE_DEBT_COLLECTOR = 'ROLE_DEBT_COLLECTOR';
 
-    public const ROLE_DEFAULT = self::ROLE_USER;
+    private const DEFAULT_ROLE = self::ROLE_USER;
 
     /**
      * @var string
