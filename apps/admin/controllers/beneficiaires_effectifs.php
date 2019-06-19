@@ -2,7 +2,7 @@
 
 use Doctrine\ORM\EntityManager;
 use Symfony\Component\HttpFoundation\Request;
-use Unilend\Entity\{Attachment, AttachmentType, BeneficialOwner, BeneficialOwnerType, ClientAddress, ClientsAdresses, CompanyBeneficialOwnerDeclaration, Pays,
+use Unilend\Entity\{Attachment, AttachmentType, BeneficialOwner, BeneficialOwnerType, ClientAddress, CompanyBeneficialOwnerDeclaration, Pays,
     ProjectBeneficialOwnerUniversign, ProjectsStatus, Zones};
 use Unilend\Repository\BeneficialOwnerRepository;
 use Unilend\Service\BeneficialOwnerManager;
@@ -76,7 +76,7 @@ class beneficiaires_effectifsController extends bootstrap
         $passport     = $entityManager->getRepository(Attachment::class)->findOneClientAttachmentByType($company->getIdClientOwner(), $passportType);
 
         /** @var ClientAddress $companyOwnerAddress */
-        $companyOwnerAddress =$company->getIdClientOwner()->getIdAddress();
+        $companyOwnerAddress = $company->getIdClientOwner()->getIdAddress();
 
         $this->render(null, [
             'companyOwner'         => $company->getIdClientOwner(),
