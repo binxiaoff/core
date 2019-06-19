@@ -9,11 +9,10 @@ use DateTimeInterface;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
-use Ramsey\Uuid\Exception\UnsatisfiedDependencyException;
-use Ramsey\Uuid\Uuid;
+use Ramsey\Uuid\{Exception\UnsatisfiedDependencyException, Uuid};
 use Symfony\Component\Security\Core\User\{EquatableInterface, UserInterface};
 use Symfony\Component\Validator\Constraints as Assert;
-use Unilend\Entity\Traits\TimestampableTrait;
+use Unilend\Entity\Traits\{RoleableTrait, TimestampableTrait};
 use URLify;
 
 /**
@@ -28,6 +27,7 @@ use URLify;
 class Clients implements UserInterface, EquatableInterface
 {
     use TimestampableTrait;
+    use RoleableTrait;
 
     public const TYPE_PERSON                 = 1;
     public const TYPE_LEGAL_ENTITY           = 2;
@@ -44,13 +44,7 @@ class Clients implements UserInterface, EquatableInterface
     public const ROLE_PARTNER        = 'ROLE_PARTNER';
     public const ROLE_DEBT_COLLECTOR = 'ROLE_DEBT_COLLECTOR';
 
-    public const ROLES = [
-        self::ROLE_USER,
-        self::ROLE_LENDER,
-        self::ROLE_BORROWER,
-        self::ROLE_PARTNER,
-        self::ROLE_DEBT_COLLECTOR,
-    ];
+    private const DEFAULT_ROLE = self::ROLE_USER;
 
     /**
      * @var string
@@ -969,48 +963,6 @@ class Clients implements UserInterface, EquatableInterface
     /**
      * {@inheritdoc}
      */
-    public function getRoles(): array
-    {
-        $roles = $this->roles;
-        // guarantee every user at least has ROLE_USER
-        $roles[] = 'ROLE_USER';
-
-        return array_unique($roles);
-    }
-
-    /**
-     * @param array $roles
-     *
-     * @return Clients
-     */
-    public function setRoles(array $roles): Clients
-    {
-        $this->roles = $this->filterRoles($roles);
-
-        return $this;
-    }
-
-    /**
-     * @param string $role
-     *
-     * @return bool
-     */
-    public function hasRole(string $role): bool
-    {
-        return in_array($role, $this->getRoles());
-    }
-
-    /**
-     * Reset roles.
-     */
-    public function resetRoles(): void
-    {
-        $this->roles = [];
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     public function getSalt(): string
     {
         return ''; // Since we use the BCrypt password encoder, the salt will be ignored. The auto-generated one is always the best.
@@ -1086,21 +1038,5 @@ class Clients implements UserInterface, EquatableInterface
     private function isInStatus(array $status): bool
     {
         return $this->getIdClientStatusHistory() && in_array($this->getIdClientStatusHistory()->getIdStatus()->getId(), $status);
-    }
-
-    /**
-     * @param array $roles
-     *
-     * @return array
-     */
-    private function filterRoles(array $roles): array
-    {
-        foreach ($roles as $index => $role) {
-            if (false === in_array($role, self::ROLES)) {
-                unset($roles[$index]);
-            }
-        }
-
-        return $roles;
     }
 }

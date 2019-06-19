@@ -1433,7 +1433,7 @@ class Projects
      */
     public function addArranger(Companies $company): Projects
     {
-        $this->addProjectParticipant($company, ProjectParticipant::COMPANY_ROLE_ARRANGER);
+        $this->addProjectParticipant($company, ProjectParticipant::ROLE_PROJECT_ARRANGER);
 
         return $this;
     }
@@ -1445,7 +1445,7 @@ class Projects
      */
     public function addRun(Companies $company): Projects
     {
-        $this->addProjectParticipant($company, ProjectParticipant::COMPANY_ROLE_RUN);
+        $this->addProjectParticipant($company, ProjectParticipant::ROLE_PROJECT_RUN);
 
         return $this;
     }
@@ -1458,7 +1458,7 @@ class Projects
     public function addLenders(array $companies): Projects
     {
         foreach ($companies as $company) {
-            $this->addProjectParticipant($company, ProjectParticipant::COMPANY_ROLE_LENDER);
+            $this->addProjectParticipant($company, ProjectParticipant::ROLE_PROJECT_LENDER);
         }
 
         return $this;
@@ -1497,7 +1497,7 @@ class Projects
      */
     public function getArrangerParticipant(): ?ProjectParticipant
     {
-        return $this->getParticipant(ProjectParticipant::COMPANY_ROLE_ARRANGER);
+        return $this->getParticipant(ProjectParticipant::ROLE_PROJECT_ARRANGER);
     }
 
     /**
@@ -1505,7 +1505,7 @@ class Projects
      */
     public function getRunParticipant(): ?ProjectParticipant
     {
-        return $this->getParticipant(ProjectParticipant::COMPANY_ROLE_RUN);
+        return $this->getParticipant(ProjectParticipant::ROLE_PROJECT_RUN);
     }
 
     /**
@@ -1516,7 +1516,7 @@ class Projects
         $lenders = [];
 
         foreach ($this->getProjectParticipants() as $projectParticipant) {
-            if ($projectParticipant->hasRole(ProjectParticipant::COMPANY_ROLE_LENDER)) {
+            if ($projectParticipant->hasRole(ProjectParticipant::ROLE_PROJECT_LENDER)) {
                 $lenders[] = $projectParticipant->getCompany();
             }
         }
@@ -1667,7 +1667,7 @@ class Projects
      */
     private function isUniqueRole(string $role): bool
     {
-        return in_array($role, [ProjectParticipant::COMPANY_ROLE_ARRANGER, ProjectParticipant::COMPANY_ROLE_RUN]);
+        return in_array($role, [ProjectParticipant::ROLE_PROJECT_ARRANGER, ProjectParticipant::ROLE_PROJECT_RUN]);
     }
 
     /**

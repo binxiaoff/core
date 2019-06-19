@@ -62,7 +62,7 @@
             <div class="row">
                 {% for participant in project.projectParticipants %}
                     {% if
-                        participant.hasRole(constant('Unilend\\Entity\\ProjectParticipant::COMPANY_ROLE_LENDER'))
+                        participant.hasRole(constant('Unilend\\Entity\\ProjectParticipant::ROLE_PROJECT_LENDER'))
                         and participant != project.arranger
                         and participant != project.run
                     %}

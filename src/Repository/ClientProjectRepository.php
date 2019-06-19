@@ -50,8 +50,8 @@ class ClientProjectRepository extends ServiceEntityRepository
             ->where('pp.company = :userCompany')
             ->andWhere('JSON_CONTAINS(pp.roles, :roleArranger) = 1 OR JSON_CONTAINS(pp.roles, :roleRun) = 1')
             ->setParameter('userCompany', $user->getCompany())
-            ->setParameter('roleArranger', json_encode([ProjectParticipant::COMPANY_ROLE_ARRANGER]))
-            ->setParameter('roleRun', json_encode([ProjectParticipant::COMPANY_ROLE_RUN]))
+            ->setParameter('roleArranger', json_encode([ProjectParticipant::ROLE_PROJECT_ARRANGER]))
+            ->setParameter('roleRun', json_encode([ProjectParticipant::ROLE_PROJECT_RUN]))
             ->getQuery()
             ->getResult()
         ;
