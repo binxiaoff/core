@@ -1,5 +1,5 @@
 <h4 class="margin-20-t">{{ tranche.name }}</h4>
-{% set bid = tranche.bids([constant('Unilend\\Entity\\Bids::STATUS_PENDING'), constant('Unilend\\Entity\\Bids::STATUS_ACCEPTED')], wallet).first %}
+{% set bid = tranche.bids([constant('Unilend\\Entity\\Bids::STATUS_PENDING'), constant('Unilend\\Entity\\Bids::STATUS_ACCEPTED')], app.user.company).first %}
 {% if bid is not empty and bid.idBid %}
     <form action="#">
         <table class="table table-projects table-finance">

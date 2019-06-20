@@ -446,12 +446,12 @@ class Tranche
     }
 
     /**
-     * @param array|null  $status
-     * @param Wallet|null $wallet
+     * @param array|null     $status
+     * @param Companies|null $lender
      *
      * @return Bids[]|ArrayCollection
      */
-    public function getBids(?array $status = null, ?Wallet $wallet = null): iterable
+    public function getBids(?array $status = null, ?Companies $lender = null): iterable
     {
         $criteria = new Criteria();
 
@@ -459,8 +459,8 @@ class Tranche
             $criteria->andWhere(Criteria::expr()->in('status', $status));
         }
 
-        if (null !== $wallet) {
-            $criteria->andWhere(Criteria::expr()->eq('wallet', $wallet));
+        if (null !== $lender) {
+            $criteria->andWhere(Criteria::expr()->eq('lender', $lender));
         }
 
         return $this->bids->matching($criteria);

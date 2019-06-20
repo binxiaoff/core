@@ -5,17 +5,19 @@ declare(strict_types=1);
 namespace Unilend\Controller\Project;
 
 use Doctrine\ORM\{ORMException, OptimisticLockException};
+use Exception;
 use Psr\Log\LoggerInterface;
 use Swift_SwiftException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\{Request, Response};
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\User\UserInterface;
-use Unilend\Entity\{Bids, Clients, Project, WalletType};
+use Unilend\Entity\{Bids, Clients, Project};
 use Unilend\Form\Bid\BidType;
-use Unilend\Repository\{BidsRepository, ProjectAttachmentRepository, WalletRepository};
+use Unilend\Repository\{BidsRepository, ProjectAttachmentRepository};
 use Unilend\Service\Front\ProjectDisplayManager;
 use Unilend\Service\MailerManager;
+use Unilend\Service\User\RealUserFinder;
 
 class ViewController extends AbstractController
 {
@@ -25,13 +27,14 @@ class ViewController extends AbstractController
      * @param Project                     $project
      * @param Request                     $request
      * @param UserInterface|Clients|null  $user
-     * @param WalletRepository            $walletRepository
      * @param BidsRepository              $bidsRepository
      * @param ProjectAttachmentRepository $projectAttachmentRepository
      * @param ProjectDisplayManager       $projectDisplayManager
      * @param MailerManager               $mailerManager
+     * @param RealUserFinder              $realUserFinder
      * @param LoggerInterface             $logger
      *
+     * @throws Exception
      * @throws ORMException
      * @throws OptimisticLockException
      *
@@ -41,29 +44,28 @@ class ViewController extends AbstractController
         Project $project,
         Request $request,
         ?UserInterface $user,
-        WalletRepository $walletRepository,
         BidsRepository $bidsRepository,
         ProjectAttachmentRepository $projectAttachmentRepository,
         ProjectDisplayManager $projectDisplayManager,
         MailerManager $mailerManager,
+        RealUserFinder $realUserFinder,
         LoggerInterface $logger
     ): Response {
         if (ProjectDisplayManager::VISIBILITY_FULL !== $projectDisplayManager->getVisibility($project, $user)) {
             return $this->redirectToRoute('list_projects');
         }
 
-        $wallet = $walletRepository->getWalletByType($user, WalletType::LENDER);
-
         $bidForms = [];
 
         foreach ($project->getTranches() as $tranche) {
-            $userBid = $tranche->getBids([Bids::STATUS_PENDING], $wallet)->first();
+            $userBid = $tranche->getBids([Bids::STATUS_PENDING], $user->getCompany())->first();
             if (!$userBid) {
                 $userBid = new Bids();
                 $userBid
                     ->setTranche($tranche)
-                    ->setWallet($wallet)
+                    ->setLender($user->getCompany())
                     ->setStatus(Bids::STATUS_PENDING)
+                    ->setAddedByValue($realUserFinder)
                 ;
                 $userBid->getMoney()->setCurrency($tranche->getMoney()->getCurrency());
                 $bidForms[$tranche->getId()] = $this->get('form.factory')->createNamed('tranche_' . $tranche->getId(), BidType::class, $userBid);
@@ -96,7 +98,6 @@ class ViewController extends AbstractController
 
         return $this->render('project/view/details.html.twig', [
             'project'            => $project,
-            'wallet'             => $wallet,
             'bidForms'           => $bidForms,
             'projectAttachments' => $projectAttachmentRepository->getAttachmentsWithoutSignature($project, ['added' => 'DESC']),
         ]);

@@ -3,6 +3,7 @@
 namespace Unilend\Service;
 
 use Doctrine\ORM\EntityManagerInterface;
+use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
 use Unilend\Entity\{AcceptationsLegalDocs, AcceptedBids, Clients, Embeddable\LendingRate, LoanTransfer, Loans, UnderlyingContract, UnderlyingContractAttributeType};
 use Unilend\Service\Product\Contract\ContractAttributeManager;
@@ -58,7 +59,10 @@ class LoanManager
             $IfpLoanAmountMax = $contractAttrVars[0];
 
             if (bccomp(round(bcdiv($loanAmount, 100, 4), 2), $IfpLoanAmountMax, 2) > 0) {
-                throw new \InvalidArgumentException('Sum of bids for client ' . $acceptedBids[0]->getIdBid()->getWallet()->getIdClient()->getIdClient() . ' exceeds maximum IFP amount.');
+                throw new InvalidArgumentException(sprintf(
+                    'Sum of bids for client %s exceeds maximum IFP amount.',
+                    $acceptedBids[0]->getIdBid()->getWallet()->getIdClient()->getIdClient()
+                ));
             }
 
             //todo: check also if this is the only one loan to build for IFP (We can only have one IFP loan per project)
@@ -76,7 +80,7 @@ class LoanManager
 
         $loan = new Loans();
         $loan
-            ->setWallet($acceptedBids[0]->getIdBid()->getWallet())
+            ->setLender($acceptedBids[0]->getIdBid()->getLender())
             ->setTranche($acceptedBids[0]->getIdBid()->getProject())
             ->setAmount($loanAmount)
             ->setRate($lendingRate)

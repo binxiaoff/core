@@ -20,7 +20,7 @@
             {% set offer = bid.acceptedBids|first %}
         {% endif %}
         <tr>
-            <td>{{ bid.wallet.idClient.company.name }}</td>
+            <td>{{ bid.lender.name }}</td>
             <td>{{ offer.money.amount|localizedcurrency(offer.money.currency, null, false) }}</td>
             <td>{{ ('interest-rate-index.index_' ~ bid.rate.indexType|lower)|trans }}</td>
             <td>{{ bid.rate.margin|localizednumberwithprecision(2) }}&nbsp;%</td>

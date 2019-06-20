@@ -4,12 +4,12 @@ namespace Unilend\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
-use Unilend\Entity\Traits\{LendableTrait, TimestampableTrait};
+use Unilend\Entity\Traits\{BlamableAddedTrait, LendableTrait, TimestampableTrait};
 use Unilend\Traits\ConstantsAwareTrait;
 
 /**
  * @ORM\Table(name="bids", indexes={@ORM\Index(columns={"id_tranche", "status"})})
- * @ORM\Entity(repositoryClass="Unilend\Repository\BidsRepository")
+ * @ORM\Entity
  * @ORM\HasLifecycleCallbacks
  * @ORM\AssociationOverrides({@ORM\AssociationOverride(name="tranche", inversedBy="bids")})
  */
@@ -18,28 +18,11 @@ class Bids
     use LendableTrait;
     use TimestampableTrait;
     use ConstantsAwareTrait;
+    use BlamableAddedTrait;
 
-    public const STATUS_PENDING                      = 0;
-    public const STATUS_ACCEPTED                     = 1;
-    public const STATUS_REJECTED                     = 2;
-    public const STATUS_TEMPORARILY_REJECTED_AUTOBID = 3;
-
-    /**
-     * @var Autobid|null
-     *
-     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Autobid")
-     * @ORM\JoinColumns({
-     *     @ORM\JoinColumn(name="id_autobid", referencedColumnName="id_autobid")
-     * })
-     */
-    private $autobid;
-
-    /**
-     * @var int|null
-     *
-     * @ORM\Column(name="ordre", type="integer", nullable=true)
-     */
-    private $ordre;
+    public const STATUS_PENDING  = 0;
+    public const STATUS_ACCEPTED = 1;
+    public const STATUS_REJECTED = 2;
 
     /**
      * @var int
@@ -72,46 +55,6 @@ class Bids
         $this->acceptedBids = new ArrayCollection();
         $this->bidFees      = new ArrayCollection();
         $this->traitInit();
-    }
-
-    /**
-     * @param Autobid|null $autobid
-     *
-     * @return Bids
-     */
-    public function setAutobid(?Autobid $autobid): Bids
-    {
-        $this->autobid = $autobid;
-
-        return $this;
-    }
-
-    /**
-     * @return Autobid|null
-     */
-    public function getAutobid(): ?Autobid
-    {
-        return $this->autobid;
-    }
-
-    /**
-     * @param int|null $ordre
-     *
-     * @return Bids
-     */
-    public function setOrdre(?int $ordre): Bids
-    {
-        $this->ordre = $ordre;
-
-        return $this;
-    }
-
-    /**
-     * @return int|null
-     */
-    public function getOrdre(): ?int
-    {
-        return $this->ordre;
     }
 
     /**
