@@ -44,6 +44,7 @@ services:
             $rootDirectory: '%kernel.root_dir%'
             $numberFormatter: '@number_formatter'
             $currencyFormatter: '@currency_formatter'
+            $currencyFormatterNoDecimal: '@currency_formatter_no_decimal'
             $environment: '%kernel.environment%'
             $protectedPath: '%path.protected%'
             $staticPath: '%path.static%'
@@ -188,6 +189,18 @@ services:
         arguments:
             - '%locale%'
             - !php/const \NumberFormatter::CURRENCY
+
+    currency_formatter_no_decimal:
+        public: true
+        class: NumberFormatter
+        arguments:
+            - '%locale%'
+            - !php/const \NumberFormatter::CURRENCY
+        calls:
+            - method: setAttribute
+              arguments:
+                - !php/const \NumberFormatter::MAX_FRACTION_DIGITS
+                - 0
 
     number_formatter:
         public: true
