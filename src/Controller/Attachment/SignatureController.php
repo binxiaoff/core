@@ -14,7 +14,7 @@ use Symfony\Component\Routing\{Annotation\Route, Router, RouterInterface};
 use Symfony\Component\Security\Core\User\UserInterface;
 use Unilend\Entity\{Attachment, AttachmentSignature, AttachmentType, Clients, Project};
 use Unilend\Repository\{AttachmentSignatureRepository, AttachmentTypeRepository, CompaniesRepository};
-use Unilend\Service\{AttachmentManager, DemoMailerManager, ElectronicSignatureManager};
+use Unilend\Service\{AttachmentManager, ElectronicSignatureManager, MailerManager};
 
 class SignatureController extends AbstractController
 {
@@ -130,7 +130,7 @@ class SignatureController extends AbstractController
      * @param CompaniesRepository           $companyRepository
      * @param AttachmentSignatureRepository $signatureRepository
      * @param AttachmentManager             $attachmentManager
-     * @param DemoMailerManager             $mailerManager
+     * @param MailerManager                 $mailerManager
      *
      * @throws Exception
      * @throws ORMException
@@ -147,7 +147,7 @@ class SignatureController extends AbstractController
         CompaniesRepository $companyRepository,
         AttachmentSignatureRepository $signatureRepository,
         AttachmentManager $attachmentManager,
-        DemoMailerManager $mailerManager
+        MailerManager $mailerManager
     ): Response {
         $file               = $request->files->get('extraElectronicSignature');
         $fileType           = $request->request->get('filetype')['electronicSignature'];

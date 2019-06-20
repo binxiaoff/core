@@ -13,7 +13,7 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 use Unilend\Entity\{AttachmentSignature, Bids, Clients, Loans, Project, Tranche};
 use Unilend\SwiftMailer\TemplateMessageProvider;
 
-class DemoMailerManager
+class MailerManager
 {
     public const RECIPIENT_TYPE_ARRANGER  = 'arranger';
     public const RECIPIENT_TYPE_LENDERS   = 'lenders';

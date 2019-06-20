@@ -14,7 +14,8 @@ use Symfony\Component\Security\Core\User\UserInterface;
 use Unilend\Entity\{Bids, Clients, Project, WalletType};
 use Unilend\Form\Bid\BidType;
 use Unilend\Repository\{BidsRepository, ProjectAttachmentRepository, WalletRepository};
-use Unilend\Service\{DemoMailerManager, Front\ProjectDisplayManager};
+use Unilend\Service\Front\ProjectDisplayManager;
+use Unilend\Service\MailerManager;
 
 class ViewController extends AbstractController
 {
@@ -28,7 +29,7 @@ class ViewController extends AbstractController
      * @param BidsRepository              $bidsRepository
      * @param ProjectAttachmentRepository $projectAttachmentRepository
      * @param ProjectDisplayManager       $projectDisplayManager
-     * @param DemoMailerManager           $mailerManager
+     * @param MailerManager               $mailerManager
      * @param LoggerInterface             $logger
      *
      * @throws ORMException
@@ -44,7 +45,7 @@ class ViewController extends AbstractController
         BidsRepository $bidsRepository,
         ProjectAttachmentRepository $projectAttachmentRepository,
         ProjectDisplayManager $projectDisplayManager,
-        DemoMailerManager $mailerManager,
+        MailerManager $mailerManager,
         LoggerInterface $logger
     ): Response {
         if (ProjectDisplayManager::VISIBILITY_FULL !== $projectDisplayManager->getVisibility($project, $user)) {

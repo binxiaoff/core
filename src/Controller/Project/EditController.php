@@ -26,7 +26,7 @@ use Unilend\Form\Tranche\TrancheTypeCollectionType;
 use Unilend\Repository\{AcceptedBidsRepository, BidsRepository, CaRegionalBankRepository, CompaniesRepository, ProjectAttachmentRepository, ProjectAttachmentTypeRepository,
     ProjectRepository, TrancheRepository, UnderlyingContractRepository};
 use Unilend\Security\Voter\ProjectVoter;
-use Unilend\Service\{AttachmentManager, DemoMailerManager, ProjectStatusManager};
+use Unilend\Service\{AttachmentManager, MailerManager, ProjectStatusManager};
 
 class EditController extends AbstractController
 {
@@ -187,7 +187,7 @@ class EditController extends AbstractController
      * @param Request                      $request
      * @param UserInterface|Clients|null   $user
      * @param ProjectStatusManager         $projectStatusManager
-     * @param DemoMailerManager            $mailerManager
+     * @param MailerManager                $mailerManager
      * @param LoggerInterface              $logger
      * @param TrancheRepository            $trancheRepository
      * @param BidsRepository               $bidsRepository
@@ -204,7 +204,7 @@ class EditController extends AbstractController
         Request $request,
         ?UserInterface $user,
         ProjectStatusManager $projectStatusManager,
-        DemoMailerManager $mailerManager,
+        MailerManager $mailerManager,
         LoggerInterface $logger,
         TrancheRepository $trancheRepository,
         BidsRepository $bidsRepository,
@@ -291,7 +291,7 @@ class EditController extends AbstractController
      *
      * @param Project              $project
      * @param Request              $request
-     * @param DemoMailerManager    $mailerManager
+     * @param MailerManager        $mailerManager
      * @param CompaniesRepository  $companyRepository
      * @param ProjectRepository    $projectRepository
      * @param AuthorizationChecker $authorizationChecker
@@ -305,7 +305,7 @@ class EditController extends AbstractController
     public function update(
         Project $project,
         Request $request,
-        DemoMailerManager $mailerManager,
+        MailerManager $mailerManager,
         CompaniesRepository $companyRepository,
         ProjectRepository $projectRepository,
         AuthorizationCheckerInterface $authorizationChecker,
