@@ -8,10 +8,9 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\{Request, Response};
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\User\UserInterface;
-use Unilend\Entity\{Clients, Loans, Project, ProjectStatusHistory, WalletType};
+use Unilend\Entity\{Clients, Loans, Project, ProjectStatusHistory};
 use Unilend\Repository\ClientProjectRepository;
 use Unilend\Repository\ProjectRepository;
-use Unilend\Repository\WalletRepository;
 use Unilend\Service\Front\ProjectDisplayManager;
 
 class ListController extends AbstractController
@@ -59,7 +58,6 @@ class ListController extends AbstractController
      *
      * @param ProjectRepository          $projectRepository
      * @param ClientProjectRepository    $clientProjectRepository
-     * @param WalletRepository           $walletRepository
      * @param UserInterface|Clients|null $user
      *
      * @return Response
@@ -67,7 +65,6 @@ class ListController extends AbstractController
     public function wallet(
         ProjectRepository $projectRepository,
         ClientProjectRepository $clientProjectRepository,
-        WalletRepository $walletRepository,
         ?UserInterface $user
     ): Response {
         $statuses = ProjectStatusHistory::getAllProjectStatus();
@@ -79,17 +76,15 @@ class ListController extends AbstractController
             ],
         ];
 
-        $wallet = $walletRepository->getWalletByType($user, WalletType::LENDER);
-
         // En cours (HOT)
         $projectsInProgressBid = $projectRepository->createQueryBuilder('p')
             ->distinct()
             ->innerJoin('p.tranches', 't')
             ->innerJoin('t.bids', 'b')
             ->innerJoin('p.currentProjectStatusHistory', 'psh')
-            ->where('b.wallet = :wallet')
+            ->where('b.lender = :lender')
             ->andWhere('psh.status = :online')
-            ->setParameters(['wallet' => $wallet, 'online' => ProjectStatusHistory::STATUS_PUBLISHED])
+            ->setParameters(['lender' => $user->getCompany(), 'online' => ProjectStatusHistory::STATUS_PUBLISHED])
             ->getQuery()
             ->getResult()
         ;
@@ -98,9 +93,9 @@ class ListController extends AbstractController
             ->distinct()
             ->innerJoin('p.tranches', 't')
             ->innerJoin('t.loans', 'l')
-            ->where('l.wallet = :wallet')
+            ->where('l.lender = :lender')
             ->andWhere('l.status = :pending')
-            ->setParameters(['wallet' => $wallet, 'pending' => Loans::STATUS_PENDING])
+            ->setParameters(['lender' => $user->getCompany(), 'pending' => Loans::STATUS_PENDING])
             ->getQuery()
             ->getResult()
         ;
@@ -119,11 +114,11 @@ class ListController extends AbstractController
             ->innerJoin('p.tranches', 't')
             ->innerJoin('t.loans', 'l')
             ->innerJoin('p.currentProjectStatusHistory', 'psh')
-            ->where('l.wallet = :wallet')
+            ->where('l.lender = :lender')
             ->andWhere('l.status = :accepted')
             ->andWhere('psh.status IN (:active)')
             ->setParameters([
-                'wallet'   => $wallet,
+                'lender'   => $user->getCompany(),
                 'accepted' => Loans::STATUS_ACCEPTED,
                 'active'   => [ProjectStatusHistory::STATUS_FUNDED, ProjectStatusHistory::STATUS_CONTRACTS_REDACTED, ProjectStatusHistory::STATUS_CONTRACTS_SIGNED],
             ])
@@ -138,11 +133,11 @@ class ListController extends AbstractController
             ->innerJoin('p.tranches', 't')
             ->innerJoin('t.loans', 'l')
             ->innerJoin('p.currentProjectStatusHistory', 'psh')
-            ->where('l.wallet = :wallet')
+            ->where('l.lender = :lender')
             ->andWhere('l.status = :accepted')
             ->andWhere('psh.status IN (:finished)')
             ->setParameters([
-                'wallet'   => $wallet,
+                'lender'   => $user->getCompany(),
                 'accepted' => Loans::STATUS_ACCEPTED,
                 'finished' => [ProjectStatusHistory::STATUS_LOST, ProjectStatusHistory::STATUS_FINISHED, ProjectStatusHistory::STATUS_CANCELLED],
             ])
@@ -155,9 +150,9 @@ class ListController extends AbstractController
         $projectsMasked = $projectRepository->createQueryBuilder('p')
             ->innerJoin('p.tranches', 't')
             ->innerJoin('t.loans', 'l')
-            ->where('l.wallet = :wallet')
+            ->where('l.lender = :lender')
             ->andWhere('l.status = :refused')
-            ->setParameters(['wallet' => $wallet, 'refused' => Loans::STATUS_REJECTED])
+            ->setParameters(['lender' => $user->getCompany(), 'refused' => Loans::STATUS_REJECTED])
             ->getQuery()
             ->getResult()
         ;

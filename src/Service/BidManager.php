@@ -2,10 +2,9 @@
 
 namespace Unilend\Service;
 
-use Doctrine\ORM\{NonUniqueResultException, ORMException, OptimisticLockException};
 use Exception;
-use Unilend\Entity\Embeddable\{LendingRate, Money};
-use Unilend\Entity\{AcceptedBids, Bids, Tranche, Wallet};
+use Unilend\Entity\Embeddable\Money;
+use Unilend\Entity\{AcceptedBids, Bids};
 use Unilend\Repository\{AcceptedBidsRepository, BidsRepository};
 
 class BidManager
@@ -23,38 +22,6 @@ class BidManager
     {
         $this->bidsRepository         = $bidsRepository;
         $this->acceptedBidsRepository = $acceptedBidsRepository;
-    }
-
-    /**
-     * @param Wallet      $wallet
-     * @param Tranche     $tranche
-     * @param Money       $money
-     * @param LendingRate $rate
-     *
-     * @throws NonUniqueResultException
-     * @throws ORMException
-     * @throws OptimisticLockException
-     *
-     * @return Bids
-     */
-    public function bid(Wallet $wallet, Tranche $tranche, Money $money, LendingRate $rate): Bids
-    {
-        $bidNb = $this->bidsRepository->countBy(['tranche' => $tranche]);
-        ++$bidNb;
-
-        $bid = new Bids();
-        $bid
-            ->setWallet($wallet)
-            ->setTranche($tranche)
-            ->setMoney($money)
-            ->setRate($rate)
-            ->setStatus(Bids::STATUS_PENDING)
-            ->setOrdre($bidNb)
-        ;
-
-        $this->bidsRepository->save($bid);
-
-        return $bid;
     }
 
     /**
@@ -85,7 +52,7 @@ class BidManager
      */
     public function reject(Bids $bid): void
     {
-        if (in_array($bid->getStatus(), [Bids::STATUS_PENDING, Bids::STATUS_TEMPORARILY_REJECTED_AUTOBID])) {
+        if (Bids::STATUS_PENDING === $bid->getStatus()) {
             $bid->setStatus(Bids::STATUS_REJECTED);
             $this->bidsRepository->save($bid);
         }
