@@ -56,7 +56,7 @@
                 {% if tranche.rate.indexType %}
                     <div class="form-field">
                         <label>{% trans %} lending-form.index-type {% endtrans %}</label>
-                        <div>{{ tranche.rate.indexType }}</div>
+                        <div>{{ ('interest-rate-index.index_' ~ tranche.rate.indexType|lower)|trans }}</div>
                     </div>
                 {% else %}
                     {{ form_row(form.rate.indexType, {attr: {class: 'tranche-rate-index'}}) }}
