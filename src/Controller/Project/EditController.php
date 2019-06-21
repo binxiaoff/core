@@ -471,7 +471,7 @@ class EditController extends AbstractController
 
                 $loan = new Loans();
                 $loan
-                    ->setWallet($bid->getWallet())
+                    ->setLender($bid->getLender())
                     ->setTranche($bid->getTranche())
                     ->setUnderlyingContract($contract)
                     ->setMoney($bid->getMoney())

@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace Unilend\Entity\Traits;
 
 use Doctrine\ORM\Mapping as ORM;
-use Unilend\Entity\{Embeddable\LendingRate, Embeddable\Money, Tranche, Wallet};
+use Unilend\Entity\Embeddable\{LendingRate, Money};
+use Unilend\Entity\{Companies, Tranche};
 
 trait LendableTrait
 {
@@ -20,14 +21,14 @@ trait LendableTrait
     protected $tranche;
 
     /**
-     * @var Wallet
+     * @var Companies
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Wallet")
+     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Companies")
      * @ORM\JoinColumns({
-     *     @ORM\JoinColumn(name="id_wallet", nullable=false)
+     *     @ORM\JoinColumn(name="id_lender", referencedColumnName="id_company", nullable=false)
      * })
      */
-    protected $wallet;
+    protected $lender;
 
     /**
      * @var int
@@ -100,21 +101,21 @@ trait LendableTrait
     }
 
     /**
-     * @return Wallet
+     * @return Companies
      */
-    public function getWallet(): Wallet
+    public function getLender(): Companies
     {
-        return $this->wallet;
+        return $this->lender;
     }
 
     /**
-     * @param Wallet $wallet
+     * @param Companies $lender
      *
      * @return self
      */
-    public function setWallet(Wallet $wallet): self
+    public function setLender(Companies $lender): self
     {
-        $this->wallet = $wallet;
+        $this->lender = $lender;
 
         return $this;
     }

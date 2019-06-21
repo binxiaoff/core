@@ -174,7 +174,7 @@ class MailerManager
             'firstName'     => '',
             'projectUrl'    => $this->router->generate('edit_project_details', ['hash' => $project->getHash()], RouterInterface::ABSOLUTE_URL),
             'projectName'   => $project->getBorrowerCompany()->getName() . ' / ' . $project->getTitle(),
-            'bidderName'    => $bid->getWallet()->getIdClient()->getCompany()->getName(),
+            'bidderName'    => $bid->getLender()->getName(),
             'bidAmount'     => $formatter->format($bid->getMoney()->getAmount()),
             'bidRateIndex'  => $bid->getRate()->getIndexType(),
             'bidMarginRate' => $formatter->format($bid->getRate()->getMargin()),
@@ -208,7 +208,7 @@ class MailerManager
      */
     public function sendBidAcceptedRejected(Bids $bid): int
     {
-        $recipient = $bid->getWallet()->getIdClient();
+        $recipient = $bid->getLender()->getIdClientOwner();
 
         if (empty($recipient->getEmail())) {
             return 0;
@@ -250,7 +250,7 @@ class MailerManager
         ]);
 
         foreach ($loans as $loan) {
-            $recipient = $loan->getWallet()->getIdClient();
+            $recipient = $loan->getLender()->getIdClientOwner();
 
             if (false === empty($recipient->getEmail())) {
                 $keywords['firstName'] = $recipient->getFirstName();

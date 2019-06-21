@@ -49,29 +49,6 @@ class BidsRepository extends ServiceEntityRepository
     }
 
     /**
-     * @param array $criteria
-     *
-     * @throws NonUniqueResultException
-     *
-     * @return mixed
-     */
-    public function countBy(array $criteria = [])
-    {
-        $qb = $this->createQueryBuilder('b');
-        $qb->select('COUNT(b)');
-        if (false === empty($criteria)) {
-            foreach ($criteria as $field => $value) {
-                $qb->andWhere('b.' . $field . ' = :' . $field)
-                    ->setParameter($field, $value)
-                ;
-            }
-        }
-        $query = $qb->getQuery();
-
-        return $query->getSingleScalarResult();
-    }
-
-    /**
      * @param \DateTime   $from
      * @param \DateTime   $to
      * @param int|Clients $clientId

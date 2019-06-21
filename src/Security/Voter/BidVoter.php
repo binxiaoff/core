@@ -8,7 +8,7 @@ use LogicException;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
-use Unilend\Entity\{Bids, Clients, WalletType};
+use Unilend\Entity\{Bids, Clients};
 use Unilend\Repository\WalletRepository;
 use Unilend\Traits\ConstantsAwareTrait;
 
@@ -83,8 +83,6 @@ class BidVoter extends Voter
             return true;
         }
 
-        $wallet = $this->walletRepository->getWalletByType($user, WalletType::LENDER);
-
-        return null !== $wallet && $wallet === $bid->getWallet();
+        return null !== $bid->getLender()->getStaff($user);
     }
 }
