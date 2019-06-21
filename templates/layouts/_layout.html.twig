@@ -89,8 +89,8 @@
 
         {% block jsFiles %}
             <script type="text/javascript">
-                {#{% set notifications = [] %}
-                {% set lenderNotifications = lenderNotifications(app.user) %}
+                {% set notifications = [] %}
+                {% set lenderNotifications = notifications(app.user) %}
                 {% if lenderNotifications is not empty %}
                     {% for notification in lenderNotifications %}
                         {% set notifications = notifications|merge([{
@@ -107,7 +107,7 @@
                     {% endfor %}
                 {% endif %}
 
-                var USERNOTIFICATIONS = JSON.parse('{{ notifications|json_encode|escape('js')|raw }}')#}
+                var USERNOTIFICATIONS = JSON.parse('{{ notifications|json_encode|escape('js')|raw }}')
 
                 var UTILITY_LANG = JSON.parse('{{ dictionary('utility')|json_encode|escape('js')|raw }}')
                 var AUTOCOMPLETE_LANG = JSON.parse('{{ dictionary('auto-complete')|json_encode|escape('js')|raw }}')

@@ -33,6 +33,9 @@ use Unilend\Entity\{
 use Unilend\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\SwiftMailer\{TemplateMessage, TemplateMessageProvider};
 
+/**
+ * @deprecated
+ */
 class UnilendMailerManager
 {
     /** @var Settings */

@@ -10,16 +10,11 @@ use Swift_Mailer;
 use Swift_RfcComplianceException;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
-use Unilend\Entity\{AttachmentSignature, Bids, Clients, Loans, Project, Tranche};
+use Unilend\Entity\{AttachmentSignature, Bids, Clients, Loans, Project, ProjectComment, Tranche};
 use Unilend\SwiftMailer\TemplateMessageProvider;
 
 class MailerManager
 {
-    public const RECIPIENT_TYPE_ARRANGER  = 'arranger';
-    public const RECIPIENT_TYPE_LENDERS   = 'lenders';
-    public const RECIPIENT_TYPE_RUN       = 'run';
-    public const RECIPIENT_TYPE_SUBMITTER = 'submitter';
-
     /** @var TemplateMessageProvider */
     private $messageProvider;
     /** @var Swift_Mailer */
@@ -53,31 +48,26 @@ class MailerManager
     }
 
     /**
-     * @param Project $project
+     * @param Project   $project
+     * @param Clients[] $recipients
      *
      * @throws Swift_RfcComplianceException
      *
      * @return int
      */
-    public function sendProjectRequest(Project $project): int
+    public function sendProjectRequest(Project $project, array $recipients): int
     {
+        $sent     = 0;
         $keywords = [
             'firstName'  => '',
             'projectUrl' => $this->router->generate('edit_project_details', ['hash' => $project->getHash()], RouterInterface::ABSOLUTE_URL),
             'borrower'   => $project->getBorrowerCompany()->getName(),
         ];
 
-        $sent       = 0;
-        $recipients = $this->getProjectRecipients($project, [
-            self::RECIPIENT_TYPE_ARRANGER,
-            self::RECIPIENT_TYPE_RUN,
-            self::RECIPIENT_TYPE_SUBMITTER,
-        ]);
-
         foreach ($recipients as $recipient) {
             if (false === empty($recipient->getEmail())) {
                 $keywords['firstName'] = $recipient->getFirstName();
-                $message               = $this->messageProvider->newMessage('project-new', $keywords);
+                $message               = $this->messageProvider->newMessage('project-request', $keywords);
                 $message->setTo($recipient->getEmail());
 
                 $sent += $this->mailer->send($message);
@@ -88,63 +78,21 @@ class MailerManager
     }
 
     /**
-     * @param Project $project
+     * @param Project   $project
+     * @param Clients[] $recipients
      *
      * @throws Swift_RfcComplianceException
      *
      * @return int
      */
-    public function sendScoringUpdated(Project $project): int
+    public function sendProjectPublication(Project $project, array $recipients): int
     {
-        $keywords = [
-            'firstName'    => '',
-            'projectUrl'   => $this->router->generate('edit_project_details', ['hash' => $project->getHash()], RouterInterface::ABSOLUTE_URL),
-            'projectName'  => $project->getBorrowerCompany()->getName() . ' / ' . $project->getTitle(),
-            'scoringValue' => $project->getInternalRatingScore(),
-        ];
-
-        $sent       = 0;
-        $recipients = $this->getProjectRecipients($project, [
-            self::RECIPIENT_TYPE_ARRANGER,
-            self::RECIPIENT_TYPE_RUN,
-            self::RECIPIENT_TYPE_SUBMITTER,
-        ]);
-
-        foreach ($recipients as $recipient) {
-            if (false === empty($recipient->getEmail())) {
-                $keywords['firstName'] = $recipient->getFirstName();
-                $message               = $this->messageProvider->newMessage('project-scoring', $keywords);
-                $message->setTo($recipient->getEmail());
-
-                $sent += $this->mailer->send($message);
-            }
-        }
-
-        return $sent;
-    }
-
-    /**
-     * @param Project $project
-     *
-     * @throws Swift_RfcComplianceException
-     *
-     * @return int
-     */
-    public function sendProjectPublication(Project $project): int
-    {
+        $sent     = 0;
         $keywords = [
             'firstName'   => '',
             'projectUrl'  => $this->router->generate('lender_project_details', ['slug' => $project->getSlug()], RouterInterface::ABSOLUTE_URL),
             'projectName' => $project->getBorrowerCompany()->getName() . ' / ' . $project->getTitle(),
         ];
-
-        $sent       = 0;
-        $recipients = $this->getProjectRecipients($project, [
-            self::RECIPIENT_TYPE_ARRANGER,
-            self::RECIPIENT_TYPE_LENDERS,
-            self::RECIPIENT_TYPE_RUN,
-            self::RECIPIENT_TYPE_SUBMITTER,
-        ]);
 
         foreach ($recipients as $recipient) {
             if (false === empty($recipient->getEmail())) {
@@ -160,14 +108,47 @@ class MailerManager
     }
 
     /**
-     * @param Bids $bid
+     * @param ProjectComment $comment
+     * @param Clients[]      $recipients
      *
      * @throws Swift_RfcComplianceException
      *
      * @return int
      */
-    public function sendBidSubmitted(Bids $bid): int
+    public function sendProjectCommentAdded(ProjectComment $comment, array $recipients): int
     {
+        $sent     = 0;
+        $project  = $comment->getProject();
+        $keywords = [
+            'firstName'   => '',
+            'projectUrl'  => $this->router->generate('lender_project_details', ['slug' => $project->getSlug()], RouterInterface::ABSOLUTE_URL) . '#article-discussions',
+            'projectName' => $project->getBorrowerCompany()->getName() . ' / ' . $project->getTitle(),
+        ];
+
+        foreach ($recipients as $recipient) {
+            if (false === empty($recipient->getEmail())) {
+                $keywords['firstName'] = $recipient->getFirstName();
+                $message               = $this->messageProvider->newMessage('project-comment-added', $keywords);
+                $message->setTo($recipient->getEmail());
+
+                $sent += $this->mailer->send($message);
+            }
+        }
+
+        return $sent;
+    }
+
+    /**
+     * @param Bids      $bid
+     * @param Clients[] $recipients
+     *
+     * @throws Swift_RfcComplianceException
+     *
+     * @return int
+     */
+    public function sendBidSubmitted(Bids $bid, array $recipients): int
+    {
+        $sent      = 0;
         $formatter = new NumberFormatter('fr_FR', NumberFormatter::DEFAULT_STYLE);
         $project   = $bid->getTranche()->getProject();
         $keywords  = [
@@ -180,16 +161,10 @@ class MailerManager
             'bidMarginRate' => $formatter->format($bid->getRate()->getMargin()),
         ];
 
-        $sent       = 0;
-        $recipients = $this->getProjectRecipients($project, [
-            self::RECIPIENT_TYPE_ARRANGER,
-            self::RECIPIENT_TYPE_SUBMITTER,
-        ]);
-
         foreach ($recipients as $recipient) {
             if (false === empty($recipient->getEmail())) {
                 $keywords['firstName'] = $recipient->getFirstName();
-                $message               = $this->messageProvider->newMessage('bid-new', $keywords);
+                $message               = $this->messageProvider->newMessage('bid-submitted', $keywords);
                 $message->setTo($recipient->getEmail());
 
                 $sent += $this->mailer->send($message);
@@ -208,7 +183,8 @@ class MailerManager
      */
     public function sendBidAcceptedRejected(Bids $bid): int
     {
-        $recipient = $bid->getLender()->getIdClientOwner();
+        // @todo change when all roles are defined
+        $recipient = $bid->getAddedBy();
 
         if (empty($recipient->getEmail())) {
             return 0;
@@ -250,6 +226,7 @@ class MailerManager
         ]);
 
         foreach ($loans as $loan) {
+            // @todo change when all roles are defined
             $recipient = $loan->getLender()->getIdClientOwner();
 
             if (false === empty($recipient->getEmail())) {
@@ -285,48 +262,5 @@ class MailerManager
         $message->setTo($signature->getSignatory()->getEmail());
 
         return $this->mailer->send($message);
-    }
-
-    /**
-     * @param Project $project
-     * @param array   $types
-     *
-     * @return Clients[]
-     */
-    private function getProjectRecipients(Project $project, array $types): array
-    {
-        $recipients = [];
-
-        foreach ($types as $type) {
-            switch ($type) {
-                case self::RECIPIENT_TYPE_ARRANGER:
-                    if ($arranger = $project->getArranger()) {
-                        $recipients[$arranger->getCompany()->getIdClientOwner()->getIdClient()] = $arranger->getCompany()->getIdClientOwner();
-                    }
-
-                    break;
-                case self::RECIPIENT_TYPE_LENDERS:
-                    $lenders = $project->getLenders();
-                    foreach ($lenders as $lender) {
-                        $recipients[$lender->getCompany()->getIdClientOwner()->getIdClient()] = $lender->getCompany()->getIdClientOwner();
-                    }
-
-                    break;
-                case self::RECIPIENT_TYPE_RUN:
-                    if ($run = $project->getRun()) {
-                        $recipients[$run->getCompany()->getIdClientOwner()->getIdClient()] = $run->getCompany()->getIdClientOwner();
-                    }
-
-                    break;
-                case self::RECIPIENT_TYPE_SUBMITTER:
-                    if ($submitter = $project->getSubmitterClient()) {
-                        $recipients[$submitter->getIdClient()] = $submitter;
-                    }
-
-                    break;
-            }
-        }
-
-        return $recipients;
     }
 }

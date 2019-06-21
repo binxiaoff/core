@@ -2,386 +2,163 @@
 
 namespace Unilend\Service\Front;
 
-use Doctrine\ORM\EntityManagerInterface;
+use Exception;
+use NumberFormatter;
 use Symfony\Component\Routing\RouterInterface;
-use Symfony\Component\Translation\TranslatorInterface;
-use Unilend\Entity\{Autobid, Clients, Notifications, Projects, Wallet, WalletType};
-use Unilend\Service\{AutoBidSettingsManager, BidManager, Simulator\EntityManager as EntityManagerSimulator};
-use Unilend\core\Loader;
+use Symfony\Contracts\Translation\TranslatorInterface;
+use Unilend\Entity\{Clients, Notification};
+use Unilend\Repository\NotificationRepository;
 
 class NotificationDisplayManager
 {
-    /** @var EntityManagerSimulator $entityManagerSimulator */
-    private $entityManagerSimulator;
-    /** @var AutoBidSettingsManager */
-    private $autoBidSettingsManager;
+    /** @var NotificationRepository */
+    private $notificationRepository;
     /** @var TranslatorInterface */
     private $translator;
     /** @var RouterInterface */
     private $router;
-    /** @var EntityManagerInterface */
-    private $entityManager;
-    /** @var BidManager */
-    private $bidManager;
+    /** @var NumberFormatter */
+    private $currencyFormatterNoDecimal;
 
     /**
-     * @param EntityManagerSimulator $entityManagerSimulator
-     * @param AutoBidSettingsManager $autoBidSettingsManager
+     * @param NotificationRepository $notificationRepository
      * @param TranslatorInterface    $translator
      * @param RouterInterface        $router
-     * @param EntityManagerInterface $entityManager
-     * @param BidManager             $bidManager
+     * @param NumberFormatter        $currencyFormatterNoDecimal
      */
     public function __construct(
-        EntityManagerSimulator $entityManagerSimulator,
-        AutoBidSettingsManager $autoBidSettingsManager,
+        NotificationRepository $notificationRepository,
         TranslatorInterface $translator,
         RouterInterface $router,
-        EntityManagerInterface $entityManager,
-        BidManager $bidManager
-    )
-    {
-        $this->entityManagerSimulator = $entityManagerSimulator;
-        $this->autoBidSettingsManager = $autoBidSettingsManager;
-        $this->translator             = $translator;
-        $this->router                 = $router;
-        $this->entityManager          = $entityManager;
-        $this->bidManager             = $bidManager;
+        NumberFormatter $currencyFormatterNoDecimal
+    ) {
+        $this->notificationRepository     = $notificationRepository;
+        $this->translator                 = $translator;
+        $this->router                     = $router;
+        $this->currencyFormatterNoDecimal = $currencyFormatterNoDecimal;
     }
 
     /**
      * @param Clients $client
      *
+     * @throws Exception
+     *
      * @return array
-     * @throws \Exception
      */
-    public function getLastLenderNotifications(Clients $client)
+    public function getLastClientNotifications(Clients $client)
     {
-        return $this->getLenderNotifications($client, 1, 20);
+        return $this->getClientNotifications($client, 0, 20);
     }
 
     /**
      * @param Clients $client
      * @param int     $offset
-     * @param int     $length
+     * @param int     $limit
      *
-     * @return array
-     * @throws \Exception
-     */
-    public function getLenderNotifications(Clients $client, $offset, $length)
-    {
-        return $this->getLenderNotificationsDetail($client, null, $offset, $length);
-    }
-
-    /**
-     * @param Clients  $client
-     * @param Projects $project
-     * @param null|int $offset
-     * @param null|int $length
+     * @throws Exception
      *
      * @return array
      */
-    public function getLenderNotificationsByProject(Clients $client, Projects $project, $offset = null, $length = null)
+    public function getClientNotifications(Clients $client, $offset = null, $limit = null)
     {
-        return $this->getLenderNotificationsDetail($client, $project->getIdProject(), $offset, $length);
-    }
+        $formattedNotifications = [];
+        $notifications          = $this->notificationRepository->findBy(['client' => $client], ['added' => 'DESC'], $limit, $offset);
 
-    /**
-     * @param Clients      $client
-     * @param integer|null $projectId
-     * @param int          $offset
-     * @param int          $length
-     *
-     * @return array
-     * @throws \Exception
-     */
-    private function getLenderNotificationsDetail(Clients $client, $projectId = null, $offset = null, $length = null)
-    {
-        if (false === $client->isLender()) {
-            throw new \Exception('Client ' . $client->getIdClient() . ' is not a Lender');
-        }
-        $wallet = $this->entityManager->getRepository(Wallet::class)->getWalletByType($client, WalletType::LENDER);
-        /** @var \accepted_bids $acceptedBid */
-        $acceptedBid = $this->entityManagerSimulator->getRepository('accepted_bids');
-        $autobidRepository = $this->entityManager->getRepository(Autobid::class);
-        /** @var \bids $bid */
-        $bid = $this->entityManagerSimulator->getRepository('bids');
-        /** @var \companies $company */
-        $company = $this->entityManagerSimulator->getRepository('companies');
-        /** @var \notifications $notifications */
-        $notifications = $this->entityManagerSimulator->getRepository('notifications');
-        /** @var \projects $project */
-        $project = $this->entityManagerSimulator->getRepository('projects');
-        /** @var \ficelle $ficelle */
-        $ficelle = Loader::loadLib('ficelle');
-
-        $result = [];
-
-        $where        = (null === $projectId) ? 'id_lender = ' . $wallet->getId() : 'id_lender = ' . $wallet->getId() . ' AND id_project = ' . $projectId;
-        $start        = (true === empty($offset)) ? '' : $offset - 1;
-        $numberOfRows = (true === empty($length)) ? '' : $length;
-
-        foreach ($notifications->select($where, 'added DESC', $start, $numberOfRows) as $notification) {
-            $type    = ''; // Style of title (account, offer-accepted, offer-rejected, remboursement)
-            $title   = ''; // Title (translation)
-            $content = ''; // Main message (translation)
+        foreach ($notifications as $notification) {
+            $type    = ''; // Style of title (account, offer-accepted, offer-rejected, normal)
             $image   = ''; // SVG icon (icons/notification)
+            $title   = '';
+            $content = '';
 
-            switch ($notification['type']) {
-                case Notifications::TYPE_BID_REJECTED:
-                    $bid->get($notification['id_bid'], 'id_bid');
-                    $project->get($notification['id_project'], 'id_project');
-                    $company->get($project->id_company, 'id_company');
-
-                    $type    = 'offer-rejected';
-                    $image   = 'offer-rejected';
-                    $title   = 'rejected-bid-title';
-                    $content = $bid->id_autobid == 0 ? 'rejected-bid-content' : 'rejected-autobid-content';
-
-                    if ($bid->amount != $notification['amount']) {
-                        $title   = 'partially-' . $title;
-                        $content = 'partially-' . $content;
-                    }
-
-                    $title   = $this->translator->trans('lender-notifications_' . $title);
-                    $content = $this->translator->trans('lender-notifications_' . $content, [
-                        '%rate%'       => $ficelle->formatNumber($bid->rate, 1),
-                        '%amount%'     => $ficelle->formatNumber($notification['amount'] / 100, 0),
-                        '%projectUrl%' => $this->router->generate('project_detail', ['projectSlug' => $project->slug]),
-                        '%company%'    => $company->name
-                    ]);
-                    break;
-                case Notifications::TYPE_REPAYMENT:
-                    $project->get($notification['id_project'], 'id_project');
-                    $company->get($project->id_company, 'id_company');
-
-                    $type    = 'remboursement';
-                    $image   = 'remboursement';
-                    $title   = $this->translator->trans('lender-notifications_repayment-title');
-                    $content = $this->translator->trans('lender-notifications_repayment-content', [
-                        '%amount%'     => $ficelle->formatNumber($notification['amount'] / 100, 2),
-                        '%projectUrl%' => $this->router->generate('project_detail', ['projectSlug' => $project->slug]),
-                        '%company%'    => $company->name
-                    ]);
-                    break;
-                case Notifications::TYPE_REPAYMENT_REGULARIZATION:
-                    $project->get($notification['id_project'], 'id_project');
-                    $company->get($project->id_company, 'id_company');
-
-                    $type    = 'remboursement';
-                    $image   = 'remboursement';
-                    $title   = $this->translator->trans('lender-notifications_repayment-regularization-title');
-                    $content = $this->translator->trans('lender-notifications_repayment-regularization-content', [
-                        '%amount%'     => $ficelle->formatNumber($notification['amount'] / 100, 2),
-                        '%projectUrl%' => $this->router->generate('project_detail', ['projectSlug' => $project->slug]),
-                        '%company%'    => $company->name
-                    ]);
-                    break;
-                case Notifications::TYPE_BID_PLACED:
-                    $bid->get($notification['id_bid'], 'id_bid');
-                    $project->get($notification['id_project'], 'id_project');
-                    $company->get($project->id_company, 'id_company');
-
-                    $type    = 'offer';
-                    $image   = 'remboursement';
-                    $title   = $this->translator->trans('lender-notifications_placed-bid-title');
-                    $content = 'placed-bid-content';
-
-                    if ($bid->id_autobid > 0) {
-                        $autobidEntity    = $autobidRepository->find($bid->id_autobid);
-                        $content          = 'placed-autobid-content';
-                        $projectRateRange = $this->bidManager->getProjectRateRange($project);
-                        $appliedMinRate   = max($autobidEntity->getRateMin(), $projectRateRange['rate_min']);
-                    }
-
-                    $content = $this->translator->trans('lender-notifications_' . $content, [
-                        '%rate%'       => $ficelle->formatNumber($bid->rate, 1),
-                        '%amount%'     => $ficelle->formatNumber($notification['amount'] / 100, 0),
-                        '%projectUrl%' => $this->router->generate('project_detail', ['projectSlug' => $project->slug]),
-                        '%company%'    => $company->name,
-                        '%minRate%'    => isset($appliedMinRate) ? $ficelle->formatNumber($appliedMinRate, 1) : ''
-                    ]);
-                    break;
-                case Notifications::TYPE_LOAN_ACCEPTED:
-                    $bid->get($notification['id_bid'], 'id_bid');
-                    $project->get($notification['id_project'], 'id_project');
-                    $company->get($project->id_company, 'id_company');
-
-                    $type    = 'offer-accepted';
-                    $image   = 'offer-accepted';
-                    $title   = $this->translator->trans('lender-notifications_accepted-loan-title');
-                    $content = $this->translator->trans('lender-notifications_accepted-loan-content', [
-                        '%rate%'       => $ficelle->formatNumber($bid->rate, 1),
-                        '%amount%'     => $ficelle->formatNumber($acceptedBid->getAcceptedAmount($bid->id_bid), 0),
-                        '%projectUrl%' => $this->router->generate('project_detail', ['projectSlug' => $project->slug]),
-                        '%company%'    => $company->name
-                    ]);
-                    break;
-                case Notifications::TYPE_BANK_TRANSFER_CREDIT:
-                    $type    = 'remboursement';
-                    $image   = 'account-borne';
-                    $title   = $this->translator->trans('lender-notifications_bank-transfer-credit-title');
-                    $content = $this->translator->trans('lender-notifications_bank-transfer-credit-content', [
-                        '%amount%' => $ficelle->formatNumber($notification['amount'] / 100, 2)
-                    ]);
-                    break;
-                case Notifications::TYPE_CREDIT_CARD_CREDIT:
-                    $type    = 'remboursement';
-                    $image   = 'account-cb';
-                    $title   = $this->translator->trans('lender-notifications_credit-card-credit-title');
-                    $content = $this->translator->trans('lender-notifications_credit-card-credit-content', [
-                        '%amount%' => $ficelle->formatNumber($notification['amount'] / 100, 2)
-                    ]);
-                    break;
-                case Notifications::TYPE_DEBIT:
-                    $type    = 'remboursement';
-                    $image   = 'account-withdraw';
-                    $title   = $this->translator->trans('lender-notifications_withdraw-title');
-                    $content = $this->translator->trans('lender-notifications_withdraw-content', [
-                        '%amount%' => $ficelle->formatNumber($notification['amount'] / 100, 2)
-                    ]);
-                    break;
-                case Notifications::TYPE_NEW_PROJECT:
-                    $project->get($notification['id_project'], 'id_project');
-
-                    $type    = 'remboursement';
-                    $image   = 'project';
-                    $title   = $this->translator->trans('lender-notifications_new-project-title');
-                    $content = $this->translator->trans('lender-notifications_new-project-content', [
-                        '%projectUrl%'      => $this->router->generate('project_detail', ['projectSlug' => $project->slug]),
-                        '%projectTitle%'    => $project->title,
-                        '%publicationDate%' => date('d/m/Y', strtotime($project->date_publication)),
-                        '%publicationTime%' => date('H:i', strtotime($project->date_publication)),
-                        '%amount%'          => $ficelle->formatNumber($project->amount, 0),
-                        '%duration%'        => $project->period
-                    ]);
-                    break;
-                case Notifications::TYPE_PROJECT_PROBLEM:
-                    $project->get($notification['id_project'], 'id_project');
-                    $company->get($project->id_company);
-
-                    $type    = 'account';
-                    $image   = 'entreprise-inprogress';
-                    $title   = $this->translator->trans('lender-notifications_late-repayment-title');
-                    $content = $this->translator->trans('lender-notifications_late-repayment-content', [
-                        '%projectUrl%' => $this->router->generate('project_detail', ['projectSlug' => $project->slug]) . '#project-section-info',
-                        '%company%'    => $company->name
-                    ]);
-                    break;
-                case Notifications::TYPE_PROJECT_PROBLEM_REMINDER:
-                    $project->get($notification['id_project'], 'id_project');
-                    $company->get($project->id_company);
-
-                    $type    = 'account';
-                    $image   = 'entreprise-inprogress';
-                    $title   = $this->translator->trans('lender-notifications_late-repayment-x-days-title');
-                    $content = $this->translator->trans('lender-notifications_late-repayment-x-days-content', [
-                        '%projectUrl%' => $this->router->generate('project_detail', ['projectSlug' => $project->slug]) . '#project-section-info',
-                        '%company%'    => $company->name
-                    ]);
-                    break;
-                case Notifications::TYPE_PROJECT_RECOVERY:
-                    $project->get($notification['id_project'], 'id_project');
-                    $company->get($project->id_company);
-
-                    $type    = 'account';
-                    $image   = 'entreprise-recovery';
-                    $title   = $this->translator->trans('lender-notifications_recovery-title');
-                    $content = $this->translator->trans('lender-notifications_recovery-content', [
-                        '%projectUrl%' => $this->router->generate('project_detail', ['projectSlug' => $project->slug]) . '#project-section-info',
-                        '%company%'    => $company->name
-                    ]);
-                    break;
-                case Notifications::TYPE_PROJECT_PRECAUTIONARY_PROCESS:
-                    $project->get($notification['id_project'], 'id_project');
-                    $company->get($project->id_company);
-
-                    $type    = 'account';
-                    $image   = 'entreprise-palace';
-                    $title   = $this->translator->trans('lender-notifications_precautionary-process-title');
-                    $content = $this->translator->trans('lender-notifications_precautionary-process-content', [
-                        '%projectUrl%' => $this->router->generate('project_detail', ['projectSlug' => $project->slug]) . '#project-section-info',
-                        '%company%'    => $company->name
-                    ]);
-                    break;
-                case Notifications::TYPE_PROJECT_RECEIVERSHIP:
-                    $project->get($notification['id_project'], 'id_project');
-                    $company->get($project->id_company);
-
-                    $type    = 'account';
-                    $image   = 'entreprise-palace';
-                    $title   = $this->translator->trans('lender-notifications_receivership-title');
-                    $content = $this->translator->trans('lender-notifications_receivership-content', [
-                        '%projectUrl%' => $this->router->generate('project_detail', ['projectSlug' => $project->slug]) . '#project-section-info',
-                        '%company%'    => $company->name
-                    ]);
-                    break;
-                case Notifications::TYPE_PROJECT_COMPULSORY_LIQUIDATION:
-                    $project->get($notification['id_project'], 'id_project');
-                    $company->get($project->id_company);
-
-                    $type    = 'offer-rejected';
-                    $image   = 'entreprise-rejected';
-                    $title   = $this->translator->trans('lender-notifications_compulsory-liquidation-title');
-                    $content = $this->translator->trans('lender-notifications_compulsory-liquidation-content', [
-                        '%projectUrl%' => $this->router->generate('project_detail', ['projectSlug' => $project->slug]) . '#project-section-info',
-                        '%company%'    => $company->name
-                    ]);
-                    break;
-                case Notifications::TYPE_PROJECT_FAILURE:
-                    $project->get($notification['id_project'], 'id_project');
-                    $company->get($project->id_company);
-
-                    $type    = 'offer-rejected';
-                    $image   = 'entreprise-rejected';
-                    $title   = $this->translator->trans('lender-notifications_company-failure-title');
-                    $content = $this->translator->trans('lender-notifications_company-failure-content', [
-                        '%projectUrl%' => $this->router->generate('project_detail', ['projectSlug' => $project->slug]) . '#project-section-info',
-                        '%company%'    => $company->name
-                    ]);
-                    break;
-                case Notifications::TYPE_AUTOBID_BALANCE_INSUFFICIENT:
-                    $type    = 'offer-rejected';
-                    $image   = 'account-noauto';
-                    $title   = $this->translator->trans('lender-notifications_autolend-insufficient-balance-title');
-                    $content = $this->translator->trans('lender-notifications_autolend-insufficient-balance-content', [
-                        '%url%' => $this->router->generate('lender_wallet_deposit')
-                    ]);
-                    break;
-                case Notifications::TYPE_AUTOBID_BALANCE_LOW:
-                    $type    = 'account';
-                    $image   = 'account-lowbalance';
-                    $title   = $this->translator->trans('lender-notifications_autolend-low-balance-title');
-                    $content = $this->translator->trans('lender-notifications_autolend-low-balance-content', [
-                        '%url%' => $this->router->generate('lender_wallet_deposit')
-                    ]);
-                    break;
-                case Notifications::TYPE_AUTOBID_FIRST_ACTIVATION:
-                    $type    = 'offer-accepted';
+            switch ($notification->getType()) {
+                case Notification::TYPE_ACCOUNT_CREATED:
+                    $type    = 'normal';
                     $image   = 'circle-accepted';
-                    $title   = $this->translator->trans('lender-notifications_autolend-first-activation-title');
-                    $content = $this->translator->trans('lender-notifications_autolend-first-activation-content', [
-                        '%activationDate%' => $this->autoBidSettingsManager->getActivationTime($wallet->getIdClient())->format('G\hi'),
-                        '%settingsUrl%'    => $this->router->generate('autolend')
+                    $title   = $this->translator->trans('notifications.account-created-title');
+                    $content = $this->translator->trans('notifications.account-created-content');
+
+                    break;
+                case Notification::TYPE_PROJECT_REQUEST:
+                    $project = $notification->getProject();
+                    $type    = 'normal';
+                    $image   = 'project-added';
+                    $title   = $this->translator->trans('notifications.project-request-title');
+                    $content = $this->translator->trans('notifications.project-request-content', [
+                        '%projectUrl%'    => $this->router->generate('project_detail', ['projectSlug' => $project->getSlug()]),
+                        '%projectTitle%'  => $project->getTitle(),
+                        '%borrowerName%'  => $project->getBorrowerCompany()->getName(),
+                        '%submitterName%' => $project->getSubmitterCompany()->getName(),
                     ]);
+
+                    break;
+                case Notification::TYPE_PROJECT_PUBLICATION:
+                    $project = $notification->getProject();
+                    $type    = 'normal';
+                    $image   = 'project';
+                    $title   = $this->translator->trans('notifications.project-publication-title');
+                    $content = $this->translator->trans('notifications.project-publication-content', [
+                        '%projectUrl%'   => $this->router->generate('lender_project_details', ['slug' => $project->getSlug()]),
+                        '%projectTitle%' => $project->getTitle(),
+                        '%borrowerName%' => $project->getBorrowerCompany()->getName(),
+                    ]);
+
+                    break;
+                case Notification::TYPE_BID_SUBMITTED_BIDDER:
+                    $bid     = $notification->getBid();
+                    $project = $bid->getTranche()->getProject();
+                    $type    = 'normal';
+                    $image   = 'offer';
+                    $title   = $this->translator->trans('notifications.bid-submitted-bidder-title');
+                    $content = $this->translator->trans('notifications.bid-submitted-bidder-content', [
+                        '%projectUrl%'   => $this->router->generate('lender_project_details', ['slug' => $project->getSlug()]),
+                        '%projectTitle%' => $project->getTitle(),
+                        '%borrowerName%' => $project->getBorrowerCompany()->getName(),
+                        '%bidAmount%'    => $this->currencyFormatterNoDecimal->formatCurrency($bid->getMoney()->getAmount(), $bid->getMoney()->getCurrency()),
+                    ]);
+
+                    break;
+                case Notification::TYPE_BID_SUBMITTED_LENDERS:
+                    $bid     = $notification->getBid();
+                    $project = $bid->getTranche()->getProject();
+                    $type    = 'normal';
+                    $image   = 'offer';
+                    $title   = $this->translator->trans('notifications.bid-submitted-lenders-title');
+                    $content = $this->translator->trans('notifications.bid-submitted-lenders-content', [
+                        '%projectUrl%'   => $this->router->generate('lender_project_details', ['slug' => $project->getSlug()]),
+                        '%projectTitle%' => $project->getTitle(),
+                        '%borrowerName%' => $project->getBorrowerCompany()->getName(),
+                        '%bidderName%'   => $bid->getLender()->getName(),
+                        '%bidAmount%'    => $this->currencyFormatterNoDecimal->formatCurrency($bid->getMoney()->getAmount(), $bid->getMoney()->getCurrency()),
+                    ]);
+
+                    break;
+                case Notification::TYPE_PROJECT_COMMENT_ADDED:
+                    $project = $notification->getProject();
+                    $type    = 'normal';
+                    $image   = '';
+                    $title   = $this->translator->trans('notifications.project-comment-added-title');
+                    $content = $this->translator->trans('notifications.project-comment-added-content', [
+                        '%projectUrl%'   => $this->router->generate('lender_project_details', ['slug' => $project->getSlug()]) . '#article-discussions',
+                        '%projectTitle%' => $project->getTitle(),
+                        '%borrowerName%' => $project->getBorrowerCompany()->getName(),
+                    ]);
+
                     break;
             }
 
-            $added = new \DateTime($notification['added']);
-
-            $result[] = [
-                'id'        => $notification['id_notification'],
-                'projectId' => $notification['id_project'],
+            $formattedNotifications[] = [
+                'id'        => $notification->getId(),
+                'projectId' => $notification->getProject() ? $notification->getProject()->getId() : null,
                 'type'      => $type,
                 'title'     => $title,
-                'datetime'  => $added,
-                'iso-8601'  => $added->format('c'),
+                'datetime'  => $notification->getAdded(),
+                'iso-8601'  => $notification->getAdded()->format('c'),
                 'content'   => $content,
                 'image'     => $image,
-                'status'    => $notification['status'] == Notifications::STATUS_READ ? 'read' : 'unread'
+                'status'    => Notification::STATUS_READ === $notification->getStatus() ? 'read' : 'unread',
             ];
         }
 
-        return $result;
+        return $formattedNotifications;
     }
 }

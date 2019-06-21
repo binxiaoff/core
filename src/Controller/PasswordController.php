@@ -22,7 +22,7 @@ use Unilend\Entity\{ClientsHistoryActions, TemporaryLinksLogin};
 use Unilend\Repository\{ClientsRepository, TemporaryLinksLoginRepository};
 use Unilend\Security\BCryptPasswordEncoder;
 use Unilend\Service\Front\FormManager;
-use Unilend\Service\GoogleRecaptchaManager;
+use Unilend\Service\{GoogleRecaptchaManager, NotificationManager};
 use Unilend\SwiftMailer\{TemplateMessageProvider, UnilendMailer};
 
 class PasswordController extends AbstractController
@@ -71,6 +71,7 @@ class PasswordController extends AbstractController
      * @param TemporaryLinksLogin           $temporaryLink
      * @param TemporaryLinksLoginRepository $temporaryLinksLoginRepository
      * @param ClientsRepository             $clientsRepository
+     * @param NotificationManager           $notificationManager
      * @param Request                       $request
      * @param TranslatorInterface           $translator
      * @param UserPasswordEncoderInterface  $userPasswordEncoder
@@ -83,6 +84,7 @@ class PasswordController extends AbstractController
         TemporaryLinksLogin $temporaryLink,
         TemporaryLinksLoginRepository $temporaryLinksLoginRepository,
         ClientsRepository $clientsRepository,
+        NotificationManager $notificationManager,
         Request $request,
         TranslatorInterface $translator,
         UserPasswordEncoderInterface $userPasswordEncoder
@@ -140,6 +142,8 @@ class PasswordController extends AbstractController
 
             $temporaryLink->setExpires($now);
             $temporaryLinksLoginRepository->save($temporaryLink);
+
+            $notificationManager->createAccountCreated($client);
 
             return $this->redirectToRoute('login');
         }
