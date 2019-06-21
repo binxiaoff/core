@@ -16,18 +16,18 @@ use Unilend\Entity\Embeddable\Money;
 use Unilend\Form\Bid\PartialBid;
 use Unilend\Repository\BidsRepository;
 use Unilend\Security\Voter\BidVoter;
-use Unilend\Service\{BidManager, DemoMailerManager};
+use Unilend\Service\{BidManager, MailerManager};
 
 class EditController extends AbstractController
 {
     /**
      * @Route("/bid/status", name="edit_bid_status", methods={"POST"})
      *
-     * @param Request           $request
-     * @param BidManager        $bidManager
-     * @param BidsRepository    $bidsRepository
-     * @param DemoMailerManager $mailerManager
-     * @param LoggerInterface   $logger
+     * @param Request         $request
+     * @param BidManager      $bidManager
+     * @param BidsRepository  $bidsRepository
+     * @param MailerManager   $mailerManager
+     * @param LoggerInterface $logger
      *
      * @throws ORMException
      * @throws OptimisticLockException
@@ -39,7 +39,7 @@ class EditController extends AbstractController
         Request $request,
         BidManager $bidManager,
         BidsRepository $bidsRepository,
-        DemoMailerManager $mailerManager,
+        MailerManager $mailerManager,
         LoggerInterface $logger
     ): RedirectResponse {
         $bidId  = $request->request->get('bid');
@@ -87,11 +87,11 @@ class EditController extends AbstractController
     /**
      * @Route("/bid/partial", name="edit_bid_partial", methods={"POST"})
      *
-     * @param Request           $request
-     * @param BidManager        $bidManager
-     * @param BidsRepository    $bidsRepository
-     * @param DemoMailerManager $mailerManager
-     * @param LoggerInterface   $logger
+     * @param Request         $request
+     * @param BidManager      $bidManager
+     * @param BidsRepository  $bidsRepository
+     * @param MailerManager   $mailerManager
+     * @param LoggerInterface $logger
      *
      * @throws Exception
      *
@@ -101,7 +101,7 @@ class EditController extends AbstractController
         Request $request,
         BidManager $bidManager,
         BidsRepository $bidsRepository,
-        DemoMailerManager $mailerManager,
+        MailerManager $mailerManager,
         LoggerInterface $logger
     ): RedirectResponse {
         $form = $this->createForm(PartialBid::class);

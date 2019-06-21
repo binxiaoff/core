@@ -610,7 +610,7 @@ class transfertsController extends bootstrap
             $projectManager = $this->get('unilend.service.project_manager');
             /** @var \Unilend\Service\ProjectStatusManager $projectStatusManager */
             $projectStatusManager = $this->get('unilend.service.project_status_manager');
-            /** @var \Unilend\Service\MailerManager $mailerManager */
+            /** @var \Unilend\Service\UnilendMailerManager $mailerManager */
             $mailerManager = $this->get('unilend.service.email_manager');
             /** @var \Unilend\Service\AcceptedBidAndLoanNotificationSender $acceptedLoanNotificationSender */
             $acceptedLoanNotificationSender = $this->get(\Unilend\Service\AcceptedBidAndLoanNotificationSender::class);

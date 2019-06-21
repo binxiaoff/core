@@ -1026,7 +1026,7 @@ class partenairesController extends bootstrap
                 $clientCreationManager = $this->get('unilend.service.client_creation_manager');
                 $clientCreationManager->createAccount($companyClient->getIdClient(), WalletType::PARTNER, $_SESSION['user']['id_user'], ClientsStatus::STATUS_VALIDATED);
 
-                /** @var \Unilend\Service\MailerManager $mailerManager */
+                /** @var \Unilend\Service\UnilendMailerManager $mailerManager */
                 $mailerManager = $this->get('unilend.service.email_manager');
                 $mailerManager->sendPartnerAccountActivation($companyClient->getIdClient());
 

@@ -31,7 +31,7 @@ services:
     unilend.service.eligibility.bulk_company_check_manager: '@Unilend\Service\BulkCompanyCheckManager'
     unilend.service.eligibility.company_validator: '@Unilend\Service\Eligibility\Validator\CompanyValidator'
     unilend.service.eligibility.eligibility_manager: '@Unilend\Service\Eligibility\EligibilityManager'
-    unilend.service.email_manager: '@Unilend\Service\MailerManager'
+    unilend.service.email_manager: '@Unilend\Service\UnilendMailerManager'
     unilend.service.entity_manager: '@Unilend\Service\Simulator\EntityManager'
     unilend.service.external_data_manager: '@Unilend\Service\ExternalDataManager'
     unilend.service.google_recaptcha_manager: '@Unilend\Service\GoogleRecaptchaManager'

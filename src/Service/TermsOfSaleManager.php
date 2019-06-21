@@ -20,7 +20,7 @@ class TermsOfSaleManager
 
     /** @var EntityManagerInterface */
     private $entityManager;
-    /** @var MailerManager */
+    /** @var UnilendMailerManager */
     private $mailerManager;
     /** @var TokenStorageInterface */
     private $tokenStorage;
@@ -33,7 +33,7 @@ class TermsOfSaleManager
 
     /**
      * @param EntityManagerInterface $entityManager
-     * @param MailerManager          $mailerManager
+     * @param UnilendMailerManager   $mailerManager
      * @param TokenStorageInterface  $tokenStorage
      * @param RequestStack           $requestStack
      * @param string                 $rootDirectory
@@ -41,7 +41,7 @@ class TermsOfSaleManager
      */
     public function __construct(
         EntityManagerInterface $entityManager,
-        MailerManager $mailerManager,
+        UnilendMailerManager $mailerManager,
         TokenStorageInterface $tokenStorage,
         RequestStack $requestStack,
         string $rootDirectory,

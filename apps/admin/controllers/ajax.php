@@ -1044,7 +1044,7 @@ class ajaxController extends bootstrap
                     break;
             }
 
-            /** @var \Unilend\Service\MailerManager $mailerManager */
+            /** @var \Unilend\Service\UnilendMailerManager $mailerManager */
             $mailerManager = $this->get('unilend.service.email_manager');
             $mailerManager->sendBorrowerAccount($client, $emailType);
         }

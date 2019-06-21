@@ -78,7 +78,7 @@ class usersController extends bootstrap
                 $usersZones->create();
             }
 
-            /** @var \Unilend\Service\MailerManager $mailerManager */
+            /** @var \Unilend\Service\UnilendMailerManager $mailerManager */
             $mailerManager = $this->get('unilend.service.email_manager');
             $mailerManager->sendNewPasswordEmail($user, $newPassword);
 
@@ -205,7 +205,7 @@ class usersController extends bootstrap
                 $_SESSION['user']['password']        = $this->users->password;
                 $_SESSION['user']['password_edited'] = $this->users->password_edited;
 
-                /** @var \Unilend\Service\MailerManager $mailerManager */
+                /** @var \Unilend\Service\UnilendMailerManager $mailerManager */
                 $mailerManager = $this->get('unilend.service.email_manager');
                 $mailerManager->sendAdminPasswordModificationEmail($this->users);
 
@@ -243,7 +243,7 @@ class usersController extends bootstrap
             $newPassword = $this->ficelle->generatePassword(10);
             $this->users->changePassword($newPassword, $this->users, true);
 
-            /** @var \Unilend\Service\MailerManager $mailerManager */
+            /** @var \Unilend\Service\UnilendMailerManager $mailerManager */
             $mailerManager = $this->get('unilend.service.email_manager');
             $mailerManager->sendNewPasswordEmail($this->users, $newPassword);
         }

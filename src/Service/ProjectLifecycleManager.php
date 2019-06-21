@@ -26,7 +26,7 @@ class ProjectLifecycleManager
     private $loanManager;
     /** @var NotificationManager */
     private $notificationManager;
-    /** @var MailerManager */
+    /** @var UnilendMailerManager */
     private $mailerManager;
     /** @var ProjectRateSettingsManager */
     private $projectRateSettingsManager;
@@ -67,7 +67,7 @@ class ProjectLifecycleManager
      * @param BidManager                      $bidManager
      * @param LoanManager                     $loanManager
      * @param NotificationManager             $notificationManager
-     * @param MailerManager                   $mailerManager
+     * @param UnilendMailerManager            $mailerManager
      * @param ProjectRateSettingsManager      $projectRateSettingsManager
      * @param ProductManager                  $productManager
      * @param ContractAttributeManager        $contractAttributeManager
@@ -90,7 +90,7 @@ class ProjectLifecycleManager
         BidManager $bidManager,
         LoanManager $loanManager,
         NotificationManager $notificationManager,
-        MailerManager $mailerManager,
+        UnilendMailerManager $mailerManager,
         ProjectRateSettingsManager $projectRateSettingsManager,
         ProductManager $productManager,
         ContractAttributeManager $contractAttributeManager,
