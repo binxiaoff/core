@@ -24,7 +24,7 @@
                                         <span class="label">Place de marché</span>
                                     </a>
                                 </li>
-                                <li role="presentation" class="{% if app.request.get('_route') == 'reporting' %} active{% endif %}">
+                                {#<li role="presentation" class="{% if app.request.get('_route') == 'reporting' %} active{% endif %}">
                                     <a href="{{ path('reporting') }}">
                                         <span class="icon fa-linechart-u"></span>
                                         <span class="label">Reporting</span>
@@ -42,7 +42,7 @@
                                         <span class="label">Base documentaire</span>
                                     </a>
                                 </li>
-                                {#<li role="presentation" class="{% if app.request.get('_route') == 'demo_notifications' %} active{% endif %}">
+                                <li role="presentation" class="{% if app.request.get('_route') == 'demo_notifications' %} active{% endif %}">
                                     <a href="{{ path('demo_notifications') }}">
                                         <span class="icon fa-bell-u"></span>
                                         <span class="label">
@@ -50,16 +50,17 @@
                                             <span data-usernotifications-unreadcount></span>
                                         </span>
                                     </a>
-                                </li>#}
+                                </li>
                                 <li role="presentation" class="{% if app.request.get('_route') == 'demo_help' %} active{% endif %}">
                                     <a href="{{ path('demo_help') }}">
                                         <span class="icon fa-question-circle-o"></span>
                                         <span class="label">Aide</span>
                                     </a>
-                                </li>
+                                </li>#}
                             </ul>
                         {% endblock %}
                     </nav>
+                    {% include 'partials/sidebar_notifications.html.twig' %}
                 </div><!-- /.col-menu -->
                 <div class="col-content dashboard-content">
                     {% block dashboardContent %} {% endblock %}

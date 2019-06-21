@@ -26,7 +26,7 @@ use Unilend\Form\Tranche\TrancheTypeCollectionType;
 use Unilend\Repository\{AcceptedBidsRepository, BidsRepository, CaRegionalBankRepository, CompaniesRepository, ProjectAttachmentRepository, ProjectAttachmentTypeRepository,
     ProjectRepository, TrancheRepository, UnderlyingContractRepository};
 use Unilend\Security\Voter\ProjectVoter;
-use Unilend\Service\{AttachmentManager, MailerManager, ProjectStatusManager};
+use Unilend\Service\{AttachmentManager, MailerManager, NotificationManager, ProjectStatusManager};
 
 class EditController extends AbstractController
 {
@@ -188,6 +188,7 @@ class EditController extends AbstractController
      * @param UserInterface|Clients|null   $user
      * @param ProjectStatusManager         $projectStatusManager
      * @param MailerManager                $mailerManager
+     * @param NotificationManager          $notificationManager
      * @param LoggerInterface              $logger
      * @param TrancheRepository            $trancheRepository
      * @param BidsRepository               $bidsRepository
@@ -205,6 +206,7 @@ class EditController extends AbstractController
         ?UserInterface $user,
         ProjectStatusManager $projectStatusManager,
         MailerManager $mailerManager,
+        NotificationManager $notificationManager,
         LoggerInterface $logger,
         TrancheRepository $trancheRepository,
         BidsRepository $bidsRepository,
@@ -252,8 +254,8 @@ class EditController extends AbstractController
             switch ($status) {
                 case ProjectStatusHistory::STATUS_PUBLISHED:
                     try {
-                        $mailerManager->sendProjectPublication($project);
-                    } catch (Swift_SwiftException $exception) {
+                        $notificationManager->createProjectPublication($project);
+                    } catch (Exception $exception) {
                         $logger->error('An error occurred while sending project publication email. Message: ' . $exception->getMessage(), [
                             'class'    => __CLASS__,
                             'function' => __FUNCTION__,
@@ -289,13 +291,11 @@ class EditController extends AbstractController
      *
      * @IsGranted("edit", subject="project")
      *
-     * @param Project              $project
-     * @param Request              $request
-     * @param MailerManager        $mailerManager
-     * @param CompaniesRepository  $companyRepository
-     * @param ProjectRepository    $projectRepository
-     * @param AuthorizationChecker $authorizationChecker
-     * @param LoggerInterface      $logger
+     * @param Project                       $project
+     * @param Request                       $request
+     * @param CompaniesRepository           $companyRepository
+     * @param ProjectRepository             $projectRepository
+     * @param AuthorizationCheckerInterface $authorizationChecker
      *
      * @throws ORMException
      * @throws OptimisticLockException
@@ -305,11 +305,9 @@ class EditController extends AbstractController
     public function update(
         Project $project,
         Request $request,
-        MailerManager $mailerManager,
         CompaniesRepository $companyRepository,
         ProjectRepository $projectRepository,
-        AuthorizationCheckerInterface $authorizationChecker,
-        LoggerInterface $logger
+        AuthorizationCheckerInterface $authorizationChecker
     ): Response {
         if (false === $project->isEditable()) {
             return (new Response())
@@ -402,17 +400,6 @@ class EditController extends AbstractController
 
                 $value = $value ?: null;
                 $project->setInternalRatingScore($value);
-
-                try {
-                    $mailerManager->sendScoringUpdated($project);
-                } catch (Swift_SwiftException $exception) {
-                    $logger->error('An error occurred while sending scoring update email. Message: ' . $exception->getMessage(), [
-                        'class'    => __CLASS__,
-                        'function' => __FUNCTION__,
-                        'file'     => $exception->getFile(),
-                        'line'     => $exception->getLine(),
-                    ]);
-                }
 
                 $outputValue = $project->getInternalRatingScore();
 
