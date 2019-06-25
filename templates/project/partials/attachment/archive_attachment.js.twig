@@ -12,7 +12,7 @@ $(document).on('click', '[data-action="archive-attachment"]', function (e) {
                 let $attachmentTable = $('#uploaded-project-documents')
                 if (1 === $attachmentTable.find('tbody tr').length) {
                     $attachmentTable.fadeOut(1000, function(){
-                        $(this).replaceWith('<div class="message-info">Vous n‘avez aucun document associé à votre dossier.</div>')
+                        $(this).replaceWith('<div class="message-info">{% trans %} attachment.no-attachment-info-message {% endtrans %}</div>')
                     });
                 } else {
                     $attachment.parents('tr').fadeOut(1000, function(){
