@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Unilend\Controller\Attachment;
 
 use Doctrine\ORM\{ORMException, OptimisticLockException};
-use Exception;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\{IsGranted, ParamConverter};
 use Swift_RfcComplianceException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -14,7 +13,7 @@ use Symfony\Component\Routing\{Annotation\Route, Router, RouterInterface};
 use Symfony\Component\Security\Core\User\UserInterface;
 use Unilend\Entity\{Attachment, AttachmentSignature, AttachmentType, Clients, Project};
 use Unilend\Repository\{AttachmentSignatureRepository, AttachmentTypeRepository, CompaniesRepository};
-use Unilend\Service\{AttachmentManager, ElectronicSignatureManager, MailerManager};
+use Unilend\Service\{Attachment\AttachmentManager, Attachment\ProjectAttachmentManager, ElectronicSignatureManager, MailerManager};
 
 class SignatureController extends AbstractController
 {
@@ -130,9 +129,9 @@ class SignatureController extends AbstractController
      * @param CompaniesRepository           $companyRepository
      * @param AttachmentSignatureRepository $signatureRepository
      * @param AttachmentManager             $attachmentManager
+     * @param ProjectAttachmentManager      $projectAttachmentManager
      * @param MailerManager                 $mailerManager
      *
-     * @throws Exception
      * @throws ORMException
      * @throws OptimisticLockException
      * @throws Swift_RfcComplianceException
@@ -147,6 +146,7 @@ class SignatureController extends AbstractController
         CompaniesRepository $companyRepository,
         AttachmentSignatureRepository $signatureRepository,
         AttachmentManager $attachmentManager,
+        ProjectAttachmentManager $projectAttachmentManager,
         MailerManager $mailerManager
     ): Response {
         $file               = $request->files->get('extraElectronicSignature');
@@ -171,7 +171,7 @@ class SignatureController extends AbstractController
             if ($attachmentType) {
                 $attachment = $attachmentManager->upload($user, $user->getCompany(), $user, $attachmentType, null, $file, false, $fileName);
 
-                $attachmentManager->attachToProject($attachment, $project);
+                $projectAttachmentManager->attachToProject($attachment, $project);
 
                 foreach ($signatoryCompanies as $signatoryCompanyId) {
                     $signatory = $companyRepository->find($signatoryCompanyId)->getIdClientOwner();

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Unilend\Service\User;
 
 use Doctrine\Common\Persistence\ManagerRegistry;
-use Symfony\Component\Security\Core\Role\SwitchUserRole;
+use Symfony\Component\Security\Core\Authentication\Token\SwitchUserToken;
 use Symfony\Component\Security\Core\Security;
 use Unilend\Entity\Clients;
 
@@ -31,15 +31,12 @@ class RealUserFinder
      */
     public function __invoke(): object
     {
-        if ($this->security->isGranted('ROLE_PREVIOUS_ADMIN')) {
-            foreach ($this->security->getToken()->getRoles() as $role) {
-                if ($role instanceof SwitchUserRole) {
-                    $user          = $role->getSource()->getUser();
-                    $entityManager = $this->managerRegistry->getManagerForClass(get_class($user));
+        $token = $this->security->getToken();
+        if ($token instanceof SwitchUserToken) {
+            $user          = $token->getOriginalToken()->getUser();
+            $entityManager = $this->managerRegistry->getManagerForClass(get_class($user));
 
-                    return $entityManager->merge($user);
-                }
-            }
+            return $entityManager->merge($user);
         }
 
         return $this->security->getUser();

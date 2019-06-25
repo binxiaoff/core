@@ -419,7 +419,7 @@ class beneficiaires_effectifsController extends bootstrap
         }
 
         if ('no_change' !== $request->request->get('id_card_passport') && null !== $request->files->all()) {
-            /** @var \Unilend\Service\AttachmentManager $attachmentManager */
+            /** @var \Unilend\Service\Attachment\AttachmentManager $attachmentManager */
             $attachmentManager = $this->get('unilend.service.attachment_manager');
             $attachmentType    = $entityManager->getRepository(AttachmentType::class)->find(AttachmentType::CNI_PASSPORTE);
             if ($attachmentType) {

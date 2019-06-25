@@ -162,7 +162,7 @@ services:
         $accessKey: '%payline.access_key%'
         $logPath: '%path.payline%'
 
-    Unilend\Service\AttachmentManager:
+    Unilend\Service\Attachment\AttachmentManager:
         $uploadRootDirectory: '%path.protected%attachments'
         $tmpDirectory: '%path.shared_tmp%'
 

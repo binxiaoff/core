@@ -7,6 +7,7 @@ use JMS\Serializer\SerializerInterface;
 use Psr\Log\LoggerInterface;
 use Unilend\Entity\External\GreenPoint\{HousingCertificate, Identity, Rib};
 use Unilend\Entity\{Attachment, AttachmentType, ClientAddressAttachment, Clients, ClientsStatus, ClientsStatusHistory, GreenpointAttachment, GreenpointKyc};
+use Unilend\Service\Attachment\AttachmentManager;
 use Unilend\Service\WebServiceClient\GreenPointManager;
 
 class GreenPointValidationManager

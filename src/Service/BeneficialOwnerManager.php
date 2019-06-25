@@ -10,6 +10,7 @@ use Symfony\Component\Routing\RouterInterface;
 use Twig_Environment;
 use Unilend\Entity\{Attachment, AttachmentType, BeneficialOwner, BeneficialOwnerType, ClientAddress, Clients, Companies, CompanyBeneficialOwnerDeclaration, Pays,
     ProjectBeneficialOwnerUniversign, Projects, ProjectsStatus, UniversignEntityInterface};
+use Unilend\Service\Attachment\AttachmentManager;
 use Unilend\Service\Front\UniversignManager;
 
 class BeneficialOwnerManager
