@@ -2,10 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Service;
+namespace Unilend\Service\Attachment;
 
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\OptimisticLockException;
+use Doctrine\ORM\ORMException;
 use Exception;
 use InvalidArgumentException;
 use PhpOffice\PhpSpreadsheet\Exception as PhpSpreadsheetException;
@@ -14,7 +16,8 @@ use PhpOffice\PhpSpreadsheet\Writer\Pdf\Mpdf as PhpSpreadsheetMpdf;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Filesystem\{Exception\FileNotFoundException, Filesystem};
 use Symfony\Component\HttpFoundation\File\UploadedFile;
-use Unilend\Entity\{Attachment, AttachmentType, Clients, Companies, Project, ProjectAttachment, ProjectAttachmentType, Transfer, TransferAttachment};
+use Unilend\Entity\{Attachment, AttachmentType, ClientAddressAttachment, Clients, Companies, GreenpointAttachment, ProjectAttachment, Transfer,
+    TransferAttachment};
 use Unilend\Service\User\RealUserFinder;
 use URLify;
 
@@ -170,49 +173,6 @@ class AttachmentManager
 
     /**
      * @param Attachment $attachment
-     * @param Project    $project
-     *
-     * @throws Exception
-     *
-     * @return ProjectAttachment
-     */
-    public function attachToProject(Attachment $attachment, Project $project)
-    {
-        $projectAttachmentRepository = $this->entityManager->getRepository(ProjectAttachment::class);
-        $attached                    = $projectAttachmentRepository->getAttachedAttachmentsByType($project, $attachment->getType());
-        $projectAttachmentType       = $this->entityManager->getRepository(ProjectAttachmentType::class)->findOneBy([
-            'attachmentType' => $attachment->getType(),
-        ])
-        ;
-
-        foreach ($attached as $index => $attachmentToDetach) {
-            if (null === $projectAttachmentType->getMaxItems() || $index < $projectAttachmentType->getMaxItems() - 1) {
-                continue;
-            }
-
-            $attachmentToDetach->getAttachment()->setArchived(new DateTimeImmutable());
-
-            $this->entityManager->remove($attachmentToDetach);
-            $this->entityManager->flush([$attachmentToDetach->getAttachment(), $attachmentToDetach]);
-        }
-
-        $projectAttachment = $projectAttachmentRepository->findOneBy(['attachment' => $attachment, 'project' => $project]);
-        if (null === $projectAttachment) {
-            $projectAttachment = new ProjectAttachment();
-            $projectAttachment
-                ->setProject($project)
-                ->setAttachment($attachment)
-            ;
-
-            $this->entityManager->persist($projectAttachment);
-            $this->entityManager->flush($projectAttachment);
-        }
-
-        return $projectAttachment;
-    }
-
-    /**
-     * @param Attachment $attachment
      * @param Transfer   $transfer
      *
      * @return TransferAttachment
@@ -292,6 +252,59 @@ class AttachmentManager
         }
 
         return null !== $previousAttachment;
+    }
+
+    /**
+     * @param Attachment $attachment
+     *
+     * @return bool
+     */
+    public function isOrphan(Attachment $attachment): bool
+    {
+        $attachedAttachments = $this->entityManager->getRepository(ProjectAttachment::class)->findBy(['attachment' => $attachment]);
+
+        if (count($attachedAttachments) > 0) {
+            return false;
+        }
+
+        $attachedAttachments = $this->entityManager->getRepository(ClientAddressAttachment::class)->findBy(['idAttachment' => $attachment]);
+
+        if (count($attachedAttachments) > 0) {
+            return false;
+        }
+
+        $attachedAttachments = $this->entityManager->getRepository(TransferAttachment::class)->findBy(['idAttachment' => $attachment]);
+
+        if (count($attachedAttachments) > 0) {
+            return false;
+        }
+
+        $attachedAttachments = $this->entityManager->getRepository(GreenpointAttachment::class)->findBy(['idAttachment' => $attachment]);
+
+        if (count($attachedAttachments) > 0) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * @param Attachment $attachment
+     * @param bool       $save
+     *
+     * @throws ORMException
+     * @throws OptimisticLockException
+     */
+    public function archive(Attachment $attachment, bool $save = true): void
+    {
+        $attachment
+            ->setArchived(new DateTimeImmutable())
+            ->setArchivedByValue($this->realUserFinder)
+        ;
+
+        if ($save) {
+            $this->entityManager->getRepository(Attachment::class)->save($attachment);
+        }
     }
 
     /**
@@ -438,10 +451,7 @@ class AttachmentManager
             ;
 
             foreach ($attachmentsToArchive as $attachment) {
-                $attachment
-                    ->setArchived(new DateTimeImmutable())
-                    ->setArchivedByValue($this->realUserFinder)
-                ;
+                $this->archive($attachment, false);
             }
         }
 

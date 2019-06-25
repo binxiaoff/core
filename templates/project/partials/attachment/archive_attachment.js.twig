@@ -1,0 +1,25 @@
+$(document).on('click', '[data-action="archive-attachment"]', function (e) {
+    e.preventDefault()
+    let $attachment = $(this)
+    if (confirm('{% trans %} attachment.detach-popup-confirmation-message {% endtrans %}')) {
+        $.ajax({
+            url: Routing.generate('document_detach', {id: $attachment.data('project-attachment-id')}),
+            method: 'PATCH'
+        }).done(function (response) {
+            if ('OK' === response) {
+                $attachment.tooltip('hide')
+
+                let $attachmentTable = $('#uploaded-project-documents')
+                if (1 === $attachmentTable.find('tbody tr').length) {
+                    $attachmentTable.fadeOut(1000, function(){
+                        $(this).replaceWith('<div class="message-info">Vous n‘avez aucun document associé à votre dossier.</div>')
+                    });
+                } else {
+                    $attachment.parents('tr').fadeOut(1000, function(){
+                        $(this).remove()
+                    });
+                }
+            }
+        })
+    }
+})

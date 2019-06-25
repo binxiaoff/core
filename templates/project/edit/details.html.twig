@@ -412,28 +412,62 @@
             {% endif %}
             <article class="dashboard-tab-pane" id="article-documents">
                 <div class="panel">
-                    {{ form_start(documentForm) }}
-                    <fieldset>
+                    <div class="panel-content">
                         <h3 class="margin-10-t">Documents</h3>
-                        {% for projectAttachment in projectAttachments %}
-                            {% set attachment = projectAttachment.attachment %}
-                            <div class="row">
-                                <span class="icon fa-file-u"></span>
-                                <a href="{{ path('document_download', {'id': projectAttachment.attachment.id, 'originalName': projectAttachment.attachment.originalName}) }}">
-                                    {% if projectAttachment.attachment.description is not empty %}{{ projectAttachment.attachment.description }}{% else %}{{ projectAttachment.attachment.originalName }}{% endif %}
-                                </a>
-                                <small>({{ attachment.added|localizeddate('short', 'short') }})</small>
-                            </div>
+                        {% if projectAttachments is not empty %}
+                            <table class="table table-projects table-finance" id="uploaded-project-documents">
+                                <thead>
+                                <tr class="my-offers-bid-row">
+                                    <th>{% trans %} attachment.type-column-label {% endtrans %}</th>
+                                    <th>{% trans %} attachment.description-column-label {% endtrans %}</th>
+                                    <th>{% trans %} attachment.original-file-name-column-label {% endtrans %}</th>
+                                    <th style="width: 60px;">&nbsp;</th>
+                                    <th style="width: 60px;">&nbsp;</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for projectAttachment in projectAttachments %}
+                                    {% set attachment = projectAttachment.attachment %}
+                                    <tr>
+                                        <td>{{ attachment.type }}</td>
+                                        <td>{{ attachment.description }}</td>
+                                        <td>
+                                            <a data-toggle="tooltip" title="{% trans %} attachment.download-button-tooltip {% endtrans %}"
+                                               href="{{ path('document_download', {'id': attachment.id, 'originalName': attachment.originalName}) }}">
+                                                {{ attachment.originalName }}
+                                            </a>
+                                        </td>
+                                        <td>
+                                            <a data-toggle="tooltip" title="{% trans %} attachment.download-button-tooltip {% endtrans %}"
+                                               href="{{ path('document_download', {'id': attachment.id, 'originalName': attachment.originalName}) }}">
+                                                <span class="fa fa-download" style="font-size: x-large;"></span>
+                                            </a>
+                                        </td>
+                                        <td>
+                                            <a href="#"
+                                               data-action="archive-attachment"
+                                               data-project-attachment-id="{{ projectAttachment.id }}"
+                                               data-toggle="tooltip" title="{% trans %} attachment.detach-button-tooltip {% endtrans %}">
+                                                <span class="fa fa-archive" style="font-size: x-large;"></span>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
                         {% else %}
-                            <div class="message-info">Vous n‘avez aucun document associé à votre dossier.</div>
-                        {% endfor %}
+                            <div class="message-info">{% trans %}attachment.no-attachment-info-message{% endtrans %}</div>
+                        {% endif %}
                         <h5 class="h4 margin-20-t">Ajouter des documents</h5>
-                        {{ form_row(documentForm.projectAttachments) }}
-                    </fieldset>
-                    <div class="text-align-right">
-                        <button type="submit" class="btn-primary btn-shape-xs" data-spinnerbutton>Charger</button>
-                    </div>
-                    {{ form_end(documentForm) }}
+                        {{ form_start(documentForm) }}
+                        <fieldset>
+                            {{ form_row(documentForm.projectAttachments) }}
+                        </fieldset>
+                        <div class="text-align-right">
+                            <button type="submit" class="btn-primary btn-shape-xs" data-spinnerbutton>Charger</button>
+                        </div>
+                        {{ form_end(documentForm) }}
+                    </div><!-- /.panel-content -->
                 </div><!-- /.panel -->
             </article><!-- /.dashboard-tab-pane -->
             <article class="dashboard-tab-pane" id="article-electronic-signature">
@@ -652,6 +686,7 @@
             {% include 'project/partials/bids/actions.js.twig' %}
             {% include 'project/partials/fees/edit_project_fees.js.twig' %}
             {% include 'project/partials/attachment/add_attachment.js.twig' %}
+            {% include 'project/partials/attachment/archive_attachment.js.twig' %}
             {% include 'project/partials/tranche/edit_tranches.js.twig' %}
 
             $.fn.editable.defaults.mode = 'inline'

@@ -9,7 +9,7 @@ services:
     # aliases so that the old service ids can still be accessed
 
     unilend.service.address_manager: '@Unilend\Service\AddressManager'
-    unilend.service.attachment_manager: '@Unilend\Service\AttachmentManager'
+    unilend.service.attachment_manager: '@Unilend\Service\Attachment\AttachmentManager'
     unilend.service.autobid_settings_manager: '@Unilend\Service\AutoBidSettingsManager'
     unilend.service.back_office_user_manager: '@Unilend\Service\BackOfficeUserManager'
     unilend.service.bank_account_manager: '@Unilend\Service\BankAccountManager'

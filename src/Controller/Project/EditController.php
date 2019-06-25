@@ -26,7 +26,7 @@ use Unilend\Form\Tranche\TrancheTypeCollectionType;
 use Unilend\Repository\{AcceptedBidsRepository, BidsRepository, CaRegionalBankRepository, CompaniesRepository, ProjectAttachmentRepository, ProjectAttachmentTypeRepository,
     ProjectRepository, TrancheRepository, UnderlyingContractRepository};
 use Unilend\Security\Voter\ProjectVoter;
-use Unilend\Service\{AttachmentManager, MailerManager, NotificationManager, ProjectStatusManager};
+use Unilend\Service\{Attachment\AttachmentManager, MailerManager, ProjectStatusManager};
 
 class EditController extends AbstractController
 {

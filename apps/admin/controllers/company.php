@@ -157,7 +157,7 @@ class companyController extends bootstrap
     {
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
-        /** @var \Unilend\Service\AttachmentManager $attachmentManager */
+        /** @var \Unilend\Service\Attachment\AttachmentManager $attachmentManager */
         $attachmentManager = $this->get('unilend.service.attachment_manager');
         /** @var \Unilend\Service\AddressManager $addressManager */
         $addressManager = $this->get('unilend.service.address_manager');

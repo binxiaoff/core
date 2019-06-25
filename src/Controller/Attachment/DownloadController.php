@@ -12,7 +12,7 @@ use Symfony\Component\HttpFoundation\{BinaryFileResponse, Response};
 use Symfony\Component\Routing\Annotation\Route;
 use Unilend\Entity\{Attachment, Project};
 use Unilend\Repository\ProjectAttachmentRepository;
-use Unilend\Service\AttachmentManager;
+use Unilend\Service\Attachment\AttachmentManager;
 use ZipArchive;
 
 class DownloadController extends AbstractController

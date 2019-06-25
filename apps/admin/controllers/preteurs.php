@@ -7,7 +7,7 @@ use Unilend\Entity\{AcceptationsLegalDocs, AddressType, Attachment, AttachmentTy
     LenderTaxExemption, Loans, MailTemplates, OffresBienvenues, OffresBienvenuesDetails, Operation, OperationType, Pays, ProjectNotification, ProjectsStatus, UsersHistory, VigilanceRule, Wallet,
     WalletType, Zones};
 use Unilend\Repository\LenderStatisticRepository;
-use Unilend\Service\{AttachmentManager, ClientAuditer, ClientDataHistoryManager, ClientStatusManager, LenderOperationsManager};
+use Unilend\Service\{Attachment\AttachmentManager, ClientAuditer, ClientDataHistoryManager, ClientStatusManager, LenderOperationsManager};
 
 class preteursController extends bootstrap
 {

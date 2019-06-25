@@ -6,10 +6,10 @@ use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\OptimisticLockException;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Form\{FormError, FormInterface};
-use Symfony\Component\HttpFoundation\{File\UploadedFile, FileBag};
+use Symfony\Component\HttpFoundation\{FileBag, File\UploadedFile};
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Entity\{AddressType, Attachment, AttachmentType, BankAccount, ClientAddress, Clients, Companies, CompanyAddress, Pays, Users, Villes, Wallet, WalletType};
-use Unilend\Service\{AddressManager, AttachmentManager, BankAccountManager, ClientAuditer, ClientDataHistoryManager, ClientStatusManager};
+use Unilend\Service\{AddressManager, Attachment\AttachmentManager, BankAccountManager, ClientAuditer, ClientDataHistoryManager, ClientStatusManager};
 use Unilend\SwiftMailer\TemplateMessageProvider;
 
 class LenderProfileFormsHandler
@@ -62,8 +62,7 @@ class LenderProfileFormsHandler
         TemplateMessageProvider $messageProvider,
         \Swift_Mailer $mailer,
         LoggerInterface $logger
-    )
-    {
+    ) {
         $this->entityManager            = $entityManager;
         $this->attachmentManager        = $attachmentManager;
         $this->clientStatusManager      = $clientStatusManager;
@@ -83,8 +82,9 @@ class LenderProfileFormsHandler
      * @param FormInterface $form
      * @param FileBag       $fileBag
      *
-     * @return bool
      * @throws \Exception
+     *
+     * @return bool
      */
     public function handlePersonIdentity(Clients $client, Clients $unattachedClient, FormInterface $form, FileBag $fileBag): bool
     {
@@ -102,62 +102,14 @@ class LenderProfileFormsHandler
     /**
      * @param Clients       $client
      * @param Clients       $unattachedClient
-     * @param FormInterface $form
-     * @param FileBag       $fileBag
-     *
-     * @return Attachment[]
-     */
-    private function uploadPersonalIdentityDocuments(Clients $client, Clients $unattachedClient, FormInterface $form, FileBag $fileBag): array
-    {
-        $newAttachments = [];
-
-        $files = [
-            AttachmentType::CNI_PASSPORTE       => $fileBag->get('id_recto'),
-            AttachmentType::CNI_PASSPORTE_VERSO => $fileBag->get('id_verso')
-        ];
-
-        foreach ($files as $attachmentTypeId => $file) {
-            if ($file instanceof UploadedFile) {
-                try {
-                    $newAttachments[$attachmentTypeId] = $this->upload($client, $attachmentTypeId, $file);
-                } catch (\Exception $exception) {
-                    $form->addError(new FormError($this->translator->trans('lender-profile_information-tab-identity-section-upload-files-error-message')));
-
-                    $this->logger->error('An error occurred while uploading attachment type id: ' . $attachmentTypeId . '. Error message: ' . $exception->getMessage(), [
-                        'id_client' => $client->getIdClient(),
-                        'class'     => __CLASS__,
-                        'function'  => __FUNCTION__,
-                        'file'      => $exception->getFile(),
-                        'line'      => $exception->getLine()
-                    ]);
-                }
-            }
-        }
-
-        if (
-            false === in_array(AttachmentType::CNI_PASSPORTE, array_keys($newAttachments))
-            && (
-                $unattachedClient->getIdNationality() !== $client->getIdNationality()
-                || $unattachedClient->getTitle() !== $client->getTitle()
-                || $unattachedClient->getFirstName() !== $client->getFirstName()
-            )
-        ) {
-            $form->addError(new FormError($this->translator->trans('lender-profile_information-tab-identity-section-change-ID-warning-message')));
-        }
-
-        return $newAttachments;
-    }
-
-    /**
-     * @param Clients       $client
-     * @param Clients       $unattachedClient
      * @param Companies     $company
      * @param Companies     $unattachedCompany
      * @param FormInterface $form
      * @param FileBag       $fileBag
      *
-     * @return bool
      * @throws \Exception
+     *
+     * @return bool
      */
     public function handleCompanyIdentity(Clients $client, Clients $unattachedClient, Companies $company, Companies $unattachedCompany, FormInterface $form, FileBag $fileBag): bool
     {
@@ -179,6 +131,318 @@ class LenderProfileFormsHandler
     }
 
     /**
+     * @param Clients            $client
+     * @param Clients            $unattachedClient
+     * @param FormInterface      $form
+     * @param FileBag            $fileBag
+     * @param string             $type
+     * @param ClientAddress|null $clientAddress
+     *
+     * @throws OptimisticLockException
+     *
+     * @return bool
+     */
+    public function handlePersonAddress(Clients $client, Clients $unattachedClient, FormInterface $form, FileBag $fileBag, string $type, ?ClientAddress $clientAddress): bool
+    {
+        $addressModified = $this->isAddressModified($form, $clientAddress);
+        if (false === $addressModified) {
+            return true;
+        }
+
+        $this->checkAddressForm($form, $type);
+
+        $newAttachments = $this->uploadPersonAddressDocument($client, $form, $fileBag, $type);
+
+        if ($this->isFormValid($form)) {
+            $this->savePersonAddress($client, $form, $type, $newAttachments);
+
+            if ($form->has('noUsPerson')) {
+                $form->get('noUsPerson')->getData() ? $client->setUsPerson(false) : $client->setUsPerson(true);
+            }
+
+            $this->saveAndNotifyChanges($client, $unattachedClient, null, null, $newAttachments, $type);
+
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * @param Companies           $company
+     * @param FormInterface       $form
+     * @param string              $addressType
+     * @param CompanyAddress|null $companyAddress
+     *
+     * @throws \Exception
+     * @throws \Doctrine\ORM\NonUniqueResultException
+     *
+     * @return bool
+     */
+    public function handleCompanyAddress(Companies $company, FormInterface $form, string $addressType, ?CompanyAddress $companyAddress): bool
+    {
+        $addressModified = $this->isAddressModified($form, $companyAddress);
+        if (false === $addressModified) {
+            return true;
+        }
+
+        $this->checkAddressForm($form, $addressType);
+
+        if ($form->isValid()) {
+            $this->saveCompanyAddress($company, $form, $addressType);
+
+            $this->saveAndNotifyChanges($company->getIdClientOwner(), $company->getIdClientOwner(), null, null, [], $addressType);
+
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * @param Clients       $client
+     * @param Clients       $unattachedClient
+     * @param FormInterface $form
+     * @param FileBag       $fileBag
+     *
+     * @throws \Exception
+     *
+     * @return bool
+     */
+    public function handleBankDetailsForm(Clients $client, Clients $unattachedClient, FormInterface $form, FileBag $fileBag): bool
+    {
+        $this->checkBankDetailsForm($form);
+        $bankAccount         = $this->entityManager->getRepository(BankAccount::class)->getLastModifiedBankAccount($client);
+        $bankAccountDocument = $this->uploadBankDocument($client, $form, $fileBag, $bankAccount);
+
+        if ($this->isFormValid($form)) {
+            $newAttachments      = [];
+            $bankAccountModified = false;
+
+            if ($bankAccountDocument) {
+                $iban = $form->get('iban')->getData();
+                $bic  = $form->get('bic')->getData();
+                $this->bankAccountManager->saveBankInformation($client, $bic, $iban, $bankAccountDocument);
+                $bankAccountModified = true;
+                $newAttachments      = [$bankAccountDocument];
+            }
+
+            $this->saveAndNotifyChanges($client, $unattachedClient, null, null, $newAttachments, null, $bankAccountModified);
+
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * @param Clients       $client
+     * @param Clients       $unattachedClient
+     * @param FormInterface $form
+     *
+     * @throws \Doctrine\ORM\ORMException
+     * @throws \Doctrine\ORM\OptimisticLockException
+     *
+     * @return bool
+     */
+    public function handleContactForm(Clients $client, Clients $unattachedClient, FormInterface $form): bool
+    {
+        if ($this->isUpdatingUsingExistingEmail($client, $unattachedClient)) {
+            $form->get('email')->addError(new FormError($this->translator->trans('lender-profile_identification-error-existing-email')));
+            $this->logger->error('Same email found ' . $client->getEmail(), [__METHOD__, $form->getErrors(), $form->isValid()]);
+        }
+
+        if ($form->isValid()) {
+            $this->saveAndNotifyChanges($client, $unattachedClient);
+
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * @param Clients       $client
+     * @param Clients       $unattachedClient
+     * @param ClientAddress $clientAddress
+     * @param string        $addressType
+     * @param FormInterface $form
+     * @param FileBag       $fileBag
+     *
+     * @throws \Exception
+     */
+    public function handleAllPersonalData(
+        Clients $client,
+        Clients $unattachedClient,
+        ClientAddress $clientAddress,
+        string $addressType,
+        FormInterface $form,
+        FileBag $fileBag
+    ): void {
+        $clientForm          = $form->get('client');
+        $addressForm         = $form->get($addressType);
+        $bankForm            = $form->get('bankAccount');
+        $modifiedAddressType = null;
+        $newAttachments      = [];
+
+        // Identity
+        $identityAttachments = $this->uploadPersonalIdentityDocuments($client, $unattachedClient, $clientForm, $fileBag);
+        $newAttachments      = $identityAttachments + $newAttachments;
+
+        // Address
+        $isAddressModified = $this->isAddressModified($addressForm, $clientAddress);
+        if ($isAddressModified) {
+            $this->checkAddressForm($addressForm, $addressType);
+            $housingAttachments  = $this->uploadPersonAddressDocument($client, $addressForm, $fileBag, $addressType);
+            $newAttachments      = $housingAttachments + $newAttachments;
+            $modifiedAddressType = $addressType;
+        }
+
+        //Bank Account
+        $isBankAccountModified = false;
+        $bankAccount           = $this->entityManager->getRepository(BankAccount::class)->getLastModifiedBankAccount($client);
+        $bankAccountAttachment = $this->uploadBankDocument($client, $bankForm, $fileBag, $bankAccount);
+        if ($bankAccountAttachment) {
+            $this->checkBankDetailsForm($bankForm);
+            $newAttachments[AttachmentType::RIB] = $bankAccountAttachment;
+            $isBankAccountModified               = true;
+        }
+
+        if ($form->isValid()) {
+            if ($isAddressModified) {
+                $this->savePersonAddress($client, $addressForm, $addressType, $newAttachments);
+            }
+
+            $addressForm->get('noUsPerson')->getData() ? $client->setUsPerson(false) : $client->setUsPerson(true);
+
+            if ($isBankAccountModified) {
+                $iban = $bankForm->get('iban')->getData();
+                $bic  = $bankForm->get('bic')->getData();
+                $this->bankAccountManager->saveBankInformation($client, $bic, $iban, $newAttachments[AttachmentType::RIB]);
+            }
+
+            $client->setPersonalDataUpdated();
+
+            $this->saveAndNotifyChanges($client, $unattachedClient, null, null, $newAttachments, $modifiedAddressType, $isBankAccountModified);
+        }
+    }
+
+    /**
+     * @param Clients        $client
+     * @param Clients        $unattachedClient
+     * @param Companies      $company
+     * @param Companies      $unattachedCompany
+     * @param CompanyAddress $companyAddress
+     * @param string         $addressType
+     * @param FormInterface  $form
+     * @param FileBag        $fileBag
+     *
+     * @throws \Exception
+     */
+    public function handleAllLegalEntityData(
+        Clients $client,
+        Clients $unattachedClient,
+        Companies $company,
+        Companies $unattachedCompany,
+        CompanyAddress $companyAddress,
+        string $addressType,
+        FormInterface $form,
+        FileBag $fileBag
+    ): void {
+        $companyForm         = $form->get('company');
+        $addressForm         = $form->get($addressType);
+        $bankForm            = $form->get('bankAccount');
+        $modifiedAddressType = null;
+
+        // Identity
+        $this->checkCompanyIdentityForm($company, $companyForm);
+
+        $newAttachments = $this->uploadCompanyIdentityDocuments($client, $company, $companyForm, $fileBag);
+
+        // Address
+        $isAddressModified = $this->isAddressModified($addressForm, $companyAddress);
+        if ($isAddressModified) {
+            $this->checkAddressForm($addressForm, $addressType);
+            $modifiedAddressType = $addressType;
+        }
+
+        //Bank Account
+        $isBankAccountModified = false;
+        $bankAccount           = $this->entityManager->getRepository(BankAccount::class)->getLastModifiedBankAccount($client);
+        $bankAccountAttachment = $this->uploadBankDocument($client, $bankForm, $fileBag, $bankAccount);
+        if ($bankAccountAttachment) {
+            $this->checkBankDetailsForm($bankForm);
+            $newAttachments[AttachmentType::RIB] = $bankAccountAttachment;
+            $isBankAccountModified               = true;
+        }
+
+        if ($form->isValid()) {
+            if ($isAddressModified) {
+                $this->saveCompanyAddress($company, $addressForm, $addressType);
+            }
+
+            if ($isBankAccountModified) {
+                $iban = $bankForm->get('iban')->getData();
+                $bic  = $bankForm->get('bic')->getData();
+                $this->bankAccountManager->saveBankInformation($client, $bic, $iban, $newAttachments[AttachmentType::RIB]);
+            }
+
+            $client->setPersonalDataUpdated();
+
+            $this->saveAndNotifyChanges($client, $unattachedClient, $company, $unattachedCompany, $newAttachments, $modifiedAddressType, $isBankAccountModified);
+        }
+    }
+
+    /**
+     * @param Clients       $client
+     * @param Clients       $unattachedClient
+     * @param FormInterface $form
+     * @param FileBag       $fileBag
+     *
+     * @return Attachment[]
+     */
+    private function uploadPersonalIdentityDocuments(Clients $client, Clients $unattachedClient, FormInterface $form, FileBag $fileBag): array
+    {
+        $newAttachments = [];
+
+        $files = [
+            AttachmentType::CNI_PASSPORTE       => $fileBag->get('id_recto'),
+            AttachmentType::CNI_PASSPORTE_VERSO => $fileBag->get('id_verso'),
+        ];
+
+        foreach ($files as $attachmentTypeId => $file) {
+            if ($file instanceof UploadedFile) {
+                try {
+                    $newAttachments[$attachmentTypeId] = $this->upload($client, $attachmentTypeId, $file);
+                } catch (\Exception $exception) {
+                    $form->addError(new FormError($this->translator->trans('lender-profile_information-tab-identity-section-upload-files-error-message')));
+
+                    $this->logger->error('An error occurred while uploading attachment type id: ' . $attachmentTypeId . '. Error message: ' . $exception->getMessage(), [
+                        'id_client' => $client->getIdClient(),
+                        'class'     => __CLASS__,
+                        'function'  => __FUNCTION__,
+                        'file'      => $exception->getFile(),
+                        'line'      => $exception->getLine(),
+                    ]);
+                }
+            }
+        }
+
+        if (
+            false === in_array(AttachmentType::CNI_PASSPORTE, array_keys($newAttachments))
+            && (
+                $unattachedClient->getIdNationality() !== $client->getIdNationality()
+                || $unattachedClient->getTitle() !== $client->getTitle()
+                || $unattachedClient->getFirstName() !== $client->getFirstName()
+            )
+        ) {
+            $form->addError(new FormError($this->translator->trans('lender-profile_information-tab-identity-section-change-ID-warning-message')));
+        }
+
+        return $newAttachments;
+    }
+
+    /**
      * @param Companies     $company
      * @param FormInterface $companyForm
      */
@@ -191,7 +455,8 @@ class LenderProfileFormsHandler
             ) {
                 $companyForm
                     ->get('statusConseilExterneEntreprise')
-                    ->addError(new FormError($this->translator->trans('lender-profile_information-tab-identity-section-company-external-counsel-error-message')));
+                    ->addError(new FormError($this->translator->trans('lender-profile_information-tab-identity-section-company-external-counsel-error-message')))
+                ;
             }
 
             if (
@@ -201,13 +466,15 @@ class LenderProfileFormsHandler
             ) {
                 $companyForm
                     ->get('preciserConseilExterneEntreprise')
-                    ->addError(new FormError($this->translator->trans('lender-profile_information-tab-identity-section-company-external-counsel-error-message')));
+                    ->addError(new FormError($this->translator->trans('lender-profile_information-tab-identity-section-company-external-counsel-error-message')))
+                ;
             }
 
             if (empty($company->getCiviliteDirigeant())) {
                 $companyForm
                     ->get('civiliteDirigeant')
-                    ->addError(new FormError($this->translator->trans('lender-profile_information-tab-identity-section-company-director-form-of-address-missing')));
+                    ->addError(new FormError($this->translator->trans('lender-profile_information-tab-identity-section-company-director-form-of-address-missing')))
+                ;
             }
 
             if (empty($company->getNomDirigeant())) {
@@ -266,50 +533,13 @@ class LenderProfileFormsHandler
                         'class'     => __CLASS__,
                         'function'  => __FUNCTION__,
                         'file'      => $exception->getFile(),
-                        'line'      => $exception->getLine()
+                        'line'      => $exception->getLine(),
                     ]);
                 }
             }
         }
 
         return $newAttachments;
-    }
-
-    /**
-     * @param Clients            $client
-     * @param Clients            $unattachedClient
-     * @param FormInterface      $form
-     * @param FileBag            $fileBag
-     * @param string             $type
-     * @param null|ClientAddress $clientAddress
-     *
-     * @return bool
-     * @throws OptimisticLockException
-     */
-    public function handlePersonAddress(Clients $client, Clients $unattachedClient, FormInterface $form, FileBag $fileBag, string $type, ?ClientAddress $clientAddress): bool
-    {
-        $addressModified = $this->isAddressModified($form, $clientAddress);
-        if (false === $addressModified) {
-            return true;
-        }
-
-        $this->checkAddressForm($form, $type);
-
-        $newAttachments = $this->uploadPersonAddressDocument($client, $form, $fileBag, $type);
-
-        if ($this->isFormValid($form)) {
-            $this->savePersonAddress($client, $form, $type, $newAttachments);
-
-            if ($form->has('noUsPerson')) {
-                $form->get('noUsPerson')->getData() ? $client->setUsPerson(false) : $client->setUsPerson(true);
-            }
-
-            $this->saveAndNotifyChanges($client, $unattachedClient, null, null, $newAttachments, $type);
-
-            return true;
-        }
-
-        return false;
     }
 
     /**
@@ -370,7 +600,7 @@ class LenderProfileFormsHandler
         $countryId = $form->get('idCountry')->getData();
 
         $files[AttachmentType::JUSTIFICATIF_DOMICILE] = $fileBag->get('housing-certificate');
-        if ($countryId !== Pays::COUNTRY_FRANCE) {
+        if (Pays::COUNTRY_FRANCE !== $countryId) {
             $files[AttachmentType::JUSTIFICATIF_FISCAL] = $fileBag->get('tax-certificate');
         }
         if ($form->get('housedByThirdPerson')->getData()) {
@@ -389,19 +619,22 @@ class LenderProfileFormsHandler
                         'class'     => __CLASS__,
                         'function'  => __FUNCTION__,
                         'file'      => $exception->getFile(),
-                        'line'      => $exception->getLine()
+                        'line'      => $exception->getLine(),
                     ]);
                 }
             } else {
                 switch ($attachmentTypeId) {
                     case AttachmentType::JUSTIFICATIF_FISCAL:
                         $error = $this->translator->trans('lender-profile_information-tab-fiscal-address-section-missing-tax-certificate');
+
                         break;
                     case AttachmentType::ATTESTATION_HEBERGEMENT_TIERS:
                         $error = $this->translator->trans('lender-profile_information-tab-fiscal-address-missing-housed-by-third-person-declaration');
+
                         break;
                     case AttachmentType::CNI_PASSPORT_TIERS_HEBERGEANT:
                         $error = $this->translator->trans('lender-profile_information-tab-fiscal-address-missing-id-third-person-housing');
+
                         break;
                     default:
                         continue 2;
@@ -452,7 +685,8 @@ class LenderProfileFormsHandler
         ) {
             $lastModifiedAddress = $this->entityManager
                 ->getRepository(ClientAddress::class)
-                ->findLastModifiedNotArchivedAddressByType($client, AddressType::TYPE_MAIN_ADDRESS);
+                ->findLastModifiedNotArchivedAddressByType($client, AddressType::TYPE_MAIN_ADDRESS)
+            ;
 
             if ($lastModifiedAddress instanceof ClientAddress) {
                 $this->addressManager->linkAttachmentToAddress($lastModifiedAddress, $newAttachments[AttachmentType::JUSTIFICATIF_DOMICILE]);
@@ -460,40 +694,10 @@ class LenderProfileFormsHandler
                 $this->logger->error('Client has no address to link to housing certificate', [
                     'id_client' => $client->getIdClient(),
                     'class'     => __CLASS__,
-                    'function'  => __FUNCTION__
+                    'function'  => __FUNCTION__,
                 ]);
             }
         }
-    }
-
-    /**
-     * @param Companies           $company
-     * @param FormInterface       $form
-     * @param string              $addressType
-     * @param CompanyAddress|null $companyAddress
-     *
-     * @return bool
-     * @throws \Exception
-     * @throws \Doctrine\ORM\NonUniqueResultException
-     */
-    public function handleCompanyAddress(Companies $company, FormInterface $form, string $addressType, ?CompanyAddress $companyAddress): bool
-    {
-        $addressModified = $this->isAddressModified($form, $companyAddress);
-        if (false === $addressModified) {
-            return true;
-        }
-
-        $this->checkAddressForm($form, $addressType);
-
-        if ($form->isValid()) {
-            $this->saveCompanyAddress($company, $form, $addressType);
-
-            $this->saveAndNotifyChanges($company->getIdClientOwner(), $company->getIdClientOwner(), null, null, [], $addressType);
-
-            return true;
-        }
-
-        return false;
     }
 
     /**
@@ -524,46 +728,11 @@ class LenderProfileFormsHandler
     }
 
     /**
-     * @param Clients       $client
-     * @param Clients       $unattachedClient
-     * @param FormInterface $form
-     * @param FileBag       $fileBag
-     *
-     * @return bool
-     * @throws \Exception
-     */
-    public function handleBankDetailsForm(Clients $client, Clients $unattachedClient, FormInterface $form, FileBag $fileBag): bool
-    {
-        $this->checkBankDetailsForm($form);
-        $bankAccount         = $this->entityManager->getRepository(BankAccount::class)->getLastModifiedBankAccount($client);
-        $bankAccountDocument = $this->uploadBankDocument($client, $form, $fileBag, $bankAccount);
-
-        if ($this->isFormValid($form)) {
-            $newAttachments      = [];
-            $bankAccountModified = false;
-
-            if ($bankAccountDocument) {
-                $iban = $form->get('iban')->getData();
-                $bic  = $form->get('bic')->getData();
-                $this->bankAccountManager->saveBankInformation($client, $bic, $iban, $bankAccountDocument);
-                $bankAccountModified = true;
-                $newAttachments      = [$bankAccountDocument];
-            }
-
-            $this->saveAndNotifyChanges($client, $unattachedClient, null, null, $newAttachments, null, $bankAccountModified);
-
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
      * @param FormInterface $form
      */
     private function checkBankDetailsForm(FormInterface $form): void
     {
-        if (false === in_array(strtoupper(substr($form->get('iban')->getData(), 0, 2)), Pays::EEA_COUNTRIES_ISO)) {
+        if (false === in_array(mb_strtoupper(mb_substr($form->get('iban')->getData(), 0, 2)), Pays::EEA_COUNTRIES_ISO)) {
             $form->get('iban')->addError(new FormError($this->translator->trans('lender-subscription_documents-iban-not-european-error-message')));
         }
     }
@@ -572,9 +741,9 @@ class LenderProfileFormsHandler
      * @param Clients          $client
      * @param FormInterface    $form
      * @param FileBag          $fileBag
-     * @param null|BankAccount $unattachedBankAccount
+     * @param BankAccount|null $unattachedBankAccount
      *
-     * @return null|Attachment
+     * @return Attachment|null
      */
     private function uploadBankDocument(Clients $client, FormInterface $form, FileBag $fileBag, ?BankAccount $unattachedBankAccount): ?Attachment
     {
@@ -595,38 +764,13 @@ class LenderProfileFormsHandler
                         'class'     => __CLASS__,
                         'function'  => __FUNCTION__,
                         'file'      => $exception->getFile(),
-                        'line'      => $exception->getLine()
+                        'line'      => $exception->getLine(),
                     ]);
                 }
             }
         }
 
         return $bankAccountDocument;
-    }
-
-    /**
-     * @param Clients       $client
-     * @param Clients       $unattachedClient
-     * @param FormInterface $form
-     *
-     * @return bool
-     * @throws \Doctrine\ORM\ORMException
-     * @throws \Doctrine\ORM\OptimisticLockException
-     */
-    public function handleContactForm(Clients $client, Clients $unattachedClient, FormInterface $form): bool
-    {
-        if ($this->isUpdatingUsingExistingEmail($client, $unattachedClient)) {
-            $form->get('email')->addError(new FormError($this->translator->trans('lender-profile_identification-error-existing-email')));
-            $this->logger->error('Same email found ' . $client->getEmail(), [__METHOD__, $form->getErrors(), $form->isValid()]);
-        }
-
-        if ($form->isValid()) {
-            $this->saveAndNotifyChanges($client, $unattachedClient);
-
-            return true;
-        }
-
-        return false;
     }
 
     /**
@@ -670,8 +814,7 @@ class LenderProfileFormsHandler
         array $newAttachments = [],
         ?string $modifiedAddressType = null,
         bool $isBankAccountModified = false
-    ): void
-    {
+    ): void {
         if ($modifiedCompany) {
             $this->entityManager->flush($modifiedCompany);
         }
@@ -683,19 +826,27 @@ class LenderProfileFormsHandler
         }
         $isAddressModified = in_array($modifiedAddressType, [AddressType::TYPE_MAIN_ADDRESS, AddressType::TYPE_POSTAL_ADDRESS]);
 
-        $this->clientStatusManager->changeClientStatusTriggeredByClientAction($modifiedClient, $unattachedClient, $modifiedCompany, $unattachedCompany, $isAddressModified, $isBankAccountModified,
-            $newAttachments);
+        $this->clientStatusManager->changeClientStatusTriggeredByClientAction(
+            $modifiedClient,
+            $unattachedClient,
+            $modifiedCompany,
+            $unattachedCompany,
+            $isAddressModified,
+            $isBankAccountModified,
+            $newAttachments
+        );
         $this->clientDataHistoryManager->sendLenderProfileModificationEmail($modifiedClient, $clientChanges, $companyChanges, $newAttachments, $modifiedAddressType, $isBankAccountModified);
     }
 
     /**
      * Changes should only be logged when client is actually updated, meaning the form should be valid
-     * Thus this method should only be called once form is fully validated, including attachments
+     * Thus this method should only be called once form is fully validated, including attachments.
      *
      * @param Clients $client
      *
-     * @return array
      * @throws \Doctrine\ORM\OptimisticLockException
+     *
+     * @return array
      */
     private function logAndSaveClientChanges(Clients $client): array
     {
@@ -724,7 +875,7 @@ class LenderProfileFormsHandler
             $this->logger->error('Could not notify email modification to old email address. Unable to find lender wallet.', [
                 'id_client' => $client,
                 'class'     => __CLASS__,
-                'function'  => __FUNCTION__
+                'function'  => __FUNCTION__,
             ]);
 
             return;
@@ -733,7 +884,7 @@ class LenderProfileFormsHandler
         $message = $this->messageProvider->newMessage('notification-changement-email-preteur', [
             'firstName'     => $client->getFirstName(),
             'lastName'      => $client->getLastName(),
-            'lenderPattern' => $wallet->getWireTransferPattern()
+            'lenderPattern' => $wallet->getWireTransferPattern(),
         ]);
 
         try {
@@ -746,7 +897,7 @@ class LenderProfileFormsHandler
                 'class'       => __CLASS__,
                 'function'    => __FUNCTION__,
                 'file'        => $exception->getFile(),
-                'line'        => $exception->getLine()
+                'line'        => $exception->getLine(),
             ]);
         }
     }
@@ -756,8 +907,9 @@ class LenderProfileFormsHandler
      * @param int          $attachmentTypeId
      * @param UploadedFile $file
      *
-     * @return Attachment
      * @throws \Exception
+     *
+     * @return Attachment
      */
     private function upload(Clients $client, int $attachmentTypeId, UploadedFile $file): Attachment
     {
@@ -769,73 +921,6 @@ class LenderProfileFormsHandler
         }
 
         return $attachment;
-    }
-
-    /**
-     * @param Clients       $client
-     * @param Clients       $unattachedClient
-     * @param ClientAddress $clientAddress
-     * @param string        $addressType
-     * @param FormInterface $form
-     * @param FileBag       $fileBag
-     *
-     * @throws \Exception
-     */
-    public function handleAllPersonalData(
-        Clients $client,
-        Clients $unattachedClient,
-        ClientAddress $clientAddress,
-        string $addressType,
-        FormInterface $form,
-        FileBag $fileBag
-    ): void
-    {
-        $clientForm          = $form->get('client');
-        $addressForm         = $form->get($addressType);
-        $bankForm            = $form->get('bankAccount');
-        $modifiedAddressType = null;
-        $newAttachments      = [];
-
-        // Identity
-        $identityAttachments = $this->uploadPersonalIdentityDocuments($client, $unattachedClient, $clientForm, $fileBag);
-        $newAttachments      = $identityAttachments + $newAttachments;
-
-        // Address
-        $isAddressModified = $this->isAddressModified($addressForm, $clientAddress);
-        if ($isAddressModified) {
-            $this->checkAddressForm($addressForm, $addressType);
-            $housingAttachments  = $this->uploadPersonAddressDocument($client, $addressForm, $fileBag, $addressType);
-            $newAttachments      = $housingAttachments + $newAttachments;
-            $modifiedAddressType = $addressType;
-        }
-
-        //Bank Account
-        $isBankAccountModified = false;
-        $bankAccount           = $this->entityManager->getRepository(BankAccount::class)->getLastModifiedBankAccount($client);
-        $bankAccountAttachment = $this->uploadBankDocument($client, $bankForm, $fileBag, $bankAccount);
-        if ($bankAccountAttachment) {
-            $this->checkBankDetailsForm($bankForm);
-            $newAttachments[AttachmentType::RIB] = $bankAccountAttachment;
-            $isBankAccountModified               = true;
-        }
-
-        if ($form->isValid()) {
-            if ($isAddressModified) {
-                $this->savePersonAddress($client, $addressForm, $addressType, $newAttachments);
-            }
-
-            $addressForm->get('noUsPerson')->getData() ? $client->setUsPerson(false) : $client->setUsPerson(true);
-
-            if ($isBankAccountModified) {
-                $iban = $bankForm->get('iban')->getData();
-                $bic  = $bankForm->get('bic')->getData();
-                $this->bankAccountManager->saveBankInformation($client, $bic, $iban, $newAttachments[AttachmentType::RIB]);
-            }
-
-            $client->setPersonalDataUpdated();
-
-            $this->saveAndNotifyChanges($client, $unattachedClient, null, null, $newAttachments, $modifiedAddressType, $isBankAccountModified);
-        }
     }
 
     /**
@@ -857,72 +942,5 @@ class LenderProfileFormsHandler
         }
 
         return false;
-    }
-
-    /**
-     * @param Clients        $client
-     * @param Clients        $unattachedClient
-     * @param Companies      $company
-     * @param Companies      $unattachedCompany
-     * @param CompanyAddress $companyAddress
-     * @param string         $addressType
-     * @param FormInterface  $form
-     * @param FileBag        $fileBag
-     *
-     * @throws \Exception
-     */
-    public function handleAllLegalEntityData(
-        Clients $client,
-        Clients $unattachedClient,
-        Companies $company,
-        Companies $unattachedCompany,
-        CompanyAddress $companyAddress,
-        string $addressType,
-        FormInterface $form,
-        FileBag $fileBag
-    ): void
-    {
-        $companyForm         = $form->get('company');
-        $addressForm         = $form->get($addressType);
-        $bankForm            = $form->get('bankAccount');
-        $modifiedAddressType = null;
-
-        // Identity
-        $this->checkCompanyIdentityForm($company, $companyForm);
-
-        $newAttachments = $this->uploadCompanyIdentityDocuments($client, $company, $companyForm, $fileBag);
-
-        // Address
-        $isAddressModified = $this->isAddressModified($addressForm, $companyAddress);
-        if ($isAddressModified) {
-            $this->checkAddressForm($addressForm, $addressType);
-            $modifiedAddressType = $addressType;
-        }
-
-        //Bank Account
-        $isBankAccountModified = false;
-        $bankAccount           = $this->entityManager->getRepository(BankAccount::class)->getLastModifiedBankAccount($client);
-        $bankAccountAttachment = $this->uploadBankDocument($client, $bankForm, $fileBag, $bankAccount);
-        if ($bankAccountAttachment) {
-            $this->checkBankDetailsForm($bankForm);
-            $newAttachments[AttachmentType::RIB] = $bankAccountAttachment;
-            $isBankAccountModified               = true;
-        }
-
-        if ($form->isValid()) {
-            if ($isAddressModified) {
-                $this->saveCompanyAddress($company, $addressForm, $addressType);
-            }
-
-            if ($isBankAccountModified) {
-                $iban = $bankForm->get('iban')->getData();
-                $bic  = $bankForm->get('bic')->getData();
-                $this->bankAccountManager->saveBankInformation($client, $bic, $iban, $newAttachments[AttachmentType::RIB]);
-            }
-
-            $client->setPersonalDataUpdated();
-
-            $this->saveAndNotifyChanges($client, $unattachedClient, $company, $unattachedCompany, $newAttachments, $modifiedAddressType, $isBankAccountModified);
-        }
     }
 }

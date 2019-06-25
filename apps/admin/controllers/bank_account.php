@@ -18,7 +18,7 @@ class bank_accountController extends bootstrap
             $this->attachment = $entityManager->getRepository(Attachment::class)->find($this->params[0]);
 
             if ($this->attachment) {
-                /** @var \Unilend\Service\AttachmentManager $attachmentManager */
+                /** @var \Unilend\Service\Attachment\AttachmentManager $attachmentManager */
                 $attachmentManager = $this->get('unilend.service.attachment_manager');
                 /** @var \Unilend\Service\BankAccountManager $bankAccountManager */
                 $bankAccountManager = $this->get('unilend.service.bank_account_manager');

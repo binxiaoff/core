@@ -909,7 +909,7 @@ class transfertsController extends bootstrap
                     $transfer->create();
 
                     $transferEntity = $entityManager->getRepository(Transfer::class)->find($transfer->id_transfer);
-                    /** @var \Unilend\Service\AttachmentManager $attachmentManager */
+                    /** @var \Unilend\Service\Attachment\AttachmentManager $attachmentManager */
                     $attachmentManager = $this->get('unilend.service.attachment_manager');
                     $attachmentType    = $entityManager->getRepository(AttachmentType::class)->find(AttachmentType::TRANSFER_CERTIFICATE);
                     if ($attachmentType) {

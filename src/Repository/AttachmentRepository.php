@@ -5,8 +5,8 @@ namespace Unilend\Repository;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\Query\Expr\Join;
-use Doctrine\ORM\{ORMException, OptimisticLockException};
-use Unilend\Entity\{Attachment, AttachmentType, Clients, ProjectAttachment, Projects};
+use Doctrine\ORM\{NonUniqueResultException, ORMException, OptimisticLockException};
+use Unilend\Entity\{Attachment, AttachmentType, Clients, Project, ProjectAttachment};
 
 class AttachmentRepository extends ServiceEntityRepository
 {
@@ -26,15 +26,15 @@ class AttachmentRepository extends ServiceEntityRepository
      */
     public function save(Attachment $attachment)
     {
-        $this->_em->persist($attachment);
-        $this->_em->flush();
+        $this->getEntityManager()->persist($attachment);
+        $this->getEntityManager()->flush();
     }
 
     /**
-     * @param Projects|int       $project
+     * @param Project|int        $project
      * @param AttachmentType|int $attachmentType
      *
-     * @throws \Doctrine\ORM\NonUniqueResultException
+     * @throws NonUniqueResultException
      *
      * @return Attachment|null
      */
@@ -68,7 +68,7 @@ class AttachmentRepository extends ServiceEntityRepository
     /**
      * @param Attachment $attachment
      *
-     * @throws \Doctrine\ORM\NonUniqueResultException
+     * @throws NonUniqueResultException
      *
      * @return Attachment|null
      */

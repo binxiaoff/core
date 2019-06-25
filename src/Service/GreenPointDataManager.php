@@ -6,6 +6,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Unilend\Entity\External\GreenPoint\{HousingCertificate, Identity, Rib};
 use Unilend\Entity\{AddressType, Attachment, AttachmentType, ClientAddress, Companies, CompanyAddress, GreenpointAttachment, GreenpointAttachmentDetail};
+use Unilend\Service\Attachment\AttachmentManager;
 use Unilend\Service\WebServiceClient\GreenPointManager;
 
 class GreenPointDataManager
