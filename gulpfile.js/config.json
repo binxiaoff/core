@@ -35,7 +35,7 @@
       "src": "sass",
       "dest": "css",
       "autoprefixer": {
-        "overrideBrowserslist": ["last 2 versions"],
+        "browsers": ["last 2 versions"],
         "cascade": true
       },
       "compass": {
