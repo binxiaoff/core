@@ -1,6 +1,6 @@
 <?php
 
-namespace Unilend\Controller\Unilend;
+namespace Unilend\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\{JsonResponse, Request};
