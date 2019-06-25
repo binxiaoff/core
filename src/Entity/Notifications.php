@@ -5,7 +5,7 @@ namespace Unilend\Entity;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * Notifications
+ * @deprecated
  *
  * @ORM\Table(name="notifications", indexes={@ORM\Index(name="id_lender", columns={"id_lender"})})
  * @ORM\Entity(repositoryClass="Unilend\Repository\NotificationsRepository")

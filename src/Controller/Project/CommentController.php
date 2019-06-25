@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Unilend\Controller\Project;
 
 use Doctrine\ORM\{ORMException, OptimisticLockException};
+use Exception;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\{JsonResponse, Request, Response};
@@ -12,6 +13,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Unilend\Entity\{Clients, Project, ProjectComment};
 use Unilend\Repository\ProjectCommentRepository;
+use Unilend\Service\NotificationManager;
 
 class CommentController extends AbstractController
 {
@@ -28,16 +30,23 @@ class CommentController extends AbstractController
      *
      * @param Project                    $project
      * @param ProjectCommentRepository   $projectCommentRepository
+     * @param NotificationManager        $notificationManager
      * @param Request                    $request
      * @param UserInterface|Clients|null $user
      *
-     * @throws ORMException
+     * @throws Exception
      * @throws OptimisticLockException
+     * @throws ORMException
      *
      * @return Response
      */
-    public function add(Project $project, ProjectCommentRepository $projectCommentRepository, Request $request, ?UserInterface $user): Response
-    {
+    public function add(
+        Project $project,
+        ProjectCommentRepository $projectCommentRepository,
+        NotificationManager $notificationManager,
+        Request $request,
+        ?UserInterface $user
+    ): Response {
         $content = $request->request->get('content');
 
         if ($content) {
@@ -53,6 +62,8 @@ class CommentController extends AbstractController
             ;
 
             $projectCommentRepository->save($comment);
+
+            $notificationManager->createProjectCommentAdded($comment);
 
             return $this->render('project/comment/response.json.twig', ['comment' => $comment], new JsonResponse());
         }

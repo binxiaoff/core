@@ -1,4 +1,4 @@
-{% extends 'layouts/_page_with_side_bar.html.twig' %}
+{% extends 'layouts/_page_with_sidebar.html.twig' %}
 
 {% set page = {
     id: 'demo-project-details',
@@ -196,7 +196,7 @@
                 </div><!-- /.section-tabs-nav -->
                 <div class="section-tabs-content tab-content">
                     {% for tranche in project.tranches %}
-                        {% include 'project/partials/bids/my_bid.html.twig' with {tranche: tranche, wallet: wallet, form: bidForms[tranche.id].createView()|default(null)} %}
+                        {% include 'project/partials/bids/my_bid.html.twig' with {tranche: tranche, form: bidForms[tranche.id].createView()|default(null)} %}
                     {% endfor %}
                 </div><!-- /.section-tabs-content -->
             </div><!-- /.panel -->

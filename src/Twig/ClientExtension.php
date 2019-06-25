@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Unilend\Twig;
 
 use Doctrine\ORM\EntityManagerInterface;
+use Exception;
 use Psr\Log\LoggerInterface;
 use Twig\Extension\AbstractExtension;
 use Twig\TwigFunction;
@@ -54,153 +55,36 @@ class ClientExtension extends AbstractExtension
         return [
             new TwigFunction('partner', [$this, 'getPartner']),
             new TwigFunction('walletBalance', [$this, 'getBalance']),
-            new TwigFunction('lenderNotifications', [$this, 'getLenderNotifications']),
+            new TwigFunction('notifications', [$this, 'getNotifications']),
         ];
     }
 
     /**
      * @param Clients|null $client
      *
-     * @return array
+     * @throws Exception
      *
-     * @throws \Exception
+     * @return array
      */
-    public function getLenderNotifications(?Clients $client): array
+    public function getNotifications(?Clients $client): array
     {
-        return [
-            [
-                'id'        => 1,
-                'projectId' => 1,
-                'type'      => 'offer-accepted',
-                'title'     => 'Offre acceptée',
-                'datetime'  => (new \DateTime('2019-03-25 11:00:00')),
-                'iso-8601'  => (new \DateTime('2019-03-25 11:00:00'))->format('c'),
-                'content'   => 'L‘offre de participation de 20&nbsp;000&nbsp;€ que vous avez faite sur le projet «&nbsp;Éolien marin Manche&nbsp;» a été acceptée.',
-                'image'     => 'circle-accepted',
-                'status'    => 'unread',
-            ],
-            [
-                'id'        => 2,
-                'projectId' => 2,
-                'type'      => 'offer',
-                'title'     => 'Nouvelle offre',
-                'datetime'  => (new \DateTime('2019-03-20 12:15:00')),
-                'iso-8601'  => (new \DateTime('2019-03-20 12:15:00'))->format('c'),
-                'content'   => 'CA Centre vient de faire une offre de participation de 15&nbsp;000&nbsp;€ sur votre projet «&nbsp;Région Bretagne S2 2019&nbsp;».',
-                'image'     => '',
-                'status'    => 'unread',
-            ],
-            [
-                'id'        => 3,
-                'projectId' => 3,
-                'type'      => 'offer',
-                'title'     => 'Nouveau projet',
-                'datetime'  => (new \DateTime('2019-01-01 10:00:00')),
-                'iso-8601'  => (new \DateTime('2019-01-01 10:00:00'))->format('c'),
-                'content'   => 'Un nouveau projet de financement vous est proposé par CA Touraine-Poitou.',
-                'image'     => 'project',
-                'status'    => 'unread',
-            ],
-            [
-                'id'        => 4,
-                'projectId' => 4,
-                'type'      => 'offer-rejected',
-                'title'     => 'Offre rejetée',
-                'datetime'  => (new \DateTime('2018-12-18 19:20:00')),
-                'iso-8601'  => (new \DateTime('2018-12-18 19:20:00'))->format('c'),
-                'content'   => '',
-                'image'     => 'circle-rejected',
-                'status'    => 'unread',
-            ],
-            [
-                'id'        => 5,
-                'projectId' => 5,
-                'type'      => 'account',
-                'title'     => 'Attente de signature',
-                'datetime'  => (new \DateTime('2018-12-17 07:50:00')),
-                'iso-8601'  => (new \DateTime('2018-12-17 07:50:00'))->format('c'),
-                'content'   => '',
-                'image'     => '',
-                'status'    => 'unread',
-            ],
-            [
-                'id'        => 6,
-                'projectId' => 6,
-                'type'      => 'offer',
-                'title'     => 'Fin du financement',
-                'datetime'  => (new \DateTime('2018-11-29 15:25:00')),
-                'iso-8601'  => (new \DateTime('2018-11-29 15:25:00'))->format('c'),
-                'content'   => '',
-                'image'     => '',
-                'status'    => 'unread',
-            ],
-            [
-                'id'        => 7,
-                'projectId' => 7,
-                'type'      => 'offer',
-                'title'     => 'Nouveau projet',
-                'datetime'  => (new \DateTime('2018-11-27 17:45:00')),
-                'iso-8601'  => (new \DateTime('2018-11-27 17:45:00'))->format('c'),
-                'content'   => '',
-                'image'     => 'project',
-                'status'    => 'unread',
-            ],
-            [
-                'id'        => 8,
-                'projectId' => 8,
-                'type'      => 'offer',
-                'title'     => 'Nouvelle offre',
-                'datetime'  => (new \DateTime('2018-11-17 17:44:00')),
-                'iso-8601'  => (new \DateTime('2018-11-17 17:44:00'))->format('c'),
-                'content'   => '',
-                'image'     => '',
-                'status'    => 'unread',
-            ],
-            [
-                'id'        => 9,
-                'projectId' => 9,
-                'type'      => 'offer',
-                'title'     => 'Nouvelle offre',
-                'datetime'  => (new \DateTime('2018-11-01 11:11:00')),
-                'iso-8601'  => (new \DateTime('2018-11-01 11:11:00'))->format('c'),
-                'content'   => '',
-                'image'     => '',
-                'status'    => 'read',
-            ],
-            [
-                'id'        => 10,
-                'projectId' => 10,
-                'type'      => 'offer',
-                'title'     => 'Nouveau projet',
-                'datetime'  => (new \DateTime('2018-10-01 14:58:00')),
-                'iso-8601'  => (new \DateTime('2018-10-01 14:58:00'))->format('c'),
-                'content'   => '',
-                'image'     => 'project',
-                'status'    => 'read',
-            ],
-        ];
-
-        if (false === $client instanceof Clients || false === $client->isLender()) {
+        if (false === $client instanceof Clients) {
             return [];
         }
 
         try {
-            $notifications = $this->notificationDisplayManager->getLastLenderNotifications($client);
-        } catch (\Exception $exception) {
-            $notifications = [];
-            $this->logger->error(
-                'Unable to retrieve last lender notifications. Error: ' . $exception->getMessage(),
-                [
-                    'id_client' => $client->getIdClient(),
-                    'class'     => __CLASS__,
-                    'function'  => __FUNCTION__,
-                    'file'      => $exception->getFile(),
-                    'line'      => $exception->getLine(),
-                ]
-            );
-        }
+            return $this->notificationDisplayManager->getLastClientNotifications($client);
+        } catch (Exception $exception) {
+            $this->logger->error('Unable to retrieve last client notifications. Error: ' . $exception->getMessage(), [
+                'id_client' => $client->getIdClient(),
+                'class'     => __CLASS__,
+                'function'  => __FUNCTION__,
+                'file'      => $exception->getFile(),
+                'line'      => $exception->getLine(),
+            ]);
 
-        return $notifications;
+            return [];
+        }
     }
 
     /**

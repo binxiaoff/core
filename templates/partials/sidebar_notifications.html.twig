@@ -1,0 +1,30 @@
+{% set notifications = notifications(app.user) %}
+{% if notifications|length > 0 %}
+    <article class="dashboard-panel-alt dashboard-notifications">
+        <header class="dashboard-panel-header">
+            <h3 class="dashboard-panel-title">
+                Notifications <span data-usernotifications-unreadcount></span>
+            </h3>
+        </header>
+        <div class="dashboard-panel-content">
+            <div id="profile-notifications" data-usernotificationslist>
+                <ul class="list-notifications">
+                    {% for notification in notifications %}
+                        <li class="notification notification-type-{{ notification.type|default('message')|escape('html_attr') }} ui-notification-status-{{ notification.status }}" data-notification-id="{{ notification.id|default(notification.datetime|date('U'))|e('html_attr') }}" data-notification-project-id="{{ notification.projectId }}" tabindex="0">
+                            <header class="notification-header">
+                                <h5 class="notification-datetime">{{ notification.datetime|localizeddate('medium', 'short') }}</h5>
+                                <h4 class="notification-title">{{ notification.title|raw }}</h4>
+                                <div class="notification-image">
+                                    <span class="svg-icon-wrap">{{ svgimage('#notification-' ~ notification.image, notification.title, 100, 100, 'none')|raw }}</span>
+                                </div>
+                            </header>
+                            <div class="notification-content">
+                                <p>{{ notification.content|raw|nl2br }}</p>
+                            </div>
+                        </li><!-- /.notification -->
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </article>
+{% endif %}

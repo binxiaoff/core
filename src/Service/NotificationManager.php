@@ -3,263 +3,222 @@
 namespace Unilend\Service;
 
 use Doctrine\ORM\EntityManagerInterface;
-use Unilend\Entity\{Clients, ClientsGestionMailsNotif, ClientsGestionNotifications, ClientsGestionTypeNotif, Wallet, WalletBalanceHistory, WalletType};
-use Unilend\Service\Simulator\EntityManager as EntityManagerSimulator;
+use Exception;
+use Swift_RfcComplianceException;
+use Unilend\Entity\{Bids, Clients, Notification, Project, ProjectComment};
+use Unilend\Repository\NotificationRepository;
 
 class NotificationManager
 {
-    /** @var MailerManager */
-    private $mailerManager;
+    public const RECIPIENT_TYPE_AGENCY       = 'agency';
+    public const RECIPIENT_TYPE_ARRANGER     = 'arranger';
+    public const RECIPIENT_TYPE_LENDERS      = 'lenders';
+    public const RECIPIENT_TYPE_RUN          = 'run';
+    public const RECIPIENT_TYPE_SUBMITTER    = 'submitter';
+    public const RECIPIENT_TYPES_BACK_OFFICE = [
+        self::RECIPIENT_TYPE_AGENCY,
+        self::RECIPIENT_TYPE_ARRANGER,
+        self::RECIPIENT_TYPE_RUN,
+        self::RECIPIENT_TYPE_SUBMITTER,
+    ];
+
     /** @var EntityManagerInterface */
     private $entityManager;
-    /** @var EntityManagerSimulator */
-    private $entityManagerSimulator;
+    /** @var NotificationRepository */
+    private $notificationRepository;
+    /** @var MailerManager */
+    private $mailerManager;
 
     /**
-     * @param EntityManagerSimulator $entityManagerSimulator
      * @param EntityManagerInterface $entityManager
+     * @param NotificationRepository $notificationRepository
      * @param MailerManager          $mailerManager
      */
-    public function __construct(
-        EntityManagerSimulator $entityManagerSimulator,
-        EntityManagerInterface $entityManager,
-        MailerManager $mailerManager
-    )
+    public function __construct(EntityManagerInterface $entityManager, NotificationRepository $notificationRepository, MailerManager $mailerManager)
     {
-        $this->entityManagerSimulator = $entityManagerSimulator;
         $this->entityManager          = $entityManager;
+        $this->notificationRepository = $notificationRepository;
         $this->mailerManager          = $mailerManager;
     }
 
     /**
-     * @param int                       $notificationType
-     * @param int                       $mailType
-     * @param int                       $clientId
-     * @param null|int                  $mailFunction
-     * @param null|int                  $projectId
-     * @param null|float                $amount
-     * @param null|int                  $bidId
-     * @param null|WalletBalanceHistory $walletBalanceHistory
-     * @param null|int                  $loanId
-     *
-     * @throws \Doctrine\ORM\OptimisticLockException
-     */
-    public function create(
-        $notificationType,
-        $mailType,
-        $clientId,
-        $mailFunction = null,
-        $projectId = null,
-        $amount = null,
-        $bidId = null,
-        WalletBalanceHistory $walletBalanceHistory = null,
-        $loanId = null
-    )
-    {
-        /** @var \clients_gestion_notifications $notificationSettings */
-        $notificationSettings = $this->entityManagerSimulator->getRepository('clients_gestion_notifications');
-        $notification         = $this->createNotification($notificationType, $clientId, $projectId, $amount, $bidId);
-
-        if ($notificationSettings->getNotif($clientId, $mailType, 'uniquement_notif') == false) {
-            if (
-                $notificationSettings->getNotif($clientId, $mailType, 'immediatement')
-                || false === $notificationSettings->exist(['id_client' => $clientId, 'id_notif'  => $mailType])
-                && null !== $mailFunction && method_exists($this->mailerManager, $mailFunction)
-            ) {
-                $this->mailerManager->$mailFunction($notification);
-                $sent = true;
-            } else {
-                $sent = false;
-            }
-
-            $this->createEmailNotification($mailType, $clientId, $notification->id_notification, $walletBalanceHistory, $projectId, $loanId, $sent);
-        }
-    }
-
-    /**
-     * @param int        $notificationType
-     * @param int        $clientId
-     * @param null|int   $projectId
-     * @param null|float $amount
-     * @param null|int   $bidId
-     *
-     * @return \notifications
-     */
-    public function createNotification($notificationType, $clientId, $projectId = null, $amount = null, $bidId = null)
-    {
-        /** @var \notifications $notification */
-        $notification = $this->entityManagerSimulator->getRepository('notifications');
-        $wallet       = $this->entityManager->getRepository(Wallet::class)->getWalletByType($clientId, WalletType::LENDER);
-
-        $lenderId = '';
-        if (null !== $wallet) {
-            $lenderId = $wallet->getId();
-        }
-        $notification->type       = $notificationType;
-        $notification->id_lender  = $lenderId;
-        $notification->id_project = $projectId;
-        $notification->amount     = bcmul($amount, 100);
-        $notification->id_bid     = $bidId;
-        $notification->create();
-
-        return $notification;
-    }
-
-    /**
-     * @param int                       $mailType
-     * @param int                       $clientId
-     * @param int|null                  $notificationId
-     * @param WalletBalanceHistory|null $walletBalanceHistory
-     * @param int|null                  $projectId
-     * @param int|null                  $loanId
-     * @param bool                      $sent
-     * @param \DateTime|null            $notificationDate
-     *
-     * @return ClientsGestionMailsNotif
-     * @throws \Doctrine\ORM\OptimisticLockException
-     */
-    public function createEmailNotification(
-        int $mailType,
-        int $clientId,
-        ?int $notificationId = null,
-        ?WalletBalanceHistory $walletBalanceHistory = null,
-        ?int $projectId = null,
-        ?int $loanId = null,
-        bool $sent = false,
-        ?\DateTime $notificationDate = null
-    ): ClientsGestionMailsNotif
-    {
-        $emailNotification = new ClientsGestionMailsNotif();
-        $emailNotification
-            ->setIdClient($clientId)
-            ->setIdNotif($mailType)
-            ->setDateNotif(new \DateTime('NOW'))
-            ->setIdNotification($notificationId)
-            ->setIdProject($projectId)
-            ->setIdLoan($loanId);
-
-        if ($notificationDate instanceof \DateTime) {
-            $emailNotification->setDateNotif($notificationDate);
-        }
-
-        if (null !== $walletBalanceHistory) {
-            $emailNotification->setIdWalletBalanceHistory($walletBalanceHistory);
-        }
-
-        if ($sent) {
-            $emailNotification->setImmediatement(1);
-        }
-
-        $this->entityManager->persist($emailNotification);
-        $this->entityManager->flush($emailNotification);
-
-        return $emailNotification;
-    }
-
-    /**
      * @param Clients $client
-     *
-     * @throws \Doctrine\ORM\OptimisticLockException
      */
-    public function generateDefaultNotificationSettings(Clients $client)
+    public function createAccountCreated(Clients $client): void
     {
-        $allTypes = $this->entityManager->getRepository(ClientsGestionTypeNotif::class)->findAll();
-
-        /** @var ClientsGestionTypeNotif $type */
-        foreach ($allTypes as $type) {
-            $this->createMissingNotificationSettingWithDefaultValue($type, $client);
-        }
+        $this->createNotification(Notification::TYPE_ACCOUNT_CREATED, [$client]);
     }
 
     /**
-     * @param Clients $client
+     * @param Project $project
      *
-     * @throws \Doctrine\ORM\OptimisticLockException
+     * @throws Swift_RfcComplianceException
+     * @throws Exception
      */
-    public function checkNotificationSettingsAndCreateDefaultIfMissing(Clients $client): void
+    public function createProjectRequest(Project $project): void
     {
-        $settings = $this->entityManagerSimulator->getRepository('clients_gestion_notifications')->getNotifs($client->getIdClient());
+        $recipients = $this->getProjectRecipients($project, [
+            self::RECIPIENT_TYPE_SUBMITTER,
+            self::RECIPIENT_TYPE_ARRANGER,
+            self::RECIPIENT_TYPE_RUN,
+        ]);
 
-        if (empty($settings)) {
-            $this->generateDefaultNotificationSettings($client);
-            return;
-        }
+        $this->createNotification(Notification::TYPE_PROJECT_REQUEST, $recipients, $project);
 
-        $allTypes = $this->entityManager->getRepository(ClientsGestionTypeNotif::class)->findAll();
+        $this->mailerManager->sendProjectRequest($project, $recipients);
+    }
 
-        /** @var ClientsGestionTypeNotif $type */
-        foreach ($allTypes as $type) {
-            if (false === isset($settings[$type->getIdClientGestionTypeNotif()])) {
-                $this->createMissingNotificationSettingWithDefaultValue($type, $client);
+    /**
+     * @param Project $project
+     *
+     * @throws Swift_RfcComplianceException
+     * @throws Exception
+     */
+    public function createProjectPublication(Project $project): void
+    {
+        $recipients = $this->getProjectRecipients($project);
+
+        $this->createNotification(Notification::TYPE_PROJECT_PUBLICATION, $recipients, $project);
+
+        $this->mailerManager->sendProjectPublication($project, $recipients);
+    }
+
+    /**
+     * @param Bids $bid
+     *
+     * @throws Swift_RfcComplianceException
+     * @throws Exception
+     */
+    public function createBidSubmitted(Bids $bid): void
+    {
+        $bidder     = $bid->getAddedBy();
+        $recipients = $this->getProjectRecipients($bid->getTranche()->getProject());
+
+        unset($recipients[$bidder->getIdClient()]);
+
+        $this->createNotification(Notification::TYPE_BID_SUBMITTED_BIDDER, [$bidder], null, $bid);
+        $this->createNotification(Notification::TYPE_BID_SUBMITTED_LENDERS, $recipients, null, $bid);
+
+        $this->mailerManager->sendBidSubmitted($bid, $recipients);
+    }
+
+    /**
+     * @param ProjectComment $comment
+     *
+     * @throws Exception
+     */
+    public function createProjectCommentAdded(ProjectComment $comment): void
+    {
+        $recipients = $this->getProjectRecipients($comment->getProject());
+
+        unset($recipients[$comment->getClient()->getIdClient()]);
+
+        foreach ($recipients as $recipient) {
+            $notification = $this->notificationRepository->findOneBy([
+                'client'  => $recipient,
+                'project' => $comment->getProject(),
+                'type'    => Notification::TYPE_PROJECT_COMMENT_ADDED,
+                'status'  => Notification::STATUS_UNREAD,
+            ]);
+
+            if (null === $notification) {
+                $this->createNotification(Notification::TYPE_PROJECT_COMMENT_ADDED, [$recipient], $comment->getProject());
+
+                $this->mailerManager->sendProjectCommentAdded($comment, [$recipient]);
             }
         }
     }
 
     /**
-     * @param ClientsGestionTypeNotif $type
-     * @param Clients                 $client
+     * @todo change when users' roles are better defined
      *
-     * @return ClientsGestionNotifications
-     * @throws \Doctrine\ORM\OptimisticLockException
+     * @param Project    $project
+     * @param array|null $types
+     *
+     * @throws Exception
+     *
+     * @return Clients[]
      */
-    public function createMissingNotificationSettingWithDefaultValue(ClientsGestionTypeNotif $type, Clients $client): ClientsGestionNotifications
+    private function getProjectRecipients(Project $project, ?array $types = null): array
     {
-        $immediateSetting = in_array($type->getIdClientGestionTypeNotif(), ClientsGestionTypeNotif::TYPES_WITH_DEFAULT_SETTING_IMMEDIATE) ? 1 : 0;
-        $dailySetting     = in_array($type->getIdClientGestionTypeNotif(), ClientsGestionTypeNotif::TYPES_WITH_DEFAULT_SETTING_DAILY) ? 1 : 0;
-        $weeklySetting    = in_array($type->getIdClientGestionTypeNotif(), ClientsGestionTypeNotif::TYPES_WITH_DEFAULT_SETTING_WEEKLY) ? 1 : 0;
-        $monthlySetting   = 0;
-        $onlyNotification = 0;
+        $recipients = [];
 
-        $setting = new ClientsGestionNotifications();
-        $setting
-            ->setIdClient($client->getIdClient())
-            ->setIdNotif($type->getIdClientGestionTypeNotif())
-            ->setImmediatement($immediateSetting)
-            ->setQuotidienne($dailySetting)
-            ->setHebdomadaire($weeklySetting)
-            ->setMensuelle($monthlySetting)
-            ->setUniquementNotif($onlyNotification);
+        if (null === $types) {
+            foreach ($project->getProjectParticipants() as $projectParticipant) {
+                $recipients[$projectParticipant->getCompany()->getIdClientOwner()->getIdClient()] = $projectParticipant->getCompany()->getIdClientOwner();
+            }
 
-        $this->entityManager->persist($setting);
-        $this->entityManager->flush($setting);
-
-        return $setting;
-    }
-
-    /**
-     * @param \clients $client
-     */
-    public function deactivateAllNotificationSettings(\clients $client)
-    {
-        /** @var \clients_gestion_notifications $clientNotificationSettings */
-        $clientNotificationSettings = $this->entityManagerSimulator->getRepository('clients_gestion_notifications');
-
-        foreach ($clientNotificationSettings->getNotifs($client->id_client) as $idNotification => $notification){
-            $clientNotificationSettings->get(['id_notif' => $idNotification]);
-            $clientNotificationSettings->immediatement    = 0;
-            $clientNotificationSettings->quotidienne      = 0;
-            $clientNotificationSettings->hebdomadaire     = 0;
-            $clientNotificationSettings->mensuelle        = 0;
-            $clientNotificationSettings->uniquement_notif = 0;
-            $clientNotificationSettings->update(['id_notif' => $clientNotificationSettings->id_notif]);
+            return $recipients;
         }
+
+        foreach ($types as $type) {
+            switch ($type) {
+                case self::RECIPIENT_TYPE_ARRANGER:
+                    if ($arranger = $project->getArranger()) {
+                        $recipients[$arranger->getCompany()->getIdClientOwner()->getIdClient()] = $arranger->getCompany()->getIdClientOwner();
+                    }
+
+                    if ($deputyArranger = $project->getDeputyArranger()) {
+                        $recipients[$deputyArranger->getCompany()->getIdClientOwner()->getIdClient()] = $deputyArranger->getCompany()->getIdClientOwner();
+                    }
+
+                    break;
+                case self::RECIPIENT_TYPE_LENDERS:
+                    $lenders = $project->getLenders();
+                    foreach ($lenders as $lender) {
+                        $recipients[$lender->getCompany()->getIdClientOwner()->getIdClient()] = $lender->getCompany()->getIdClientOwner();
+                    }
+
+                    break;
+                case self::RECIPIENT_TYPE_RUN:
+                    if ($run = $project->getRun()) {
+                        $recipients[$run->getCompany()->getIdClientOwner()->getIdClient()] = $run->getCompany()->getIdClientOwner();
+                    }
+
+                    break;
+                case self::RECIPIENT_TYPE_SUBMITTER:
+                    if ($submitter = $project->getSubmitterClient()) {
+                        $recipients[$submitter->getIdClient()] = $submitter;
+                    }
+
+                    break;
+                case self::RECIPIENT_TYPE_AGENCY:
+                    if ($loanOfficer = $project->getLoanOfficer()) {
+                        $recipients[$loanOfficer->getCompany()->getIdClientOwner()->getIdClient()] = $loanOfficer->getCompany()->getIdClientOwner();
+                    }
+
+                    if ($securityTrustee = $project->getSecurityTrustee()) {
+                        $recipients[$securityTrustee->getCompany()->getIdClientOwner()->getIdClient()] = $securityTrustee->getCompany()->getIdClientOwner();
+                    }
+
+                    break;
+            }
+        }
+
+        return $recipients;
     }
 
     /**
-     * Method placed here in order to reduce use of EntityManagerSimulator
-     * in new code (which will reduce migration cost)
-     *
-     * @param int    $clientId
-     * @param string $type
-     * @param string $frequency
-     *
-     * @return bool
+     * @param int          $type
+     * @param Clients[]    $clients
+     * @param Project|null $project
+     * @param Bids|null    $bid
      */
-    public function getNotif(int $clientId, string $type, string $frequency): bool
+    private function createNotification(int $type, array $clients, ?Project $project = null, ?Bids $bid = null): void
     {
-        /** @var \clients_gestion_notifications $clientNotifications */
-        $clientNotifications = $this->entityManagerSimulator->getRepository('clients_gestion_notifications');
+        foreach ($clients as $client) {
+            $notification = new Notification();
+            $notification
+                ->setType($type)
+                ->setStatus(Notification::STATUS_UNREAD)
+                ->setClient($client)
+                ->setProject($project)
+                ->setBid($bid)
+            ;
 
-        return $clientNotifications->getNotif($clientId, $type, $frequency);
+            $this->entityManager->persist($notification);
+        }
+
+        $this->entityManager->flush();
     }
 }

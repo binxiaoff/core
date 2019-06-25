@@ -16,7 +16,7 @@ use Unilend\Entity\{Bids, Clients, Project};
 use Unilend\Form\Bid\BidType;
 use Unilend\Repository\{BidsRepository, ProjectAttachmentRepository};
 use Unilend\Service\Front\ProjectDisplayManager;
-use Unilend\Service\MailerManager;
+use Unilend\Service\NotificationManager;
 use Unilend\Service\User\RealUserFinder;
 
 class ViewController extends AbstractController
@@ -30,7 +30,7 @@ class ViewController extends AbstractController
      * @param BidsRepository              $bidsRepository
      * @param ProjectAttachmentRepository $projectAttachmentRepository
      * @param ProjectDisplayManager       $projectDisplayManager
-     * @param MailerManager               $mailerManager
+     * @param NotificationManager         $notificationManager
      * @param RealUserFinder              $realUserFinder
      * @param LoggerInterface             $logger
      *
@@ -47,7 +47,7 @@ class ViewController extends AbstractController
         BidsRepository $bidsRepository,
         ProjectAttachmentRepository $projectAttachmentRepository,
         ProjectDisplayManager $projectDisplayManager,
-        MailerManager $mailerManager,
+        NotificationManager $notificationManager,
         RealUserFinder $realUserFinder,
         LoggerInterface $logger
     ): Response {
@@ -87,7 +87,7 @@ class ViewController extends AbstractController
                 $bidsRepository->save($bid);
 
                 try {
-                    $mailerManager->sendBidSubmitted($bid);
+                    $notificationManager->createBidSubmitted($bid);
                 } catch (Swift_SwiftException $exception) {
                     $logger->error('An error occurred while sending submitted bid email. Message: ' . $exception->getMessage(), [
                         'class'    => __CLASS__,
