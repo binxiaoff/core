@@ -22,8 +22,8 @@ final class Version20190625083822 extends ContainerAwareMigration
         $this->addSql(
             <<<'TRANSLATIONS'
             INSERT INTO translations (locale, section, name, translation, added) VALUES
-                ('fr_FR', 'attachment', 'Type-column-label', 'description', NOW()),
-                ('fr_FR', 'attachment', 'description-column-label', 'description', NOW()),
+                ('fr_FR', 'attachment', 'Type-column-label', 'Type', NOW()),
+                ('fr_FR', 'attachment', 'description-column-label', 'Description', NOW()),
                 ('fr_FR', 'attachment', 'original-file-name-column-label', 'Nom du fichier', NOW()),
                 ('fr_FR', 'attachment', 'download-button-tooltip', 'Télécharger', NOW()),
                 ('fr_FR', 'attachment', 'detach-button-tooltip', 'Archiver', NOW()),
