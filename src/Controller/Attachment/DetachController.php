@@ -10,7 +10,7 @@ use Unilend\Entity\ProjectAttachment;
 use Unilend\Security\Voter\ProjectVoter;
 use Unilend\Service\Attachment\ProjectAttachmentManager;
 
-class ArchiveController extends AbstractController
+class DetachController extends AbstractController
 {
     /**
      * @Route(
