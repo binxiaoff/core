@@ -11,10 +11,8 @@ var buffer       = require('vinyl-buffer')
 var uglify       = require('gulp-uglify')
 var sourcemaps   = require('gulp-sourcemaps')
 var gulpIf       = require('gulp-if')
-var browserSync  = require('browser-sync')
-var watchify     = require('watchify')
 
-var browserifyTask =  function(watchMode) {
+var browserifyTask =  function() {
 
   var browserifyThis = function(bundleConfig) {
 
@@ -38,19 +36,7 @@ var browserifyTask =  function(watchMode) {
         .pipe(gulp.dest(path.join(config.root.dest, bundleConfig.dest)))
         .on('end', function() {
           bundleLogger.end(bundleConfig.outputName)
-        })
-        .pipe(browserSync.reload({
-          stream: true
-        }));
-
-    }
-
-    if(watchMode === true) {
-      // Wrap with watchify and rebundle on changes
-      bundler = watchify(bundler, {poll: true});
-      // Rebundle on update
-      bundler.on('update', bundle);
-      bundleLogger.watch(bundleConfig.outputName);
+        });
     }
 
     return bundle()

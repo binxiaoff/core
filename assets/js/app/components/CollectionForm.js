@@ -1,23 +1,21 @@
-let $ = require('jquery')
+var $ = require('jquery')
 var __ = require('__')
 
-let CollectionForm = function (options) {
-    let self = this
+var CollectionForm = function (options) {
+    var self = this
 
-    self.options = {
+    self.options = $.extend({
         autoCreate: false,
         initForm: true,
         initProjectFee: false,
         feeCollectionHolderSelector: null
-    }
-
-    self.options = {...self.options, ...options}
+    }, options)
 
     self.add = function ($collectionHolder, $addButton) {
-        let prototype = $collectionHolder.data('prototype')
-        let prototypeName = $collectionHolder.data('prototype-name')
-        let index = $collectionHolder.data('index')
-        let $newForm = $(prototype.replace(new RegExp(prototypeName, 'g'), index))
+        var prototype = $collectionHolder.data('prototype')
+        var prototypeName = $collectionHolder.data('prototype-name')
+        var index = $collectionHolder.data('index')
+        var $newForm = $(prototype.replace(new RegExp(prototypeName, 'g'), index))
 
         $collectionHolder.data('index', index + 1)
         $addButton.before($newForm)
@@ -36,7 +34,7 @@ let CollectionForm = function (options) {
 
     self.iniFeesHolder = function ($collectionHolder) {
         if (self.options.feeCollectionHolderSelector) {
-            let $feeCollectionHolder = $collectionHolder.find(self.options.feeCollectionHolderSelector)
+            var $feeCollectionHolder = $collectionHolder.find(self.options.feeCollectionHolderSelector)
             if ($feeCollectionHolder.length > 0) {
                 $feeCollectionHolder.uiInitCollectionHolder()
             }
@@ -44,7 +42,7 @@ let CollectionForm = function (options) {
     }
 
     self.initLendingRate = function ($newForm) {
-        let $lendingRateInputs = $newForm.find("[id$='_rate_margin'], [id$='_rate_indexType'], [id$='_rate_floor']")
+        var $lendingRateInputs = $newForm.find("[id$='_rate_margin'], [id$='_rate_indexType'], [id$='_rate_floor']")
         if ($lendingRateInputs.length === 3) {
             $newForm.uiInitLendingRate()
         }
@@ -53,7 +51,7 @@ let CollectionForm = function (options) {
     }
 
     self.initDataPicker = function ($newForm) {
-        let $dataPickerInputs = $newForm.find('.ui-has-datepicker, [data-ui-datepicker]')
+        var $dataPickerInputs = $newForm.find('.ui-has-datepicker, [data-ui-datepicker]')
         if ($dataPickerInputs.length > 0) {
             $dataPickerInputs.uiPikaday()
         }
@@ -62,7 +60,7 @@ let CollectionForm = function (options) {
     }
 
     self.initRemoveButton = function($newForm) {
-        let $removeFormButton = $newForm.find(`[data-action='remove']`)
+        var $removeFormButton = $newForm.find('[data-action="remove"]')
         $removeFormButton.on('click', function () {
             if (confirm(__.__('Voulez-vous vraiment supprimer cet élément ?', 'delete-confirmation'))) {
                 $newForm.remove()
@@ -76,10 +74,10 @@ let CollectionForm = function (options) {
         if (false === self.options.initProjectFee) {
             return self
         }
-        let $feeTypeSelector = $newForm.find('[data-fee-type]')
+        var $feeTypeSelector = $newForm.find('[data-fee-type]')
 
         $feeTypeSelector.on('change', function () {
-            let selectedType = $(this).children('option:selected').val()
+            var selectedType = $(this).children('option:selected').val()
             if (selectedType === '2') {
                 $newForm.find('input[type=checkbox]').prop('checked', true)
             } else {
@@ -87,22 +85,22 @@ let CollectionForm = function (options) {
             }
         })
 
-        let $feeRateInput = $newForm.find("input[id$='_fee_rate']")
+        var $feeRateInput = $newForm.find("input[id$='_fee_rate']")
 
         $feeRateInput.on('focusout', function () {
             $(this).parent().find('.rate-amount').remove()
             if (false === $newForm.find('input[type=checkbox]').prop('checked') && $feeRateInput.val()) {
-                let $referenceAmountInputs = $('[data-fee-reference-amount]')
-                let referenceAmount = 0
+                var $referenceAmountInputs = $('[data-fee-reference-amount]')
+                var referenceAmount = 0
                 $referenceAmountInputs.each(function () {
-                    let amount = parseFloat($(this).val().replace(' ', '').replace(',', '.'))
+                    var amount = parseFloat($(this).val().replace(' ', '').replace(',', '.'))
                     if ($.isNumeric(amount)) {
                         referenceAmount += amount
                     }
                 })
 
-                let rate = $feeRateInput.val().replace(',', '.')
-                let rateAmount = rate * referenceAmount / 100
+                var rate = $feeRateInput.val().replace(',', '.')
+                var rateAmount = rate * referenceAmount / 100
                 if (rateAmount > 0) {
                     $feeRateInput.after('<small class="help-text rate-amount" style="display: block">soit ' + __.formatNumber(rateAmount) + ' €</small>')
                 }
@@ -114,9 +112,9 @@ let CollectionForm = function (options) {
 }
 
 $.fn.uiInitCollectionHolder = function (options) {
-    let self = this
-    let collectionForm = new CollectionForm(options)
-    let $addButton = $(
+    var self = this
+    var collectionForm = new CollectionForm(options)
+    var $addButton = $(
         '<a href="javascript:" class="btn-default btn-shape-sq-md margin-10-t">' +
         '    <span class="icon fa-plus-u16 c-t2"></span>' +
         '</a>'
@@ -127,7 +125,7 @@ $.fn.uiInitCollectionHolder = function (options) {
         .data('index', self.find(':input').length)
 
     $addButton.on('click', function () {
-        let $newForm = collectionForm.add(self, $addButton)
+        var $newForm = collectionForm.add(self, $addButton)
         collectionForm.init($newForm)
         collectionForm.iniFeesHolder(self)
     })
@@ -138,8 +136,8 @@ $.fn.uiInitCollectionHolder = function (options) {
 }
 
 $.fn.uiInitCollectionForm = function (options) {
-    let self = this
-    let collectionForm = new CollectionForm(options)
+    var self = this
+    var collectionForm = new CollectionForm(options)
 
     collectionForm.init(self)
 }

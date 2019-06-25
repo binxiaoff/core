@@ -5,12 +5,6 @@
   },
 
   "tasks": {
-    "browserSync": {
-      "server": {
-        "baseDir": "public"
-      }
-    },
-
     "jsDependencies": {
       "src": "js",
       "dest": "js",
@@ -35,7 +29,7 @@
       "src": "sass",
       "dest": "css",
       "autoprefixer": {
-        "browsers": ["last 2 versions"],
+        "overrideBrowserslist": ["last 2 versions"],
         "cascade": true
       },
       "compass": {

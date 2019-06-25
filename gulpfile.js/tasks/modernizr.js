@@ -5,7 +5,6 @@ var gulp         = require('gulp')
 var handleErrors = require('../lib/handleErrors')
 var path         = require('path')
 var modernizr    = require('gulp-modernizr')
-var browserSync  = require('browser-sync')
 var del          = require('del')
 
 var paths = {
@@ -39,7 +38,6 @@ var modernizrTask = function () {
         'csspointerevents']
     }))
     .pipe(gulp.dest(paths.dest))
-    .pipe(browserSync.stream())
     .on('end', cleanCompass)
 }
 

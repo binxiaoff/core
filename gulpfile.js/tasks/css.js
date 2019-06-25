@@ -3,7 +3,6 @@ if(!config.tasks.css) return
 
 var gulp         = require('gulp')
 var gutil        = require('gulp-util')
-var browserSync  = require('browser-sync')
 var handleErrors = require('../lib/handleErrors')
 var autoprefixer = require('gulp-autoprefixer')
 var path         = require('path')
@@ -70,7 +69,6 @@ var cssTask = function () {
     .pipe(gulpIf(!global.production, sourcemaps.write('./')))
     .pipe(rename({dirname: ''}))
     .pipe(gulp.dest(paths.dest))
-    .pipe(browserSync.stream())
 }
 
 gulp.task('css', cssTask)

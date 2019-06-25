@@ -1,9 +1,9 @@
-let $ = require('jquery')
+var $ = require('jquery')
 
 function handleRateDisplaying($rateMarginInput, $rateIndexTypeInput, $rateFloorInput) {
     if ($rateIndexTypeInput.length > 0) {
-        let selectedType = $rateIndexTypeInput.find('option:selected')
-        let noFloor = typeof selectedType.data('no-floor') !== 'undefined' || '' === selectedType.val()
+        var selectedType = $rateIndexTypeInput.find('option:selected')
+        var noFloor = typeof selectedType.data('no-floor') !== 'undefined' || '' === selectedType.val()
 
         $rateFloorInput.toggleClass('hidden', noFloor)
         $("label[for='" + $rateFloorInput.attr('id') + "']").toggleClass('hidden', noFloor)
@@ -19,9 +19,9 @@ function handleRateDisplaying($rateMarginInput, $rateIndexTypeInput, $rateFloorI
 }
 
 $.fn.uiInitLendingRate = function () {
-    let $rateMarginInput = this.find("[id$='_rate_margin']")
-    let $rateIndexTypeInput = this.find("[id$='_rate_indexType']")
-    let $rateFloorInput = this.find("[id$='_rate_floor']")
+    var $rateMarginInput = this.find("[id$='_rate_margin']")
+    var $rateIndexTypeInput = this.find("[id$='_rate_indexType']")
+    var $rateFloorInput = this.find("[id$='_rate_floor']")
     handleRateDisplaying($rateMarginInput, $rateIndexTypeInput, $rateFloorInput)
 
     $rateIndexTypeInput.on('change', function () {

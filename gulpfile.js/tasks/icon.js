@@ -2,7 +2,6 @@ var config      = require('../config')
 if(!config.tasks.icon) return
 
 var gulp         = require('gulp')
-var browserSync  = require('browser-sync')
 var path         = require('path')
 var rename       = require('gulp-rename')
 var handleErrors = require('../lib/handleErrors')
@@ -42,7 +41,6 @@ var iconTask = function() {
     .pipe(svgstore())
     .pipe(rename('icons.svg'))
     .pipe(gulp.dest(paths.dest))
-    .pipe(browserSync.stream())
 }
 
 gulp.task('icon', iconTask)
