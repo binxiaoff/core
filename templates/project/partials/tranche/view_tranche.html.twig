@@ -1,0 +1,63 @@
+{% for tranche in tranches %}
+    <div class="panel-header">
+        <div class="row">
+            <h4 class="h4 margin-20-t">{{ tranche.name }}</h4>
+        </div>
+    </div>
+    <div class="panel-content">
+        <div class="row margin-20-t">
+            <dl class="col-lg-3 col-md-3">
+                <dt>{% trans %} money-form.amount {% endtrans %}</dt>
+                <dd>{{ tranche.money.amount|localizedcurrency(tranche.money.currency, null, false) }}</dd>
+            </dl>
+            <dl class="col-lg-3 col-md-3">
+                <dt>{% trans %} tranche-form.maturity {% endtrans %}</dt>
+                <dd>{{ tranche.duration|localizednumber }} mois</dd>
+            </dl>
+            <dl class="col-lg-3 col-md-3">
+                <dt>{% trans %} tranche-form.loan-type {% endtrans %}</dt>
+                <dd>{{ ('loan-type.' ~ tranche.loanType)|trans }}</dd>
+            </dl>
+            <dl class="col-lg-3 col-md-3">
+                <dt>{% trans %} tranche-form.repayment-type {% endtrans %}</dt>
+                <dd>{{ ('repayment-type.' ~ tranche.repaymentType)|trans }}</dd>
+            </dl>
+            <dl class="col-lg-3 col-md-3">
+                <dt>{% trans %} tranche-form.capital-periodicity {% endtrans %}</dt>
+                <dd>{{ tranche.capitalPeriodicity }} mois</dd>
+            </dl>
+            <dl class="col-lg-3 col-md-3">
+                <dt>{% trans %} tranche-form.interest-periodicity {% endtrans %}</dt>
+                <dd>{{ tranche.interestPeriodicity }} mois</dd>
+            </dl>
+            {% if tranche.rate.indexType is not null %}
+                <dl class="col-lg-3 col-md-3">
+                    <dt>{% trans %} lending-form.index-type {% endtrans %}</dt>
+                    <dd>{{ ('interest-rate-index.index_' ~ tranche.rate.indexType|lower)|trans }}</dd>
+                </dl>
+                {% if tranche.rate.margin is not null %}
+                    <dl class="col-lg-3 col-md-3">
+                        <dt>{% trans %} lending-form.margin {% endtrans %}</dt>
+                        <dd>{{ tranche.rate.margin|localizednumberwithprecision(2) }}</dd>
+                    </dl>
+                {% endif %}
+            {% endif %}
+            <dl class="col-lg-3 col-md-3">
+                <dt>{% trans %} tranche-form.expected-releasing-date {% endtrans %}</dt>
+                <dd>{{ tranche.expectedReleasingDate|localizeddate('short', 'none') }}</dd>
+            </dl>
+            <dl class="col-lg-3 col-md-3">
+                <dt>{% trans %} tranche-form.expected-starting-date {% endtrans %}</dt>
+                <dd>{{ tranche.expectedStartingDate|localizeddate('short', 'none') }}</dd>
+            </dl>
+        </div>
+        {% if showFees %}
+            <div class="row margin-20-t">
+                <div class="col-lg-12 col-md-12">
+                    <h5 class="h5">Frais sur la tranche</h5>
+                    {% include 'project/partials/fees/view_fees.html.twig' with {fees: tranche.trancheFees} %}
+                </div>
+            </div>
+        {% endif %}
+    </div>
+{% endfor %}

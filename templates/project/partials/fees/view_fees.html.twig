@@ -1,0 +1,30 @@
+{% if fees is not empty %}
+    <table class="table table-projects table-finance">
+        <thead>
+        <tr class="my-offers-bid-row">
+            <th>{% trans %} fee.type-column-label {% endtrans %}</th>
+            <th>{% trans %} fee.rate-column-label {% endtrans %}</th>
+            <th>{% trans %} fee.is-recurring-column-label {% endtrans %}</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for xFee in fees %}
+            {% set fee = xFee.fee %}
+            {% set feeTypeConstantkey = xFee.feeTypeConstantKey(fee.type) %}
+            <tr>
+                <td> {{ ('fee-type.' ~ (feeTypeConstantkey|lower))|trans }}</td>
+                <td>{{ fee.rate|localizednumberwithprecision(2) }}&nbsp;%</td>
+                <td>
+                    {% if fee.isRecurring %}
+                        {% trans %} fee.recurring-text {% endtrans %}
+                    {% else %}
+                        {% trans %} fee.one-time-text {% endtrans %}
+                    {% endif %}
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <div class="message-info">{% trans %} fee.no-fee-info-message {% endtrans %}</div>
+{% endif %}
