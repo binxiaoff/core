@@ -168,9 +168,6 @@
     "escapestudios/symfony2-coding-standard": {
         "version": "3.8.0"
     },
-    "facebook/webdriver": {
-        "version": "1.6.0"
-    },
     "facile-it/doctrine-mysql-come-back": {
         "version": "v1.7"
     },
@@ -746,9 +743,6 @@
     },
     "symfony/orm-pack": {
         "version": "v1.0.6"
-    },
-    "symfony/panther": {
-        "version": "v0.3.0"
     },
     "symfony/phpunit-bridge": {
         "version": "4.3",
