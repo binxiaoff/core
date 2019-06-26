@@ -24,13 +24,13 @@
                                         <span class="label">Place de marché</span>
                                     </a>
                                 </li>
-                                {#<li role="presentation" class="{% if app.request.get('_route') == 'reporting' %} active{% endif %}">
+                                <li role="presentation" class="{% if app.request.get('_route') == 'reporting' %} active{% endif %}">
                                     <a href="{{ path('reporting') }}">
                                         <span class="icon fa-linechart-u"></span>
                                         <span class="label">Reporting</span>
                                     </a>
                                 </li>
-                                <li role="presentation" class="{% if app.request.get('_route') == 'demo_agency' %} active{% endif %}">
+                                {#<li role="presentation" class="{% if app.request.get('_route') == 'demo_agency' %} active{% endif %}">
                                     <a href="{{ path('demo_agency') }}">
                                         <span class="icon fa-check-u"></span>
                                         <span class="label">Agency</span>
