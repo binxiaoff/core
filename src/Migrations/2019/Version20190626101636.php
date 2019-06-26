@@ -24,7 +24,7 @@ final class Version20190626101636 extends ContainerAwareMigration
                 ('fr_FR', 'fee', 'is-recurring-column-label', 'Récurrent ?', NOW()),
                 ('fr_FR', 'fee', 'one-time-text', 'Non', NOW()),
                 ('fr_FR', 'fee', 'recurring-text', 'Oui', NOW()),
-                ('fr_FR', 'fee', 'no-fee-info-message', 'Il y n\'a pas de frais ni commissions sur ce projet.', NOW())
+                ('fr_FR', 'fee', 'no-fee-info-message', 'Il n’y a aucun frais ou commission sur ce dossier.', NOW())
 TRANSLATIONS
     );
     }
