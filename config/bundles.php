@@ -14,7 +14,6 @@ return [
     Knp\Bundle\SnappyBundle\KnpSnappyBundle::class => ['all' => true],
     Ekino\NewRelicBundle\EkinoNewRelicBundle::class => ['all' => true],
     Sonata\CacheBundle\SonataCacheBundle::class => ['all' => true],
-    Doctrine\Bundle\MongoDBBundle\DoctrineMongoDBBundle::class => ['all' => true],
     JMS\SerializerBundle\JMSSerializerBundle::class => ['all' => true],
     EightPoints\Bundle\GuzzleBundle\EightPointsGuzzleBundle::class => ['all' => true],
     RobertoTru\ToInlineStyleEmailBundle\RobertoTruToInlineStyleEmailBundle::class => ['all' => true],

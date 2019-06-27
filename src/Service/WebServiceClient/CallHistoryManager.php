@@ -31,7 +31,7 @@ class CallHistoryManager
     /** @var LoggerInterface */
     private $logger;
     /** @var ManagerRegistry */
-    private $managerRegistry;
+    //private $managerRegistry;
     /** @var LoggerInterface */
     private $mongoDBLogger;
     /** @var bool */
@@ -57,7 +57,7 @@ class CallHistoryManager
         $alertChannel,
         Packages $assetPackage,
         LoggerInterface $wsClientLogger,
-        ManagerRegistry $managerRegistry,
+        //ManagerRegistry $managerRegistry,
         LoggerInterface $mongoDBLogger,
         bool $mongoLogEnabled
     )
@@ -69,7 +69,7 @@ class CallHistoryManager
         $this->alertChannel    = $alertChannel;
         $this->assetPackage    = $assetPackage;
         $this->logger          = $wsClientLogger;
-        $this->managerRegistry = $managerRegistry;
+        //$this->managerRegistry = $managerRegistry;
         $this->mongoDBLogger   = $mongoDBLogger;
         $this->mongoLogEnabled = $mongoLogEnabled;
     }
