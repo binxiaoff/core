@@ -308,6 +308,18 @@ class AttachmentManager
     }
 
     /**
+     * @param Attachment $attachment
+     *
+     * @throws ORMException
+     * @throws OptimisticLockException
+     */
+    public function logDownload(Attachment $attachment): void
+    {
+        $attachment->setDownloaded(new DateTimeImmutable());
+        $this->entityManager->getRepository(Attachment::class)->save($attachment);
+    }
+
+    /**
      * @return string
      */
     private function getUploadRootDir()

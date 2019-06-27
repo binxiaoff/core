@@ -40,6 +40,8 @@ class DownloadController extends AbstractController
 
         $fileName = $attachment->getOriginalName() ?? basename($attachment->getPath());
 
+        $attachmentManager->logDownload($attachment);
+
         return $this->file($path, $fileName);
     }
 
