@@ -4,10 +4,13 @@ namespace Unilend\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
+use Gedmo\Mapping\Annotation as Gedmo;
 use Unilend\Entity\Traits\{BlamableAddedTrait, LendableTrait, TimestampableTrait};
 use Unilend\Traits\ConstantsAwareTrait;
 
 /**
+ * @Gedmo\Loggable(logEntryClass="Unilend\Entity\Versioned\VersionedBid")
+ *
  * @ORM\Table(name="bids", indexes={@ORM\Index(columns={"id_tranche", "status"})})
  * @ORM\Entity
  * @ORM\HasLifecycleCallbacks
