@@ -19,6 +19,7 @@
     "gulp": "gulp",
     "gulp:dev": "gulp && gulp rev",
     "gulp:demo": "gulp && gulp rev",
+    "gulp:test": "gulp && gulp rev",
     "gulp:preprod": "gulp production && gulp rev",
     "gulp:prod": "gulp production && gulp rev"
   },
