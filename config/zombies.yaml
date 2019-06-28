@@ -1,12 +1,4 @@
 parameters:
-    mongodb_server: 'mongodb://127.0.0.1:27017'
-    mongodb_username: unilend
-    mongodb_password: passw0rd
-    mongodb_default_database: ws_call
-    mongodb_auth_source: ws_call
-    mongodb_ssl_connect: false
-    mongodb_replica_set_name: null
-    mongodb.log.enable: false
     url.universign: ''
     payline.merchant_id: ''
     payline.access_key: ''

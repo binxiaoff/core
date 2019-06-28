@@ -31,7 +31,7 @@ class CallHistoryManager
     /** @var LoggerInterface */
     private $logger;
     /** @var ManagerRegistry */
-    private $managerRegistry;
+    //private $managerRegistry;
     /** @var LoggerInterface */
     private $mongoDBLogger;
     /** @var bool */
@@ -54,24 +54,24 @@ class CallHistoryManager
         CacheItemPoolInterface $cacheItemPool,
         Stopwatch $stopwatch,
         SlackManager $slackManager,
-        $alertChannel,
+        //$alertChannel,
         Packages $assetPackage,
-        LoggerInterface $wsClientLogger,
-        ManagerRegistry $managerRegistry,
-        LoggerInterface $mongoDBLogger,
-        bool $mongoLogEnabled
+        LoggerInterface $wsClientLogger//,
+        //ManagerRegistry $managerRegistry,
+        //LoggerInterface $mongoDBLogger,
+        //bool $mongoLogEnabled
     )
     {
         $this->entityManager   = $entityManager;
         $this->cacheItemPool   = $cacheItemPool;
         $this->stopwatch       = $stopwatch;
         $this->slackManager    = $slackManager;
-        $this->alertChannel    = $alertChannel;
+        //$this->alertChannel    = $alertChannel;
         $this->assetPackage    = $assetPackage;
         $this->logger          = $wsClientLogger;
-        $this->managerRegistry = $managerRegistry;
-        $this->mongoDBLogger   = $mongoDBLogger;
-        $this->mongoLogEnabled = $mongoLogEnabled;
+        //$this->managerRegistry = $managerRegistry;
+        //$this->mongoDBLogger   = $mongoDBLogger;
+        //$this->mongoLogEnabled = $mongoLogEnabled;
     }
 
     /**

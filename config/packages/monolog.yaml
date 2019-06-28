@@ -1,5 +1,5 @@
 monolog:
-    channels: [console, mongodb, wsclient]
+    channels: [console, wsclient]
     handlers:
         error:
             type: fingers_crossed
@@ -46,24 +46,11 @@ monolog:
             type: filter
             handler: site_handler
             max_level: warning
-            channels: ['!console', '!translation', '!mongodb', '!wsclient']
+            channels: ['!console', '!translation', '!wsclient']
         site_handler:
             type: rotating_file
             level: warning
             path: "%kernel.logs_dir%/site.%kernel.environment%.log"
-            max_files: 90
-            file_permission: 0664
-            date_format: 'Y-m-d'
-
-        mongodb:
-            type: fingers_crossed
-            action_level: warning
-            handler: mongodb_handler
-            channels: mongodb
-        mongodb_handler:
-            type: rotating_file
-            level: debug
-            path: "%kernel.logs_dir%/mongodb.%kernel.environment%.log"
             max_files: 90
             file_permission: 0664
             date_format: 'Y-m-d'
