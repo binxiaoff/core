@@ -111,4 +111,14 @@ class TrancheFee
     {
         return self::getConstants('TRANCHE_FEE_TYPE_');
     }
+
+    /**
+     * @param int $value
+     *
+     * @return false|string
+     */
+    public static function getFeeTypeConstantKey(int $value)
+    {
+        return self::getConstantKey($value, 'TRANCHE_FEE_TYPE_');
+    }
 }

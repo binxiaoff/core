@@ -63,66 +63,29 @@ class EditController extends AbstractController
     ): Response {
         $regionalBanks = $companyRepository->findRegionalBanks(['name' => 'ASC']);
 
-        $documentForm = $this->get('form.factory')->createNamedBuilder('attachments')
-            ->add('projectAttachments', ProjectAttachmentCollectionType::class)
-            ->getForm()
-        ;
+        $trancheForm = null;
+        $feesForm    = null;
 
-        $trancheForm = $this->get('form.factory')->createNamedBuilder('tranches', FormType::class, $project, ['data_class' => Project::class])
-            ->add('tranches', TrancheTypeCollectionType::class, [
-                'constraints'   => [new Valid()],
-                'entry_options' => ['rate_required' => Project::OPERATION_TYPE_SYNDICATION === (int) $project->getOperationType()],
-            ])
-            ->getForm()
-        ;
+        if ($project->isEditable()) {
+            $trancheForm = $this->buildTrancheForm($project);
+            if ($this->handleTrancheForm($trancheForm, $request, $projectRepository)) {
+                return $this->redirect($request->getUri());
+            }
 
-        $feesForm = $this->get('form.factory')->createNamedBuilder('fees', FormType::class, $project, ['data_class' => Project::class])
-            ->add('projectFees', ProjectFeeTypeCollectionType::class)
-            ->getForm()
-            ;
+            $feesForm = $this->buildFeesForm($project);
+            if ($this->handleFeesForm($feesForm, $request, $projectRepository)) {
+                return $this->redirect($request->getUri());
+            }
+        }
+
+        $documentForm = $this->buildDocumentForm();
+        if ($this->handleDocumentForm($project, $user, $documentForm, $request, $projectRepository, $attachmentManager)) {
+            return $this->redirect($request->getUri());
+        }
 
         $partialBidForm = $this->createForm(PartialBid::class, null, [
             'action' => $this->generateUrl('edit_bid_partial'),
         ]);
-
-        $documentForm->handleRequest($request);
-        $trancheForm->handleRequest($request);
-        $feesForm->handleRequest($request);
-
-        if ($documentForm->isSubmitted() && $documentForm->isValid()) {
-            $projectAttachmentForms = $documentForm->get('projectAttachments');
-
-            /** @var FormInterface $projectAttachmentForm */
-            foreach ($projectAttachmentForms as $projectAttachmentForm) {
-                $projectAttachment = $projectAttachmentForm->getData();
-                $attachmentForm    = $projectAttachmentForm->get('attachment');
-                /** @var Attachment $attachment */
-                $attachment = $attachmentForm->getData();
-                /** @var UploadedFile $uploadedFile */
-                $uploadedFile = $attachmentForm->get('file')->getData();
-                $companyOwner = $project->getBorrowerCompany();
-                $attachmentManager->upload(null, $companyOwner, $user, null, $attachment, $uploadedFile);
-                $project->addProjectAttachment($projectAttachment);
-            }
-
-            $projectRepository->save($project);
-
-            return $this->redirect($request->getUri());
-        }
-
-        if ($trancheForm->isSubmitted() && $trancheForm->isValid()) {
-            $project = $trancheForm->getData();
-            $projectRepository->save($project);
-
-            return $this->redirect($request->getUri());
-        }
-
-        if ($feesForm->isSubmitted() && $feesForm->isValid()) {
-            $project = $feesForm->getData();
-            $projectRepository->save($project);
-
-            return $this->redirect($request->getUri());
-        }
 
         $template = [
             'arrangers'                => $companyRepository->findEligibleArrangers($user->getCompany(), ['name' => 'ASC']),
@@ -139,8 +102,8 @@ class EditController extends AbstractController
             'projectAttachments'       => $projectAttachmentRepository->getAttachmentsWithoutSignature($project),
             'signatureAttachments'     => $projectAttachmentRepository->getAttachmentsWithSignature($project),
             'documentForm'             => $documentForm->createView(),
-            'trancheForm'              => $trancheForm->createView(),
-            'feesForm'                 => $feesForm->createView(),
+            'trancheForm'              => $trancheForm ? $trancheForm->createView() : null,
+            'feesForm'                 => $feesForm ? $feesForm->createView() : null,
             'partialBidForm'           => $partialBidForm->createView(),
         ];
 
@@ -485,5 +448,141 @@ class EditController extends AbstractController
         } catch (Exception $e) {
             $entityManager->getConnection()->rollBack();
         }
+    }
+
+    /**
+     * @param Project $project
+     *
+     * @return FormInterface
+     */
+    private function buildTrancheForm(Project $project): FormInterface
+    {
+        return $this->get('form.factory')->createNamedBuilder('tranches', FormType::class, $project, ['data_class' => Project::class])
+            ->add('tranches', TrancheTypeCollectionType::class, [
+                'constraints'   => [new Valid()],
+                'entry_options' => ['rate_required' => Project::OPERATION_TYPE_SYNDICATION === (int) $project->getOperationType()],
+            ])
+            ->getForm()
+        ;
+    }
+
+    /**
+     * @param FormInterface     $trancheForm
+     * @param Request           $request
+     * @param ProjectRepository $projectRepository
+     *
+     * @throws ORMException
+     * @throws OptimisticLockException
+     *
+     * @return bool
+     */
+    private function handleTrancheForm(FormInterface $trancheForm, Request $request, ProjectRepository $projectRepository): bool
+    {
+        $trancheForm->handleRequest($request);
+
+        if ($trancheForm->isSubmitted() && $trancheForm->isValid()) {
+            $project = $trancheForm->getData();
+            $projectRepository->save($project);
+
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * @return FormInterface
+     */
+    private function buildDocumentForm(): FormInterface
+    {
+        return $this->get('form.factory')->createNamedBuilder('attachments')
+            ->add('projectAttachments', ProjectAttachmentCollectionType::class)
+            ->getForm()
+        ;
+    }
+
+    /**
+     * @param Project           $project
+     * @param Clients           $user
+     * @param FormInterface     $documentForm
+     * @param Request           $request
+     * @param ProjectRepository $projectRepository
+     * @param AttachmentManager $attachmentManager
+     *
+     * @throws ORMException
+     * @throws OptimisticLockException
+     * @throws Exception
+     *
+     * @return bool
+     */
+    private function handleDocumentForm(
+        Project $project,
+        Clients $user,
+        FormInterface $documentForm,
+        Request $request,
+        ProjectRepository $projectRepository,
+        AttachmentManager $attachmentManager
+    ): bool {
+        $documentForm->handleRequest($request);
+
+        if ($documentForm->isSubmitted() && $documentForm->isValid()) {
+            $projectAttachmentForms = $documentForm->get('projectAttachments');
+
+            /** @var FormInterface $projectAttachmentForm */
+            foreach ($projectAttachmentForms as $projectAttachmentForm) {
+                $projectAttachment = $projectAttachmentForm->getData();
+                $attachmentForm    = $projectAttachmentForm->get('attachment');
+                /** @var Attachment $attachment */
+                $attachment = $attachmentForm->getData();
+                /** @var UploadedFile $uploadedFile */
+                $uploadedFile = $attachmentForm->get('file')->getData();
+                $companyOwner = $project->getBorrowerCompany();
+                $attachmentManager->upload(null, $companyOwner, $user, null, $attachment, $uploadedFile);
+                $project->addProjectAttachment($projectAttachment);
+            }
+
+            $projectRepository->save($project);
+
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * @param Project $project
+     *
+     * @return FormInterface
+     */
+    private function buildFeesForm(Project $project)
+    {
+        return $this->get('form.factory')->createNamedBuilder('fees', FormType::class, $project, ['data_class' => Project::class])
+            ->add('projectFees', ProjectFeeTypeCollectionType::class)
+            ->getForm()
+        ;
+    }
+
+    /**
+     * @param FormInterface     $feesForm
+     * @param Request           $request
+     * @param ProjectRepository $projectRepository
+     *
+     * @throws ORMException
+     * @throws OptimisticLockException
+     *
+     * @return bool
+     */
+    private function handleFeesForm(FormInterface $feesForm, Request $request, ProjectRepository $projectRepository): bool
+    {
+        $feesForm->handleRequest($request);
+
+        if ($feesForm->isSubmitted() && $feesForm->isValid()) {
+            $project = $feesForm->getData();
+            $projectRepository->save($project);
+
+            return true;
+        }
+
+        return false;
     }
 }

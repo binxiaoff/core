@@ -107,4 +107,14 @@ class ProjectFee
     {
         return self::getConstants('PROJECT_FEE_TYPE_');
     }
+
+    /**
+     * @param int $value
+     *
+     * @return false|string
+     */
+    public static function getFeeTypeConstantKey(int $value)
+    {
+        return self::getConstantKey($value, 'PROJECT_FEE_TYPE_');
+    }
 }

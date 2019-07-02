@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Unilend\Traits;
 
+use ReflectionClass;
+use ReflectionException;
+
 trait ConstantsAwareTrait
 {
     /**
@@ -14,9 +17,9 @@ trait ConstantsAwareTrait
     private static function getConstants(?string $prefix = null): array
     {
         try {
-            $self      = new \ReflectionClass(__CLASS__);
+            $self      = new ReflectionClass(__CLASS__);
             $constants = $self->getConstants();
-        } catch (\ReflectionException $exception) {
+        } catch (ReflectionException $exception) {
             return [];
         }
 
@@ -31,5 +34,18 @@ trait ConstantsAwareTrait
         }
 
         return $constants;
+    }
+
+    /**
+     * @param mixed       $value
+     * @param string|null $prefix
+     *
+     * @return false|string
+     */
+    private static function getConstantKey($value, ?string $prefix = null)
+    {
+        $constants = self::getConstants($prefix);
+
+        return array_search($value, $constants);
     }
 }
