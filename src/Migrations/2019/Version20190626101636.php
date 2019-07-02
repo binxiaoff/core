@@ -27,7 +27,6 @@ final class Version20190626101636 extends ContainerAwareMigration
                 ('fr_FR', 'fee', 'no-fee-info-message', 'Il n’y a aucun frais ou commission sur ce dossier.', NOW()),
                 ('fr_FR', 'project-edit', 'structuring-section-title', 'Structuration', NOW()),
                 ('fr_FR', 'common', 'confirmation-button-label', 'Confirmer', NOW()),
-                ('fr_FR', 'common', 'confirm-button-label', 'Confirmer', NOW()),
                 ('fr_FR', 'tranche', 'fees-title', 'Frais sur la tranche', NOW())
 TRANSLATIONS
     );
