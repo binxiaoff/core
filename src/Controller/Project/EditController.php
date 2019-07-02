@@ -26,7 +26,7 @@ use Unilend\Form\Tranche\TrancheTypeCollectionType;
 use Unilend\Repository\{AcceptedBidsRepository, BidsRepository, CaRegionalBankRepository, CompaniesRepository, ProjectAttachmentRepository, ProjectAttachmentTypeRepository,
     ProjectRepository, TrancheRepository, UnderlyingContractRepository};
 use Unilend\Security\Voter\ProjectVoter;
-use Unilend\Service\{Attachment\AttachmentManager, MailerManager, NotificationManager, ProjectStatusManager};
+use Unilend\Service\{Attachment\AttachmentManager, MailerManager, NotificationManager, ProjectStatusManager, User\RealUserFinder};
 
 class EditController extends AbstractController
 {
@@ -158,6 +158,7 @@ class EditController extends AbstractController
      * @param UnderlyingContractRepository $underlyingContractRepository
      * @param AcceptedBidsRepository       $acceptedBidRepository
      * @param EntityManagerInterface       $entityManager
+     * @param RealUserFinder               $realUserFinder
      *
      * @throws ConnectionException
      *
@@ -175,7 +176,8 @@ class EditController extends AbstractController
         BidsRepository $bidsRepository,
         UnderlyingContractRepository $underlyingContractRepository,
         AcceptedBidsRepository $acceptedBidRepository,
-        EntityManagerInterface $entityManager
+        EntityManagerInterface $entityManager,
+        RealUserFinder $realUserFinder
     ): Response {
         $status = null;
         $route  = $request->get('_route');
@@ -229,7 +231,16 @@ class EditController extends AbstractController
 
                     break;
                 case ProjectStatusHistory::STATUS_FUNDED:
-                    $this->closeProject($project, $trancheRepository, $bidsRepository, $underlyingContractRepository, $acceptedBidRepository, $logger, $entityManager);
+                    $this->closeProject(
+                        $project,
+                        $trancheRepository,
+                        $bidsRepository,
+                        $underlyingContractRepository,
+                        $acceptedBidRepository,
+                        $logger,
+                        $entityManager,
+                        $realUserFinder
+                    );
 
                     try {
                         $mailerManager->sendProjectFundingEnd($project);
@@ -385,6 +396,7 @@ class EditController extends AbstractController
      * @param AcceptedBidsRepository       $acceptedBidRepository
      * @param LoggerInterface              $logger
      * @param EntityManagerInterface       $entityManager
+     * @param RealUserFinder               $realUserFinder
      *
      * @throws ConnectionException
      */
@@ -395,7 +407,8 @@ class EditController extends AbstractController
         UnderlyingContractRepository $underlyingContractRepository,
         AcceptedBidsRepository $acceptedBidRepository,
         LoggerInterface $logger,
-        EntityManagerInterface $entityManager
+        EntityManagerInterface $entityManager,
+        RealUserFinder $realUserFinder
     ): void {
         $tranches = $trancheRepository->findBy(['project' => $project]);
         $bids     = $bidsRepository->findBy([
@@ -436,6 +449,7 @@ class EditController extends AbstractController
                     ->setBid($bid)
                     ->setLoan($loan)
                     ->setMoney($bid->getMoney())
+                    ->setAddedByValue($realUserFinder)
                 ;
 
                 $entityManager->persist($acceptedBid);

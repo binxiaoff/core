@@ -10,7 +10,6 @@ use Gedmo\Loggable\Entity\MappedSuperclass\AbstractLogEntry;
 /**
  * @ORM\Table(
  *     name="zz_versioned_project_comment",
- *     options={"row_format": "DYNAMIC"},
  *     indexes={
  *         @ORM\Index(columns={"logged_at"}),
  *         @ORM\Index(columns={"username"}),
