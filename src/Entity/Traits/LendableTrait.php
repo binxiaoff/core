@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Unilend\Entity\Traits;
 
 use Doctrine\ORM\Mapping as ORM;
+use Gedmo\Mapping\Annotation as Gedmo;
 use Unilend\Entity\Embeddable\{LendingRate, Money};
 use Unilend\Entity\{Companies, Tranche};
 
@@ -34,6 +35,8 @@ trait LendableTrait
      * @var int
      *
      * @ORM\Column(type="smallint")
+     *
+     * @Gedmo\Versioned
      */
     protected $status;
 
@@ -41,6 +44,8 @@ trait LendableTrait
      * @var LendingRate
      *
      * @ORM\Embedded(class="Unilend\Entity\Embeddable\LendingRate")
+     *
+     * @Gedmo\Versioned
      */
     protected $rate;
 
@@ -48,6 +53,8 @@ trait LendableTrait
      * @var Money
      *
      * @ORM\Embedded(class="Unilend\Entity\Embeddable\Money")
+     *
+     * @Gedmo\Versioned
      */
     private $money;
 

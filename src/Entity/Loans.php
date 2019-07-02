@@ -4,9 +4,12 @@ namespace Unilend\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
+use Gedmo\Mapping\Annotation as Gedmo;
 use Unilend\Entity\Traits\{LendableTrait, TimestampableTrait};
 
 /**
+ * @Gedmo\Loggable(logEntryClass="Unilend\Entity\Versioned\VersionedLoan")
+ *
  * @ORM\Table(name="loans", indexes={
  *     @ORM\Index(columns={"id_tranche", "status"}),
  *     @ORM\Index(columns={"added"})

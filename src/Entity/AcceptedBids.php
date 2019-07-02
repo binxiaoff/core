@@ -4,6 +4,7 @@ namespace Unilend\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use Unilend\Entity\Embeddable\Money;
+use Unilend\Entity\Traits\BlamableAddedTrait;
 use Unilend\Entity\Traits\TimestampableTrait;
 
 /**
@@ -14,6 +15,7 @@ use Unilend\Entity\Traits\TimestampableTrait;
 class AcceptedBids
 {
     use TimestampableTrait;
+    use BlamableAddedTrait;
 
     /**
      * @var Bids
