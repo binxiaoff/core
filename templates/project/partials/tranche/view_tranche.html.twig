@@ -12,7 +12,7 @@
             </dl>
             <dl class="col-lg-3 col-md-3">
                 <dt>{% trans %} tranche-form.maturity {% endtrans %}</dt>
-                <dd>{{ tranche.duration|localizednumber }} mois</dd>
+                <dd>{% trans with {'%count%': tranche.duration} %} common.month {% endtrans %}</dd>
             </dl>
             <dl class="col-lg-3 col-md-3">
                 <dt>{% trans %} tranche-form.loan-type {% endtrans %}</dt>
@@ -24,11 +24,11 @@
             </dl>
             <dl class="col-lg-3 col-md-3">
                 <dt>{% trans %} tranche-form.capital-periodicity {% endtrans %}</dt>
-                <dd>{{ tranche.capitalPeriodicity }} mois</dd>
+                <dd>{% trans with {'%count%': tranche.capitalPeriodicity} %} common.month {% endtrans %}</dd>
             </dl>
             <dl class="col-lg-3 col-md-3">
                 <dt>{% trans %} tranche-form.interest-periodicity {% endtrans %}</dt>
-                <dd>{{ tranche.interestPeriodicity }} mois</dd>
+                <dd>{% trans with {'%count%': tranche.interestPeriodicity} %} common.month {% endtrans %}</dd>
             </dl>
             {% if tranche.rate.indexType is not null %}
                 <dl class="col-lg-3 col-md-3">
@@ -38,7 +38,7 @@
                 {% if tranche.rate.margin is not null %}
                     <dl class="col-lg-3 col-md-3">
                         <dt>{% trans %} lending-form.margin {% endtrans %}</dt>
-                        <dd>{{ tranche.rate.margin|localizednumberwithprecision(2) }}</dd>
+                        <dd>{{ tranche.rate.margin|localizednumber }}&nbsp;%</dd>
                     </dl>
                 {% endif %}
             {% endif %}
@@ -54,7 +54,7 @@
         {% if showFees %}
             <div class="row margin-20-t">
                 <div class="col-lg-12 col-md-12">
-                    <h5 class="h5">Frais sur la tranche</h5>
+                    <h5 class="h5">{% trans %} tranche.fees-title {% endtrans %}</h5>
                     {% include 'project/partials/fees/view_fees.html.twig' with {fees: tranche.trancheFees} %}
                 </div>
             </div>

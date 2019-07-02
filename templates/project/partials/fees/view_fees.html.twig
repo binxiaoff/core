@@ -13,7 +13,7 @@
             {% set feeTypeConstantkey = xFee.feeTypeConstantKey(fee.type) %}
             <tr>
                 <td> {{ ('fee-type.' ~ (feeTypeConstantkey|lower))|trans }}</td>
-                <td>{{ fee.rate|localizednumberwithprecision(2) }}&nbsp;%</td>
+                <td>{{ fee.rate|localizednumber }}&nbsp;%</td>
                 <td>
                     {% if fee.isRecurring %}
                         {% trans %} fee.recurring-text {% endtrans %}

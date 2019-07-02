@@ -524,6 +524,7 @@ class EditController extends AbstractController
         AttachmentManager $attachmentManager
     ): bool {
         $documentForm->handleRequest($request);
+
         if ($documentForm->isSubmitted() && $documentForm->isValid()) {
             $projectAttachmentForms = $documentForm->get('projectAttachments');
 

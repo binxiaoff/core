@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Unilend\Traits;
 
 use ReflectionClass;
+use ReflectionException;
 
 trait ConstantsAwareTrait
 {
@@ -18,7 +19,7 @@ trait ConstantsAwareTrait
         try {
             $self      = new ReflectionClass(__CLASS__);
             $constants = $self->getConstants();
-        } catch (\ReflectionException $exception) {
+        } catch (ReflectionException $exception) {
             return [];
         }
 
