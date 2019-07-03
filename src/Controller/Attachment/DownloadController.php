@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\Controller\Attachment;
 
+use Doctrine\ORM\{ORMException, OptimisticLockException};
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\{IsGranted, ParamConverter};
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Filesystem\Exception\FileNotFoundException;
@@ -28,6 +29,9 @@ class DownloadController extends AbstractController
      * @param AttachmentManager $attachmentManager
      * @param Filesystem        $filesystem
      *
+     * @throws ORMException
+     * @throws OptimisticLockException
+     *
      * @return BinaryFileResponse
      */
     public function download(Attachment $attachment, AttachmentManager $attachmentManager, Filesystem $filesystem)
@@ -39,6 +43,8 @@ class DownloadController extends AbstractController
         }
 
         $fileName = $attachment->getOriginalName() ?? basename($attachment->getPath());
+
+        $attachmentManager->logDownload($attachment);
 
         return $this->file($path, $fileName);
     }

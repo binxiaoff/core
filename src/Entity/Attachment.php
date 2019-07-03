@@ -7,9 +7,12 @@ namespace Unilend\Entity;
 use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
+use Gedmo\Mapping\Annotation as Gedmo;
 use Unilend\Entity\Traits\{BlamableAddedTrait, BlamableArchivedTrait, BlamableUpdatedTrait, TimestampableTrait};
 
 /**
+ * @Gedmo\Loggable(logEntryClass="Unilend\Entity\Versioned\VersionedAttachment")
+ *
  * @ORM\Entity(repositoryClass="Unilend\Repository\AttachmentRepository")
  * @ORM\HasLifecycleCallbacks
  */
@@ -31,8 +34,19 @@ class Attachment
      * @var DateTimeImmutable
      *
      * @ORM\Column(type="datetime_immutable", nullable=true)
+     *
+     * @Gedmo\Versioned
      */
     private $archived;
+
+    /**
+     * @var DateTimeImmutable
+     *
+     * @ORM\Column(type="datetime_immutable", nullable=true)
+     *
+     * @Gedmo\Versioned
+     */
+    private $downloaded;
 
     /**
      * @var int
@@ -98,6 +112,8 @@ class Attachment
      * @var string
      *
      * @ORM\Column(length=191, nullable=true)
+     *
+     * @Gedmo\Versioned
      */
     private $description;
 
@@ -286,5 +302,25 @@ class Attachment
     public function getSignatures(): iterable
     {
         return $this->signatures;
+    }
+
+    /**
+     * @param DateTimeImmutable $downloaded
+     *
+     * @return Attachment
+     */
+    public function setDownloaded(DateTimeImmutable $downloaded): Attachment
+    {
+        $this->downloaded = $downloaded;
+
+        return $this;
+    }
+
+    /**
+     * @return DateTimeImmutable
+     */
+    public function getDownloaded(): DateTimeImmutable
+    {
+        return $this->downloaded;
     }
 }
