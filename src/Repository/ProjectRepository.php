@@ -11,6 +11,12 @@ use Unilend\Entity\Project;
 use Unilend\Repository\Traits\OrderByHandlerTrait;
 use Unilend\Repository\Traits\PaginationHandlerTrait;
 
+/**
+ * @method Project|null find($id, $lockMode = null, $lockVersion = null)
+ * @method Project|null findOneBy(array $criteria, array $orderBy = null)
+ * @method Project[]    findAll()
+ * @method Project[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
+ */
 class ProjectRepository extends ServiceEntityRepository
 {
     use OrderByHandlerTrait;

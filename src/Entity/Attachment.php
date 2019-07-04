@@ -80,7 +80,7 @@ class Attachment
     /**
      * @var Companies
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Companies")
+     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Companies", cascade={"persist"})
      * @ORM\JoinColumns({
      *     @ORM\JoinColumn(name="id_company_owner", referencedColumnName="id_company")
      * })
