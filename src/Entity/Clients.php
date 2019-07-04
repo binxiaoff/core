@@ -9,6 +9,7 @@ use DateTimeInterface;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
+use Gedmo\Mapping\Annotation as Gedmo;
 use Ramsey\Uuid\{Exception\UnsatisfiedDependencyException, Uuid};
 use Symfony\Component\Security\Core\User\{EquatableInterface, UserInterface};
 use Symfony\Component\Validator\Constraints as Assert;
@@ -16,6 +17,8 @@ use Unilend\Entity\Traits\{RoleableTrait, TimestampableTrait};
 use URLify;
 
 /**
+ * @Gedmo\Loggable(logEntryClass="Unilend\Entity\Versioned\VersionedClients")
+ *
  * @ORM\Table(name="clients", indexes={
  *     @ORM\Index(columns={"hash"}),
  *     @ORM\Index(columns={"email"}),
@@ -183,6 +186,8 @@ class Clients implements UserInterface, EquatableInterface
      * @var string
      *
      * @ORM\Column(name="password", type="string", length=191, nullable=true)
+     *
+     * @Gedmo\Versioned
      */
     private $password;
 
@@ -190,6 +195,8 @@ class Clients implements UserInterface, EquatableInterface
      * @var string
      *
      * @ORM\Column(name="security_question", type="string", length=191, nullable=true)
+     *
+     * @Gedmo\Versioned
      */
     private $securityQuestion;
 
@@ -197,6 +204,8 @@ class Clients implements UserInterface, EquatableInterface
      * @var string
      *
      * @ORM\Column(name="security_answer", type="string", length=191, nullable=true)
+     *
+     * @Gedmo\Versioned
      */
     private $securityAnswer;
 

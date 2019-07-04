@@ -8,7 +8,6 @@ services:
 
     # aliases so that the old service ids can still be accessed
     unilend.frontbundle.notification_display_manager: '@Unilend\Service\Front\NotificationDisplayManager'
-    unilend.frontbundle.security.password_encoder: '@Unilend\Security\BCryptPasswordEncoder'
     unilend.frontbundle.service.content_manager: '@Unilend\Service\Front\ContentManager'
     unilend.frontbundle.service.form_manager: '@Unilend\Service\Front\FormManager'
     unilend.frontbundle.service.lender_account_display_manager: '@Unilend\Service\Front\LenderAccountDisplayManager'
