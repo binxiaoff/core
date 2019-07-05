@@ -4,7 +4,7 @@ namespace Unilend\Service;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
-use Unilend\Entity\{Clients, ClientSettingType};
+use Unilend\Entity\{ClientSettingType, Clients};
 
 class ClientManager
 {
@@ -12,27 +12,21 @@ class ClientManager
     private $entityManager;
     /** @var ClientSettingsManager */
     private $clientSettingsManager;
-    /** @var TermsOfSaleManager */
-    private $termsOfSaleManager;
     /** @var LoggerInterface */
     private $logger;
 
     /**
      * @param EntityManagerInterface $entityManager
      * @param ClientSettingsManager  $clientSettingsManager
-     * @param TermsOfSaleManager     $termsOfSaleManager
      * @param LoggerInterface        $logger
      */
     public function __construct(
         EntityManagerInterface $entityManager,
         ClientSettingsManager $clientSettingsManager,
-        TermsOfSaleManager $termsOfSaleManager,
         LoggerInterface $logger
-    )
-    {
+    ) {
         $this->entityManager         = $entityManager;
         $this->clientSettingsManager = $clientSettingsManager;
-        $this->termsOfSaleManager    = $termsOfSaleManager;
         $this->logger                = $logger;
     }
 
@@ -49,7 +43,7 @@ class ClientManager
             $this->logger->warning('Unable to retrieve client beta tester status: ' . $client->getIdClient(), [
                 'id_client' => $client->getIdClient(),
                 'class'     => __CLASS__,
-                'function'  => __FUNCTION__
+                'function'  => __FUNCTION__,
             ]);
 
             return false;

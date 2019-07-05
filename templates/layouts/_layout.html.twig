@@ -81,9 +81,9 @@
                 and false == app.session.get(tos_session_key)
                 and is_granted('ROLE_LENDER')
                 and app.user.isValidated()
-                and app.request.get('_route') != 'lenders_terms_of_sales'
+                and app.request.get('_route') != 'terms_of_sales'
             %}
-                <div id="modal-tos" data-modal data-modal-openonload="true" data-modal-maxheight="550"><form id="form-tos" method="post" action="{{ path('lender_tos_popup') }}"></form></div>
+                <div id="modal-tos" data-modal data-modal-openonload="true" data-modal-maxheight="550"><form id="form-tos" method="post" action="{{ path('tos_popup') }}"></form></div>
             {% endif %}
         </div>
 

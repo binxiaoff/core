@@ -89,7 +89,7 @@ class CmsController extends AbstractController
             case self::CMS_TEMPLATE_NAV:
                 return $this->renderCmsNav($tree, $finalElements['content'], $entityManagerSimulator);
             case self::CMS_TEMPLATE_TOS:
-                return $this->redirectToRoute('lenders_terms_of_sales');
+                return $this->redirectToRoute('terms_of_sales');
             default:
                 return new RedirectResponse('/');
         }

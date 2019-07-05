@@ -5,8 +5,6 @@ namespace Unilend\Entity;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * AcceptationsLegalDocs
- *
  * @ORM\Table(name="acceptations_legal_docs", indexes={@ORM\Index(name="id_client", columns={"id_client"})})
  * @ORM\Entity(repositoryClass="Unilend\Repository\AcceptationLegalDocsRepository")
  * @ORM\HasLifecycleCallbacks
@@ -42,14 +40,14 @@ class AcceptationsLegalDocs
     private $updated;
 
     /**
-     * @var \Unilend\Entity\Clients
+     * @var Clients
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\Clients")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_client", referencedColumnName="id_client", nullable=false)
+     *     @ORM\JoinColumn(name="id_client", referencedColumnName="id_client", nullable=false)
      * })
      */
-    private $idClient;
+    private $client;
 
     /**
      * @var int
@@ -81,13 +79,13 @@ class AcceptationsLegalDocs
     }
 
     /**
-     * @param Clients $idClient
+     * @param Clients $client
      *
      * @return AcceptationsLegalDocs
      */
-    public function setIdClient(Clients $idClient): AcceptationsLegalDocs
+    public function setClient(Clients $client): AcceptationsLegalDocs
     {
-        $this->idClient = $idClient;
+        $this->client = $client;
 
         return $this;
     }
@@ -95,9 +93,9 @@ class AcceptationsLegalDocs
     /**
      * @return Clients
      */
-    public function getIdClient(): Clients
+    public function getClient(): Clients
     {
-        return $this->idClient;
+        return $this->client;
     }
 
     /**
@@ -141,7 +139,7 @@ class AcceptationsLegalDocs
     }
 
     /**
-     * @return integer
+     * @return int
      */
     public function getIdAcceptation(): int
     {
@@ -153,7 +151,7 @@ class AcceptationsLegalDocs
      */
     public function setAddedValue()
     {
-        if (! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
+        if (!$this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
             $this->added = new \DateTime();
         }
     }
@@ -176,7 +174,6 @@ class AcceptationsLegalDocs
         $this->pdfName = $pdfName;
 
         return $this;
-
     }
 
     /**

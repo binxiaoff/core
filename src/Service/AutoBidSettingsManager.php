@@ -4,13 +4,10 @@ namespace Unilend\Service;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
-use Unilend\Entity\{Autobid, Bids, Clients, ClientSettingType, ClientsHistoryActions, Notifications, ProjectPeriod, ProjectRateSettings, Settings, Wallet, WalletType};
+use Unilend\Entity\{Autobid, Bids, ClientSettingType, Clients, ClientsHistoryActions, Notifications, ProjectPeriod, ProjectRateSettings, Settings, Wallet, WalletType};
 use Unilend\Service\Product\{Contract\ContractManager, ProductManager};
 use Unilend\Service\Simulator\EntityManager as EntityManagerSimulator;
 
-/**
- * @package Unilend\Service
- */
 class AutoBidSettingsManager
 {
     /** @var EntityManagerSimulator */
@@ -29,8 +26,6 @@ class AutoBidSettingsManager
     private $productManager;
     /** @var ContractManager */
     private $contractManager;
-    /** @var TermsOfSaleManager */
-    private $termsOfSaleManager;
     /** @var LoggerInterface */
     private $logger;
     /** @var UnilendMailerManager */
@@ -45,7 +40,6 @@ class AutoBidSettingsManager
      * @param LenderManager          $lenderManager
      * @param ProductManager         $productManager
      * @param ContractManager        $contractManager
-     * @param TermsOfSaleManager     $termsOfSaleManager
      * @param LoggerInterface        $logger
      * @param UnilendMailerManager   $mailerManager
      */
@@ -58,11 +52,9 @@ class AutoBidSettingsManager
         LenderManager $lenderManager,
         ProductManager $productManager,
         ContractManager $contractManager,
-        TermsOfSaleManager $termsOfSaleManager,
         LoggerInterface $logger,
         UnilendMailerManager $mailerManager
-    )
-    {
+    ) {
         $this->entityManagerSimulator = $entityManagerSimulator;
         $this->entityManager          = $entityManager;
         $this->clientSettingsManager  = $clientSettingsManager;
@@ -71,7 +63,6 @@ class AutoBidSettingsManager
         $this->lenderManager          = $lenderManager;
         $this->productManager         = $productManager;
         $this->contractManager        = $contractManager;
-        $this->termsOfSaleManager     = $termsOfSaleManager;
         $this->logger                 = $logger;
         $this->mailerManager          = $mailerManager;
     }
@@ -122,7 +113,6 @@ class AutoBidSettingsManager
     public function isQualified(Clients $client): bool
     {
         return false;
-
         if (false === $client->isLender()) {
             return false;
         }
@@ -189,7 +179,8 @@ class AutoBidSettingsManager
             } else {
                 $autoBidActiveEntity
                     ->setRateMin($rate)
-                    ->setAmount($amount);
+                    ->setAmount($amount)
+                ;
                 $this->entityManager->flush($autoBidActiveEntity);
             }
 
@@ -204,34 +195,11 @@ class AutoBidSettingsManager
     }
 
     /**
-     * @param Wallet        $wallet
-     * @param string        $evaluation
-     * @param ProjectPeriod $autobidPeriodId
-     * @param string        $rate
-     * @param int           $amount
-     *
-     * @throws \Doctrine\ORM\OptimisticLockException
-     */
-    private function createSetting(Wallet $wallet, string $evaluation, ProjectPeriod $autobidPeriodId, string $rate, int $amount): void
-    {
-        $autobid = new Autobid();
-        $autobid
-            ->setIdLender($wallet)
-            ->setStatus(Autobid::STATUS_ACTIVE)
-            ->setEvaluation($evaluation)
-            ->setIdPeriod($autobidPeriodId)
-            ->setRateMin($rate)
-            ->setAmount($amount);
-
-        $this->entityManager->persist($autobid);
-        $this->entityManager->flush($autobid);
-    }
-
-    /**
      * @param Clients $client
      *
-     * @return bool
      * @throws \Exception
+     *
+     * @return bool
      */
     public function isNovice(Clients $client)
     {
@@ -256,6 +224,7 @@ class AutoBidSettingsManager
                     foreach ($autobidSettings as $autobidSetting) {
                         if ($fRate !== $autobidSetting->getRateMin() || $iAmount !== $autobidSetting->getAmount()) {
                             $bIsNovice = false;
+
                             break;
                         }
                     }
@@ -301,6 +270,7 @@ class AutoBidSettingsManager
                 'Could not save autobid novice settings for client ' . $client->getIdClient() . ', using rate=' . $rate . ' and amount=' . $amount . '. Error: ' . $exception->getMessage(),
                 ['method' => __METHOD__, 'id_client' => $client->getIdClient(), 'file' => $exception->getFile(), 'line' => $exception->getLine()]
             );
+
             throw $exception;
         }
     }
@@ -340,14 +310,14 @@ class AutoBidSettingsManager
         }
         $wallet        = $this->entityManager->getRepository(Wallet::class)->getWalletByType($client, WalletType::LENDER);
         $autobidEntity = $this->entityManager->getRepository(Autobid::class)
-            ->findOneBy(['idLender' => $wallet, 'status' => [Autobid::STATUS_ACTIVE, Autobid::STATUS_INACTIVE], 'evaluation' => $evaluation, 'idPeriod' => $autoBidPeriodId]);
+            ->findOneBy(['idLender' => $wallet, 'status' => [Autobid::STATUS_ACTIVE, Autobid::STATUS_INACTIVE], 'evaluation' => $evaluation, 'idPeriod' => $autoBidPeriodId])
+        ;
 
         if (null !== $autobidEntity && in_array($newStatus, [Autobid::STATUS_ACTIVE, Autobid::STATUS_INACTIVE])) {
             $autobidEntity->setStatus($newStatus);
             $this->entityManager->flush($autobidEntity);
         }
     }
-
 
     /**
      * @param int $clientId
@@ -357,8 +327,9 @@ class AutoBidSettingsManager
     public function getLastDateOnOff($clientId): array
     {
         $autoBidHistory = $this->entityManager->getRepository(ClientsHistoryActions::class)
-            ->findBy(['idClient' => $clientId, 'nomForm' => ClientsHistoryActions::AUTOBID_SWITCH], ['added' => 'DESC'], 2);
-        $dates          = [];
+            ->findBy(['idClient' => $clientId, 'nomForm' => ClientsHistoryActions::AUTOBID_SWITCH], ['added' => 'DESC'], 2)
+        ;
+        $dates = [];
 
         foreach ($autoBidHistory as $historyAction) {
             $action                           = unserialize($historyAction->getSerialize());
@@ -371,8 +342,9 @@ class AutoBidSettingsManager
     /**
      * @param Clients $client
      *
-     * @return \DateTime
      * @throws \Exception
+     *
+     * @return \DateTime
      */
     public function getValidationDate(Clients $client): \DateTime
     {
@@ -409,8 +381,9 @@ class AutoBidSettingsManager
     /**
      * @param Clients $client
      *
-     * @return \DateTime
      * @throws \Exception
+     *
+     * @return \DateTime
      */
     public function getActivationTime(Clients $client): \DateTime
     {
@@ -433,8 +406,9 @@ class AutoBidSettingsManager
     /**
      * @param Clients $client
      *
-     * @return bool
      * @throws \Exception
+     *
+     * @return bool
      */
     public function hasAutoBidActivationHistory(Clients $client): bool
     {
@@ -455,7 +429,7 @@ class AutoBidSettingsManager
     {
         $projectRateSettingsRepository = $this->entityManager->getRepository(ProjectRateSettings::class);
 
-        if ($evaluation === null || $periodId === null) {
+        if (null === $evaluation || null === $periodId) {
             $projectMinMaxRate = $projectRateSettingsRepository->getGlobalMinMaxRate();
         } else {
             /** @var \project_rate_settings $projectRateSettings */
@@ -473,7 +447,7 @@ class AutoBidSettingsManager
 
     /**
      * Check if a autobid settings rate is valid (don't use it for a bid on a particular project. in this case, use
-     * getProjectRateRange() of bid manager)
+     * getProjectRateRange() of bid manager).
      *
      * @param string      $rate
      * @param string|null $evaluation
@@ -495,8 +469,9 @@ class AutoBidSettingsManager
     /**
      * @param Clients $client
      *
-     * @return int|null
      * @throws \Exception
+     *
+     * @return int|null
      */
     public function getAmount(Clients $client): ?int
     {
@@ -519,8 +494,9 @@ class AutoBidSettingsManager
     /**
      * @param Clients $client
      *
-     * @return int|null
      * @throws \Exception
+     *
+     * @return int|null
      */
     public function getMaxAmountPossible(Clients $client): ?int
     {
@@ -543,10 +519,11 @@ class AutoBidSettingsManager
 
     /**
      * @param Clients    $client
-     * @param array|null $projectRates optional, for optimize the performance.
+     * @param array|null $projectRates optional, for optimize the performance
+     *
+     * @throws \Exception
      *
      * @return array
-     * @throws \Exception
      */
     public function getBadAutoBidSettings(Clients $client, ?array $projectRates = null): array
     {
@@ -556,7 +533,7 @@ class AutoBidSettingsManager
         $wallet            = $this->entityManager->getRepository(Wallet::class)->getWalletByType($client, WalletType::LENDER);
         $autoBidRepository = $this->entityManager->getRepository(Autobid::class);
 
-        if ($projectRates == null) {
+        if (null == $projectRates) {
             /** @var \project_rate_settings $projectRateSettings */
             $projectRateSettings = $this->entityManagerSimulator->getRepository('project_rate_settings');
             $projectRates        = $projectRateSettings->getSettings();
@@ -597,5 +574,30 @@ class AutoBidSettingsManager
         $autobidRepository = $this->entityManager->getRepository(Autobid::class);
 
         return null === $autobidRepository->findOneBy(['idLender' => $lenderWallet]);
+    }
+
+    /**
+     * @param Wallet        $wallet
+     * @param string        $evaluation
+     * @param ProjectPeriod $autobidPeriodId
+     * @param string        $rate
+     * @param int           $amount
+     *
+     * @throws \Doctrine\ORM\OptimisticLockException
+     */
+    private function createSetting(Wallet $wallet, string $evaluation, ProjectPeriod $autobidPeriodId, string $rate, int $amount): void
+    {
+        $autobid = new Autobid();
+        $autobid
+            ->setIdLender($wallet)
+            ->setStatus(Autobid::STATUS_ACTIVE)
+            ->setEvaluation($evaluation)
+            ->setIdPeriod($autobidPeriodId)
+            ->setRateMin($rate)
+            ->setAmount($amount)
+        ;
+
+        $this->entityManager->persist($autobid);
+        $this->entityManager->flush($autobid);
     }
 }

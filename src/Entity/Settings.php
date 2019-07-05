@@ -5,20 +5,20 @@ namespace Unilend\Entity;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * Settings
- *
  * @ORM\Table(name="settings")
  * @ORM\Entity
  */
 class Settings
 {
-    const TYPE_AUTOBID_GLOBAL_SWITCH = 'Auto-bid global switch';
-    const TYPE_AUTOBID_STEP          = 'Auto-bid step';
+    public const TYPE_AUTOBID_GLOBAL_SWITCH = 'Auto-bid global switch';
+    public const TYPE_AUTOBID_STEP          = 'Auto-bid step';
 
-    const TYPE_LENDER_TOS_LEGAL_ENTITY   = 'Lien conditions generales inscription preteur societe';
-    const TYPE_LENDER_TOS_NATURAL_PERSON = 'Lien conditions generales inscription preteur particulier';
-    const TYPE_DATE_LENDER_TOS           = 'Date nouvelles CGV avec 2 mandats';
-    const TYPE_BORROWER_TOS              = 'Lien conditions generales depot dossier';
+    public const TYPE_LENDER_TOS_LEGAL_ENTITY   = 'Lien conditions generales inscription preteur societe';
+    public const TYPE_LENDER_TOS_NATURAL_PERSON = 'Lien conditions generales inscription preteur particulier';
+    public const TYPE_DATE_LENDER_TOS           = 'Date nouvelles CGV avec 2 mandats';
+    public const TYPE_BORROWER_TOS              = 'Lien conditions generales depot dossier';
+
+    public const TYPE_TERMS_OF_SALE_PAGE_ID = 'TERMS_OF_SALE_PAGE_ID';
 
     /**
      * @var string
@@ -57,11 +57,7 @@ class Settings
      */
     private $idSetting;
 
-
-
     /**
-     * Set type
-     *
      * @param string $type
      *
      * @return Settings
@@ -74,8 +70,6 @@ class Settings
     }
 
     /**
-     * Get type
-     *
      * @return string
      */
     public function getType()
@@ -84,8 +78,6 @@ class Settings
     }
 
     /**
-     * Set value
-     *
      * @param string $value
      *
      * @return Settings
@@ -98,8 +90,6 @@ class Settings
     }
 
     /**
-     * Get value
-     *
      * @return string
      */
     public function getValue()
@@ -108,8 +98,6 @@ class Settings
     }
 
     /**
-     * Set added
-     *
      * @param \DateTime $added
      *
      * @return Settings
@@ -122,8 +110,6 @@ class Settings
     }
 
     /**
-     * Get added
-     *
      * @return \DateTime
      */
     public function getAdded()
@@ -132,8 +118,6 @@ class Settings
     }
 
     /**
-     * Set updated
-     *
      * @param \DateTime $updated
      *
      * @return Settings
@@ -146,8 +130,6 @@ class Settings
     }
 
     /**
-     * Get updated
-     *
      * @return \DateTime
      */
     public function getUpdated()
@@ -156,9 +138,7 @@ class Settings
     }
 
     /**
-     * Get idSetting
-     *
-     * @return integer
+     * @return int
      */
     public function getIdSetting()
     {

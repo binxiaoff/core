@@ -24,11 +24,12 @@ class TermsOfSaleSubscriber implements EventSubscriberInterface
      */
     public static function getSubscribedEvents(): array
     {
-        return [
-            KernelEvents::REQUEST => 'checkLegalDoc'
-        ];
+        return [KernelEvents::REQUEST => 'checkLegalDoc'];
     }
 
+    /**
+     * Check and save in the session if the Terms of sale has been accepted.
+     */
     public function checkLegalDoc(): void
     {
         $this->termsOfSaleManager->checkCurrentVersionAccepted();

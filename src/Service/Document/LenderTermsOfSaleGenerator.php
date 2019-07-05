@@ -3,6 +3,7 @@
 namespace Unilend\Service\Document;
 
 use Doctrine\ORM\EntityManagerInterface;
+use Exception;
 use Knp\Snappy\Pdf;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Asset\Packages;
@@ -13,9 +14,9 @@ use Unilend\Service\TermsOfSaleManager;
 
 class LenderTermsOfSaleGenerator implements DocumentGeneratorInterface
 {
-    const PATH = 'pdf' . DIRECTORY_SEPARATOR . 'cgv_preteurs';
+    public const PATH = 'pdf' . DIRECTORY_SEPARATOR . 'cgv_preteurs';
 
-    const LEGAL_ENTITY_PLACEHOLDERS = [
+    public const LEGAL_ENTITY_PLACEHOLDERS = [
         '[Civilite]',
         '[Prenom]',
         '[Nom]',
@@ -23,17 +24,17 @@ class LenderTermsOfSaleGenerator implements DocumentGeneratorInterface
         '[Raison_sociale]',
         '[SIREN]',
         '[adresse_fiscale]',
-        '[date_validation_cgv]'
+        '[date_validation_cgv]',
     ];
 
-    const NATURAL_PERSON_PLACEHOLDERS = [
+    public const NATURAL_PERSON_PLACEHOLDERS = [
         '[Civilite]',
         '[Prenom]',
         '[Nom]',
         '[date]',
         '[ville_naissance]',
         '[adresse_fiscale]',
-        '[date_validation_cgv]'
+        '[date_validation_cgv]',
     ];
 
     /** @var EntityManagerInterface */
@@ -84,8 +85,7 @@ class LenderTermsOfSaleGenerator implements DocumentGeneratorInterface
         \NumberFormatter $numberFormatter,
         \NumberFormatter $currencyFormatter,
         LoggerInterface $logger
-    )
-    {
+    ) {
         $this->entityManager      = $entityManager;
         $this->termsOfSaleManager = $termsOfSaleManager;
         $this->filesystem         = $filesystem;
@@ -112,8 +112,9 @@ class LenderTermsOfSaleGenerator implements DocumentGeneratorInterface
     /**
      * @param AcceptationsLegalDocs $acceptedLegalDoc
      *
+     * @throws Exception
+     *
      * @return string
-     * @throws \Exception
      */
     public function getPath($acceptedLegalDoc): string
     {
@@ -124,7 +125,7 @@ class LenderTermsOfSaleGenerator implements DocumentGeneratorInterface
             throw new \InvalidArgumentException('AcceptationsLegalDocs entity expected, got "' . $parameterType . '"');
         }
 
-        return $this->protectedPath . self::PATH . DIRECTORY_SEPARATOR . $acceptedLegalDoc->getIdClient()->getIdClient() . DIRECTORY_SEPARATOR . $this->getName($acceptedLegalDoc);
+        return $this->protectedPath . self::PATH . DIRECTORY_SEPARATOR . $acceptedLegalDoc->getClient()->getIdClient() . DIRECTORY_SEPARATOR . $this->getName($acceptedLegalDoc);
     }
 
     /**
@@ -134,14 +135,15 @@ class LenderTermsOfSaleGenerator implements DocumentGeneratorInterface
      */
     public function getName(AcceptationsLegalDocs $acceptedLegalDoc)
     {
-        return 'cgv_preteurs-' . $acceptedLegalDoc->getIdClient()->getHash() . '-' . $acceptedLegalDoc->getIdLegalDoc() . '.pdf';
+        return 'cgv_preteurs-' . $acceptedLegalDoc->getClient()->getHash() . '-' . $acceptedLegalDoc->getIdLegalDoc() . '.pdf';
     }
 
     /**
      * @param AcceptationsLegalDocs $acceptedLegalDoc
      *
+     * @throws Exception
+     *
      * @return bool
-     * @throws \Exception
      */
     public function exists($acceptedLegalDoc): bool
     {
@@ -153,7 +155,7 @@ class LenderTermsOfSaleGenerator implements DocumentGeneratorInterface
     /**
      * @param AcceptationsLegalDocs $acceptedLegalDoc
      *
-     * @throws \Exception
+     * @throws Exception
      * @throws \Doctrine\ORM\NonUniqueResultException
      * @throws \Twig_Error_Loader
      * @throws \Twig_Error_Runtime
@@ -180,23 +182,36 @@ class LenderTermsOfSaleGenerator implements DocumentGeneratorInterface
     }
 
     /**
-     * @param AcceptationsLegalDocs $acceptedLegalDoc
+     * @param int $idTree
+     *
+     * @throws Exception
      *
      * @return array
-     * @throws \Exception
+     */
+    public function getNonPersonalizedContent(int $idTree): array
+    {
+        return $this->getContent($idTree);
+    }
+
+    /**
+     * @param AcceptationsLegalDocs $acceptedLegalDoc
+     *
+     * @throws Exception
      * @throws \Doctrine\ORM\NonUniqueResultException
+     *
+     * @return array
      */
     private function getPersonalizedContent(AcceptationsLegalDocs $acceptedLegalDoc): array
     {
-        if (false === $acceptedLegalDoc->getIdClient()->isLender()) {
+        if (false === $acceptedLegalDoc->getClient()->isLender()) {
             throw new \InvalidArgumentException('Client is no lender');
         }
 
-        $newTermsOfServiceDate        = $this->termsOfSaleManager->getDateOfNewTermsOfSaleWithTwoMandates();
-        $wallet                       = $this->entityManager->getRepository(Wallet::class)->getWalletByType($acceptedLegalDoc->getIdClient(), WalletType::LENDER);
-        $loansCount                   = $this->entityManager->getRepository(Loans::class)->getCountLoansForLenderBeforeDate($wallet, $newTermsOfServiceDate);
+        $newTermsOfSaleDate = $this->termsOfSaleManager->getDateOfNewTermsOfSaleWithTwoMandates();
+        $wallet             = $this->entityManager->getRepository(Wallet::class)->getWalletByType($acceptedLegalDoc->getClient(), WalletType::LENDER);
+        $loansCount         = $this->entityManager->getRepository(Loans::class)->getCountLoansForLenderBeforeDate($wallet, $newTermsOfSaleDate);
 
-        $replacements                                     = $acceptedLegalDoc->getIdClient()->isNaturalPerson() ? $this->getNaturalPersonData($acceptedLegalDoc) : $this->getLegalEntityData($acceptedLegalDoc);
+        $replacements                                     = $acceptedLegalDoc->getClient()->isNaturalPerson() ? $this->getNaturalPersonData($acceptedLegalDoc) : $this->getLegalEntityData($acceptedLegalDoc);
         $content                                          = $this->getContent($acceptedLegalDoc->getIdLegalDoc());
         $content['debtCollectionMandate']                 = $this->replacePlaceHolders($replacements, $content['mandat-de-recouvrement']);
         $content['debtCollectionMandateWithExitingLoans'] = $loansCount > 0 ? $this->replacePlaceHolders($replacements, $content['mandat-de-recouvrement-avec-pret']) : '';
@@ -207,39 +222,42 @@ class LenderTermsOfSaleGenerator implements DocumentGeneratorInterface
     /**
      * @param AcceptationsLegalDocs $accepted
      *
-     * @return array
      * @throws \Doctrine\ORM\NonUniqueResultException
+     *
+     * @return array
      */
     private function getNaturalPersonData(AcceptationsLegalDocs $accepted): array
     {
         $clientAddressRepository = $this->entityManager->getRepository(ClientAddress::class);
-        $clientAddress           = $clientAddressRepository->findMainAddressAddedBeforeDate($accepted->getAdded(), $accepted->getIdClient());
+        $clientAddress           = $clientAddressRepository->findMainAddressAddedBeforeDate($accepted->getAdded(), $accepted->getClient());
 
         if (null === $clientAddress) {
             $clientAddress = $clientAddressRepository
-                ->findLastModifiedNotArchivedAddressByType($accepted->getIdClient(), AddressType::TYPE_MAIN_ADDRESS);
+                ->findLastModifiedNotArchivedAddressByType($accepted->getClient(), AddressType::TYPE_MAIN_ADDRESS)
+            ;
         }
 
         return [
-            '[Civilite]'            => $accepted->getIdClient()->getTitle(),
-            '[Prenom]'              => $accepted->getIdClient()->getFirstName(),
-            '[Nom]'                 => $accepted->getIdClient()->getLastName(),
-            '[date]'                => $accepted->getIdClient()->getDateOfBirth()->format('d/m/Y'),
-            '[ville_naissance]'     => $accepted->getIdClient()->getBirthCity(),
+            '[Civilite]'            => $accepted->getClient()->getTitle(),
+            '[Prenom]'              => $accepted->getClient()->getFirstName(),
+            '[Nom]'                 => $accepted->getClient()->getLastName(),
+            '[date]'                => $accepted->getClient()->getDateOfBirth()->format('d/m/Y'),
+            '[ville_naissance]'     => $accepted->getClient()->getBirthCity(),
             '[adresse_fiscale]'     => $clientAddress instanceof ClientAddress ? $clientAddress->getAddress() . ', ' . $clientAddress->getZip() . ', ' . $clientAddress->getCity() . ', ' . $clientAddress->getIdCountry()->getFr() : '',
-            '[date_validation_cgv]' => 'Sign&eacute; &eacute;lectroniquement le ' . $accepted->getAdded()->format('d/m/Y')
+            '[date_validation_cgv]' => 'Sign&eacute; &eacute;lectroniquement le ' . $accepted->getAdded()->format('d/m/Y'),
         ];
     }
 
     /**
      * @param AcceptationsLegalDocs $accepted
      *
-     * @return array
      * @throws \Doctrine\ORM\NonUniqueResultException
+     *
+     * @return array
      */
     private function getLegalEntityData(AcceptationsLegalDocs $accepted): array
     {
-        $company = $this->entityManager->getRepository(Companies::class)->findOneBy(['idClientOwner' => $accepted->getIdClient()]);
+        $company = $this->entityManager->getRepository(Companies::class)->findOneBy(['idClientOwner' => $accepted->getClient()]);
         if (null === $company) {
             throw new \InvalidArgumentException('Client of type legal entity has no attached company');
         }
@@ -252,27 +270,29 @@ class LenderTermsOfSaleGenerator implements DocumentGeneratorInterface
         }
 
         return [
-            '[Civilite]'            => $accepted->getIdClient()->getTitle(),
-            '[Prenom]'              => $accepted->getIdClient()->getFirstName(),
-            '[Nom]'                 => $accepted->getIdClient()->getLastName(),
+            '[Civilite]'            => $accepted->getClient()->getTitle(),
+            '[Prenom]'              => $accepted->getClient()->getFirstName(),
+            '[Nom]'                 => $accepted->getClient()->getLastName(),
             '[Fonction]'            => '',
             '[Raison_sociale]'      => $company->getName(),
             '[SIREN]'               => $company->getSiren(),
             '[adresse_fiscale]'     => $companyAddress instanceof CompanyAddress ? $companyAddress->getAddress() . ', ' . $companyAddress->getZip() . ', ' . $companyAddress->getCity() . ', ' . $companyAddress->getIdCountry()->getFr() : '',
-            '[date_validation_cgv]' => 'Sign&eacute; &eacute;lectroniquement le ' . $accepted->getAdded()->format('d/m/Y')
+            '[date_validation_cgv]' => 'Sign&eacute; &eacute;lectroniquement le ' . $accepted->getAdded()->format('d/m/Y'),
         ];
     }
 
     /**
      * @param int $idTree
      *
+     * @throws Exception
+     *
      * @return array
-     * @throws \Exception
      */
     private function getContent(int $idTree): array
     {
         $tosElements = $this->entityManager->getRepository(TreeElements::class)
-            ->findBy(['idTree' => $idTree]);
+            ->findBy(['idTree' => $idTree])
+        ;
 
         if (empty($tosElements)) {
             throw new \InvalidArgumentException('There are not tree elements associated with terms of sales treeId');
@@ -285,7 +305,7 @@ class LenderTermsOfSaleGenerator implements DocumentGeneratorInterface
             /** @var Elements $element */
             $element = $elementRepository->findOneBy(['idElement' => $treeElement->getIdElement()]);
             if (null === $element) {
-                throw new \Exception('Tree element has no corresponding element');
+                throw new Exception('Tree element has no corresponding element');
             }
 
             $content[$element->getSlug()] = $treeElement->getValue();
@@ -303,28 +323,5 @@ class LenderTermsOfSaleGenerator implements DocumentGeneratorInterface
     private function replacePlaceHolders(array $placeholders, string $content): string
     {
         return str_replace(array_keys($placeholders), $placeholders, $content);
-    }
-
-    /**
-     * @param int    $idTree
-     * @param string $type
-     *
-     * @return array
-     * @throws \Exception
-     */
-    public function getNonPersonalizedContent(int $idTree, string $type): array
-    {
-        $content = $this->getContent($idTree);
-
-        if (false === empty($type)) {
-            $replacements = explode(';', $content['contenu-variables-par-defaut-morale']);
-            $content['debtCollectionContract'] = str_replace(self::LEGAL_ENTITY_PLACEHOLDERS, $replacements, $content['mandat-de-recouvrement-personne-morale']);
-
-        } else {
-            $replacements = explode(';', $content['contenu-variables-par-defaut']);
-            $content['debtCollectionContract'] = str_replace(self::NATURAL_PERSON_PLACEHOLDERS, $replacements, $content['mandat-de-recouvrement']);
-        }
-
-        return $content;
     }
 }

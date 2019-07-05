@@ -1,5 +1,5 @@
 <header class="modal-header">
-    <h2 class="modal-title">{% trans %} tos-update_title {% endtrans %}</h2>
+    <h2 class="modal-title">{% trans %} tos-popup.title {% endtrans %}</h2>
 </header><!-- /.modal-header -->
 
 <div class="modal-body">
@@ -11,18 +11,8 @@
     <div id="accept-tos" class="form-field form-field-single-checkbox">
         <label>
             <input type="checkbox" name="terms" value="true">
-            <span class="label">{% trans %} tos-update_confirm-check-box-label {% endtrans %}</span>
+            <span class="label">{% trans %} tos-popup.confirm-check-box-label {% endtrans %}</span>
         </label>
     </div>
-
-    {% if newsletterOptIn %}
-        <div class="form-field form-field-single-checkbox">
-            <label class="custom-input-switch custom-input-switch-sm">
-                <input type="checkbox" id="newsletter-opt-in" name="newsletterOptIn" value="true">
-                <span class="label"><span class="sr-only">{% trans %} common_switch-button-screen-reader {% endtrans %}</span></span>
-                {% trans %} tos-update_newsletter-consent-label {% endtrans %}
-            </label>
-        </div>
-    {% endif %}
-    <button type="submit" class="btn-primary btn-shape-md" data-modal-doactionconfirm>{% trans %} common_form-btn-submit {% endtrans %}<span class="icon fa-angle-r"></span></button>
+    <button type="submit" class="btn-primary btn-shape-md" data-modal-doactionconfirm>{% trans %} common.confirmation-button-label {% endtrans %}<span class="icon fa-angle-r"></span></button>
 </footer><!-- /.modal-footer -->
