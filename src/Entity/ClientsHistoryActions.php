@@ -5,6 +5,8 @@ namespace Unilend\Entity;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
+ * @deprecated
+ *
  * ClientsHistoryActions
  *
  * @ORM\Table(name="clients_history_actions", indexes={@ORM\Index(name="idx_clients_history_actions_id_client_nom_form", columns={"id_client", "nom_form"}), @ORM\Index(name="IDX_C386E5B9E173B1B8", columns={"id_client"})})

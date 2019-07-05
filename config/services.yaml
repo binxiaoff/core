@@ -223,8 +223,5 @@ services:
             - '@UserAgentParser\Provider\WhichBrowser'
             - '@UserAgentParser\Provider\PiwikDeviceDetector'
 
-    Unilend\Security\BCryptPasswordEncoder:
-        $cost: '%security.bcrypt.cost%'
-
     Unilend\Service\Front\UniversignManager:
         $universignURL: '%url.universign%'
