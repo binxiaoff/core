@@ -64,7 +64,7 @@ services:
     unilend.service.slack_manager: '@Unilend\Service\SlackManager'
     unilend.service.sponsorship_manager: '@Unilend\Service\SponsorshipManager'
     unilend.service.statistics_manager: '@Unilend\Service\StatisticsManager'
-    unilend.service.terms_of_sale_manager: '@Unilend\Service\TermsOfSaleManager'
+    unilend.service.terms_of_sale_manager: '@Unilend\Service\TermsOfSale\TermsOfSaleManager'
     unilend.service.vigilance_rule_manager: '@Unilend\Service\VigilanceRuleManager'
     unilend.service.welcome_offer_manager: '@Unilend\Service\WelcomeOfferManager'
     unilend.service.wire_transfer_out_manager: '@Unilend\Service\WireTransferOutManager'

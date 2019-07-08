@@ -213,9 +213,9 @@ use Unilend\Entity\ClientsStatus;
                 <tbody>
                 <?php foreach ($this->termsOfSalesAcceptation as $termsOfSales) : ?>
                     <?php /** @var \Unilend\Entity\AcceptationsLegalDocs $termsOfSales */ ?>
-                    <?php $tree = $this->treeRepository->findOneBy(['idTree' => $termsOfSales->getIdLegalDoc(), 'idLangue' => $this->language]); ?>
+                    <?php $tree = $this->treeRepository->findOneBy(['idTree' => $termsOfSales->getLegalDoc(), 'idLangue' => $this->language]); ?>
                     <tr>
-                        <td><?= $termsOfSales->getIdLegalDoc() ?></td>
+                        <td><?= $termsOfSales->getLegalDoc() ?></td>
                         <td><?= $tree->getAdded()->format('d/m/Y') ?></td>
                         <td><?= $termsOfSales->getAdded()->format('d/m/Y H:i') ?></td>
                     </tr>

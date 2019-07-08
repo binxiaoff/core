@@ -5,7 +5,7 @@ use Unilend\Entity\{AcceptationsLegalDocs, AddressType, Attachment, AttachmentTy
     CompanyStatus, CompanyStatusHistory, Echeanciers, EcheanciersEmprunteur, Loans, Operation, Partner, PartnerProjectAttachment, Prelevements, ProjectAbandonReason, ProjectAttachmentType,
     ProjectBeneficialOwnerUniversign, ProjectNotification, ProjectRejectionReason, ProjectRepaymentTask, Projects, ProjectsComments, ProjectsNotes, ProjectsPouvoir, ProjectsStatus,
     ProjectsStatusHistory, ProjectStatusHistoryReason, Users, UsersTypes, Virements, Wallet, WalletType, Zones};
-use Unilend\Service\{BackOfficeUserManager, ProjectManager, ProjectRequestManager, TermsOfSaleManager, WireTransferOutManager, WorkingDaysManager};
+use Unilend\Service\{BackOfficeUserManager, ProjectManager, ProjectRequestManager, TermsOfSale\TermsOfSaleManager, WireTransferOutManager, WorkingDaysManager};
 
 class dossiersController extends bootstrap
 {

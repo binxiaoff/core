@@ -12,7 +12,7 @@
             </thead>
             <tbody>
             <?php foreach ($this->legalDocuments as $legalDocument) : ?>
-                <?php $tree = $this->treeRepository->findOneBy(['idTree' => $legalDocument->getIdLegalDoc(), 'idLangue' => $this->language]); ?>
+                <?php $tree = $this->treeRepository->findOneBy(['idTree' => $legalDocument->getLegalDoc(), 'idLangue' => $this->language]); ?>
                 <tr>
                     <td><?= $tree->getAdded()->format('d/m/Y') ?></td>
                     <td><?= $tree->getTitle() ?></td>
