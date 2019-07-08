@@ -1,0 +1,18 @@
+{% extends 'layouts/_pdf_layout.html.twig' %}
+
+{% block cssFiles %}
+{% endblock %}
+
+{% block header %}{% endblock %}
+
+{% block content %}
+    <div class="cgu-wrapper">
+        <div class="main" style="padding-bottom: 0px;">
+            <div class="shell" style="width:750px;">
+                <div class="logo"></div>
+                {{ content['contenu-cgu']|raw }}
+                <div style="page-break-after: always;"></div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

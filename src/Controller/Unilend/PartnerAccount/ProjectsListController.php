@@ -9,12 +9,13 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Unilend\Entity\{Clients, ProjectAbandonReason, ProjectCgv, Projects, ProjectsComments, ProjectsStatus, ProjectsStatusHistory};
 use Unilend\Repository\ProjectsRepository;
-use Unilend\Service\TermsOfSaleManager;
+use Unilend\Service\TermsOfSale\TermsOfSaleManager;
 
 class ProjectsListController extends Controller
 {
     /**
      * @Route("partenaire/emprunteurs", name="partner_projects_list", methods={"GET"})
+     *
      * @Security("has_role('ROLE_PARTNER')")
      *
      * @param UserInterface|Clients|null $partnerUser
@@ -38,8 +39,12 @@ class ProjectsListController extends Controller
         $pending           = $projectRepository->getPartnerProjects($companies, [ProjectsStatus::STATUS_REQUESTED], $submitter);
         $ready             = $projectRepository->getPartnerProjects($companies, [ProjectsStatus::STATUS_REVIEW], $submitter);
         $online            = $projectRepository->getPartnerProjects($companies, [ProjectsStatus::STATUS_PUBLISHED], $submitter);
-        $funded            = $projectRepository->getPartnerProjects($companies, [ProjectsStatus::STATUS_FUNDED, ProjectsStatus::STATUS_CONTRACTS_SIGNED, ProjectsStatus::STATUS_FINISHED, ProjectsStatus::STATUS_LOST], $submitter);
-        $cancelled         = $projectRepository->getPartnerProjects($companies, [ProjectsStatus::STATUS_CANCELLED], $submitter);
+        $funded            = $projectRepository->getPartnerProjects($companies, [
+            ProjectsStatus::STATUS_FUNDED,
+            ProjectsStatus::STATUS_CONTRACTS_SIGNED,
+            ProjectsStatus::STATUS_FINISHED, ProjectsStatus::STATUS_LOST,
+        ], $submitter);
+        $cancelled = $projectRepository->getPartnerProjects($companies, [ProjectsStatus::STATUS_CANCELLED], $submitter);
 
         return $this->render('/partner_account/projects_list.html.twig', [
             'pending'        => $this->formatProject($partnerUser, $pending, false),
@@ -49,12 +54,13 @@ class ProjectsListController extends Controller
             'cancelled'      => $this->formatProject($partnerUser, $cancelled, false),
             'abandonReasons' => $entityManager
                 ->getRepository(ProjectAbandonReason::class)
-                ->findBy(['status' => ProjectAbandonReason::STATUS_ONLINE], ['reason' => 'ASC'])
+                ->findBy(['status' => ProjectAbandonReason::STATUS_ONLINE], ['reason' => 'ASC']),
         ]);
     }
 
     /**
      * @Route("partenaire/emprunteurs", name="partner_project_tos", condition="request.isXmlHttpRequest()", methods={"POST"})
+     *
      * @Security("has_role('ROLE_PARTNER')")
      *
      * @param Request                    $request
@@ -70,9 +76,9 @@ class ProjectsListController extends Controller
             return $this->redirect($request->headers->get('referer'));
         }
 
-        $translator        = $this->get('translator');
-        $entityManager     = $this->get('doctrine.orm.entity_manager');
-        $partnerManager    = $this->get('unilend.service.partner_manager');
+        $translator     = $this->get('translator');
+        $entityManager  = $this->get('doctrine.orm.entity_manager');
+        $partnerManager = $this->get('unilend.service.partner_manager');
 
         $projectRepository = $entityManager->getRepository(Projects::class);
         $project           = $projectRepository->findOneBy(['hash' => $hash]);
@@ -81,7 +87,7 @@ class ProjectsListController extends Controller
         if (false === $project instanceof Projects || false === in_array($project->getIdCompanySubmitter(), $userCompanies)) {
             return new JsonResponse([
                 'error'   => true,
-                'message' => $translator->trans('partner-project-list_popup-project-tos-message-error')
+                'message' => $translator->trans('partner-project-list_popup-project-tos-message-error'),
             ]);
         }
 
@@ -93,29 +99,29 @@ class ProjectsListController extends Controller
                 case TermsOfSaleManager::EXCEPTION_CODE_INVALID_EMAIL:
                     return new JsonResponse([
                         'error'   => true,
-                        'message' => $translator->trans('partner-project-list_popup-project-tos-message-error-email')
+                        'message' => $translator->trans('partner-project-list_popup-project-tos-message-error-email'),
                     ]);
                 case TermsOfSaleManager::EXCEPTION_CODE_INVALID_PHONE_NUMBER:
                     return new JsonResponse([
                         'error'   => true,
-                        'message' => $translator->trans('partner-project-list_popup-project-tos-message-error-phone-number')
+                        'message' => $translator->trans('partner-project-list_popup-project-tos-message-error-phone-number'),
                     ]);
                 case TermsOfSaleManager::EXCEPTION_CODE_PDF_FILE_NOT_FOUND:
                     return new JsonResponse([
                         'error'   => true,
-                        'message' => $translator->trans('partner-project-list_popup-project-tos-message-error-file-not-found')
+                        'message' => $translator->trans('partner-project-list_popup-project-tos-message-error-file-not-found'),
                     ]);
                 default:
                     return new JsonResponse([
                         'error'   => true,
-                        'message' => $translator->trans('partner-project-list_popup-project-tos-message-error')
+                        'message' => $translator->trans('partner-project-list_popup-project-tos-message-error'),
                     ]);
             }
         }
 
         return new JsonResponse([
             'success' => true,
-            'message' => $translator->trans('partner-project-list_popup-project-tos-message-success')
+            'message' => $translator->trans('partner-project-list_popup-project-tos-message-success'),
         ]);
     }
 
@@ -137,28 +143,28 @@ class ProjectsListController extends Controller
 
         foreach ($projects as $project) {
             $display[$project->getIdProject()] = [
-                'id'         => $project->getIdProject(),
-                'hash'       => $project->getHash(),
-                'name'       => empty($project->getTitle()) ? $project->getIdCompany()->getName() : $project->getTitle(),
-                'amount'     => $project->getAmount(),
-                'duration'   => $project->getPeriod(),
-                'status'     => $project->getStatus(),
-                'date'       => $project->getAdded(),
-                'submitter'  => [
+                'id'        => $project->getIdProject(),
+                'hash'      => $project->getHash(),
+                'name'      => empty($project->getTitle()) ? $project->getIdCompany()->getName() : $project->getTitle(),
+                'amount'    => $project->getAmount(),
+                'duration'  => $project->getPeriod(),
+                'status'    => $project->getStatus(),
+                'date'      => $project->getAdded(),
+                'submitter' => [
                     'firstName' => $project->getIdClientSubmitter() && $project->getIdClientSubmitter()->getIdClient() ? $project->getIdClientSubmitter()->getFirstName() : '',
                     'lastName'  => $project->getIdClientSubmitter() && $project->getIdClientSubmitter()->getIdClient() ? $project->getIdClientSubmitter()->getLastName() : '',
-                    'entity'    => $project->getIdCompanySubmitter()->getName()
+                    'entity'    => $project->getIdCompanySubmitter()->getName(),
                 ],
                 'motive'     => $project->getIdBorrowingMotive() ? $translator->trans('borrowing-motive_motive-' . $project->getIdBorrowingMotive()) : '',
                 'memos'      => $loadNotes ? $this->formatNotes($project->getPublicMemos()) : [],
                 'hasChanged' => $loadNotes ? $this->hasProjectChanged($project, $client) : false,
-                'tos'        => []
+                'tos'        => [],
             ];
 
             $termsOfSale = $termsOfSaleRepository->findOneBy(['idProject' => $project]);
 
             if ($termsOfSale) {
-                $dateFormatter = new \IntlDateFormatter($this->getParameter('locale'), \IntlDateFormatter::MEDIUM, \IntlDateFormatter::SHORT);
+                $dateFormatter                              = new \IntlDateFormatter($this->getParameter('locale'), \IntlDateFormatter::MEDIUM, \IntlDateFormatter::SHORT);
                 $display[$project->getIdProject()]['tos'][] = $dateFormatter->format($termsOfSale->getAdded());
             }
 
@@ -169,7 +175,7 @@ class ProjectsListController extends Controller
 
                 $history = $projectStatusHistoryRepository->findOneBy([
                     'idProject'       => $project->getIdProject(),
-                    'idProjectStatus' => $abandonProjectStatus
+                    'idProjectStatus' => $abandonProjectStatus,
                 ]);
                 $display[$project->getIdProject()]['projectAbandonReasons'] = $history ? $history->getAbandonReasons() : [];
             }
@@ -191,7 +197,7 @@ class ProjectsListController extends Controller
             $display[] = [
                 'author'  => $note->getIdUser()->getFirstname() . ' ' . $note->getIdUser()->getName(),
                 'date'    => $note->getAdded(),
-                'content' => $note->getContent()
+                'content' => $note->getContent(),
             ];
         }
 
@@ -211,10 +217,12 @@ class ProjectsListController extends Controller
         $lastLoginDate                  = $client->getLastLogin();
         $notes                          = $project->getPublicMemos();
 
-        return (
+        return
             null === $lastLoginDate
             || count($notes) && $lastLoginDate < $notes[0]->getAdded()
-            || $lastLoginDate < $projectStatusRepositoryHistory->findOneBy(['idProject' => $project->getIdProject()], ['added' => 'DESC', 'idProjectStatusHistory' => 'DESC'])->getAdded()
-        );
+            || $lastLoginDate                  < $projectStatusRepositoryHistory
+                ->findOneBy(['idProject' => $project->getIdProject()], ['added' => 'DESC', 'idProjectStatusHistory' => 'DESC'])
+                ->getAdded()
+        ;
     }
 }

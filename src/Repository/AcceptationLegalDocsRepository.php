@@ -5,8 +5,14 @@ namespace Unilend\Repository;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Unilend\Entity\AcceptationsLegalDocs;
-use Unilend\Service\TermsOfSaleManager;
+use Unilend\Service\TermsOfSale\TermsOfSaleManager;
 
+/**
+ * @method AcceptationsLegalDocs|null find($id, $lockMode = null, $lockVersion = null)
+ * @method AcceptationsLegalDocs|null findOneBy(array $criteria, array $orderBy = null)
+ * @method AcceptationsLegalDocs[]    findAll()
+ * @method AcceptationsLegalDocs[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
+ */
 class AcceptationLegalDocsRepository extends ServiceEntityRepository
 {
     /** @var TermsOfSaleManager */

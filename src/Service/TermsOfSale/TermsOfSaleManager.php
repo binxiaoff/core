@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Service;
+namespace Unilend\Service\TermsOfSale;
 
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
@@ -10,8 +10,8 @@ use Exception;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
-use Unilend\core\Loader;
-use Unilend\Entity\{AcceptationsLegalDocs, Clients, Companies, Elements, ProjectCgv, Projects, Settings, TreeElements, UniversignEntityInterface};
+use Unilend\Entity\{AcceptationsLegalDocs, Clients, Settings, Tree};
+use Unilend\Message\TermsOfSale\TermsOfSaleAccepted;
 
 class TermsOfSaleManager
 {
@@ -23,8 +23,6 @@ class TermsOfSaleManager
 
     /** @var EntityManagerInterface */
     private $entityManager;
-    /** @var UnilendMailerManager */
-    private $mailerManager;
     /** @var TokenStorageInterface */
     private $tokenStorage;
     /** @var RequestStack */
@@ -38,15 +36,14 @@ class TermsOfSaleManager
 
     /**
      * @param EntityManagerInterface $entityManager
-     * @param UnilendMailerManager   $mailerManager
      * @param TokenStorageInterface  $tokenStorage
      * @param RequestStack           $requestStack
      * @param string                 $rootDirectory
      * @param string                 $defaultLocale
+     * @param MessageBusInterface    $messageBus
      */
     public function __construct(
         EntityManagerInterface $entityManager,
-        UnilendMailerManager $mailerManager,
         TokenStorageInterface $tokenStorage,
         RequestStack $requestStack,
         string $rootDirectory,
@@ -54,7 +51,6 @@ class TermsOfSaleManager
         MessageBusInterface $messageBus
     ) {
         $this->entityManager = $entityManager;
-        $this->mailerManager = $mailerManager;
         $this->tokenStorage  = $tokenStorage;
         $this->requestStack  = $requestStack;
         $this->rootDirectory = $rootDirectory;
@@ -133,20 +129,27 @@ class TermsOfSaleManager
 
     /**
      * @param Clients $client
+     *
+     * @return AcceptationsLegalDocs
      */
-    public function acceptCurrentVersion(Clients $client): void
+    public function acceptCurrentVersion(Clients $client): AcceptationsLegalDocs
     {
-        $termsOfUse = new AcceptationsLegalDocs();
-        $termsOfUse
-            ->setIdLegalDoc($this->getCurrentVersionId())
+        $legalDocument          = $this->entityManager->getRepository(Tree::class)->find($this->getCurrentVersionId());
+        $TermsOfSaleAcceptation = new AcceptationsLegalDocs();
+        $TermsOfSaleAcceptation
+            ->setLegalDoc($legalDocument)
             ->setClient($client)
         ;
 
-        $this->entityManager->persist($termsOfUse);
+        $this->entityManager->persist($TermsOfSaleAcceptation);
         $this->entityManager->flush();
 
         $session = $this->requestStack->getCurrentRequest()->getSession();
         $session->remove(self::SESSION_KEY_TOS_ACCEPTED);
+
+        $this->messageBus->dispatch(new TermsOfSaleAccepted($TermsOfSaleAcceptation->getIdAcceptation()));
+
+        return $TermsOfSaleAcceptation;
     }
 
     /**
@@ -160,76 +163,6 @@ class TermsOfSaleManager
     }
 
     /**
-     * @param Projects       $project
-     * @param Companies|null $companySubmitter
-     *
-     * @throws Exception
-     */
-    public function sendBorrowerEmail(Projects $project, Companies $companySubmitter = null): void
-    {
-        /** @var \ficelle $stringManager */
-        $stringManager = Loader::loadLib('ficelle');
-        $client        = $project->getIdCompany()->getIdClientOwner();
-
-        if (empty($client->getEmail())) {
-            throw new Exception('Invalid client email', self::EXCEPTION_CODE_INVALID_EMAIL);
-        }
-
-        if (empty($client->getPhone()) || false === $stringManager->isMobilePhoneNumber($client->getPhone())) {
-            throw new Exception('Invalid client mobile phone number', self::EXCEPTION_CODE_INVALID_PHONE_NUMBER);
-        }
-
-        $termsOfSale = $this->entityManager->getRepository(ProjectCgv::class)->findOneBy(['idProject' => $project]);
-
-        if (null === $termsOfSale) {
-            $tree = $this->entityManager->getRepository(Settings::class)->findOneBy(['type' => Settings::TYPE_BORROWER_TOS]);
-
-            if (null === $tree) {
-                throw new Exception('Unable to find tree element', self::EXCEPTION_CODE_PDF_FILE_NOT_FOUND);
-            }
-
-            $termsOfSale = new ProjectCgv();
-            $termsOfSale
-                ->setIdProject($project)
-                ->setIdTree($tree->getValue())
-                ->setName($termsOfSale->generateFileName())
-                ->setIdUniversign('')
-                ->setUrlUniversign('')
-                ->setStatus(UniversignEntityInterface::STATUS_PENDING)
-            ;
-
-            $this->entityManager->persist($termsOfSale);
-            $this->entityManager->flush($termsOfSale);
-        }
-
-        $pdfElement = $this->entityManager->getRepository(TreeElements::class)->findOneBy([
-            'idTree'    => $termsOfSale->getIdTree(),
-            'idElement' => Elements::TYPE_PDF_TERMS_OF_SALE,
-            'idLangue'  => mb_substr($this->locale, 0, 2),
-        ]);
-
-        if (null === $pdfElement || empty($pdfElement->getValue())) {
-            throw new Exception('Unable to find PDF', self::EXCEPTION_CODE_PDF_FILE_NOT_FOUND);
-        }
-
-        $pdfPath = $this->rootDirectory . '/../public/default/var/fichiers/' . $pdfElement->getValue();
-
-        if (false === file_exists($pdfPath)) {
-            throw new Exception('PDF file does not exist', self::EXCEPTION_CODE_PDF_FILE_NOT_FOUND);
-        }
-
-        if (false === is_dir($this->rootDirectory . '/../' . ProjectCgv::BASE_PATH)) {
-            mkdir($this->rootDirectory . '/../' . ProjectCgv::BASE_PATH);
-        }
-
-        if (false === file_exists($this->rootDirectory . '/../' . ProjectCgv::BASE_PATH . $termsOfSale->getName())) {
-            copy($pdfPath, $this->rootDirectory . '/../' . ProjectCgv::BASE_PATH . $termsOfSale->getName());
-        }
-
-        $this->mailerManager->sendProjectTermsOfSale($termsOfSale, $companySubmitter);
-    }
-
-    /**
      * @param Clients $client
      * @param int     $termsOfSaleId
      *
@@ -239,7 +172,7 @@ class TermsOfSaleManager
     {
         $legalDocsAcceptance = $this->entityManager
             ->getRepository(AcceptationsLegalDocs::class)
-            ->findOneBy(['client' => $client, 'idLegalDoc' => $termsOfSaleId])
+            ->findOneBy(['client' => $client, 'legalDoc' => $termsOfSaleId])
         ;
 
         return null !== $legalDocsAcceptance;

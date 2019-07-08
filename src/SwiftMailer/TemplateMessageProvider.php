@@ -3,15 +3,16 @@
 namespace Unilend\SwiftMailer;
 
 use Doctrine\ORM\EntityManagerInterface;
+use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Asset\Packages;
-use Symfony\Component\Translation\TranslatorInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 use Unilend\Entity\{MailTemplates, Settings, Translations};
 
 class TemplateMessageProvider
 {
-    const KEYWORDS_PREFIX = '[EMV DYN]';
-    const KEYWORDS_SUFFIX = '[EMV /DYN]';
+    public const KEYWORDS_PREFIX = '[EMV DYN]';
+    public const KEYWORDS_SUFFIX = '[EMV /DYN]';
 
     /** @var EntityManagerInterface */
     private $entityManager;
@@ -47,8 +48,7 @@ class TemplateMessageProvider
         Packages $assetsPackages,
         string $frontUrl,
         string $adminUrl
-    )
-    {
+    ) {
         $this->entityManager       = $entityManager;
         $this->templateMessageFQCN = $templateMessageFQCN;
         $this->defaultLocale       = $defaultLocale;
@@ -68,6 +68,7 @@ class TemplateMessageProvider
     public function setLogger(?LoggerInterface $logger)
     {
         $this->logger = $logger;
+
         return $this;
     }
 
@@ -77,7 +78,6 @@ class TemplateMessageProvider
      * @param bool   $wrapKeywords
      *
      * @return TemplateMessage
-     * @throws \Swift_RfcComplianceException
      */
     public function newMessage(string $templateName, array $keywords = [], bool $wrapKeywords = true)
     {
@@ -85,11 +85,11 @@ class TemplateMessageProvider
             'type'   => $templateName,
             'locale' => $this->defaultLocale,
             'status' => MailTemplates::STATUS_ACTIVE,
-            'part'   => MailTemplates::PART_TYPE_CONTENT
+            'part'   => MailTemplates::PART_TYPE_CONTENT,
         ]);
 
         if (null === $mailTemplate) {
-            throw new \InvalidArgumentException('The mail template ' . $templateName . ' for the language ' . $this->defaultLocale . ' is not found.');
+            throw new InvalidArgumentException(sprintf('The mail template %s for the language %s is not found.', $templateName, $this->defaultLocale));
         }
 
         return $this->setMessageAttributes($mailTemplate, $keywords, $wrapKeywords);
@@ -113,7 +113,6 @@ class TemplateMessageProvider
      * @param bool          $wrapKeywords
      *
      * @return TemplateMessage
-     * @throws \Swift_RfcComplianceException
      */
     private function setMessageAttributes(MailTemplates $mailTemplate, array $keywords = [], bool $wrapKeywords = true): TemplateMessage
     {
@@ -121,13 +120,15 @@ class TemplateMessageProvider
         $overwrittenKeywords = array_intersect_key($keywords, $commonKeywords);
 
         if (false === empty($overwrittenKeywords) && $this->logger instanceof LoggerInterface) {
-            $this->logger->warning('Following keywords are overwritten by common keywords in "' . $mailTemplate->getType() . '" email: ' . implode(', ', array_keys($overwrittenKeywords)));
+            $this->logger->warning(
+                sprintf('Following keywords are overwritten by common keywords in %s email: %s', $mailTemplate->getType(), implode(', ', array_keys($overwrittenKeywords)))
+            );
         }
 
         if ($mailTemplate->getIdHeader()) {
             $keywords['title'] = strtr($this->translator->trans(Translations::SECTION_MAIL_TITLE . '_' . $mailTemplate->getType()), $keywords);
 
-            if (false !== strpos($keywords['title'], self::KEYWORDS_SUFFIX) && false !== strpos($keywords['title'], self::KEYWORDS_PREFIX)) {
+            if (false !== mb_strpos($keywords['title'], self::KEYWORDS_SUFFIX) && false !== mb_strpos($keywords['title'], self::KEYWORDS_PREFIX)) {
                 $keywords['title'] = str_replace(self::KEYWORDS_SUFFIX, '', str_replace(self::KEYWORDS_PREFIX, '', $keywords['title']));
             }
 
@@ -150,7 +151,8 @@ class TemplateMessageProvider
             ->setFrom($mailTemplate->getSenderEmail(), $fromName)
             ->setReplyTo($mailTemplate->getSenderEmail(), $fromName)
             ->setSubject($subject)
-            ->setBody($body, 'text/html');
+            ->setBody($body, 'text/html')
+        ;
 
         if ($this->logger instanceof LoggerInterface) {
             $message->setLogger($this->logger);
@@ -174,7 +176,7 @@ class TemplateMessageProvider
             'twitterLink'     => $settingsRepository->findOneBy(['type' => 'Twitter'])->getValue(),
             'borrowerFAQLink' => $settingsRepository->findOneBy(['type' => 'URL FAQ emprunteur'])->getValue(),
             'lenderFAQLink'   => $settingsRepository->findOneBy(['type' => 'URL FAQ preteur'])->getValue(),
-            'year'            => date('Y')
+            'year'            => date('Y'),
         ];
     }
 

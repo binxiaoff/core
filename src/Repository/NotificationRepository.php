@@ -37,6 +37,25 @@ class NotificationRepository extends ServiceEntityRepository
     }
 
     /**
+     * @param Notification $notification
+     *
+     * @throws ORMException
+     */
+    public function persist(Notification $notification)
+    {
+        $this->getEntityManager()->persist($notification);
+    }
+
+    /**
+     * @throws ORMException
+     * @throws OptimisticLockException
+     */
+    public function flush()
+    {
+        $this->getEntityManager()->flush();
+    }
+
+    /**
      * @param Clients $client
      */
     public function markAllClientNotificationsAsRead(Clients $client): void

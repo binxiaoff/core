@@ -5,18 +5,21 @@ namespace Unilend\Entity;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * @ORM\Table(name="acceptations_legal_docs", indexes={@ORM\Index(name="id_client", columns={"id_client"})})
+ * @ORM\Table(name="acceptations_legal_docs")
  * @ORM\Entity(repositoryClass="Unilend\Repository\AcceptationLegalDocsRepository")
  * @ORM\HasLifecycleCallbacks
  */
 class AcceptationsLegalDocs
 {
     /**
-     * @var int
+     * @var Tree
      *
-     * @ORM\Column(name="id_legal_doc", type="integer")
+     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Tree")
+     * @ORM\JoinColumns({
+     *     @ORM\JoinColumn(name="id_legal_doc", referencedColumnName="id_tree", nullable=false)
+     * })
      */
-    private $idLegalDoc;
+    private $legalDoc;
 
     /**
      * @var string
@@ -59,23 +62,23 @@ class AcceptationsLegalDocs
     private $idAcceptation;
 
     /**
-     * @param int $idLegalDoc
+     * @param Tree $legalDoc
      *
      * @return AcceptationsLegalDocs
      */
-    public function setIdLegalDoc(int $idLegalDoc): AcceptationsLegalDocs
+    public function setLegalDoc(Tree $legalDoc): AcceptationsLegalDocs
     {
-        $this->idLegalDoc = $idLegalDoc;
+        $this->legalDoc = $legalDoc;
 
         return $this;
     }
 
     /**
-     * @return int
+     * @return Tree
      */
-    public function getIdLegalDoc(): int
+    public function getLegalDoc(): Tree
     {
-        return $this->idLegalDoc;
+        return $this->legalDoc;
     }
 
     /**

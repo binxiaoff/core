@@ -75,7 +75,7 @@
             {% include 'partials/beta_disclaimer_modal.html.twig' %}
 
             {# Global site-wide modals can be placed here #}
-            {% set tos_session_key = constant('Unilend\\Service\\TermsOfSaleManager::SESSION_KEY_TOS_ACCEPTED') %}
+            {% set tos_session_key = constant('Unilend\\Service\\TermsOfSale\\TermsOfSaleManager::SESSION_KEY_TOS_ACCEPTED') %}
             {% if app.user
                 and app.session.has(tos_session_key)
                 and false == app.session.get(tos_session_key)

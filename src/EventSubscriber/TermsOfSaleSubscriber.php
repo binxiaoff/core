@@ -4,7 +4,7 @@ namespace Unilend\EventSubscriber;
 
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpKernel\KernelEvents;
-use Unilend\Service\TermsOfSaleManager;
+use Unilend\Service\TermsOfSale\TermsOfSaleManager;
 
 class TermsOfSaleSubscriber implements EventSubscriberInterface
 {

@@ -3,20 +3,21 @@
 namespace Unilend\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Unilend\Entity\Traits\TimestampableTrait;
 
 /**
- * Tree
- *
- * @ORM\Table(name="tree", indexes={@ORM\Index(name="id_parent", columns={"id_parent"}), @ORM\Index(name="id_template", columns={"id_template"}), @ORM\Index(name="id_tree", columns={"id_tree"})})
+ * @ORM\Table(name="tree", indexes={@ORM\Index(name="id_parent", columns={"id_parent"}), @ORM\Index(name="id_template", columns={"id_template"})})
  * @ORM\Entity
  */
 class Tree
 {
-    const STATUS_OFFLINE = 0;
-    const STATUS_ONLINE  = 1;
+    use TimestampableTrait;
 
-    const VISIBILITY_PRIVATE = 1;
-    const VISIBILITY_PUBLIC  = 0;
+    public const STATUS_OFFLINE = 0;
+    public const STATUS_ONLINE  = 1;
+
+    public const VISIBILITY_PRIVATE = 1;
+    public const VISIBILITY_PUBLIC  = 0;
 
     /**
      * @var int
@@ -124,20 +125,6 @@ class Tree
     private $indexation = '1';
 
     /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="added", type="datetime")
-     */
-    private $added;
-
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="updated", type="datetime")
-     */
-    private $updated;
-
-    /**
      * @var int
      *
      * @ORM\Column(name="id_tree", type="integer")
@@ -150,15 +137,11 @@ class Tree
      * @var string
      *
      * @ORM\Column(name="id_langue", type="string", length=2)
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="NONE")
      */
     private $idLangue;
 
     /**
-     * Set idParent
-     *
-     * @param integer $idParent
+     * @param int $idParent
      *
      * @return Tree
      */
@@ -170,9 +153,7 @@ class Tree
     }
 
     /**
-     * Get idParent
-     *
-     * @return integer
+     * @return int
      */
     public function getIdParent()
     {
@@ -180,9 +161,7 @@ class Tree
     }
 
     /**
-     * Set idTemplate
-     *
-     * @param integer $idTemplate
+     * @param int $idTemplate
      *
      * @return Tree
      */
@@ -194,9 +173,7 @@ class Tree
     }
 
     /**
-     * Get idTemplate
-     *
-     * @return integer
+     * @return int
      */
     public function getIdTemplate()
     {
@@ -204,9 +181,7 @@ class Tree
     }
 
     /**
-     * Set idUser
-     *
-     * @param integer $idUser
+     * @param int $idUser
      *
      * @return Tree
      */
@@ -218,9 +193,7 @@ class Tree
     }
 
     /**
-     * Get idUser
-     *
-     * @return integer
+     * @return int
      */
     public function getIdUser()
     {
@@ -228,8 +201,6 @@ class Tree
     }
 
     /**
-     * Set title
-     *
      * @param string $title
      *
      * @return Tree
@@ -242,8 +213,6 @@ class Tree
     }
 
     /**
-     * Get title
-     *
      * @return string
      */
     public function getTitle()
@@ -252,8 +221,6 @@ class Tree
     }
 
     /**
-     * Set slug
-     *
      * @param string $slug
      *
      * @return Tree
@@ -266,8 +233,6 @@ class Tree
     }
 
     /**
-     * Get slug
-     *
      * @return string
      */
     public function getSlug()
@@ -276,8 +241,6 @@ class Tree
     }
 
     /**
-     * Set imgMenu
-     *
      * @param string $imgMenu
      *
      * @return Tree
@@ -290,8 +253,6 @@ class Tree
     }
 
     /**
-     * Get imgMenu
-     *
      * @return string
      */
     public function getImgMenu()
@@ -300,8 +261,6 @@ class Tree
     }
 
     /**
-     * Set menuTitle
-     *
      * @param string $menuTitle
      *
      * @return Tree
@@ -314,8 +273,6 @@ class Tree
     }
 
     /**
-     * Get menuTitle
-     *
      * @return string
      */
     public function getMenuTitle()
@@ -324,8 +281,6 @@ class Tree
     }
 
     /**
-     * Set metaTitle
-     *
      * @param string $metaTitle
      *
      * @return Tree
@@ -338,8 +293,6 @@ class Tree
     }
 
     /**
-     * Get metaTitle
-     *
      * @return string
      */
     public function getMetaTitle()
@@ -348,8 +301,6 @@ class Tree
     }
 
     /**
-     * Set metaDescription
-     *
      * @param string $metaDescription
      *
      * @return Tree
@@ -362,8 +313,6 @@ class Tree
     }
 
     /**
-     * Get metaDescription
-     *
      * @return string
      */
     public function getMetaDescription()
@@ -372,8 +321,6 @@ class Tree
     }
 
     /**
-     * Set metaKeywords
-     *
      * @param string $metaKeywords
      *
      * @return Tree
@@ -386,8 +333,6 @@ class Tree
     }
 
     /**
-     * Get metaKeywords
-     *
      * @return string
      */
     public function getMetaKeywords()
@@ -396,9 +341,7 @@ class Tree
     }
 
     /**
-     * Set ordre
-     *
-     * @param integer $ordre
+     * @param int $ordre
      *
      * @return Tree
      */
@@ -410,9 +353,7 @@ class Tree
     }
 
     /**
-     * Get ordre
-     *
-     * @return integer
+     * @return int
      */
     public function getOrdre()
     {
@@ -420,9 +361,7 @@ class Tree
     }
 
     /**
-     * Set status
-     *
-     * @param integer $status
+     * @param int $status
      *
      * @return Tree
      */
@@ -434,9 +373,7 @@ class Tree
     }
 
     /**
-     * Get status
-     *
-     * @return integer
+     * @return int
      */
     public function getStatus()
     {
@@ -444,9 +381,7 @@ class Tree
     }
 
     /**
-     * Set statusMenu
-     *
-     * @param integer $statusMenu
+     * @param int $statusMenu
      *
      * @return Tree
      */
@@ -458,9 +393,7 @@ class Tree
     }
 
     /**
-     * Get statusMenu
-     *
-     * @return integer
+     * @return int
      */
     public function getStatusMenu()
     {
@@ -468,9 +401,7 @@ class Tree
     }
 
     /**
-     * Set prive
-     *
-     * @param integer $prive
+     * @param int $prive
      *
      * @return Tree
      */
@@ -482,9 +413,7 @@ class Tree
     }
 
     /**
-     * Get prive
-     *
-     * @return integer
+     * @return int
      */
     public function getPrive()
     {
@@ -492,9 +421,7 @@ class Tree
     }
 
     /**
-     * Set indexation
-     *
-     * @param integer $indexation
+     * @param int $indexation
      *
      * @return Tree
      */
@@ -506,9 +433,7 @@ class Tree
     }
 
     /**
-     * Get indexation
-     *
-     * @return integer
+     * @return int
      */
     public function getIndexation()
     {
@@ -516,57 +441,9 @@ class Tree
     }
 
     /**
-     * Set added
+     * Set idTree.
      *
-     * @param \DateTime $added
-     *
-     * @return Tree
-     */
-    public function setAdded($added)
-    {
-        $this->added = $added;
-
-        return $this;
-    }
-
-    /**
-     * Get added
-     *
-     * @return \DateTime
-     */
-    public function getAdded()
-    {
-        return $this->added;
-    }
-
-    /**
-     * Set updated
-     *
-     * @param \DateTime $updated
-     *
-     * @return Tree
-     */
-    public function setUpdated($updated)
-    {
-        $this->updated = $updated;
-
-        return $this;
-    }
-
-    /**
-     * Get updated
-     *
-     * @return \DateTime
-     */
-    public function getUpdated()
-    {
-        return $this->updated;
-    }
-
-    /**
-     * Set idTree
-     *
-     * @param integer $idTree
+     * @param int $idTree
      *
      * @return Tree
      */
@@ -578,9 +455,9 @@ class Tree
     }
 
     /**
-     * Get idTree
+     * Get idTree.
      *
-     * @return integer
+     * @return int
      */
     public function getIdTree()
     {
@@ -588,7 +465,7 @@ class Tree
     }
 
     /**
-     * Set idLangue
+     * Set idLangue.
      *
      * @param string $idLangue
      *
@@ -602,7 +479,7 @@ class Tree
     }
 
     /**
-     * Get idLangue
+     * Get idLangue.
      *
      * @return string
      */

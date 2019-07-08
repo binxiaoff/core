@@ -8,36 +8,36 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\{Input\InputInterface, Input\InputOption, Output\OutputInterface};
 use Unilend\Entity\AcceptationsLegalDocs;
-use Unilend\Service\Document\LenderTermsOfSaleGenerator;
-use Unilend\Service\TermsOfSaleManager;
+use Unilend\Service\Document\TermsOfSaleGenerator;
+use Unilend\Service\TermsOfSale\TermsOfSaleManager;
 
 class GenerateLenderAcceptedTosCommand extends Command
 {
     /** @var EntityManagerInterface */
     private $entityManager;
-    /** @var LenderTermsOfSaleGenerator */
-    private $lenderTermsOfSaleGenerator;
+    /** @var TermsOfSaleGenerator */
+    private $termsOfSaleGenerator;
     /** @var TermsOfSaleManager */
     private $termsOfSaleManager;
     /** @var LoggerInterface */
     private $consoleLogger;
 
     /**
-     * @param EntityManagerInterface     $entityManager
-     * @param LenderTermsOfSaleGenerator $lenderTermsOfSaleGenerator
-     * @param TermsOfSaleManager         $termsOfSaleManager
-     * @param LoggerInterface            $consoleLogger
+     * @param EntityManagerInterface $entityManager
+     * @param TermsOfSaleGenerator   $termsOfSaleGenerator
+     * @param TermsOfSaleManager     $termsOfSaleManager
+     * @param LoggerInterface        $consoleLogger
      */
     public function __construct(
         EntityManagerInterface $entityManager,
-        LenderTermsOfSaleGenerator $lenderTermsOfSaleGenerator,
+        TermsOfSaleGenerator $termsOfSaleGenerator,
         TermsOfSaleManager $termsOfSaleManager,
         LoggerInterface $consoleLogger
     ) {
-        $this->entityManager              = $entityManager;
-        $this->lenderTermsOfSaleGenerator = $lenderTermsOfSaleGenerator;
-        $this->termsOfSaleManager         = $termsOfSaleManager;
-        $this->consoleLogger              = $consoleLogger;
+        $this->entityManager        = $entityManager;
+        $this->termsOfSaleGenerator = $termsOfSaleGenerator;
+        $this->termsOfSaleManager   = $termsOfSaleManager;
+        $this->consoleLogger        = $consoleLogger;
 
         parent::__construct();
     }
@@ -75,11 +75,11 @@ EOF
 
         foreach ($acceptedTermsOfUse as $accepted) {
             try {
-                if (false === $this->lenderTermsOfSaleGenerator->exists($accepted)) {
-                    $this->lenderTermsOfSaleGenerator->generate($accepted);
+                if (false === $this->termsOfSaleGenerator->exists($accepted)) {
+                    $this->termsOfSaleGenerator->generate($accepted);
                 }
 
-                $accepted->setPdfName($this->lenderTermsOfSaleGenerator->getName($accepted));
+                $accepted->setPdfName($this->termsOfSaleGenerator->getName($accepted));
 
                 $this->entityManager->flush();
             } catch (Exception $exception) {
