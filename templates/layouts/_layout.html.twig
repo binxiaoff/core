@@ -75,13 +75,13 @@
             {% include 'partials/beta_disclaimer_modal.html.twig' %}
 
             {# Global site-wide modals can be placed here #}
-            {% set tos_session_key = constant('Unilend\\Service\\TermsOfSale\\TermsOfSaleManager::SESSION_KEY_TOS_ACCEPTED') %}
+            {% set tos_session_key = constant('Unilend\\Service\\ServiceTerms\\ServiceTermsManager::SESSION_KEY_SERVICE_TERMS_ACCEPTED') %}
             {% if app.user
                 and app.session.has(tos_session_key)
                 and false == app.session.get(tos_session_key)
                 and is_granted('ROLE_LENDER')
                 and app.user.isValidated()
-                and app.request.get('_route') != 'terms_of_sales'
+                and app.request.get('_route') != 'service_terms'
             %}
                 <div id="modal-tos" data-modal data-modal-openonload="true" data-modal-maxheight="550"><form id="form-tos" method="post" action="{{ path('tos_popup') }}"></form></div>
             {% endif %}

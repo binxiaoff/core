@@ -4,10 +4,10 @@
     </header>
     <section id="profile-terms-of-use-section">
             <div class="list-files">
-                {% for acceptedTos in acceptedTermsOfSale %}
+                {% for acceptedTos in acceptedServiceTerms %}
                     {% if acceptedTos.getPdfName() is not empty %} {# display only terms of sale for which we have the PDF the client can download (BLD-319 / BLD-320 #}
                         <p>
-                            <a href="{{ path('lender_terms_of_sale_pdf', {'idAcceptation': acceptedTos.idAcceptation}) }}" target="_blank" class="link">
+                            <a href="{{ path('service_terms_pdf', {'idAcceptation': acceptedTos.idAcceptation}) }}" target="_blank" class="link">
                                 <span class="icon fa-file-pdf-o"></span>
                             </a>
                             {% trans with {'%date%' : acceptedTos.added|date('d/m/Y')} %} lender-profile_information-tab-terms-of-use-section-link-label {% endtrans %}

@@ -5,7 +5,7 @@ use Unilend\Entity\{AcceptationsLegalDocs, AddressType, Attachment, AttachmentTy
     CompanyStatus, CompanyStatusHistory, Echeanciers, EcheanciersEmprunteur, Loans, Operation, Partner, PartnerProjectAttachment, Prelevements, ProjectAbandonReason, ProjectAttachmentType,
     ProjectBeneficialOwnerUniversign, ProjectNotification, ProjectRejectionReason, ProjectRepaymentTask, Projects, ProjectsComments, ProjectsNotes, ProjectsPouvoir, ProjectsStatus,
     ProjectsStatusHistory, ProjectStatusHistoryReason, Users, UsersTypes, Virements, Wallet, WalletType, Zones};
-use Unilend\Service\{BackOfficeUserManager, ProjectManager, ProjectRequestManager, TermsOfSale\TermsOfSaleManager, WireTransferOutManager, WorkingDaysManager};
+use Unilend\Service\{BackOfficeUserManager, ProjectManager, ProjectRequestManager, ServiceTerms\ServiceTermsManager, WireTransferOutManager, WorkingDaysManager};
 
 class dossiersController extends bootstrap
 {
@@ -1755,18 +1755,18 @@ class dossiersController extends bootstrap
         }
 
         try {
-            /** @var TermsOfSaleManager $termsOfSaleManager */
-            $termsOfSaleManager = $this->get('unilend.service.terms_of_sale_manager');
-            $termsOfSaleManager->sendBorrowerEmail($project);
+            /** @var ServiceTermsManager $serviceTermsManager */
+            $serviceTermsManager = $this->get('unilend.service.service_terms_manager');
+            $serviceTermsManager->sendBorrowerEmail($project);
         } catch (\Exception $exception) {
             switch ($exception->getCode()) {
-                case TermsOfSaleManager::EXCEPTION_CODE_INVALID_EMAIL:
+                case ServiceTermsManager::EXCEPTION_CODE_INVALID_EMAIL:
                     $this->result = 'Erreur : L\'adresse mail du client est vide';
                     return;
-                case TermsOfSaleManager::EXCEPTION_CODE_INVALID_PHONE_NUMBER:
+                case ServiceTermsManager::EXCEPTION_CODE_INVALID_PHONE_NUMBER:
                     $this->result = 'Le numéro de téléphone du dirigeant n\'est pas un numéro de portable';
                     return;
-                case TermsOfSaleManager::EXCEPTION_CODE_PDF_FILE_NOT_FOUND:
+                case ServiceTermsManager::EXCEPTION_CODE_PDF_FILE_NOT_FOUND:
                     $this->result = 'file not found';
                     return;
                 default:

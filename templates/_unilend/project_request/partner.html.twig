@@ -199,7 +199,7 @@
                                                 <div class="form-field form-field-single-checkbox{% if form.errors.terms is defined %} ui-formvalidation-error{% endif %}">
                                                     <label>
                                                         <input type="checkbox" name="terms" value="true" data-formvalidation-input data-formvalidation-required="true">
-                                                        <span class="label">{% trans with {'%tosStart%' : '<a href="' ~ terms_of_sale_link ~ '">', '%tosEnd%' : '</a>'} %} project-request_step-1-confirm-terms-of-use {% endtrans %} <span class="field-required">* <span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></span>
+                                                        <span class="label">{% trans with {'%tosStart%' : '<a href="' ~ service_terms_link ~ '">', '%tosEnd%' : '</a>'} %} project-request_step-1-confirm-terms-of-use {% endtrans %} <span class="field-required">* <span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></span>
                                                     </label>
                                                     {% if form.errors.terms is defined %}
                                                         <ul class="ui-formvalidation-messages"><li>{% trans %} form-validation_error-field-required-checkbox {% endtrans %}</li></ul>

@@ -312,7 +312,7 @@ class sfpmeiController extends bootstrap
                 $this->transfers                      = $entityManager->getRepository(Transfer::class)->findTransferByClient($this->wallet->getIdClient());
                 $this->taxationCountryHistory         = $this->getTaxationHistory($this->wallet->getId());
                 $this->taxExemptionHistory            = $this->getTaxExemptionHistory($this->users_history->getTaxExemptionHistoryAction($this->clients->id_client));
-                $this->termsOfSalesAcceptation        = $entityManager->getRepository(AcceptationsLegalDocs::class)->findBy(['idClient' => $this->clients->id_client], ['added' => 'DESC']);
+                $this->serviceTermsAcceptation        = $entityManager->getRepository(AcceptationsLegalDocs::class)->findBy(['idClient' => $this->clients->id_client], ['added' => 'DESC']);
                 $this->treeRepository                 = $entityManager->getRepository(Tree::class);
 
                 if (null === $this->currentBankAccount) {
