@@ -53,7 +53,7 @@ class ServiceTermsController extends AbstractController
     }
 
     /**
-     * @Route("/cgu", name="service_terms")
+     * @Route("/cgu", name="service_terms", methods={"GET"})
      *
      * @param UserInterface|Clients|null     $client
      * @param AcceptationLegalDocsRepository $acceptationLegalDocsRepository
@@ -65,7 +65,7 @@ class ServiceTermsController extends AbstractController
      *
      * @return Response
      */
-    public function serviceTerms(
+    public function currentServiceTerms(
         ?UserInterface $client,
         AcceptationLegalDocsRepository $acceptationLegalDocsRepository,
         TreeRepository $treeRepository,
@@ -92,71 +92,78 @@ class ServiceTermsController extends AbstractController
     }
 
     /**
-     * @Route("/cgv-popup", name="tos_popup", condition="request.isXmlHttpRequest()")
+     * @Route("/cgv-popup", name="service_terms_popup", condition="request.isXmlHttpRequest()", methods={"GET"})
      *
      * @Security("has_role('ROLE_LENDER')")
      *
-     * @param Request                        $request
      * @param UserInterface|Clients|null     $client
      * @param AcceptationLegalDocsRepository $acceptationLegalDocsRepository
      * @param ElementsRepository             $elementsRepository
      * @param BlocsElementsRepository        $blocsElementsRepository
-     * @param ServiceTermsManager            $serviceTermsManager
      * @param LoggerInterface                $logger
      *
      * @return JsonResponse|Response
      */
-    public function lastServiceTermsAction(
-        Request $request,
+    public function currentServiceTermsAcceptation(
         ?UserInterface $client,
         AcceptationLegalDocsRepository $acceptationLegalDocsRepository,
         ElementsRepository $elementsRepository,
         BlocsElementsRepository $blocsElementsRepository,
-        ServiceTermsManager $serviceTermsManager,
         LoggerInterface $logger
     ): Response {
-        $tosDetails = '';
+        $serviceTermsDetails = '';
 
-        if ($request->isMethod(Request::METHOD_GET)) {
-            $elementSlug = 'tos-new';
-            if ($acceptationLegalDocsRepository->findOneBy(['client' => $client])) {
-                $elementSlug = 'tos-update';
-            }
+        $elementSlug = 'tos-new';
+        if ($acceptationLegalDocsRepository->findOneBy(['client' => $client])) {
+            $elementSlug = 'tos-update';
+        }
 
-            $element = $elementsRepository->findOneBy(['slug' => $elementSlug]);
-            if ($element) {
-                $blockElement = $blocsElementsRepository->findOneBy(['idElement' => $element->getIdElement()]);
+        $element = $elementsRepository->findOneBy(['slug' => $elementSlug]);
+        if ($element) {
+            $blockElement = $blocsElementsRepository->findOneBy(['idElement' => $element->getIdElement()]);
 
-                if ($blockElement) {
-                    $tosDetails = $blockElement->getValue();
-                } else {
-                    $logger->error('The block element ID: ' . $element->getIdElement() . ' doesn\'t exist');
-                }
+            if ($blockElement) {
+                $serviceTermsDetails = $blockElement->getValue();
             } else {
-                $logger->error('The element slug: ' . $elementSlug . ' doesn\'t exist');
+                $logger->error('The block element ID: ' . $element->getIdElement() . ' doesn\'t exist');
             }
-        }
-        if ($request->isMethod(Request::METHOD_POST)) {
-            if ('true' === $request->request->get('terms')) {
-                try {
-                    $serviceTermsManager->acceptCurrentVersion($client);
-                } catch (Exception $exception) {
-                    $logger->error('TOS could not be accepted by lender ' . $client->getIdClient() . ' - Message: ' . $exception->getMessage(), [
-                        'id_client' => $client->getIdClient(),
-                        'class'     => __CLASS__,
-                        'function'  => __FUNCTION__,
-                        'file'      => $exception->getFile(),
-                        'line'      => $exception->getLine(),
-                    ])
-                    ;
-                }
-            }
-
-            return $this->json([]);
+        } else {
+            $logger->error('The element slug: ' . $elementSlug . ' doesn\'t exist');
         }
 
-        return $this->render('partials/lender_tos_popup.html.twig', [
-            'tosDetails' => $tosDetails,
+        return $this->render('partials/service_terms_popup.html.twig', [
+            'serviceTermsDetails' => $serviceTermsDetails,
         ]);
+    }
+
+    /**
+     * @Route("/cgv-popup", name="service_terms_popup_accepted", condition="request.isXmlHttpRequest()", methods={"POST"})
+     *
+     * @Security("has_role('ROLE_LENDER')")
+     *
+     * @param Request                    $request
+     * @param UserInterface|Clients|null $client
+     * @param ServiceTermsManager        $serviceTermsManager
+     * @param LoggerInterface            $logger
+     *
+     * @return JsonResponse|Response
+     */
+    public function currentServiceTermsAccepted(Request $request, ?UserInterface $client, ServiceTermsManager $serviceTermsManager, LoggerInterface $logger): Response
+    {
+        if ('true' === $request->request->get('terms')) {
+            try {
+                $serviceTermsManager->acceptCurrentVersion($client);
+            } catch (Exception $exception) {
+                $logger->error('Service Terms could not be accepted by lender ' . $client->getIdClient() . ' - Message: ' . $exception->getMessage(), [
+                    'id_client' => $client->getIdClient(),
+                    'class'     => __CLASS__,
+                    'function'  => __FUNCTION__,
+                    'file'      => $exception->getFile(),
+                    'line'      => $exception->getLine(),
+                ]);
+            }
+        }
+
+        return $this->json([]);
     }
 }

@@ -83,7 +83,7 @@
                 and app.user.isValidated()
                 and app.request.get('_route') != 'service_terms'
             %}
-                <div id="modal-tos" data-modal data-modal-openonload="true" data-modal-maxheight="550"><form id="form-tos" method="post" action="{{ path('tos_popup') }}"></form></div>
+                <div id="modal-tos" data-modal data-modal-openonload="true" data-modal-maxheight="550"><form id="form-tos" method="post" action="{{ path('service_terms_popup') }}"></form></div>
             {% endif %}
         </div>
 
