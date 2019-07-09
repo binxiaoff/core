@@ -16,15 +16,6 @@ use Unilend\Service\ServiceTerms\ServiceTermsManager;
 
 class ServiceTermsController extends AbstractController
 {
-    public const ERROR_CANNOT_FIND_TOS          = 'cannot-find-tos';
-    public const ERROR_CANNOT_FIND_CLIENT       = 'cannot-find-client';
-    public const ERROR_CANNOT_FIND_ACCEPTED_TOS = 'cannot-find-accepted-tos';
-    public const ERROR_ACCESS_DENIED            = 'access-denied';
-    public const ERROR_EXCEPTION_OCCURRED       = 'exception-occurred';
-    public const ERROR_UNKNOWN                  = 'unknown';
-
-    public const ROUTE_PARAMETER_LEGAL_ENTITY = 'morale';
-
     /**
      * @Route("/pdf/cgu/{idAcceptation}", name="service_terms_pdf", requirements={"idAcceptation": "\d+"})
      *

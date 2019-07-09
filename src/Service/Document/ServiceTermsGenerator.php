@@ -16,27 +16,6 @@ class ServiceTermsGenerator implements DocumentGeneratorInterface
 {
     public const PATH = 'pdf' . DIRECTORY_SEPARATOR . 'cgu';
 
-    public const LEGAL_ENTITY_PLACEHOLDERS = [
-        '[Civilite]',
-        '[Prenom]',
-        '[Nom]',
-        '[Fonction]',
-        '[Raison_sociale]',
-        '[SIREN]',
-        '[adresse_fiscale]',
-        '[date_validation_cgv]',
-    ];
-
-    public const NATURAL_PERSON_PLACEHOLDERS = [
-        '[Civilite]',
-        '[Prenom]',
-        '[Nom]',
-        '[date]',
-        '[ville_naissance]',
-        '[adresse_fiscale]',
-        '[date_validation_cgv]',
-    ];
-
     /** @var EntityManagerInterface */
     private $entityManager;
     /** @var ServiceTermsManager */

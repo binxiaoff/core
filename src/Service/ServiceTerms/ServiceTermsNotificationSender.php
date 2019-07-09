@@ -15,6 +15,7 @@ use Unilend\SwiftMailer\{TemplateMessageProvider, UnilendMailer};
 class ServiceTermsNotificationSender
 {
     private const MAIL_TYPE_SERVICE_TERMS_ACCEPTED = 'terms-of-sale-accepted';
+
     /** @var TemplateMessageProvider */
     private $messageProvider;
     /** @var RouterInterface */
