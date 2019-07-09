@@ -304,7 +304,7 @@ class MainController extends Controller
             case self::CMS_TEMPLATE_BORROWER_LANDING_PAGE:
                 return $this->renderBorrowerLandingPage($request, $finalElements['content'], $finalElements['complement']);
             case self::CMS_TEMPLATE_TOS:
-                return $this->redirectToRoute('terms_of_sales');
+                return $this->redirectToRoute('service_terms');
             default:
                 return new RedirectResponse('/');
         }

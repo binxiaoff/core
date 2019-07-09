@@ -5,7 +5,7 @@ namespace Unilend\Repository;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Unilend\Entity\AcceptationsLegalDocs;
-use Unilend\Service\TermsOfSale\TermsOfSaleManager;
+use Unilend\Service\ServiceTerms\ServiceTermsManager;
 
 /**
  * @method AcceptationsLegalDocs|null find($id, $lockMode = null, $lockVersion = null)
@@ -15,17 +15,17 @@ use Unilend\Service\TermsOfSale\TermsOfSaleManager;
  */
 class AcceptationLegalDocsRepository extends ServiceEntityRepository
 {
-    /** @var TermsOfSaleManager */
-    private $termsOfSaleManager;
+    /** @var ServiceTermsManager */
+    private $serviceTermsManager;
 
     /**
-     * @param ManagerRegistry    $registry
-     * @param TermsOfSaleManager $termsOfSaleManager
+     * @param ManagerRegistry     $registry
+     * @param ServiceTermsManager $serviceTermsManager
      */
-    public function __construct(ManagerRegistry $registry, TermsOfSaleManager $termsOfSaleManager)
+    public function __construct(ManagerRegistry $registry, ServiceTermsManager $serviceTermsManager)
     {
         parent::__construct($registry, AcceptationsLegalDocs::class);
-        $this->termsOfSaleManager = $termsOfSaleManager;
+        $this->serviceTermsManager = $serviceTermsManager;
     }
 
     /**
@@ -35,7 +35,7 @@ class AcceptationLegalDocsRepository extends ServiceEntityRepository
      */
     public function findByIdLegalDocWithoutPfd(int $limit): array
     {
-        $idTree = $this->termsOfSaleManager->getCurrentVersionId();
+        $idTree = $this->serviceTermsManager->getCurrentVersionId();
 
         $queryBuilder = $this->createQueryBuilder('ald');
         $queryBuilder

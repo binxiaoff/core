@@ -2,20 +2,18 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Service\TermsOfSale;
+namespace Unilend\Service\ServiceTerms;
 
-use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
-use Exception;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Unilend\Entity\{AcceptationsLegalDocs, Clients, Settings, Tree};
-use Unilend\Message\TermsOfSale\TermsOfSaleAccepted;
+use Unilend\Message\ServiceTerms\ServiceTermsAccepted;
 
-class TermsOfSaleManager
+class ServiceTermsManager
 {
-    public const SESSION_KEY_TOS_ACCEPTED = 'user_legal_doc_accepted';
+    public const SESSION_KEY_SERVICE_TERMS_ACCEPTED = 'user_legal_doc_accepted';
 
     public const EXCEPTION_CODE_INVALID_EMAIL        = 1;
     public const EXCEPTION_CODE_INVALID_PHONE_NUMBER = 2;
@@ -27,10 +25,6 @@ class TermsOfSaleManager
     private $tokenStorage;
     /** @var RequestStack */
     private $requestStack;
-    /** @var string */
-    private $rootDirectory;
-    /** @var string */
-    private $locale;
     /** @var MessageBusInterface */
     private $messageBus;
 
@@ -38,35 +32,29 @@ class TermsOfSaleManager
      * @param EntityManagerInterface $entityManager
      * @param TokenStorageInterface  $tokenStorage
      * @param RequestStack           $requestStack
-     * @param string                 $rootDirectory
-     * @param string                 $defaultLocale
      * @param MessageBusInterface    $messageBus
      */
     public function __construct(
         EntityManagerInterface $entityManager,
         TokenStorageInterface $tokenStorage,
         RequestStack $requestStack,
-        string $rootDirectory,
-        string $defaultLocale,
         MessageBusInterface $messageBus
     ) {
         $this->entityManager = $entityManager;
         $this->tokenStorage  = $tokenStorage;
         $this->requestStack  = $requestStack;
-        $this->rootDirectory = $rootDirectory;
-        $this->locale        = $defaultLocale;
         $this->messageBus    = $messageBus;
     }
 
     /**
-     * If the lender has accepted the last TOS, the session will not be set, and we check if there is a new TOS at all time
-     * Otherwise, the session will be set to accepted = false. With accepted = false, we check no longer the new TOS, but we read the value from the session.
+     * If the lender has accepted the last service terms, the session will not be set, and we check if there is a new service terms at all time
+     * Otherwise, the session will be set to accepted = false. With accepted = false, we check no longer the new service terms, but we read the value from the session.
      */
     public function checkCurrentVersionAccepted(): void
     {
         $session = $this->requestStack->getCurrentRequest()->getSession();
 
-        if ($session->has(self::SESSION_KEY_TOS_ACCEPTED)) {
+        if ($session->has(self::SESSION_KEY_SERVICE_TERMS_ACCEPTED)) {
             return; // already checked and not accepted
         }
 
@@ -76,23 +64,9 @@ class TermsOfSaleManager
             $client = $token->getUser();
 
             if ($client instanceof Clients && false === $this->hasAcceptedCurrentVersion($client)) {
-                $session->set(self::SESSION_KEY_TOS_ACCEPTED, false);
+                $session->set(self::SESSION_KEY_SERVICE_TERMS_ACCEPTED, false);
             }
         }
-    }
-
-    /**
-     * @deprecated
-     *
-     * @return int
-     */
-    public function getCurrentVersionForPerson(): int
-    {
-        return (int) $this->entityManager
-            ->getRepository(Settings::class)
-            ->findOneBy(['type' => Settings::TYPE_LENDER_TOS_NATURAL_PERSON])
-            ->getValue()
-        ;
     }
 
     /**
@@ -102,29 +76,9 @@ class TermsOfSaleManager
     {
         return (int) $this->entityManager
             ->getRepository(Settings::class)
-            ->findOneBy(['type' => Settings::TYPE_TERMS_OF_SALE_PAGE_ID])
+            ->findOneBy(['type' => Settings::TYPE_SERVICE_TERMS_PAGE_ID])
             ->getValue()
         ;
-    }
-
-    /**
-     * @todo to delete
-     *
-     * @deprecated no need any more
-     *
-     * @throws Exception
-     *
-     * @return DateTime
-     */
-    public function getDateOfNewTermsOfSaleWithTwoMandates(): DateTime
-    {
-        $setting = $this->entityManager
-            ->getRepository(Settings::class)
-            ->findOneBy(['type' => Settings::TYPE_DATE_LENDER_TOS])
-            ->getValue()
-        ;
-
-        return new DateTime($setting);
     }
 
     /**
@@ -134,22 +88,22 @@ class TermsOfSaleManager
      */
     public function acceptCurrentVersion(Clients $client): AcceptationsLegalDocs
     {
-        $legalDocument          = $this->entityManager->getRepository(Tree::class)->find($this->getCurrentVersionId());
-        $TermsOfSaleAcceptation = new AcceptationsLegalDocs();
-        $TermsOfSaleAcceptation
+        $legalDocument           = $this->entityManager->getRepository(Tree::class)->find($this->getCurrentVersionId());
+        $ServiceTermsAcceptation = new AcceptationsLegalDocs();
+        $ServiceTermsAcceptation
             ->setLegalDoc($legalDocument)
             ->setClient($client)
         ;
 
-        $this->entityManager->persist($TermsOfSaleAcceptation);
+        $this->entityManager->persist($ServiceTermsAcceptation);
         $this->entityManager->flush();
 
         $session = $this->requestStack->getCurrentRequest()->getSession();
-        $session->remove(self::SESSION_KEY_TOS_ACCEPTED);
+        $session->remove(self::SESSION_KEY_SERVICE_TERMS_ACCEPTED);
 
-        $this->messageBus->dispatch(new TermsOfSaleAccepted($TermsOfSaleAcceptation->getIdAcceptation()));
+        $this->messageBus->dispatch(new ServiceTermsAccepted($ServiceTermsAcceptation->getIdAcceptation()));
 
-        return $TermsOfSaleAcceptation;
+        return $ServiceTermsAcceptation;
     }
 
     /**
@@ -164,15 +118,15 @@ class TermsOfSaleManager
 
     /**
      * @param Clients $client
-     * @param int     $termsOfSaleId
+     * @param int     $serviceTermsId
      *
      * @return bool
      */
-    private function hasAccepted(Clients $client, int $termsOfSaleId): bool
+    private function hasAccepted(Clients $client, int $serviceTermsId): bool
     {
         $legalDocsAcceptance = $this->entityManager
             ->getRepository(AcceptationsLegalDocs::class)
-            ->findOneBy(['client' => $client, 'legalDoc' => $termsOfSaleId])
+            ->findOneBy(['client' => $client, 'legalDoc' => $serviceTermsId])
         ;
 
         return null !== $legalDocsAcceptance;

@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Message\TermsOfSale;
+namespace Unilend\Message\ServiceTerms;
 
-class TermsOfSaleAccepted
+class ServiceTermsAccepted
 {
     /** @var int */
     private $acceptationId;

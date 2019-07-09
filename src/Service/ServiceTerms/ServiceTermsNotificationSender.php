@@ -2,40 +2,40 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Service\TermsOfSale;
+namespace Unilend\Service\ServiceTerms;
 
 use Swift_Attachment;
 use Swift_Mailer;
 use Swift_RfcComplianceException;
 use Symfony\Component\Routing\RouterInterface;
 use Unilend\Entity\AcceptationsLegalDocs;
-use Unilend\Service\Document\TermsOfSaleGenerator;
+use Unilend\Service\Document\ServiceTermsGenerator;
 use Unilend\SwiftMailer\{TemplateMessageProvider, UnilendMailer};
 
-class TermsOfSaleNotificationSender
+class ServiceTermsNotificationSender
 {
-    private const MAIL_TYPE_TERMS_OF_SALE_ACCEPTED = 'terms-of-sale-accepted';
+    private const MAIL_TYPE_SERVICE_TERMS_ACCEPTED = 'terms-of-sale-accepted';
     /** @var TemplateMessageProvider */
     private $messageProvider;
     /** @var RouterInterface */
     private $router;
-    /** @var TermsOfSaleGenerator */
-    private $termsOfSaleGenerator;
+    /** @var ServiceTermsGenerator */
+    private $serviceTermsGenerator;
     /** @var Swift_Mailer */
     private $mailer;
 
     /**
      * @param TemplateMessageProvider $messageProvider
      * @param RouterInterface         $router
-     * @param TermsOfSaleGenerator    $termsOfSaleGenerator
+     * @param ServiceTermsGenerator   $serviceTermsGenerator
      * @param UnilendMailer           $mailer
      */
-    public function __construct(TemplateMessageProvider $messageProvider, RouterInterface $router, TermsOfSaleGenerator $termsOfSaleGenerator, UnilendMailer $mailer)
+    public function __construct(TemplateMessageProvider $messageProvider, RouterInterface $router, ServiceTermsGenerator $serviceTermsGenerator, UnilendMailer $mailer)
     {
-        $this->messageProvider      = $messageProvider;
-        $this->router               = $router;
-        $this->termsOfSaleGenerator = $termsOfSaleGenerator;
-        $this->mailer               = $mailer;
+        $this->messageProvider       = $messageProvider;
+        $this->router                = $router;
+        $this->serviceTermsGenerator = $serviceTermsGenerator;
+        $this->mailer                = $mailer;
     }
 
     /**
@@ -53,15 +53,15 @@ class TermsOfSaleNotificationSender
             return 0;
         }
 
-        if (false === $this->termsOfSaleGenerator->exists($acceptationsLegalDoc)) {
-            $this->termsOfSaleGenerator->generate($acceptationsLegalDoc);
+        if (false === $this->serviceTermsGenerator->exists($acceptationsLegalDoc)) {
+            $this->serviceTermsGenerator->generate($acceptationsLegalDoc);
         }
 
-        $message = $this->messageProvider->newMessage(self::MAIL_TYPE_TERMS_OF_SALE_ACCEPTED, [
+        $message = $this->messageProvider->newMessage(self::MAIL_TYPE_SERVICE_TERMS_ACCEPTED, [
             'firstName' => $recipient->getFirstName(),
         ]);
         $message->setTo($recipient->getEmail());
-        $message->attach(Swift_Attachment::fromPath($this->termsOfSaleGenerator->getPath($acceptationsLegalDoc)));
+        $message->attach(Swift_Attachment::fromPath($this->serviceTermsGenerator->getPath($acceptationsLegalDoc)));
 
         return $this->mailer->send($message);
     }

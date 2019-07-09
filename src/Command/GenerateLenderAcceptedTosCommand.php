@@ -8,36 +8,36 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\{Input\InputInterface, Input\InputOption, Output\OutputInterface};
 use Unilend\Entity\AcceptationsLegalDocs;
-use Unilend\Service\Document\TermsOfSaleGenerator;
-use Unilend\Service\TermsOfSale\TermsOfSaleManager;
+use Unilend\Service\Document\ServiceTermsGenerator;
+use Unilend\Service\ServiceTerms\ServiceTermsManager;
 
 class GenerateLenderAcceptedTosCommand extends Command
 {
     /** @var EntityManagerInterface */
     private $entityManager;
-    /** @var TermsOfSaleGenerator */
-    private $termsOfSaleGenerator;
-    /** @var TermsOfSaleManager */
-    private $termsOfSaleManager;
+    /** @var ServiceTermsGenerator */
+    private $serviceTermsGenerator;
+    /** @var ServiceTermsManager */
+    private $serviceTermsManager;
     /** @var LoggerInterface */
     private $consoleLogger;
 
     /**
      * @param EntityManagerInterface $entityManager
-     * @param TermsOfSaleGenerator   $termsOfSaleGenerator
-     * @param TermsOfSaleManager     $termsOfSaleManager
+     * @param ServiceTermsGenerator  $serviceTermsGenerator
+     * @param ServiceTermsManager    $serviceTermsManager
      * @param LoggerInterface        $consoleLogger
      */
     public function __construct(
         EntityManagerInterface $entityManager,
-        TermsOfSaleGenerator $termsOfSaleGenerator,
-        TermsOfSaleManager $termsOfSaleManager,
+        ServiceTermsGenerator $serviceTermsGenerator,
+        ServiceTermsManager $serviceTermsManager,
         LoggerInterface $consoleLogger
     ) {
-        $this->entityManager        = $entityManager;
-        $this->termsOfSaleGenerator = $termsOfSaleGenerator;
-        $this->termsOfSaleManager   = $termsOfSaleManager;
-        $this->consoleLogger        = $consoleLogger;
+        $this->entityManager         = $entityManager;
+        $this->serviceTermsGenerator = $serviceTermsGenerator;
+        $this->serviceTermsManager   = $serviceTermsManager;
+        $this->consoleLogger         = $consoleLogger;
 
         parent::__construct();
     }
@@ -48,12 +48,12 @@ class GenerateLenderAcceptedTosCommand extends Command
     protected function configure(): void
     {
         $this
-            ->setName('unilend:lender:terms_of_sale:generate')
+            ->setName('unilend:lender:service_terms:generate')
             ->setDescription('Generates terms of sale pdf document')
             ->setHelp(
                 <<<'EOF'
-The <info>lender:terms_of_sale:generate</info> command generates the pdf version of accepted lenders terms of sale.
-<info>php bin/console lender:terms_of_sale:generate</info>
+The <info>lender:service_terms:generate</info> command generates the pdf version of accepted lenders terms of sale.
+<info>php bin/console lender:service_terms:generate</info>
 EOF
             )
             ->addOption('limit-tos', 'l', InputOption::VALUE_REQUIRED, 'Number of accepted tos to process')
@@ -68,18 +68,18 @@ EOF
         $limit = $input->getOption('limit-tos');
         $limit = $limit ? $limit : 100;
 
-        $acceptedTermsOfUse = $this->entityManager
+        $acceptedServiceTerms = $this->entityManager
             ->getRepository(AcceptationsLegalDocs::class)
             ->findByIdLegalDocWithoutPfd($limit)
         ;
 
-        foreach ($acceptedTermsOfUse as $accepted) {
+        foreach ($acceptedServiceTerms as $accepted) {
             try {
-                if (false === $this->termsOfSaleGenerator->exists($accepted)) {
-                    $this->termsOfSaleGenerator->generate($accepted);
+                if (false === $this->serviceTermsGenerator->exists($accepted)) {
+                    $this->serviceTermsGenerator->generate($accepted);
                 }
 
-                $accepted->setPdfName($this->termsOfSaleGenerator->getName($accepted));
+                $accepted->setPdfName($this->serviceTermsGenerator->getName($accepted));
 
                 $this->entityManager->flush();
             } catch (Exception $exception) {

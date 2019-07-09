@@ -12,13 +12,7 @@ class Settings
 {
     public const TYPE_AUTOBID_GLOBAL_SWITCH = 'Auto-bid global switch';
     public const TYPE_AUTOBID_STEP          = 'Auto-bid step';
-
-    public const TYPE_LENDER_TOS_LEGAL_ENTITY   = 'Lien conditions generales inscription preteur societe';
-    public const TYPE_LENDER_TOS_NATURAL_PERSON = 'Lien conditions generales inscription preteur particulier';
-    public const TYPE_DATE_LENDER_TOS           = 'Date nouvelles CGV avec 2 mandats';
-    public const TYPE_BORROWER_TOS              = 'Lien conditions generales depot dossier';
-
-    public const TYPE_TERMS_OF_SALE_PAGE_ID = 'TERMS_OF_SALE_PAGE_ID';
+    public const TYPE_SERVICE_TERMS_PAGE_ID = 'SERVICE_TERMS_PAGE_ID';
 
     /**
      * @var string

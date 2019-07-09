@@ -380,7 +380,7 @@ P = Montant révisé de la Redevance.</p>
 ', '', 1, NOW(), NOW());
 TREE_ELEMENT
         );
-        $this->addSql('INSERT INTO settings (type, value, added) VALUES (\'TERMS_OF_SALE_PAGE_ID\', 96, NOW())');
+        $this->addSql('INSERT INTO settings (type, value, added) VALUES (\'SERVICE_TERMS_PAGE_ID\', 96, NOW())');
         $this->addSql(
             <<<'TRANSLATIONS'
             INSERT INTO translations (locale, section, name, translation, added) VALUES
@@ -392,7 +392,7 @@ TRANSLATIONS
 
     public function down(Schema $schema): void
     {
-        $this->addSql('DELETE FROM settings WHERE type = \'TERMS_OF_SALE_PAGE_ID\'');
+        $this->addSql('DELETE FROM settings WHERE type = \'SERVICE_TERMS_PAGE_ID\'');
         $this->addSql('DELETE FROM tree_elements WHERE id_tree = 96');
         $this->addSql('DELETE FROM tree WHERE id_tree = 96');
         $this->addSql('INSERT INTO elements (id_element, id_template, id_bloc, name, slug, ordre, type_element, status, added, updated)

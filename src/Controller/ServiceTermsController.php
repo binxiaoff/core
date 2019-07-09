@@ -6,15 +6,15 @@ use Exception;
 use Psr\Log\LoggerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\{BinaryFileResponse, JsonResponse, Request, Response};
+use Symfony\Component\HttpFoundation\{JsonResponse, Request, Response};
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Unilend\Entity\{AcceptationsLegalDocs, Clients};
 use Unilend\Repository\{AcceptationLegalDocsRepository, BlocsElementsRepository, ElementsRepository, TreeRepository};
-use Unilend\Service\Document\TermsOfSaleGenerator;
-use Unilend\Service\TermsOfSale\TermsOfSaleManager;
+use Unilend\Service\Document\ServiceTermsGenerator;
+use Unilend\Service\ServiceTerms\ServiceTermsManager;
 
-class TermsOfSaleController extends AbstractController
+class ServiceTermsController extends AbstractController
 {
     public const ERROR_CANNOT_FIND_TOS          = 'cannot-find-tos';
     public const ERROR_CANNOT_FIND_CLIENT       = 'cannot-find-client';
@@ -26,67 +26,61 @@ class TermsOfSaleController extends AbstractController
     public const ROUTE_PARAMETER_LEGAL_ENTITY = 'morale';
 
     /**
-     * @Route("/pdf/cgu/{idAcceptation}", name="terms_of_sale_pdf", requirements={"idAcceptation": "\d+"})
+     * @Route("/pdf/cgu/{idAcceptation}", name="service_terms_pdf", requirements={"idAcceptation": "\d+"})
      *
      * @param UserInterface|Clients|null $client
      * @param AcceptationsLegalDocs      $acceptationsLegalDoc
-     * @param TermsOfSaleGenerator       $termsOfSaleGenerator
+     * @param ServiceTermsGenerator      $serviceTermsGenerator
      *
      * @throws Exception
      *
      * @return Response
      */
-    public function termsOfSaleDownload(
-        ?UserInterface $client,
-        AcceptationsLegalDocs $acceptationsLegalDoc,
-        TermsOfSaleGenerator $termsOfSaleGenerator
-    ) {
+    public function serviceTermsDownload(?UserInterface $client, AcceptationsLegalDocs $acceptationsLegalDoc, ServiceTermsGenerator $serviceTermsGenerator)
+    {
         if ($client !== $acceptationsLegalDoc->getClient()) {
             $this->createAccessDeniedException();
         }
 
-        if (false === $termsOfSaleGenerator->exists($acceptationsLegalDoc)) {
-            $termsOfSaleGenerator->generate($acceptationsLegalDoc);
+        if (false === $serviceTermsGenerator->exists($acceptationsLegalDoc)) {
+            $serviceTermsGenerator->generate($acceptationsLegalDoc);
         }
 
-        $filePath = $termsOfSaleGenerator->getPath($acceptationsLegalDoc);
+        $file = $this->file($serviceTermsGenerator->getPath($acceptationsLegalDoc), $acceptationsLegalDoc->getPdfName());
+        $file->headers->set('Content-Type', $serviceTermsGenerator->getContentType());
 
-        return new BinaryFileResponse($filePath, 200, [
-            'Content-Type'        => $termsOfSaleGenerator->getContentType(),
-            'Content-Length'      => filesize($filePath),
-            'Content-Disposition' => 'attachement; filename="' . $acceptationsLegalDoc->getPdfName() . '"',
-        ]);
+        return $file;
     }
 
     /**
-     * @Route("/cgu", name="terms_of_sales")
+     * @Route("/cgu", name="service_terms")
      *
      * @param UserInterface|Clients|null     $client
      * @param AcceptationLegalDocsRepository $acceptationLegalDocsRepository
      * @param TreeRepository                 $treeRepository
-     * @param TermsOfSaleManager             $termsOfSaleManager
-     * @param TermsOfSaleGenerator           $termsOfSaleGenerator
+     * @param ServiceTermsManager            $serviceTermsManager
+     * @param ServiceTermsGenerator          $serviceTermsGenerator
      *
      * @throws Exception
      *
      * @return Response
      */
-    public function termsOfSales(
+    public function serviceTerms(
         ?UserInterface $client,
         AcceptationLegalDocsRepository $acceptationLegalDocsRepository,
         TreeRepository $treeRepository,
-        TermsOfSaleManager $termsOfSaleManager,
-        TermsOfSaleGenerator $termsOfSaleGenerator
+        ServiceTermsManager $serviceTermsManager,
+        ServiceTermsGenerator $serviceTermsGenerator
     ): Response {
-        $legalDocsAcceptance = $acceptationLegalDocsRepository->findOneBy(['client' => $client, 'legalDoc' => $termsOfSaleManager->getCurrentVersionId()]);
+        $legalDocsAcceptance = $acceptationLegalDocsRepository->findOneBy(['client' => $client, 'legalDoc' => $serviceTermsManager->getCurrentVersionId()]);
 
         if ($legalDocsAcceptance) {
-            return $this->redirectToRoute('terms_of_sale_pdf', ['idAcceptation' => $legalDocsAcceptance->getIdAcceptation()]);
+            return $this->redirectToRoute('service_terms_pdf', ['idAcceptation' => $legalDocsAcceptance->getIdAcceptation()]);
         }
 
-        $tree = $treeRepository->findOneBy(['idTree' => $termsOfSaleManager->getCurrentVersionId()]);
+        $tree = $treeRepository->findOneBy(['idTree' => $serviceTermsManager->getCurrentVersionId()]);
 
-        $content = $termsOfSaleGenerator->getNonPersonalizedContent($tree->getIdTree());
+        $content = $serviceTermsGenerator->getNonPersonalizedContent($tree->getIdTree());
         $cms     = [
             'title'         => $tree->getTitle(),
             'header_image'  => $tree->getImgMenu(),
@@ -94,7 +88,7 @@ class TermsOfSaleController extends AbstractController
             'right_content' => $content,
         ];
 
-        return $this->render('terms_of_sale/template_cgv.html.twig', ['cms' => $cms]);
+        return $this->render('service_terms/template_cgv.html.twig', ['cms' => $cms]);
     }
 
     /**
@@ -107,18 +101,18 @@ class TermsOfSaleController extends AbstractController
      * @param AcceptationLegalDocsRepository $acceptationLegalDocsRepository
      * @param ElementsRepository             $elementsRepository
      * @param BlocsElementsRepository        $blocsElementsRepository
-     * @param TermsOfSaleManager             $termsOfSaleManager
+     * @param ServiceTermsManager            $serviceTermsManager
      * @param LoggerInterface                $logger
      *
      * @return JsonResponse|Response
      */
-    public function lastTermsOfSaleAction(
+    public function lastServiceTermsAction(
         Request $request,
         ?UserInterface $client,
         AcceptationLegalDocsRepository $acceptationLegalDocsRepository,
         ElementsRepository $elementsRepository,
         BlocsElementsRepository $blocsElementsRepository,
-        TermsOfSaleManager $termsOfSaleManager,
+        ServiceTermsManager $serviceTermsManager,
         LoggerInterface $logger
     ): Response {
         $tosDetails = '';
@@ -145,7 +139,7 @@ class TermsOfSaleController extends AbstractController
         if ($request->isMethod(Request::METHOD_POST)) {
             if ('true' === $request->request->get('terms')) {
                 try {
-                    $termsOfSaleManager->acceptCurrentVersion($client);
+                    $serviceTermsManager->acceptCurrentVersion($client);
                 } catch (Exception $exception) {
                     $logger->error('TOS could not be accepted by lender ' . $client->getIdClient() . ' - Message: ' . $exception->getMessage(), [
                         'id_client' => $client->getIdClient(),

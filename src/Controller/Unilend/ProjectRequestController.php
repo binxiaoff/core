@@ -3,31 +3,31 @@
 namespace Unilend\Controller\Unilend;
 
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
-use Symfony\Component\HttpFoundation\{RedirectResponse, Request, Response};
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Symfony\Component\HttpFoundation\{RedirectResponse, Request, Response};
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use Unilend\core\Loader;
 use Unilend\Entity\{AttachmentType, BorrowingMotive, Clients, Companies, CompaniesBilans, Partner, ProjectAbandonReason, ProjectAttachmentType, ProjectRejectionReason, Projects, ProjectsStatus,
     Settings, Tree, Users};
-use Unilend\Service\{ProjectRequestManager, ProjectStatusManager};
 use Unilend\Service\Front\{DataLayerCollector};
-use Unilend\core\Loader;
+use Unilend\Service\{ProjectRequestManager, ProjectStatusManager};
 
 class ProjectRequestController extends Controller
 {
-    const PAGE_ROUTE_LANDING_PAGE_START = 'project_request_landing_page_start';
-    const PAGE_ROUTE_SIMULATOR_START    = 'project_request_simulator_start';
-    const PAGE_ROUTE_CONTACT            = 'project_request_contact';
-    const PAGE_ROUTE_FINANCE            = 'project_request_finance';
-    const PAGE_ROUTE_PROSPECT           = 'project_request_prospect';
-    const PAGE_ROUTE_FILES              = 'project_request_files';
-    const PAGE_ROUTE_PARTNER            = 'project_request_partner';
-    const PAGE_ROUTE_END                = 'project_request_end';
-    const PAGE_ROUTE_EMAILS             = 'project_request_emails';
-    const PAGE_ROUTE_INDEX              = 'project_request_index';
-    const PAGE_ROUTE_RECOVERY           = 'project_request_recovery';
-    const PAGE_ROUTE_STAND_BY           = 'project_request_stand_by';
+    public const PAGE_ROUTE_LANDING_PAGE_START = 'project_request_landing_page_start';
+    public const PAGE_ROUTE_SIMULATOR_START    = 'project_request_simulator_start';
+    public const PAGE_ROUTE_CONTACT            = 'project_request_contact';
+    public const PAGE_ROUTE_FINANCE            = 'project_request_finance';
+    public const PAGE_ROUTE_PROSPECT           = 'project_request_prospect';
+    public const PAGE_ROUTE_FILES              = 'project_request_files';
+    public const PAGE_ROUTE_PARTNER            = 'project_request_partner';
+    public const PAGE_ROUTE_END                = 'project_request_end';
+    public const PAGE_ROUTE_EMAILS             = 'project_request_emails';
+    public const PAGE_ROUTE_INDEX              = 'project_request_index';
+    public const PAGE_ROUTE_RECOVERY           = 'project_request_recovery';
+    public const PAGE_ROUTE_STAND_BY           = 'project_request_stand_by';
 
     /**
      * @Route("/depot_de_dossier/{hash}", name="project_request_index", requirements={"hash": "[0-9a-f-]{32,36}"})
@@ -90,10 +90,10 @@ class ProjectRequestController extends Controller
             }
             if (false === empty($siren)) {
                 $siren = $projectRequestManager->validateSiren($siren);
-                $siren = $siren === false ? null : $siren;
+                $siren = false === $siren ? null : $siren;
                 // We accept in the same field both siren and siret
                 $siret = $projectRequestManager->validateSiret($request->request->get('siren'));
-                $siret = $siret === false ? null : $siret;
+                $siret = false === $siret ? null : $siret;
             } else {
                 $siren = null;
                 $siret = null;
@@ -122,8 +122,8 @@ class ProjectRequestController extends Controller
                 'values' => [
                     'amount' => $amount,
                     'siren'  => $siren,
-                    'email'  => $email
-                ]
+                    'email'  => $email,
+                ],
             ]);
 
             return $this->redirect($request->headers->get('referer'));
@@ -132,7 +132,7 @@ class ProjectRequestController extends Controller
                 'class'    => __CLASS__,
                 'function' => __FUNCTION__,
                 'file'     => $exception->getFile(),
-                'line'     => $exception->getLine()
+                'line'     => $exception->getLine(),
             ]);
 
             return $this->redirectToRoute('home_borrower', ['_fragment' => 'homeemp-section-esim']);
@@ -162,37 +162,8 @@ class ProjectRequestController extends Controller
     }
 
     /**
-     * @param Projects $project
-     *
-     * @return RedirectResponse
-     */
-    private function start(Projects $project): RedirectResponse
-    {
-        $projectRequestManager = $this->get('unilend.service.project_request_manager');
-//        if ($project->getIdCompany()->getSiren()) {
-//            $projectRequestManager->checkProjectRisk($project, Users::USER_ID_FRONT);
-//        } elseif (BorrowingMotive::ID_MOTIVE_FRANCHISER_CREATION === $project->getIdBorrowingMotive()) {
-//            return $this->redirectStatus($project, self::PAGE_ROUTE_CONTACT, ProjectsStatus::IMPOSSIBLE_AUTO_EVALUATION);
-//        } else {
-//            return $this->redirectStatus($project, self::PAGE_ROUTE_PROSPECT, ProjectsStatus::STATUS_CANCELLED, ProjectsStatus::NON_ELIGIBLE_REASON_UNKNOWN_SIREN);
-//        }
-//
-//        if (ProjectsStatus::STATUS_CANCELLED == $project->getStatus()) {
-//            return $this->redirectToRoute(self::PAGE_ROUTE_PROSPECT, ['hash' => $project->getHash()]);
-//        }
-
-        $numberOfProductsFound = $projectRequestManager->assignEligiblePartnerProduct($project, Users::USER_ID_FRONT, false);
-
-        if (0 === $numberOfProductsFound) {
-            return $this->redirectStatus($project, self::PAGE_ROUTE_END, ProjectsStatus::STATUS_CANCELLED, ProjectRejectionReason::PRODUCT_NOT_FOUND);
-        }
-
-        return $this->redirectToRoute(self::PAGE_ROUTE_CONTACT, ['hash' => $project->getHash()]);
-    }
-
-    /**
      * @Route("/depot_de_dossier/etape2/{hash}", name="project_request_contact",
-     *     requirements={"hash": "[0-9a-f-]{32,36}"}, methods={"GET"})
+     * requirements={"hash": "[0-9a-f-]{32,36}"}, methods={"GET"})
      *
      * @param string  $hash
      * @param Request $request
@@ -213,7 +184,7 @@ class ProjectRequestController extends Controller
         $settingsRepository             = $entityManager->getRepository(Settings::class);
         $treeId                         = $settingsRepository->findOneBy(['type' => 'Lien conditions generales depot dossier']);
         $tree                           = $entityManager->getRepository(Tree::class)->findOneBy(['idTree' => $treeId->getValue()]);
-        $template['terms_of_sale_link'] = $this->generateUrl($tree->getSlug());
+        $template['service_terms_link'] = $this->generateUrl($tree->getSlug());
 
         $availablePeriods         = $settingsRepository->findOneBy(['type' => 'Durée des prêts autorisées']);
         $template['loan_periods'] = explode(',', $availablePeriods->getValue());
@@ -225,19 +196,19 @@ class ProjectRequestController extends Controller
             $this->get('logger')->error('An error occurred while creating project. Client or Company is empty', [
                 'class'      => __CLASS__,
                 'function'   => __FUNCTION__,
-                'id_project' => $project->getIdProject()
+                'id_project' => $project->getIdProject(),
             ]);
 
             return $this->redirectToRoute('home_borrower', ['_fragment' => 'homeemp-section-esim']);
         }
 
         $contact   = $project->getIdCompany()->getIdClientOwner();
-        $title     = $values['contact']['title'] ?? $contact->getTitle();
-        $lastName  = $values['contact']['lastname'] ?? $contact->getLastName();
+        $title     = $values['contact']['title']     ?? $contact->getTitle();
+        $lastName  = $values['contact']['lastname']  ?? $contact->getLastName();
         $firstName = $values['contact']['firstname'] ?? $contact->getFirstName();
-        $email     = $values['contact']['email'] ?? $this->removeEmailSuffix($contact->getEmail());
-        $mobile    = $values['contact']['mobile'] ?? $contact->getPhone();
-        $function  = $values['contact']['function'] ?? $contact->getFonction();
+        $email     = $values['contact']['email']     ?? $this->removeEmailSuffix($contact->getEmail());
+        $mobile    = $values['contact']['mobile']    ?? $contact->getPhone();
+        $function  = $values['contact']['function']  ?? $contact->getFonction();
 
         try {
             $template['activeExecutives'] = $this->get('unilend.service.external_data_manager')->getActiveExecutives($project->getIdCompany()->getSiren());
@@ -249,7 +220,7 @@ class ProjectRequestController extends Controller
                 'function'   => __FUNCTION__,
                 'file'       => $exception->getFile(),
                 'line'       => $exception->getLine(),
-                'id_project' => $project->getIdProject()
+                'id_project' => $project->getIdProject(),
             ]);
         }
         // If one (last name) of these fields is empty, we can consider that all the field is empty
@@ -266,21 +237,22 @@ class ProjectRequestController extends Controller
             foreach ($template['activeExecutives'] as $executive) {
                 if (mb_strtolower($executive['firstName'] . $executive['lastName']) === mb_strtolower($contact->getFirstName() . $contact->getLastName())) {
                     $contactInList = true;
+
                     break;
                 }
             }
         }
 
-        $template['form']                   = [
+        $template['form'] = [
             'errors' => $session['errors'] ?? [],
             'values' => [
-                'contact'      => [
+                'contact' => [
                     'title'     => $title,
                     'lastName'  => $lastName,
                     'firstName' => $firstName,
                     'email'     => $email,
                     'mobile'    => $mobile,
-                    'function'  => $function
+                    'function'  => $function,
                 ],
                 'otherContact' => [
                     'title'     => false === $contactInList ? $contact->getTitle() : '',
@@ -288,13 +260,13 @@ class ProjectRequestController extends Controller
                     'firstName' => false === $contactInList ? $contact->getFirstName() : '',
                     'email'     => false === $contactInList ? $this->removeEmailSuffix($contact->getEmail()) : '',
                     'mobile'    => false === $contactInList ? $contact->getPhone() : '',
-                    'function'  => false === $contactInList ? $contact->getFonction() : ''
+                    'function'  => false === $contactInList ? $contact->getFonction() : '',
                 ],
-                'project'      => [
+                'project' => [
                     'duration'    => $values['project']['duration'] ?? $project->getPeriod(),
-                    'description' => $values['project']['description'] ?? $project->getComments()
-                ]
-            ]
+                    'description' => $values['project']['description'] ?? $project->getComments(),
+                ],
+            ],
         ];
         $template['contactInList']          = $contactInList;
         $template['project']                = $project;
@@ -313,7 +285,7 @@ class ProjectRequestController extends Controller
 
     /**
      * @Route("/depot_de_dossier/etape2/{hash}", name="project_request_contact_form",
-     *     requirements={"hash": "[0-9a-f-]{32,36}"}, methods={"POST"})
+     * requirements={"hash": "[0-9a-f-]{32,36}"}, methods={"POST"})
      *
      * @param string  $hash
      * @param Request $request
@@ -373,7 +345,7 @@ class ProjectRequestController extends Controller
         if (false === empty($errors)) {
             $request->getSession()->set('projectRequest', [
                 'values' => $request->request->all(),
-                'errors' => $errors
+                'errors' => $errors,
             ]);
 
             return $this->redirectToRoute(self::PAGE_ROUTE_CONTACT, ['hash' => $project->getHash()]);
@@ -396,7 +368,8 @@ class ProjectRequestController extends Controller
 
         $project
             ->setPeriod($duration)
-            ->setDescription($description);
+            ->setDescription($description)
+        ;
 
         $entityManager->flush($project);
 
@@ -409,7 +382,7 @@ class ProjectRequestController extends Controller
 
     /**
      * @Route("/depot_de_dossier/etape3/{hash}", name="project_request_finance",
-     *     requirements={"hash": "[0-9a-f-]{32,36}"}, methods={"GET"})
+     * requirements={"hash": "[0-9a-f-]{32,36}"}, methods={"GET"})
      *
      * @param string  $hash
      * @param Request $request
@@ -462,9 +435,9 @@ class ProjectRequestController extends Controller
         $request->getSession()->set('companyBalanceSheetValues', $balanceSheetValues);
 
         $session = $request->getSession()->get('projectRequest');
-        $values  = isset($session['values']) ? $session['values'] : [];
+        $values  = $session['values'] ?? [];
 
-        $template['form']['errors'] = isset($session['errors']) ? $session['errors'] : [];
+        $template['form']['errors'] = $session['errors'] ?? [];
 
         if (empty($project->getIdCompany()->getRcs())) {
             $template['rcs']            = false;
@@ -520,7 +493,7 @@ class ProjectRequestController extends Controller
             'amount'                   => $project->getAmount(),
             'averageFundingDuration'   => $projectManager->getAverageFundingDuration($project->getAmount()),
             'monthlyPaymentBoundaries' => $projectManager->getMonthlyPaymentBoundaries($project->getAmount(), $project->getPeriod(), $project->getCommissionRateRepayment()),
-            'hash'                     => $project->getHash()
+            'hash'                     => $project->getHash(),
         ];
 
         $request->getSession()->remove('projectRequest');
@@ -530,7 +503,7 @@ class ProjectRequestController extends Controller
 
     /**
      * @Route("/depot_de_dossier/etape3/{hash}", name="project_request_finance_form",
-     *     requirements={"hash": "[0-9a-f-]{32,36}"}, methods={"POST"})
+     * requirements={"hash": "[0-9a-f-]{32,36}"}, methods={"POST"})
      *
      * @param string  $hash
      * @param Request $request
@@ -554,17 +527,17 @@ class ProjectRequestController extends Controller
         $values = is_array($values) ? $values : [];
 
         if (empty($project->getIdCompany()->getRcs())) {
-            if (false === isset($values['ag_2035']) || $values['ag_2035'] === '') {
+            if (false === isset($values['ag_2035']) || '' === $values['ag_2035']) {
                 $errors['ag_2035'] = true;
             }
         } else {
-            if (false === isset($values['dl']) || $values['dl'] === '') {
+            if (false === isset($values['dl']) || '' === $values['dl']) {
                 $errors['dl'] = true;
             }
-            if (false === isset($values['fl']) || $values['fl'] === '') {
+            if (false === isset($values['fl']) || '' === $values['fl']) {
                 $errors['fl'] = true;
             }
-            if (false === isset($values['gg']) || $values['gg'] === '') {
+            if (false === isset($values['gg']) || '' === $values['gg']) {
                 $errors['gg'] = true;
             }
         }
@@ -585,7 +558,7 @@ class ProjectRequestController extends Controller
         if (false === empty($errors)) {
             $request->getSession()->set('projectRequest', [
                 'values' => $values,
-                'errors' => $errors
+                'errors' => $errors,
             ]);
 
             return $this->redirectToRoute(self::PAGE_ROUTE_FINANCE, ['hash' => $project->getHash()]);
@@ -597,12 +570,14 @@ class ProjectRequestController extends Controller
             foreach ($files as $inputName => $file) {
                 if ('accounts' !== $inputName && $file instanceof UploadedFile && false === empty($fileTypes[$inputName])) {
                     $attachmentTypeId = $fileTypes[$inputName];
+
                     try {
                         $attachmentType = $entityManager->getRepository(AttachmentType::class)->find($attachmentTypeId);
                         $attachment     = $attachmentManager->upload($project->getIdCompany()->getIdClientOwner(), $attachmentType, $file, false);
                         $attachmentManager->attachToProject($attachment, $project);
                     } catch (\Exception $exception) {
                         $logger->error('Cannot upload the file. Error : ' . $exception->getMessage(), ['file' => $exception->getFile(), 'line' => $exception->getLine()]);
+
                         continue;
                     }
                 }
@@ -679,7 +654,7 @@ class ProjectRequestController extends Controller
 
     /**
      * @Route("/depot_de_dossier/partenaire/{hash}", name="project_request_partner",
-     *     requirements={"hash": "[0-9a-f-]{32,36}"}, methods={"GET"})
+     * requirements={"hash": "[0-9a-f-]{32,36}"}, methods={"GET"})
      *
      * @param string  $hash
      * @param Request $request
@@ -714,7 +689,7 @@ class ProjectRequestController extends Controller
         /** @var \tree $tree */
         $tree = $entityManagerSimulator->getRepository('tree');
         $tree->get(['id_tree' => $settings->value]);
-        $template['terms_of_sale_link'] = $this->generateUrl($tree->slug);
+        $template['service_terms_link'] = $this->generateUrl($tree->slug);
 
         $settings->get('Adresse emprunteur', 'type');
         $template['borrower_service_email'] = $settings->value;
@@ -723,31 +698,31 @@ class ProjectRequestController extends Controller
         $template['loan_periods'] = explode(',', $settings->value);
 
         $session = $request->getSession()->get('projectRequest');
-        $values  = isset($session['values']) ? $session['values'] : [];
+        $values  = $session['values'] ?? [];
 
         $template['form'] = [
-            'errors' => isset($session['errors']) ? $session['errors'] : [],
+            'errors' => $session['errors'] ?? [],
             'values' => [
                 'contact' => [
-                    'civility'  => isset($values['contact']['civility']) ? $values['contact']['civility'] : $project->getIdCompany()->getIdClientOwner()->getTitle(),
-                    'lastname'  => isset($values['contact']['lastname']) ? $values['contact']['lastname'] : $project->getIdCompany()->getIdClientOwner()->getLastName(),
-                    'firstname' => isset($values['contact']['firstname']) ? $values['contact']['firstname'] : $project->getIdCompany()->getIdClientOwner()->getFirstName(),
-                    'email'     => isset($values['contact']['email']) ? $values['contact']['email'] : $this->removeEmailSuffix($project->getIdCompany()->getIdClientOwner()->getEmail()),
-                    'mobile'    => isset($values['contact']['mobile']) ? $values['contact']['mobile'] : $project->getIdCompany()->getIdClientOwner()->getPhone(),
-                    'function'  => isset($values['contact']['function']) ? $values['contact']['function'] : $project->getIdCompany()->getIdClientOwner()->getFonction()
+                    'civility'  => $values['contact']['civility'] ?? $project->getIdCompany()->getIdClientOwner()->getTitle(),
+                    'lastname'  => $values['contact']['lastname'] ?? $project->getIdCompany()->getIdClientOwner()->getLastName(),
+                    'firstname' => $values['contact']['firstname'] ?? $project->getIdCompany()->getIdClientOwner()->getFirstName(),
+                    'email'     => $values['contact']['email'] ?? $this->removeEmailSuffix($project->getIdCompany()->getIdClientOwner()->getEmail()),
+                    'mobile'    => $values['contact']['mobile'] ?? $project->getIdCompany()->getIdClientOwner()->getPhone(),
+                    'function'  => $values['contact']['function'] ?? $project->getIdCompany()->getIdClientOwner()->getFonction(),
                 ],
                 'project' => [
-                    'duration'    => isset($values['project']['duration']) ? $values['project']['duration'] : $project->getPeriod(),
-                    'description' => isset($values['project']['description']) ? $values['project']['description'] : $project->getComments()
-                ]
-            ]
+                    'duration'    => $values['project']['duration'] ?? $project->getPeriod(),
+                    'description' => $values['project']['description'] ?? $project->getComments(),
+                ],
+            ],
         ];
 
         $template['project'] = [
             'company_name' => $project->getIdCompany()->getName(),
             'siren'        => $project->getIdCompany()->getSiren(),
             'amount'       => $project->getAmount(),
-            'hash'         => $project->getHash()
+            'hash'         => $project->getHash(),
         ];
 
         $request->getSession()->remove('projectRequest');
@@ -757,7 +732,7 @@ class ProjectRequestController extends Controller
 
     /**
      * @Route("/depot_de_dossier/partenaire/{hash}", name="project_request_partner_form",
-     *     requirements={"hash": "[0-9a-f-]{32,36}"}, methods={"POST"})
+     * requirements={"hash": "[0-9a-f-]{32,36}"}, methods={"POST"})
      *
      * @param string  $hash
      * @param Request $request
@@ -815,7 +790,7 @@ class ProjectRequestController extends Controller
         if (false === empty($errors)) {
             $request->getSession()->set('projectRequest', [
                 'values' => $request->request->all(),
-                'errors' => $errors
+                'errors' => $errors,
             ]);
 
             return $this->redirectToRoute(self::PAGE_ROUTE_PARTNER, ['hash' => $project->getHash()]);
@@ -855,12 +830,14 @@ class ProjectRequestController extends Controller
         foreach ($files as $inputName => $file) {
             if ($file instanceof UploadedFile && false === empty($fileTypes[$inputName])) {
                 $attachmentTypeId = $fileTypes[$inputName];
+
                 try {
                     $attachmentType = $entityManager->getRepository(AttachmentType::class)->find($attachmentTypeId);
                     $attachment     = $attachmentManager->upload($project->getIdCompany()->getIdClientOwner(), $attachmentType, $file, false);
                     $attachmentManager->attachToProject($attachment, $project);
                 } catch (\Exception $exception) {
                     $logger->error('Cannot upload the file. Error : ' . $exception->getMessage(), ['file' => $exception->getFile(), 'line' => $exception->getLine()]);
+
                     continue;
                 }
             }
@@ -873,7 +850,7 @@ class ProjectRequestController extends Controller
 
     /**
      * @Route("/depot_de_dossier/prospect/{hash}", name="project_request_prospect",
-     *     requirements={"hash": "[0-9a-f-]{32,36}"}, methods={"GET"})
+     * requirements={"hash": "[0-9a-f-]{32,36}"}, methods={"GET"})
      *
      * @param string  $hash
      * @param Request $request
@@ -889,23 +866,23 @@ class ProjectRequestController extends Controller
         }
 
         $session = $request->getSession()->get('projectRequest');
-        $values  = isset($session['values']) ? $session['values'] : [];
+        $values  = $session['values'] ?? [];
 
         $template = [
-            'form'    => [
-                'errors' => isset($session['errors']) ? $session['errors'] : [],
+            'form' => [
+                'errors' => $session['errors'] ?? [],
                 'values' => [
-                    'civility'  => isset($values['civility']) ? $values['civility'] : $project->getIdCompany()->getIdClientOwner()->getTitle(),
-                    'lastname'  => isset($values['lastname']) ? $values['lastname'] : $project->getIdCompany()->getIdClientOwner()->getLastName(),
-                    'firstname' => isset($values['firstname']) ? $values['firstname'] : $project->getIdCompany()->getIdClientOwner()->getFirstName(),
-                    'email'     => isset($values['email']) ? $values['email'] : $this->removeEmailSuffix($project->getIdCompany()->getIdClientOwner()->getEmail()),
-                    'mobile'    => isset($values['mobile']) ? $values['mobile'] : $project->getIdCompany()->getIdClientOwner()->getPhone(),
-                    'function'  => isset($values['function']) ? $values['function'] : $project->getIdCompany()->getIdClientOwner()->getFonction()
-                ]
+                    'civility'  => $values['civility'] ?? $project->getIdCompany()->getIdClientOwner()->getTitle(),
+                    'lastname'  => $values['lastname'] ?? $project->getIdCompany()->getIdClientOwner()->getLastName(),
+                    'firstname' => $values['firstname'] ?? $project->getIdCompany()->getIdClientOwner()->getFirstName(),
+                    'email'     => $values['email'] ?? $this->removeEmailSuffix($project->getIdCompany()->getIdClientOwner()->getEmail()),
+                    'mobile'    => $values['mobile'] ?? $project->getIdCompany()->getIdClientOwner()->getPhone(),
+                    'function'  => $values['function'] ?? $project->getIdCompany()->getIdClientOwner()->getFonction(),
+                ],
             ],
             'project' => [
-                'hash' => $project->getHash()
-            ]
+                'hash' => $project->getHash(),
+            ],
         ];
 
         $request->getSession()->remove('projectRequest');
@@ -915,7 +892,8 @@ class ProjectRequestController extends Controller
 
     /**
      * @Route("/depot_de_dossier/prospect/{hash}", name="project_request_prospect_form",
-     *     requirements={"hash": "[0-9a-f-]{32,36}"}, methods={"POST"})
+     * requirements={"hash": "[0-9a-f-]{32,36}"}, methods={"POST"})
+     *
      * @param string  $hash
      * @param Request $request
      *
@@ -953,7 +931,7 @@ class ProjectRequestController extends Controller
         if (false === empty($errors)) {
             $request->getSession()->set('projectRequest', [
                 'values' => $request->request->all(),
-                'errors' => $errors
+                'errors' => $errors,
             ]);
 
             return $this->redirectToRoute(self::PAGE_ROUTE_PROSPECT, ['hash' => $project->getHash()]);
@@ -974,7 +952,7 @@ class ProjectRequestController extends Controller
 
     /**
      * @Route("/depot_de_dossier/fichiers/{hash}", name="project_request_files",
-     *     requirements={"hash": "[0-9a-f-]{32,36}"}, methods={"GET"})
+     * requirements={"hash": "[0-9a-f-]{32,36}"}, methods={"GET"})
      *
      * @param string  $hash
      * @param Request $request
@@ -996,8 +974,8 @@ class ProjectRequestController extends Controller
                 'amount'                   => $project->getAmount(),
                 'averageFundingDuration'   => $projectManager->getAverageFundingDuration($project->getAmount()),
                 'monthlyPaymentBoundaries' => $projectManager->getMonthlyPaymentBoundaries($project->getAmount(), $project->getPeriod(), $project->getCommissionRateRepayment()),
-                'hash'                     => $project->getHash()
-            ]
+                'hash'                     => $project->getHash(),
+            ],
         ];
 
         $attachmentTypes    = [];
@@ -1009,7 +987,7 @@ class ProjectRequestController extends Controller
         $maxItemsByAttachmentType = [];
         $entityManager            = $this->get('doctrine.orm.entity_manager');
         $projectAttachmentTypes   = $entityManager->getRepository(ProjectAttachmentType::class)->findBy([
-            'idType' => $attachmentTypes
+            'idType' => $attachmentTypes,
         ]);
         foreach ($projectAttachmentTypes as $projectAttachmentType) {
             $maxItemsByAttachmentType[$projectAttachmentType->getIdType()->getId()] = $projectAttachmentType->getMaxItems();
@@ -1055,7 +1033,7 @@ class ProjectRequestController extends Controller
 
     /**
      * @Route("/depot_de_dossier/fichiers/{hash}", name="project_request_files_form",
-     *     requirements={"hash": "[0-9a-f-]{32,36}"}, methods={"POST"})
+     * requirements={"hash": "[0-9a-f-]{32,36}"}, methods={"POST"})
      *
      * @param string  $hash
      * @param Request $request
@@ -1079,12 +1057,14 @@ class ProjectRequestController extends Controller
         foreach ($files as $inputName => $file) {
             if ($file instanceof UploadedFile && false === empty($fileTypes[$inputName])) {
                 $attachmentTypeId = $fileTypes[$inputName];
+
                 try {
                     $attachmentType = $entityManager->getRepository(AttachmentType::class)->find($attachmentTypeId);
                     $attachment     = $attachmentManager->upload($project->getIdCompany()->getIdClientOwner(), $attachmentType, $file, false);
                     $attachmentManager->attachToProject($attachment, $project);
                 } catch (\Exception $exception) {
                     $logger->error('Cannot upload the file. Error : ' . $exception->getMessage(), ['file' => $exception->getFile(), 'line' => $exception->getLine()]);
+
                     continue;
                 }
             }
@@ -1097,7 +1077,7 @@ class ProjectRequestController extends Controller
 
     /**
      * @Route("/depot_de_dossier/fin/{hash}", name="project_request_end",
-     *     requirements={"hash": "[0-9a-f-]{32,36}"}, methods={"GET"})
+     * requirements={"hash": "[0-9a-f-]{32,36}"}, methods={"GET"})
      *
      * @param string  $hash
      * @param Request $request
@@ -1120,11 +1100,13 @@ class ProjectRequestController extends Controller
                 $title    = $translator->trans('project-request_end-page-aborted-title');
                 $subtitle = $translator->trans('project-request_end-page-aborted-subtitle');
                 $message  = $translator->trans('project-request_end-page-aborted-message');
+
                 break;
             case ProjectsStatus::STATUS_REVIEW:
                 $title    = $translator->trans('project-request_end-page-processing-title');
                 $subtitle = $translator->trans('project-request_end-page-processing-subtitle');
                 $message  = $translator->trans('project-request_end-page-analysis-in-progress-message');
+
                 break;
             default:
                 $title    = $translator->trans('project-request_end-page-rejection-title');
@@ -1132,6 +1114,7 @@ class ProjectRequestController extends Controller
 
                 $projectRequestManager = $this->get('unilend.service.project_request_manager');
                 $message               = $projectRequestManager->getMainRejectionReasonMessage($project);
+
                 break;
         }
 
@@ -1141,8 +1124,8 @@ class ProjectRequestController extends Controller
             'title'        => $title,
             'subtitle'     => $subtitle,
             'project'      => [
-                'hash' => $project->getHash()
-            ]
+                'hash' => $project->getHash(),
+            ],
         ];
 
         return $this->render('project_request/end.html.twig', $template);
@@ -1150,7 +1133,7 @@ class ProjectRequestController extends Controller
 
     /**
      * @Route("/depot_de_dossier/emails/{hash}", name="project_request_emails",
-     *     requirements={"hash": "[0-9a-f-]{32,36}"}, methods={"GET"})
+     * requirements={"hash": "[0-9a-f-]{32,36}"}, methods={"GET"})
      *
      * @param string  $hash
      * @param Request $request
@@ -1168,11 +1151,41 @@ class ProjectRequestController extends Controller
         /** @var ProjectStatusManager $projectStatusManager */
         $projectStatusManager = $this->get('unilend.service.project_status_manager');
         $abandonReason        = $this->get('doctrine.orm.entity_manager')->getRepository(ProjectAbandonReason::class)
-            ->findBy(['label' => ProjectAbandonReason::UNSUBSCRIBE_FROM_EMAIL_REMINDER]);
+            ->findBy(['label' => ProjectAbandonReason::UNSUBSCRIBE_FROM_EMAIL_REMINDER])
+        ;
 
         $projectStatusManager->abandonProject($project, $abandonReason, Users::USER_ID_FRONT);
 
         return $this->render('project_request/emails.html.twig');
+    }
+
+    /**
+     * @param Projects $project
+     *
+     * @return RedirectResponse
+     */
+    private function start(Projects $project): RedirectResponse
+    {
+        $projectRequestManager = $this->get('unilend.service.project_request_manager');
+//        if ($project->getIdCompany()->getSiren()) {
+//            $projectRequestManager->checkProjectRisk($project, Users::USER_ID_FRONT);
+//        } elseif (BorrowingMotive::ID_MOTIVE_FRANCHISER_CREATION === $project->getIdBorrowingMotive()) {
+//            return $this->redirectStatus($project, self::PAGE_ROUTE_CONTACT, ProjectsStatus::IMPOSSIBLE_AUTO_EVALUATION);
+//        } else {
+//            return $this->redirectStatus($project, self::PAGE_ROUTE_PROSPECT, ProjectsStatus::STATUS_CANCELLED, ProjectsStatus::NON_ELIGIBLE_REASON_UNKNOWN_SIREN);
+//        }
+//
+//        if (ProjectsStatus::STATUS_CANCELLED == $project->getStatus()) {
+//            return $this->redirectToRoute(self::PAGE_ROUTE_PROSPECT, ['hash' => $project->getHash()]);
+//        }
+
+        $numberOfProductsFound = $projectRequestManager->assignEligiblePartnerProduct($project, Users::USER_ID_FRONT, false);
+
+        if (0 === $numberOfProductsFound) {
+            return $this->redirectStatus($project, self::PAGE_ROUTE_END, ProjectsStatus::STATUS_CANCELLED, ProjectRejectionReason::PRODUCT_NOT_FOUND);
+        }
+
+        return $this->redirectToRoute(self::PAGE_ROUTE_CONTACT, ['hash' => $project->getHash()]);
     }
 
     /**
@@ -1216,11 +1229,12 @@ class ProjectRequestController extends Controller
                 '[ID_PROJET]'      => $project->getIdProject(),
                 '[LIEN_BO_PROJET]' => $this->getParameter('router.request_context.scheme') . '://' . getenv('HOST_ADMIN_URL') . '/dossiers/edit/' . $project->getIdProject(),
                 '[RAISON_SOCIALE]' => $project->getIdCompany()->getName(),
-                '[SURL]'           => $this->getParameter('router.request_context.scheme') . '://' . getenv('HOST_DEFAULT_URL')
+                '[SURL]'           => $this->getParameter('router.request_context.scheme') . '://' . getenv('HOST_DEFAULT_URL'),
             ];
 
             /** @var \Unilend\SwiftMailer\TemplateMessage $message */
             $message = $this->get('unilend.swiftmailer.message_provider')->newMessage($emailType, $aReplacements, false);
+
             try {
                 $message->setTo(trim($user->getEmail()));
                 $mailer = $this->get('mailer');
@@ -1236,7 +1250,7 @@ class ProjectRequestController extends Controller
 
     /**
      * Check that hash is present in URL and valid
-     * If hash is valid, check status and redirect to appropriate page
+     * If hash is valid, check status and redirect to appropriate page.
      *
      * @param string  $route
      * @param string  $hash
@@ -1266,23 +1280,28 @@ class ProjectRequestController extends Controller
                 if (false === in_array($route, [self::PAGE_ROUTE_END, self::PAGE_ROUTE_PROSPECT])) {
                     return $this->redirectToRoute(self::PAGE_ROUTE_END, ['hash' => $hash]);
                 }
+
                 break;
             case ProjectsStatus::STATUS_REQUESTED:
-                if ($route !== self::PAGE_ROUTE_CONTACT && empty($request->getSession()->get('partnerProjectRequest'))) {
+                if (self::PAGE_ROUTE_CONTACT !== $route && empty($request->getSession()->get('partnerProjectRequest'))) {
                     return $this->redirectToRoute(self::PAGE_ROUTE_CONTACT, ['hash' => $hash]);
-                } elseif ($route !== self::PAGE_ROUTE_PARTNER && false === empty($request->getSession()->get('partnerProjectRequest'))) {
+                }
+                if (self::PAGE_ROUTE_PARTNER !== $route && false === empty($request->getSession()->get('partnerProjectRequest'))) {
                     return $this->redirectToRoute(self::PAGE_ROUTE_PARTNER, ['hash' => $hash]);
                 }
+
                 break;
             case ProjectsStatus::STATUS_REVIEW:
                 if (false === in_array($route, [self::PAGE_ROUTE_FINANCE, self::PAGE_ROUTE_END, self::PAGE_ROUTE_FILES])) {
                     return $this->redirectToRoute(self::PAGE_ROUTE_FINANCE, ['hash' => $hash]);
                 }
+
                 break;
             default: // Should correspond to "Revue analyste" and above
-                if ($route !== self::PAGE_ROUTE_END) {
+                if (self::PAGE_ROUTE_END !== $route) {
                     return $this->redirectToRoute(self::PAGE_ROUTE_END, ['hash' => $hash]);
                 }
+
                 break;
         }
 
@@ -1290,7 +1309,7 @@ class ProjectRequestController extends Controller
     }
 
     /**
-     * Redirect to corresponding route and update status
+     * Redirect to corresponding route and update status.
      *
      * @param Projects $project
      * @param string   $route
@@ -1308,7 +1327,9 @@ class ProjectRequestController extends Controller
             switch ($projectStatus) {
                 case ProjectsStatus::STATUS_CANCELLED:
                     $rejectionReason = $this->get('doctrine.orm.entity_manager')->getRepository(ProjectRejectionReason::class)
-                        ->findBy(['label' => $message]);
+                        ->findBy(['label' => $message])
+                    ;
+
                     try {
                         $projectStatusManager->rejectProject($project, $projectStatus, $rejectionReason, Users::USER_ID_FRONT);
                     } catch (\Exception $exception) {
@@ -1317,12 +1338,14 @@ class ProjectRequestController extends Controller
                             'class'      => __CLASS__,
                             'function'   => __FUNCTION__,
                             'file'       => $exception->getFile(),
-                            'line'       => $exception->getLine()
+                            'line'       => $exception->getLine(),
                         ]);
                     }
+
                     break;
                 default:
                     $projectStatusManager->addProjectStatus(Users::USER_ID_FRONT, $projectStatus, $project, 0, $message);
+
                     break;
             }
         }
@@ -1374,11 +1397,13 @@ class ProjectRequestController extends Controller
             ->setFonction($position)
             ->setPhone($mobilePhone)
             ->setIdLanguage('fr')
-            ->setSlug($ficelle->generateSlug($firstName . '-' . $lastName));
+            ->setSlug($ficelle->generateSlug($firstName . '-' . $lastName))
+        ;
 
         $company
             ->setEmailDirigeant($email)
-            ->setEmailFacture($email);
+            ->setEmailFacture($email)
+        ;
 
         try {
             $entityManager->flush([$company, $client]);
@@ -1388,7 +1413,7 @@ class ProjectRequestController extends Controller
                 'class'      => __CLASS__,
                 'function'   => __FUNCTION__,
                 'file'       => $exception->getFile(),
-                'line'       => $exception->getLine()
+                'line'       => $exception->getLine(),
             ]);
         }
     }

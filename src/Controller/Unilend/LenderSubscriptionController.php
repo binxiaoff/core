@@ -116,10 +116,10 @@ class LenderSubscriptionController extends Controller
         }
 
         $template = [
-            'termsOfUseLegalEntity' => $this->generateUrl('terms_of_sales', ['type' => 'morale']),
-            'termsOfUsePerson'      => $this->generateUrl('terms_of_sales'),
-            'identityForm'          => $identityForm->createView(),
-            'companyIdentityForm'   => $companyIdentityForm->createView(),
+            'serviceTermsLegalEntity' => $this->generateUrl('service_terms', ['type' => 'morale']),
+            'serviceTermsPerson'      => $this->generateUrl('service_terms'),
+            'identityForm'            => $identityForm->createView(),
+            'companyIdentityForm'     => $companyIdentityForm->createView(),
         ];
 
         if ($this->get('session')->get(self::SESSION_NAME_CAPTCHA, false)) {
@@ -571,7 +571,7 @@ class LenderSubscriptionController extends Controller
                 $entityManager->flush($client);
 
                 $this->get('unilend.service.client_creation_manager')->createAccount($client, WalletType::LENDER, Users::USER_ID_FRONT, ClientsStatus::STATUS_CREATION);
-                $this->get('unilend.service.terms_of_sale_manager')->acceptCurrentVersion($client);
+                $this->get('unilend.service.service_terms_manager')->acceptCurrentVersion($client);
 
                 $addressManager->saveClientAddress(
                     $form->get('mainAddress')->get('address')->getData(),
@@ -696,7 +696,7 @@ class LenderSubscriptionController extends Controller
                         AddressType::TYPE_POSTAL_ADDRESS
                     );
                 }
-                $this->get('unilend.service.terms_of_sale_manager')->acceptCurrentVersion($client);
+                $this->get('unilend.service.service_terms_manager')->acceptCurrentVersion($client);
 
                 $entityManager->commit();
             } catch (\Exception $exception) {

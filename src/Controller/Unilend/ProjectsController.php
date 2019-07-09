@@ -2,29 +2,29 @@
 
 namespace Unilend\Controller\Unilend;
 
-use Psr\Cache\CacheItemPoolInterface;
 use Knp\Snappy\GeneratorInterface;
+use Psr\Cache\CacheItemPoolInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\{Security, Template};
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\{JsonResponse, RedirectResponse, Request, Response};
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Translation\TranslatorInterface;
+use Unilend\core\Loader;
 use Unilend\Entity\{Attachment, AttachmentType, Bids, Clients, ClientsHistoryActions, Companies, Embeddable\LendingRate, Loans, Operation, Product, Projects, ProjectsStatus, UnderlyingContract,
     UnderlyingContractAttributeType, Wallet, WalletType};
 use Unilend\Exception\BidException;
 use Unilend\Repository\ProjectsRepository;
-use Unilend\Service\CIPManager;
 use Unilend\Security\LoginAuthenticator;
+use Unilend\Service\CIPManager;
 use Unilend\Service\Front\{LenderAccountDisplayManager, ProjectDisplayManager};
-use Unilend\core\Loader;
 
 class ProjectsController extends Controller
 {
     /**
      * @Route("/projets-a-financer/{page}/{sortType}/{sortDirection}", name="projects_list",
      *     defaults={"page": "1", "sortType": "end", "sortDirection": "desc"},
-     *     requirements={"page": "\d+"}, methods={"GET"})
+     * requirements={"page": "\d+"}, methods={"GET"})
      * @Template("projects/list.html.twig")
      *
      * @param int                        $page
@@ -42,7 +42,7 @@ class ProjectsController extends Controller
     /**
      * @Route("/projets-a-financer/{page}/{sortType}/{sortDirection}", name="projects_list_json",
      *     defaults={"page": "1", "sortType": "end", "sortDirection": "desc"},
-     *     requirements={"page": "\d+"}, methods={"POST"})
+     * requirements={"page": "\d+"}, methods={"POST"})
      * @Template("projects/list/map_item_template.html.twig")
      *
      * @param                            $page
@@ -98,7 +98,7 @@ class ProjectsController extends Controller
                 'status'      => $status,
                 'offers'      => $translator->transchoice('project-list_project-map-tooltip-offers-count', $project['bidsCount'], ['%count%' => $ficelle->formatNumber($project['bidsCount'], 0)]),
                 'offerStatus' => $offerStatus,
-                'groupName'   => $status
+                'groupName'   => $status,
             ];
         }
 
@@ -107,7 +107,9 @@ class ProjectsController extends Controller
 
     /**
      * @Route("/projects/{page}/{sortType}/{sortDirection}", defaults={"page": "1", "sortType": "end", "sortDirection": "desc"}, requirements={"page": "\d+"}, name="lender_projects")
+     *
      * @Template("lender_account/projects.html.twig")
+     *
      * @Security("has_role('ROLE_LENDER')")
      *
      * @param int                        $page
@@ -120,107 +122,6 @@ class ProjectsController extends Controller
     public function lenderProjectsAction(int $page, string $sortType, string $sortDirection, ?UserInterface $client): array
     {
         return $this->getProjectsList($page, $sortType, $sortDirection, $client);
-    }
-
-    /**
-     * @param int    $page
-     * @param string $sortType
-     * @param string $sortDirection
-     * @param Clients|null $client
-     *
-     * @return array
-     */
-    private function getProjectsList(int $page, string $sortType, string $sortDirection, ?Clients $client): array
-    {
-        $entityManager         = $this->get('doctrine.orm.entity_manager');
-        $projectDisplayManager = $this->get('unilend.frontbundle.service.project_display_manager');
-        $projectRepository     = $entityManager->getRepository(Projects::class);
-
-        $template      = [];
-        $pagination    = $this->getPaginationStartAndLimit($page);
-        $limit         = $pagination['limit'];
-        $start         = $pagination['start'];
-        $sort          = [];
-        $sortDirection = strtoupper($sortDirection);
-
-        if (
-            in_array($sortType, [ProjectsRepository::SORT_FIELD_SECTOR, ProjectsRepository::SORT_FIELD_AMOUNT, ProjectsRepository::SORT_FIELD_RATE, ProjectsRepository::SORT_FIELD_RISK, ProjectsRepository::SORT_FIELD_END])
-            && in_array($sortDirection, ['ASC', 'DESC'])
-        ) {
-            $sort = [$sortType => $sortDirection];
-        }
-
-        $template['projects'] = $projectDisplayManager->getProjectsList([], $sort, $start, $limit, $client);
-
-        $productRepository = $entityManager->getRepository(Product::class);
-        $products          = $productRepository->findAvailableProductsByClient($client);
-        $projects          = $projectRepository->findBy(['status' => ProjectsStatus::STATUS_PUBLISHED, 'idProduct' => $products]);
-
-        $template['projectsInFunding'] = count($projects);
-        $template['pagination']        = $this->pagination($page, $limit, $client);
-        $template['showPagination']    = true;
-        $template['showSortable']      = true;
-        $template['currentPage']       = $page;
-        $template['sortType']          = strtolower($sortType);
-        $template['sortDirection']     = strtolower($sortDirection);
-
-        return $template;
-    }
-
-    /**
-     * @param int          $page
-     * @param int          $limit
-     * @param Clients|null $client
-     *
-     * @return array
-     */
-    private function pagination($page, $limit, ?Clients $client)
-    {
-        $projectDisplayManager = $this->get('unilend.frontbundle.service.project_display_manager');
-        $totalNumberProjects   = $projectDisplayManager->getTotalNumberOfDisplayedProjects($client);
-        $totalPages            = $limit ? ceil($totalNumberProjects / $limit) : 1;
-
-        $paginationSettings = [
-            'itemsPerPage'      => $limit,
-            'totalItems'        => $totalNumberProjects,
-            'totalPages'        => $totalPages,
-            'currentIndex'      => $page,
-            'currentIndexItems' => min($page * $limit, $totalNumberProjects),
-            'remainingItems'    => $limit ? ceil($totalNumberProjects - ($totalNumberProjects / $limit)) : 0,
-            'pageUrl'           => 'projects'
-        ];
-
-        if ($totalPages > 1) {
-            $paginationSettings['indexPlan'] = [$page - 1, $page, $page + 1];
-
-            if ($page > $totalPages - 3) {
-                $paginationSettings['indexPlan'] = [$totalPages - 3, $totalPages - 2, $totalPages - 1];
-            } elseif ($page == $totalPages - 3) {
-                $paginationSettings['indexPlan'] = [$totalPages - 4, $totalPages - 3, $totalPages - 2, $totalPages - 1];
-            } elseif (4 == $page) {
-                $paginationSettings['indexPlan'] = [2, 3, 4, 5];
-            } elseif ($page < 4) {
-                $paginationSettings['indexPlan'] = [2, 3, 4];
-            }
-        }
-
-        return $paginationSettings;
-    }
-
-    /**
-     * @param int $page
-     *
-     * @return array
-     */
-    private function getPaginationStartAndLimit($page)
-    {
-        /** @var \settings $settings */
-        $settings = $this->get('unilend.service.entity_manager')->getRepository('settings');
-        $settings->get('nombre-de-projets-par-page', 'type');
-        $limit = (int) $settings->value;
-        $start = ($page > 1) ? $limit * ($page - 1) : 0;
-
-        return ['start' => $start, 'limit' => $limit];
     }
 
     /**
@@ -248,15 +149,15 @@ class ProjectsController extends Controller
             'bidToken'            => sha1('tokenBid-' . time() . '-' . uniqid()),
             'suggestAutolend'     => false,
             'recaptchaKey'        => getenv('GOOGLE_RECAPTCHA_KEY'),
-            'displayLoginCaptcha' => $request->getSession()->get(LoginAuthenticator::SESSION_NAME_LOGIN_CAPTCHA, false)
+            'displayLoginCaptcha' => $request->getSession()->get(LoginAuthenticator::SESSION_NAME_LOGIN_CAPTCHA, false),
         ];
 
         if (isset($template['project']['bids'])) {
             $template['project']['bids']['graph'] = [
-                'summary' => array_reverse($template['project']['bids']['summary'], true)
+                'summary' => array_reverse($template['project']['bids']['summary'], true),
             ];
 
-            $index = 0;
+            $index                                                   = 0;
             $template['project']['bids']['graph']['maxNotNullIndex'] = 0;
             foreach ($template['project']['bids']['graph']['summary'] as $rateSummary) {
                 if ($rateSummary['activeBidsCount'] > 0) {
@@ -285,9 +186,9 @@ class ProjectsController extends Controller
             $template['amountMin'] = (int) trim($settings->value);
 
             /** @var LenderAccountDisplayManager $lenderAccountDisplayManager */
-            $lenderAccountDisplayManager = $this->get('unilend.frontbundle.service.lender_account_display_manager');
+            $lenderAccountDisplayManager   = $this->get('unilend.frontbundle.service.lender_account_display_manager');
             $template['project']['lender'] = [
-                'bids' => $lenderAccountDisplayManager->getBidsForProject($project->id_project, $client)
+                'bids' => $lenderAccountDisplayManager->getBidsForProject($project->id_project, $client),
             ];
 
             if ($project->status >= ProjectsStatus::STATUS_FUNDED) {
@@ -348,63 +249,32 @@ class ProjectsController extends Controller
 
             if (isset($template['project']['navigation']['previous']['title']) && $template['project']['navigation']['previous']['project'] instanceof Projects) {
                 /** @var Projects $previousProject */
-                $previousProject = $template['project']['navigation']['previous']['project'];
+                $previousProject                                        = $template['project']['navigation']['previous']['project'];
                 $template['project']['navigation']['previous']['title'] = $translator->trans('company-sector_sector-' . $previousProject->getIdCompany()->getSector());
             }
 
             if (isset($template['project']['navigation']['next']['title']) && $template['project']['navigation']['next']['project'] instanceof Projects) {
                 /** @var Projects $nextProject */
-                $nextProject = $template['project']['navigation']['next']['project'];
+                $nextProject                                        = $template['project']['navigation']['next']['project'];
                 $template['project']['navigation']['next']['title'] = $translator->trans('company-sector_sector-' . $nextProject->getIdCompany()->getSector());
             }
         }
 
         $template['conditions'] = [
-            'visibility'           => $visibility,
-            'bids'                 => isset($template['project']['bids']) && $template['project']['status'] == ProjectsStatus::STATUS_PUBLISHED,
-            'myBids'               => isset($template['project']['lender']) && $template['project']['lender']['bids']['count'] > 0,
-            'finance'              => ProjectDisplayManager::VISIBILITY_FULL === $visibility,
-            'canBid'               => ProjectDisplayManager::VISIBILITY_FULL === $visibility
-                && $client instanceof Clients
-                && $client->isLender()
-                && $this->get('unilend.service.terms_of_sale_manager')->hasAcceptedCurrentVersion($client),
+            'visibility' => $visibility,
+            'bids'       => isset($template['project']['bids']) && ProjectsStatus::STATUS_PUBLISHED == $template['project']['status'],
+            'myBids'     => isset($template['project']['lender']) && $template['project']['lender']['bids']['count'] > 0,
+            'finance'    => ProjectDisplayManager::VISIBILITY_FULL === $visibility,
+            'canBid'     => ProjectDisplayManager::VISIBILITY_FULL === $visibility
+            && $client instanceof Clients
+            && $client->isLender()
+            && $this->get('unilend.service.service_terms_manager')->hasAcceptedCurrentVersion($client),
             'warningLending'       => true,
             'warningTaxDeduction'  => $template['project']['startDate'] >= '2016-01-01',
-            'displayCipDisclaimer' => $displayCipDisclaimer
+            'displayCipDisclaimer' => $displayCipDisclaimer,
         ];
 
         return $this->render('projects/detail.html.twig', $template);
-    }
-
-    /**
-     * @param string       $projectSlug
-     * @param Clients|null $client
-     *
-     * @return \projects|RedirectResponse
-     */
-    private function checkProjectAndRedirect(string $projectSlug, ?Clients $client)
-    {
-        $entityManagerSimulator = $this->get('unilend.service.entity_manager');
-        /** @var \projects $project */
-        $project = $entityManagerSimulator->getRepository('projects');
-
-        if (false === $project->get($projectSlug, 'slug') || $project->slug !== $projectSlug) { // MySQL does not check collation (hôtellerie = hotellerie) so we strictly check in PHP
-            throw $this->createNotFoundException();
-        }
-
-        $projectDisplayManager = $this->get('unilend.frontbundle.service.project_display_manager');
-        $entityManager         = $this->get('doctrine.orm.entity_manager');
-        $projectEntity         = $entityManager->getRepository(Projects::class)->find($project->id_project);
-
-        if (
-            $project->status >= ProjectsStatus::STATUS_REVIEW && $project->status < ProjectsStatus::STATUS_PUBLISHED
-            || ProjectDisplayManager::VISIBILITY_NONE !== $projectDisplayManager->getVisibility($projectEntity, $client)
-            || $this->get('security.authorization_checker')->isGranted('IS_AUTHENTICATED_FULLY') && 28002 == $project->id_project
-        ) {
-            return $project;
-        }
-
-        throw $this->createNotFoundException();
     }
 
     /**
@@ -427,7 +297,7 @@ class ProjectsController extends Controller
         ) {
             return new JsonResponse([
                 'error'   => true,
-                'message' => 'Missing parameters'
+                'message' => 'Missing parameters',
             ]);
         }
 
@@ -442,7 +312,7 @@ class ProjectsController extends Controller
         ) {
             return new JsonResponse([
                 'error'   => true,
-                'message' => 'Wrong parameter value'
+                'message' => 'Wrong parameter value',
             ]);
         }
 
@@ -458,12 +328,13 @@ class ProjectsController extends Controller
             'message' => $translator->trans(
                 'project-detail_monthly-repayment-estimation',
                 ['%amount%' => $ficelle->formatNumber($repayment)]
-            )
+            ),
         ]);
     }
 
     /**
      * @Route("/projects/bid/{projectId}", requirements={"projectId": "\d+"}, name="place_bid", methods={"POST"})
+     *
      * @Security("has_role('ROLE_LENDER')")
      *
      * @param int                        $projectId
@@ -492,6 +363,7 @@ class ProjectsController extends Controller
 
             if (false === $client->isValidated()) {
                 $request->getSession()->set('bidResult', ['error' => true, 'message' => $translator->trans('project-detail_side-bar-bids-user-logged-out')]);
+
                 return $this->redirectToRoute('project_detail', ['projectSlug' => $project->slug]);
             }
 
@@ -503,6 +375,7 @@ class ProjectsController extends Controller
 
             if ($request->getSession()->get('bidToken') !== $post['bidToken']) {
                 $request->getSession()->set('bidResult', ['error' => true, 'message' => $translator->trans('project-detail_side-bar-bids-invalid-security-token')]);
+
                 return $this->redirectToRoute('project_detail', ['projectSlug' => $project->slug]);
             }
 
@@ -511,8 +384,8 @@ class ProjectsController extends Controller
             $bidManager = $this->get('unilend.service.bid_manager');
 
             try {
-                $projectEntity  = $this->get('doctrine.orm.entity_manager')->getRepository(Projects::class)->find($projectId);
-                $bids           = $bidManager->bid($wallet, $projectEntity, $bidAmount, $rate);
+                $projectEntity = $this->get('doctrine.orm.entity_manager')->getRepository(Projects::class)->find($projectId);
+                $bids          = $bidManager->bid($wallet, $projectEntity, $bidAmount, $rate);
                 /** @var CacheItemPoolInterface $oCachePool */
                 $oCachePool = $this->get('cache.app');
                 $oCachePool->deleteItem(\bids::CACHE_KEY_PROJECT_BIDS . '_' . $project->id_project);
@@ -525,18 +398,18 @@ class ProjectsController extends Controller
                     $product = $entityManagerSimulator->getRepository('product');
                     $product->get($project->id_product);
 
-                    $amountMax = $productManager->getMaxEligibleAmount($client, $product);
-                    $reasons   = $productManager->checkBidEligibility($bids);
+                    $amountMax  = $productManager->getMaxEligibleAmount($client, $product);
+                    $reasons    = $productManager->checkBidEligibility($bids);
                     $amountRest = 0;
                     foreach ($reasons as $reason) {
-                        if ($reason === UnderlyingContractAttributeType::TOTAL_LOAN_AMOUNT_LIMITATION_IN_EURO) {
+                        if (UnderlyingContractAttributeType::TOTAL_LOAN_AMOUNT_LIMITATION_IN_EURO === $reason) {
                             $amountRest = $productManager->getAmountLenderCanStillBid($client, $project);
                         }
                         $currencyFormatter = $this->get('currency_formatter');
                         $amountRest        = $currencyFormatter->formatCurrency($amountRest, 'EUR');
                         $amountMax         = $currencyFormatter->formatCurrency($amountMax, 'EUR');
 
-                        $this->addFlash('bid_not_eligible_reason', $translator->transChoice('project-detail_bid-not-eligible-reason-' . $reason, 0,['%amountRest%' => $amountRest, '%amountMax%' => $amountMax]));
+                        $this->addFlash('bid_not_eligible_reason', $translator->transChoice('project-detail_bid-not-eligible-reason-' . $reason, 0, ['%amountRest%' => $amountRest, '%amountMax%' => $amountMax]));
                     }
                 } else {
                     $request->getSession()->set('bidResult', ['error' => true, 'message' => $translator->trans('project-detail_side-bar-' . $exception->getMessage())]);
@@ -552,10 +425,10 @@ class ProjectsController extends Controller
     }
 
     /**
-     * todo: this controller can be "GET"
+     * todo: this controller can be "GET".
      *
      * @Route("/projects/bids/{projectId}/{rate}", name="bids_on_project",
-     *     requirements={"projectId": "\d+", "rate": "(?:\d+|\d*\.\d+)"}, methods={"POST"})
+     * requirements={"projectId": "\d+", "rate": "(?:\d+|\d*\.\d+)"}, methods={"POST"})
      *
      * @param int                        $projectId
      * @param float                      $rate
@@ -582,7 +455,7 @@ class ProjectsController extends Controller
             /** @var \bids $bidEntity */
             $bidEntity = $entityManagerSimulator->getRepository('bids');
 
-            $bids = $bidEntity->select('id_project = ' . $projectId . ' AND rate = ' . $rate, 'ordre ASC');
+            $bids             = $bidEntity->select('id_project = ' . $projectId . ' AND rate = ' . $rate, 'ordre ASC');
             $template['bids'] = [];
 
             foreach ($bids as $bid) {
@@ -593,7 +466,7 @@ class ProjectsController extends Controller
                     'status'       => (int) $bid['status'],
                     'lenderId'     => (int) $bid['id_wallet'],
                     'userInvolved' => false,
-                    'autobid'      => $bid['id_autobid'] > 0
+                    'autobid'      => $bid['id_autobid'] > 0,
                 ];
             }
 
@@ -604,7 +477,7 @@ class ProjectsController extends Controller
         if ($client instanceof Clients && $client->isLender()) {
             $wallet = $entityManager->getRepository(Wallet::class)->getWalletByType($client, WalletType::LENDER);
 
-            array_walk($template['bids'], function(&$bid) use ($wallet) {
+            array_walk($template['bids'], function (&$bid) use ($wallet) {
                 if ($bid['lenderId'] == $wallet->getId()) {
                     $bid['userInvolved'] = true;
                 }
@@ -638,10 +511,10 @@ class ProjectsController extends Controller
         $projectDisplayManager = $this->get('unilend.frontbundle.service.project_display_manager');
         $financeData           = $projectDisplayManager->getProjectFinancialData($project);
 
-        $firstBalanceSheet     = current($financeData);
-        $columns               = array_keys($firstBalanceSheet['income_statement']['details']);
+        $firstBalanceSheet = current($financeData);
+        $columns           = array_keys($firstBalanceSheet['income_statement']['details']);
 
-        $iRow         = 1;
+        $iRow = 1;
         /** @var \PHPExcel $oDocument */
         $oDocument    = new \PHPExcel();
         $oActiveSheet = $oDocument->setActiveSheetIndex(0);
@@ -659,7 +532,7 @@ class ProjectsController extends Controller
         foreach ($columns as $column) {
             $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translator->trans($column));
             $columnCount = 1;
-            foreach($financeData as $balanceSheet) {
+            foreach ($financeData as $balanceSheet) {
                 $oActiveSheet->setCellValueByColumnAndRow($columnCount++, $iRow, $balanceSheet['income_statement']['details'][$column][0]);
             }
         }
@@ -718,83 +591,83 @@ class ProjectsController extends Controller
         $aFundedCompanies     = explode(',', $oSetting->value);
         $bPreviousRiskProject = in_array($oCompany->id_company, $aFundedCompanies);
 
-        $iRow         = 1;
+        $iRow = 1;
         /** @var \PHPExcel $oDocument */
         $oDocument    = new \PHPExcel();
         $oActiveSheet = $oDocument->setActiveSheetIndex(0);
         $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translator->trans('preteur-projets_bilan'));
         $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translator->trans('preteur-projets_actif'));
         $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translator->trans('preteur-projets_immobilisations-corporelles'));
-        for ($i = 0; $i < 3; $i++) {
+        for ($i = 0; $i < 3; ++$i) {
             $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAssetsDebts[$i]['immobilisations_corporelles']);
         }
         $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translator->trans('preteur-projets_immobilisations-incorporelles'));
-        for ($i = 0; $i < 3; $i++) {
+        for ($i = 0; $i < 3; ++$i) {
             $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAssetsDebts[$i]['immobilisations_incorporelles']);
         }
         $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translator->trans('preteur-projets_immobilisations-financieres'));
-        for ($i = 0; $i < 3; $i++) {
+        for ($i = 0; $i < 3; ++$i) {
             $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAssetsDebts[$i]['immobilisations_financieres']);
         }
         $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translator->trans('preteur-projets_stocks'));
-        for ($i = 0; $i < 3; $i++) {
+        for ($i = 0; $i < 3; ++$i) {
             $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAssetsDebts[$i]['stocks']);
         }
         $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translator->trans('preteur-projets_creances-clients'));
-        for ($i = 0; $i < 3; $i++) {
+        for ($i = 0; $i < 3; ++$i) {
             $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAssetsDebts[$i]['creances_clients']);
         }
         $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translator->trans('preteur-projets_disponibilites'));
-        for ($i = 0; $i < 3; $i++) {
+        for ($i = 0; $i < 3; ++$i) {
             $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAssetsDebts[$i]['disponibilites']);
         }
         $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translator->trans('preteur-projets_valeurs-mobilieres-de-placement'));
-        for ($i = 0; $i < 3; $i++) {
+        for ($i = 0; $i < 3; ++$i) {
             $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAssetsDebts[$i]['valeurs_mobilieres_de_placement']);
         }
-        if (false === $bPreviousRiskProject && ($aAssetsDebts[0]['comptes_regularisation_actif'] != 0 || $aAssetsDebts[1]['comptes_regularisation_actif'] != 0 || $aAssetsDebts[2]['comptes_regularisation_actif'] != 0)) {
+        if (false === $bPreviousRiskProject && (0 != $aAssetsDebts[0]['comptes_regularisation_actif'] || 0 != $aAssetsDebts[1]['comptes_regularisation_actif'] || 0 != $aAssetsDebts[2]['comptes_regularisation_actif'])) {
             $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translator->trans('preteur-projets_comptes-regularisation'));
-            for ($i = 0; $i < 3; $i++) {
+            for ($i = 0; $i < 3; ++$i) {
                 $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAssetsDebts[$i]['comptes_regularisation_actif']);
             }
         }
         $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translator->trans('preteur-projets_total-bilan-actifs'));
-        for ($i = 0; $i < 3; $i++) {
+        for ($i = 0; $i < 3; ++$i) {
             $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAssetsDebts[$i]['immobilisations_corporelles'] + $aAssetsDebts[$i]['immobilisations_incorporelles'] + $aAssetsDebts[$i]['immobilisations_financieres'] + $aAssetsDebts[$i]['stocks'] + $aAssetsDebts[$i]['creances_clients'] + $aAssetsDebts[$i]['disponibilites'] + $aAssetsDebts[$i]['valeurs_mobilieres_de_placement'] + $aAssetsDebts[$i]['comptes_regularisation_actif']);
         }
         $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translator->trans('preteur-projets_passif'));
         $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translator->trans('preteur-projets_capitaux-propres'));
-        for ($i = 0; $i < 3; $i++) {
+        for ($i = 0; $i < 3; ++$i) {
             $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAssetsDebts[$i]['capitaux_propres']);
         }
         $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translator->trans('preteur-projets_provisions-pour-risques-charges'));
-        for ($i = 0; $i < 3; $i++) {
+        for ($i = 0; $i < 3; ++$i) {
             $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAssetsDebts[$i]['provisions_pour_risques_et_charges']);
         }
         $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translator->trans('preteur-projets_amortissement-sur-immo'));
-        for ($i = 0; $i < 3; $i++) {
+        for ($i = 0; $i < 3; ++$i) {
             $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAssetsDebts[$i]['amortissement_sur_immo']);
         }
         $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translator->trans('preteur-projets_dettes-financieres'));
-        for ($i = 0; $i < 3; $i++) {
+        for ($i = 0; $i < 3; ++$i) {
             $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAssetsDebts[$i]['dettes_financieres']);
         }
         $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translator->trans('preteur-projets_dettes-fournisseurs'));
-        for ($i = 0; $i < 3; $i++) {
+        for ($i = 0; $i < 3; ++$i) {
             $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAssetsDebts[$i]['dettes_fournisseurs']);
         }
         $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translator->trans('preteur-projets_autres-dettes'));
-        for ($i = 0; $i < 3; $i++) {
+        for ($i = 0; $i < 3; ++$i) {
             $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAssetsDebts[$i]['autres_dettes']);
         }
-        if (false === $bPreviousRiskProject && ($aAssetsDebts[0]['comptes_regularisation_passif'] != 0 || $aAssetsDebts[1]['comptes_regularisation_passif'] != 0 || $aAssetsDebts[2]['comptes_regularisation_passif'] != 0)) {
+        if (false === $bPreviousRiskProject && (0 != $aAssetsDebts[0]['comptes_regularisation_passif'] || 0 != $aAssetsDebts[1]['comptes_regularisation_passif'] || 0 != $aAssetsDebts[2]['comptes_regularisation_passif'])) {
             $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translator->trans('preteur-projets_comptes-regularisation'));
-            for ($i = 0; $i < 3; $i++) {
+            for ($i = 0; $i < 3; ++$i) {
                 $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAssetsDebts[$i]['comptes_regularisation_passif']);
             }
         }
         $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $translator->trans('preteur-projets_total-bilan-passifs'));
-        for ($i = 0; $i < 3; $i++) {
+        for ($i = 0; $i < 3; ++$i) {
             $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAssetsDebts[$i]['capitaux_propres'] + $aAssetsDebts[$i]['provisions_pour_risques_et_charges'] + $aAssetsDebts[$i]['amortissement_sur_immo'] + $aAssetsDebts[$i]['dettes_financieres'] + $aAssetsDebts[$i]['dettes_fournisseurs'] + $aAssetsDebts[$i]['autres_dettes'] + $aAssetsDebts[$i]['comptes_regularisation_passif']);
         }
 
@@ -828,7 +701,7 @@ class ProjectsController extends Controller
         if ($project->get($projectId, 'id_project')) {
             $translator = $this->get('translator');
 
-            if ($project->status == ProjectsStatus::STATUS_PUBLISHED) {
+            if (ProjectsStatus::STATUS_PUBLISHED == $project->status) {
                 ob_start();
                 echo "\xEF\xBB\xBF";
                 echo '"N°";"' . $translator->trans('preteur-projets_taux-dinteret') . '";"' . $translator->trans('preteur-projets_montant') . '";"' . $translator->trans('preteur-projets_statuts') . '"' . PHP_EOL;
@@ -841,7 +714,7 @@ class ProjectsController extends Controller
                 $bidStatus = [
                     Bids::STATUS_PENDING  => $translator->trans('preteur-projets_enchere-en-cours'),
                     Bids::STATUS_ACCEPTED => $translator->trans('preteur-projets_enchere-ok'),
-                    Bids::STATUS_REJECTED => $translator->trans('preteur-projets_enchere-ko')
+                    Bids::STATUS_REJECTED => $translator->trans('preteur-projets_enchere-ko'),
                 ];
 
                 while ($bidsList = $bids->select('id_project = ' . $project->id_project, 'ordre ASC', $offset, $limit)) {
@@ -862,7 +735,7 @@ class ProjectsController extends Controller
 
     /**
      * @Route("/projects/pre-check-bid/{projectSlug}/{amount}/{rate}", name="pre_check_bid", condition="request.isXmlHttpRequest()",
-     *     requirements={"projectSlug": "[a-z0-9-]+", "amount": "\d+", "rate": "\d{1,2}(\.\d|)"})
+     * requirements={"projectSlug": "[a-z0-9-]+", "amount": "\d+", "rate": "\d{1,2}(\.\d|)"})
      *
      * @param string                     $projectSlug
      * @param int                        $amount
@@ -885,8 +758,8 @@ class ProjectsController extends Controller
 
         if (false === $project->get($projectSlug, 'slug')) {
             return new JsonResponse([
-                'error'   => true,
-                'messages' => ['Invalid parameters']
+                'error'    => true,
+                'messages' => ['Invalid parameters'],
             ]);
         }
 
@@ -897,9 +770,10 @@ class ProjectsController extends Controller
 
         if ($amount < $amountMin) {
             $amountMin = $currencyFormatter->formatCurrency($amountMin, 'EUR');
+
             return new JsonResponse([
-                'error'   => true,
-                'messages' => [$translator->trans('project-detail_bid-min-amount-error', ['%amountMin%' => $amountMin])]
+                'error'    => true,
+                'messages' => [$translator->trans('project-detail_bid-min-amount-error', ['%amountMin%' => $amountMin])],
             ]);
         }
 
@@ -907,7 +781,7 @@ class ProjectsController extends Controller
             return new JsonResponse([
                 'error'    => true,
                 'title'    => $translator->trans('project-detail_modal-bid-error-disconnected-lender-title'),
-                'messages' => [$translator->trans('project-detail_modal-bid-error-disconnected-lender-message')]
+                'messages' => [$translator->trans('project-detail_modal-bid-error-disconnected-lender-message')],
             ]);
         }
 
@@ -917,26 +791,29 @@ class ProjectsController extends Controller
             return new JsonResponse([
                 'error'    => true,
                 'title'    => $translator->trans('project-detail_modal-bid-error-amount-title'),
-                'messages' => [$translator->trans('project-detail_side-bar-bids-low-balance')]
+                'messages' => [$translator->trans('project-detail_side-bar-bids-low-balance')],
             ]);
         }
 
         $lendingRate = (new LendingRate())
             ->setType(LendingRate::INDEX_FIXED)
-            ->setMargin($rate);
+            ->setMargin($rate)
+        ;
 
         $bid = new Bids();
         $bid
             ->setTranche($entityManager->getRepository(Projects::class)->find($project->id_project))
             ->setWallet($wallet)
             ->setAmount($amount * 100)
-            ->setRate($lendingRate);
+            ->setRate($lendingRate)
+        ;
 
         $reasons = $productManager->checkBidEligibility($bid);
 
         if (false === empty($reasons)) {
             $pendingBidAmount = $entityManager->getRepository(Bids::class)
-                ->getSumByWalletAndProjectAndStatus($wallet, $bid->getTranche(), [Bids::STATUS_PENDING]);
+                ->getSumByWalletAndProjectAndStatus($wallet, $bid->getTranche(), [Bids::STATUS_PENDING])
+            ;
 
             $product = $entityManagerSimulator->getRepository('product');
             $product->get($project->id_product);
@@ -946,19 +823,19 @@ class ProjectsController extends Controller
             $amountMax         = $productManager->getMaxEligibleAmount($client, $product);
 
             foreach ($reasons as $reason) {
-                if ($reason === UnderlyingContractAttributeType::TOTAL_LOAN_AMOUNT_LIMITATION_IN_EURO) {
+                if (UnderlyingContractAttributeType::TOTAL_LOAN_AMOUNT_LIMITATION_IN_EURO === $reason) {
                     $amountRest = $productManager->getAmountLenderCanStillBid($client, $project);
                 }
                 $amountRest = $currencyFormatter->formatCurrency($amountRest, 'EUR');
                 $amountMax  = $currencyFormatter->formatCurrency($amountMax, 'EUR');
 
-                $translatedReasons[] = $translator->transChoice('project-detail_bid-not-eligible-reason-' . $reason, $pendingBidAmount,['%amountRest%' => $amountRest, '%amountMax%' => $amountMax]);
+                $translatedReasons[] = $translator->transChoice('project-detail_bid-not-eligible-reason-' . $reason, $pendingBidAmount, ['%amountRest%' => $amountRest, '%amountMax%' => $amountMax]);
             }
 
             return new JsonResponse([
                 'error'    => true,
                 'title'    => $translator->trans('project-detail_modal-bid-error-amount-title'),
-                'messages' => $translatedReasons
+                'messages' => $translatedReasons,
             ]);
         }
 
@@ -967,7 +844,7 @@ class ProjectsController extends Controller
         $validationNeeded = $cipManager->isCIPValidationNeeded($bid);
         $response         = [
             'validation'      => $validationNeeded,
-            'isNaturalPerson' => $client->isNaturalPerson()
+            'isNaturalPerson' => $client->isNaturalPerson(),
         ];
 
         if ($validationNeeded) {
@@ -1000,10 +877,11 @@ class ProjectsController extends Controller
 
                 if (null !== $indicators[CIPManager::INDICATOR_AMOUNT_BY_MONTH]) {
                     /** @var \bids $bids */
-                    $bids        = $entityManagerSimulator->getRepository('bids');
+                    $bids      = $entityManagerSimulator->getRepository('bids');
                     $totalBids = $bids->sum(
                         'id_wallet = ' . $wallet->getId() . ' AND added >= DATE_SUB(NOW(), INTERVAL 1 MONTH) AND status IN (' . Bids::STATUS_PENDING . ', ' . Bids::STATUS_TEMPORARILY_REJECTED_AUTOBID . ')',
-                        'ROUND(amount / 100)');
+                        'ROUND(amount / 100)'
+                    );
                     /** @var \loans $loans */
                     $loans      = $entityManagerSimulator->getRepository('loans');
                     $totalLoans = $loans->sum(
@@ -1088,14 +966,14 @@ class ProjectsController extends Controller
         $template = [
             'company' => $this->getDIRSCompany($project),
             'project' => $this->getDIRSProject($project),
-            'unilend' => $this->getDIRSUnilend()
+            'unilend' => $this->getDIRSUnilend(),
         ];
 
         $html = $this->renderView('/pdf/dirs.html.twig', $template);
 
-        $filename   = $project->slug . '.pdf';
-        $options    = [
-            'page-size' => 'A4'
+        $filename = $project->slug . '.pdf';
+        $options  = [
+            'page-size' => 'A4',
         ];
 
         /** @var GeneratorInterface $snappy */
@@ -1108,8 +986,140 @@ class ProjectsController extends Controller
 
         return new Response($snappy->getOutputFromHtml($html, $options), 200, [
             'Content-Type'        => 'application/pdf',
-            'Content-Disposition' => sprintf('attachment; filename="%s"', $filename)
+            'Content-Disposition' => sprintf('attachment; filename="%s"', $filename),
         ]);
+    }
+
+    /**
+     * @param int          $page
+     * @param string       $sortType
+     * @param string       $sortDirection
+     * @param Clients|null $client
+     *
+     * @return array
+     */
+    private function getProjectsList(int $page, string $sortType, string $sortDirection, ?Clients $client): array
+    {
+        $entityManager         = $this->get('doctrine.orm.entity_manager');
+        $projectDisplayManager = $this->get('unilend.frontbundle.service.project_display_manager');
+        $projectRepository     = $entityManager->getRepository(Projects::class);
+
+        $template      = [];
+        $pagination    = $this->getPaginationStartAndLimit($page);
+        $limit         = $pagination['limit'];
+        $start         = $pagination['start'];
+        $sort          = [];
+        $sortDirection = mb_strtoupper($sortDirection);
+
+        if (
+            in_array($sortType, [ProjectsRepository::SORT_FIELD_SECTOR, ProjectsRepository::SORT_FIELD_AMOUNT, ProjectsRepository::SORT_FIELD_RATE, ProjectsRepository::SORT_FIELD_RISK, ProjectsRepository::SORT_FIELD_END])
+            && in_array($sortDirection, ['ASC', 'DESC'])
+        ) {
+            $sort = [$sortType => $sortDirection];
+        }
+
+        $template['projects'] = $projectDisplayManager->getProjectsList([], $sort, $start, $limit, $client);
+
+        $productRepository = $entityManager->getRepository(Product::class);
+        $products          = $productRepository->findAvailableProductsByClient($client);
+        $projects          = $projectRepository->findBy(['status' => ProjectsStatus::STATUS_PUBLISHED, 'idProduct' => $products]);
+
+        $template['projectsInFunding'] = count($projects);
+        $template['pagination']        = $this->pagination($page, $limit, $client);
+        $template['showPagination']    = true;
+        $template['showSortable']      = true;
+        $template['currentPage']       = $page;
+        $template['sortType']          = mb_strtolower($sortType);
+        $template['sortDirection']     = mb_strtolower($sortDirection);
+
+        return $template;
+    }
+
+    /**
+     * @param int          $page
+     * @param int          $limit
+     * @param Clients|null $client
+     *
+     * @return array
+     */
+    private function pagination($page, $limit, ?Clients $client)
+    {
+        $projectDisplayManager = $this->get('unilend.frontbundle.service.project_display_manager');
+        $totalNumberProjects   = $projectDisplayManager->getTotalNumberOfDisplayedProjects($client);
+        $totalPages            = $limit ? ceil($totalNumberProjects / $limit) : 1;
+
+        $paginationSettings = [
+            'itemsPerPage'      => $limit,
+            'totalItems'        => $totalNumberProjects,
+            'totalPages'        => $totalPages,
+            'currentIndex'      => $page,
+            'currentIndexItems' => min($page * $limit, $totalNumberProjects),
+            'remainingItems'    => $limit ? ceil($totalNumberProjects - ($totalNumberProjects / $limit)) : 0,
+            'pageUrl'           => 'projects',
+        ];
+
+        if ($totalPages > 1) {
+            $paginationSettings['indexPlan'] = [$page - 1, $page, $page + 1];
+
+            if ($page > $totalPages - 3) {
+                $paginationSettings['indexPlan'] = [$totalPages - 3, $totalPages - 2, $totalPages - 1];
+            } elseif ($page == $totalPages - 3) {
+                $paginationSettings['indexPlan'] = [$totalPages - 4, $totalPages - 3, $totalPages - 2, $totalPages - 1];
+            } elseif (4 == $page) {
+                $paginationSettings['indexPlan'] = [2, 3, 4, 5];
+            } elseif ($page < 4) {
+                $paginationSettings['indexPlan'] = [2, 3, 4];
+            }
+        }
+
+        return $paginationSettings;
+    }
+
+    /**
+     * @param int $page
+     *
+     * @return array
+     */
+    private function getPaginationStartAndLimit($page)
+    {
+        /** @var \settings $settings */
+        $settings = $this->get('unilend.service.entity_manager')->getRepository('settings');
+        $settings->get('nombre-de-projets-par-page', 'type');
+        $limit = (int) $settings->value;
+        $start = ($page > 1) ? $limit * ($page - 1) : 0;
+
+        return ['start' => $start, 'limit' => $limit];
+    }
+
+    /**
+     * @param string       $projectSlug
+     * @param Clients|null $client
+     *
+     * @return \projects|RedirectResponse
+     */
+    private function checkProjectAndRedirect(string $projectSlug, ?Clients $client)
+    {
+        $entityManagerSimulator = $this->get('unilend.service.entity_manager');
+        /** @var \projects $project */
+        $project = $entityManagerSimulator->getRepository('projects');
+
+        if (false === $project->get($projectSlug, 'slug') || $project->slug !== $projectSlug) { // MySQL does not check collation (hôtellerie = hotellerie) so we strictly check in PHP
+            throw $this->createNotFoundException();
+        }
+
+        $projectDisplayManager = $this->get('unilend.frontbundle.service.project_display_manager');
+        $entityManager         = $this->get('doctrine.orm.entity_manager');
+        $projectEntity         = $entityManager->getRepository(Projects::class)->find($project->id_project);
+
+        if (
+            $project->status >= ProjectsStatus::STATUS_REVIEW && $project->status < ProjectsStatus::STATUS_PUBLISHED
+            || ProjectDisplayManager::VISIBILITY_NONE !== $projectDisplayManager->getVisibility($projectEntity, $client)
+            || $this->get('security.authorization_checker')->isGranted('IS_AUTHENTICATED_FULLY') && 28002 == $project->id_project
+        ) {
+            return $project;
+        }
+
+        throw $this->createNotFoundException();
     }
 
     /**
@@ -1138,17 +1148,18 @@ class ProjectsController extends Controller
             'commercial_court' => $company->getTribunalCom(),
             'creation_date'    => $company->getDateCreation()->format('Y-m-d'),
             'accounts_count'   => $project->balance_count,
-            'working_capital'  => $workingCapital
+            'working_capital'  => $workingCapital,
         ];
     }
 
     /**
      * @param \projects $project
      *
-     * @return array
      * @throws \Doctrine\DBAL\DBALException
      * @throws \Doctrine\ORM\NonUniqueResultException
      * @throws \Exception
+     *
+     * @return array
      */
     private function getDIRSProject(\projects $project): array
     {
@@ -1171,7 +1182,7 @@ class ProjectsController extends Controller
         $endDate       = \DateTime::createFromFormat('Y-m-d H:i:s', $project->date_retrait);
         $signatureDate = \DateTime::createFromFormat('Y-m-d H:i:s', $project->date_retrait)->add(new \DateInterval('P7D'));
 
-        $repaymentDate     = \DateTime::createFromFormat('Y-m-d H:i:s', substr($project->date_retrait, 0, 8) . '01 00:00:00');
+        $repaymentDate     = \DateTime::createFromFormat('Y-m-d H:i:s', mb_substr($project->date_retrait, 0, 8) . '01 00:00:00');
         $repaymentSchedule = \repayment::getRepaymentSchedule(1000, $project->period, $minimumBidRate / 100);
 
         foreach ($repaymentSchedule as $order => $repayment) {
@@ -1189,7 +1200,7 @@ class ProjectsController extends Controller
             'signature_date'      => $signatureDate,
             'released_funds'      => $entityManager->getRepository(Operation::class)->getLastYearReleasedFundsBySIREN($projectEntity->getIdCompany()->getSiren()),
             'debts_statement_img' => base64_encode(file_get_contents($attachmentManager->getFullPath($attachment))),
-            'repayment_schedule'  => $repaymentSchedule
+            'repayment_schedule'  => $repaymentSchedule,
         ];
     }
 
@@ -1198,7 +1209,6 @@ class ProjectsController extends Controller
      */
     private function getDIRSUnilend()
     {
-
         /** @var \settings $setting */
         $setting = $this->get('unilend.service.entity_manager')->getRepository('settings');
         $setting->get('Declaration contrat pret - raison sociale', 'type');

@@ -10,9 +10,9 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\{Asset\Packages, Filesystem\Filesystem};
 use Twig\Environment;
 use Unilend\Entity\{AcceptationsLegalDocs, Elements, TreeElements};
-use Unilend\Service\TermsOfSale\TermsOfSaleManager;
+use Unilend\Service\ServiceTerms\ServiceTermsManager;
 
-class TermsOfSaleGenerator implements DocumentGeneratorInterface
+class ServiceTermsGenerator implements DocumentGeneratorInterface
 {
     public const PATH = 'pdf' . DIRECTORY_SEPARATOR . 'cgu';
 
@@ -39,8 +39,8 @@ class TermsOfSaleGenerator implements DocumentGeneratorInterface
 
     /** @var EntityManagerInterface */
     private $entityManager;
-    /** @var TermsOfSaleManager */
-    private $termsOfSaleManager;
+    /** @var ServiceTermsManager */
+    private $serviceTermsManager;
     /** @var Filesystem */
     private $filesystem;
     /** @var string */
@@ -62,7 +62,7 @@ class TermsOfSaleGenerator implements DocumentGeneratorInterface
 
     /**
      * @param EntityManagerInterface $entityManager
-     * @param TermsOfSaleManager     $termsOfSaleManager
+     * @param ServiceTermsManager    $serviceTermsManager
      * @param Filesystem             $filesystem
      * @param string                 $protectedPath
      * @param string                 $staticPath
@@ -75,7 +75,7 @@ class TermsOfSaleGenerator implements DocumentGeneratorInterface
      */
     public function __construct(
         EntityManagerInterface $entityManager,
-        TermsOfSaleManager $termsOfSaleManager,
+        ServiceTermsManager $serviceTermsManager,
         Filesystem $filesystem,
         string $protectedPath,
         string $staticPath,
@@ -86,17 +86,17 @@ class TermsOfSaleGenerator implements DocumentGeneratorInterface
         \NumberFormatter $currencyFormatter,
         LoggerInterface $logger
     ) {
-        $this->entityManager      = $entityManager;
-        $this->termsOfSaleManager = $termsOfSaleManager;
-        $this->filesystem         = $filesystem;
-        $this->protectedPath      = $protectedPath;
-        $this->staticPath         = $staticPath;
-        $this->twig               = $twig;
-        $this->snappy             = $snappy;
-        $this->staticUrl          = $assetsPackages->getUrl('');
-        $this->numberFormatter    = $numberFormatter;
-        $this->currencyFormatter  = $currencyFormatter;
-        $this->logger             = $logger;
+        $this->entityManager       = $entityManager;
+        $this->serviceTermsManager = $serviceTermsManager;
+        $this->filesystem          = $filesystem;
+        $this->protectedPath       = $protectedPath;
+        $this->staticPath          = $staticPath;
+        $this->twig                = $twig;
+        $this->snappy              = $snappy;
+        $this->staticUrl           = $assetsPackages->getUrl('');
+        $this->numberFormatter     = $numberFormatter;
+        $this->currencyFormatter   = $currencyFormatter;
+        $this->logger              = $logger;
 
         $this->snappy->setBinary('/usr/local/bin/wkhtmltopdf');
     }
@@ -171,7 +171,7 @@ class TermsOfSaleGenerator implements DocumentGeneratorInterface
             'content'   => $this->getNonPersonalizedContent($acceptedLegalDoc->getLegalDoc()->getIdTree()),
         ];
 
-        $content = $this->twig->render('/terms_of_sale/pdf/lender_terms_of_sale.html.twig', $template);
+        $content = $this->twig->render('/service_terms/pdf/service_terms.html.twig', $template);
 
         $this->snappy->setOption('user-style-sheet', $this->staticPath . 'styles/default/pdf/style.css');
         $this->snappy->generateFromHtml($content, $this->getPath($acceptedLegalDoc), [], true);

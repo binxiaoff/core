@@ -5,18 +5,19 @@ namespace Unilend\Controller\Unilend\PartnerAccount;
 use Psr\Log\InvalidArgumentException;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
-use Symfony\Component\HttpFoundation\{RedirectResponse, Request, Response};
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Symfony\Component\HttpFoundation\{RedirectResponse, Request, Response};
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Unilend\core\Loader;
 use Unilend\Entity\{BorrowingMotive, Clients, ClientsStatus, CompanyClient, PartnerProjectAttachment, ProjectAbandonReason, ProjectRejectionReason, Projects, ProjectsStatus, Users};
 use Unilend\Service\ProjectRequestManager;
-use Unilend\core\Loader;
 
 class ProjectRequestController extends Controller
 {
     /**
      * @Route("partenaire/depot", name="partner_project_request", methods={"GET"})
+     *
      * @Security("has_role('ROLE_PARTNER')")
      *
      * @param Request $request
@@ -32,7 +33,7 @@ class ProjectRequestController extends Controller
             'projectAmountMin' => $projectManager->getMinProjectAmount(),
             'projectAmountMax' => $projectManager->getMaxProjectAmount(),
             'borrowingMotives' => $this->get('doctrine.orm.entity_manager')->getRepository(BorrowingMotive::class)->findBy([], ['rank' => 'ASC']),
-            'form'             => $request->getSession()->get('partnerProjectRequest', [])
+            'form'             => $request->getSession()->get('partnerProjectRequest', []),
         ];
 
         $request->getSession()->remove('partnerProjectRequest');
@@ -42,6 +43,7 @@ class ProjectRequestController extends Controller
 
     /**
      * @Route("partenaire/depot", name="partner_project_request_form", methods={"POST"})
+     *
      * @Security("has_role('ROLE_PARTNER')")
      *
      * @param Request                    $request
@@ -56,9 +58,9 @@ class ProjectRequestController extends Controller
         $entityManager         = $this->get('doctrine.orm.entity_manager');
         $partnerManager        = $this->get('unilend.service.partner_manager');
 
-        $formData    = $request->request->get('simulator');
-        $amount      = $formData['amount'] ?? null;
-        $duration    = $formData['duration'] ?? null;
+        $formData = $request->request->get('simulator');
+        $amount   = $formData['amount']   ?? null;
+        $duration = $formData['duration'] ?? null;
 
         try {
             if (empty($formData) || false === is_array($formData) || empty($formData['amount']) || empty($formData['duration'])) {
@@ -77,7 +79,8 @@ class ProjectRequestController extends Controller
             $project = $projectRequestManager->newProject($frontUser, $partnerManager->getPartner($partnerUser), ProjectsStatus::STATUS_REQUESTED, $amount, null, null, null, null, $duration);
             $project
                 ->setIdClientSubmitter($partnerUser)
-                ->setIdCompanySubmitter($partnerCompany);
+                ->setIdCompanySubmitter($partnerCompany)
+            ;
 
             $entityManager->flush($project);
 
@@ -93,8 +96,8 @@ class ProjectRequestController extends Controller
             $request->getSession()->set('partnerProjectRequest', [
                 'values' => [
                     'amount'   => $amount,
-                    'duration' => $duration
-                ]
+                    'duration' => $duration,
+                ],
             ]);
 
             return $this->redirect($request->headers->get('referer'));
@@ -103,7 +106,7 @@ class ProjectRequestController extends Controller
                 'class'    => __CLASS__,
                 'function' => __FUNCTION__,
                 'file'     => $exception->getFile(),
-                'line'     => $exception->getLine()
+                'line'     => $exception->getLine(),
             ]);
         }
 
@@ -112,7 +115,7 @@ class ProjectRequestController extends Controller
 
     /**
      * @Route("partenaire/depot/eligibilite/{hash}", name="partner_project_request_eligibility",
-     *     requirements={"hash":"[a-z0-9-]{32,36}"}, methods={"GET"})
+     * requirements={"hash": "[a-z0-9-]{32,36}"}, methods={"GET"})
      * @Security("has_role('ROLE_PARTNER')")
      *
      * @param string                     $hash
@@ -139,33 +142,34 @@ class ProjectRequestController extends Controller
             'duration' => $project->getPeriod(),
             'company'  => $project->getIdCompany()->getName(),
             'siren'    => $project->getIdCompany()->getSiren(),
-            'hash'     => $project->getHash()
+            'hash'     => $project->getHash(),
         ];
 
-        if ($project->getStatus() === ProjectsStatus::STATUS_CANCELLED) {
+        if (ProjectsStatus::STATUS_CANCELLED === $project->getStatus()) {
             $projectRequestManager       = $this->get('unilend.service.project_request_manager');
             $template['rejectionReason'] = $projectRequestManager->getPartnerMainRejectionReasonMessage($project);
         } else {
             $monthlyPaymentBoundaries = $projectManager->getMonthlyPaymentBoundaries($project->getAmount(), $project->getPeriod(), $project->getCommissionRateRepayment());
             $projectAbandonReasonList = $entityManager->getRepository(ProjectAbandonReason::class)
-                ->findBy(['status' => ProjectRejectionReason::STATUS_ONLINE], ['reason' => 'ASC']);
-            $partner                  = $this->get('unilend.service.partner_manager')->getPartner($partnerUser);
+                ->findBy(['status' => ProjectRejectionReason::STATUS_ONLINE], ['reason' => 'ASC'])
+            ;
+            $partner = $this->get('unilend.service.partner_manager')->getPartner($partnerUser);
 
             $template = $template + [
-                    'averageFundingDuration' => $projectManager->getAverageFundingDuration($project->getAmount()),
-                    'abandonReasons'         => $projectAbandonReasonList,
-                    'prospect'               => false === $partner->getProspect(),
-                    'payment'                => [
-                        'monthly'   => [
-                            'min' => $monthlyPaymentBoundaries['minimum'],
-                            'max' => $monthlyPaymentBoundaries['maximum']
-                        ],
-                        'interests' => [
-                            'min' => $monthlyPaymentBoundaries['minimum'] * $project->getPeriod() - $project->getAmount(),
-                            'max' => $monthlyPaymentBoundaries['maximum'] * $project->getPeriod() - $project->getAmount()
-                        ]
-                    ]
-                ];
+                'averageFundingDuration' => $projectManager->getAverageFundingDuration($project->getAmount()),
+                'abandonReasons'         => $projectAbandonReasonList,
+                'prospect'               => false === $partner->getProspect(),
+                'payment'                => [
+                    'monthly' => [
+                        'min' => $monthlyPaymentBoundaries['minimum'],
+                        'max' => $monthlyPaymentBoundaries['maximum'],
+                    ],
+                    'interests' => [
+                        'min' => $monthlyPaymentBoundaries['minimum'] * $project->getPeriod() - $project->getAmount(),
+                        'max' => $monthlyPaymentBoundaries['maximum'] * $project->getPeriod() - $project->getAmount(),
+                    ],
+                ],
+            ];
         }
 
         return $this->render('/partner_account/project_request_eligibility.html.twig', $template);
@@ -173,7 +177,7 @@ class ProjectRequestController extends Controller
 
     /**
      * @Route("partenaire/depot/details/{hash}", name="partner_project_request_details",
-     *     requirements={"hash":"[a-z0-9-]{32,36}"}, methods={"GET"})
+     * requirements={"hash": "[a-z0-9-]{32,36}"}, methods={"GET"})
      * @Security("has_role('ROLE_PARTNER')")
      *
      * @param string                     $hash
@@ -190,7 +194,7 @@ class ProjectRequestController extends Controller
             return $project;
         }
 
-        if ($project->getStatus() === ProjectsStatus::STATUS_CANCELLED) {
+        if (ProjectsStatus::STATUS_CANCELLED === $project->getStatus()) {
             return $this->redirectToRoute('partner_project_request_end', ['hash' => $project->getHash()]);
         }
 
@@ -198,8 +202,9 @@ class ProjectRequestController extends Controller
         $projectManager           = $this->get('unilend.service.project_manager');
         $client                   = $project->getIdCompany()->getIdClientOwner();
         $projectAbandonReasonList = $entityManager->getRepository(ProjectAbandonReason::class)
-            ->findBy(['status' => ProjectAbandonReason::STATUS_ONLINE], ['reason' => 'ASC']);
-        $partner                  = $this->get('unilend.service.partner_manager')->getPartner($partnerUser);
+            ->findBy(['status' => ProjectAbandonReason::STATUS_ONLINE], ['reason' => 'ASC'])
+        ;
+        $partner = $this->get('unilend.service.partner_manager')->getPartner($partnerUser);
 
         try {
             $activeExecutives = [];
@@ -212,7 +217,7 @@ class ProjectRequestController extends Controller
                 'function'   => __FUNCTION__,
                 'file'       => $exception->getFile(),
                 'line'       => $exception->getLine(),
-                'id_project' => $project->getIdProject()
+                'id_project' => $project->getIdProject(),
             ]);
         }
 
@@ -222,7 +227,7 @@ class ProjectRequestController extends Controller
             'monthlyPaymentBoundaries' => $projectManager->getMonthlyPaymentBoundaries($project->getAmount(), $project->getPeriod(), $project->getCommissionRateRepayment()),
             'abandonReasons'           => $projectAbandonReasonList,
             'attachments'              => $entityManager->getRepository(PartnerProjectAttachment::class)->findBy(['idPartner' => $partner], ['rank' => 'ASC']),
-            'activeExecutives'         => $activeExecutives
+            'activeExecutives'         => $activeExecutives,
         ];
 
         $session = $request->getSession()->get('partnerProjectRequest');
@@ -230,12 +235,12 @@ class ProjectRequestController extends Controller
 
         $request->getSession()->remove('partnerProjectRequest');
 
-        $title     = $values['contact']['title'] ?? $client->getTitle();
-        $lastName  = $values['contact']['lastName'] ?? $client->getLastName();
+        $title     = $values['contact']['title']     ?? $client->getTitle();
+        $lastName  = $values['contact']['lastName']  ?? $client->getLastName();
         $firstName = $values['contact']['firstName'] ?? $client->getFirstName();
-        $email     = $values['contact']['email'] ?? $this->removeEmailSuffix($client->getEmail());
-        $mobile    = $values['contact']['mobile'] ?? $client->getPhone();
-        $function  = $values['contact']['function'] ?? $client->getFonction();
+        $email     = $values['contact']['email']     ?? $this->removeEmailSuffix($client->getEmail());
+        $mobile    = $values['contact']['mobile']    ?? $client->getPhone();
+        $function  = $values['contact']['function']  ?? $client->getFonction();
         // If one (last name) of these fields is empty, we can consider that all the field is empty
         $firstExecutiveFound = $template['activeExecutives'][0] ?? null;
         if (empty($lastName) && null !== $firstExecutiveFound) {
@@ -250,6 +255,7 @@ class ProjectRequestController extends Controller
             foreach ($template['activeExecutives'] as $executive) {
                 if (mb_strtolower($executive['firstName'] . $executive['lastName']) === mb_strtolower($client->getFirstName() . $client->getLastName())) {
                     $contactInList = true;
+
                     break;
                 }
             }
@@ -258,13 +264,13 @@ class ProjectRequestController extends Controller
         $template['form']          = [
             'errors' => $session['errors'] ?? [],
             'values' => [
-                'contact'      => [
+                'contact' => [
                     'title'     => $title,
                     'lastName'  => $lastName,
                     'firstName' => $firstName,
                     'email'     => $email,
                     'mobile'    => $mobile,
-                    'function'  => $function
+                    'function'  => $function,
                 ],
                 'otherContact' => [
                     'title'     => false === $contactInList ? $client->getTitle() : '',
@@ -272,12 +278,12 @@ class ProjectRequestController extends Controller
                     'firstName' => false === $contactInList ? $client->getFirstName() : '',
                     'email'     => false === $contactInList ? $this->removeEmailSuffix($client->getEmail()) : '',
                     'mobile'    => false === $contactInList ? $client->getPhone() : '',
-                    'function'  => false === $contactInList ? $client->getFonction() : ''
+                    'function'  => false === $contactInList ? $client->getFonction() : '',
                 ],
-                'project'      => [
-                    'description' => $values['project']['description'] ?? $project->getComments()
-                ]
-            ]
+                'project' => [
+                    'description' => $values['project']['description'] ?? $project->getComments(),
+                ],
+            ],
         ];
 
         return $this->render('/partner_account/project_request_details.html.twig', $template);
@@ -285,15 +291,16 @@ class ProjectRequestController extends Controller
 
     /**
      * @Route("partenaire/depot/details/{hash}", name="partner_project_request_details_form",
-     *     requirements={"hash":"[a-z0-9-]{32,36}"}, methods={"POST"})
+     * requirements={"hash": "[a-z0-9-]{32,36}"}, methods={"POST"})
      * @Security("has_role('ROLE_PARTNER')")
      *
      * @param string                     $hash
      * @param Request                    $request
      * @param UserInterface|Clients|null $partnerUser
      *
-     * @return Response
      * @throws \Doctrine\ORM\OptimisticLockException
+     *
+     * @return Response
      */
     public function projectRequestDetailsFormAction(string $hash, Request $request, ?UserInterface $partnerUser): Response
     {
@@ -376,7 +383,7 @@ class ProjectRequestController extends Controller
         if (false === empty($errors)) {
             $request->getSession()->set('partnerProjectRequest', [
                 'errors' => $errors,
-                'values' => $request->request->all()
+                'values' => $request->request->all(),
             ]);
 
             return $this->redirectToRoute('partner_project_request_details', ['hash' => $hash]);
@@ -409,7 +416,8 @@ class ProjectRequestController extends Controller
             $project
                 ->getIdCompany()
                 ->setEmailDirigeant($email)
-                ->setEmailFacture($email);
+                ->setEmailFacture($email)
+            ;
 
             $entityManager->flush($project->getIdCompany());
         }
@@ -430,17 +438,18 @@ class ProjectRequestController extends Controller
 
         if (false === $submit) {
             return $this->redirectToRoute('partner_project_request_details', ['hash' => $hash]);
-        } elseif (false === in_array($project->getStatus(), [ProjectsStatus::STATUS_CANCELLED, ProjectsStatus::STATUS_REVIEW])) {
+        }
+        if (false === in_array($project->getStatus(), [ProjectsStatus::STATUS_CANCELLED, ProjectsStatus::STATUS_REVIEW])) {
             try {
-                $termsOfSaleManager = $this->get('unilend.service.terms_of_sale_manager');
-                $termsOfSaleManager->sendBorrowerEmail($project, $project->getIdCompanySubmitter());
+                $serviceTermsManager = $this->get('unilend.service.service_terms_manager');
+                $serviceTermsManager->sendBorrowerEmail($project, $project->getIdCompanySubmitter());
             } catch (\Exception $exception) {
                 $this->get('logger')->error('Error while sending terms of sale to partner borrower for project ' . $project->getIdProject() . ': ' . $exception->getMessage(), [
                     'id_project' => $project->getIdProject(),
                     'class'      => __CLASS__,
                     'function'   => __FUNCTION__,
                     'file'       => $exception->getFile(),
-                    'line'       => $exception->getLine()
+                    'line'       => $exception->getLine(),
                 ]);
             }
 
@@ -451,14 +460,16 @@ class ProjectRequestController extends Controller
     }
 
     /**
-     * @Route("partenaire/depot/publier/{hash}", name="partner_project_request_online", requirements={"hash":"[a-z0-9-]{32,36}"})
+     * @Route("partenaire/depot/publier/{hash}", name="partner_project_request_online", requirements={"hash": "[a-z0-9-]{32,36}"})
+     *
      * @Security("has_role('ROLE_PARTNER')")
      *
      * @param string                     $hash
      * @param UserInterface|Clients|null $partnerUser
      *
-     * @return Response
      * @throws \Doctrine\ORM\OptimisticLockException
+     *
+     * @return Response
      */
     public function projectRequestOnlineAction(string $hash, ?UserInterface $partnerUser): Response
     {
@@ -476,6 +487,7 @@ class ProjectRequestController extends Controller
 
     /**
      * @Route("partenaire/depot/eligibilite", name="partner_project_request_submit", methods={"POST"})
+     *
      * @Security("has_role('ROLE_PARTNER')")
      *
      * @param Request                    $request
@@ -497,7 +509,7 @@ class ProjectRequestController extends Controller
             return $project;
         }
 
-        if ($project->getStatus() === ProjectsStatus::STATUS_REQUESTED) {
+        if (ProjectsStatus::STATUS_REQUESTED === $project->getStatus()) {
             /** @var \projects $projectData */
             $projectData = $this->get('unilend.service.entity_manager')->getRepository('projects');
             $projectData->get($project->getIdProject());
@@ -511,6 +523,7 @@ class ProjectRequestController extends Controller
 
     /**
      * @Route("partenaire/depot/abandon", name="partner_project_request_abandon", methods={"POST"})
+     *
      * @Security("has_role('ROLE_PARTNER')")
      *
      * @param Request                    $request
@@ -536,7 +549,7 @@ class ProjectRequestController extends Controller
         $abandonReasonRepository = $entityManager->getRepository(ProjectAbandonReason::class);
 
         if (
-            $project->getStatus() !== ProjectsStatus::STATUS_CANCELLED
+            ProjectsStatus::STATUS_CANCELLED !== $project->getStatus()
             && $request->request->get('reason')
             && ($abandonReason = $abandonReasonRepository->findBy(['idAbandon' => $request->request->get('reason')]))
         ) {
@@ -548,7 +561,8 @@ class ProjectRequestController extends Controller
     }
 
     /**
-     * @Route("partenaire/depot/fin/{hash}", name="partner_project_request_end", requirements={"hash":"[a-z0-9-]{32,36}"})
+     * @Route("partenaire/depot/fin/{hash}", name="partner_project_request_end", requirements={"hash": "[a-z0-9-]{32,36}"})
+     *
      * @Security("has_role('ROLE_PARTNER')")
      *
      * @param string                     $hash
@@ -572,6 +586,7 @@ class ProjectRequestController extends Controller
                     'title'   => $translator->trans('partner-project-end_status-abandon-title'),
                     'message' => $translator->trans('partner-project-end_status-abandon-message'),
                 ];
+
                 break;
             case ProjectsStatus::STATUS_REVIEW:
             default:
@@ -579,6 +594,7 @@ class ProjectRequestController extends Controller
                     'title'   => $translator->trans('partner-project-end_status-completed-title'),
                     'message' => $translator->trans('partner-project-end_status-completed-message'),
                 ];
+
                 break;
         }
 

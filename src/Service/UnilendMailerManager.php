@@ -658,8 +658,8 @@ class UnilendMailerManager
                     'Could not send email: annonce-mise-en-ligne-emprunteur - Exception: ' . $exception->getMessage(),
                     ['id_mail_template' => $message->getTemplateId(), 'id_client' => $company->getIdClientOwner()->getIdClient(), 'class' => __CLASS__, 'function' => __FUNCTION__]
                 );
+            }
         }
-    }
     }
 
     /**
@@ -1743,20 +1743,20 @@ class UnilendMailerManager
     }
 
     /**
-     * @param ProjectCgv     $termsOfSale
+     * @param ProjectCgv     $serviceTerms
      * @param Companies|null $companySubmitter
      */
-    public function sendProjectTermsOfSale(ProjectCgv $termsOfSale, Companies $companySubmitter = null)
+    public function sendProjectServiceTerms(ProjectCgv $serviceTerms, Companies $companySubmitter = null)
     {
         $mailType = 'signature-universign-de-cgv';
-        $client   = $termsOfSale->getIdProject()->getIdCompany()->getIdClientOwner();
+        $client   = $serviceTerms->getIdProject()->getIdCompany()->getIdClientOwner();
         $keywords = [
             'firstName'                  => $client->getFirstName(),
-            'amount'                     => $this->oFicelle->formatNumber($termsOfSale->getIdProject()->getAmount(), 0),
-            'companyName'                => $termsOfSale->getIdProject()->getIdCompany()->getName(),
-            'universignTosLink'          => $this->sFUrl . $termsOfSale->getUrlPath(),
-            'fundsCommissionRate'        => $this->oFicelle->formatNumber($termsOfSale->getIdProject()->getCommissionRateFunds(), 1),
-            'repaymentCommissionRate'    => $this->oFicelle->formatNumber($termsOfSale->getIdProject()->getCommissionRateRepayment(), 1),
+            'amount'                     => $this->oFicelle->formatNumber($serviceTerms->getIdProject()->getAmount(), 0),
+            'companyName'                => $serviceTerms->getIdProject()->getIdCompany()->getName(),
+            'universignTosLink'          => $this->sFUrl . $serviceTerms->getUrlPath(),
+            'fundsCommissionRate'        => $this->oFicelle->formatNumber($serviceTerms->getIdProject()->getCommissionRateFunds(), 1),
+            'repaymentCommissionRate'    => $this->oFicelle->formatNumber($serviceTerms->getIdProject()->getCommissionRateRepayment(), 1),
             'borrowerServicePhoneNumber' => $this->settingsRepository->findOneBy(['type' => 'Téléphone emprunteur'])->getValue(),
             'borrowerServiceEmail'       => $this->settingsRepository->findOneBy(['type' => 'Adresse emprunteur'])->getValue(),
         ];

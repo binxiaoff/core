@@ -9,7 +9,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Unilend\Entity\{Clients, ProjectAbandonReason, ProjectCgv, Projects, ProjectsComments, ProjectsStatus, ProjectsStatusHistory};
 use Unilend\Repository\ProjectsRepository;
-use Unilend\Service\TermsOfSale\TermsOfSaleManager;
+use Unilend\Service\ServiceTerms\ServiceTermsManager;
 
 class ProjectsListController extends Controller
 {
@@ -92,21 +92,21 @@ class ProjectsListController extends Controller
         }
 
         try {
-            $termsOfSaleManager = $this->get('unilend.service.terms_of_sale_manager');
-            $termsOfSaleManager->sendBorrowerEmail($project);
+            $serviceTermsManager = $this->get('unilend.service.service_terms_manager');
+            $serviceTermsManager->sendBorrowerEmail($project);
         } catch (\Exception $exception) {
             switch ($exception->getCode()) {
-                case TermsOfSaleManager::EXCEPTION_CODE_INVALID_EMAIL:
+                case ServiceTermsManager::EXCEPTION_CODE_INVALID_EMAIL:
                     return new JsonResponse([
                         'error'   => true,
                         'message' => $translator->trans('partner-project-list_popup-project-tos-message-error-email'),
                     ]);
-                case TermsOfSaleManager::EXCEPTION_CODE_INVALID_PHONE_NUMBER:
+                case ServiceTermsManager::EXCEPTION_CODE_INVALID_PHONE_NUMBER:
                     return new JsonResponse([
                         'error'   => true,
                         'message' => $translator->trans('partner-project-list_popup-project-tos-message-error-phone-number'),
                     ]);
-                case TermsOfSaleManager::EXCEPTION_CODE_PDF_FILE_NOT_FOUND:
+                case ServiceTermsManager::EXCEPTION_CODE_PDF_FILE_NOT_FOUND:
                     return new JsonResponse([
                         'error'   => true,
                         'message' => $translator->trans('partner-project-list_popup-project-tos-message-error-file-not-found'),
@@ -139,7 +139,7 @@ class ProjectsListController extends Controller
         $translator                     = $this->get('translator');
         $entityManager                  = $this->get('doctrine.orm.entity_manager');
         $projectStatusHistoryRepository = $entityManager->getRepository(ProjectsStatusHistory::class);
-        $termsOfSaleRepository          = $entityManager->getRepository(ProjectCgv::class);
+        $serviceTermsRepository         = $entityManager->getRepository(ProjectCgv::class);
 
         foreach ($projects as $project) {
             $display[$project->getIdProject()] = [
@@ -161,11 +161,11 @@ class ProjectsListController extends Controller
                 'tos'        => [],
             ];
 
-            $termsOfSale = $termsOfSaleRepository->findOneBy(['idProject' => $project]);
+            $serviceTerms = $serviceTermsRepository->findOneBy(['idProject' => $project]);
 
-            if ($termsOfSale) {
+            if ($serviceTerms) {
                 $dateFormatter                              = new \IntlDateFormatter($this->getParameter('locale'), \IntlDateFormatter::MEDIUM, \IntlDateFormatter::SHORT);
-                $display[$project->getIdProject()]['tos'][] = $dateFormatter->format($termsOfSale->getAdded());
+                $display[$project->getIdProject()]['tos'][] = $dateFormatter->format($serviceTerms->getAdded());
             }
 
             if ($abandoned) {
