@@ -28,20 +28,20 @@ $doc.on(Utility.clickEvent, '.table-projects [data-action]:not([data-action="mem
   var $modal = $('#modal-partner-project-' + action)
   var $form = $modal.find('form')
 
-  if (action === 'tos') {
+  if (action === 'serviceTerms') {
     $form.find('table').hide()
-    var tos = Utility.convertStringToJson($project.data('details-tos'))
-    if (tos.length > 0) {
-      var tosHtml = ''
-      $.each(tos, function (i, date) {
-        tosHtml += Templating.replace('<tr>\
+    var serviceTerms = Utility.convertStringToJson($project.data('details-service-terms'))
+    if (serviceTerms.length > 0) {
+      var serviceTermsHtml = ''
+      $.each(serviceTerms, function (i, date) {
+        serviceTermsHtml += Templating.replace('<tr>\
                     <td>{{ date }}</td>\
                 </tr>', {
           date: date,
         })
       })
       $form.find('table').show()
-      $form.find('table tbody').html(tosHtml)
+      $form.find('table tbody').html(serviceTermsHtml)
     }
   }
 
@@ -55,7 +55,7 @@ $doc.on(Utility.clickEvent, '.table-projects [data-action]:not([data-action="mem
   $modal.uiModal('open')
 })
 
-$doc.on('submit', '#modal-partner-project-tos form', function (event) {
+$doc.on('submit', '#modal-partner-project-service-terms form', function (event) {
   event.preventDefault()
   var $form = $(this)
   var $modal = $(this).parents('[data-modal]')

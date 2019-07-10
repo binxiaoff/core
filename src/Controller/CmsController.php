@@ -16,11 +16,11 @@ use Unilend\Service\Simulator\EntityManager as EntityManagerSimulator;
 
 class CmsController extends AbstractController
 {
-    public const CMS_TEMPLATE_BIG_HEADER = 1;
-    public const CMS_TEMPLATE_NAV        = 2;
-    public const CMS_TEMPLATE_TOS        = 5;
+    private const CMS_TEMPLATE_BIG_HEADER    = 1;
+    private const CMS_TEMPLATE_NAV           = 2;
+    private const CMS_TEMPLATE_SERVICE_TERMS = 5;
 
-    public const SLUG_ELEMENT_NAV_IMAGE = 'image-header';
+    private const SLUG_ELEMENT_NAV_IMAGE = 'image-header';
 
     /**
      * @Route("/", name="home")
@@ -88,8 +88,8 @@ class CmsController extends AbstractController
                 return $this->renderCmsBigHeader($finalElements['content']);
             case self::CMS_TEMPLATE_NAV:
                 return $this->renderCmsNav($tree, $finalElements['content'], $entityManagerSimulator);
-            case self::CMS_TEMPLATE_TOS:
-                return $this->redirectToRoute('lenders_terms_of_sales');
+            case self::CMS_TEMPLATE_SERVICE_TERMS:
+                return $this->redirectToRoute('service_terms');
             default:
                 return new RedirectResponse('/');
         }

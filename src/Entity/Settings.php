@@ -3,22 +3,20 @@
 namespace Unilend\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Unilend\Entity\Traits\TimestampableTrait;
 
 /**
- * Settings
- *
  * @ORM\Table(name="settings")
  * @ORM\Entity
+ * @ORM\HasLifecycleCallbacks
  */
 class Settings
 {
-    const TYPE_AUTOBID_GLOBAL_SWITCH = 'Auto-bid global switch';
-    const TYPE_AUTOBID_STEP          = 'Auto-bid step';
+    use TimestampableTrait;
 
-    const TYPE_LENDER_TOS_LEGAL_ENTITY   = 'Lien conditions generales inscription preteur societe';
-    const TYPE_LENDER_TOS_NATURAL_PERSON = 'Lien conditions generales inscription preteur particulier';
-    const TYPE_DATE_LENDER_TOS           = 'Date nouvelles CGV avec 2 mandats';
-    const TYPE_BORROWER_TOS              = 'Lien conditions generales depot dossier';
+    public const TYPE_AUTOBID_GLOBAL_SWITCH = 'Auto-bid global switch';
+    public const TYPE_AUTOBID_STEP          = 'Auto-bid step';
+    public const TYPE_SERVICE_TERMS_PAGE_ID = 'SERVICE_TERMS_PAGE_ID';
 
     /**
      * @var string
@@ -35,20 +33,6 @@ class Settings
     private $value;
 
     /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="added", type="datetime")
-     */
-    private $added;
-
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="updated", type="datetime", nullable=true)
-     */
-    private $updated;
-
-    /**
      * @var int
      *
      * @ORM\Column(name="id_setting", type="integer")
@@ -57,11 +41,7 @@ class Settings
      */
     private $idSetting;
 
-
-
     /**
-     * Set type
-     *
      * @param string $type
      *
      * @return Settings
@@ -74,8 +54,6 @@ class Settings
     }
 
     /**
-     * Get type
-     *
      * @return string
      */
     public function getType()
@@ -84,8 +62,6 @@ class Settings
     }
 
     /**
-     * Set value
-     *
      * @param string $value
      *
      * @return Settings
@@ -98,8 +74,6 @@ class Settings
     }
 
     /**
-     * Get value
-     *
      * @return string
      */
     public function getValue()
@@ -108,57 +82,7 @@ class Settings
     }
 
     /**
-     * Set added
-     *
-     * @param \DateTime $added
-     *
-     * @return Settings
-     */
-    public function setAdded($added)
-    {
-        $this->added = $added;
-
-        return $this;
-    }
-
-    /**
-     * Get added
-     *
-     * @return \DateTime
-     */
-    public function getAdded()
-    {
-        return $this->added;
-    }
-
-    /**
-     * Set updated
-     *
-     * @param \DateTime $updated
-     *
-     * @return Settings
-     */
-    public function setUpdated($updated)
-    {
-        $this->updated = $updated;
-
-        return $this;
-    }
-
-    /**
-     * Get updated
-     *
-     * @return \DateTime
-     */
-    public function getUpdated()
-    {
-        return $this->updated;
-    }
-
-    /**
-     * Get idSetting
-     *
-     * @return integer
+     * @return int
      */
     public function getIdSetting()
     {

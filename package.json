@@ -116,7 +116,7 @@
     "MapView": "./assets/js/app/components/MapView.js",
     "ChartView": "./assets/js/app/components/ChartView.js",
     "Modal": "./assets/js/app/components/Modal.js",
-    "ModalTOS": "./assets/js/app/components/ModalTOS.js",
+    "ModalServiceTerms": "./assets/js/app/components/ModalServiceTerms.js",
     "Spinner": "./assets/js/app/components/Spinner.js",
     "SpinnerButton": "./assets/js/app/components/SpinnerButton.js",
     "ProgressBar": "./assets/js/app/components/ProgressBar.js",

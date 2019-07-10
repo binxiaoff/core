@@ -201,7 +201,7 @@ use Unilend\Entity\ClientsStatus;
 <div class="row">
     <div class="col-md-6">
         <h3>CGV</h3>
-        <?php if (false === empty($this->termsOfSalesAcceptation)) : ?>
+        <?php if (false === empty($this->serviceTermsAcceptation)) : ?>
             <table class="table table-hover table-striped">
                 <thead>
                 <tr>
@@ -211,13 +211,13 @@ use Unilend\Entity\ClientsStatus;
                 </tr>
                 </thead>
                 <tbody>
-                <?php foreach ($this->termsOfSalesAcceptation as $termsOfSales) : ?>
-                    <?php /** @var \Unilend\Entity\AcceptationsLegalDocs $termsOfSales */ ?>
-                    <?php $tree = $this->treeRepository->findOneBy(['idTree' => $termsOfSales->getIdLegalDoc(), 'idLangue' => $this->language]); ?>
+                <?php foreach ($this->serviceTermsAcceptation as $serviceTerms) : ?>
+                    <?php /** @var \Unilend\Entity\AcceptationsLegalDocs $serviceTerms */ ?>
+                    <?php $tree = $this->treeRepository->findOneBy(['idTree' => $serviceTerms->getLegalDoc(), 'idLangue' => $this->language]); ?>
                     <tr>
-                        <td><?= $termsOfSales->getIdLegalDoc() ?></td>
+                        <td><?= $serviceTerms->getLegalDoc() ?></td>
                         <td><?= $tree->getAdded()->format('d/m/Y') ?></td>
-                        <td><?= $termsOfSales->getAdded()->format('d/m/Y H:i') ?></td>
+                        <td><?= $serviceTerms->getAdded()->format('d/m/Y H:i') ?></td>
                     </tr>
                 <?php endforeach; ?>
                 </tbody>

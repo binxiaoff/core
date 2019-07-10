@@ -239,7 +239,7 @@ use Unilend\Entity\{
                 <?php if ($this->client->isNaturalPerson()) : ?>
                     <li><a href="#fiscal-history-tab">Historique fiscal</a></li>
                 <?php endif; ?>
-                <li><a href="#tos-tab">Acceptation CGV</a></li>
+                <li><a href="#service-terms-tab">Acceptation CGV</a></li>
             </ul>
             <div id="client-status-tab">
                 <div class="row">
@@ -276,7 +276,7 @@ use Unilend\Entity\{
                     <?php $this->fireView('partials/fiscal_history') ?>
                 </div>
             <?php endif; ?>
-            <div id="tos-tab">
+            <div id="service-terms-tab">
                 <?php $this->fireView('../blocs/acceptedLegalDocumentList'); ?>
             </div>
         </div>

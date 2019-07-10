@@ -3,22 +3,26 @@
 namespace Unilend\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Unilend\Entity\Traits\TimestampableTrait;
 
 /**
- * AcceptationsLegalDocs
- *
- * @ORM\Table(name="acceptations_legal_docs", indexes={@ORM\Index(name="id_client", columns={"id_client"})})
+ * @ORM\Table(name="acceptations_legal_docs")
  * @ORM\Entity(repositoryClass="Unilend\Repository\AcceptationLegalDocsRepository")
  * @ORM\HasLifecycleCallbacks
  */
 class AcceptationsLegalDocs
 {
+    use TimestampableTrait;
+
     /**
-     * @var int
+     * @var Tree
      *
-     * @ORM\Column(name="id_legal_doc", type="integer")
+     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Tree")
+     * @ORM\JoinColumns({
+     *     @ORM\JoinColumn(name="id_legal_doc", referencedColumnName="id_tree", nullable=false)
+     * })
      */
-    private $idLegalDoc;
+    private $legalDoc;
 
     /**
      * @var string
@@ -28,28 +32,14 @@ class AcceptationsLegalDocs
     private $pdfName;
 
     /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="added", type="datetime")
-     */
-    private $added;
-
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="updated", type="datetime", nullable=true)
-     */
-    private $updated;
-
-    /**
-     * @var \Unilend\Entity\Clients
+     * @var Clients
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\Clients")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_client", referencedColumnName="id_client", nullable=false)
+     *     @ORM\JoinColumn(name="id_client", referencedColumnName="id_client", nullable=false)
      * })
      */
-    private $idClient;
+    private $client;
 
     /**
      * @var int
@@ -61,33 +51,33 @@ class AcceptationsLegalDocs
     private $idAcceptation;
 
     /**
-     * @param int $idLegalDoc
+     * @param Tree $legalDoc
      *
      * @return AcceptationsLegalDocs
      */
-    public function setIdLegalDoc(int $idLegalDoc): AcceptationsLegalDocs
+    public function setLegalDoc(Tree $legalDoc): AcceptationsLegalDocs
     {
-        $this->idLegalDoc = $idLegalDoc;
+        $this->legalDoc = $legalDoc;
 
         return $this;
     }
 
     /**
-     * @return int
+     * @return Tree
      */
-    public function getIdLegalDoc(): int
+    public function getLegalDoc(): Tree
     {
-        return $this->idLegalDoc;
+        return $this->legalDoc;
     }
 
     /**
-     * @param Clients $idClient
+     * @param Clients $client
      *
      * @return AcceptationsLegalDocs
      */
-    public function setIdClient(Clients $idClient): AcceptationsLegalDocs
+    public function setClient(Clients $client): AcceptationsLegalDocs
     {
-        $this->idClient = $idClient;
+        $this->client = $client;
 
         return $this;
     }
@@ -95,75 +85,17 @@ class AcceptationsLegalDocs
     /**
      * @return Clients
      */
-    public function getIdClient(): Clients
+    public function getClient(): Clients
     {
-        return $this->idClient;
+        return $this->client;
     }
 
     /**
-     * @param \DateTime $added
-     *
-     * @return AcceptationsLegalDocs
-     */
-    public function setAdded(\DateTime $added): AcceptationsLegalDocs
-    {
-        $this->added = $added;
-
-        return $this;
-    }
-
-    /**
-     * @return \DateTime
-     */
-    public function getAdded(): \DateTime
-    {
-        return $this->added;
-    }
-
-    /**
-     * @param \DateTime|null $updated
-     *
-     * @return AcceptationsLegalDocs
-     */
-    public function setUpdated(?\DateTime $updated): AcceptationsLegalDocs
-    {
-        $this->updated = $updated;
-
-        return $this;
-    }
-
-    /**
-     * @return \DateTime|null
-     */
-    public function getUpdated(): ?\DateTime
-    {
-        return $this->updated;
-    }
-
-    /**
-     * @return integer
+     * @return int
      */
     public function getIdAcceptation(): int
     {
         return $this->idAcceptation;
-    }
-
-    /**
-     * @ORM\PrePersist
-     */
-    public function setAddedValue()
-    {
-        if (! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
-            $this->added = new \DateTime();
-        }
-    }
-
-    /**
-     * @ORM\PreUpdate
-     */
-    public function setUpdatedValue()
-    {
-        $this->updated = new \DateTime();
     }
 
     /**
@@ -176,7 +108,6 @@ class AcceptationsLegalDocs
         $this->pdfName = $pdfName;
 
         return $this;
-
     }
 
     /**

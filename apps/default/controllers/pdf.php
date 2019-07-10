@@ -635,7 +635,7 @@ class pdfController extends bootstrap
 
         if (false === file_exists($path . $oProjectCgv->name)) {
             // Recuperation du pdf du tree
-            $elements = $this->tree_elements->select('id_tree = "' . $oProjectCgv->id_tree . '" AND id_element = ' . Elements::TYPE_PDF_TERMS_OF_SALE . ' AND id_langue = "' . $this->language . '"');
+            $elements = $this->tree_elements->select('id_tree = "' . $oProjectCgv->id_tree . '" AND id_element = ' . Elements::TYPE_PDF_SERVICE_TERMS . ' AND id_langue = "' . $this->language . '"');
 
             if (false === isset($elements[0]['value']) || '' == $elements[0]['value']) {
                 header('Location: ' . $this->lurl);

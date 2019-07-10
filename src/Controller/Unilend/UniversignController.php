@@ -21,7 +21,7 @@ use Unilend\Entity\WireTransferOutUniversign;
 
 class UniversignController extends Controller
 {
-    const SIGNATURE_TYPE_PROJECT = 'projet';
+    public const SIGNATURE_TYPE_PROJECT = 'projet';
 
     /**
      * @Route(
@@ -33,6 +33,7 @@ class UniversignController extends Controller
      *         "clientHash": "[0-9a-f-]{32,36}"
      *     }
      * )
+     *
      * @param string $signatureType
      * @param int    $signatureId
      * @param string $clientHash
@@ -51,11 +52,13 @@ class UniversignController extends Controller
 
         switch ($signatureType) {
             case self::SIGNATURE_TYPE_PROJECT:
-                $status                     = [UniversignEntityInterface::STATUS_PENDING, UniversignEntityInterface::STATUS_SIGNED];
-                $mandate                    = $entityManager->getRepository(ClientsMandats::class)
-                    ->findOneBy(['idProject' => $signatureId, 'status' => $status], ['added' => 'DESC']);
-                $proxy                      = $entityManager->getRepository(ProjectsPouvoir::class)
-                    ->findOneBy(['idProject' => $signatureId, 'status' => $status], ['added' => 'DESC']);
+                $status  = [UniversignEntityInterface::STATUS_PENDING, UniversignEntityInterface::STATUS_SIGNED];
+                $mandate = $entityManager->getRepository(ClientsMandats::class)
+                    ->findOneBy(['idProject' => $signatureId, 'status' => $status], ['added' => 'DESC'])
+                ;
+                $proxy = $entityManager->getRepository(ProjectsPouvoir::class)
+                    ->findOneBy(['idProject' => $signatureId, 'status' => $status], ['added' => 'DESC'])
+                ;
 
                 if (null === $mandate || null === $proxy) {
                     return $this->redirectToRoute('home');
@@ -63,7 +66,8 @@ class UniversignController extends Controller
 
                 if ($this->get('unilend.service.beneficial_owner_manager')->projectNeedsBeneficialOwnerDeclaration($proxy->getIdProject())) {
                     $beneficialOwnerDeclaration = $entityManager->getRepository(ProjectBeneficialOwnerUniversign::class)
-                        ->findOneBy(['idProject' => $signatureId, 'status' => $status], ['added' => 'DESC']);
+                        ->findOneBy(['idProject' => $signatureId, 'status' => $status], ['added' => 'DESC'])
+                    ;
 
                     if (null === $beneficialOwnerDeclaration) {
                         return $this->redirectToRoute('home');
@@ -74,21 +78,27 @@ class UniversignController extends Controller
 
                 $documents[] = $proxy;
                 $documents[] = $mandate;
+
                 break;
             case ProjectsPouvoir::DOCUMENT_TYPE:
                 $documents[] = $entityManager->getRepository(ProjectsPouvoir::class)->find($signatureId);
+
                 break;
             case ClientsMandats::DOCUMENT_TYPE:
                 $documents[] = $entityManager->getRepository(ClientsMandats::class)->find($signatureId);
+
                 break;
             case ProjectCgv::DOCUMENT_TYPE:
                 $documents[] = $entityManager->getRepository(ProjectCgv::class)->find($signatureId);
+
                 break;
             case WireTransferOutUniversign::DOCUMENT_TYPE:
                 $documents[] = $entityManager->getRepository(WireTransferOutUniversign::class)->find($signatureId);
+
                 break;
             case ProjectBeneficialOwnerUniversign::DOCUMENT_TYPE:
                 $documents[] = $entityManager->getRepository(ProjectBeneficialOwnerUniversign::class)->find($signatureId);
+
                 break;
             default:
                 return $this->redirectToRoute('home');
@@ -107,12 +117,14 @@ class UniversignController extends Controller
                     ) {
                         $documentClient = $document->getIdProject()->getIdCompany()->getIdClientOwner();
                     }
+
                     break;
                 case ClientsMandats::class:
                     /** @var ClientsMandats $document */
                     if ($document->getIdClient() instanceof Clients) {
                         $documentClient = $document->getIdClient();
                     }
+
                     break;
                 case WireTransferOutUniversign::class:
                     /** @var WireTransferOutUniversign $document */
@@ -122,6 +134,7 @@ class UniversignController extends Controller
                     ) {
                         $documentClient = $document->getIdWireTransferOut()->getClient();
                     }
+
                     break;
                 case ProjectBeneficialOwnerUniversign::class:
                     /** @var ProjectBeneficialOwnerUniversign $document */
@@ -131,6 +144,7 @@ class UniversignController extends Controller
                     ) {
                         $documentClient = $document->getIdProject()->getIdCompany()->getIdClientOwner();
                     }
+
                     break;
             }
 
@@ -142,7 +156,7 @@ class UniversignController extends Controller
         $universignManager = $this->get('unilend.frontbundle.service.universign_manager');
         $template          = [
             'documents'           => [],
-            'borrowerAccountLink' => $this->generateUrl('borrower_account_profile')
+            'borrowerAccountLink' => $this->generateUrl('borrower_account_profile'),
         ];
 
         foreach ($documents as $document) {
@@ -167,7 +181,7 @@ class UniversignController extends Controller
                 'pdfLink'    => $pdfLink,
                 'name'       => $this->getDocumentTypeTranslationLabel($document),
                 'status'     => $this->getStatusTranslationLabel($document),
-                'universign' => $document
+                'universign' => $document,
             ];
         }
 
@@ -178,12 +192,12 @@ class UniversignController extends Controller
      * @Route(
      *     "/universign/pouvoir/{proxyId}/{universignUpdate}",
      *     name="universign_proxy_generation_no_update",
-     *     requirements={"proxyId":"\d+", "universignUpdate":"\w+"}
+     *     requirements={"proxyId": "\d+", "universignUpdate": "\w+"}
      * )
-     * @Route("/universign/pouvoir/{proxyId}", name="universign_proxy_generation", requirements={"proxyId":"\d+"})
+     * @Route("/universign/pouvoir/{proxyId}", name="universign_proxy_generation", requirements={"proxyId": "\d+"})
      *
      * @param int         $proxyId
-     * @param null|string $universignUpdate
+     * @param string|null $universignUpdate
      *
      * @return Response
      */
@@ -196,7 +210,7 @@ class UniversignController extends Controller
         if (
             $proxy
             && UniversignEntityInterface::STATUS_PENDING === $proxy->getStatus()
-            && ($universignUpdate == 'NoUpdateUniversign' && false === empty($proxy->getUrlUniversign()) || $universignManager->createProxy($proxy))
+            && ('NoUpdateUniversign' == $universignUpdate && false === empty($proxy->getUrlUniversign()) || $universignManager->createProxy($proxy))
         ) {
             return $this->redirect($proxy->getUrlUniversign());
         }
@@ -205,7 +219,7 @@ class UniversignController extends Controller
     }
 
     /**
-     * @Route("/universign/mandat/{mandateId}", name="universign_mandate_generation", requirements={"mandateId":"\d+"})
+     * @Route("/universign/mandat/{mandateId}", name="universign_mandate_generation", requirements={"mandateId": "\d+"})
      *
      * @param int $mandateId
      *
@@ -229,7 +243,7 @@ class UniversignController extends Controller
     }
 
     /**
-     * @Route("/universign/projet/{projectId}", name="universign_project_generation", requirements={"projectId":"\d+"})
+     * @Route("/universign/projet/{projectId}", name="universign_project_generation", requirements={"projectId": "\d+"})
      *
      * @param int $projectId
      *
@@ -237,14 +251,16 @@ class UniversignController extends Controller
      */
     public function createProjectAction($projectId)
     {
-        $entityManager              = $this->get('doctrine.orm.entity_manager');
-        $universignManager          = $this->get('unilend.frontbundle.service.universign_manager');
-        $beneficialOwnerManager     = $this->get('unilend.service.beneficial_owner_manager');
-        $project                    = $entityManager->getRepository(Projects::class)->find($projectId);
-        $mandate                    = $entityManager->getRepository(ClientsMandats::class)
-            ->findOneBy(['idProject' => $projectId, 'status' => UniversignEntityInterface::STATUS_PENDING], ['added' => 'DESC']);
-        $proxy                      = $entityManager->getRepository(ProjectsPouvoir::class)
-            ->findOneBy(['idProject' => $projectId, 'status' => UniversignEntityInterface::STATUS_PENDING], ['added' => 'DESC']);
+        $entityManager          = $this->get('doctrine.orm.entity_manager');
+        $universignManager      = $this->get('unilend.frontbundle.service.universign_manager');
+        $beneficialOwnerManager = $this->get('unilend.service.beneficial_owner_manager');
+        $project                = $entityManager->getRepository(Projects::class)->find($projectId);
+        $mandate                = $entityManager->getRepository(ClientsMandats::class)
+            ->findOneBy(['idProject' => $projectId, 'status' => UniversignEntityInterface::STATUS_PENDING], ['added' => 'DESC'])
+        ;
+        $proxy = $entityManager->getRepository(ProjectsPouvoir::class)
+            ->findOneBy(['idProject' => $projectId, 'status' => UniversignEntityInterface::STATUS_PENDING], ['added' => 'DESC'])
+        ;
 
         if (null === $project || null === $mandate || null === $proxy) {
             return $this->redirectToRoute('home');
@@ -252,7 +268,8 @@ class UniversignController extends Controller
 
         if ($beneficialOwnerManager->projectNeedsBeneficialOwnerDeclaration($project)) {
             $beneficialOwnerDeclaration = $entityManager->getRepository(ProjectBeneficialOwnerUniversign::class)
-                ->findOneBy(['idProject' => $projectId, 'status' => UniversignEntityInterface::STATUS_PENDING], ['added' => 'DESC']);
+                ->findOneBy(['idProject' => $projectId, 'status' => UniversignEntityInterface::STATUS_PENDING], ['added' => 'DESC'])
+            ;
 
             if (
                 null !== $beneficialOwnerDeclaration
@@ -280,23 +297,23 @@ class UniversignController extends Controller
     }
 
     /**
-     * @Route("/universign/cgv_emprunteurs/{tosId}/{tosName}", name="universign_tos_generation", requirements={"tosId":"\d+"})
+     * @Route("/universign/cgv_emprunteurs/{serviceTermsId}/{serviceTermsName}", name="universign_service_terms_generation", requirements={"serviceTermsId": "\d+"})
      *
-     * @param int    $tosId
-     * @param string $tosName
+     * @param int    $serviceTermsId
+     * @param string $serviceTermsName
      *
      * @return Response
      */
-    public function createTosAction($tosId, $tosName)
+    public function createServiceTermsAction($serviceTermsId, $serviceTermsName)
     {
-        $entityManager     = $this->get('doctrine.orm.entity_manager');
-        $universignManager = $this->get('unilend.frontbundle.service.universign_manager');
-        $tos               = $entityManager->getRepository(ProjectCgv::class)->find($tosId);
+        $entityManager       = $this->get('doctrine.orm.entity_manager');
+        $universignManager   = $this->get('unilend.frontbundle.service.universign_manager');
+        $projectServiceTerms = $entityManager->getRepository(ProjectCgv::class)->find($serviceTermsId);
 
-        if ($tos && $tos->getStatus() == UniversignEntityInterface::STATUS_PENDING && $tosName === $tos->getName()) {
-            $tosLastUpdateDate = $tos->getLastUpdated();
-            if ($tosLastUpdateDate->format('Y-m-d') === date('Y-m-d') && false === empty($tos->getUrlUniversign()) || $universignManager->createTos($tos)) {
-                return $this->redirect($tos->getUrlUniversign());
+        if ($projectServiceTerms && UniversignEntityInterface::STATUS_PENDING == $projectServiceTerms->getStatus() && $serviceTermsName === $projectServiceTerms->getName()) {
+            $serviceTermsLastUpdateDate = $projectServiceTerms->getLastUpdated();
+            if ($serviceTermsLastUpdateDate->format('Y-m-d') === date('Y-m-d') && false === empty($projectServiceTerms->getUrlUniversign()) || $universignManager->createServiceTerms($projectServiceTerms)) {
+                return $this->redirect($projectServiceTerms->getUrlUniversign());
             }
         }
 
@@ -304,10 +321,10 @@ class UniversignController extends Controller
     }
 
     /**
-     * @Route("/pdf/virement_emprunteurs/{wireTransferOutId}/demande_virement_tiers_{clientHash}.pdf", name="wire_transfer_out_request_pdf", requirements={"wireTransferOutId":"\d+", "clientHash": "[0-9a-f-]{32,36}"})
+     * @Route("/pdf/virement_emprunteurs/{wireTransferOutId}/demande_virement_tiers_{clientHash}.pdf", name="wire_transfer_out_request_pdf", requirements={"wireTransferOutId": "\d+", "clientHash": "[0-9a-f-]{32,36}"})
      *
-     * @param string  $clientHash
-     * @param int     $wireTransferOutId
+     * @param string $clientHash
+     * @param int    $wireTransferOutId
      *
      * @return Response
      */
@@ -342,7 +359,8 @@ class UniversignController extends Controller
             $universign = new WireTransferOutUniversign();
             $universign->setIdWireTransferOut($wireTransferOut)
                 ->setName('demande-virement-tiers-' . $clientHash . '-' . $wireTransferOutId . '.pdf')
-                ->setStatus(UniversignEntityInterface::STATUS_PENDING);
+                ->setStatus(UniversignEntityInterface::STATUS_PENDING)
+            ;
             $entityManager->persist($universign);
             $entityManager->flush($universign);
         }
@@ -363,15 +381,15 @@ class UniversignController extends Controller
                 'destinationCompanyName'  => $destinationCompany->getName(),
                 'iban'                    => $bankAccount->getIban(),
             ]);
-            $snappy             = $this->get('knp_snappy.pdf');
-            $outputFile         = $wireTransferOutPdfRoot . DIRECTORY_SEPARATOR . $universign->getName();
-            $options            = [
+            $snappy     = $this->get('knp_snappy.pdf');
+            $outputFile = $wireTransferOutPdfRoot . DIRECTORY_SEPARATOR . $universign->getName();
+            $options    = [
                 'footer-html'   => '',
                 'header-html'   => '',
                 'margin-top'    => 20,
                 'margin-right'  => 15,
                 'margin-bottom' => 10,
-                'margin-left'   => 15
+                'margin-left'   => 15,
             ];
             $snappy->generateFromHtml($pdfContent, $outputFile, $options, true);
         }
@@ -393,8 +411,8 @@ class UniversignController extends Controller
     /**
      * @Route("/pdf/beneficiaires-effectifs/{clientHash}/{idProject}",
      *     name="beneficial_owner_declaration_pdf",
-     *     requirements={"idProject":"\d+", "clientHash": "[0-9a-f-]{32,36}"}
-     *     )
+     *     requirements={"idProject": "\d+", "clientHash": "[0-9a-f-]{32,36}"}
+     * )
      *
      * @param string $clientHash
      * @param int    $idProject
@@ -429,7 +447,7 @@ class UniversignController extends Controller
     /**
      * @param UniversignEntityInterface $universign
      *
-     * @return null|string
+     * @return string|null
      */
     private function getStatusTranslationLabel(UniversignEntityInterface $universign)
     {
@@ -445,8 +463,10 @@ class UniversignController extends Controller
             default:
                 /** @var LoggerInterface $logger */
                 $logger = $this->get('logger');
-                $logger->warning('Unknown tos status (' . $universign->status . ') - Cannot create PDF for Universign (project ' . $universign->id_project . ')',
-                    ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $universign->id_project]);
+                $logger->warning(
+                    'Unknown service terms status (' . $universign->status . ') - Cannot create PDF for Universign (project ' . $universign->id_project . ')',
+                    ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $universign->id_project]
+                );
 
                 return null;
         }
@@ -455,7 +475,7 @@ class UniversignController extends Controller
     /**
      * @param UniversignEntityInterface $universign
      *
-     * @return null|string
+     * @return string|null
      */
     private function getDocumentTypeTranslationLabel(UniversignEntityInterface $universign)
     {
@@ -465,7 +485,7 @@ class UniversignController extends Controller
             case ProjectsPouvoir::class:
                 return 'proxy';
             case ProjectCgv::class:
-                return 'tos';
+                return 'service-terms';
             case WireTransferOutUniversign::class:
                 return 'wire-transfer-out';
             case ProjectBeneficialOwnerUniversign::class:
@@ -473,8 +493,11 @@ class UniversignController extends Controller
             default:
                 /** @var LoggerInterface $logger */
                 $logger = $this->get('logger');
-                $logger->warning('Unknown tos status (' . $universign->status . ') - Cannot create PDF for Universign (project ' . $universign->id_project . ')',
-                    ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $universign->id_project]);
+                $logger->warning(
+                    'Unknown service terms status (' . $universign->status . ') - Cannot create PDF for Universign (project ' . $universign->id_project . ')',
+                    ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $universign->id_project]
+                );
+
                 return null;
         }
     }

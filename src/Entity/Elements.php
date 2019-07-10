@@ -3,16 +3,18 @@
 namespace Unilend\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Unilend\Entity\Traits\TimestampableTrait;
 
 /**
- * Elements
- *
  * @ORM\Table(name="elements")
  * @ORM\Entity
+ * @ORM\HasLifecycleCallbacks
  */
 class Elements
 {
-    const TYPE_PDF_TERMS_OF_SALE = 143;
+    use TimestampableTrait;
+
+    public const TYPE_PDF_SERVICE_TERMS = 143;
 
     /**
      * @var int
@@ -45,7 +47,7 @@ class Elements
     /**
      * @var int
      *
-     * @ORM\Column(name="ordre", type="integer", nullable=false, options={"default" : 0})
+     * @ORM\Column(name="ordre", type="integer", nullable=false, options={"default": 0})
      */
     private $ordre = 0;
 
@@ -64,20 +66,6 @@ class Elements
     private $status;
 
     /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="added", type="datetime")
-     */
-    private $added;
-
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="updated", type="datetime")
-     */
-    private $updated;
-
-    /**
      * @var int
      *
      * @ORM\Column(name="id_element", type="integer")
@@ -86,12 +74,8 @@ class Elements
      */
     private $idElement;
 
-
-
     /**
-     * Set idTemplate
-     *
-     * @param integer $idTemplate
+     * @param int $idTemplate
      *
      * @return Elements
      */
@@ -103,9 +87,7 @@ class Elements
     }
 
     /**
-     * Get idTemplate
-     *
-     * @return integer
+     * @return int
      */
     public function getIdTemplate()
     {
@@ -113,9 +95,7 @@ class Elements
     }
 
     /**
-     * Set idBloc
-     *
-     * @param integer $idBloc
+     * @param int $idBloc
      *
      * @return Elements
      */
@@ -127,9 +107,7 @@ class Elements
     }
 
     /**
-     * Get idBloc
-     *
-     * @return integer
+     * @return int
      */
     public function getIdBloc()
     {
@@ -137,8 +115,6 @@ class Elements
     }
 
     /**
-     * Set name
-     *
      * @param string $name
      *
      * @return Elements
@@ -151,8 +127,6 @@ class Elements
     }
 
     /**
-     * Get name
-     *
      * @return string
      */
     public function getName()
@@ -161,8 +135,6 @@ class Elements
     }
 
     /**
-     * Set slug
-     *
      * @param string $slug
      *
      * @return Elements
@@ -175,8 +147,6 @@ class Elements
     }
 
     /**
-     * Get slug
-     *
      * @return string
      */
     public function getSlug()
@@ -185,9 +155,7 @@ class Elements
     }
 
     /**
-     * Set ordre
-     *
-     * @param integer $ordre
+     * @param int $ordre
      *
      * @return Elements
      */
@@ -199,9 +167,7 @@ class Elements
     }
 
     /**
-     * Get ordre
-     *
-     * @return integer
+     * @return int
      */
     public function getOrdre()
     {
@@ -209,8 +175,6 @@ class Elements
     }
 
     /**
-     * Set typeElement
-     *
      * @param string $typeElement
      *
      * @return Elements
@@ -223,8 +187,6 @@ class Elements
     }
 
     /**
-     * Get typeElement
-     *
      * @return string
      */
     public function getTypeElement()
@@ -233,9 +195,7 @@ class Elements
     }
 
     /**
-     * Set status
-     *
-     * @param integer $status
+     * @param int $status
      *
      * @return Elements
      */
@@ -247,9 +207,7 @@ class Elements
     }
 
     /**
-     * Get status
-     *
-     * @return integer
+     * @return int
      */
     public function getStatus()
     {
@@ -257,57 +215,7 @@ class Elements
     }
 
     /**
-     * Set added
-     *
-     * @param \DateTime $added
-     *
-     * @return Elements
-     */
-    public function setAdded($added)
-    {
-        $this->added = $added;
-
-        return $this;
-    }
-
-    /**
-     * Get added
-     *
-     * @return \DateTime
-     */
-    public function getAdded()
-    {
-        return $this->added;
-    }
-
-    /**
-     * Set updated
-     *
-     * @param \DateTime $updated
-     *
-     * @return Elements
-     */
-    public function setUpdated($updated)
-    {
-        $this->updated = $updated;
-
-        return $this;
-    }
-
-    /**
-     * Get updated
-     *
-     * @return \DateTime
-     */
-    public function getUpdated()
-    {
-        return $this->updated;
-    }
-
-    /**
-     * Get idElement
-     *
-     * @return integer
+     * @return int
      */
     public function getIdElement()
     {

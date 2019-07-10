@@ -7,8 +7,8 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\Security\Core\Exception\{UnsupportedUserException, UsernameNotFoundException};
 use Symfony\Component\Security\Core\User\{UserInterface, UserProviderInterface};
 use Unilend\Entity\Clients;
-use Unilend\Service\{ClientManager, LenderManager, SlackManager, TermsOfSaleManager};
 use Unilend\Service\Front\NotificationDisplayManager;
+use Unilend\Service\{ClientManager, LenderManager, SlackManager};
 
 class UserProvider implements UserProviderInterface
 {
@@ -22,8 +22,6 @@ class UserProvider implements UserProviderInterface
     private $lenderManager;
     /** @var SlackManager */
     private $slackManager;
-    /** @var TermsOfSaleManager */
-    private $termsOfSaleManager;
     /** @var LoggerInterface */
     private $logger;
 
@@ -33,7 +31,6 @@ class UserProvider implements UserProviderInterface
      * @param NotificationDisplayManager $notificationDisplayManager
      * @param LenderManager              $lenderManager
      * @param SlackManager               $slackManager
-     * @param TermsOfSaleManager         $termsOfSaleManager
      * @param LoggerInterface            $logger
      */
     public function __construct(
@@ -42,21 +39,18 @@ class UserProvider implements UserProviderInterface
         NotificationDisplayManager $notificationDisplayManager,
         LenderManager $lenderManager,
         SlackManager $slackManager,
-        TermsOfSaleManager $termsOfSaleManager,
         LoggerInterface $logger
-    )
-    {
+    ) {
         $this->entityManager              = $entityManager;
         $this->clientManager              = $clientManager;
         $this->notificationDisplayManager = $notificationDisplayManager;
         $this->lenderManager              = $lenderManager;
         $this->slackManager               = $slackManager;
-        $this->termsOfSaleManager         = $termsOfSaleManager;
         $this->logger                     = $logger;
     }
 
     /**
-     * @inheritDoc
+     * {@inheritdoc}
      */
     public function loadUserByUsername($username): UserInterface
     {
@@ -86,7 +80,7 @@ class UserProvider implements UserProviderInterface
     }
 
     /**
-     * @inheritDoc
+     * {@inheritdoc}
      */
     public function refreshUser(UserInterface $user): UserInterface
     {
@@ -100,7 +94,8 @@ class UserProvider implements UserProviderInterface
         // validation errors.
         $id = $user->getIdClient();
         if (empty($id)) {
-            throw new \InvalidArgumentException('You cannot refresh a user ' .
+            throw new \InvalidArgumentException(
+                'You cannot refresh a user ' .
                 'from the EntityUserProvider that does not contain an identifier. ' .
                 'The user object has to be serialized with its own identifier ' .
                 'mapped by Doctrine.'
@@ -116,10 +111,10 @@ class UserProvider implements UserProviderInterface
     }
 
     /**
-     * @inheritDoc
+     * {@inheritdoc}
      */
     public function supportsClass($class): bool
     {
-        return $class === Clients::class;
+        return Clients::class === $class;
     }
 }

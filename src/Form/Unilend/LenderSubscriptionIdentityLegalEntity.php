@@ -46,7 +46,7 @@ class LenderSubscriptionIdentityLegalEntity extends AbstractType
                 'multiple' => false,
                 'data'     => 'legalEntity'
             ])
-            ->add('tos', CheckboxType::class);
+            ->add('serviceTerms', CheckboxType::class);
     }
 
     /**

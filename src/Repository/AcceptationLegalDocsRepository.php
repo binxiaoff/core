@@ -4,56 +4,47 @@ namespace Unilend\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
-use Doctrine\ORM\Query\Expr\Join;
-use Unilend\Entity\{AcceptationsLegalDocs, Wallet, WalletType};
-use Unilend\Service\TermsOfSaleManager;
+use Unilend\Entity\AcceptationsLegalDocs;
+use Unilend\Service\ServiceTerms\ServiceTermsManager;
 
+/**
+ * @method AcceptationsLegalDocs|null find($id, $lockMode = null, $lockVersion = null)
+ * @method AcceptationsLegalDocs|null findOneBy(array $criteria, array $orderBy = null)
+ * @method AcceptationsLegalDocs[]    findAll()
+ * @method AcceptationsLegalDocs[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
+ */
 class AcceptationLegalDocsRepository extends ServiceEntityRepository
 {
-    public function __construct(ManagerRegistry $registry)
+    /** @var ServiceTermsManager */
+    private $serviceTermsManager;
+
+    /**
+     * @param ManagerRegistry     $registry
+     * @param ServiceTermsManager $serviceTermsManager
+     */
+    public function __construct(ManagerRegistry $registry, ServiceTermsManager $serviceTermsManager)
     {
         parent::__construct($registry, AcceptationsLegalDocs::class);
+        $this->serviceTermsManager = $serviceTermsManager;
     }
 
     /**
-     * @param array $legalDocs
-     * @param int   $limit
+     * @param int $limit
      *
      * @return AcceptationsLegalDocs[]
      */
-    public function findByIdLegalDocWithoutPfd(array $legalDocs, int $limit): array
+    public function findByIdLegalDocWithoutPfd(int $limit): array
     {
+        $idTree = $this->serviceTermsManager->getCurrentVersionId();
+
         $queryBuilder = $this->createQueryBuilder('ald');
         $queryBuilder
             ->where('ald.idLegalDoc IN (:version)')
             ->andWhere('ald.pdfName IS NULL')
             ->orderBy('ald.idAcceptation', 'ASC')
-            ->setParameter('version', $legalDocs)
-            ->setMaxResults($limit);
-
-        return $queryBuilder->getQuery()->getResult();
-    }
-
-    /**
-     * Can be deleted after all previous accepted terms of sale have been generated (BLD-320)
-     *
-     * @param int $limit
-     *
-     * @return AcceptationsLegalDocs[]
-     */
-    public function findWithoutPfdForLender(int $limit): array
-    {
-        $queryBuilder = $this->createQueryBuilder('ald');
-        $queryBuilder
-            ->innerJoin(Wallet::class, 'w', Join::WITH, 'w.idClient = ald.idClient')
-            ->innerJoin(WalletType::class, 'wt', Join::WITH, 'wt.id = w.idType')
-            ->andWhere('ald.pdfName IS NULL')
-            ->andWhere('wt.label = :walletLabel')
-            ->andWhere('ald.idLegalDoc != :rootFolderIdTree')
-            ->orderBy('ald.idAcceptation', 'ASC')
-            ->setParameter('walletLabel', WalletType::LENDER)
-            ->setParameter('rootFolderIdTree', TermsOfSaleManager::ID_TREE_ROOT_SECTION_LENDER_TOS)
-            ->setMaxResults($limit);
+            ->setParameter('version', $idTree)
+            ->setMaxResults($limit)
+        ;
 
         return $queryBuilder->getQuery()->getResult();
     }

@@ -68,7 +68,7 @@ class LoanManager
             //todo: check also if this is the only one loan to build for IFP (We can only have one IFP loan per project)
         }
 
-        $currentAcceptedTermsOfSale = $this->entityManager
+        $currentAcceptedServiceTerms = $this->entityManager
             ->getRepository(AcceptationsLegalDocs::class)
             ->findOneBy(['idClient' => $acceptedBids[0]->getIdBid()->getWallet()->getIdClient()], ['added' => 'DESC'])
         ;
@@ -86,7 +86,7 @@ class LoanManager
             ->setRate($lendingRate)
             ->setStatus(Loans::STATUS_ACCEPTED)
             ->setUnderlyingContract($contract)
-            ->setAcceptationLegalDoc($currentAcceptedTermsOfSale)
+            ->setAcceptationLegalDoc($currentAcceptedServiceTerms)
         ;
 
         $this->entityManager->persist($loan);

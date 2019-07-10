@@ -69,21 +69,21 @@
         <div rel="templates" style="display:none" aria-hidden="true">
             {% block modals %}
                 {# Place page-specific modals in this block and then use the `data-modal-toggle="#modal-id"` attribute on the anchor/button element you want to use to show it,
-                   e.g. <a href="javascript:;" data-modal-toggle="#modal-tos">Open the TOS model</a> #}
+                   e.g. <a href="javascript:;" data-modal-toggle="#modal-service-terms">Open the service terms model</a> #}
             {% endblock %}
 
             {% include 'partials/beta_disclaimer_modal.html.twig' %}
 
             {# Global site-wide modals can be placed here #}
-            {% set tos_session_key = constant('Unilend\\Service\\TermsOfSaleManager::SESSION_KEY_TOS_ACCEPTED') %}
+            {% set service_terms_session_key = constant('Unilend\\Service\\ServiceTerms\\ServiceTermsManager::SESSION_KEY_SERVICE_TERMS_ACCEPTED') %}
             {% if app.user
-                and app.session.has(tos_session_key)
-                and false == app.session.get(tos_session_key)
+                and app.session.has(service_terms_session_key)
+                and false == app.session.get(service_terms_session_key)
                 and is_granted('ROLE_LENDER')
                 and app.user.isValidated()
-                and app.request.get('_route') != 'lenders_terms_of_sales'
+                and app.request.get('_route') != 'service_terms'
             %}
-                <div id="modal-tos" data-modal data-modal-openonload="true" data-modal-maxheight="550"><form id="form-tos" method="post" action="{{ path('lender_tos_popup') }}"></form></div>
+                <div id="modal-service-terms" data-modal data-modal-openonload="true" data-modal-maxheight="550"><form id="form-service-terms" method="post" action="{{ path('service_terms_popup') }}"></form></div>
             {% endif %}
         </div>
 

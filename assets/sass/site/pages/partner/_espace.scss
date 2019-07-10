@@ -212,7 +212,7 @@
   margin: 0 auto;
 }
 
-#modal-partner-project-tos {
+#modal-partner-project-service-terms {
   .table {
     tr {
       th {
@@ -230,7 +230,7 @@
     display: none;
   }
   &.ui-ajax-feedback {
-    .btn-primary:not(.ui-ajax-feedback-button), .btn-default, .tos-message {
+    .btn-primary:not(.ui-ajax-feedback-button), .btn-default, .service-terms-message {
       display: none;
     }
     .ui-ajax-feedback-button {

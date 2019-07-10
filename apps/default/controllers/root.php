@@ -110,7 +110,7 @@ class rootController extends bootstrap
             }
 
             $this->settings->get('Date nouvelles CGV avec 2 mandats', 'type');
-            $sNewTermsOfServiceDate = $this->settings->value;
+            $sNewServiceTermsDate = $this->settings->value;
 
             /** @var \Doctrine\ORM\EntityManager $entityManager */
             $entityManager = $this->get('doctrine.orm.entity_manager');
@@ -119,7 +119,7 @@ class rootController extends bootstrap
 
             /** @var \loans $oLoans */
             $oLoans      = $this->loadData('loans');
-            $iLoansCount = $oLoans->counter('id_wallet = ' . $wallet->getId() . ' AND added < "' . $sNewTermsOfServiceDate . '"');
+            $iLoansCount = $oLoans->counter('id_wallet = ' . $wallet->getId() . ' AND added < "' . $sNewServiceTermsDate . '"');
 
             if (in_array($this->clients->type, [Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER])) {
                 $clientAddress = $wallet->getIdClient()->getIdAddress();

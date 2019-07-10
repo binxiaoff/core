@@ -658,8 +658,8 @@ class UnilendMailerManager
                     'Could not send email: annonce-mise-en-ligne-emprunteur - Exception: ' . $exception->getMessage(),
                     ['id_mail_template' => $message->getTemplateId(), 'id_client' => $company->getIdClientOwner()->getIdClient(), 'class' => __CLASS__, 'function' => __FUNCTION__]
                 );
+            }
         }
-    }
     }
 
     /**
@@ -1739,44 +1739,6 @@ class UnilendMailerManager
                 'file'             => $exception->getFile(),
                 'line'             => $exception->getLine(),
             ]);
-        }
-    }
-
-    /**
-     * @param ProjectCgv     $termsOfSale
-     * @param Companies|null $companySubmitter
-     */
-    public function sendProjectTermsOfSale(ProjectCgv $termsOfSale, Companies $companySubmitter = null)
-    {
-        $mailType = 'signature-universign-de-cgv';
-        $client   = $termsOfSale->getIdProject()->getIdCompany()->getIdClientOwner();
-        $keywords = [
-            'firstName'                  => $client->getFirstName(),
-            'amount'                     => $this->oFicelle->formatNumber($termsOfSale->getIdProject()->getAmount(), 0),
-            'companyName'                => $termsOfSale->getIdProject()->getIdCompany()->getName(),
-            'universignTosLink'          => $this->sFUrl . $termsOfSale->getUrlPath(),
-            'fundsCommissionRate'        => $this->oFicelle->formatNumber($termsOfSale->getIdProject()->getCommissionRateFunds(), 1),
-            'repaymentCommissionRate'    => $this->oFicelle->formatNumber($termsOfSale->getIdProject()->getCommissionRateRepayment(), 1),
-            'borrowerServicePhoneNumber' => $this->settingsRepository->findOneBy(['type' => 'Téléphone emprunteur'])->getValue(),
-            'borrowerServiceEmail'       => $this->settingsRepository->findOneBy(['type' => 'Adresse emprunteur'])->getValue(),
-        ];
-
-        if (null !== $companySubmitter) {
-            $mailType               = 'cgv-emprunteurs-depot-partenaire';
-            $keywords['agencyName'] = $companySubmitter->getName();
-        }
-
-        /** @var TemplateMessage $message */
-        $message = $this->messageProvider->newMessage($mailType, $keywords);
-
-        try {
-            $message->setTo($client->getEmail());
-            $this->mailer->send($message);
-        } catch (\Exception $exception) {
-            $this->oLogger->warning(
-                'Could not send email: ' . $mailType . ' - Exception: ' . $exception->getMessage(),
-                ['id_mail_template' => $message->getTemplateId(), 'id_client' => $client->getIdClient(), 'class' => __CLASS__, 'function' => __FUNCTION__]
-            );
         }
     }
 
