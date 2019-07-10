@@ -92,7 +92,7 @@ class ServiceTermsGenerator implements DocumentGeneratorInterface
      */
     public function getName(AcceptationsLegalDocs $acceptedLegalDoc)
     {
-        return 'cgu-' . $acceptedLegalDoc->getClient()->getHash() . '-' . $acceptedLegalDoc->getLegalDoc()->getIdTree() . '.pdf';
+        return 'conditions-service-' . $acceptedLegalDoc->getClient()->getHash() . '-' . $acceptedLegalDoc->getLegalDoc()->getIdTree() . '.pdf';
     }
 
     /**

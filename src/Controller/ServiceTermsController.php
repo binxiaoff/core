@@ -17,7 +17,7 @@ use Unilend\Service\ServiceTerms\ServiceTermsManager;
 class ServiceTermsController extends AbstractController
 {
     /**
-     * @Route("/pdf/cgu/{idAcceptation}", name="service_terms_pdf", requirements={"idAcceptation": "\d+"})
+     * @Route("/pdf/conditions-service/{idAcceptation}", name="service_terms_pdf", requirements={"idAcceptation": "\d+"})
      *
      * @param UserInterface|Clients|null $client
      * @param AcceptationsLegalDocs      $acceptationsLegalDoc
@@ -44,7 +44,7 @@ class ServiceTermsController extends AbstractController
     }
 
     /**
-     * @Route("/cgu", name="service_terms", methods={"GET"})
+     * @Route("/conditions-service", name="service_terms", methods={"GET"})
      *
      * @param UserInterface|Clients|null     $client
      * @param AcceptationLegalDocsRepository $acceptationLegalDocsRepository
@@ -83,7 +83,7 @@ class ServiceTermsController extends AbstractController
     }
 
     /**
-     * @Route("/cgv-popup", name="service_terms_popup", condition="request.isXmlHttpRequest()", methods={"GET"})
+     * @Route("/conditions-service-popup", name="service_terms_popup", condition="request.isXmlHttpRequest()", methods={"GET"})
      *
      * @Security("has_role('ROLE_LENDER')")
      *
@@ -128,7 +128,7 @@ class ServiceTermsController extends AbstractController
     }
 
     /**
-     * @Route("/cgv-popup", name="service_terms_popup_accepted", condition="request.isXmlHttpRequest()", methods={"POST"})
+     * @Route("/conditions-service-popup", name="service_terms_popup_accepted", condition="request.isXmlHttpRequest()", methods={"POST"})
      *
      * @Security("has_role('ROLE_LENDER')")
      *

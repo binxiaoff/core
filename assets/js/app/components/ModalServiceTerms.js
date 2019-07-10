@@ -17,7 +17,7 @@ $doc
   })
 
   .ready(function () {
-    $('#form-service-terms').load('/cgv-popup', function() {
+    $('#form-service-terms').load('/conditions-service-popup', function() {
       $.fancybox.update()
     });
   })

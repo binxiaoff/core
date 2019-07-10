@@ -29,7 +29,7 @@ final class Version20190708122648 extends AbstractMigration
 
         $this->addSql(
             <<<'EMAIL'
-INSERT INTO mail_templates (type, locale, part, recipient_type, sender_name, sender_email, subject, content, compiled_content, id_header, id_footer, status, added, updated) VALUES ('terms-of-sale-accepted', 'fr_FR', 'content', 'external', 'Crédit Agricole Lending Services', 'contact@ca-lendingservices.com', 'Vous avez accepté les conditions générales d''utilisation', '<p>Bonjour [EMV DYN]firstName[EMV /DYN],</p>
+INSERT INTO mail_templates (type, locale, part, recipient_type, sender_name, sender_email, subject, content, compiled_content, id_header, id_footer, status, added, updated) VALUES ('service-terms-accepted', 'fr_FR', 'content', 'external', 'Crédit Agricole Lending Services', 'contact@ca-lendingservices.com', 'Vous avez accepté les conditions générales d''utilisation', '<p>Bonjour [EMV DYN]firstName[EMV /DYN],</p>
 <p>Vous venez de signer les Conditions Générales de la plateforme Crédit Agricole Lending Services. Vous trouverez ci-joint la version PDF de ces Conditions Générales.</p>
 <p></p>
 <p>À bientôt sur Crédit Agricole Lending Service</p>', '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -444,6 +444,6 @@ EMAIL
         $this->addSql('ALTER TABLE tree CHANGE updated updated DATETIME NOT NULL, CHANGE added added DATETIME NOT NULL');
         $this->addSql('CREATE INDEX id_tree ON tree (id_tree)');
         $this->addSql('ALTER TABLE tree ADD PRIMARY KEY (id_tree, id_langue)');
-        $this->addSql('DELETE FROM mail_templates WHERE type = \'terms-of-sale-accepted\'');
+        $this->addSql('DELETE FROM mail_templates WHERE type = \'service-terms-accepted\'');
     }
 }
