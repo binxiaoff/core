@@ -3,13 +3,17 @@
 namespace Unilend\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Unilend\Entity\Traits\TimestampableTrait;
 
 /**
  * @ORM\Table(name="settings")
  * @ORM\Entity
+ * @ORM\HasLifecycleCallbacks
  */
 class Settings
 {
+    use TimestampableTrait;
+
     public const TYPE_AUTOBID_GLOBAL_SWITCH = 'Auto-bid global switch';
     public const TYPE_AUTOBID_STEP          = 'Auto-bid step';
     public const TYPE_SERVICE_TERMS_PAGE_ID = 'SERVICE_TERMS_PAGE_ID';
@@ -27,20 +31,6 @@ class Settings
      * @ORM\Column(name="value", type="text", length=16777215)
      */
     private $value;
-
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="added", type="datetime")
-     */
-    private $added;
-
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="updated", type="datetime", nullable=true)
-     */
-    private $updated;
 
     /**
      * @var int
@@ -89,46 +79,6 @@ class Settings
     public function getValue()
     {
         return $this->value;
-    }
-
-    /**
-     * @param \DateTime $added
-     *
-     * @return Settings
-     */
-    public function setAdded($added)
-    {
-        $this->added = $added;
-
-        return $this;
-    }
-
-    /**
-     * @return \DateTime
-     */
-    public function getAdded()
-    {
-        return $this->added;
-    }
-
-    /**
-     * @param \DateTime $updated
-     *
-     * @return Settings
-     */
-    public function setUpdated($updated)
-    {
-        $this->updated = $updated;
-
-        return $this;
-    }
-
-    /**
-     * @return \DateTime
-     */
-    public function getUpdated()
-    {
-        return $this->updated;
     }
 
     /**

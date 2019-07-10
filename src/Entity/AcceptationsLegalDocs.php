@@ -3,6 +3,7 @@
 namespace Unilend\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Unilend\Entity\Traits\TimestampableTrait;
 
 /**
  * @ORM\Table(name="acceptations_legal_docs")
@@ -11,6 +12,8 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class AcceptationsLegalDocs
 {
+    use TimestampableTrait;
+
     /**
      * @var Tree
      *
@@ -27,20 +30,6 @@ class AcceptationsLegalDocs
      * @ORM\Column(name="pdf_name", type="string", length=191, nullable=true)
      */
     private $pdfName;
-
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="added", type="datetime")
-     */
-    private $added;
-
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="updated", type="datetime", nullable=true)
-     */
-    private $updated;
 
     /**
      * @var Clients
@@ -102,69 +91,11 @@ class AcceptationsLegalDocs
     }
 
     /**
-     * @param \DateTime $added
-     *
-     * @return AcceptationsLegalDocs
-     */
-    public function setAdded(\DateTime $added): AcceptationsLegalDocs
-    {
-        $this->added = $added;
-
-        return $this;
-    }
-
-    /**
-     * @return \DateTime
-     */
-    public function getAdded(): \DateTime
-    {
-        return $this->added;
-    }
-
-    /**
-     * @param \DateTime|null $updated
-     *
-     * @return AcceptationsLegalDocs
-     */
-    public function setUpdated(?\DateTime $updated): AcceptationsLegalDocs
-    {
-        $this->updated = $updated;
-
-        return $this;
-    }
-
-    /**
-     * @return \DateTime|null
-     */
-    public function getUpdated(): ?\DateTime
-    {
-        return $this->updated;
-    }
-
-    /**
      * @return int
      */
     public function getIdAcceptation(): int
     {
         return $this->idAcceptation;
-    }
-
-    /**
-     * @ORM\PrePersist
-     */
-    public function setAddedValue()
-    {
-        if (!$this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
-            $this->added = new \DateTime();
-        }
-    }
-
-    /**
-     * @ORM\PreUpdate
-     */
-    public function setUpdatedValue()
-    {
-        $this->updated = new \DateTime();
     }
 
     /**

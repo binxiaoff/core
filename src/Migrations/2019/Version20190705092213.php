@@ -23,6 +23,7 @@ final class Version20190705092213 extends ContainerAwareMigration
         $this->addSql('DELETE FROM elements WHERE id_element in (144, 145, 146, 147, 148, 149, 150)');
         $this->addSql('UPDATE elements SET slug = \'service-terms-new\' WHERE slug = \'tos-new\'');
         $this->addSql('UPDATE elements SET slug = \'service-terms-update\' WHERE slug = \'tos-update\'');
+        $this->addSql('UPDATE elements SET slug = \'service-terms-content\' WHERE slug = \'contenu-cgu\'');
         $this->addSql(
             <<<'TREE_ELEMENT'
             INSERT INTO tree_elements (id_tree, id_element, id_langue, value, complement, status, added, updated) VALUES (96, 142, 'fr', '<p>Les présentes conditions générales SaaS Crédit Agricole Lending Services (ci-après désignées les «&nbsp;<strong>Conditions Générales</strong>&nbsp;») régissent les relations entre la société Crédit Agricole Lending Services, société <strong>[•]</strong> au capital de <strong>[•]</strong> euros, immatriculée au registre du commerce et des sociétés de <strong>[•]</strong> sous le numéro <strong>[•]</strong>, dont le siège social est situé au <strong>[•]</strong> (ci-après désignée «&nbsp;<strong>Crédit Agricole Lending Services</strong>&nbsp;» ou «&nbsp;<strong>CALS</strong>&nbsp;») et toute personne morale qui utilise la Plateforme CALS (ci-après désignée le «&nbsp;<strong>Client</strong>&nbsp;»).</p>

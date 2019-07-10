@@ -6,20 +6,16 @@ use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use InvalidArgumentException;
 use Knp\Snappy\Pdf;
-use Psr\Log\LoggerInterface;
 use Symfony\Component\{Asset\Packages, Filesystem\Filesystem};
 use Twig\Environment;
 use Unilend\Entity\{AcceptationsLegalDocs, Elements, TreeElements};
-use Unilend\Service\ServiceTerms\ServiceTermsManager;
 
 class ServiceTermsGenerator implements DocumentGeneratorInterface
 {
-    public const PATH = 'pdf' . DIRECTORY_SEPARATOR . 'cgu';
+    public const PATH = 'pdf' . DIRECTORY_SEPARATOR . 'service_terms';
 
     /** @var EntityManagerInterface */
     private $entityManager;
-    /** @var ServiceTermsManager */
-    private $serviceTermsManager;
     /** @var Filesystem */
     private $filesystem;
     /** @var string */
@@ -32,50 +28,32 @@ class ServiceTermsGenerator implements DocumentGeneratorInterface
     private $staticUrl;
     /** @var string */
     private $staticPath;
-    /** @var \NumberFormatter */
-    private $numberFormatter;
-    /** @var \NumberFormatter */
-    private $currencyFormatter;
-    /** @var LoggerInterface */
-    private $logger;
 
     /**
      * @param EntityManagerInterface $entityManager
-     * @param ServiceTermsManager    $serviceTermsManager
      * @param Filesystem             $filesystem
      * @param string                 $protectedPath
      * @param string                 $staticPath
      * @param Environment            $twig
      * @param Pdf                    $snappy
      * @param Packages               $assetsPackages
-     * @param \NumberFormatter       $numberFormatter
-     * @param \NumberFormatter       $currencyFormatter
-     * @param LoggerInterface        $logger
      */
     public function __construct(
         EntityManagerInterface $entityManager,
-        ServiceTermsManager $serviceTermsManager,
         Filesystem $filesystem,
         string $protectedPath,
         string $staticPath,
         Environment $twig,
         Pdf $snappy,
-        Packages $assetsPackages,
-        \NumberFormatter $numberFormatter,
-        \NumberFormatter $currencyFormatter,
-        LoggerInterface $logger
+        Packages $assetsPackages
     ) {
-        $this->entityManager       = $entityManager;
-        $this->serviceTermsManager = $serviceTermsManager;
-        $this->filesystem          = $filesystem;
-        $this->protectedPath       = $protectedPath;
-        $this->staticPath          = $staticPath;
-        $this->twig                = $twig;
-        $this->snappy              = $snappy;
-        $this->staticUrl           = $assetsPackages->getUrl('');
-        $this->numberFormatter     = $numberFormatter;
-        $this->currencyFormatter   = $currencyFormatter;
-        $this->logger              = $logger;
+        $this->entityManager = $entityManager;
+        $this->filesystem    = $filesystem;
+        $this->protectedPath = $protectedPath;
+        $this->staticPath    = $staticPath;
+        $this->twig          = $twig;
+        $this->snappy        = $snappy;
+        $this->staticUrl     = $assetsPackages->getUrl('');
 
         $this->snappy->setBinary('/usr/local/bin/wkhtmltopdf');
     }
@@ -177,18 +155,18 @@ class ServiceTermsGenerator implements DocumentGeneratorInterface
      */
     private function getContent(int $idTree): array
     {
-        $tosElements = $this->entityManager->getRepository(TreeElements::class)
+        $serviceTermsElements = $this->entityManager->getRepository(TreeElements::class)
             ->findBy(['idTree' => $idTree])
         ;
 
-        if (empty($tosElements)) {
+        if (empty($serviceTermsElements)) {
             throw new InvalidArgumentException('There are not tree elements associated with terms of sales treeId');
         }
 
         $content           = [];
         $elementRepository = $this->entityManager->getRepository(Elements::class);
         /** @var TreeElements $treeElement */
-        foreach ($tosElements as $treeElement) {
+        foreach ($serviceTermsElements as $treeElement) {
             /** @var Elements $element */
             $element = $elementRepository->findOneBy(['idElement' => $treeElement->getIdElement()]);
             if (null === $element) {
