@@ -543,8 +543,8 @@ class LenderSubscriptionController extends Controller
             $this->checkSecuritySection($client, $form);
         }
 
-        if (false === $form->get('tos')->getData()) {
-            $form->get('tos')->addError(new FormError($translator->trans('lender-subscription_personal-information-error-terms-of-use')));
+        if (false === $form->get('serviceTerms')->getData()) {
+            $form->get('serviceTerms')->addError(new FormError($translator->trans('lender-subscription_personal-information-error-service-terms')));
         }
 
         if ($isValidCaptcha && $form->isValid()) {
@@ -646,8 +646,8 @@ class LenderSubscriptionController extends Controller
             $this->checkSecuritySection($client, $form);
         }
 
-        if (false === $form->get('tos')->getData()) {
-            $form->get('tos')->addError(new FormError($translator->trans('lender-subscription_personal-information-error-terms-of-use')));
+        if (false === $form->get('serviceTerms')->getData()) {
+            $form->get('serviceTerms')->addError(new FormError($translator->trans('lender-subscription_personal-information-error-service-terms')));
         }
 
         if ($isValidCaptcha && $form->isValid()) {

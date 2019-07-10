@@ -11,7 +11,7 @@ use Unilend\Entity\AcceptationsLegalDocs;
 use Unilend\Service\Document\ServiceTermsGenerator;
 use Unilend\Service\ServiceTerms\ServiceTermsManager;
 
-class GenerateLenderAcceptedTosCommand extends Command
+class GenerateLenderAcceptedServiceTermsCommand extends Command
 {
     /** @var EntityManagerInterface */
     private $entityManager;
@@ -56,7 +56,7 @@ The <info>lender:service_terms:generate</info> command generates the pdf version
 <info>php bin/console lender:service_terms:generate</info>
 EOF
             )
-            ->addOption('limit-tos', 'l', InputOption::VALUE_REQUIRED, 'Number of accepted tos to process')
+            ->addOption('limit-service-terms', 'l', InputOption::VALUE_REQUIRED, 'Number of accepted service terms to process')
         ;
     }
 
@@ -65,7 +65,7 @@ EOF
      */
     protected function execute(InputInterface $input, OutputInterface $output): void
     {
-        $limit = $input->getOption('limit-tos');
+        $limit = $input->getOption('limit-service-terms');
         $limit = $limit ? $limit : 100;
 
         $acceptedServiceTerms = $this->entityManager

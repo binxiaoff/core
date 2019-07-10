@@ -451,9 +451,9 @@
 
     <fieldset class="panel">
         <div class="row">
-            <div class="form-field form-field-single-checkbox{% if identityForm.tos.vars.errors|length > 0 %} ui-formvalidation-error{% endif %}">
+            <div class="form-field form-field-single-checkbox{% if identityForm.serviceTerms.vars.errors|length > 0 %} ui-formvalidation-error{% endif %}">
                 <label>
-                    {{ form_widget(identityForm.tos, {
+                    {{ form_widget(identityForm.serviceTerms, {
                         'attr' : {
                             'data-formvalidation-input data-formvalidation-required' : 'true'
                         }

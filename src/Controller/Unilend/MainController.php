@@ -23,7 +23,7 @@ class MainController extends Controller
     public const CMS_TEMPLATE_BIG_HEADER            = 1;
     public const CMS_TEMPLATE_NAV                   = 2;
     public const CMS_TEMPLATE_BORROWER_LANDING_PAGE = 3;
-    public const CMS_TEMPLATE_TOS                   = 5;
+    public const CMS_TEMPLATE_SERVICE_TERMS         = 5;
 
     public const SLUG_PAGE_BECOME_LENDER = 'lender_subscription_personal_information';
     public const SLUG_ELEMENT_NAV_IMAGE  = 'image-header';
@@ -303,7 +303,7 @@ class MainController extends Controller
                 return $this->renderCmsNav($tree, $finalElements['content'], $entityManager);
             case self::CMS_TEMPLATE_BORROWER_LANDING_PAGE:
                 return $this->renderBorrowerLandingPage($request, $finalElements['content'], $finalElements['complement']);
-            case self::CMS_TEMPLATE_TOS:
+            case self::CMS_TEMPLATE_SERVICE_TERMS:
                 return $this->redirectToRoute('service_terms');
             default:
                 return new RedirectResponse('/');

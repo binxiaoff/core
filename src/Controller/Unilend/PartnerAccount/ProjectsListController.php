@@ -59,7 +59,7 @@ class ProjectsListController extends Controller
     }
 
     /**
-     * @Route("partenaire/emprunteurs", name="partner_project_tos", condition="request.isXmlHttpRequest()", methods={"POST"})
+     * @Route("partenaire/emprunteurs", name="partner_project_service_terms", condition="request.isXmlHttpRequest()", methods={"POST"})
      *
      * @Security("has_role('ROLE_PARTNER')")
      *
@@ -87,7 +87,7 @@ class ProjectsListController extends Controller
         if (false === $project instanceof Projects || false === in_array($project->getIdCompanySubmitter(), $userCompanies)) {
             return new JsonResponse([
                 'error'   => true,
-                'message' => $translator->trans('partner-project-list_popup-project-tos-message-error'),
+                'message' => $translator->trans('partner-project-list_popup-project-service-terms-message-error'),
             ]);
         }
 
@@ -99,29 +99,29 @@ class ProjectsListController extends Controller
                 case ServiceTermsManager::EXCEPTION_CODE_INVALID_EMAIL:
                     return new JsonResponse([
                         'error'   => true,
-                        'message' => $translator->trans('partner-project-list_popup-project-tos-message-error-email'),
+                        'message' => $translator->trans('partner-project-list_popup-project-service-terms-message-error-email'),
                     ]);
                 case ServiceTermsManager::EXCEPTION_CODE_INVALID_PHONE_NUMBER:
                     return new JsonResponse([
                         'error'   => true,
-                        'message' => $translator->trans('partner-project-list_popup-project-tos-message-error-phone-number'),
+                        'message' => $translator->trans('partner-project-list_popup-project-service-terms-message-error-phone-number'),
                     ]);
                 case ServiceTermsManager::EXCEPTION_CODE_PDF_FILE_NOT_FOUND:
                     return new JsonResponse([
                         'error'   => true,
-                        'message' => $translator->trans('partner-project-list_popup-project-tos-message-error-file-not-found'),
+                        'message' => $translator->trans('partner-project-list_popup-project-service-terms-message-error-file-not-found'),
                     ]);
                 default:
                     return new JsonResponse([
                         'error'   => true,
-                        'message' => $translator->trans('partner-project-list_popup-project-tos-message-error'),
+                        'message' => $translator->trans('partner-project-list_popup-project-service-terms-message-error'),
                     ]);
             }
         }
 
         return new JsonResponse([
             'success' => true,
-            'message' => $translator->trans('partner-project-list_popup-project-tos-message-success'),
+            'message' => $translator->trans('partner-project-list_popup-project-service-terms-message-success'),
         ]);
     }
 
@@ -155,17 +155,17 @@ class ProjectsListController extends Controller
                     'lastName'  => $project->getIdClientSubmitter() && $project->getIdClientSubmitter()->getIdClient() ? $project->getIdClientSubmitter()->getLastName() : '',
                     'entity'    => $project->getIdCompanySubmitter()->getName(),
                 ],
-                'motive'     => $project->getIdBorrowingMotive() ? $translator->trans('borrowing-motive_motive-' . $project->getIdBorrowingMotive()) : '',
-                'memos'      => $loadNotes ? $this->formatNotes($project->getPublicMemos()) : [],
-                'hasChanged' => $loadNotes ? $this->hasProjectChanged($project, $client) : false,
-                'tos'        => [],
+                'motive'       => $project->getIdBorrowingMotive() ? $translator->trans('borrowing-motive_motive-' . $project->getIdBorrowingMotive()) : '',
+                'memos'        => $loadNotes ? $this->formatNotes($project->getPublicMemos()) : [],
+                'hasChanged'   => $loadNotes ? $this->hasProjectChanged($project, $client) : false,
+                'serviceTerms' => [],
             ];
 
             $serviceTerms = $serviceTermsRepository->findOneBy(['idProject' => $project]);
 
             if ($serviceTerms) {
                 $dateFormatter                              = new \IntlDateFormatter($this->getParameter('locale'), \IntlDateFormatter::MEDIUM, \IntlDateFormatter::SHORT);
-                $display[$project->getIdProject()]['tos'][] = $dateFormatter->format($serviceTerms->getAdded());
+                $display[$project->getIdProject()]['serviceTerms'][] = $dateFormatter->format($serviceTerms->getAdded());
             }
 
             if ($abandoned) {

@@ -79,7 +79,7 @@ class ServiceTermsController extends AbstractController
             'right_content' => $content,
         ];
 
-        return $this->render('service_terms/template_cgv.html.twig', ['cms' => $cms]);
+        return $this->render('service_terms/view.html.twig', ['cms' => $cms]);
     }
 
     /**
@@ -104,9 +104,9 @@ class ServiceTermsController extends AbstractController
     ): Response {
         $serviceTermsDetails = '';
 
-        $elementSlug = 'tos-new';
+        $elementSlug = 'service-terms-new';
         if ($acceptationLegalDocsRepository->findOneBy(['client' => $client])) {
-            $elementSlug = 'tos-update';
+            $elementSlug = 'service-terms-update';
         }
 
         $element = $elementsRepository->findOneBy(['slug' => $elementSlug]);
@@ -122,7 +122,7 @@ class ServiceTermsController extends AbstractController
             $logger->error('The element slug: ' . $elementSlug . ' doesn\'t exist');
         }
 
-        return $this->render('partials/service_terms_popup.html.twig', [
+        return $this->render('service_terms/popup.html.twig', [
             'serviceTermsDetails' => $serviceTermsDetails,
         ]);
     }

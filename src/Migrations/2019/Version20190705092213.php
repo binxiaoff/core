@@ -21,6 +21,8 @@ final class Version20190705092213 extends ContainerAwareMigration
     {
         $this->addSql('INSERT INTO tree (id_tree, id_langue, id_parent, id_template, id_user, title, slug, img_menu, menu_title, meta_title, meta_description, meta_keywords, ordre, status, status_menu, prive, indexation, added, updated) VALUES (96, \'fr\', 22, 5, 1, \'Conditions générales d‘utilisation\', \'conditions-generales-d-utilisation-96\', \'\', \'Conditions générales d‘utilisation\', \'Conditions générales d‘utilisation\', \'Conditions générales d‘utilisation\', \'\', 3, 1, 1, 0, 1, NOW(), NOW())');
         $this->addSql('DELETE FROM elements WHERE id_element in (144, 145, 146, 147, 148, 149, 150)');
+        $this->addSql('UPDATE elements SET slug = \'service-terms-new\' WHERE slug = \'tos-new\'');
+        $this->addSql('UPDATE elements SET slug = \'service-terms-update\' WHERE slug = \'tos-update\'');
         $this->addSql(
             <<<'TREE_ELEMENT'
             INSERT INTO tree_elements (id_tree, id_element, id_langue, value, complement, status, added, updated) VALUES (96, 142, 'fr', '<p>Les présentes conditions générales SaaS Crédit Agricole Lending Services (ci-après désignées les «&nbsp;<strong>Conditions Générales</strong>&nbsp;») régissent les relations entre la société Crédit Agricole Lending Services, société <strong>[•]</strong> au capital de <strong>[•]</strong> euros, immatriculée au registre du commerce et des sociétés de <strong>[•]</strong> sous le numéro <strong>[•]</strong>, dont le siège social est situé au <strong>[•]</strong> (ci-après désignée «&nbsp;<strong>Crédit Agricole Lending Services</strong>&nbsp;» ou «&nbsp;<strong>CALS</strong>&nbsp;») et toute personne morale qui utilise la Plateforme CALS (ci-après désignée le «&nbsp;<strong>Client</strong>&nbsp;»).</p>
@@ -384,8 +386,8 @@ TREE_ELEMENT
         $this->addSql(
             <<<'TRANSLATIONS'
             INSERT INTO translations (locale, section, name, translation, added) VALUES
-                ('fr_FR', 'tos-popup', 'title', 'Les conditions générales d‘utilisation évoluent.', NOW()),
-                ('fr_FR', 'tos-popup', 'confirm-check-box-label', 'Je certifie avoir pris connaissance et accepter expressément <a href="/cgu">les conditions générales d‘utilisation de CALS</a>.', NOW())
+                ('fr_FR', 'service-terms-popup', 'title', 'Les conditions générales d‘utilisation évoluent.', NOW()),
+                ('fr_FR', 'service-terms-popup', 'confirm-check-box-label', 'Je certifie avoir pris connaissance et accepter expressément <a href="/cgu">les conditions générales d‘utilisation de CALS</a>.', NOW())
 TRANSLATIONS
         );
     }
@@ -404,6 +406,6 @@ TRANSLATIONS
                            (149, 5, 0, \'Mandat de recouvrement avec prêt - personne physique\', \'mandat-de-recouvrement-avec-pret\', 3, \'Texteditor\', 1, \'2016-09-14 09:24:37\', \'2016-09-14 09:24:37\'),
                            (150, 5, 0, \'Mandat de recouvrement avec prêt - personne morale\', \'mandat-de-recouvrement-avec-pret-personne-morale\', 5, \'Texteditor\', 1, \'2016-09-14 09:24:37\', \'2016-09-14 09:24:37\')');
 
-        $this->addSql('DELETE FROM translations WHERE section = \'tos-popup\' AND name in (\'title\', \'confirm-check-box-label\')');
+        $this->addSql('DELETE FROM translations WHERE section = \'service-terms-popup\' AND name in (\'title\', \'confirm-check-box-label\')');
     }
 }

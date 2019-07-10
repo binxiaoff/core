@@ -47,7 +47,7 @@ class LenderSubscriptionIdentityPerson extends AbstractType
                 'multiple' => false,
                 'data'     => 'person'
             ])
-            ->add('tos', CheckboxType::class);
+            ->add('serviceTerms', CheckboxType::class);
     }
 
     /**

@@ -227,21 +227,21 @@ class UniversignManager
     }
 
     /**
-     * @param ProjectCgv $tos
+     * @param ProjectCgv $projectServiceTerms
      *
      * @return bool
      */
-    public function createTOS(ProjectCgv $tos)
+    public function createServiceTerms(ProjectCgv $projectServiceTerms)
     {
-        $resultValue = $this->createSignature(ProjectCgv::DOCUMENT_TYPE, $tos->getId(), [$tos]);
+        $resultValue = $this->createSignature(ProjectCgv::DOCUMENT_TYPE, $projectServiceTerms->getId(), [$projectServiceTerms]);
 
         if ($resultValue instanceof Value) {
-            $tos
+            $projectServiceTerms
                 ->setIdUniversign($resultValue['id']->scalarVal())
                 ->setUrlUniversign($resultValue['url']->scalarVal())
                 ->setStatus(UniversignEntityInterface::STATUS_PENDING)
             ;
-            $this->entityManager->flush($tos);
+            $this->entityManager->flush($projectServiceTerms);
 
             return true;
         }

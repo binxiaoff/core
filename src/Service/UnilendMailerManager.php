@@ -1754,7 +1754,7 @@ class UnilendMailerManager
             'firstName'                  => $client->getFirstName(),
             'amount'                     => $this->oFicelle->formatNumber($serviceTerms->getIdProject()->getAmount(), 0),
             'companyName'                => $serviceTerms->getIdProject()->getIdCompany()->getName(),
-            'universignTosLink'          => $this->sFUrl . $serviceTerms->getUrlPath(),
+            'universignServiceTermsLink' => $this->sFUrl . $serviceTerms->getUrlPath(),
             'fundsCommissionRate'        => $this->oFicelle->formatNumber($serviceTerms->getIdProject()->getCommissionRateFunds(), 1),
             'repaymentCommissionRate'    => $this->oFicelle->formatNumber($serviceTerms->getIdProject()->getCommissionRateRepayment(), 1),
             'borrowerServicePhoneNumber' => $this->settingsRepository->findOneBy(['type' => 'Téléphone emprunteur'])->getValue(),
