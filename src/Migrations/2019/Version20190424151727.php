@@ -29,7 +29,7 @@ final class Version20190424151727 extends AbstractMigration
 
         $this->addSql('DROP INDEX idx_client_nom ON clients');
         $this->addSql(
-            <<<'ALTER'
+            <<<'QUERY'
 ALTER TABLE clients
   CHANGE id_langue id_language VARCHAR(2) NOT NULL,
   CHANGE civilite title VARCHAR(255) DEFAULT NULL,
@@ -58,7 +58,7 @@ ALTER TABLE clients
   DROP optin1, 
   DROP optin2, 
   CHANGE lastlogin last_login DATETIME DEFAULT NULL
-ALTER
+QUERY
         );
         $this->addSql('CREATE INDEX IDX_C82E74C808BA5A ON clients (last_name)');
         $this->addSql('ALTER TABLE clients RENAME INDEX hash TO IDX_C82E74D1B862B8');
@@ -78,7 +78,7 @@ ALTER
 
         $this->addSql('DROP INDEX IDX_C82E74C808BA5A ON clients');
         $this->addSql(
-            <<<'ALTER'
+            <<<'QUERY'
 ALTER TABLE clients
   CHANGE id_language id_langue VARCHAR(5) NOT NULL COLLATE utf8mb4_unicode_ci,
   CHANGE title civilite VARCHAR(255) DEFAULT NULL COLLATE utf8mb4_unicode_ci,
@@ -107,7 +107,7 @@ ALTER TABLE clients
   ADD optin1 SMALLINT DEFAULT NULL,
   ADD optin2 SMALLINT DEFAULT NULL,
   CHANGE last_login lastlogin DATETIME DEFAULT NULL
-ALTER
+QUERY
 );
         $this->addSql('CREATE INDEX idx_client_nom ON clients (nom)');
         $this->addSql('ALTER TABLE clients RENAME INDEX idx_c82e74d1b862b8 TO hash');
