@@ -91,7 +91,7 @@ class NotificationManager
      */
     public function createBidSubmitted(Bids $bid): void
     {
-        $bidder     = $bid->getAddedBy();
+        $bidder     = $bid->getLender()->getIdClientOwner();
         $recipients = $this->getProjectRecipients($bid->getTranche()->getProject());
 
         unset($recipients[$bidder->getIdClient()]);

@@ -17,17 +17,11 @@
                             {% else %}
                                 {% set sortParameter = 'desc' %}
                             {% endif %}
-                            <div class="project-list-item-category project-list-filter{% if sortType == 'idPartner' %} ui-sortable-current ui-sortable-direction-{{ sortDirection }} {% endif %}">
-                                <a href="{{ path(app.request.attributes.get('_route'), {'page': currentPage, 'sortType': 'idPartner', sortDirection: sortParameter}) }}">
-                                    <span class="label">Marché</span>
-                                    <span class="project-list-filter-order"></span>
-                                </a>
+                            <div class="project-list-item-category project-list-filter{% if sortType == 'idMarketSegment' %} ui-sortable-current ui-sortable-direction-{{ sortDirection }} {% endif %}">
+                                <span class="label">Marché</span>
                             </div><!-- /.project-list-filter -->
                             <div class="project-list-item-info project-list-filter{% if sortType == 'title' %} ui-sortable-current ui-sortable-direction-{{ sortDirection }} {% endif %}">
-                                <a href="{{ path(app.request.attributes.get('_route'), {'page': currentPage, 'sortType': 'title', sortDirection: sortParameter}) }}">
-                                    <span class="label">Projet</span>
-                                    <span class="project-list-filter-order"></span>
-                                </a>
+                                <span class="label">Projet</span>
                             </div><!-- /.project-list-filter -->
                             <div class="project-list-item-view project-list-filter">
                                 <span class="label">&nbsp;</span>
