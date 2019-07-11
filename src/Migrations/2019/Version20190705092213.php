@@ -388,7 +388,8 @@ TREE_ELEMENT
             <<<'TRANSLATIONS'
             INSERT INTO translations (locale, section, name, translation, added) VALUES
                 ('fr_FR', 'service-terms-popup', 'title', 'Les conditions générales d‘utilisation évoluent.', NOW()),
-                ('fr_FR', 'service-terms-popup', 'confirm-check-box-label', 'Je certifie avoir pris connaissance et accepter expressément <a href="/conditions-service">les conditions générales d‘utilisation de CALS</a>.', NOW())
+                ('fr_FR', 'service-terms-popup', 'confirm-check-box-label', 'Je certifie avoir pris connaissance et accepter expressément <a href="/conditions-service">les conditions générales d‘utilisation de CALS</a>.', NOW()),
+                ('fr_FR', 'mail-title', 'service-terms-accepted', 'Vous avez accepté les conditions générales d‘utilisation', NOW())
 TRANSLATIONS
         );
     }
