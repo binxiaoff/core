@@ -23,7 +23,7 @@ final class Version20190520143152 extends AbstractMigration
     public function up(Schema $schema): void
     {
         $this->addSql(
-            <<<'INSERT'
+            <<<'TRANSLATIONS'
             INSERT INTO translations (locale, section, name, translation, added) VALUES
               ('fr_FR', 'bids', 'table-column-lender', 'Prêteur', NOW()),
               ('fr_FR', 'bids', 'table-column-amount', 'Montant', NOW()),
@@ -38,7 +38,7 @@ final class Version20190520143152 extends AbstractMigration
               ('fr_FR', 'bids', 'modal-partial-amount-help', '(max #formattedAmountPlaceholder#)', NOW()),
               ('fr_FR', 'bids', 'modal-partial-cancel-button', 'Annuler', NOW()),
               ('fr_FR', 'bids', 'modal-partial-submit-button', 'Accepter l’offre', NOW())
-INSERT
+TRANSLATIONS
         );
     }
 

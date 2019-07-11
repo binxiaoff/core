@@ -42,7 +42,7 @@ final class Version20190424091944 extends AbstractMigration
         $this->addSql('UPDATE projects_status_history SET id_project_status = 7 WHERE id_project_status = 8');
         $this->addSql('TRUNCATE projects_status');
         $this->addSql(
-            <<<'INSERT'
+            <<<'STATUS'
 INSERT INTO projects_status (id_project_status, label, status)
 VALUES
   (1, 'Dépôt', 10),
@@ -53,7 +53,7 @@ VALUES
   (6, 'Clôture', 60),
   (7, 'Perte', 70),
   (8, 'Annulé', 100)
-INSERT
+STATUS
         );
         $this->addSql('SET FOREIGN_KEY_CHECKS = 1');
 
@@ -80,7 +80,7 @@ TRANSLATIONS
         $this->addSql('SET FOREIGN_KEY_CHECKS = 0');
         $this->addSql('TRUNCATE projects_status');
         $this->addSql(
-            <<<'INSERT'
+            <<<'STATUS'
 INSERT INTO projects_status (id_project_status, label, status)
 VALUES
   (1, 'À compléter', 10),
@@ -92,7 +92,7 @@ VALUES
   (7, 'Remboursé', 70),
   (8, 'Perte', 80),
   (9, 'Annulé', 100)
-INSERT
+STATUS
 );
         $this->addSql('UPDATE projects SET status = 80 WHERE status = 70');
         $this->addSql('UPDATE projects SET status = 70 WHERE status = 60');
