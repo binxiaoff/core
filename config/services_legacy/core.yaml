@@ -83,8 +83,8 @@ services:
 
     # move these services to services.yaml, once the related deprecations are fixed
     Unilend\Service\Document\LoanContractGenerator:
-        $protectedPath: '%path.protected%'
-        $staticPath: '%path.static%'
+        $publicDirectory: '%directory.public%'
+        $documentRootDirectory: '%directory.protected%/pdf/'
         $numberFormatter: '@number_formatter'
         $currencyFormatter: '@currency_formatter'
 

@@ -123,7 +123,7 @@ class FeedsDirectDebitCommand extends ContainerAwareCommand
         $xml = str_replace('[#borrowerTotalAmount#]', $borrowerTotalAmount, $xml);
 
         if (false === empty($borrowerDirectDebits)) {
-            file_put_contents($this->getContainer()->getParameter('path.sftp') . 'sfpmei/emissions/prelevements/Unilend_Prelevements_' . $date . '.xml', $xml);
+            file_put_contents($this->getContainer()->getParameter('directory.sftp') . 'sfpmei/emissions/prelevements/Unilend_Prelevements_' . $date . '.xml', $xml);
         }
     }
 

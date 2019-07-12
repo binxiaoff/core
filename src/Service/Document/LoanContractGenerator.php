@@ -3,25 +3,23 @@
 namespace Unilend\Service\Document;
 
 use Doctrine\ORM\{EntityManagerInterface, NonUniqueResultException};
+use Exception;
 use Knp\Snappy\Pdf;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Asset\Packages;
 use Symfony\Component\Filesystem\Filesystem;
 use Twig\Environment;
-use Unilend\Entity\{AddressType, Blocs, BlocsElements, ClientAddress, Companies, CompaniesActifPassif, CompaniesBilans, CompanyAddress, Echeanciers, Elements, Loans, ProjectsStatus,
-    ProjectsStatusHistory, TaxType, UnderlyingContract};
+use Unilend\Entity\{AddressType, Blocs, BlocsElements, ClientAddress, Companies, CompaniesActifPassif, CompaniesBilans, CompanyAddress, Echeanciers,
+    Elements, Loans, ProjectsStatus, ProjectsStatusHistory, TaxType, UnderlyingContract};
 use Unilend\Service\LoanManager;
 
-class LoanContractGenerator implements DocumentGeneratorInterface
+class LoanContractGenerator extends AbstractDocumentGenerator
 {
-    const PATH = 'pdf' . DIRECTORY_SEPARATOR . 'contrat';
+    private const PATH        = 'loan_contract';
+    private const FILE_PREFIX = 'contrat-pret';
 
     /** @var EntityManagerInterface */
     private $entityManager;
-    /** @var Filesystem */
-    private $filesystem;
-    /** @var string */
-    private $protectedPath;
     /** @var Environment */
     private $twig;
     /** @var Pdf */
@@ -29,7 +27,7 @@ class LoanContractGenerator implements DocumentGeneratorInterface
     /** @var string */
     private $staticUrl;
     /** @var string */
-    private $staticPath;
+    private $publicDirectory;
     /** @var \NumberFormatter */
     private $numberFormatter;
     /** @var \NumberFormatter */
@@ -42,8 +40,7 @@ class LoanContractGenerator implements DocumentGeneratorInterface
     /**
      * @param EntityManagerInterface $entityManager
      * @param Filesystem             $filesystem
-     * @param string                 $protectedPath
-     * @param string                 $staticPath
+     * @param string                 $publicDirectory
      * @param Environment            $twig
      * @param Pdf                    $snappy
      * @param Packages               $assetsPackages
@@ -51,25 +48,23 @@ class LoanContractGenerator implements DocumentGeneratorInterface
      * @param \NumberFormatter       $currencyFormatter
      * @param LoanManager            $loanManager
      * @param LoggerInterface        $logger
+     * @param string                 $documentRootDirectory
      */
     public function __construct(
         EntityManagerInterface $entityManager,
         Filesystem $filesystem,
-        string $protectedPath,
-        string $staticPath,
+        string $publicDirectory,
         Environment $twig,
         Pdf $snappy,
         Packages $assetsPackages,
         \NumberFormatter $numberFormatter,
         \NumberFormatter $currencyFormatter,
         LoanManager $loanManager,
-        LoggerInterface $logger
-    )
-    {
+        LoggerInterface $logger,
+        string $documentRootDirectory
+    ) {
         $this->entityManager     = $entityManager;
-        $this->filesystem        = $filesystem;
-        $this->protectedPath     = $protectedPath;
-        $this->staticPath        = $staticPath;
+        $this->publicDirectory   = $publicDirectory;
         $this->twig              = $twig;
         $this->snappy            = $snappy;
         $this->staticUrl         = $assetsPackages->getUrl('');
@@ -79,68 +74,19 @@ class LoanContractGenerator implements DocumentGeneratorInterface
         $this->logger            = $logger;
 
         $this->snappy->setBinary('/usr/local/bin/wkhtmltopdf');
-    }
 
-    /**
-     * @return string
-     */
-    public function getContentType(): string
-    {
-        return self::CONTENT_TYPE_PDF;
-    }
-
-    /**
-     * @param Loans $loan
-     *
-     * @return string
-     * @throws \Exception
-     */
-    public function getPath($loan): string
-    {
-        if (false === $loan instanceof Loans) {
-            $parameterType = gettype($loan);
-            $parameterType = 'object' === $parameterType ? get_class($loan) : $parameterType;
-
-            throw new \InvalidArgumentException('Loan entity expected, got "' . $parameterType . '"');
-        }
-
-        if (null === $loan->getWallet() || null === $loan->getWallet()->getIdClient()) {
-            throw new \Exception('No lender defined for loan ' . $loan->getIdLoan());
-        }
-
-        return $this->protectedPath . self::PATH . DIRECTORY_SEPARATOR . 'contrat-' . $loan->getWallet()->getIdClient()->getHash() . '-' . $loan->getIdLoan() . '.pdf';
-    }
-
-    /**
-     * @param Loans $loan
-     *
-     * @return bool
-     * @throws \Exception
-     */
-    public function exists($loan): bool
-    {
-        $path = $this->getPath($loan);
-
-        return $this->filesystem->exists($path);
+        parent::__construct($filesystem, $documentRootDirectory);
     }
 
     /**
      * @param Loans $loan
      *
      * @throws NonUniqueResultException
-     * @throws \Twig_Error_Loader
-     * @throws \Twig_Error_Runtime
-     * @throws \Twig_Error_Syntax
-     * @throws \Exception
+     * @throws Exception
      */
     public function generate($loan): void
     {
-        if (false === $loan instanceof Loans) {
-            $parameterType = gettype($loan);
-            $parameterType = 'object' === $parameterType ? get_class($loan) : $parameterType;
-
-            throw new \InvalidArgumentException('Loan entity expected, got "' . $parameterType . '"');
-        }
+        $this->checkObject($loan);
 
         $template = [
             'staticUrl' => $this->staticUrl,
@@ -148,7 +94,7 @@ class LoanContractGenerator implements DocumentGeneratorInterface
             'loan'      => $this->getLoanData($loan),
             'borrower'  => $this->getBorrowerData($loan),
             'lender'    => $this->getLenderData($loan),
-            'project'   => $loan->getTranche()->getNatureProject()
+            'project'   => $loan->getTranche()->getName(),
         ];
 
         if (UnderlyingContract::CONTRACT_BDC === $loan->getUnderlyingContract()->getLabel()) {
@@ -161,7 +107,7 @@ class LoanContractGenerator implements DocumentGeneratorInterface
 
                     $template['finance'] = [
                         'lastAnnualAccountsDate' => $lastAnnualAccounts->getClotureExerciceFiscal()->format('d/m/Y'),
-                        'assetsDebts'            => $assetsDebtsRepository->findOneBy(['idBilan' => $lastAnnualAccounts->getIdBilan()])
+                        'assetsDebts'            => $assetsDebtsRepository->findOneBy(['idBilan' => $lastAnnualAccounts->getIdBilan()]),
                     ];
                 }
             }
@@ -169,8 +115,32 @@ class LoanContractGenerator implements DocumentGeneratorInterface
 
         $content = $this->twig->render('/pdf/contract/' . $loan->getUnderlyingContract()->getDocumentTemplate() . '.html.twig', $template);
 
-        $this->snappy->setOption('user-style-sheet', $this->staticPath . 'styles/default/pdf/style.css');
-        $this->snappy->generateFromHtml($content, $this->getPath($loan), [], true);
+        $this->snappy->setOption('user-style-sheet', $this->publicDirectory . 'styles/default/pdf/style.css');
+        $this->snappy->generateFromHtml($content, $this->getFilePath($loan), [], true);
+    }
+
+    /**
+     * @param Loans|object $loan
+     *
+     * @return string
+     */
+    protected function getFileName(object $loan): string
+    {
+        $this->checkObject($loan);
+
+        return self::FILE_PREFIX . '-' . $loan->getWallet()->getIdClient()->getHash() . '-' . $loan->getIdLoan() . '.pdf';
+    }
+
+    /**
+     * @param Loans|object $loan
+     *
+     * @return string
+     */
+    protected function getRelativeDirectory(object $loan): string
+    {
+        $this->checkObject($loan);
+
+        return self::PATH . DIRECTORY_SEPARATOR . $loan->getTranche()->getProject()->getId();
     }
 
     /**
@@ -184,7 +154,8 @@ class LoanContractGenerator implements DocumentGeneratorInterface
         $loanAmount        = bcdiv($loan->getAmount(), 100);
         $repaymentSchedule = $this->entityManager
             ->getRepository(Echeanciers::class)
-            ->findBy(['idLoan' => $loan], ['ordre' => 'ASC']);
+            ->findBy(['idLoan' => $loan], ['ordre' => 'ASC'])
+        ;
 
         foreach ($repaymentSchedule as $repayment) {
             $interests = bcadd($interests, bcdiv($repayment->getInterets(), 100, 5), 5);
@@ -194,14 +165,16 @@ class LoanContractGenerator implements DocumentGeneratorInterface
 
         $repaymentStatus = $this->entityManager
             ->getRepository(ProjectsStatus::class)
-            ->findOneBy(['status' => ProjectsStatus::STATUS_CONTRACTS_SIGNED]);
+            ->findOneBy(['status' => ProjectsStatus::STATUS_CONTRACTS_SIGNED])
+        ;
 
         $repaymentStatusHistory = $this->entityManager
             ->getRepository(ProjectsStatusHistory::class)
             ->findOneBy(
-                ['idProject' => $loan->getTranche()->getIdProject(), 'idProjectStatus' => $repaymentStatus],
+                ['idProject' => $loan->getTranche()->getProject(), 'idProjectStatus' => $repaymentStatus],
                 ['added' => 'ASC', 'idProjectStatusHistory' => 'ASC']
-            );
+            )
+        ;
 
         $vatRate                    = $this->entityManager->getRepository(TaxType::class)->findOneBy(['idTaxType' => TaxType::TYPE_VAT]);
         $fundsReleaseCommissionRate = round(bcdiv($loan->getTranche()->getCommissionRateFunds(), 100, 4), 2);
@@ -222,7 +195,7 @@ class LoanContractGenerator implements DocumentGeneratorInterface
             'lastRepaymentDate' => array_slice($repaymentSchedule, -1)[0]->getDateEcheance()->format('d/m/Y'),
             'borrowerFees'      => $this->currencyFormatter->formatCurrency($borrowerFees, 'EUR'),
             'borrowerCost'      => $this->currencyFormatter->formatCurrency($borrowerCost, 'EUR'),
-            'repaymentSchedule' => $repaymentSchedule
+            'repaymentSchedule' => $repaymentSchedule,
         ];
     }
 
@@ -240,11 +213,13 @@ class LoanContractGenerator implements DocumentGeneratorInterface
         $content = [];
         $block   = $this->entityManager
             ->getRepository(Blocs::class)
-            ->findOneBy(['slug' => $loan->getUnderlyingContract()->getBlockSlug()]);
+            ->findOneBy(['slug' => $loan->getUnderlyingContract()->getBlockSlug()])
+        ;
 
         $blockElements = $this->entityManager
             ->getRepository(BlocsElements::class)
-            ->findBy(['idBloc' => $block->getIdBloc()]);
+            ->findBy(['idBloc' => $block->getIdBloc()])
+        ;
 
         $elementRepository = $this->entityManager->getRepository(Elements::class);
 
@@ -275,17 +250,18 @@ class LoanContractGenerator implements DocumentGeneratorInterface
             'address'         => [
                 'address' => $company->getIdAddress() ? $company->getIdAddress()->getAddress() : '',
                 'zip'     => $company->getIdAddress() ? $company->getIdAddress()->getZip() : '',
-                'city'    => $company->getIdAddress() ? $company->getIdAddress()->getCity() : ''
-            ]
+                'city'    => $company->getIdAddress() ? $company->getIdAddress()->getCity() : '',
+            ],
         ];
     }
 
     /**
      * @param Loans $loan
      *
-     * @return array
-     * @throws \Exception
+     * @throws Exception
      * @throws NonUniqueResultException
+     *
+     * @return array
      */
     private function getLenderData(Loans $loan): array
     {
@@ -300,7 +276,8 @@ class LoanContractGenerator implements DocumentGeneratorInterface
         } else {
             $company = $this->entityManager
                 ->getRepository(Companies::class)
-                ->findOneBy(['idClientOwner' => $client]);
+                ->findOneBy(['idClientOwner' => $client])
+            ;
 
             $address = $company->getIdAddress();
         }
@@ -309,22 +286,24 @@ class LoanContractGenerator implements DocumentGeneratorInterface
             $this->logger->warning('Client ' . $client->getIdClient() . ' has no validated main address. Only validated addresses should be used in official documents', [
                 'id_client' => $client->getIdClient(),
                 'class'     => __CLASS__,
-                'function'  => __FUNCTION__
+                'function'  => __FUNCTION__,
             ]);
 
             if ($client->isNaturalPerson()) {
                 $address = $this->entityManager
                     ->getRepository(ClientAddress::class)
-                    ->findLastModifiedNotArchivedAddressByType($client, AddressType::TYPE_MAIN_ADDRESS);
+                    ->findLastModifiedNotArchivedAddressByType($client, AddressType::TYPE_MAIN_ADDRESS)
+                ;
             } else {
                 $address = $this->entityManager
                     ->getRepository(CompanyAddress::class)
-                    ->findLastModifiedNotArchivedAddressByType($company, AddressType::TYPE_MAIN_ADDRESS);
+                    ->findLastModifiedNotArchivedAddressByType($company, AddressType::TYPE_MAIN_ADDRESS)
+                ;
             }
         }
 
         if (null === $address) {
-            throw new \Exception('No address found for client ' . $client->getIdClient());
+            throw new Exception('No address found for client ' . $client->getIdClient());
         }
 
         $lenderData = [
@@ -335,8 +314,8 @@ class LoanContractGenerator implements DocumentGeneratorInterface
             'address'         => [
                 'address' => $address->getAddress(),
                 'zip'     => $address->getZip(),
-                'city'    => $address->getCity()
-            ]
+                'city'    => $address->getCity(),
+            ],
         ];
 
         if (false === $client->isNaturalPerson()) {
@@ -345,10 +324,18 @@ class LoanContractGenerator implements DocumentGeneratorInterface
                 'name'            => $company->getName(),
                 'legalStatus'     => $company->getForme(),
                 'capitalStock'    => $this->numberFormatter->format(max($company->getCapital(), 0)),
-                'commercialCourt' => $company->getTribunalCom()
+                'commercialCourt' => $company->getTribunalCom(),
             ];
         }
 
         return $lenderData;
+    }
+
+    /**
+     * @param Loans $loans
+     */
+    private function checkObject(Loans $loans)
+    {
+        //nothing to do. The language structure (type hint) is used to check the object.
     }
 }

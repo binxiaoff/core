@@ -31,7 +31,7 @@ class DebtCollectionMissionManager
     private $logger;
 
     /** @var string */
-    private $protectedPath;
+    private $protectedDirectory;
 
     /** @var Filesystem */
     private $fileSystem;
@@ -44,7 +44,7 @@ class DebtCollectionMissionManager
      * @param ProjectRepaymentTaskManager   $projectRepaymentTaskManager
      * @param LoggerInterface               $logger
      * @param Filesystem                    $filesystem
-     * @param string                        $protectedPath
+     * @param string                        $protectedDirectory
      * @param ProjectCloseOutNettingManager $projectCloseOutNettingManager
      */
     public function __construct(
@@ -52,7 +52,7 @@ class DebtCollectionMissionManager
         ProjectRepaymentTaskManager $projectRepaymentTaskManager,
         LoggerInterface $logger,
         Filesystem $filesystem,
-        string $protectedPath,
+        string $protectedDirectory,
         ProjectCloseOutNettingManager $projectCloseOutNettingManager
     )
     {
@@ -60,7 +60,7 @@ class DebtCollectionMissionManager
         $this->projectRepaymentTaskManager   = $projectRepaymentTaskManager;
         $this->logger                        = $logger;
         $this->fileSystem                    = $filesystem;
-        $this->protectedPath                 = $protectedPath;
+        $this->protectedDirectory                 = $protectedDirectory;
         $this->projectCloseOutNettingManager = $projectCloseOutNettingManager;
     }
 
@@ -278,7 +278,7 @@ class DebtCollectionMissionManager
 
         $fileName     = 'recouvrement_' . $debtCollectionMission->getId() . '_' . $debtCollectionMission->getAdded()->format('Y-m-d');
         $absolutePath = implode(DIRECTORY_SEPARATOR, [
-            $this->protectedPath,
+            $this->protectedDirectory,
             self::DEBT_COLLECTION_MISSION_FOLDER,
             trim($debtCollectionMission->getIdClientDebtCollector()->getIdClient()),
             $debtCollectionMission->getIdProject()->getIdProject()
@@ -297,7 +297,7 @@ class DebtCollectionMissionManager
         $writer = \PHPExcel_IOFactory::createWriter($excel, 'Excel2007');
         $writer->save($absoluteFileName);
 
-        $debtCollectionMission->setAttachment(str_replace($this->protectedPath, '', $absoluteFileName));
+        $debtCollectionMission->setAttachment(str_replace($this->protectedDirectory, '', $absoluteFileName));
         $this->entityManager->flush($debtCollectionMission);
     }
 

@@ -4,6 +4,7 @@ namespace Unilend\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
+use Doctrine\ORM\{ORMException, OptimisticLockException};
 use Unilend\Entity\AcceptationsLegalDocs;
 use Unilend\Service\ServiceTerms\ServiceTermsManager;
 
@@ -26,6 +27,18 @@ class AcceptationLegalDocsRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, AcceptationsLegalDocs::class);
         $this->serviceTermsManager = $serviceTermsManager;
+    }
+
+    /**
+     * @param AcceptationsLegalDocs $acceptationsLegalDocs
+     *
+     * @throws ORMException
+     * @throws OptimisticLockException
+     */
+    public function save(AcceptationsLegalDocs $acceptationsLegalDocs): void
+    {
+        $this->getEntityManager()->persist($acceptationsLegalDocs);
+        $this->getEntityManager()->flush();
     }
 
     /**

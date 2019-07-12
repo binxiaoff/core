@@ -45,7 +45,7 @@ class QueriesCrsDacCommand extends ContainerAwareCommand
             return;
         }
 
-        $filePath         = $this->getContainer()->getParameter('path.protected') . '/queries/' . 'preteurs_crs_dac' . $year . '.xlsx';
+        $filePath         = $this->getContainer()->getParameter('directory.protected') . '/queries/' . 'preteurs_crs_dac' . $year . '.xlsx';
         $logger           = $this->getContainer()->get('logger');
         $entityManager    = $this->getContainer()->get('doctrine.orm.entity_manager');
         $clientRepository = $entityManager->getRepository(Clients::class);

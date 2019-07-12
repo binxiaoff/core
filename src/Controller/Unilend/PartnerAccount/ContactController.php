@@ -66,7 +66,7 @@ class ContactController extends Controller
                     $message->setTo($settingsRepository->findOneBy(['type' => 'Adresse emprunteur'])->getValue());
 
                     if ($file instanceof UploadedFile) {
-                        $uploadDestination = $this->getParameter('path.protected') . 'contact/';
+                        $uploadDestination = $this->getParameter('directory.protected') . 'contact/';
                         $file              = $file->move($uploadDestination, $file->getClientOriginalName());
                         $filePath          = $file->getPathname();
                         $message->attach(\Swift_Attachment::fromPath($filePath));

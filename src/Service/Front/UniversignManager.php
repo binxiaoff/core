@@ -35,7 +35,7 @@ class UniversignManager
     /** @var string */
     private $universignURL;
     /** @var string */
-    private $rootDirectory;
+    private $documentRootDirectory;
     /** @var SlackManager */
     private $slackManager;
 
@@ -50,7 +50,7 @@ class UniversignManager
      * @param WireTransferOutManager  $wireTransferOutManager
      * @param SlackManager            $slackManager
      * @param string                  $universignURL
-     * @param string                  $rootDirectory
+     * @param string                  $documentRootDirectory
      */
     public function __construct(
         EntityManagerInterface $entityManager,
@@ -63,7 +63,7 @@ class UniversignManager
         WireTransferOutManager $wireTransferOutManager,
         SlackManager $slackManager,
         string $universignURL,
-        string $rootDirectory
+        string $documentRootDirectory
     ) {
         $this->entityManager          = $entityManager;
         $this->mailerManager          = $mailerManager;
@@ -75,7 +75,7 @@ class UniversignManager
         $this->wireTransferOutManager = $wireTransferOutManager;
         $this->slackManager           = $slackManager;
         $this->universignURL          = $universignURL;
-        $this->rootDirectory          = $rootDirectory;
+        $this->documentRootDirectory  = $documentRootDirectory;
     }
 
     /**
@@ -543,23 +543,23 @@ class UniversignManager
 
         switch (get_class($document)) {
             case ClientsMandats::class:
-                $documentFullPath = $this->rootDirectory . '/../protected/pdf/mandat/' . $documentName;
+                $documentFullPath = $this->documentRootDirectory . 'mandat/' . $documentName;
 
                 break;
             case ProjectsPouvoir::class:
-                $documentFullPath = $this->rootDirectory . '/../protected/pdf/pouvoir/' . $documentName;
+                $documentFullPath = $this->documentRootDirectory . 'pouvoir/' . $documentName;
 
                 break;
             case ProjectCgv::class:
-                $documentFullPath = $this->rootDirectory . '/../' . ProjectCgv::BASE_PATH . $documentName;
+                $documentFullPath = $this->documentRootDirectory . 'cgv_emprunteurs/' . $documentName;
 
                 break;
             case WireTransferOutUniversign::class:
-                $documentFullPath = $this->rootDirectory . '/../protected/pdf/wire_transfer_out/' . $documentName;
+                $documentFullPath = $this->documentRootDirectory . 'wire_transfer_out/' . $documentName;
 
                 break;
             case ProjectBeneficialOwnerUniversign::class:
-                $documentFullPath = $this->rootDirectory . '/../protected/pdf/beneficial_owner/' . $documentName;
+                $documentFullPath = $this->documentRootDirectory . 'beneficial_owner/' . $documentName;
 
                 break;
             default:

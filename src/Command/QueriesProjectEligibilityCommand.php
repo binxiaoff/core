@@ -27,7 +27,7 @@ class QueriesProjectEligibilityCommand extends ContainerAwareCommand
      */
     protected function execute(InputInterface $input, OutputInterface $output): void
     {
-        $filePath = $this->getContainer()->getParameter('path.protected') . '/queries/' . 'projects_eligibility.xlsx';
+        $filePath = $this->getContainer()->getParameter('directory.protected') . '/queries/' . 'projects_eligibility.xlsx';
         $header   = [
             'ID projet',
             'Date de dépôt',

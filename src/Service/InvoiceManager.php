@@ -16,7 +16,7 @@ class InvoiceManager
     /** @var Twig_Environment */
     private $twig;
     /** @var string */
-    private $protectedPath;
+    private $protectedDirectory;
     /** @var ProjectManager */
     private $projectManager;
 
@@ -24,16 +24,16 @@ class InvoiceManager
      * @param EntityManagerInterface $entityManager
      * @param GeneratorInterface     $snappy
      * @param Twig_Environment       $twig
-     * @param string                 $protectedPath
+     * @param string                 $protectedDirectory
      * @param ProjectManager         $projectManager
      */
-    public function __construct(EntityManagerInterface $entityManager, GeneratorInterface $snappy, Twig_Environment $twig, ProjectManager $projectManager, string $protectedPath)
+    public function __construct(EntityManagerInterface $entityManager, GeneratorInterface $snappy, Twig_Environment $twig, ProjectManager $projectManager, string $protectedDirectory)
     {
-        $this->entityManager  = $entityManager;
-        $this->snappy         = $snappy;
-        $this->twig           = $twig;
-        $this->protectedPath  = $protectedPath;
-        $this->projectManager = $projectManager;
+        $this->entityManager      = $entityManager;
+        $this->snappy             = $snappy;
+        $this->twig               = $twig;
+        $this->protectedDirectory = $protectedDirectory;
+        $this->projectManager     = $projectManager;
     }
 
     /**
@@ -127,9 +127,9 @@ class InvoiceManager
         $client = $invoice->getIdProject()->getIdCompany()->getIdClientOwner();
 
         if ($invoice->getOrdre() >= 1) {
-            return $this->protectedPath . '/pdf/facture/facture_ER-' . $client->getHash() . '-' . $invoice->getIdProject()->getIdProject() . '-' . $invoice->getOrdre() . '.pdf';
+            return $this->protectedDirectory . '/pdf/facture/facture_ER-' . $client->getHash() . '-' . $invoice->getIdProject()->getIdProject() . '-' . $invoice->getOrdre() . '.pdf';
         } else {
-            return $this->protectedPath . '/pdf/facture/facture_EF-' . $client->getHash() . '-' . $invoice->getIdProject()->getIdProject() . '.pdf';
+            return $this->protectedDirectory . '/pdf/facture/facture_EF-' . $client->getHash() . '-' . $invoice->getIdProject()->getIdProject() . '.pdf';
         }
     }
 

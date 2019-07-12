@@ -345,7 +345,7 @@ class UniversignController extends Controller
         }
 
         $universign             = $wireTransferOut->getUniversign();
-        $wireTransferOutPdfRoot = $this->getParameter('path.protected') . 'pdf/wire_transfer_out';
+        $wireTransferOutPdfRoot = $this->getParameter('directory.protected') . 'pdf/wire_transfer_out';
 
         if (
             $universign instanceof WireTransferOutUniversign

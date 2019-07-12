@@ -17,16 +17,16 @@ class IfuManager
     private $entityManager;
 
     /** @var string */
-    private $protectedPath;
+    private $protectedDirectory;
 
     /**
      * @param EntityManagerInterface $entityManager
-     * @param string                 $protectedPath
+     * @param string                 $protectedDirectory
      */
-    public function __construct(EntityManagerInterface $entityManager, $protectedPath)
+    public function __construct(EntityManagerInterface $entityManager, $protectedDirectory)
     {
-        $this->entityManager = $entityManager;
-        $this->protectedPath = $protectedPath;
+        $this->entityManager      = $entityManager;
+        $this->protectedDirectory = $protectedDirectory;
     }
 
     /**
@@ -52,13 +52,13 @@ class IfuManager
      */
     public function getStorageRootPath()
     {
-        $directory = $this->protectedPath . DIRECTORY_SEPARATOR . 'IFU' . DIRECTORY_SEPARATOR . 'extraction';
+        $directory = $this->protectedDirectory . DIRECTORY_SEPARATOR . 'IFU' . DIRECTORY_SEPARATOR . 'extraction';
 
         if (false === is_dir($directory)) {
             mkdir($directory);
         }
 
-        return $this->protectedPath . DIRECTORY_SEPARATOR . 'IFU' . DIRECTORY_SEPARATOR . 'extraction';
+        return $this->protectedDirectory . DIRECTORY_SEPARATOR . 'IFU' . DIRECTORY_SEPARATOR . 'extraction';
     }
 
     /**

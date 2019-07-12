@@ -29,15 +29,15 @@ class debt_collection_missionController extends bootstrap
                 $missionId = filter_var($this->params[0], FILTER_VALIDATE_INT);
                 if (null !== ($debtCollectionMission = $entityManager->getRepository(DebtCollectionMission::class)->find($missionId))) {
                     try {
-                        if (is_dir($this->getParameter('path.protected') . $debtCollectionMission->getAttachment())
-                            || false === file_exists($this->getParameter('path.protected') . $debtCollectionMission->getAttachment())) {
+                        if (is_dir($this->getParameter('directory.protected') . $debtCollectionMission->getAttachment())
+                            || false === file_exists($this->getParameter('directory.protected') . $debtCollectionMission->getAttachment())) {
                             $debtCollectionMissionManager->generateExcelFile($debtCollectionMission);
                         }
                         header('Content-Type: application/force-download; charset=utf-8');
                         header('Content-Disposition: attachment;filename=' . basename($debtCollectionMission->getAttachment()));
                         header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
                         header('Expires: 0');
-                        readfile($this->getParameter('path.protected') . $debtCollectionMission->getAttachment());
+                        readfile($this->getParameter('directory.protected') . $debtCollectionMission->getAttachment());
                         die;
                     } catch (\Exception $exception) {
                         $this->get('logger')->warning(

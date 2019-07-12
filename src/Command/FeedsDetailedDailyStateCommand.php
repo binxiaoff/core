@@ -151,7 +151,7 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
             $this->addBankAccountData($activeSheet, $firstDay, $requestedDate, $specificRows);
 
 
-            $filePath = $this->getContainer()->getParameter('path.sftp') . 'sfpmei/emissions/etat_quotidien/Unilend_etat_detaille_' . $requestedDate->format('Ymd') . '.xlsx';
+            $filePath = $this->getContainer()->getParameter('directory.sftp') . 'sfpmei/emissions/etat_quotidien/Unilend_etat_detaille_' . $requestedDate->format('Ymd') . '.xlsx';
             /** @var \PHPExcel_Writer_CSV $writer */
             $writer = \PHPExcel_IOFactory::createWriter($document, 'Excel2007');
             $writer->save(str_replace(__FILE__, $filePath, __FILE__));
