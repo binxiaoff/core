@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\Message\Project;
 
-class ProjectRequested
+class ProjectPublished
 {
     /** @var int */
     private $projectId;

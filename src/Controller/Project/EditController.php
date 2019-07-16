@@ -137,7 +137,6 @@ class EditController extends AbstractController
 
     /**
      * @Route("/projet/abandon/{hash}", name="edit_project_status_abandon", requirements={"hash": "[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}"})
-     * @Route("/projet/financement/{hash}", name="edit_project_status_publish", requirements={"hash": "[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}"})
      * @Route("/projet/finance/{hash}", name="edit_project_status_funded", requirements={"hash": "[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}"})
      * @Route("/projet/signature/{hash}", name="edit_project_status_contracts_redacted", requirements={"hash": "[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}"})
      * @Route("/projet/remboursement/{hash}", name="edit_project_status_signed", requirements={"hash": "[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}"})
@@ -151,7 +150,6 @@ class EditController extends AbstractController
      * @param UserInterface|Clients|null   $user
      * @param ProjectStatusManager         $projectStatusManager
      * @param MailerManager                $mailerManager
-     * @param NotificationManager          $notificationManager
      * @param LoggerInterface              $logger
      * @param TrancheRepository            $trancheRepository
      * @param BidsRepository               $bidsRepository
@@ -170,7 +168,6 @@ class EditController extends AbstractController
         ?UserInterface $user,
         ProjectStatusManager $projectStatusManager,
         MailerManager $mailerManager,
-        NotificationManager $notificationManager,
         LoggerInterface $logger,
         TrancheRepository $trancheRepository,
         BidsRepository $bidsRepository,
@@ -185,10 +182,6 @@ class EditController extends AbstractController
         switch ($route) {
             case 'edit_project_status_abandon':
                 $status = ProjectStatusHistory::STATUS_CANCELLED;
-
-                break;
-            case 'edit_project_status_publish':
-                $status = ProjectStatusHistory::STATUS_PUBLISHED;
 
                 break;
             case 'edit_project_status_funded':
@@ -217,19 +210,6 @@ class EditController extends AbstractController
             $projectStatusManager->addProjectStatus($user, $status, $project);
 
             switch ($status) {
-                case ProjectStatusHistory::STATUS_PUBLISHED:
-                    try {
-                        $notificationManager->createProjectPublication($project);
-                    } catch (Exception $exception) {
-                        $logger->error('An error occurred while sending project publication email. Message: ' . $exception->getMessage(), [
-                            'class'    => __CLASS__,
-                            'function' => __FUNCTION__,
-                            'file'     => $exception->getFile(),
-                            'line'     => $exception->getLine(),
-                        ]);
-                    }
-
-                    break;
                 case ProjectStatusHistory::STATUS_FUNDED:
                     $this->closeProject(
                         $project,

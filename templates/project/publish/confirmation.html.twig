@@ -1,0 +1,13 @@
+{% extends 'layouts/_page_with_sidebar.html.twig' %}
+
+{% block dashboardContent %}
+    <section class="dashboard-tabs tabs">
+        <div class="dashboard-tabs-content tab-content">
+            <div id="form-container" class="dashboard-tab-pane">
+                <article class="request-form-panel panel ">
+                   {% trans with {projectLink: projectLink} %} project.put-on-line-confirmation-message {% endtrans %}
+                </article>
+            </div>
+        </div>
+    </section>
+{% endblock %}

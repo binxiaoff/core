@@ -167,6 +167,13 @@ class Tranche
     private $loans;
 
     /**
+     * @var TrancheAttribute[]|ArrayCollection
+     *
+     * @ORM\OneToMany(targetEntity="TrancheAttribute", mappedBy="tranche", cascade={"persist"}, orphanRemoval=true)
+     */
+    private $trancheAttributes;
+
+    /**
      * Tranche constructor.
      */
     public function __construct()
@@ -487,5 +494,41 @@ class Tranche
     public static function getRepaymentTypes(): array
     {
         return self::getConstants('REPAYMENT_TYPE_');
+    }
+
+    /**
+     * @return TrancheAttribute[]|ArrayCollection
+     */
+    public function getTrancheAttributes(): iterable
+    {
+        return $this->trancheAttributes;
+    }
+
+    /**
+     * @param TrancheAttribute $trancheAttribute
+     *
+     * @return Tranche
+     */
+    public function addTrancheAttribute(TrancheAttribute $trancheAttribute): Tranche
+    {
+        $trancheAttribute->setTranche($this);
+
+        if (false === $this->trancheAttributes->contains($trancheAttribute) && false === empty($trancheAttribute->getAttribute()->getValue())) {
+            $this->trancheAttributes->add($trancheAttribute);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @param TrancheAttribute $trancheAttribute
+     *
+     * @return Tranche
+     */
+    public function removeTrancheAttribute(TrancheAttribute $trancheAttribute): Tranche
+    {
+        $this->trancheAttributes->removeElement($trancheAttribute);
+
+        return $this;
     }
 }

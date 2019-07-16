@@ -426,9 +426,19 @@ class Project
      */
     public function setFoncarisGuarantee(?int $foncarisGuarantee): Project
     {
-        $this->foncarisGuarantee = $foncarisGuarantee;
+        if (in_array($foncarisGuarantee, self::getFoncarisGuaranteeOptions())) {
+            $this->foncarisGuarantee = $foncarisGuarantee;
+        }
 
         return $this;
+    }
+
+    /**
+     * @return bool
+     */
+    public function needFoncarisGuarantee(): bool
+    {
+        return self::FONCARIS_GUARANTEE_NEED === $this->getFoncarisGuarantee();
     }
 
     /**

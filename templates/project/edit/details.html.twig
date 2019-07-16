@@ -132,7 +132,7 @@
                                     <a href="{{ path('edit_project_status_abandon', {'hash': project.hash}) }}" class="btn-default btn-shape-xs margin-10-t" style="width: 100%;">Abandonner le dossier</a>
                                 {% endif %}
                                 {% if project.currentProjectStatusHistory.status == constant('\\Unilend\\Entity\\ProjectStatusHistory::STATUS_REQUESTED') %}
-                                    <a href="{{ path('edit_project_status_publish', {'hash': project.hash}) }}" class="btn-primary btn-shape-xs margin-10-t" style="width: 100%;">Proposer au financement</a>
+                                    <a href="{{ path('project_publish_instructions', {'hash': project.hash}) }}" class="btn-primary btn-shape-xs margin-10-t" style="width: 100%;">Proposer au financement</a>
                                 {% endif %}
                                 {% if project.currentProjectStatusHistory.status == constant('\\Unilend\\Entity\\ProjectStatusHistory::STATUS_PUBLISHED') %}
                                     <a href="{{ path('edit_project_status_funded', {'hash': project.hash}) }}" class="btn-primary btn-shape-xs margin-10-t" style="width: 100%;">Clôturer la syndication</a>

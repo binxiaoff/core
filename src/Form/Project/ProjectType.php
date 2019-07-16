@@ -114,14 +114,6 @@ class ProjectType extends AbstractType
                 'constraints'   => [new Valid()],
                 'entry_options' => ['rate_required' => Project::OPERATION_TYPE_SYNDICATION === $options['operation_type']],
             ])
-            ->add('foncarisGuarantee', ChoiceType::class, [
-                'label'        => 'project-form.foncaris-guarantee-label',
-                'required'     => false,
-                'choices'      => Project::getFoncarisGuaranteeOptions(),
-                'choice_label' => function ($option, string $key, string $value) {
-                    return 'foncaris-guarantee.' . mb_strtolower($key);
-                },
-            ])
             ->add('arranger', EntityType::class, [
                 'label'         => 'project-form.arranger-label',
                 'required'      => false,
