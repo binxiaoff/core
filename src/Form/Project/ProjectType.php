@@ -14,7 +14,7 @@ use Symfony\Component\Validator\Constraints\Valid;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Unilend\Entity\{Clients, Companies, MarketSegment, Project};
 use Unilend\Form\{Company\CompanyAutocompleteType, Tranche\TrancheTypeCollectionType};
-use Unilend\Repository\CompaniesRepository;
+use Unilend\Repository\{CompaniesRepository, MarketSegmentRepository};
 
 class ProjectType extends AbstractType
 {
@@ -30,22 +30,28 @@ class ProjectType extends AbstractType
     /** @var CompaniesRepository */
     private $companyRepository;
 
+    /** @var MarketSegmentRepository */
+    private $marketSegmentRepository;
+
     /**
-     * @param ManagerRegistry       $managerRegistry
-     * @param TokenStorageInterface $tokenStorage
-     * @param TranslatorInterface   $translator
-     * @param CompaniesRepository   $companyRepository
+     * @param ManagerRegistry         $managerRegistry
+     * @param TokenStorageInterface   $tokenStorage
+     * @param TranslatorInterface     $translator
+     * @param CompaniesRepository     $companyRepository
+     * @param MarketSegmentRepository $marketSegmentRepository
      */
     public function __construct(
         ManagerRegistry $managerRegistry,
         TokenStorageInterface $tokenStorage,
         TranslatorInterface $translator,
-        CompaniesRepository $companyRepository
+        CompaniesRepository $companyRepository,
+        MarketSegmentRepository $marketSegmentRepository
     ) {
-        $this->managerRegistry   = $managerRegistry;
-        $this->tokenStorage      = $tokenStorage;
-        $this->translator        = $translator;
-        $this->companyRepository = $companyRepository;
+        $this->managerRegistry         = $managerRegistry;
+        $this->tokenStorage            = $tokenStorage;
+        $this->translator              = $translator;
+        $this->companyRepository       = $companyRepository;
+        $this->marketSegmentRepository = $marketSegmentRepository;
     }
 
     /**
@@ -58,6 +64,14 @@ class ProjectType extends AbstractType
         $arrangerQueryBuilder = $this->companyRepository->createEligibleArrangersQB($currentCompany, ['name' => 'ASC']);
         $runAgentQueryBuilder = $this->companyRepository->createEligibleRunAgentQB(['name' => 'ASC']);
 
+        $marketSegments = $this->marketSegmentRepository->findAll();
+        usort($marketSegments, function ($first, $second) {
+            return strcmp(
+                $this->translator->trans('market-segment.' . $first->getLabel()),
+                $this->translator->trans('market-segment.' . $second->getLabel())
+            );
+        });
+
         $builder
             ->add('title', TextType::class, ['label' => 'project-form.title-label'])
             ->add('borrowerCompany', CompanyAutocompleteType::class, ['label' => 'project-form.borrower-company-label'])
@@ -68,10 +82,11 @@ class ProjectType extends AbstractType
             ])
             ->add('marketSegment', EntityType::class, [
                 'label'        => 'project-form.market-segment-label',
+                'class'        => MarketSegment::class,
+                'choices'      => $marketSegments,
                 'choice_label' => function (MarketSegment $marketSegment, $key, $value) {
                     return 'market-segment.' . $marketSegment->getLabel();
                 },
-                'class'                     => MarketSegment::class,
                 'choice_translation_domain' => true,
                 'placeholder'               => '',
             ])
