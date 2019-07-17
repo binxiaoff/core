@@ -29,7 +29,8 @@ final class Version20190717100314 extends ContainerAwareMigration
                 ('fr_FR', 'tranche-form', 'foncaris-funding-type-label', 'Nature du financement', NOW()),
                 ('fr_FR', 'tranche-form', 'foncaris-security-label', 'Sureté', NOW()),
                 ('fr_FR', 'project', 'publish-confirmation-message', '<p>Le dossier vient d‘être publié. Il est à présent possible de formuler une offre de participation sur ce dossier.</p><p><a href="%projectLink%">Consulter le dossier</p>', NOW()),
-                ('fr_FR', 'project', 'publish-confirmation-title', 'Confirmation', NOW())
+                ('fr_FR', 'project', 'publish-confirmation-title', 'Confirmation', NOW()),
+                ('fr_FR', 'project', 'publish-confirmation-button-label', 'Confirmer', NOW())
 TRANSLATIONS
 );
     }
@@ -37,6 +38,6 @@ TRANSLATIONS
     public function down(Schema $schema): void
     {
         $this->addSql('DELETE FROM translations WHERE section = \'tranche-form\' AND name in (\'credit-agricole-green-id-label\', \'foncaris-funding-type-label\', \'foncaris-security-label\')');
-        $this->addSql('DELETE FROM translations WHERE section = \'project\' AND name in (\'publish-confirmation-message\', \'publish-confirmation-title\')');
+        $this->addSql('DELETE FROM translations WHERE section = \'project\' AND name in (\'publish-confirmation-message\', \'publish-confirmation-title\', \'publish-confirmation-button-label\')');
     }
 }
