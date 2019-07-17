@@ -482,7 +482,7 @@ class OperationManager
                     $walletType    = WalletType::TAX_FR_RETENUES_A_LA_SOURCE;
                     break;
                 default :
-                    continue;
+                    continue 2;
             }
 
             $walletTaxType = $walletTypeRepository->findOneBy(['label' => $walletType]);
