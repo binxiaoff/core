@@ -497,11 +497,18 @@ class Tranche
     }
 
     /**
+     * @param string|null $name
+     *
      * @return TrancheAttribute[]|ArrayCollection
      */
-    public function getTrancheAttributes(): iterable
+    public function getTrancheAttributes(?string $name = null): iterable
     {
-        return $this->trancheAttributes;
+        $criteria = new Criteria();
+        if ($name) {
+            $criteria->where(Criteria::expr()->eq('attribute.name', $name));
+        }
+
+        return $this->trancheAttributes->matching($criteria);
     }
 
     /**

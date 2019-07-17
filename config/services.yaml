@@ -47,7 +47,7 @@ services:
             $environment: '%kernel.environment%'
             $protectedDirectory: '%directory.protected%'
             $publicDirectory: '%directory.public%'
-            $documentRootDirectory: '%directory.protected%/pdf/'
+            $documentRootDirectory: '%directory.protected%/generated_document/'
 
     # makes classes in src/ available to be used as services
     # this creates a service per class whose id is the fully-qualified class name

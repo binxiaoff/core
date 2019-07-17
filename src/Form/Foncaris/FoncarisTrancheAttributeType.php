@@ -20,11 +20,11 @@ class FoncarisTrancheAttributeType extends AbstractType
     {
         $builder
             ->add('greenId', TextType::class, [
-                'label'    => 'project-form.credit-agricole-green-id-label',
+                'label'    => 'tranche-form.credit-agricole-green-id-label',
                 'required' => false,
             ])
             ->add('fundingType', EntityType::class, [
-                'label'        => 'project-form.foncaris-funding-type-label',
+                'label'        => 'tranche-form.foncaris-funding-type-label',
                 'required'     => true,
                 'choice_label' => function (FoncarisFundingType $foncarisFundingType) {
                     return $foncarisFundingType->getDescription();
@@ -44,8 +44,10 @@ class FoncarisTrancheAttributeType extends AbstractType
                 },
             ])
             ->add('security', EntityType::class, [
-                'label'        => 'project-form.foncaris-security-label',
+                'label'        => 'tranche-form.foncaris-security-label',
                 'required'     => true,
+                'attr'         => ['class' => 'select2'],
+                'multiple'     => true,
                 'choice_label' => function (FoncarisSecurity $foncarisSecurity) {
                     return $foncarisSecurity->getDescription();
                 },

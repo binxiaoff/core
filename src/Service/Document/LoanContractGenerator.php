@@ -7,7 +7,6 @@ use Exception;
 use Knp\Snappy\Pdf;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Asset\Packages;
-use Symfony\Component\Filesystem\Filesystem;
 use Twig\Environment;
 use Unilend\Entity\{AddressType, Blocs, BlocsElements, ClientAddress, Companies, CompaniesActifPassif, CompaniesBilans, CompanyAddress, Echeanciers,
     Elements, Loans, ProjectsStatus, ProjectsStatusHistory, TaxType, UnderlyingContract};
@@ -39,7 +38,6 @@ class LoanContractGenerator extends AbstractDocumentGenerator
 
     /**
      * @param EntityManagerInterface $entityManager
-     * @param Filesystem             $filesystem
      * @param string                 $publicDirectory
      * @param Environment            $twig
      * @param Pdf                    $snappy
@@ -52,7 +50,6 @@ class LoanContractGenerator extends AbstractDocumentGenerator
      */
     public function __construct(
         EntityManagerInterface $entityManager,
-        Filesystem $filesystem,
         string $publicDirectory,
         Environment $twig,
         Pdf $snappy,
@@ -75,7 +72,7 @@ class LoanContractGenerator extends AbstractDocumentGenerator
 
         $this->snappy->setBinary('/usr/local/bin/wkhtmltopdf');
 
-        parent::__construct($filesystem, $documentRootDirectory);
+        parent::__construct($documentRootDirectory);
     }
 
     /**
@@ -303,7 +300,7 @@ class LoanContractGenerator extends AbstractDocumentGenerator
         }
 
         if (null === $address) {
-            throw new Exception('No address found for client ' . $client->getIdClient());
+            throw new Exception(sprintf('No address found for client %s', $client->getIdClient()));
         }
 
         $lenderData = [

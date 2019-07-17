@@ -34,7 +34,6 @@ class ServiceTermsGenerator extends AbstractDocumentGenerator
     private $elementsRepository;
 
     /**
-     * @param Filesystem                     $filesystem
      * @param string                         $documentRootDirectory
      * @param string                         $publicDirectory
      * @param Environment                    $twig
@@ -45,7 +44,6 @@ class ServiceTermsGenerator extends AbstractDocumentGenerator
      * @param ElementsRepository             $elementsRepository
      */
     public function __construct(
-        Filesystem $filesystem,
         string $documentRootDirectory,
         string $publicDirectory,
         Environment $twig,
@@ -65,7 +63,7 @@ class ServiceTermsGenerator extends AbstractDocumentGenerator
 
         $this->snappy->setBinary('/usr/local/bin/wkhtmltopdf');
 
-        parent::__construct($filesystem, $documentRootDirectory);
+        parent::__construct($documentRootDirectory);
     }
 
     /**

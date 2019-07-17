@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Unilend\Controller\Project;
 
 use Doctrine\ORM\{ORMException, OptimisticLockException};
+use PhpOffice\PhpSpreadsheet\{Exception as PhpSpreadsheetException, Writer\Exception as PhpSpreadsheetWriterException};
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\{Request, Response};
@@ -15,7 +16,7 @@ use Unilend\Entity\{Clients, Project, ProjectStatusHistory, TrancheAttribute};
 use Unilend\Form\Foncaris\{FoncarisRequestType, FoncarisTrancheAttributeType};
 use Unilend\Message\Project\ProjectPublished;
 use Unilend\Repository\ProjectRepository;
-use Unilend\Service\ProjectStatusManager;
+use Unilend\Service\{Foncaris\GuaranteeRequestGenerator, ProjectStatusManager};
 
 class PublishController extends AbstractController
 {
@@ -64,23 +65,21 @@ class PublishController extends AbstractController
                 foreach ($project->getTranches() as $tranche) {
                     $greenId        = $form->get($tranche->getid())->get('greenId')->getData();
                     $trancheGreenId = new TrancheAttribute(TrancheAttribute::ATTRIBUTE_CREDIT_AGRICOLE_GREEN_ID, (string) $greenId);
+                    $tranche->addTrancheAttribute($trancheGreenId);
 
                     $fundingType        = $form->get($tranche->getid())->get('fundingType')->getData();
                     $trancheFundingType = new TrancheAttribute(TrancheAttribute::ATTRIBUTE_FONCARIS_FUNDING_TYPE, (string) $fundingType->getId());
+                    $tranche->addTrancheAttribute($trancheFundingType);
 
-                    $fundingSecurity        = $form->get($tranche->getid())->get('security')->getData();
-                    $trancheFundingSecurity = new TrancheAttribute(TrancheAttribute::ATTRIBUTE_FONCARIS_FUNDING_SECURITY, (string) $fundingSecurity->getId());
-
-                    $tranche
-                        ->addTrancheAttribute($trancheFundingType)
-                        ->addTrancheAttribute($trancheFundingSecurity)
-                        ->addTrancheAttribute($trancheGreenId)
-                    ;
+                    $fundingSecurities = $form->get($tranche->getid())->get('security')->getData();
+                    foreach ($fundingSecurities as $fundingSecurity) {
+                        $trancheFundingSecurity = new TrancheAttribute(TrancheAttribute::ATTRIBUTE_FONCARIS_FUNDING_SECURITY, (string) $fundingSecurity->getId());
+                        $tranche->addTrancheAttribute($trancheFundingSecurity);
+                    }
                 }
             }
 
             $projectRepository->save($project);
-
             $messageBus->dispatch(new ProjectPublished($project->getId()));
 
             return $this->redirectToRoute('project_publish_confirmation', ['hash' => $project->getHash()]);
@@ -101,12 +100,18 @@ class PublishController extends AbstractController
      *
      * @IsGranted("edit", subject="project")
      *
-     * @param Project $project
+     * @param Project                   $project
+     * @param GuaranteeRequestGenerator $guaranteeRequestGenerator
+     *
+     * @throws PhpSpreadsheetException
+     * @throws PhpSpreadsheetWriterException
      *
      * @return Response
      */
-    public function confirmation(Project $project)
+    public function confirmation(Project $project, GuaranteeRequestGenerator $guaranteeRequestGenerator)
     {
+        $guaranteeRequestGenerator->generate($project);
+
         return $this->render('project/publish/confirmation.html.twig', [
             'projectLink' => $this->get('router')->generate('edit_project_details', ['hash' => $project->getHash()]),
         ]);
