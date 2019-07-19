@@ -4,58 +4,105 @@ declare(strict_types=1);
 
 namespace Unilend\Service\Document;
 
-abstract class AbstractDocumentGenerator implements DocumentGeneratorInterface
+use InvalidArgumentException;
+use Doctrine\Common\Persistence\ManagerRegistry;
+use Unilend\Entity\Interfaces\FileStorageInterface;
+
+abstract class AbstractDocumentGenerator
 {
     /** @var string */
     private $documentRootDirectory;
+    /** @var ManagerRegistry */
+    private $managerRegistry;
 
     /**
-     * @param string $documentRootDirectory
+     * @param string          $documentRootDirectory
+     * @param ManagerRegistry $managerRegistry
      */
-    public function __construct(string $documentRootDirectory)
+    public function __construct(string $documentRootDirectory, ManagerRegistry $managerRegistry)
     {
         $this->documentRootDirectory = $documentRootDirectory;
+        $this->managerRegistry       = $managerRegistry;
     }
 
     /**
-     * @param object $document
-     *
-     * @return bool
-     */
-    public function exists(object $document): bool
-    {
-        return file_exists($this->getFilePath($document));
-    }
-
-    /**
-     * @param object $document
+     * @param FileStorageInterface $document
      *
      * @return string
      */
-    public function getFilePath(object $document): string
+    final public function getFilePath(FileStorageInterface $document): string
     {
+        if (false === $this->supports($document)) {
+            throw new InvalidArgumentException(sprintf('The document type %s is not supported by the generator.', get_class($document)));
+        }
+
         return $this->getRootDirectory() . DIRECTORY_SEPARATOR . $this->getRelativeFilePath($document);
     }
 
     /**
-     * @param object $document
+     * @param FileStorageInterface $document
      */
-    abstract public function generate(object $document): void;
+    final public function generate(FileStorageInterface $document): void
+    {
+        if (false === $this->supports($document)) {
+            throw new InvalidArgumentException(sprintf('The document type %s is not supported by the generator.', get_class($document)));
+        }
+
+        if (file_exists($this->getFilePath($document))) {
+            return;
+        }
+
+        $this->generateDocument($document);
+
+        $document->setRelativeFilePath($this->getRelativeFilePath($document));
+
+        $entityManager = $this->managerRegistry->getManagerForClass(get_class($document));
+        $entityManager->persist($document);
+        $entityManager->flush();
+    }
 
     /**
-     * @param object $document
+     * @param FileStorageInterface $document
+     */
+    abstract protected function generateDocument(FileStorageInterface $document): void;
+
+    /**
+     * @param FileStorageInterface $document
      *
      * @return string
      */
-    protected function getRelativeFilePath(object $document): string
+    abstract protected function getFileName(FileStorageInterface $document): string;
+
+    /**
+     * @param FileStorageInterface $document
+     *
+     * @return string
+     */
+    abstract protected function generateRelativeDirectory(FileStorageInterface $document): string;
+
+    /**
+     * Determines if the document are supported by this generator.
+     *
+     * @param FileStorageInterface $document
+     *
+     * @return bool
+     */
+    abstract protected function supports(FileStorageInterface $document): bool;
+
+    /**
+     * @param FileStorageInterface $document
+     *
+     * @return string
+     */
+    private function getRelativeFilePath(FileStorageInterface $document): string
     {
-        return $this->getRelativeDirectory($document) . DIRECTORY_SEPARATOR . $this->getFileName($document);
+        return $document->getRelativeFilePath() ?: $this->generateRelativeDirectory($document) . DIRECTORY_SEPARATOR . $this->getFileName($document);
     }
 
     /**
      * @return string
      */
-    protected function getRootDirectory()
+    private function getRootDirectory()
     {
         if (false === is_dir($this->documentRootDirectory)) {
             mkdir($this->documentRootDirectory, 0775);
@@ -65,18 +112,4 @@ abstract class AbstractDocumentGenerator implements DocumentGeneratorInterface
 
         return DIRECTORY_SEPARATOR === mb_substr($rootDirectory, -1) ? mb_substr($rootDirectory, 0, -1) : $rootDirectory;
     }
-
-    /**
-     * @param object $document
-     *
-     * @return string
-     */
-    abstract protected function getFileName(object $document): string;
-
-    /**
-     * @param object $document
-     *
-     * @return string
-     */
-    abstract protected function getRelativeDirectory(object $document): string;
 }

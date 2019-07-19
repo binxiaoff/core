@@ -6,10 +6,11 @@ use Doctrine\ORM\{EntityManagerInterface, NonUniqueResultException};
 use Exception;
 use Knp\Snappy\Pdf;
 use Psr\Log\LoggerInterface;
+use Doctrine\Common\Persistence\ManagerRegistry;
 use Symfony\Component\Asset\Packages;
 use Twig\Environment;
-use Unilend\Entity\{AddressType, Blocs, BlocsElements, ClientAddress, Companies, CompaniesActifPassif, CompaniesBilans, CompanyAddress, Echeanciers,
-    Elements, Loans, ProjectsStatus, ProjectsStatusHistory, TaxType, UnderlyingContract};
+use Unilend\Entity\{AddressType, Blocs, BlocsElements, ClientAddress, Companies, CompaniesActifPassif, CompaniesBilans, CompanyAddress, Echeanciers, Elements,
+    Interfaces\FileStorageInterface, Loans, ProjectsStatus, ProjectsStatusHistory, TaxType, UnderlyingContract};
 use Unilend\Service\LoanManager;
 
 class LoanContractGenerator extends AbstractDocumentGenerator
@@ -47,6 +48,7 @@ class LoanContractGenerator extends AbstractDocumentGenerator
      * @param LoanManager            $loanManager
      * @param LoggerInterface        $logger
      * @param string                 $documentRootDirectory
+     * @param ManagerRegistry        $managerRegistry
      */
     public function __construct(
         EntityManagerInterface $entityManager,
@@ -58,7 +60,8 @@ class LoanContractGenerator extends AbstractDocumentGenerator
         \NumberFormatter $currencyFormatter,
         LoanManager $loanManager,
         LoggerInterface $logger,
-        string $documentRootDirectory
+        string $documentRootDirectory,
+        ManagerRegistry $managerRegistry
     ) {
         $this->entityManager     = $entityManager;
         $this->publicDirectory   = $publicDirectory;
@@ -72,19 +75,17 @@ class LoanContractGenerator extends AbstractDocumentGenerator
 
         $this->snappy->setBinary('/usr/local/bin/wkhtmltopdf');
 
-        parent::__construct($documentRootDirectory);
+        parent::__construct($documentRootDirectory, $managerRegistry);
     }
 
     /**
-     * @param Loans $loan
+     * @param Loans|FileStorageInterface $loan
      *
      * @throws NonUniqueResultException
      * @throws Exception
      */
-    public function generate($loan): void
+    protected function generateDocument(FileStorageInterface $loan): void
     {
-        $this->checkObject($loan);
-
         $template = [
             'staticUrl' => $this->staticUrl,
             'content'   => $this->getContentData($loan),
@@ -117,26 +118,22 @@ class LoanContractGenerator extends AbstractDocumentGenerator
     }
 
     /**
-     * @param Loans|object $loan
+     * @param Loans|FileStorageInterface $loan
      *
      * @return string
      */
-    protected function getFileName(object $loan): string
+    protected function getFileName(FileStorageInterface $loan): string
     {
-        $this->checkObject($loan);
-
         return self::FILE_PREFIX . '-' . $loan->getWallet()->getIdClient()->getHash() . '-' . $loan->getIdLoan() . '.pdf';
     }
 
     /**
-     * @param Loans|object $loan
+     * @param Loans|FileStorageInterface $loan
      *
      * @return string
      */
-    protected function getRelativeDirectory(object $loan): string
+    protected function generateRelativeDirectory(FileStorageInterface $loan): string
     {
-        $this->checkObject($loan);
-
         return self::PATH . DIRECTORY_SEPARATOR . $loan->getTranche()->getProject()->getId();
     }
 
@@ -329,10 +326,10 @@ class LoanContractGenerator extends AbstractDocumentGenerator
     }
 
     /**
-     * @param Loans $loans
+     * {@inheritdoc}
      */
-    private function checkObject(Loans $loans)
+    protected function supports(FileStorageInterface $loan): bool
     {
-        //nothing to do. The language structure (type hint) is used to check the object.
+        return $loan instanceof Loans;
     }
 }

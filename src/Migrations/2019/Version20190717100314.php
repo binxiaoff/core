@@ -30,7 +30,8 @@ final class Version20190717100314 extends ContainerAwareMigration
                 ('fr_FR', 'tranche-form', 'foncaris-security-label', 'Sureté', NOW()),
                 ('fr_FR', 'project', 'publish-confirmation-message', '<p>Le dossier vient d‘être publié. Il est à présent possible de formuler une offre de participation sur ce dossier.</p><p><a href="%projectLink%">Consulter le dossier</p>', NOW()),
                 ('fr_FR', 'project', 'publish-confirmation-title', 'Confirmation', NOW()),
-                ('fr_FR', 'project', 'publish-confirmation-button-label', 'Confirmer', NOW())
+                ('fr_FR', 'project', 'publish-confirmation-button-label', 'Confirmer', NOW()),
+                ('fr_FR', 'project-request', 'foncaris-section-title', 'Garantie', NOW())
 TRANSLATIONS
 );
     }

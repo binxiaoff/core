@@ -103,12 +103,4 @@ class TrancheAttribute
 
         return $this;
     }
-
-    /**
-     * @return array
-     */
-    public static function getFoncarisGuaranteeOptions(): array
-    {
-        return self::getConstants('FONCARIS_GUARANTEE_');
-    }
 }

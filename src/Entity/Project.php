@@ -27,10 +27,6 @@ class Project
     use TimestampableTrait;
     use ConstantsAwareTrait;
 
-    public const FONCARIS_GUARANTEE_NO_NEED            = 0;
-    public const FONCARIS_GUARANTEE_NEED               = 1;
-    public const FONCARIS_GUARANTEE_ALREADY_GUARANTEED = 2;
-
     public const OPERATION_TYPE_ARRANGEMENT = 1;
     public const OPERATION_TYPE_SYNDICATION = 2;
 
@@ -149,13 +145,6 @@ class Project
      * @Assert\Date
      */
     private $expectedClosingDate;
-
-    /**
-     * @var int
-     *
-     * @ORM\Column(type="smallint", nullable=true)
-     */
-    private $foncarisGuarantee;
 
     /**
      * @var ProjectStatusHistory|null
@@ -409,44 +398,6 @@ class Project
     public function getCurrentProjectStatusHistory(): ?ProjectStatusHistory
     {
         return $this->currentProjectStatusHistory;
-    }
-
-    /**
-     * @return int|null
-     */
-    public function getFoncarisGuarantee(): ?int
-    {
-        return $this->foncarisGuarantee;
-    }
-
-    /**
-     * @param int|null $foncarisGuarantee
-     *
-     * @return Project
-     */
-    public function setFoncarisGuarantee(?int $foncarisGuarantee): Project
-    {
-        if (in_array($foncarisGuarantee, self::getFoncarisGuaranteeOptions())) {
-            $this->foncarisGuarantee = $foncarisGuarantee;
-        }
-
-        return $this;
-    }
-
-    /**
-     * @return bool
-     */
-    public function needFoncarisGuarantee(): bool
-    {
-        return self::FONCARIS_GUARANTEE_NEED === $this->getFoncarisGuarantee();
-    }
-
-    /**
-     * @return array
-     */
-    public static function getFoncarisGuaranteeOptions(): array
-    {
-        return self::getConstants('FONCARIS_GUARANTEE_');
     }
 
     /**

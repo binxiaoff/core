@@ -5,12 +5,11 @@ namespace Unilend\Service\ServiceTerms;
 use Exception;
 use InvalidArgumentException;
 use Knp\Snappy\Pdf;
-use Symfony\Component\{Asset\Packages, Filesystem\Filesystem};
+use Doctrine\Common\Persistence\ManagerRegistry;
+use Symfony\Component\Asset\Packages;
 use Twig\Environment;
-use Unilend\Entity\{AcceptationsLegalDocs, Elements, TreeElements};
-use Unilend\Repository\AcceptationLegalDocsRepository;
-use Unilend\Repository\ElementsRepository;
-use Unilend\Repository\TreeElementsRepository;
+use Unilend\Entity\{AcceptationsLegalDocs, Elements, Interfaces\FileStorageInterface, TreeElements};
+use Unilend\Repository\{AcceptationLegalDocsRepository, ElementsRepository, TreeElementsRepository};
 use Unilend\Service\Document\AbstractDocumentGenerator;
 
 class ServiceTermsGenerator extends AbstractDocumentGenerator
@@ -42,6 +41,7 @@ class ServiceTermsGenerator extends AbstractDocumentGenerator
      * @param AcceptationLegalDocsRepository $acceptationLegalDocsRepository
      * @param TreeElementsRepository         $treeElementsRepository
      * @param ElementsRepository             $elementsRepository
+     * @param ManagerRegistry                $managerRegistry
      */
     public function __construct(
         string $documentRootDirectory,
@@ -51,7 +51,8 @@ class ServiceTermsGenerator extends AbstractDocumentGenerator
         Packages $assetsPackages,
         AcceptationLegalDocsRepository $acceptationLegalDocsRepository,
         TreeElementsRepository $treeElementsRepository,
-        ElementsRepository $elementsRepository
+        ElementsRepository $elementsRepository,
+        ManagerRegistry $managerRegistry
     ) {
         $this->publicDirectory                = $publicDirectory;
         $this->twig                           = $twig;
@@ -63,30 +64,7 @@ class ServiceTermsGenerator extends AbstractDocumentGenerator
 
         $this->snappy->setBinary('/usr/local/bin/wkhtmltopdf');
 
-        parent::__construct($documentRootDirectory);
-    }
-
-    /**
-     * @param AcceptationsLegalDocs|object $acceptedLegalDoc
-     *
-     * @throws Exception
-     */
-    public function generate(object $acceptedLegalDoc): void
-    {
-        $this->checkObject($acceptedLegalDoc);
-
-        $template = [
-            'staticUrl' => $this->staticUrl,
-            'content'   => $this->getNonPersonalizedContent($acceptedLegalDoc->getLegalDoc()->getIdTree()),
-        ];
-
-        $content = $this->twig->render('/service_terms/pdf/service_terms.html.twig', $template);
-
-        $this->snappy->setOption('user-style-sheet', $this->publicDirectory . 'styles/default/pdf/style.css');
-        $this->snappy->generateFromHtml($content, $this->getFilePath($acceptedLegalDoc), [], true);
-
-        $acceptedLegalDoc->setPdfName($this->getRelativeFilePath($acceptedLegalDoc));
-        $this->acceptationLegalDocsRepository->save($acceptedLegalDoc);
+        parent::__construct($documentRootDirectory, $managerRegistry);
     }
 
     /**
@@ -120,46 +98,48 @@ class ServiceTermsGenerator extends AbstractDocumentGenerator
     }
 
     /**
-     * @param AcceptationsLegalDocs|object $acceptedLegalDoc
+     * @param AcceptationsLegalDocs|FileStorageInterface $acceptedLegalDoc
+     *
+     * @throws Exception
+     */
+    protected function generateDocument(FileStorageInterface $acceptedLegalDoc): void
+    {
+        $template = [
+            'staticUrl' => $this->staticUrl,
+            'content'   => $this->getNonPersonalizedContent($acceptedLegalDoc->getLegalDoc()->getIdTree()),
+        ];
+
+        $content = $this->twig->render('/service_terms/pdf/service_terms.html.twig', $template);
+
+        $this->snappy->setOption('user-style-sheet', $this->publicDirectory . 'styles/default/pdf/style.css');
+        $this->snappy->generateFromHtml($content, $this->getFilePath($acceptedLegalDoc), [], true);
+    }
+
+    /**
+     * @param AcceptationsLegalDocs|FileStorageInterface $acceptedLegalDoc
      *
      * @return string
      */
-    protected function getFileName(object $acceptedLegalDoc): string
+    protected function getFileName(FileStorageInterface $acceptedLegalDoc): string
     {
-        $this->checkObject($acceptedLegalDoc);
-
         return self::FILE_PREFIX . '-' . $acceptedLegalDoc->getClient()->getHash() . '-' . $acceptedLegalDoc->getLegalDoc()->getIdTree() . '.pdf';
     }
 
     /**
-     * @param AcceptationsLegalDocs|object $acceptedLegalDoc
+     * @param AcceptationsLegalDocs|FileStorageInterface $acceptedLegalDoc
      *
      * @return string
      */
-    protected function getRelativeDirectory(object $acceptedLegalDoc): string
+    protected function generateRelativeDirectory(FileStorageInterface $acceptedLegalDoc): string
     {
-        $this->checkObject($acceptedLegalDoc);
-
         return self::PATH . DIRECTORY_SEPARATOR . $acceptedLegalDoc->getClient()->getIdClient();
     }
 
     /**
-     * @param AcceptationsLegalDocs|object $acceptedLegalDoc
-     *
-     * @return string
+     * {@inheritdoc}
      */
-    protected function getRelativeFilePath(object $acceptedLegalDoc): string
+    protected function supports(FileStorageInterface $document): bool
     {
-        $this->checkObject($acceptedLegalDoc);
-
-        return $acceptedLegalDoc->getPdfName() ?? $this->getRelativeDirectory($acceptedLegalDoc) . DIRECTORY_SEPARATOR . $this->getFileName($acceptedLegalDoc);
-    }
-
-    /**
-     * @param AcceptationsLegalDocs $acceptationsLegalDocs
-     */
-    private function checkObject(AcceptationsLegalDocs $acceptationsLegalDocs)
-    {
-        //nothing to do. The language structure (type hint) is used to check the object.
+        return $document instanceof AcceptationsLegalDocs;
     }
 }

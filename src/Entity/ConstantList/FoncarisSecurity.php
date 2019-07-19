@@ -76,7 +76,7 @@ class FoncarisSecurity
      *
      * @return FoncarisSecurity
      */
-    public function setDescription(string $description): self
+    public function setDescription(string $description): FoncarisSecurity
     {
         $this->description = $description;
 

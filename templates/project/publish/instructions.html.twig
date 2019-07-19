@@ -6,9 +6,9 @@
             <div id="form-container" class="dashboard-tab-pane">
                 {{ form_start(form) }}
                 <article class="request-form-panel panel ">
-                    <h3 class="margin-5-t">{% trans %} project-request.guarantee-section-title {% endtrans %}</h3>
+                    <h3 class="margin-5-t">{% trans %} project-request.foncaris-section-title {% endtrans %}</h3>
                     <div class="row row-multi-col-computer">
-                        {{ form_row(form.guarantee, {label: false}) }}
+                        {{ form_row(form.choice, {label: false}) }}
                     </div>
                 </article>
                 <article class="panel collapse" id="tranche-attributes">
@@ -41,7 +41,7 @@
 {% block pageScripts %}
 <script>
     $(function () {
-        $(document).on('change', '#foncaris_request_type_guarantee', function () {
+        $(document).on('change', '#foncaris_request_type_choice', function () {
             $('#tranche-attributes').toggle('1' === $(this).children("option:selected").val());
         })
     })

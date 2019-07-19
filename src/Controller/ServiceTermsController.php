@@ -33,9 +33,7 @@ class ServiceTermsController extends AbstractController
             $this->createAccessDeniedException();
         }
 
-        if (false === $serviceTermsGenerator->exists($acceptationsLegalDoc)) {
-            $serviceTermsGenerator->generate($acceptationsLegalDoc);
-        }
+        $serviceTermsGenerator->generate($acceptationsLegalDoc);
 
         return $this->file($serviceTermsGenerator->getFilePath($acceptationsLegalDoc));
     }

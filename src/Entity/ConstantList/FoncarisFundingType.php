@@ -5,7 +5,7 @@ namespace Unilend\Entity\ConstantList;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * @ORM\Entity(repositoryClass="Unilend\Repository\ConstantList\FoncarisFundingTypeRepository")
+ * @ORM\Entity
  */
 class FoncarisFundingType
 {
@@ -75,7 +75,7 @@ class FoncarisFundingType
      *
      * @return FoncarisFundingType
      */
-    public function setDescription(string $description): self
+    public function setDescription(string $description): FoncarisFundingType
     {
         $this->description = $description;
 

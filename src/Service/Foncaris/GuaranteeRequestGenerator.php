@@ -6,15 +6,16 @@ namespace Unilend\Service\Foncaris;
 
 use NumberFormatter;
 use PhpOffice\PhpSpreadsheet\{Exception as PhpSpreadsheetException, Spreadsheet, Writer\Exception as PhpSpreadsheetWriterException, Writer\Xlsx};
+use Doctrine\Common\Persistence\ManagerRegistry;
 use Symfony\Contracts\Translation\TranslatorInterface;
-use Unilend\Entity\{Project, Tranche, TrancheAttribute};
+use Unilend\Entity\{FoncarisRequest, Interfaces\FileStorageInterface, Project, Tranche, TrancheAttribute};
 use Unilend\Repository\ConstantList\{FoncarisFundingTypeRepository, FoncarisSecurityRepository};
 use Unilend\Service\Document\AbstractDocumentGenerator;
 
 class GuaranteeRequestGenerator extends AbstractDocumentGenerator
 {
     private const FILE_PREFIX = 'demande-garantie';
-    private const PATH        = 'guarantee-foncaris';
+    private const PATH        = 'foncaris';
 
     /** @var FoncarisFundingTypeRepository */
     private $foncarisFundingTypeRepository;
@@ -31,15 +32,17 @@ class GuaranteeRequestGenerator extends AbstractDocumentGenerator
      * @param FoncarisSecurityRepository    $foncarisSecurityRepository
      * @param NumberFormatter               $currencyFormatterNoDecimal
      * @param TranslatorInterface           $translator
+     * @param ManagerRegistry               $managerRegistry
      */
     public function __construct(
         string $documentRootDirectory,
         FoncarisFundingTypeRepository $foncarisFundingTypeRepository,
         FoncarisSecurityRepository $foncarisSecurityRepository,
         NumberFormatter $currencyFormatterNoDecimal,
-        TranslatorInterface $translator
+        TranslatorInterface $translator,
+        ManagerRegistry $managerRegistry
     ) {
-        parent::__construct($documentRootDirectory);
+        parent::__construct($documentRootDirectory, $managerRegistry);
 
         $this->foncarisFundingTypeRepository = $foncarisFundingTypeRepository;
         $this->foncarisSecurityRepository    = $foncarisSecurityRepository;
@@ -48,14 +51,14 @@ class GuaranteeRequestGenerator extends AbstractDocumentGenerator
     }
 
     /**
-     * @param Project|object $project
+     * @param FoncarisRequest|FileStorageInterface $foncarisRequest
      *
      * @throws PhpSpreadsheetException
      * @throws PhpSpreadsheetWriterException
      */
-    public function generate(object $project): void
+    public function generateDocument(FileStorageInterface $foncarisRequest): void
     {
-        $this->checkObject($project);
+        $project = $foncarisRequest->getProject();
 
         $spreadsheet = new Spreadsheet();
         $sheet       = $spreadsheet->getActiveSheet();
@@ -168,7 +171,7 @@ class GuaranteeRequestGenerator extends AbstractDocumentGenerator
 
         $writer = new Xlsx($spreadsheet);
 
-        $filePath  = $this->getFilePath($project);
+        $filePath  = $this->getFilePath($foncarisRequest);
         $directory = dirname($filePath);
 
         if (false === is_dir($directory)) {
@@ -179,27 +182,31 @@ class GuaranteeRequestGenerator extends AbstractDocumentGenerator
     }
 
     /**
-     * @param Project|object $project
+     * @param FoncarisRequest|FileStorageInterface $foncarisRequest
      *
      * @return string
      */
-    protected function getFileName(object $project): string
+    protected function getFileName(FileStorageInterface $foncarisRequest): string
     {
-        $this->checkObject($project);
-
-        return self::FILE_PREFIX . '-' . $project->getHash() . '.xlsx';
+        return self::FILE_PREFIX . '-' . $foncarisRequest->getProject()->getHash() . '.xlsx';
     }
 
     /**
-     * @param Project|object $project
+     * @param FoncarisRequest|FileStorageInterface $foncarisRequest
      *
      * @return string
      */
-    protected function getRelativeDirectory(object $project): string
+    protected function generateRelativeDirectory(FileStorageInterface $foncarisRequest): string
     {
-        $this->checkObject($project);
+        return self::PATH . DIRECTORY_SEPARATOR . $foncarisRequest->getProject()->getId();
+    }
 
-        return self::PATH . DIRECTORY_SEPARATOR . $project->getId();
+    /**
+     * {@inheritdoc}
+     */
+    protected function supports(FileStorageInterface $document): bool
+    {
+        return $document instanceof FoncarisRequest;
     }
 
     /**
@@ -255,13 +262,5 @@ class GuaranteeRequestGenerator extends AbstractDocumentGenerator
         }
 
         return implode(', ', $foncarisFundingSecurities);
-    }
-
-    /**
-     * @param Project $project
-     */
-    private function checkObject(Project $project)
-    {
-        //nothing to do. The language structure (type hint) is used to check the object.
     }
 }

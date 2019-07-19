@@ -12,9 +12,10 @@ use Symfony\Component\HttpFoundation\{Request, Response};
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\User\UserInterface;
-use Unilend\Entity\{Clients, Project, ProjectStatusHistory, TrancheAttribute};
+use Unilend\Entity\{Clients, FoncarisRequest, Project, ProjectStatusHistory, TrancheAttribute};
 use Unilend\Form\Foncaris\{FoncarisRequestType, FoncarisTrancheAttributeType};
 use Unilend\Message\Project\ProjectPublished;
+use Unilend\Repository\FoncarisRequestRepository;
 use Unilend\Repository\ProjectRepository;
 use Unilend\Service\{Foncaris\GuaranteeRequestGenerator, ProjectStatusManager};
 
@@ -33,6 +34,7 @@ class PublishController extends AbstractController
      * @param UserInterface|Clients|null $user
      * @param Request                    $request
      * @param ProjectRepository          $projectRepository
+     * @param FoncarisRequestRepository  $foncarisRequestRepository
      * @param ProjectStatusManager       $projectStatusManager
      * @param MessageBusInterface        $messageBus
      *
@@ -46,32 +48,33 @@ class PublishController extends AbstractController
         ?UserInterface $user,
         Request $request,
         ProjectRepository $projectRepository,
+        FoncarisRequestRepository $foncarisRequestRepository,
         ProjectStatusManager $projectStatusManager,
         MessageBusInterface $messageBus
     ) {
-        $form = $this->createForm(FoncarisRequestType::class);
+        $form = $this->createForm(FoncarisRequestType::class, (new FoncarisRequest())->setProject($project));
 
         foreach ($project->getTranches() as $tranche) {
-            $form->add($tranche->getId(), FoncarisTrancheAttributeType::class);
+            $form->add($tranche->getId(), FoncarisTrancheAttributeType::class, ['mapped' => false]);
         }
 
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {
-            $foncarisRequest = $form->getData();
-            $project->setFoncarisGuarantee($foncarisRequest['guarantee']);
             $projectStatusManager->addProjectStatus($user, ProjectStatusHistory::STATUS_PUBLISHED, $project);
 
-            if ($project->needFoncarisGuarantee()) {
+            $foncarisRequest = $form->getData();
+
+            if ($foncarisRequest->needFoncarisGuarantee()) {
                 foreach ($project->getTranches() as $tranche) {
-                    $greenId        = $form->get($tranche->getid())->get('greenId')->getData();
+                    $greenId        = $form->get($tranche->getId())->get('greenId')->getData();
                     $trancheGreenId = new TrancheAttribute(TrancheAttribute::ATTRIBUTE_CREDIT_AGRICOLE_GREEN_ID, (string) $greenId);
                     $tranche->addTrancheAttribute($trancheGreenId);
 
-                    $fundingType        = $form->get($tranche->getid())->get('fundingType')->getData();
+                    $fundingType        = $form->get($tranche->getId())->get('fundingType')->getData();
                     $trancheFundingType = new TrancheAttribute(TrancheAttribute::ATTRIBUTE_FONCARIS_FUNDING_TYPE, (string) $fundingType->getId());
                     $tranche->addTrancheAttribute($trancheFundingType);
 
-                    $fundingSecurities = $form->get($tranche->getid())->get('security')->getData();
+                    $fundingSecurities = $form->get($tranche->getId())->get('security')->getData();
                     foreach ($fundingSecurities as $fundingSecurity) {
                         $trancheFundingSecurity = new TrancheAttribute(TrancheAttribute::ATTRIBUTE_FONCARIS_FUNDING_SECURITY, (string) $fundingSecurity->getId());
                         $tranche->addTrancheAttribute($trancheFundingSecurity);
@@ -79,7 +82,9 @@ class PublishController extends AbstractController
                 }
             }
 
+            $foncarisRequestRepository->save($foncarisRequest);
             $projectRepository->save($project);
+
             $messageBus->dispatch(new ProjectPublished($project->getId()));
 
             return $this->redirectToRoute('project_publish_confirmation', ['hash' => $project->getHash()]);
@@ -102,18 +107,17 @@ class PublishController extends AbstractController
      *
      * @param Project                   $project
      * @param GuaranteeRequestGenerator $guaranteeRequestGenerator
-     *
-     * @throws PhpSpreadsheetException
-     * @throws PhpSpreadsheetWriterException
+     * @param FoncarisRequestRepository $foncarisRequestRepository
      *
      * @return Response
      */
-    public function confirmation(Project $project, GuaranteeRequestGenerator $guaranteeRequestGenerator)
+    public function confirmation(Project $project, GuaranteeRequestGenerator $guaranteeRequestGenerator, FoncarisRequestRepository $foncarisRequestRepository)
     {
-        $guaranteeRequestGenerator->generate($project);
+        $foncarisRequest = $foncarisRequestRepository->findOneBy(['project' => $project]);
+        $guaranteeRequestGenerator->generate($foncarisRequest);
 
         return $this->render('project/publish/confirmation.html.twig', [
-            'projectLink' => $this->get('router')->generate('edit_project_details', ['hash' => $project->getHash()]),
+            'projectLink' => $this->generateUrl('edit_project_details', ['hash' => $project->getHash()]),
         ]);
     }
 }

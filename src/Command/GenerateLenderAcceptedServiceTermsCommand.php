@@ -75,9 +75,7 @@ EOF
 
         foreach ($acceptedServiceTerms as $accepted) {
             try {
-                if (false === $this->serviceTermsGenerator->exists($accepted)) {
-                    $this->serviceTermsGenerator->generate($accepted);
-                }
+                $this->serviceTermsGenerator->generate($accepted);
             } catch (Exception $exception) {
                 $this->consoleLogger->error('An error occurred while generating lender terms of sale pdf. Message: ' . $exception->getMessage(), [
                     'class'          => __CLASS__,

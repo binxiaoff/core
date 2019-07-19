@@ -53,9 +53,7 @@ class ServiceTermsNotificationSender
             return 0;
         }
 
-        if (false === $this->serviceTermsGenerator->exists($acceptationsLegalDoc)) {
-            $this->serviceTermsGenerator->generate($acceptationsLegalDoc);
-        }
+        $this->serviceTermsGenerator->generate($acceptationsLegalDoc);
 
         $message = $this->messageProvider->newMessage(self::MAIL_TYPE_SERVICE_TERMS_ACCEPTED, [
             'firstName' => $recipient->getFirstName(),
