@@ -33,7 +33,7 @@ class TrancheAttribute
     /**
      * @var Tranche
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Tranche", inversedBy="attributes")
+     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Tranche", inversedBy="trancheAttributes")
      * @ORM\JoinColumns({
      *     @ORM\JoinColumn(name="id_tranche", nullable=false)
      * })
