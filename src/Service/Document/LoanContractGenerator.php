@@ -2,11 +2,11 @@
 
 namespace Unilend\Service\Document;
 
+use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\{EntityManagerInterface, NonUniqueResultException};
 use Exception;
 use Knp\Snappy\Pdf;
 use Psr\Log\LoggerInterface;
-use Doctrine\Common\Persistence\ManagerRegistry;
 use Symfony\Component\Asset\Packages;
 use Twig\Environment;
 use Unilend\Entity\{AddressType, Blocs, BlocsElements, ClientAddress, Companies, CompaniesActifPassif, CompaniesBilans, CompanyAddress, Echeanciers, Elements,
@@ -135,6 +135,14 @@ class LoanContractGenerator extends AbstractDocumentGenerator
     protected function generateRelativeDirectory(FileStorageInterface $loan): string
     {
         return self::PATH . DIRECTORY_SEPARATOR . $loan->getTranche()->getProject()->getId();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function supports(FileStorageInterface $loan): bool
+    {
+        return $loan instanceof Loans;
     }
 
     /**
@@ -323,13 +331,5 @@ class LoanContractGenerator extends AbstractDocumentGenerator
         }
 
         return $lenderData;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function supports(FileStorageInterface $loan): bool
-    {
-        return $loan instanceof Loans;
     }
 }
