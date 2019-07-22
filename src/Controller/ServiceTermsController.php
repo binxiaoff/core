@@ -85,7 +85,7 @@ class ServiceTermsController extends AbstractController
     /**
      * @Route("/conditions-service-popup", name="service_terms_popup", condition="request.isXmlHttpRequest()", methods={"GET"})
      *
-     * @Security("has_role('ROLE_LENDER')")
+     * @Security("is_granted('ROLE_LENDER')")
      *
      * @param UserInterface|Clients|null     $client
      * @param AcceptationLegalDocsRepository $acceptationLegalDocsRepository
@@ -130,7 +130,7 @@ class ServiceTermsController extends AbstractController
     /**
      * @Route("/conditions-service-popup", name="service_terms_popup_accepted", condition="request.isXmlHttpRequest()", methods={"POST"})
      *
-     * @Security("has_role('ROLE_LENDER')")
+     * @Security("is_granted('ROLE_LENDER')")
      *
      * @param Request                    $request
      * @param UserInterface|Clients|null $client

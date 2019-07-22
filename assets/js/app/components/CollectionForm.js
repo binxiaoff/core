@@ -59,7 +59,7 @@ var CollectionForm = function (options) {
         return self
     }
 
-    self.initRemoveButton = function($newForm) {
+    self.initRemoveButton = function ($newForm) {
         var $removeFormButton = $newForm.find('[data-action="remove"]')
         $removeFormButton.on('click', function () {
             if (confirm(__.__('Voulez-vous vraiment supprimer cet élément ?', 'delete-confirmation'))) {
@@ -70,7 +70,7 @@ var CollectionForm = function (options) {
         return self
     }
 
-    self.initProjectFees = function($newForm) {
+    self.initProjectFees = function ($newForm) {
         if (false === self.options.initProjectFee) {
             return self
         }

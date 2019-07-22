@@ -37,8 +37,7 @@ $doc
         method: $('#form-service-terms').attr('method'),
         global: false,
         data: {
-          terms: $('#modal-service-terms input[name="terms"]').is(':checked'),
-          newsletterOptIn: $('#modal-service-terms input[name="newsletterOptIn"]').is(':checked')
+          terms: $('#modal-service-terms input[name="terms"]').is(':checked')
         },
 
         // Event: received server response

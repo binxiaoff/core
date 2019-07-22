@@ -89,21 +89,21 @@ class ServiceTermsManager
     public function acceptCurrentVersion(Clients $client): AcceptationsLegalDocs
     {
         $legalDocument           = $this->entityManager->getRepository(Tree::class)->find($this->getCurrentVersionId());
-        $ServiceTermsAcceptation = new AcceptationsLegalDocs();
-        $ServiceTermsAcceptation
+        $serviceTermsAcceptation = new AcceptationsLegalDocs();
+        $serviceTermsAcceptation
             ->setLegalDoc($legalDocument)
             ->setClient($client)
         ;
 
-        $this->entityManager->persist($ServiceTermsAcceptation);
+        $this->entityManager->persist($serviceTermsAcceptation);
         $this->entityManager->flush();
 
         $session = $this->requestStack->getCurrentRequest()->getSession();
         $session->remove(self::SESSION_KEY_SERVICE_TERMS_ACCEPTED);
 
-        $this->messageBus->dispatch(new ServiceTermsAccepted($ServiceTermsAcceptation->getIdAcceptation()));
+        $this->messageBus->dispatch(new ServiceTermsAccepted($serviceTermsAcceptation->getIdAcceptation()));
 
-        return $ServiceTermsAcceptation;
+        return $serviceTermsAcceptation;
     }
 
     /**
