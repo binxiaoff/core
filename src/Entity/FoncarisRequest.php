@@ -6,7 +6,6 @@ namespace Unilend\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use Unilend\Entity\Interfaces\FileStorageInterface;
-use Unilend\Entity\Traits\FileStorageTrait;
 use Unilend\Entity\Traits\TimestampableTrait;
 use Unilend\Traits\ConstantsAwareTrait;
 
@@ -18,7 +17,6 @@ class FoncarisRequest implements FileStorageInterface
 {
     use TimestampableTrait;
     use ConstantsAwareTrait;
-    use FileStorageTrait;
 
     public const FONCARIS_GUARANTEE_NO_NEED            = 0;
     public const FONCARIS_GUARANTEE_NEED               = 1;
@@ -49,6 +47,13 @@ class FoncarisRequest implements FileStorageInterface
      * @ORM\Column(type="smallint", nullable=true)
      */
     private $choice;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(type="string", length=191, nullable=true)
+     */
+    private $relativeFilePath;
 
     /**
      * @return int
@@ -114,5 +119,25 @@ class FoncarisRequest implements FileStorageInterface
     public static function getFoncarisGuaranteeOptions(): array
     {
         return self::getConstants('FONCARIS_GUARANTEE_');
+    }
+
+    /**
+     * @param string|null $relativeFilePath
+     *
+     * @return self
+     */
+    public function setRelativeFilePath(?string $relativeFilePath): AcceptationsLegalDocs
+    {
+        $this->relativeFilePath = $relativeFilePath;
+
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getRelativeFilePath(): ?string
+    {
+        return $this->relativeFilePath;
     }
 }

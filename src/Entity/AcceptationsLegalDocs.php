@@ -4,7 +4,6 @@ namespace Unilend\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use Unilend\Entity\Interfaces\FileStorageInterface;
-use Unilend\Entity\Traits\FileStorageTrait;
 use Unilend\Entity\Traits\TimestampableTrait;
 
 /**
@@ -15,7 +14,6 @@ use Unilend\Entity\Traits\TimestampableTrait;
 class AcceptationsLegalDocs implements FileStorageInterface
 {
     use TimestampableTrait;
-    use FileStorageTrait;
 
     /**
      * @var Tree
@@ -45,6 +43,13 @@ class AcceptationsLegalDocs implements FileStorageInterface
      * @ORM\GeneratedValue(strategy="IDENTITY")
      */
     private $idAcceptation;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(type="string", length=191, nullable=true)
+     */
+    private $relativeFilePath;
 
     /**
      * @param Tree $legalDoc
@@ -92,5 +97,25 @@ class AcceptationsLegalDocs implements FileStorageInterface
     public function getIdAcceptation(): int
     {
         return $this->idAcceptation;
+    }
+
+    /**
+     * @param string|null $relativeFilePath
+     *
+     * @return self
+     */
+    public function setRelativeFilePath(?string $relativeFilePath): AcceptationsLegalDocs
+    {
+        $this->relativeFilePath = $relativeFilePath;
+
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getRelativeFilePath(): ?string
+    {
+        return $this->relativeFilePath;
     }
 }
