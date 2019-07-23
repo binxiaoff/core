@@ -24,7 +24,7 @@ class QueriesLoiEckertInactiveAccountsCommand extends ContainerAwareCommand
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $entityManager       = $this->getContainer()->get('doctrine.orm.entity_manager');
-        $filePath            = $this->getContainer()->getParameter('path.protected') . '/queries/' . 'loi_eckert.xlsx';
+        $filePath            = $this->getContainer()->getParameter('directory.protected') . '/queries/' . 'loi_eckert.xlsx';
 
         /** @var \PHPExcel $document */
         $document    = new \PHPExcel();

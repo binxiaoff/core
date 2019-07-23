@@ -3,6 +3,7 @@
 namespace Unilend\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Unilend\Entity\Interfaces\FileStorageInterface;
 use Unilend\Entity\Traits\TimestampableTrait;
 
 /**
@@ -10,7 +11,7 @@ use Unilend\Entity\Traits\TimestampableTrait;
  * @ORM\Entity(repositoryClass="Unilend\Repository\AcceptationLegalDocsRepository")
  * @ORM\HasLifecycleCallbacks
  */
-class AcceptationsLegalDocs
+class AcceptationsLegalDocs implements FileStorageInterface
 {
     use TimestampableTrait;
 
@@ -23,13 +24,6 @@ class AcceptationsLegalDocs
      * })
      */
     private $legalDoc;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="pdf_name", type="string", length=191, nullable=true)
-     */
-    private $pdfName;
 
     /**
      * @var Clients
@@ -49,6 +43,13 @@ class AcceptationsLegalDocs
      * @ORM\GeneratedValue(strategy="IDENTITY")
      */
     private $idAcceptation;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(type="string", length=191, nullable=true)
+     */
+    private $relativeFilePath;
 
     /**
      * @param Tree $legalDoc
@@ -99,22 +100,22 @@ class AcceptationsLegalDocs
     }
 
     /**
-     * @param string|null $pdfName
+     * @param string|null $relativeFilePath
      *
-     * @return AcceptationsLegalDocs
+     * @return self
      */
-    public function setPdfName(?string $pdfName): AcceptationsLegalDocs
+    public function setRelativeFilePath(?string $relativeFilePath): AcceptationsLegalDocs
     {
-        $this->pdfName = $pdfName;
+        $this->relativeFilePath = $relativeFilePath;
 
         return $this;
     }
 
     /**
-     * @return string|null
+     * @return string
      */
-    public function getPdfName(): ?string
+    public function getRelativeFilePath(): ?string
     {
-        return $this->pdfName;
+        return $this->relativeFilePath;
     }
 }

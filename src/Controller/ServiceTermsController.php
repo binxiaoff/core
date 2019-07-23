@@ -11,7 +11,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Unilend\Entity\{AcceptationsLegalDocs, Clients};
 use Unilend\Repository\{AcceptationLegalDocsRepository, BlocsElementsRepository, ElementsRepository, TreeRepository};
-use Unilend\Service\Document\ServiceTermsGenerator;
+use Unilend\Service\ServiceTerms\ServiceTermsGenerator;
 use Unilend\Service\ServiceTerms\ServiceTermsManager;
 
 class ServiceTermsController extends AbstractController
@@ -33,14 +33,9 @@ class ServiceTermsController extends AbstractController
             $this->createAccessDeniedException();
         }
 
-        if (false === $serviceTermsGenerator->exists($acceptationsLegalDoc)) {
-            $serviceTermsGenerator->generate($acceptationsLegalDoc);
-        }
+        $serviceTermsGenerator->generate($acceptationsLegalDoc);
 
-        $file = $this->file($serviceTermsGenerator->getPath($acceptationsLegalDoc), $acceptationsLegalDoc->getPdfName());
-        $file->headers->set('Content-Type', $serviceTermsGenerator->getContentType());
-
-        return $file;
+        return $this->file($serviceTermsGenerator->getFilePath($acceptationsLegalDoc));
     }
 
     /**

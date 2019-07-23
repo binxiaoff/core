@@ -437,7 +437,7 @@ class statsController extends bootstrap
         $this->autoFireView = false;
         $this->hideDecoration();
 
-        $filePath = $this->getParameter('path.protected') . '/queries/projects_eligibility.xlsx';
+        $filePath = $this->getParameter('directory.protected') . '/queries/projects_eligibility.xlsx';
 
         if (file_exists($filePath)) {
             $this->download($filePath);
@@ -453,7 +453,7 @@ class statsController extends bootstrap
 
         $year     = date('Y') - 1;
         $fileName = 'preteurs_crs_dac' . $year . '.xlsx';
-        $filePath = $this->getParameter('path.protected') . '/queries/' . $fileName;
+        $filePath = $this->getParameter('directory.protected') . '/queries/' . $fileName;
 
         if (file_exists($filePath)) {
             $this->download($filePath);
@@ -475,7 +475,7 @@ class statsController extends bootstrap
         $this->autoFireView = false;
         $this->hideDecoration();
 
-        $filePath = $this->getParameter('path.protected') . '/queries/loi_eckert.xlsx';
+        $filePath = $this->getParameter('directory.protected') . '/queries/loi_eckert.xlsx';
 
         if (file_exists($filePath)) {
             $this->download($filePath);
@@ -486,7 +486,7 @@ class statsController extends bootstrap
 
     public function _reporting_sfpmei()
     {
-        $directoryPath       = $this->getParameter('path.protected') . '/queries/';
+        $directoryPath       = $this->getParameter('directory.protected') . '/queries/';
         $this->reportingList = [];
 
         if (

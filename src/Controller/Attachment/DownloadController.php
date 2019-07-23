@@ -57,7 +57,7 @@ class DownloadController extends AbstractController
      * @param Project                     $project
      * @param ProjectAttachmentRepository $projectAttachmentRepository
      * @param AttachmentManager           $attachmentManager
-     * @param string                      $sharedTemporaryPath
+     * @param string                      $temporaryDirectory
      *
      * @return Response
      */
@@ -65,10 +65,10 @@ class DownloadController extends AbstractController
         Project $project,
         ProjectAttachmentRepository $projectAttachmentRepository,
         AttachmentManager $attachmentManager,
-        string $sharedTemporaryPath
+        string $temporaryDirectory
     ): Response {
         $zip      = new ZipArchive();
-        $filename = $sharedTemporaryPath . $project->getSlug() . '.zip';
+        $filename = $temporaryDirectory . $project->getSlug() . '.zip';
 
         if (true === $zip->open($filename, ZipArchive::CREATE)) {
             $projectAttachments = $projectAttachmentRepository->getAttachmentsWithoutSignature($project, ['added' => 'DESC']);

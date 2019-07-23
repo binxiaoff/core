@@ -7,15 +7,14 @@ use Symfony\Component\Asset\Packages;
 use Twig\Extension\AbstractExtension;
 use Twig\TwigFilter;
 use Twig\TwigFunction;
-use Unilend\Entity\{Pays, Projects};
-use Unilend\Service\{LocationManager, Simulator\EntityManager, StatisticsManager};
-use Unilend\Service\Translation\TranslationManager;
 use Unilend\CacheKeys;
+use Unilend\Entity\{Pays, Projects};
+use Unilend\Service\{LocationManager, Simulator\EntityManager, StatisticsManager, Translation\TranslationManager};
 
 class FrontBundleExtension extends AbstractExtension
 {
     /** @var string */
-    private $rootDirectory;
+    private $publicDirectory;
     /** @var StatisticsManager */
     private $statisticsManager;
     /** @var TranslationManager */
@@ -30,16 +29,15 @@ class FrontBundleExtension extends AbstractExtension
     private $packages;
 
     public function __construct(
-        string $rootDirectory,
+        string $publicDirectory,
         Packages $assetsPackages,
         StatisticsManager $statisticsManager,
         TranslationManager $translationManager,
         EntityManager $entityManager,
         CacheItemPoolInterface $cachePool,
         LocationManager $locationManager
-    )
-    {
-        $this->rootDirectory      = $rootDirectory;
+    ) {
+        $this->publicDirectory    = $publicDirectory;
         $this->packages           = $assetsPackages;
         $this->statisticsManager  = $statisticsManager;
         $this->translationManager = $translationManager;
@@ -50,27 +48,27 @@ class FrontBundleExtension extends AbstractExtension
 
     public function getFunctions()
     {
-        return array(
+        return [
             new TwigFunction('setting', [$this, 'settingFunction']),
             new TwigFunction('svgimage', [$this, 'svgImageFunction']),
             new TwigFunction('uploadedImage', [$this, 'uploadedImageFunction']),
             new TwigFunction('photo', [$this, 'photo']),
             new TwigFunction('dictionary', [$this, 'dictionary']),
-            new TwigFunction('getStatistic', [$this, 'getStatisticFunction'])
-        );
+            new TwigFunction('getStatistic', [$this, 'getStatisticFunction']),
+        ];
     }
 
     public function getFilters()
     {
-        return array(
+        return [
             new TwigFilter('nbsp', [$this, 'nbspFilter']),
             new TwigFilter('convertRisk', [$this, 'convertProjectRiskFilter']),
             new TwigFilter('completeProjectImagePath', [$this, 'projectImagePathFilter']),
             new TwigFilter('baseUrl', [$this, 'addBaseUrl']),
             new TwigFilter('countryLabel', [$this, 'getCountry']),
             new TwigFilter('nationalityLabel', [$this, 'getNationality']),
-            new TwigFilter('json_decode', [$this, 'jsonDecode'])
-        );
+            new TwigFilter('json_decode', [$this, 'jsonDecode']),
+        ];
     }
 
     public function settingFunction($name)
@@ -87,9 +85,9 @@ class FrontBundleExtension extends AbstractExtension
             $this->cachePool->save($cachedItem);
 
             return $value;
-        } else {
-            return $cachedItem->get();
         }
+
+        return $cachedItem->get();
     }
 
     public function uploadedImageFunction($image)
@@ -108,12 +106,12 @@ class FrontBundleExtension extends AbstractExtension
         $sSvgHeaders = ' version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve"';
 
         // Supported sizing sizes, using preserveAspectRatio
-        $aSupportedSizes = array(
+        $aSupportedSizes = [
             'none'    => '',
             'stretch' => 'none',
             'cover'   => 'xMidYMid slice',
-            'contain' => 'xMidYMid meet'
-        );
+            'contain' => 'xMidYMid meet',
+        ];
 
         // Fallback to 'contain' aspect ratio if invalid option given
         if (false === isset($sSizing) || false === in_array($sSizing, $aSupportedSizes)) {
@@ -129,14 +127,14 @@ class FrontBundleExtension extends AbstractExtension
         $sWidthAttr               = (isset($iWidth) ? ' width="' . $iWidth . '"' : '');
         $sHeightAttr              = (isset($iHeight) ? ' height="' . $iHeight . '"' : '');
         $sPreserveAspectRatioAttr = (isset($sSizing) ? ' preserveAspectRatio="' . $aSupportedSizes[$sSizing] . '"' : '');
-        $sSvgHtml                 = '<svg role="img"' . $sTitleAttr . $sWidthAttr . $sHeightAttr . $sPreserveAspectRatioAttr . ' class="svg-icon svg-icon-' . $sUseId . '"' . $sSvgHeaders . '>' . $sUses . '</svg>';
 
-        return $sSvgHtml;
+        return '<svg role="img"' . $sTitleAttr . $sWidthAttr . $sHeightAttr . $sPreserveAspectRatioAttr
+            . ' class="svg-icon svg-icon-' . $sUseId . '"' . $sSvgHeaders . '>' . $sUses . '</svg>';
     }
 
     public function getStatisticFunction($statisticType, $date = null)
     {
-        $requestedDate = (is_null($date)) ? new \DateTime('NOW') : new \DateTime($date);
+        $requestedDate = (null === $date) ? new \DateTime('NOW') : new \DateTime($date);
 
         return $this->statisticsManager->getStatistic($statisticType, $requestedDate);
     }
@@ -169,7 +167,7 @@ class FrontBundleExtension extends AbstractExtension
 
         $countryList = $this->locationManager->getCountries();
 
-        return isset($countryList[$countryId]) ? $countryList[$countryId] : '';
+        return $countryList[$countryId] ?? '';
     }
 
     public function getNationality($nationalityId)
@@ -191,7 +189,7 @@ class FrontBundleExtension extends AbstractExtension
      */
     public function photo($image, $format = '')
     {
-        $photos = new \photos([$this->rootDirectory . '/../public/default/var/', $this->packages->getUrl('')]);
+        $photos = new \photos([$this->publicDirectory . 'var/', $this->packages->getUrl('')]);
 
         return $photos->display($image, $format);
     }

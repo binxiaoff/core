@@ -79,8 +79,8 @@ EOF
     private function zipProjectAttachments(Projects $project): void
     {
         $company   = $project->getIdCompany();
-        $noZipPath = $this->getContainer()->getParameter('path.sftp') . 'groupama_nozip/';
-        $path      = $this->getContainer()->getParameter('path.sftp') . 'groupama/';
+        $noZipPath = $this->getContainer()->getParameter('directory.sftp') . 'groupama_nozip/';
+        $path      = $this->getContainer()->getParameter('directory.sftp') . 'groupama/';
 
         if (false === is_dir($path)) {
             mkdir($path);
@@ -176,7 +176,7 @@ EOF
     private function deleteOldFiles(): void
     {
         $fileSystem = $this->getContainer()->get('filesystem');
-        $path       = $this->getContainer()->getParameter('path.sftp') . 'groupama/';
+        $path       = $this->getContainer()->getParameter('directory.sftp') . 'groupama/';
         $duration   = 30; // jours
         $files      = scandir($path);
         unset($files[0], $files[1]);

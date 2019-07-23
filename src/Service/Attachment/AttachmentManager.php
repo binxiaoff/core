@@ -30,9 +30,7 @@ class AttachmentManager
     /** @var string */
     private $uploadRootDirectory;
     /** @var string */
-    private $tmpDirectory;
-    /** @var string */
-    private $rootDirectory;
+    private $temporaryDirectory;
     /** @var LoggerInterface */
     private $logger;
     /** @var RealUserFinder */
@@ -42,8 +40,7 @@ class AttachmentManager
      * @param EntityManagerInterface $entityManager
      * @param Filesystem             $filesystem
      * @param string                 $uploadRootDirectory
-     * @param string                 $tmpDirectory
-     * @param string                 $rootDirectory
+     * @param string                 $temporaryDirectory
      * @param LoggerInterface        $logger
      * @param RealUserFinder         $realUserFinder
      */
@@ -51,16 +48,14 @@ class AttachmentManager
         EntityManagerInterface $entityManager,
         Filesystem $filesystem,
         string $uploadRootDirectory,
-        string $tmpDirectory,
-        string $rootDirectory,
+        string $temporaryDirectory,
         LoggerInterface $logger,
         RealUserFinder $realUserFinder
     ) {
         $this->entityManager       = $entityManager;
         $this->filesystem          = $filesystem;
         $this->uploadRootDirectory = $uploadRootDirectory;
-        $this->tmpDirectory        = $tmpDirectory;
-        $this->rootDirectory       = $rootDirectory;
+        $this->temporaryDirectory  = $temporaryDirectory;
         $this->logger              = $logger;
         $this->realUserFinder      = $realUserFinder;
     }
@@ -339,13 +334,13 @@ class AttachmentManager
 
         try {
             $path          = $this->getFullPath($attachment);
-            $temporaryPath = $this->tmpDirectory . '/' . uniqid() . '.pdf';
+            $temporaryPath = $this->temporaryDirectory . '/' . uniqid() . '.pdf';
             $document      = PhpSpreadsheetIOFactory::load($path);
 
             /** @var PhpSpreadsheetMpdf $writer */
             $writer = PhpSpreadsheetIOFactory::createWriter($document, 'Mpdf');
             $writer->writeAllSheets();
-            $writer->setTempDir($this->tmpDirectory);
+            $writer->setTempDir($this->temporaryDirectory);
             $writer->save($temporaryPath);
 
             $fileName = $attachment->getOriginalName() ?? basename($attachment->getPath());

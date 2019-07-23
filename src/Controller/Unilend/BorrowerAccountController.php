@@ -345,7 +345,7 @@ class BorrowerAccountController extends Controller
                 $filePath = '';
                 $file     = $request->files->get('attachment');
                 if ($file instanceof UploadedFile) {
-                    $uploadDestination = $this->getParameter('path.protected') . 'contact/';
+                    $uploadDestination = $this->getParameter('directory.protected') . 'contact/';
                     $file              = $file->move($uploadDestination, $file->getClientOriginalName());
                     $filePath          = $file->getPathname();
                 }

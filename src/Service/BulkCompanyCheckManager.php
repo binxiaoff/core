@@ -37,21 +37,20 @@ class BulkCompanyCheckManager
     private $slackManager;
 
     /**
-     * @param string                 $protectedPath
+     * @param string                 $protectedDirectory
      * @param Filesystem             $filesystem
      * @param EntityManagerInterface $entityManager
      * @param LoggerInterface        $logger
      * @param SlackManager           $slackManager
      */
     public function __construct(
-        $protectedPath,
+        $protectedDirectory,
         Filesystem $filesystem,
         EntityManagerInterface $entityManager,
         LoggerInterface $logger,
         SlackManager $slackManager
-    )
-    {
-        $this->baseDir       = $protectedPath;
+    ) {
+        $this->baseDir       = $protectedDirectory;
         $this->fileSystem    = $filesystem;
         $this->entityManager = $entityManager;
         $this->logger        = $logger;

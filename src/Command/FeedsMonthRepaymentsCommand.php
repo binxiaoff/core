@@ -41,7 +41,7 @@ class FeedsMonthRepaymentsCommand extends ContainerAwareCommand
             $month = new \DateTime('first day of last month');
         }
 
-        $monthFilePath = $this->getContainer()->getParameter('path.sftp') . 'sfpmei/emissions/etat_fiscal/echeances_' . $month->format('Ym') . '.csv';
+        $monthFilePath = $this->getContainer()->getParameter('directory.sftp') . 'sfpmei/emissions/etat_fiscal/echeances_' . $month->format('Ym') . '.csv';
 
         $output->writeln('Generating repayment file for ' . $month->format('Y-m'));
 

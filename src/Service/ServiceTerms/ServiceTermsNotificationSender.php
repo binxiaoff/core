@@ -9,7 +9,6 @@ use Swift_Mailer;
 use Swift_RfcComplianceException;
 use Symfony\Component\Routing\RouterInterface;
 use Unilend\Entity\AcceptationsLegalDocs;
-use Unilend\Service\Document\ServiceTermsGenerator;
 use Unilend\SwiftMailer\{TemplateMessageProvider, UnilendMailer};
 
 class ServiceTermsNotificationSender
@@ -54,15 +53,13 @@ class ServiceTermsNotificationSender
             return 0;
         }
 
-        if (false === $this->serviceTermsGenerator->exists($acceptationsLegalDoc)) {
-            $this->serviceTermsGenerator->generate($acceptationsLegalDoc);
-        }
+        $this->serviceTermsGenerator->generate($acceptationsLegalDoc);
 
         $message = $this->messageProvider->newMessage(self::MAIL_TYPE_SERVICE_TERMS_ACCEPTED, [
             'firstName' => $recipient->getFirstName(),
         ]);
         $message->setTo($recipient->getEmail());
-        $message->attach(Swift_Attachment::fromPath($this->serviceTermsGenerator->getPath($acceptationsLegalDoc)));
+        $message->attach(Swift_Attachment::fromPath($this->serviceTermsGenerator->getFilePath($acceptationsLegalDoc)));
 
         return $this->mailer->send($message);
     }

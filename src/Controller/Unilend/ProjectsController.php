@@ -980,7 +980,7 @@ class ProjectsController extends Controller
         $snappy = $this->get('knp_snappy.pdf');
 
         if ($project->status >= ProjectsStatus::STATUS_PUBLISHED) {
-            $outputFile = $this->getParameter('path.user') . 'dirs/' . $filename;
+            $outputFile = $this->getParameter('directory.user') . 'dirs/' . $filename;
             $snappy->generateFromHtml($html, $outputFile, $options, true);
         }
 

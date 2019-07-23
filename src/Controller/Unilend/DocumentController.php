@@ -56,9 +56,7 @@ class DocumentController extends Controller
         $loanContractGenerator = $this->get(LoanContractGenerator::class);
 
         try {
-            if (false === $loanContractGenerator->exists($loan)) {
-                $loanContractGenerator->generate($loan);
-            }
+            $loanContractGenerator->generate($loan);
 
             $filePath = $loanContractGenerator->getPath($loan);
         } catch (\Exception $exception) {

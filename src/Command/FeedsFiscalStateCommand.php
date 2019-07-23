@@ -165,7 +165,7 @@ class FeedsFiscalStateCommand extends ContainerAwareCommand
 
         $totalFrPhysicalPersonInterest = round(bcadd(bcadd(bcadd($statutoryContributionsInterestsBDC, $statutoryContributionsInterestsIFP, 4), $statutoryContributionsInterestsMiniBon, 4), $exemptedInterests, 4), 2);
 
-        $filePath = $this->getContainer()->getParameter('path.sftp') . 'sfpmei/emissions/etat_fiscal/Unilend_etat_fiscal_' . date('Ymd') . '.xlsx';
+        $filePath = $this->getContainer()->getParameter('directory.sftp') . 'sfpmei/emissions/etat_fiscal/Unilend_etat_fiscal_' . date('Ymd') . '.xlsx';
 
         try {
             /** @var \PHPExcel $document */

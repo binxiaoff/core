@@ -27,7 +27,7 @@ class BeneficialOwnerManager
     /** @var Twig_Environment */
     private $twig;
     /** @var string */
-    private $protectedPath;
+    private $protectedDirectory;
     /** @var RouterInterface */
     private $router;
     /** @var UniversignManager */
@@ -44,7 +44,7 @@ class BeneficialOwnerManager
      * @param RouterInterface        $router
      * @param UniversignManager      $universignManager
      * @param AttachmentManager      $attachmentManager
-     * @param string                 $protectedPath
+     * @param string                 $protectedDirectory
      */
     public function __construct(
         EntityManagerInterface $entityManager,
@@ -54,16 +54,16 @@ class BeneficialOwnerManager
         UniversignManager $universignManager,
         AttachmentManager $attachmentManager,
         LoggerInterface $logger,
-        $protectedPath
+        string $protectedDirectory
     ) {
-        $this->entityManager     = $entityManager;
-        $this->snappy            = $snappy;
-        $this->twig              = $twig;
-        $this->router            = $router;
-        $this->universignManager = $universignManager;
-        $this->attachmentManager = $attachmentManager;
-        $this->protectedPath     = $protectedPath;
-        $this->logger            = $logger;
+        $this->entityManager      = $entityManager;
+        $this->snappy             = $snappy;
+        $this->twig               = $twig;
+        $this->router             = $router;
+        $this->universignManager  = $universignManager;
+        $this->attachmentManager  = $attachmentManager;
+        $this->protectedDirectory = $protectedDirectory;
+        $this->logger             = $logger;
     }
 
     /**
@@ -100,7 +100,7 @@ class BeneficialOwnerManager
      */
     public function getBeneficialOwnerDeclarationPdfRoot()
     {
-        return $this->protectedPath . 'pdf/beneficial_owner';
+        return $this->protectedDirectory . 'pdf/beneficial_owner';
     }
 
     /**

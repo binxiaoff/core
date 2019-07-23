@@ -48,7 +48,7 @@ EOF
         $aEmittedLeviesStatus  = [23, 25, 'A1', 'B1'];
         $aRejectedLeviesStatus = [10, 27, 'A3', 'B3'];
 
-        $receptionPath = $this->getContainer()->getParameter('path.sftp') . 'sfpmei/receptions/';
+        $receptionPath = $this->getContainer()->getParameter('directory.sftp') . 'sfpmei/receptions/';
 
         if (false === @file_get_contents($receptionPath . self::FILE_ROOT_NAME . date('Ymd') . '.txt')) {
             $this->logger->info('No SFPMEI incoming file to process in "' . $receptionPath . '"', ['class' => __CLASS__, 'function' => __FUNCTION__]);

@@ -17,14 +17,14 @@ parameters:
             height: 1365
             width: 2048
     router.request_context.scheme: https
-    path.static: /data/sites/unilend/public/default/
-    path.shared: /data/medias/nfs/
-    path.shared_tmp: '%path.shared%tmp/'
-    path.user: '%path.shared%var/'
-    path.sftp: '%path.shared%sftp/'
-    path.protected: '%path.shared%protected/'
-    path.logs: /data/log
-    path.payline: '%path.logs%/payline'
+    directory.public: /data/sites/unilend/public/default/
+    directory.shared: /data/medias/nfs/
+    directory.temporary: '%directory.shared%tmp/'
+    directory.user: '%directory.shared%var/'
+    directory.sftp: '%directory.shared%sftp/'
+    directory.protected: '%directory.shared%protected/'
+    directory.logs: /data/log
+    directory.payline: '%directory.logs%/payline'
     mapbox.token: ''
     security.bcrypt.cost: 13
     translation_cache_path: '%kernel.cache_dir%/translations'
@@ -37,17 +37,17 @@ services:
             $consoleLogger: '@monolog.logger.console'
             $wsClientLogger: '@monolog.logger.wsclient'
             $defaultLocale: '%locale%'
-            $sharedTemporaryPath: '%path.shared_tmp%'
+            $temporaryDirectory: '%directory.temporary%'
             $templateMessageFQCN: 'Unilend\SwiftMailer\TemplateMessage'
             $frontUrl: '%router.request_context.scheme%://%env(HOST_DEFAULT_URL)%'
             $adminUrl: '%router.request_context.scheme%://%env(HOST_ADMIN_URL)%'
-            $rootDirectory: '%kernel.root_dir%'
             $numberFormatter: '@number_formatter'
             $currencyFormatter: '@currency_formatter'
             $currencyFormatterNoDecimal: '@currency_formatter_no_decimal'
             $environment: '%kernel.environment%'
-            $protectedPath: '%path.protected%'
-            $staticPath: '%path.static%'
+            $protectedDirectory: '%directory.protected%'
+            $publicDirectory: '%directory.public%'
+            $documentRootDirectory: '%directory.protected%/generated_document/'
 
     # makes classes in src/ available to be used as services
     # this creates a service per class whose id is the fully-qualified class name
@@ -141,7 +141,7 @@ services:
         public: true
 
     Unilend\Service\SalesforceManager:
-        $extractionDir: '%path.protected%dataloader'
+        $extractionDir: '%directory.protected%dataloader'
         $configDir: '%kernel.root_dir%/dataloader/conf'
 
     Unilend\Service\LocationManager:
@@ -155,11 +155,10 @@ services:
     Unilend\Service\PaylineManager:
         $merchantId: '%payline.merchant_id%'
         $accessKey: '%payline.access_key%'
-        $logPath: '%path.payline%'
+        $logPath: '%directory.payline%'
 
     Unilend\Service\Attachment\AttachmentManager:
-        $uploadRootDirectory: '%path.protected%attachments'
-        $tmpDirectory: '%path.shared_tmp%'
+        $uploadRootDirectory: '%directory.protected%attachments'
 
     Unilend\Service\GoogleRecaptchaManager:
         $client: '@eight_points_guzzle.client.google_recaptcha'

@@ -80,9 +80,7 @@ class protectedController extends bootstrap
         $loanContractGenerator = $this->get(LoanContractGenerator::class);
 
         try {
-            if (false === $loanContractGenerator->exists($loan)) {
-                $loanContractGenerator->generate($loan);
-            }
+            $loanContractGenerator->generate($loan);
 
             $filePath = $loanContractGenerator->getPath($loan);
 

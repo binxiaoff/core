@@ -8,7 +8,7 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\{Input\InputInterface, Input\InputOption, Output\OutputInterface};
 use Unilend\Entity\AcceptationsLegalDocs;
-use Unilend\Service\Document\ServiceTermsGenerator;
+use Unilend\Service\ServiceTerms\ServiceTermsGenerator;
 use Unilend\Service\ServiceTerms\ServiceTermsManager;
 
 class GenerateLenderAcceptedServiceTermsCommand extends Command
@@ -75,13 +75,7 @@ EOF
 
         foreach ($acceptedServiceTerms as $accepted) {
             try {
-                if (false === $this->serviceTermsGenerator->exists($accepted)) {
-                    $this->serviceTermsGenerator->generate($accepted);
-                }
-
-                $accepted->setPdfName($this->serviceTermsGenerator->getName($accepted));
-
-                $this->entityManager->flush();
+                $this->serviceTermsGenerator->generate($accepted);
             } catch (Exception $exception) {
                 $this->consoleLogger->error('An error occurred while generating lender terms of sale pdf. Message: ' . $exception->getMessage(), [
                     'class'          => __CLASS__,

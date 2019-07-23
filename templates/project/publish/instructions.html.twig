@@ -1,0 +1,49 @@
+{% extends 'layouts/_page_with_sidebar.html.twig' %}
+
+{% block dashboardContent %}
+    <section class="dashboard-tabs tabs">
+        <div class="dashboard-tabs-content tab-content">
+            <div id="form-container" class="dashboard-tab-pane">
+                {{ form_start(form) }}
+                <article class="request-form-panel panel ">
+                    <h3 class="margin-5-t">{% trans %} project-request.foncaris-section-title {% endtrans %}</h3>
+                    <div class="row row-multi-col-computer">
+                        {{ form_row(form.choice, {label: false}) }}
+                    </div>
+                </article>
+                <article class="panel collapse" id="tranche-attributes">
+                    {% for tranche in project.tranches %}
+                        <h4 class="margin-20-t">{{ tranche.name }}</h4>
+                        <div class="row row-multi-col-computer">
+                            <div class="col-lg-4 col-md-4">
+                                {{ form_row(form[tranche.id].greenId) }}
+                            </div>
+                            <div class="col-lg-4 col-md-4">
+                                {{ form_row(form[tranche.id].fundingType) }}
+                            </div>
+                            <div class="col-lg-4 col-md-4">
+                                {{ form_row(form[tranche.id].security) }}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </article>
+                <article class="panel">
+                    <div class="text-align-right">
+                        <button type="submit" class="btn-primary btn-shape-xs" data-spinnerbutton>{% trans %} project.publish-confirmation-button-label {% endtrans %}</button>
+                    </div>
+                </article>
+                {{ form_end(form) }}
+            </div>
+        </div>
+    </section>
+{% endblock %}
+
+{% block pageScripts %}
+<script>
+    $(function () {
+        $(document).on('change', '#foncaris_request_type_choice', function () {
+            $('#tranche-attributes').toggle('1' === $(this).children("option:selected").val());
+        })
+    })
+</script>
+{% endblock %}
