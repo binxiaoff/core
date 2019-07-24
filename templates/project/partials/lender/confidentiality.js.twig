@@ -1,0 +1,11 @@
+$('#confidentiality_confidential').on('change', function () {
+    let $disclaimer = $('#confidentiality_confidentialityDisclaimer')
+    let $disclaimerContainer = $disclaimer.parents('.row')
+
+    let confidential = $(this).is(':checked')
+    let visible = $disclaimerContainer.is(':visible')
+
+    if (confidential && ! visible || ! confidential && visible) {
+        $disclaimerContainer.slideToggle()
+    }
+})

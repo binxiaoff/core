@@ -129,6 +129,20 @@ class Project
     private $description;
 
     /**
+     * @var bool
+     *
+     * @ORM\Column(type="boolean", options={"default": false})
+     */
+    private $confidential = false;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(type="text", nullable=true)
+     */
+    private $confidentialityDisclaimer;
+
+    /**
      * @var DateTimeImmutable
      *
      * @ORM\Column(type="date_immutable", nullable=true)
@@ -390,6 +404,46 @@ class Project
     public function getDescription(): ?string
     {
         return $this->description;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isConfidential(): bool
+    {
+        return $this->confidential;
+    }
+
+    /**
+     * @param bool $confidential
+     *
+     * @return Project
+     */
+    public function setConfidential(bool $confidential): Project
+    {
+        $this->confidential = $confidential;
+
+        return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getConfidentialityDisclaimer(): ?string
+    {
+        return $this->confidentialityDisclaimer;
+    }
+
+    /**
+     * @param string|null $confidentialityDisclaimer
+     *
+     * @return Project
+     */
+    public function setConfidentialityDisclaimer(?string $confidentialityDisclaimer): Project
+    {
+        $this->confidentialityDisclaimer = $confidentialityDisclaimer;
+
+        return $this;
     }
 
     /**

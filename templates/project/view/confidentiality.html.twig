@@ -1,0 +1,34 @@
+{% extends 'layouts/_page_with_sidebar.html.twig' %}
+
+{% block dashboardContent %}
+    <div class="dashboard-tabs-content tab-content">
+        <article class="dashboard-tab-pane">
+            <div class="panel">
+                {% include 'project/partials/lender/header.html.twig' %}
+            </div>
+            <div class="panel">
+                <h2 class="margin-10-t">{% trans %} project-confidentiality.page-title {% endtrans %}</h2>
+                {{ form_start(acceptanceForm) }}
+                    <div class="row">
+                        <div class="form-field">
+                            <label>
+                                <input type="checkbox" id="acceptance_accept" name="acceptance[accept]" value="1" required="required">
+                                {% do acceptanceForm.accept.setRendered %}
+                                {{ project.confidentialityDisclaimer|nl2br }}
+                            </label>
+                        </div>
+                    </div>
+                    <div class="text-align-right">
+                        {{ form_row(acceptanceForm.submit, {attr: {class: 'btn-primary btn-shape-xs', 'data-spinnerbutton': ''}}) }}
+                    </div>
+                {{ form_end(acceptanceForm) }}
+            </div>
+        </article>
+    </div>
+{% endblock %}
+
+{% block pageHeadScripts %}
+    <style>
+        {% include 'project/partials/lender/header.css.twig' %}
+    </style>
+{% endblock %}

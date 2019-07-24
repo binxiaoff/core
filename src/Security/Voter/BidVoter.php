@@ -9,7 +9,6 @@ use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 use Unilend\Entity\{Bids, Clients};
-use Unilend\Repository\WalletRepository;
 use Unilend\Traits\ConstantsAwareTrait;
 
 class BidVoter extends Voter
@@ -20,17 +19,13 @@ class BidVoter extends Voter
 
     /** @var AuthorizationCheckerInterface */
     private $authorizationChecker;
-    /** @var WalletRepository */
-    private $walletRepository;
 
     /**
      * @param AuthorizationCheckerInterface $authorizationChecker
-     * @param WalletRepository              $walletRepository
      */
-    public function __construct(AuthorizationCheckerInterface $authorizationChecker, WalletRepository $walletRepository)
+    public function __construct(AuthorizationCheckerInterface $authorizationChecker)
     {
         $this->authorizationChecker = $authorizationChecker;
-        $this->walletRepository     = $walletRepository;
     }
 
     /**

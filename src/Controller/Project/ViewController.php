@@ -7,32 +7,37 @@ namespace Unilend\Controller\Project;
 use Doctrine\ORM\{ORMException, OptimisticLockException};
 use Exception;
 use Psr\Log\LoggerInterface;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Swift_SwiftException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Form\Extension\Core\Type\{CheckboxType, SubmitType};
 use Symfony\Component\HttpFoundation\{Request, Response};
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
-use Unilend\Entity\{Bids, Clients, Project};
+use Symfony\Component\Validator\Constraints\NotBlank;
+use Unilend\Entity\{Bids, Clients, Project, ProjectConfidentialityAcceptance};
 use Unilend\Form\Bid\BidType;
-use Unilend\Repository\{BidsRepository, ProjectAttachmentRepository};
-use Unilend\Service\Front\ProjectDisplayManager;
-use Unilend\Service\NotificationManager;
-use Unilend\Service\User\RealUserFinder;
+use Unilend\Repository\{BidsRepository, ProjectAttachmentRepository, ProjectConfidentialityAcceptanceRepository};
+use Unilend\Security\Voter\ProjectVoter;
+use Unilend\Service\{NotificationManager, User\RealUserFinder};
 
 class ViewController extends AbstractController
 {
     /**
-     * @Route("/projets/details/lender/{slug}", name="lender_project_details")
+     * @Route("/projet/details/{slug}", name="lender_project_details")
      *
-     * @param Project                     $project
-     * @param Request                     $request
-     * @param UserInterface|Clients|null  $user
-     * @param BidsRepository              $bidsRepository
-     * @param ProjectAttachmentRepository $projectAttachmentRepository
-     * @param ProjectDisplayManager       $projectDisplayManager
-     * @param NotificationManager         $notificationManager
-     * @param RealUserFinder              $realUserFinder
-     * @param LoggerInterface             $logger
+     * @IsGranted("view", subject="project")
+     *
+     * @param Project                       $project
+     * @param Request                       $request
+     * @param UserInterface|Clients|null    $user
+     * @param BidsRepository                $bidsRepository
+     * @param ProjectAttachmentRepository   $projectAttachmentRepository
+     * @param NotificationManager           $notificationManager
+     * @param RealUserFinder                $realUserFinder
+     * @param AuthorizationCheckerInterface $authorizationChecker
+     * @param LoggerInterface               $logger
      *
      * @throws Exception
      * @throws ORMException
@@ -46,13 +51,13 @@ class ViewController extends AbstractController
         ?UserInterface $user,
         BidsRepository $bidsRepository,
         ProjectAttachmentRepository $projectAttachmentRepository,
-        ProjectDisplayManager $projectDisplayManager,
         NotificationManager $notificationManager,
         RealUserFinder $realUserFinder,
+        AuthorizationCheckerInterface $authorizationChecker,
         LoggerInterface $logger
     ): Response {
-        if (ProjectDisplayManager::VISIBILITY_FULL !== $projectDisplayManager->getVisibility($project, $user)) {
-            return $this->redirectToRoute('list_projects');
+        if (false === $authorizationChecker->isGranted(ProjectVoter::ATTRIBUTE_VIEW_CONFIDENTIAL, $project)) {
+            return $this->redirectToRoute('project_confidentiality_acceptance', ['slug' => $project->getSlug()]);
         }
 
         $bidForms = [];
@@ -105,6 +110,65 @@ class ViewController extends AbstractController
             'project'            => $project,
             'bidForms'           => $bidForms,
             'projectAttachments' => $projectAttachmentRepository->getAttachmentsWithoutSignature($project, ['added' => 'DESC']),
+        ]);
+    }
+
+    /**
+     * @Route("/projet/confidentialite/{slug}", name="project_confidentiality_acceptance")
+     *
+     * @param Project                                    $project
+     * @param Request                                    $request
+     * @param UserInterface|Clients|null                 $user
+     * @param ProjectConfidentialityAcceptanceRepository $acceptanceRepository
+     * @param AuthorizationCheckerInterface              $authorizationChecker
+     *
+     * @throws ORMException
+     * @throws OptimisticLockException
+     *
+     * @return Response
+     */
+    public function confidentialityAcceptance(
+        Project $project,
+        Request $request,
+        ?UserInterface $user,
+        ProjectConfidentialityAcceptanceRepository $acceptanceRepository,
+        AuthorizationCheckerInterface $authorizationChecker
+    ): Response {
+        if ($authorizationChecker->isGranted(ProjectVoter::ATTRIBUTE_VIEW_CONFIDENTIAL, $project)) {
+            return $this->redirectToRoute('lender_project_details', ['slug' => $project->getSlug()]);
+        }
+
+        $acceptanceForm = $this->get('form.factory')
+            ->createNamedBuilder('acceptance')
+            ->add('accept', CheckboxType::class, [
+                'value'       => true,
+                'label'       => false,
+                'required'    => true,
+                'constraints' => new NotBlank(),
+            ])
+            ->add('submit', SubmitType::class, [
+                'label' => 'project-confidentiality.submit-button-label',
+            ])
+            ->getForm()
+        ;
+
+        $acceptanceForm->handleRequest($request);
+
+        if ($acceptanceForm->isSubmitted() && $acceptanceForm->isValid()) {
+            $acceptance = new ProjectConfidentialityAcceptance();
+            $acceptance
+                ->setProject($project)
+                ->setClient($user)
+            ;
+
+            $acceptanceRepository->save($acceptance);
+
+            return $this->redirectToRoute('lender_project_details', ['slug' => $project->getSlug()]);
+        }
+
+        return $this->render('project/view/confidentiality.html.twig', [
+            'project'        => $project,
+            'acceptanceForm' => $acceptanceForm->createView(),
         ]);
     }
 }

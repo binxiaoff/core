@@ -12,7 +12,7 @@ use Psr\Log\LoggerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Swift_SwiftException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\Form\Extension\Core\Type\FormType;
+use Symfony\Component\Form\Extension\Core\Type\{CheckboxType, FormType, SubmitType, TextareaType};
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\{File\UploadedFile, Request, Response};
 use Symfony\Component\Routing\Annotation\Route;
@@ -87,6 +87,11 @@ class EditController extends AbstractController
             'action' => $this->generateUrl('edit_bid_partial'),
         ]);
 
+        $confidentialityForm = $this->buildConfidentialityForm($project);
+        if ($this->handleConfidentialityForm($confidentialityForm, $request, $projectRepository)) {
+            return $this->redirect($request->getUri());
+        }
+
         $template = [
             'arrangers'                => $companyRepository->findEligibleArrangers($user->getCompany(), ['name' => 'ASC']),
             'runs'                     => $regionalBanks,
@@ -105,6 +110,7 @@ class EditController extends AbstractController
             'trancheForm'              => $trancheForm ? $trancheForm->createView() : null,
             'feesForm'                 => $feesForm ? $feesForm->createView() : null,
             'partialBidForm'           => $partialBidForm->createView(),
+            'confidentialityForm'      => $confidentialityForm->createView(),
         ];
 
         return $this->render('project/edit/details.html.twig', $template);
@@ -572,6 +578,61 @@ class EditController extends AbstractController
 
         if ($feesForm->isSubmitted() && $feesForm->isValid()) {
             $project = $feesForm->getData();
+            $projectRepository->save($project);
+
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * @param Project $project
+     *
+     * @return FormInterface
+     */
+    private function buildConfidentialityForm(Project $project): FormInterface
+    {
+        return $this->get('form.factory')
+            ->createNamedBuilder('confidentiality', FormType::class, $project, ['data_class' => Project::class])
+            ->add('confidential', CheckboxType::class, [
+                'value'    => true,
+                'label'    => false,
+                'required' => false,
+            ])
+            ->add('confidentialityDisclaimer', TextareaType::class, [
+                'label'    => false,
+                'required' => false,
+            ])
+            ->add('submit', SubmitType::class, [
+                'label' => 'confidentiality-form.submit-button-label',
+            ])
+            ->getForm()
+        ;
+    }
+
+    /**
+     * @param FormInterface     $confidentialityForm
+     * @param Request           $request
+     * @param ProjectRepository $projectRepository
+     *
+     * @throws ORMException
+     * @throws OptimisticLockException
+     *
+     * @return bool
+     */
+    private function handleConfidentialityForm(FormInterface $confidentialityForm, Request $request, ProjectRepository $projectRepository): bool
+    {
+        $confidentialityForm->handleRequest($request);
+
+        if ($confidentialityForm->isSubmitted() && $confidentialityForm->isValid()) {
+            /** @var Project $project */
+            $project = $confidentialityForm->getData();
+
+            if (false === $project->isConfidential()) {
+                $project->setConfidentialityDisclaimer(null);
+            }
+
             $projectRepository->save($project);
 
             return true;
