@@ -69,11 +69,14 @@ class GuaranteeRequestGenerator extends AbstractDocumentGenerator
 
         $sheet->setCellValue('A1', 'Demande de Garantie');
 
-        $sheet->setCellValue('A3', 'SIREN');
-        $sheet->setCellValue('B3', $project->getBorrowerCompany()->getSiren());
+        $sheet->setCellValue('A3', 'Nom Emprunteur');
+        $sheet->setCellValue('B3', $project->getBorrowerCompany()->getName());
+
+        $sheet->setCellValue('C3', 'SIREN');
+        $sheet->setCellValue('D3', $project->getBorrowerCompany()->getSiren());
 
         $sheet->setCellValue('A4', 'La CR demandeuse');
-        $sheet->setCellValue('B4', $project->getBorrowerCompany()->getName());
+        $sheet->setCellValue('B4', $project->getArranger()->getCompany()->getName());
 
         $sheet->setCellValue('A5', 'Contact dans la CR demandeuse');
         $sheet->setCellValue('B5', sprintf(
@@ -135,13 +138,12 @@ class GuaranteeRequestGenerator extends AbstractDocumentGenerator
             $sheet->setCellValueByColumnAndRow($column, $row, $isAmortizable ? 'O' : 'N');
             ++$column;
 
-            if ($isAmortizable) {
+            $rate = 'N/A';
+            if ($isAmortizable && $tranche->getRate()->getIndexType() && $tranche->getRate()->getMargin()) {
                 $indexType = $this->translator->trans('interest-rate-index.index_' . mb_strtolower($tranche->getRate()->getIndexType()));
                 $rate      = $indexType . ' + ' . $tranche->getRate()->getMargin() . ($tranche->getRate()->getFloor() ? ' flooré à ' . $tranche->getRate()->getFloor() : '');
-                $sheet->setCellValueByColumnAndRow($column, $row, $rate);
-            } else {
-                $sheet->setCellValueByColumnAndRow($column, $row, 'N/A');
             }
+            $sheet->setCellValueByColumnAndRow($column, $row, $rate);
             ++$column;
 
             if ($isAmortizable) {
