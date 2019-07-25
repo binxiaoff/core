@@ -4,11 +4,20 @@
     <section class="dashboard-tabs tabs">
         <div class="dashboard-tabs-content tab-content">
             <div id="form-container" class="dashboard-tab-pane">
-                <article class="request-form-panel panel ">
-                    <h1>{% trans %} project.publish-confirmation-title {% endtrans %}</h1>
-                   {% trans with {'%projectLink%': projectLink} %} project.publish-confirmation-message {% endtrans %}
+                <div class="panel">
+                    {% include 'project/partials/lender/header.html.twig' %}
+                </div>
+                <article class="request-form-panel panel">
+                    <h1 class="margin-5-t">{% trans %} project-publish.confirmation-title {% endtrans %}</h1>
+                   {% trans with {'%projectLink%': path('edit_project_details', {hash: project.hash})} %} project-publish.confirmation-message {% endtrans %}
                 </article>
             </div>
         </div>
     </section>
+{% endblock %}
+
+{% block pageHeadScripts %}
+    <style>
+        {% include 'project/partials/lender/header.css.twig' %}
+    </style>
 {% endblock %}

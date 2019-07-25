@@ -129,9 +129,9 @@ class ProjectVoter extends Voter
             return true;
         }
 
-//        if ($user->getCompany() === $project->getSubmitterCompany()) {
-//            return true;
-//        }
+        if ($user->getCompany() === $project->getSubmitterCompany()) {
+            return true;
+        }
 
         $acceptance = $this->acceptanceRepository->findOneBy(['project' => $project, 'client' => $user]);
 
