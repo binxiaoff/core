@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Unilend\Service\Foncaris;
 
+use Doctrine\Common\Persistence\ManagerRegistry;
 use NumberFormatter;
 use PhpOffice\PhpSpreadsheet\{Exception as PhpSpreadsheetException, Spreadsheet, Writer\Exception as PhpSpreadsheetWriterException, Writer\Xlsx};
-use Doctrine\Common\Persistence\ManagerRegistry;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Unilend\Entity\{FoncarisRequest, Interfaces\FileStorageInterface, Project, Tranche, TrancheAttribute};
 use Unilend\Repository\ConstantList\{FoncarisFundingTypeRepository, FoncarisSecurityRepository};
@@ -58,6 +58,10 @@ class GuaranteeRequestGenerator extends AbstractDocumentGenerator
      */
     public function generateDocument(FileStorageInterface $foncarisRequest): void
     {
+        if (FoncarisRequest::FONCARIS_GUARANTEE_NEED !== $foncarisRequest->getChoice()) {
+            return;
+        }
+
         $project = $foncarisRequest->getProject();
 
         $spreadsheet = new Spreadsheet();
@@ -141,7 +145,7 @@ class GuaranteeRequestGenerator extends AbstractDocumentGenerator
             ++$column;
 
             if ($isAmortizable) {
-                $sheet->setCellValueByColumnAndRow($column, $row, $tranche->getExpectedStartingDate()->format('d/m/Y'));
+                $sheet->setCellValueByColumnAndRow($column, $row, $tranche->getExpectedStartingDate() ? $tranche->getExpectedStartingDate()->format('d/m/Y') : '');
             } else {
                 $sheet->setCellValueByColumnAndRow($column, $row, 'N/A');
             }
