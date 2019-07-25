@@ -7,10 +7,22 @@ namespace Unilend\Form\Foncaris;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\{AbstractType, FormBuilderInterface, FormError, FormEvent, FormEvents};
+use Symfony\Contracts\Translation\TranslatorInterface;
 use Unilend\Entity\{ConstantList\FoncarisFundingType, ConstantList\FoncarisSecurity, FoncarisRequest};
 
 class FoncarisTrancheAttributeType extends AbstractType
 {
+    /** @var TranslatorInterface */
+    private $translator;
+
+    /**
+     * @param TranslatorInterface $translator
+     */
+    public function __construct(TranslatorInterface $translator)
+    {
+        $this->translator = $translator;
+    }
+
     /**
      * {@inheritdoc}
      */
@@ -78,12 +90,12 @@ class FoncarisTrancheAttributeType extends AbstractType
         if (FoncarisRequest::FONCARIS_GUARANTEE_NEED === $form->getParent()->get('choice')->getData()) {
             $fundingType = $form->get('fundingType');
             if (null === $fundingType->getData()) {
-                $fundingType->addError(new FormError('tranche-form.foncaris-funding-type-required'));
+                $fundingType->addError(new FormError($this->translator->trans('tranche-form.foncaris-funding-type-required')));
             }
 
             $security = $form->get('security');
             if (0 === count($security->getData())) {
-                $security->addError(new FormError('tranche-form.foncaris-security-required'));
+                $security->addError(new FormError($this->translator->trans('tranche-form.foncaris-security-required')));
             }
         }
     }
