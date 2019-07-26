@@ -48,7 +48,7 @@ class menusController extends bootstrap
             $_SESSION['freeow']['title']   = 'Modification d\'un menu';
             $_SESSION['freeow']['message'] = 'Le menu a bien &eacute;t&eacute; modifi&eacute; !';
 
-            header('Location:' . $this->lurl . '/menus');
+            header('Location:' . $this->url . '/menus');
             die;
         }
 
@@ -61,7 +61,7 @@ class menusController extends bootstrap
             $_SESSION['freeow']['title']   = 'Ajout d\'un menu';
             $_SESSION['freeow']['message'] = 'Le menu a bien &eacute;t&eacute; ajout&eacute; !';
 
-            header('Location:' . $this->lurl . '/menus');
+            header('Location:' . $this->url . '/menus');
             die;
         }
 
@@ -75,7 +75,7 @@ class menusController extends bootstrap
                     $_SESSION['freeow']['title']   = 'Statut d\'un menu';
                     $_SESSION['freeow']['message'] = 'Le statut du menu a bien &eacute;t&eacute; modifi&eacute; !';
 
-                    header('Location: ' . $this->lurl . '/menus');
+                    header('Location: ' . $this->url . '/menus');
                     die;
                 case 'delete':
                     $this->menus->get($this->params[1], 'id_menu');
@@ -86,7 +86,7 @@ class menusController extends bootstrap
                     $_SESSION['freeow']['title']   = 'Suppression d\'un menu';
                     $_SESSION['freeow']['message'] = 'Le menu a bien &eacute;t&eacute; supprim&eacute; !';
 
-                    header('Location: ' . $this->lurl . '/menus');
+                    header('Location: ' . $this->url . '/menus');
                     die;
             }
         }
@@ -128,11 +128,11 @@ class menusController extends bootstrap
             switch ($this->params[1]) {
                 case 'up':
                     $this->tree_menu->moveUp($this->params[2], $this->params[0]);
-                    header('Location: ' . $this->lurl . '/menus/elements/' . $this->params[0]);
+                    header('Location: ' . $this->url . '/menus/elements/' . $this->params[0]);
                     die;
                 case 'down':
                     $this->tree_menu->moveDown($this->params[2], $this->params[0]);
-                    header('Location: ' . $this->lurl . '/menus/elements/' . $this->params[0]);
+                    header('Location: ' . $this->url . '/menus/elements/' . $this->params[0]);
                     die;
                 case 'status':
                     foreach ($this->lLangues as $key => $lng) {
@@ -144,7 +144,7 @@ class menusController extends bootstrap
                     $_SESSION['freeow']['title']   = 'Statut d\'un &eacute;l&eacute;ment';
                     $_SESSION['freeow']['message'] = 'Le statut de l\'&eacute;l&eacute;ment a bien &eacute;t&eacute; modifi&eacute; !';
 
-                    header('Location: ' . $this->lurl . '/menus/elements/' . $this->params[0]);
+                    header('Location: ' . $this->url . '/menus/elements/' . $this->params[0]);
                     die;
                 case 'delete':
                     $this->tree_menu->delete(['id' => $this->params[2]]);
@@ -153,7 +153,7 @@ class menusController extends bootstrap
                     $_SESSION['freeow']['title']   = 'Suppression d\'un &eacute;l&eacute;ment';
                     $_SESSION['freeow']['message'] = 'L\'&eacute;l&eacute;ment a bien &eacute;t&eacute; supprim&eacute; !';
 
-                    header('Location: ' . $this->lurl . '/menus/elements/' . $this->params[0]);
+                    header('Location: ' . $this->url . '/menus/elements/' . $this->params[0]);
                     die;
             }
         }
@@ -187,7 +187,7 @@ class menusController extends bootstrap
             $_SESSION['freeow']['title']   = 'Ajout d\'un &eacute;l&eacute;ment';
             $_SESSION['freeow']['message'] = 'L\'&eacute;l&eacute;ment a bien &eacute;t&eacute; ajout&eacute; !';
 
-            header('Location:' . $this->lurl . '/menus/elements/' . $_POST['id_menu']);
+            header('Location:' . $this->url . '/menus/elements/' . $_POST['id_menu']);
             die;
         }
 
@@ -205,7 +205,7 @@ class menusController extends bootstrap
             $_SESSION['freeow']['title']   = 'Modification d\'un &eacute;l&eacute;ment';
             $_SESSION['freeow']['message'] = 'L\'&eacute;l&eacute;ment a bien &eacute;t&eacute; modifi&eacute; !';
 
-            header('Location: ' . $this->lurl . '/menus/elements/' . $this->tree_menu->id_menu);
+            header('Location: ' . $this->url . '/menus/elements/' . $this->tree_menu->id_menu);
             die;
         }
     }

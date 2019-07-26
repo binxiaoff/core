@@ -57,7 +57,7 @@
                             <tr>
                                 <th><label for="id_template_<?= $key ?>">Template :</label></th>
                                 <td>
-                                    <select name="id_template_<?= $key ?>" id="id_template_<?= $key ?>" onchange="if(confirm('Voulez-vous vraiment changer ce template ?\nLe contenu existant de cette page sera d\351finitivement \351ffac\351.')){ window.location.href = '<?= $this->lurl ?>/tree/edit/<?=$this->tree->id_tree?>/<?= $key ?>/' + this.value; } else { this.value = '<?= $this->tree->id_template ?>'; }" class="select">
+                                    <select name="id_template_<?= $key ?>" id="id_template_<?= $key ?>" onchange="if(confirm('Voulez-vous vraiment changer ce template ?\nLe contenu existant de cette page sera d\351finitivement \351ffac\351.')){ window.location.href = '<?= $this->url ?>/tree/edit/<?=$this->tree->id_tree?>/<?= $key ?>/' + this.value; } else { this.value = '<?= $this->tree->id_template ?>'; }" class="select">
                                         <option value="0">Choisir un template</option>
                                         <?php foreach($this->lTemplate as $template) : ?>
                                             <option value="<?= $template['id_template'] ?>"<?= ($this->tree->id_template == $template['id_template'] ? ' selected="selected"' : '') ?>><?= $template['name'] ?></option>

@@ -1,6 +1,6 @@
 <div id="popup">
     <a onclick="parent.$.fn.colorbox.close();" title="Fermer" class="closeBtn"><img src="<?= $this->surl ?>/images/admin/delete.png" alt="Fermer" /></a>
-    <form method="post" name="add_element" id="add_element" enctype="multipart/form-data" action="<?= $this->lurl ?>/templates/elements" target="_parent">
+    <form method="post" name="add_element" id="add_element" enctype="multipart/form-data" action="<?= $this->url ?>/templates/elements" target="_parent">
         <input type="hidden" name="id_template" id="id_template" value="<?= $this->templates->id_template ?>" />
         <h1>Ajouter un &eacute;l&eacute;ment au template <?= $this->templates->name ?></h1>
         <fieldset>

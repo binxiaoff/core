@@ -1,6 +1,6 @@
 <div id="popup">
     <a onclick="parent.$.fn.colorbox.close();" title="Fermer" class="closeBtn"><img src="<?= $this->surl ?>/images/admin/delete.png" alt="Fermer" /></a>
-    <form method="post" name="add_menu" id="add_menu" enctype="multipart/form-data" action="<?= $this->lurl ?>/menus" target="_parent">
+    <form method="post" name="add_menu" id="add_menu" enctype="multipart/form-data" action="<?= $this->url ?>/menus" target="_parent">
         <h1>Ajouter un menu</h1>
         <fieldset>
             <table class="formColor">

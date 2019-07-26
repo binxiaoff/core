@@ -17,7 +17,7 @@
             var keywords = {
                 staticUrl: '<?= $this->surl ?>',
                 frontUrl: '<?= $this->furl ?>',
-                adminUrl: '<?= $this->aurl ?>',
+                adminUrl: '<?= $this->url ?>',
                 facebookLink: '<?= $this->facebookUrl ?>',
                 twitterLink: '<?= $this->twitterUrl ?>',
                 year: '<?= date('Y') ?>'
@@ -82,7 +82,7 @@
     <div id="preview-content">
         <a onclick="parent.$.fn.colorbox.close();" title="Fermer" class="closeBtn"><img src="<?= $this->surl ?>/images/admin/delete.png" alt="Fermer"></a>
         <div class="row" style="margin: 40px 15px 0 15px;">
-            <form id="preview-keywords-form" method="post" action="<?= $this->lurl ?>/mails/preview" class="col-md-3">
+            <form id="preview-keywords-form" method="post" action="<?= $this->url ?>/mails/preview" class="col-md-3">
                 <div id="preview-keywords"></div>
                 <div class="form-group">
                     <input type="hidden" name="title">

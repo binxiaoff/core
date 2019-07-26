@@ -2,11 +2,11 @@
     <h1>Liste des traductions</h1>
     <div class="row form-group">
         <div class="col-sm-12">
-            <a href="<?= $this->lurl ?>/traductions/regenerateTranslationCache" class="btn-primary pull-left">
+            <a href="<?= $this->url ?>/traductions/regenerateTranslationCache" class="btn-primary pull-left">
                 Appliquer les modifications
             </a>
-            <a href="<?= $this->lurl ?>/traductions/add" class="btn-primary pull-left thickbox" style="margin-left: 10px;">Ajouter une traduction</a>&nbsp;
-            <a href="<?= $this->lurl ?>/traductions/export" class="btn-default pull-left" style="margin-left: 10px;">Export</a>&nbsp;&nbsp;
+            <a href="<?= $this->url ?>/traductions/add" class="btn-primary pull-left thickbox" style="margin-left: 10px;">Ajouter une traduction</a>&nbsp;
+            <a href="<?= $this->url ?>/traductions/export" class="btn-default pull-left" style="margin-left: 10px;">Export</a>&nbsp;&nbsp;
         </div>
     </div>
     <?php if (count($this->lSections) > 0) : ?>
@@ -39,7 +39,7 @@
                 </th>
                 <td>&nbsp;</td>
                 <th>
-                    <a href="<?= $this->lurl ?>/traductions/add/<?= ((isset($this->params[0]) && $this->params[0] != '') ? $this->params[0] : '') ?>" id="btnAjouterTraduction"
+                    <a href="<?= $this->url ?>/traductions/add/<?= ((isset($this->params[0]) && $this->params[0] != '') ? $this->params[0] : '') ?>" id="btnAjouterTraduction"
                        class="btn-primary thickbox"<?= ((isset($this->params[0]) && $this->params[0] != '') ? ' style="display:block;"' : ' style="display:none;"') ?>>
                         Ajouter une traduction pour la section
                     </a>

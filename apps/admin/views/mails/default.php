@@ -36,7 +36,7 @@
             <h1>Liste des emails du site</h1>
         </div>
         <div class="col-md-6">
-            <a href="<?= $this->lurl ?>/mails/add" class="btn-primary pull-right">Ajouter un email</a>
+            <a href="<?= $this->url ?>/mails/add" class="btn-primary pull-right">Ajouter un email</a>
         </div>
     </div>
     <?php foreach ($this->sections as $section) : ?>
@@ -78,10 +78,10 @@
                                     <td><?= $section['stats'][$mailTemplate->getIdMailTemplate()]['month'] ?></td>
                                 <?php endif; ?>
                                 <td align="center">
-                                    <a href="<?= $this->lurl ?>/mails/edit/<?= $mailTemplate->getType() ?>" title="Modifier <?= $mailTemplate->getType() ?>">
+                                    <a href="<?= $this->url ?>/mails/edit/<?= $mailTemplate->getType() ?>" title="Modifier <?= $mailTemplate->getType() ?>">
                                         <img src="<?= $this->surl ?>/images/admin/edit.png" alt="Modifier <?= $mailTemplate->getType() ?>"/>
                                     </a>
-                                    <a href="<?= $this->lurl ?>/mails/delete/<?= $mailTemplate->getType() ?>" title="Archiver <?= $mailTemplate->getType() ?>" onclick="return confirm('Etes vous sur de vouloir archiver <?= $mailTemplate->getType() ?> ?')">
+                                    <a href="<?= $this->url ?>/mails/delete/<?= $mailTemplate->getType() ?>" title="Archiver <?= $mailTemplate->getType() ?>" onclick="return confirm('Etes vous sur de vouloir archiver <?= $mailTemplate->getType() ?> ?')">
                                         <img src="<?= $this->surl ?>/images/admin/delete.png" alt="Supprimer <?= $mailTemplate->getType() ?>"/>
                                     </a>
                                 </td>
@@ -114,7 +114,7 @@
                             <td><?= $mailTemplate->getType() ?></td>
                             <td data-order="<?= $updateDate->getTimestamp() ?>"><?= $updateDate->format('d/m/Y H:i') ?></td>
                             <td align="center">
-                                <a href="<?= $this->lurl ?>/mails/edit/<?= $mailTemplate->getType() ?>/<?= \Unilend\Entity\MailTemplates::PART_TYPE_HEADER ?>" title="Modifier <?= $mailTemplate->getType() ?>">
+                                <a href="<?= $this->url ?>/mails/edit/<?= $mailTemplate->getType() ?>/<?= \Unilend\Entity\MailTemplates::PART_TYPE_HEADER ?>" title="Modifier <?= $mailTemplate->getType() ?>">
                                     <img src="<?= $this->surl ?>/images/admin/edit.png" alt="Modifier <?= $mailTemplate->getType() ?>"/>
                                 </a>
                             </td>
@@ -144,7 +144,7 @@
                             <td><?= $mailTemplate->getType() ?></td>
                             <td data-order="<?= $updateDate->getTimestamp() ?>"><?= $updateDate->format('d/m/Y H:i') ?></td>
                             <td align="center">
-                                <a href="<?= $this->lurl ?>/mails/edit/<?= $mailTemplate->getType() ?>/<?= \Unilend\Entity\MailTemplates::PART_TYPE_FOOTER ?>" title="Modifier <?= $mailTemplate->getType() ?>">
+                                <a href="<?= $this->url ?>/mails/edit/<?= $mailTemplate->getType() ?>/<?= \Unilend\Entity\MailTemplates::PART_TYPE_FOOTER ?>" title="Modifier <?= $mailTemplate->getType() ?>">
                                     <img src="<?= $this->surl ?>/images/admin/edit.png" alt="Modifier <?= $mailTemplate->getType() ?>"/>
                                 </a>
                             </td>

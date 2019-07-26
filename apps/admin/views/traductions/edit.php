@@ -1,4 +1,4 @@
-<form method="post" name="mod_traduction" id="mod_traduction" enctype="multipart/form-data" action="<?= $this->lurl ?>/traductions">
+<form method="post" name="mod_traduction" id="mod_traduction" enctype="multipart/form-data" action="<?= $this->url ?>/traductions">
     <input type="hidden" name="form_mod_traduction" id="form_mod_traduction" value="0">
     <input type="hidden" name="section" id="section" value="<?= $this->section ?>">
     <input type="hidden" name="nom" id="nom" value="<?= $this->nom ?>">

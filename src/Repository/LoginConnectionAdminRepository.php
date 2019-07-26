@@ -21,15 +21,15 @@ class LoginConnectionAdminRepository extends ServiceEntityRepository
      */
     public function countFailedAttemptsSince($ip, \DateTime $start)
     {
-        $queryBuilder = $this->getEntityManager()->createQueryBuilder();
+        $queryBuilder = $this->createQueryBuilder('log');
         $queryBuilder
             ->select('COUNT(log.idLoginConnectionAdmin)')
-            ->leftJoin(LoginConnectionAdmin::class, 'log')
             ->where('log.ip = :ip')
             ->andWhere('log.idUser IS NULL')
             ->andWhere('log.dateConnexion >= :start')
             ->setParameter('ip', $ip)
-            ->setParameter('start', $start);
+            ->setParameter('start', $start)
+        ;
 
         return (int) $queryBuilder->getQuery()->getSingleScalarResult();
     }

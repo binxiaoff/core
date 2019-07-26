@@ -1,7 +1,7 @@
 <div id="contenu">
     <h1>Liste des éléments du menu <?= $this->menus->nom ?></h1>
     <div class="btnDroite">
-        <a href="<?= $this->lurl ?>/menus/addElement/<?= $this->menus->id_menu ?>" class="btn_link thickbox">Ajouter un élément</a>
+        <a href="<?= $this->url ?>/menus/addElement/<?= $this->menus->id_menu ?>" class="btn_link thickbox">Ajouter un élément</a>
     </div>
     <?php if (count($this->lElements) > 0) : ?>
         <table class="tablesorter">
@@ -24,25 +24,25 @@
                         <td align="center">
                             <?php if (count($this->lElements) > 1) : ?>
                                 <?php if ($e['ordre'] > 0) : ?>
-                                    <a href="<?= $this->lurl ?>/menus/elements/<?= $this->menus->id_menu ?>/up/<?= $e['id'] ?>" title="Remonter">
+                                    <a href="<?= $this->url ?>/menus/elements/<?= $this->menus->id_menu ?>/up/<?= $e['id'] ?>" title="Remonter">
                                         <img src="<?= $this->surl ?>/images/admin/up.png" alt="Remonter"/>
                                     </a>
                                 <?php endif; ?>
                                 <?php if ($e['ordre'] < (count($this->lElements) - 1)) : ?>
-                                    <a href="<?= $this->lurl ?>/menus/elements/<?= $this->menus->id_menu ?>/down/<?= $e['id'] ?>" title="Descendre">
+                                    <a href="<?= $this->url ?>/menus/elements/<?= $this->menus->id_menu ?>/down/<?= $e['id'] ?>" title="Descendre">
                                         <img src="<?= $this->surl ?>/images/admin/down.png" alt="Descendre"/>
                                     </a>
                                 <?php endif; ?>
                             <?php endif; ?>
                         </td>
                         <td align="center">
-                            <a href="<?= $this->lurl ?>/menus/elements/<?= $this->menus->id_menu ?>/status/<?= $e['id'] ?>/<?= $e['status'] ?>" title="<?= ($e['status'] == 1 ? 'Passer hors ligne' : 'Passer en ligne') ?>">
+                            <a href="<?= $this->url ?>/menus/elements/<?= $this->menus->id_menu ?>/status/<?= $e['id'] ?>/<?= $e['status'] ?>" title="<?= ($e['status'] == 1 ? 'Passer hors ligne' : 'Passer en ligne') ?>">
                                 <img src="<?= $this->surl ?>/images/admin/<?= ($e['status'] == 1 ? 'offline' : 'online') ?>.png" alt="<?= ($e['status'] == 1 ? 'Passer hors ligne' : 'Passer en ligne') ?>"/>
                             </a>
-                            <a href="<?= $this->lurl ?>/menus/editElement/<?= $e['id'] ?>/<?= $this->menus->id_menu ?>" class="thickbox">
+                            <a href="<?= $this->url ?>/menus/editElement/<?= $e['id'] ?>/<?= $this->menus->id_menu ?>" class="thickbox">
                                 <img src="<?= $this->surl ?>/images/admin/edit.png" alt="Modifier <?= $e['nom'] ?>"/>
                             </a>
-                            <a href="<?= $this->lurl ?>/menus/elements/<?= $this->menus->id_menu ?>/delete/<?= $e['id'] ?>" title="Supprimer <?= $e['nom'] ?>" onclick="return confirm('Etes vous sur de vouloir supprimer <?= $e['nom'] ?> ?')">
+                            <a href="<?= $this->url ?>/menus/elements/<?= $this->menus->id_menu ?>/delete/<?= $e['id'] ?>" title="Supprimer <?= $e['nom'] ?>" onclick="return confirm('Etes vous sur de vouloir supprimer <?= $e['nom'] ?> ?')">
                                 <img src="<?= $this->surl ?>/images/admin/delete.png" alt="Supprimer <?= $e['nom'] ?>"/>
                             </a>
                         </td>

@@ -5,22 +5,7 @@ use Unilend\Entity\{LoginConnectionAdmin, ProjectsStatus, UserAccess, Users, Zon
 
 class bootstrap extends Controller
 {
-    const MENU = [
-        [
-            'title'    => 'Accueil',
-            'uri'   => 'root',
-            'zone'     => Zones::ZONE_LABEL_DASHBOARD,
-            'children' => [
-                [
-                    'title' => 'Accueil',
-                    'uri'   => ''
-                ],
-                [
-                    'title' => 'Activité commerciale',
-                    'uri'   => 'dashboard/activite'
-                ]
-            ]
-        ],
+    public const MENU = [
         [
             'title'    => 'Edition',
             'uri'      => 'tree',
@@ -32,25 +17,25 @@ class bootstrap extends Controller
                 ],
                 [
                     'title' => 'Blocs',
-                    'uri'   => 'blocs'
+                    'uri'   => 'blocs',
                 ],
                 [
                     'title' => 'Menus',
-                    'uri'   => 'menus'
+                    'uri'   => 'menus',
                 ],
                 [
                     'title' => 'Templates',
-                    'uri'   => 'templates'
+                    'uri'   => 'templates',
                 ],
                 [
                     'title' => 'Traductions',
-                    'uri'   => 'traductions'
+                    'uri'   => 'traductions',
                 ],
                 [
                     'title' => 'Mails',
-                    'uri'   => 'mails'
-                ]
-            ]
+                    'uri'   => 'mails',
+                ],
+            ],
         ],
         [
             'title'    => 'Configuration',
@@ -63,237 +48,13 @@ class bootstrap extends Controller
                 ],
                 [
                     'title' => 'Historique des Mails',
-                    'uri'   => 'mails/emailhistory'
-                ],
-                [
-                    'title' => 'Grille de taux',
-                    'uri'   => 'project_rate_settings',
-                    'zone'  => Zones::ZONE_LABEL_ADMINISTRATION
-                ]
-            ]
-        ],
-        [
-            'title'    => 'Statistiques',
-            'uri'      => 'queries',
-            'zone'     => Zones::ZONE_LABEL_STATISTICS,
-            'children' => [
-                [
-                    'title' => 'Requêtes',
-                    'uri'   => 'queries',
-                ],
-                [
-                    'title' => 'Etape d\'inscription',
-                    'uri'   => 'stats/etape_inscription'
-                ],
-                [
-                    'title' => 'Sources emprunteurs',
-                    'uri'   => 'stats/requete_source_emprunteurs'
-                ],
-                [
-                    'title' => 'Revenus',
-                    'uri'   => 'stats/requete_revenus_download'
-                ],
-                [
-                    'title' => 'Bénéficiaires',
-                    'uri'   => 'stats/requete_beneficiaires_download'
-                ],
-                [
-                    'title' => 'Infosben',
-                    'uri'   => 'stats/requete_infosben_download'
-                ],
-                [
-                    'title' => 'Toutes les enchères',
-                    'uri'   => 'stats/requete_encheres'
-                ],
-                [
-                    'title' => 'Echeanciers projet',
-                    'uri'   => 'stats/tous_echeanciers_pour_projet'
-                ],
-                [
-                    'title' => 'Statistiques Autolend',
-                    'uri'   => 'stats/autobid_statistic'
-                ],
-                [
-                    'title' => 'Déclarations BDF',
-                    'uri'   => 'stats/declarations_bdf'
-                ],
-                [
-                    'title' => 'CRS DAC',
-                    'uri'   => 'stats/requete_crs_dac'
-                ],
-                [
-                    'title' => 'Éligibilité des projets',
-                    'uri'   => 'stats/projects_eligibility'
-                ],
-                [
-                    'title' => 'Logs webservices',
-                    'uri'   => 'stats/logs_webservices'
-                ],
-                [
-                    'title' => 'Reporting Mensuel SFPMEI',
-                    'uri'   => 'stats/reporting_sfpmei'
-                ],
-                [
-                    'title' => 'Loi Eckert',
-                    'uri'   => 'stats/loi_eckert'
-                ],
-            ]
-        ],
-        [
-            'title'    => 'Prêteurs',
-            'uri'      => 'preteurs/search',
-            'zone'     => Zones::ZONE_LABEL_LENDERS,
-            'children' => [
-                [
-                    'title' => 'Recherche prêteurs',
-                    'uri'   => 'preteurs/search'
-                ],
-                [
-                    'title' => 'Activation prêteurs',
-                    'uri'   => 'preteurs/activation '
-                ],
-                [
-                    'title' => 'Offre de bienvenue',
-                    'uri'   => 'preteurs/offres_de_bienvenue'
-                ],
-                [
-                    'title' => 'Parrainage',
-                    'uri'   => 'parrainage'
-                ],
-                [
-                    'title' => 'Notifications',
-                    'uri'   => 'preteurs/notifications'
-                ],
-                [
-                    'title' => 'Opérations atypiques',
-                    'uri'   => 'client_atypical_operation'
-                ],
-                [
-                    'title' => 'Comptes doublons',
-                    'uri'   => 'comptes/doublons'
-                ]
-            ]
-        ],
-        [
-            'title'    => 'Emprunteurs',
-            'zone'     => Zones::ZONE_LABEL_BORROWERS,
-            'children' => [
-                [
-                    'title' => 'Projets',
-                    'uri'   => 'dossiers',
-                ],
-                [
-                    'title' => 'Emprunteurs',
-                    'uri'   => 'emprunteurs/gestion'
-                ],
-                [
-                    'title' => 'Remboursements',
-                    'uri'   => 'dossiers/' . ProjectsStatus::STATUS_FUNDED . ',' . ProjectsStatus::STATUS_CONTRACTS_SIGNED . ',' . ProjectsStatus::STATUS_FINISHED
-                ],
-                [
-                    'title' => 'Erreurs remboursements',
-                    'uri'   => 'dossiers/' . ProjectsStatus::STATUS_LOST
-                ],
-                [
-                    'title' => 'Suivi statuts projets',
-                    'uri'   => 'dossiers/status'
+                    'uri'   => 'mails/emailhistory',
                 ],
                 [
                     'title' => 'Produits',
-                    'uri'   => 'product'
+                    'uri'   => 'product',
                 ],
-                [
-                    'title' => 'Sociétés',
-                    'uri'   => 'company'
-                ],
-                [
-                    'title' => 'Partenaires',
-                    'uri'   => 'partenaires'
-                ],
-                [
-                    'title' => 'Comptes doublons',
-                    'uri'   => 'comptes/doublons'
-                ],
-                [
-                    'title' => 'Surveillance données risque',
-                    'uri'   => 'surveillance_risque'
-                ],
-                [
-                    'title' => 'Simulateur WS risque',
-                    'uri'   => 'simulation/webservices_risque',
-                    'zone'  => Zones::ZONE_LABEL_SIMULATOR
-                ],
-                [
-                    'title' => 'Test éligibilité',
-                    'uri'   => 'emprunteurs/test_eligibilite',
-                    'zone'  => Zones::ZONE_LABEL_RISK
-                ],
-                [
-                    'title' => 'Données externes entreprises',
-                    'uri'   => 'emprunteurs/donnees_externes',
-                    'zone'  => Zones::ZONE_LABEL_RISK
-                ],
-                [
-                    'title' => 'Dépôt liste projets',
-                    'uri'   => 'projets/depot_liste',
-                    'zone'  => Zones::ZONE_LABEL_RISK
-                ]
-            ]
-        ],
-        [
-            'title' => 'Remboursements',
-            'uri'   => 'remboursement/validation',
-            'zone'  => Zones::ZONE_LABEL_REPAYMENT,
-            'children' => [
-                [
-                    'title' => 'Projets avec retard',
-                    'uri'   => 'dossiers/projets_avec_retard'
-                ],
-                [
-                    'title' => 'Remboursements à valider',
-                    'uri'   => 'remboursement/validation'
-                ],
-                [
-                    'title' => 'Recouvreurs',
-                    'uri'   => 'recouvreur/liste',
-                    'zone'  => Zones::ZONE_LABEL_DEBT_COLLECTOR
-                ],
-            ]
-        ],
-        [
-            'title'    => 'Dépôt de fonds',
-            'uri'      => 'transferts',
-            'zone'     => Zones::ZONE_LABEL_TRANSFERS,
-            'children' => [
-                [
-                    'title' => 'Prêteurs',
-                    'uri'   => 'transferts/preteurs',
-                ],
-                [
-                    'title' => 'Emprunteurs',
-                    'uri'   => 'transferts/emprunteurs'
-                ],
-                [
-                    'title' => 'Non attribués',
-                    'uri'   => 'transferts/non_attribues'
-                ],
-                [
-                    'title' => 'Déblocage des fonds',
-                    'uri'   => 'transferts/deblocage'
-                ],
-                [
-                    'title' => 'Succession (Transfert de solde et prêts)',
-                    'uri'   => 'transferts/succession'
-                ],
-                [
-                    'title' => 'Opérations atypiques',
-                    'uri'   => 'client_atypical_operation'
-                ],
-                [
-                    'title' => 'Transfert des fonds',
-                    'uri'   => 'transferts/virement_emprunteur'
-                ]
-            ]
+            ],
         ],
         [
             'title'    => 'Administration',
@@ -306,53 +67,18 @@ class bootstrap extends Controller
                 ],
                 [
                     'title' => 'Droits d\'accès',
-                    'uri'   => 'zones'
+                    'uri'   => 'zones',
                 ],
                 [
                     'title' => 'Logs connexions',
-                    'uri'   => 'users/logs'
-                ]
-            ]
+                    'uri'   => 'users/logs',
+                ],
+            ],
         ],
-        [
-            'title'    => 'SFPMEI',
-            'uri'      => 'sfpmei',
-            'zone'     => Zones::ZONE_LABEL_SFPMEI,
-            'children' => [
-                [
-                    'title' => 'Prêteurs',
-                    'uri'   => 'sfpmei/preteurs',
-                ],
-                [
-                    'title' => 'Emprunteurs',
-                    'uri'   => 'sfpmei/emprunteurs',
-                ],
-                [
-                    'title' => 'Projets',
-                    'uri'   => 'sfpmei/projets',
-                ],
-                [
-                    'title' => 'Transferts de fonds prêteurs',
-                    'uri'   => 'sfpmei/transferts/preteurs',
-                ],
-                [
-                    'title' => 'Transferts de fonds emprunteurs',
-                    'uri'   => 'sfpmei/transferts/emprunteurs',
-                ],
-                [
-                    'title' => 'Opérations non attribuées',
-                    'uri'   => 'sfpmei/transferts/non_attribues',
-                ],
-                [
-                    'title' => 'Exports',
-                    'uri'   => 'sfpmei/exports',
-                ]
-            ]
-        ]
     ];
 
     /**
-     * Helpers
+     * Helpers.
      */
     /** @var \ficelle */
     protected $ficelle;
@@ -364,7 +90,7 @@ class bootstrap extends Controller
     protected $ln;
 
     /**
-     * Data
+     * Data.
      */
     /** @var \settings */
     protected $settings;
@@ -398,13 +124,13 @@ class bootstrap extends Controller
     protected $echeanciers;
 
     /**
-     * Doctrine entities
+     * Doctrine entities.
      */
     /** @var Users */
     protected $userEntity;
 
     /**
-     * Config
+     * Config.
      */
     /** @var string */
     protected $spath;
@@ -423,7 +149,7 @@ class bootstrap extends Controller
     {
         parent::initialize();
 
-        if ($this->current_function != 'login') {
+        if ('login' != $this->current_function) {
             $_SESSION['request_url'] = $_SERVER['REQUEST_URI'];
         }
 
@@ -438,8 +164,8 @@ class bootstrap extends Controller
         $this->blocs          = $this->loadData('blocs');
         $this->blocs_elements = $this->loadData('blocs_elements');
         $this->elements       = $this->loadData('elements');
-        $this->tree           = $this->loadData('tree', ['url' => $this->lurl, 'front' => $this->furl, 'surl' => $this->surl, 'tree_elements' => $this->tree_elements, 'blocs_elements' => $this->blocs_elements, 'upload' => $this->upload, 'spath' => $this->spath, 'path' => $this->path]);
-        $this->users          = $this->loadData('users', ['lurl' => $this->lurl]);
+        $this->tree           = $this->loadData('tree', ['url' => $this->url, 'front' => $this->furl, 'surl' => $this->surl, 'tree_elements' => $this->tree_elements, 'blocs_elements' => $this->blocs_elements, 'upload' => $this->upload, 'spath' => $this->spath, 'path' => $this->path]);
+        $this->users          = $this->loadData('users', ['lurl' => $this->url]);
         $this->users_zones    = $this->loadData('users_zones');
         $this->users_history  = $this->loadData('users_history');
 
@@ -455,7 +181,7 @@ class bootstrap extends Controller
             $isAuthorizedIp = true;
             $user           = $this->users->login($_POST['login'], $_POST['password']);
 
-            if ($user !== false && false === empty($user['ip'])) {
+            if (false !== $user && false === empty($user['ip'])) {
                 $ip            = ip2long($_SERVER['REMOTE_ADDR']);
                 $authorizedIps = explode(';', $user['ip']);
 
@@ -465,7 +191,7 @@ class bootstrap extends Controller
                     $isAuthorizedIp = false;
                     $authorizedIp   = trim($authorizedIp);
 
-                    if (false === strpos($authorizedIp, '-')) {
+                    if (false === mb_strpos($authorizedIp, '-')) {
                         if (false !== filter_var($authorizedIp, FILTER_VALIDATE_IP)) {
                             $min = ip2long($authorizedIp);
                             $max = ip2long($authorizedIp);
@@ -485,12 +211,13 @@ class bootstrap extends Controller
 
                     if (isset($min, $max) && $ip >= $min && $ip <= $max) {
                         $isAuthorizedIp = true;
+
                         break;
                     }
                 }
             }
 
-            if ($user !== false && $isAuthorizedIp) {
+            if (false !== $user && $isAuthorizedIp) {
                 $loginLog->setIdUser($user['id_user']);
                 $loginLog->setNomUser($user['firstname'] . ' ' . $user['name']);
 
@@ -507,16 +234,13 @@ class bootstrap extends Controller
                 $this->nb_tentatives_precedentes = $entityManager->getRepository(LoginConnectionAdmin::class)->countFailedAttemptsSince($_SERVER['REMOTE_ADDR'], new \DateTime('10 minutes ago'));
 
                 if ($this->nb_tentatives_precedentes > 0 && $this->nb_tentatives_precedentes < 100) {
-                    for ($i = 1; $i <= $this->nb_tentatives_precedentes; $i++) {
+                    for ($i = 1; $i <= $this->nb_tentatives_precedentes; ++$i) {
                         $this->duree_waiting *= 2;
                     }
                 }
 
                 $this->error_login = 'Identifiant ou mot de passe incorrect';
             }
-
-            $entityManager->persist($loginLog);
-            $entityManager->flush();
         }
 
         $this->loadJs('admin/external/jquery/jquery');
@@ -581,7 +305,7 @@ class bootstrap extends Controller
             'activeMenu' => isset($this->menu_admin) ? $this->menu_admin : '',
             'session'    => $_SESSION,
             'user'       => $this->userEntity,
-            'userZones'  => isset($this->lZonesHeader) ? $this->lZonesHeader : []
+            'userZones'  => isset($this->lZonesHeader) ? $this->lZonesHeader : [],
         ];
 
         return parent::render($template, $context, $return);

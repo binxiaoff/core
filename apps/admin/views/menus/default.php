@@ -13,7 +13,7 @@
             <h1>Liste des menus</h1>
         </div>
         <div class="col-md-6">
-            <a href="<?= $this->lurl ?>/menus/add" class="btn-primary pull-right thickbox">Ajouter un menu</a>
+            <a href="<?= $this->url ?>/menus/add" class="btn-primary pull-right thickbox">Ajouter un menu</a>
         </div>
     </div>
     <?php if (count($this->lMenus) > 0) : ?>
@@ -32,16 +32,16 @@
                         <td><?= $m['nom'] ?></td>
                         <td><?= $m['slug'] ?></td>
                         <td align="center">
-                            <a href="<?= $this->lurl ?>/menus/status/<?= $m['id_menu'] ?>/<?= $m['status'] ?>" title="<?= ($m['status'] == 1 ? 'Passer hors ligne' : 'Passer en ligne') ?>">
+                            <a href="<?= $this->url ?>/menus/status/<?= $m['id_menu'] ?>/<?= $m['status'] ?>" title="<?= ($m['status'] == 1 ? 'Passer hors ligne' : 'Passer en ligne') ?>">
                                 <img src="<?= $this->surl ?>/images/admin/<?= ($m['status'] == 1 ? 'offline' : 'online') ?>.png" alt="<?= ($m['status'] == 1 ? 'Passer hors ligne' : 'Passer en ligne') ?>"/>
                             </a>
-                            <a href="<?= $this->lurl ?>/menus/edit/<?= $m['id_menu'] ?>" class="thickbox">
+                            <a href="<?= $this->url ?>/menus/edit/<?= $m['id_menu'] ?>" class="thickbox">
                                 <img src="<?= $this->surl ?>/images/admin/edit.png" alt="Modifier <?= $m['nom'] ?>"/>
                             </a>
-                            <a href="<?= $this->lurl ?>/menus/elements/<?= $m['id_menu'] ?>" title="Elements du menu <?= $m['nom'] ?>">
+                            <a href="<?= $this->url ?>/menus/elements/<?= $m['id_menu'] ?>" title="Elements du menu <?= $m['nom'] ?>">
                                 <img src="<?= $this->surl ?>/images/admin/database.png" alt="Elements du menu <?= $m['nom'] ?>"/>
                             </a>
-                            <a href="<?= $this->lurl ?>/menus/delete/<?= $m['id_menu'] ?>" title="Supprimer <?= $m['nom'] ?>" onclick="return confirm('Etes vous sur de vouloir supprimer <?= $m['nom'] ?> ?')">
+                            <a href="<?= $this->url ?>/menus/delete/<?= $m['id_menu'] ?>" title="Supprimer <?= $m['nom'] ?>" onclick="return confirm('Etes vous sur de vouloir supprimer <?= $m['nom'] ?> ?')">
                                 <img src="<?= $this->surl ?>/images/admin/delete.png" alt="Supprimer <?= $m['nom'] ?>"/>
                             </a>
                         </td>

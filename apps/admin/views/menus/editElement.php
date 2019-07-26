@@ -25,7 +25,7 @@
 </script>
 <div id="popup">
     <a onclick="parent.$.fn.colorbox.close();" title="Fermer" class="closeBtn"><img src="<?= $this->surl ?>/images/admin/delete.png" alt="Fermer"/></a>
-    <form method="post" name="add_element" id="add_element" enctype="multipart/form-data" action="<?= $this->lurl ?>/menus/elements/<?= $this->params[1] ?>" target="_parent">
+    <form method="post" name="add_element" id="add_element" enctype="multipart/form-data" action="<?= $this->url ?>/menus/elements/<?= $this->params[1] ?>" target="_parent">
         <input type="hidden" name="id_menu" id="id_menu" value="<?= $this->menus->id_menu ?>"/>
         <input type="hidden" name="id" id="id" value="<?= $this->tree_menu->id ?>"/>
         <input type="hidden" name="complement" id="complement" value="<?= $this->tree_menu->complement ?>"/>

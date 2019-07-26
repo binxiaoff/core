@@ -18,14 +18,14 @@ class treeController extends bootstrap
         if (isset($this->params[0]) && $this->params[0] == 'up') {
             $this->tree->moveUp($this->params[1]);
 
-            header('Location: ' . $this->lurl . '/tree');
+            header('Location: ' . $this->url . '/tree');
             die;
         }
 
         if (isset($this->params[0]) && $this->params[0] == 'down') {
             $this->tree->moveDown($this->params[1]);
 
-            header('Location: ' . $this->lurl . '/tree');
+            header('Location: ' . $this->url . '/tree');
             die;
         }
 
@@ -36,7 +36,7 @@ class treeController extends bootstrap
             $_SESSION['freeow']['title']   = 'Suppression d\'une page';
             $_SESSION['freeow']['message'] = 'La page et ses enfants ont bien été supprimés';
 
-            header('Location: ' . $this->lurl . '/tree');
+            header('Location: ' . $this->url . '/tree');
             die;
         }
     }
@@ -97,7 +97,7 @@ class treeController extends bootstrap
             $_SESSION['freeow']['title']   = 'Ajout d\'une page';
             $_SESSION['freeow']['message'] = 'La page a bien été enregistrée';
 
-            header('Location: ' . $this->lurl . '/tree/edit/' . $this->tree->id_tree);
+            header('Location: ' . $this->url . '/tree/edit/' . $this->tree->id_tree);
             die;
         }
 
@@ -210,7 +210,7 @@ class treeController extends bootstrap
                 $_SESSION['freeow']['title']   = 'Modification d\'une page';
                 $_SESSION['freeow']['message'] = 'La page a bien été modifiée';
 
-                header('Location: ' . $this->lurl . '/tree');
+                header('Location: ' . $this->url . '/tree');
                 die;
             }
 
@@ -222,7 +222,7 @@ class treeController extends bootstrap
             $_SESSION['freeow']['title']   = 'Modification d\'une page';
             $_SESSION['freeow']['message'] = 'Aucune page &agrave; modifier';
 
-            header('Location: ' . $this->lurl . '/tree');
+            header('Location: ' . $this->url . '/tree');
             die;
         }
     }
