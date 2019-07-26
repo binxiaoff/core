@@ -28,8 +28,6 @@ EOF
 
         require_once $sRootDir . '/../core/command.class.php';
         require_once $sRootDir . '/../core/controller.class.php';
-        require_once $sRootDir . '/../apps/default/bootstrap.php';
-        require_once $sRootDir . '/../apps/default/controllers/pdf.php';
 
         $logger        = $this->getContainer()->get('monolog.logger.console');
         $entityManager = $this->getContainer()->get('doctrine.orm.entity_manager');
