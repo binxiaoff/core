@@ -2,7 +2,7 @@
     <div class="row">
         <div class="col-md-6">
             <div class="logo_header">
-                <a href="<?php echo $this->url; ?>"><img src="<?php echo $this->url; ?>/images/logo.png" alt="CALS"/></a>
+                <a href="<?php echo $this->url; ?>"><img src="<?php echo $this->furl; ?>/assets/images/logo/logo-and-type-245x52.png" alt="CALS"/></a>
             </div>
         </div>
         <div class="col-md-6">

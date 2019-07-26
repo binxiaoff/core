@@ -3,7 +3,7 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
     <title>Administration du site</title>
-    <link rel="shortcut icon" href="<?= $this->surl ?>/images/admin/favicon.png" type="image/x-icon"/>
+    <link rel="shortcut icon" href="<?= $this->surl ?>/favicon.ico" type="image/x-icon"/>
     <script type="text/javascript">
         var add_surl = '<?= $this->surl ?>';
         var add_url = '<?= $this->url ?>';
@@ -24,7 +24,7 @@
     </script>
     <div id="logo_site">
         <a href="<?= $this->url ?>" title="Administration du site">
-            <img src="<?= $this->surl ?>/styles/default/images/logo.png" alt="Administration du site"/>
+            <img src="<?php echo $this->furl; ?>/assets/images/logo/logo-and-type-245x52.png" alt="Administration du site"/>
         </a>
     </div>
     <div id="contenu_login">

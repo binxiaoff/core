@@ -89,14 +89,14 @@ class ajaxController extends bootstrap
     public function _deleteImageTree()
     {
         if (isset($this->params[0]) && '' != $this->params[0]) {
-            $this->tree->get(['id_tree' => $this->params[0], 'id_langue' => $this->params[1]]);
+            $this->tree->get($this->params[0]);
 
             // On supprime le fichier sur le serveur
             @unlink($this->spath . 'images/' . $this->tree->img_menu);
 
             // On supprime le fichier de la base
             $this->tree->img_menu = '';
-            $this->tree->update(['id_tree' => $this->params[0], 'id_langue' => $this->params[1]]);
+            $this->tree->update($this->params[0]);
         }
     }
 

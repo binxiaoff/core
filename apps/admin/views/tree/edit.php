@@ -27,7 +27,7 @@
         <input type="hidden" name="lng_encours" id="lng_encours" value="<?= $this->dLanguage ?>" />
         <input type="hidden" name="id_parent" id="id_parent" value="<?= $this->tree->id_parent ?>" />
         <?php foreach ($this->lLangues as $key => $lng) :
-            $this->tree->get(array('id_tree' => $this->params[0], 'id_langue' => $key));
+            $this->tree->get($this->params[0]);
 
             // Recuperation de l'id du template s'il est passé en param
             if (isset($this->params[2]) && $this->params[2] != '') {
