@@ -5,21 +5,17 @@ declare(strict_types=1);
 namespace Unilend\Controller\Project;
 
 use Doctrine\ORM\{ORMException, OptimisticLockException};
-use Exception;
 use Psr\Log\LoggerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Swift_SwiftException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\Form\Extension\Core\Type\{CheckboxType, SubmitType};
 use Symfony\Component\HttpFoundation\{Request, Response};
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
-use Symfony\Component\Validator\Constraints\NotBlank;
 use Unilend\Entity\{Bids, Clients, Project, ProjectConfidentialityAcceptance};
 use Unilend\Form\Bid\BidType;
+use Unilend\Form\Project\ConfidentialityAcceptanceType;
 use Unilend\Repository\{BidsRepository, ProjectAttachmentRepository, ProjectConfidentialityAcceptanceRepository};
-use Unilend\Security\Voter\ProjectVoter;
 use Unilend\Service\{NotificationManager, User\RealUserFinder};
 
 class ViewController extends AbstractController
@@ -29,17 +25,16 @@ class ViewController extends AbstractController
      *
      * @IsGranted("view", subject="project")
      *
-     * @param Project                       $project
-     * @param Request                       $request
-     * @param UserInterface|Clients|null    $user
-     * @param BidsRepository                $bidsRepository
-     * @param ProjectAttachmentRepository   $projectAttachmentRepository
-     * @param NotificationManager           $notificationManager
-     * @param RealUserFinder                $realUserFinder
-     * @param AuthorizationCheckerInterface $authorizationChecker
-     * @param LoggerInterface               $logger
+     * @param Project                                    $project
+     * @param Request                                    $request
+     * @param UserInterface|Clients|null                 $user
+     * @param BidsRepository                             $bidsRepository
+     * @param ProjectAttachmentRepository                $projectAttachmentRepository
+     * @param ProjectConfidentialityAcceptanceRepository $acceptanceRepository
+     * @param NotificationManager                        $notificationManager
+     * @param RealUserFinder                             $realUserFinder
+     * @param LoggerInterface                            $logger
      *
-     * @throws Exception
      * @throws ORMException
      * @throws OptimisticLockException
      *
@@ -51,12 +46,12 @@ class ViewController extends AbstractController
         ?UserInterface $user,
         BidsRepository $bidsRepository,
         ProjectAttachmentRepository $projectAttachmentRepository,
+        ProjectConfidentialityAcceptanceRepository $acceptanceRepository,
         NotificationManager $notificationManager,
         RealUserFinder $realUserFinder,
-        AuthorizationCheckerInterface $authorizationChecker,
         LoggerInterface $logger
     ): Response {
-        if (false === $authorizationChecker->isGranted(ProjectVoter::ATTRIBUTE_VIEW_CONFIDENTIAL, $project)) {
+        if (false === $this->isConfidentialityGranted($project, $user, $acceptanceRepository)) {
             return $this->redirectToRoute('project_confidentiality_acceptance', ['slug' => $project->getSlug()]);
         }
 
@@ -120,7 +115,6 @@ class ViewController extends AbstractController
      * @param Request                                    $request
      * @param UserInterface|Clients|null                 $user
      * @param ProjectConfidentialityAcceptanceRepository $acceptanceRepository
-     * @param AuthorizationCheckerInterface              $authorizationChecker
      *
      * @throws ORMException
      * @throws OptimisticLockException
@@ -131,27 +125,13 @@ class ViewController extends AbstractController
         Project $project,
         Request $request,
         ?UserInterface $user,
-        ProjectConfidentialityAcceptanceRepository $acceptanceRepository,
-        AuthorizationCheckerInterface $authorizationChecker
+        ProjectConfidentialityAcceptanceRepository $acceptanceRepository
     ): Response {
-        if ($authorizationChecker->isGranted(ProjectVoter::ATTRIBUTE_VIEW_CONFIDENTIAL, $project)) {
+        if ($this->isConfidentialityGranted($project, $user, $acceptanceRepository)) {
             return $this->redirectToRoute('lender_project_details', ['slug' => $project->getSlug()]);
         }
 
-        $acceptanceForm = $this->get('form.factory')
-            ->createNamedBuilder('acceptance')
-            ->add('accept', CheckboxType::class, [
-                'value'       => true,
-                'label'       => false,
-                'required'    => true,
-                'constraints' => new NotBlank(),
-            ])
-            ->add('submit', SubmitType::class, [
-                'label' => 'project-confidentiality.submit-button-label',
-            ])
-            ->getForm()
-        ;
-
+        $acceptanceForm = $this->createForm(ConfidentialityAcceptanceType::class);
         $acceptanceForm->handleRequest($request);
 
         if ($acceptanceForm->isSubmitted() && $acceptanceForm->isValid()) {
@@ -170,5 +150,27 @@ class ViewController extends AbstractController
             'project'        => $project,
             'acceptanceForm' => $acceptanceForm->createView(),
         ]);
+    }
+
+    /**
+     * @param Project                                    $project
+     * @param Clients                                    $user
+     * @param ProjectConfidentialityAcceptanceRepository $acceptanceRepository
+     *
+     * @return bool
+     */
+    private function isConfidentialityGranted(Project $project, Clients $user, ProjectConfidentialityAcceptanceRepository $acceptanceRepository): bool
+    {
+        if (false === $project->isConfidential()) {
+            return true;
+        }
+
+        if ($user->getCompany() === $project->getSubmitterCompany()) {
+            return true;
+        }
+
+        $acceptance = $acceptanceRepository->findOneBy(['project' => $project, 'client' => $user]);
+
+        return null !== $acceptance;
     }
 }

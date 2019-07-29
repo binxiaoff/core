@@ -126,7 +126,7 @@ class FoncarisRequest implements FileStorageInterface
      *
      * @return self
      */
-    public function setRelativeFilePath(?string $relativeFilePath): AcceptationsLegalDocs
+    public function setRelativeFilePath(?string $relativeFilePath): FoncarisRequest
     {
         $this->relativeFilePath = $relativeFilePath;
 

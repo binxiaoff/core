@@ -12,7 +12,7 @@ use Psr\Log\LoggerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Swift_SwiftException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\Form\Extension\Core\Type\{CheckboxType, FormType, SubmitType, TextareaType};
+use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\{File\UploadedFile, Request, Response};
 use Symfony\Component\Routing\Annotation\Route;
@@ -21,7 +21,7 @@ use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Validator\Constraints\Valid;
 use Unilend\Entity\{AcceptedBids, Attachment, Bids, CaRegionalBank, Clients, Loans, Project, ProjectStatusHistory, UnderlyingContract};
 use Unilend\Form\Bid\PartialBid;
-use Unilend\Form\Project\{ProjectAttachmentCollectionType, ProjectFeeTypeCollectionType};
+use Unilend\Form\Project\{ConfidentialityEditionType, ProjectAttachmentCollectionType, ProjectFeeTypeCollectionType};
 use Unilend\Form\Tranche\TrancheTypeCollectionType;
 use Unilend\Repository\{AcceptedBidsRepository, BidsRepository, CaRegionalBankRepository, CompaniesRepository, ProjectAttachmentRepository, ProjectAttachmentTypeRepository,
     ProjectRepository, TrancheRepository, UnderlyingContractRepository};
@@ -87,7 +87,7 @@ class EditController extends AbstractController
             'action' => $this->generateUrl('edit_bid_partial'),
         ]);
 
-        $confidentialityForm = $this->buildConfidentialityForm($project);
+        $confidentialityForm = $this->createForm(ConfidentialityEditionType::class, $project);
         if ($this->handleConfidentialityForm($confidentialityForm, $request, $projectRepository)) {
             return $this->redirect($request->getUri());
         }
@@ -584,31 +584,6 @@ class EditController extends AbstractController
         }
 
         return false;
-    }
-
-    /**
-     * @param Project $project
-     *
-     * @return FormInterface
-     */
-    private function buildConfidentialityForm(Project $project): FormInterface
-    {
-        return $this->get('form.factory')
-            ->createNamedBuilder('confidentiality', FormType::class, $project, ['data_class' => Project::class])
-            ->add('confidential', CheckboxType::class, [
-                'value'    => true,
-                'label'    => false,
-                'required' => false,
-            ])
-            ->add('confidentialityDisclaimer', TextareaType::class, [
-                'label'    => false,
-                'required' => false,
-            ])
-            ->add('submit', SubmitType::class, [
-                'label' => 'confidentiality-form.submit-button-label',
-            ])
-            ->getForm()
-        ;
     }
 
     /**

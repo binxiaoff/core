@@ -17,13 +17,12 @@ class ProjectVoter extends Voter
 {
     use ConstantsAwareTrait;
 
-    public const ATTRIBUTE_VIEW              = 'view';
-    public const ATTRIBUTE_VIEW_CONFIDENTIAL = 'view_confidential';
-    public const ATTRIBUTE_EDIT              = 'edit';
-    public const ATTRIBUTE_MANAGE_BIDS       = 'manage_bids';
-    public const ATTRIBUTE_RATE              = 'rate';
-    public const ATTRIBUTE_BID               = 'bid';
-    public const ATTRIBUTE_COMMENT           = 'comment';
+    public const ATTRIBUTE_VIEW        = 'view';
+    public const ATTRIBUTE_EDIT        = 'edit';
+    public const ATTRIBUTE_MANAGE_BIDS = 'manage_bids';
+    public const ATTRIBUTE_RATE        = 'rate';
+    public const ATTRIBUTE_BID         = 'bid';
+    public const ATTRIBUTE_COMMENT     = 'comment';
 
     /** @var AuthorizationCheckerInterface */
     private $authorizationChecker;
@@ -73,8 +72,6 @@ class ProjectVoter extends Voter
         switch ($attribute) {
             case self::ATTRIBUTE_VIEW:
                 return $this->canView($project, $user);
-            case self::ATTRIBUTE_VIEW_CONFIDENTIAL:
-                return $this->canViewConfidential($project, $user);
             case self::ATTRIBUTE_EDIT:
                 return $this->canEdit($project, $user);
             case self::ATTRIBUTE_MANAGE_BIDS:
@@ -109,33 +106,6 @@ class ProjectVoter extends Voter
         }
 
         return null !== $project->getProjectParticipantByCompany($user->getCompany());
-    }
-
-    /**
-     * @param Project $project
-     * @param Clients $user
-     *
-     * @throws Exception
-     *
-     * @return bool
-     */
-    private function canViewConfidential(Project $project, Clients $user): bool
-    {
-        if (false === $this->canView($project, $user)) {
-            return false;
-        }
-
-        if (false === $project->isConfidential()) {
-            return true;
-        }
-
-        if ($user->getCompany() === $project->getSubmitterCompany()) {
-            return true;
-        }
-
-        $acceptance = $this->acceptanceRepository->findOneBy(['project' => $project, 'client' => $user]);
-
-        return null !== $acceptance;
     }
 
     /**
@@ -197,7 +167,7 @@ class ProjectVoter extends Voter
     private function canBid(Project $project, Clients $user): bool
     {
         return
-            $this->canViewConfidential($project, $user)
+            $this->canView($project, $user)
             && in_array($user->getCompany(), $project->getLenderCompanies()->toArray())
         ;
     }
@@ -212,6 +182,6 @@ class ProjectVoter extends Voter
      */
     private function canComment(Project $project, Clients $user): bool
     {
-        return $this->canViewConfidential($project, $user);
+        return $this->canView($project, $user);
     }
 }
