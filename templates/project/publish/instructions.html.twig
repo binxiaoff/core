@@ -41,9 +41,14 @@
 {% block pageScripts %}
 <script>
     $(function () {
+        toggleAttributesDisplaying()
         $(document).on('change', '#foncaris_request_type_choice', function () {
-            $('#tranche-attributes').toggle('1' === $(this).children("option:selected").val());
+            toggleAttributesDisplaying()
         })
+
+        function toggleAttributesDisplaying() {
+            $('#tranche-attributes').toggle('1' === $('#foncaris_request_type_choice').children('option:selected').val())
+        }
     })
 </script>
 {% endblock %}

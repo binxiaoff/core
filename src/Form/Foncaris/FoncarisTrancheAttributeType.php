@@ -5,14 +5,24 @@ declare(strict_types=1);
 namespace Unilend\Form\Foncaris;
 
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
-use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
-use Symfony\Component\Form\FormBuilderInterface;
-use Unilend\Entity\ConstantList\FoncarisFundingType;
-use Unilend\Entity\ConstantList\FoncarisSecurity;
+use Symfony\Component\Form\{AbstractType, FormBuilderInterface, FormError, FormEvent, FormEvents};
+use Symfony\Contracts\Translation\TranslatorInterface;
+use Unilend\Entity\{ConstantList\FoncarisFundingType, ConstantList\FoncarisSecurity, FoncarisRequest};
 
 class FoncarisTrancheAttributeType extends AbstractType
 {
+    /** @var TranslatorInterface */
+    private $translator;
+
+    /**
+     * @param TranslatorInterface $translator
+     */
+    public function __construct(TranslatorInterface $translator)
+    {
+        $this->translator = $translator;
+    }
+
     /**
      * {@inheritdoc}
      */
@@ -25,7 +35,7 @@ class FoncarisTrancheAttributeType extends AbstractType
             ])
             ->add('fundingType', EntityType::class, [
                 'label'        => 'tranche-form.foncaris-funding-type-label',
-                'required'     => true,
+                'required'     => false,
                 'choice_label' => function (FoncarisFundingType $foncarisFundingType) {
                     return $foncarisFundingType->getDescription();
                 },
@@ -45,7 +55,7 @@ class FoncarisTrancheAttributeType extends AbstractType
             ])
             ->add('security', EntityType::class, [
                 'label'        => 'tranche-form.foncaris-security-label',
-                'required'     => true,
+                'required'     => false,
                 'attr'         => ['class' => 'select2'],
                 'multiple'     => true,
                 'choice_label' => function (FoncarisSecurity $foncarisSecurity) {
@@ -67,7 +77,27 @@ class FoncarisTrancheAttributeType extends AbstractType
                     }
                 },
             ])
+            ->addEventListener(FormEvents::POST_SUBMIT, [$this, 'checkFoncarisAttributes'])
         ;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function checkFoncarisAttributes(FormEvent $formEvent)
+    {
+        $form = $formEvent->getForm();
+        if (FoncarisRequest::FONCARIS_GUARANTEE_NEED === $form->getParent()->get('choice')->getData()) {
+            $fundingType = $form->get('fundingType');
+            if (null === $fundingType->getData()) {
+                $fundingType->addError(new FormError($this->translator->trans('tranche-form.foncaris-funding-type-required')));
+            }
+
+            $security = $form->get('security');
+            if (0 === count($security->getData())) {
+                $security->addError(new FormError($this->translator->trans('tranche-form.foncaris-security-required')));
+            }
+        }
     }
 
     /**

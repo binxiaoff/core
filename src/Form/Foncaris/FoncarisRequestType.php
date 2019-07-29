@@ -20,7 +20,8 @@ class FoncarisRequestType extends AbstractType
         $builder
             ->add('choice', ChoiceType::class, [
                 'label'        => 'project-form.foncaris-guarantee-label',
-                'required'     => false,
+                'required'     => true,
+                'placeholder'  => '',
                 'choices'      => FoncarisRequest::getFoncarisGuaranteeOptions(),
                 'choice_label' => function ($option, string $key, string $value) {
                     return 'foncaris-guarantee.' . mb_strtolower($key);
