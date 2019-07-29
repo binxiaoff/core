@@ -299,7 +299,7 @@
                         <div class="row">
                             <div class="form-field">
                                 <label>
-                                    <input type="checkbox" id="confidentiality_confidential" name="confidentiality[confidential]" value="1"{% if project.confidential %} checked{% endif %}>
+                                    <input type="checkbox" id="confidentiality_edition_confidential" name="confidentiality_edition[confidential]" value="1"{% if project.confidential %} checked{% endif %}>
                                     {% do confidentialityForm.confidential.setRendered %}
                                     {% trans %} confidentiality-form.confidential-label {% endtrans %}
                                 </label>
@@ -309,7 +309,7 @@
                             {{ form_row(confidentialityForm.confidentialityDisclaimer, {attr: {rows: 10, cols: 95, placeholder: 'confidentiality-form.disclaimer-placeholder'}}) }}
                         </div>
                         <div class="text-align-right">
-                            {{ form_row(confidentialityForm.submit, {attr: {class: 'btn-primary btn-shape-xs', 'data-spinnerbutton': ''}}) }}
+                            <button type="submit" class="btn-primary btn-shape-xs" data-spinnerbutton>{% trans %} confidentiality-form.submit-button-label {% endtrans %}</button>
                         </div>
                     {{ form_end(confidentialityForm) }}
                 </div>
@@ -712,7 +712,7 @@
             {% include 'project/partials/attachment/add_attachment.js.twig' %}
             {% include 'project/partials/attachment/archive_attachment.js.twig' %}
             {% include 'project/partials/tranche/edit_tranches.js.twig' %}
-            {% include 'project/partials/lender/confidentiality.js.twig' %}
+            {% include 'project/partials/confidentiality.js.twig' %}
 
             $.fn.editable.defaults.mode = 'inline'
 

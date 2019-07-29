@@ -40,7 +40,7 @@ class ListController extends AbstractController
         $projects = $projectRepository->findByStatus(ProjectDisplayManager::STATUS_DISPLAYABLE, $sort);
 
         foreach ($projects as $index => $project) {
-            if (false === $authorizationChecker->isGranted(ProjectVoter::ATTRIBUTE_VIEW, $project)) {
+            if (false === $authorizationChecker->isGranted(ProjectVoter::ATTRIBUTE_LIST, $project)) {
                 unset($projects[$index]);
             }
         }

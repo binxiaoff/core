@@ -23,17 +23,16 @@ class ViewController extends AbstractController
     /**
      * @Route("/projet/details/{slug}", name="lender_project_details")
      *
-     * @IsGranted("view", subject="project")
+     * @IsGranted("list", subject="project")
      *
-     * @param Project                                    $project
-     * @param Request                                    $request
-     * @param UserInterface|Clients|null                 $user
-     * @param BidsRepository                             $bidsRepository
-     * @param ProjectAttachmentRepository                $projectAttachmentRepository
-     * @param ProjectConfidentialityAcceptanceRepository $acceptanceRepository
-     * @param NotificationManager                        $notificationManager
-     * @param RealUserFinder                             $realUserFinder
-     * @param LoggerInterface                            $logger
+     * @param Project                     $project
+     * @param Request                     $request
+     * @param UserInterface|Clients|null  $user
+     * @param BidsRepository              $bidsRepository
+     * @param ProjectAttachmentRepository $projectAttachmentRepository
+     * @param NotificationManager         $notificationManager
+     * @param RealUserFinder              $realUserFinder
+     * @param LoggerInterface             $logger
      *
      * @throws ORMException
      * @throws OptimisticLockException
@@ -46,12 +45,11 @@ class ViewController extends AbstractController
         ?UserInterface $user,
         BidsRepository $bidsRepository,
         ProjectAttachmentRepository $projectAttachmentRepository,
-        ProjectConfidentialityAcceptanceRepository $acceptanceRepository,
         NotificationManager $notificationManager,
         RealUserFinder $realUserFinder,
         LoggerInterface $logger
     ): Response {
-        if (false === $this->isConfidentialityGranted($project, $user, $acceptanceRepository)) {
+        if (false === $project->checkUserConfidentiality($user)) {
             return $this->redirectToRoute('project_confidentiality_acceptance', ['slug' => $project->getSlug()]);
         }
 
@@ -127,7 +125,7 @@ class ViewController extends AbstractController
         ?UserInterface $user,
         ProjectConfidentialityAcceptanceRepository $acceptanceRepository
     ): Response {
-        if ($this->isConfidentialityGranted($project, $user, $acceptanceRepository)) {
+        if ($project->checkUserConfidentiality($user)) {
             return $this->redirectToRoute('lender_project_details', ['slug' => $project->getSlug()]);
         }
 
@@ -150,27 +148,5 @@ class ViewController extends AbstractController
             'project'        => $project,
             'acceptanceForm' => $acceptanceForm->createView(),
         ]);
-    }
-
-    /**
-     * @param Project                                    $project
-     * @param Clients                                    $user
-     * @param ProjectConfidentialityAcceptanceRepository $acceptanceRepository
-     *
-     * @return bool
-     */
-    private function isConfidentialityGranted(Project $project, Clients $user, ProjectConfidentialityAcceptanceRepository $acceptanceRepository): bool
-    {
-        if (false === $project->isConfidential()) {
-            return true;
-        }
-
-        if ($user->getCompany() === $project->getSubmitterCompany()) {
-            return true;
-        }
-
-        $acceptance = $acceptanceRepository->findOneBy(['project' => $project, 'client' => $user]);
-
-        return null !== $acceptance;
     }
 }

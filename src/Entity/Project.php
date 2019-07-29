@@ -228,16 +228,24 @@ class Project
     private $tranches;
 
     /**
+     * @var ProjectConfidentialityAcceptance[]|ArrayCollection
+     *
+     * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectConfidentialityAcceptance", mappedBy="project", cascade={"persist"}, orphanRemoval=true)
+     */
+    private $confidentialityAcceptances;
+
+    /**
      * Project constructor.
      */
     public function __construct()
     {
-        $this->projectAttachments     = new ArrayCollection();
-        $this->projectParticipants    = new ArrayCollection();
-        $this->projectFees            = new ArrayCollection();
-        $this->comments               = new ArrayCollection();
-        $this->projectStatusHistories = new ArrayCollection();
-        $this->tranches               = new ArrayCollection();
+        $this->projectAttachments         = new ArrayCollection();
+        $this->projectParticipants        = new ArrayCollection();
+        $this->projectFees                = new ArrayCollection();
+        $this->comments                   = new ArrayCollection();
+        $this->projectStatusHistories     = new ArrayCollection();
+        $this->tranches                   = new ArrayCollection();
+        $this->confidentialityAcceptances = new ArrayCollection();
     }
 
     /**
@@ -987,6 +995,23 @@ class Project
     public function isOnline(): bool
     {
         return ProjectStatusHistory::STATUS_PUBLISHED === $this->getCurrentProjectStatusHistory()->getStatus();
+    }
+
+    /**
+     * @param Clients $user
+     *
+     * @return bool
+     */
+    public function checkUserConfidentiality(Clients $user): bool
+    {
+        $criteria = new Criteria();
+        $criteria->where(Criteria::expr()->eq('client', $user));
+
+        return
+            false                  === $this->isConfidential()
+            || $user->getCompany() === $this->getSubmitterCompany()
+            || false               === $this->confidentialityAcceptances->matching($criteria)->isEmpty()
+        ;
     }
 
     /**

@@ -12,14 +12,14 @@
                     <div class="row">
                         <div class="form-field">
                             <label>
-                                <input type="checkbox" id="acceptance_accept" name="acceptance[accept]" value="1" required="required">
+                                <input type="checkbox" id="confidentiality_acceptance_accept" name="confidentiality_acceptance[accept]" value="1" required="required">
                                 {% do acceptanceForm.accept.setRendered %}
                                 {{ project.confidentialityDisclaimer|nl2br }}
                             </label>
                         </div>
                     </div>
                     <div class="text-align-right">
-                        {{ form_row(acceptanceForm.submit, {attr: {class: 'btn-primary btn-shape-xs', 'data-spinnerbutton': ''}}) }}
+                        <button type="submit" class="btn-primary btn-shape-xs" data-spinnerbutton>{% trans %} project-confidentiality.submit-button-label {% endtrans %}</button>
                     </div>
                 {{ form_end(acceptanceForm) }}
             </div>

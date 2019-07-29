@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\Form\Project;
 
-use Symfony\Component\Form\Extension\Core\Type\{CheckboxType, SubmitType, TextareaType};
+use Symfony\Component\Form\Extension\Core\Type\{CheckboxType, TextareaType};
 use Symfony\Component\Form\{AbstractType, FormBuilderInterface};
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Unilend\Entity\Project;
@@ -27,9 +27,6 @@ class ConfidentialityEditionType extends AbstractType
                 'label'    => false,
                 'required' => false,
             ])
-            ->add('submit', SubmitType::class, [
-                'label' => 'confidentiality-form.submit-button-label',
-            ])
             ->getForm()
         ;
     }
@@ -47,6 +44,6 @@ class ConfidentialityEditionType extends AbstractType
      */
     public function getBlockPrefix()
     {
-        return 'confidentiality';
+        return 'confidentiality_edition';
     }
 }
