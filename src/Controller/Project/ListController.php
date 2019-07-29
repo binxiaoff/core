@@ -7,10 +7,11 @@ namespace Unilend\Controller\Project;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\{Request, Response};
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Unilend\Entity\{Clients, Loans, Project, ProjectStatusHistory};
-use Unilend\Repository\ClientProjectRepository;
-use Unilend\Repository\ProjectRepository;
+use Unilend\Repository\{ClientProjectRepository, ProjectRepository};
+use Unilend\Security\Voter\ProjectVoter;
 use Unilend\Service\Front\ProjectDisplayManager;
 
 class ListController extends AbstractController
@@ -18,15 +19,19 @@ class ListController extends AbstractController
     /**
      * @Route("/projets", name="list_projects")
      *
-     * @param ProjectDisplayManager      $projectDisplayManager
-     * @param Request                    $request
-     * @param UserInterface|Clients|null $user
-     * @param ProjectRepository          $projectRepository
+     * @param ProjectDisplayManager         $projectDisplayManager
+     * @param Request                       $request
+     * @param ProjectRepository             $projectRepository
+     * @param AuthorizationCheckerInterface $authorizationChecker
      *
      * @return Response
      */
-    public function list(ProjectDisplayManager $projectDisplayManager, Request $request, ?UserInterface $user, ProjectRepository $projectRepository): Response
-    {
+    public function list(
+        ProjectDisplayManager $projectDisplayManager,
+        Request $request,
+        ProjectRepository $projectRepository,
+        AuthorizationCheckerInterface $authorizationChecker
+    ): Response {
         $page          = $request->query->get('page', 1);
         $sortDirection = $request->query->get('sortDirection', 'DESC');
         $sortType      = $request->query->get('sortType', 'expectedClosingDate');
@@ -35,7 +40,7 @@ class ListController extends AbstractController
         $projects = $projectRepository->findByStatus(ProjectDisplayManager::STATUS_DISPLAYABLE, $sort);
 
         foreach ($projects as $index => $project) {
-            if (ProjectDisplayManager::VISIBILITY_FULL !== $projectDisplayManager->getVisibility($project, $user)) {
+            if (false === $authorizationChecker->isGranted(ProjectVoter::ATTRIBUTE_LIST, $project)) {
                 unset($projects[$index]);
             }
         }

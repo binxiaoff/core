@@ -21,7 +21,7 @@ use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Validator\Constraints\Valid;
 use Unilend\Entity\{AcceptedBids, Attachment, Bids, CaRegionalBank, Clients, Loans, Project, ProjectStatusHistory, UnderlyingContract};
 use Unilend\Form\Bid\PartialBid;
-use Unilend\Form\Project\{ProjectAttachmentCollectionType, ProjectFeeTypeCollectionType};
+use Unilend\Form\Project\{ConfidentialityEditionType, ProjectAttachmentCollectionType, ProjectFeeTypeCollectionType};
 use Unilend\Form\Tranche\TrancheTypeCollectionType;
 use Unilend\Repository\{AcceptedBidsRepository, BidsRepository, CaRegionalBankRepository, CompaniesRepository, ProjectAttachmentRepository, ProjectAttachmentTypeRepository,
     ProjectRepository, TrancheRepository, UnderlyingContractRepository};
@@ -87,6 +87,11 @@ class EditController extends AbstractController
             'action' => $this->generateUrl('edit_bid_partial'),
         ]);
 
+        $confidentialityForm = $this->createForm(ConfidentialityEditionType::class, $project);
+        if ($this->handleConfidentialityForm($confidentialityForm, $request, $projectRepository)) {
+            return $this->redirect($request->getUri());
+        }
+
         $template = [
             'arrangers'                => $companyRepository->findEligibleArrangers($user->getCompany(), ['name' => 'ASC']),
             'runs'                     => $regionalBanks,
@@ -105,6 +110,7 @@ class EditController extends AbstractController
             'trancheForm'              => $trancheForm ? $trancheForm->createView() : null,
             'feesForm'                 => $feesForm ? $feesForm->createView() : null,
             'partialBidForm'           => $partialBidForm->createView(),
+            'confidentialityForm'      => $confidentialityForm->createView(),
         ];
 
         return $this->render('project/edit/details.html.twig', $template);
@@ -572,6 +578,36 @@ class EditController extends AbstractController
 
         if ($feesForm->isSubmitted() && $feesForm->isValid()) {
             $project = $feesForm->getData();
+            $projectRepository->save($project);
+
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * @param FormInterface     $confidentialityForm
+     * @param Request           $request
+     * @param ProjectRepository $projectRepository
+     *
+     * @throws ORMException
+     * @throws OptimisticLockException
+     *
+     * @return bool
+     */
+    private function handleConfidentialityForm(FormInterface $confidentialityForm, Request $request, ProjectRepository $projectRepository): bool
+    {
+        $confidentialityForm->handleRequest($request);
+
+        if ($confidentialityForm->isSubmitted() && $confidentialityForm->isValid()) {
+            /** @var Project $project */
+            $project = $confidentialityForm->getData();
+
+            if (false === $project->isConfidential()) {
+                $project->setConfidentialityDisclaimer(null);
+            }
+
             $projectRepository->save($project);
 
             return true;

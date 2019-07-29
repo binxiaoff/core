@@ -8,15 +8,7 @@
 {% block pageHeadScripts %}
     {% include 'project/partials/comment/styles.html.twig' %}
     <style>
-        .bubble {
-            display: inline-block;
-            border-radius: 14px;
-            padding: 5px 10px;
-            line-height: 18px;
-            color: #fbf9fb;
-            font-weight: 900;
-            font-size: 16px;
-        }
+        {% include 'project/partials/lender/header.css.twig' %}
 
         .input-field {
             width: 80%;
@@ -60,16 +52,10 @@
         <article class="project-single dashboard-tab-pane{% if false == project.isOnline %} ui-project-expired{% endif %}">
             <div class="panel">
                 <div class="panel-header">
-                    <div class="row">
-                        <div class="project-single-details">
-                            <div class="pull-right">
-                                {% include 'partials/market_bubble.html.twig' with {'market': project.marketSegment.label} %}
-                            </div>
-                            <h1 class="project-single-title">{{ project.borrowerCompany.name }}</h1>
-                            <span style="font-weight: 400; margin-top: 1em; margin-bottom: 1em; font-size: xx-large; color: #787679;">{{ project.title }}</span>
-                        </div><!-- /.project-single-details -->
-                    </div>
+                    {% include 'project/partials/lender/header.html.twig' %}
                 </div>
+            </div>
+            <div class="panel">
                 <div class="panel-content">
                     <div class="row margin-20-t">
                         <div class="row{% if projectAttachments|length %} col-lg-9 col-md-9 col-sm-9{% endif %}">
@@ -127,13 +113,9 @@
                     </div>
                 </div>
             </div>
-        </article>
-        <article class="dashboard-tab-pane">
             <div class="panel">
                 {% include 'project/partials/tranche/view_tranche.html.twig' with {tranches: project.tranches, showFees: false} %}
             </div>
-        </article>
-        <article class="dashboard-tab-pane{% if false == project.isOnline %} ui-project-expired{% endif %}">
             <div class="panel">
                 <div class="section-tabs-nav">
                     <header>
@@ -146,8 +128,6 @@
                     {% endfor %}
                 </div><!-- /.section-tabs-content -->
             </div><!-- /.panel -->
-        </article>
-        <article class="dashboard-tab-pane{% if false == project.isOnline %} ui-project-expired{% endif %}">
             <div class="panel">
                 <div class="section-tabs-nav">
                     <header>
@@ -160,9 +140,7 @@
                     {% endfor %}
                 </div><!-- /.section-tabs-content -->
             </div><!-- /.panel -->
-        </article><!-- /.dashboard-tab-pane -->
-        <article class="dashboard-tab-pane" id="article-discussions">
-            <div class="panel" style="font-size: 16px;">
+            <div id="article-discussions" class="panel" style="font-size: 16px;">
                 <div class="section-tabs-nav">
                     <header>
                         <h3 class="h3">Discussions</h3>

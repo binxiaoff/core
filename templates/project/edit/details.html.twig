@@ -119,6 +119,7 @@
                             <ul>
                                 <li><a href="#article-scoring">Notation</a></li>
                                 {#<li><a href="#article-fees">Frais / commissions</a></li>#}
+                                <li><a href="#article-confidentiality">Confidentialité</a></li>
                                 <li><a href="#article-visibility">Visibilité</a></li>
                                 {% if project.currentProjectStatusHistory.status >= constant('\\Unilend\\Entity\\ProjectStatusHistory::STATUS_PUBLISHED') %}
                                     <li><a href="#article-bids">Offres de participation</a></li>
@@ -286,6 +287,31 @@
                             </dl>
                         </div>
                     </fieldset>
+                </div>
+            </article><!-- /.dashboard-tab-pane -->
+            <article class="dashboard-tab-pane" id="article-confidentiality">
+                <div class="panel">
+                    <h3 class="margin-10-t">{% trans %} project-edit.confidentiality-section-title {% endtrans %}</h3>
+                    <div class="row">
+                        <div class="message-info">{% trans %} project-edit.confidentiality-section-info {% endtrans %}</div>
+                    </div>
+                    {{ form_start(confidentialityForm) }}
+                        <div class="row">
+                            <div class="form-field">
+                                <label>
+                                    <input type="checkbox" id="confidentiality_edition_confidential" name="confidentiality_edition[confidential]" value="1"{% if project.confidential %} checked{% endif %}>
+                                    {% do confidentialityForm.confidential.setRendered %}
+                                    {% trans %} confidentiality-form.confidential-label {% endtrans %}
+                                </label>
+                            </div>
+                        </div>
+                        <div class="row"{% if not project.confidential %}  style="display: none;"{% endif %}>
+                            {{ form_row(confidentialityForm.confidentialityDisclaimer, {attr: {rows: 10, cols: 95, placeholder: 'confidentiality-form.disclaimer-placeholder'}}) }}
+                        </div>
+                        <div class="text-align-right">
+                            <button type="submit" class="btn-primary btn-shape-xs" data-spinnerbutton>{% trans %} confidentiality-form.submit-button-label {% endtrans %}</button>
+                        </div>
+                    {{ form_end(confidentialityForm) }}
                 </div>
             </article><!-- /.dashboard-tab-pane -->
             <article class="dashboard-tab-pane" id="article-visibility">
@@ -686,6 +712,7 @@
             {% include 'project/partials/attachment/add_attachment.js.twig' %}
             {% include 'project/partials/attachment/archive_attachment.js.twig' %}
             {% include 'project/partials/tranche/edit_tranches.js.twig' %}
+            {% include 'project/partials/confidentiality.js.twig' %}
 
             $.fn.editable.defaults.mode = 'inline'
 

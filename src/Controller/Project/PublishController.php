@@ -116,8 +116,6 @@ class PublishController extends AbstractController
         $foncarisRequest = $foncarisRequestRepository->findOneBy(['project' => $project]);
         $guaranteeRequestGenerator->generate($foncarisRequest);
 
-        return $this->render('project/publish/confirmation.html.twig', [
-            'projectLink' => $this->generateUrl('edit_project_details', ['hash' => $project->getHash()]),
-        ]);
+        return $this->render('project/publish/confirmation.html.twig', ['project' => $project]);
     }
 }

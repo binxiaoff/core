@@ -129,6 +129,20 @@ class Project
     private $description;
 
     /**
+     * @var bool
+     *
+     * @ORM\Column(type="boolean", options={"default": false})
+     */
+    private $confidential = false;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(type="text", nullable=true)
+     */
+    private $confidentialityDisclaimer;
+
+    /**
      * @var DateTimeImmutable
      *
      * @ORM\Column(type="date_immutable", nullable=true)
@@ -214,16 +228,24 @@ class Project
     private $tranches;
 
     /**
+     * @var ProjectConfidentialityAcceptance[]|ArrayCollection
+     *
+     * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectConfidentialityAcceptance", mappedBy="project", cascade={"persist"}, orphanRemoval=true)
+     */
+    private $confidentialityAcceptances;
+
+    /**
      * Project constructor.
      */
     public function __construct()
     {
-        $this->projectAttachments     = new ArrayCollection();
-        $this->projectParticipants    = new ArrayCollection();
-        $this->projectFees            = new ArrayCollection();
-        $this->comments               = new ArrayCollection();
-        $this->projectStatusHistories = new ArrayCollection();
-        $this->tranches               = new ArrayCollection();
+        $this->projectAttachments         = new ArrayCollection();
+        $this->projectParticipants        = new ArrayCollection();
+        $this->projectFees                = new ArrayCollection();
+        $this->comments                   = new ArrayCollection();
+        $this->projectStatusHistories     = new ArrayCollection();
+        $this->tranches                   = new ArrayCollection();
+        $this->confidentialityAcceptances = new ArrayCollection();
     }
 
     /**
@@ -390,6 +412,46 @@ class Project
     public function getDescription(): ?string
     {
         return $this->description;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isConfidential(): bool
+    {
+        return $this->confidential;
+    }
+
+    /**
+     * @param bool $confidential
+     *
+     * @return Project
+     */
+    public function setConfidential(bool $confidential): Project
+    {
+        $this->confidential = $confidential;
+
+        return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getConfidentialityDisclaimer(): ?string
+    {
+        return $this->confidentialityDisclaimer;
+    }
+
+    /**
+     * @param string|null $confidentialityDisclaimer
+     *
+     * @return Project
+     */
+    public function setConfidentialityDisclaimer(?string $confidentialityDisclaimer): Project
+    {
+        $this->confidentialityDisclaimer = $confidentialityDisclaimer;
+
+        return $this;
     }
 
     /**
@@ -933,6 +995,23 @@ class Project
     public function isOnline(): bool
     {
         return ProjectStatusHistory::STATUS_PUBLISHED === $this->getCurrentProjectStatusHistory()->getStatus();
+    }
+
+    /**
+     * @param Clients $user
+     *
+     * @return bool
+     */
+    public function checkUserConfidentiality(Clients $user): bool
+    {
+        $criteria = new Criteria();
+        $criteria->where(Criteria::expr()->eq('client', $user));
+
+        return
+            false                  === $this->isConfidential()
+            || $user->getCompany() === $this->getSubmitterCompany()
+            || false               === $this->confidentialityAcceptances->matching($criteria)->isEmpty()
+        ;
     }
 
     /**

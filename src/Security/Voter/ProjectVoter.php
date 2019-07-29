@@ -7,20 +7,38 @@ namespace Unilend\Security\Voter;
 use Exception;
 use LogicException;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
+use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
-use Unilend\Entity\{Clients, Project};
+use Unilend\Entity\{Clients, Project, ProjectStatusHistory};
+use Unilend\Repository\ProjectConfidentialityAcceptanceRepository;
 use Unilend\Traits\ConstantsAwareTrait;
 
 class ProjectVoter extends Voter
 {
     use ConstantsAwareTrait;
 
+    public const ATTRIBUTE_LIST        = 'list';
     public const ATTRIBUTE_VIEW        = 'view';
     public const ATTRIBUTE_EDIT        = 'edit';
     public const ATTRIBUTE_MANAGE_BIDS = 'manage_bids';
     public const ATTRIBUTE_RATE        = 'rate';
     public const ATTRIBUTE_BID         = 'bid';
     public const ATTRIBUTE_COMMENT     = 'comment';
+
+    /** @var AuthorizationCheckerInterface */
+    private $authorizationChecker;
+    /** @var ProjectConfidentialityAcceptanceRepository */
+    private $acceptanceRepository;
+
+    /**
+     * @param AuthorizationCheckerInterface              $authorizationChecker
+     * @param ProjectConfidentialityAcceptanceRepository $acceptanceRepository
+     */
+    public function __construct(AuthorizationCheckerInterface $authorizationChecker, ProjectConfidentialityAcceptanceRepository $acceptanceRepository)
+    {
+        $this->authorizationChecker = $authorizationChecker;
+        $this->acceptanceRepository = $acceptanceRepository;
+    }
 
     /**
      * {@inheritdoc}
@@ -53,6 +71,8 @@ class ProjectVoter extends Voter
         }
 
         switch ($attribute) {
+            case self::ATTRIBUTE_LIST:
+                return $this->canList($project, $user);
             case self::ATTRIBUTE_VIEW:
                 return $this->canView($project, $user);
             case self::ATTRIBUTE_EDIT:
@@ -78,13 +98,30 @@ class ProjectVoter extends Voter
      *
      * @return bool
      */
-    private function canView(Project $project, Clients $user): bool
+    private function canList(Project $project, Clients $user): bool
     {
-        if ($this->canEdit($project, $user) || $this->canBid($project, $user)) {
+        if ($this->canEdit($project, $user)) {
             return true;
         }
 
+        if ($project->getCurrentProjectStatusHistory()->getStatus() < ProjectStatusHistory::STATUS_PUBLISHED) {
+            return false;
+        }
+
         return null !== $project->getProjectParticipantByCompany($user->getCompany());
+    }
+
+    /**
+     * @param Project $project
+     * @param Clients $user
+     *
+     * @throws Exception
+     *
+     * @return bool
+     */
+    private function canView(Project $project, Clients $user): bool
+    {
+        return $this->canList($project, $user) && $project->checkUserConfidentiality($user);
     }
 
     /**
@@ -139,11 +176,16 @@ class ProjectVoter extends Voter
      * @param Project $project
      * @param Clients $user
      *
+     * @throws Exception
+     *
      * @return bool
      */
     private function canBid(Project $project, Clients $user): bool
     {
-        return in_array($user->getCompany(), $project->getLenderCompanies()->toArray());
+        return
+            $this->canView($project, $user)
+            && in_array($user->getCompany(), $project->getLenderCompanies()->toArray())
+        ;
     }
 
     /**
