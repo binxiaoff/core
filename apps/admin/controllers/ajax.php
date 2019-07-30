@@ -96,13 +96,14 @@ class ajaxController extends bootstrap
 
             // On supprime le fichier de la base
             $this->tree->img_menu = '';
-            $this->tree->update($this->params[0]);
+            $this->tree->update();
         }
     }
 
     // Fonction AJAX chargement des noms de la section de traduction
     public function _loadNomTexte()
     {
+        $this->autoFireView = true;
         /** @var TranslationManager $translationManager */
         $translationManager = $this->get('unilend.service.translation_manager');
 
@@ -114,6 +115,7 @@ class ajaxController extends bootstrap
     // Fonction AJAX chargement des traductions de la section de traduction
     public function _loadTradTexte()
     {
+        $this->autoFireView = true;
         /** @var TranslationManager $translationManager */
         $translationManager = $this->get('unilend.service.translation_manager');
         if (isset($this->params[0]) && '' != $this->params[0]) {

@@ -34,8 +34,6 @@ abstract class Controller implements ContainerAwareInterface
     private $included_css = [];
     /** @var array */
     private $included_js = [];
-    /** @var Twig_Environment */
-    private $twigEnvironment;
 
     /**
      * @param Command      $command
@@ -90,22 +88,20 @@ abstract class Controller implements ContainerAwareInterface
 
         call_user_func([$this, '_' . $this->Command->getFunction()]);
 
-        if (null === $this->twigEnvironment) {
-            if (empty($this->view)) {
-                $this->setView($this->Command->getFunction());
-            }
-            if ($this->autoFireHead) {
-                $this->fireHead();
-            }
-            if ($this->autoFireHeader) {
-                $this->fireHeader();
-            }
-            if ($this->autoFireView) {
-                $this->fireView();
-            }
-            if ($this->autoFireFooter) {
-                $this->fireFooter();
-            }
+        if (empty($this->view)) {
+            $this->setView($this->Command->getFunction());
+        }
+        if ($this->autoFireHead) {
+            $this->fireHead();
+        }
+        if ($this->autoFireHeader) {
+            $this->fireHeader();
+        }
+        if ($this->autoFireView) {
+            $this->fireView();
+        }
+        if ($this->autoFireFooter) {
+            $this->fireFooter();
         }
     }
 
@@ -156,46 +152,6 @@ abstract class Controller implements ContainerAwareInterface
     public function setView($view)
     {
         $this->view = $view;
-    }
-
-    /**
-     * @param string $template
-     * @param array  $context
-     * @param bool   $return
-     *
-     * @return string
-     */
-    public function render($template = null, array $context = [], $return = false)
-    {
-        $this->initializeTwig();
-
-        if (null === $template) {
-            $template = $this->Command->getControllerName() . '/' . $this->Command->getFunction() . '.html.twig';
-        }
-
-        try {
-            $this->twigEnvironment->loadTemplate($template);
-        } catch (\Twig_Error $exception) {
-            $template                = 'error.html.twig';
-            $context['errorMessage'] = $exception->getMessage();
-        }
-
-        $context['app'] += [
-            'environment' => $this->getParameter('kernel.environment'),
-            'adminUrl'    => $this->getParameter('router.request_context.scheme') . '://' . getenv('HOST_ADMIN_URL'),
-            'frontUrl'    => $this->getParameter('router.request_context.scheme') . '://' . getenv('HOST_DEFAULT_URL'),
-            'staticUrl'   => $this->getParameter('router.request_context.scheme') . '://' . getenv('HOST_DEFAULT_URL'),
-            'parameters'  => $this->Command->getParameters(),
-        ];
-
-        $content = $this->twigEnvironment->render($template, $context);
-
-        if ($return) {
-            return $content;
-        }
-
-        echo $content;
-        exit;
     }
 
     /**
@@ -330,23 +286,5 @@ abstract class Controller implements ContainerAwareInterface
         ]);
 
         exit;
-    }
-
-    /**
-     * @internal
-     */
-    private function initializeTwig()
-    {
-        $kernel                = $this->get('kernel');
-        $loader                = new Twig_Loader_Filesystem($kernel->getRootDir() . '/../apps/' . $this->App . '/views');
-        $this->twigEnvironment = new Twig_Environment($loader, [
-            'autoescape' => false,
-            'cache'      => $kernel->getCacheDir() . '/twig',
-            'debug'      => 'prod' !== $this->get('kernel')->getEnvironment(),
-        ]);
-        $this->twigEnvironment->addExtension(new Twig_Extension_Debug());
-        $this->twigEnvironment->addExtension(new Twig_Extensions_Extension_Intl());
-        $this->twigEnvironment->addExtension(new Symfony\Bridge\Twig\Extension\TranslationExtension($this->get('translator')));
-        $this->twigEnvironment->addFilter(new Twig_SimpleFilter('addslashes', 'addslashes'));
     }
 }

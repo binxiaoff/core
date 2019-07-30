@@ -20,10 +20,6 @@ class bootstrap extends Controller
                     'uri'   => 'blocs',
                 ],
                 [
-                    'title' => 'Menus',
-                    'uri'   => 'menus',
-                ],
-                [
                     'title' => 'Templates',
                     'uri'   => 'templates',
                 ],
@@ -49,10 +45,6 @@ class bootstrap extends Controller
                 [
                     'title' => 'Historique des Mails',
                     'uri'   => 'mails/emailhistory',
-                ],
-                [
-                    'title' => 'Produits',
-                    'uri'   => 'product',
                 ],
             ],
         ],
@@ -288,26 +280,5 @@ class bootstrap extends Controller
             $entityManager->persist($userAccessEntity);
             $entityManager->flush($userAccessEntity);
         }
-    }
-
-    /**
-     * @param string $template
-     * @param array  $context
-     * @param bool   $return
-     *
-     * @return string
-     */
-    public function render($template = null, array $context = [], $return = false)
-    {
-        $context['app'] = [
-            'staticsKey' => $this->staticsKey,
-            'navigation' => self::MENU,
-            'activeMenu' => isset($this->menu_admin) ? $this->menu_admin : '',
-            'session'    => $_SESSION,
-            'user'       => $this->userEntity,
-            'userZones'  => isset($this->lZonesHeader) ? $this->lZonesHeader : [],
-        ];
-
-        return parent::render($template, $context, $return);
     }
 }

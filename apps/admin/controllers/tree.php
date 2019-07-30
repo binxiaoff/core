@@ -193,7 +193,7 @@ class treeController extends bootstrap
                     if ($create) {
                         $this->tree->create(['id_tree' => $this->params[0], 'id_langue' => $this->tree->id_langue]);
                     } else {
-                        $this->tree->update($this->params[0]);
+                        $this->tree->update();
                     }
 
                     if (0 == $_POST['status_' . $key]) {

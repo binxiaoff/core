@@ -56,7 +56,7 @@
     </script>
     <div id="logo_site">
         <a href="<?= $this->url ?>" title="Administration du site">
-            <img src="<?php echo $this->furl; ?>/assets/images/logo/logo-and-type-245x52.png" alt="Administration du site"/>
+            <img src="<?php echo $this->surl; ?>/assets/images/logo/logo-and-type-245x52.png" alt="Administration du site"/>
         </a>
     </div>
     <div id="freeow-tr" class="freeow freeow-top-right"></div>
@@ -86,7 +86,7 @@
                     <tr>
                         <th><label for="new_pass">Nouveau mot de passe* :</label></th>
                         <td>
-                            <input type="password" name="new_pass" id="new_pass" value="" onKeyUp="check_force_pass();" autocomplete="off" class="input_large"/>
+                            <input type="password" name="new_pass" id="new_pass" value="" autocomplete="off" class="input_large"/>
                             <div id="indicateur_force"></div>
                         </td>
                     </tr>

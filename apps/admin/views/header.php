@@ -9,9 +9,7 @@
             <div class="bloc_info_header">
                 <div>
                     <?php if (false === empty($this->userEntity)) { ?>
-                        <a href="<?php echo $this->url; ?>/users/edit_perso/<?php echo $this->userEntity->getIdUser(); ?>" class="thickbox">
-                            <?php echo $this->userEntity->getFirstName() . ' ' . $this->userEntity->getName(); ?>
-                        </a>
+                        <?php echo $this->userEntity->getFirstName() . ' ' . $this->userEntity->getName(); ?>
                         &nbsp;&nbsp;|&nbsp;&nbsp;
                         <a href="<?php echo $this->url; ?>/logout" title="Se déconnecter"><strong>Se déconnecter</strong></a>
                     <?php } ?>
