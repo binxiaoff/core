@@ -19,6 +19,10 @@
                     </div>
                 </article>
                 <article class="panel collapse" id="tranche-attributes">
+                    <div class="row row-multi-col-computer">
+                        {{ form_row(form.comment) }}
+                    </div>
+
                     {% for tranche in project.tranches %}
                         <h4 class="margin-20-t">{{ tranche.name }}</h4>
                         <div class="row row-multi-col-computer">

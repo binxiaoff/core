@@ -51,6 +51,13 @@ class FoncarisRequest implements FileStorageInterface
     /**
      * @var string
      *
+     * @ORM\Column(type="text", nullable=true)
+     */
+    private $comment;
+
+    /**
+     * @var string
+     *
      * @ORM\Column(type="string", length=191, nullable=true)
      */
     private $relativeFilePath;
@@ -139,5 +146,25 @@ class FoncarisRequest implements FileStorageInterface
     public function getRelativeFilePath(): ?string
     {
         return $this->relativeFilePath;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getComment(): ?string
+    {
+        return $this->comment;
+    }
+
+    /**
+     * @param string|null $comment
+     *
+     * @return FoncarisRequest
+     */
+    public function setComment(?string $comment): FoncarisRequest
+    {
+        $this->comment = $comment;
+
+        return $this;
     }
 }
