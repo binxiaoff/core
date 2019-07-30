@@ -27,7 +27,7 @@ class ProjectConfidentialityAcceptance
     /**
      * @var Project
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Project")
+     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Project", inversedBy="confidentialityAcceptances")
      * @ORM\JoinColumns({
      *     @ORM\JoinColumn(name="id_project", nullable=false)
      * })
