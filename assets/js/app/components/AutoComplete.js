@@ -516,7 +516,7 @@ var AutoComplete = function (elem, options) {
         if (self.$target.find('.autocomplete-results li.empty').length === 0) {
           self.$target.find('.autocomplete-results').append(Templating.replace(self.templates.message, {
             classNames: 'no-results',
-            text: __.__('No results found!', 'noResults')
+            text: __.__('Aucun résultat trouvé !', 'noResults')
           }))
         }
         self.$target.find('.autocomplete-results li.no-results').show()

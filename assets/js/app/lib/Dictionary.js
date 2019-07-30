@@ -247,8 +247,8 @@ Dictionary.prototype.formatNumber = function (input, limitDecimal, padDecimal, l
   if (input === Infinity || isNaN(number)) return input
 
   // Language options
-  var numberDecimal = self.__('.', 'number-decimal', lang)
-  var numberMilli = self.__(',', 'number-milli', lang)
+  var numberDecimal = self.__(',', 'number-decimal', lang)
+  var numberMilli = self.__(' ', 'number-milli', lang)
 
   // Pad decimal
   // If detects there's a money sign, will pad decimal to 2
