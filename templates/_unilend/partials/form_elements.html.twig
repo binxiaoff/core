@@ -1,3 +1,0 @@
-{% macro recaptcha(key, id) %}
-    <div class="g-recaptcha" data-sitekey="{{ key }}" data-callback="onSubmitRecaptchaCallback" data-expired-callback="onExpireRecaptchaCallback"{% if id is not empty %} id="{{ id }}"{% endif %}></div>
-{% endmacro %}
