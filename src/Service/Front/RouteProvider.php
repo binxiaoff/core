@@ -8,18 +8,14 @@ use Symfony\Cmf\Component\Routing\RouteProviderInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Route;
 use Symfony\Component\Routing\RouteCollection;
-use Unilend\Service\Simulator\EntityManager;
 use Unilend\CacheKeys;
+use Unilend\Entity\Tree;
+use Unilend\Repository\TreeRepository;
 
 class RouteProvider implements RouteProviderInterface
 {
-    /** List of routes available through CMS */
-    const ROUTE_LENDER_FAQ   = 'faq-preteur';
-    const ROUTE_BORROWER_FAQ = 'faq-emprunteur';
-    const ROUTE_OUR_ETHICS   = 'charte-de-deontologie';
-
-    /** @var EntityManager */
-    private $entityManager;
+    /** @var TreeRepository */
+    private $treeRepository;
 
     /** @var LoggerInterface */
     private $logger;
@@ -27,15 +23,20 @@ class RouteProvider implements RouteProviderInterface
     /** @var CacheItemPoolInterface */
     private $cacheItemPool;
 
-    public function __construct(EntityManager $entityManager, LoggerInterface $logger, CacheItemPoolInterface $cacheItemPool)
+    /**
+     * @param TreeRepository         $treeRepository
+     * @param LoggerInterface        $logger
+     * @param CacheItemPoolInterface $cacheItemPool
+     */
+    public function __construct(TreeRepository $treeRepository, LoggerInterface $logger, CacheItemPoolInterface $cacheItemPool)
     {
-        $this->entityManager = $entityManager;
-        $this->logger        = $logger;
-        $this->cacheItemPool = $cacheItemPool;
+        $this->treeRepository = $treeRepository;
+        $this->logger         = $logger;
+        $this->cacheItemPool  = $cacheItemPool;
     }
 
     /**
-     * @see RouteProviderInterface
+     * {@inheritdoc}
      */
     public function getRouteCollectionForRequest(Request $request)
     {
@@ -43,24 +44,7 @@ class RouteProvider implements RouteProviderInterface
     }
 
     /**
-     * @return RouteCollection
-     */
-    private function getRouteCollection()
-    {
-        $routeCollection = new RouteCollection();
-
-        /** @var \tree $trees */
-        $trees = $this->entityManager->getRepository('tree');
-
-        foreach ($trees->select('status = 1 AND prive = 0') as $tree) {
-            $routeCollection->add($tree['slug'], new Route($tree['slug']));
-        }
-
-        return $routeCollection;
-    }
-
-    /**
-     * @see RouteProviderInterface
+     * {@inheritdoc}
      */
     public function getRouteByName($name)
     {
@@ -69,10 +53,14 @@ class RouteProvider implements RouteProviderInterface
         if ($cachedItem->isHit()) {
             $path = $cachedItem->get();
         } else {
-            /** @var \tree $tree */
-            $tree = $this->entityManager->getRepository('tree');
-            if ($tree->get(['slug' => $name, 'status' => 1, 'prive' => 0])) {
-                $path = $tree->slug;
+            $tree = $this->treeRepository->findOneBy([
+                'slug'   => $name,
+                'status' => Tree::STATUS_ONLINE,
+                'prive'  => Tree::VISIBILITY_PUBLIC,
+            ]);
+
+            if ($tree) {
+                $path = $tree->getSlug();
                 $cachedItem->set($path)->expiresAfter(CacheKeys::MEDIUM_TIME);
                 $this->cacheItemPool->save($cachedItem);
             } else {
@@ -85,11 +73,11 @@ class RouteProvider implements RouteProviderInterface
     }
 
     /**
-     * @see RouteProviderInterface
+     * {@inheritdoc}
      */
     public function getRoutesByNames($names)
     {
-        if (is_null($names)) {
+        if (null === $names) {
             return $this->getRouteCollection();
         }
 
@@ -99,5 +87,20 @@ class RouteProvider implements RouteProviderInterface
         }
 
         return $routes;
+    }
+
+    /**
+     * @return RouteCollection
+     */
+    private function getRouteCollection()
+    {
+        $routeCollection = new RouteCollection();
+        $trees           = $this->treeRepository->findBy(['status' => Tree::STATUS_ONLINE, 'prive' => Tree::VISIBILITY_PUBLIC]);
+
+        foreach ($trees as $tree) {
+            $routeCollection->add($tree->getSlug(), new Route($tree->getSlug()));
+        }
+
+        return $routeCollection;
     }
 }
