@@ -1,8 +1,6 @@
 <?php
 
-use Box\Spout\{
-    Common\Type, Writer\Style\StyleBuilder, Writer\WriterFactory
-};
+use Box\Spout\{Common\Type, Writer\Style\StyleBuilder, Writer\WriterFactory};
 use Unilend\Entity\Zones;
 
 class queriesController extends bootstrap

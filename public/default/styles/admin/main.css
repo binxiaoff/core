@@ -82,8 +82,6 @@ table.login label { cursor: pointer; font-weight: bold; }
 
 .bloc_info_header { position: relative; float: right; display: inline; margin: 0; padding: 0; text-align:right; }
 
-#quick_search { margin-top: 10px; }
-
 #navigation { height: 34px; background: #2bc9af; text-align: center; position: relative; }
 #navigation ul { list-style: none; margin: 0; padding: 0; width: 100%; position: absolute; top: 0; left: 0; }
 #navigation > ul { display: table; }

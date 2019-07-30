@@ -129,13 +129,8 @@ class Loader
             if (1 === $nb_cle) {
                 $dao = file_get_contents($path . 'core/crud.sample.php');
 
-                if ($slug) {
-                    $controleslug      = "\$this->bdd->controlSlug('--table--', \$this->slug, '--id--', \$this->--id--);";
-                    $controleslugmulti = "\$this->bdd->controlSlugMultiLn('--table--', \$this->slug, \$this->--id--, \$list_field_value, \$this->id_langue);";
-                } else {
-                    $controleslug      = '';
-                    $controleslugmulti = '';
-                }
+                $controleslug      = '';
+                $controleslugmulti = '';
 
                 $dao = str_replace('--controleslug--', $controleslug, $dao);
                 $dao = str_replace('--controleslugmulti--', $controleslugmulti, $dao);

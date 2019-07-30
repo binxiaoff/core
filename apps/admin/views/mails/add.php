@@ -1,6 +1,6 @@
 <div id="contenu">
     <h1>Ajouter un email</h1>
-    <form method="post" action="<?= $this->lurl ?>/mails/add">
+    <form method="post" action="<?= $this->url ?>/mails/add">
         <div class="row">
             <div class="form-group col-md-12">
                 <label for="type">Type</label>

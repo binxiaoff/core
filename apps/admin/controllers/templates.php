@@ -64,7 +64,7 @@ class templatesController extends bootstrap
             $_SESSION['freeow']['title']   = 'Ajout d\'un &eacute;l&eacute;ment';
             $_SESSION['freeow']['message'] = 'L\'&eacute;l&eacute;ment a bien &eacute;t&eacute; ajout&eacute; !';
 
-            header('Location: ' . $this->lurl . '/templates/elements/' . $_POST['id_template']);
+            header('Location: ' . $this->url . '/templates/elements/' . $_POST['id_template']);
             die;
         }
 
@@ -78,7 +78,7 @@ class templatesController extends bootstrap
             $_SESSION['freeow']['title']   = 'Modification d\'un &eacute;l&eacute;ment';
             $_SESSION['freeow']['message'] = 'L\'&eacute;l&eacute;ment a bien &eacute;t&eacute; modifi&eacute; !';
 
-            header('Location: ' . $this->lurl . '/templates/elements/' . $this->elements->id_template);
+            header('Location: ' . $this->url . '/templates/elements/' . $this->elements->id_template);
             die;
         }
 
@@ -86,11 +86,11 @@ class templatesController extends bootstrap
             switch ($this->params[1]) {
                 case 'up':
                     $this->elements->moveUp($this->params[2], $this->params[0], 'id_template');
-                    header('Location: ' . $this->lurl . '/templates/elements/' . $this->params[0]);
+                    header('Location: ' . $this->url . '/templates/elements/' . $this->params[0]);
                     die;
                 case 'down':
                     $this->elements->moveDown($this->params[2], $this->params[0], 'id_template');
-                    header('Location: ' . $this->lurl . '/templates/elements/' . $this->params[0]);
+                    header('Location: ' . $this->url . '/templates/elements/' . $this->params[0]);
                     die;
                 case 'status':
                     $this->elements->get($this->params[2], 'id_element');
@@ -100,7 +100,7 @@ class templatesController extends bootstrap
                     $_SESSION['freeow']['title']   = 'Statut d\'un &eacute;l&eacute;ment';
                     $_SESSION['freeow']['message'] = 'Le statut de l\'&eacute;l&eacute;ment a bien &eacute;t&eacute; modifi&eacute; !';
 
-                    header('Location: ' . $this->lurl . '/templates/elements/' . $this->params[0]);
+                    header('Location: ' . $this->url . '/templates/elements/' . $this->params[0]);
                     die;
                 case 'delete':
                     $this->elements->delete($this->params[2], 'id_element');
@@ -111,7 +111,7 @@ class templatesController extends bootstrap
                     $_SESSION['freeow']['title']   = 'Suppression d\'un &eacute;l&eacute;ment';
                     $_SESSION['freeow']['message'] = 'L\'&eacute;l&eacute;ment a bien &eacute;t&eacute; supprim&eacute; !';
 
-                    header('Location: ' . $this->lurl . '/templates/elements/' . $this->params[0]);
+                    header('Location: ' . $this->url . '/templates/elements/' . $this->params[0]);
                     die;
             }
         }

@@ -1,6 +1,6 @@
 <div id="popup">
     <a onclick="parent.$.fn.colorbox.close();" title="Fermer" class="closeBtn"><img src="<?= $this->surl ?>/images/admin/delete.png" alt="Fermer" /></a>
-    <form method="post" name="edit_element" id="edit_element" enctype="multipart/form-data" action="<?= $this->lurl ?>/blocs/elements/<?= $this->params[1] ?>" target="_parent">
+    <form method="post" name="edit_element" id="edit_element" enctype="multipart/form-data" action="<?= $this->url ?>/blocs/elements/<?= $this->params[1] ?>" target="_parent">
         <input type="hidden" name="id_element" id="id_element" value="<?= $this->elements->id_element ?>" />
         <h1>Modification de l'élément <?= $this->elements->name ?> du bloc <?= $this->blocs->name ?></h1>
         <fieldset>

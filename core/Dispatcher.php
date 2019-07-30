@@ -3,8 +3,7 @@
 namespace Unilend\core;
 
 use Monolog\ErrorHandler;
-use Psr\Log\LoggerInterface;
-use Psr\Log\LogLevel;
+use Psr\Log\{LogLevel, LoggerInterface};
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Unilend\Kernel;
@@ -12,19 +11,19 @@ use Unilend\Kernel;
 class Dispatcher
 {
     private $Command;
-    /** @var  Request */
+    /** @var Request */
     private $request;
     /** @var Kernel */
     private $kernel;
 
-    public function __construct($kernel, $name, $request)
+    public function __construct($kernel, $request)
     {
         $this->kernel      = $kernel;
         $this->request     = $request;
-        $this->App         = $name;
+        $this->App         = 'admin';
         $this->environment = $this->kernel->getEnvironment();
         $this->debug       = $this->kernel->isDebug();
-        $this->path        = $this->kernel->getRootDir() . '/../';
+        $this->path        = $this->kernel->getProjectDir() . DIRECTORY_SEPARATOR;
 
         $this->handleUrl();
         $this->handleError();
@@ -41,7 +40,7 @@ class Dispatcher
         $commandArray = array_values($commandArray);
 
         // Si le dernier élément de l'array est vide (cas où l'on a un / à la fin de l'URL, on enlève la dernière occurence du tableau (puisqu'elle est vide et que donc on s'en fout)
-        if ($commandArray[count($commandArray) - 1] == '') {
+        if ('' == $commandArray[count($commandArray) - 1]) {
             unset($commandArray[count($commandArray) - 1]);
         }
 
@@ -49,19 +48,19 @@ class Dispatcher
             //si $commandArray[0] est vide c'est qu'on a aucun param dans l'url
             $controllerName     = 'root';
             $controllerFunction = 'default';
-            $parameters         = array();
+            $parameters         = [];
         } elseif (empty($commandArray[1])) {
             //si on a que le premier qui est rempli, on regarde ce que c'est
             //c'est un controller ?
             if ($this->isController($commandArray[0])) {
                 $controllerName     = $commandArray[0];
                 $controllerFunction = 'default';
-                $parameters         = array();
-            } elseif ($this->isActionInController('root', $commandArray[0]) === true) {
+                $parameters         = [];
+            } elseif (true === $this->isActionInController('root', $commandArray[0])) {
                 //c'est une action, et dans ce cas c'est forcement une action de root
                 $controllerName     = 'root';
                 $controllerFunction = $commandArray[0];
-                $parameters         = array();
+                $parameters         = [];
             } else {
                 //ou bien c'est un paramètre ?
                 $controllerName     = 'root';
@@ -99,7 +98,7 @@ class Dispatcher
 
     public function dispatch()
     {
-        $this->fireBootstrap();
+        include $this->path . 'apps/' . $this->App . '/bootstrap.php';
 
         $controllerName  = $this->Command->getControllerName();
         $controllerClass = $controllerName . 'Controller';
@@ -116,9 +115,9 @@ class Dispatcher
     {
         if (file_exists($this->path . 'apps/' . $this->App . '/controllers/' . $controllerName . '.php')) {
             return true;
-        } else {
-            return false;
         }
+
+        return false;
     }
 
     // Test si une action existe dans le controller root
@@ -126,35 +125,21 @@ class Dispatcher
     {
         $controller_content = file_get_contents($this->path . 'apps/' . $this->App . '/controllers/' . $controllerName . '.php');
 
-        if (strpos($controller_content, 'function _' . $action . '(') === false && strpos($controller_content, 'function _' . $action . ' (') === false) {
+        if (false === mb_strpos($controller_content, 'function _' . $action . '(') && false === mb_strpos($controller_content, 'function _' . $action . ' (')) {
             return false;
-        } else {
-            return true;
-        }
-    }
-
-    // Execution (en fait inclusion) du bootstrap s'il existe
-    public function fireBootstrap($bootstrap = '')
-    {
-        if ($bootstrap == '') {
-            $bootstrap = 'bootstrap';
         }
 
-        if (! file_exists($this->path . 'apps/' . $this->App . '/' . $bootstrap . '.php')) {
-            call_user_func(array($this, '_error'), 'bootstrap not found : ' . $this->App . '/' . $bootstrap . '.php');
-        } else {
-            include($this->path . 'apps/' . $this->App . '/' . $bootstrap . '.php');
-        }
+        return true;
     }
 
     private function newRelic(\Command $command)
     {
-        if ($this->environment !== 'prod' || false === extension_loaded('newrelic')) {
+        if ('prod' !== $this->environment || false === extension_loaded('newrelic')) {
             return;
         }
         $container       = $this->kernel->getContainer();
         $applicationName = $container->getParameter('new_relic.front_app_name');
-        if ($this->App === 'admin') {
+        if ('admin' === $this->App) {
             $applicationName = $container->getParameter('new_relic.back_app_name');
         }
         $transactionName = $command->getControllerName() . '::' . $command->getFunction();

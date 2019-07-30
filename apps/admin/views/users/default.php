@@ -15,7 +15,7 @@ use Unilend\Entity\UsersTypes;
             <h1>Utilisateurs</h1>
         </div>
         <div class="col-md-6">
-            <a href="<?= $this->lurl ?>/users/add" class="btn-primary pull-right thickbox">Ajouter un utilisateur</a>
+            <a href="<?= $this->url ?>/users/add" class="btn-primary pull-right thickbox">Ajouter un utilisateur</a>
         </div>
     </div>
     <?php
@@ -54,10 +54,10 @@ use Unilend\Entity\UsersTypes;
                             <td><?= $this->formatDate($user['updated'], 'd/m/Y') ?></td>
                             <td><?= $this->formatDate($user['lastlogin'], 'd/m/Y') ?></td>
                             <td align="center">
-                                <a href="<?= $this->lurl ?>/users/status/<?= $user['id_user'] ?>/<?= $user['status'] ?>" title="<?= ($user['status'] == \Unilend\Entity\Users::STATUS_ONLINE ? 'Passer hors ligne' : 'Passer en ligne') ?>">
+                                <a href="<?= $this->url ?>/users/status/<?= $user['id_user'] ?>/<?= $user['status'] ?>" title="<?= ($user['status'] == \Unilend\Entity\Users::STATUS_ONLINE ? 'Passer hors ligne' : 'Passer en ligne') ?>">
                                     <img src="<?= $this->surl ?>/images/admin/<?= ($user['status'] == \Unilend\Entity\Users::STATUS_ONLINE ? 'offline' : 'online') ?>.png" alt="<?= ($user['status'] == \Unilend\Entity\Users::STATUS_ONLINE ? 'Passer hors ligne' : 'Passer en ligne') ?>">
                                 </a>
-                                <a href="<?= $this->lurl ?>/users/edit/<?= $user['id_user'] ?>" class="thickbox">
+                                <a href="<?= $this->url ?>/users/edit/<?= $user['id_user'] ?>" class="thickbox">
                                     <img src="<?= $this->surl ?>/images/admin/edit.png" alt="Modifier <?= $user['firstname'] ?> <?= $user['name'] ?>">
                                 </a>
                             </td>

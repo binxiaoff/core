@@ -33,19 +33,19 @@ class rootController extends bootstrap
                 $_SESSION['msgErreur']   = 'newPassword';
                 $_SESSION['newPassword'] = 'OK';
 
-                header('Location: ' . $this->lurl . '/login');
+                header('Location: ' . $this->url . '/login');
                 die;
             } else {
                 $_SESSION['msgErreur']   = 'newPassword';
                 $_SESSION['newPassword'] = 'NOK';
 
-                header('Location: ' . $this->lurl . '/login');
+                header('Location: ' . $this->url . '/login');
                 die;
             }
         }
 
         if (isset($_SESSION['auth'], $_SESSION['token']) && $_SESSION['auth'] && false === empty(trim($_SESSION['token']))) {
-            header('Location: ' . $this->lurl);
+            header('Location: ' . $this->url);
             die;
         }
     }
@@ -54,7 +54,7 @@ class rootController extends bootstrap
     {
         $this->autoFireView = false;
 
-        $_SESSION['request_url'] = $this->lurl;
+        $_SESSION['request_url'] = $this->url;
 
         $this->users->handleLogout();
     }
@@ -63,7 +63,7 @@ class rootController extends bootstrap
     {
         $this->users->checkAccess(Zones::ZONE_LABEL_DASHBOARD);
 
-        header('Location: ' . $this->lurl . '/dashboard');
+        header('Location: ' . $this->url . '/tree');
         exit;
     }
 
@@ -121,7 +121,7 @@ class rootController extends bootstrap
                 $_SESSION['freeow']['title']   = 'Modification de votre mot de passe';
                 $_SESSION['freeow']['message'] = 'Votre mot de passe a bien été modifé';
 
-                header('Location: ' . $this->lurl);
+                header('Location: ' . $this->url);
                 die;
             } else {
                 $this->retour_pass = 'La confirmation du nouveau de passe doit être la même que votre nouveau mot de passe';

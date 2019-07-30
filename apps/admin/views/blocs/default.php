@@ -13,7 +13,7 @@
             <h1>Liste des blocs</h1>
         </div>
         <div class="col-md-6">
-            <a href="<?= $this->lurl ?>/blocs/add" class="btn-primary pull-right thickbox">Ajouter un bloc</a>
+            <a href="<?= $this->url ?>/blocs/add" class="btn-primary pull-right thickbox">Ajouter un bloc</a>
         </div>
     </div>
     <?php if (count($this->lBlocs) > 0) : ?>
@@ -38,19 +38,19 @@
                             <?php endif; ?>
                         </td>
                         <td align="center">
-                            <a href="<?= $this->lurl ?>/blocs/status/<?= $b['id_bloc'] ?>/<?= $b['status'] ?>" title="<?= ($b['status'] == 1 ? 'Passer hors ligne' : 'Passer en ligne') ?>">
+                            <a href="<?= $this->url ?>/blocs/status/<?= $b['id_bloc'] ?>/<?= $b['status'] ?>" title="<?= ($b['status'] == 1 ? 'Passer hors ligne' : 'Passer en ligne') ?>">
                                 <img src="<?= $this->surl ?>/images/admin/<?= ($b['status'] == 1 ? 'offline' : 'online') ?>.png" alt="<?= ($b['status'] == 1 ? 'Passer hors ligne' : 'Passer en ligne') ?>"/>
                             </a>
-                            <a href="<?= $this->lurl ?>/blocs/edit/<?= $b['id_bloc'] ?>" class="thickbox">
+                            <a href="<?= $this->url ?>/blocs/edit/<?= $b['id_bloc'] ?>" class="thickbox">
                                 <img src="<?= $this->surl ?>/images/admin/edit.png" alt="Modifier <?= $b['name'] ?>"/>
                             </a>
-                            <a href="<?= $this->lurl ?>/blocs/elements/<?= $b['id_bloc'] ?>" title="Liste des éléments du bloc <?= $b['name'] ?>">
+                            <a href="<?= $this->url ?>/blocs/elements/<?= $b['id_bloc'] ?>" title="Liste des éléments du bloc <?= $b['name'] ?>">
                                 <img src="<?= $this->surl ?>/images/admin/database.png" alt="Liste des éléments du bloc <?= $b['name'] ?>"/>
                             </a>
-                            <a href="<?= $this->lurl ?>/blocs/modifier/<?= $b['id_bloc'] ?>" title="Edition des éléments du bloc <?= $b['name'] ?>">
+                            <a href="<?= $this->url ?>/blocs/modifier/<?= $b['id_bloc'] ?>" title="Edition des éléments du bloc <?= $b['name'] ?>">
                                 <img src="<?= $this->surl ?>/images/admin/modif.png" alt="Edition des éléments du bloc <?= $b['name'] ?>"/>
                             </a>
-                            <a href="<?= $this->lurl ?>/blocs/delete/<?= $b['id_bloc'] ?>" title="Supprimer <?= $b['name'] ?>" onclick="return confirm('Etes vous sur de vouloir supprimer <?= $b['name'] ?> ?')">
+                            <a href="<?= $this->url ?>/blocs/delete/<?= $b['id_bloc'] ?>" title="Supprimer <?= $b['name'] ?>" onclick="return confirm('Etes vous sur de vouloir supprimer <?= $b['name'] ?> ?')">
                                 <img src="<?= $this->surl ?>/images/admin/delete.png" alt="Supprimer <?= $b['name'] ?>"/>
                             </a>
                         </td>

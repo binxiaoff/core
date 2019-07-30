@@ -1,5 +1,6 @@
 <?php
 
+use Doctrine\ORM\EntityManagerInterface;
 use Unilend\Entity\Zones;
 
 class treeController extends bootstrap
@@ -15,28 +16,28 @@ class treeController extends bootstrap
 
     public function _default()
     {
-        if (isset($this->params[0]) && $this->params[0] == 'up') {
+        if (isset($this->params[0]) && 'up' == $this->params[0]) {
             $this->tree->moveUp($this->params[1]);
 
-            header('Location: ' . $this->lurl . '/tree');
+            header('Location: ' . $this->url . '/tree');
             die;
         }
 
-        if (isset($this->params[0]) && $this->params[0] == 'down') {
+        if (isset($this->params[0]) && 'down' == $this->params[0]) {
             $this->tree->moveDown($this->params[1]);
 
-            header('Location: ' . $this->lurl . '/tree');
+            header('Location: ' . $this->url . '/tree');
             die;
         }
 
-        if (isset($this->params[0]) && $this->params[0] == 'delete') {
-            $this->tree->get(['id_tree' => $this->params[1], 'id_langue' => $this->language]);
+        if (isset($this->params[0]) && 'delete' == $this->params[0]) {
+            $this->tree->get($this->params[1]);
             $this->tree->deleteCascade($this->params[1]);
 
             $_SESSION['freeow']['title']   = 'Suppression d\'une page';
             $_SESSION['freeow']['message'] = 'La page et ses enfants ont bien été supprimés';
 
-            header('Location: ' . $this->lurl . '/tree');
+            header('Location: ' . $this->url . '/tree');
             die;
         }
     }
@@ -55,15 +56,15 @@ class treeController extends bootstrap
                 $this->tree->slug        = '';
                 $this->tree->img_menu    = '';
 
-                if ($_POST['id_parent_' . $key] != 0) {
-                    if (trim($_POST['slug_' . $key]) != '') {
+                if (0 != $_POST['id_parent_' . $key]) {
+                    if ('' != trim($_POST['slug_' . $key])) {
                         $this->tree->slug = $this->bdd->generateSlug(trim($_POST['slug_' . $key]));
                     } else {
                         $this->tree->slug = $this->bdd->generateSlug(trim($_POST['title_' . $key]));
                     }
                 }
 
-                if (isset($_FILES['img_menu_' . $key]) && $_FILES['img_menu_' . $key]['name'] != '') {
+                if (isset($_FILES['img_menu_' . $key]) && '' != $_FILES['img_menu_' . $key]['name']) {
                     $this->upload->setUploadDir($this->spath, 'images/');
 
                     if ($this->upload->doUpload('img_menu_' . $key)) {
@@ -71,9 +72,9 @@ class treeController extends bootstrap
                     }
                 }
 
-                $this->tree->menu_title       = trim($_POST['menu_title_' . $key]) != '' ? trim($_POST['menu_title_' . $key]) : $_POST['title_' . $key];
-                $this->tree->meta_title       = trim($_POST['meta_title_' . $key]) != '' ? trim($_POST['meta_title_' . $key]) : $_POST['title_' . $key];
-                $this->tree->meta_description = $_POST['meta_description_' . $key] != '' ? $_POST['meta_description_' . $key] : $_POST['title_' . $key];
+                $this->tree->menu_title       = '' != trim($_POST['menu_title_' . $key]) ? trim($_POST['menu_title_' . $key]) : $_POST['title_' . $key];
+                $this->tree->meta_title       = '' != trim($_POST['meta_title_' . $key]) ? trim($_POST['meta_title_' . $key]) : $_POST['title_' . $key];
+                $this->tree->meta_description = '' != $_POST['meta_description_' . $key] ? $_POST['meta_description_' . $key] : $_POST['title_' . $key];
                 $this->tree->meta_keywords    = $_POST['meta_keywords_' . $key];
 
                 if ($key == $this->dLanguage) {
@@ -97,7 +98,7 @@ class treeController extends bootstrap
             $_SESSION['freeow']['title']   = 'Ajout d\'une page';
             $_SESSION['freeow']['message'] = 'La page a bien été enregistrée';
 
-            header('Location: ' . $this->lurl . '/tree/edit/' . $this->tree->id_tree);
+            header('Location: ' . $this->url . '/tree/edit/' . $this->tree->id_tree);
             die;
         }
 
@@ -107,31 +108,34 @@ class treeController extends bootstrap
 
     public function _edit()
     {
+        /** @var EntityManagerInterface $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+
         $this->templates    = $this->loadData('templates');
         $this->elements     = $this->loadData('elements');
         $this->redirections = $this->loadData('redirections');
-        $this->controlTree  = $this->loadData('tree');
+        $treeRepository     = $entityManager->getRepository(\Unilend\Entity\Tree::class);
 
-        if (isset($this->params[0]) && $this->params[0] != '') {
+        if (isset($this->params[0]) && '' != $this->params[0]) {
             if (isset($_POST['form_edit_tree'])) {
                 foreach ($this->lLangues as $key => $lng) {
-                    if ($this->tree->get(['id_tree' => $this->params[0], 'id_langue' => $key])) {
+                    if ($this->tree->get($this->params[0])) {
                         $create = false;
                     } else {
                         $create = true;
                     }
 
-                    if ($_POST['id_parent_' . $key] == 0) {
+                    if (0 == $_POST['id_parent_' . $key]) {
                         $this->tree->slug = '';
                     } else {
                         if (trim($_POST['slug_' . $key]) != $this->tree->slug) {
-                            if (trim($_POST['slug_' . $key]) != '') {
+                            if ('' != trim($_POST['slug_' . $key])) {
                                 $slug_temp = $this->bdd->generateSlug(trim($_POST['slug_' . $key]));
                             } else {
                                 $slug_temp = $this->bdd->generateSlug(trim($_POST['title_' . $key]));
                             }
 
-                            if ($this->controlTree->get(['slug' => $slug_temp, 'id_langue' => $key])) {
+                            if ($treeRepository->findOneBy(['slug' => $slug_temp])) {
                                 $slug_temp = $slug_temp . '-' . $key . '-' . $this->params[0];
                             }
 
@@ -165,7 +169,7 @@ class treeController extends bootstrap
                     $this->tree->id_user     = $_SESSION['user']['id_user'];
                     $this->tree->title       = trim($_POST['title_' . $key]);
 
-                    if (isset($_FILES['img_menu_' . $key]) && $_FILES['img_menu_' . $key]['name'] != '') {
+                    if (isset($_FILES['img_menu_' . $key]) && '' != $_FILES['img_menu_' . $key]['name']) {
                         $this->upload->setUploadDir($this->spath, 'images/');
 
                         if ($this->upload->doUpload('img_menu_' . $key)) {
@@ -177,9 +181,9 @@ class treeController extends bootstrap
                         $this->tree->img_menu = $_POST['img_menu_' . $key . '-old'];
                     }
 
-                    $this->tree->menu_title       = (trim($_POST['menu_title_' . $key]) != '' ? trim($_POST['menu_title_' . $key]) : $_POST['title_' . $key]);
-                    $this->tree->meta_title       = (trim($_POST['meta_title_' . $key]) != '' ? trim($_POST['meta_title_' . $key]) : $_POST['title_' . $key]);
-                    $this->tree->meta_description = ($_POST['meta_description_' . $key] != '' ? $_POST['meta_description_' . $key] : $_POST['title_' . $key]);
+                    $this->tree->menu_title       = ('' != trim($_POST['menu_title_' . $key]) ? trim($_POST['menu_title_' . $key]) : $_POST['title_' . $key]);
+                    $this->tree->meta_title       = ('' != trim($_POST['meta_title_' . $key]) ? trim($_POST['meta_title_' . $key]) : $_POST['title_' . $key]);
+                    $this->tree->meta_description = ('' != $_POST['meta_description_' . $key] ? $_POST['meta_description_' . $key] : $_POST['title_' . $key]);
                     $this->tree->meta_keywords    = $_POST['meta_keywords_' . $key];
                     $this->tree->status           = $_POST['status_' . $key];
                     $this->tree->status_menu      = $_POST['status_menu_' . $key];
@@ -189,14 +193,14 @@ class treeController extends bootstrap
                     if ($create) {
                         $this->tree->create(['id_tree' => $this->params[0], 'id_langue' => $this->tree->id_langue]);
                     } else {
-                        $this->tree->update(['id_tree' => $this->params[0], 'id_langue' => $this->tree->id_langue]);
+                        $this->tree->update();
                     }
 
-                    if ($_POST['status_' . $key] == 0) {
+                    if (0 == $_POST['status_' . $key]) {
                         $this->tree->statusCascade($this->params[0], $key);
                     }
 
-                    $this->tree->get(['id_tree' => $this->params[0], 'id_langue' => $key]);
+                    $this->tree->get($this->params[0]);
 
                     $this->tree_elements->delete($this->tree->id_tree, 'id_langue = "' . $key . '" AND id_tree');
 
@@ -210,19 +214,19 @@ class treeController extends bootstrap
                 $_SESSION['freeow']['title']   = 'Modification d\'une page';
                 $_SESSION['freeow']['message'] = 'La page a bien été modifiée';
 
-                header('Location: ' . $this->lurl . '/tree');
+                header('Location: ' . $this->url . '/tree');
                 die;
             }
 
             $this->lTree     = $this->tree->listChilds(0, [], $this->dLanguage);
             $this->lTemplate = $this->templates->select('', 'name ASC');
 
-            $this->tree->get(['id_tree' => $this->params[0], 'id_langue' => $this->dLanguage]);
+            $this->tree->get($this->params[0]);
         } else {
             $_SESSION['freeow']['title']   = 'Modification d\'une page';
             $_SESSION['freeow']['message'] = 'Aucune page &agrave; modifier';
 
-            header('Location: ' . $this->lurl . '/tree');
+            header('Location: ' . $this->url . '/tree');
             die;
         }
     }

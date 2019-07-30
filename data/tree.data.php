@@ -19,12 +19,28 @@ class tree extends tree_crud
         parent::__construct($bdd, $params);
     }
 
-    public function create($list_field_value = array())
+    function get($id, $field = 'id_tree')
     {
-        parent::create($list_field_value);
+        return parent::get($id, $field);
     }
 
-    public function select($where = '', $order = '', $start = '', $nb = '')
+    function update($cs = '')
+    {
+        parent::update($cs);
+    }
+
+    function delete($id, $field = 'id_tree')
+    {
+        parent::delete($id, $field);
+    }
+
+    function create($cs = '')
+    {
+        $id = parent::create($cs);
+        return $id;
+    }
+
+    function select($where = '', $order = '', $start = '', $nb = '')
     {
         if ($where != '') {
             $where = ' WHERE ' . $where;
@@ -32,34 +48,32 @@ class tree extends tree_crud
         if ($order != '') {
             $order = ' ORDER BY ' . $order;
         }
-        $sql = 'SELECT * FROM tree' . $where . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
+        $sql = 'SELECT * FROM `tree`' . $where . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
 
-        $result   = array();
         $resultat = $this->bdd->query($sql);
+        $result   = array();
         while ($record = $this->bdd->fetch_array($resultat)) {
             $result[] = $record;
         }
         return $result;
     }
 
-    public function counter($where = '')
+    function counter($where = '')
     {
         if ($where != '') {
             $where = ' WHERE ' . $where;
         }
 
-        $result = $this->bdd->query('SELECT COUNT(*) FROM tree ' . $where);
-        return (int) $this->bdd->result($result, 0, 0);
+        $sql = 'SELECT count(*) FROM `tree` ' . $where;
+
+        $result = $this->bdd->query($sql);
+        return (int) ($this->bdd->result($result, 0, 0));
     }
 
-    public function exist($list_field_value)
+    function exist($id, $field = 'id_tree')
     {
-        $list = '';
-        foreach ($list_field_value as $champ => $valeur) {
-            $list .= ' AND ' . $champ . ' = "' . $valeur . '" ';
-        }
-
-        $result = $this->bdd->query('SELECT * FROM tree WHERE 1 = 1 ' . $list);
+        $sql    = 'SELECT * FROM `tree` WHERE ' . $field . '="' . $id . '"';
+        $result = $this->bdd->query($sql);
         return ($this->bdd->fetch_array($result) > 0);
     }
 

@@ -1,6 +1,6 @@
 <div id="popup" style="background-color:#FFF;">
     <a onclick="parent.$.fn.colorbox.close();" title="Fermer" class="closeBtn"><img src="<?= $this->surl ?>/images/admin/delete.png" alt="Fermer"/></a>
-    <form method="post" name="add_traduction" id="add_traduction" enctype="multipart/form-data" action="<?= $this->lurl ?>/traductions" target="_parent">
+    <form method="post" name="add_traduction" id="add_traduction" enctype="multipart/form-data" action="<?= $this->url ?>/traductions" target="_parent">
         <h1>Ajouter une traduction</h1>
         <fieldset>
             <table class="formColor">

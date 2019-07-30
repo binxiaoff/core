@@ -27,7 +27,7 @@
         <input type="hidden" name="lng_encours" id="lng_encours" value="<?= $this->dLanguage ?>" />
         <input type="hidden" name="id_parent" id="id_parent" value="<?= $this->tree->id_parent ?>" />
         <?php foreach ($this->lLangues as $key => $lng) :
-            $this->tree->get(array('id_tree' => $this->params[0], 'id_langue' => $key));
+            $this->tree->get($this->params[0]);
 
             // Recuperation de l'id du template s'il est passé en param
             if (isset($this->params[2]) && $this->params[2] != '') {
@@ -57,7 +57,7 @@
                             <tr>
                                 <th><label for="id_template_<?= $key ?>">Template :</label></th>
                                 <td>
-                                    <select name="id_template_<?= $key ?>" id="id_template_<?= $key ?>" onchange="if(confirm('Voulez-vous vraiment changer ce template ?\nLe contenu existant de cette page sera d\351finitivement \351ffac\351.')){ window.location.href = '<?= $this->lurl ?>/tree/edit/<?=$this->tree->id_tree?>/<?= $key ?>/' + this.value; } else { this.value = '<?= $this->tree->id_template ?>'; }" class="select">
+                                    <select name="id_template_<?= $key ?>" id="id_template_<?= $key ?>" onchange="if(confirm('Voulez-vous vraiment changer ce template ?\nLe contenu existant de cette page sera d\351finitivement \351ffac\351.')){ window.location.href = '<?= $this->url ?>/tree/edit/<?=$this->tree->id_tree?>/<?= $key ?>/' + this.value; } else { this.value = '<?= $this->tree->id_template ?>'; }" class="select">
                                         <option value="0">Choisir un template</option>
                                         <?php foreach($this->lTemplate as $template) : ?>
                                             <option value="<?= $template['id_template'] ?>"<?= ($this->tree->id_template == $template['id_template'] ? ' selected="selected"' : '') ?>><?= $template['name'] ?></option>

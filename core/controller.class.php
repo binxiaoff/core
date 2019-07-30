@@ -1,7 +1,8 @@
 <?php
 
-use Symfony\Component\DependencyInjection\ContainerAwareInterface;
-use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\DependencyInjection\{ContainerAwareInterface, ContainerInterface};
+use Symfony\Component\HttpFoundation\Request;
+use Unilend\Doctrine\DBAL\Connection;
 
 abstract class Controller implements ContainerAwareInterface
 {
@@ -19,27 +20,25 @@ abstract class Controller implements ContainerAwareInterface
     public $autoFireView = true;
     /** @var bool */
     public $autoFireFooter = true;
-    /** @var \Unilend\Doctrine\DBAL\Connection */
+    /** @var Connection */
     public $bdd;
     /** @var string */
     public $view;
+    /** @var string */
+    public $current_template = '';
+    /** @var Request */
+    public $request;
+    /** @var ContainerInterface */
+    protected $container;
     /** @var array */
     private $included_css = [];
     /** @var array */
     private $included_js = [];
-    /** @var ContainerInterface */
-    protected $container;
-    /** @var string */
-    public $current_template = '';
-    /** @var \Symfony\Component\HttpFoundation\Request */
-    public $request;
-    /** @var Twig_Environment */
-    private $twigEnvironment;
 
     /**
-     * @param Command $command
-     * @param string  $app
-     * @param \Symfony\Component\HttpFoundation\Request|null  $request
+     * @param Command      $command
+     * @param string       $app
+     * @param Request|null $request
      */
     final public function __construct(Command &$command, $app, $request = null)
     {
@@ -49,27 +48,6 @@ abstract class Controller implements ContainerAwareInterface
         $this->Command = $command;
         $this->App     = $app;
         $this->request = $request;
-    }
-
-    protected function initialize()
-    {
-        $this->bdd = $this->get('database_connection');
-
-        $this->language           = $this->Command->Language;
-        $this->current_controller = $this->Command->getControllerName();
-        $this->current_function   = $this->Command->getfunction();
-
-        $this->path       = $this->get('kernel')->getRootDir() . '/../';
-        $this->spath      = $this->get('kernel')->getRootDir() . '/../public/default/var/';
-        $this->staticPath = $this->get('kernel')->getRootDir() . '/../public/default/';
-        $this->logPath    = $this->get('kernel')->getLogDir();
-
-        //$this->surl = $this->get('assets.packages')->getUrl('');
-        $this->surl = $this->getParameter('router.request_context.scheme') . '://' . getenv('HOST_DEFAULT_URL');
-        $this->url  = $this->getParameter('router.request_context.scheme') . '://' . getenv('HOST_' . strtoupper($this->App) . '_URL');
-        $this->aurl = $this->getParameter('router.request_context.scheme') . '://' . getenv('HOST_ADMIN_URL');
-        $this->furl = $this->getParameter('router.request_context.scheme') . '://' . getenv('HOST_DEFAULT_URL');
-        $this->lurl = $this->url;
     }
 
     /**
@@ -86,7 +64,6 @@ abstract class Controller implements ContainerAwareInterface
 
     public function _default()
     {
-
     }
 
     public function _error($msg = '')
@@ -111,22 +88,20 @@ abstract class Controller implements ContainerAwareInterface
 
         call_user_func([$this, '_' . $this->Command->getFunction()]);
 
-        if (null === $this->twigEnvironment) {
-            if (empty($this->view)) {
-                $this->setView($this->Command->getFunction());
-            }
-            if ($this->autoFireHead) {
-                $this->fireHead();
-            }
-            if ($this->autoFireHeader) {
-                $this->fireHeader();
-            }
-            if ($this->autoFireView) {
-                $this->fireView();
-            }
-            if ($this->autoFireFooter) {
-                $this->fireFooter();
-            }
+        if (empty($this->view)) {
+            $this->setView($this->Command->getFunction());
+        }
+        if ($this->autoFireHead) {
+            $this->fireHead();
+        }
+        if ($this->autoFireHeader) {
+            $this->fireHeader();
+        }
+        if ($this->autoFireView) {
+            $this->fireView();
+        }
+        if ($this->autoFireFooter) {
+            $this->fireFooter();
         }
     }
 
@@ -141,14 +116,14 @@ abstract class Controller implements ContainerAwareInterface
 
     public function fireView($view = '')
     {
-        if (empty($view) && ! empty($this->view)) {
+        if (empty($view) && !empty($this->view)) {
             $view = $this->view;
         }
 
-        if ($view != '') {
-            if (! file_exists($this->path . 'apps/' . $this->App . '/views/' . $this->Command->getControllerName() . '/' . $view . '.php')) {
+        if ('' != $view) {
+            if (!file_exists($this->path . 'apps/' . $this->App . '/views/' . $this->Command->getControllerName() . '/' . $view . '.php')) {
                 call_user_func([
-                    $this, '_error'
+                    $this, '_error',
                 ], 'view not found : views/' . $this->Command->getControllerName() . '/' . $view . '.php');
             } else {
                 include $this->path . 'apps/' . $this->App . '/views/' . $this->Command->getControllerName() . '/' . $view . '.php';
@@ -177,102 +152,6 @@ abstract class Controller implements ContainerAwareInterface
     public function setView($view)
     {
         $this->view = $view;
-    }
-
-    /**
-     * @param string $template
-     * @param array  $context
-     * @param bool   $return
-     *
-     * @return string
-     */
-    public function render($template = null, array $context = [], $return = false)
-    {
-        $this->initializeTwig();
-
-        if (null === $template) {
-            $template = $this->Command->getControllerName() . '/' . $this->Command->getFunction() . '.html.twig';
-        }
-
-        try {
-            $this->twigEnvironment->loadTemplate($template);
-        } catch (\Twig_Error $exception) {
-            $template = 'error.html.twig';
-            $context['errorMessage'] = $exception->getMessage();
-        }
-
-        $context['app'] += [
-            'environment' => $this->getParameter('kernel.environment'),
-            'adminUrl'    => $this->getParameter('router.request_context.scheme') . '://' . getenv('HOST_ADMIN_URL'),
-            'frontUrl'    => $this->getParameter('router.request_context.scheme') . '://' . getenv('HOST_DEFAULT_URL'),
-            //'staticUrl'   => $this->get('assets.packages')->getUrl(''),
-            'staticUrl'   => $this->getParameter('router.request_context.scheme') . '://' . getenv('HOST_DEFAULT_URL'),
-            'parameters'  => $this->Command->getParameters()
-        ];
-
-        $content = $this->twigEnvironment->render($template, $context);
-
-        if ($return) {
-            return $content;
-        }
-
-        echo $content;
-        exit;
-    }
-
-    /**
-     * @internal
-     */
-    private function initializeTwig()
-    {
-        $kernel                = $this->get('kernel');
-        $loader                = new Twig_Loader_Filesystem($kernel->getRootDir() . '/../apps/' . $this->App . '/views');
-        $this->twigEnvironment = new Twig_Environment($loader, [
-            'autoescape' => false,
-            'cache'      => $kernel->getCacheDir() . '/twig',
-            'debug'      => 'prod' !== $this->get('kernel')->getEnvironment()
-        ]);
-        $this->twigEnvironment->addExtension(new Twig_Extension_Debug());
-        $this->twigEnvironment->addExtension(new Twig_Extensions_Extension_Intl());
-        $this->twigEnvironment->addExtension(new Symfony\Bridge\Twig\Extension\TranslationExtension($this->get('translator')));
-        $this->twigEnvironment->addFilter(new Twig_SimpleFilter('addslashes', 'addslashes'));
-
-    }
-
-    protected function loadData($object, $params = [])
-    {
-        return $this->get('unilend.service.entity_manager')->getRepository($object, $params);
-    }
-
-    /**
-     * @deprecated Each lib will be declared as a service.
-     *
-     * @param string $library
-     * @param array  $params
-     * @param bool   $instanciate
-     *
-     * @return bool|object
-     */
-    protected function loadLib($library, $params = [], $instanciate = true)
-    {
-        return \Unilend\core\Loader::loadLib($library, $params, $instanciate);
-    }
-
-    protected function get($service)
-    {
-        return $this->container->get($service);
-    }
-
-    /**
-     * Gets a container configuration parameter by its name.
-     *
-     * @param string $name The parameter name
-     *
-     * @return mixed
-     */
-    protected function getParameter($name)
-    {
-        return $this->container->getParameter($name);
     }
 
     /**
@@ -311,6 +190,77 @@ abstract class Controller implements ContainerAwareInterface
         }
     }
 
+    /**
+     * Since it can be replaced by Twig filter once the template is migrated to Twig, I create it as a temporary solution to replace the dates::formatDate.
+     *
+     * @param string $date
+     * @param string $format
+     *
+     * @return string
+     */
+    public function formatDate(?string $date, $format = 'd/m/Y'): string
+    {
+        if (empty($date)) {
+            return '';
+        }
+
+        $formattedDate = date($format, strtotime($date));
+
+        return $formattedDate ? $formattedDate : '';
+    }
+
+    protected function initialize()
+    {
+        $this->bdd = $this->get('database_connection');
+
+        $this->language           = $this->Command->Language;
+        $this->current_controller = $this->Command->getControllerName();
+        $this->current_function   = $this->Command->getfunction();
+
+        $this->path  = $this->get('kernel')->getProjectDir() . DIRECTORY_SEPARATOR;
+        $this->spath = $this->path . 'public/default/var/';
+
+        $this->url  = $this->getParameter('router.request_context.scheme') . '://' . getenv('HOST_ADMIN_URL');
+        $this->furl = $this->getParameter('router.request_context.scheme') . '://' . getenv('HOST_DEFAULT_URL');
+        $this->surl = $this->furl;
+    }
+
+    protected function loadData($object, $params = [])
+    {
+        return $this->get('unilend.service.entity_manager')->getRepository($object, $params);
+    }
+
+    /**
+     * @deprecated each lib will be declared as a service
+     *
+     * @param string $library
+     * @param array  $params
+     * @param bool   $instanciate
+     *
+     * @return bool|object
+     */
+    protected function loadLib($library, $params = [], $instanciate = true)
+    {
+        return \Unilend\core\Loader::loadLib($library, $params, $instanciate);
+    }
+
+    protected function get($service)
+    {
+        return $this->container->get($service);
+    }
+
+    /**
+     * Gets a container configuration parameter by its name.
+     *
+     * @param string $name The parameter name
+     *
+     * @return mixed
+     */
+    protected function getParameter($name)
+    {
+        return $this->container->getParameter($name);
+    }
+
     protected function hideDecoration()
     {
         $this->autoFireHeader = false;
@@ -332,28 +282,9 @@ abstract class Controller implements ContainerAwareInterface
             'success' => $success,
             'error'   => $errors,
             'id'      => $id,
-            'data'    => $data
+            'data'    => $data,
         ]);
 
         exit;
-    }
-
-    /**
-     * Since it can be replaced by Twig filter once the template is migrated to Twig, I create it as a temporary solution to replace the dates::formatDate
-     *
-     * @param string $date
-     * @param string $format
-     *
-     * @return string
-     */
-    public function formatDate(?string $date, $format = 'd/m/Y'): string
-    {
-        if (empty($date)) {
-            return '';
-        }
-
-        $formattedDate = date($format, strtotime($date));
-
-        return $formattedDate ? $formattedDate : '';
     }
 }

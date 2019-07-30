@@ -1,6 +1,6 @@
 <div id="popup">
     <a onclick="parent.$.fn.colorbox.close();" title="Fermer" class="closeBtn"><img src="<?= $this->surl ?>/images/admin/delete.png" alt="Fermer"></a>
-    <form method="post" name="mod_users" id="mod_users" enctype="multipart/form-data" action="<?= $this->lurl ?>/users/<?= $this->users->id_user ?>" target="_parent" onsubmit="return checkFormModifUser();">
+    <form method="post" name="mod_users" id="mod_users" enctype="multipart/form-data" action="<?= $this->url ?>/users/<?= $this->users->id_user ?>" target="_parent" onsubmit="return checkFormModifUser();">
         <h1>Modifier <?= $this->users->firstname ?> <?= $this->users->name ?></h1>
         <fieldset>
             <table class="formColor">
@@ -54,7 +54,7 @@
                 </tr>
                 <tr>
                     <td colspan="2">
-                        <a href="<?= $this->lurl ?>/users/generate_new_password/<?= $this->users->id_user ?>" class="btn-default">Générer un nouveau mot de passe</a>
+                        <a href="<?= $this->url ?>/users/generate_new_password/<?= $this->users->id_user ?>" class="btn-default">Générer un nouveau mot de passe</a>
                         <button type="submit" class="btn-primary pull-right">Valider</button>
                         <input type="hidden" name="form_mod_users">
                     </td>

@@ -1,6 +1,6 @@
 <div id="contenu">
     <h1>Modifier <?= $this->mailTemplate->getType() ?></h1>
-    <form method="post" action="<?= $this->lurl ?>/mails/edit/<?= $this->mailTemplate->getType() ?><?= isset($this->params[1]) ? '/' . $this->params[1] : '' ?>">
+    <form method="post" action="<?= $this->url ?>/mails/edit/<?= $this->mailTemplate->getType() ?><?= isset($this->params[1]) ? '/' . $this->params[1] : '' ?>">
         <?php if (\Unilend\Entity\MailTemplates::PART_TYPE_CONTENT === $this->mailTemplate->getPart()) : ?>
             <div class="row">
                 <div class="form-group col-md-6">

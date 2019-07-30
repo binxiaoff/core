@@ -44,7 +44,7 @@ class mailsController extends bootstrap
             $_SESSION['freeow']['title']   = 'Archivage d\'un mail';
             $_SESSION['freeow']['message'] = 'Le mail a bien été archivé';
 
-            header('Location: ' . $this->lurl . '/mails');
+            header('Location: ' . $this->url . '/mails');
             die;
         }
 
@@ -121,7 +121,7 @@ class mailsController extends bootstrap
                 $_SESSION['freeow']['message'] = 'Le mail a bien été ajouté';
             }
 
-            header('Location: ' . $this->lurl . '/mails');
+            header('Location: ' . $this->url . '/mails');
             die;
         }
 
@@ -259,7 +259,7 @@ class mailsController extends bootstrap
         $this->menu_admin = 'configuration';
 
         $this->hideDecoration();
-        $_SESSION['request_url'] = $this->lurl;
+        $_SESSION['request_url'] = $this->url;
     }
 
     public function _email_history_preview()

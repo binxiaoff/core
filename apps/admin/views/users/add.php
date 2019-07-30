@@ -1,6 +1,6 @@
 <div id="popup">
     <a onclick="parent.$.fn.colorbox.close();" title="Fermer" class="closeBtn"><img src="<?= $this->surl ?>/images/admin/delete.png" alt="Fermer"></a>
-    <form method="post" name="add_users" id="add_users" enctype="multipart/form-data" action="<?= $this->lurl ?>/users" target="_parent" onsubmit="return checkFormAjoutUser();">
+    <form method="post" name="add_users" id="add_users" enctype="multipart/form-data" action="<?= $this->url ?>/users" target="_parent" onsubmit="return checkFormAjoutUser();">
         <h1>Ajouter un utilisateur</h1>
         <fieldset>
             <table class="formColor">

@@ -45,7 +45,7 @@ class blocsController extends bootstrap
             $_SESSION['freeow']['title']   = 'Modification d\'un bloc';
             $_SESSION['freeow']['message'] = 'Le bloc a bien &eacute;t&eacute; modifi&eacute; !';
 
-            header('Location: ' . $this->lurl . '/blocs');
+            header('Location: ' . $this->url . '/blocs');
             die;
         }
 
@@ -69,7 +69,7 @@ class blocsController extends bootstrap
             $_SESSION['freeow']['title']   = 'Ajout d\'un bloc';
             $_SESSION['freeow']['message'] = 'Le bloc a bien &eacute;t&eacute; ajout&eacute; !';
 
-            header('Location: ' . $this->lurl . '/blocs');
+            header('Location: ' . $this->url . '/blocs');
             die;
         }
 
@@ -83,7 +83,7 @@ class blocsController extends bootstrap
                     $_SESSION['freeow']['title']   = 'Statut d\'un bloc';
                     $_SESSION['freeow']['message'] = 'Le statut du bloc a bien &eacute;t&eacute; modifi&eacute; !';
 
-                    header('Location: ' . $this->lurl . '/blocs');
+                    header('Location: ' . $this->url . '/blocs');
                     die;
                 case 'delete':
                     $this->blocs->get($this->params[1],'id_bloc');
@@ -97,7 +97,7 @@ class blocsController extends bootstrap
                     $_SESSION['freeow']['title']   = 'Suppression d\'un bloc';
                     $_SESSION['freeow']['message'] = 'Le bloc a bien &eacute;t&eacute; supprim&eacute; !';
 
-                    header('Location: ' . $this->lurl . '/blocs');
+                    header('Location: ' . $this->url . '/blocs');
                     die;
             }
         }
@@ -149,7 +149,7 @@ class blocsController extends bootstrap
             $_SESSION['freeow']['title']   = 'Ajout d\'un &eacute;l&eacute;ment';
             $_SESSION['freeow']['message'] = 'L\'&eacute;l&eacute;ment a bien &eacute;t&eacute; ajout&eacute; !';
 
-            header('Location: ' . $this->lurl . '/blocs/elements/' . $_POST['id_bloc']);
+            header('Location: ' . $this->url . '/blocs/elements/' . $_POST['id_bloc']);
             die;
         }
 
@@ -163,7 +163,7 @@ class blocsController extends bootstrap
             $_SESSION['freeow']['title']   = 'Modification d\'un &eacute;l&eacute;ment';
             $_SESSION['freeow']['message'] = 'L\'&eacute;l&eacute;ment a bien &eacute;t&eacute; modifi&eacute; !';
 
-            header('Location: ' . $this->lurl . '/blocs/elements/' . $this->elements->id_bloc);
+            header('Location: ' . $this->url . '/blocs/elements/' . $this->elements->id_bloc);
             die;
         }
 
@@ -171,11 +171,11 @@ class blocsController extends bootstrap
             switch ($this->params[1]) {
                 case 'up':
                     $this->elements->moveUp($this->params[2], $this->params[0], 'id_bloc');
-                    header('Location: ' . $this->lurl . '/blocs/elements/' . $this->params[0]);
+                    header('Location: ' . $this->url . '/blocs/elements/' . $this->params[0]);
                     die;
                 case 'down':
                     $this->elements->moveDown($this->params[2], $this->params[0], 'id_bloc');
-                    header('Location: ' . $this->lurl . '/blocs/elements/' . $this->params[0]);
+                    header('Location: ' . $this->url . '/blocs/elements/' . $this->params[0]);
                     die;
                 case 'status':
                     $this->elements->get($this->params[2], 'id_element');
@@ -185,7 +185,7 @@ class blocsController extends bootstrap
                     $_SESSION['freeow']['title']   = 'Statut d\'un &eacute;l&eacute;ment';
                     $_SESSION['freeow']['message'] = 'Le statut de l\'&eacute;l&eacute;ment a bien &eacute;t&eacute; modifi&eacute; !';
 
-                    header('Location: ' . $this->lurl . '/blocs/elements/' . $this->params[0]);
+                    header('Location: ' . $this->url . '/blocs/elements/' . $this->params[0]);
                     die;
                 case 'delete':
                     $this->elements->delete($this->params[2], 'id_element');
@@ -196,7 +196,7 @@ class blocsController extends bootstrap
                     $_SESSION['freeow']['title']   = 'Suppression d\'un &eacute;l&eacute;ment';
                     $_SESSION['freeow']['message'] = 'L\'&eacute;l&eacute;ment a bien &eacute;t&eacute; supprim&eacute; !';
 
-                    header('Location: ' . $this->lurl . '/blocs/elements/' . $this->params[0]);
+                    header('Location: ' . $this->url . '/blocs/elements/' . $this->params[0]);
                     die;
             }
         }
@@ -225,7 +225,7 @@ class blocsController extends bootstrap
             $_SESSION['freeow']['title']   = 'Modification d\'un bloc';
             $_SESSION['freeow']['message'] = 'Le bloc a bien &eacute;t&eacute; modifi&eacute; !';
 
-            header('Location: ' . $this->lurl . '/blocs');
+            header('Location: ' . $this->url . '/blocs');
             die;
         }
     }

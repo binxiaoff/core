@@ -43,7 +43,7 @@
             <h1>Historique des emails</h1>
         </div>
         <div class="col-md-6">
-            <a href="<?= $this->lurl ?>/mails/recherche" class="btn-primary pull-right thickbox">Rechercher</a>
+            <a href="<?= $this->url ?>/mails/recherche" class="btn-primary pull-right thickbox">Rechercher</a>
         </div>
     </div>
     <?php if (isset($this->emails) && count($this->emails) > 0) : ?>

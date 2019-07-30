@@ -29,7 +29,7 @@ class traductionsController extends bootstrap
             $_SESSION['freeow']['title']   = 'Ajout d\'une traduction';
             $_SESSION['freeow']['message'] = 'La traduction a bien &eacute;t&eacute; ajout&eacute;e !';
 
-            header('Location:' . $this->lurl . '/traductions/' . $sSection);
+            header('Location:' . $this->url . '/traductions/' . $sSection);
             die;
         }
 
@@ -38,7 +38,7 @@ class traductionsController extends bootstrap
 
             $_SESSION['freeow']['title']   = 'Suppression d\'une traduction';
             $_SESSION['freeow']['message'] = 'La traduction a bien &eacute;t&eacute; supprim&eacute;e !';
-            header('Location:' . $this->lurl . '/traductions/' . $_POST['section']);
+            header('Location:' . $this->url . '/traductions/' . $_POST['section']);
             die;
         }
 
@@ -48,7 +48,7 @@ class traductionsController extends bootstrap
 
             $_SESSION['freeow']['title']   = 'Modification d\'une traduction';
             $_SESSION['freeow']['message'] = 'La traduction a bien &eacute;t&eacute; modifi&eacute;e !';
-            header('Location:' . $this->lurl . '/traductions/' . $_POST['section'] . '/' . $_POST['nom']);
+            header('Location:' . $this->url . '/traductions/' . $_POST['section'] . '/' . $_POST['nom']);
             die;
         }
 
@@ -120,7 +120,7 @@ class traductionsController extends bootstrap
         $translationManager = $this->get('unilend.service.translation_manager');
         $translationManager->flush();
 
-        header('Location: ' . $this->lurl . '/traductions');
+        header('Location: ' . $this->url . '/traductions');
         die;
     }
 }
