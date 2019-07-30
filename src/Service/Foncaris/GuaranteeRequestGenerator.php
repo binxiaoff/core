@@ -6,16 +6,21 @@ namespace Unilend\Service\Foncaris;
 
 use Doctrine\Common\Persistence\ManagerRegistry;
 use NumberFormatter;
-use PhpOffice\PhpSpreadsheet\{Exception as PhpSpreadsheetException, Spreadsheet, Writer\Exception as PhpSpreadsheetWriterException, Writer\Xlsx};
+use PhpOffice\PhpSpreadsheet\{Exception as PhpSpreadsheetException, Spreadsheet, Style\Alignment, Style\Border, Style\Fill, Worksheet\Worksheet,
+    Writer\Exception as PhpSpreadsheetWriterException, Writer\Xlsx};
 use Symfony\Contracts\Translation\TranslatorInterface;
-use Unilend\Entity\{FoncarisRequest, Interfaces\FileStorageInterface, Project, Tranche, TrancheAttribute};
+use Unilend\Entity\{Embeddable\LendingRate, FoncarisRequest, Interfaces\FileStorageInterface, Tranche, TrancheAttribute};
 use Unilend\Repository\ConstantList\{FoncarisFundingTypeRepository, FoncarisSecurityRepository};
 use Unilend\Service\Document\AbstractDocumentGenerator;
+use URLify;
 
 class GuaranteeRequestGenerator extends AbstractDocumentGenerator
 {
-    private const FILE_PREFIX = 'demande-garantie';
+    private const FILE_PREFIX = 'demande garantie CALS - ';
     private const PATH        = 'foncaris';
+
+    private const START_COLUMN = 'A';
+    private const START_ROW    = 1;
 
     /** @var FoncarisFundingTypeRepository */
     private $foncarisFundingTypeRepository;
@@ -25,12 +30,15 @@ class GuaranteeRequestGenerator extends AbstractDocumentGenerator
     private $currencyFormatterNoDecimal;
     /** @var TranslatorInterface */
     private $translator;
+    /** @var NumberFormatter */
+    private $numberFormatter;
 
     /**
      * @param string                        $documentRootDirectory
      * @param FoncarisFundingTypeRepository $foncarisFundingTypeRepository
      * @param FoncarisSecurityRepository    $foncarisSecurityRepository
      * @param NumberFormatter               $currencyFormatterNoDecimal
+     * @param NumberFormatter               $numberFormatter
      * @param TranslatorInterface           $translator
      * @param ManagerRegistry               $managerRegistry
      */
@@ -39,6 +47,7 @@ class GuaranteeRequestGenerator extends AbstractDocumentGenerator
         FoncarisFundingTypeRepository $foncarisFundingTypeRepository,
         FoncarisSecurityRepository $foncarisSecurityRepository,
         NumberFormatter $currencyFormatterNoDecimal,
+        NumberFormatter $numberFormatter,
         TranslatorInterface $translator,
         ManagerRegistry $managerRegistry
     ) {
@@ -48,6 +57,7 @@ class GuaranteeRequestGenerator extends AbstractDocumentGenerator
         $this->foncarisSecurityRepository    = $foncarisSecurityRepository;
         $this->currencyFormatterNoDecimal    = $currencyFormatterNoDecimal;
         $this->translator                    = $translator;
+        $this->numberFormatter               = $numberFormatter;
     }
 
     /**
@@ -67,112 +77,112 @@ class GuaranteeRequestGenerator extends AbstractDocumentGenerator
         $spreadsheet = new Spreadsheet();
         $sheet       = $spreadsheet->getActiveSheet();
 
-        $sheet->setCellValue('A1', 'Demande de Garantie');
+        $currentRow     = self::START_ROW;
+        $sheetWidth     = count($project->getTranches()) + 2;
+        $sheetEndColumn = $this->getColumnByOffset(self::START_COLUMN, --$sheetWidth);
 
-        $sheet->setCellValue('A3', 'Nom Emprunteur');
-        $sheet->setCellValue('B3', $project->getBorrowerCompany()->getName());
+        //Title
+        $sheet->mergeCells(self::START_COLUMN . $currentRow . ':' . $sheetEndColumn . $currentRow);
+        $sheet->setCellValue(self::START_COLUMN . $currentRow, 'Demande de garantie FONCARIS  par un acheteur');
+        $sheet->getStyle(self::START_COLUMN . $currentRow)->applyFromArray($this->getTitleStyle());
 
-        $sheet->setCellValue('C3', 'SIREN');
-        $sheet->setCellValue('D3', $project->getBorrowerCompany()->getSiren());
+        //Group
+        ++$currentRow;
+        $sectionData = [
+            ['Nom du Groupe de Risque', ''],
+            ['ID AGORA du groupe ( = RICOS = TIGRE = TCA)', ''],
+        ];
+        $this->fillSection($sheet, 'Groupe', $sectionData, $sheetEndColumn, $currentRow, $this->getGroupSectionStyle());
 
-        $sheet->setCellValue('A4', 'La CR demandeuse');
-        $sheet->setCellValue('B4', $project->getArranger()->getCompany()->getName());
+        //Borrower
+        $currentRow = $sheet->getHighestDataRow();
+        ++$currentRow;
+        $sectionData = [
+            ['Nom Emprunteur', $project->getBorrowerCompany()->getName()],
+            ['SIREN', $project->getBorrowerCompany()->getSiren()],
+            ['ID AGORA de l\'emprunteur ( = RICOS = TIGRE = TCA)', ''],
+        ];
+        $this->fillSection($sheet, 'Emprunteur', $sectionData, $sheetEndColumn, $currentRow, $this->getBorrowerSectionStyle());
+        $currentRow = $sheet->getHighestDataRow();
 
-        $sheet->setCellValue('A5', 'Contact dans la CR demandeuse');
-        $sheet->setCellValue('B5', sprintf(
-            '%s %s (%s)',
-            $project->getSubmitterClient()->getFirstName(),
-            $project->getSubmitterClient()->getLastName(),
-            $project->getSubmitterClient()->getEmail()
-        ));
+        //Regional bank
+        ++$currentRow;
+        $sectionData = [
+            ['Nom de la CR demandeuse', $project->getSubmitterCompany()->getName()],
+            ['Nom du contact dans la CR demandeuse', $project->getSubmitterClient()->getFirstName() . ' ' . $project->getSubmitterClient()->getLastName()],
+            ['Email du contact dans la CR demandeuse', $project->getSubmitterClient()->getEmail()],
+        ];
+        $this->fillSection($sheet, 'CR', $sectionData, $sheetEndColumn, $currentRow, $this->getRegionalBankSectionStyle());
 
-        $trancheNb = count($project->getTranches());
-        $sheet->setCellValue('A7', 'Opération');
-        $sheet->setCellValue('B7', sprintf('%s / %s', $trancheNb, $trancheNb));
+        //Operation (tranche)
+        $currentRow = $sheet->getHighestDataRow();
+        ++$currentRow;
+        $greenIds       = ['IG GREEN'];
+        $fundingTypes   = ['Nature du financement'];
+        $fundingObjects = ['Objet du financement'];
+        $implementation = ['Mise en place'];
+        $amounts        = ['Montant soumis à garantie'];
+        $durations      = ['Échéance ou durée (en mois)'];
+        $step           = ['Palier'];
+        $amortizables   = ['Amortissable'];
+        $rates          = ['Taux'];
+        $margins        = ['Marge'];
+        $securities     = ['Sureté'];
 
-        $sheet->setCellValue('A8', 'ID Green');
-        $sheet->setCellValue('B8', 'Nature du financement');
-        $sheet->setCellValue('C8', 'Objet du financement');
-        $sheet->setCellValue('D8', 'Mise en place');
-        $sheet->setCellValue('E8', 'Montant soumis à garantie');
-        $sheet->setCellValue('F8', 'Échéance ou durée (en mois)');
-        $sheet->setCellValue('G8', 'Palier');
-        $sheet->setCellValue('H8', 'Amortissable');
-        $sheet->setCellValue('I8', 'Taux');
-        $sheet->setCellValue('J8', 'Date de 1ère échéance');
-        $sheet->setCellValue('K8', 'Periodicité capitale (mois)');
-        $sheet->setCellValue('L8', 'Periodicité intérêts (mois)');
-        $sheet->setCellValue('M8', 'Sureté');
-        $sheet->setCellValue('N8', 'Taux de garantie Foncaris demandé');
-
-        $row = 9;
         foreach ($project->getTranches() as $tranche) {
-            $column = 1;
+            $greenIds[]       = $this->getGreenId($tranche);
+            $fundingTypes[]   = $this->getFoncarisFundingType($tranche);
+            $fundingObjects[] = $tranche->getName();
+            $implementation[] = 'N';
+            $amounts[]        = $this->currencyFormatterNoDecimal->formatCurrency((float) $tranche->getMoney()->getAmount(), $tranche->getMoney()->getCurrency());
+            $durations[]      = $tranche->getDuration();
+            $step[]           = 'N';
 
-            $sheet->setCellValueByColumnAndRow($column, $row, $this->getGreenId($tranche));
-            ++$column;
-
-            $sheet->setCellValueByColumnAndRow($column, $row, $this->getFoncarisFundingType($tranche));
-            ++$column;
-
-            $sheet->setCellValueByColumnAndRow($column, $row, $tranche->getName());
-            ++$column;
-
-            $sheet->setCellValueByColumnAndRow($column, $row, 'N');
-            ++$column;
-
-            $sheet->setCellValueByColumnAndRow(
-                $column,
-                $row,
-                $this->currencyFormatterNoDecimal->formatCurrency((float) $tranche->getMoney()->getAmount(), $tranche->getMoney()->getCurrency())
-            );
-            ++$column;
-
-            $sheet->setCellValueByColumnAndRow($column, $row, $tranche->getDuration());
-            ++$column;
-
-            $sheet->setCellValueByColumnAndRow($column, $row, 'N');
-            ++$column;
-
-            $isAmortizable = Tranche::REPAYMENT_TYPE_AMORTIZABLE === $tranche->getRepaymentType();
-            $sheet->setCellValueByColumnAndRow($column, $row, $isAmortizable ? 'O' : 'N');
-            ++$column;
-
-            $rate = 'N/A';
-            if ($isAmortizable && $tranche->getRate()->getIndexType() && $tranche->getRate()->getMargin()) {
-                $indexType = $this->translator->trans('interest-rate-index.index_' . mb_strtolower($tranche->getRate()->getIndexType()));
-                $rate      = $indexType . ' + ' . $tranche->getRate()->getMargin() . ($tranche->getRate()->getFloor() ? ' flooré à ' . $tranche->getRate()->getFloor() : '');
+            $amortizable = 'N';
+            $rate        = 'N/A';
+            $margin      = 'N/A';
+            if (Tranche::REPAYMENT_TYPE_AMORTIZABLE === $tranche->getRepaymentType()) {
+                $amortizable = 'O';
+                $rate        = '';
+                $margin      = '';
+                if ($tranche->getRate()->getIndexType() && $tranche->getRate()->getMargin()) {
+                    if (LendingRate::INDEX_FIXED === $tranche->getRate()->getIndexType()) {
+                        $rate   = $this->numberFormatter->format($tranche->getRate()->getMargin()) . '%';
+                        $margin = 'N/A';
+                    } else {
+                        $indexType = $this->translator->trans('interest-rate-index.index_' . mb_strtolower($tranche->getRate()->getIndexType()));
+                        $margin    = $indexType . ' + ' . $this->numberFormatter->format($tranche->getRate()->getMargin()) . '%'
+                            . ($tranche->getRate()->getFloor() ? ' flooré à ' . $this->numberFormatter->format($tranche->getRate()->getFloor()) . '%' : '');
+                        $rate = 'N/A';
+                    }
+                }
             }
-            $sheet->setCellValueByColumnAndRow($column, $row, $rate);
-            ++$column;
 
-            if ($isAmortizable) {
-                $sheet->setCellValueByColumnAndRow($column, $row, $tranche->getExpectedStartingDate() ? $tranche->getExpectedStartingDate()->format('d/m/Y') : '');
-            } else {
-                $sheet->setCellValueByColumnAndRow($column, $row, 'N/A');
-            }
-            ++$column;
+            $amortizables[] = $amortizable;
+            $rates[]        = $rate;
+            $margins[]      = $margin;
+            $securities[]   = $this->getFoncarisFundingSecurity($tranche);
+        }
 
-            if ($isAmortizable) {
-                $sheet->setCellValueByColumnAndRow($column, $row, $tranche->getCapitalPeriodicity());
-            } else {
-                $sheet->setCellValueByColumnAndRow($column, $row, 'N/A');
-            }
-            ++$column;
+        $sectionData = [
+            $greenIds,
+            $fundingTypes,
+            $fundingObjects,
+            $implementation,
+            ['Date de signature du contrat'],
+            $amounts,
+            $durations,
+            $step,
+            $amortizables,
+            $rates,
+            $margins,
+            $securities,
+        ];
 
-            if ($isAmortizable) {
-                $sheet->setCellValueByColumnAndRow($column, $row, $tranche->getInterestPeriodicity());
-            } else {
-                $sheet->setCellValueByColumnAndRow($column, $row, 'N/A');
-            }
-            ++$column;
+        $this->fillSection($sheet, 'Opération', $sectionData, $sheetEndColumn, $currentRow, $this->getOperationSectionStyle(), false);
 
-            $sheet->setCellValueByColumnAndRow($column, $row, $this->getFoncarisFundingSecurity($tranche));
-            ++$column;
-
-            $sheet->setCellValueByColumnAndRow($column, $row, '50%');
-
-            ++$row;
+        foreach (range(self::START_COLUMN, $sheet->getHighestDataColumn()) as $column) {
+            $sheet->getColumnDimension($column)->setAutoSize(true);
         }
 
         $writer = new Xlsx($spreadsheet);
@@ -194,7 +204,7 @@ class GuaranteeRequestGenerator extends AbstractDocumentGenerator
      */
     protected function getFileName(FileStorageInterface $foncarisRequest): string
     {
-        return self::FILE_PREFIX . '-' . $foncarisRequest->getProject()->getHash() . '.xlsx';
+        return self::FILE_PREFIX . URLify::filter($foncarisRequest->getProject()->getBorrowerCompany()->getName()) . '-ISOLE.xlsx';
     }
 
     /**
@@ -268,5 +278,143 @@ class GuaranteeRequestGenerator extends AbstractDocumentGenerator
         }
 
         return implode(', ', $foncarisFundingSecurities);
+    }
+
+    /**
+     * @param string $column
+     * @param int    $offset
+     *
+     * @return string
+     */
+    private function getColumnByOffset(string $column, int $offset): string
+    {
+        return chr(ord($column) + $offset);
+    }
+
+    /**
+     * @param Worksheet $sheet
+     * @param string    $sectionTitle
+     * @param array     $sectionData
+     * @param string    $sheetEndColumn
+     * @param int       $currentRow
+     * @param array     $styleArray
+     * @param bool      $mergeValueCells
+     *
+     * @throws PhpSpreadsheetException
+     */
+    private function fillSection(
+        Worksheet $sheet,
+        string $sectionTitle,
+        array $sectionData,
+        string $sheetEndColumn,
+        int $currentRow,
+        array $styleArray,
+        bool $mergeValueCells = true
+    ) {
+        $rowsCount   = count($sectionData);
+        $labelColumn = $this->getColumnByOffset(self::START_COLUMN, 1);
+        $valueColumn = $this->getColumnByOffset(self::START_COLUMN, 2);
+
+        $sheet->getStyle(self::START_COLUMN . $currentRow . ':' . $sheetEndColumn . ($currentRow + $rowsCount - 1))->applyFromArray($styleArray);
+        $sheet->mergeCells(self::START_COLUMN . $currentRow . ':' . self::START_COLUMN . ($currentRow + $rowsCount - 1));
+        $sheet->getStyle(self::START_COLUMN . $currentRow . ':' . self::START_COLUMN . $currentRow)->applyFromArray($this->getSectionTitleStyle());
+        $sheet->setCellValue(self::START_COLUMN . $currentRow, $sectionTitle);
+
+        $sheet->fromArray($sectionData, null, $labelColumn . $currentRow);
+
+        if ($mergeValueCells) {
+            for ($i = 0; $i < $rowsCount; ++$i) {
+                $sheet->mergeCells($valueColumn . $currentRow . ':' . $sheetEndColumn . $currentRow);
+                ++$currentRow;
+            }
+        }
+    }
+
+    /**
+     * @return array
+     */
+    private function getTitleStyle(): array
+    {
+        return [
+            'font' => [
+                'bold' => true,
+                'size' => 16,
+            ],
+            'alignment' => [
+                'horizontal' => Alignment::HORIZONTAL_CENTER,
+            ],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    private function getSectionTitleStyle(): array
+    {
+        return [
+            'alignment' => [
+                'horizontal' => Alignment::HORIZONTAL_CENTER,
+                'vertical'   => Alignment::VERTICAL_CENTER,
+            ],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    private function getGroupSectionStyle(): array
+    {
+        return $this->generateSectionStyle('FFE2EFDA');
+    }
+
+    /**
+     * @return array
+     */
+    private function getBorrowerSectionStyle(): array
+    {
+        return $this->generateSectionStyle('FFFFF2CC');
+    }
+
+    /**
+     * @return array
+     */
+    private function getRegionalBankSectionStyle(): array
+    {
+        return $this->generateSectionStyle('FFEDEDED');
+    }
+
+    /**
+     * @return array
+     */
+    private function getOperationSectionStyle(): array
+    {
+        return $this->generateSectionStyle('FFFCE4D6');
+    }
+
+    /**
+     * @param string $backgroundColor
+     *
+     * @return array
+     */
+    private function generateSectionStyle(string $backgroundColor): array
+    {
+        return [
+            'borders' => [
+                'allBorders' => [
+                    'borderStyle' => Border::BORDER_THIN,
+                    'color'       => ['argb' => 'FF000000'],
+                ],
+            ],
+            'alignment' => [
+                'horizontal' => Alignment::HORIZONTAL_LEFT,
+                'vertical'   => Alignment::VERTICAL_CENTER,
+            ],
+            'fill' => [
+                'fillType'   => Fill::FILL_SOLID,
+                'startColor' => [
+                    'argb' => $backgroundColor,
+                ],
+            ],
+        ];
     }
 }
