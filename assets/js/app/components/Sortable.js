@@ -175,7 +175,7 @@ var Sortable = function (elem, options) {
       resetFiltersItem = Templating.replace(self.templates.responsiveFiltersItem, [{
         id: self.$elem.attr('id') + '-filter-reset',
         name: 'reset',
-        label: __.__('Clear filters', 'resetFiltersLabel'),
+        label: __.__('Effacer les filtres', 'resetFiltersLabel'),
         value: 'reset'
       }, __])
     }

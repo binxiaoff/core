@@ -71,19 +71,19 @@ var PasswordCheck = function (input, options) {
     // The level of security of the password
     levels: [{
       name: 'weak-very',
-      label: __.__('Very weak', 'passwordLevelLabel1')
+      label: __.__('Très faible', 'passwordLevelLabel1')
     },{
       name: 'weak',
-      label: __.__('Weak', 'passwordLevelLabel2')
+      label: __.__('Faible', 'passwordLevelLabel2')
     },{
       name: 'medium',
-      label: __.__('Medium', 'passwordLevelLabel3')
+      label: __.__('Moyen', 'passwordLevelLabel3')
     },{
       name: 'strong',
-      label: __.__('Strong', 'passwordLevelLabel4')
+      label: __.__('Fort', 'passwordLevelLabel4')
     },{
       name: 'strong-very',
-      label: __.__('Very strong', 'passwordLevelLabel5')
+      label: __.__('Très fort', 'passwordLevelLabel5')
     }],
 
     // Event to fire when an evaluation has completed
@@ -232,28 +232,28 @@ var PasswordCheck = function (input, options) {
     },{
       re: /p[a4][s5]+(?:w[o0]+rd)?|mot[s]?depasse/i,
       amount: -1,
-      description: __.__('Variations on the word "password"', 'evaluationRuleWordPasswordDescription'),
-      help: __.__('Avoid using the word "password" or any other variation, e.g. "P455w0rD"', 'evaluationRuleWordPasswordHelp')
+      description: __.__('Variantes de "mot de passe"', 'evaluationRuleWordPasswordDescription'),
+      help: __.__('Veuillez ne pas utiliser le mot "password" ou toute autre variation comme "P455w0rD"', 'evaluationRuleWordPasswordHelp')
     },{
       re: /azer|poiu|wxcv|nbvc|tyui|jklm|n,;:|uiop|,;:=/i,
       amount: -1,
-      description: __.__('Combination matches common keyboard layouts', 'evaluationRuleCommonKeyboardDescription'),
-      help: __.__('Avoid using common keyboard layout combinations', 'evaluationRuleCommonKeyboardHelp')
+      description: __.__('La combinaison correspond à une suite de touches sur le clavier', 'evaluationRuleCommonKeyboardDescription'),
+      help: __.__('Veuillez ne pas utiliser de suite de touches de votre clavier', 'evaluationRuleCommonKeyboardHelp')
     },{
       re: /([a-z0-9])\1{2,}/i,
       amount: -1,
-      description: __.__('Repeated same character', 'evaluationRuleRepeatedCharacterDescription'),
-      help: __.__('Avoid repeating the same character. Add in more variation', 'evaluationRuleRepeatedCharacterHelp')
+      description: __.__('Répétition du même caractère', 'evaluationRuleRepeatedCharacterDescription'),
+      help: __.__('Veuillez ne pas utiliser de répétition de caractère', 'evaluationRuleRepeatedCharacterHelp')
     },{
       re: /123(?:456789|45678|4567|456|45|4)?/,
       amount: -1,
-      description: __.__('Incrementing number sequence', 'evaluationRuleIncrementingNumberDescription'),
-      help: __.__('Avoid using incrementing number sequences', 'evaluationRuleIncrementingNumberHelp')
+      description: __.__('Séquence de chiffres', 'evaluationRuleIncrementingNumberDescription'),
+      help: __.__('Veuillez ne pas utiliser de séquence de chiffres consécutifs', 'evaluationRuleIncrementingNumberHelp')
     },{
       re: /abc|xyz/i,
       amount: -1,
-      description: __.__('Common alphabet sequences', 'evaluationRuleAlphabetSequenceDescription'),
-      help: __.__('Avoid using combinations like "abc" and "xyz"', 'evaluationRuleAlphabetSequenceHelp')
+      description: __.__('Séquence alphabétique', 'evaluationRuleAlphabetSequenceDescription'),
+      help: __.__('Veuillez ne pas utiliser de suite de lettres comme "abc" et "xyz"', 'evaluationRuleAlphabetSequenceHelp')
     }]
     if (self.settings.evaluationRules instanceof Array && self.settings.evaluationRules.length > 0) {
       evaluationRules += self.settings.evaluationRules
@@ -266,8 +266,8 @@ var PasswordCheck = function (input, options) {
     if (input.length < self.settings.minLength) {
       score -= 1
       info.push({
-        description: __.__('Password is too short', 'evaluationRuleShortLengthDescription'),
-        help: __.__('Add extra words or characters to lengthen your password', 'evaluationRuleShortLengthHelp')
+        description: __.__('Le mot de passe est trop court', 'evaluationRuleShortLengthDescription'),
+        help: __.__('Veuillez ajouter des mots ou des caractères à votre mot de passe', 'evaluationRuleShortLengthHelp')
       })
     } else {
       score += 1
@@ -293,8 +293,8 @@ var PasswordCheck = function (input, options) {
     // Extra checks
     if (complexity < 3) {
       info.push({
-        description: __.__('Password is potentially too simple', 'evaluationRuleSimpleDescription'),
-        help: __.__('Use a combination of upper-case, lower-case, numbers and punctuation characters', 'evaluationRuleSimpleHelp')
+        description: __.__('Le mot de passe est potentiellement trop simple', 'evaluationRuleSimpleDescription'),
+        help: __.__('Utilisez une combinaison de minuscules, majuscules, chiffres et ponctuations', 'evaluationRuleSimpleHelp')
       })
     }
 

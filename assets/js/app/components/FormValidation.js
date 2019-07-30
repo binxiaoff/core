@@ -773,7 +773,7 @@ FormValidation.prototype.validate = function (options) {
     // Render to view
     if (groupValidation.options.render && groupValidation.options.showNotifications && groupValidation.$notifications) {
       groupValidation.$notifications.html(Templating.replace(self.templates.errorMessage, {
-        description: __.__('There are errors with the form below. Please ensure your information has been entered correctly before continuing.', 'error-group-has-errors')
+        description: __.__('Le formulaire comporte des erreurs. Veuillez vous assurer que vous avez correctement rempli l’ensemble des informations avant de continuer.', 'error-group-has-errors')
       }))
     }
 
@@ -884,49 +884,49 @@ FormValidation.prototype.rules = {
       if (inputValidation.options.rules.inputType === 'duration') {
         inputValidation.errors.push({
           type: 'inputType',
-          description: __.__('Need to choose project duration', 'error-field-input-type-duration')
+          description: __.__('Veuillez saisir la durée du projet', 'error-field-input-type-duration')
         })
 
       // Project motive
       } else if (inputValidation.options.rules.inputType === 'motive') {
         inputValidation.errors.push({
           type: 'inputType',
-          description: __.__('Need to choose project motive', 'error-field-input-type-motive')
+          description: __.__('Veuillez saisir le motif d’emprunt', 'error-field-input-type-motive')
         })
 
       // Checkbox is empty
       } else if (inputValidation.type === 'checkbox') {
         inputValidation.errors.push({
           type: 'required',
-          description: __.__('Please check the box to continue', 'error-field-required-checkbox')
+          description: __.__('Veuillez cocher la case pour continuer', 'error-field-required-checkbox')
         })
 
       // Multiple checkboxes are empty
       } else if (inputValidation.type === 'multi checkbox') {
         inputValidation.errors.push({
           type: 'required',
-          description: __.__('Please select an option to continue', 'error-field-required-checkboxes')
+          description: __.__('Veuillez sélectionner une option pour continuer', 'error-field-required-checkboxes')
         })
 
       // Radio is empty
       } else if (inputValidation.type === 'radio' || inputValidation.type === 'multi radio') {
         inputValidation.errors.push({
           type: 'required',
-          description: __.__('Please select an option to continue', 'error-field-required-radio')
+          description: __.__('Veuillez sélectionner une option pour continuer', 'error-field-required-radio')
         })
 
       // Select value is empty
       } else if (inputValidation.type === 'select') {
         inputValidation.errors.push({
           type: 'required',
-          description: __.__('Please select an option to continue', 'error-field-required-select')
+          description: __.__('Veuillez sélectionner une option pour continuer', 'error-field-required-select')
         })
 
       // Other type of input is empty
       } else {
         inputValidation.errors.push({
           type: 'required',
-          description: __.__('Field value cannot be empty', 'error-field-required')
+          description: __.__('Le champ ne peut être vide', 'error-field-required')
         })
       }
     }
@@ -951,7 +951,7 @@ FormValidation.prototype.rules = {
     if (minLength && inputValidation.value.length < minLength) {
       inputValidation.errors.push({
         type: 'minLength',
-        description: sprintf(__.__('Please ensure field is at least %d characters long', 'error-field-min-length'), minLength)
+        description: sprintf(__.__('Veuillez vous assurer que le champ contient au moins %d caractères', 'error-field-min-length'), minLength)
       })
     }
   },
@@ -972,7 +972,7 @@ FormValidation.prototype.rules = {
     if (maxLength && inputValidation.value.length > maxLength) {
       inputValidation.errors.push({
         type: 'maxLength',
-        description: sprintf(__.__('Please ensure field does not exceed %d characters', 'error-field-max-length'), maxLength)
+        description: sprintf(__.__('Veuillez vous assurer que le champ ne contient pas plus de %d caractères', 'error-field-max-length'), maxLength)
       })
     }
   },
@@ -1006,7 +1006,7 @@ FormValidation.prototype.rules = {
       if (!$.inArray(inputValidation.value, inputValidation.options.setValues)) {
         inputValidation.errors.push({
           type: 'setValues',
-          description: __.__('Field value not accepted', 'error-field-set-values')
+          description: __.__('Valeur non acceptée', 'error-field-set-values')
         })
       }
     }
@@ -1042,7 +1042,7 @@ FormValidation.prototype.rules = {
           if (/[^\d.,-]+/.test(testValue)) {
             inputValidation.errors.push({
               type: 'inputType',
-              description: __.__('Field accepts only numbers', 'error-field-input-type-number')
+              description: __.__('Ce champ doit contenir un nombre', 'error-field-input-type-number')
             })
 
             return false
@@ -1058,7 +1058,7 @@ FormValidation.prototype.rules = {
           if (isNaN(testValue) || typeof testValue !== 'number' || testValue % 1 !== 0) {
             inputValidation.errors.push({
               type: 'inputType',
-              description: __.__('Field accepts only integers', 'error-field-input-type-integer')
+              description: __.__('Ce champ ne doit contenir que des chiffres', 'error-field-input-type-integer')
             })
 
             return false
@@ -1070,7 +1070,7 @@ FormValidation.prototype.rules = {
           if (!(/^[\d]+([,.]([\d]{1,2}))?$/.test(inputValidation.value))) {
             inputValidation.errors.push({
               type: 'inputType',
-              description: __.__('Field accepts only numbers', 'error-field-input-type-currency')
+              description: __.__('Ce champ doit contenir un nombre', 'error-field-input-type-currency')
             })
 
             return false
@@ -1097,7 +1097,7 @@ FormValidation.prototype.rules = {
           if (!reValidation.test(inputValidation.value)) {
             inputValidation.errors.push({
               type: 'inputType',
-              description: __.__('Not a valid telephone number', 'error-field-input-type-telephone')
+              description: __.__('Numéro de téléphone invalide', 'error-field-input-type-telephone')
             })
 
             return false
@@ -1122,7 +1122,7 @@ FormValidation.prototype.rules = {
           if (!reValidation.test(inputValidation.value)) {
             inputValidation.errors.push({
               type: 'inputType',
-              description: __.__('Not a valid mobile number', 'error-field-input-type-mobile')
+              description: __.__('Numéro de téléphone portable invalide', 'error-field-input-type-mobile')
             })
 
             return false
@@ -1134,7 +1134,7 @@ FormValidation.prototype.rules = {
           if (!/^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(inputValidation.value)) {
             inputValidation.errors.push({
               type: 'inputType',
-              description: __.__('Not a valid email address', 'error-field-input-type-email')
+              description: __.__('Adresse email invalide', 'error-field-input-type-email')
             })
 
             return false
@@ -1148,7 +1148,7 @@ FormValidation.prototype.rules = {
           if (!testValue || testValue.toString() === 'Invalid Date' || isNaN(testValue.getTime())) {
             inputValidation.errors.push({
               type: 'inputType',
-              description: __.__('Not a valid date', 'error-field-input-type-date')
+              description: __.__('Date invalide', 'error-field-input-type-date')
             })
 
             return false
@@ -1211,7 +1211,7 @@ FormValidation.prototype.rules = {
           if (!/^\d{9}|\d{14}$/.test(testValue)) {
             inputValidation.errors.push({
               type: 'inputType',
-              description: __.__('Not a valid SIREN number. Please ensure you have entered your number in correctly', 'error-field-input-type-siren')
+              description: __.__('Numéro de SIREN invalide', 'error-field-input-type-siren')
             })
 
             return false
@@ -1224,7 +1224,7 @@ FormValidation.prototype.rules = {
           if (!/^[A-Za-z\u00C0-\u017F]+([ \-'][A-Za-z\u00C0-\u017F]+)*$/i.test(inputValidation.value)) {
             inputValidation.errors.push({
               type: 'inputType',
-              description: __.__('Not a valid name. Please ensure you have only entered alphabetic characters', 'error-field-input-type-name')
+              description: __.__('Nom invalide. Veuillez vous assurer que le champ ne contient que des caractères alphabétiques', 'error-field-input-type-name')
             })
 
             return false
@@ -1236,7 +1236,7 @@ FormValidation.prototype.rules = {
           if (!inputValidation.$formField.find('select').val()) {
             inputValidation.errors.push({
               type: 'inputType',
-              description: __.__('Invalid file type', 'error-field-input-type-file-select'),
+              description: __.__('Type de fichier invalide', 'error-field-input-type-file-select'),
               target: inputValidation.$formField.find('select')
             })
 
@@ -1247,7 +1247,7 @@ FormValidation.prototype.rules = {
           if (!inputValidation.$formField.find('input[type=file]').val()) {
             inputValidation.errors.push({
               type: 'inputType',
-              description: __.__('No file attached', 'error-field-input-type-file-field'),
+              description: __.__('Aucun fichier sélectionné', 'error-field-input-type-file-field'),
               target: inputValidation.$formField.find('input[type=file]')
             })
 
@@ -1259,7 +1259,7 @@ FormValidation.prototype.rules = {
           if (!/^(?=.*[a-z])(?=.*[A-Z]).{8,}$/.test(inputValidation.value)) {
             inputValidation.errors.push({
               type: 'inputType',
-              description: __.__('Password needs to be at least 8 characters and needs to contain at least one lowercase and one uppercase letter', 'error-field-input-type-password')
+              description: __.__('Le mot de passe doit contenir au moins 8 caractères et doit contenir au moins une minuscule et une majuscule', 'error-field-input-type-password')
             })
 
             return false
@@ -1291,7 +1291,7 @@ FormValidation.prototype.rules = {
           var compareElemLabel = getLabelForElem($compareElem).replace(/\*.*$/i, '')
           inputValidation.errors.push({
             type: 'sameValueAs',
-            description: sprintf(__.__('Field doesn\'t match %s', 'error-field-same-value-as'), '<label for="' + $compareElem.attr('id') + '"><strong>' + compareElemLabel + '</strong></label>')
+            description: sprintf(__.__('Le champ n’est pas égal à %s', 'error-field-same-value-as'), '<label for="' + $compareElem.attr('id') + '"><strong>' + compareElemLabel + '</strong></label>')
           })
 
           return false
@@ -1318,7 +1318,7 @@ FormValidation.prototype.rules = {
     if (minValue && parseFloat(valueToCheck) < minValue) {
       inputValidation.errors.push({
         type: 'minValue',
-        description: sprintf(__.__('Amounts below %s are not allowed', 'error-field-min-value'), __Utility.formatNumber(minValue, 0))
+        description: sprintf(__.__('Les montants inférieurs à %s ne sont pas autorisés', 'error-field-min-value'), __Utility.formatNumber(minValue, 0))
       })
 
       return false
@@ -1343,7 +1343,7 @@ FormValidation.prototype.rules = {
     if (maxValue && parseFloat(valueToCheck) > maxValue) {
       inputValidation.errors.push({
         type: 'maxValue',
-        description: sprintf(__.__('Amounts above %s are not allowed', 'error-field-max-value'), __Utility.formatNumber(maxValue, 2))
+        description: sprintf(__.__('Les montants supérieurs à %s ne sont pas autorisés', 'error-field-max-value'), __Utility.formatNumber(maxValue, 2))
       })
 
       return false
