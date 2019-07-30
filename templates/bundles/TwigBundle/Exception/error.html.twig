@@ -4,7 +4,7 @@
 {% block pageTitle %}
     <h1 class="page-title">
         {% block errorPageTitle %}
-            {% trans %} error-page_general-page-title {% endtrans %}
+            {% trans %} error-page.general-page-title {% endtrans %}
         {% endblock %}
     </h1>
 {% endblock %}
@@ -19,15 +19,15 @@
     <section class="page-section">
         <h2>
             {% block errorTitle %}
-                {% trans %} error-page_general-title {% endtrans %}
+                {% trans %} error-page.general-title {% endtrans %}
             {% endblock %}
         </h2>
         {% block errorDetails %}
-            {{ 'error-page_general-details'|trans|raw }}
+            {{ 'error-page.general-details'|trans|raw }}
         {% endblock %}
         <br>
         <div class="btn-toolbar text-align-left">
-            <a href="{{ path('home') }}" class="btn-primary">{% trans %} error-page_button-home-page {% endtrans %}</a>
+            <a href="{{ path('home') }}" class="btn-primary">{% trans %} error-page.button-home-page {% endtrans %}</a>
         </div><!-- /.btn-toolbar -->
     </section><!-- /.page-section -->
 {% endblock %}

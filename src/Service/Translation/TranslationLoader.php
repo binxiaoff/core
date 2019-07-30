@@ -3,7 +3,6 @@
 namespace Unilend\Service\Translation;
 
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\Translation\Exception\{InvalidResourceException, NotFoundResourceException};
 use Symfony\Component\Translation\Loader\LoaderInterface;
 use Symfony\Component\Translation\MessageCatalogue;
 use Unilend\Entity\Translations;
@@ -11,8 +10,7 @@ use Unilend\Repository\TranslationsRepository;
 
 class TranslationLoader implements LoaderInterface
 {
-    public const SECTION_SEPARATOR        = '.';
-    public const LEGACY_SECTION_SEPARATOR = '_';
+    public const SECTION_SEPARATOR = '.';
 
     /** @var TranslationsRepository */
     private $translationRepository;
@@ -39,7 +37,6 @@ class TranslationLoader implements LoaderInterface
         /** @var Translations $translation */
         foreach ($this->translationRepository->findBy(['locale' => $this->defaultLocale]) as $translation) {
             $catalogue->set($translation->getSection() . self::SECTION_SEPARATOR . $translation->getName(), $translation->getTranslation(), $domain);
-            $catalogue->set($translation->getSection() . self::LEGACY_SECTION_SEPARATOR . $translation->getName(), $translation->getTranslation(), $domain);
         }
 
         return $catalogue;

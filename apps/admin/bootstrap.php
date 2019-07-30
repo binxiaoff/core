@@ -540,8 +540,7 @@ class bootstrap extends Controller
         $this->loadCss('../scripts/admin/external/jquery/plugin/jquery-ui/jquery-ui.min');
         $this->loadCss('admin/main', $this->staticsKey);
 
-        $this->settings->get('Paging Tableaux', 'type');
-        $this->nb_lignes = $this->settings->value;
+        $this->nb_lignes = 100;
 
         $this->lLangues  = ['fr' => 'Francais'];
         $this->dLanguage = 'fr';
