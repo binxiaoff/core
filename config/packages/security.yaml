@@ -25,7 +25,6 @@ security:
             logout:
                 path: logout
                 target: /
-                success_handler: Unilend\Security\LogoutSuccessHandler
             switch_user: true
 
     access_denied_url: /login

@@ -4,7 +4,7 @@ namespace Unilend\Security;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\HttpFoundation\{Cookie, RedirectResponse, Request};
+use Symfony\Component\HttpFoundation\{RedirectResponse, Request};
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
@@ -16,7 +16,7 @@ use Symfony\Component\Security\Csrf\{CsrfToken, CsrfTokenManagerInterface};
 use Symfony\Component\Security\Guard\Authenticator\AbstractFormLoginAuthenticator;
 use Symfony\Component\Security\Http\Session\SessionAuthenticationStrategyInterface;
 use Symfony\Component\Security\Http\Util\TargetPathTrait;
-use Unilend\Entity\{Clients, ClientsStatus, LoginLog, Settings};
+use Unilend\Entity\{Clients, LoginLog, Settings};
 use Unilend\Service\Front\LoginHistoryLogger;
 use Unilend\Service\{CIPManager, GoogleRecaptchaManager, LenderManager};
 
@@ -24,7 +24,6 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
 {
     use TargetPathTrait;
 
-    public const COOKIE_NO_CF               = 'uld-nocf';
     public const SESSION_NAME_LOGIN_CAPTCHA = 'displayLoginCaptcha';
 
     /** @var UserPasswordEncoderInterface */
@@ -165,46 +164,7 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
             $targetPath = $this->getDefaultSuccessRedirectUrl($request);
         }
 
-        $response = new RedirectResponse($targetPath);
-
-        $cookie = new Cookie(self::COOKIE_NO_CF, 1);
-        $response->headers->setCookie($cookie);
-
-        return $response;
-
-        try {
-            $needUpdatePersonalData = $this->lenderManager->needUpdatePersonalData($client);
-            $needCipEvaluation      = $this->cipManager->needReevaluation($client);
-        } catch (\InvalidArgumentException $exception) {
-            $needUpdatePersonalData = false;
-            $needCipEvaluation      = false;
-        } catch (\Exception $exception) {
-            $needUpdatePersonalData = false;
-            $needCipEvaluation      = false;
-
-            $this->logger->error('An error occurs when calling LenderManager::needUpdatePersonalData() Error : ' . $exception->getMessage(), [
-                'class'     => __CLASS__,
-                'function'  => __FUNCTION__,
-                'file'      => $exception->getFile(),
-                'line'      => $exception->getLine(),
-                'id_client' => $client->getIdClient(),
-            ]);
-        }
-
-        if ($needUpdatePersonalData) {
-            $targetPath = $this->router->generate('lender_data_update_start');
-        } elseif ($needCipEvaluation) {
-            $targetPath = $this->router->generate('cip_index');
-        } else {
-            $targetPath = $this->getUserSpecificTargetPath($request, $providerKey, $client);
-        }
-
-        $response = new RedirectResponse($targetPath);
-
-        $cookie = new Cookie(self::COOKIE_NO_CF, 1);
-        $response->headers->setCookie($cookie);
-
-        return $response;
+        return new RedirectResponse($targetPath);
     }
 
     /**
@@ -325,37 +285,5 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
         $fragment  = isset($parsedUrl['fragment']) ? '#' . $parsedUrl['fragment'] : '';
 
         return $path . $query . $fragment;
-    }
-
-    /**
-     * @param Request $request
-     * @param string  $providerKey
-     * @param Clients $client
-     *
-     * @return string
-     */
-    private function getUserSpecificTargetPath(Request $request, string $providerKey, Clients $client): string
-    {
-        $targetPath = $this->getTargetPath($request->getSession(), $providerKey);
-
-        if (!$targetPath) {
-            $targetPath = $this->getDefaultSuccessRedirectUrl($request);
-        }
-
-        if ($client->isLender()) {
-            switch ($client->getIdClientStatusHistory()->getIdStatus()->getId()) {
-                case ClientsStatus::STATUS_CREATION:
-                    $targetPath = $this->router->generate('lender_subscription_documents', ['clientHash' => $client->getHash()]);
-
-                    break;
-                case ClientsStatus::STATUS_COMPLETENESS:
-                case ClientsStatus::STATUS_COMPLETENESS_REMINDER:
-                    $targetPath = $this->router->generate('lender_completeness');
-
-                    break;
-            }
-        }
-
-        return $targetPath;
     }
 }

@@ -144,13 +144,12 @@ class TranslationManager
         $translationCatalogue   = $this->translator->getCatalogue($locale);
         $allTranslation         = $translationCatalogue->all();
         $section                = $section . TranslationLoader::SECTION_SEPARATOR;
-        $legacySection          = $section . TranslationLoader::LEGACY_SECTION_SEPARATOR;
         $length                 = mb_strlen($section); // Same length as legacy
 
-        foreach ($allTranslation as $domain => $translations) {
+        foreach ($allTranslation as $translations) {
             foreach ($translations as $label => $translation) {
                 $partOfLabel = mb_substr($label, 0, $length);
-                if ($partOfLabel === $section || $partOfLabel === $legacySection) {
+                if ($partOfLabel === $section) {
                     $translationLabelWithoutSection                          = mb_substr($label, $length);
                     $translationsForSection[$translationLabelWithoutSection] = $translation;
                 }

@@ -5,11 +5,11 @@
                 <div class="col-pagination-info col-lg-4 col-md-4">
                     <div class="pagination-info">
                         <span class="pagination-location">
-                            {% trans with {'%item%' : pagination.currentIndexItems, '%items%' : pagination.totalItems} %} projects-listing_pagination-info-location {% endtrans %}
+                            {% trans with {'%item%' : pagination.currentIndexItems, '%items%' : pagination.totalItems} %} projects-listing.pagination-info-location {% endtrans %}
                         </span>
                         {% if pagination.currentIndex < pagination.totalPages %}
                             <a href="{{ path('projects_list', {'page' : pagination.currentIndex + 1, 'sortType' : sortType, 'sortDirection' : sortDirection}) }}" class="link pagination-next">
-                                {% transchoice pagination.itemsPerPage with {'%items%' : pagination.itemsPerPage } %} projects-listing_pagination-info-next-label {% endtranschoice %}
+                                {% transchoice pagination.itemsPerPage with {'%items%' : pagination.itemsPerPage } %} projects-listing.pagination-info-next-label {% endtranschoice %}
                             </a>
                         {% endif %}
                     </div>
@@ -21,7 +21,7 @@
                                 <a href="{{ path('projects_list', {'page' : pagination.currentIndex - 1, 'sortType' : sortType, 'sortDirection' : sortDirection}) }}">
                                     <span class="icon fa-angle-left"></span>
                                     <span class="sr-only">
-                                        {% trans with {'%items%' : pagination.itemsPerPage } %} projects-listing_pagination-index-previous-label {% endtrans %}
+                                        {% trans with {'%items%' : pagination.itemsPerPage } %} projects-listing.pagination-index-previous-label {% endtrans %}
                                     </span>
                                 </a>
                             </li>
@@ -76,7 +76,7 @@
                             <li role="presentation">
                                 <a href="{{ path('projects_list', {'page' : pagination.currentIndex + 1, 'sortType' : sortType, 'sortDirection' : sortDirection}) }}">
                                     <span class="sr-only">
-                                        {% transchoice pagination.itemsPerPage with {'%items%' : pagination.itemsPerPage } %} projects-listing_pagination-info-next-label {% endtranschoice %}
+                                        {% transchoice pagination.itemsPerPage with {'%items%' : pagination.itemsPerPage } %} projects-listing.pagination-info-next-label {% endtranschoice %}
                                     </span>
                                     <span class="icon fa-angle-right"></span>
                                 </a>
