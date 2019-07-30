@@ -120,8 +120,10 @@ class GuaranteeRequestGenerator extends AbstractDocumentGenerator
         $greenIds       = ['IG GREEN'];
         $fundingTypes   = ['Nature du financement'];
         $fundingObjects = ['Objet du financement'];
+        $implementation = ['Mise en place'];
         $amounts        = ['Montant soumis à garantie'];
         $durations      = ['Échéance ou durée (en mois)'];
+        $step           = ['Palier'];
         $amortizables   = ['Amortissable'];
         $rates          = ['Taux'];
         $margins        = ['Marge'];
@@ -131,8 +133,10 @@ class GuaranteeRequestGenerator extends AbstractDocumentGenerator
             $greenIds[]       = $this->getGreenId($tranche);
             $fundingTypes[]   = $this->getFoncarisFundingType($tranche);
             $fundingObjects[] = $tranche->getName();
+            $implementation[] = 'N';
             $amounts[]        = $this->currencyFormatterNoDecimal->formatCurrency((float) $tranche->getMoney()->getAmount(), $tranche->getMoney()->getCurrency());
             $durations[]      = $tranche->getDuration();
+            $step[]           = 'N';
 
             $amortizable = 'N';
             $rate        = 'N/A';
@@ -164,11 +168,11 @@ class GuaranteeRequestGenerator extends AbstractDocumentGenerator
             $greenIds,
             $fundingTypes,
             $fundingObjects,
-            ['Mise en place', 'N', 'N'],
-            ['Date de signature du contrat', '', ''],
+            $implementation,
+            ['Date de signature du contrat'],
             $amounts,
             $durations,
-            ['Palier', 'N', 'N'],
+            $step,
             $amortizables,
             $rates,
             $margins,
