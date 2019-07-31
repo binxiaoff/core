@@ -18,7 +18,11 @@
                         {{ form_row(form.choice, {label: false}) }}
                     </div>
                 </article>
-                <article class="panel collapse" id="tranche-attributes">
+                <article class="panel collapse" id="foncaris-needed">
+                    <div class="row row-multi-col-computer">
+                        {{ form_row(form.comment) }}
+                    </div>
+
                     {% for tranche in project.tranches %}
                         <h4 class="margin-20-t">{{ tranche.name }}</h4>
                         <div class="row row-multi-col-computer">
@@ -60,7 +64,7 @@
         })
 
         function toggleAttributesDisplaying() {
-            $('#tranche-attributes').toggle('1' === $('#foncaris_request_type_choice').children('option:selected').val())
+            $('#foncaris-needed').toggle('1' === $('#foncaris_request_type_choice').children('option:selected').val())
         }
     })
 </script>

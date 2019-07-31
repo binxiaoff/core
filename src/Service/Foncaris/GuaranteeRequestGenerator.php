@@ -87,7 +87,7 @@ class GuaranteeRequestGenerator extends AbstractDocumentGenerator
         $sheet->getStyle(self::START_COLUMN . $currentRow)->applyFromArray($this->getTitleStyle());
 
         //Group
-        ++$currentRow;
+        $currentRow  = $this->localizeCurrentRow($sheet);
         $sectionData = [
             ['Nom du Groupe de Risque', ''],
             ['ID AGORA du groupe ( = RICOS = TIGRE = TCA)', ''],
@@ -95,18 +95,16 @@ class GuaranteeRequestGenerator extends AbstractDocumentGenerator
         $this->fillSection($sheet, 'Groupe', $sectionData, $sheetEndColumn, $currentRow, $this->getGroupSectionStyle());
 
         //Borrower
-        $currentRow = $sheet->getHighestDataRow();
-        ++$currentRow;
+        $currentRow  = $this->localizeCurrentRow($sheet);
         $sectionData = [
             ['Nom Emprunteur', $project->getBorrowerCompany()->getName()],
             ['SIREN', $project->getBorrowerCompany()->getSiren()],
             ['ID AGORA de l\'emprunteur ( = RICOS = TIGRE = TCA)', ''],
         ];
         $this->fillSection($sheet, 'Emprunteur', $sectionData, $sheetEndColumn, $currentRow, $this->getBorrowerSectionStyle());
-        $currentRow = $sheet->getHighestDataRow();
 
         //Regional bank
-        ++$currentRow;
+        $currentRow  = $this->localizeCurrentRow($sheet);
         $sectionData = [
             ['Nom de la CR demandeuse', $project->getSubmitterCompany()->getName()],
             ['Nom du contact dans la CR demandeuse', $project->getSubmitterClient()->getFirstName() . ' ' . $project->getSubmitterClient()->getLastName()],
@@ -115,8 +113,7 @@ class GuaranteeRequestGenerator extends AbstractDocumentGenerator
         $this->fillSection($sheet, 'CR', $sectionData, $sheetEndColumn, $currentRow, $this->getRegionalBankSectionStyle());
 
         //Operation (tranche)
-        $currentRow = $sheet->getHighestDataRow();
-        ++$currentRow;
+        $currentRow     = $this->localizeCurrentRow($sheet);
         $greenIds       = ['IG GREEN'];
         $fundingTypes   = ['Nature du financement'];
         $fundingObjects = ['Objet du financement'];
@@ -125,7 +122,6 @@ class GuaranteeRequestGenerator extends AbstractDocumentGenerator
         $durations      = ['Échéance ou durée (en mois)'];
         $step           = ['Palier'];
         $amortizables   = ['Amortissable'];
-        $rates          = ['Taux'];
         $margins        = ['Marge'];
         $securities     = ['Sureté'];
 
@@ -139,27 +135,16 @@ class GuaranteeRequestGenerator extends AbstractDocumentGenerator
             $step[]           = 'N';
 
             $amortizable = 'N';
-            $rate        = 'N/A';
             $margin      = 'N/A';
             if (Tranche::REPAYMENT_TYPE_AMORTIZABLE === $tranche->getRepaymentType()) {
                 $amortizable = 'O';
-                $rate        = '';
                 $margin      = '';
-                if ($tranche->getRate()->getIndexType() && $tranche->getRate()->getMargin()) {
-                    if (LendingRate::INDEX_FIXED === $tranche->getRate()->getIndexType()) {
-                        $rate   = $this->numberFormatter->format($tranche->getRate()->getMargin()) . '%';
-                        $margin = 'N/A';
-                    } else {
-                        $indexType = $this->translator->trans('interest-rate-index.index_' . mb_strtolower($tranche->getRate()->getIndexType()));
-                        $margin    = $indexType . ' + ' . $this->numberFormatter->format($tranche->getRate()->getMargin()) . '%'
-                            . ($tranche->getRate()->getFloor() ? ' flooré à ' . $this->numberFormatter->format($tranche->getRate()->getFloor()) . '%' : '');
-                        $rate = 'N/A';
-                    }
+                if ($tranche->getRate()->getMargin()) {
+                    $margin = $this->numberFormatter->format($tranche->getRate()->getMargin()) . '%';
                 }
             }
 
             $amortizables[] = $amortizable;
-            $rates[]        = $rate;
             $margins[]      = $margin;
             $securities[]   = $this->getFoncarisFundingSecurity($tranche);
         }
@@ -174,12 +159,17 @@ class GuaranteeRequestGenerator extends AbstractDocumentGenerator
             $durations,
             $step,
             $amortizables,
-            $rates,
             $margins,
             $securities,
         ];
-
         $this->fillSection($sheet, 'Opération', $sectionData, $sheetEndColumn, $currentRow, $this->getOperationSectionStyle(), false);
+
+        //Other
+        $currentRow  = $this->localizeCurrentRow($sheet);
+        $sectionData = [
+            ['Commentaire', $foncarisRequest->getComment()],
+        ];
+        $this->fillSection($sheet, 'Autre', $sectionData, $sheetEndColumn, $currentRow, $this->getOtherSectionStyle());
 
         foreach (range(self::START_COLUMN, $sheet->getHighestDataColumn()) as $column) {
             $sheet->getColumnDimension($column)->setAutoSize(true);
@@ -392,6 +382,14 @@ class GuaranteeRequestGenerator extends AbstractDocumentGenerator
     }
 
     /**
+     * @return array
+     */
+    private function getOtherSectionStyle(): array
+    {
+        return $this->generateSectionStyle('FFC8D9EF');
+    }
+
+    /**
      * @param string $backgroundColor
      *
      * @return array
@@ -416,5 +414,17 @@ class GuaranteeRequestGenerator extends AbstractDocumentGenerator
                 ],
             ],
         ];
+    }
+
+    /**
+     * @param Worksheet $worksheet
+     *
+     * @return int
+     */
+    private function localizeCurrentRow(Worksheet $worksheet): int
+    {
+        $currentRow = $worksheet->getHighestDataRow();
+
+        return ++$currentRow;
     }
 }
