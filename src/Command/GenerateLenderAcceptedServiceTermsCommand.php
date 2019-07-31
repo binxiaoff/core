@@ -2,19 +2,16 @@
 
 namespace Unilend\Command;
 
-use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\{Input\InputInterface, Input\InputOption, Output\OutputInterface};
-use Unilend\Entity\AcceptationsLegalDocs;
-use Unilend\Service\ServiceTerms\ServiceTermsGenerator;
-use Unilend\Service\ServiceTerms\ServiceTermsManager;
+use Symfony\Component\Console\{Command\Command, Input\InputInterface, Input\InputOption, Output\OutputInterface};
+use Unilend\Repository\AcceptationLegalDocsRepository;
+use Unilend\Service\ServiceTerms\{ServiceTermsGenerator, ServiceTermsManager};
 
 class GenerateLenderAcceptedServiceTermsCommand extends Command
 {
-    /** @var EntityManagerInterface */
-    private $entityManager;
+    /** @var AcceptationLegalDocsRepository */
+    private $acceptationLegalDocsRepository;
     /** @var ServiceTermsGenerator */
     private $serviceTermsGenerator;
     /** @var ServiceTermsManager */
@@ -23,21 +20,21 @@ class GenerateLenderAcceptedServiceTermsCommand extends Command
     private $consoleLogger;
 
     /**
-     * @param EntityManagerInterface $entityManager
-     * @param ServiceTermsGenerator  $serviceTermsGenerator
-     * @param ServiceTermsManager    $serviceTermsManager
-     * @param LoggerInterface        $consoleLogger
+     * @param AcceptationLegalDocsRepository $acceptationLegalDocsRepository
+     * @param ServiceTermsGenerator          $serviceTermsGenerator
+     * @param ServiceTermsManager            $serviceTermsManager
+     * @param LoggerInterface                $consoleLogger
      */
     public function __construct(
-        EntityManagerInterface $entityManager,
+        AcceptationLegalDocsRepository $acceptationLegalDocsRepository,
         ServiceTermsGenerator $serviceTermsGenerator,
         ServiceTermsManager $serviceTermsManager,
         LoggerInterface $consoleLogger
     ) {
-        $this->entityManager         = $entityManager;
-        $this->serviceTermsGenerator = $serviceTermsGenerator;
-        $this->serviceTermsManager   = $serviceTermsManager;
-        $this->consoleLogger         = $consoleLogger;
+        $this->acceptationLegalDocsRepository = $acceptationLegalDocsRepository;
+        $this->serviceTermsGenerator          = $serviceTermsGenerator;
+        $this->serviceTermsManager            = $serviceTermsManager;
+        $this->consoleLogger                  = $consoleLogger;
 
         parent::__construct();
     }
@@ -68,16 +65,13 @@ EOF
         $limit = $input->getOption('limit-service-terms');
         $limit = $limit ? $limit : 100;
 
-        $acceptedServiceTerms = $this->entityManager
-            ->getRepository(AcceptationsLegalDocs::class)
-            ->findByIdLegalDocWithoutPfd($limit)
-        ;
+        $acceptedServiceTerms = $this->acceptationLegalDocsRepository->findByIdLegalDocWithoutPfd($limit);
 
         foreach ($acceptedServiceTerms as $accepted) {
             try {
                 $this->serviceTermsGenerator->generate($accepted);
             } catch (Exception $exception) {
-                $this->consoleLogger->error('An error occurred while generating lender terms of sale pdf. Message: ' . $exception->getMessage(), [
+                $this->consoleLogger->error(sprintf('An error occurred while generating lender terms of sale pdf. Error: %s', $exception->getMessage()), [
                     'class'          => __CLASS__,
                     'function'       => __FUNCTION__,
                     'file'           => $exception->getFile(),
