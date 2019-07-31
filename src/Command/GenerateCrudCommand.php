@@ -4,10 +4,7 @@ namespace Unilend\Command;
 
 use Doctrine\DBAL\DBALException;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\{InputArgument, InputInterface};
-use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Style\SymfonyStyle;
+use Symfony\Component\Console\{Command\Command, Input\InputArgument, Input\InputInterface, Output\OutputInterface, Style\SymfonyStyle};
 use Unilend\core\Loader;
 
 class GenerateCrudCommand extends Command
@@ -66,7 +63,7 @@ class GenerateCrudCommand extends Command
     private function getTables(?string $table)
     {
         if ($table) {
-            return [$table];
+            return [[$table, $this->checkCrud($table)]];
         }
 
         $tables    = [];

@@ -4,9 +4,7 @@ namespace Unilend\Command;
 
 use Exception;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\{InputInterface, InputOption};
-use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\{Command\Command, Input\InputInterface, Input\InputOption, Output\OutputInterface};
 use Unilend\Repository\AcceptationLegalDocsRepository;
 use Unilend\Service\ServiceTerms\{ServiceTermsGenerator, ServiceTermsManager};
 
