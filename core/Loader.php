@@ -173,29 +173,28 @@ class Loader
     }
 
     /**
-     * @param string $sLibrary
-     * @param array  $aParams
+     * @param string $library
      *
      * @return object|bool
      */
-    public static function loadLib($sLibrary, array $aParams = [])
+    public static function loadLib($library)
     {
         $sProjectPath = realpath(__DIR__ . '/..') . '/';
         $sClassPath   = '';
-        $aPath        = explode('/', $sLibrary);
+        $aPath        = explode('/', $library);
 
         if (count($aPath) > 1) {
-            $sLibrary   = array_pop($aPath);
+            $library   = array_pop($aPath);
             $sClassPath = implode('/', $aPath) . '/';
         }
 
-        if (false === file_exists($sProjectPath . 'librairies/' . $sClassPath . $sLibrary . '.class.php')) {
+        if (false === file_exists($sProjectPath . 'librairies/' . $sClassPath . $library . '.class.php')) {
             return false;
         }
 
-        $sClassName = '\\' . $sLibrary;
+        $sClassName = '\\' . $library;
 
-        return new $sClassName($aParams);
+        return new $sClassName();
     }
 
     /**

@@ -55,10 +55,10 @@ use Unilend\Entity\UsersTypes;
                             <td><?= $this->formatDate($user['lastlogin'], 'd/m/Y') ?></td>
                             <td align="center">
                                 <a href="<?= $this->url ?>/users/status/<?= $user['id_user'] ?>/<?= $user['status'] ?>" title="<?= ($user['status'] == \Unilend\Entity\Users::STATUS_ONLINE ? 'Passer hors ligne' : 'Passer en ligne') ?>">
-                                    <img src="<?= $this->surl ?>/images/admin/<?= ($user['status'] == \Unilend\Entity\Users::STATUS_ONLINE ? 'offline' : 'online') ?>.png" alt="<?= ($user['status'] == \Unilend\Entity\Users::STATUS_ONLINE ? 'Passer hors ligne' : 'Passer en ligne') ?>">
+                                    <img src="<?= $this->url ?>/images/<?= ($user['status'] == \Unilend\Entity\Users::STATUS_ONLINE ? 'offline' : 'online') ?>.png" alt="<?= ($user['status'] == \Unilend\Entity\Users::STATUS_ONLINE ? 'Passer hors ligne' : 'Passer en ligne') ?>">
                                 </a>
                                 <a href="<?= $this->url ?>/users/edit/<?= $user['id_user'] ?>" class="thickbox">
-                                    <img src="<?= $this->surl ?>/images/admin/edit.png" alt="Modifier <?= $user['firstname'] ?> <?= $user['name'] ?>">
+                                    <img src="<?= $this->url ?>/images/edit.png" alt="Modifier <?= $user['firstname'] ?> <?= $user['name'] ?>">
                                 </a>
                             </td>
                         </tr>

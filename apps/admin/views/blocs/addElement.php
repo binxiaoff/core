@@ -1,5 +1,5 @@
 <div id="popup">
-    <a onclick="parent.$.fn.colorbox.close();" title="Fermer" class="closeBtn"><img src="<?= $this->surl ?>/images/admin/delete.png" alt="Fermer" /></a>
+    <a onclick="parent.$.fn.colorbox.close();" title="Fermer" class="closeBtn"><img src="<?= $this->url ?>/images/delete.png" alt="Fermer" /></a>
     <form method="post" name="add_element" id="add_element" enctype="multipart/form-data" action="<?= $this->url ?>/blocs/elements/<?= $this->blocs->id_bloc ?>" target="_parent">
         <input type="hidden" name="id_bloc" id="id_bloc" value="<?= $this->blocs->id_bloc ?>" />
         <h1>Ajouter un élément au bloc <?= $this->blocs->name ?></h1>

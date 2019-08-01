@@ -1,5 +1,5 @@
 <div id="popup">
-    <a onclick="parent.$.fn.colorbox.close();" title="Fermer" class="closeBtn" id="closeButton"><img src="<?= $this->surl ?>/images/admin/delete.png" alt="Fermer"/></a>
+    <a onclick="parent.$.fn.colorbox.close();" title="Fermer" class="closeBtn" id="closeButton"><img src="<?= $this->url ?>/images/delete.png" alt="Fermer"/></a>
     <form method="post" name="envoi_params" id="envoi_params" enctype="multipart/form-data"
           action="<?= $this->lurl ?>/queries/<?= isset($this->params[1]) && $this->params[1] == 'export' ? 'export' : 'execute' ?>/<?= $this->queries->id_query ?>" target="_parent">
         <h1>Paramètres de <?= $this->queries->name ?></h1>

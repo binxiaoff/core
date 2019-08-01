@@ -22,7 +22,7 @@
                         <td style="overflow: auto; max-width: 700px;"><?= $setting->getValue() ?></td>
                         <td class="center">
                             <a href="<?= $this->url ?>/settings/edit/<?= $setting->getIdSetting() ?>" class="thickbox">
-                                <img src="<?= $this->surl ?>/images/admin/edit.png" alt="Modifier">
+                                <img src="<?= $this->url ?>/images/edit.png" alt="Modifier">
                             </a>
                         </td>
                     </tr>

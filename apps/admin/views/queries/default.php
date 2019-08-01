@@ -40,26 +40,26 @@
                         <td align="center">
                             <?php if (strrchr($r['sql'], '@')) : ?>
                                 <a href="<?= $this->lurl ?>/queries/params/<?= $r['id_query'] ?>" class="thickbox">
-                                    <img src="<?= $this->surl ?>/images/admin/modif.png" alt="Renseigner les paramètres"/>
+                                    <img src="<?= $this->url ?>/images/modif.png" alt="Renseigner les paramètres"/>
                                 </a>
                                 <a href="<?= $this->lurl ?>/queries/params/<?= $r['id_query'] ?>/export" class="thickbox">
-                                    <img src="<?= $this->surl ?>/images/admin/xls.png" alt="Export Brut"/>
+                                    <img src="<?= $this->url ?>/images/xls.png" alt="Export Brut"/>
                                 </a>
                             <?php else : ?>
                                 <a href="<?= $this->lurl ?>/queries/execute/<?= $r['id_query'] ?>" title="Voir le résultat">
-                                    <img src="<?= $this->surl ?>/images/admin/modif.png" alt="Voir le résultat"/>
+                                    <img src="<?= $this->url ?>/images/modif.png" alt="Voir le résultat"/>
                                 </a>
                                 <a href="<?= $this->lurl ?>/queries/export/<?= $r['id_query'] ?>" target="_blank" title="Export Brut">
-                                    <img src="<?= $this->surl ?>/images/admin/xls.png" alt="Export Brut"/>
+                                    <img src="<?= $this->url ?>/images/xls.png" alt="Export Brut"/>
                                 </a>
 
                             <?php endif; ?>
                             <?php if ($isAllowedToEdit) : ?>
                                 <a href="<?= $this->lurl ?>/queries/edit/<?= $r['id_query'] ?>" class="thickbox">
-                                    <img src="<?= $this->surl ?>/images/admin/edit.png" alt="Modifier <?= $r['name'] ?>"/>
+                                    <img src="<?= $this->url ?>/images/edit.png" alt="Modifier <?= $r['name'] ?>"/>
                                 </a>
                                 <a href="<?= $this->lurl ?>/queries/delete/<?= $r['id_query'] ?>" title="Supprimer <?= $r['name'] ?>" onclick="return confirm('Etes vous sur de vouloir supprimer <?= $r['name'] ?> ?')">
-                                    <img src="<?= $this->surl ?>/images/admin/delete.png" alt="Supprimer <?= $r['name'] ?>"/>
+                                    <img src="<?= $this->url ?>/images/delete.png" alt="Supprimer <?= $r['name'] ?>"/>
                                 </a>
                             <?php endif; ?>
                         </td>
@@ -72,11 +72,11 @@
             <table>
                 <tr>
                     <td id="pager">
-                        <img src="<?= $this->surl ?>/images/admin/first.png" alt="Première" class="first"/>
-                        <img src="<?= $this->surl ?>/images/admin/prev.png" alt="Précédente" class="prev"/>
+                        <img src="<?= $this->url ?>/images/first.png" alt="Première" class="first"/>
+                        <img src="<?= $this->url ?>/images/prev.png" alt="Précédente" class="prev"/>
                         <input type="text" class="pagedisplay"/>
-                        <img src="<?= $this->surl ?>/images/admin/next.png" alt="Suivante" class="next"/>
-                        <img src="<?= $this->surl ?>/images/admin/last.png" alt="Dernière" class="last"/>
+                        <img src="<?= $this->url ?>/images/next.png" alt="Suivante" class="next"/>
+                        <img src="<?= $this->url ?>/images/last.png" alt="Dernière" class="last"/>
                         <select class="pagesize">
                             <option value="<?= $this->nb_lignes ?>" selected="selected"><?= $this->nb_lignes ?></option>
                         </select>

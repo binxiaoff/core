@@ -2,16 +2,14 @@
     $(function() {
         $.datepicker.setDefaults($.extend({showMonthAfterYear: false}, $.datepicker.regional['fr']));
 
-        <?php foreach ($this->lLangues as $key => $lng) : ?>
-            $("#datepik_<?= $key ?>").datepicker({
-                showOn: 'both',
-                buttonImage: '<?= $this->surl ?>/images/admin/calendar.gif',
-                buttonImageOnly: true,
-                changeMonth: true,
-                changeYear: true,
-                yearRange: '<?= (date('Y') - 10) ?>:<?= (date('Y') + 10) ?>'
-            });
-        <?php endforeach; ?>
+        $("#datepik_fr").datepicker({
+            showOn: 'both',
+            buttonImage: '<?= $this->url ?>/images/calendar.gif',
+            buttonImageOnly: true,
+            changeMonth: true,
+            changeYear: true,
+            yearRange: '<?= (date('Y') - 10) ?>:<?= (date('Y') + 10) ?>'
+        });
     });
 </script>
 <script type="text/javascript" src="<?= $this->url ?>/ckeditor/ckeditor.js"></script>

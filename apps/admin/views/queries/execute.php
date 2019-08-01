@@ -47,11 +47,11 @@
             <table>
                 <tr>
                     <td id="pager">
-                        <img src="<?= $this->surl ?>/images/admin/first.png" alt="Première" class="first"/>
-                        <img src="<?= $this->surl ?>/images/admin/prev.png" alt="Précédente" class="prev"/>
+                        <img src="<?= $this->url ?>/images/first.png" alt="Première" class="first"/>
+                        <img src="<?= $this->url ?>/images/prev.png" alt="Précédente" class="prev"/>
                         <input type="text" class="pagedisplay"/>
-                        <img src="<?= $this->surl ?>/images/admin/next.png" alt="Suivante" class="next"/>
-                        <img src="<?= $this->surl ?>/images/admin/last.png" alt="Dernière" class="last"/>
+                        <img src="<?= $this->url ?>/images/next.png" alt="Suivante" class="next"/>
+                        <img src="<?= $this->url ?>/images/last.png" alt="Dernière" class="last"/>
                         <select class="pagesize">
                             <option value="<?= $this->queries->paging ?>" selected="selected"><?= $this->queries->paging ?></option>
                         </select>

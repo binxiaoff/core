@@ -20,7 +20,7 @@
                         <?php foreach ($this->zones as $zone) : ?>
                             <?php $this->userZone->get($user['id_user'], 'id_zone = "' . $zone['id_zone'] . '" AND id_user'); ?>
                             <td align="center">
-                                <img onclick="activeUserZone(<?= $user['id_user'] ?>,<?= $zone['id_zone'] ?>,'zone_<?= $user['id_user'] ?>_<?= $zone['id_zone'] ?>');" src="<?= $this->surl ?>/images/admin/check_<?= ($this->userZone->id != '' ? 'on' : 'off') ?>.png" id="zone_<?= $user['id_user'] ?>_<?= $zone['id_zone'] ?>" style="cursor: pointer;"/>
+                                <img onclick="activeUserZone(<?= $user['id_user'] ?>,<?= $zone['id_zone'] ?>,'zone_<?= $user['id_user'] ?>_<?= $zone['id_zone'] ?>');" src="<?= $this->url ?>/images/check_<?= ($this->userZone->id != '' ? 'on' : 'off') ?>.png" id="zone_<?= $user['id_user'] ?>_<?= $zone['id_zone'] ?>" style="cursor: pointer;"/>
                             </td>
                         <?php endforeach; ?>
                     </tr>

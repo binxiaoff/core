@@ -15,7 +15,7 @@
                         <td><?= $t['name'] ?></td>
                         <td align="center">
                             <a href="<?= $this->url ?>/templates/elements/<?= $t['id_template'] ?>" title="Liste des éléments du template <?= $t['name'] ?>">
-                                <img src="<?= $this->surl ?>/images/admin/edit.png" alt="Liste des éléments du template <?= $t['name'] ?>"/>
+                                <img src="<?= $this->url ?>/images/edit.png" alt="Liste des éléments du template <?= $t['name'] ?>"/>
                             </a>
                         </td>
                     </tr>

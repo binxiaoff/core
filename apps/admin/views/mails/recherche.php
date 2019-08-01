@@ -3,7 +3,7 @@
         $.datepicker.setDefaults($.extend({showMonthAfterYear: false}, $.datepicker.regional['fr']));
         $("#datepik_from").datepicker({
             showOn: 'both',
-            buttonImage: '<?= $this->surl ?>/images/admin/calendar.gif',
+            buttonImage: '<?= $this->url ?>/images/calendar.gif',
             buttonImageOnly: true,
             changeMonth: true,
             changeYear: true,
@@ -11,7 +11,7 @@
         });
         $("#datepik_to").datepicker({
             showOn: 'both',
-            buttonImage: '<?= $this->surl ?>/images/admin/calendar.gif',
+            buttonImage: '<?= $this->url ?>/images/calendar.gif',
             buttonImageOnly: true,
             changeMonth: true,
             changeYear: true,
@@ -20,7 +20,7 @@
     });
 </script>
 <div id="popup">
-    <a onclick="parent.$.fn.colorbox.close();" title="Fermer" class="closeBtn"><img src="<?= $this->surl ?>/images/admin/delete.png" alt="Fermer"/></a>
+    <a onclick="parent.$.fn.colorbox.close();" title="Fermer" class="closeBtn"><img src="<?= $this->url ?>/images/delete.png" alt="Fermer"/></a>
     <form method="post" name="add_recherche" id="add_recherche" enctype="multipart/form-data" action="<?= $this->url ?>/mails/emailhistory" target="_parent">
         <h1>Recherche</h1>
         <fieldset>
