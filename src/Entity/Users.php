@@ -2,7 +2,9 @@
 
 namespace Unilend\Entity;
 
+use DateTime;
 use Doctrine\ORM\Mapping as ORM;
+use Unilend\Entity\Traits\TimestampableTrait;
 
 /**
  * Users
@@ -13,6 +15,8 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class Users
 {
+    use TimestampableTrait;
+
     const USER_ID_CRON       = -1;
     const USER_ID_FRONT      = -2;
     const USER_ID_WEBSERVICE = -3;
@@ -21,7 +25,7 @@ class Users
     const STATUS_OFFLINE = 0;
 
     /**
-     * @var \Unilend\Entity\UsersTypes
+     * @var UsersTypes
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\UsersTypes")
      * @ORM\JoinColumns({
@@ -87,9 +91,9 @@ class Users
     private $password;
 
     /**
-     * @var \DateTime
+     * @var DateTime
      *
-     * @ORM\Column(name="password_edited", type="datetime")
+     * @ORM\Column(name="password_edited", type="datetime", nullable=true)
      */
     private $passwordEdited;
 
@@ -101,23 +105,9 @@ class Users
     private $status;
 
     /**
-     * @var \DateTime
+     * @var DateTime
      *
-     * @ORM\Column(name="added", type="datetime")
-     */
-    private $added;
-
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="updated", type="datetime")
-     */
-    private $updated;
-
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="lastlogin", type="datetime")
+     * @ORM\Column(name="lastlogin", type="datetime", nullable=true)
      */
     private $lastlogin;
 
@@ -130,11 +120,7 @@ class Users
      */
     private $idUser;
 
-
-
     /**
-     * Set idUserType
-     *
      * @param UsersTypes $idUserType
      *
      * @return Users
@@ -147,8 +133,6 @@ class Users
     }
 
     /**
-     * Get idUserType
-     *
      * @return UsersTypes
      */
     public function getIdUserType(): UsersTypes
@@ -157,8 +141,6 @@ class Users
     }
 
     /**
-     * Set firstname
-     *
      * @param string $firstname
      *
      * @return Users
@@ -171,8 +153,6 @@ class Users
     }
 
     /**
-     * Get firstname
-     *
      * @return string
      */
     public function getFirstname(): string
@@ -181,8 +161,6 @@ class Users
     }
 
     /**
-     * Set name
-     *
      * @param string $name
      *
      * @return Users
@@ -195,8 +173,6 @@ class Users
     }
 
     /**
-     * Get name
-     *
      * @return string
      */
     public function getName(): string
@@ -205,8 +181,6 @@ class Users
     }
 
     /**
-     * Set phone
-     *
      * @param string|null $phone
      *
      * @return Users
@@ -219,8 +193,6 @@ class Users
     }
 
     /**
-     * Get phone
-     *
      * @return string|null
      */
     public function getPhone(): ?string
@@ -229,8 +201,6 @@ class Users
     }
 
     /**
-     * Set mobile
-     *
      * @param string|null $mobile
      *
      * @return Users
@@ -243,8 +213,6 @@ class Users
     }
 
     /**
-     * Get mobile
-     *
      * @return string|null
      */
     public function getMobile(): ?string
@@ -253,8 +221,6 @@ class Users
     }
 
     /**
-     * Set email
-     *
      * @param string $email
      *
      * @return Users
@@ -267,8 +233,6 @@ class Users
     }
 
     /**
-     * Get email
-     *
      * @return string
      */
     public function getEmail(): string
@@ -277,8 +241,6 @@ class Users
     }
 
     /**
-     * Set slack
-     *
      * @param string|null $slack
      *
      * @return Users
@@ -291,8 +253,6 @@ class Users
     }
 
     /**
-     * Get slack
-     *
      * @return string|null
      */
     public function getSlack(): ?string
@@ -301,8 +261,6 @@ class Users
     }
 
     /**
-     * Set IP range
-     *
      * @param string|null $ip
      *
      * @return Users
@@ -315,8 +273,6 @@ class Users
     }
 
     /**
-     * Get ip
-     *
      * @return string|null
      */
     public function getIp(): ?string
@@ -325,8 +281,6 @@ class Users
     }
 
     /**
-     * Set password
-     *
      * @param string $password
      *
      * @return Users
@@ -339,8 +293,6 @@ class Users
     }
 
     /**
-     * Get password
-     *
      * @return string
      */
     public function getPassword(): string
@@ -349,13 +301,11 @@ class Users
     }
 
     /**
-     * Set passwordEdited
-     *
-     * @param \DateTime|null $passwordEdited
+     * @param DateTime|null $passwordEdited
      *
      * @return Users
      */
-    public function setPasswordEdited(?\DateTime $passwordEdited): Users
+    public function setPasswordEdited(?DateTime $passwordEdited): Users
     {
         $this->passwordEdited = $passwordEdited;
 
@@ -363,18 +313,14 @@ class Users
     }
 
     /**
-     * Get passwordEdited
-     *
-     * @return \DateTime|null
+     * @return DateTime|null
      */
-    public function getPasswordEdited(): ?\DateTime
+    public function getPasswordEdited(): ?DateTime
     {
         return $this->passwordEdited;
     }
 
     /**
-     * Set status
-     *
      * @param int $status
      *
      * @return Users
@@ -387,8 +333,6 @@ class Users
     }
 
     /**
-     * Get status
-     *
      * @return int
      */
     public function getStatus(): int
@@ -397,61 +341,11 @@ class Users
     }
 
     /**
-     * Set added
-     *
-     * @param \DateTime $added
+     * @param DateTime|null $lastlogin
      *
      * @return Users
      */
-    public function setAdded(\DateTime $added): Users
-    {
-        $this->added = $added;
-
-        return $this;
-    }
-
-    /**
-     * Get added
-     *
-     * @return \DateTime
-     */
-    public function getAdded(): \DateTime
-    {
-        return $this->added;
-    }
-
-    /**
-     * Set updated
-     *
-     * @param \DateTime|null $updated
-     *
-     * @return Users
-     */
-    public function setUpdated(?\DateTime $updated): Users
-    {
-        $this->updated = $updated;
-
-        return $this;
-    }
-
-    /**
-     * Get updated
-     *
-     * @return \DateTime|null
-     */
-    public function getUpdated(): ?\DateTime
-    {
-        return $this->updated;
-    }
-
-    /**
-     * Set lastlogin
-     *
-     * @param \DateTime|null $lastlogin
-     *
-     * @return Users
-     */
-    public function setLastlogin(?\DateTime $lastlogin): Users
+    public function setLastlogin(?DateTime $lastlogin): Users
     {
         $this->lastlogin = $lastlogin;
 
@@ -459,40 +353,18 @@ class Users
     }
 
     /**
-     * Get lastlogin
-     *
-     * @return \DateTime|null
+     * @return DateTime|null
      */
-    public function getLastlogin(): ?\DateTime
+    public function getLastlogin(): ?DateTime
     {
         return $this->lastlogin;
     }
 
     /**
-     * Get idUser
-     *
      * @return int
      */
     public function getIdUser(): int
     {
         return $this->idUser;
-    }
-
-    /**
-     * @ORM\PrePersist
-     */
-    public function setAddedValue(): void
-    {
-        if (! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
-            $this->added = new \DateTime();
-        }
-    }
-
-    /**
-     * @ORM\PreUpdate
-     */
-    public function setUpdatedValue(): void
-    {
-        $this->updated = new \DateTime();
     }
 }

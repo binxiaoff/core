@@ -12,7 +12,7 @@ class queriesController extends bootstrap
     {
         parent::initialize();
 
-        $this->users->checkAccess(Zones::ZONE_LABEL_STATISTICS);
+        $this->users->checkAccess(Zones::ZONE_LABEL_EDITION);
 
         $this->menu_admin = 'stats';
     }

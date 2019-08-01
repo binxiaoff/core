@@ -212,14 +212,12 @@ class blocsController extends bootstrap
         $this->lTree = $this->tree->listChilds(0, [], $this->language);
 
         if (isset($_POST['form_edit_bloc'])) {
-            foreach ($this->lLangues as $key => $lng) {
-                $this->blocs_elements->delete($this->blocs->id_bloc, 'id_langue = "' . $key . '" AND id_bloc');
+            $this->blocs_elements->delete($this->blocs->id_bloc, 'id_langue = "fr" AND id_bloc');
 
-                $this->lElements = $this->elements->select('status = 1 AND id_bloc != 0 AND id_bloc = ' . $this->blocs->id_bloc, 'ordre ASC');
+            $this->lElements = $this->elements->select('status = 1 AND id_bloc != 0 AND id_bloc = ' . $this->blocs->id_bloc, 'ordre ASC');
 
-                foreach ($this->lElements as $element) {
-                    $this->tree->handleFormElement($this->blocs->id_bloc, $element, 'bloc', $key);
-                }
+            foreach ($this->lElements as $element) {
+                $this->tree->handleFormElement($this->blocs->id_bloc, $element, 'bloc', 'fr');
             }
 
             $_SESSION['freeow']['title']   = 'Modification d\'un bloc';

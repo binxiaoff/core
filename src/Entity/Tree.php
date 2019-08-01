@@ -129,7 +129,7 @@ class Tree
      *
      * @ORM\Column(name="id_tree", type="integer")
      * @ORM\Id
-     * @ORM\GeneratedValue(strategy="NONE")
+     * @ORM\GeneratedValue(strategy="IDENTITY")
      */
     private $idTree;
 

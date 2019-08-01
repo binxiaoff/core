@@ -14,33 +14,7 @@ class tree extends tree_crud
         'statistique', 'statistiques', 'contact'
     ];
 
-    public function __construct($bdd, $params = '')
-    {
-        parent::__construct($bdd, $params);
-    }
-
-    function get($id, $field = 'id_tree')
-    {
-        return parent::get($id, $field);
-    }
-
-    function update($cs = '')
-    {
-        parent::update($cs);
-    }
-
-    function delete($id, $field = 'id_tree')
-    {
-        parent::delete($id, $field);
-    }
-
-    function create($cs = '')
-    {
-        $id = parent::create($cs);
-        return $id;
-    }
-
-    function select($where = '', $order = '', $start = '', $nb = '')
+    public function select($where = '', $order = '', $start = '', $nb = '')
     {
         if ($where != '') {
             $where = ' WHERE ' . $where;
@@ -58,7 +32,7 @@ class tree extends tree_crud
         return $result;
     }
 
-    function counter($where = '')
+    public function counter($where = '')
     {
         if ($where != '') {
             $where = ' WHERE ' . $where;
@@ -70,7 +44,7 @@ class tree extends tree_crud
         return (int) ($this->bdd->result($result, 0, 0));
     }
 
-    function exist($id, $field = 'id_tree')
+    public function exist($id, $field = 'id_tree')
     {
         $sql    = 'SELECT * FROM `tree` WHERE ' . $field . '="' . $id . '"';
         $result = $this->bdd->query($sql);
@@ -382,14 +356,6 @@ class tree extends tree_crud
         }
     }
 
-    // Recuperation de l'id max pour la création d'une page (clé primaire multiple, pas d'auto incremente)
-    public function getMaxId()
-    {
-        $sql    = 'SELECT MAX(id_tree) as id FROM tree';
-        $result = $this->bdd->query($sql);
-        return (int) ($this->bdd->result($result, 0, 0));
-    }
-
     public function getChilds($id_parent, $langue = 'fr')
     {
         $sSense     = (self::PRESS_SPEAKS == (int) $id_parent) ? 'DESC' : 'ASC';
@@ -399,12 +365,12 @@ class tree extends tree_crud
             if ($rub['ordre'] == $this->getFirstPosition($rub['id_parent'])) {
                 $up = '';
             } else {
-                $up = '<a href="' . $this->params['url'] . '/tree/up/' . $rub['id_tree'] . '" title="Up"><img src="' . $this->params['surl'] . '/images/admin/up.png" alt="Up" /></a>';
+                $up = '<a href="' . $this->params['url'] . '/tree/up/' . $rub['id_tree'] . '" title="Up"><img src="' . $this->params['url'] . '/images/up.png" alt="Up" /></a>';
             }
             if ($rub['ordre'] == $this->getLastPosition($rub['id_parent'])) {
                 $down = '';
             } else {
-                $down = '<a href="' . $this->params['url'] . '/tree/down/' . $rub['id_tree'] . '" title="Down"><img src="' . $this->params['surl'] . '/images/admin/down.png" alt="Down" /></a>';
+                $down = '<a href="' . $this->params['url'] . '/tree/down/' . $rub['id_tree'] . '" title="Down"><img src="' . $this->params['url'] . '/images/down.png" alt="Down" /></a>';
             }
 
             if (strlen($rub['menu_title']) > 60) {
@@ -584,20 +550,13 @@ class tree extends tree_crud
 
         foreach ($final as $f) {
             if (! is_null($f)) {
-                $this->delete(array('id_tree' => $f));
+                $this->delete($f);
             }
         }
 
-        $this->delete(array('id_tree' => $id_parent));
+        $this->delete($id_parent);
         $this->params['tree_elements']->delete($id_parent, 'id_tree');
         $this->reordre($id_grand_parent);
-    }
-
-    // On rement le champ template des page à 0 dans la table tree
-    public function deleteTemplate($id_template)
-    {
-        $sql = 'UPDATE tree SET id_template = 0 WHERE id_template = "' . $id_template . '"';
-        $this->bdd->query($sql);
     }
 
     // Récupération du slug de la page

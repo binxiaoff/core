@@ -90,6 +90,7 @@ class usersController extends bootstrap
         }
 
         if (isset($_POST['form_mod_users'])) {
+            /** @var Users $user */
             $user = $entityManager->getRepository(Users::class)->find($this->params[0]);
 
             if (null === $user) {
@@ -100,6 +101,8 @@ class usersController extends bootstrap
                 die;
             }
 
+            $userType = $entityManager->getRepository(UsersTypes::class)->find($_POST['id_user_type']);
+
             $user
                 ->setFirstname($_POST['firstname'])
                 ->setName($_POST['name'])
@@ -109,7 +112,8 @@ class usersController extends bootstrap
                 ->setSlack($_POST['slack'])
                 ->setIp($_POST['ip'])
                 ->setStatus($_POST['status'])
-                ->setIdU($_POST['id_user_type']);
+                ->setIdUserType($userType)
+            ;
 
             $entityManager->flush($user);
 

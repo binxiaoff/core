@@ -79,14 +79,6 @@ class tree_menu extends tree_menu_crud
     //**************************************** AJOUTS ******************************************//
     //******************************************************************************************//
 
-    // Recuperation de l'id max pour la création d'une page (clé primaire multiple, pas d'auto incremente)
-    public function getMaxId()
-    {
-        $sql    = 'SELECT MAX(id) as id FROM tree_menu';
-        $result = $this->bdd->query($sql);
-        return (int) $this->bdd->result($result);
-    }
-
     // Récupération de la derniere position des liens d'un menu
     public function getLastPosition($id_menu)
     {
