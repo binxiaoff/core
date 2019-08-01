@@ -8,7 +8,7 @@
     });
 </script>
 
-<?php $isAllowedToEdit = $this->get('unilend.service.back_office_user_manager')->isGrantedIT($this->userEntity);?>
+<?php $isAllowedToEdit = $this->isGrantedIT($this->userEntity);?>
 <div id="contenu">
     <div class="row">
         <div class="col-md-6">
