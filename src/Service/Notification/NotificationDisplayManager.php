@@ -115,7 +115,7 @@ class NotificationDisplayManager
                         '%projectUrl%'   => $this->router->generate('lender_project_details', ['slug' => $project->getSlug()]),
                         '%projectTitle%' => $project->getTitle(),
                         '%borrowerName%' => $project->getBorrowerCompany()->getName(),
-                        '%bidAmount%'    => $this->currencyFormatterNoDecimal->formatCurrency($bid->getMoney()->getAmount(), $bid->getMoney()->getCurrency()),
+                        '%bidAmount%'    => $this->currencyFormatterNoDecimal->formatCurrency((float) $bid->getMoney()->getAmount(), $bid->getMoney()->getCurrency()),
                     ]);
 
                     break;

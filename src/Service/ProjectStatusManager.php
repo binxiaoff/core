@@ -5,7 +5,7 @@ namespace Unilend\Service;
 use Doctrine\ORM\{EntityManagerInterface, ORMException, OptimisticLockException};
 use Psr\Log\LoggerInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
-use Unilend\Entity\{Project, ProjectStatusHistory};
+use Unilend\Entity\{Clients, Project, ProjectStatusHistory};
 use Unilend\Repository\ProjectRepository;
 use Unilend\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\Service\User\RealUserFinder;
@@ -55,10 +55,11 @@ class ProjectStatusManager
     }
 
     /**
+     * @param Clients $user
      * @param int     $projectStatus
      * @param Project $project
      */
-    public function addProjectStatus(int $projectStatus, $project)
+    public function addProjectStatus(Clients $user, int $projectStatus, $project)
     {
         $projectStatusHistory = (new ProjectStatusHistory())
             ->setStatus($projectStatus)
