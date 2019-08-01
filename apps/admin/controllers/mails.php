@@ -264,13 +264,7 @@ class mailsController extends bootstrap
 
     public function _email_history_preview()
     {
-        $this->users->checkAccess();
-        $zones = array_intersect([Zones::ZONE_LABEL_CONFIGURATION, Zones::ZONE_LABEL_LENDERS], $this->lZonesHeader);
-
-        if (empty($zones)) {
-            $this->errorMessage = 'Vous n\'avez pas les droits pour visualiser les mails.';
-            die;
-        }
+        $this->users->checkAccess(Zones::ZONE_LABEL_CONFIGURATION);
 
         $this->hideDecoration();
         $_SESSION['request_url'] = $this->url;

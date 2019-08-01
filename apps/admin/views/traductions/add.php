@@ -15,13 +15,13 @@
                     <td><input type="text" name="name" id="name" class="input_large"/></td>
                 </tr>
                 <tr>
-                    <th><label for="translation">Texte <?= (count($this->lLangues) > 1 ? '(' . $this->dLanguage . ')' : '') ?>:</label></th>
+                    <th><label for="translation">Texte :</label></th>
                     <td><textarea name="translation" id="translation" class="textarea"></textarea></td>
                 </tr>
                 <tr>
                     <td>&nbsp;</td>
                     <th>
-                        <input type="hidden" name="id_langue" id="id_langue" value="<?= $this->dLanguage ?>"/>
+                        <input type="hidden" name="id_langue" id="id_langue" value="fr"/>
                         <input type="hidden" name="form_add_traduction" id="form_add_traduction"/>
                         <button type="submit" class="btn-primary">Valider</button>
                     </th>

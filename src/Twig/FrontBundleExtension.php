@@ -182,19 +182,6 @@ class FrontBundleExtension extends AbstractExtension
     }
 
     /**
-     * @param string $image
-     * @param string $format
-     *
-     * @return string
-     */
-    public function photo($image, $format = '')
-    {
-        $photos = new \photos([$this->publicDirectory . 'var/', $this->packages->getUrl('')]);
-
-        return $photos->display($image, $format);
-    }
-
-    /**
      * @param string $section
      *
      * @return array

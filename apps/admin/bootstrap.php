@@ -1,7 +1,7 @@
 <?php
 
 use Doctrine\ORM\EntityManager;
-use Unilend\Entity\{LoginConnectionAdmin, ProjectsStatus, UserAccess, Users, Zones};
+use Unilend\Entity\{LoginConnectionAdmin, UserAccess, Users, Zones};
 
 class bootstrap extends Controller
 {
@@ -76,8 +76,6 @@ class bootstrap extends Controller
     protected $ficelle;
     /** @var \upload */
     protected $upload;
-    /** @var \photos */
-    protected $photos;
     /** @var \translations */
     protected $ln;
 
@@ -139,7 +137,7 @@ class bootstrap extends Controller
     {
         parent::initialize();
 
-        if ('login' != $this->current_function) {
+        if ('login' !== $this->current_function) {
             $_SESSION['request_url'] = $_SERVER['REQUEST_URI'];
         }
 
@@ -154,19 +152,29 @@ class bootstrap extends Controller
         $this->blocs          = $this->loadData('blocs');
         $this->blocs_elements = $this->loadData('blocs_elements');
         $this->elements       = $this->loadData('elements');
-        $this->tree           = $this->loadData('tree', ['url' => $this->url, 'front' => $this->furl, 'surl' => $this->surl, 'tree_elements' => $this->tree_elements, 'blocs_elements' => $this->blocs_elements, 'upload' => $this->upload, 'spath' => $this->spath, 'path' => $this->path]);
         $this->users          = $this->loadData('users', ['lurl' => $this->url]);
         $this->users_zones    = $this->loadData('users_zones');
         $this->users_history  = $this->loadData('users_history');
+        $this->tree           = $this->loadData('tree', [
+            'url'            => $this->url,
+            'front'          => $this->furl,
+            'tree_elements'  => $this->tree_elements,
+            'blocs_elements' => $this->blocs_elements,
+            'upload'         => $this->upload,
+            'spath'          => $this->spath,
+            'path'           => $this->path,
+        ]);
 
         /** @var EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
 
         if (false === empty($_POST['connect']) && false === empty($_POST['password'])) {
             $loginLog = new LoginConnectionAdmin();
-            $loginLog->setEmail($_POST['login']);
-            $loginLog->setDateConnexion(new \DateTime('now'));
-            $loginLog->setIp($_SERVER['REMOTE_ADDR']);
+            $loginLog
+                ->setEmail($_POST['login'])
+                ->setDateConnexion(new \DateTime('now'))
+                ->setIp($_SERVER['REMOTE_ADDR'])
+            ;
 
             $isAuthorizedIp = true;
             $user           = $this->users->login($_POST['login'], $_POST['password']);
@@ -256,9 +264,6 @@ class bootstrap extends Controller
 
         $this->nb_lignes = 100;
 
-        $this->lLangues  = ['fr' => 'Francais'];
-        $this->dLanguage = 'fr';
-
         if (isset($_SESSION['user']) && false === empty($_SESSION['user']['id_user'])) {
             $this->sessionIdUser = $_SESSION['user']['id_user'];
             $this->lZonesHeader  = $this->users_zones->selectZonesUser($_SESSION['user']['id_user']);
@@ -269,10 +274,12 @@ class bootstrap extends Controller
             $this->userEntity = $entityManager->getRepository(Users::class)->find($_SESSION['user']['id_user']);
 
             $userAccessEntity = new UserAccess();
-            $userAccessEntity->setAction($this->current_function);
-            $userAccessEntity->setController($this->current_controller);
-            $userAccessEntity->setIdUser($this->userEntity);
-            $userAccessEntity->setIp($_SERVER['REMOTE_ADDR']);
+            $userAccessEntity
+                ->setAction($this->current_function)
+                ->setController($this->current_controller)
+                ->setIdUser($this->userEntity)
+                ->setIp($_SERVER['REMOTE_ADDR'])
+            ;
 
             $entityManager->persist($userAccessEntity);
             $entityManager->flush($userAccessEntity);

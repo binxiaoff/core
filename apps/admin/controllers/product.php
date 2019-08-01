@@ -8,7 +8,7 @@ class productController extends bootstrap
     {
         parent::initialize();
 
-        $this->users->checkAccess(Zones::ZONE_LABEL_BORROWERS);
+        $this->users->checkAccess(Zones::ZONE_LABEL_CONFIGURATION);
 
         $this->menu_admin = 'emprunteurs';
         $this->translator = $this->get('translator');
