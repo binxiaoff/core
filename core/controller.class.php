@@ -2,6 +2,7 @@
 
 use Symfony\Component\DependencyInjection\{ContainerAwareInterface, ContainerInterface};
 use Symfony\Component\HttpFoundation\Request;
+use Unilend\core\Loader;
 use Unilend\Doctrine\DBAL\Connection;
 
 abstract class Controller implements ContainerAwareInterface
@@ -161,7 +162,7 @@ abstract class Controller implements ContainerAwareInterface
     public function loadJs(string $js, ?string $cacheKey = null): void
     {
         if (false === array_key_exists($js, $this->included_js)) {
-            $this->included_js[$js] = '<script src="' . $this->surl . '/scripts/' . $js . '.js' . ($cacheKey ? '?' . $cacheKey : '') . '"></script>';
+            $this->included_js[$js] = '<script src="' . $this->url . '/scripts/' . $js . '.js' . ($cacheKey ? '?' . $cacheKey : '') . '"></script>';
         }
     }
 
@@ -179,7 +180,7 @@ abstract class Controller implements ContainerAwareInterface
     public function loadCss(string $css, ?string $cacheKey = null): void
     {
         if (false === array_key_exists($css, $this->included_css)) {
-            $this->included_css[$css] = '<link media="all" href="' . $this->surl . '/styles/' . $css . '.css' . ($cacheKey ? '?' . $cacheKey : '') . '" type="text/css" rel="stylesheet">';
+            $this->included_css[$css] = '<link media="all" href="' . $this->url . '/styles/' . $css . '.css' . ($cacheKey ? '?' . $cacheKey : '') . '" type="text/css" rel="stylesheet">';
         }
     }
 
@@ -222,7 +223,6 @@ abstract class Controller implements ContainerAwareInterface
 
         $this->url  = $this->getParameter('router.request_context.scheme') . '://' . getenv('HOST_ADMIN_URL');
         $this->furl = $this->getParameter('router.request_context.scheme') . '://' . getenv('HOST_DEFAULT_URL');
-        $this->surl = $this->furl;
     }
 
     protected function loadData($object, $params = [])
@@ -234,14 +234,12 @@ abstract class Controller implements ContainerAwareInterface
      * @deprecated each lib will be declared as a service
      *
      * @param string $library
-     * @param array  $params
-     * @param bool   $instanciate
      *
      * @return bool|object
      */
-    protected function loadLib($library, $params = [], $instanciate = true)
+    protected function loadLib($library)
     {
-        return \Unilend\core\Loader::loadLib($library, $params, $instanciate);
+        return Loader::loadLib($library);
     }
 
     protected function get($service)

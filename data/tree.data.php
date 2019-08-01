@@ -169,16 +169,16 @@ class tree extends tree_crud
                 </tr>
                 <tr id="deleteImageElement' . $jsFunction . $this->params[$elementType]->id . '">';
                 if ($this->params[$elementType]->value != '') {
-                    $imagePath = 'tree' === $type ? $this->params['spath'] . 'images/' : $this->params['surl'] . '/var/images/';
+                    $imagePath = 'tree' === $type ? $this->params['spath'] . 'images/' : $this->params['furl'] . '/var/images/';
                     list($width, $height) = @getimagesize($imagePath . $this->params[$elementType]->value);
                     echo '
                         <th class="bas">
-                            <a href="' . $this->params['surl'] . '/var/images/' . $this->params[$elementType]->value . '" class="thickbox">
-                                <img src="' . $this->params['surl'] . '/var/images/' . $this->params[$elementType]->value . '" alt="' . $element['name'] . '"' . ($height > 180 ? ' height="180"' : ($width > 400 ? ' width="400"' : '')) . ' style="vertical-align:middle;" />
+                            <a href="' . $this->params['furl'] . '/var/images/' . $this->params[$elementType]->value . '" class="thickbox">
+                                <img src="' . $this->params['furl'] . '/var/images/' . $this->params[$elementType]->value . '" alt="' . $element['name'] . '"' . ($height > 180 ? ' height="180"' : ($width > 400 ? ' width="400"' : '')) . ' style="vertical-align:middle;" />
                             </a>
                             &nbsp;&nbsp; Supprimer l\'image&nbsp;&nbsp;
                             <a onclick="if(confirm(\'Etes vous sur de vouloir supprimer cette image ?\')){deleteImageElement' . $jsFunction . '(' . $this->params[$elementType]->id . ',\'' . $element['slug'] . '_' . $langue . '\');return false;}">
-                                <img src="' . $this->params['surl'] . '/images/admin/delete.png" alt="Supprimer" style="vertical-align:middle;" />
+                                <img src="' . $this->params['url'] . '/images/delete.png" alt="Supprimer" style="vertical-align:middle;" />
                             </a>
                         </th>';
                 } else {
@@ -209,10 +209,10 @@ class tree extends tree_crud
                     echo '
                         <th class="bas">
                             <label>Fichier actuel</label> :
-                            <a href="' . $this->params['surl'] . '/var/fichiers/' . $this->params[$elementType]->value . '" target="blank">' . $this->params['surl'] . '/var/fichiers/' . $this->params[$elementType]->value . '</a>
+                            <a href="' . $this->params['furl'] . '/var/fichiers/' . $this->params[$elementType]->value . '" target="blank">' . $this->params['furl'] . '/var/fichiers/' . $this->params[$elementType]->value . '</a>
                             &nbsp;&nbsp;
                             <a onclick="if(confirm(\'Etes vous sur de vouloir supprimer ce fichier ?\')){deleteFichierElement' . $jsFunction . '(' . $this->params[$elementType]->id . ',\'' . $element['slug'] . '_' . $langue . '\');return false;}">
-                                <img src="' . $this->params['surl'] . '/images/admin/delete.png" alt="Supprimer">
+                                <img src="' . $this->params['url'] . '/images/delete.png" alt="Supprimer">
                             </a>
                         </th>';
                 } else {
@@ -433,9 +433,9 @@ class tree extends tree_crud
                 }
             }
 
-            $edit = '<a href="' . $this->params['url'] . '/tree/edit/' . $rub['id_tree'] . '" title="Edit"><img src="' . $this->params['surl'] . '/images/admin/edit.png" alt="Edit" /></a>';
-            $add  = '<a href="' . $this->params['url'] . '/tree/add/' . $rub['id_tree'] . '" title="Add"><img src="' . $this->params['surl'] . '/images/admin/add.png" alt="Add" /></a>';
-            $del  = '<a href="' . $this->params['url'] . '/tree/delete/' . $rub['id_tree'] . '" onclick="return confirm(\'Etes vous sur de vouloir supprimer cette page et toutes les pages qui en dépendent ?\')" title="Delete"><img src="' . $this->params['surl'] . '/images/admin/delete.png" alt="Delete" /></a>';
+            $edit = '<a href="' . $this->params['url'] . '/tree/edit/' . $rub['id_tree'] . '" title="Edit"><img src="' . $this->params['url'] . '/images/edit.png" alt="Edit" /></a>';
+            $add  = '<a href="' . $this->params['url'] . '/tree/add/' . $rub['id_tree'] . '" title="Add"><img src="' . $this->params['url'] . '/images/add.png" alt="Add" /></a>';
+            $del  = '<a href="' . $this->params['url'] . '/tree/delete/' . $rub['id_tree'] . '" onclick="return confirm(\'Etes vous sur de vouloir supprimer cette page et toutes les pages qui en dépendent ?\')" title="Delete"><img src="' . $this->params['url'] . '/images/delete.png" alt="Delete" /></a>';
 
             $this->arbre .= '
             <li>
@@ -459,10 +459,10 @@ class tree extends tree_crud
     // Recuperation et affichage de l'arbo du site
     public function getArbo($id = '1', $langue = 'fr')
     {
-        $edit = '<a href="' . $this->params['url'] . '/tree/edit/' . $id . '" title="Edit"><img src="' . $this->params['surl'] . '/images/admin/edit.png" alt="Edit" /></a>';
-        $add  = '<a href="' . $this->params['url'] . '/tree/add/' . $id . '" title="Add"><img src="' . $this->params['surl'] . '/images/admin/add.png" border="0" alt="Add" /></a>';
+        $edit = '<a href="' . $this->params['url'] . '/tree/edit/' . $id . '" title="Edit"><img src="' . $this->params['url'] . '/images/edit.png" alt="Edit" /></a>';
+        $add  = '<a href="' . $this->params['url'] . '/tree/add/' . $id . '" title="Add"><img src="' . $this->params['url'] . '/images/add.png" border="0" alt="Add" /></a>';
 
-        $this->arbre = '<img src="' . $this->params['surl'] . '/images/admin/home.png" border="0" alt="Home" />';
+        $this->arbre = '<img src="' . $this->params['url'] . '/images/home.png" border="0" alt="Home" />';
         $this->arbre .= $edit . '' . $add;
         $this->arbre .= '<ul id="browser" class="filetree">';
 

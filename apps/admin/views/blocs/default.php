@@ -39,19 +39,19 @@
                         </td>
                         <td align="center">
                             <a href="<?= $this->url ?>/blocs/status/<?= $b['id_bloc'] ?>/<?= $b['status'] ?>" title="<?= ($b['status'] == 1 ? 'Passer hors ligne' : 'Passer en ligne') ?>">
-                                <img src="<?= $this->surl ?>/images/admin/<?= ($b['status'] == 1 ? 'offline' : 'online') ?>.png" alt="<?= ($b['status'] == 1 ? 'Passer hors ligne' : 'Passer en ligne') ?>"/>
+                                <img src="<?= $this->url ?>/images/<?= ($b['status'] == 1 ? 'offline' : 'online') ?>.png" alt="<?= ($b['status'] == 1 ? 'Passer hors ligne' : 'Passer en ligne') ?>"/>
                             </a>
                             <a href="<?= $this->url ?>/blocs/edit/<?= $b['id_bloc'] ?>" class="thickbox">
-                                <img src="<?= $this->surl ?>/images/admin/edit.png" alt="Modifier <?= $b['name'] ?>"/>
+                                <img src="<?= $this->url ?>/images/edit.png" alt="Modifier <?= $b['name'] ?>"/>
                             </a>
                             <a href="<?= $this->url ?>/blocs/elements/<?= $b['id_bloc'] ?>" title="Liste des éléments du bloc <?= $b['name'] ?>">
-                                <img src="<?= $this->surl ?>/images/admin/database.png" alt="Liste des éléments du bloc <?= $b['name'] ?>"/>
+                                <img src="<?= $this->url ?>/images/database.png" alt="Liste des éléments du bloc <?= $b['name'] ?>"/>
                             </a>
                             <a href="<?= $this->url ?>/blocs/modifier/<?= $b['id_bloc'] ?>" title="Edition des éléments du bloc <?= $b['name'] ?>">
-                                <img src="<?= $this->surl ?>/images/admin/modif.png" alt="Edition des éléments du bloc <?= $b['name'] ?>"/>
+                                <img src="<?= $this->url ?>/images/modif.png" alt="Edition des éléments du bloc <?= $b['name'] ?>"/>
                             </a>
                             <a href="<?= $this->url ?>/blocs/delete/<?= $b['id_bloc'] ?>" title="Supprimer <?= $b['name'] ?>" onclick="return confirm('Etes vous sur de vouloir supprimer <?= $b['name'] ?> ?')">
-                                <img src="<?= $this->surl ?>/images/admin/delete.png" alt="Supprimer <?= $b['name'] ?>"/>
+                                <img src="<?= $this->url ?>/images/delete.png" alt="Supprimer <?= $b['name'] ?>"/>
                             </a>
                         </td>
                     </tr>
@@ -63,11 +63,11 @@
             <table>
                 <tr>
                     <td id="pager">
-                        <img src="<?= $this->surl ?>/images/admin/first.png" alt="Première" class="first"/>
-                        <img src="<?= $this->surl ?>/images/admin/prev.png" alt="Précédente" class="prev"/>
+                        <img src="<?= $this->url ?>/images/first.png" alt="Première" class="first"/>
+                        <img src="<?= $this->url ?>/images/prev.png" alt="Précédente" class="prev"/>
                         <input type="text" class="pagedisplay"/>
-                        <img src="<?= $this->surl ?>/images/admin/next.png" alt="Suivante" class="next"/>
-                        <img src="<?= $this->surl ?>/images/admin/last.png" alt="Dernière" class="last"/>
+                        <img src="<?= $this->url ?>/images/next.png" alt="Suivante" class="next"/>
+                        <img src="<?= $this->url ?>/images/last.png" alt="Dernière" class="last"/>
                         <select class="pagesize">
                             <option value="<?= $this->nb_lignes ?>" selected="selected"><?= $this->nb_lignes ?></option>
                         </select>

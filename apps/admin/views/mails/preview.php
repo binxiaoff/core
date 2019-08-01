@@ -15,7 +15,7 @@
             var content = $('#content').val()
             var form = ''
             var keywords = {
-                staticUrl: '<?= $this->surl ?>',
+                staticUrl: '<?= $this->furl ?>',
                 frontUrl: '<?= $this->furl ?>',
                 adminUrl: '<?= $this->url ?>',
                 facebookLink: '<?= $this->facebookUrl ?>',
@@ -80,7 +80,7 @@
 </script>
 <div style="display: none;">
     <div id="preview-content">
-        <a onclick="parent.$.fn.colorbox.close();" title="Fermer" class="closeBtn"><img src="<?= $this->surl ?>/images/admin/delete.png" alt="Fermer"></a>
+        <a onclick="parent.$.fn.colorbox.close();" title="Fermer" class="closeBtn"><img src="<?= $this->url ?>/images/delete.png" alt="Fermer"></a>
         <div class="row" style="margin: 40px 15px 0 15px;">
             <form id="preview-keywords-form" method="post" action="<?= $this->url ?>/mails/preview" class="col-md-3">
                 <div id="preview-keywords"></div>

@@ -1,5 +1,5 @@
 <div id="popup">
-    <a onclick="parent.$.fn.colorbox.close();" title="Fermer" class="closeBtn"><img src="<?= $this->surl ?>/images/admin/delete.png" alt="Fermer" /></a>
+    <a onclick="parent.$.fn.colorbox.close();" title="Fermer" class="closeBtn"><img src="<?= $this->url ?>/images/delete.png" alt="Fermer" /></a>
     <form method="post" name="mod_users" id="mod_users" enctype="multipart/form-data" action="<?= $this->url ?>/users/edit_perso_user/<?= $this->users->id_user ?>" target="_parent" onsubmit="return checkFormModifUser();">
         <h1>Modifier <?= $this->users->firstname ?> <?= $this->users->name ?></h1>
         <fieldset>

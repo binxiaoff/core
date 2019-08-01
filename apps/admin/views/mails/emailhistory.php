@@ -15,7 +15,7 @@
                 $.datepicker.setDefaults($.extend({showMonthAfterYear: false}, $.datepicker.regional['fr']));
                 $("#datepik_from").datepicker({
                     showOn: 'both',
-                    buttonImage: '<?= $this->surl ?>/images/admin/calendar.gif',
+                    buttonImage: '<?= $this->url ?>/images/calendar.gif',
                     buttonImageOnly: true,
                     changeMonth: true,
                     changeYear: true,
@@ -23,7 +23,7 @@
                 });
                 $("#datepik_to").datepicker({
                     showOn: 'both',
-                    buttonImage: '<?= $this->surl ?>/images/admin/calendar.gif',
+                    buttonImage: '<?= $this->url ?>/images/calendar.gif',
                     buttonImageOnly: true,
                     changeMonth: true,
                     changeYear: true,
@@ -67,7 +67,7 @@
                         <td><?= $email['subject'] ?></td>
                         <td align="center">
                             <a href="<?= $this->url ?>/mails/email_history_preview/<?= $email['idQueue'] ?>" class="thickbox">
-                                <img src="<?= $this->surl ?>/images/admin/modif.png" alt="Voir <?= $email['subject'] ?>">
+                                <img src="<?= $this->url ?>/images/modif.png" alt="Voir <?= $email['subject'] ?>">
                             </a>
                         </td>
                     </tr>
@@ -79,11 +79,11 @@
             <table>
                 <tr>
                     <td id="pager">
-                        <img src="<?= $this->surl ?>/images/admin/first.png" alt="Première" class="first">
-                        <img src="<?= $this->surl ?>/images/admin/prev.png" alt="Précédente" class="prev">
+                        <img src="<?= $this->url ?>/images/first.png" alt="Première" class="first">
+                        <img src="<?= $this->url ?>/images/prev.png" alt="Précédente" class="prev">
                         <input type="text" class="pagedisplay">
-                        <img src="<?= $this->surl ?>/images/admin/next.png" alt="Suivante" class="next">
-                        <img src="<?= $this->surl ?>/images/admin/last.png" alt="Dernière" class="last">
+                        <img src="<?= $this->url ?>/images/next.png" alt="Suivante" class="next">
+                        <img src="<?= $this->url ?>/images/last.png" alt="Dernière" class="last">
                         <select class="pagesize">
                             <option value="<?= $this->nb_lignes ?>" selected="selected"><?= $this->nb_lignes ?></option>
                         </select>

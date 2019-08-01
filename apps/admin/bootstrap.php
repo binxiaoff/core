@@ -131,8 +131,6 @@ class bootstrap extends Controller
     /** @var string */
     protected $lurl;
     /** @var string */
-    protected $surl;
-    /** @var string */
     protected $url;
     /** @var string */
     protected $staticsKey;
@@ -223,7 +221,8 @@ class bootstrap extends Controller
                 $this->error_login = 'Vous n\'êtes pas autorisé à vous connecter depuis cette adresse IP';
             } else {
                 $this->duree_waiting             = 1;
-                $this->nb_tentatives_precedentes = $entityManager->getRepository(LoginConnectionAdmin::class)->countFailedAttemptsSince($_SERVER['REMOTE_ADDR'], new \DateTime('10 minutes ago'));
+                $this->nb_tentatives_precedentes = $entityManager->getRepository(LoginConnectionAdmin::class)
+                    ->countFailedAttemptsSince($_SERVER['REMOTE_ADDR'], new \DateTime('10 minutes ago'));
 
                 if ($this->nb_tentatives_precedentes > 0 && $this->nb_tentatives_precedentes < 100) {
                     for ($i = 1; $i <= $this->nb_tentatives_precedentes; ++$i) {
@@ -235,26 +234,25 @@ class bootstrap extends Controller
             }
         }
 
-        $this->loadJs('admin/external/jquery/jquery');
-        $this->loadJs('admin/external/jquery/plugin/jquery-ui/jquery-ui.min');
-        $this->loadJs('admin/external/jquery/plugin/jquery-ui/jquery-ui.datepicker-fr');
-        $this->loadJs('admin/freeow/jquery.freeow.min');
-        $this->loadJs('admin/external/jquery/plugin/colorbox/jquery.colorbox-min');
-        $this->loadJs('admin/treeview/jquery.treeview');
-        $this->loadJs('admin/treeview/jquery.cookie');
-        $this->loadJs('admin/treeview/tree');
-        $this->loadJs('admin/tablesorter/jquery.tablesorter.min');
-        $this->loadJs('admin/tablesorter/jquery.tablesorter.pager');
-        $this->loadJs('admin/ajax', $this->staticsKey);
-        $this->loadJs('admin/main', $this->staticsKey);
+        $this->loadJs('jquery');
+        $this->loadJs('jquery-ui/jquery-ui.min');
+        $this->loadJs('jquery-ui/jquery-ui.datepicker-fr');
+        $this->loadJs('freeow/jquery.freeow.min');
+        $this->loadJs('colorbox/jquery.colorbox-min');
+        $this->loadJs('treeview/jquery.treeview');
+        $this->loadJs('treeview/jquery.cookie');
+        $this->loadJs('treeview/tree');
+        $this->loadJs('tablesorter/jquery.tablesorter.min');
+        $this->loadJs('tablesorter/jquery.tablesorter.pager');
+        $this->loadJs('main', $this->staticsKey);
 
-        $this->loadCss('admin/bootstrap');
-        $this->loadCss('../scripts/admin/freeow/freeow');
-        $this->loadCss('../scripts/admin/external/jquery/plugin/colorbox/colorbox');
-        $this->loadCss('../scripts/admin/treeview/jquery.treeview');
-        $this->loadCss('../scripts/admin/tablesorter/style');
-        $this->loadCss('../scripts/admin/external/jquery/plugin/jquery-ui/jquery-ui.min');
-        $this->loadCss('admin/main', $this->staticsKey);
+        $this->loadCss('bootstrap');
+        $this->loadCss('../scripts/freeow/freeow');
+        $this->loadCss('../scripts/colorbox/colorbox');
+        $this->loadCss('../scripts/treeview/jquery.treeview');
+        $this->loadCss('../scripts/tablesorter/style');
+        $this->loadCss('../scripts/jquery-ui/jquery-ui.min');
+        $this->loadCss('main', $this->staticsKey);
 
         $this->nb_lignes = 100;
 

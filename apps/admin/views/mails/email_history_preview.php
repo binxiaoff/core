@@ -1,5 +1,5 @@
 <div id="popup" style="width:800px;">
-    <a onclick="parent.$.fn.colorbox.close();" title="Fermer" class="closeBtn"><img src="<?= $this->surl ?>/images/admin/delete.png" alt="Fermer"/></a>
+    <a onclick="parent.$.fn.colorbox.close();" title="Fermer" class="closeBtn"><img src="<?= $this->url ?>/images/delete.png" alt="Fermer"/></a>
     <?php if (false === empty($this->email)) : ?>
         <div class="formMail">
             <div>

@@ -36,7 +36,7 @@
                         <td><?= $status ?></td>
                         <td>
                             <a href="/product/edit/<?= $product['id_product'] ?>" title="Consulter">
-                                <img src="<?= $this->surl ?>/images/admin/modif.png" alt="Consulter" />
+                                <img src="<?= $this->url ?>/images/modif.png" alt="Consulter" />
                             </a>
                         </td>
                     </tr>

@@ -9,6 +9,8 @@ class usersController extends bootstrap
     {
         parent::initialize();
 
+        $this->users->checkAccess(Zones::ZONE_LABEL_ADMINISTRATION);
+
         $this->menu_admin        = 'admin';
         $this->users_zones       = $this->loadData('users_zones');
         $this->users_types_zones = $this->loadData('users_types_zones');
@@ -16,8 +18,6 @@ class usersController extends bootstrap
 
     public function _default()
     {
-        $this->users->checkAccess(Zones::ZONE_LABEL_ADMINISTRATION);
-
         /** @var EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
 
@@ -141,8 +141,6 @@ class usersController extends bootstrap
 
     public function _edit()
     {
-        $this->users->checkAccess(Zones::ZONE_LABEL_ADMINISTRATION);
-
         $this->hideDecoration();
         $_SESSION['request_url'] = $this->url;
 
@@ -155,8 +153,6 @@ class usersController extends bootstrap
 
     public function _edit_perso()
     {
-        $this->users->checkAccess(Zones::ZONE_LABEL_ADMINISTRATION);
-
         $this->hideDecoration();
         $_SESSION['request_url'] = $this->url;
 
@@ -165,8 +161,6 @@ class usersController extends bootstrap
 
     public function _add()
     {
-        $this->users->checkAccess(Zones::ZONE_LABEL_ADMINISTRATION);
-
         $this->hideDecoration();
         $_SESSION['request_url'] = $this->url;
 
@@ -177,8 +171,6 @@ class usersController extends bootstrap
 
     public function _logs()
     {
-        $this->users->checkAccess(Zones::ZONE_LABEL_ADMINISTRATION);
-
         /** @var EntityManager $entityManager */
         $entityManager   = $this->get('doctrine.orm.entity_manager');
         $this->loginLogs = $entityManager->getRepository(LoginConnectionAdmin::class)->findBy([], ['added' => 'DESC'], 500);
@@ -186,8 +178,6 @@ class usersController extends bootstrap
 
     public function _generate_new_password()
     {
-        $this->users->checkAccess(Zones::ZONE_LABEL_ADMINISTRATION);
-
         if (isset($this->params[0]) && $this->users->get($this->params[0], 'id_user')) {
             $newPassword = $this->ficelle->generatePassword(10);
             $this->users->changePassword($newPassword, $this->users, true);
@@ -201,5 +191,28 @@ class usersController extends bootstrap
 
         header('Location: ' . $this->url . '/users');
         die;
+    }
+
+    /* Activer un utilisateur sur une zone */
+    public function _activeUserZone()
+    {
+        $this->autoFireView = false;
+        $this->hideDecoration();
+
+        if (false === empty(isset($this->params[0]))) {
+            $this->users_zones->get($this->params[0], 'id_zone = ' . $this->params[1] . ' AND id_user');
+
+            if ($this->users_zones->id) {
+                $this->users_zones->delete($this->users_zones->id);
+
+                echo $this->url . '/images/check_off.png';
+            } else {
+                $this->users_zones->id_user = $this->params[0];
+                $this->users_zones->id_zone = $this->params[1];
+                $this->users_zones->create();
+
+                echo $this->url . '/images/check_on.png';
+            }
+        }
     }
 }

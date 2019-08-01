@@ -113,7 +113,7 @@ class LoanContractGenerator extends AbstractDocumentGenerator
 
         $content = $this->twig->render('/pdf/contract/' . $loan->getUnderlyingContract()->getDocumentTemplate() . '.html.twig', $template);
 
-        $this->snappy->setOption('user-style-sheet', $this->publicDirectory . 'styles/default/pdf/style.css');
+        $this->snappy->setOption('user-style-sheet', $this->publicDirectory . 'styles/pdf/style.css');
         $this->snappy->generateFromHtml($content, $this->getFilePath($loan), [], true);
     }
 
