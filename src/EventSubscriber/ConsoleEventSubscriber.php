@@ -83,11 +83,11 @@ class ConsoleEventSubscriber implements EventSubscriberInterface
     }
 
     /**
-     * @param int $microseconds
+     * @param int|float $microseconds
      *
      * @return string
      */
-    private function formatDuration(int $microseconds): string
+    private function formatDuration($microseconds): string
     {
         return round($microseconds / 1000, 2) . 's';
     }
