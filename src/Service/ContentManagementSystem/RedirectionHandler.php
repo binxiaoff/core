@@ -10,9 +10,6 @@ use Symfony\Component\HttpFoundation\{RedirectResponse, Request};
 use Unilend\CacheKeys;
 use Unilend\Entity\Redirections;
 
-/**
- * Class RedirectionHandler.
- */
 class RedirectionHandler
 {
     /** @var EntityManagerInterface */

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\Controller\Project;
 
+use Doctrine\ORM\NonUniqueResultException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\{Request, Response};
 use Symfony\Component\Routing\Annotation\Route;
@@ -20,6 +21,8 @@ class ListController extends AbstractController
      * @param Request                    $request
      * @param ProjectRepository          $projectRepository
      *
+     * @throws NonUniqueResultException
+     *
      * @return Response
      */
     public function list(
@@ -28,11 +31,12 @@ class ListController extends AbstractController
         ProjectRepository $projectRepository
     ): Response {
         $page          = $request->query->get('page', 1);
+        $limit         = 20;
         $sortDirection = $request->query->get('sortDirection', 'DESC');
         $sortType      = $request->query->get('sortType', 'expectedClosingDate');
         $sort          = ['cpsh.status' => 'ASC', $sortType => $sortDirection];
-        /** @var Project[] $projects */
-        $projects = $projectRepository->findListableByClient($client, $sort);
+        $projects      = $projectRepository->findListableByClient($client, $sort, $limit, ($page - 1) * $limit);
+        $projectCount  = $projectRepository->countListableByClient($client);
 
         $template = [
             'sortDirection'  => $sortDirection,
@@ -40,7 +44,7 @@ class ListController extends AbstractController
             'showSortable'   => true,
             'showPagination' => true,
             'currentPage'    => $page,
-            'pagination'     => $this->pagination($projects, $page, 20),
+            'pagination'     => $this->pagination($projectCount, $page, 20),
             'projects'       => $projects,
         ];
 
@@ -179,16 +183,15 @@ class ListController extends AbstractController
     }
 
     /**
-     * @param array $projects
-     * @param int   $page
-     * @param int   $limit
+     * @param int $totalNumberProjects
+     * @param int $page
+     * @param int $limit
      *
      * @return array
      */
-    private function pagination(array $projects, int $page, int $limit): array
+    private function pagination(int $totalNumberProjects, int $page, int $limit): array
     {
-        $totalNumberProjects = count($projects);
-        $totalPages          = $limit ? ceil($totalNumberProjects / $limit) : 1;
+        $totalPages = $limit ? ceil($totalNumberProjects / $limit) : 1;
 
         $paginationSettings = [
             'itemsPerPage'      => $limit,
