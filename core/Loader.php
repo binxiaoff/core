@@ -184,7 +184,7 @@ class Loader
         $aPath        = explode('/', $library);
 
         if (count($aPath) > 1) {
-            $library   = array_pop($aPath);
+            $library    = array_pop($aPath);
             $sClassPath = implode('/', $aPath) . '/';
         }
 
