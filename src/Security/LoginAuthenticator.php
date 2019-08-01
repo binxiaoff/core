@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Unilend\Security;
 
 use Doctrine\ORM\EntityManagerInterface;
@@ -17,8 +19,7 @@ use Symfony\Component\Security\Guard\Authenticator\AbstractFormLoginAuthenticato
 use Symfony\Component\Security\Http\Session\SessionAuthenticationStrategyInterface;
 use Symfony\Component\Security\Http\Util\TargetPathTrait;
 use Unilend\Entity\{Clients, LoginLog, Settings};
-use Unilend\Service\Front\LoginHistoryLogger;
-use Unilend\Service\{CIPManager, GoogleRecaptchaManager, LenderManager};
+use Unilend\Service\{GoogleRecaptchaManager, User\LoginHistoryLogger};
 
 class LoginAuthenticator extends AbstractFormLoginAuthenticator
 {
@@ -38,10 +39,6 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
     private $csrfTokenManager;
     /** @var GoogleRecaptchaManager */
     private $googleRecaptchaManager;
-    /** @var LenderManager */
-    private $lenderManager;
-    /** @var CIPManager */
-    private $cipManager;
     /** @var LoggerInterface */
     private $logger;
     /** @var LoginHistoryLogger */
@@ -54,8 +51,6 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
      * @param SessionAuthenticationStrategyInterface $sessionStrategy
      * @param CsrfTokenManagerInterface              $csrfTokenManager
      * @param GoogleRecaptchaManager                 $googleRecaptchaManager
-     * @param LenderManager                          $lenderManager
-     * @param CIPManager                             $cipManager
      * @param LoggerInterface                        $logger
      * @param LoginHistoryLogger                     $loginHistoryLogger
      */
@@ -66,8 +61,6 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
         SessionAuthenticationStrategyInterface $sessionStrategy,
         CsrfTokenManagerInterface $csrfTokenManager,
         GoogleRecaptchaManager $googleRecaptchaManager,
-        LenderManager $lenderManager,
-        CIPManager $cipManager,
         LoggerInterface $logger,
         LoginHistoryLogger $loginHistoryLogger
     ) {
@@ -77,8 +70,6 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
         $this->sessionStrategy         = $sessionStrategy;
         $this->csrfTokenManager        = $csrfTokenManager;
         $this->googleRecaptchaManager  = $googleRecaptchaManager;
-        $this->lenderManager           = $lenderManager;
-        $this->cipManager              = $cipManager;
         $this->logger                  = $logger;
         $this->loginHistoryLogger      = $loginHistoryLogger;
     }

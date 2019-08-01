@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Unilend\EventSubscriber;
 
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;

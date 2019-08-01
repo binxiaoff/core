@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Unilend\Command;
 
 use Doctrine\DBAL\DBALException;

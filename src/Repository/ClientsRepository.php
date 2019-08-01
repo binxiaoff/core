@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Unilend\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
@@ -8,9 +10,8 @@ use Doctrine\DBAL\{Connection, DBALException, Driver\Statement};
 use Doctrine\ORM\Query\{Expr\Join, ResultSetMapping};
 use Doctrine\ORM\{AbstractQuery, NoResultException, NonUniqueResultException, ORMException, OptimisticLockException, UnexpectedResultException};
 use PDO;
-use Unilend\Entity\{AddressType, Attachment, AttachmentType, BankAccount, BeneficialOwner, ClientAddress, Clients, ClientsStatus, ClientsStatusHistory, Companies,
-    CompanyClient, GreenpointAttachment, Loans, Operation, OperationType, Partner, Pays, Users, VigilanceRule, Wallet, WalletBalanceHistory, WalletType};
-use Unilend\Service\{GreenPointValidationManager, LenderValidationManager};
+use Unilend\Entity\{Attachment, AttachmentType, BankAccount, BeneficialOwner, ClientAddress, Clients, ClientsStatus, ClientsStatusHistory, Companies, CompanyClient, Loans,
+    Operation, OperationType, Partner, Pays, Wallet, WalletBalanceHistory, WalletType};
 
 /**
  * @method Clients|null find($id, $lockMode = null, $lockVersion = null)
@@ -196,26 +197,6 @@ class ClientsRepository extends ServiceEntityRepository
         ;
 
         return $qb->getQuery()->getResult(AbstractQuery::HYDRATE_SCALAR);
-    }
-
-    /**
-     * @return array
-     */
-    public function getLendersForGreenpointCheck(): array
-    {
-        $queryBuilder = $this->createQueryBuilder('c');
-        $queryBuilder
-            ->innerJoin(Wallet::class, 'w', Join::WITH, 'c.idClient = w.idClient')
-            ->innerJoin(WalletType::class, 'wt', Join::WITH, 'w.idType = wt.id')
-            ->innerJoin(ClientsStatusHistory::class, 'csh', Join::WITH, 'c.idClientStatusHistory = csh.id')
-            ->where('csh.idStatus IN (:status)')
-            ->andWhere('wt.label = :lender')
-            ->andWhere('c.usPerson IS NULL OR c.usPerson = 0')
-            ->setParameter('status', GreenPointValidationManager::STATUS_TO_CHECK, Connection::PARAM_INT_ARRAY)
-            ->setParameter('lender', WalletType::LENDER)
-        ;
-
-        return $queryBuilder->getQuery()->getResult();
     }
 
     /**
@@ -790,7 +771,7 @@ class ClientsRepository extends ServiceEntityRepository
                 a.id AS attachmentId,
                 a.originalName AS attachmentOriginalName,
                 a.path AS attachmentPath'
-            )
+        )
             ->leftJoin(Attachment::class, 'a', Join::WITH, 'a.idClient = c.idClient AND a.idType = ' . AttachmentType::CNI_PASSPORTE)
             ->leftJoin('c.idAddress', 'ca')
             ->where('c.nom LIKE :name')
@@ -850,7 +831,7 @@ class ClientsRepository extends ServiceEntityRepository
                 pa.id AS idPartner,
                 cp.name AS partnerName,
                 COUNT(DISTINCT bo.id) AS beneficialOwner'
-            )
+        )
             ->leftJoin(Wallet::class, 'w', Join::WITH, 'c.idClient = w.idClient')
             ->leftJoin(WalletType::class, 'wt', Join::WITH, 'w.idType = wt.id')
             ->leftJoin(WalletBalanceHistory::class, 'wbh', Join::WITH, 'w.id = wbh.idWallet')
@@ -962,92 +943,6 @@ class ClientsRepository extends ServiceEntityRepository
         return $this->getEntityManager()
             ->getConnection()
             ->executeQuery($query, ['start' => $start->format('Y-m-d'), 'end' => $end->format('Y-m-d')])
-            ->fetchAll(PDO::FETCH_ASSOC)
-        ;
-    }
-
-    /**
-     * @throws DBALException
-     *
-     * @return array
-     */
-    public function getClientsToAutoValidate(): array
-    {
-        $bind = [
-            'statusValid'            => GreenpointAttachment::STATUS_VALIDATION_VALID,
-            'clientStatus'           => [ClientsStatus::STATUS_TO_BE_CHECKED, ClientsStatus::STATUS_COMPLETENESS_REPLY, ClientsStatus::STATUS_MODIFICATION],
-            'attachmentTypeIdentity' => AttachmentType::CNI_PASSPORTE,
-            'attachmentTypeAddress'  => AttachmentType::JUSTIFICATIF_DOMICILE,
-            'attachmentTypeRib'      => AttachmentType::RIB,
-            'vigilanceStatus'        => [VigilanceRule::VIGILANCE_STATUS_HIGH, VigilanceRule::VIGILANCE_STATUS_REFUSE],
-            'lenderWallet'           => WalletType::LENDER,
-            'clientStatusSuspended'  => ClientsStatus::STATUS_SUSPENDED,
-            'idUserFront'            => Users::USER_ID_FRONT,
-            'mainAddressType'        => AddressType::TYPE_MAIN_ADDRESS,
-            'idCountryFr'            => Pays::COUNTRY_FRANCE,
-        ];
-        $type = [
-            'statusValid'            => PDO::PARAM_INT,
-            'clientStatus'           => Connection::PARAM_INT_ARRAY,
-            'attachmentTypeIdentity' => PDO::PARAM_INT,
-            'attachmentTypeAddress'  => PDO::PARAM_INT,
-            'attachmentTypeRib'      => PDO::PARAM_INT,
-            'vigilanceStatus'        => Connection::PARAM_INT_ARRAY,
-            'lenderWallet'           => PDO::PARAM_STR,
-            'clientStatusSuspended'  => PDO::PARAM_INT,
-            'idUserFront'            => PDO::PARAM_INT,
-            'mainAddressType'        => PDO::PARAM_STR,
-            'idCountryFr'            => PDO::PARAM_INT,
-        ];
-
-        $query = '
-            SELECT
-              c.id_client,
-              ga_identity.id AS identity_attachment_id,
-              ga_identity.validation_status identity_attachment_status,
-              ga_address.id AS address_attachment_id,
-              ga_address.validation_status address_attachment_status,
-              ga_rib.id AS rib_attachment_id,
-              ga_rib.validation_status rib_attachment_status
-            FROM clients c 
-            INNER JOIN clients_status_history csh ON c.id_client_status_history = csh.id
-            INNER JOIN (SELECT a.id_client, a.id, ga.validation_status FROM greenpoint_attachment ga INNER JOIN attachment a ON a.id = ga.id_attachment AND ga.validation_status = :statusValid AND a.id_type = :attachmentTypeIdentity AND a.archived IS NULL) ga_identity ON ga_identity.id_client = csh.id_client
-            INNER JOIN (SELECT a.id_client, a.id, ga.validation_status FROM greenpoint_attachment ga INNER JOIN attachment a ON a.id = ga.id_attachment AND ga.validation_status = :statusValid AND a.id_type = :attachmentTypeAddress AND a.archived IS NULL) ga_address ON ga_address.id_client = csh.id_client
-            INNER JOIN (SELECT a.id_client, a.id, ga.validation_status FROM greenpoint_attachment ga INNER JOIN attachment a ON a.id = ga.id_attachment AND ga.validation_status = :statusValid AND a.id_type = :attachmentTypeRib AND a.archived IS NULL) ga_rib ON ga_rib.id_client = csh.id_client
-            INNER JOIN client_address_attachment cadatt ON cadatt.id_attachment = ga_address.id
-            INNER JOIN wallet w ON c.id_client = w.id_client
-            INNER JOIN wallet_type wt ON w.id_type = wt.id AND wt.label = :lenderWallet
-            LEFT JOIN (
-              SELECT * 
-              FROM client_vigilance_status_history cvsh
-              WHERE cvsh.id = (
-                SELECT cvsh_max.id
-                FROM client_vigilance_status_history cvsh_max
-                WHERE cvsh.id_client = cvsh_max.id_client
-                ORDER BY cvsh_max.added DESC, cvsh_max.id DESC LIMIT 1
-              )
-            ) last_cvsh ON c.id_client = last_cvsh.id_client AND last_cvsh.vigilance_status IN (:vigilanceStatus)
-            WHERE (
-                csh.id_status IN (:clientStatus)
-                OR csh.id_status = :clientStatusSuspended
-                   AND csh.id_user = :idUserFront
-                   AND (
-                         SELECT id_country
-                         FROM client_address
-                           INNER JOIN address_type at ON client_address.id_type = at.id
-                         WHERE id_client = c.id_client
-                               AND at.label = :mainAddressType
-                         ORDER BY added DESC
-                         LIMIT 1
-                       ) = :idCountryFr
-              )
-              AND TIMESTAMPDIFF(YEAR, c.naissance, CURDATE()) < ' . LenderValidationManager::MAX_AGE_AUTOMATIC_VALIDATION . '
-              AND last_cvsh.id_client IS NULL';
-
-        return $this
-            ->getEntityManager()
-            ->getConnection()
-            ->executeQuery($query, $bind, $type)
             ->fetchAll(PDO::FETCH_ASSOC)
         ;
     }

@@ -8,7 +8,7 @@ use GuzzleHttp\Client;
 
 class InseeManager
 {
-    const ENDPOINT_URL = 'https://api.insee.fr/entreprises/sirene/V3/siren/';
+    private const ENDPOINT_URL = 'https://api.insee.fr/entreprises/sirene/V3/siren/';
 
     /** @var Client */
     private $client;

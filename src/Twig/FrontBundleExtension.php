@@ -1,77 +1,66 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Unilend\Twig;
 
 use Psr\Cache\CacheItemPoolInterface;
+use Psr\Cache\InvalidArgumentException;
 use Symfony\Component\Asset\Packages;
 use Twig\Extension\AbstractExtension;
-use Twig\TwigFilter;
 use Twig\TwigFunction;
 use Unilend\CacheKeys;
-use Unilend\Entity\{Pays, Projects};
-use Unilend\Service\{LocationManager, Simulator\EntityManager, StatisticsManager, Translation\TranslationManager};
+use Unilend\Service\{Simulator\EntityManager, Translation\TranslationManager};
 
 class FrontBundleExtension extends AbstractExtension
 {
-    /** @var string */
-    private $publicDirectory;
-    /** @var StatisticsManager */
-    private $statisticsManager;
     /** @var TranslationManager */
     private $translationManager;
     /** @var EntityManager */
     private $entityManager;
     /** @var CacheItemPoolInterface */
     private $cachePool;
-    /** @var LocationManager */
-    private $locationManager;
     /** @var Packages */
     private $packages;
 
+    /**
+     * @param Packages               $assetsPackages
+     * @param TranslationManager     $translationManager
+     * @param EntityManager          $entityManager
+     * @param CacheItemPoolInterface $cachePool
+     */
     public function __construct(
-        string $publicDirectory,
         Packages $assetsPackages,
-        StatisticsManager $statisticsManager,
         TranslationManager $translationManager,
         EntityManager $entityManager,
-        CacheItemPoolInterface $cachePool,
-        LocationManager $locationManager
+        CacheItemPoolInterface $cachePool
     ) {
-        $this->publicDirectory    = $publicDirectory;
         $this->packages           = $assetsPackages;
-        $this->statisticsManager  = $statisticsManager;
         $this->translationManager = $translationManager;
         $this->entityManager      = $entityManager;
         $this->cachePool          = $cachePool;
-        $this->locationManager    = $locationManager;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function getFunctions()
     {
         return [
             new TwigFunction('setting', [$this, 'settingFunction']),
             new TwigFunction('svgimage', [$this, 'svgImageFunction']),
-            new TwigFunction('uploadedImage', [$this, 'uploadedImageFunction']),
-            new TwigFunction('photo', [$this, 'photo']),
             new TwigFunction('dictionary', [$this, 'dictionary']),
-            new TwigFunction('getStatistic', [$this, 'getStatisticFunction']),
         ];
     }
 
-    public function getFilters()
-    {
-        return [
-            new TwigFilter('nbsp', [$this, 'nbspFilter']),
-            new TwigFilter('convertRisk', [$this, 'convertProjectRiskFilter']),
-            new TwigFilter('completeProjectImagePath', [$this, 'projectImagePathFilter']),
-            new TwigFilter('baseUrl', [$this, 'addBaseUrl']),
-            new TwigFilter('countryLabel', [$this, 'getCountry']),
-            new TwigFilter('nationalityLabel', [$this, 'getNationality']),
-            new TwigFilter('json_decode', [$this, 'jsonDecode']),
-        ];
-    }
-
-    public function settingFunction($name)
+    /**
+     * @param string $name
+     *
+     * @throws InvalidArgumentException
+     *
+     * @return mixed
+     */
+    public function settingFunction(string $name)
     {
         $cachedItem = $this->cachePool->getItem($name);
 
@@ -90,17 +79,16 @@ class FrontBundleExtension extends AbstractExtension
         return $cachedItem->get();
     }
 
-    public function uploadedImageFunction($image)
-    {
-        return $this->packages->getUrl('/var/images/' . $image);
-    }
-
-    public function getName()
-    {
-        return 'app_extension';
-    }
-
-    public function svgImageFunction($sId, $sTitle, $iWidth, $iHeight, $sSizing = null)
+    /**
+     * @param string      $id
+     * @param string      $title
+     * @param int         $width
+     * @param int         $height
+     * @param string|null $sizing
+     *
+     * @return string
+     */
+    public function svgImageFunction(string $id, string $title, int $width, int $height, ?string $sizing = null): string
     {
         $sUrl        = $this->packages->getUrl('images/svg/icons.svg', 'gulp');
         $sSvgHeaders = ' version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve"';
@@ -114,71 +102,22 @@ class FrontBundleExtension extends AbstractExtension
         ];
 
         // Fallback to 'contain' aspect ratio if invalid option given
-        if (false === isset($sSizing) || false === in_array($sSizing, $aSupportedSizes)) {
-            $sSizing = 'contain';
+        if (false === isset($sizing) || false === in_array($sizing, $aSupportedSizes)) {
+            $sizing = 'contain';
         }
 
         //TODO implement the possibility to use several SVGs, which as for today is not used in the code, except for the tests
         //TODO add possibility to call without ID if necessary, for instance all calls are made with id
 
-        $sUseId                   = str_replace('#', '', $sId);
-        $sUses                    = '<use xlink:href="' . $sUrl . $sId . '" class="svg-file-' . $sUseId . '"/>';
-        $sTitleAttr               = (isset($sTitle) ? ' title="' . $sTitle . '"' : '');
-        $sWidthAttr               = (isset($iWidth) ? ' width="' . $iWidth . '"' : '');
-        $sHeightAttr              = (isset($iHeight) ? ' height="' . $iHeight . '"' : '');
-        $sPreserveAspectRatioAttr = (isset($sSizing) ? ' preserveAspectRatio="' . $aSupportedSizes[$sSizing] . '"' : '');
+        $sUseId                   = str_replace('#', '', $id);
+        $sUses                    = '<use xlink:href="' . $sUrl . $id . '" class="svg-file-' . $sUseId . '"/>';
+        $sTitleAttr               = (isset($title) ? ' title="' . $title . '"' : '');
+        $sWidthAttr               = (isset($width) ? ' width="' . $width . '"' : '');
+        $sHeightAttr              = (isset($height) ? ' height="' . $height . '"' : '');
+        $sPreserveAspectRatioAttr = (isset($sizing) ? ' preserveAspectRatio="' . $aSupportedSizes[$sizing] . '"' : '');
 
         return '<svg role="img"' . $sTitleAttr . $sWidthAttr . $sHeightAttr . $sPreserveAspectRatioAttr
             . ' class="svg-icon svg-icon-' . $sUseId . '"' . $sSvgHeaders . '>' . $sUses . '</svg>';
-    }
-
-    public function getStatisticFunction($statisticType, $date = null)
-    {
-        $requestedDate = (null === $date) ? new \DateTime('NOW') : new \DateTime($date);
-
-        return $this->statisticsManager->getStatistic($statisticType, $requestedDate);
-    }
-
-    public function nbspFilter($sString)
-    {
-        return preg_replace('/[ ](?=[^>]*(?:<|$))/', '&nbsp;', $sString);
-    }
-
-    public function convertProjectRiskFilter($sProjectRating)
-    {
-        return constant(Projects::class . '::RISK_' . $sProjectRating);
-    }
-
-    public function projectImagePathFilter($image, $size = 'source')
-    {
-        return $this->packages->getUrl('/images/dyn/projets/' . $size . '/' . $image);
-    }
-
-    public function addBaseUrl($sUrl)
-    {
-        return $this->packages->getUrl($sUrl);
-    }
-
-    public function getCountry($countryId)
-    {
-        if (empty($countryId)) {
-            $countryId = Pays::COUNTRY_FRANCE;
-        }
-
-        $countryList = $this->locationManager->getCountries();
-
-        return $countryList[$countryId] ?? '';
-    }
-
-    public function getNationality($nationalityId)
-    {
-        if (empty($nationalityId)) {
-            $nationalityId = Pays::COUNTRY_FRANCE;
-        }
-
-        $nationalityList = $this->locationManager->getNationalities();
-
-        return $nationalityList[$nationalityId];
     }
 
     /**
@@ -186,7 +125,7 @@ class FrontBundleExtension extends AbstractExtension
      *
      * @return array
      */
-    public function dictionary($section)
+    public function dictionary($section): array
     {
         return $this->translationManager->getAllTranslationsForSection($section);
     }
