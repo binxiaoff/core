@@ -28,6 +28,4 @@ class CacheKeys
      * constant for underlying contract.
      */
     public const CONTRACT_ATTRIBUTE_BY_TYPE = 'contract_attribute_by_type';
-
-    public const GET_CLIENT_SETTING = 'UNILEND_SERVICE_CLIENTSETTINGSMANAGER_GETSETTING';
 }
