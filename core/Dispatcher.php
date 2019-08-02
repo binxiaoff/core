@@ -93,7 +93,6 @@ class Dispatcher
         }
 
         $this->Command = new \Command($controllerName, $controllerFunction, $parameters, 'fr');
-        $this->newRelic($this->Command);
     }
 
     public function dispatch()
@@ -130,22 +129,6 @@ class Dispatcher
         }
 
         return true;
-    }
-
-    private function newRelic(\Command $command)
-    {
-        if ('prod' !== $this->environment || false === extension_loaded('newrelic')) {
-            return;
-        }
-        $container       = $this->kernel->getContainer();
-        $applicationName = $container->getParameter('new_relic.front_app_name');
-        if ('admin' === $this->App) {
-            $applicationName = $container->getParameter('new_relic.back_app_name');
-        }
-        $transactionName = $command->getControllerName() . '::' . $command->getFunction();
-
-        newrelic_set_appname($applicationName);
-        newrelic_name_transaction($transactionName);
     }
 
     private function handleError()
