@@ -8,7 +8,7 @@ use Symfony\Component\Config\Resource\FileResource;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\HttpKernel\Kernel as BaseKernel;
 use Symfony\Component\Routing\RouteCollectionBuilder;
-use Unilend\DependencyInjection\Compiler\{AddDbalCacheConfigurationPass, MakeSonataCacheSymfonyPublicPass, OverrideNewRelicSettingsForConsolePass};
+use Unilend\DependencyInjection\Compiler\{AddDbalCacheConfigurationPass, MakeSonataCacheSymfonyPublicPass};
 
 class Kernel extends BaseKernel
 {
@@ -44,7 +44,6 @@ class Kernel extends BaseKernel
     {
         parent::build($container);
 
-        $container->addCompilerPass(new OverrideNewRelicSettingsForConsolePass());
         $container->addCompilerPass(new MakeSonataCacheSymfonyPublicPass());
         $container->addCompilerPass(new AddDbalCacheConfigurationPass());
     }
