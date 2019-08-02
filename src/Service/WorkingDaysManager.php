@@ -1,10 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Unilend\Service;
 
 use Psr\Log\LoggerInterface;
-use Yasumi\Provider\France;
-use Yasumi\Yasumi;
+use Yasumi\{Provider\France, Yasumi};
 
 class WorkingDaysManager
 {
@@ -35,9 +36,10 @@ class WorkingDaysManager
                 'function' => __FUNCTION__,
                 'file'     => $exception->getFile(),
                 'line'     => $exception->getLine(),
-                'trace'    => $exception->getTraceAsString()
+                'trace'    => $exception->getTraceAsString(),
             ]);
             $date = clone $startDate;
+
             return $date->modify($workingDays * 2 . 'day');
         }
     }
@@ -58,9 +60,10 @@ class WorkingDaysManager
                 'function' => __FUNCTION__,
                 'file'     => $exception->getFile(),
                 'line'     => $exception->getLine(),
-                'trace'    => $exception->getTraceAsString()
+                'trace'    => $exception->getTraceAsString(),
             ]);
             $date = clone $startDate;
+
             return $date->modify(-2 * $workingDays . 'day');
         }
     }

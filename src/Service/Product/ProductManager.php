@@ -8,7 +8,7 @@ use Unilend\Service\Product\Contract\ContractManager;
 use Unilend\Service\Product\Validator\{BidValidator, ClientValidator, LenderValidator, ProjectValidator};
 use Unilend\Service\Simulator\EntityManager as EntityManagerSimulator;
 
-abstract class ProductManager
+class ProductManager
 {
     /** @var EntityManagerSimulator */
     protected $entityManagerSimulator;
@@ -46,8 +46,7 @@ abstract class ProductManager
         ProductAttributeManager $productAttributeManager,
         ContractManager $contractManager,
         EntityManagerInterface $entityManager
-    )
-    {
+    ) {
         $this->entityManagerSimulator  = $entityManagerSimulator;
         $this->projectValidator        = $projectValidator;
         $this->bidValidator            = $bidValidator;
@@ -62,9 +61,21 @@ abstract class ProductManager
      * @param Projects $project
      * @param bool     $includeInactiveProduct
      *
-     * @return mixed
+     * @return Product[]
      */
-    abstract public function findEligibleProducts(Projects $project, bool $includeInactiveProduct = false);
+    public function findEligibleProducts(Projects $project, bool $includeInactiveProduct = false): iterable
+    {
+        $eligibleProducts = [];
+
+        foreach ($this->getAvailableProducts($includeInactiveProduct) as $product) {
+            if ($this->isProjectEligible($project, $product)) {
+                $eligibleProduct    = clone $product;
+                $eligibleProducts[] = $eligibleProduct;
+            }
+        }
+
+        return $eligibleProducts;
+    }
 
     /**
      * @param Projects|\projects $project
@@ -80,6 +91,12 @@ abstract class ProductManager
         return $this->isProductUsable($product) && 0 === count($this->checkProjectEligibility($project, $product));
     }
 
+    /**
+     * @param $project
+     * @param $product
+     *
+     * @return array
+     */
     public function checkProjectEligibility($project, $product)
     {
         $product = $this->convertProduct($product);
@@ -88,7 +105,7 @@ abstract class ProductManager
         return $this->projectValidator->validate($project, $product);
     }
 
-    /**\
+    /**
      * @param Bids $bid
      *
      * @return bool
@@ -109,7 +126,7 @@ abstract class ProductManager
     }
 
     /**
-     * @param Clients|null $client null corresponds to an anonymous client (logged out)
+     * @param Clients|null $client  null corresponds to an anonymous client (logged out)
      * @param Projects     $project
      *
      * @return array
@@ -170,7 +187,9 @@ abstract class ProductManager
 
         if (null === $durationProductMax) {
             return $durationContractMax;
-        } elseif (null === $durationContractMax) {
+        }
+
+        if (null === $durationContractMax) {
             return $durationProductMax;
         }
 
@@ -186,18 +205,18 @@ abstract class ProductManager
     {
         $product         = $this->convertProduct($product);
         $durationMinAttr = $this->productAttributeManager->getProductAttributesByType($product, ProductAttributeType::MIN_LOAN_DURATION_IN_MONTH);
-        $durationMin     = empty($durationMinAttr) ? null : $durationMinAttr[0];
 
-        return $durationMin;
+        return empty($durationMinAttr) ? null : $durationMinAttr[0];
     }
 
     /**
      * @param Clients          $client
      * @param Product|\product $product
-     * @param boolean          $isAutobid
+     * @param bool             $isAutobid
+     *
+     * @throws \Exception
      *
      * @return int|null
-     * @throws \Exception
      */
     public function getMaxEligibleAmount(Clients $client, $product, $isAutobid = false)
     {
@@ -210,7 +229,7 @@ abstract class ProductManager
      * @param Clients   $client
      * @param \projects $project
      *
-     * @return null|string
+     * @return string|null
      */
     public function getAmountLenderCanStillBid(Clients $client, \projects $project)
     {
@@ -233,9 +252,19 @@ abstract class ProductManager
     }
 
     /**
-     * @return \product[]
+     * @param bool $includeInactiveProduct
+     *
+     * @return Product[]
      */
-    abstract public function getAvailableProducts();
+    public function getAvailableProducts($includeInactiveProduct = false): iterable
+    {
+        $status = [Product::STATUS_ONLINE];
+        if ($includeInactiveProduct) {
+            $status[] = Product::STATUS_ARCHIVED;
+        }
+
+        return $this->entityManager->getRepository(Product::class)->findBy(['status' => $status]);
+    }
 
     /**
      * @param \product|int $product
@@ -276,6 +305,20 @@ abstract class ProductManager
     }
 
     /**
+     * @param $project
+     *
+     * @return object|Projects|null
+     */
+    protected function convertProject($project)
+    {
+        if ($project instanceof \projects) {
+            return $this->entityManager->getRepository(Projects::class)->find($project->id_project);
+        }
+
+        return $project;
+    }
+
+    /**
      * @param Product $product
      *
      * @return bool
@@ -288,7 +331,7 @@ abstract class ProductManager
     /**
      * @param Product|\product $product
      *
-     * @return null|Product
+     * @return Product|null
      */
     private function convertProduct($product)
     {
@@ -297,14 +340,5 @@ abstract class ProductManager
         }
 
         return $product;
-    }
-
-    protected function convertProject($project)
-    {
-        if ($project instanceof \projects) {
-            return $this->entityManager->getRepository(Projects::class)->find($project->id_project);
-        }
-
-        return $project;
     }
 }

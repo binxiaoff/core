@@ -2,8 +2,6 @@
 # from the container via $container->get()
 services:
     _defaults:
-        autowire: true
-        autoconfigure: true
         public: true
 
     unilend.service.translation_manager: '@Unilend\Service\Translation\TranslationManager'

@@ -1,6 +1,8 @@
 <?php
 
 use Box\Spout\{Common\Type, Writer\Style\StyleBuilder, Writer\WriterFactory};
+use Unilend\Entity\Users;
+use Unilend\Entity\UsersTypes;
 use Unilend\Entity\Zones;
 
 class queriesController extends bootstrap
@@ -38,10 +40,8 @@ class queriesController extends bootstrap
     {
         $this->queries   = $this->loadData('queries');
         $this->lRequetes = $this->queries->select('', 'executed DESC');
-        /** @var \Unilend\Service\BackOfficeUserManager $userManager */
-        $userManager = $this->get('unilend.service.back_office_user_manager');
 
-        if (isset($_POST['form_edit_requete']) && $userManager->isGrantedIT($this->userEntity)) {
+        if (isset($_POST['form_edit_requete']) && $this->isGrantedIT($this->userEntity)) {
             $this->queries->get($this->params[0], 'id_query');
             $this->queries->name   = $_POST['name'];
             $this->queries->paging = $_POST['paging'];
@@ -55,7 +55,7 @@ class queriesController extends bootstrap
             die;
         }
 
-        if (isset($_POST['form_add_requete']) && $userManager->isGrantedIT($this->userEntity)) {
+        if (isset($_POST['form_add_requete']) && $this->isGrantedIT($this->userEntity)) {
             $this->queries->name   = $_POST['name'];
             $this->queries->paging = $_POST['paging'];
             $this->queries->sql    = $_POST['sql'];
@@ -68,7 +68,7 @@ class queriesController extends bootstrap
             die;
         }
 
-        if (isset($this->params[0]) && $this->params[0] == 'delete' && $userManager->isGrantedIT($this->userEntity)) {
+        if (isset($this->params[0]) && $this->params[0] == 'delete' && $this->isGrantedIT($this->userEntity)) {
             $this->queries->delete($this->params[1], 'id_query');
 
             $_SESSION['freeow']['title']   = 'Suppression d\'une requ&ecirc;te';
@@ -159,5 +159,19 @@ class queriesController extends bootstrap
         }
 
         die;
+    }
+
+    /**
+     * @param Users $user
+     *
+     * @return bool
+     */
+    public function isGrantedIT(Users $user)
+    {
+        if (in_array($user->getIdUserType()->getIdUserType(), [UsersTypes::TYPE_ADMIN, UsersTypes::TYPE_IT])) {
+            return true;
+        }
+
+        return false;
     }
 }

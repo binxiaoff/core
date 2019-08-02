@@ -28,6 +28,14 @@ class ProjectStatusHistory
     public const STATUS_LOST               = 70;
     public const STATUS_CANCELLED          = 100;
 
+    public const DISPLAYABLE_STATUS = [
+        self::STATUS_PUBLISHED,
+        self::STATUS_FUNDED,
+        self::STATUS_CONTRACTS_REDACTED,
+        self::STATUS_CONTRACTS_SIGNED,
+        self::STATUS_FINISHED,
+    ];
+
     /**
      * @var int
      *

@@ -6,4 +6,4 @@ cmf_routing:
     dynamic:
         enabled: true
         default_controller: Unilend\Controller\CmsController::cms
-        route_provider_service_id: Unilend\Service\Front\RouteProvider
+        route_provider_service_id: Unilend\Service\ContentManagementSystem\RouteProvider

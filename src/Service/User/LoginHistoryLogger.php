@@ -1,6 +1,8 @@
 <?php
 
-namespace Unilend\Service\Front;
+declare(strict_types=1);
+
+namespace Unilend\Service\User;
 
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;

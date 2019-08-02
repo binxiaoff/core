@@ -78,10 +78,6 @@ class usersController extends bootstrap
                 $usersZones->create();
             }
 
-            /** @var \Unilend\Service\UnilendMailerManager $mailerManager */
-            $mailerManager = $this->get('unilend.service.email_manager');
-            $mailerManager->sendNewPasswordEmail($user, $newPassword);
-
             $_SESSION['freeow']['title']   = 'Ajout d\'un utilisateur';
             $_SESSION['freeow']['message'] = 'L\'utilisateur a bien été ajouté';
 
@@ -185,10 +181,6 @@ class usersController extends bootstrap
         if (isset($this->params[0]) && $this->users->get($this->params[0], 'id_user')) {
             $newPassword = $this->ficelle->generatePassword(10);
             $this->users->changePassword($newPassword, $this->users, true);
-
-            /** @var \Unilend\Service\UnilendMailerManager $mailerManager */
-            $mailerManager = $this->get('unilend.service.email_manager');
-            $mailerManager->sendNewPasswordEmail($this->users, $newPassword);
         }
         $_SESSION['freeow']['title']   = 'Modification du mot de passe';
         $_SESSION['freeow']['message'] = 'Le mot de passe a bien &eacute;t&eacute; modifi&eacute; !';

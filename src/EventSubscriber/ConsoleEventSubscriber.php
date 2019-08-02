@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Unilend\EventSubscriber;
 
 use Psr\Log\LoggerInterface;
@@ -17,7 +19,6 @@ class ConsoleEventSubscriber implements EventSubscriberInterface
     private $stopwatch;
 
     /**
-     *
      * @param LoggerInterface $consoleLogger
      * @param Stopwatch       $stopwatch
      */
@@ -27,11 +28,14 @@ class ConsoleEventSubscriber implements EventSubscriberInterface
         $this->stopwatch     = $stopwatch;
     }
 
-    public static function getSubscribedEvents()
+    /**
+     * {@inheritdoc}
+     */
+    public static function getSubscribedEvents(): array
     {
         return [
             ConsoleEvents::COMMAND   => 'onCommandStart',
-            ConsoleEvents::TERMINATE => 'onCommandEnd'
+            ConsoleEvents::TERMINATE => 'onCommandEnd',
         ];
     }
 
@@ -47,7 +51,7 @@ class ConsoleEventSubscriber implements EventSubscriberInterface
 
         $this->consoleLogger->info('Start command ' . $command->getName(), [
             'arguments' => $input->getArguments(),
-            'options'   => $input->getOptions()
+            'options'   => $input->getOptions(),
         ]);
     }
 
@@ -64,7 +68,7 @@ class ConsoleEventSubscriber implements EventSubscriberInterface
             'max_memory_usage' => $this->formatMemory($stopwatchEvent->getMemory()),
             'execution_time'   => $this->formatDuration($stopwatchEvent->getDuration()),
             'arguments'        => $input->getArguments(),
-            'options'          => $input->getOptions()
+            'options'          => $input->getOptions(),
         ]);
     }
 
@@ -79,11 +83,11 @@ class ConsoleEventSubscriber implements EventSubscriberInterface
     }
 
     /**
-     * @param int $microseconds
+     * @param int|float $microseconds
      *
      * @return string
      */
-    private function formatDuration(int $microseconds): string
+    private function formatDuration($microseconds): string
     {
         return round($microseconds / 1000, 2) . 's';
     }

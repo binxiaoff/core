@@ -1,9 +1,4 @@
 parameters:
-    # To delete
-    ekomi.shop_id: null
-    ekomi.password: null
-    ekomi.url: 'https://srr.ekomi.com/add-recipient'
-    # End of to delete
     sonata_cache.servers:
         - { domain: '%env(INTERNAL_SERVER_DOMAIN_HOST1)%', ip: '%env(INTERNAL_SERVER_IP_HOST1)%', port: '%env(int:INTERNAL_SERVER_PORT_HOST1)%' }
     dbal_wrapper_class: Unilend\Doctrine\DBAL\Connection
@@ -67,96 +62,11 @@ services:
         tags:
             - { name: translation.loader, alias: db }
 
-    soap_client.altares_identity:
-        class: SoapClient
-        arguments:
-            $wsdl: '%altares.wsdl_url_identity%'
-            $options:
-                exception: 1
-                trace: 1
-
-    soap_client.altares_risque:
-        class: SoapClient
-        arguments:
-            $wsdl: '%altares.wsdl_url_risk%'
-            $options:
-                exception: 1
-                trace: 1
-
-    soap_client.altares_risk_monitoring:
-        class: SoapClient
-        arguments:
-            $wsdl: '%altares.wsdl_url_risk_monitoring%'
-            $options:
-                exception: 1
-                trace: 1
-
-    Unilend\Service\WebServiceClient\EulerHermesManager:
-        $client: '@eight_points_guzzle.client.euler'
-        $gradingApiKey: '%euler.grading_key%'
-        $accountApiKey: '%euler.account_key%'
-        $accountPassword: '%euler.password%'
-        $accountEmail: '%euler.email%'
-
-    Unilend\Service\WebServiceClient\CodinfManager:
-        $client: '@eight_points_guzzle.client.codinf'
-        $user: '%codinf.user%'
-        $password: '%codinf.password%'
-
-    Unilend\Service\WebServiceClient\InfolegaleManager:
-        $client: '@eight_points_guzzle.client.infolegale'
-        $token: '%infolegale.token%'
-
-    Unilend\Service\WebServiceClient\InfogreffeManager:
-        $login: '%infogreffe.login%'
-        $password: '%infogreffe.password%'
-        $wsdl: '%infogreffe.wsdl_url%'
-        $url: '%infogreffe.url%'
-
-    Unilend\Service\WebServiceClient\AltaresManager:
-        $login: '%altares.login%'
-        $password: '%altares.password%'
-        $identityClient: '@soap_client.altares_identity'
-        $riskClient: '@soap_client.altares_risque'
-        $riskMonitoringClient: '@soap_client.altares_risk_monitoring'
-
-    Unilend\Service\WebServiceClient\EllisphereManager:
-        $client: '@eight_points_guzzle.client.ellisphere'
-        $contractId: '%ellisphere.contract_id%'
-        $userPrefix: '%ellisphere.user_prefix%'
-        $userId: '%ellisphere.user_id%'
-        $password: '%ellisphere.password%'
-
-    Unilend\Service\WebServiceClient\GreenPointManager:
-        $client: '@eight_points_guzzle.client.greenpoint'
-        $login: '%greenpoint.login%'
-        $password: '%greenpoint.password%'
-
     Unilend\Service\WebServiceClient\InseeManager:
         $client: '@eight_points_guzzle.client.insee'
 
-    Unilend\Service\Product\ProductManager: '@Unilend\Service\PartnerProductManager'
-
-    # The "public: true" can be removed if there is no more access via $container->get()
-    Unilend\Service\AcceptedBidAndLoanNotificationSender:
-        public: true
-
-    Unilend\Service\SalesforceManager:
-        $extractionDir: '%directory.protected%dataloader'
-        $configDir: '%kernel.root_dir%/dataloader/conf'
-
     Unilend\Service\LocationManager:
         $mapboxToken: '%mapbox.token%'
-
-    Unilend\Service\Ekomi:
-        $url: '%ekomi.url%'
-        $shopId: '%ekomi.shop_id%'
-        $password: '%ekomi.password%'
-
-    Unilend\Service\PaylineManager:
-        $merchantId: '%payline.merchant_id%'
-        $accessKey: '%payline.access_key%'
-        $logPath: '%directory.payline%'
 
     Unilend\Service\Attachment\AttachmentManager:
         $uploadRootDirectory: '%directory.protected%attachments'
@@ -222,6 +132,3 @@ services:
         $providers:
             - '@UserAgentParser\Provider\WhichBrowser'
             - '@UserAgentParser\Provider\PiwikDeviceDetector'
-
-    Unilend\Service\Front\UniversignManager:
-        $universignURL: '%url.universign%'

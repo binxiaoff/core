@@ -1,18 +1,15 @@
 <?php
 
-namespace Unilend\Service\Front;
+declare(strict_types=1);
+
+namespace Unilend\Service\ContentManagementSystem;
 
 use Doctrine\ORM\EntityManagerInterface;
-use Psr\Cache\CacheItemPoolInterface;
-use Symfony\Component\HttpFoundation\RedirectResponse;
-use Symfony\Component\HttpFoundation\Request;
-use Unilend\Entity\Redirections;
+use Psr\Cache\{CacheItemPoolInterface, InvalidArgumentException};
+use Symfony\Component\HttpFoundation\{RedirectResponse, Request};
 use Unilend\CacheKeys;
+use Unilend\Entity\Redirections;
 
-/**
- * Class RedirectionHandler
- * @package Unilend\Service\Front
- */
 class RedirectionHandler
 {
     /** @var EntityManagerInterface */
@@ -35,7 +32,9 @@ class RedirectionHandler
     /**
      * @param Request $request
      *
-     * @return null|RedirectResponse
+     * @throws InvalidArgumentException
+     *
+     * @return RedirectResponse|null
      */
     public function handle(Request $request)
     {
@@ -45,7 +44,7 @@ class RedirectionHandler
         if (false === $cachedItem->isHit()) {
             $redirection = $this->entityManager->getRepository(Redirections::class)->findOneBy([
                 'fromSlug' => $requestedPath,
-                'status'   => Redirections::STATUS_ENABLED
+                'status'   => Redirections::STATUS_ENABLED,
             ]);
 
             if ($redirection) {
@@ -54,7 +53,8 @@ class RedirectionHandler
                 $newPath = [];
             }
             $cachedItem->set($newPath)
-                ->expiresAfter(CacheKeys::MEDIUM_TIME);
+                ->expiresAfter(CacheKeys::MEDIUM_TIME)
+            ;
             $this->cacheItemPool->save($cachedItem);
         } else {
             $newPath = $cachedItem->get();

@@ -21,9 +21,6 @@
 <div id="navigation">
     <ul id="menu_deroulant">
         <?php
-        /** @var \Unilend\Service\BackOfficeUserManager $userManager */
-        $userManager = $this->get('unilend.service.back_office_user_manager');
-
         $menuHtml = '';
         foreach (static::MENU as $item) {
             $zone  = $item['zone'];

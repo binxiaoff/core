@@ -6,6 +6,9 @@ namespace Unilend\Security;
 
 use Symfony\Component\Security\Core\Encoder\BasePasswordEncoder;
 
+/**
+ * @todo: Can be replaced with a real Symfony custom Validation Constraint
+ */
 class PasswordConstraints
 {
     public const MAX_PASSWORD_LENGTH    = BasePasswordEncoder::MAX_PASSWORD_LENGTH;

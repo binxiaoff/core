@@ -21,7 +21,7 @@ security:
             guard:
                 authenticators:
                     - Unilend\Security\LoginAuthenticator
-            user_checker: Unilend\Security\User\UserChecker
+            user_checker: Unilend\Security\UserChecker
             logout:
                 path: logout
                 target: /

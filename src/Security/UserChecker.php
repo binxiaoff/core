@@ -1,6 +1,8 @@
-<?php declare(strict_types=1);
+<?php
 
-namespace Unilend\Security\User;
+declare(strict_types=1);
+
+namespace Unilend\Security;
 
 use Symfony\Component\Security\Core\Exception\DisabledException;
 use Symfony\Component\Security\Core\User\{UserCheckerInterface, UserInterface};
@@ -9,7 +11,7 @@ use Unilend\Entity\Clients;
 class UserChecker implements UserCheckerInterface
 {
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function checkPreAuth(UserInterface $user): void
     {
@@ -20,12 +22,13 @@ class UserChecker implements UserCheckerInterface
         if (false === $user->isGrantedLogin()) {
             $exception = new DisabledException('User account is disabled.');
             $exception->setUser($user);
+
             throw $exception;
         }
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function checkPostAuth(UserInterface $user): void
     {

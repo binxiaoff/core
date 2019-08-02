@@ -1,6 +1,8 @@
 <?php
 
-namespace Unilend\Service\Front;
+declare(strict_types=1);
+
+namespace Unilend\Service\ContentManagementSystem;
 
 use Psr\Cache\CacheItemPoolInterface;
 use Psr\Log\LoggerInterface;

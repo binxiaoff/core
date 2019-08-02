@@ -5,7 +5,6 @@ namespace Unilend\Service\Product\Validator;
 use Doctrine\ORM\EntityManagerInterface;
 use Unilend\Entity\{Product, ProductAttributeType, ProjectProductAssessment, Projects};
 use Unilend\Service\Product\{Checker\CompanyChecker, Checker\ProjectChecker, Contract\ContractManager, ProductAttributeManager};
-use Unilend\Service\WebServiceClient\InfolegaleManager;
 
 class ProjectValidator
 {
@@ -21,15 +20,16 @@ class ProjectValidator
     /** @var EntityManagerInterface */
     private $entityManager;
 
-    /** @var InfolegaleManager */
-    private $infolegaleManager;
-
-    public function __construct(ProductAttributeManager $productAttributeManager, ContractManager $contractManager, EntityManagerInterface $entityManager, InfolegaleManager $infolegaleManager)
+    /**
+     * @param ProductAttributeManager $productAttributeManager
+     * @param ContractManager         $contractManager
+     * @param EntityManagerInterface  $entityManager
+     */
+    public function __construct(ProductAttributeManager $productAttributeManager, ContractManager $contractManager, EntityManagerInterface $entityManager)
     {
         $this->productAttributeManager = $productAttributeManager;
         $this->contractManager         = $contractManager;
         $this->entityManager           = $entityManager;
-        $this->infolegaleManager       = $infolegaleManager;
     }
 
     /**
@@ -62,58 +62,74 @@ class ProjectValidator
      * @param Product              $product
      * @param ProductAttributeType $productAttributeType
      *
-     * @return bool|null
      * @throws \Doctrine\ORM\NonUniqueResultException
+     *
+     * @return bool|null
      */
     private function check(Projects $project, Product $product, ProductAttributeType $productAttributeType)
     {
         switch ($productAttributeType->getLabel()) {
             case ProductAttributeType::MIN_LOAN_DURATION_IN_MONTH:
                 $checkResult = $this->isEligibleForMinDuration($project, $product, $this->productAttributeManager);
+
                 break;
             case ProductAttributeType::MAX_LOAN_DURATION_IN_MONTH:
                 $checkResult = $this->isEligibleForMaxDuration($project, $product, $this->productAttributeManager);
+
                 break;
             case ProductAttributeType::ELIGIBLE_BORROWING_MOTIVE:
                 $checkResult = $this->isEligibleForMotive($project, $product, $this->productAttributeManager);
+
                 break;
             case ProductAttributeType::ELIGIBLE_EXCLUDED_BORROWING_MOTIVE:
                 $checkResult = $this->isEligibleForExcludedMotive($project, $product, $this->productAttributeManager);
+
                 break;
             case ProductAttributeType::MIN_CREATION_DAYS:
                 $checkResult = $this->isEligibleForCreationDays($project->getIdCompany(), $product, $this->productAttributeManager);
+
                 break;
             case ProductAttributeType::ELIGIBLE_BORROWER_COMPANY_RCS:
                 $checkResult = $this->isEligibleForRCS($project->getIdCompany(), $product, $this->productAttributeManager);
+
                 break;
             case ProductAttributeType::ELIGIBLE_BORROWER_COMPANY_NAF_CODE:
                 $checkResult = $this->isEligibleForNafCode($project->getIdCompany(), $product, $this->productAttributeManager);
+
                 break;
             case ProductAttributeType::MIN_PRE_SCORE:
                 $checkResult = $this->isEligibleForMinPreScore($project, $product, $this->productAttributeManager, $this->entityManager);
+
                 break;
             case ProductAttributeType::MAX_PRE_SCORE:
                 $checkResult = $this->isEligibleForMaxPreScore($project, $product, $this->productAttributeManager, $this->entityManager);
+
                 break;
             case ProductAttributeType::ELIGIBLE_EXCLUDED_HEADQUARTERS_LOCATION:
                 $checkResult = $this->isEligibleForExcludedHeadquartersLocation($project->getIdCompany(), $product, $this->productAttributeManager);
+
                 break;
             case ProductAttributeType::MAX_XERFI_SCORE:
                 $checkResult = $this->isEligibleForMaxXerfiScore($project->getIdCompany(), $product, $this->productAttributeManager, $this->entityManager);
+
                 break;
             case ProductAttributeType::NO_IN_PROGRESS_BLEND_PROJECT_DAYS:
                 $checkResult = $this->isEligibleForNoBlendProject($project->getIdCompany(), $product, $this->productAttributeManager, $this->entityManager);
+
                 break;
             case ProductAttributeType::NO_INCIDENT_UNILEND_PROJECT_DAYS:
                 $checkResult = $this->isEligibleForNoUnilendProjectIncident($project->getIdCompany(), $product, $this->productAttributeManager, $this->entityManager);
+
                 break;
             case ProductAttributeType::NO_INCIDENT_BLEND_PROJECT_DAYS:
                 $checkResult = $this->isEligibleForNoBlendProjectIncident($project->getIdCompany(), $product, $this->productAttributeManager, $this->entityManager);
+
                 break;
             case ProductAttributeType::ELIGIBLE_BORROWER_COMPANY_LEGAL_FORM_CODE:
                 $checkResult = $this->isEligibleForLegalFormCode($project->getIdCompany(), $product, $this->productAttributeManager);
+
                 break;
-            default;
+            default:
                 return true;
         }
 
@@ -133,7 +149,7 @@ class ProjectValidator
         $assessment = $this->entityManager->getRepository(ProjectProductAssessment::class)->findOneBy([
             'idProject'              => $project,
             'idProduct'              => $product,
-            'idProductAttributeType' => $productAttributeType
+            'idProductAttributeType' => $productAttributeType,
         ], ['added' => 'DESC']);
 
         if (null === $assessment || $checkResult !== $assessment->getStatus()) {
@@ -142,7 +158,8 @@ class ProjectValidator
             $assessment->setIdProject($project)
                 ->setIdProduct($product)
                 ->setIdProductAttributeType($productAttributeType)
-                ->setStatus($checkResult);
+                ->setStatus($checkResult)
+            ;
 
             $this->entityManager->persist($assessment);
             $this->entityManager->flush($assessment);

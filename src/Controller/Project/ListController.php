@@ -4,46 +4,39 @@ declare(strict_types=1);
 
 namespace Unilend\Controller\Project;
 
+use Doctrine\ORM\NonUniqueResultException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\{Request, Response};
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Unilend\Entity\{Clients, Loans, Project, ProjectStatusHistory};
 use Unilend\Repository\{ClientProjectRepository, ProjectRepository};
-use Unilend\Security\Voter\ProjectVoter;
-use Unilend\Service\Front\ProjectDisplayManager;
 
 class ListController extends AbstractController
 {
     /**
      * @Route("/projets", name="list_projects")
      *
-     * @param ProjectDisplayManager         $projectDisplayManager
-     * @param Request                       $request
-     * @param ProjectRepository             $projectRepository
-     * @param AuthorizationCheckerInterface $authorizationChecker
+     * @param UserInterface|Clients|null $client
+     * @param Request                    $request
+     * @param ProjectRepository          $projectRepository
+     *
+     * @throws NonUniqueResultException
      *
      * @return Response
      */
     public function list(
-        ProjectDisplayManager $projectDisplayManager,
+        ?UserInterface $client,
         Request $request,
-        ProjectRepository $projectRepository,
-        AuthorizationCheckerInterface $authorizationChecker
+        ProjectRepository $projectRepository
     ): Response {
         $page          = $request->query->get('page', 1);
+        $limit         = 20;
         $sortDirection = $request->query->get('sortDirection', 'DESC');
         $sortType      = $request->query->get('sortType', 'expectedClosingDate');
         $sort          = ['cpsh.status' => 'ASC', $sortType => $sortDirection];
-        /** @var Project[] $projects */
-        $projects = $projectRepository->findByStatus(ProjectDisplayManager::STATUS_DISPLAYABLE, $sort);
-
-        foreach ($projects as $index => $project) {
-            if (false === $authorizationChecker->isGranted(ProjectVoter::ATTRIBUTE_LIST, $project)) {
-                unset($projects[$index]);
-            }
-        }
+        $projects      = $projectRepository->findListableByClient($client, $sort, $limit, ($page - 1) * $limit);
+        $projectCount  = $projectRepository->countListableByClient($client);
 
         $template = [
             'sortDirection'  => $sortDirection,
@@ -51,7 +44,7 @@ class ListController extends AbstractController
             'showSortable'   => true,
             'showPagination' => true,
             'currentPage'    => $page,
-            'pagination'     => $this->pagination($projectDisplayManager, $page, 20),
+            'pagination'     => $this->pagination($projectCount, $page, 20),
             'projects'       => $projects,
         ];
 
@@ -190,16 +183,15 @@ class ListController extends AbstractController
     }
 
     /**
-     * @param ProjectDisplayManager $projectDisplayManager
-     * @param int                   $page
-     * @param int                   $limit
+     * @param int $totalNumberProjects
+     * @param int $page
+     * @param int $limit
      *
      * @return array
      */
-    private function pagination(ProjectDisplayManager $projectDisplayManager, int $page, int $limit): array
+    private function pagination(int $totalNumberProjects, int $page, int $limit): array
     {
-        $totalNumberProjects = $projectDisplayManager->getTotalNumberOfDisplayedProjects(null);
-        $totalPages          = $limit ? ceil($totalNumberProjects / $limit) : 1;
+        $totalPages = $limit ? ceil($totalNumberProjects / $limit) : 1;
 
         $paginationSettings = [
             'itemsPerPage'      => $limit,
