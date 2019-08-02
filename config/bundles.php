@@ -10,7 +10,6 @@ return [
     Symfony\Bundle\SecurityBundle\SecurityBundle::class => ['all' => true],
     Symfony\Cmf\Bundle\RoutingBundle\CmfRoutingBundle::class => ['all' => true],
     Xynnn\GoogleTagManagerBundle\GoogleTagManagerBundle::class => ['all' => true],
-    Sonata\SeoBundle\SonataSeoBundle::class => ['all' => true],
     Knp\Bundle\SnappyBundle\KnpSnappyBundle::class => ['all' => true],
     Sonata\CacheBundle\SonataCacheBundle::class => ['all' => true],
     EightPoints\Bundle\GuzzleBundle\EightPointsGuzzleBundle::class => ['all' => true],

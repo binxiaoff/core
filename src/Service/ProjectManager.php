@@ -137,41 +137,6 @@ class ProjectManager
     }
 
     /**
-     * @param int $amount
-     * @param int $duration
-     * @param int $repaymentCommissionRate
-     *
-     * @return int[]
-     */
-    public function getMonthlyPaymentBoundaries($amount, $duration, $repaymentCommissionRate = Projects::DEFAULT_COMMISSION_RATE_REPAYMENT)
-    {
-        $financialCalculation = new \PHPExcel_Calculation_Financial();
-
-        /** @var \project_period $projectPeriod */
-        $projectPeriod = $this->entityManagerSimulator->getRepository('project_period');
-        $projectPeriod->getPeriod($duration);
-
-        /** @var \project_rate_settings $projectRateSettings */
-        $projectRateSettings = $this->entityManagerSimulator->getRepository('project_rate_settings');
-        $rateSettings        = $projectRateSettings->getSettings(null, $projectPeriod->id_period);
-
-        $minimumRate = min(array_column($rateSettings, 'rate_min'));
-        $maximumRate = max(array_column($rateSettings, 'rate_max'));
-
-        $taxType = $this->entityManager->getRepository(TaxType::class)->find(TaxType::TYPE_VAT);
-        $vatRate = $taxType->getRate() / 100;
-
-        $commissionRateRepayment = round(bcdiv($repaymentCommissionRate, 100, 4), 2);
-        $vatFreeCommission       = ($financialCalculation->PMT($commissionRateRepayment / 12, $duration, -$amount) - $financialCalculation->PMT(0, $duration, -$amount));
-        $commission              = $vatFreeCommission * (1 + $vatRate);
-
-        return [
-            'minimum' => round($financialCalculation->PMT($minimumRate / 100 / 12, $duration, -$amount) + $commission),
-            'maximum' => round($financialCalculation->PMT($maximumRate / 100 / 12, $duration, -$amount) + $commission),
-        ];
-    }
-
-    /**
      * @param Projects $project
      *
      * @throws Exception
