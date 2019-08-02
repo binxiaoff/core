@@ -1,32 +1,8 @@
 eight_points_guzzle:
     clients:
-        euler:
-            base_url: "%euler.url%"
-            options:
-                timeout: 16
-                http_errors: false
-        codinf:
-            base_url: "%codinf.url%"
-            options:
-                http_errors: false
-
-        infolegale:
-            base_url: "%infolegale.url%"
-            options:
-                http_errors: false
-        ellisphere:
-            base_url: "%ellisphere.url%"
-            options:
-                http_errors: false
         google_recaptcha:
             base_url: 'https://www.google.com/recaptcha/api/siteverify'
             options:
-                http_errors: false
-        greenpoint:
-            base_url: "%greenpoint.url%"
-            options:
-                headers:
-                    Accept: "application/json"
                 http_errors: false
         insee:
             base_url: "https://api.insee.fr/entreprises/sirene/V3/siren/"

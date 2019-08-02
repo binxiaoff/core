@@ -19,7 +19,6 @@ parameters:
     directory.sftp: '%directory.shared%sftp/'
     directory.protected: '%directory.shared%protected/'
     directory.logs: /data/log
-    directory.payline: '%directory.logs%/payline'
     mapbox.token: ''
     security.bcrypt.cost: 13
     translation_cache_path: '%kernel.cache_dir%/translations'
