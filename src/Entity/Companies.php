@@ -18,20 +18,6 @@ class Companies
     use TimestampableTrait;
 
     public const INVALID_SIREN_EMPTY  = '000000000';
-    public const NAF_CODE_NO_ACTIVITY = '0000Z';
-
-    public const SAME_ADDRESS_FOR_POSTAL_AND_FISCAL      = 1;
-    public const DIFFERENT_ADDRESS_FOR_POSTAL_AND_FISCAL = 0;
-
-    public const CLIENT_STATUS_MANAGER             = 1;
-    public const CLIENT_STATUS_DELEGATION_OF_POWER = 2;
-    public const CLIENT_STATUS_EXTERNAL_CONSULTANT = 3;
-
-    /** Warning, these constants are also setting , but added as constants for more clarity in the code*/
-    public const CLIENT_STATUS_EXTERNAL_COUNSEL_ACCOUNTANT    = 1;
-    public const CLIENT_STATUS_EXTERNAL_COUNSEL_CREDIT_BROKER = 2;
-    public const CLIENT_STATUS_EXTERNAL_COUNSEL_OTHER         = 3;
-    public const CLIENT_STATUS_EXTERNAL_COUNSEL_BANKER        = 4;
 
     public const COMPANY_ID_CASA      = 1;
     public const COMPANY_ID_CACIB     = 2;
@@ -45,7 +31,7 @@ class Companies
     public const TRANSLATION_CREATION_IN_PROGRESS = 'creation-in-progress';
 
     /**
-     * @var \Unilend\Entity\CompanyStatus
+     * @var CompanyStatus
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\CompanyStatus")
      * @ORM\JoinColumns({
@@ -53,13 +39,6 @@ class Companies
      * })
      */
     private $idStatus;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="email_facture", type="string", length=191, nullable=true)
-     */
-    private $emailFacture;
 
     /**
      * @var string
@@ -104,196 +83,11 @@ class Companies
     private $siret;
 
     /**
-     * @var int
-     *
-     * @ORM\Column(name="execices_comptables", type="smallint", nullable=true)
-     */
-    private $execicesComptables;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="rcs", type="string", length=45, nullable=true)
-     */
-    private $rcs;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="tribunal_com", type="string", length=191, nullable=true)
-     */
-    private $tribunalCom;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="activite", type="string", length=191, nullable=true)
-     */
-    private $activite;
-
-    /**
-     * @var float
-     *
-     * @ORM\Column(name="capital", type="float", precision=10, scale=0, nullable=true)
-     *
-     * @Assert\NotBlank
-     * @Assert\Type(type="numeric")
-     */
-    private $capital;
-
-    /**
      * @var \DateTime
      *
      * @ORM\Column(name="date_creation", type="date", nullable=true)
      */
     private $dateCreation;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="adresse1", type="string", length=191, nullable=true)
-     */
-    private $adresse1;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="adresse2", type="string", length=191, nullable=true)
-     */
-    private $adresse2;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="zip", type="string", length=10, nullable=true)
-     */
-    private $zip;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="city", type="string", length=191, nullable=true)
-     */
-    private $city;
-
-    /**
-     * @var int
-     *
-     * @ORM\Column(name="id_pays", type="integer", nullable=true)
-     */
-    private $idPays;
-
-    /**
-     * @var float
-     *
-     * @ORM\Column(name="latitude", type="decimal", precision=10, scale=8, nullable=true)
-     */
-    private $latitude;
-
-    /**
-     * @var float
-     *
-     * @ORM\Column(name="longitude", type="decimal", precision=11, scale=8, nullable=true)
-     */
-    private $longitude;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="phone", type="string", length=45, nullable=true)
-     */
-    private $phone;
-
-    /**
-     * @var int
-     *
-     * @ORM\Column(name="status_adresse_correspondance", type="smallint", nullable=true)
-     */
-    private $statusAdresseCorrespondance;
-
-    /**
-     * @var int
-     *
-     * @ORM\Column(name="status_client", type="smallint", nullable=true)
-     */
-    private $statusClient;
-
-    /**
-     * @var int
-     *
-     * @ORM\Column(name="status_conseil_externe_entreprise", type="smallint", nullable=true)
-     */
-    private $statusConseilExterneEntreprise;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="preciser_conseil_externe_entreprise", type="string", length=191, nullable=true)
-     */
-    private $preciserConseilExterneEntreprise;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="civilite_dirigeant", type="string", nullable=true)
-     */
-    private $civiliteDirigeant;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="nom_dirigeant", type="string", length=191, nullable=true)
-     */
-    private $nomDirigeant;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="prenom_dirigeant", type="string", length=191, nullable=true)
-     */
-    private $prenomDirigeant;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="fonction_dirigeant", type="string", length=191, nullable=true)
-     */
-    private $fonctionDirigeant;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="email_dirigeant", type="string", length=191, nullable=true)
-     */
-    private $emailDirigeant;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="phone_dirigeant", type="string", length=45, nullable=true)
-     */
-    private $phoneDirigeant;
-
-    /**
-     * @var int
-     *
-     * @ORM\Column(name="sector", type="integer", nullable=true)
-     */
-    private $sector;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="risk", type="string", length=45, nullable=true)
-     */
-    private $risk;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="code_naf", type="string", length=5, nullable=true)
-     */
-    private $codeNaf;
 
     /**
      * @var int
@@ -313,22 +107,6 @@ class Companies
      * })
      */
     private $parent;
-
-    /**
-     * @var CompanyAddress
-     *
-     * @ORM\OneToOne(targetEntity="Unilend\Entity\CompanyAddress")
-     * @ORM\JoinColumn(name="id_address", referencedColumnName="id")
-     */
-    private $idAddress;
-
-    /**
-     * @var CompanyAddress
-     *
-     * @ORM\OneToOne(targetEntity="Unilend\Entity\CompanyAddress")
-     * @ORM\JoinColumn(name="id_postal_address", referencedColumnName="id")
-     */
-    private $idPostalAddress;
 
     /**
      * @var Staff[]
@@ -378,7 +156,7 @@ class Companies
      *
      * Set idClientOwner
      */
-    public function setIdClientOwner(Clients $client = null)
+    public function setIdClientOwner(Clients $client = null): Companies
     {
         if ($client) {
             $this->addStaff($client, Staff::ROLE_COMPANY_OWNER);
@@ -394,7 +172,7 @@ class Companies
      *
      * Get idClientOwner
      */
-    public function getIdClientOwner()
+    public function getIdClientOwner(): ?Clients
     {
         foreach ($this->getStaff() as $staff) {
             if ($staff->hasRole(Staff::ROLE_COMPANY_OWNER)) {
@@ -406,37 +184,13 @@ class Companies
     }
 
     /**
-     * Set emailFacture.
-     *
-     * @param string $emailFacture
-     *
-     * @return Companies
-     */
-    public function setEmailFacture($emailFacture)
-    {
-        $this->emailFacture = $emailFacture;
-
-        return $this;
-    }
-
-    /**
-     * Get emailFacture.
-     *
-     * @return string
-     */
-    public function getEmailFacture()
-    {
-        return $this->emailFacture;
-    }
-
-    /**
      * Set name.
      *
      * @param string $name
      *
      * @return Companies
      */
-    public function setName($name)
+    public function setName($name): Companies
     {
         $this->name = $name;
 
@@ -448,7 +202,7 @@ class Companies
      *
      * @return string
      */
-    public function getName()
+    public function getName(): string
     {
         return $this->name;
     }
@@ -460,7 +214,7 @@ class Companies
      *
      * @return Companies
      */
-    public function setForme($forme)
+    public function setForme($forme): Companies
     {
         $this->forme = $forme;
 
@@ -472,7 +226,7 @@ class Companies
      *
      * @return string
      */
-    public function getForme()
+    public function getForme(): string
     {
         return $this->forme;
     }
@@ -484,7 +238,7 @@ class Companies
      *
      * @return Companies
      */
-    public function setSiren($siren)
+    public function setSiren($siren): Companies
     {
         $this->siren = $siren;
 
@@ -496,7 +250,7 @@ class Companies
      *
      * @return string
      */
-    public function getSiren()
+    public function getSiren(): string
     {
         return $this->siren;
     }
@@ -508,7 +262,7 @@ class Companies
      *
      * @return Companies
      */
-    public function setSiret($siret)
+    public function setSiret($siret): Companies
     {
         $this->siret = $siret;
 
@@ -520,662 +274,9 @@ class Companies
      *
      * @return string
      */
-    public function getSiret()
+    public function getSiret(): string
     {
         return $this->siret;
-    }
-
-    /**
-     * Set execicesComptables.
-     *
-     * @param int $execicesComptables
-     *
-     * @return Companies
-     */
-    public function setExecicesComptables($execicesComptables)
-    {
-        $this->execicesComptables = $execicesComptables;
-
-        return $this;
-    }
-
-    /**
-     * Get execicesComptables.
-     *
-     * @return int
-     */
-    public function getExecicesComptables()
-    {
-        return $this->execicesComptables;
-    }
-
-    /**
-     * Set rcs.
-     *
-     * @param string $rcs
-     *
-     * @return Companies
-     */
-    public function setRcs($rcs)
-    {
-        $this->rcs = $rcs;
-
-        return $this;
-    }
-
-    /**
-     * Get rcs.
-     *
-     * @return string
-     */
-    public function getRcs()
-    {
-        return $this->rcs;
-    }
-
-    /**
-     * Set tribunalCom.
-     *
-     * @param string $tribunalCom
-     *
-     * @return Companies
-     */
-    public function setTribunalCom($tribunalCom)
-    {
-        $this->tribunalCom = $tribunalCom;
-
-        return $this;
-    }
-
-    /**
-     * Get tribunalCom.
-     *
-     * @return string
-     */
-    public function getTribunalCom()
-    {
-        return $this->tribunalCom;
-    }
-
-    /**
-     * Set activite.
-     *
-     * @param string $activite
-     *
-     * @return Companies
-     */
-    public function setActivite($activite)
-    {
-        $this->activite = $activite;
-
-        return $this;
-    }
-
-    /**
-     * Get activite.
-     *
-     * @return string
-     */
-    public function getActivite()
-    {
-        return $this->activite;
-    }
-
-    /**
-     * Set capital.
-     *
-     * @param float $capital
-     *
-     * @return Companies
-     */
-    public function setCapital($capital)
-    {
-        $this->capital = $this->cleanCapital($capital);
-
-        return $this;
-    }
-
-    /**
-     * Get capital.
-     *
-     * @return float
-     */
-    public function getCapital()
-    {
-        return $this->capital;
-    }
-
-    /**
-     * Set dateCreation.
-     *
-     * @param \DateTime $dateCreation
-     *
-     * @return Companies
-     */
-    public function setDateCreation($dateCreation)
-    {
-        $this->dateCreation = $dateCreation;
-
-        return $this;
-    }
-
-    /**
-     * Get dateCreation.
-     *
-     * @return \DateTime
-     */
-    public function getDateCreation()
-    {
-        // @todo to be removed when projects is fully under doctrine
-        if (null !== $this->dateCreation && $this->dateCreation->getTimestamp() < 0) {
-            return null;
-        }
-
-        return $this->dateCreation;
-    }
-
-    /**
-     * Set adresse1.
-     *
-     * @param string $adresse1
-     *
-     * @return Companies
-     */
-    public function setAdresse1($adresse1)
-    {
-        $this->adresse1 = $adresse1;
-
-        return $this;
-    }
-
-    /**
-     * Get adresse1.
-     *
-     * @return string
-     */
-    public function getAdresse1()
-    {
-        return $this->adresse1;
-    }
-
-    /**
-     * Set adresse2.
-     *
-     * @param string $adresse2
-     *
-     * @return Companies
-     */
-    public function setAdresse2($adresse2)
-    {
-        $this->adresse2 = $adresse2;
-
-        return $this;
-    }
-
-    /**
-     * Get adresse2.
-     *
-     * @return string
-     */
-    public function getAdresse2()
-    {
-        return $this->adresse2;
-    }
-
-    /**
-     * Set zip.
-     *
-     * @param string $zip
-     *
-     * @return Companies
-     */
-    public function setZip($zip)
-    {
-        $this->zip = $zip;
-
-        return $this;
-    }
-
-    /**
-     * Get zip.
-     *
-     * @return string
-     */
-    public function getZip()
-    {
-        return $this->zip;
-    }
-
-    /**
-     * Set city.
-     *
-     * @param string $city
-     *
-     * @return Companies
-     */
-    public function setCity($city)
-    {
-        $this->city = $city;
-
-        return $this;
-    }
-
-    /**
-     * Get city.
-     *
-     * @return string
-     */
-    public function getCity()
-    {
-        return $this->city;
-    }
-
-    /**
-     * Set idPays.
-     *
-     * @param int $idPays
-     *
-     * @return Companies
-     */
-    public function setIdPays($idPays)
-    {
-        $this->idPays = $idPays;
-
-        return $this;
-    }
-
-    /**
-     * Get idPays.
-     *
-     * @return int
-     */
-    public function getIdPays()
-    {
-        return $this->idPays;
-    }
-
-    /**
-     * Set latitude.
-     *
-     * @param float $latitude
-     *
-     * @return Companies
-     */
-    public function setLatitude($latitude)
-    {
-        $this->latitude = $latitude;
-
-        return $this;
-    }
-
-    /**
-     * Get latitude.
-     *
-     * @return float
-     */
-    public function getLatitude()
-    {
-        return $this->latitude;
-    }
-
-    /**
-     * Set longitude.
-     *
-     * @param float $longitude
-     *
-     * @return Companies
-     */
-    public function setLongitude($longitude)
-    {
-        $this->longitude = $longitude;
-
-        return $this;
-    }
-
-    /**
-     * Get longitude.
-     *
-     * @return float
-     */
-    public function getLongitude()
-    {
-        return $this->longitude;
-    }
-
-    /**
-     * Set phone.
-     *
-     * @param string $phone
-     *
-     * @return Companies
-     */
-    public function setPhone($phone)
-    {
-        $this->phone = $this->cleanPhoneNumber($phone);
-
-        return $this;
-    }
-
-    /**
-     * Get phone.
-     *
-     * @return string
-     */
-    public function getPhone()
-    {
-        return $this->phone;
-    }
-
-    /**
-     * Set statusAdresseCorrespondance.
-     *
-     * @param int $statusAdresseCorrespondance
-     *
-     * @return Companies
-     */
-    public function setStatusAdresseCorrespondance($statusAdresseCorrespondance)
-    {
-        $this->statusAdresseCorrespondance = $statusAdresseCorrespondance;
-
-        return $this;
-    }
-
-    /**
-     * Get statusAdresseCorrespondance.
-     *
-     * @return int
-     */
-    public function getStatusAdresseCorrespondance()
-    {
-        return $this->statusAdresseCorrespondance;
-    }
-
-    /**
-     * Set statusClient.
-     *
-     * @param int $statusClient
-     *
-     * @return Companies
-     */
-    public function setStatusClient($statusClient)
-    {
-        $this->statusClient = $statusClient;
-
-        return $this;
-    }
-
-    /**
-     * Get statusClient.
-     *
-     * @return int
-     */
-    public function getStatusClient()
-    {
-        return $this->statusClient;
-    }
-
-    /**
-     * Set statusConseilExterneEntreprise.
-     *
-     * @param int $statusConseilExterneEntreprise
-     *
-     * @return Companies
-     */
-    public function setStatusConseilExterneEntreprise($statusConseilExterneEntreprise)
-    {
-        $this->statusConseilExterneEntreprise = $statusConseilExterneEntreprise;
-
-        return $this;
-    }
-
-    /**
-     * Get statusConseilExterneEntreprise.
-     *
-     * @return int
-     */
-    public function getStatusConseilExterneEntreprise()
-    {
-        return $this->statusConseilExterneEntreprise;
-    }
-
-    /**
-     * Set preciserConseilExterneEntreprise.
-     *
-     * @param string $preciserConseilExterneEntreprise
-     *
-     * @return Companies
-     */
-    public function setPreciserConseilExterneEntreprise($preciserConseilExterneEntreprise)
-    {
-        $this->preciserConseilExterneEntreprise = $preciserConseilExterneEntreprise;
-
-        return $this;
-    }
-
-    /**
-     * Get preciserConseilExterneEntreprise.
-     *
-     * @return string
-     */
-    public function getPreciserConseilExterneEntreprise()
-    {
-        return $this->preciserConseilExterneEntreprise;
-    }
-
-    /**
-     * Set civiliteDirigeant.
-     *
-     * @param string $civiliteDirigeant
-     *
-     * @return Companies
-     */
-    public function setCiviliteDirigeant($civiliteDirigeant)
-    {
-        $this->civiliteDirigeant = $civiliteDirigeant;
-
-        return $this;
-    }
-
-    /**
-     * Get civiliteDirigeant.
-     *
-     * @return string
-     */
-    public function getCiviliteDirigeant()
-    {
-        return $this->civiliteDirigeant;
-    }
-
-    /**
-     * Set nomDirigeant.
-     *
-     * @param string $nomDirigeant
-     *
-     * @return Companies
-     */
-    public function setNomDirigeant($nomDirigeant)
-    {
-        $this->nomDirigeant = $this->normalizeName($nomDirigeant);
-
-        return $this;
-    }
-
-    /**
-     * Get nomDirigeant.
-     *
-     * @return string
-     */
-    public function getNomDirigeant()
-    {
-        return $this->nomDirigeant;
-    }
-
-    /**
-     * Set prenomDirigeant.
-     *
-     * @param string $prenomDirigeant
-     *
-     * @return Companies
-     */
-    public function setPrenomDirigeant($prenomDirigeant)
-    {
-        $this->prenomDirigeant = $this->normalizeName($prenomDirigeant);
-
-        return $this;
-    }
-
-    /**
-     * Get prenomDirigeant.
-     *
-     * @return string
-     */
-    public function getPrenomDirigeant()
-    {
-        return $this->prenomDirigeant;
-    }
-
-    /**
-     * Set fonctionDirigeant.
-     *
-     * @param string $fonctionDirigeant
-     *
-     * @return Companies
-     */
-    public function setFonctionDirigeant($fonctionDirigeant)
-    {
-        $this->fonctionDirigeant = $fonctionDirigeant;
-
-        return $this;
-    }
-
-    /**
-     * Get fonctionDirigeant.
-     *
-     * @return string
-     */
-    public function getFonctionDirigeant()
-    {
-        return $this->fonctionDirigeant;
-    }
-
-    /**
-     * Set emailDirigeant.
-     *
-     * @param string $emailDirigeant
-     *
-     * @return Companies
-     */
-    public function setEmailDirigeant($emailDirigeant)
-    {
-        $this->emailDirigeant = $emailDirigeant;
-
-        return $this;
-    }
-
-    /**
-     * Get emailDirigeant.
-     *
-     * @return string
-     */
-    public function getEmailDirigeant()
-    {
-        return $this->emailDirigeant;
-    }
-
-    /**
-     * Set phoneDirigeant.
-     *
-     * @param string $phoneDirigeant
-     *
-     * @return Companies
-     */
-    public function setPhoneDirigeant($phoneDirigeant)
-    {
-        $this->phoneDirigeant = $phoneDirigeant;
-
-        return $this;
-    }
-
-    /**
-     * Get phoneDirigeant.
-     *
-     * @return string
-     */
-    public function getPhoneDirigeant()
-    {
-        return $this->phoneDirigeant;
-    }
-
-    /**
-     * Set sector.
-     *
-     * @param int $sector
-     *
-     * @return Companies
-     */
-    public function setSector($sector)
-    {
-        $this->sector = $sector;
-
-        return $this;
-    }
-
-    /**
-     * Get sector.
-     *
-     * @return int
-     */
-    public function getSector()
-    {
-        return $this->sector;
-    }
-
-    /**
-     * Set risk.
-     *
-     * @param string $risk
-     *
-     * @return Companies
-     */
-    public function setRisk($risk)
-    {
-        $this->risk = $risk;
-
-        return $this;
-    }
-
-    /**
-     * Get risk.
-     *
-     * @return string
-     */
-    public function getRisk()
-    {
-        return $this->risk;
-    }
-
-    /**
-     * Set codeNaf.
-     *
-     * @param string $codeNaf
-     *
-     * @return Companies
-     */
-    public function setCodeNaf($codeNaf)
-    {
-        $this->codeNaf = $codeNaf;
-
-        return $this;
-    }
-
-    /**
-     * Get codeNaf.
-     *
-     * @return string
-     */
-    public function getCodeNaf()
-    {
-        return $this->codeNaf;
     }
 
     /**
@@ -1195,7 +296,7 @@ class Companies
      *
      * @return Companies
      */
-    public function setParent(Companies $parent = null)
+    public function setParent(Companies $parent = null): Companies
     {
         $this->parent = $parent;
 
@@ -1207,7 +308,7 @@ class Companies
      *
      * @return Companies
      */
-    public function getParent()
+    public function getParent(): Companies
     {
         return $this->parent;
     }
@@ -1215,7 +316,7 @@ class Companies
     /**
      * @return string|null
      */
-    public function getLegalFormCode()
+    public function getLegalFormCode(): ?string
     {
         return $this->legalFormCode;
     }
@@ -1223,7 +324,7 @@ class Companies
     /**
      * @param string $legalFormCode
      */
-    public function setLegalFormCode($legalFormCode = null)
+    public function setLegalFormCode($legalFormCode = null): void
     {
         $this->legalFormCode = $legalFormCode;
     }
@@ -1231,7 +332,7 @@ class Companies
     /**
      * @return CompanyStatus|null
      */
-    public function getIdStatus()
+    public function getIdStatus(): ?CompanyStatus
     {
         return $this->idStatus;
     }
@@ -1241,138 +342,9 @@ class Companies
      *
      * @return Companies
      */
-    public function setIdStatus(CompanyStatus $idStatus)
+    public function setIdStatus(CompanyStatus $idStatus): Companies
     {
         $this->idStatus = $idStatus;
-
-        return $this;
-    }
-
-    /**
-     * @ORM\PreFlush
-     */
-    public function setSectorAccordingToNaf()
-    {
-        if (self::NAF_CODE_NO_ACTIVITY === $this->codeNaf) {
-            return;
-        }
-
-        if (in_array(mb_substr($this->codeNaf, 0, 2), ['01', '02', '03'])) {
-            $this->sector = 1;
-        }
-
-        if (in_array(mb_substr($this->codeNaf, 0, 2), ['10', '11'])) {
-            $this->sector = 2;
-        }
-
-        if (in_array(mb_substr($this->codeNaf, 0, 2), ['41', '42', '43', '71'])) {
-            $this->sector = 3;
-        }
-
-        if (in_array(mb_substr($this->codeNaf, 0, 2), ['45', '46', '47', '95'])) {
-            $this->sector = 4;
-        }
-
-        if (in_array(mb_substr($this->codeNaf, 0, 2), ['59', '60', '90', '91'])) {
-            $this->sector = 6;
-        }
-
-        if (in_array(mb_substr($this->codeNaf, 0, 2), ['55'])) {
-            $this->sector = 7;
-        }
-
-        if (in_array(mb_substr($this->codeNaf, 0, 2), ['16', '17', '18', '19', '20', '22', '23', '24', '25', '26', '27', '28', '29', '30', '31', '32', '33', '35', '36'])) {
-            $this->sector = 8;
-        }
-
-        if (in_array(mb_substr($this->codeNaf, 0, 2), ['61', '62', '63'])) {
-            $this->sector = 9;
-        }
-
-        if (in_array(mb_substr($this->codeNaf, 0, 2), ['21', '75', '86'])) {
-            $this->sector = 10;
-        }
-
-        if (in_array(mb_substr($this->codeNaf, 0, 2), ['56'])) {
-            $this->sector = 11;
-        }
-
-        if (in_array(mb_substr($this->codeNaf, 0, 2), ['58', '65', '66', '68', '69', '70', '73', '74', '77', '78', '79', '80', '81', '82', '96', '97'])) {
-            $this->sector = 12;
-        }
-
-        if (in_array(mb_substr($this->codeNaf, 0, 2), ['13', '14', '15'])) {
-            $this->sector = 13;
-        }
-
-        if (in_array(mb_substr($this->codeNaf, 0, 2), ['49', '50', '51', '52', '53'])) {
-            $this->sector = 14;
-        }
-
-        if (in_array(mb_substr($this->codeNaf, 0, 2), ['05', '06', '07', '08', '09', '12', '37', '38', '39', '64', '72', '84', '85', '87', '88', '92', '93', '94', '98', '99'])) {
-            $this->sector = 15;
-        }
-    }
-
-    /**
-     * @ORM\PreFlush
-     */
-    public function checkCompanyNameCreation()
-    {
-        if (is_numeric($this->name) || 0 === strcasecmp($this->name, 'Monsieur') || 0 === strcasecmp($this->name, 'Madame')) {
-            trigger_error(sprintf(
-                'An invalid company name "%s" detected for siren : %s - trace : %s',
-                $this->name,
-                $this->siren,
-                serialize(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 5))
-            ), E_USER_WARNING);
-        }
-    }
-
-    /**
-     * @return CompanyAddress|null
-     */
-    public function getIdAddress(): ?CompanyAddress
-    {
-        if (null !== $this->idAddress && empty($this->idAddress->getId())) {
-            $this->idAddress = null;
-        }
-
-        return $this->idAddress;
-    }
-
-    /**
-     * @param CompanyAddress|null $idAddress
-     *
-     * @return Companies
-     */
-    public function setIdAddress(?CompanyAddress $idAddress): Companies
-    {
-        $this->idAddress = $idAddress;
-
-        return $this;
-    }
-
-    /**
-     * @return CompanyAddress|null
-     */
-    public function getIdPostalAddress(): ?CompanyAddress
-    {
-        if (null !== $this->idPostalAddress && empty($this->idPostalAddress->getId())) {
-            $this->idPostalAddress = null;
-        }
-
-        return $this->idPostalAddress;
-    }
-
-    /**
-     * @param CompanyAddress|null $idPostalAddress
-     *
-     * @return Companies
-     */
-    public function setIdPostalAddress(?CompanyAddress $idPostalAddress): Companies
-    {
-        $this->idPostalAddress = $idPostalAddress;
 
         return $this;
     }
@@ -1428,11 +400,11 @@ class Companies
     }
 
     /**
-     * @param Projects|null $project
+     * @param Project|null $project
      *
      * @return ArrayCollection|ProjectParticipant[]
      */
-    public function getProjectParticipants(?Projects $project = null): iterable
+    public function getProjectParticipants(?Project $project = null): iterable
     {
         $criteria = new Criteria();
         if ($project) {
@@ -1443,11 +415,11 @@ class Companies
     }
 
     /**
-     * @param Projects $project
+     * @param Project $project
      *
      * @return bool
      */
-    public function isArranger(Projects $project)
+    public function isArranger(Project $project): bool
     {
         $projectParticipant = $this->getProjectParticipants($project)->first();
         if ($projectParticipant instanceof ProjectParticipant) {
@@ -1455,49 +427,5 @@ class Companies
         }
 
         return false;
-    }
-
-    /**
-     * @param string $name
-     *
-     * @return string
-     */
-    private function normalizeName(string $name): string
-    {
-        $name = mb_strtolower($name);
-
-        $pos = mb_strrpos($name, '-');
-        if (false === $pos) {
-            return ucwords($name);
-        }
-        $tabName = explode('-', $name);
-        $newName = '';
-        $i       = 0;
-        foreach ($tabName as $name) {
-            $newName .= (0 === $i ? '' : '-') . ucwords($name);
-            ++$i;
-        }
-
-        return $newName;
-    }
-
-    /**
-     * @param string $number
-     *
-     * @return string
-     */
-    private function cleanPhoneNumber($number)
-    {
-        return str_replace([' ', '.'], '', $number);
-    }
-
-    /**
-     * @param string $capital
-     *
-     * @return mixed
-     */
-    private function cleanCapital($capital)
-    {
-        return str_replace([' ', '.'], '', $capital);
     }
 }

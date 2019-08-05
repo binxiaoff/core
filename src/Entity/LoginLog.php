@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Unilend\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * LoginLog
+ * LoginLog.
  *
  * @ORM\Table(name="login_log", indexes={@ORM\Index(name="pseudo", columns={"pseudo"}), @ORM\Index(name="idx_login_log_IP", columns={"IP"})})
  * @ORM\Entity(repositoryClass="Unilend\Repository\LoginLogRepository")
@@ -50,10 +52,8 @@ class LoginLog
      */
     private $idLogLogin;
 
-
-
     /**
-     * Set pseudo
+     * Set pseudo.
      *
      * @param string $pseudo
      *
@@ -67,7 +67,7 @@ class LoginLog
     }
 
     /**
-     * Get pseudo
+     * Get pseudo.
      *
      * @return string
      */
@@ -77,7 +77,7 @@ class LoginLog
     }
 
     /**
-     * Set ip
+     * Set ip.
      *
      * @param string $ip
      *
@@ -91,7 +91,7 @@ class LoginLog
     }
 
     /**
-     * Get ip
+     * Get ip.
      *
      * @return string
      */
@@ -101,7 +101,7 @@ class LoginLog
     }
 
     /**
-     * Set retour
+     * Set retour.
      *
      * @param string $retour
      *
@@ -115,7 +115,7 @@ class LoginLog
     }
 
     /**
-     * Get retour
+     * Get retour.
      *
      * @return string
      */
@@ -125,7 +125,7 @@ class LoginLog
     }
 
     /**
-     * Set added
+     * Set added.
      *
      * @param \DateTime $added
      *
@@ -139,7 +139,7 @@ class LoginLog
     }
 
     /**
-     * Get added
+     * Get added.
      *
      * @return \DateTime
      */
@@ -149,7 +149,7 @@ class LoginLog
     }
 
     /**
-     * Get idLogLogin
+     * Get idLogLogin.
      *
      * @return int
      */
@@ -163,7 +163,7 @@ class LoginLog
      */
     public function setAddedValue(): void
     {
-        if (! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
+        if (!$this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
             $this->added = new \DateTime();
         }
     }

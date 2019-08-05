@@ -1,20 +1,22 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Unilend\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * Zones
+ * Zones.
  *
  * @ORM\Table(name="zones")
  * @ORM\Entity
  */
 class Zones
 {
-    const ZONE_LABEL_ADMINISTRATION = 'admin';
-    const ZONE_LABEL_CONFIGURATION  = 'configuration';
-    const ZONE_LABEL_EDITION        = 'edition';
+    public const ZONE_LABEL_ADMINISTRATION = 'admin';
+    public const ZONE_LABEL_CONFIGURATION  = 'configuration';
+    public const ZONE_LABEL_EDITION        = 'edition';
 
     /**
      * @var string
@@ -61,7 +63,7 @@ class Zones
     private $idZone;
 
     /**
-     * Set name
+     * Set name.
      *
      * @param string $name
      *
@@ -75,7 +77,7 @@ class Zones
     }
 
     /**
-     * Get name
+     * Get name.
      *
      * @return string
      */
@@ -85,7 +87,7 @@ class Zones
     }
 
     /**
-     * Set slug
+     * Set slug.
      *
      * @param string $slug
      *
@@ -99,7 +101,7 @@ class Zones
     }
 
     /**
-     * Get slug
+     * Get slug.
      *
      * @return string
      */
@@ -109,7 +111,7 @@ class Zones
     }
 
     /**
-     * Set status
+     * Set status.
      *
      * @param bool $status
      *
@@ -123,7 +125,7 @@ class Zones
     }
 
     /**
-     * Get status
+     * Get status.
      *
      * @return bool
      */
@@ -133,7 +135,7 @@ class Zones
     }
 
     /**
-     * Set added
+     * Set added.
      *
      * @param \DateTime $added
      *
@@ -147,7 +149,7 @@ class Zones
     }
 
     /**
-     * Get added
+     * Get added.
      *
      * @return \DateTime
      */
@@ -157,7 +159,7 @@ class Zones
     }
 
     /**
-     * Set updated
+     * Set updated.
      *
      * @param \DateTime $updated
      *
@@ -171,7 +173,7 @@ class Zones
     }
 
     /**
-     * Get updated
+     * Get updated.
      *
      * @return \DateTime
      */
@@ -181,9 +183,9 @@ class Zones
     }
 
     /**
-     * Get idZone
+     * Get idZone.
      *
-     * @return integer
+     * @return int
      */
     public function getIdZone()
     {

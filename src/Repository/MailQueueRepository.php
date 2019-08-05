@@ -1,12 +1,23 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Unilend\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
+use Doctrine\DBAL\DBALException;
+use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\Query\Expr\Join;
+use Exception;
 use Unilend\Entity\{MailQueue, MailTemplates};
 
+/**
+ * @method MailQueue|null find($id, $lockMode = null, $lockVersion = null)
+ * @method MailQueue|null findOneBy(array $criteria, array $orderBy = null)
+ * @method MailQueue[]    findAll()
+ * @method MailQueue[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
+ */
 class MailQueueRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
@@ -17,6 +28,8 @@ class MailQueueRepository extends ServiceEntityRepository
     /**
      * @param int $limit
      *
+     * @throws Exception
+     *
      * @return MailQueue[]
      */
     public function getPendingMails($limit)
@@ -25,11 +38,12 @@ class MailQueueRepository extends ServiceEntityRepository
         $qb->where('mq.status = :pending')
             ->setParameter('pending', MailQueue::STATUS_PENDING)
             ->andWhere(
-               $qb->expr()->orX('mq.toSendAt <= :now', $qb->expr()->isNull('mq.toSendAt'))
+                $qb->expr()->orX('mq.toSendAt <= :now', $qb->expr()->isNull('mq.toSendAt'))
             )
             ->setParameter('now', new \DateTime())
             ->orderBy('mq.idQueue', 'ASC')
-            ->groupBy('mq.recipient');
+            ->groupBy('mq.recipient')
+        ;
 
         if (is_numeric($limit)) {
             $qb->setMaxResults($limit);
@@ -42,6 +56,7 @@ class MailQueueRepository extends ServiceEntityRepository
      * @param int $templateId
      *
      * @return bool
+     * @throws NonUniqueResultException
      */
     public function existsTemplateInMailQueue($templateId)
     {
@@ -52,7 +67,8 @@ class MailQueueRepository extends ServiceEntityRepository
             ->where('mt.idMailTemplate = :templateId')
             ->orWhere('mt.idHeader = :templateId')
             ->orWhere('mt.idFooter = :templateId')
-            ->setParameter('templateId', $templateId);
+            ->setParameter('templateId', $templateId)
+        ;
 
         return $queryBuilder->getQuery()->getSingleScalarResult() > 0;
     }
@@ -67,11 +83,12 @@ class MailQueueRepository extends ServiceEntityRepository
      *
      * @return array
      */
-    public function searchSentEmails($clientId = null, $sender = null, $recipient = null, $subject = null, \DateTime $startDate = null, \DateTime $endDate = null)
+    public function searchSentEmails($clientId = null, $sender = null, $recipient = null, $subject = null, \DateTime $startDate = null, \DateTime $endDate = null): array
     {
         $queryBuilder = $this->createQueryBuilder('mq');
         $queryBuilder
-            ->select('
+            ->select(
+                '
                 mq.idQueue,
                 mq.sentAt,
                 mq.recipient,
@@ -82,50 +99,58 @@ class MailQueueRepository extends ServiceEntityRepository
             ->innerJoin(MailTemplates::class, 'mt', Join::WITH, 'mq.idMailTemplate = mt.idMailTemplate')
             ->where('mq.status = :sentStatus')
             ->setParameter('sentStatus', MailQueue::STATUS_SENT)
-            ->orderBy('mq.sentAt', 'DESC');
+            ->orderBy('mq.sentAt', 'DESC')
+        ;
 
-        if (false === is_null($clientId)) {
+        if (false === (null === $clientId)) {
             $queryBuilder
                 ->andWhere('mq.idClient = :clientId')
-                ->setParameter('clientId', $clientId);
+                ->setParameter('clientId', $clientId)
+            ;
         }
 
-        if (false === is_null($sender)) {
+        if (false === (null === $sender)) {
             $queryBuilder
                 ->andWhere('mt.senderName LIKE :sender')
-                ->setParameter('sender', '%' . $sender . '%');
+                ->setParameter('sender', '%' . $sender . '%')
+            ;
         }
 
-        if (false === is_null($recipient)) {
+        if (false === (null === $recipient)) {
             $queryBuilder
                 ->andWhere('mq.recipient LIKE :recipient')
-                ->setParameter('recipient', '%' . $recipient . '%');
+                ->setParameter('recipient', '%' . $recipient . '%')
+            ;
         }
 
-        if (false === is_null($subject)) {
+        if (false === (null === $subject)) {
             $queryBuilder
                 ->andWhere('mt.subject LIKE :subject')
-                ->setParameter('subject', '%' . $subject . '%');
+                ->setParameter('subject', '%' . $subject . '%')
+            ;
         }
 
-        if (false === is_null($startDate)) {
+        if (false === (null === $startDate)) {
             $queryBuilder
                 ->andWhere('mq.sentAt >= :startDate')
-                ->setParameter('startDate', $startDate->format('Y-m-d 00:00:00'));
+                ->setParameter('startDate', $startDate->format('Y-m-d 00:00:00'))
+            ;
         }
 
-        if (false === is_null($endDate)) {
+        if (false === (null === $endDate)) {
             $queryBuilder
                 ->andWhere('mq.sentAt <= :endDate')
-                ->setParameter('endDate', $endDate->format('Y-m-d 23:59:59'));
+                ->setParameter('endDate', $endDate->format('Y-m-d 23:59:59'))
+            ;
         }
 
         return $queryBuilder->getQuery()->getResult();
     }
 
     /**
+     * @throws DBALException
+     *
      * @return array
-     * @throws \Doctrine\DBAL\DBALException
      */
     public function getMailTemplateSendFrequency(): array
     {

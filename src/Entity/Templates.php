@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Unilend\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * Templates
+ * Templates.
  *
  * @ORM\Table(name="templates")
  * @ORM\Entity
@@ -49,10 +51,8 @@ class Templates
      */
     private $idTemplate;
 
-
-
     /**
-     * Set name
+     * Set name.
      *
      * @param string $name
      *
@@ -66,7 +66,7 @@ class Templates
     }
 
     /**
-     * Get name
+     * Get name.
      *
      * @return string
      */
@@ -76,7 +76,7 @@ class Templates
     }
 
     /**
-     * Set slug
+     * Set slug.
      *
      * @param string $slug
      *
@@ -90,7 +90,7 @@ class Templates
     }
 
     /**
-     * Get slug
+     * Get slug.
      *
      * @return string
      */
@@ -100,7 +100,7 @@ class Templates
     }
 
     /**
-     * Set added
+     * Set added.
      *
      * @param \DateTime $added
      *
@@ -114,7 +114,7 @@ class Templates
     }
 
     /**
-     * Get added
+     * Get added.
      *
      * @return \DateTime
      */
@@ -124,7 +124,7 @@ class Templates
     }
 
     /**
-     * Set updated
+     * Set updated.
      *
      * @param \DateTime $updated
      *
@@ -138,7 +138,7 @@ class Templates
     }
 
     /**
-     * Get updated
+     * Get updated.
      *
      * @return \DateTime
      */
@@ -148,9 +148,9 @@ class Templates
     }
 
     /**
-     * Get idTemplate
+     * Get idTemplate.
      *
-     * @return integer
+     * @return int
      */
     public function getIdTemplate()
     {

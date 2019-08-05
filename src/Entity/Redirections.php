@@ -1,19 +1,21 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Unilend\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * Redirections
+ * Redirections.
  *
  * @ORM\Table(name="redirections")
  * @ORM\Entity
  */
 class Redirections
 {
-    const STATUS_DISABLED = 0;
-    const STATUS_ENABLED  = 1;
+    public const STATUS_DISABLED = 0;
+    public const STATUS_ENABLED  = 1;
     /**
      * @var string
      *
@@ -68,7 +70,7 @@ class Redirections
     private $fromSlug;
 
     /**
-     * Set toSlug
+     * Set toSlug.
      *
      * @param string $toSlug
      *
@@ -82,7 +84,7 @@ class Redirections
     }
 
     /**
-     * Get toSlug
+     * Get toSlug.
      *
      * @return string
      */
@@ -92,9 +94,9 @@ class Redirections
     }
 
     /**
-     * Set type
+     * Set type.
      *
-     * @param integer $type
+     * @param int $type
      *
      * @return Redirections
      */
@@ -106,9 +108,9 @@ class Redirections
     }
 
     /**
-     * Get type
+     * Get type.
      *
-     * @return integer
+     * @return int
      */
     public function getType()
     {
@@ -116,9 +118,9 @@ class Redirections
     }
 
     /**
-     * Set status
+     * Set status.
      *
-     * @param integer $status
+     * @param int $status
      *
      * @return Redirections
      */
@@ -130,9 +132,9 @@ class Redirections
     }
 
     /**
-     * Get status
+     * Get status.
      *
-     * @return integer
+     * @return int
      */
     public function getStatus()
     {
@@ -140,7 +142,7 @@ class Redirections
     }
 
     /**
-     * Set added
+     * Set added.
      *
      * @param \DateTime $added
      *
@@ -154,7 +156,7 @@ class Redirections
     }
 
     /**
-     * Get added
+     * Get added.
      *
      * @return \DateTime
      */
@@ -164,7 +166,7 @@ class Redirections
     }
 
     /**
-     * Set updated
+     * Set updated.
      *
      * @param \DateTime $updated
      *
@@ -178,7 +180,7 @@ class Redirections
     }
 
     /**
-     * Get updated
+     * Get updated.
      *
      * @return \DateTime
      */
@@ -188,7 +190,7 @@ class Redirections
     }
 
     /**
-     * Set idLangue
+     * Set idLangue.
      *
      * @param string $idLangue
      *
@@ -202,7 +204,7 @@ class Redirections
     }
 
     /**
-     * Get idLangue
+     * Get idLangue.
      *
      * @return string
      */
@@ -212,7 +214,7 @@ class Redirections
     }
 
     /**
-     * Set fromSlug
+     * Set fromSlug.
      *
      * @param string $fromSlug
      *
@@ -226,7 +228,7 @@ class Redirections
     }
 
     /**
-     * Get fromSlug
+     * Get fromSlug.
      *
      * @return string
      */

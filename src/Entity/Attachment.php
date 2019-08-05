@@ -88,20 +88,6 @@ class Attachment
     private $companyOwner;
 
     /**
-     * @var GreenpointAttachment
-     *
-     * @ORM\OneToOne(targetEntity="Unilend\Entity\GreenpointAttachment", mappedBy="idAttachment")
-     */
-    private $greenpointAttachment;
-
-    /**
-     * @var BankAccount
-     *
-     * @ORM\OneToOne(targetEntity="Unilend\Entity\BankAccount", mappedBy="idAttachment")
-     */
-    private $bankAccount;
-
-    /**
      * @var string
      *
      * @ORM\Column(length=191)
@@ -218,22 +204,6 @@ class Attachment
     public function getClientOwner(): ?Clients
     {
         return $this->clientOwner;
-    }
-
-    /**
-     * @return GreenpointAttachment
-     */
-    public function getGreenpointAttachment(): GreenpointAttachment
-    {
-        return $this->greenpointAttachment;
-    }
-
-    /**
-     * @return BankAccount
-     */
-    public function getBankAccount(): BankAccount
-    {
-        return $this->bankAccount;
     }
 
     /**

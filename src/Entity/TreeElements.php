@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Unilend\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * TreeElements
+ * TreeElements.
  *
  * @ORM\Table(name="tree_elements", uniqueConstraints={@ORM\UniqueConstraint(name="id_tree_2", columns={"id_tree", "id_element", "id_langue"})}, indexes={@ORM\Index(name="id_element", columns={"id_element"}), @ORM\Index(name="id_tree_3", columns={"id_tree"})})
  * @ORM\Entity
@@ -50,7 +52,7 @@ class TreeElements
     /**
      * @var int
      *
-     * @ORM\Column(name="status", type="smallint", nullable=false, options={"default" : 0})
+     * @ORM\Column(name="status", type="smallint", nullable=false, options={"default": 0})
      */
     private $status = 0;
 
@@ -77,12 +79,10 @@ class TreeElements
      */
     private $id;
 
-
-
     /**
-     * Set idTree
+     * Set idTree.
      *
-     * @param integer $idTree
+     * @param int $idTree
      *
      * @return TreeElements
      */
@@ -94,9 +94,9 @@ class TreeElements
     }
 
     /**
-     * Get idTree
+     * Get idTree.
      *
-     * @return integer
+     * @return int
      */
     public function getIdTree()
     {
@@ -104,9 +104,9 @@ class TreeElements
     }
 
     /**
-     * Set idElement
+     * Set idElement.
      *
-     * @param integer $idElement
+     * @param int $idElement
      *
      * @return TreeElements
      */
@@ -118,9 +118,9 @@ class TreeElements
     }
 
     /**
-     * Get idElement
+     * Get idElement.
      *
-     * @return integer
+     * @return int
      */
     public function getIdElement()
     {
@@ -128,7 +128,7 @@ class TreeElements
     }
 
     /**
-     * Set idLangue
+     * Set idLangue.
      *
      * @param string $idLangue
      *
@@ -142,7 +142,7 @@ class TreeElements
     }
 
     /**
-     * Get idLangue
+     * Get idLangue.
      *
      * @return string
      */
@@ -152,7 +152,7 @@ class TreeElements
     }
 
     /**
-     * Set value
+     * Set value.
      *
      * @param string $value
      *
@@ -166,7 +166,7 @@ class TreeElements
     }
 
     /**
-     * Get value
+     * Get value.
      *
      * @return string
      */
@@ -176,7 +176,7 @@ class TreeElements
     }
 
     /**
-     * Set complement
+     * Set complement.
      *
      * @param string $complement
      *
@@ -190,7 +190,7 @@ class TreeElements
     }
 
     /**
-     * Get complement
+     * Get complement.
      *
      * @return string
      */
@@ -200,9 +200,9 @@ class TreeElements
     }
 
     /**
-     * Set status
+     * Set status.
      *
-     * @param integer $status
+     * @param int $status
      *
      * @return TreeElements
      */
@@ -214,9 +214,9 @@ class TreeElements
     }
 
     /**
-     * Get status
+     * Get status.
      *
-     * @return integer
+     * @return int
      */
     public function getStatus()
     {
@@ -224,7 +224,7 @@ class TreeElements
     }
 
     /**
-     * Set added
+     * Set added.
      *
      * @param \DateTime $added
      *
@@ -238,7 +238,7 @@ class TreeElements
     }
 
     /**
-     * Get added
+     * Get added.
      *
      * @return \DateTime
      */
@@ -248,7 +248,7 @@ class TreeElements
     }
 
     /**
-     * Set updated
+     * Set updated.
      *
      * @param \DateTime $updated
      *
@@ -262,7 +262,7 @@ class TreeElements
     }
 
     /**
-     * Get updated
+     * Get updated.
      *
      * @return \DateTime
      */
@@ -272,9 +272,9 @@ class TreeElements
     }
 
     /**
-     * Get id
+     * Get id.
      *
-     * @return integer
+     * @return int
      */
     public function getId()
     {

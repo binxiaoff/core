@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Unilend\Entity;
 
 use DateTime;
@@ -7,7 +9,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Unilend\Entity\Traits\TimestampableTrait;
 
 /**
- * Users
+ * Users.
  *
  * @ORM\Table(name="users")
  * @ORM\Entity
@@ -17,19 +19,19 @@ class Users
 {
     use TimestampableTrait;
 
-    const USER_ID_CRON       = -1;
-    const USER_ID_FRONT      = -2;
-    const USER_ID_WEBSERVICE = -3;
+    public const USER_ID_CRON       = -1;
+    public const USER_ID_FRONT      = -2;
+    public const USER_ID_WEBSERVICE = -3;
 
-    const STATUS_ONLINE  = 1;
-    const STATUS_OFFLINE = 0;
+    public const STATUS_ONLINE  = 1;
+    public const STATUS_OFFLINE = 0;
 
     /**
      * @var UsersTypes
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\UsersTypes")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_user_type", referencedColumnName="id_user_type")
+     *     @ORM\JoinColumn(name="id_user_type", referencedColumnName="id_user_type")
      * })
      */
     private $idUserType;

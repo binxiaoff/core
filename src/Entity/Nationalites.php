@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Unilend\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * Nationalites
+ * Nationalites.
  *
  * @ORM\Table(name="nationalites")
  * @ORM\Entity
@@ -49,10 +51,8 @@ class Nationalites
      */
     private $idNationalite;
 
-
-
     /**
-     * Set codePays
+     * Set codePays.
      *
      * @param string $codePays
      *
@@ -66,7 +66,7 @@ class Nationalites
     }
 
     /**
-     * Get codePays
+     * Get codePays.
      *
      * @return string
      */
@@ -76,7 +76,7 @@ class Nationalites
     }
 
     /**
-     * Set etat
+     * Set etat.
      *
      * @param string $etat
      *
@@ -90,7 +90,7 @@ class Nationalites
     }
 
     /**
-     * Get etat
+     * Get etat.
      *
      * @return string
      */
@@ -100,7 +100,7 @@ class Nationalites
     }
 
     /**
-     * Set frM
+     * Set frM.
      *
      * @param string $frM
      *
@@ -114,7 +114,7 @@ class Nationalites
     }
 
     /**
-     * Get frM
+     * Get frM.
      *
      * @return string
      */
@@ -124,7 +124,7 @@ class Nationalites
     }
 
     /**
-     * Set frF
+     * Set frF.
      *
      * @param string $frF
      *
@@ -138,7 +138,7 @@ class Nationalites
     }
 
     /**
-     * Get frF
+     * Get frF.
      *
      * @return string
      */
@@ -148,9 +148,9 @@ class Nationalites
     }
 
     /**
-     * Get idNationalite
+     * Get idNationalite.
      *
-     * @return integer
+     * @return int
      */
     public function getIdNationalite()
     {

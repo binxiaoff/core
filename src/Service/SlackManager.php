@@ -1,13 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Unilend\Service;
 
+use Doctrine\ORM\EntityManagerInterface;
 use Http\Client\Exception;
 use Nexy\Slack\Client;
-use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Asset\Packages;
-use Unilend\Entity\{Projects, ProjectsStatus};
 
 class SlackManager
 {
@@ -43,8 +44,7 @@ class SlackManager
         string $adminUrl,
         string $environment,
         LoggerInterface $logger
-    )
-    {
+    ) {
         $this->apiClient     = $apiClient;
         $this->entityManager = $entityManager;
         $this->iconUrl       = $assetsPackages->getUrl('/assets/images/slack/unilend.png');
@@ -84,31 +84,5 @@ class SlackManager
 
             return false;
         }
-    }
-
-    /**
-     * @param Projects $project
-     *
-     * @return string
-     */
-    public function getProjectName(Projects $project)
-    {
-        $title   = $project->getTitle();
-        $backUrl = $this->backUrl . '/dossiers/edit/' . $project->getIdProject();
-        $company = $project->getIdCompany();
-
-        if (empty($title) && $company) {
-            $title = $company->getName();
-        }
-
-        if (empty($title) && $company) {
-            $title = $company->getSiren();
-        }
-
-        if ($project->getStatus() >= ProjectsStatus::STATUS_PUBLISHED) {
-            return '*<' . $this->frontUrl . '/projects/detail/' . $project->getSlug() . '|' . $title . '>* (<' . $backUrl . '|' . $project->getIdProject() . '>)';
-        }
-
-        return '*' . $title . '* (<' . $backUrl . '|' . $project->getIdProject() . '>)';
     }
 }

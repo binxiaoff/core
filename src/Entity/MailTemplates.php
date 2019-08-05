@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Unilend\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * MailTemplates
+ * MailTemplates.
  *
  * @ORM\Table(name="mail_templates", indexes={@ORM\Index(name="type", columns={"type", "locale", "status", "part"}), @ORM\Index(name="fk_mail_templates_header", columns={"id_header"}), @ORM\Index(name="fk_mail_templates_footer", columns={"id_footer"})})
  * @ORM\HasLifecycleCallbacks
@@ -13,15 +15,15 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class MailTemplates
 {
-    const STATUS_ACTIVE   = 1;
-    const STATUS_ARCHIVED = 2;
+    public const STATUS_ACTIVE   = 1;
+    public const STATUS_ARCHIVED = 2;
 
-    const RECIPIENT_TYPE_INTERNAL = 'internal';
-    const RECIPIENT_TYPE_EXTERNAL = 'external';
+    public const RECIPIENT_TYPE_INTERNAL = 'internal';
+    public const RECIPIENT_TYPE_EXTERNAL = 'external';
 
-    const PART_TYPE_CONTENT = 'content';
-    const PART_TYPE_HEADER  = 'header';
-    const PART_TYPE_FOOTER  = 'footer';
+    public const PART_TYPE_CONTENT = 'content';
+    public const PART_TYPE_HEADER  = 'header';
+    public const PART_TYPE_FOOTER  = 'footer';
 
     /**
      * @var string
@@ -91,7 +93,7 @@ class MailTemplates
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\MailTemplates")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_header", referencedColumnName="id_mail_template")
+     *     @ORM\JoinColumn(name="id_header", referencedColumnName="id_mail_template")
      * })
      */
     private $idHeader;
@@ -101,7 +103,7 @@ class MailTemplates
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\MailTemplates")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_footer", referencedColumnName="id_mail_template")
+     *     @ORM\JoinColumn(name="id_footer", referencedColumnName="id_mail_template")
      * })
      */
     private $idFooter;
@@ -136,10 +138,8 @@ class MailTemplates
      */
     private $idMailTemplate;
 
-
-
     /**
-     * Set type
+     * Set type.
      *
      * @param string $type
      *
@@ -153,7 +153,7 @@ class MailTemplates
     }
 
     /**
-     * Get type
+     * Get type.
      *
      * @return string
      */
@@ -163,7 +163,7 @@ class MailTemplates
     }
 
     /**
-     * Set locale
+     * Set locale.
      *
      * @param string $locale
      *
@@ -177,7 +177,7 @@ class MailTemplates
     }
 
     /**
-     * Get locale
+     * Get locale.
      *
      * @return string
      */
@@ -187,7 +187,7 @@ class MailTemplates
     }
 
     /**
-     * Set part
+     * Set part.
      *
      * @param string $part
      *
@@ -201,7 +201,7 @@ class MailTemplates
     }
 
     /**
-     * Get part
+     * Get part.
      *
      * @return string
      */
@@ -211,7 +211,7 @@ class MailTemplates
     }
 
     /**
-     * Set recipientType
+     * Set recipientType.
      *
      * @param string $recipientType
      *
@@ -225,7 +225,7 @@ class MailTemplates
     }
 
     /**
-     * Get recipientType
+     * Get recipientType.
      *
      * @return string
      */
@@ -235,7 +235,7 @@ class MailTemplates
     }
 
     /**
-     * Set senderName
+     * Set senderName.
      *
      * @param string $senderName
      *
@@ -249,7 +249,7 @@ class MailTemplates
     }
 
     /**
-     * Get senderName
+     * Get senderName.
      *
      * @return string
      */
@@ -259,7 +259,7 @@ class MailTemplates
     }
 
     /**
-     * Set senderEmail
+     * Set senderEmail.
      *
      * @param string $senderEmail
      *
@@ -273,7 +273,7 @@ class MailTemplates
     }
 
     /**
-     * Get senderEmail
+     * Get senderEmail.
      *
      * @return string
      */
@@ -283,7 +283,7 @@ class MailTemplates
     }
 
     /**
-     * Set subject
+     * Set subject.
      *
      * @param string $subject
      *
@@ -297,7 +297,7 @@ class MailTemplates
     }
 
     /**
-     * Get subject
+     * Get subject.
      *
      * @return string
      */
@@ -307,7 +307,7 @@ class MailTemplates
     }
 
     /**
-     * Set content
+     * Set content.
      *
      * @param string $content
      *
@@ -321,7 +321,7 @@ class MailTemplates
     }
 
     /**
-     * Get content
+     * Get content.
      *
      * @return string
      */
@@ -331,7 +331,7 @@ class MailTemplates
     }
 
     /**
-     * Set compiled content
+     * Set compiled content.
      *
      * @param string $compiledContent
      *
@@ -345,7 +345,7 @@ class MailTemplates
     }
 
     /**
-     * Get compiled content
+     * Get compiled content.
      *
      * @return string
      */
@@ -355,7 +355,7 @@ class MailTemplates
     }
 
     /**
-     * Set idHeader
+     * Set idHeader.
      *
      * @param MailTemplates $idHeader
      *
@@ -369,7 +369,7 @@ class MailTemplates
     }
 
     /**
-     * Get idHeader
+     * Get idHeader.
      *
      * @return MailTemplates
      */
@@ -379,7 +379,7 @@ class MailTemplates
     }
 
     /**
-     * Set idFooter
+     * Set idFooter.
      *
      * @param MailTemplates $idFooter
      *
@@ -393,7 +393,7 @@ class MailTemplates
     }
 
     /**
-     * Get idFooter
+     * Get idFooter.
      *
      * @return MailTemplates
      */
@@ -403,9 +403,9 @@ class MailTemplates
     }
 
     /**
-     * Set status
+     * Set status.
      *
-     * @param integer $status
+     * @param int $status
      *
      * @return MailTemplates
      */
@@ -417,9 +417,9 @@ class MailTemplates
     }
 
     /**
-     * Get status
+     * Get status.
      *
-     * @return integer
+     * @return int
      */
     public function getStatus()
     {
@@ -427,7 +427,7 @@ class MailTemplates
     }
 
     /**
-     * Set added
+     * Set added.
      *
      * @param \DateTime $added
      *
@@ -441,7 +441,7 @@ class MailTemplates
     }
 
     /**
-     * Get added
+     * Get added.
      *
      * @return \DateTime
      */
@@ -451,7 +451,7 @@ class MailTemplates
     }
 
     /**
-     * Set updated
+     * Set updated.
      *
      * @param \DateTime $updated
      *
@@ -465,7 +465,7 @@ class MailTemplates
     }
 
     /**
-     * Get updated
+     * Get updated.
      *
      * @return \DateTime
      */
@@ -475,9 +475,9 @@ class MailTemplates
     }
 
     /**
-     * Get idMailTemplate
+     * Get idMailTemplate.
      *
-     * @return integer
+     * @return int
      */
     public function getIdMailTemplate()
     {
@@ -489,7 +489,7 @@ class MailTemplates
      */
     public function setAddedValue()
     {
-        if (! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
+        if (!$this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
             $this->added = new \DateTime();
         }
     }

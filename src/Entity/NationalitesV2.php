@@ -1,19 +1,21 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Unilend\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * NationalitesV2
+ * NationalitesV2.
  *
  * @ORM\Table(name="nationalites_v2")
  * @ORM\Entity
  */
 class NationalitesV2
 {
-    const NATIONALITY_FRENCH = 1;
-    const NATIONALITY_OTHER  = 35;
+    public const NATIONALITY_FRENCH = 1;
+    public const NATIONALITY_OTHER  = 35;
 
     /**
      * @var string
@@ -38,10 +40,8 @@ class NationalitesV2
      */
     private $idNationalite;
 
-
-
     /**
-     * Set frF
+     * Set frF.
      *
      * @param string $frF
      *
@@ -55,7 +55,7 @@ class NationalitesV2
     }
 
     /**
-     * Get frF
+     * Get frF.
      *
      * @return string
      */
@@ -65,9 +65,9 @@ class NationalitesV2
     }
 
     /**
-     * Set ordre
+     * Set ordre.
      *
-     * @param integer $ordre
+     * @param int $ordre
      *
      * @return NationalitesV2
      */
@@ -79,9 +79,9 @@ class NationalitesV2
     }
 
     /**
-     * Get ordre
+     * Get ordre.
      *
-     * @return integer
+     * @return int
      */
     public function getOrdre()
     {
@@ -89,9 +89,9 @@ class NationalitesV2
     }
 
     /**
-     * Get idNationalite
+     * Get idNationalite.
      *
-     * @return integer
+     * @return int
      */
     public function getIdNationalite()
     {

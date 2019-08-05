@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Unilend\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * BlocsElements
+ * BlocsElements.
  *
  * @ORM\Table(name="blocs_elements", uniqueConstraints={@ORM\UniqueConstraint(name="id_bloc", columns={"id_bloc", "id_element", "id_langue"})}, indexes={@ORM\Index(name="id_bloc_2", columns={"id_bloc"}), @ORM\Index(name="id_element", columns={"id_element"})})
  * @ORM\Entity
@@ -77,12 +79,10 @@ class BlocsElements
      */
     private $id;
 
-
-
     /**
-     * Set idBloc
+     * Set idBloc.
      *
-     * @param integer $idBloc
+     * @param int $idBloc
      *
      * @return BlocsElements
      */
@@ -94,9 +94,9 @@ class BlocsElements
     }
 
     /**
-     * Get idBloc
+     * Get idBloc.
      *
-     * @return integer
+     * @return int
      */
     public function getIdBloc()
     {
@@ -104,9 +104,9 @@ class BlocsElements
     }
 
     /**
-     * Set idElement
+     * Set idElement.
      *
-     * @param integer $idElement
+     * @param int $idElement
      *
      * @return BlocsElements
      */
@@ -118,9 +118,9 @@ class BlocsElements
     }
 
     /**
-     * Get idElement
+     * Get idElement.
      *
-     * @return integer
+     * @return int
      */
     public function getIdElement()
     {
@@ -128,7 +128,7 @@ class BlocsElements
     }
 
     /**
-     * Set idLangue
+     * Set idLangue.
      *
      * @param string $idLangue
      *
@@ -142,7 +142,7 @@ class BlocsElements
     }
 
     /**
-     * Get idLangue
+     * Get idLangue.
      *
      * @return string
      */
@@ -152,7 +152,7 @@ class BlocsElements
     }
 
     /**
-     * Set value
+     * Set value.
      *
      * @param string $value
      *
@@ -166,7 +166,7 @@ class BlocsElements
     }
 
     /**
-     * Get value
+     * Get value.
      *
      * @return string
      */
@@ -176,7 +176,7 @@ class BlocsElements
     }
 
     /**
-     * Set complement
+     * Set complement.
      *
      * @param string $complement
      *
@@ -190,7 +190,7 @@ class BlocsElements
     }
 
     /**
-     * Get complement
+     * Get complement.
      *
      * @return string
      */
@@ -200,9 +200,9 @@ class BlocsElements
     }
 
     /**
-     * Set status
+     * Set status.
      *
-     * @param integer $status
+     * @param int $status
      *
      * @return BlocsElements
      */
@@ -214,9 +214,9 @@ class BlocsElements
     }
 
     /**
-     * Get status
+     * Get status.
      *
-     * @return integer
+     * @return int
      */
     public function getStatus()
     {
@@ -224,7 +224,7 @@ class BlocsElements
     }
 
     /**
-     * Set added
+     * Set added.
      *
      * @param \DateTime $added
      *
@@ -238,7 +238,7 @@ class BlocsElements
     }
 
     /**
-     * Get added
+     * Get added.
      *
      * @return \DateTime
      */
@@ -248,7 +248,7 @@ class BlocsElements
     }
 
     /**
-     * Set updated
+     * Set updated.
      *
      * @param \DateTime $updated
      *
@@ -262,7 +262,7 @@ class BlocsElements
     }
 
     /**
-     * Get updated
+     * Get updated.
      *
      * @return \DateTime
      */
@@ -272,9 +272,9 @@ class BlocsElements
     }
 
     /**
-     * Get id
+     * Get id.
      *
-     * @return integer
+     * @return int
      */
     public function getId()
     {

@@ -7,15 +7,12 @@ use Psr\Log\LoggerInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Unilend\Entity\{Clients, Project, ProjectStatusHistory};
 use Unilend\Repository\ProjectRepository;
-use Unilend\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\Service\User\RealUserFinder;
 
 class ProjectStatusManager
 {
     /** @var LoggerInterface */
     protected $logger;
-    /** @var EntityManagerSimulator */
-    private $entityManagerSimulator;
     /** @var EntityManagerInterface */
     private $entityManager;
     /** @var TranslatorInterface */
@@ -28,7 +25,6 @@ class ProjectStatusManager
     private $realUserFinder;
 
     /**
-     * @param EntityManagerSimulator $entityManagerSimulator
      * @param EntityManagerInterface $entityManager
      * @param TranslatorInterface    $translator
      * @param LoggerInterface        $logger
@@ -37,7 +33,6 @@ class ProjectStatusManager
      * @param RealUserFinder         $realUserFinder
      */
     public function __construct(
-        EntityManagerSimulator $entityManagerSimulator,
         EntityManagerInterface $entityManager,
         TranslatorInterface $translator,
         LoggerInterface $logger,
@@ -45,7 +40,6 @@ class ProjectStatusManager
         ProjectRepository $projectRepository,
         RealUserFinder $realUserFinder
     ) {
-        $this->entityManagerSimulator = $entityManagerSimulator;
         $this->entityManager          = $entityManager;
         $this->translator             = $translator;
         $this->logger                 = $logger;

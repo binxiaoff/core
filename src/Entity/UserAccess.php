@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Unilend\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * UserAccess
+ * UserAccess.
  *
  * @ORM\Table(name="user_access", indexes={@ORM\Index(name="user_access_id_user", columns={"id_user"})})
  * @ORM\Entity
@@ -55,15 +57,13 @@ class UserAccess
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\Users")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_user", referencedColumnName="id_user", nullable=false)
+     *     @ORM\JoinColumn(name="id_user", referencedColumnName="id_user", nullable=false)
      * })
      */
     private $idUser;
 
-
-
     /**
-     * Set controller
+     * Set controller.
      *
      * @param string $controller
      *
@@ -77,7 +77,7 @@ class UserAccess
     }
 
     /**
-     * Get controller
+     * Get controller.
      *
      * @return string
      */
@@ -87,7 +87,7 @@ class UserAccess
     }
 
     /**
-     * Set action
+     * Set action.
      *
      * @param string $action
      *
@@ -101,7 +101,7 @@ class UserAccess
     }
 
     /**
-     * Get action
+     * Get action.
      *
      * @return string
      */
@@ -111,7 +111,7 @@ class UserAccess
     }
 
     /**
-     * Set ip
+     * Set ip.
      *
      * @param string $ip
      *
@@ -125,7 +125,7 @@ class UserAccess
     }
 
     /**
-     * Get ip
+     * Get ip.
      *
      * @return string
      */
@@ -135,7 +135,7 @@ class UserAccess
     }
 
     /**
-     * Set added
+     * Set added.
      *
      * @param \DateTime $added
      *
@@ -149,7 +149,7 @@ class UserAccess
     }
 
     /**
-     * Get added
+     * Get added.
      *
      * @return \DateTime
      */
@@ -159,9 +159,9 @@ class UserAccess
     }
 
     /**
-     * Get id
+     * Get id.
      *
-     * @return integer
+     * @return int
      */
     public function getId()
     {
@@ -169,13 +169,13 @@ class UserAccess
     }
 
     /**
-     * Set idUser
+     * Set idUser.
      *
      * @param \Unilend\Entity\Users $idUser
      *
      * @return UserAccess
      */
-    public function setIdUser(\Unilend\Entity\Users $idUser = null)
+    public function setIdUser(Users $idUser = null)
     {
         $this->idUser = $idUser;
 
@@ -183,7 +183,7 @@ class UserAccess
     }
 
     /**
-     * Get idUser
+     * Get idUser.
      *
      * @return \Unilend\Entity\Users
      */
@@ -197,7 +197,7 @@ class UserAccess
      */
     public function setAddedValue()
     {
-        if (! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
+        if (!$this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
             $this->added = new \DateTime();
         }
     }

@@ -10,34 +10,35 @@ use Symfony\Component\Asset\Packages;
 use Twig\Extension\AbstractExtension;
 use Twig\TwigFunction;
 use Unilend\CacheKeys;
-use Unilend\Service\{Simulator\EntityManager, Translation\TranslationManager};
+use Unilend\Repository\SettingsRepository;
+use Unilend\Service\Translation\TranslationManager;
 
 class FrontBundleExtension extends AbstractExtension
 {
     /** @var TranslationManager */
     private $translationManager;
-    /** @var EntityManager */
-    private $entityManager;
     /** @var CacheItemPoolInterface */
     private $cachePool;
     /** @var Packages */
     private $packages;
+    /** @var SettingsRepository */
+    private $settingsRepository;
 
     /**
      * @param Packages               $assetsPackages
      * @param TranslationManager     $translationManager
-     * @param EntityManager          $entityManager
+     * @param SettingsRepository     $settingsRepository
      * @param CacheItemPoolInterface $cachePool
      */
     public function __construct(
         Packages $assetsPackages,
         TranslationManager $translationManager,
-        EntityManager $entityManager,
+        SettingsRepository $settingsRepository,
         CacheItemPoolInterface $cachePool
     ) {
         $this->packages           = $assetsPackages;
         $this->translationManager = $translationManager;
-        $this->entityManager      = $entityManager;
+        $this->settingsRepository = $settingsRepository;
         $this->cachePool          = $cachePool;
     }
 
@@ -65,13 +66,13 @@ class FrontBundleExtension extends AbstractExtension
         $cachedItem = $this->cachePool->getItem($name);
 
         if (false === $cachedItem->isHit()) {
-            /** @var \settings $settings */
-            $settings = $this->entityManager->getRepository('settings');
-            $settings->get($name, 'type');
-            $value = $settings->value;
-
-            $cachedItem->set($value)->expiresAfter(CacheKeys::LONG_TIME);
-            $this->cachePool->save($cachedItem);
+            $value    = null;
+            $settings = $this->settingsRepository->findOneBy(['type' => $name]);
+            if ($settings) {
+                $value = $settings->getValue();
+                $cachedItem->set($value)->expiresAfter(CacheKeys::LONG_TIME);
+                $this->cachePool->save($cachedItem);
+            }
 
             return $value;
         }

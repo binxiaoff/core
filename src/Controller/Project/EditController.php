@@ -19,12 +19,12 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Validator\Constraints\Valid;
-use Unilend\Entity\{AcceptedBids, Attachment, Bids, CaRegionalBank, Clients, Loans, Project, ProjectStatusHistory, UnderlyingContract};
+use Unilend\Entity\{AcceptedBids, Attachment, Bids, CaRegionalBank, Clients, Loans, Project, ProjectStatusHistory};
 use Unilend\Form\Bid\PartialBid;
 use Unilend\Form\Project\{ConfidentialityEditionType, ProjectAttachmentCollectionType, ProjectFeeTypeCollectionType};
 use Unilend\Form\Tranche\TrancheTypeCollectionType;
 use Unilend\Repository\{AcceptedBidsRepository, BidsRepository, CaRegionalBankRepository, CompaniesRepository, ProjectAttachmentRepository, ProjectAttachmentTypeRepository,
-    ProjectRepository, TrancheRepository, UnderlyingContractRepository};
+    ProjectRepository, TrancheRepository};
 use Unilend\Security\Voter\ProjectVoter;
 use Unilend\Service\{Attachment\AttachmentManager, MailerManager, ProjectStatusManager, User\RealUserFinder};
 
@@ -159,7 +159,6 @@ class EditController extends AbstractController
      * @param LoggerInterface              $logger
      * @param TrancheRepository            $trancheRepository
      * @param BidsRepository               $bidsRepository
-     * @param UnderlyingContractRepository $underlyingContractRepository
      * @param AcceptedBidsRepository       $acceptedBidRepository
      * @param EntityManagerInterface       $entityManager
      * @param RealUserFinder               $realUserFinder
@@ -177,7 +176,6 @@ class EditController extends AbstractController
         LoggerInterface $logger,
         TrancheRepository $trancheRepository,
         BidsRepository $bidsRepository,
-        UnderlyingContractRepository $underlyingContractRepository,
         AcceptedBidsRepository $acceptedBidRepository,
         EntityManagerInterface $entityManager,
         RealUserFinder $realUserFinder
@@ -221,7 +219,6 @@ class EditController extends AbstractController
                         $project,
                         $trancheRepository,
                         $bidsRepository,
-                        $underlyingContractRepository,
                         $acceptedBidRepository,
                         $logger,
                         $entityManager,
@@ -375,14 +372,13 @@ class EditController extends AbstractController
     }
 
     /**
-     * @param Project                      $project
-     * @param TrancheRepository            $trancheRepository
-     * @param BidsRepository               $bidsRepository
-     * @param UnderlyingContractRepository $underlyingContractRepository
-     * @param AcceptedBidsRepository       $acceptedBidRepository
-     * @param LoggerInterface              $logger
-     * @param EntityManagerInterface       $entityManager
-     * @param RealUserFinder               $realUserFinder
+     * @param Project                $project
+     * @param TrancheRepository      $trancheRepository
+     * @param BidsRepository         $bidsRepository
+     * @param AcceptedBidsRepository $acceptedBidRepository
+     * @param LoggerInterface        $logger
+     * @param EntityManagerInterface $entityManager
+     * @param RealUserFinder         $realUserFinder
      *
      * @throws ConnectionException
      */
@@ -390,7 +386,6 @@ class EditController extends AbstractController
         Project $project,
         TrancheRepository $trancheRepository,
         BidsRepository $bidsRepository,
-        UnderlyingContractRepository $underlyingContractRepository,
         AcceptedBidsRepository $acceptedBidRepository,
         LoggerInterface $logger,
         EntityManagerInterface $entityManager,
@@ -401,8 +396,6 @@ class EditController extends AbstractController
             'tranche' => $tranches,
             'status'  => [Bids::STATUS_ACCEPTED, Bids::STATUS_PENDING],
         ]);
-
-        $contract = $underlyingContractRepository->findOneBy(['label' => UnderlyingContract::CONTRACT_BDC]);
 
         $entityManager->getConnection()->beginTransaction();
 
@@ -422,7 +415,6 @@ class EditController extends AbstractController
                 $loan
                     ->setLender($bid->getLender())
                     ->setTranche($bid->getTranche())
-                    ->setUnderlyingContract($contract)
                     ->setMoney($bid->getMoney())
                     ->setRate($bid->getRate())
                     ->setStatus(Loans::STATUS_PENDING)

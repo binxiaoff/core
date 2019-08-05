@@ -44,10 +44,6 @@
             <td><?= isset($this->loanDurationMax[0]) ? $this->loanDurationMax[0] : 'pas de contrôle' ?></td>
         </tr>
         <tr>
-            <th>Eligibilité d'Autolend :</th>
-            <td><?= isset($this->eligibilityAutobid[0]) ? ($this->eligibilityAutobid[0] == 1 ? 'éligible' : 'non éligible') : 'pas de contrôle' ?></td>
-        </tr>
-        <tr>
             <th>Jours de creation min :</th>
             <td><?= isset($this->creationDaysMin[0]) ? $this->creationDaysMin[0] : 'pas de contrôle' ?></td>
         </tr>

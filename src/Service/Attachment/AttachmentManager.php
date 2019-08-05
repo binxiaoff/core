@@ -16,7 +16,7 @@ use PhpOffice\PhpSpreadsheet\Writer\Pdf\Mpdf as PhpSpreadsheetMpdf;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Filesystem\{Exception\FileNotFoundException, Filesystem};
 use Symfony\Component\HttpFoundation\File\UploadedFile;
-use Unilend\Entity\{Attachment, AttachmentType, ClientAddressAttachment, Clients, Companies, GreenpointAttachment, ProjectAttachment, Transfer,
+use Unilend\Entity\{Attachment, AttachmentType, Clients, Companies, ProjectAttachment, Transfer,
     TransferAttachment};
 use Unilend\Service\User\RealUserFinder;
 use URLify;
@@ -262,19 +262,7 @@ class AttachmentManager
             return false;
         }
 
-        $attachedAttachments = $this->entityManager->getRepository(ClientAddressAttachment::class)->findBy(['idAttachment' => $attachment]);
-
-        if (count($attachedAttachments) > 0) {
-            return false;
-        }
-
         $attachedAttachments = $this->entityManager->getRepository(TransferAttachment::class)->findBy(['idAttachment' => $attachment]);
-
-        if (count($attachedAttachments) > 0) {
-            return false;
-        }
-
-        $attachedAttachments = $this->entityManager->getRepository(GreenpointAttachment::class)->findBy(['idAttachment' => $attachment]);
 
         if (count($attachedAttachments) > 0) {
             return false;

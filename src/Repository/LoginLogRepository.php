@@ -1,12 +1,22 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Unilend\Repository;
 
+use DateInterval;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
-use Doctrine\ORM\UnexpectedResultException;
+use Doctrine\ORM\NonUniqueResultException;
+use Exception;
 use Unilend\Entity\LoginLog;
 
+/**
+ * @method LoginLog|null find($id, $lockMode = null, $lockVersion = null)
+ * @method LoginLog|null findOneBy(array $criteria, array $orderBy = null)
+ * @method LoginLog[]    findAll()
+ * @method LoginLog[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
+ */
 class LoginLogRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
@@ -15,12 +25,14 @@ class LoginLogRepository extends ServiceEntityRepository
     }
 
     /**
-     * @param string        $ipAddress
-     * @param \DateInterval $period
+     * @param string       $ipAddress
+     * @param DateInterval $period
+     *
+     * @throws Exception
      *
      * @return int
      */
-    public function countLastFailuresByIp(string $ipAddress, \DateInterval $period): int
+    public function countLastFailuresByIp(string $ipAddress, DateInterval $period): int
     {
         $queryBuilder = $this->createQueryBuilder('ll');
         $queryBuilder
@@ -28,11 +40,12 @@ class LoginLogRepository extends ServiceEntityRepository
             ->where('ll.ip = :ip')
             ->andWhere('ll.added >= :period')
             ->setParameter('ip', $ipAddress)
-            ->setParameter('period', (new \DateTime())->sub($period));
+            ->setParameter('period', (new \DateTime())->sub($period))
+        ;
 
         try {
-            return $queryBuilder->getQuery()->getSingleScalarResult();
-        } catch (UnexpectedResultException $exception) {
+            return (int) $queryBuilder->getQuery()->getSingleScalarResult();
+        } catch (NonUniqueResultException $e) {
             return 0;
         }
     }

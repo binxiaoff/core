@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Unilend\Repository\Traits;
 
 use Doctrine\ORM\QueryBuilder;

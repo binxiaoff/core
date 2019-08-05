@@ -1,11 +1,21 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Unilend\Repository;
 
+use DateTime;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
+use Doctrine\DBAL\DBALException;
 use Unilend\Entity\{Clients, ClientsHistory};
 
+/**
+ * @method ClientsHistory|null find($id, $lockMode = null, $lockVersion = null)
+ * @method ClientsHistory|null findOneBy(array $criteria, array $orderBy = null)
+ * @method ClientsHistory[]    findAll()
+ * @method ClientsHistory[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
+ */
 class ClientsHistoryRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
@@ -14,19 +24,20 @@ class ClientsHistoryRepository extends ServiceEntityRepository
     }
 
     /**
-     * @param Clients|int    $client
-     * @param \DateTime|null $lastLoginDate
+     * @param Clients|int   $client
+     * @param DateTime|null $lastLoginDate
+     *
+     * @throws DBALException
      *
      * @return array
-     * @throws \Doctrine\DBAL\DBALException
      */
-    public function getRecentLoginHistoryAndDevices($client, ?\DateTime $lastLoginDate = null): array
+    public function getRecentLoginHistoryAndDevices($client, ?DateTime $lastLoginDate = null): array
     {
         if ($client instanceof Clients) {
             $client = $client->getIdClient();
         }
         if (null === $lastLoginDate) {
-            $lastLoginDate = new \DateTime('6 months ago');
+            $lastLoginDate = new DateTime('6 months ago');
         }
 
         $query = '
@@ -44,12 +55,13 @@ class ClientsHistoryRepository extends ServiceEntityRepository
 
         $params = [
             'idClient'      => $client,
-            'lastLoginDate' => $lastLoginDate->format('Y-m-d H:i:s')
+            'lastLoginDate' => $lastLoginDate->format('Y-m-d H:i:s'),
         ];
 
         return $this->getEntityManager()
             ->getConnection()
             ->executeQuery($query, $params)
-            ->fetchAll();
+            ->fetchAll()
+        ;
     }
 }

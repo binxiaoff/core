@@ -96,7 +96,6 @@ class productController extends bootstrap
         $this->loanAmountMax      = $contractManager->getAttributesByType($this->contract, UnderlyingContractAttributeType::TOTAL_LOAN_AMOUNT_LIMITATION_IN_EURO);
         $this->loanQtyMax         = $contractManager->getAttributesByType($this->contract, UnderlyingContractAttributeType::TOTAL_QUANTITY_LIMITATION);
         $this->loanDurationMax    = $contractManager->getAttributesByType($this->contract, UnderlyingContractAttributeType::MAX_LOAN_DURATION_IN_MONTH);
-        $this->eligibilityAutobid = $contractManager->getAttributesByType($this->contract, UnderlyingContractAttributeType::ELIGIBLE_AUTOBID);
         $this->creationDaysMin    = $contractManager->getAttributesByType($this->contract, UnderlyingContractAttributeType::MIN_CREATION_DAYS);
         $this->rcs                = $contractManager->getAttributesByType($this->contract, UnderlyingContractAttributeType::ELIGIBLE_BORROWER_COMPANY_RCS);
     }

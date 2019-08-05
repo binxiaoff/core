@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Unilend\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * LoginConnectionAdmin
+ * LoginConnectionAdmin.
  *
  * @ORM\Table(name="login_connection_admin", indexes={@ORM\Index(name="id_user", columns={"id_user"})})
  * @ORM\Entity(repositoryClass="Unilend\Repository\LoginConnectionAdminRepository")
@@ -71,12 +73,10 @@ class LoginConnectionAdmin
      */
     private $idLoginConnectionAdmin;
 
-
-
     /**
-     * Set idUser
+     * Set idUser.
      *
-     * @param integer $idUser
+     * @param int $idUser
      *
      * @return LoginConnectionAdmin
      */
@@ -88,9 +88,9 @@ class LoginConnectionAdmin
     }
 
     /**
-     * Get idUser
+     * Get idUser.
      *
-     * @return integer
+     * @return int
      */
     public function getIdUser()
     {
@@ -98,7 +98,7 @@ class LoginConnectionAdmin
     }
 
     /**
-     * Set nomUser
+     * Set nomUser.
      *
      * @param string $nomUser
      *
@@ -112,7 +112,7 @@ class LoginConnectionAdmin
     }
 
     /**
-     * Get nomUser
+     * Get nomUser.
      *
      * @return string
      */
@@ -122,7 +122,7 @@ class LoginConnectionAdmin
     }
 
     /**
-     * Set email
+     * Set email.
      *
      * @param string $email
      *
@@ -136,7 +136,7 @@ class LoginConnectionAdmin
     }
 
     /**
-     * Get email
+     * Get email.
      *
      * @return string
      */
@@ -146,7 +146,7 @@ class LoginConnectionAdmin
     }
 
     /**
-     * Set dateConnexion
+     * Set dateConnexion.
      *
      * @param \DateTime $dateConnexion
      *
@@ -160,7 +160,7 @@ class LoginConnectionAdmin
     }
 
     /**
-     * Get dateConnexion
+     * Get dateConnexion.
      *
      * @return \DateTime
      */
@@ -170,7 +170,7 @@ class LoginConnectionAdmin
     }
 
     /**
-     * Set ip
+     * Set ip.
      *
      * @param string $ip
      *
@@ -184,7 +184,7 @@ class LoginConnectionAdmin
     }
 
     /**
-     * Get ip
+     * Get ip.
      *
      * @return string
      */
@@ -194,7 +194,7 @@ class LoginConnectionAdmin
     }
 
     /**
-     * Set updated
+     * Set updated.
      *
      * @param \DateTime $updated
      *
@@ -208,7 +208,7 @@ class LoginConnectionAdmin
     }
 
     /**
-     * Get updated
+     * Get updated.
      *
      * @return \DateTime
      */
@@ -218,7 +218,7 @@ class LoginConnectionAdmin
     }
 
     /**
-     * Set added
+     * Set added.
      *
      * @param \DateTime $added
      *
@@ -232,7 +232,7 @@ class LoginConnectionAdmin
     }
 
     /**
-     * Get added
+     * Get added.
      *
      * @return \DateTime
      */
@@ -242,9 +242,9 @@ class LoginConnectionAdmin
     }
 
     /**
-     * Get idLoginConnectionAdmin
+     * Get idLoginConnectionAdmin.
      *
-     * @return integer
+     * @return int
      */
     public function getIdLoginConnectionAdmin()
     {
@@ -256,7 +256,7 @@ class LoginConnectionAdmin
      */
     public function setAddedValue()
     {
-        if (! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
+        if (!$this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
             $this->added = new \DateTime();
         }
     }

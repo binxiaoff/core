@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Unilend\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * CompanyStatusHistory
+ * CompanyStatusHistory.
  *
  * @ORM\Table(name="company_status_history", indexes={
  *     @ORM\Index(name="idx_company_status_history_id_company", columns={"id_company"}),
@@ -32,7 +34,7 @@ class CompanyStatusHistory
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\Companies")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_company", referencedColumnName="id_company", nullable=false)
+     *     @ORM\JoinColumn(name="id_company", referencedColumnName="id_company", nullable=false)
      * })
      */
     private $idCompany;
@@ -42,7 +44,7 @@ class CompanyStatusHistory
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\CompanyStatus")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_status", referencedColumnName="id", nullable=false)
+     *     @ORM\JoinColumn(name="id_status", referencedColumnName="id", nullable=false)
      * })
      */
     private $idStatus;
@@ -52,7 +54,7 @@ class CompanyStatusHistory
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\Users")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_user", referencedColumnName="id_user", nullable=false)
+     *     @ORM\JoinColumn(name="id_user", referencedColumnName="id_user", nullable=false)
      * })
      */
     private $idUser;
@@ -99,7 +101,6 @@ class CompanyStatusHistory
     {
         return $this->id;
     }
-
 
     /**
      * @return Companies
@@ -170,7 +171,7 @@ class CompanyStatusHistory
     }
 
     /**
-     * @param null|\DateTime $changedOn
+     * @param \DateTime|null $changedOn
      *
      * @return CompanyStatusHistory
      */
@@ -190,7 +191,7 @@ class CompanyStatusHistory
     }
 
     /**
-     * @param null|string $receiver
+     * @param string|null $receiver
      *
      * @return CompanyStatusHistory
      */
@@ -210,7 +211,7 @@ class CompanyStatusHistory
     }
 
     /**
-     * @param null|string $mailContent
+     * @param string|null $mailContent
      *
      * @return CompanyStatusHistory
      */
@@ -230,7 +231,7 @@ class CompanyStatusHistory
     }
 
     /**
-     * @param null|string $siteContent
+     * @param string|null $siteContent
      *
      * @return CompanyStatusHistory
      */
@@ -266,7 +267,7 @@ class CompanyStatusHistory
      */
     public function setAddedValue()
     {
-        if (! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
+        if (!$this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
             $this->added = new \DateTime();
         }
     }

@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Unilend\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * MailQueue
+ * MailQueue.
  *
  * @ORM\Table(name="mail_queue", indexes={
  *     @ORM\Index(name="status", columns={"status"}),
@@ -19,17 +21,17 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class MailQueue
 {
-    const STATUS_PENDING    = 0;
-    const STATUS_PROCESSING = 1;
-    const STATUS_SENT       = 2;
-    const STATUS_ERROR      = -1;
+    public const STATUS_PENDING    = 0;
+    public const STATUS_PROCESSING = 1;
+    public const STATUS_SENT       = 2;
+    public const STATUS_ERROR      = -1;
 
     /**
      * @var \Unilend\Entity\MailTemplates
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\MailTemplates")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_mail_template", referencedColumnName="id_mail_template", nullable=false)
+     *     @ORM\JoinColumn(name="id_mail_template", referencedColumnName="id_mail_template", nullable=false)
      * })
      */
     private $idMailTemplate;
@@ -42,7 +44,7 @@ class MailQueue
     private $serializedVariables;
 
     /**
-     * Attachments path separated by ;
+     * Attachments path separated by ;.
      *
      * @var string
      *
@@ -130,7 +132,7 @@ class MailQueue
     private $idQueue;
 
     /**
-     * Set idMailTemplate
+     * Set idMailTemplate.
      *
      * @param MailTemplates $idMailTemplate
      *
@@ -144,7 +146,7 @@ class MailQueue
     }
 
     /**
-     * Get idMailTemplate
+     * Get idMailTemplate.
      *
      * @return MailTemplates
      */
@@ -154,7 +156,7 @@ class MailQueue
     }
 
     /**
-     * Set serializedVariables
+     * Set serializedVariables.
      *
      * @param string $serializedVariables
      *
@@ -168,7 +170,7 @@ class MailQueue
     }
 
     /**
-     * Get serializedVariables
+     * Get serializedVariables.
      *
      * @return string
      */
@@ -178,7 +180,7 @@ class MailQueue
     }
 
     /**
-     * Set attachments
+     * Set attachments.
      *
      * @param string $attachments
      *
@@ -192,7 +194,7 @@ class MailQueue
     }
 
     /**
-     * Get attachments
+     * Get attachments.
      *
      * @return string
      */
@@ -202,7 +204,7 @@ class MailQueue
     }
 
     /**
-     * Set recipient
+     * Set recipient.
      *
      * @param string $recipient
      *
@@ -216,7 +218,7 @@ class MailQueue
     }
 
     /**
-     * Get recipient
+     * Get recipient.
      *
      * @return string
      */
@@ -226,7 +228,7 @@ class MailQueue
     }
 
     /**
-     * Set replyTo
+     * Set replyTo.
      *
      * @param string $replyTo
      *
@@ -240,7 +242,7 @@ class MailQueue
     }
 
     /**
-     * Get replyTo
+     * Get replyTo.
      *
      * @return string
      */
@@ -250,9 +252,9 @@ class MailQueue
     }
 
     /**
-     * Set idClient
+     * Set idClient.
      *
-     * @param integer $idClient
+     * @param int $idClient
      *
      * @return MailQueue
      */
@@ -264,9 +266,9 @@ class MailQueue
     }
 
     /**
-     * Get idClient
+     * Get idClient.
      *
-     * @return integer
+     * @return int
      */
     public function getIdClient()
     {
@@ -274,9 +276,9 @@ class MailQueue
     }
 
     /**
-     * Set idMessageMailjet
+     * Set idMessageMailjet.
      *
-     * @param integer $idMessageMailjet
+     * @param int $idMessageMailjet
      *
      * @return MailQueue
      */
@@ -288,9 +290,9 @@ class MailQueue
     }
 
     /**
-     * Get idMessageMailjet
+     * Get idMessageMailjet.
      *
-     * @return integer
+     * @return int
      */
     public function getIdMessageMailjet()
     {
@@ -298,7 +300,7 @@ class MailQueue
     }
 
     /**
-     * Set errorMailjet
+     * Set errorMailjet.
      *
      * @param string $errorMailjet
      *
@@ -312,7 +314,7 @@ class MailQueue
     }
 
     /**
-     * Get errorMailjet
+     * Get errorMailjet.
      *
      * @return string
      */
@@ -322,9 +324,9 @@ class MailQueue
     }
 
     /**
-     * Set status
+     * Set status.
      *
-     * @param integer $status
+     * @param int $status
      *
      * @return MailQueue
      */
@@ -336,9 +338,9 @@ class MailQueue
     }
 
     /**
-     * Get status
+     * Get status.
      *
-     * @return integer
+     * @return int
      */
     public function getStatus()
     {
@@ -346,7 +348,7 @@ class MailQueue
     }
 
     /**
-     * Set toSendAt
+     * Set toSendAt.
      *
      * @param \DateTime $toSendAt
      *
@@ -360,7 +362,7 @@ class MailQueue
     }
 
     /**
-     * Get toSendAt
+     * Get toSendAt.
      *
      * @return \DateTime
      */
@@ -370,7 +372,7 @@ class MailQueue
     }
 
     /**
-     * Set sentAt
+     * Set sentAt.
      *
      * @param \DateTime $sentAt
      *
@@ -384,7 +386,7 @@ class MailQueue
     }
 
     /**
-     * Get sentAt
+     * Get sentAt.
      *
      * @return \DateTime
      */
@@ -394,7 +396,7 @@ class MailQueue
     }
 
     /**
-     * Set updated
+     * Set updated.
      *
      * @param \DateTime $updated
      *
@@ -408,7 +410,7 @@ class MailQueue
     }
 
     /**
-     * Get updated
+     * Get updated.
      *
      * @return \DateTime
      */
@@ -418,7 +420,7 @@ class MailQueue
     }
 
     /**
-     * Set added
+     * Set added.
      *
      * @param \DateTime $added
      *
@@ -432,7 +434,7 @@ class MailQueue
     }
 
     /**
-     * Get added
+     * Get added.
      *
      * @return \DateTime
      */
@@ -442,9 +444,9 @@ class MailQueue
     }
 
     /**
-     * Get idQueue
+     * Get idQueue.
      *
-     * @return integer
+     * @return int
      */
     public function getIdQueue()
     {
@@ -456,7 +458,7 @@ class MailQueue
      */
     public function setAddedValue()
     {
-        if (! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
+        if (!$this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
             $this->added = new \DateTime();
         }
     }

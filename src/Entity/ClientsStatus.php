@@ -1,31 +1,33 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Unilend\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * ClientsStatus
+ * ClientsStatus.
  *
  * @ORM\Table(name="clients_status")
  * @ORM\Entity
  */
 class ClientsStatus
 {
-    const STATUS_CREATION              = 5;
-    const STATUS_TO_BE_CHECKED         = 10;
-    const STATUS_COMPLETENESS          = 20;
-    const STATUS_COMPLETENESS_REMINDER = 30;
-    const STATUS_COMPLETENESS_REPLY    = 40;
-    const STATUS_MODIFICATION          = 50;
-    const STATUS_VALIDATED             = 60;
-    const STATUS_SUSPENDED             = 65;
-    const STATUS_DISABLED              = 70;
-    const STATUS_CLOSED_LENDER_REQUEST = 80;
-    const STATUS_CLOSED_BY_UNILEND     = 90;
-    const STATUS_CLOSED_DEFINITELY     = 100;
+    public const STATUS_CREATION              = 5;
+    public const STATUS_TO_BE_CHECKED         = 10;
+    public const STATUS_COMPLETENESS          = 20;
+    public const STATUS_COMPLETENESS_REMINDER = 30;
+    public const STATUS_COMPLETENESS_REPLY    = 40;
+    public const STATUS_MODIFICATION          = 50;
+    public const STATUS_VALIDATED             = 60;
+    public const STATUS_SUSPENDED             = 65;
+    public const STATUS_DISABLED              = 70;
+    public const STATUS_CLOSED_LENDER_REQUEST = 80;
+    public const STATUS_CLOSED_BY_UNILEND     = 90;
+    public const STATUS_CLOSED_DEFINITELY     = 100;
 
-    const GRANTED_LOGIN = [
+    public const GRANTED_LOGIN = [
         self::STATUS_CREATION,
         self::STATUS_TO_BE_CHECKED,
         self::STATUS_COMPLETENESS,
@@ -33,35 +35,31 @@ class ClientsStatus
         self::STATUS_COMPLETENESS_REPLY,
         self::STATUS_MODIFICATION,
         self::STATUS_VALIDATED,
-        self::STATUS_SUSPENDED
+        self::STATUS_SUSPENDED,
     ];
 
-    const GRANTED_LENDER_ACCOUNT_READ = [
+    public const GRANTED_LENDER_ACCOUNT_READ = [
         self::STATUS_TO_BE_CHECKED,
         self::STATUS_COMPLETENESS,
         self::STATUS_COMPLETENESS_REMINDER,
         self::STATUS_COMPLETENESS_REPLY,
         self::STATUS_MODIFICATION,
         self::STATUS_VALIDATED,
-        self::STATUS_SUSPENDED
+        self::STATUS_SUSPENDED,
     ];
 
-    const GRANTED_LENDER_DEPOSIT = [
+    public const GRANTED_LENDER_DEPOSIT = [
         self::STATUS_TO_BE_CHECKED,
         self::STATUS_COMPLETENESS,
         self::STATUS_COMPLETENESS_REMINDER,
         self::STATUS_COMPLETENESS_REPLY,
         self::STATUS_MODIFICATION,
-        self::STATUS_VALIDATED
-    ];
-
-    const GRANTED_LENDER_WITHDRAW = [
         self::STATUS_VALIDATED,
-        self::STATUS_SUSPENDED
     ];
 
-    const GRANTED_LENDER_SPONSORSHIP = [
-        self::STATUS_VALIDATED
+    public const GRANTED_LENDER_WITHDRAW = [
+        self::STATUS_VALIDATED,
+        self::STATUS_SUSPENDED,
     ];
 
     /**
@@ -80,10 +78,8 @@ class ClientsStatus
      */
     private $id;
 
-
-
     /**
-     * Set label
+     * Set label.
      *
      * @param string $label
      *
@@ -97,7 +93,7 @@ class ClientsStatus
     }
 
     /**
-     * Get label
+     * Get label.
      *
      * @return string
      */
@@ -107,9 +103,9 @@ class ClientsStatus
     }
 
     /**
-     * Get id
+     * Get id.
      *
-     * @return integer
+     * @return int
      */
     public function getId()
     {

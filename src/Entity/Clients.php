@@ -41,11 +41,7 @@ class Clients implements UserInterface, EquatableInterface
     public const TITLE_MISTER    = 'M.';
     public const TITLE_UNDEFINED = '';
 
-    public const ROLE_USER           = 'ROLE_USER';
-    public const ROLE_LENDER         = 'ROLE_LENDER';
-    public const ROLE_BORROWER       = 'ROLE_BORROWER';
-    public const ROLE_PARTNER        = 'ROLE_PARTNER';
-    public const ROLE_DEBT_COLLECTOR = 'ROLE_DEBT_COLLECTOR';
+    public const ROLE_USER = 'ROLE_USER';
 
     private const DEFAULT_ROLE = self::ROLE_USER;
 
@@ -229,13 +225,6 @@ class Clients implements UserInterface, EquatableInterface
     /**
      * @var DateTime
      *
-     * @ORM\Column(name="personal_data_updated", type="datetime", nullable=true)
-     */
-    private $personalDataUpdated;
-
-    /**
-     * @var DateTime
-     *
      * @ORM\Column(name="last_login", type="datetime", nullable=true)
      */
     private $lastLogin;
@@ -257,29 +246,6 @@ class Clients implements UserInterface, EquatableInterface
     private $attachments;
 
     /**
-     * @var Wallet[]
-     *
-     * @ORM\OneToMany(targetEntity="Unilend\Entity\Wallet", mappedBy="idClient")
-     */
-    private $wallets;
-
-    /**
-     * @var ClientAddress|null
-     *
-     * @ORM\OneToOne(targetEntity="Unilend\Entity\ClientAddress")
-     * @ORM\JoinColumn(name="id_address", referencedColumnName="id")
-     */
-    private $idAddress;
-
-    /**
-     * @var ClientAddress|null
-     *
-     * @ORM\OneToOne(targetEntity="Unilend\Entity\ClientAddress")
-     * @ORM\JoinColumn(name="id_postal_address", referencedColumnName="id")
-     */
-    private $idPostalAddress;
-
-    /**
      * @var Staff|null
      *
      * @ORM\OneToOne(targetEntity="Unilend\Entity\Staff", mappedBy="client")
@@ -299,7 +265,6 @@ class Clients implements UserInterface, EquatableInterface
     public function __construct()
     {
         $this->attachments = new ArrayCollection();
-        $this->wallets     = new ArrayCollection();
     }
 
     /**
@@ -767,128 +732,6 @@ class Clients implements UserInterface, EquatableInterface
         }
 
         return $this->attachments;
-    }
-
-    /**
-     * @return Wallet[]
-     */
-    public function getWallets(): iterable
-    {
-        return $this->wallets;
-    }
-
-    /**
-     * @return bool
-     */
-    public function isLender(): bool
-    {
-        return $this->hasRole(self::ROLE_LENDER);
-    }
-
-    /**
-     * @return bool
-     */
-    public function isBorrower(): bool
-    {
-        return $this->hasRole(self::ROLE_BORROWER);
-    }
-
-    /**
-     * @return bool
-     */
-    public function isPartner(): bool
-    {
-        return $this->hasRole(self::ROLE_PARTNER);
-    }
-
-    /**
-     * @return bool
-     */
-    public function isDebtCollector(): bool
-    {
-        return $this->hasRole(self::ROLE_DEBT_COLLECTOR);
-    }
-
-    /**
-     * @return bool
-     */
-    public function isNaturalPerson(): bool
-    {
-        return in_array($this->type, [self::TYPE_PERSON, self::TYPE_PERSON_FOREIGNER]);
-    }
-
-    /**
-     * @return ClientAddress|null
-     */
-    public function getIdAddress(): ?ClientAddress
-    {
-        if (null !== $this->idAddress && empty($this->idAddress->getId())) {
-            $this->idAddress = null;
-        }
-
-        return $this->idAddress;
-    }
-
-    /**
-     * @param ClientAddress|null $idAddress
-     *
-     * @return Clients
-     */
-    public function setIdAddress(?ClientAddress $idAddress): Clients
-    {
-        $this->idAddress = $idAddress;
-
-        return $this;
-    }
-
-    /**
-     * @return ClientAddress|null
-     */
-    public function getIdPostalAddress(): ?ClientAddress
-    {
-        if (null !== $this->idPostalAddress && empty($this->idPostalAddress->getId())) {
-            $this->idPostalAddress = null;
-        }
-
-        return $this->idPostalAddress;
-    }
-
-    /**
-     * @param ClientAddress|null $idPostalAddress
-     *
-     * @return Clients
-     */
-    public function setIdPostalAddress(?ClientAddress $idPostalAddress): Clients
-    {
-        $this->idPostalAddress = $idPostalAddress;
-
-        return $this;
-    }
-
-    /**
-     * @return DateTime|null
-     */
-    public function getPersonalDataUpdated(): ?DateTime
-    {
-        return $this->personalDataUpdated;
-    }
-
-    /**
-     * @param DateTime|null $personalDataUpdated
-     *
-     * @throws Exception
-     *
-     * @return Clients
-     */
-    public function setPersonalDataUpdated(?DateTime $personalDataUpdated = null): Clients
-    {
-        if (null === $personalDataUpdated) {
-            $personalDataUpdated = new DateTime();
-        }
-
-        $this->personalDataUpdated = $personalDataUpdated;
-
-        return $this;
     }
 
     /**

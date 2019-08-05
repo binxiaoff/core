@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Unilend\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * Queries
+ * Queries.
  *
  * @ORM\Table(name="queries")
  * @ORM\Entity
@@ -70,10 +72,8 @@ class Queries
      */
     private $idQuery;
 
-
-
     /**
-     * Set name
+     * Set name.
      *
      * @param string $name
      *
@@ -87,7 +87,7 @@ class Queries
     }
 
     /**
-     * Get name
+     * Get name.
      *
      * @return string
      */
@@ -97,7 +97,7 @@ class Queries
     }
 
     /**
-     * Set sql
+     * Set sql.
      *
      * @param string $sql
      *
@@ -111,7 +111,7 @@ class Queries
     }
 
     /**
-     * Get sql
+     * Get sql.
      *
      * @return string
      */
@@ -121,9 +121,9 @@ class Queries
     }
 
     /**
-     * Set paging
+     * Set paging.
      *
-     * @param integer $paging
+     * @param int $paging
      *
      * @return Queries
      */
@@ -135,9 +135,9 @@ class Queries
     }
 
     /**
-     * Get paging
+     * Get paging.
      *
-     * @return integer
+     * @return int
      */
     public function getPaging()
     {
@@ -145,9 +145,9 @@ class Queries
     }
 
     /**
-     * Set executions
+     * Set executions.
      *
-     * @param integer $executions
+     * @param int $executions
      *
      * @return Queries
      */
@@ -159,9 +159,9 @@ class Queries
     }
 
     /**
-     * Get executions
+     * Get executions.
      *
-     * @return integer
+     * @return int
      */
     public function getExecutions()
     {
@@ -169,7 +169,7 @@ class Queries
     }
 
     /**
-     * Set executed
+     * Set executed.
      *
      * @param \DateTime $executed
      *
@@ -183,7 +183,7 @@ class Queries
     }
 
     /**
-     * Get executed
+     * Get executed.
      *
      * @return \DateTime
      */
@@ -193,7 +193,7 @@ class Queries
     }
 
     /**
-     * Set added
+     * Set added.
      *
      * @param \DateTime $added
      *
@@ -207,7 +207,7 @@ class Queries
     }
 
     /**
-     * Get added
+     * Get added.
      *
      * @return \DateTime
      */
@@ -217,7 +217,7 @@ class Queries
     }
 
     /**
-     * Set updated
+     * Set updated.
      *
      * @param \DateTime $updated
      *
@@ -231,7 +231,7 @@ class Queries
     }
 
     /**
-     * Get updated
+     * Get updated.
      *
      * @return \DateTime
      */
@@ -241,9 +241,9 @@ class Queries
     }
 
     /**
-     * Get idQuery
+     * Get idQuery.
      *
-     * @return integer
+     * @return int
      */
     public function getIdQuery()
     {

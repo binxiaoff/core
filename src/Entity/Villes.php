@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Unilend\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * Villes
+ * Villes.
  *
  * @ORM\Table(name="villes", uniqueConstraints={@ORM\UniqueConstraint(name="uq_ville_insee_cp", columns={"ville", "insee", "cp"})}, indexes={@ORM\Index(name="idx_villes_cp", columns={"cp"}), @ORM\Index(name="idx_villes_ville_cp", columns={"ville", "cp"})})
  * @ORM\Entity
@@ -70,10 +72,8 @@ class Villes
      */
     private $idVille;
 
-
-
     /**
-     * Set ville
+     * Set ville.
      *
      * @param string $ville
      *
@@ -87,7 +87,7 @@ class Villes
     }
 
     /**
-     * Get ville
+     * Get ville.
      *
      * @return string
      */
@@ -97,7 +97,7 @@ class Villes
     }
 
     /**
-     * Set insee
+     * Set insee.
      *
      * @param string $insee
      *
@@ -111,7 +111,7 @@ class Villes
     }
 
     /**
-     * Get insee
+     * Get insee.
      *
      * @return string
      */
@@ -121,7 +121,7 @@ class Villes
     }
 
     /**
-     * Set cp
+     * Set cp.
      *
      * @param string $cp
      *
@@ -135,7 +135,7 @@ class Villes
     }
 
     /**
-     * Get cp
+     * Get cp.
      *
      * @return string
      */
@@ -145,7 +145,7 @@ class Villes
     }
 
     /**
-     * Set numDepartement
+     * Set numDepartement.
      *
      * @param string $numDepartement
      *
@@ -159,7 +159,7 @@ class Villes
     }
 
     /**
-     * Get numDepartement
+     * Get numDepartement.
      *
      * @return string
      */
@@ -169,9 +169,9 @@ class Villes
     }
 
     /**
-     * Set active
+     * Set active.
      *
-     * @param integer $active
+     * @param int $active
      *
      * @return Villes
      */
@@ -183,9 +183,9 @@ class Villes
     }
 
     /**
-     * Get active
+     * Get active.
      *
-     * @return integer
+     * @return int
      */
     public function getActive()
     {
@@ -193,7 +193,7 @@ class Villes
     }
 
     /**
-     * Set added
+     * Set added.
      *
      * @param \DateTime $added
      *
@@ -207,7 +207,7 @@ class Villes
     }
 
     /**
-     * Get added
+     * Get added.
      *
      * @return \DateTime
      */
@@ -217,7 +217,7 @@ class Villes
     }
 
     /**
-     * Set updated
+     * Set updated.
      *
      * @param \DateTime $updated
      *
@@ -231,7 +231,7 @@ class Villes
     }
 
     /**
-     * Get updated
+     * Get updated.
      *
      * @return \DateTime
      */
@@ -241,9 +241,9 @@ class Villes
     }
 
     /**
-     * Get idVille
+     * Get idVille.
      *
-     * @return integer
+     * @return int
      */
     public function getIdVille()
     {

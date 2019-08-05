@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Unilend\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * Insee
+ * Insee.
  *
  * @ORM\Table(name="insee", indexes={@ORM\Index(name="NCCENR", columns={"NCCENR"}), @ORM\Index(name="NCC", columns={"NCC"})})
  * @ORM\Entity
@@ -105,12 +107,10 @@ class Insee
      */
     private $idInsee;
 
-
-
     /**
-     * Set cdc
+     * Set cdc.
      *
-     * @param integer $cdc
+     * @param int $cdc
      *
      * @return Insee
      */
@@ -122,9 +122,9 @@ class Insee
     }
 
     /**
-     * Get cdc
+     * Get cdc.
      *
-     * @return integer
+     * @return int
      */
     public function getCdc()
     {
@@ -132,9 +132,9 @@ class Insee
     }
 
     /**
-     * Set cheflieu
+     * Set cheflieu.
      *
-     * @param integer $cheflieu
+     * @param int $cheflieu
      *
      * @return Insee
      */
@@ -146,9 +146,9 @@ class Insee
     }
 
     /**
-     * Get cheflieu
+     * Get cheflieu.
      *
-     * @return integer
+     * @return int
      */
     public function getCheflieu()
     {
@@ -156,9 +156,9 @@ class Insee
     }
 
     /**
-     * Set reg
+     * Set reg.
      *
-     * @param integer $reg
+     * @param int $reg
      *
      * @return Insee
      */
@@ -170,9 +170,9 @@ class Insee
     }
 
     /**
-     * Get reg
+     * Get reg.
      *
-     * @return integer
+     * @return int
      */
     public function getReg()
     {
@@ -180,9 +180,9 @@ class Insee
     }
 
     /**
-     * Set dep
+     * Set dep.
      *
-     * @param integer $dep
+     * @param int $dep
      *
      * @return Insee
      */
@@ -194,9 +194,9 @@ class Insee
     }
 
     /**
-     * Get dep
+     * Get dep.
      *
-     * @return integer
+     * @return int
      */
     public function getDep()
     {
@@ -204,9 +204,9 @@ class Insee
     }
 
     /**
-     * Set com
+     * Set com.
      *
-     * @param integer $com
+     * @param int $com
      *
      * @return Insee
      */
@@ -218,9 +218,9 @@ class Insee
     }
 
     /**
-     * Get com
+     * Get com.
      *
-     * @return integer
+     * @return int
      */
     public function getCom()
     {
@@ -228,9 +228,9 @@ class Insee
     }
 
     /**
-     * Set ar
+     * Set ar.
      *
-     * @param integer $ar
+     * @param int $ar
      *
      * @return Insee
      */
@@ -242,9 +242,9 @@ class Insee
     }
 
     /**
-     * Get ar
+     * Get ar.
      *
-     * @return integer
+     * @return int
      */
     public function getAr()
     {
@@ -252,9 +252,9 @@ class Insee
     }
 
     /**
-     * Set ct
+     * Set ct.
      *
-     * @param integer $ct
+     * @param int $ct
      *
      * @return Insee
      */
@@ -266,9 +266,9 @@ class Insee
     }
 
     /**
-     * Get ct
+     * Get ct.
      *
-     * @return integer
+     * @return int
      */
     public function getCt()
     {
@@ -276,9 +276,9 @@ class Insee
     }
 
     /**
-     * Set tncc
+     * Set tncc.
      *
-     * @param integer $tncc
+     * @param int $tncc
      *
      * @return Insee
      */
@@ -290,9 +290,9 @@ class Insee
     }
 
     /**
-     * Get tncc
+     * Get tncc.
      *
-     * @return integer
+     * @return int
      */
     public function getTncc()
     {
@@ -300,7 +300,7 @@ class Insee
     }
 
     /**
-     * Set artmaj
+     * Set artmaj.
      *
      * @param string $artmaj
      *
@@ -314,7 +314,7 @@ class Insee
     }
 
     /**
-     * Get artmaj
+     * Get artmaj.
      *
      * @return string
      */
@@ -324,7 +324,7 @@ class Insee
     }
 
     /**
-     * Set ncc
+     * Set ncc.
      *
      * @param string $ncc
      *
@@ -338,7 +338,7 @@ class Insee
     }
 
     /**
-     * Get ncc
+     * Get ncc.
      *
      * @return string
      */
@@ -348,7 +348,7 @@ class Insee
     }
 
     /**
-     * Set artmin
+     * Set artmin.
      *
      * @param string $artmin
      *
@@ -362,7 +362,7 @@ class Insee
     }
 
     /**
-     * Get artmin
+     * Get artmin.
      *
      * @return string
      */
@@ -372,7 +372,7 @@ class Insee
     }
 
     /**
-     * Set nccenr
+     * Set nccenr.
      *
      * @param string $nccenr
      *
@@ -386,7 +386,7 @@ class Insee
     }
 
     /**
-     * Get nccenr
+     * Get nccenr.
      *
      * @return string
      */
@@ -396,9 +396,9 @@ class Insee
     }
 
     /**
-     * Get idInsee
+     * Get idInsee.
      *
-     * @return integer
+     * @return int
      */
     public function getIdInsee()
     {

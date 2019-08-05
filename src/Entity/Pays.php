@@ -1,32 +1,34 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Unilend\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * Pays
+ * Pays.
  *
  * @ORM\Table(name="pays")
  * @ORM\Entity
  */
 class Pays
 {
-    const VIGILANCE_STATUS_LOW_RISK    = 0;
-    const VIGILANCE_STATUS_MEDIUM_RISK = 1;
-    const VIGILANCE_STATUS_HIGH_RISK   = 2;
+    public const VIGILANCE_STATUS_LOW_RISK    = 0;
+    public const VIGILANCE_STATUS_MEDIUM_RISK = 1;
+    public const VIGILANCE_STATUS_HIGH_RISK   = 2;
 
-    const COUNTRY_FRANCE  = 1;
-    const COUNTRY_USA     = 62;
-    const COUNTRY_ERITREA = 59;
+    public const COUNTRY_FRANCE  = 1;
+    public const COUNTRY_USA     = 62;
+    public const COUNTRY_ERITREA = 59;
 
-    const FRANCE_DOM_TOM = [155, 195, 196, 197, 198];
+    public const FRANCE_DOM_TOM = [155, 195, 196, 197, 198];
 
     /** Name is misleading, it is a list fo EU countries, excluding France, to be confirmed https://unilend.atlassian.net/browse/TSK-147 */
-    const EUROPEAN_ECONOMIC_AREA = [6, 14, 21, 31, 41, 50, 52, 60, 61, 65, 70, 79, 84, 87, 98, 103, 104, 111, 139, 142, 143, 148, 150, 151, 165, 166, 171];
+    public const EUROPEAN_ECONOMIC_AREA = [6, 14, 21, 31, 41, 50, 52, 60, 61, 65, 70, 79, 84, 87, 98, 103, 104, 111, 139, 142, 143, 148, 150, 151, 165, 166, 171];
 
     /** Countries for which we allow lender IBANs */
-    const EEA_COUNTRIES_ISO = ['FR', 'DE', 'AT','BE', 'BG', 'CY', 'HR', 'DK', 'ES', 'EE', 'FI', 'GR', 'HU', 'IE', 'IS', 'IT', 'LV', 'LI', 'LT', 'LU', 'MT', 'NO', 'NL', 'PL', 'PT', 'CZ', 'RO', 'GB', 'SK', 'SI', 'SE'];
+    public const EEA_COUNTRIES_ISO = ['FR', 'DE', 'AT', 'BE', 'BG', 'CY', 'HR', 'DK', 'ES', 'EE', 'FI', 'GR', 'HU', 'IE', 'IS', 'IT', 'LV', 'LI', 'LT', 'LU', 'MT', 'NO', 'NL', 'PL', 'PT', 'CZ', 'RO', 'GB', 'SK', 'SI', 'SE'];
 
     /**
      * @var string
@@ -66,7 +68,7 @@ class Pays
     private $idPays;
 
     /**
-     * Set fr
+     * Set fr.
      *
      * @param string|null $fr
      *
@@ -80,7 +82,7 @@ class Pays
     }
 
     /**
-     * Get fr
+     * Get fr.
      *
      * @return string|null
      */
@@ -90,7 +92,7 @@ class Pays
     }
 
     /**
-     * Set iso
+     * Set iso.
      *
      * @param string $iso
      *
@@ -104,7 +106,7 @@ class Pays
     }
 
     /**
-     * Get iso
+     * Get iso.
      *
      * @return string
      */
@@ -114,7 +116,7 @@ class Pays
     }
 
     /**
-     * Set ordre
+     * Set ordre.
      *
      * @param int $ordre
      *
@@ -128,7 +130,7 @@ class Pays
     }
 
     /**
-     * Get ordre
+     * Get ordre.
      *
      * @return int
      */
@@ -158,7 +160,7 @@ class Pays
     }
 
     /**
-     * Get idPays
+     * Get idPays.
      *
      * @return int
      */

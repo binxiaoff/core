@@ -947,16 +947,16 @@ class Project
     }
 
     /**
-     * @param array|null  $status
-     * @param Wallet|null $wallet
+     * @param array|null     $status
+     * @param Companies|null $lender
      *
      * @return Bids[]|ArrayCollection
      */
-    public function getBids(?array $status = null, ?Wallet $wallet = null): iterable
+    public function getBids(?array $status = null, ?Companies $lender = null): iterable
     {
         $bids = [];
         foreach ($this->getTranches() as $tranche) {
-            $bids = array_merge($bids, $tranche->getBids($status, $wallet)->toArray());
+            $bids = array_merge($bids, $tranche->getBids($status, $lender)->toArray());
         }
 
         return new ArrayCollection($bids);

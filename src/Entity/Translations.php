@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Unilend\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * Translations
+ * Translations.
  *
  * @ORM\Table(name="translations", uniqueConstraints={@ORM\UniqueConstraint(name="unq_translation", columns={"locale", "section", "name"})}, indexes={@ORM\Index(name="section", columns={"section"})})
  * @ORM\Entity(repositoryClass="Unilend\Repository\TranslationsRepository")
@@ -13,7 +15,7 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class Translations
 {
-    const SECTION_MAIL_TITLE = 'mail-title';
+    public const SECTION_MAIL_TITLE = 'mail-title';
 
     /**
      * @var string
@@ -193,12 +195,13 @@ class Translations
     {
         return $this->idTranslation;
     }
+
     /**
      * @ORM\PrePersist
      */
     public function setAddedValue()
     {
-        if (! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
+        if (!$this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
             $this->added = new \DateTime();
         }
     }

@@ -47,7 +47,7 @@ class NotificationDisplayManager
      *
      * @return array
      */
-    public function getLastClientNotifications(Clients $client)
+    public function getLastClientNotifications(Clients $client): array
     {
         return $this->getClientNotifications($client, 0, 20);
     }
@@ -61,7 +61,7 @@ class NotificationDisplayManager
      *
      * @return array
      */
-    public function getClientNotifications(Clients $client, $offset = null, $limit = null)
+    public function getClientNotifications(Clients $client, $offset = null, $limit = null): array
     {
         $formattedNotifications = [];
         $notifications          = $this->notificationRepository->findBy(['client' => $client], ['added' => 'DESC'], $limit, $offset);

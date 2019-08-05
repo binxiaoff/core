@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Unilend\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * TreeMenu
+ * TreeMenu.
  *
  * @ORM\Table(name="tree_menu", uniqueConstraints={@ORM\UniqueConstraint(name="id_langue", columns={"id_langue", "id_menu", "nom", "value", "complement"})})
  * @ORM\Entity
@@ -55,7 +57,7 @@ class TreeMenu
     private $ordre = 0;
 
     /**
-     * 0 : Hors ligne 1: En ligne
+     * 0 : Hors ligne 1: En ligne.
      *
      * @var bool
      *
@@ -95,12 +97,10 @@ class TreeMenu
      */
     private $idLangue;
 
-
-
     /**
-     * Set idMenu
+     * Set idMenu.
      *
-     * @param integer $idMenu
+     * @param int $idMenu
      *
      * @return TreeMenu
      */
@@ -112,9 +112,9 @@ class TreeMenu
     }
 
     /**
-     * Get idMenu
+     * Get idMenu.
      *
-     * @return integer
+     * @return int
      */
     public function getIdMenu()
     {
@@ -122,7 +122,7 @@ class TreeMenu
     }
 
     /**
-     * Set nom
+     * Set nom.
      *
      * @param string $nom
      *
@@ -136,7 +136,7 @@ class TreeMenu
     }
 
     /**
-     * Get nom
+     * Get nom.
      *
      * @return string
      */
@@ -146,7 +146,7 @@ class TreeMenu
     }
 
     /**
-     * Set value
+     * Set value.
      *
      * @param string $value
      *
@@ -160,7 +160,7 @@ class TreeMenu
     }
 
     /**
-     * Get value
+     * Get value.
      *
      * @return string
      */
@@ -170,7 +170,7 @@ class TreeMenu
     }
 
     /**
-     * Set complement
+     * Set complement.
      *
      * @param string $complement
      *
@@ -184,7 +184,7 @@ class TreeMenu
     }
 
     /**
-     * Get complement
+     * Get complement.
      *
      * @return string
      */
@@ -194,7 +194,7 @@ class TreeMenu
     }
 
     /**
-     * Set target
+     * Set target.
      *
      * @param string $target
      *
@@ -208,7 +208,7 @@ class TreeMenu
     }
 
     /**
-     * Get target
+     * Get target.
      *
      * @return string
      */
@@ -218,9 +218,9 @@ class TreeMenu
     }
 
     /**
-     * Set ordre
+     * Set ordre.
      *
-     * @param integer $ordre
+     * @param int $ordre
      *
      * @return TreeMenu
      */
@@ -232,9 +232,9 @@ class TreeMenu
     }
 
     /**
-     * Get ordre
+     * Get ordre.
      *
-     * @return integer
+     * @return int
      */
     public function getOrdre()
     {
@@ -242,7 +242,7 @@ class TreeMenu
     }
 
     /**
-     * Set status
+     * Set status.
      *
      * @param bool $status
      *
@@ -256,7 +256,7 @@ class TreeMenu
     }
 
     /**
-     * Get status
+     * Get status.
      *
      * @return bool
      */
@@ -266,7 +266,7 @@ class TreeMenu
     }
 
     /**
-     * Set added
+     * Set added.
      *
      * @param \DateTime $added
      *
@@ -280,7 +280,7 @@ class TreeMenu
     }
 
     /**
-     * Get added
+     * Get added.
      *
      * @return \DateTime
      */
@@ -290,7 +290,7 @@ class TreeMenu
     }
 
     /**
-     * Set updated
+     * Set updated.
      *
      * @param \DateTime $updated
      *
@@ -304,7 +304,7 @@ class TreeMenu
     }
 
     /**
-     * Get updated
+     * Get updated.
      *
      * @return \DateTime
      */
@@ -314,9 +314,9 @@ class TreeMenu
     }
 
     /**
-     * Set id
+     * Set id.
      *
-     * @param integer $id
+     * @param int $id
      *
      * @return TreeMenu
      */
@@ -328,9 +328,9 @@ class TreeMenu
     }
 
     /**
-     * Get id
+     * Get id.
      *
-     * @return integer
+     * @return int
      */
     public function getId()
     {
@@ -338,7 +338,7 @@ class TreeMenu
     }
 
     /**
-     * Set idLangue
+     * Set idLangue.
      *
      * @param string $idLangue
      *
@@ -352,7 +352,7 @@ class TreeMenu
     }
 
     /**
-     * Get idLangue
+     * Get idLangue.
      *
      * @return string
      */

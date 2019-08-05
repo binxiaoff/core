@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Unilend\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * CompanySector
+ * CompanySector.
  *
  * @ORM\Table(name="company_sector")
  * @ORM\Entity
@@ -42,10 +44,8 @@ class CompanySector
      */
     private $idCompanySector;
 
-
-
     /**
-     * Set sector
+     * Set sector.
      *
      * @param string $sector
      *
@@ -59,7 +59,7 @@ class CompanySector
     }
 
     /**
-     * Get sector
+     * Get sector.
      *
      * @return string
      */
@@ -69,7 +69,7 @@ class CompanySector
     }
 
     /**
-     * Set added
+     * Set added.
      *
      * @param \DateTime $added
      *
@@ -83,7 +83,7 @@ class CompanySector
     }
 
     /**
-     * Get added
+     * Get added.
      *
      * @return \DateTime
      */
@@ -93,7 +93,7 @@ class CompanySector
     }
 
     /**
-     * Set updated
+     * Set updated.
      *
      * @param \DateTime $updated
      *
@@ -107,7 +107,7 @@ class CompanySector
     }
 
     /**
-     * Get updated
+     * Get updated.
      *
      * @return \DateTime
      */
@@ -117,9 +117,9 @@ class CompanySector
     }
 
     /**
-     * Get idCompanySector
+     * Get idCompanySector.
      *
-     * @return integer
+     * @return int
      */
     public function getIdCompanySector()
     {

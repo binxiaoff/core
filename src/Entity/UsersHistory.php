@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Unilend\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * UsersHistory
+ * UsersHistory.
  *
  * @ORM\Table(name="users_history", indexes={
  *     @ORM\Index(name="idx_users_history_id_user", columns={"id_user"}),
@@ -15,14 +17,14 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class UsersHistory
 {
-    const FORM_ID_LENDER_STATUS         = 1;
-    const FORM_ID_LENDER                = 3;
-    const FORM_ID_PROJECT_UPLOAD        = 9;
-    const FORM_ID_BULK_PROJECT_CREATION = 13;
+    public const FORM_ID_LENDER_STATUS         = 1;
+    public const FORM_ID_LENDER                = 3;
+    public const FORM_ID_PROJECT_UPLOAD        = 9;
+    public const FORM_ID_BULK_PROJECT_CREATION = 13;
 
-    const FORM_NAME_LENDER_STATUS         = 'Statut prêteur';
-    const FORM_NAME_TAX_EXEMPTION         = 'modification exoneration fiscale';
-    const FROM_NAME_BULK_PROJECT_CREATION = 'depot_dossier_en_masse';
+    public const FORM_NAME_LENDER_STATUS         = 'Statut prêteur';
+    public const FORM_NAME_TAX_EXEMPTION         = 'modification exoneration fiscale';
+    public const FROM_NAME_BULK_PROJECT_CREATION = 'depot_dossier_en_masse';
 
     /**
      * @var int
@@ -75,12 +77,10 @@ class UsersHistory
      */
     private $idUserHistory;
 
-
-
     /**
-     * Set idForm
+     * Set idForm.
      *
-     * @param integer $idForm
+     * @param int $idForm
      *
      * @return UsersHistory
      */
@@ -92,9 +92,9 @@ class UsersHistory
     }
 
     /**
-     * Get idForm
+     * Get idForm.
      *
-     * @return integer
+     * @return int
      */
     public function getIdForm()
     {
@@ -102,7 +102,7 @@ class UsersHistory
     }
 
     /**
-     * Set nomForm
+     * Set nomForm.
      *
      * @param string $nomForm
      *
@@ -116,7 +116,7 @@ class UsersHistory
     }
 
     /**
-     * Get nomForm
+     * Get nomForm.
      *
      * @return string
      */
@@ -126,9 +126,9 @@ class UsersHistory
     }
 
     /**
-     * Set idUser
+     * Set idUser.
      *
-     * @param integer $idUser
+     * @param int $idUser
      *
      * @return UsersHistory
      */
@@ -140,9 +140,9 @@ class UsersHistory
     }
 
     /**
-     * Get idUser
+     * Get idUser.
      *
-     * @return integer
+     * @return int
      */
     public function getIdUser()
     {
@@ -150,7 +150,7 @@ class UsersHistory
     }
 
     /**
-     * Set serialize
+     * Set serialize.
      *
      * @param string $serialize
      *
@@ -164,7 +164,7 @@ class UsersHistory
     }
 
     /**
-     * Get serialize
+     * Get serialize.
      *
      * @return string
      */
@@ -174,7 +174,7 @@ class UsersHistory
     }
 
     /**
-     * Set added
+     * Set added.
      *
      * @param \DateTime $added
      *
@@ -188,7 +188,7 @@ class UsersHistory
     }
 
     /**
-     * Get added
+     * Get added.
      *
      * @return \DateTime
      */
@@ -198,7 +198,7 @@ class UsersHistory
     }
 
     /**
-     * Set updated
+     * Set updated.
      *
      * @param \DateTime $updated
      *
@@ -212,7 +212,7 @@ class UsersHistory
     }
 
     /**
-     * Get updated
+     * Get updated.
      *
      * @return \DateTime
      */
@@ -222,9 +222,9 @@ class UsersHistory
     }
 
     /**
-     * Get idUserHistory
+     * Get idUserHistory.
      *
-     * @return integer
+     * @return int
      */
     public function getIdUserHistory()
     {
