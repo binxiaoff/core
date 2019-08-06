@@ -76,14 +76,10 @@ class bootstrap extends Controller
     protected $ficelle;
     /** @var \upload */
     protected $upload;
-    /** @var \translations */
-    protected $ln;
 
     /**
      * Data.
      */
-    /** @var \settings */
-    protected $settings;
     /** @var \tree_elements */
     protected $tree_elements;
     /** @var \blocs */
@@ -98,18 +94,6 @@ class bootstrap extends Controller
     protected $users;
     /** @var \users_zones */
     protected $users_zones;
-    /** @var \users_history */
-    protected $users_history;
-    /** @var \projects */
-    protected $projects;
-    /** @var \clients */
-    protected $clients;
-    /** @var \companies */
-    protected $companies;
-    /** @var \bids */
-    protected $bids;
-    /** @var \loans */
-    protected $loans;
 
     /**
      * Doctrine entities.

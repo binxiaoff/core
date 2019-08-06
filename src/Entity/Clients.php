@@ -41,7 +41,9 @@ class Clients implements UserInterface, EquatableInterface
     public const TITLE_MISTER    = 'M.';
     public const TITLE_UNDEFINED = '';
 
-    public const ROLE_USER = 'ROLE_USER';
+    public const ROLE_USER        = 'ROLE_USER';
+    public const ROLE_ADMIN       = 'ROLE_ADMIN';
+    public const ROLE_SUPER_ADMIN = 'ROLE_SUPER_ADMIN';
 
     private const DEFAULT_ROLE = self::ROLE_USER;
 

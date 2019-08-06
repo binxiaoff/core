@@ -57,8 +57,6 @@ class rootController extends bootstrap
 
     public function _default()
     {
-        $this->users->checkAccess(Zones::ZONE_LABEL_EDITION);
-
         header('Location: ' . $this->url . '/tree');
         exit;
     }

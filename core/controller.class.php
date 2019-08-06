@@ -41,7 +41,7 @@ abstract class Controller implements ContainerAwareInterface
      * @param string       $app
      * @param Request|null $request
      */
-    final public function __construct(Command &$command, $app, $request = null)
+    final public function __construct(Command $command, $app, $request = null)
     {
         setlocale(LC_TIME, 'fr_FR.utf8');
         setlocale(LC_TIME, 'fr_FR');
@@ -72,13 +72,6 @@ abstract class Controller implements ContainerAwareInterface
         if (false === isset($this->params[0])) {
             trigger_error('ASPARTAM - ' . $msg, E_USER_ERROR);
         }
-    }
-
-    public function _404()
-    {
-        header('HTTP/1.0 404 Not Found');
-        echo 'Page not found';
-        die;
     }
 
     public function execute()
