@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Unilend\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * UsersZones
+ * UsersZones.
  *
  * @ORM\Table(name="users_zones", uniqueConstraints={@ORM\UniqueConstraint(name="id_user", columns={"id_user", "id_zone"})})
  * @ORM\Entity
@@ -17,7 +19,7 @@ class UsersZones
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\Users")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_user", referencedColumnName="id_user", nullable=false)
+     *     @ORM\JoinColumn(name="id_user", referencedColumnName="id_user", nullable=false)
      * })
      */
     private $idUser;
@@ -27,7 +29,7 @@ class UsersZones
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\Zones")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_zone", referencedColumnName="id_zone", nullable=false)
+     *     @ORM\JoinColumn(name="id_zone", referencedColumnName="id_zone", nullable=false)
      * })
      */
     private $idZone;
@@ -55,10 +57,8 @@ class UsersZones
      */
     private $id;
 
-
-
     /**
-     * Set idUser
+     * Set idUser.
      *
      * @param Users $idUser
      *
@@ -72,7 +72,7 @@ class UsersZones
     }
 
     /**
-     * Get idUser
+     * Get idUser.
      *
      * @return Users
      */
@@ -82,7 +82,7 @@ class UsersZones
     }
 
     /**
-     * Set idZone
+     * Set idZone.
      *
      * @param Zones $idZone
      *
@@ -96,7 +96,7 @@ class UsersZones
     }
 
     /**
-     * Get idZone
+     * Get idZone.
      *
      * @return Zones
      */
@@ -106,7 +106,7 @@ class UsersZones
     }
 
     /**
-     * Set added
+     * Set added.
      *
      * @param \DateTime $added
      *
@@ -120,7 +120,7 @@ class UsersZones
     }
 
     /**
-     * Get added
+     * Get added.
      *
      * @return \DateTime
      */
@@ -130,7 +130,7 @@ class UsersZones
     }
 
     /**
-     * Set updated
+     * Set updated.
      *
      * @param \DateTime $updated
      *
@@ -144,7 +144,7 @@ class UsersZones
     }
 
     /**
-     * Get updated
+     * Get updated.
      *
      * @return \DateTime
      */
@@ -154,9 +154,9 @@ class UsersZones
     }
 
     /**
-     * Get id
+     * Get id.
      *
-     * @return integer
+     * @return int
      */
     public function getId()
     {

@@ -28,23 +28,6 @@ class Loans
     public const STATUS_REJECTED = 1;
 
     /**
-     * @var LoanTransfer|null
-     *
-     * @ORM\ManyToOne(targetEntity="Unilend\Entity\LoanTransfer")
-     * @ORM\JoinColumns({
-     *     @ORM\JoinColumn(name="id_transfer", referencedColumnName="id_loan_transfer")
-     * })
-     */
-    private $transfer;
-
-    /**
-     * @var string|null
-     *
-     * @ORM\Column(name="fichier_declarationContratPret", type="string", length=191, nullable=true)
-     */
-    private $fichierDeclarationcontratpret;
-
-    /**
      * @var int
      *
      * @ORM\Column(name="id_loan", type="integer")
@@ -52,16 +35,6 @@ class Loans
      * @ORM\GeneratedValue(strategy="IDENTITY")
      */
     private $idLoan;
-
-    /**
-     * @var UnderlyingContract
-     *
-     * @ORM\ManyToOne(targetEntity="Unilend\Entity\UnderlyingContract")
-     * @ORM\JoinColumns({
-     *     @ORM\JoinColumn(name="id_type_contract", referencedColumnName="id_contract", nullable=false)
-     * })
-     */
-    private $underlyingContract;
 
     /**
      * @var AcceptationsLegalDocs|null
@@ -90,76 +63,11 @@ class Loans
     }
 
     /**
-     * @param LoanTransfer|null $transfer
-     *
-     * @return Loans
-     */
-    public function setTransfer(?LoanTransfer $transfer): Loans
-    {
-        $this->transfer = $transfer;
-
-        return $this;
-    }
-
-    /**
-     * @return LoanTransfer|null
-     */
-    public function getTransfer(): ?LoanTransfer
-    {
-        // @todo to be removed when it is fully under doctrine
-        if (null !== $this->transfer) {
-            $this->transfer->getIdTransfer();
-        }
-
-        return $this->transfer;
-    }
-
-    /**
-     * @param string|null $fichierDeclarationcontratpret
-     *
-     * @return Loans
-     */
-    public function setFichierDeclarationcontratpret(?string $fichierDeclarationcontratpret): Loans
-    {
-        $this->fichierDeclarationcontratpret = $fichierDeclarationcontratpret;
-
-        return $this;
-    }
-
-    /**
-     * @return string|null
-     */
-    public function getFichierDeclarationcontratpret(): ?string
-    {
-        return $this->fichierDeclarationcontratpret;
-    }
-
-    /**
      * @return int
      */
     public function getIdLoan(): int
     {
         return $this->idLoan;
-    }
-
-    /**
-     * @param UnderlyingContract $underlyingContract
-     *
-     * @return Loans
-     */
-    public function setUnderlyingContract(UnderlyingContract $underlyingContract): Loans
-    {
-        $this->underlyingContract = $underlyingContract;
-
-        return $this;
-    }
-
-    /**
-     * @return UnderlyingContract
-     */
-    public function getUnderlyingContract(): UnderlyingContract
-    {
-        return $this->underlyingContract;
     }
 
     /**

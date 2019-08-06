@@ -110,8 +110,6 @@ class bootstrap extends Controller
     protected $bids;
     /** @var \loans */
     protected $loans;
-    /** @var \echeanciers */
-    protected $echeanciers;
 
     /**
      * Doctrine entities.

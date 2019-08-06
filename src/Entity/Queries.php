@@ -1,12 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Unilend\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * Queries
- *
  * @ORM\Table(name="queries")
  * @ORM\Entity
  */
@@ -70,11 +70,7 @@ class Queries
      */
     private $idQuery;
 
-
-
     /**
-     * Set name
-     *
      * @param string $name
      *
      * @return Queries
@@ -87,8 +83,6 @@ class Queries
     }
 
     /**
-     * Get name
-     *
      * @return string
      */
     public function getName()
@@ -97,8 +91,6 @@ class Queries
     }
 
     /**
-     * Set sql
-     *
      * @param string $sql
      *
      * @return Queries
@@ -111,8 +103,6 @@ class Queries
     }
 
     /**
-     * Get sql
-     *
      * @return string
      */
     public function getSql()
@@ -121,9 +111,7 @@ class Queries
     }
 
     /**
-     * Set paging
-     *
-     * @param integer $paging
+     * @param int $paging
      *
      * @return Queries
      */
@@ -135,9 +123,7 @@ class Queries
     }
 
     /**
-     * Get paging
-     *
-     * @return integer
+     * @return int
      */
     public function getPaging()
     {
@@ -145,9 +131,7 @@ class Queries
     }
 
     /**
-     * Set executions
-     *
-     * @param integer $executions
+     * @param int $executions
      *
      * @return Queries
      */
@@ -159,9 +143,7 @@ class Queries
     }
 
     /**
-     * Get executions
-     *
-     * @return integer
+     * @return int
      */
     public function getExecutions()
     {
@@ -169,8 +151,6 @@ class Queries
     }
 
     /**
-     * Set executed
-     *
      * @param \DateTime $executed
      *
      * @return Queries
@@ -183,8 +163,6 @@ class Queries
     }
 
     /**
-     * Get executed
-     *
      * @return \DateTime
      */
     public function getExecuted()
@@ -193,8 +171,6 @@ class Queries
     }
 
     /**
-     * Set added
-     *
      * @param \DateTime $added
      *
      * @return Queries
@@ -207,8 +183,6 @@ class Queries
     }
 
     /**
-     * Get added
-     *
      * @return \DateTime
      */
     public function getAdded()
@@ -217,8 +191,6 @@ class Queries
     }
 
     /**
-     * Set updated
-     *
      * @param \DateTime $updated
      *
      * @return Queries
@@ -231,8 +203,6 @@ class Queries
     }
 
     /**
-     * Get updated
-     *
      * @return \DateTime
      */
     public function getUpdated()
@@ -241,9 +211,7 @@ class Queries
     }
 
     /**
-     * Get idQuery
-     *
-     * @return integer
+     * @return int
      */
     public function getIdQuery()
     {

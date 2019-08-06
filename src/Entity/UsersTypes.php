@@ -1,25 +1,27 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Unilend\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * UsersTypes
+ * UsersTypes.
  *
  * @ORM\Table(name="users_types")
  * @ORM\Entity
  */
 class UsersTypes
 {
-    const TYPE_ADMIN      = 1;
-    const TYPE_RISK       = 2;
-    const TYPE_COMMERCIAL = 3;
-    const TYPE_MARKETING  = 4;
-    const TYPE_COMPLIANCE = 5;
-    const TYPE_IT         = 6;
-    const TYPE_DIRECTION  = 7;
-    const TYPE_EXTERNAL   = 8;
+    public const TYPE_ADMIN      = 1;
+    public const TYPE_RISK       = 2;
+    public const TYPE_COMMERCIAL = 3;
+    public const TYPE_MARKETING  = 4;
+    public const TYPE_COMPLIANCE = 5;
+    public const TYPE_IT         = 6;
+    public const TYPE_DIRECTION  = 7;
+    public const TYPE_EXTERNAL   = 8;
 
     /**
      * @var string
@@ -51,10 +53,8 @@ class UsersTypes
      */
     private $idUserType;
 
-
-
     /**
-     * Set label
+     * Set label.
      *
      * @param string $label
      *
@@ -68,7 +68,7 @@ class UsersTypes
     }
 
     /**
-     * Get label
+     * Get label.
      *
      * @return string
      */
@@ -78,7 +78,7 @@ class UsersTypes
     }
 
     /**
-     * Set added
+     * Set added.
      *
      * @param \DateTime $added
      *
@@ -92,7 +92,7 @@ class UsersTypes
     }
 
     /**
-     * Get added
+     * Get added.
      *
      * @return \DateTime
      */
@@ -102,7 +102,7 @@ class UsersTypes
     }
 
     /**
-     * Set updated
+     * Set updated.
      *
      * @param \DateTime $updated
      *
@@ -116,7 +116,7 @@ class UsersTypes
     }
 
     /**
-     * Get updated
+     * Get updated.
      *
      * @return \DateTime
      */
@@ -126,9 +126,9 @@ class UsersTypes
     }
 
     /**
-     * Get idUserType
+     * Get idUserType.
      *
-     * @return integer
+     * @return int
      */
     public function getIdUserType()
     {

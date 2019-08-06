@@ -32,6 +32,7 @@ return PhpCsFixer\Config::create()
         'php_unit_strict'                        => true, //risky
         'php_unit_test_case_static_method_calls' => true, //risky
         'random_api_migration'                   => true, //risky
+        'declare_strict_types'                   => true, //risky
     ])
     ->setFinder($finder)
     ;

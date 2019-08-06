@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Unilend\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
@@ -7,6 +9,12 @@ use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\Query\Expr\Join;
 use Unilend\Entity\{ProjectAttachmentType, ProjectAttachmentTypeCategory};
 
+/**
+ * @method ProjectAttachmentType|null find($id, $lockMode = null, $lockVersion = null)
+ * @method ProjectAttachmentType|null findOneBy(array $criteria, array $orderBy = null)
+ * @method ProjectAttachmentType[]    findAll()
+ * @method ProjectAttachmentType[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
+ */
 class ProjectAttachmentTypeRepository extends ServiceEntityRepository
 {
     /**

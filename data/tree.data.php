@@ -1,7 +1,5 @@
 <?php
 
-use Unilend\Entity\Partner;
-
 class tree extends tree_crud
 {
     /**
@@ -55,7 +53,7 @@ class tree extends tree_crud
     //**************************************** AJOUTS ******************************************//
     //******************************************************************************************//
     // Definition des types d'éléments
-    public $typesElements = ['Texte', 'Textearea', 'Texteditor', 'Lien Interne', 'Image', 'Fichier', 'Boolean', 'SVG', 'Partner'];
+    public $typesElements = ['Texte', 'Textearea', 'Texteditor', 'Lien Interne', 'Image', 'Fichier', 'Boolean', 'SVG'];
 
     // Affichage des elements de formulaire en fonction du type d'élément
     public function displayFormElement($id_tree, $element, $type = 'tree', $langue = 'fr')
@@ -228,27 +226,6 @@ class tree extends tree_crud
                         <select name="' . $element['slug'] . '_' . $langue . '" id="' . $element['slug'] . '_' . $langue . '">
                             <option value="0"' . ($this->params[$elementType]->value == 0 ? ' selected' : '') . '>Non</option>
                             <option value="1"' . ($this->params[$elementType]->value == 1 ? ' selected' : '') . '>Oui</option>
-                        </select>
-                    </th>
-                </tr>';
-                break;
-
-            case 'Partner':
-                $partner  = new \partner($this->bdd);
-                $partners = $partner->select('status = ' . Partner::STATUS_VALIDATED, 'label ASC');
-
-                echo '
-                <tr>
-                    <th style="padding-top:10px">
-                        <label for="' . $element['slug'] . '_' . $langue . '">' . $element['name'] . ' : </label>
-                        <select name="' . $element['slug'] . '_' . $langue . '" id="' . $element['slug'] . '_' . $langue . '">
-                            <option value=""></option>';
-
-                foreach ($partners as $partner) {
-                    echo '<option value="' . $partner['id'] . '"' . ($this->params[$elementType]->value == $partner['id'] ? ' selected' : '') . '>' . $partner['label'] . '</option>';
-                }
-
-                echo '
                         </select>
                     </th>
                 </tr>';

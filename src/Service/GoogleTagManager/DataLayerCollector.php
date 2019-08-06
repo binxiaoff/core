@@ -47,12 +47,6 @@ class DataLayerCollector
 
             if ($client instanceof Clients) {
                 $data = ['uid' => md5($client->getEmail()), 'unique_id' => md5($client->getEmail())];
-
-                if ($client->isLender()) {
-                    $data['ID_Preteur'] = $client->getIdClient();
-                } else {
-                    $data['ID_Emprunteur'] = $client->getIdClient();
-                }
             } else {
                 $session = $this->requestStack->getCurrentRequest()->getSession();
 

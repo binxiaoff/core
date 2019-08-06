@@ -1,21 +1,21 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Unilend\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * TemporaryLinksLogin
- *
  * @ORM\Table(name="temporary_links_login", indexes={@ORM\Index(name="fk_temporary_links_login_id_client", columns={"id_client"})})
  * @ORM\Entity(repositoryClass="Unilend\Repository\TemporaryLinksLoginRepository")
  * @ORM\HasLifecycleCallbacks
  */
 class TemporaryLinksLogin
 {
-    const PASSWORD_TOKEN_LIFETIME_SHORT  = 'T1H';
-    const PASSWORD_TOKEN_LIFETIME_MEDIUM = '1D';
-    const PASSWORD_TOKEN_LIFETIME_LONG   = '1W';
+    public const PASSWORD_TOKEN_LIFETIME_SHORT  = 'T1H';
+    public const PASSWORD_TOKEN_LIFETIME_MEDIUM = '1D';
+    public const PASSWORD_TOKEN_LIFETIME_LONG   = '1W';
 
     /**
      * @var string
@@ -66,15 +66,12 @@ class TemporaryLinksLogin
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\Clients")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_client", referencedColumnName="id_client", nullable=false)
+     *     @ORM\JoinColumn(name="id_client", referencedColumnName="id_client", nullable=false)
      * })
      */
     private $idClient;
 
-
     /**
-     * Set idClient
-     *
      * @param Clients $idClient
      *
      * @return TemporaryLinksLogin
@@ -87,8 +84,6 @@ class TemporaryLinksLogin
     }
 
     /**
-     * Get idClient
-     *
      * @return Clients
      */
     public function getIdClient(): Clients
@@ -97,8 +92,6 @@ class TemporaryLinksLogin
     }
 
     /**
-     * Set token
-     *
      * @param string $token
      *
      * @return TemporaryLinksLogin
@@ -111,8 +104,6 @@ class TemporaryLinksLogin
     }
 
     /**
-     * Get token
-     *
      * @return string
      */
     public function getToken(): string
@@ -121,8 +112,6 @@ class TemporaryLinksLogin
     }
 
     /**
-     * Set expires
-     *
      * @param \DateTime $expires
      *
      * @return TemporaryLinksLogin
@@ -135,8 +124,6 @@ class TemporaryLinksLogin
     }
 
     /**
-     * Get expires
-     *
      * @return \DateTime
      */
     public function getExpires(): \DateTime
@@ -145,8 +132,6 @@ class TemporaryLinksLogin
     }
 
     /**
-     * Set accessed
-     *
      * @param \DateTime|null $accessed
      *
      * @return TemporaryLinksLogin
@@ -159,8 +144,6 @@ class TemporaryLinksLogin
     }
 
     /**
-     * Get accessed
-     *
      * @return \DateTime|null
      */
     public function getAccessed(): ?\DateTime
@@ -169,8 +152,6 @@ class TemporaryLinksLogin
     }
 
     /**
-     * Set added
-     *
      * @param \DateTime $added
      *
      * @return TemporaryLinksLogin
@@ -183,8 +164,6 @@ class TemporaryLinksLogin
     }
 
     /**
-     * Get added
-     *
      * @return \DateTime
      */
     public function getAdded(): \DateTime
@@ -193,8 +172,6 @@ class TemporaryLinksLogin
     }
 
     /**
-     * Set updated
-     *
      * @param \DateTime|null $updated
      *
      * @return TemporaryLinksLogin
@@ -207,8 +184,6 @@ class TemporaryLinksLogin
     }
 
     /**
-     * Get updated
-     *
      * @return \DateTime|null
      */
     public function getUpdated(): ?\DateTime
@@ -217,8 +192,6 @@ class TemporaryLinksLogin
     }
 
     /**
-     * Get idLink
-     *
      * @return int
      */
     public function getIdLink(): int
@@ -231,7 +204,7 @@ class TemporaryLinksLogin
      */
     public function setAddedValue(): void
     {
-        if (! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
+        if (!$this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
             $this->added = new \DateTime();
         }
     }

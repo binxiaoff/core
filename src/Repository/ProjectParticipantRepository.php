@@ -6,8 +6,14 @@ namespace Unilend\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
-use Unilend\Entity\{ProjectParticipant, Projects};
+use Unilend\Entity\ProjectParticipant;
 
+/**
+ * @method ProjectParticipant|null find($id, $lockMode = null, $lockVersion = null)
+ * @method ProjectParticipant|null findOneBy(array $criteria, array $orderBy = null)
+ * @method ProjectParticipant[]    findAll()
+ * @method ProjectParticipant[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
+ */
 class ProjectParticipantRepository extends ServiceEntityRepository
 {
     /**

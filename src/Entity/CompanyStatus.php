@@ -1,21 +1,23 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Unilend\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * CompanyStatus
+ * CompanyStatus.
  *
  * @ORM\Table(name="company_status")
  * @ORM\Entity
  */
 class CompanyStatus
 {
-    const STATUS_IN_BONIS               = 'in_bonis';
-    const STATUS_PRECAUTIONARY_PROCESS  = 'precautionary_process';
-    const STATUS_RECEIVERSHIP           = 'receivership';
-    const STATUS_COMPULSORY_LIQUIDATION = 'compulsory_liquidation';
+    public const STATUS_IN_BONIS               = 'in_bonis';
+    public const STATUS_PRECAUTIONARY_PROCESS  = 'precautionary_process';
+    public const STATUS_RECEIVERSHIP           = 'receivership';
+    public const STATUS_COMPULSORY_LIQUIDATION = 'compulsory_liquidation';
 
     /**
      * @var int

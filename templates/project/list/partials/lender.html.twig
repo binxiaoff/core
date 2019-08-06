@@ -197,21 +197,21 @@
                                         <td class="table-projects-item-status">
                                             {% set status = project.status %}
                                             {% set statusLabel = '' %}
-                                            {% if status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_REQUESTED') %}
+                                            {% if status == constant('\\Unilend\\Entity\\ProjectStatusHistory::STATUS_REQUESTED') %}
                                                 {% set statusLabel = 'Dépôt' %}
-                                            {% elseif status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_PUBLISHED') %}
+                                            {% elseif status == constant('\\Unilend\\Entity\\ProjectStatusHistory::STATUS_PUBLISHED') %}
                                                 {% set statusLabel = 'En cours de financement' %}
-                                            {% elseif status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_FUNDED') %}
+                                            {% elseif status == constant('\\Unilend\\Entity\\ProjectStatusHistory::STATUS_FUNDED') %}
                                                 {% set statusLabel = 'Contractualisation' %}
-                                            {% elseif status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_CONTRACTS_REDACTED') %}
+                                            {% elseif status == constant('\\Unilend\\Entity\\ProjectStatusHistory::STATUS_CONTRACTS_REDACTED') %}
                                                 {% set statusLabel = 'Signature' %}
-                                            {% elseif status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_CONTRACTS_SIGNED') %}
+                                            {% elseif status == constant('\\Unilend\\Entity\\ProjectStatusHistory::STATUS_CONTRACTS_SIGNED') %}
                                                 {% set statusLabel = 'En cours de remboursement' %}
-                                            {% elseif status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_FINISHED') %}
+                                            {% elseif status == constant('\\Unilend\\Entity\\ProjectStatusHistory::STATUS_FINISHED') %}
                                                 {% set statusLabel = 'Terminé' %}
-                                            {% elseif status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_LOST') %}
+                                            {% elseif status == constant('\\Unilend\\Entity\\ProjectStatusHistory::STATUS_LOST') %}
                                                 {% set statusLabel = 'Défaut' %}
-                                            {% elseif status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_CANCELLED') %}
+                                            {% elseif status == constant('\\Unilend\\Entity\\ProjectStatusHistory::STATUS_CANCELLED') %}
                                                 {% set statusLabel = 'Annulé' %}
                                             {% endif %}
                                             {{ statusLabel }}
@@ -317,21 +317,21 @@
                                         <td class="table-projects-item-status">
                                             {% set status = project.status %}
                                             {% set statusLabel = '' %}
-                                            {% if status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_REQUESTED') %}
+                                            {% if status == constant('\\Unilend\\Entity\\ProjectStatusHistory::STATUS_REQUESTED') %}
                                                 {% set statusLabel = 'Dépôt' %}
-                                            {% elseif status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_PUBLISHED') %}
+                                            {% elseif status == constant('\\Unilend\\Entity\\ProjectStatusHistory::STATUS_PUBLISHED') %}
                                                 {% set statusLabel = 'En cours de financement' %}
-                                            {% elseif status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_FUNDED') %}
+                                            {% elseif status == constant('\\Unilend\\Entity\\ProjectStatusHistory::STATUS_FUNDED') %}
                                                 {% set statusLabel = 'Contractualisation' %}
-                                            {% elseif status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_CONTRACTS_REDACTED') %}
+                                            {% elseif status == constant('\\Unilend\\Entity\\ProjectStatusHistory::STATUS_CONTRACTS_REDACTED') %}
                                                 {% set statusLabel = 'Signature' %}
-                                            {% elseif status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_CONTRACTS_SIGNED') %}
+                                            {% elseif status == constant('\\Unilend\\Entity\\ProjectStatusHistory::STATUS_CONTRACTS_SIGNED') %}
                                                 {% set statusLabel = 'En cours de remboursement' %}
-                                            {% elseif status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_FINISHED') %}
+                                            {% elseif status == constant('\\Unilend\\Entity\\ProjectStatusHistory::STATUS_FINISHED') %}
                                                 {% set statusLabel = 'Terminé' %}
-                                            {% elseif status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_LOST') %}
+                                            {% elseif status == constant('\\Unilend\\Entity\\ProjectStatusHistory::STATUS_LOST') %}
                                                 {% set statusLabel = 'Défaut' %}
-                                            {% elseif status == constant('\\Unilend\\Entity\\ProjectsStatus::STATUS_CANCELLED') %}
+                                            {% elseif status == constant('\\Unilend\\Entity\\ProjectStatusHistory::STATUS_CANCELLED') %}
                                                 {% set statusLabel = 'Annulé' %}
                                             {% endif %}
                                             {{ statusLabel }}

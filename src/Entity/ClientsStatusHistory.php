@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Unilend\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * ClientsStatusHistory
+ * ClientsStatusHistory.
  *
  * @ORM\Table(name="clients_status_history", indexes={@ORM\Index(name="id_client", columns={"id_client"}), @ORM\Index(name="id_user", columns={"id_user"}), @ORM\Index(name="idx_clients_status_history_id_status", columns={"id_status"})})
  * @ORM\Entity(repositoryClass="Unilend\Repository\ClientsStatusHistoryRepository")
@@ -18,7 +20,7 @@ class ClientsStatusHistory
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\Clients")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_client", referencedColumnName="id_client", nullable=false)
+     *     @ORM\JoinColumn(name="id_client", referencedColumnName="id_client", nullable=false)
      * })
      */
     private $idClient;
@@ -28,7 +30,7 @@ class ClientsStatusHistory
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\ClientsStatus")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_status", referencedColumnName="id", nullable=false)
+     *     @ORM\JoinColumn(name="id_status", referencedColumnName="id", nullable=false)
      * })
      */
     private $idStatus;
@@ -45,7 +47,7 @@ class ClientsStatusHistory
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\Users")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_user", referencedColumnName="id_user", nullable=false)
+     *     @ORM\JoinColumn(name="id_user", referencedColumnName="id_user", nullable=false)
      * })
      */
     private $idUser;
@@ -73,10 +75,8 @@ class ClientsStatusHistory
      */
     private $id;
 
-
-
     /**
-     * Set idClient
+     * Set idClient.
      *
      * @param Clients $idClient
      *
@@ -90,7 +90,7 @@ class ClientsStatusHistory
     }
 
     /**
-     * Get idClient
+     * Get idClient.
      *
      * @return Clients
      */
@@ -100,7 +100,7 @@ class ClientsStatusHistory
     }
 
     /**
-     * Set idStatus
+     * Set idStatus.
      *
      * @param ClientsStatus $idStatus
      *
@@ -114,7 +114,7 @@ class ClientsStatusHistory
     }
 
     /**
-     * Get ClientsStatus
+     * Get ClientsStatus.
      *
      * @return ClientsStatus
      */
@@ -124,7 +124,7 @@ class ClientsStatusHistory
     }
 
     /**
-     * Set content
+     * Set content.
      *
      * @param string|null $content
      *
@@ -138,7 +138,7 @@ class ClientsStatusHistory
     }
 
     /**
-     * Get content
+     * Get content.
      *
      * @return string|null
      */
@@ -148,7 +148,7 @@ class ClientsStatusHistory
     }
 
     /**
-     * Set idUser
+     * Set idUser.
      *
      * @param Users $idUser
      *
@@ -162,7 +162,7 @@ class ClientsStatusHistory
     }
 
     /**
-     * Get idUser
+     * Get idUser.
      *
      * @return Users
      */
@@ -172,7 +172,7 @@ class ClientsStatusHistory
     }
 
     /**
-     * Set numeroRelance
+     * Set numeroRelance.
      *
      * @param int|null $numeroRelance
      *
@@ -186,7 +186,7 @@ class ClientsStatusHistory
     }
 
     /**
-     * Get numeroRelance
+     * Get numeroRelance.
      *
      * @return int|null
      */
@@ -196,7 +196,7 @@ class ClientsStatusHistory
     }
 
     /**
-     * Set added
+     * Set added.
      *
      * @param \DateTime $added
      *
@@ -210,7 +210,7 @@ class ClientsStatusHistory
     }
 
     /**
-     * Get added
+     * Get added.
      *
      * @return \DateTime
      */
@@ -220,7 +220,7 @@ class ClientsStatusHistory
     }
 
     /**
-     * Get id
+     * Get id.
      *
      * @return int
      */
@@ -234,7 +234,7 @@ class ClientsStatusHistory
      */
     public function setAddedValue(): void
     {
-        if (! $this->added instanceof \DateTime || 1 > $this->added->getTimestamp()) {
+        if (!$this->added instanceof \DateTime || 1 > $this->added->getTimestamp()) {
             $this->added = new \DateTime();
         }
     }

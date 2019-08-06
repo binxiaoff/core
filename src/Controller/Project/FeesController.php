@@ -10,7 +10,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\{JsonResponse, RedirectResponse, Request};
 use Symfony\Component\Routing\Annotation\Route;
 use Unilend\Entity\{Embeddable\Fee, Project, ProjectFee};
-use Unilend\Repository\{FeeTypeRepository, ProjectRepository};
+use Unilend\Repository\ProjectRepository;
 
 class FeesController extends AbstractController
 {
@@ -19,7 +19,6 @@ class FeesController extends AbstractController
      *
      * @param Project           $project
      * @param Request           $request
-     * @param FeeTypeRepository $feeTypeRepository
      * @param ProjectRepository $projectRepository
      *
      * @throws ORMException
@@ -27,7 +26,7 @@ class FeesController extends AbstractController
      *
      * @return JsonResponse
      */
-    public function addProjectFees(Project $project, Request $request, FeeTypeRepository $feeTypeRepository, ProjectRepository $projectRepository): JsonResponse
+    public function addProjectFees(Project $project, Request $request, ProjectRepository $projectRepository): JsonResponse
     {
         $projectForm = $request->request->get('project_type');
         $projectFees = empty($projectForm['projectFees']) ? [] : $projectForm['projectFees'];

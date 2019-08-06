@@ -1,12 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Unilend\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * Insee
- *
  * @ORM\Table(name="insee", indexes={@ORM\Index(name="NCCENR", columns={"NCCENR"}), @ORM\Index(name="NCC", columns={"NCC"})})
  * @ORM\Entity
  */
@@ -105,12 +105,8 @@ class Insee
      */
     private $idInsee;
 
-
-
     /**
-     * Set cdc
-     *
-     * @param integer $cdc
+     * @param int $cdc
      *
      * @return Insee
      */
@@ -122,9 +118,7 @@ class Insee
     }
 
     /**
-     * Get cdc
-     *
-     * @return integer
+     * @return int
      */
     public function getCdc()
     {
@@ -132,9 +126,7 @@ class Insee
     }
 
     /**
-     * Set cheflieu
-     *
-     * @param integer $cheflieu
+     * @param int $cheflieu
      *
      * @return Insee
      */
@@ -146,9 +138,7 @@ class Insee
     }
 
     /**
-     * Get cheflieu
-     *
-     * @return integer
+     * @return int
      */
     public function getCheflieu()
     {
@@ -156,9 +146,7 @@ class Insee
     }
 
     /**
-     * Set reg
-     *
-     * @param integer $reg
+     * @param int $reg
      *
      * @return Insee
      */
@@ -170,9 +158,7 @@ class Insee
     }
 
     /**
-     * Get reg
-     *
-     * @return integer
+     * @return int
      */
     public function getReg()
     {
@@ -180,9 +166,7 @@ class Insee
     }
 
     /**
-     * Set dep
-     *
-     * @param integer $dep
+     * @param int $dep
      *
      * @return Insee
      */
@@ -194,9 +178,7 @@ class Insee
     }
 
     /**
-     * Get dep
-     *
-     * @return integer
+     * @return int
      */
     public function getDep()
     {
@@ -204,9 +186,7 @@ class Insee
     }
 
     /**
-     * Set com
-     *
-     * @param integer $com
+     * @param int $com
      *
      * @return Insee
      */
@@ -218,9 +198,7 @@ class Insee
     }
 
     /**
-     * Get com
-     *
-     * @return integer
+     * @return int
      */
     public function getCom()
     {
@@ -228,9 +206,7 @@ class Insee
     }
 
     /**
-     * Set ar
-     *
-     * @param integer $ar
+     * @param int $ar
      *
      * @return Insee
      */
@@ -242,9 +218,7 @@ class Insee
     }
 
     /**
-     * Get ar
-     *
-     * @return integer
+     * @return int
      */
     public function getAr()
     {
@@ -252,9 +226,7 @@ class Insee
     }
 
     /**
-     * Set ct
-     *
-     * @param integer $ct
+     * @param int $ct
      *
      * @return Insee
      */
@@ -266,9 +238,7 @@ class Insee
     }
 
     /**
-     * Get ct
-     *
-     * @return integer
+     * @return int
      */
     public function getCt()
     {
@@ -276,9 +246,7 @@ class Insee
     }
 
     /**
-     * Set tncc
-     *
-     * @param integer $tncc
+     * @param int $tncc
      *
      * @return Insee
      */
@@ -290,9 +258,7 @@ class Insee
     }
 
     /**
-     * Get tncc
-     *
-     * @return integer
+     * @return int
      */
     public function getTncc()
     {
@@ -300,8 +266,6 @@ class Insee
     }
 
     /**
-     * Set artmaj
-     *
      * @param string $artmaj
      *
      * @return Insee
@@ -314,8 +278,6 @@ class Insee
     }
 
     /**
-     * Get artmaj
-     *
      * @return string
      */
     public function getArtmaj()
@@ -324,8 +286,6 @@ class Insee
     }
 
     /**
-     * Set ncc
-     *
      * @param string $ncc
      *
      * @return Insee
@@ -338,8 +298,6 @@ class Insee
     }
 
     /**
-     * Get ncc
-     *
      * @return string
      */
     public function getNcc()
@@ -348,8 +306,6 @@ class Insee
     }
 
     /**
-     * Set artmin
-     *
      * @param string $artmin
      *
      * @return Insee
@@ -362,8 +318,6 @@ class Insee
     }
 
     /**
-     * Get artmin
-     *
      * @return string
      */
     public function getArtmin()
@@ -372,8 +326,6 @@ class Insee
     }
 
     /**
-     * Set nccenr
-     *
      * @param string $nccenr
      *
      * @return Insee
@@ -386,8 +338,6 @@ class Insee
     }
 
     /**
-     * Get nccenr
-     *
      * @return string
      */
     public function getNccenr()
@@ -396,9 +346,7 @@ class Insee
     }
 
     /**
-     * Get idInsee
-     *
-     * @return integer
+     * @return int
      */
     public function getIdInsee()
     {

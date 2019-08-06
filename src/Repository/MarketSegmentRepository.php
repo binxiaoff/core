@@ -8,6 +8,12 @@ use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Unilend\Entity\MarketSegment;
 
+/**
+ * @method MarketSegment|null find($id, $lockMode = null, $lockVersion = null)
+ * @method MarketSegment|null findOneBy(array $criteria, array $orderBy = null)
+ * @method MarketSegment[]    findAll()
+ * @method MarketSegment[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
+ */
 class MarketSegmentRepository extends ServiceEntityRepository
 {
     /**

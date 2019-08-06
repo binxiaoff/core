@@ -1,19 +1,19 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Unilend\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * Redirections
- *
  * @ORM\Table(name="redirections")
  * @ORM\Entity
  */
 class Redirections
 {
-    const STATUS_DISABLED = 0;
-    const STATUS_ENABLED  = 1;
+    public const STATUS_DISABLED = 0;
+    public const STATUS_ENABLED  = 1;
     /**
      * @var string
      *
@@ -68,8 +68,6 @@ class Redirections
     private $fromSlug;
 
     /**
-     * Set toSlug
-     *
      * @param string $toSlug
      *
      * @return Redirections
@@ -82,8 +80,6 @@ class Redirections
     }
 
     /**
-     * Get toSlug
-     *
      * @return string
      */
     public function getToSlug()
@@ -92,9 +88,7 @@ class Redirections
     }
 
     /**
-     * Set type
-     *
-     * @param integer $type
+     * @param int $type
      *
      * @return Redirections
      */
@@ -106,9 +100,7 @@ class Redirections
     }
 
     /**
-     * Get type
-     *
-     * @return integer
+     * @return int
      */
     public function getType()
     {
@@ -116,9 +108,7 @@ class Redirections
     }
 
     /**
-     * Set status
-     *
-     * @param integer $status
+     * @param int $status
      *
      * @return Redirections
      */
@@ -130,9 +120,7 @@ class Redirections
     }
 
     /**
-     * Get status
-     *
-     * @return integer
+     * @return int
      */
     public function getStatus()
     {
@@ -140,8 +128,6 @@ class Redirections
     }
 
     /**
-     * Set added
-     *
      * @param \DateTime $added
      *
      * @return Redirections
@@ -154,8 +140,6 @@ class Redirections
     }
 
     /**
-     * Get added
-     *
      * @return \DateTime
      */
     public function getAdded()
@@ -164,8 +148,6 @@ class Redirections
     }
 
     /**
-     * Set updated
-     *
      * @param \DateTime $updated
      *
      * @return Redirections
@@ -178,8 +160,6 @@ class Redirections
     }
 
     /**
-     * Get updated
-     *
      * @return \DateTime
      */
     public function getUpdated()
@@ -188,8 +168,6 @@ class Redirections
     }
 
     /**
-     * Set idLangue
-     *
      * @param string $idLangue
      *
      * @return Redirections
@@ -202,8 +180,6 @@ class Redirections
     }
 
     /**
-     * Get idLangue
-     *
      * @return string
      */
     public function getIdLangue()
@@ -212,8 +188,6 @@ class Redirections
     }
 
     /**
-     * Set fromSlug
-     *
      * @param string $fromSlug
      *
      * @return Redirections
@@ -226,8 +200,6 @@ class Redirections
     }
 
     /**
-     * Get fromSlug
-     *
      * @return string
      */
     public function getFromSlug()

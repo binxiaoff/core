@@ -1,11 +1,21 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Unilend\Repository;
 
+use DateTime;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
+use Doctrine\ORM\NonUniqueResultException;
 use Unilend\Entity\LoginConnectionAdmin;
 
+/**
+ * @method LoginConnectionAdmin|null find($id, $lockMode = null, $lockVersion = null)
+ * @method LoginConnectionAdmin|null findOneBy(array $criteria, array $orderBy = null)
+ * @method LoginConnectionAdmin[]    findAll()
+ * @method LoginConnectionAdmin[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
+ */
 class LoginConnectionAdminRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
@@ -14,12 +24,14 @@ class LoginConnectionAdminRepository extends ServiceEntityRepository
     }
 
     /**
-     * @param string    $ip
-     * @param \DateTime $start
+     * @param string   $ip
+     * @param DateTime $start
+     *
+     * @throws NonUniqueResultException
      *
      * @return int
      */
-    public function countFailedAttemptsSince($ip, \DateTime $start)
+    public function countFailedAttemptsSince($ip, DateTime $start): int
     {
         $queryBuilder = $this->createQueryBuilder('log');
         $queryBuilder

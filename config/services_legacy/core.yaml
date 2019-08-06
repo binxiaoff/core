@@ -1,9 +1,0 @@
-# remove these if/when you are not fetching these directly
-# from the container via $container->get()
-services:
-    _defaults:
-        public: true
-
-    # aliases so that the old service ids can still be accessed
-    unilend.service_product.product_manager: '@Unilend\Service\Product\ProductManager'
-    unilend.service_product_contract.contract_manager: '@Unilend\Service\Product\Contract\ContractManager'

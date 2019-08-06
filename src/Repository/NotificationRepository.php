@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Unilend\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
@@ -30,7 +32,7 @@ class NotificationRepository extends ServiceEntityRepository
      * @throws ORMException
      * @throws OptimisticLockException
      */
-    public function save(Notification $notification)
+    public function save(Notification $notification): void
     {
         $this->getEntityManager()->persist($notification);
         $this->getEntityManager()->flush();
@@ -41,7 +43,7 @@ class NotificationRepository extends ServiceEntityRepository
      *
      * @throws ORMException
      */
-    public function persist(Notification $notification)
+    public function persist(Notification $notification): void
     {
         $this->getEntityManager()->persist($notification);
     }
@@ -50,7 +52,7 @@ class NotificationRepository extends ServiceEntityRepository
      * @throws ORMException
      * @throws OptimisticLockException
      */
-    public function flush()
+    public function flush(): void
     {
         $this->getEntityManager()->flush();
     }

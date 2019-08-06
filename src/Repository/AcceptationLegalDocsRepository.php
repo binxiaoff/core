@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Unilend\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;

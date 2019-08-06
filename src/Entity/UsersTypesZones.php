@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Unilend\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * UsersTypesZones
+ * UsersTypesZones.
  *
  * @ORM\Table(name="users_types_zones", indexes={@ORM\Index(name="id_user_type", columns={"id_user_type"}), @ORM\Index(name="id_zone", columns={"id_zone"}), @ORM\Index(name="id_user_type", columns={"id_user_type"})})
  * @ORM\Entity
@@ -17,7 +19,7 @@ class UsersTypesZones
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\UsersTypes")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_user_type", referencedColumnName="id_user_type", nullable=false)
+     *     @ORM\JoinColumn(name="id_user_type", referencedColumnName="id_user_type", nullable=false)
      * })
      */
     private $idUserType;
@@ -27,7 +29,7 @@ class UsersTypesZones
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\Zones")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_zone", referencedColumnName="id_zone", nullable=false)
+     *     @ORM\JoinColumn(name="id_zone", referencedColumnName="id_zone", nullable=false)
      * })
      */
     private $idZone;
@@ -55,9 +57,8 @@ class UsersTypesZones
      */
     private $idUserTypeZone;
 
-
     /**
-     * Set idUserType
+     * Set idUserType.
      *
      * @param UsersTypes $idUserType
      *
@@ -71,7 +72,7 @@ class UsersTypesZones
     }
 
     /**
-     * Get idUserType
+     * Get idUserType.
      *
      * @return UsersTypes
      */
@@ -81,7 +82,7 @@ class UsersTypesZones
     }
 
     /**
-     * Set idZone
+     * Set idZone.
      *
      * @param Zones $idZone
      *
@@ -95,7 +96,7 @@ class UsersTypesZones
     }
 
     /**
-     * Get idZone
+     * Get idZone.
      *
      * @return Zones
      */
@@ -105,7 +106,7 @@ class UsersTypesZones
     }
 
     /**
-     * Set added
+     * Set added.
      *
      * @param \DateTime $added
      *
@@ -119,7 +120,7 @@ class UsersTypesZones
     }
 
     /**
-     * Get added
+     * Get added.
      *
      * @return \DateTime
      */
@@ -129,7 +130,7 @@ class UsersTypesZones
     }
 
     /**
-     * Set updated
+     * Set updated.
      *
      * @param \DateTime $updated
      *
@@ -143,7 +144,7 @@ class UsersTypesZones
     }
 
     /**
-     * Get updated
+     * Get updated.
      *
      * @return \DateTime
      */
@@ -153,9 +154,9 @@ class UsersTypesZones
     }
 
     /**
-     * Get idUserTypeZone
+     * Get idUserTypeZone.
      *
-     * @return integer
+     * @return int
      */
     public function getIdUserTypeZone()
     {

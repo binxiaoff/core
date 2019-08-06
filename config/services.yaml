@@ -64,9 +64,6 @@ services:
     Unilend\Service\WebServiceClient\InseeManager:
         $client: '@eight_points_guzzle.client.insee'
 
-    Unilend\Service\LocationManager:
-        $mapboxToken: '%mapbox.token%'
-
     Unilend\Service\Attachment\AttachmentManager:
         $uploadRootDirectory: '%directory.protected%attachments'
 
