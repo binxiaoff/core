@@ -7,8 +7,6 @@ namespace Unilend\Entity;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * TreeElements.
- *
  * @ORM\Table(name="tree_elements", uniqueConstraints={@ORM\UniqueConstraint(name="id_tree_2", columns={"id_tree", "id_element", "id_langue"})}, indexes={@ORM\Index(name="id_element", columns={"id_element"}), @ORM\Index(name="id_tree_3", columns={"id_tree"})})
  * @ORM\Entity
  */
@@ -80,8 +78,6 @@ class TreeElements
     private $id;
 
     /**
-     * Set idTree.
-     *
      * @param int $idTree
      *
      * @return TreeElements
@@ -94,8 +90,6 @@ class TreeElements
     }
 
     /**
-     * Get idTree.
-     *
      * @return int
      */
     public function getIdTree()
@@ -104,8 +98,6 @@ class TreeElements
     }
 
     /**
-     * Set idElement.
-     *
      * @param int $idElement
      *
      * @return TreeElements
@@ -118,8 +110,6 @@ class TreeElements
     }
 
     /**
-     * Get idElement.
-     *
      * @return int
      */
     public function getIdElement()
@@ -128,8 +118,6 @@ class TreeElements
     }
 
     /**
-     * Set idLangue.
-     *
      * @param string $idLangue
      *
      * @return TreeElements
@@ -142,8 +130,6 @@ class TreeElements
     }
 
     /**
-     * Get idLangue.
-     *
      * @return string
      */
     public function getIdLangue()
@@ -152,8 +138,6 @@ class TreeElements
     }
 
     /**
-     * Set value.
-     *
      * @param string $value
      *
      * @return TreeElements
@@ -166,8 +150,6 @@ class TreeElements
     }
 
     /**
-     * Get value.
-     *
      * @return string
      */
     public function getValue()
@@ -176,8 +158,6 @@ class TreeElements
     }
 
     /**
-     * Set complement.
-     *
      * @param string $complement
      *
      * @return TreeElements
@@ -190,8 +170,6 @@ class TreeElements
     }
 
     /**
-     * Get complement.
-     *
      * @return string
      */
     public function getComplement()
@@ -200,8 +178,6 @@ class TreeElements
     }
 
     /**
-     * Set status.
-     *
      * @param int $status
      *
      * @return TreeElements
@@ -214,8 +190,6 @@ class TreeElements
     }
 
     /**
-     * Get status.
-     *
      * @return int
      */
     public function getStatus()
@@ -224,8 +198,6 @@ class TreeElements
     }
 
     /**
-     * Set added.
-     *
      * @param \DateTime $added
      *
      * @return TreeElements
@@ -238,8 +210,6 @@ class TreeElements
     }
 
     /**
-     * Get added.
-     *
      * @return \DateTime
      */
     public function getAdded()
@@ -248,8 +218,6 @@ class TreeElements
     }
 
     /**
-     * Set updated.
-     *
      * @param \DateTime $updated
      *
      * @return TreeElements
@@ -262,8 +230,6 @@ class TreeElements
     }
 
     /**
-     * Get updated.
-     *
      * @return \DateTime
      */
     public function getUpdated()
@@ -272,8 +238,6 @@ class TreeElements
     }
 
     /**
-     * Get id.
-     *
      * @return int
      */
     public function getId()

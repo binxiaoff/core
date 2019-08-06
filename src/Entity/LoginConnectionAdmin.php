@@ -7,8 +7,6 @@ namespace Unilend\Entity;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * LoginConnectionAdmin.
- *
  * @ORM\Table(name="login_connection_admin", indexes={@ORM\Index(name="id_user", columns={"id_user"})})
  * @ORM\Entity(repositoryClass="Unilend\Repository\LoginConnectionAdminRepository")
  * @ORM\HasLifecycleCallbacks
@@ -74,8 +72,6 @@ class LoginConnectionAdmin
     private $idLoginConnectionAdmin;
 
     /**
-     * Set idUser.
-     *
      * @param int $idUser
      *
      * @return LoginConnectionAdmin
@@ -88,8 +84,6 @@ class LoginConnectionAdmin
     }
 
     /**
-     * Get idUser.
-     *
      * @return int
      */
     public function getIdUser()
@@ -98,8 +92,6 @@ class LoginConnectionAdmin
     }
 
     /**
-     * Set nomUser.
-     *
      * @param string $nomUser
      *
      * @return LoginConnectionAdmin
@@ -112,8 +104,6 @@ class LoginConnectionAdmin
     }
 
     /**
-     * Get nomUser.
-     *
      * @return string
      */
     public function getNomUser()
@@ -122,8 +112,6 @@ class LoginConnectionAdmin
     }
 
     /**
-     * Set email.
-     *
      * @param string $email
      *
      * @return LoginConnectionAdmin
@@ -136,8 +124,6 @@ class LoginConnectionAdmin
     }
 
     /**
-     * Get email.
-     *
      * @return string
      */
     public function getEmail()
@@ -146,8 +132,6 @@ class LoginConnectionAdmin
     }
 
     /**
-     * Set dateConnexion.
-     *
      * @param \DateTime $dateConnexion
      *
      * @return LoginConnectionAdmin
@@ -160,8 +144,6 @@ class LoginConnectionAdmin
     }
 
     /**
-     * Get dateConnexion.
-     *
      * @return \DateTime
      */
     public function getDateConnexion()
@@ -170,8 +152,6 @@ class LoginConnectionAdmin
     }
 
     /**
-     * Set ip.
-     *
      * @param string $ip
      *
      * @return LoginConnectionAdmin
@@ -184,8 +164,6 @@ class LoginConnectionAdmin
     }
 
     /**
-     * Get ip.
-     *
      * @return string
      */
     public function getIp()
@@ -194,8 +172,6 @@ class LoginConnectionAdmin
     }
 
     /**
-     * Set updated.
-     *
      * @param \DateTime $updated
      *
      * @return LoginConnectionAdmin
@@ -208,8 +184,6 @@ class LoginConnectionAdmin
     }
 
     /**
-     * Get updated.
-     *
      * @return \DateTime
      */
     public function getUpdated()
@@ -218,8 +192,6 @@ class LoginConnectionAdmin
     }
 
     /**
-     * Set added.
-     *
      * @param \DateTime $added
      *
      * @return LoginConnectionAdmin
@@ -232,8 +204,6 @@ class LoginConnectionAdmin
     }
 
     /**
-     * Get added.
-     *
      * @return \DateTime
      */
     public function getAdded()
@@ -242,8 +212,6 @@ class LoginConnectionAdmin
     }
 
     /**
-     * Get idLoginConnectionAdmin.
-     *
      * @return int
      */
     public function getIdLoginConnectionAdmin()

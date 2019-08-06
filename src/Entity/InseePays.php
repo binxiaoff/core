@@ -7,8 +7,6 @@ namespace Unilend\Entity;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * InseePays.
- *
  * @ORM\Table(name="insee_pays", indexes={@ORM\Index(name="COG", columns={"COG"}), @ORM\Index(name="LIBCOG", columns={"LIBCOG"}), @ORM\Index(name="codeiso2", columns={"CODEISO2"})})
  * @ORM\Entity(repositoryClass="Unilend\Repository\InseePaysRepository")
  */
@@ -87,8 +85,6 @@ class InseePays
     private $idInseePays;
 
     /**
-     * Set codeiso2.
-     *
      * @param string $codeiso2
      *
      * @return InseePays
@@ -101,8 +97,6 @@ class InseePays
     }
 
     /**
-     * Get codeiso2.
-     *
      * @return string
      */
     public function getCodeiso2()
@@ -111,8 +105,6 @@ class InseePays
     }
 
     /**
-     * Set cog.
-     *
      * @param string $cog
      *
      * @return InseePays
@@ -125,8 +117,6 @@ class InseePays
     }
 
     /**
-     * Get cog.
-     *
      * @return string
      */
     public function getCog()
@@ -135,8 +125,6 @@ class InseePays
     }
 
     /**
-     * Set actual.
-     *
      * @param int $actual
      *
      * @return InseePays
@@ -149,8 +137,6 @@ class InseePays
     }
 
     /**
-     * Get actual.
-     *
      * @return int
      */
     public function getActual()
@@ -159,8 +145,6 @@ class InseePays
     }
 
     /**
-     * Set capay.
-     *
      * @param string $capay
      *
      * @return InseePays
@@ -173,8 +157,6 @@ class InseePays
     }
 
     /**
-     * Get capay.
-     *
      * @return string
      */
     public function getCapay()
@@ -183,8 +165,6 @@ class InseePays
     }
 
     /**
-     * Set crpay.
-     *
      * @param int $crpay
      *
      * @return InseePays
@@ -197,8 +177,6 @@ class InseePays
     }
 
     /**
-     * Get crpay.
-     *
      * @return int
      */
     public function getCrpay()
@@ -207,8 +185,6 @@ class InseePays
     }
 
     /**
-     * Set ani.
-     *
      * @param int $ani
      *
      * @return InseePays
@@ -221,8 +197,6 @@ class InseePays
     }
 
     /**
-     * Get ani.
-     *
      * @return int
      */
     public function getAni()
@@ -231,8 +205,6 @@ class InseePays
     }
 
     /**
-     * Set libcog.
-     *
      * @param string $libcog
      *
      * @return InseePays
@@ -245,8 +217,6 @@ class InseePays
     }
 
     /**
-     * Get libcog.
-     *
      * @return string
      */
     public function getLibcog()
@@ -255,8 +225,6 @@ class InseePays
     }
 
     /**
-     * Set libenr.
-     *
      * @param string $libenr
      *
      * @return InseePays
@@ -269,8 +237,6 @@ class InseePays
     }
 
     /**
-     * Get libenr.
-     *
      * @return string
      */
     public function getLibenr()
@@ -279,8 +245,6 @@ class InseePays
     }
 
     /**
-     * Set ancnom.
-     *
      * @param string $ancnom
      *
      * @return InseePays
@@ -293,8 +257,6 @@ class InseePays
     }
 
     /**
-     * Get ancnom.
-     *
      * @return string
      */
     public function getAncnom()
@@ -303,8 +265,6 @@ class InseePays
     }
 
     /**
-     * Get idInseePays.
-     *
      * @return int
      */
     public function getIdInseePays()

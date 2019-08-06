@@ -16,8 +16,7 @@ use PhpOffice\PhpSpreadsheet\Writer\Pdf\Mpdf as PhpSpreadsheetMpdf;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Filesystem\{Exception\FileNotFoundException, Filesystem};
 use Symfony\Component\HttpFoundation\File\UploadedFile;
-use Unilend\Entity\{Attachment, AttachmentType, Clients, Companies, ProjectAttachment, Transfer,
-    TransferAttachment};
+use Unilend\Entity\{Attachment, AttachmentType, Clients, Companies, ProjectAttachment};
 use Unilend\Service\User\RealUserFinder;
 use URLify;
 
@@ -167,35 +166,6 @@ class AttachmentManager
     }
 
     /**
-     * @param Attachment $attachment
-     * @param Transfer   $transfer
-     *
-     * @return TransferAttachment
-     */
-    public function attachToTransfer(Attachment $attachment, Transfer $transfer)
-    {
-        $transferAttachmentRepository = $this->entityManager->getRepository(TransferAttachment::class);
-        $attached                     = $transferAttachmentRepository->getAttachedAttachments($transfer, $attachment->getType());
-
-        foreach ($attached as $attachmentToDetach) {
-            $this->entityManager->remove($attachmentToDetach);
-            $this->entityManager->flush($attachmentToDetach);
-        }
-
-        $transferAttachment = $this->entityManager->getRepository(TransferAttachment::class)->findOneBy(['idAttachment' => $attachment, 'idTransfer' => $transfer]);
-        if (null === $transferAttachment) {
-            $transferAttachment = new TransferAttachment();
-            $transferAttachment->setTransfer($transfer)
-                ->setAttachment($attachment)
-            ;
-            $this->entityManager->persist($transferAttachment);
-            $this->entityManager->flush($transferAttachment);
-        }
-
-        return $transferAttachment;
-    }
-
-    /**
      * @param bool $includeOthers
      *
      * @return AttachmentType[]
@@ -258,17 +228,7 @@ class AttachmentManager
     {
         $attachedAttachments = $this->entityManager->getRepository(ProjectAttachment::class)->findBy(['attachment' => $attachment]);
 
-        if (count($attachedAttachments) > 0) {
-            return false;
-        }
-
-        $attachedAttachments = $this->entityManager->getRepository(TransferAttachment::class)->findBy(['idAttachment' => $attachment]);
-
-        if (count($attachedAttachments) > 0) {
-            return false;
-        }
-
-        return true;
+        return 0 === count($attachedAttachments);
     }
 
     /**

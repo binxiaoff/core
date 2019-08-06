@@ -14,8 +14,6 @@ class Settings
 {
     use TimestampableTrait;
 
-    public const TYPE_AUTOBID_GLOBAL_SWITCH = 'Auto-bid global switch';
-    public const TYPE_AUTOBID_STEP          = 'Auto-bid step';
     public const TYPE_SERVICE_TERMS_PAGE_ID = 'SERVICE_TERMS_PAGE_ID';
 
     /**

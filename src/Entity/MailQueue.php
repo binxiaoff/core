@@ -7,8 +7,6 @@ namespace Unilend\Entity;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * MailQueue.
- *
  * @ORM\Table(name="mail_queue", indexes={
  *     @ORM\Index(name="status", columns={"status"}),
  *     @ORM\Index(name="recipient", columns={"recipient", "id_mail_template"}),
@@ -132,8 +130,6 @@ class MailQueue
     private $idQueue;
 
     /**
-     * Set idMailTemplate.
-     *
      * @param MailTemplates $idMailTemplate
      *
      * @return MailQueue
@@ -146,8 +142,6 @@ class MailQueue
     }
 
     /**
-     * Get idMailTemplate.
-     *
      * @return MailTemplates
      */
     public function getIdMailTemplate()
@@ -156,8 +150,6 @@ class MailQueue
     }
 
     /**
-     * Set serializedVariables.
-     *
      * @param string $serializedVariables
      *
      * @return MailQueue
@@ -170,8 +162,6 @@ class MailQueue
     }
 
     /**
-     * Get serializedVariables.
-     *
      * @return string
      */
     public function getSerializedVariables()
@@ -180,8 +170,6 @@ class MailQueue
     }
 
     /**
-     * Set attachments.
-     *
      * @param string $attachments
      *
      * @return MailQueue
@@ -194,8 +182,6 @@ class MailQueue
     }
 
     /**
-     * Get attachments.
-     *
      * @return string
      */
     public function getAttachments()
@@ -204,8 +190,6 @@ class MailQueue
     }
 
     /**
-     * Set recipient.
-     *
      * @param string $recipient
      *
      * @return MailQueue
@@ -218,8 +202,6 @@ class MailQueue
     }
 
     /**
-     * Get recipient.
-     *
      * @return string
      */
     public function getRecipient()
@@ -228,8 +210,6 @@ class MailQueue
     }
 
     /**
-     * Set replyTo.
-     *
      * @param string $replyTo
      *
      * @return MailQueue
@@ -242,8 +222,6 @@ class MailQueue
     }
 
     /**
-     * Get replyTo.
-     *
      * @return string
      */
     public function getReplyTo()
@@ -252,8 +230,6 @@ class MailQueue
     }
 
     /**
-     * Set idClient.
-     *
      * @param int $idClient
      *
      * @return MailQueue
@@ -266,8 +242,6 @@ class MailQueue
     }
 
     /**
-     * Get idClient.
-     *
      * @return int
      */
     public function getIdClient()
@@ -276,8 +250,6 @@ class MailQueue
     }
 
     /**
-     * Set idMessageMailjet.
-     *
      * @param int $idMessageMailjet
      *
      * @return MailQueue
@@ -290,8 +262,6 @@ class MailQueue
     }
 
     /**
-     * Get idMessageMailjet.
-     *
      * @return int
      */
     public function getIdMessageMailjet()
@@ -300,8 +270,6 @@ class MailQueue
     }
 
     /**
-     * Set errorMailjet.
-     *
      * @param string $errorMailjet
      *
      * @return MailQueue
@@ -314,8 +282,6 @@ class MailQueue
     }
 
     /**
-     * Get errorMailjet.
-     *
      * @return string
      */
     public function getErrorMailjet()
@@ -324,8 +290,6 @@ class MailQueue
     }
 
     /**
-     * Set status.
-     *
      * @param int $status
      *
      * @return MailQueue
@@ -338,8 +302,6 @@ class MailQueue
     }
 
     /**
-     * Get status.
-     *
      * @return int
      */
     public function getStatus()
@@ -348,8 +310,6 @@ class MailQueue
     }
 
     /**
-     * Set toSendAt.
-     *
      * @param \DateTime $toSendAt
      *
      * @return MailQueue
@@ -362,8 +322,6 @@ class MailQueue
     }
 
     /**
-     * Get toSendAt.
-     *
      * @return \DateTime
      */
     public function getToSendAt()
@@ -372,8 +330,6 @@ class MailQueue
     }
 
     /**
-     * Set sentAt.
-     *
      * @param \DateTime $sentAt
      *
      * @return MailQueue
@@ -386,8 +342,6 @@ class MailQueue
     }
 
     /**
-     * Get sentAt.
-     *
      * @return \DateTime
      */
     public function getSentAt()
@@ -396,8 +350,6 @@ class MailQueue
     }
 
     /**
-     * Set updated.
-     *
      * @param \DateTime $updated
      *
      * @return MailQueue
@@ -410,8 +362,6 @@ class MailQueue
     }
 
     /**
-     * Get updated.
-     *
      * @return \DateTime
      */
     public function getUpdated()
@@ -420,8 +370,6 @@ class MailQueue
     }
 
     /**
-     * Set added.
-     *
      * @param \DateTime $added
      *
      * @return MailQueue
@@ -434,8 +382,6 @@ class MailQueue
     }
 
     /**
-     * Get added.
-     *
      * @return \DateTime
      */
     public function getAdded()
@@ -444,8 +390,6 @@ class MailQueue
     }
 
     /**
-     * Get idQueue.
-     *
      * @return int
      */
     public function getIdQueue()

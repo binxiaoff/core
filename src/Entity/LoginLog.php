@@ -7,8 +7,6 @@ namespace Unilend\Entity;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * LoginLog.
- *
  * @ORM\Table(name="login_log", indexes={@ORM\Index(name="pseudo", columns={"pseudo"}), @ORM\Index(name="idx_login_log_IP", columns={"IP"})})
  * @ORM\Entity(repositoryClass="Unilend\Repository\LoginLogRepository")
  * @ORM\HasLifecycleCallbacks
@@ -53,8 +51,6 @@ class LoginLog
     private $idLogLogin;
 
     /**
-     * Set pseudo.
-     *
      * @param string $pseudo
      *
      * @return LoginLog
@@ -67,8 +63,6 @@ class LoginLog
     }
 
     /**
-     * Get pseudo.
-     *
      * @return string
      */
     public function getPseudo(): string
@@ -77,8 +71,6 @@ class LoginLog
     }
 
     /**
-     * Set ip.
-     *
      * @param string $ip
      *
      * @return LoginLog
@@ -91,8 +83,6 @@ class LoginLog
     }
 
     /**
-     * Get ip.
-     *
      * @return string
      */
     public function getIp(): string
@@ -101,8 +91,6 @@ class LoginLog
     }
 
     /**
-     * Set retour.
-     *
      * @param string $retour
      *
      * @return LoginLog
@@ -115,8 +103,6 @@ class LoginLog
     }
 
     /**
-     * Get retour.
-     *
      * @return string
      */
     public function getRetour(): string
@@ -125,8 +111,6 @@ class LoginLog
     }
 
     /**
-     * Set added.
-     *
      * @param \DateTime $added
      *
      * @return LoginLog
@@ -139,8 +123,6 @@ class LoginLog
     }
 
     /**
-     * Get added.
-     *
      * @return \DateTime
      */
     public function getAdded(): \DateTime
@@ -149,8 +131,6 @@ class LoginLog
     }
 
     /**
-     * Get idLogLogin.
-     *
      * @return int
      */
     public function getIdLogLogin(): int

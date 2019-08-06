@@ -7,8 +7,6 @@ namespace Unilend\Entity;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * BlocsElements.
- *
  * @ORM\Table(name="blocs_elements", uniqueConstraints={@ORM\UniqueConstraint(name="id_bloc", columns={"id_bloc", "id_element", "id_langue"})}, indexes={@ORM\Index(name="id_bloc_2", columns={"id_bloc"}), @ORM\Index(name="id_element", columns={"id_element"})})
  * @ORM\Entity
  */
@@ -80,8 +78,6 @@ class BlocsElements
     private $id;
 
     /**
-     * Set idBloc.
-     *
      * @param int $idBloc
      *
      * @return BlocsElements
@@ -94,8 +90,6 @@ class BlocsElements
     }
 
     /**
-     * Get idBloc.
-     *
      * @return int
      */
     public function getIdBloc()
@@ -104,8 +98,6 @@ class BlocsElements
     }
 
     /**
-     * Set idElement.
-     *
      * @param int $idElement
      *
      * @return BlocsElements
@@ -118,8 +110,6 @@ class BlocsElements
     }
 
     /**
-     * Get idElement.
-     *
      * @return int
      */
     public function getIdElement()
@@ -128,8 +118,6 @@ class BlocsElements
     }
 
     /**
-     * Set idLangue.
-     *
      * @param string $idLangue
      *
      * @return BlocsElements
@@ -142,8 +130,6 @@ class BlocsElements
     }
 
     /**
-     * Get idLangue.
-     *
      * @return string
      */
     public function getIdLangue()
@@ -152,8 +138,6 @@ class BlocsElements
     }
 
     /**
-     * Set value.
-     *
      * @param string $value
      *
      * @return BlocsElements
@@ -166,8 +150,6 @@ class BlocsElements
     }
 
     /**
-     * Get value.
-     *
      * @return string
      */
     public function getValue()
@@ -176,8 +158,6 @@ class BlocsElements
     }
 
     /**
-     * Set complement.
-     *
      * @param string $complement
      *
      * @return BlocsElements
@@ -190,8 +170,6 @@ class BlocsElements
     }
 
     /**
-     * Get complement.
-     *
      * @return string
      */
     public function getComplement()
@@ -200,8 +178,6 @@ class BlocsElements
     }
 
     /**
-     * Set status.
-     *
      * @param int $status
      *
      * @return BlocsElements
@@ -214,8 +190,6 @@ class BlocsElements
     }
 
     /**
-     * Get status.
-     *
      * @return int
      */
     public function getStatus()
@@ -224,8 +198,6 @@ class BlocsElements
     }
 
     /**
-     * Set added.
-     *
      * @param \DateTime $added
      *
      * @return BlocsElements
@@ -238,8 +210,6 @@ class BlocsElements
     }
 
     /**
-     * Get added.
-     *
      * @return \DateTime
      */
     public function getAdded()
@@ -248,8 +218,6 @@ class BlocsElements
     }
 
     /**
-     * Set updated.
-     *
      * @param \DateTime $updated
      *
      * @return BlocsElements
@@ -262,8 +230,6 @@ class BlocsElements
     }
 
     /**
-     * Get updated.
-     *
      * @return \DateTime
      */
     public function getUpdated()
@@ -272,8 +238,6 @@ class BlocsElements
     }
 
     /**
-     * Get id.
-     *
      * @return int
      */
     public function getId()

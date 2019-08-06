@@ -7,8 +7,6 @@ namespace Unilend\Entity;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * NationalitesV2.
- *
  * @ORM\Table(name="nationalites_v2")
  * @ORM\Entity
  */
@@ -41,8 +39,6 @@ class NationalitesV2
     private $idNationalite;
 
     /**
-     * Set frF.
-     *
      * @param string $frF
      *
      * @return NationalitesV2
@@ -55,8 +51,6 @@ class NationalitesV2
     }
 
     /**
-     * Get frF.
-     *
      * @return string
      */
     public function getFrF()
@@ -65,8 +59,6 @@ class NationalitesV2
     }
 
     /**
-     * Set ordre.
-     *
      * @param int $ordre
      *
      * @return NationalitesV2
@@ -79,8 +71,6 @@ class NationalitesV2
     }
 
     /**
-     * Get ordre.
-     *
      * @return int
      */
     public function getOrdre()
@@ -89,8 +79,6 @@ class NationalitesV2
     }
 
     /**
-     * Get idNationalite.
-     *
      * @return int
      */
     public function getIdNationalite()

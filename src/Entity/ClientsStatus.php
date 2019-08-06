@@ -38,30 +38,6 @@ class ClientsStatus
         self::STATUS_SUSPENDED,
     ];
 
-    public const GRANTED_LENDER_ACCOUNT_READ = [
-        self::STATUS_TO_BE_CHECKED,
-        self::STATUS_COMPLETENESS,
-        self::STATUS_COMPLETENESS_REMINDER,
-        self::STATUS_COMPLETENESS_REPLY,
-        self::STATUS_MODIFICATION,
-        self::STATUS_VALIDATED,
-        self::STATUS_SUSPENDED,
-    ];
-
-    public const GRANTED_LENDER_DEPOSIT = [
-        self::STATUS_TO_BE_CHECKED,
-        self::STATUS_COMPLETENESS,
-        self::STATUS_COMPLETENESS_REMINDER,
-        self::STATUS_COMPLETENESS_REPLY,
-        self::STATUS_MODIFICATION,
-        self::STATUS_VALIDATED,
-    ];
-
-    public const GRANTED_LENDER_WITHDRAW = [
-        self::STATUS_VALIDATED,
-        self::STATUS_SUSPENDED,
-    ];
-
     /**
      * @var string
      *
@@ -79,8 +55,6 @@ class ClientsStatus
     private $id;
 
     /**
-     * Set label.
-     *
      * @param string $label
      *
      * @return ClientsStatus
@@ -93,8 +67,6 @@ class ClientsStatus
     }
 
     /**
-     * Get label.
-     *
      * @return string
      */
     public function getLabel()
@@ -103,8 +75,6 @@ class ClientsStatus
     }
 
     /**
-     * Get id.
-     *
      * @return int
      */
     public function getId()

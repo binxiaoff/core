@@ -7,8 +7,6 @@ namespace Unilend\Entity;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * Pays.
- *
  * @ORM\Table(name="pays")
  * @ORM\Entity
  */
@@ -68,8 +66,6 @@ class Pays
     private $idPays;
 
     /**
-     * Set fr.
-     *
      * @param string|null $fr
      *
      * @return Pays
@@ -82,8 +78,6 @@ class Pays
     }
 
     /**
-     * Get fr.
-     *
      * @return string|null
      */
     public function getFr(): ?string
@@ -92,8 +86,6 @@ class Pays
     }
 
     /**
-     * Set iso.
-     *
      * @param string $iso
      *
      * @return Pays
@@ -106,8 +98,6 @@ class Pays
     }
 
     /**
-     * Get iso.
-     *
      * @return string
      */
     public function getIso(): string
@@ -116,8 +106,6 @@ class Pays
     }
 
     /**
-     * Set ordre.
-     *
      * @param int $ordre
      *
      * @return Pays
@@ -130,8 +118,6 @@ class Pays
     }
 
     /**
-     * Get ordre.
-     *
      * @return int
      */
     public function getOrdre(): int
@@ -160,8 +146,6 @@ class Pays
     }
 
     /**
-     * Get idPays.
-     *
      * @return int
      */
     public function getIdPays(): int

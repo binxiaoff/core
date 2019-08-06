@@ -7,8 +7,6 @@ namespace Unilend\Entity;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * TreeMenu.
- *
  * @ORM\Table(name="tree_menu", uniqueConstraints={@ORM\UniqueConstraint(name="id_langue", columns={"id_langue", "id_menu", "nom", "value", "complement"})})
  * @ORM\Entity
  */
@@ -98,8 +96,6 @@ class TreeMenu
     private $idLangue;
 
     /**
-     * Set idMenu.
-     *
      * @param int $idMenu
      *
      * @return TreeMenu
@@ -112,8 +108,6 @@ class TreeMenu
     }
 
     /**
-     * Get idMenu.
-     *
      * @return int
      */
     public function getIdMenu()
@@ -122,8 +116,6 @@ class TreeMenu
     }
 
     /**
-     * Set nom.
-     *
      * @param string $nom
      *
      * @return TreeMenu
@@ -136,8 +128,6 @@ class TreeMenu
     }
 
     /**
-     * Get nom.
-     *
      * @return string
      */
     public function getNom()
@@ -146,8 +136,6 @@ class TreeMenu
     }
 
     /**
-     * Set value.
-     *
      * @param string $value
      *
      * @return TreeMenu
@@ -160,8 +148,6 @@ class TreeMenu
     }
 
     /**
-     * Get value.
-     *
      * @return string
      */
     public function getValue()
@@ -170,8 +156,6 @@ class TreeMenu
     }
 
     /**
-     * Set complement.
-     *
      * @param string $complement
      *
      * @return TreeMenu
@@ -184,8 +168,6 @@ class TreeMenu
     }
 
     /**
-     * Get complement.
-     *
      * @return string
      */
     public function getComplement()
@@ -194,8 +176,6 @@ class TreeMenu
     }
 
     /**
-     * Set target.
-     *
      * @param string $target
      *
      * @return TreeMenu
@@ -208,8 +188,6 @@ class TreeMenu
     }
 
     /**
-     * Get target.
-     *
      * @return string
      */
     public function getTarget()
@@ -218,8 +196,6 @@ class TreeMenu
     }
 
     /**
-     * Set ordre.
-     *
      * @param int $ordre
      *
      * @return TreeMenu
@@ -232,8 +208,6 @@ class TreeMenu
     }
 
     /**
-     * Get ordre.
-     *
      * @return int
      */
     public function getOrdre()
@@ -242,8 +216,6 @@ class TreeMenu
     }
 
     /**
-     * Set status.
-     *
      * @param bool $status
      *
      * @return TreeMenu
@@ -256,8 +228,6 @@ class TreeMenu
     }
 
     /**
-     * Get status.
-     *
      * @return bool
      */
     public function getStatus()
@@ -266,8 +236,6 @@ class TreeMenu
     }
 
     /**
-     * Set added.
-     *
      * @param \DateTime $added
      *
      * @return TreeMenu
@@ -280,8 +248,6 @@ class TreeMenu
     }
 
     /**
-     * Get added.
-     *
      * @return \DateTime
      */
     public function getAdded()
@@ -290,8 +256,6 @@ class TreeMenu
     }
 
     /**
-     * Set updated.
-     *
      * @param \DateTime $updated
      *
      * @return TreeMenu
@@ -304,8 +268,6 @@ class TreeMenu
     }
 
     /**
-     * Get updated.
-     *
      * @return \DateTime
      */
     public function getUpdated()
@@ -314,8 +276,6 @@ class TreeMenu
     }
 
     /**
-     * Set id.
-     *
      * @param int $id
      *
      * @return TreeMenu
@@ -328,8 +288,6 @@ class TreeMenu
     }
 
     /**
-     * Get id.
-     *
      * @return int
      */
     public function getId()
@@ -338,8 +296,6 @@ class TreeMenu
     }
 
     /**
-     * Set idLangue.
-     *
      * @param string $idLangue
      *
      * @return TreeMenu
@@ -352,8 +308,6 @@ class TreeMenu
     }
 
     /**
-     * Get idLangue.
-     *
      * @return string
      */
     public function getIdLangue()

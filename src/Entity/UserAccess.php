@@ -7,8 +7,6 @@ namespace Unilend\Entity;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * UserAccess.
- *
  * @ORM\Table(name="user_access", indexes={@ORM\Index(name="user_access_id_user", columns={"id_user"})})
  * @ORM\Entity
  * @ORM\HasLifecycleCallbacks
@@ -63,8 +61,6 @@ class UserAccess
     private $idUser;
 
     /**
-     * Set controller.
-     *
      * @param string $controller
      *
      * @return UserAccess
@@ -77,8 +73,6 @@ class UserAccess
     }
 
     /**
-     * Get controller.
-     *
      * @return string
      */
     public function getController()
@@ -87,8 +81,6 @@ class UserAccess
     }
 
     /**
-     * Set action.
-     *
      * @param string $action
      *
      * @return UserAccess
@@ -101,8 +93,6 @@ class UserAccess
     }
 
     /**
-     * Get action.
-     *
      * @return string
      */
     public function getAction()
@@ -111,8 +101,6 @@ class UserAccess
     }
 
     /**
-     * Set ip.
-     *
      * @param string $ip
      *
      * @return UserAccess
@@ -125,8 +113,6 @@ class UserAccess
     }
 
     /**
-     * Get ip.
-     *
      * @return string
      */
     public function getIp()
@@ -135,8 +121,6 @@ class UserAccess
     }
 
     /**
-     * Set added.
-     *
      * @param \DateTime $added
      *
      * @return UserAccess
@@ -149,8 +133,6 @@ class UserAccess
     }
 
     /**
-     * Get added.
-     *
      * @return \DateTime
      */
     public function getAdded()
@@ -159,8 +141,6 @@ class UserAccess
     }
 
     /**
-     * Get id.
-     *
      * @return int
      */
     public function getId()
@@ -169,8 +149,6 @@ class UserAccess
     }
 
     /**
-     * Set idUser.
-     *
      * @param \Unilend\Entity\Users $idUser
      *
      * @return UserAccess
@@ -183,8 +161,6 @@ class UserAccess
     }
 
     /**
-     * Get idUser.
-     *
      * @return \Unilend\Entity\Users
      */
     public function getIdUser()

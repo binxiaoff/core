@@ -7,8 +7,6 @@ namespace Unilend\Entity;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * Blocs.
- *
  * @ORM\Table(name="blocs")
  * @ORM\Entity
  */
@@ -59,8 +57,6 @@ class Blocs
     private $idBloc;
 
     /**
-     * Set name.
-     *
      * @param string $name
      *
      * @return Blocs
@@ -73,8 +69,6 @@ class Blocs
     }
 
     /**
-     * Get name.
-     *
      * @return string
      */
     public function getName()
@@ -83,8 +77,6 @@ class Blocs
     }
 
     /**
-     * Set slug.
-     *
      * @param string $slug
      *
      * @return Blocs
@@ -97,8 +89,6 @@ class Blocs
     }
 
     /**
-     * Get slug.
-     *
      * @return string
      */
     public function getSlug()
@@ -107,8 +97,6 @@ class Blocs
     }
 
     /**
-     * Set status.
-     *
      * @param bool $status
      *
      * @return Blocs
@@ -121,8 +109,6 @@ class Blocs
     }
 
     /**
-     * Get status.
-     *
      * @return bool
      */
     public function getStatus()
@@ -131,8 +117,6 @@ class Blocs
     }
 
     /**
-     * Set added.
-     *
      * @param \DateTime $added
      *
      * @return Blocs
@@ -145,8 +129,6 @@ class Blocs
     }
 
     /**
-     * Get added.
-     *
      * @return \DateTime
      */
     public function getAdded()
@@ -155,8 +137,6 @@ class Blocs
     }
 
     /**
-     * Set updated.
-     *
      * @param \DateTime $updated
      *
      * @return Blocs
@@ -169,8 +149,6 @@ class Blocs
     }
 
     /**
-     * Get updated.
-     *
      * @return \DateTime
      */
     public function getUpdated()
@@ -179,8 +157,6 @@ class Blocs
     }
 
     /**
-     * Get idBloc.
-     *
      * @return int
      */
     public function getIdBloc()
