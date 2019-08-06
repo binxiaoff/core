@@ -1,6 +1,8 @@
 <?php
 
-use Box\Spout\{Common\Type, Writer\Style\StyleBuilder, Writer\WriterFactory};
+use Box\Spout\Common\Entity\Style\Color;
+use Box\Spout\Common\Type;
+use Box\Spout\Writer\Common\Creator\{Style\StyleBuilder, WriterFactory};
 use Unilend\Entity\Users;
 use Unilend\Entity\UsersTypes;
 use Unilend\Entity\Zones;
@@ -68,7 +70,7 @@ class queriesController extends bootstrap
             die;
         }
 
-        if (isset($this->params[0]) && $this->params[0] == 'delete' && $this->isGrantedIT($this->userEntity)) {
+        if (isset($this->params[0]) && 'delete' == $this->params[0] && $this->isGrantedIT($this->userEntity)) {
             $this->queries->delete($this->params[1], 'id_query');
 
             $_SESSION['freeow']['title']   = 'Suppression d\'une requ&ecirc;te';
@@ -101,8 +103,8 @@ class queriesController extends bootstrap
         $this->queries = $this->loadData('queries');
         $this->queries->get($this->params[0], 'id_query');
         $this->queries->sql = trim(str_replace(
-            array('[ID_USER]'),
-            array($this->sessionIdUser),
+            ['[ID_USER]'],
+            [$this->sessionIdUser],
             $this->queries->sql
         ));
 
@@ -110,9 +112,10 @@ class queriesController extends bootstrap
             1 !== preg_match('/^SELECT\s/i', $this->queries->sql)
             || 1 === preg_match('/[^A-Z](ALTER|INSERT|DELETE|DROP|TRUNCATE|UPDATE)[^A-Z]/i', $this->queries->sql)
         ) {
-            $this->result    = array();
-            $this->sqlParams = array();
+            $this->result    = [];
+            $this->sqlParams = [];
             trigger_error('Stat query may be dangerous: ' . $this->queries->sql, E_USER_WARNING);
+
             return;
         }
 
@@ -146,16 +149,18 @@ class queriesController extends bootstrap
 
             $titleStyle = (new StyleBuilder())
                 ->setFontBold()
-                ->setFontColor(\Box\Spout\Writer\Style\Color::WHITE)
+                ->setFontColor(Color::WHITE)
                 ->setBackgroundColor('2672A2')
-                ->build();
+                ->build()
+            ;
 
             $writer
                 ->openToBrowser($filename)
                 ->addRowWithStyle([$this->queries->name], $titleStyle)
                 ->addRow(array_keys($this->result[0]))
                 ->addRows($this->result)
-                ->close();
+                ->close()
+            ;
         }
 
         die;

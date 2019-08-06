@@ -1,7 +1,7 @@
 <?php
 
 use Doctrine\ORM\EntityManagerInterface;
-use Unilend\Entity\Zones;
+use Unilend\Entity\{Redirections, Tree, Zones};
 
 class treeController extends bootstrap
 {
@@ -98,49 +98,43 @@ class treeController extends bootstrap
         /** @var EntityManagerInterface $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
 
-        $this->templates    = $this->loadData('templates');
-        $this->elements     = $this->loadData('elements');
-        $this->redirections = $this->loadData('redirections');
-        $treeRepository     = $entityManager->getRepository(\Unilend\Entity\Tree::class);
+        $this->templates       = $this->loadData('templates');
+        $this->elements        = $this->loadData('elements');
+        $treeRepository        = $entityManager->getRepository(Tree::class);
+        $redirectionRepository = $entityManager->getRepository(Redirections::class);
 
         if (false === empty($this->params[0])) {
             if (isset($_POST['form_edit_tree']) && $this->tree->get($this->params[0])) {
                 if (empty($_POST['id_parent_fr'])) {
                     $this->tree->slug = '';
-                } else {
-                    if (trim($_POST['slug_fr']) !== $this->tree->slug) {
-                        if (false === empty(trim($_POST['slug_fr']))) {
-                            $slug_temp = $this->bdd->generateSlug(trim($_POST['slug_fr']));
-                        } else {
-                            $slug_temp = $this->bdd->generateSlug(trim($_POST['title_fr']));
-                        }
-
-                        if ($treeRepository->findOneBy(['slug' => $slug_temp])) {
-                            $slug_temp = $slug_temp . '-fr' . '-' . $this->params[0];
-                        }
-
-                        if ($slug_temp !== $this->tree->slug) {
-                            if ($this->redirections->get(['from_slug' => '/' . $this->tree->slug, 'id_langue' => 'fr'])) {
-                                $createRedir = false;
-                            } else {
-                                $createRedir = true;
-                            }
-
-                            $this->redirections->id_langue = 'fr';
-                            $this->redirections->from_slug = '/' . $this->tree->slug;
-                            $this->redirections->to_slug   = '/' . $slug_temp;
-                            $this->redirections->type      = 301;
-                            $this->redirections->status    = \Unilend\Entity\Redirections::STATUS_ENABLED;
-
-                            if ($createRedir) {
-                                $this->redirections->create(['from_slug' => '/' . $this->tree->slug, 'id_langue' => 'fr']);
-                            } else {
-                                $this->redirections->update(['from_slug' => '/' . $this->tree->slug, 'id_langue' => 'fr']);
-                            }
-                        }
-
-                        $this->tree->slug = $slug_temp;
+                } elseif (trim($_POST['slug_fr']) !== $this->tree->slug) {
+                    if (false === empty(trim($_POST['slug_fr']))) {
+                        $slug_temp = $this->bdd->generateSlug(trim($_POST['slug_fr']));
+                    } else {
+                        $slug_temp = $this->bdd->generateSlug(trim($_POST['title_fr']));
                     }
+
+                    if ($treeRepository->findOneBy(['slug' => $slug_temp])) {
+                        $slug_temp = $slug_temp . '-fr' . '-' . $this->params[0];
+                    }
+
+                    if ($slug_temp !== $this->tree->slug) {
+                        $redirection = $redirectionRepository->findOneBy(['fromSlug' => '/' . $this->tree->slug]);
+                        if (null === $redirection) {
+                            $redirection = new Redirections();
+                        }
+                        $redirection
+                            ->setIdLangue('fr')
+                            ->setFromSlug('/' . $this->tree->slug)
+                            ->setToSlug('/' . $slug_temp)
+                            ->setType(301)
+                            ->setStatus(Redirections::STATUS_ENABLED)
+                            ;
+                        $entityManager->persist($redirection);
+                        $entityManager->flush();
+                    }
+
+                    $this->tree->slug = $slug_temp;
                 }
 
                 $this->tree->id_langue   = 'fr';

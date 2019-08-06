@@ -18,8 +18,6 @@
                 staticUrl: '<?= $this->furl ?>',
                 frontUrl: '<?= $this->furl ?>',
                 adminUrl: '<?= $this->url ?>',
-                facebookLink: '<?= $this->facebookUrl ?>',
-                twitterLink: '<?= $this->twitterUrl ?>',
                 year: '<?= date('Y') ?>'
             }
 

@@ -12,12 +12,6 @@ class mailsController extends bootstrap
     public function initialize()
     {
         parent::initialize();
-
-        $this->settings->get('Facebook', 'type');
-        $this->facebookUrl = $this->settings->value;
-
-        $this->settings->get('Twitter', 'type');
-        $this->twitterUrl = $this->settings->value;
     }
 
     public function _default()

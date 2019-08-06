@@ -144,15 +144,12 @@ class bootstrap extends Controller
         $this->ficelle = $this->loadLib('ficelle');
         $this->upload  = $this->loadLib('upload');
 
-        $this->ln             = $this->loadData('translations');
-        $this->settings       = $this->loadData('settings');
         $this->tree_elements  = $this->loadData('tree_elements');
         $this->blocs          = $this->loadData('blocs');
         $this->blocs_elements = $this->loadData('blocs_elements');
         $this->elements       = $this->loadData('elements');
         $this->users          = $this->loadData('users', ['lurl' => $this->url]);
         $this->users_zones    = $this->loadData('users_zones');
-        $this->users_history  = $this->loadData('users_history');
         $this->tree           = $this->loadData('tree', [
             'url'            => $this->url,
             'front'          => $this->furl,
@@ -265,9 +262,6 @@ class bootstrap extends Controller
         if (isset($_SESSION['user']) && false === empty($_SESSION['user']['id_user'])) {
             $this->sessionIdUser = $_SESSION['user']['id_user'];
             $this->lZonesHeader  = $this->users_zones->selectZonesUser($_SESSION['user']['id_user']);
-
-            /** @var \Doctrine\ORM\EntityManager $entityManager */
-            $entityManager = $this->get('doctrine.orm.entity_manager');
 
             $this->userEntity = $entityManager->getRepository(Users::class)->find($_SESSION['user']['id_user']);
 
