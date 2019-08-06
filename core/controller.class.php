@@ -227,7 +227,7 @@ abstract class Controller implements ContainerAwareInterface
 
     protected function loadData($object, $params = [])
     {
-        return $this->get('unilend.service.entity_manager')->getRepository($object, $params);
+        return Loader::loadData($object, $params);
     }
 
     /**
