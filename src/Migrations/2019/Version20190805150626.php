@@ -307,6 +307,7 @@ final class Version20190805150626 extends AbstractMigration
         $this->addSql('DROP INDEX UNIQ_8244AA3AAA4846F1 ON companies');
         $this->addSql('DROP INDEX UNIQ_8244AA3AD3D3C6F1 ON companies');
         $this->addSql('ALTER TABLE companies DROP id_address, DROP id_postal_address, DROP email_facture, DROP execices_comptables, DROP rcs, DROP tribunal_com, DROP activite, DROP capital, DROP adresse1, DROP adresse2, DROP zip, DROP city, DROP id_pays, DROP latitude, DROP longitude, DROP phone, DROP status_adresse_correspondance, DROP status_client, DROP status_conseil_externe_entreprise, DROP preciser_conseil_externe_entreprise, DROP civilite_dirigeant, DROP nom_dirigeant, DROP prenom_dirigeant, DROP fonction_dirigeant, DROP email_dirigeant, DROP phone_dirigeant, DROP sector, DROP risk, DROP code_naf');
+        $this->addSql('DROP TABLE company_sector');
     }
 
     public function down(Schema $schema): void
@@ -663,5 +664,6 @@ final class Version20190805150626 extends AbstractMigration
         $this->addSql('ALTER TABLE loans ADD CONSTRAINT FK_82C24DBC9A58DEC0 FOREIGN KEY (id_type_contract) REFERENCES underlying_contract (id_contract) ON UPDATE NO ACTION ON DELETE NO ACTION');
         $this->addSql('CREATE INDEX IDX_82C24DBC9A58DEC0 ON loans (id_type_contract)');
         $this->addSql('CREATE INDEX IDX_82C24DBC10EF4F55 ON loans (id_transfer)');
+        $this->addSql('CREATE TABLE company_sector (id_company_sector INT AUTO_INCREMENT NOT NULL, sector VARCHAR(100) NOT NULL COLLATE utf8mb4_unicode_ci, added DATETIME NOT NULL, updated DATETIME NOT NULL, PRIMARY KEY(id_company_sector)) DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci ENGINE = InnoDB COMMENT = \'\' ');
     }
 }
