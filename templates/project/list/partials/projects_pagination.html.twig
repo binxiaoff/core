@@ -9,7 +9,7 @@
                         </span>
                         {% if pagination.currentIndex < pagination.totalPages %}
                             <a href="{{ path('projects_list', {'page' : pagination.currentIndex + 1, 'sortType' : sortType, 'sortDirection' : sortDirection}) }}" class="link pagination-next">
-                                {% transchoice pagination.itemsPerPage with {'%items%' : pagination.itemsPerPage } %} projects-listing.pagination-info-next-label {% endtranschoice %}
+                                {% trans with {'%items%' : pagination.itemsPerPage } %} projects-listing.pagination-info-next-label {% endtrans %}
                             </a>
                         {% endif %}
                     </div>
@@ -76,7 +76,7 @@
                             <li role="presentation">
                                 <a href="{{ path('projects_list', {'page' : pagination.currentIndex + 1, 'sortType' : sortType, 'sortDirection' : sortDirection}) }}">
                                     <span class="sr-only">
-                                        {% transchoice pagination.itemsPerPage with {'%items%' : pagination.itemsPerPage } %} projects-listing.pagination-info-next-label {% endtranschoice %}
+                                        {% trans with {'%items%' : pagination.itemsPerPage } %} projects-listing.pagination-info-next-label {% endtrans %}
                                     </span>
                                     <span class="icon fa-angle-right"></span>
                                 </a>

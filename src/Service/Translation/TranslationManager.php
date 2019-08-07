@@ -1,10 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Unilend\Service\Translation;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Sonata\CacheBundle\Adapter\SymfonyCache;
-use Symfony\Component\Translation\TranslatorInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 use Unilend\Entity\Translations;
 
 class TranslationManager
