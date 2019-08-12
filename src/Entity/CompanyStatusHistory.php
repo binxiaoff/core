@@ -12,7 +12,6 @@ use Doctrine\ORM\Mapping as ORM;
  * @ORM\Table(name="company_status_history", indexes={
  *     @ORM\Index(name="idx_company_status_history_id_company", columns={"id_company"}),
  *     @ORM\Index(name="idx_company_status_history_id_status", columns={"id_status"}),
- *     @ORM\Index(name="idx_company_status_history_id_user", columns={"id_user"}),
  *     @ORM\Index(name="idx_company_status_history_changed_on", columns={"changed_on"})
  * })
  * @ORM\Entity(repositoryClass="Unilend\Repository\CompanyStatusHistoryRepository")
@@ -48,16 +47,6 @@ class CompanyStatusHistory
      * })
      */
     private $idStatus;
-
-    /**
-     * @var Users
-     *
-     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Users")
-     * @ORM\JoinColumns({
-     *     @ORM\JoinColumn(name="id_user", referencedColumnName="id_user", nullable=false)
-     * })
-     */
-    private $idUser;
 
     /**
      * @var \DateTime
@@ -138,26 +127,6 @@ class CompanyStatusHistory
     public function setIdStatus(CompanyStatus $idStatus)
     {
         $this->idStatus = $idStatus;
-
-        return $this;
-    }
-
-    /**
-     * @return Users
-     */
-    public function getIdUser()
-    {
-        return $this->idUser;
-    }
-
-    /**
-     * @param Users $idUser
-     *
-     * @return CompanyStatusHistory
-     */
-    public function setIdUser(Users $idUser)
-    {
-        $this->idUser = $idUser;
 
         return $this;
     }

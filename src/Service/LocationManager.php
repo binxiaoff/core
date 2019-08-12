@@ -114,7 +114,7 @@ class LocationManager
      */
     public function cleanLookupCityName($city): string
     {
-        $city = str_replace(['\' ', ' D ', ' '], ['\'', ' D\'', '-'], mb_strtoupper(\ficelle::speCharNoAccent($city)));
+        $city = str_replace(['\' ', ' D ', ' '], ['\'', ' D\'', '-'], mb_strtoupper(\URLify::downcode($city)));
         // Replace ST, SNT with SAINT
         $city = preg_replace('/(^|.+-)((ST)|(SNT))(-)(.+)/', '$1SAINT$5$6', $city);
         // Replace STE with SAINTE

@@ -8,10 +8,10 @@
         <div class="col-md-6">
             <div class="bloc_info_header">
                 <div>
-                    <?php if (false === empty($this->userEntity)) { ?>
-                        <?php echo $this->userEntity->getFirstName() . ' ' . $this->userEntity->getName(); ?>
+                    <?php if (false === empty($this->getUser())) { ?>
+                        <?php echo $this->getUser()->getFirstName() . ' ' . $this->getUser()->getLastName(); ?>
                         &nbsp;&nbsp;|&nbsp;&nbsp;
-                        <a href="<?php echo $this->url; ?>/logout" title="Se déconnecter"><strong>Se déconnecter</strong></a>
+                        <a href="<?php echo $this->furl; ?>/logout" title="Se déconnecter"><strong>Se déconnecter</strong></a>
                     <?php } ?>
                 </div>
             </div>
@@ -27,7 +27,6 @@
             $title = $item['title'];
 
             // Item visibility
-            if (in_array($zone, $this->lZonesHeader)) {
                 $active = isset($this->menu_admin) && $this->menu_admin === $zone ? ' class="active"' : '';
                 $menuHtml .= '<li>';
                 $menuHtml .= empty($item['uri']) ? '<span' . $active . '>' . $title . '</span>' : '<a href="' . $this->url . '/' . $item['uri'] . '"' . $active . '>' . $title . '</a>';
@@ -42,7 +41,6 @@
                     $menuHtml .= '</ul>';
                 }
                 $menuHtml .= '</li>';
-            }
         }
 
         ?>

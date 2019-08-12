@@ -61,6 +61,7 @@
                                     </div>
                                 </div><!-- /.panel -->
                                 <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+                                <input type="hidden" name="_target_path" value="{{ app.request.get('target_path') }}" />
                             </form><!-- /.form-connect -->
                         </div><!-- /.col-connect -->
 

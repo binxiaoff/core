@@ -11,8 +11,6 @@ class ajaxController extends bootstrap
 
         $_SESSION['request_url'] = $this->url;
 
-        // Should not be usefull but we keep it as a second security if someone forgets to check access in a new method
-        $this->users->checkAccess(Zones::ZONE_LABEL_EDITION);
         $this->autoFireView = false;
         $this->hideDecoration();
     }

@@ -1,15 +1,13 @@
 <?php
 
 use Doctrine\ORM\EntityManagerInterface;
-use Unilend\Entity\{Redirections, Tree, Zones};
+use Unilend\Entity\{Redirections, Tree};
 
 class treeController extends bootstrap
 {
     public function initialize()
     {
         parent::initialize();
-
-        $this->users->checkAccess(Zones::ZONE_LABEL_EDITION);
 
         $this->menu_admin = 'edition';
     }
@@ -50,7 +48,7 @@ class treeController extends bootstrap
             $this->tree->id_langue   = 'fr';
             $this->tree->id_parent   = $_POST['id_parent'];
             $this->tree->id_template = $_POST['id_template_fr'];
-            $this->tree->id_user     = $_SESSION['user']['id_user'];
+            $this->tree->id_user     = $this->getUser()->getIdClient();
             $this->tree->title       = trim($_POST['title_fr']);
             $this->tree->slug        = '';
             $this->tree->img_menu    = '';
@@ -140,7 +138,7 @@ class treeController extends bootstrap
                 $this->tree->id_langue   = 'fr';
                 $this->tree->id_parent   = $_POST['id_parent'];
                 $this->tree->id_template = $_POST['id_template_fr'];
-                $this->tree->id_user     = $_SESSION['user']['id_user'];
+                $this->tree->id_user     = $this->getUser()->getIdClient();
                 $this->tree->title       = trim($_POST['title_fr']);
 
                 if (false === empty($_FILES['img_menu_fr']['name'])) {

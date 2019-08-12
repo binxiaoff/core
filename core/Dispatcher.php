@@ -6,6 +6,7 @@ use Monolog\ErrorHandler;
 use Psr\Log\{LogLevel, LoggerInterface};
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Unilend\Kernel;
 
 class Dispatcher
@@ -27,6 +28,7 @@ class Dispatcher
 
         $this->handleUrl();
         $this->handleError();
+        $this->handleSecurityToken();
         $this->dispatch();
     }
 
@@ -136,6 +138,23 @@ class Dispatcher
         $logger = $this->kernel->getContainer()->get('logger', ContainerInterface::NULL_ON_INVALID_REFERENCE);
         if ($logger instanceof LoggerInterface) {
             ErrorHandler::register($logger, [], LogLevel::ERROR, LogLevel::ERROR);
+        }
+    }
+
+    private function handleSecurityToken(): void
+    {
+        /** @var ContainerInterface $container */
+        $container = $this->kernel->getContainer();
+
+        $tokenString = $container->get('session')->get('_security_default');
+
+        if ($tokenString) {
+            /** @var TokenInterface $token */
+            $token = unserialize($tokenString, ['allowed_classes' => true]);
+
+            if ($token instanceof TokenInterface) {
+                $container->get('security.token_storage')->setToken($token);
+            }
         }
     }
 }
