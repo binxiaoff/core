@@ -8,8 +8,6 @@ class settingsController extends bootstrap
     {
         parent::initialize();
 
-        $this->users->checkAccess(Zones::ZONE_LABEL_CONFIGURATION);
-
         $this->menu_admin = 'configuration';
     }
 

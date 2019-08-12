@@ -8,16 +8,13 @@
     });
 </script>
 
-<?php $isAllowedToEdit = $this->isGrantedIT($this->userEntity);?>
 <div id="contenu">
     <div class="row">
         <div class="col-md-6">
             <h1>Liste des requêtes</h1>
         </div>
         <div class="col-md-6">
-            <?php if ($isAllowedToEdit) : ?>
-                <a href="<?= $this->lurl ?>/queries/add" class="btn-primary pull-right thickbox">Ajouter une requête</a>
-            <?php endif; ?>
+            <a href="<?= $this->lurl ?>/queries/add" class="btn-primary pull-right thickbox">Ajouter une requête</a>
         </div>
     </div>
     <?php if (count($this->lRequetes) > 0) : ?>
@@ -54,14 +51,12 @@
                                 </a>
 
                             <?php endif; ?>
-                            <?php if ($isAllowedToEdit) : ?>
-                                <a href="<?= $this->lurl ?>/queries/edit/<?= $r['id_query'] ?>" class="thickbox">
-                                    <img src="<?= $this->url ?>/images/edit.png" alt="Modifier <?= $r['name'] ?>"/>
-                                </a>
-                                <a href="<?= $this->lurl ?>/queries/delete/<?= $r['id_query'] ?>" title="Supprimer <?= $r['name'] ?>" onclick="return confirm('Etes vous sur de vouloir supprimer <?= $r['name'] ?> ?')">
-                                    <img src="<?= $this->url ?>/images/delete.png" alt="Supprimer <?= $r['name'] ?>"/>
-                                </a>
-                            <?php endif; ?>
+                            <a href="<?= $this->lurl ?>/queries/edit/<?= $r['id_query'] ?>" class="thickbox">
+                                <img src="<?= $this->url ?>/images/edit.png" alt="Modifier <?= $r['name'] ?>"/>
+                            </a>
+                            <a href="<?= $this->lurl ?>/queries/delete/<?= $r['id_query'] ?>" title="Supprimer <?= $r['name'] ?>" onclick="return confirm('Etes vous sur de vouloir supprimer <?= $r['name'] ?> ?')">
+                                <img src="<?= $this->url ?>/images/delete.png" alt="Supprimer <?= $r['name'] ?>"/>
+                            </a>
                         </td>
                     </tr>
                     <?php $i++; ?>

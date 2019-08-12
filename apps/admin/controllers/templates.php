@@ -11,8 +11,6 @@ class templatesController extends bootstrap
     {
         parent::initialize();
 
-        $this->users->checkAccess(Zones::ZONE_LABEL_EDITION);
-
         $this->menu_admin = 'edition';
         $this->templates  = $this->loadData('templates');
     }

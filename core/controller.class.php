@@ -2,11 +2,16 @@
 
 use Symfony\Component\DependencyInjection\{ContainerAwareInterface, ContainerInterface};
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Bundle\FrameworkBundle\Controller\ControllerTrait;
+use Symfony\Component\Security\Core\Exception\{AccessDeniedException, AuthenticationCredentialsNotFoundException};
 use Unilend\core\Loader;
 use Unilend\Doctrine\DBAL\Connection;
+use Unilend\Security\Voter\BackOfficeZoneVoter;
 
 abstract class Controller implements ContainerAwareInterface
 {
+    use ControllerTrait;
+
     /** @var array */
     public $params;
     /** @var Command */
@@ -25,8 +30,6 @@ abstract class Controller implements ContainerAwareInterface
     public $bdd;
     /** @var string */
     public $view;
-    /** @var string */
-    public $current_template = '';
     /** @var Request */
     public $request;
     /** @var ContainerInterface */
@@ -43,9 +46,6 @@ abstract class Controller implements ContainerAwareInterface
      */
     final public function __construct(Command $command, $app, $request = null)
     {
-        setlocale(LC_TIME, 'fr_FR.utf8');
-        setlocale(LC_TIME, 'fr_FR');
-
         $this->Command = $command;
         $this->App     = $app;
         $this->request = $request;
@@ -216,6 +216,13 @@ abstract class Controller implements ContainerAwareInterface
 
         $this->url  = $this->getParameter('router.request_context.scheme') . '://' . getenv('HOST_ADMIN_URL');
         $this->furl = $this->getParameter('router.request_context.scheme') . '://' . getenv('HOST_DEFAULT_URL');
+
+        try {
+            $this->denyAccessUnlessGranted(BackOfficeZoneVoter::ATTRIBUTE_VIEW, $this->Command);
+        } catch (AuthenticationCredentialsNotFoundException | AccessDeniedException $exception) {
+            header('Location: ' . $this->furl . '/login?target_path=' . urlencode($this->request->getUri()));
+            exit;
+        }
     }
 
     protected function loadData($object, $params = [])
@@ -233,11 +240,6 @@ abstract class Controller implements ContainerAwareInterface
     protected function loadLib($library)
     {
         return Loader::loadLib($library);
-    }
-
-    protected function get($service)
-    {
-        return $this->container->get($service);
     }
 
     /**

@@ -16,7 +16,6 @@ class mailsController extends bootstrap
 
     public function _default()
     {
-        $this->users->checkAccess(Zones::ZONE_LABEL_EDITION);
         $this->menu_admin = 'edition';
 
         /** @var MailTemplateManager $mailTemplateManager */
@@ -65,7 +64,6 @@ class mailsController extends bootstrap
 
     public function _add()
     {
-        $this->users->checkAccess(Zones::ZONE_LABEL_EDITION);
         $this->menu_admin = 'edition';
 
         if ($this->request->isMethod(Request::METHOD_POST)) {
@@ -127,7 +125,6 @@ class mailsController extends bootstrap
 
     public function _edit()
     {
-        $this->users->checkAccess(Zones::ZONE_LABEL_EDITION);
         $this->menu_admin = 'edition';
 
         /** @var MailTemplateManager $mailTemplateManager */
@@ -195,7 +192,6 @@ class mailsController extends bootstrap
 
     public function _preview()
     {
-        $this->users->checkAccess(Zones::ZONE_LABEL_EDITION);
         $this->hideDecoration();
         $this->autoFireView = false;
 
@@ -229,7 +225,6 @@ class mailsController extends bootstrap
 
     public function _emailhistory()
     {
-        $this->users->checkAccess(Zones::ZONE_LABEL_CONFIGURATION);
         $this->menu_admin = 'configuration';
 
         /** @var MailQueueManager $mailQueueManager */
@@ -249,7 +244,6 @@ class mailsController extends bootstrap
 
     public function _recherche()
     {
-        $this->users->checkAccess(Zones::ZONE_LABEL_CONFIGURATION);
         $this->menu_admin = 'configuration';
 
         $this->hideDecoration();
@@ -258,8 +252,6 @@ class mailsController extends bootstrap
 
     public function _email_history_preview()
     {
-        $this->users->checkAccess(Zones::ZONE_LABEL_CONFIGURATION);
-
         $this->hideDecoration();
         $_SESSION['request_url'] = $this->url;
         /** @var \Unilend\Service\Mailer\MailQueueManager $mailQueueManager */

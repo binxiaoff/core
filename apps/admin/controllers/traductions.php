@@ -9,8 +9,6 @@ class traductionsController extends bootstrap
     {
         parent::initialize();
 
-        $this->users->checkAccess(Zones::ZONE_LABEL_EDITION);
-
         $this->menu_admin = 'edition';
     }
 

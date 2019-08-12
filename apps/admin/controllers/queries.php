@@ -3,9 +3,6 @@
 use Box\Spout\Common\Entity\Style\Color;
 use Box\Spout\Common\Type;
 use Box\Spout\Writer\Common\Creator\{Style\StyleBuilder, WriterFactory};
-use Unilend\Entity\Users;
-use Unilend\Entity\UsersTypes;
-use Unilend\Entity\Zones;
 
 class queriesController extends bootstrap
 {
@@ -15,8 +12,6 @@ class queriesController extends bootstrap
     public function initialize()
     {
         parent::initialize();
-
-        $this->users->checkAccess(Zones::ZONE_LABEL_EDITION);
 
         $this->menu_admin = 'stats';
     }
@@ -43,7 +38,7 @@ class queriesController extends bootstrap
         $this->queries   = $this->loadData('queries');
         $this->lRequetes = $this->queries->select('', 'executed DESC');
 
-        if (isset($_POST['form_edit_requete']) && $this->isGrantedIT($this->userEntity)) {
+        if (isset($_POST['form_edit_requete'])) {
             $this->queries->get($this->params[0], 'id_query');
             $this->queries->name   = $_POST['name'];
             $this->queries->paging = $_POST['paging'];
@@ -57,7 +52,7 @@ class queriesController extends bootstrap
             die;
         }
 
-        if (isset($_POST['form_add_requete']) && $this->isGrantedIT($this->userEntity)) {
+        if (isset($_POST['form_add_requete'])) {
             $this->queries->name   = $_POST['name'];
             $this->queries->paging = $_POST['paging'];
             $this->queries->sql    = $_POST['sql'];
@@ -70,7 +65,7 @@ class queriesController extends bootstrap
             die;
         }
 
-        if (isset($this->params[0]) && 'delete' == $this->params[0] && $this->isGrantedIT($this->userEntity)) {
+        if (isset($this->params[0]) && 'delete' == $this->params[0]) {
             $this->queries->delete($this->params[1], 'id_query');
 
             $_SESSION['freeow']['title']   = 'Suppression d\'une requ&ecirc;te';
@@ -104,7 +99,7 @@ class queriesController extends bootstrap
         $this->queries->get($this->params[0], 'id_query');
         $this->queries->sql = trim(str_replace(
             ['[ID_USER]'],
-            [$this->sessionIdUser],
+            [$this->getUser()->getIdClient()],
             $this->queries->sql
         ));
 
@@ -164,19 +159,5 @@ class queriesController extends bootstrap
         }
 
         die;
-    }
-
-    /**
-     * @param Users $user
-     *
-     * @return bool
-     */
-    public function isGrantedIT(Users $user)
-    {
-        if (in_array($user->getIdUserType()->getIdUserType(), [UsersTypes::TYPE_ADMIN, UsersTypes::TYPE_IT])) {
-            return true;
-        }
-
-        return false;
     }
 }

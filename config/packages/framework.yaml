@@ -6,6 +6,7 @@ framework:
     session:
         handler_id: ~
         cookie_samesite: lax
+        cookie_domain: .ca-lendingservices.com
     php_errors:
         log: true
     cache:

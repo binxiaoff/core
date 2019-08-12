@@ -27,11 +27,10 @@ if ($trustedHosts = $_SERVER['TRUSTED_HOSTS'] ?? $_ENV['TRUSTED_HOSTS'] ?? false
     Request::setTrustedHosts([$trustedHosts]);
 }
 
-$kernel  = new Kernel($_SERVER['APP_ENV'], (bool) $_SERVER['APP_DEBUG']);
-$request = Request::createFromGlobals();
-$kernel->boot();
-
-// use symfony session handler to avoid session issue on PHP7.1 (https://github.com/websupport-sk/pecl-memcache/issues/23)
-$kernel->getContainer()->get('session')->start();
+$kernel   = new Kernel($_SERVER['APP_ENV'], (bool) $_SERVER['APP_DEBUG']);
+$request  = Request::createFromGlobals();
+$response = $kernel->handle($request);
 
 $oDispatcher = new Dispatcher($kernel, $request);
+
+$kernel->terminate($request, $response);
