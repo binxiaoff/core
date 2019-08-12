@@ -186,12 +186,8 @@ class Connection extends BaseConnection
     public function generateSlug($string)
     {
         $string = strip_tags($string);
-        $string = strtr($string, \ficelle::$normalizeChars);
-        $string = strtolower($string); // lower-case the string
-        $string = preg_replace('/[ ]/', '-', $string); // replace special characters by score
-        $string = preg_replace('/[^a-z0-9-.]/', '', $string); // replace all non-alphanumeric characters by void
-        $string = preg_replace('/[-]{2,}/', '-', $string); // replace multi '-' by once
-        $string = preg_replace('/[-]{1,}$/', '', $string); // replace end '-' by void
+        $string = \URLify::filter($string);
+
         return $string;
     }
 

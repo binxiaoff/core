@@ -9,7 +9,7 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * ClientsStatusHistory.
  *
- * @ORM\Table(name="clients_status_history", indexes={@ORM\Index(name="id_client", columns={"id_client"}), @ORM\Index(name="id_user", columns={"id_user"}), @ORM\Index(name="idx_clients_status_history_id_status", columns={"id_status"})})
+ * @ORM\Table(name="clients_status_history", indexes={@ORM\Index(name="id_client", columns={"id_client"}), @ORM\Index(name="idx_clients_status_history_id_status", columns={"id_status"})})
  * @ORM\Entity(repositoryClass="Unilend\Repository\ClientsStatusHistoryRepository")
  * @ORM\HasLifecycleCallbacks
  */
@@ -41,23 +41,6 @@ class ClientsStatusHistory
      * @ORM\Column(name="content", type="text", length=16777215, nullable=true)
      */
     private $content;
-
-    /**
-     * @var Users
-     *
-     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Users")
-     * @ORM\JoinColumns({
-     *     @ORM\JoinColumn(name="id_user", referencedColumnName="id_user", nullable=false)
-     * })
-     */
-    private $idUser;
-
-    /**
-     * @var int
-     *
-     * @ORM\Column(name="numero_relance", type="integer", nullable=true)
-     */
-    private $numeroRelance;
 
     /**
      * @var \DateTime
@@ -145,54 +128,6 @@ class ClientsStatusHistory
     public function getContent(): ?string
     {
         return $this->content;
-    }
-
-    /**
-     * Set idUser.
-     *
-     * @param Users $idUser
-     *
-     * @return ClientsStatusHistory
-     */
-    public function setIdUser(Users $idUser): ClientsStatusHistory
-    {
-        $this->idUser = $idUser;
-
-        return $this;
-    }
-
-    /**
-     * Get idUser.
-     *
-     * @return Users
-     */
-    public function getIdUser(): Users
-    {
-        return $this->idUser;
-    }
-
-    /**
-     * Set numeroRelance.
-     *
-     * @param int|null $numeroRelance
-     *
-     * @return ClientsStatusHistory
-     */
-    public function setNumeroRelance(?int $numeroRelance): ClientsStatusHistory
-    {
-        $this->numeroRelance = $numeroRelance;
-
-        return $this;
-    }
-
-    /**
-     * Get numeroRelance.
-     *
-     * @return int|null
-     */
-    public function getNumeroRelance(): ?int
-    {
-        return $this->numeroRelance;
     }
 
     /**

@@ -43,6 +43,10 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
     private $logger;
     /** @var LoginHistoryLogger */
     private $loginHistoryLogger;
+    /** @var string */
+    private $frontUrl;
+    /** @var string */
+    private $adminUrl;
 
     /**
      * @param UserPasswordEncoderInterface           $securityPasswordEncoder
@@ -53,6 +57,8 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
      * @param GoogleRecaptchaManager                 $googleRecaptchaManager
      * @param LoggerInterface                        $logger
      * @param LoginHistoryLogger                     $loginHistoryLogger
+     * @param string                                 $frontUrl
+     * @param string                                 $adminUrl
      */
     public function __construct(
         UserPasswordEncoderInterface $securityPasswordEncoder,
@@ -62,7 +68,9 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
         CsrfTokenManagerInterface $csrfTokenManager,
         GoogleRecaptchaManager $googleRecaptchaManager,
         LoggerInterface $logger,
-        LoginHistoryLogger $loginHistoryLogger
+        LoginHistoryLogger $loginHistoryLogger,
+        string $frontUrl,
+        string $adminUrl
     ) {
         $this->securityPasswordEncoder = $securityPasswordEncoder;
         $this->router                  = $router;
@@ -72,6 +80,8 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
         $this->googleRecaptchaManager  = $googleRecaptchaManager;
         $this->logger                  = $logger;
         $this->loginHistoryLogger      = $loginHistoryLogger;
+        $this->frontUrl                = $frontUrl;
+        $this->adminUrl                = $adminUrl;
     }
 
     /**
@@ -149,10 +159,10 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
         $this->loginHistoryLogger->saveSuccessfulLogin($client, $request->getClientIp(), $request->headers->get('User-Agent'));
         $this->sessionStrategy->onAuthentication($request, $token);
 
-        $targetPath = $this->getTargetPath($request->getSession(), $providerKey);
+        $targetPath = $this->getUserDefinedSuccessRedirectUrl($request);
 
         if (!$targetPath) {
-            $targetPath = $this->getDefaultSuccessRedirectUrl($request);
+            $targetPath = $this->getTargetPath($request->getSession(), $providerKey);
         }
 
         return new RedirectResponse($targetPath);
@@ -215,11 +225,19 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
     }
 
     /**
+     * {@inheritdoc}
+     */
+    protected function getLoginUrl()
+    {
+        return $this->router->generate('login');
+    }
+
+    /**
      * @param Request $request
      *
      * @return string
      */
-    protected function getDefaultSuccessRedirectUrl(Request $request): string
+    private function getUserDefinedSuccessRedirectUrl(Request $request): string
     {
         $targetPath = $request->get('_target_path');
 
@@ -228,14 +246,6 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
         }
 
         return $this->router->generate('wallet');
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function getLoginUrl()
-    {
-        return $this->router->generate('login');
     }
 
     /**
@@ -263,18 +273,33 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
      *
      * @return string
      */
-    private function removeHost($target)
+    private function removeHost($target): string
     {
         // handle protocol-relative URLs that parse_url() doesn't like
-        if ('//' === mb_substr($target, 0, 2)) {
+        if (0 === mb_strpos($target, '//')) {
             $target = 'proto:' . $target;
         }
 
         $parsedUrl = parse_url($target);
-        $path      = $parsedUrl['path'] ?? '/';
-        $query     = isset($parsedUrl['query']) ? '?' . $parsedUrl['query'] : '';
-        $fragment  = isset($parsedUrl['fragment']) ? '#' . $parsedUrl['fragment'] : '';
+
+        if ($this->isTrustedHost($parsedUrl['host'])) {
+            return $target;
+        }
+
+        $path     = $parsedUrl['path'] ?? '/';
+        $query    = isset($parsedUrl['query']) ? '?' . $parsedUrl['query'] : '';
+        $fragment = isset($parsedUrl['fragment']) ? '#' . $parsedUrl['fragment'] : '';
 
         return $path . $query . $fragment;
+    }
+
+    /**
+     * @param string $host
+     *
+     * @return bool
+     */
+    private function isTrustedHost(string $host): bool
+    {
+        return in_array($host, [parse_url($this->frontUrl)['host'], parse_url($this->adminUrl)['host']], true);
     }
 }
