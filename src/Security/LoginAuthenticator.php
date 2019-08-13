@@ -159,10 +159,10 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
         $this->loginHistoryLogger->saveSuccessfulLogin($client, $request->getClientIp(), $request->headers->get('User-Agent'));
         $this->sessionStrategy->onAuthentication($request, $token);
 
-        $targetPath = $this->getUserDefinedSuccessRedirectUrl($request);
+        $targetPath = $this->getTargetPath($request->getSession(), $providerKey);
 
         if (!$targetPath) {
-            $targetPath = $this->getTargetPath($request->getSession(), $providerKey);
+            $targetPath = $this->getDefaultSuccessRedirectUrl($request);
         }
 
         return new RedirectResponse($targetPath);
@@ -237,7 +237,7 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
      *
      * @return string
      */
-    private function getUserDefinedSuccessRedirectUrl(Request $request): string
+    private function getDefaultSuccessRedirectUrl(Request $request): string
     {
         $targetPath = $request->get('_target_path');
 

@@ -220,7 +220,12 @@ abstract class Controller implements ContainerAwareInterface
         try {
             $this->denyAccessUnlessGranted(BackOfficeZoneVoter::ATTRIBUTE_VIEW, $this->Command);
         } catch (AuthenticationCredentialsNotFoundException | AccessDeniedException $exception) {
-            header('Location: ' . $this->furl . '/login?target_path=' . urlencode($this->request->getUri()));
+            // Throw only the AccessDeniedException for login user, as it can also be thrown for anonymous (has anonymous token), in this case, we redirect to login.
+            if (($exception instanceof AccessDeniedException) && $this->getUser()) {
+                throw $exception;
+            }
+            $this->get('session')->set('_security.default.target_path', $this->request->getUri());
+            header('Location: ' . $this->furl . '/login');
             exit;
         }
     }

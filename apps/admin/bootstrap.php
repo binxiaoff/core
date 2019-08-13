@@ -84,10 +84,6 @@ class bootstrap extends Controller
     {
         parent::initialize();
 
-        if ('login' !== $this->current_function) {
-            $_SESSION['request_url'] = $_SERVER['REQUEST_URI'];
-        }
-
         $this->staticsKey = (string) filemtime(__FILE__);
 
         $this->upload = $this->loadLib('upload');
