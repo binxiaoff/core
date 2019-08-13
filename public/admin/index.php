@@ -6,8 +6,8 @@ use Unilend\core\Dispatcher;
 use Unilend\Kernel;
 
 require dirname(__DIR__) . '/../config/bootstrap.php';
-include dirname(__DIR__) . '/../core/controller.class.php';
-include dirname(__DIR__) . '/../core/command.class.php';
+require dirname(__DIR__) . '/../apps/core/controller.class.php';
+require dirname(__DIR__) . '/../apps/core/command.class.php';
 
 header('X-Server: ' . exec('hostname'));
 

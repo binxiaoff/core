@@ -1,7 +1,7 @@
 # Mac
 .DS_Store
 
-/data/crud/*
+/apps/data/crud/*
 
 /protected
 /public/default/images/dyn
