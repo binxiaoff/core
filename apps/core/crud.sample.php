@@ -1,8 +1,10 @@
 <?php
 
+use Unilend\Doctrine\DBAL\Connection;
+
 class --classe--
 {
-    /** @var \Unilend\Doctrine\DBAL\Connection */
+    /** @var Connection */
     protected $bdd;
 
 --declaration--
@@ -33,17 +35,11 @@ class --classe--
         }
     }
 
-    public function update($cs = '')
+    public function update()
     {
 --escapestring--
         $sql = 'UPDATE `--table--` SET --updatefields-- WHERE --id-- = "' . $this->--id-- . '"';
         $this->bdd->query($sql);
-
-        if ($cs == '') {
-            --controleslug--
-        } else {
-            --controleslugmulti--
-        }
 
         $this->get($this->--id--, '--id--');
     }
@@ -57,19 +53,13 @@ class --classe--
         $this->bdd->query($sql);
     }
 
-    public function create($cs = '')
+    public function create()
     {
 --escapestring--
         $sql = 'INSERT INTO `--table--`(--clist--) VALUES(--cvalues--)';
         $this->bdd->query($sql);
 
         $this->--id-- = $this->bdd->insert_id();
-
-        if ($cs == '') {
-            --controleslug--
-        } else {
-            --controleslugmulti--
-        }
 
         $this->get($this->--id--, '--id--');
 

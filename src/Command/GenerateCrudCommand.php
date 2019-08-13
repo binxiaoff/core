@@ -69,7 +69,7 @@ class GenerateCrudCommand extends Command
         }
 
         $tables    = [];
-        $dataDir   = $this->projectDirectory . DIRECTORY_SEPARATOR . 'data';
+        $dataDir   = $this->projectDirectory . DIRECTORY_SEPARATOR . 'apps/data';
         $dataFiles = array_diff(scandir($dataDir), ['.', '..']);
         foreach ($dataFiles as $file) {
             if (false === is_dir($file) && 1 === preg_match('#(.+)\.data\.php$#', $file, $matches)) {

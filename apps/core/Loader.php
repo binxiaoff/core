@@ -40,7 +40,7 @@ class Loader
      */
     public static function crudExists(string $object): bool
     {
-        $path = realpath(__DIR__ . '/..') . '/data/crud/' . $object . '.crud.php';
+        $path = dirname(__DIR__) . '/data/crud/' . $object . '.crud.php';
 
         return file_exists($path);
     }
@@ -55,7 +55,7 @@ class Loader
     public static function generateCrud(string $table): bool
     {
         $db     = self::getConnection();
-        $path   = realpath(__DIR__ . '/..') . '/';
+        $path   = dirname(__DIR__) . '/';
         $result = $db->query('DESC ' . $table);
 
         if ($result) {
@@ -98,31 +98,21 @@ class Loader
                 }
             }
 
-            $updatefields = mb_substr($updatefields, 0, mb_strlen($updatefields) - 1);
-            $clist        = mb_substr($clist, 0, mb_strlen($clist) - 1);
-            $cvalues      = mb_substr($cvalues, 0, mb_strlen($cvalues) - 1);
+            $updatefields = mb_substr($updatefields, 0, -1);
+            $clist        = mb_substr($clist, 0, -1);
+            $cvalues      = mb_substr($cvalues, 0, -1);
 
             $dao = file_get_contents($path . 'core/crud.sample.php');
-
-            $controleslug      = '';
-            $controleslugmulti = '';
-
-            $dao = str_replace('--controleslug--', $controleslug, $dao);
-            $dao = str_replace('--controleslugmulti--', $controleslugmulti, $dao);
 
             if (isset($id[0])) {
                 $dao = str_replace('--id--', $id[0], $dao);
             }
 
-            $dao = str_replace('--declaration--', $declaration, $dao);
-            $dao = str_replace('--initialisation--', $initialisation, $dao);
-            $dao = str_replace('--remplissage--', $remplissage, $dao);
-            $dao = str_replace('--escapestring--', $escapestring, $dao);
-            $dao = str_replace('--updatefields--', $updatefields, $dao);
-            $dao = str_replace('--clist--', $clist, $dao);
-            $dao = str_replace('--cvalues--', $cvalues, $dao);
-            $dao = str_replace('--table--', $table, $dao);
-            $dao = str_replace('--classe--', $table . '_crud', $dao);
+            $dao = str_replace(
+                ['--declaration--', '--initialisation--', '--remplissage--', '--escapestring--', '--updatefields--', '--clist--', '--cvalues--', '--table--', '--classe--'],
+                [$declaration, $initialisation, $remplissage, $escapestring, $updatefields, $clist, $cvalues, $table, $table . '_crud'],
+                $dao)
+            ;
 
             touch($path . 'data/crud/' . $table . '.crud.php');
             $c = fopen($path . 'data/crud/' . $table . '.crud.php', 'r+b');
@@ -143,7 +133,7 @@ class Loader
      */
     public static function loadLib($library)
     {
-        $sProjectPath = realpath(__DIR__ . '/..') . '/';
+        $sProjectPath = dirname(__DIR__) . '/';
         $sClassPath   = '';
         $aPath        = explode('/', $library);
 
@@ -172,7 +162,7 @@ class Loader
             return self::$connection;
         }
 
-        $params = Yaml::parseFile(dirname(__DIR__) . '/config/services.yaml');
+        $params = Yaml::parseFile(dirname(__DIR__) . '/../config/services.yaml');
 
         return self::$connection = DriverManager::getConnection([
             'url' => $_SERVER['DATABASE_URL'] . '&driverClass=' . $params['parameters']['dbal_driver_class'] . '&wrapperClass=' . $params['parameters']['dbal_wrapper_class'],

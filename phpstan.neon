@@ -11,8 +11,8 @@ parameters:
         - tests
     bootstrap: %rootDir%/../../../config/autoload.php
     autoload_files:
-        - %rootDir%/../../../core/command.class.php
-        - %rootDir%/../../../core/controller.class.php
+        - %rootDir%/../../../apps/core/command.class.php
+        - %rootDir%/../../../apps/core/controller.class.php
         - %rootDir%/../../../bin/.phpunit/phpunit-8.1/vendor/autoload.php
     excludes_analyse:
         - %rootDir%/../../../src/Migrations
