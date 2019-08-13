@@ -59,16 +59,9 @@ class Loader
         $result = $db->query('DESC ' . $table);
 
         if ($result) {
-            $nb_cle = 0;
-            while ($record = $db->fetch_assoc($result)) {
-                if ('PRI' === $record['Key']) {
-                    ++$nb_cle;
-                }
-            }
 
             $result = $db->query('DESC ' . $table);
 
-            $slug           = false;
             $declaration    = '';
             $initialisation = '';
             $remplissage    = '';
@@ -92,33 +85,16 @@ class Loader
                     $updatefields .= '`' . $record['Field'] . '` = NOW(),';
                 }
 
-                if ('slug' === $record['Field']) {
-                    $slug = true;
+                if ('PRI' !== $record['Key']) {
+                    $clist .= '`' . $record['Field'] . '`,';
                 }
 
-                //Si la clé primaire est unique, c'est un autoincrémente donc on l'exclus de la liste
-                if (1 === $nb_cle) {
-                    if ('PRI' !== $record['Key']) {
-                        $clist .= '`' . $record['Field'] . '`,';
-                    }
-
-                    if ('PRI' !== $record['Key'] && 'updated' !== $record['Field'] && 'added' !== $record['Field'] && 'hash' !== $record['Field']) {
-                        $cvalues .= "\"'.\$this->" . $record['Field'] . ".'\",";
-                    } elseif ('updated' === $record['Field'] || 'added' === $record['Field']) {
-                        $cvalues .= 'NOW(),';
-                    } elseif ('hash' === $record['Field']) {
-                        $cvalues .= 'MD5(UUID()),';
-                    }
-                } else {
-                    $clist .= '`' . $record['Field'] . '`,';
-
-                    if ('updated' !== $record['Field'] && 'added' !== $record['Field'] && 'hash' !== $record['Field']) {
-                        $cvalues .= "\"'.\$this->" . $record['Field'] . ".'\",";
-                    } elseif ('updated' === $record['Field'] || 'added' === $record['Field']) {
-                        $cvalues .= 'NOW(),';
-                    } elseif ('hash' === $record['Field']) {
-                        $cvalues .= 'md5(UUID()),';
-                    }
+                if ('PRI' !== $record['Key'] && 'updated' !== $record['Field'] && 'added' !== $record['Field'] && 'hash' !== $record['Field']) {
+                    $cvalues .= "\"'.\$this->" . $record['Field'] . ".'\",";
+                } elseif ('updated' === $record['Field'] || 'added' === $record['Field']) {
+                    $cvalues .= 'NOW(),';
+                } elseif ('hash' === $record['Field']) {
+                    $cvalues .= 'MD5(UUID()),';
                 }
             }
 
@@ -126,25 +102,13 @@ class Loader
             $clist        = mb_substr($clist, 0, mb_strlen($clist) - 1);
             $cvalues      = mb_substr($cvalues, 0, mb_strlen($cvalues) - 1);
 
-            if (1 === $nb_cle) {
-                $dao = file_get_contents($path . 'core/crud.sample.php');
+            $dao = file_get_contents($path . 'core/crud.sample.php');
 
-                $controleslug      = '';
-                $controleslugmulti = '';
+            $controleslug      = '';
+            $controleslugmulti = '';
 
-                $dao = str_replace('--controleslug--', $controleslug, $dao);
-                $dao = str_replace('--controleslugmulti--', $controleslugmulti, $dao);
-            } else {
-                $dao = file_get_contents($path . 'core/crud2.sample.php');
-
-                if ($slug) {
-                    $controleslugmulti = "\$this->bdd->controlSlugMultiLn('--table--', \$this->slug, \$this->--id--, \$list_field_value, \$this->id_langue);";
-                } else {
-                    $controleslugmulti = '';
-                }
-
-                $dao = str_replace('--controleslugmulti--', $controleslugmulti, $dao);
-            }
+            $dao = str_replace('--controleslug--', $controleslug, $dao);
+            $dao = str_replace('--controleslugmulti--', $controleslugmulti, $dao);
 
             if (isset($id[0])) {
                 $dao = str_replace('--id--', $id[0], $dao);

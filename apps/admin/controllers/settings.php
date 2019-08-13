@@ -30,15 +30,6 @@ class settingsController extends bootstrap
                 $_SESSION['freeow']['title']   = 'Modification d\'un paramètre';
                 $_SESSION['freeow']['message'] = 'Le paramètre a bien été modifié';
             } catch (\Doctrine\ORM\OptimisticLockException $exception) {
-                /** @var \Psr\Log\LoggerInterface $logger */
-                $logger = $this->get('logger');
-                $logger->error('Unable to update setting "' . $setting->getType() . '" - Message: ' . $exception->getMessage(), [
-                    'class'    => __CLASS__,
-                    'function' => __FUNCTION__,
-                    'file'     => $exception->getFile(),
-                    'line'     => $exception->getLine()
-                ]);
-
                 $_SESSION['freeow']['title']   = 'Modification d\'un paramètre';
                 $_SESSION['freeow']['message'] = 'Impossible de mettre à jour le paramètre';
             }

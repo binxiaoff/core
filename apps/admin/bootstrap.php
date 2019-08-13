@@ -49,11 +49,6 @@ class bootstrap extends Controller
     private const ZONE_LABEL_CONFIGURATION = 'configuration';
     private const ZONE_LABEL_EDITION       = 'edition';
 
-    /**
-     * Helpers.
-     */
-    /** @var \ficelle */
-    protected $ficelle;
     /** @var \upload */
     protected $upload;
 

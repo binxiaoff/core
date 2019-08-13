@@ -4,24 +4,11 @@ parameters:
     dbal_wrapper_class: Unilend\Doctrine\DBAL\Connection
     dbal_driver_class: Facile\DoctrineMySQLComeBack\Doctrine\DBAL\Driver\PDOMySql\Driver
     locale: fr_FR
-    image_resize:
-        projets:
-            authorized:
-                - 72
-                - 169
-            height: 1365
-            width: 2048
     router.request_context.scheme: https
     directory.public: /data/sites/unilend/public/default/
     directory.shared: /data/medias/nfs/
     directory.temporary: '%directory.shared%tmp/'
-    directory.user: '%directory.shared%var/'
-    directory.sftp: '%directory.shared%sftp/'
     directory.protected: '%directory.shared%protected/'
-    directory.logs: /data/log
-    mapbox.token: ''
-    security.bcrypt.cost: 13
-    translation_cache_path: '%kernel.cache_dir%/translations'
 
 services:
     _defaults:
@@ -29,7 +16,6 @@ services:
         autoconfigure: true
         bind:
             $consoleLogger: '@monolog.logger.console'
-            $wsClientLogger: '@monolog.logger.wsclient'
             $defaultLocale: '%locale%'
             $temporaryDirectory: '%directory.temporary%'
             $templateMessageFQCN: 'Unilend\SwiftMailer\TemplateMessage'
@@ -39,7 +25,6 @@ services:
             $currencyFormatter: '@currency_formatter'
             $currencyFormatterNoDecimal: '@currency_formatter_no_decimal'
             $environment: '%kernel.environment%'
-            $protectedDirectory: '%directory.protected%'
             $publicDirectory: '%directory.public%'
             $documentRootDirectory: '%directory.protected%/generated_document/'
             $projectDirectory: '%kernel.project_dir%'
@@ -49,13 +34,7 @@ services:
     Unilend\:
         resource: '%kernel.project_dir%/src/*'
         # The directory Unilend contains the legacy bundles. The services are managed by their own configurations.
-        exclude: '%kernel.project_dir%/src/{Console,Entity,Migrations,Tests,Unilend,Kernel.php}'
-
-    # Define the logger service as public so we can continue to have access to it via $container->get().
-    # But $container->get('logger') is deprecated, do not use it any more.
-    logger:
-        alias: 'monolog.logger'
-        public: true
+        exclude: '%kernel.project_dir%/src/{Console,Entity,Migrations,Tests,Traits,Kernel.php}'
 
     Unilend\Service\Translation\TranslationLoader:
         tags:

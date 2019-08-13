@@ -26,7 +26,8 @@
             }
 
             // Recuperation des elements du template
-            $this->lElements = $this->elements->select('status > 0 AND id_template != 0 AND id_template = ' . $this->tree->id_template, 'ordre ASC');
+            $treeElements = $this->tree_elements->select('id_tree = ' . $this->tree->id_tree);
+            $this->lElements = $this->elements->select(sprintf('id_element in (%s)', implode(',', array_column($treeElements, 'id_element'))));
         ?>
         <div id="langue_fr">
             <fieldset>

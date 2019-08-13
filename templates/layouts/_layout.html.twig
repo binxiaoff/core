@@ -27,7 +27,7 @@
 
         {% block pageHeadScripts %}{% endblock %}
     </head>
-    <body class="{% if app.user is defined and app.user is not empty %}{% if is_granted('ROLE_LENDER') %} ui-user-type-lender{% endif %}{% if is_granted('ROLE_BORROWER') %} ui-user-type-borrower{% endif %}{% else %} ui-no-user{% endif %}{% if bodyClassNames is defined %} {{ bodyClassNames }}{% endif %}">
+    <body class="{% if app.user is defined and app.user is not empty %}{% if is_granted('ROLE_USER') %} ui-user-type-lender{% endif %}{% else %} ui-no-user{% endif %}{% if bodyClassNames is defined %} {{ bodyClassNames }}{% endif %}">
         {#{{ google_tag_manager_body() }}#}
         <div id="top" class="site">
             {% block siteHeader %}
@@ -73,7 +73,7 @@
             {% if app.user
                 and app.session.has(service_terms_session_key)
                 and false == app.session.get(service_terms_session_key)
-                and is_granted('ROLE_LENDER')
+                and is_granted('ROLE_USER')
                 and app.user.isValidated()
                 and app.request.get('_route') != 'service_terms'
             %}
