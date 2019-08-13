@@ -4,4 +4,3 @@ services:
     Xynnn\GoogleTagManagerBundle\Service\GoogleTagManagerInterface: '@google_tag_manager'
     Sonata\CacheBundle\Adapter\SymfonyCache: '@sonata.cache.symfony'
     Swift_Events_EventDispatcher: '@swiftmailer.mailer.default.transport.eventdispatcher'
-    Nexy\Slack\Client: '@nexy_slack.client'
