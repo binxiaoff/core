@@ -17,7 +17,6 @@ doctrine:
                     enum: string
                 options:
                     x_reconnect_attempts: 3
-                schema_filter: ~^(?!(project_search|xerfi))~
             # connection dedicated to Doctrine Migration bundle
             migration:
                 url: '%env(DATABASE_URL_MIGRATION)%&driverClass=%dbal_driver_class%&wrapperClass=%dbal_wrapper_class%'
@@ -28,7 +27,6 @@ doctrine:
                     enum: string
                 options:
                     x_reconnect_attempts: 3
-                schema_filter: ~^(?!(project_search|xerfi))~
     orm:
         auto_generate_proxy_classes: "%kernel.debug%"
         naming_strategy: doctrine.orm.naming_strategy.underscore
