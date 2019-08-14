@@ -8,7 +8,6 @@ use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\{ORMException, OptimisticLockException};
 use Unilend\Entity\AcceptationsLegalDocs;
-use Unilend\Service\ServiceTerms\ServiceTermsManager;
 
 /**
  * @method AcceptationsLegalDocs|null find($id, $lockMode = null, $lockVersion = null)
@@ -18,17 +17,12 @@ use Unilend\Service\ServiceTerms\ServiceTermsManager;
  */
 class AcceptationLegalDocsRepository extends ServiceEntityRepository
 {
-    /** @var ServiceTermsManager */
-    private $serviceTermsManager;
-
     /**
-     * @param ManagerRegistry     $registry
-     * @param ServiceTermsManager $serviceTermsManager
+     * @param ManagerRegistry $registry
      */
-    public function __construct(ManagerRegistry $registry, ServiceTermsManager $serviceTermsManager)
+    public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, AcceptationsLegalDocs::class);
-        $this->serviceTermsManager = $serviceTermsManager;
     }
 
     /**
@@ -50,14 +44,11 @@ class AcceptationLegalDocsRepository extends ServiceEntityRepository
      */
     public function findByIdLegalDocWithoutPfd(int $limit): array
     {
-        $idTree = $this->serviceTermsManager->getCurrentVersionId();
-
         $queryBuilder = $this->createQueryBuilder('ald');
         $queryBuilder
             ->where('ald.idLegalDoc IN (:version)')
-            ->andWhere('ald.pdfName IS NULL')
+            ->andWhere('ald.relativeFilePath IS NULL')
             ->orderBy('ald.idAcceptation', 'ASC')
-            ->setParameter('version', $idTree)
             ->setMaxResults($limit)
         ;
 

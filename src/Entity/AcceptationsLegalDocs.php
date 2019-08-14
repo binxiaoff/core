@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Unilend\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
@@ -16,11 +18,11 @@ class AcceptationsLegalDocs implements FileStorageInterface
     use TimestampableTrait;
 
     /**
-     * @var Tree
+     * @var LegalDocument
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Tree")
+     * @ORM\ManyToOne(targetEntity="Unilend\Entity\LegalDocument")
      * @ORM\JoinColumns({
-     *     @ORM\JoinColumn(name="id_legal_doc", referencedColumnName="id_tree", nullable=false)
+     *     @ORM\JoinColumn(name="id_legal_doc", nullable=false)
      * })
      */
     private $legalDoc;
@@ -52,11 +54,11 @@ class AcceptationsLegalDocs implements FileStorageInterface
     private $relativeFilePath;
 
     /**
-     * @param Tree $legalDoc
+     * @param LegalDocument $legalDoc
      *
      * @return AcceptationsLegalDocs
      */
-    public function setLegalDoc(Tree $legalDoc): AcceptationsLegalDocs
+    public function setLegalDoc(LegalDocument $legalDoc): AcceptationsLegalDocs
     {
         $this->legalDoc = $legalDoc;
 
@@ -64,9 +66,9 @@ class AcceptationsLegalDocs implements FileStorageInterface
     }
 
     /**
-     * @return Tree
+     * @return LegalDocument
      */
-    public function getLegalDoc(): Tree
+    public function getLegalDoc(): LegalDocument
     {
         return $this->legalDoc;
     }

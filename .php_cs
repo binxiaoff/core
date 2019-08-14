@@ -1,9 +1,9 @@
 <?php
 
 $finder = PhpCsFixer\Finder::create()
-    ->in('apps')->exclude(['admin/views/', 'default/views/'])
-    ->in('core')->notPath(['crud2.sample.php', 'crud.sample.php'])
-    ->in(['bin', 'data', 'librairies', 'public', 'src', 'tests'])
+    ->in('apps')->exclude(['admin/views/'])
+    ->in('apps/core')->notPath(['crud.sample.php'])
+    ->in(['bin', 'apps/data', 'apps/librairies', 'public', 'src', 'tests'])
 ;
 
 return PhpCsFixer\Config::create()

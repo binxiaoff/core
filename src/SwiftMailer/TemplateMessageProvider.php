@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Unilend\SwiftMailer;
 
 use Doctrine\ORM\EntityManagerInterface;
@@ -169,14 +171,10 @@ class TemplateMessageProvider
         $settingsRepository = $this->entityManager->getRepository(Settings::class);
 
         return [
-            'staticUrl'       => $this->staticUrl,
-            'frontUrl'        => $this->frontUrl,
-            'adminUrl'        => $this->adminUrl,
-            'facebookLink'    => $settingsRepository->findOneBy(['type' => 'Facebook'])->getValue(),
-            'twitterLink'     => $settingsRepository->findOneBy(['type' => 'Twitter'])->getValue(),
-            'borrowerFAQLink' => $settingsRepository->findOneBy(['type' => 'URL FAQ emprunteur'])->getValue(),
-            'lenderFAQLink'   => $settingsRepository->findOneBy(['type' => 'URL FAQ preteur'])->getValue(),
-            'year'            => date('Y'),
+            'staticUrl' => $this->staticUrl,
+            'frontUrl'  => $this->frontUrl,
+            'adminUrl'  => $this->adminUrl,
+            'year'      => date('Y'),
         ];
     }
 

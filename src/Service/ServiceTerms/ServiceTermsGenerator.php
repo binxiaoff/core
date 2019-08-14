@@ -1,15 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Unilend\Service\ServiceTerms;
 
-use Exception;
-use InvalidArgumentException;
-use Knp\Snappy\Pdf;
 use Doctrine\Common\Persistence\ManagerRegistry;
+use Exception;
+use Knp\Snappy\Pdf;
 use Symfony\Component\Asset\Packages;
 use Twig\Environment;
-use Unilend\Entity\{AcceptationsLegalDocs, Elements, Interfaces\FileStorageInterface, TreeElements};
-use Unilend\Repository\{AcceptationLegalDocsRepository, ElementsRepository, TreeElementsRepository};
+use Unilend\Entity\{AcceptationsLegalDocs, Interfaces\FileStorageInterface};
 use Unilend\Service\Document\AbstractDocumentGenerator;
 
 class ServiceTermsGenerator extends AbstractDocumentGenerator
@@ -25,23 +25,14 @@ class ServiceTermsGenerator extends AbstractDocumentGenerator
     private $staticUrl;
     /** @var string */
     private $publicDirectory;
-    /** @var AcceptationLegalDocsRepository */
-    private $acceptationLegalDocsRepository;
-    /** @var TreeElementsRepository */
-    private $treeElementsRepository;
-    /** @var ElementsRepository */
-    private $elementsRepository;
 
     /**
-     * @param string                         $documentRootDirectory
-     * @param string                         $publicDirectory
-     * @param Environment                    $twig
-     * @param Pdf                            $snappy
-     * @param Packages                       $assetsPackages
-     * @param AcceptationLegalDocsRepository $acceptationLegalDocsRepository
-     * @param TreeElementsRepository         $treeElementsRepository
-     * @param ElementsRepository             $elementsRepository
-     * @param ManagerRegistry                $managerRegistry
+     * @param string          $documentRootDirectory
+     * @param string          $publicDirectory
+     * @param Environment     $twig
+     * @param Pdf             $snappy
+     * @param Packages        $assetsPackages
+     * @param ManagerRegistry $managerRegistry
      */
     public function __construct(
         string $documentRootDirectory,
@@ -49,52 +40,16 @@ class ServiceTermsGenerator extends AbstractDocumentGenerator
         Environment $twig,
         Pdf $snappy,
         Packages $assetsPackages,
-        AcceptationLegalDocsRepository $acceptationLegalDocsRepository,
-        TreeElementsRepository $treeElementsRepository,
-        ElementsRepository $elementsRepository,
         ManagerRegistry $managerRegistry
     ) {
-        $this->publicDirectory                = $publicDirectory;
-        $this->twig                           = $twig;
-        $this->snappy                         = $snappy;
-        $this->staticUrl                      = $assetsPackages->getUrl('');
-        $this->acceptationLegalDocsRepository = $acceptationLegalDocsRepository;
-        $this->treeElementsRepository         = $treeElementsRepository;
-        $this->elementsRepository             = $elementsRepository;
+        $this->publicDirectory = $publicDirectory;
+        $this->twig            = $twig;
+        $this->snappy          = $snappy;
+        $this->staticUrl       = $assetsPackages->getUrl('');
 
         $this->snappy->setBinary('/usr/local/bin/wkhtmltopdf');
 
         parent::__construct($documentRootDirectory, $managerRegistry);
-    }
-
-    /**
-     * @param int $idTree
-     *
-     * @throws Exception
-     *
-     * @return array
-     */
-    public function getNonPersonalizedContent(int $idTree): array
-    {
-        $serviceTermsElements = $this->treeElementsRepository->findBy(['idTree' => $idTree]);
-
-        if (empty($serviceTermsElements)) {
-            throw new InvalidArgumentException('There are not tree elements associated with terms of sales treeId');
-        }
-
-        $content = [];
-        /** @var TreeElements $treeElement */
-        foreach ($serviceTermsElements as $treeElement) {
-            /** @var Elements $element */
-            $element = $this->elementsRepository->findOneBy(['idElement' => $treeElement->getIdElement()]);
-            if (null === $element) {
-                throw new Exception('Tree element has no corresponding element');
-            }
-
-            $content[$element->getSlug()] = $treeElement->getValue();
-        }
-
-        return $content;
     }
 
     /**
@@ -104,12 +59,7 @@ class ServiceTermsGenerator extends AbstractDocumentGenerator
      */
     protected function generateDocument(FileStorageInterface $acceptedLegalDoc): void
     {
-        $template = [
-            'staticUrl' => $this->staticUrl,
-            'content'   => $this->getNonPersonalizedContent($acceptedLegalDoc->getLegalDoc()->getIdTree()),
-        ];
-
-        $content = $this->twig->render('/service_terms/pdf/service_terms.html.twig', $template);
+        $content = $this->twig->render('/service_terms/pdf/service_terms.html.twig', ['content' => $acceptedLegalDoc->getLegalDoc()->getContent()]);
 
         $this->snappy->setOption('user-style-sheet', $this->publicDirectory . 'styles/pdf/style.css');
         $this->snappy->generateFromHtml($content, $this->getFilePath($acceptedLegalDoc), [], true);
@@ -122,7 +72,7 @@ class ServiceTermsGenerator extends AbstractDocumentGenerator
      */
     protected function getFileName(FileStorageInterface $acceptedLegalDoc): string
     {
-        return self::FILE_PREFIX . '-' . $acceptedLegalDoc->getClient()->getHash() . '-' . $acceptedLegalDoc->getLegalDoc()->getIdTree() . '.pdf';
+        return self::FILE_PREFIX . '-' . $acceptedLegalDoc->getClient()->getHash() . '-' . $acceptedLegalDoc->getLegalDoc()->getId() . '.pdf';
     }
 
     /**
