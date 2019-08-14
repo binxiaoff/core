@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Unilend\SwiftMailer;
 
 use Doctrine\ORM\EntityManagerInterface;
@@ -8,7 +10,6 @@ use Psr\Log\LoggerInterface;
 use Swift_RfcComplianceException;
 use Swift_Transport;
 use Unilend\Entity\MailTemplates;
-use Unilend\Entity\Settings;
 
 class UnilendMailer extends \Swift_Mailer
 {
@@ -127,12 +128,6 @@ class UnilendMailer extends \Swift_Mailer
      */
     private function checkEmailAddress(string $email): bool
     {
-        $regex = $this->entityManager
-            ->getRepository(Settings::class)
-            ->findOneBy(['type' => 'Regex validation email'])
-            ->getValue()
-        ;
-
-        return 1 === preg_match($regex, $email);
+        return (bool) filter_var($email, FILTER_VALIDATE_EMAIL);
     }
 }

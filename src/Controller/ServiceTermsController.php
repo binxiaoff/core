@@ -1,16 +1,17 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Unilend\Controller;
 
 use Exception;
 use Psr\Log\LoggerInterface;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\{JsonResponse, Request, Response};
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Unilend\Entity\{AcceptationsLegalDocs, Clients};
-use Unilend\Repository\{AcceptationLegalDocsRepository, BlocsElementsRepository, ElementsRepository, TreeRepository};
+use Unilend\Repository\AcceptationLegalDocsRepository;
 use Unilend\Service\ServiceTerms\ServiceTermsGenerator;
 use Unilend\Service\ServiceTerms\ServiceTermsManager;
 
@@ -43,89 +44,48 @@ class ServiceTermsController extends AbstractController
      *
      * @param UserInterface|Clients|null     $client
      * @param AcceptationLegalDocsRepository $acceptationLegalDocsRepository
-     * @param TreeRepository                 $treeRepository
      * @param ServiceTermsManager            $serviceTermsManager
-     * @param ServiceTermsGenerator          $serviceTermsGenerator
      *
      * @throws Exception
      *
      * @return Response
      */
-    public function currentServiceTerms(
-        ?UserInterface $client,
-        AcceptationLegalDocsRepository $acceptationLegalDocsRepository,
-        TreeRepository $treeRepository,
-        ServiceTermsManager $serviceTermsManager,
-        ServiceTermsGenerator $serviceTermsGenerator
-    ): Response {
-        $legalDocsAcceptance = $acceptationLegalDocsRepository->findOneBy(['client' => $client, 'legalDoc' => $serviceTermsManager->getCurrentVersionId()]);
+    public function currentServiceTerms(?UserInterface $client, AcceptationLegalDocsRepository $acceptationLegalDocsRepository, ServiceTermsManager $serviceTermsManager): Response
+    {
+        $currentServiceTerms    = $serviceTermsManager->getCurrentVersion();
+        $serviceTermsAcceptance = $acceptationLegalDocsRepository->findOneBy(['client' => $client, 'legalDoc' => $currentServiceTerms]);
 
-        if ($legalDocsAcceptance) {
-            return $this->redirectToRoute('service_terms_pdf', ['idAcceptation' => $legalDocsAcceptance->getIdAcceptation()]);
+        if ($serviceTermsAcceptance) {
+            return $this->redirectToRoute('service_terms_pdf', ['idAcceptation' => $serviceTermsAcceptance->getIdAcceptation()]);
         }
 
-        $tree = $treeRepository->findOneBy(['idTree' => $serviceTermsManager->getCurrentVersionId()]);
-
-        $content = $serviceTermsGenerator->getNonPersonalizedContent($tree->getIdTree());
-        $cms     = [
-            'title'         => $tree->getTitle(),
-            'header_image'  => $tree->getImgMenu(),
-            'left_content'  => '',
-            'right_content' => $content,
-        ];
-
-        return $this->render('service_terms/view.html.twig', ['cms' => $cms]);
+        return $this->render('service_terms/view.html.twig', ['serviceTerms' => $currentServiceTerms]);
     }
 
     /**
      * @Route("/conditions-service-popup", name="service_terms_popup", condition="request.isXmlHttpRequest()", methods={"GET"})
      *
-     * @Security("is_granted('ROLE_USER')")
-     *
      * @param UserInterface|Clients|null     $client
      * @param AcceptationLegalDocsRepository $acceptationLegalDocsRepository
-     * @param ElementsRepository             $elementsRepository
-     * @param BlocsElementsRepository        $blocsElementsRepository
-     * @param LoggerInterface                $logger
+     * @param ServiceTermsManager            $serviceTermsManager
      *
      * @return JsonResponse|Response
      */
     public function currentServiceTermsAcceptation(
         ?UserInterface $client,
         AcceptationLegalDocsRepository $acceptationLegalDocsRepository,
-        ElementsRepository $elementsRepository,
-        BlocsElementsRepository $blocsElementsRepository,
-        LoggerInterface $logger
+        ServiceTermsManager $serviceTermsManager
     ): Response {
-        $serviceTermsDetails = '';
-
-        $elementSlug = 'service-terms-new';
-        if ($acceptationLegalDocsRepository->findOneBy(['client' => $client])) {
-            $elementSlug = 'service-terms-update';
-        }
-
-        $element = $elementsRepository->findOneBy(['slug' => $elementSlug]);
-        if ($element) {
-            $blockElement = $blocsElementsRepository->findOneBy(['idElement' => $element->getIdElement()]);
-
-            if ($blockElement) {
-                $serviceTermsDetails = $blockElement->getValue();
-            } else {
-                $logger->error('The block element ID: ' . $element->getIdElement() . ' doesn\'t exist');
-            }
-        } else {
-            $logger->error('The element slug: ' . $elementSlug . ' doesn\'t exist');
-        }
+        $currentServiceTerms  = $serviceTermsManager->getCurrentVersion();
+        $acceptationLegalDocs = $acceptationLegalDocsRepository->findOneBy(['client' => $client]);
 
         return $this->render('service_terms/popup.html.twig', [
-            'serviceTermsDetails' => $serviceTermsDetails,
+            'serviceTermsDetails' => null === $acceptationLegalDocs ? $currentServiceTerms->getFirstTimeInstruction() : $currentServiceTerms->getDifferentialInstruction(),
         ]);
     }
 
     /**
      * @Route("/conditions-service-popup", name="service_terms_popup_accepted", condition="request.isXmlHttpRequest()", methods={"POST"})
-     *
-     * @Security("is_granted('ROLE_USER')")
      *
      * @param Request                    $request
      * @param UserInterface|Clients|null $client

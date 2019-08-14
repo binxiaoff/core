@@ -4,41 +4,40 @@ declare(strict_types=1);
 
 namespace Unilend\Controller\Company;
 
-use Doctrine\ORM\EntityManagerInterface;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
+use Doctrine\ORM\{ORMException, OptimisticLockException};
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\{JsonResponse, Request};
 use Symfony\Component\Routing\Annotation\Route;
 use Unilend\Entity\Companies;
+use Unilend\Repository\CompaniesRepository;
 use Unilend\Service\WebServiceClient\InseeManager;
 
-/**
- * @Security("is_granted('ROLE_USER')")
- */
 class ListController extends AbstractController
 {
     /**
      * @Route("/societe/search", name="company_search_by_siren", methods={"GET"})
      *
-     * @param Request                $request
-     * @param InseeManager           $inseeManager
-     * @param EntityManagerInterface $entityManager
+     * @param Request             $request
+     * @param InseeManager        $inseeManager
+     * @param CompaniesRepository $companyRepository
+     *
+     * @throws ORMException
+     * @throws OptimisticLockException
      *
      * @return JsonResponse
      */
-    public function search(Request $request, InseeManager $inseeManager, EntityManagerInterface $entityManager): JsonResponse
+    public function search(Request $request, InseeManager $inseeManager, CompaniesRepository $companyRepository): JsonResponse
     {
         $siren = $request->query->get('term');
 
-        if (false === empty($siren) && 1 !== preg_match('/^[0-9]{9}$/', $siren)) {
+        if (false === empty($siren) && 1 !== preg_match('/^\d{9}$/', $siren)) {
             return $this->json([
                 'success' => false,
                 'error'   => 'Invalid parameters',
             ]);
         }
 
-        $companyRepository = $entityManager->getRepository(Companies::class);
-        $company           = $companyRepository->findOneBy(['siren' => $siren]);
+        $company = $companyRepository->findOneBy(['siren' => $siren]);
 
         if (null === $company) {
             $name = $inseeManager->searchSiren($siren);
@@ -56,8 +55,7 @@ class ListController extends AbstractController
                 ->setName($name)
             ;
 
-            $entityManager->persist($company);
-            $entityManager->flush();
+            $companyRepository->save($company);
         }
 
         return $this->json([

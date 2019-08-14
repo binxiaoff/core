@@ -6,7 +6,7 @@ namespace Unilend\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
-use Doctrine\ORM\QueryBuilder;
+use Doctrine\ORM\{ORMException, OptimisticLockException, QueryBuilder};
 use Unilend\Entity\Companies;
 use Unilend\Repository\Traits\OrderByHandlerTrait;
 
@@ -28,6 +28,18 @@ class CompaniesRepository extends ServiceEntityRepository
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Companies::class);
+    }
+
+    /**
+     * @param Companies $company
+     *
+     * @throws ORMException
+     * @throws OptimisticLockException
+     */
+    public function save(Companies $company): void
+    {
+        $this->getEntityManager()->persist($company);
+        $this->getEntityManager()->flush();
     }
 
     /**

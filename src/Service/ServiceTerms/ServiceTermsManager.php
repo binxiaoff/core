@@ -4,46 +4,53 @@ declare(strict_types=1);
 
 namespace Unilend\Service\ServiceTerms;
 
-use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\HttpFoundation\RequestStack;
+use Doctrine\ORM\{ORMException, OptimisticLockException};
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
-use Unilend\Entity\{AcceptationsLegalDocs, Clients, Settings, Tree};
+use Unilend\Entity\{AcceptationsLegalDocs, Clients, LegalDocument, Settings};
 use Unilend\Message\ServiceTerms\ServiceTermsAccepted;
+use Unilend\Repository\{AcceptationLegalDocsRepository, LegalDocumentRepository, SettingsRepository};
 
 class ServiceTermsManager
 {
     public const SESSION_KEY_SERVICE_TERMS_ACCEPTED = 'user_legal_doc_accepted';
 
-    public const EXCEPTION_CODE_INVALID_EMAIL        = 1;
-    public const EXCEPTION_CODE_INVALID_PHONE_NUMBER = 2;
-    public const EXCEPTION_CODE_PDF_FILE_NOT_FOUND   = 3;
-
-    /** @var EntityManagerInterface */
-    private $entityManager;
     /** @var TokenStorageInterface */
     private $tokenStorage;
-    /** @var RequestStack */
-    private $requestStack;
+    /** @var SessionInterface */
+    private $session;
     /** @var MessageBusInterface */
     private $messageBus;
+    /** @var AcceptationLegalDocsRepository */
+    private $acceptationLegalDocsRepository;
+    /** @var LegalDocumentRepository */
+    private $legalDocumentRepository;
+    /** @var SettingsRepository */
+    private $settingsRepository;
 
     /**
-     * @param EntityManagerInterface $entityManager
-     * @param TokenStorageInterface  $tokenStorage
-     * @param RequestStack           $requestStack
-     * @param MessageBusInterface    $messageBus
+     * @param AcceptationLegalDocsRepository $acceptationLegalDocsRepository
+     * @param LegalDocumentRepository        $legalDocumentRepository
+     * @param SettingsRepository             $settingsRepository
+     * @param TokenStorageInterface          $tokenStorage
+     * @param SessionInterface               $session
+     * @param MessageBusInterface            $messageBus
      */
     public function __construct(
-        EntityManagerInterface $entityManager,
+        AcceptationLegalDocsRepository $acceptationLegalDocsRepository,
+        LegalDocumentRepository $legalDocumentRepository,
+        SettingsRepository $settingsRepository,
         TokenStorageInterface $tokenStorage,
-        RequestStack $requestStack,
+        SessionInterface $session,
         MessageBusInterface $messageBus
     ) {
-        $this->entityManager = $entityManager;
-        $this->tokenStorage  = $tokenStorage;
-        $this->requestStack  = $requestStack;
-        $this->messageBus    = $messageBus;
+        $this->acceptationLegalDocsRepository = $acceptationLegalDocsRepository;
+        $this->legalDocumentRepository        = $legalDocumentRepository;
+        $this->settingsRepository             = $settingsRepository;
+        $this->tokenStorage                   = $tokenStorage;
+        $this->session                        = $session;
+        $this->messageBus                     = $messageBus;
     }
 
     /**
@@ -52,9 +59,7 @@ class ServiceTermsManager
      */
     public function checkCurrentVersionAccepted(): void
     {
-        $session = $this->requestStack->getCurrentRequest()->getSession();
-
-        if ($session->has(self::SESSION_KEY_SERVICE_TERMS_ACCEPTED)) {
+        if ($this->session->has(self::SESSION_KEY_SERVICE_TERMS_ACCEPTED)) {
             return; // already checked and not accepted
         }
 
@@ -63,43 +68,41 @@ class ServiceTermsManager
         if ($token) {
             $client = $token->getUser();
 
-            if ($client instanceof Clients && false === $this->hasAcceptedCurrentVersion($client)) {
-                $session->set(self::SESSION_KEY_SERVICE_TERMS_ACCEPTED, false);
+            if ($client instanceof Clients && false === $this->hasAccepted($client, $this->getCurrentVersion())) {
+                $this->session->set(self::SESSION_KEY_SERVICE_TERMS_ACCEPTED, false);
             }
         }
     }
 
     /**
-     * @return int
+     * @return LegalDocument
      */
-    public function getCurrentVersionId(): int
+    public function getCurrentVersion(): LegalDocument
     {
-        return (int) $this->entityManager
-            ->getRepository(Settings::class)
-            ->findOneBy(['type' => Settings::TYPE_SERVICE_TERMS_PAGE_ID])
-            ->getValue()
-        ;
+        $currentVersionId = $this->settingsRepository->findOneBy(['type' => Settings::TYPE_SERVICE_TERMS_PAGE_ID])->getValue();
+
+        return $this->legalDocumentRepository->find($currentVersionId);
     }
 
     /**
      * @param Clients $client
      *
+     * @throws ORMException
+     * @throws OptimisticLockException
+     *
      * @return AcceptationsLegalDocs
      */
     public function acceptCurrentVersion(Clients $client): AcceptationsLegalDocs
     {
-        $legalDocument           = $this->entityManager->getRepository(Tree::class)->find($this->getCurrentVersionId());
         $serviceTermsAcceptation = new AcceptationsLegalDocs();
         $serviceTermsAcceptation
-            ->setLegalDoc($legalDocument)
+            ->setLegalDoc($this->getCurrentVersion())
             ->setClient($client)
         ;
 
-        $this->entityManager->persist($serviceTermsAcceptation);
-        $this->entityManager->flush();
+        $this->acceptationLegalDocsRepository->save($serviceTermsAcceptation);
 
-        $session = $this->requestStack->getCurrentRequest()->getSession();
-        $session->remove(self::SESSION_KEY_SERVICE_TERMS_ACCEPTED);
+        $this->session->remove(self::SESSION_KEY_SERVICE_TERMS_ACCEPTED);
 
         $this->messageBus->dispatch(new ServiceTermsAccepted($serviceTermsAcceptation->getIdAcceptation()));
 
@@ -107,27 +110,14 @@ class ServiceTermsManager
     }
 
     /**
-     * @param Clients $client
+     * @param Clients       $client
+     * @param LegalDocument $serviceTerms
      *
      * @return bool
      */
-    public function hasAcceptedCurrentVersion(Clients $client): bool
+    private function hasAccepted(Clients $client, LegalDocument $serviceTerms): bool
     {
-        return $this->hasAccepted($client, $this->getCurrentVersionId());
-    }
-
-    /**
-     * @param Clients $client
-     * @param int     $serviceTermsId
-     *
-     * @return bool
-     */
-    private function hasAccepted(Clients $client, int $serviceTermsId): bool
-    {
-        $legalDocsAcceptance = $this->entityManager
-            ->getRepository(AcceptationsLegalDocs::class)
-            ->findOneBy(['client' => $client, 'legalDoc' => $serviceTermsId])
-        ;
+        $legalDocsAcceptance = $this->acceptationLegalDocsRepository->findOneBy(['client' => $client, 'legalDoc' => $serviceTerms]);
 
         return null !== $legalDocsAcceptance;
     }

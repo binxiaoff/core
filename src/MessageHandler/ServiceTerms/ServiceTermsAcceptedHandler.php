@@ -36,6 +36,8 @@ class ServiceTermsAcceptedHandler implements MessageHandlerInterface
     {
         $serviceTermsAcceptation = $this->acceptationLegalDocsRepository->find($serviceTermsAccepted->getAcceptationId());
 
-        $this->notificationSender->sendAcceptedEmail($serviceTermsAcceptation);
+        if ($serviceTermsAcceptation) {
+            $this->notificationSender->sendAcceptedEmail($serviceTermsAcceptation);
+        }
     }
 }

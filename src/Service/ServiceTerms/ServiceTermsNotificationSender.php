@@ -7,7 +7,6 @@ namespace Unilend\Service\ServiceTerms;
 use Swift_Attachment;
 use Swift_Mailer;
 use Swift_RfcComplianceException;
-use Symfony\Component\Routing\RouterInterface;
 use Unilend\Entity\AcceptationsLegalDocs;
 use Unilend\SwiftMailer\{TemplateMessageProvider, UnilendMailer};
 
@@ -17,8 +16,6 @@ class ServiceTermsNotificationSender
 
     /** @var TemplateMessageProvider */
     private $messageProvider;
-    /** @var RouterInterface */
-    private $router;
     /** @var ServiceTermsGenerator */
     private $serviceTermsGenerator;
     /** @var Swift_Mailer */
@@ -26,14 +23,12 @@ class ServiceTermsNotificationSender
 
     /**
      * @param TemplateMessageProvider $messageProvider
-     * @param RouterInterface         $router
      * @param ServiceTermsGenerator   $serviceTermsGenerator
      * @param UnilendMailer           $mailer
      */
-    public function __construct(TemplateMessageProvider $messageProvider, RouterInterface $router, ServiceTermsGenerator $serviceTermsGenerator, UnilendMailer $mailer)
+    public function __construct(TemplateMessageProvider $messageProvider, ServiceTermsGenerator $serviceTermsGenerator, UnilendMailer $mailer)
     {
         $this->messageProvider       = $messageProvider;
-        $this->router                = $router;
         $this->serviceTermsGenerator = $serviceTermsGenerator;
         $this->mailer                = $mailer;
     }
