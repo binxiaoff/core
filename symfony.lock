@@ -1,4 +1,21 @@
 {
+    "api-platform/api-pack": {
+        "version": "v1.2.0"
+    },
+    "api-platform/core": {
+        "version": "2.1",
+        "recipe": {
+            "repo": "github.com/symfony/recipes",
+            "branch": "master",
+            "version": "2.1",
+            "ref": "18727d8f229306860b46955f438e1897421da689"
+        },
+        "files": [
+            "config/packages/api_platform.yaml",
+            "config/routes/api_platform.yaml",
+            "src/Entity/.gitignore"
+        ]
+    },
     "aws/aws-sdk-php": {
         "version": "3.111.0"
     },
@@ -140,6 +157,9 @@
     },
     "facile-it/doctrine-mysql-come-back": {
         "version": "v1.7"
+    },
+    "fig/link-util": {
+        "version": "1.0.0"
     },
     "friendsofphp/php-cs-fixer": {
         "version": "2.2",
@@ -300,6 +320,18 @@
             "config/packages/test/nelmio_alice.yaml"
         ]
     },
+    "nelmio/cors-bundle": {
+        "version": "1.5",
+        "recipe": {
+            "repo": "github.com/symfony/recipes",
+            "branch": "master",
+            "version": "1.5",
+            "ref": "6e1f64cc0f55362be49764634e8f14ce34a033c6"
+        },
+        "files": [
+            "config/packages/nelmio_cors.yaml"
+        ]
+    },
     "nette/bootstrap": {
         "version": "v3.0.0"
     },
@@ -452,6 +484,9 @@
     },
     "psr/http-message": {
         "version": "1.0.1"
+    },
+    "psr/link": {
+        "version": "1.0.0"
     },
     "psr/log": {
         "version": "1.1.0"
@@ -743,6 +778,9 @@
     "symfony/property-access": {
         "version": "v4.3.0"
     },
+    "symfony/property-info": {
+        "version": "v4.3.3"
+    },
     "symfony/proxy-manager-bridge": {
         "version": "v4.3.0"
     },
@@ -851,6 +889,9 @@
     "symfony/var-exporter": {
         "version": "v4.3.0"
     },
+    "symfony/web-link": {
+        "version": "v4.3.3"
+    },
     "symfony/web-profiler-bundle": {
         "version": "3.3",
         "recipe": {
@@ -909,6 +950,9 @@
     },
     "willdurand/jsonp-callback-validator": {
         "version": "v1.1.0"
+    },
+    "willdurand/negotiation": {
+        "version": "v2.3.1"
     },
     "xynnn/google-tag-manager-bundle": {
         "version": "2.4.2"
