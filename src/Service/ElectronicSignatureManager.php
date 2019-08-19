@@ -8,6 +8,7 @@ use DocuSign\eSign\Api\{AuthenticationApi, AuthenticationApi\LoginOptions, Envel
 use DocuSign\eSign\Model\{Document, EnvelopeDefinition, LoginAccount, LoginInformation, RecipientEmailNotification, RecipientViewRequest, Recipients, SignHere, Signer, Tabs};
 use DocuSign\eSign\{ApiClient, ApiException, Configuration};
 use Lcobucci\JWT\Builder;
+use Lcobucci\JWT\Signer\Key;
 use Lcobucci\JWT\Signer\Rsa\Sha256;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\{Request, RequestStack, Session\SessionInterface};
@@ -296,13 +297,12 @@ class ElectronicSignatureManager
         $builder = new Builder();
         $token   = $builder
             ->issuedBy($this->integratorKey)
-            ->with('sub', $this->userId)
+            ->withClaim('sub', $this->userId)
             ->issuedAt(time())
             ->expiresAt(time() + 3600)
-            ->canOnlyBeUsedBy($this->accountHost)
-            ->with('scope', 'signature impersonation')
-            ->sign($signer, $this->privateKey)
-            ->getToken()
+            ->permittedFor($this->accountHost)
+            ->withClaim('scope', 'signature impersonation')
+            ->getToken($signer, new Key($this->privateKey))
         ;
 
         try {

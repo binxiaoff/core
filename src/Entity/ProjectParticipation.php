@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace Unilend\Entity;
 
+use ApiPlatform\Core\Annotation\ApiResource;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use Unilend\Entity\Traits\{BlamableAddedTrait, RoleableTrait, TimestampableTrait};
 use Unilend\Service\User\RealUserFinder;
 
 /**
+ * @ApiResource
+ *
  * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(columns={"id_project", "id_company"})})
  * @ORM\Entity
  * @ORM\HasLifecycleCallbacks

@@ -268,6 +268,18 @@
     "league/flysystem-aws-s3-v3": {
         "version": "1.0.23"
     },
+    "lexik/jwt-authentication-bundle": {
+        "version": "2.5",
+        "recipe": {
+            "repo": "github.com/symfony/recipes",
+            "branch": "master",
+            "version": "2.5",
+            "ref": "5b2157bcd5778166a5696e42f552ad36529a07a6"
+        },
+        "files": [
+            "config/packages/lexik_jwt_authentication.yaml"
+        ]
+    },
     "mailjet/mailjet-apiv3-php": {
         "version": "v1.4.1"
     },
@@ -319,6 +331,9 @@
             "config/packages/dev/nelmio_alice.yaml",
             "config/packages/test/nelmio_alice.yaml"
         ]
+    },
+    "namshi/jose": {
+        "version": "7.2.3"
     },
     "nelmio/cors-bundle": {
         "version": "1.5",
@@ -771,6 +786,12 @@
     },
     "symfony/polyfill-mbstring": {
         "version": "v1.11.0"
+    },
+    "symfony/polyfill-php56": {
+        "version": "v1.12.0"
+    },
+    "symfony/polyfill-util": {
+        "version": "v1.12.0"
     },
     "symfony/process": {
         "version": "v4.3.0"

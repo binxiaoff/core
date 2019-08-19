@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\Entity;
 
+use ApiPlatform\Core\Annotation\ApiResource;
 use DateTimeImmutable;
 use Doctrine\Common\Collections\{ArrayCollection, Collection, Criteria};
 use Doctrine\ORM\Mapping as ORM;
@@ -17,6 +18,10 @@ use Unilend\Traits\ConstantsAwareTrait;
 use URLify;
 
 /**
+ * @ApiResource(
+ *     attributes={"access_control": "is_granted('ROLE_USER')"}
+ * )
+ *
  * @ORM\Table(indexes={
  *     @ORM\Index(name="slug", columns={"slug"}),
  *     @ORM\Index(name="hash", columns={"hash"})

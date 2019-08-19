@@ -15,6 +15,22 @@ security:
         dev:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
+        api_authentication:
+            pattern:  ^/api/authentication
+            stateless: true
+            anonymous: true
+            json_login:
+                check_path:               /api/authentication_token
+                success_handler:          lexik_jwt_authentication.handler.authentication_success
+                failure_handler:          lexik_jwt_authentication.handler.authentication_failure
+                require_previous_session: false
+        api:
+            pattern:   ^/api
+            stateless: true
+            anonymous: true
+            guard:
+                authenticators:
+                    - lexik_jwt_authentication.jwt_token_authenticator
         default:
             pattern: ^/
             anonymous: ~
@@ -31,6 +47,7 @@ security:
 
     access_control:
         - { path: ^/login$, role: IS_AUTHENTICATED_ANONYMOUSLY }
+        - { path: ^/api, roles: IS_AUTHENTICATED_ANONYMOUSLY }
         - { path: ^/mot-de-passe, role: IS_AUTHENTICATED_ANONYMOUSLY }
         - { path: ^/compte/initialisation/, role: IS_AUTHENTICATED_ANONYMOUSLY }
         - { path: ^/sonata/cache, role: IS_AUTHENTICATED_ANONYMOUSLY }

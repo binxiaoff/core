@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\Entity;
 
+use ApiPlatform\Core\Annotation\ApiResource;
 use DateTime;
 use DateTimeInterface;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -19,6 +20,8 @@ use Unilend\Entity\Traits\{RoleableTrait, StatusTraceableTrait, TimestampableTra
 use URLify;
 
 /**
+ * @ApiResource
+ *
  * @method ClientsStatus getCurrentStatus()
  *
  * @Gedmo\Loggable(logEntryClass="Unilend\Entity\Versioned\VersionedClients")

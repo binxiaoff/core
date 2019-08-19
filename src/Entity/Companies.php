@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace Unilend\Entity;
 
+use ApiPlatform\Core\Annotation\ApiResource;
 use Doctrine\Common\Collections\{ArrayCollection, Collection, Criteria};
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Entity\Traits\TimestampableTrait;
 
 /**
- * Companies.
+ * @ApiResource
  *
  * @ORM\Entity(repositoryClass="Unilend\Repository\CompaniesRepository")
  * @ORM\HasLifecycleCallbacks
@@ -215,9 +216,9 @@ class Companies
     /**
      * Get siret.
      *
-     * @return string
+     * @return string|null
      */
-    public function getSiret(): string
+    public function getSiret(): ?string
     {
         return $this->siret;
     }
@@ -249,9 +250,9 @@ class Companies
     /**
      * Get idParentCompany.
      *
-     * @return Companies
+     * @return Companies|null
      */
-    public function getParent(): Companies
+    public function getParent(): ?Companies
     {
         return $this->parent;
     }
