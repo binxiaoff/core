@@ -5,7 +5,7 @@
     <article id="connexion-inscription" class="page">
         <header class="page-header">
             <div class="site-wrap">
-                <h1>{% trans %} connect-subscribe-page_header-title {% endtrans %}</h1>
+                <h1>{% trans %} connect-subscribe-page.header-title {% endtrans %}</h1>
             </div><!-- /.site-wrap -->
         </header><!-- /.page-header -->
 
@@ -14,17 +14,17 @@
                 <div class="site-wrap">
                     <div class="row">
                         <div class="col-connect col-lg-4 col-md-4">
-                            <h2 class="h3 text-align-left">{% trans %} connect-subscribe-page_login-box-title {% endtrans %}</h2>
+                            <h2 class="h3 text-align-left">{% trans %} connect-subscribe-page.login-box-title {% endtrans %}</h2>
                             <form action="{{ path('login-check') }}" method="post" class="form-connect secure-form" data-formvalidation data-formvalidation-shownotifications="false">
                                 <div class="panel panel-connect">
                                     <div class="panel-inner">
                                         {% if error is not empty %}
                                             <div id="form-connect-notifications">
-                                                <p>{{ "connect-subscribe-page_login-box-error-message-#{ error.message }"|trans }}</p>
+                                                <p>{{ "connect-subscribe-page.login-box-error-message-#{ error.message }"|trans }}</p>
                                             </div>
                                         {% endif %}
                                         <div class="form-field">
-                                            <label for="connect-access-email">{% trans %} common_email {% endtrans %}</label>
+                                            <label for="connect-access-email">{% trans %} common.email {% endtrans %}</label>
                                             <div class="input-group set-left">
                                                 <div class="btn-group">
                                                     <label for="connect-access-email"><span class="icon fa-envelope-o"></span></label>
@@ -35,7 +35,7 @@
                                         </div><!-- /.form-field -->
 
                                         <div class="form-field">
-                                            <label for="connect-access-password">{% trans %} common_password {% endtrans %}</label>
+                                            <label for="connect-access-password">{% trans %} common.password {% endtrans %}</label>
                                             <div class="input-group set-left">
                                                 <div class="btn-group">
                                                     <label for="connect-access-password"><span class="icon fa-lock-u"></span></label>
@@ -47,7 +47,7 @@
                                         <div class="field-help">
                                             <p>
                                                 <a href="#dialog-password-forgotten-content" class="fancybox-html">
-                                                    {% trans %} connect-subscribe-page_login-box-password-forgotten-link {% endtrans %}
+                                                    {% trans %} connect-subscribe-page.login-box-password-forgotten-link {% endtrans %}
                                                 </a>
                                             </p>
                                         </div>
@@ -57,7 +57,7 @@
                                         {% if displayLoginCaptcha is defined and displayLoginCaptcha %}
                                             {% include '/partials/recaptcha.html.twig' %}
                                         {% endif %}
-                                        <button type="submit" class="btn-primary" data-spinnerbutton>{% trans %} connect-subscribe-page_login-box-connect-button {% endtrans %}</button>
+                                        <button type="submit" class="btn-primary" data-spinnerbutton>{% trans %} connect-subscribe-page.login-box-connect-button {% endtrans %}</button>
                                     </div>
                                 </div><!-- /.panel -->
                                 <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
@@ -65,29 +65,29 @@
                         </div><!-- /.col-connect -->
 
                         <div class="col-register col-lg-8 col-md-8">
-                            <h2 class="h3 text-align-left">{% trans %} connect-subscribe-page_subscribe-box-title {% endtrans %}</h2>
+                            <h2 class="h3 text-align-left">{% trans %} connect-subscribe-page.subscribe-box-title {% endtrans %}</h2>
                             <div class="row">
                                 <div class="col-emprunter col-lg-6 col-md-6">
                                     <div class="panel panel-emprunter">
                                         <div class="panel-inner" data-equal-height="md lg">
-                                            <h3>{% trans %} connect-subscribe-page_subscribe-box-borrower-title {% endtrans %}</h3>
-                                            <p>{% trans %} connect-subscribe-page_subscribe-box-borrower-text {% endtrans %}</p>
-                                            {#<p><a href="{{ path('home_borrower') }}" class="link">{% trans %} connect-subscribe-page_subscribe-box-borrower-more-link {% endtrans %}</a></p>#}
+                                            <h3>{% trans %} connect-subscribe-page.subscribe-box-borrower-title {% endtrans %}</h3>
+                                            <p>{% trans %} connect-subscribe-page.subscribe-box-borrower-text {% endtrans %}</p>
+                                            {#<p><a href="{{ path('home_borrower') }}" class="link">{% trans %} connect-subscribe-page.subscribe-box-borrower-more-link {% endtrans %}</a></p>#}
                                         </div><!-- /.panel-inner -->
                                         {#<div class="btn-controls">#}
-                                            {#<a href="{{ path('home_borrower') }}#homeemp-section-esim" class="btn-alternate">{% trans %} connect-subscribe-page_subscribe-box-borrower-button {% endtrans %}</a>#}
+                                            {#<a href="{{ path('home_borrower') }}#homeemp-section-esim" class="btn-alternate">{% trans %} connect-subscribe-page.subscribe-box-borrower-button {% endtrans %}</a>#}
                                         {#</div>#}
                                     </div><!-- /.panel -->
                                 </div>
                                 <div class="col-preter col-lg-6 col-md-6">
                                     <div class="panel panel-preter">
                                         <div class="panel-inner" data-equal-height="md lg">
-                                            <h3>{% trans %} connect-subscribe-page_subscribe-box-lender-title {% endtrans %}</h3>
-                                            <p>{% trans %} connect-subscribe-page_subscribe-box-lender-text {% endtrans %}</p>
-                                            {#<p><a href="{{ path('home_lender') }}" class="link">{% trans %} connect-subscribe-page_subscribe-box-lender-more-link {% endtrans %}</a></p>#}
+                                            <h3>{% trans %} connect-subscribe-page.subscribe-box-lender-title {% endtrans %}</h3>
+                                            <p>{% trans %} connect-subscribe-page.subscribe-box-lender-text {% endtrans %}</p>
+                                            {#<p><a href="{{ path('home_lender') }}" class="link">{% trans %} connect-subscribe-page.subscribe-box-lender-more-link {% endtrans %}</a></p>#}
                                         </div><!-- /.panel-inner -->
                                         {#<div class="btn-controls">#}
-                                            {#<a href="{{ path('lender_subscription_personal_information') }}" class="btn-primary">{% trans %} connect-subscribe-page_subscribe-box-lender-button {% endtrans %}</a>#}
+                                            {#<a href="{{ path('lender_subscription_personal_information') }}" class="btn-primary">{% trans %} connect-subscribe-page.subscribe-box-lender-button {% endtrans %}</a>#}
                                         {#</div>#}
                                     </div><!-- /.panel -->
                                 </div>
