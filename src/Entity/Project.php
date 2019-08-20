@@ -161,6 +161,15 @@ class Project
     private $expectedClosingDate;
 
     /**
+     * @var DateTimeImmutable
+     *
+     * @ORM\Column(type="date_immutable", nullable=true)
+     *
+     * @Assert\Date
+     */
+    private $lenderConsultationClosingDate;
+
+    /**
      * @var ProjectStatusHistory|null
      *
      * @ORM\OneToOne(targetEntity="Unilend\Entity\ProjectStatusHistory")
@@ -518,6 +527,26 @@ class Project
     public function setExpectedClosingDate(?DateTimeImmutable $expectedClosingDate): Project
     {
         $this->expectedClosingDate = $expectedClosingDate;
+
+        return $this;
+    }
+
+    /**
+     * @return DateTimeImmutable
+     */
+    public function getLenderConsultationClosingDate(): ?DateTimeImmutable
+    {
+        return $this->lenderConsultationClosingDate;
+    }
+
+    /**
+     * @param DateTimeImmutable $lenderConsultationClosingDate
+     *
+     * @return Project
+     */
+    public function setLenderConsultationClosingDate(DateTimeImmutable $lenderConsultationClosingDate): Project
+    {
+        $this->lenderConsultationClosingDate = $lenderConsultationClosingDate;
 
         return $this;
     }
@@ -969,7 +998,7 @@ class Project
     {
         $loans = [];
         foreach ($this->getTranches() as $tranche) {
-            $loans = array_merge($loans, $tranche->getLoans()->toArray());
+            array_push($loans, ...$tranche->getLoans()->toArray());
         }
 
         return new ArrayCollection($loans);

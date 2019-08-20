@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Unilend\Form\Project;
 
-use Doctrine\Common\Persistence\ManagerRegistry;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\Extension\Core\Type\{CheckboxType, DateType, TextType, TextareaType};
 use Symfony\Component\Form\{AbstractType, FormBuilderInterface, FormError, FormEvent, FormEvents};
@@ -18,9 +17,6 @@ use Unilend\Repository\{CompaniesRepository, MarketSegmentRepository};
 
 class ProjectType extends AbstractType
 {
-    /** @var ManagerRegistry */
-    private $managerRegistry;
-
     /** @var TokenStorageInterface */
     private $tokenStorage;
 
@@ -34,20 +30,17 @@ class ProjectType extends AbstractType
     private $marketSegmentRepository;
 
     /**
-     * @param ManagerRegistry         $managerRegistry
      * @param TokenStorageInterface   $tokenStorage
      * @param TranslatorInterface     $translator
      * @param CompaniesRepository     $companyRepository
      * @param MarketSegmentRepository $marketSegmentRepository
      */
     public function __construct(
-        ManagerRegistry $managerRegistry,
         TokenStorageInterface $tokenStorage,
         TranslatorInterface $translator,
         CompaniesRepository $companyRepository,
         MarketSegmentRepository $marketSegmentRepository
     ) {
-        $this->managerRegistry         = $managerRegistry;
         $this->tokenStorage            = $tokenStorage;
         $this->translator              = $translator;
         $this->companyRepository       = $companyRepository;
@@ -100,6 +93,14 @@ class ProjectType extends AbstractType
             ])
             ->add('expectedClosingDate', DateType::class, [
                 'label'    => 'project-form.expected-closing-date-label',
+                'required' => false,
+                'widget'   => 'single_text',
+                'input'    => 'datetime_immutable',
+                'format'   => 'dd/MM/yyyy',
+                'attr'     => ['class' => 'ui-has-datepicker'],
+            ])
+            ->add('lenderConsultationClosingDate', DateType::class, [
+                'label'    => 'project-form.lender-consultation-date-label',
                 'required' => false,
                 'widget'   => 'single_text',
                 'input'    => 'datetime_immutable',

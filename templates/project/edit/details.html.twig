@@ -80,6 +80,20 @@
                                         {% endif %}
                                     </dd>
                                 </dl>
+                                <dl class="col-md-6 col-lg-6">
+                                    <dt>Fin de consultation prêteur</dt>
+                                    <dd>
+                                        {% if project.isEditable %}
+                                            <a href="#" id="consultation-closing-date" class="editable" data-type="text" data-pk="{{ project.id }}" data-inputclass="input-field">
+                                                {% if project.lenderConsultationClosingDate %}{{ project.lenderConsultationClosingDate|localizeddate('short', 'none') }}{% endif %}
+                                            </a>
+                                        {% elseif project.lenderConsultationClosingDate %}
+                                            {{ project.lenderConsultationClosingDate|localizeddate('short', 'none') }}
+                                        {% else %}
+                                            N/A
+                                        {% endif %}
+                                    </dd>
+                                </dl>
                             </div>
 
                             {#<div class="row margin-10-t">
