@@ -151,17 +151,17 @@ class EditController extends AbstractController
      *
      * @IsGranted("edit", subject="project")
      *
-     * @param Project                      $project
-     * @param Request                      $request
-     * @param UserInterface|Clients|null   $user
-     * @param ProjectStatusManager         $projectStatusManager
-     * @param MailerManager                $mailerManager
-     * @param LoggerInterface              $logger
-     * @param TrancheRepository            $trancheRepository
-     * @param BidsRepository               $bidsRepository
-     * @param AcceptedBidsRepository       $acceptedBidRepository
-     * @param EntityManagerInterface       $entityManager
-     * @param RealUserFinder               $realUserFinder
+     * @param Project                    $project
+     * @param Request                    $request
+     * @param UserInterface|Clients|null $user
+     * @param ProjectStatusManager       $projectStatusManager
+     * @param MailerManager              $mailerManager
+     * @param LoggerInterface            $logger
+     * @param TrancheRepository          $trancheRepository
+     * @param BidsRepository             $bidsRepository
+     * @param AcceptedBidsRepository     $acceptedBidRepository
+     * @param EntityManagerInterface     $entityManager
+     * @param RealUserFinder             $realUserFinder
      *
      * @throws ConnectionException
      *
@@ -285,6 +285,7 @@ class EditController extends AbstractController
                 break;
             case 'response-date':
             case 'closing-date':
+            case 'consultation-closing-date':
                 if ($value && 1 === preg_match('#^[0-9]{2}/[0-9]{2}/[0-9]{4}$#', $value)) {
                     $value = DateTimeImmutable::createFromFormat('d/m/Y', $value)->setTime(0, 0, 0);
                 } else {
@@ -297,6 +298,10 @@ class EditController extends AbstractController
                         break;
                     case 'closing-date':
                         $project->setExpectedClosingDate($value);
+
+                        break;
+                    case 'consultation-closing-date':
+                        $project->setLenderConsultationClosingDate($value);
 
                         break;
                 }

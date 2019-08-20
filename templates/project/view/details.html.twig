@@ -61,14 +61,18 @@
                         <div class="row{% if projectAttachments|length %} col-lg-9 col-md-9 col-sm-9{% endif %}">
                             <dl class="col-lg-6 col-md-6">
                                 <dt>Date de dépôt</dt>
-                                <dd>{{ project.added|date('d/m/Y') }}</dd>
+                                <dd>{{ project.added|localizeddate('short', 'none') }}</dd>
                                 {% if project.replyDeadline is not empty %}
                                     <dt>Date butoir de réponse</dt>
-                                    <dd>{{ project.replyDeadline|date('d/m/Y') }}</dd>
+                                    <dd>{{ project.replyDeadline|localizeddate('short', 'none') }}</dd>
                                 {% endif %}
                                 {% if project.expectedClosingDate is not empty %}
                                     <dt>Date de closing envisagée</dt>
-                                    <dd>{{ project.expectedClosingDate|date('d/m/Y') }}</dd>
+                                    <dd>{{ project.expectedClosingDate|localizeddate('short', 'none') }}</dd>
+                                {% endif %}
+                                {% if project.lenderConsultationClosingDate is not empty %}
+                                    <dt>Fin de consultation prêteur</dt>
+                                    <dd>{{ project.lenderConsultationClosingDate|localizeddate('short', 'none') }}</dd>
                                 {% endif %}
                             </dl>
                             <dl class="col-lg-6 col-md-6">
