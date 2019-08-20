@@ -149,11 +149,7 @@ class Connection extends BaseConnection
         $statement = $this->executeQuery('SELECT slug FROM ' . $table . ' WHERE slug = :slug AND ' . $idName . ' != :value', $params);
 
         if ($statement->rowCount() == 1 || $slug == "") {
-            if ($table == 'tree' && $idValue == 1 && $slug == '') {
-                $slug = '';
-            } else {
-                $slug = $slug . '-' . $idValue;
-            }
+            $slug = $slug . '-' . $idValue;
         }
 
         $sql = 'UPDATE ' . $table . ' SET slug = "' . $slug . '" WHERE ' . $idName .' = '. $idValue;

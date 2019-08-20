@@ -1,14 +1,12 @@
 <div id="contenu">
     <h1>Liste des traductions</h1>
-    <div class="row form-group">
-        <div class="col-sm-12">
-            <a href="<?= $this->url ?>/traductions/regenerateTranslationCache" class="btn-primary pull-left">
-                Appliquer les modifications
-            </a>
-            <a href="<?= $this->url ?>/traductions/add" class="btn-primary pull-left thickbox" style="margin-left: 10px;">Ajouter une traduction</a>&nbsp;
-            <a href="<?= $this->url ?>/traductions/export" class="btn-default pull-left" style="margin-left: 10px;">Export</a>&nbsp;&nbsp;
-        </div>
-    </div>
+    <p>
+        <a href="<?= $this->url ?>/traductions/regenerateTranslationCache" class="btn-primary">
+            Appliquer les modifications
+        </a>
+        <a href="<?= $this->url ?>/traductions/add" class="btn-primary thickbox" style="margin-left: 10px;">Ajouter une traduction</a>&nbsp;
+        <a href="<?= $this->url ?>/traductions/export" class="btn-default" style="margin-left: 10px;">Export</a>&nbsp;&nbsp;
+    </p>
     <?php if (count($this->lSections) > 0) : ?>
         <table class="large">
             <tr>

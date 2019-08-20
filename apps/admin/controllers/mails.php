@@ -1,7 +1,7 @@
 <?php
 
 use Symfony\Component\HttpFoundation\Request;
-use Unilend\Entity\{MailQueue, MailTemplates, Translations, Zones};
+use Unilend\Entity\{MailQueue, MailTemplates, Translations};
 use Unilend\Service\Mailer\{MailQueueManager, MailTemplateManager};
 
 class mailsController extends bootstrap
@@ -12,16 +12,16 @@ class mailsController extends bootstrap
     public function initialize()
     {
         parent::initialize();
+
+        $this->menu_admin = 'mails';
     }
 
     public function _default()
     {
-        $this->menu_admin = 'edition';
-
         /** @var MailTemplateManager $mailTemplateManager */
         $mailTemplateManager = $this->get('unilend.service.mail_template');
 
-        if (isset($this->params[0]) && $this->params[0] == 'delete') {
+        if (isset($this->params[0]) && $this->params[0] === 'delete') {
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager          = $this->get('doctrine.orm.entity_manager');
             $mailTemplateRepository = $entityManager->getRepository(MailTemplates::class);
@@ -64,8 +64,6 @@ class mailsController extends bootstrap
 
     public function _add()
     {
-        $this->menu_admin = 'edition';
-
         if ($this->request->isMethod(Request::METHOD_POST)) {
             /** @var MailTemplateManager $mailTemplateManager */
             $mailTemplateManager = $this->get('unilend.service.mail_template');
@@ -125,8 +123,6 @@ class mailsController extends bootstrap
 
     public function _edit()
     {
-        $this->menu_admin = 'edition';
-
         /** @var MailTemplateManager $mailTemplateManager */
         $mailTemplateManager = $this->get('unilend.service.mail_template');
 
@@ -225,7 +221,7 @@ class mailsController extends bootstrap
 
     public function _emailhistory()
     {
-        $this->menu_admin = 'configuration';
+        $this->menu_admin = 'mailshistory';
 
         /** @var MailQueueManager $mailQueueManager */
         $mailQueueManager = $this->get('unilend.service.mail_queue');
@@ -244,7 +240,7 @@ class mailsController extends bootstrap
 
     public function _recherche()
     {
-        $this->menu_admin = 'configuration';
+        $this->menu_admin = 'mailshistory';
 
         $this->hideDecoration();
         $_SESSION['request_url'] = $this->url;
