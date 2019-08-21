@@ -223,7 +223,7 @@ abstract class Controller implements ContainerAwareInterface
         $this->spath = $this->path . 'public/default/var/';
 
         $this->url  = $this->getParameter('router.request_context.scheme') . '://' . getenv('HOST_ADMIN_URL');
-        $this->furl = $this->getParameter('router.request_context.scheme') . '://' . getenv('HOST_DEFAULT_URL');
+        $this->furl = $this->getParameter('router.request_context.scheme') . '://' . getenv('HOST_APP_URL');
 
         try {
             $this->denyAccessUnlessGranted(BackOfficeZoneVoter::ATTRIBUTE_VIEW, $this->Command);
