@@ -1,6 +1,6 @@
 <?php
 
-use Unilend\Entity\{Settings, Zones};
+use Unilend\Entity\Settings;
 
 class settingsController extends bootstrap
 {
@@ -8,7 +8,7 @@ class settingsController extends bootstrap
     {
         parent::initialize();
 
-        $this->menu_admin = 'configuration';
+        $this->menu_admin = 'settings';
     }
 
     public function _default()

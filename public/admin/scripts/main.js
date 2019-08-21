@@ -133,37 +133,6 @@ $(function () {
     }
 })
 
-/* Set du nouvel ID parent pour les 2 langues */
-function setNewIdParent(id) {
-    document.getElementById('id_parent').value = id;
-}
-
-/* Chack formulaire edition user */
-function checkFormModifUser() {
-    if (document.getElementById('email').value == '') {
-        alert("Vous devez indiquer une adresse e-mail !");
-        return false;
-    }
-
-    return true;
-}
-
-/* Check du formulaire d'ajout d'un user */
-function checkFormAjoutUser() {
-    if (document.getElementById('email').value == '') {
-        alert("Vous devez indiquer une adresse e-mail !");
-        return false;
-    } else if (document.getElementById('firstname').value == '') {
-        alert("Vous devez indiquer un prenom !");
-        return false;
-    } else if (document.getElementById('name').value == '') {
-        alert("Vous devez indiquer un nom de famille !");
-        return false;
-    }
-
-    return true;
-}
-
 function no_cache() {
     date_object = new Date();
     var param = date_object.getTime();
@@ -184,105 +153,6 @@ function AjaxObject() {
         alert('Votre navigateur ne supporte pas les objets XMLHTTPRequest...');
 
     }
-}
-
-/* Fonction AJAX delete image ELEMENT */
-function deleteImageElement(id_elt, slug) {
-    xhr_object = AjaxObject();
-    var param = no_cache();
-
-    xhr_object.onreadystatechange = function () {
-        if (xhr_object.readyState != 4) {
-            document.getElementById('deleteImageElement' + id_elt).innerHTML = '<img src="' + add_url + '/images/ajax-loader.gif">';
-        }
-        if (xhr_object.readyState == 4 && xhr_object.status == 200) {
-            var reponse = xhr_object.responseText;
-            document.getElementById('deleteImageElement' + id_elt).innerHTML = reponse;
-            document.getElementById(slug + '-old').value = '';
-            document.getElementById('nom_' + slug).value = '';
-        }
-    };
-    xhr_object.open('GET', add_url + '/ajax/deleteImageElement/' + id_elt + '/' + param, true);
-    xhr_object.send(null);
-}
-
-/* Fonction AJAX delete fichier ELEMENT */
-function deleteFichierElement(id_elt, slug) {
-    xhr_object = AjaxObject();
-    var param = no_cache();
-
-    xhr_object.onreadystatechange = function () {
-        if (xhr_object.readyState != 4) {
-            document.getElementById('deleteFichierElement' + id_elt).innerHTML = '<img src="' + add_url + '/images/ajax-loader.gif">';
-        }
-        if (xhr_object.readyState == 4 && xhr_object.status == 200) {
-            var reponse = xhr_object.responseText;
-            document.getElementById('deleteFichierElement' + id_elt).innerHTML = reponse;
-            document.getElementById(slug + '-old').value = '';
-            document.getElementById('nom_' + slug).value = '';
-        }
-    };
-    xhr_object.open('GET', add_url + '/ajax/deleteFichierElement/' + id_elt + '/' + param, true);
-    xhr_object.send(null);
-}
-
-/* Fonction AJAX delete image ELEMENT BLOC */
-function deleteImageElementBloc(id_elt, slug) {
-    xhr_object = AjaxObject();
-    var param = no_cache();
-
-    xhr_object.onreadystatechange = function () {
-        if (xhr_object.readyState != 4) {
-            document.getElementById('deleteImageElementBloc' + id_elt).innerHTML = '<img src="' + add_url + '/images/ajax-loader.gif">';
-        }
-        if (xhr_object.readyState == 4 && xhr_object.status == 200) {
-            var reponse = xhr_object.responseText;
-            document.getElementById('deleteImageElementBloc' + id_elt).innerHTML = reponse;
-            document.getElementById(slug + '-old').value = '';
-            document.getElementById('nom_' + slug).value = '';
-        }
-    };
-    xhr_object.open('GET', add_url + '/ajax/deleteImageElementBloc/' + id_elt + '/' + param, true);
-    xhr_object.send(null);
-}
-
-/* Fonction AJAX delete fichier ELEMENT Bloc */
-function deleteFichierElementBloc(id_elt, slug) {
-    xhr_object = AjaxObject();
-    var param = no_cache();
-
-    xhr_object.onreadystatechange = function () {
-        if (xhr_object.readyState != 4) {
-            document.getElementById('deleteFichierElementBloc' + id_elt).innerHTML = '<img src="' + add_url + '/images/ajax-loader.gif">';
-        }
-        if (xhr_object.readyState == 4 && xhr_object.status == 200) {
-            var reponse = xhr_object.responseText;
-            document.getElementById('deleteFichierElementBloc' + id_elt).innerHTML = reponse;
-            document.getElementById(slug + '-old').value = '';
-            document.getElementById('nom_' + slug).value = '';
-        }
-    };
-    xhr_object.open('GET', add_url + '/ajax/deleteFichierElementBloc/' + id_elt + '/' + param, true);
-    xhr_object.send(null);
-}
-
-/* Fonction AJAX delete image TREE */
-function deleteImageTree(id_tree, lng) {
-    xhr_object = AjaxObject();
-    var param = no_cache();
-
-    xhr_object.onreadystatechange = function () {
-        if (xhr_object.readyState != 4) {
-            document.getElementById('deleteImageTree_' + lng).innerHTML = '<img src="' + add_url + '/images/ajax-loader.gif">';
-        }
-        if (xhr_object.readyState == 4 && xhr_object.status == 200) {
-            var reponse = xhr_object.responseText;
-            document.getElementById('deleteImageTree_' + lng).innerHTML = reponse;
-            document.getElementById('img_menu_' + lng + '-old').value = '';
-        }
-    };
-    xhr_object.open('GET', add_url + '/ajax/deleteImageTree/' + id_tree + '/' + lng + '/' + param, true);
-    xhr_object.send(null);
 }
 
 /* Fonction AJAX chargement des noms de la section de traduction */
@@ -334,19 +204,4 @@ function loadTradTexte(nom, section) {
     else {
         document.getElementById('elementTraduction').innerHTML = '';
     }
-}
-
-/* Activer un utilisateur sur une zone */
-function activeUserZone(id_user, id_zone, zone) {
-    xhr_object = AjaxObject();
-    var param = no_cache();
-
-    xhr_object.onreadystatechange = function () {
-        if (xhr_object.readyState == 4 && xhr_object.status == 200) {
-            var reponse = xhr_object.responseText;
-            document.getElementById(zone).src = reponse;
-        }
-    };
-    xhr_object.open('GET', add_url + '/users/activeUserZone/' + id_user + '/' + id_zone + '/' + param, true);
-    xhr_object.send(null);
 }

@@ -38,6 +38,14 @@ abstract class Controller implements ContainerAwareInterface
     private $included_css = [];
     /** @var array */
     private $included_js = [];
+    /** @var string */
+    protected $path;
+    /** @var string */
+    protected $spath;
+    /** @var string */
+    protected $url;
+    /** @var string */
+    protected $furl;
 
     /**
      * @param Command      $command

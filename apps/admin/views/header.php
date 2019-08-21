@@ -19,32 +19,11 @@
     </div>
 </div>
 <div id="navigation">
-    <ul id="menu_deroulant">
-        <?php
-        $menuHtml = '';
-        foreach (static::MENU as $item) {
-            $zone  = $item['zone'];
-            $title = $item['title'];
-
-            // Item visibility
-                $active = isset($this->menu_admin) && $this->menu_admin === $zone ? ' class="active"' : '';
-                $menuHtml .= '<li>';
-                $menuHtml .= empty($item['uri']) ? '<span' . $active . '>' . $title . '</span>' : '<a href="' . $this->url . '/' . $item['uri'] . '"' . $active . '>' . $title . '</a>';
-
-                if (false === empty($item['children'])) {
-                    $menuHtml .= '<ul class="sous_menu">';
-                    foreach ($item['children'] as $subItem) {
-                        if (false === isset($subItem['zone']) || in_array($subItem['zone'], $this->lZonesHeader)) {
-                            $menuHtml .= '<li><a href="' . $this->url . '/' . $subItem['uri'] . '">' . $subItem['title'] . '</a><li>';
-                        }
-                    }
-                    $menuHtml .= '</ul>';
-                }
-                $menuHtml .= '</li>';
-        }
-
-        ?>
-        <?php echo $menuHtml; ?>
+    <ul>
+        <li<?= isset($this->menu_admin) && 'traductions' === $this->menu_admin ? ' class="active"' : ''; ?>><a href="/traductions">Traductions</a></li>
+        <li<?= isset($this->menu_admin) && 'mails' === $this->menu_admin ? ' class="active"' : ''; ?>><a href="/mails">Emails</a></li>
+        <li<?= isset($this->menu_admin) && 'mailshistory' === $this->menu_admin ? ' class="active"' : ''; ?>><a href="/mails/emailhistory">Historique enovis emails</a></li>
+        <li<?= isset($this->menu_admin) && 'settings' === $this->menu_admin ? ' class="active"' : ''; ?>><a href="/settings">Paramètres</a></li>
     </ul>
 </div>
 <div id="freeow-tr" class="freeow freeow-top-right"></div>

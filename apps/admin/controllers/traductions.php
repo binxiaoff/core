@@ -1,6 +1,5 @@
 <?php
 
-use Unilend\Entity\Zones;
 use Unilend\Service\Translation\TranslationManager;
 
 class traductionsController extends bootstrap
@@ -9,7 +8,7 @@ class traductionsController extends bootstrap
     {
         parent::initialize();
 
-        $this->menu_admin = 'edition';
+        $this->menu_admin = 'traductions';
     }
 
     public function _default()

@@ -441,12 +441,6 @@
     "swiftmailer/swiftmailer": {
         "version": "v6.2.1"
     },
-    "symfony-cmf/routing": {
-        "version": "2.1.0"
-    },
-    "symfony-cmf/routing-bundle": {
-        "version": "2.1.1"
-    },
     "symfony/asset": {
         "version": "v4.3.0"
     },
