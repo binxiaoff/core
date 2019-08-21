@@ -111,6 +111,7 @@ class EditController extends AbstractController
             'feesForm'                 => $feesForm ? $feesForm->createView() : null,
             'partialBidForm'           => $partialBidForm->createView(),
             'confidentialityForm'      => $confidentialityForm->createView(),
+            'offerVisibilities'        => Project::getAllOfferVisibilities(),
         ];
 
         return $this->render('project/edit/details.html.twig', $template);
@@ -364,6 +365,11 @@ class EditController extends AbstractController
                 $project->setInternalRatingScore($value);
 
                 $outputValue = $project->getInternalRatingScore();
+
+                break;
+            case 'offer-visibility':
+                $project->setOfferVisibility((int) $value);
+                $outputValue = $project->getOfferVisibility();
 
                 break;
         }

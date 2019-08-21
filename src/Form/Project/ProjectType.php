@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Unilend\Form\Project;
 
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
-use Symfony\Component\Form\Extension\Core\Type\{CheckboxType, DateType, TextType, TextareaType};
+use Symfony\Component\Form\Extension\Core\Type\{CheckboxType, ChoiceType, DateType, TextType, TextareaType};
 use Symfony\Component\Form\{AbstractType, FormBuilderInterface, FormError, FormEvent, FormEvents};
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
@@ -144,6 +144,15 @@ class ProjectType extends AbstractType
                 'required'      => false,
                 'class'         => Companies::class,
                 'query_builder' => $runAgentQueryBuilder,
+            ])
+            ->add('offerVisibility', ChoiceType::class, [
+                'label'             => 'project-form.offer-visibility-label',
+                'required'          => true,
+                'preferred_choices' => [Project::OFFER_VISIBILITY_PRIVATE],
+                'choices'           => Project::getAllOfferVisibilities(),
+                'choice_label'      => static function ($option, string $key, string $value) {
+                    return 'project-form.offer-visibility-choice-' . $value . '-label';
+                },
             ])
             ->add('projectAttachments', ProjectAttachmentCollectionType::class, ['constraints' => [new Valid()]])
             ->add('projectFees', ProjectFeeTypeCollectionType::class)
