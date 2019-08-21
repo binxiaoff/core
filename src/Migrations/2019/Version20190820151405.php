@@ -31,11 +31,11 @@ final class Version20190820151405 extends ContainerAwareMigration
         // this up() migration is auto-generated, please modify it to your needs
         $this->abortIf('mysql' !== $this->connection->getDatabasePlatform()->getName(), 'Migration can only be executed safely on \'mysql\'.');
 
-        $this->addSql('ALTER TABLE project ADD offer_visibility SMALLINT NOT NULL, DROP lender_consultation_closing_date');
+        $this->addSql('ALTER TABLE project ADD offer_visibility SMALLINT NOT NULL');
         $this->addSql('INSERT IGNORE INTO translations (locale, section, name, translation, added) VALUES
                             (\'fr_FR\', \'project-form\', \'offer-visibility-label\', \'Visibilité des offres\', NOW()),
-                            (\'fr_FR\', \'project-form\', \'offer-visibility-choice-label-1\', \'Publique\', NOW()),
-                            (\'fr_FR\', \'project-form\', \'offer-visibility-choice-label-2\', \'Privé\', NOW())');
+                            (\'fr_FR\', \'project-form\', \'offer-visibility-choice-1-label\', \'Publique\', NOW()),
+                            (\'fr_FR\', \'project-form\', \'offer-visibility-choice-2-label\', \'Privé\', NOW())');
     }
 
     /**

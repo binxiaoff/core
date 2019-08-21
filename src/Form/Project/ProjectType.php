@@ -146,10 +146,12 @@ class ProjectType extends AbstractType
                 'query_builder' => $runAgentQueryBuilder,
             ])
             ->add('offerVisibility', ChoiceType::class, [
-                'label'        => 'project-form.offer-visibility-label',
-                'choices'      => Project::getAllOfferVisibilities(),
-                'choice_label' => static function ($option, string $key, string $value) {
-                    return 'project-form.offer-visibility-choice-label-' . $value;
+                'label'             => 'project-form.offer-visibility-label',
+                'required'          => true,
+                'preferred_choices' => [Project::OFFER_VISIBILITY_PRIVATE],
+                'choices'           => Project::getAllOfferVisibilities(),
+                'choice_label'      => static function ($option, string $key, string $value) {
+                    return 'project-form.offer-visibility-choice-' . $value . '-label';
                 },
             ])
             ->add('projectAttachments', ProjectAttachmentCollectionType::class, ['constraints' => [new Valid()]])
