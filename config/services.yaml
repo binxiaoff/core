@@ -19,7 +19,7 @@ services:
             $defaultLocale: '%locale%'
             $temporaryDirectory: '%directory.temporary%'
             $templateMessageFQCN: 'Unilend\SwiftMailer\TemplateMessage'
-            $frontUrl: '%router.request_context.scheme%://%env(HOST_DEFAULT_URL)%'
+            $frontUrl: '%router.request_context.scheme%://%env(HOST_APP_URL)%'
             $adminUrl: '%router.request_context.scheme%://%env(HOST_ADMIN_URL)%'
             $numberFormatter: '@number_formatter'
             $currencyFormatter: '@currency_formatter'
