@@ -30,6 +30,9 @@ class Project
     public const OPERATION_TYPE_ARRANGEMENT = 1;
     public const OPERATION_TYPE_SYNDICATION = 2;
 
+    public const OFFER_VISIBILITY_PUBLIC  = 1;
+    public const OFFER_VISIBILITY_PRIVATE = 2;
+
     public const INTERNAL_RATING_SCORE_A_PLUS  = 'A+';
     public const INTERNAL_RATING_SCORE_A       = 'A';
     public const INTERNAL_RATING_SCORE_B_PLUS  = 'B+';
@@ -192,6 +195,13 @@ class Project
      * @ORM\Column(type="smallint", nullable=false)
      */
     private $operationType;
+
+    /**
+     * @var int
+     *
+     * @ORM\Column(type="smallint", nullable=false)
+     */
+    private $offerVisibility;
 
     /**
      * @var ArrayCollection|ProjectStatusHistory[]
@@ -605,6 +615,34 @@ class Project
     public function getAllOperationTypes(): array
     {
         return self::getConstants('OPERATION_TYPE_');
+    }
+
+    /**
+     * @return int
+     */
+    public function getOfferVisibility(): ?int
+    {
+        return $this->offerVisibility;
+    }
+
+    /**
+     * @param int $offerVisibility
+     *
+     * @return Project
+     */
+    public function setOfferVisibility(int $offerVisibility): Project
+    {
+        $this->offerVisibility = $offerVisibility;
+
+        return $this;
+    }
+
+    /**
+     * @return iterable
+     */
+    public static function getAllOfferVisibilities(): iterable
+    {
+        return self::getConstants('OFFER_VISIBILITY_');
     }
 
     /**

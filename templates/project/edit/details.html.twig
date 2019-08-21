@@ -95,6 +95,22 @@
                                     </dd>
                                 </dl>
                             </div>
+                            <div class="row columns-with-space margin-10-t">
+                                <dl class="col-md-6 col-lg-6">
+                                    <dt>Visibilité des offres</dt>
+                                    <dd>
+                                        {% if project.isEditable %}
+                                            <a href="#" id="offer-visibility" data-type="select" data-value="{% if project.offerVisibility %}{{ project.offerVisibility }}{% endif %}">
+                                                {% if project.offerVisibility %}
+                                                    {{ ('project-form.offer-visibility-choice-label-' ~ project.offerVisibility)|trans }}
+                                                {% endif %}
+                                            </a>
+                                        {% else %}
+                                            {{ ('project-form.offer-visibility-choice-label-' ~ project.offerVisibility)|trans }}
+                                        {% endif %}
+                                    </dd>
+                                </dl>
+                            </div>
 
                             {#<div class="row margin-10-t">
                                 <dt>Ce dossier fait déjà l‘objet d‘une demande de garantie auprès de FONCARIS</dt>
@@ -746,6 +762,14 @@
 
             $('.editable').editable(editableConfig)
 
+            $('#offer-visibility').editable(Object.assign(editableConfig, {
+                source: [
+                    {value: '', text: ''},
+                    {% for choice in offerVisibilities %}
+                    {value: {{ choice }}, text: '{{ ('project-form.offer-visibility-choice-label-' ~ choice)|trans|e('js') }}'},
+                    {% endfor %}
+                ]
+            }))
 
             $('#edit-description').on('click', function (event) {
                 event.stopPropagation()
