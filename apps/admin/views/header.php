@@ -22,7 +22,7 @@
     <ul>
         <li<?= isset($this->menu_admin) && 'traductions' === $this->menu_admin ? ' class="active"' : ''; ?>><a href="/traductions">Traductions</a></li>
         <li<?= isset($this->menu_admin) && 'mails' === $this->menu_admin ? ' class="active"' : ''; ?>><a href="/mails">Emails</a></li>
-        <li<?= isset($this->menu_admin) && 'mailshistory' === $this->menu_admin ? ' class="active"' : ''; ?>><a href="/mails/emailhistory">Historique enovis emails</a></li>
+        <li<?= isset($this->menu_admin) && 'mailshistory' === $this->menu_admin ? ' class="active"' : ''; ?>><a href="/mails/emailhistory">Historique envois emails</a></li>
         <li<?= isset($this->menu_admin) && 'settings' === $this->menu_admin ? ' class="active"' : ''; ?>><a href="/settings">Paramètres</a></li>
     </ul>
 </div>

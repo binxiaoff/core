@@ -9,7 +9,7 @@ use NumberFormatter;
 use PhpOffice\PhpSpreadsheet\{Exception as PhpSpreadsheetException, Spreadsheet, Style\Alignment, Style\Border, Style\Fill, Worksheet\Worksheet,
     Writer\Exception as PhpSpreadsheetWriterException, Writer\Xlsx};
 use Symfony\Contracts\Translation\TranslatorInterface;
-use Unilend\Entity\{Embeddable\LendingRate, FoncarisRequest, Interfaces\FileStorageInterface, Tranche, TrancheAttribute};
+use Unilend\Entity\{FoncarisRequest, Interfaces\FileStorageInterface, Tranche, TrancheAttribute};
 use Unilend\Repository\ConstantList\{FoncarisFundingTypeRepository, FoncarisSecurityRepository};
 use Unilend\Service\Document\AbstractDocumentGenerator;
 use URLify;

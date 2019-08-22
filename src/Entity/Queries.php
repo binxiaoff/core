@@ -4,14 +4,19 @@ declare(strict_types=1);
 
 namespace Unilend\Entity;
 
+use DateTime;
 use Doctrine\ORM\Mapping as ORM;
+use Unilend\Entity\Traits\TimestampableTrait;
 
 /**
  * @ORM\Table(name="queries")
- * @ORM\Entity
+ * @ORM\Entity(repositoryClass="Unilend\Repository\QueriesRepository")
+ * @ORM\HasLifecycleCallbacks
  */
 class Queries
 {
+    use TimestampableTrait;
+
     /**
      * @var string
      *
@@ -22,44 +27,30 @@ class Queries
     /**
      * @var string
      *
-     * @ORM\Column(name="sql", type="text", length=16777215)
+     * @ORM\Column(name="query", type="text", length=16777215)
      */
-    private $sql;
+    private $query;
 
     /**
      * @var int
      *
-     * @ORM\Column(name="paging", type="integer")
+     * @ORM\Column(name="paging", type="integer", options={"default": 100})
      */
-    private $paging;
+    private $paging = 100;
 
     /**
      * @var int
      *
-     * @ORM\Column(name="executions", type="integer")
+     * @ORM\Column(name="executions", type="integer", options={"default": 0})
      */
-    private $executions;
+    private $executions = 0;
 
     /**
-     * @var \DateTime
+     * @var DateTime
      *
-     * @ORM\Column(name="executed", type="datetime")
+     * @ORM\Column(name="executed", type="datetime", nullable=true)
      */
     private $executed;
-
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="added", type="datetime")
-     */
-    private $added;
-
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="updated", type="datetime")
-     */
-    private $updated;
 
     /**
      * @var int
@@ -75,7 +66,7 @@ class Queries
      *
      * @return Queries
      */
-    public function setName($name)
+    public function setName(string $name): Queries
     {
         $this->name = $name;
 
@@ -85,19 +76,19 @@ class Queries
     /**
      * @return string
      */
-    public function getName()
+    public function getName(): string
     {
         return $this->name;
     }
 
     /**
-     * @param string $sql
+     * @param string $query
      *
      * @return Queries
      */
-    public function setSql($sql)
+    public function setQuery(string $query): Queries
     {
-        $this->sql = $sql;
+        $this->query = $query;
 
         return $this;
     }
@@ -105,9 +96,9 @@ class Queries
     /**
      * @return string
      */
-    public function getSql()
+    public function getQuery(): string
     {
-        return $this->sql;
+        return $this->query;
     }
 
     /**
@@ -115,7 +106,7 @@ class Queries
      *
      * @return Queries
      */
-    public function setPaging($paging)
+    public function setPaging(int $paging): Queries
     {
         $this->paging = $paging;
 
@@ -125,17 +116,17 @@ class Queries
     /**
      * @return int
      */
-    public function getPaging()
+    public function getPaging(): int
     {
         return $this->paging;
     }
 
     /**
-     * @param int $executions
+     * @param int|null $executions
      *
      * @return Queries
      */
-    public function setExecutions($executions)
+    public function setExecutions(?int $executions): Queries
     {
         $this->executions = $executions;
 
@@ -143,19 +134,19 @@ class Queries
     }
 
     /**
-     * @return int
+     * @return int|null
      */
-    public function getExecutions()
+    public function getExecutions(): ?int
     {
         return $this->executions;
     }
 
     /**
-     * @param \DateTime $executed
+     * @param DateTime|null $executed
      *
      * @return Queries
      */
-    public function setExecuted($executed)
+    public function setExecuted(?DateTime $executed): Queries
     {
         $this->executed = $executed;
 
@@ -163,57 +154,17 @@ class Queries
     }
 
     /**
-     * @return \DateTime
+     * @return DateTime|null
      */
-    public function getExecuted()
+    public function getExecuted(): ?DateTime
     {
         return $this->executed;
     }
 
     /**
-     * @param \DateTime $added
-     *
-     * @return Queries
-     */
-    public function setAdded($added)
-    {
-        $this->added = $added;
-
-        return $this;
-    }
-
-    /**
-     * @return \DateTime
-     */
-    public function getAdded()
-    {
-        return $this->added;
-    }
-
-    /**
-     * @param \DateTime $updated
-     *
-     * @return Queries
-     */
-    public function setUpdated($updated)
-    {
-        $this->updated = $updated;
-
-        return $this;
-    }
-
-    /**
-     * @return \DateTime
-     */
-    public function getUpdated()
-    {
-        return $this->updated;
-    }
-
-    /**
      * @return int
      */
-    public function getIdQuery()
+    public function getIdQuery(): int
     {
         return $this->idQuery;
     }

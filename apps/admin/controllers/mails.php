@@ -4,7 +4,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Unilend\Entity\{MailQueue, MailTemplates, Translations};
 use Unilend\Service\Mailer\{MailQueueManager, MailTemplateManager};
 
-class mailsController extends bootstrap
+class mailsController extends Controller
 {
     /** @var MailTemplates */
     public $mailTemplate;
@@ -68,7 +68,7 @@ class mailsController extends bootstrap
             /** @var MailTemplateManager $mailTemplateManager */
             $mailTemplateManager = $this->get('unilend.service.mail_template');
 
-            $type          = $this->bdd->generateSlug($this->request->request->get('type', null));
+            $type          = $this->generateSlug($this->request->request->get('type', null));
             $senderName    = $this->request->request->get('sender_name', null);
             $senderEmail   = $this->request->request->get('sender_email', null);
             $subject       = $this->request->request->get('subject', null);
@@ -243,13 +243,12 @@ class mailsController extends bootstrap
         $this->menu_admin = 'mailshistory';
 
         $this->hideDecoration();
-        $_SESSION['request_url'] = $this->url;
     }
 
     public function _email_history_preview()
     {
         $this->hideDecoration();
-        $_SESSION['request_url'] = $this->url;
+
         /** @var \Unilend\Service\Mailer\MailQueueManager $mailQueueManager */
         $mailQueueManager = $this->get('unilend.service.mail_queue');
 

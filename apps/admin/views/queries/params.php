@@ -1,8 +1,8 @@
 <div id="popup">
     <a onclick="parent.$.fn.colorbox.close();" title="Fermer" class="closeBtn" id="closeButton"><img src="<?= $this->url ?>/images/delete.png" alt="Fermer"/></a>
     <form method="post" name="envoi_params" id="envoi_params" enctype="multipart/form-data"
-          action="<?= $this->lurl ?>/queries/<?= isset($this->params[1]) && $this->params[1] == 'export' ? 'export' : 'execute' ?>/<?= $this->queries->id_query ?>" target="_parent">
-        <h1>Paramètres de <?= $this->queries->name ?></h1>
+          action="<?= $this->url ?>/queries/<?= isset($this->params[1]) && 'export' === $this->params[1] ? 'export' : 'execute' ?>/<?= $this->query->getIdQuery() ?>" target="_parent">
+        <h1>Paramètres de <?= $this->query->getName() ?></h1>
         <fieldset>
             <table class="formColor">
                 <?php foreach ($this->sqlParams as $param) : ?>
@@ -26,7 +26,7 @@
     </form>
 </div>
 
-<?php if (isset($this->params[1]) && $this->params[1] == 'export') : ?>
+<?php if (isset($this->params[1]) && 'export' === $this->params[1]) : ?>
     <script>
         $('#send_params').click(function(){
             $('#closeButton').click();
