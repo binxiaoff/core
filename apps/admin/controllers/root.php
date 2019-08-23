@@ -1,6 +1,6 @@
 <?php
 
-class rootController extends bootstrap
+class rootController extends Controller
 {
     public function _default()
     {

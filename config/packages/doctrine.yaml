@@ -9,7 +9,7 @@ doctrine:
         default_connection: default
         connections:
             default:
-                url: '%env(DATABASE_URL)%&driverClass=%dbal_driver_class%&wrapperClass=%dbal_wrapper_class%'
+                url: '%env(DATABASE_URL)%&driverClass=%dbal_driver_class%'
                 default_table_options:
                     charset: utf8mb4
                     collate: utf8mb4_unicode_ci
@@ -19,7 +19,7 @@ doctrine:
                     x_reconnect_attempts: 3
             # connection dedicated to Doctrine Migration bundle
             migration:
-                url: '%env(DATABASE_URL_MIGRATION)%&driverClass=%dbal_driver_class%&wrapperClass=%dbal_wrapper_class%'
+                url: '%env(DATABASE_URL_MIGRATION)%&driverClass=%dbal_driver_class%'
                 default_table_options:
                     charset: utf8mb4
                     collate: utf8mb4_unicode_ci

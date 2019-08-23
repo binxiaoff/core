@@ -1,19 +1,20 @@
 <script type="text/javascript">
     $(function() {
-        $(".tablesorter").tablesorter({headers: {4: {sorter: false}}});
+        $('.tablesorter').tablesorter({headers: {4: {sorter: false}}})
 
-        <?php if ($this->nb_lignes != '') : ?>
-            $(".tablesorter").tablesorterPager({
-                container: $("#pager"),
+        <?php if (isset($this->emails) && count($this->emails) > $this->maxTableRows) : ?>
+            $('.tablesorter').tablesorterPager({
+                container: $('#pager'),
                 positionFixed: false,
-                size: <?= $this->nb_lignes ?>}
-            );
+                size: <?= $this->maxTableRows ?>
+            });
         <?php endif; ?>
 
-        $(".lightbox").colorbox({
+        $('.lightbox').colorbox({
             onComplete: function () {
                 $.datepicker.setDefaults($.extend({showMonthAfterYear: false}, $.datepicker.regional['fr']));
-                $("#datepik_from").datepicker({
+
+                $('#datepik_from').datepicker({
                     showOn: 'both',
                     buttonImage: '<?= $this->url ?>/images/calendar.gif',
                     buttonImageOnly: true,
@@ -21,7 +22,8 @@
                     changeYear: true,
                     yearRange: '<?= (date('Y') - 10) ?>:<?= (date('Y') + 10) ?>'
                 });
-                $("#datepik_to").datepicker({
+
+                $('#datepik_to').datepicker({
                     showOn: 'both',
                     buttonImage: '<?= $this->url ?>/images/calendar.gif',
                     buttonImageOnly: true,
@@ -60,12 +62,12 @@
             <tbody>
                 <?php $i = 1; ?>
                 <?php foreach ($this->emails as $email) : ?>
-                    <tr<?= ($i % 2 == 1 ? '' : ' class="odd"') ?>>
+                    <tr<?= ($i % 2 === 1 ? '' : ' class="odd"') ?>>
                         <td><?= $email['sentAt']->format('d/m/Y H:i') ?></td>
                         <td><?= $email['senderName'] ?></td>
                         <td><?= $email['recipient'] ?></td>
                         <td><?= $email['subject'] ?></td>
-                        <td align="center">
+                        <td style="center">
                             <a href="<?= $this->url ?>/mails/email_history_preview/<?= $email['idQueue'] ?>" class="thickbox">
                                 <img src="<?= $this->url ?>/images/modif.png" alt="Voir <?= $email['subject'] ?>">
                             </a>
@@ -75,7 +77,7 @@
                 <?php endforeach; ?>
             </tbody>
         </table>
-        <?php if ($this->nb_lignes != '') : ?>
+        <?php if (isset($this->emails) && count($this->emails) > $this->maxTableRows) : ?>
             <table>
                 <tr>
                     <td id="pager">
@@ -85,7 +87,7 @@
                         <img src="<?= $this->url ?>/images/next.png" alt="Suivante" class="next">
                         <img src="<?= $this->url ?>/images/last.png" alt="Dernière" class="last">
                         <select class="pagesize">
-                            <option value="<?= $this->nb_lignes ?>" selected="selected"><?= $this->nb_lignes ?></option>
+                            <option value="<?= $this->maxTableRows ?>" selected="selected"><?= $this->maxTableRows ?></option>
                         </select>
                     </td>
                 </tr>

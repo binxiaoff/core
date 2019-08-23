@@ -1,9 +1,13 @@
 <script type="text/javascript">
     $(function() {
-        $(".tablesorter").tablesorter({headers: {3: {sorter: false}}});
+        $('.tablesorter').tablesorter({headers: {3: {sorter: false}}})
 
-        <?php if ($this->nb_lignes != '') : ?>
-            $(".tablesorter").tablesorterPager({container: $("#pager"), positionFixed: false, size: <?= $this->nb_lignes ?>});
+        <?php if (count($this->queries) > $this->maxTableRows) : ?>
+            $('.tablesorter').tablesorterPager({
+                container: $('#pager'),
+                positionFixed: false,
+                size: <?= $this->maxTableRows ?>
+            });
         <?php endif; ?>
     });
 </script>
@@ -14,10 +18,10 @@
             <h1>Liste des requêtes</h1>
         </div>
         <div class="col-md-6">
-            <a href="<?= $this->lurl ?>/queries/add" class="btn-primary pull-right thickbox">Ajouter une requête</a>
+            <a href="<?= $this->url ?>/queries/add" class="btn-primary pull-right thickbox">Ajouter une requête</a>
         </div>
     </div>
-    <?php if (count($this->lRequetes) > 0) : ?>
+    <?php if (count($this->queries) > 0) : ?>
         <table class="tablesorter">
             <thead>
                 <tr>
@@ -29,33 +33,34 @@
             </thead>
             <tbody>
                 <?php $i = 1; ?>
-                <?php foreach ($this->lRequetes as $r) : ?>
-                    <tr<?= ($i % 2 == 1 ? '' : ' class="odd"') ?>>
-                        <td><?= $r['name'] ?></td>
-                        <td><?= ($r['executed'] != '0000-00-00 00:00:00' ? $this->formatDate($r['executed'], 'd/m/Y H:i:s') : 'Jamais') ?></td>
-                        <td><?= $r['executions'] ?></td>
+                <?php /** @var \Unilend\Entity\Queries $query */ ?>
+                <?php foreach ($this->queries as $query) : ?>
+                    <tr<?= ($i % 2 === 1 ? '' : ' class="odd"') ?>>
+                        <td><?= $query->getName() ?></td>
+                        <td><?= $query->getExecuted() ? $query->getExecuted()->format('d/m/Y H:i:s') : 'Jamais' ?></td>
+                        <td><?= $query->getExecutions() ?></td>
                         <td align="center">
-                            <?php if (strrchr($r['sql'], '@')) : ?>
-                                <a href="<?= $this->lurl ?>/queries/params/<?= $r['id_query'] ?>" class="thickbox">
+                            <?php if (strrchr($query->getQuery(), '@')) : ?>
+                                <a href="<?= $this->url ?>/queries/params/<?= $query->getIdQuery() ?>" class="thickbox">
                                     <img src="<?= $this->url ?>/images/modif.png" alt="Renseigner les paramètres"/>
                                 </a>
-                                <a href="<?= $this->lurl ?>/queries/params/<?= $r['id_query'] ?>/export" class="thickbox">
+                                <a href="<?= $this->url ?>/queries/params/<?= $query->getIdQuery() ?>/export" class="thickbox">
                                     <img src="<?= $this->url ?>/images/xls.png" alt="Export Brut"/>
                                 </a>
                             <?php else : ?>
-                                <a href="<?= $this->lurl ?>/queries/execute/<?= $r['id_query'] ?>" title="Voir le résultat">
+                                <a href="<?= $this->url ?>/queries/execute/<?= $query->getIdQuery() ?>" title="Voir le résultat">
                                     <img src="<?= $this->url ?>/images/modif.png" alt="Voir le résultat"/>
                                 </a>
-                                <a href="<?= $this->lurl ?>/queries/export/<?= $r['id_query'] ?>" target="_blank" title="Export Brut">
+                                <a href="<?= $this->url ?>/queries/export/<?= $query->getIdQuery() ?>" target="_blank" title="Export Brut">
                                     <img src="<?= $this->url ?>/images/xls.png" alt="Export Brut"/>
                                 </a>
 
                             <?php endif; ?>
-                            <a href="<?= $this->lurl ?>/queries/edit/<?= $r['id_query'] ?>" class="thickbox">
-                                <img src="<?= $this->url ?>/images/edit.png" alt="Modifier <?= $r['name'] ?>"/>
+                            <a href="<?= $this->url ?>/queries/edit/<?= $query->getIdQuery() ?>" class="thickbox">
+                                <img src="<?= $this->url ?>/images/edit.png" alt="Modifier <?= $query->getName() ?>"/>
                             </a>
-                            <a href="<?= $this->lurl ?>/queries/delete/<?= $r['id_query'] ?>" title="Supprimer <?= $r['name'] ?>" onclick="return confirm('Etes vous sur de vouloir supprimer <?= $r['name'] ?> ?')">
-                                <img src="<?= $this->url ?>/images/delete.png" alt="Supprimer <?= $r['name'] ?>"/>
+                            <a href="<?= $this->url ?>/queries/delete/<?= $query->getIdQuery() ?>" title="Supprimer <?= $query->getName() ?>" onclick="return confirm('Etes vous sur de vouloir supprimer <?= $query->getName() ?> ?')">
+                                <img src="<?= $this->url ?>/images/delete.png" alt="Supprimer <?= $query->getName() ?>"/>
                             </a>
                         </td>
                     </tr>
@@ -63,7 +68,7 @@
                 <?php endforeach; ?>
             </tbody>
         </table>
-        <?php if ($this->nb_lignes != '') : ?>
+        <?php if (count($this->queries) > $this->maxTableRows) : ?>
             <table>
                 <tr>
                     <td id="pager">
@@ -73,7 +78,7 @@
                         <img src="<?= $this->url ?>/images/next.png" alt="Suivante" class="next"/>
                         <img src="<?= $this->url ?>/images/last.png" alt="Dernière" class="last"/>
                         <select class="pagesize">
-                            <option value="<?= $this->nb_lignes ?>" selected="selected"><?= $this->nb_lignes ?></option>
+                            <option value="<?= $this->maxTableRows ?>" selected="selected"><?= $this->maxTableRows ?></option>
                         </select>
                     </td>
                 </tr>

@@ -2,7 +2,7 @@
 
 use Unilend\Entity\Settings;
 
-class settingsController extends bootstrap
+class settingsController extends Controller
 {
     public function initialize()
     {
@@ -44,8 +44,6 @@ class settingsController extends bootstrap
     public function _edit()
     {
         $this->hideDecoration();
-
-        $_SESSION['request_url'] = $this->url . '/settings';
 
         if (isset($this->params[0]) && false !== filter_var($this->params[0], FILTER_VALIDATE_INT)) {
             /** @var \Doctrine\ORM\EntityManager $entityManager */

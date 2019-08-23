@@ -9,7 +9,7 @@ use Unilend\Kernel;
 set_time_limit(0);
 setlocale(LC_TIME, 'fr_FR.utf8');
 
-require dirname(__DIR__) . '/config/autoload.php';
+require dirname(__DIR__) . '/vendor/autoload.php';
 
 if (!class_exists(Application::class)) {
     throw new RuntimeException('You need to add "symfony/framework-bundle" as a Composer dependency.');

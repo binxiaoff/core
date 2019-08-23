@@ -9,7 +9,7 @@ parameters:
     paths:
         - src
         - tests
-    bootstrap: %rootDir%/../../../config/autoload.php
+    bootstrap: %rootDir%/../../../vendor/autoload.php
     autoload_files:
         - %rootDir%/../../../apps/core/command.class.php
         - %rootDir%/../../../apps/core/controller.class.php
