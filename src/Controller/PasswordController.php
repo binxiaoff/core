@@ -81,7 +81,9 @@ class PasswordController extends AbstractController
                 ->setPassword($encryptedPassword)
                 ->setSecurityQuestion($formData['securityQuestion']['securityQuestion'])
                 ->setSecurityAnswer($formData['securityQuestion']['securityAnswer'])
+                ->setMobile($formData['mobile'])
             ;
+
             $clientsRepository->save($client);
 
             $temporaryLink->setExpires(new DateTime());
@@ -194,7 +196,7 @@ class PasswordController extends AbstractController
      * @param UserPasswordEncoderInterface  $userPasswordEncoder
      * @param ClientsRepository             $clientsRepository
      *
-     * @throws ORMException
+     *@throws ORMException
      * @throws Exception
      * @throws OptimisticLockException
      *
