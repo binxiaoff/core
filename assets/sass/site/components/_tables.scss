@@ -136,12 +136,6 @@ td {
         background-color: mix($c-bg3, $c-bg4);
       }
 
-      // Any row that the current user is involved with
-      &#{$js-current-user-involved} {
-        background-color: $c-purple-l2;
-        color: $c-p1;
-      }
-
       &.table-item-title {
         background-color: $c-bg3;
         color: $c-t2;
@@ -149,26 +143,6 @@ td {
         td {
           font-weight: bold;
         }
-      }
-
-      &.table-item-total {
-        background-color: $c-bg2 !important;
-        color: $c-p1;
-        font-weight: bold;
-        text-transform: uppercase;
-
-        td {
-          font-weight: bold;
-        }
-      }
-    }
-  }
-}
-.table-clickable {
-  tbody {
-    tr {
-      td {
-        cursor: pointer;
       }
     }
   }

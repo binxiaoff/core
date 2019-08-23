@@ -181,38 +181,6 @@ $breakpoints: ('xs', 'sm', 'md', 'lg', 'mobile', 'mobile-p', 'mobile-l', 'tablet
       padding-right: $padding-lg;
     }
   }
-
-  // List sharing/socialmedia
-  > .list-socialmedia,
-  > .list-sharing {
-    display: none;
-    padding: 0;
-    margin: 0;
-
-    position: absolute;
-    top: 0;
-    right: 0;
-    z-index: 9;
-
-    list-style-type: none;
-
-    li {
-      display: block;
-      padding: 0;
-      margin: 0;
-      list-style-type: none;
-    }
-
-    @include devices('md') {
-      display: block;
-      right: -($height-btn-md);
-    }
-
-    @include devices('lg') {
-      display: block;
-      right: -($height-btn-lg);
-    }
-  }
 }
 
 // Using this mixin is "same but different" than site-wrap. With this you can add your own padding,

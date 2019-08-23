@@ -813,35 +813,6 @@ $doc.on('ready', function () {
       UserNotifications.markAllRead()
     })
 
-    .on('UserNotifications:open', function(event, notificationId, projectId) {
-      // Open project in myloans table
-      if (projectId) {
-        var $loansTab = $('#loans')
-        var $project = $loansTab.find('#loan-' + projectId)
-        if ($loansTab.is('.active') && $project.length) {
-          if (!$project.is('.ui-details-open')) {
-            $('body').animate({
-              scrollTop: $project.offset().top - 80,
-              duration: 300
-            }, function () {
-              $project.find('.ui-show-table-myloans-item-activity').trigger('click')
-            });
-          }
-        }
-      }
-    })
-
-    .on('UserNotifications:close', function(event, notificationId, projectId) {
-      // Close project in myloans table
-      if (projectId) {
-        var $loansTab = $('#loans')
-        var $project = $loansTab.find('#loan-' + projectId)
-        if ($loansTab.is('.active') && $project.is('.ui-details-open')) {
-          $project.find('.ui-show-table-myloans-item-activity').trigger('click')
-        }
-      }
-    })
-
     // Click on element designated to trigger 'UserNotifications:markAllRead' event
     .on(Utility.clickEvent, '[data-usernotifications-markallread]', function (event) {
       event.preventDefault()

@@ -33,44 +33,4 @@ $doc.on('ready', function () {
             error: function (xhr, errorTxt) {}
         })
     })
-
-    // Validate the password via AJAX
-    $doc.on('keyup', 'input[name="client_new_password"]', function () {
-        var $elem = $(this)
-
-        // Do quick JS validation before doing AJAX validation
-        // @note FormValidation already supports checking with the minLength rule
-        if ($elem.val().length >= 6) return false
-
-        // Debounce AJAX
-        clearTimeout(pwdTimer)
-        pwdTimer = setTimeout(function () {
-            // Talk to AJAX
-            $.ajax({
-                url: '/security/ajax/password',
-                method: 'post',
-                data: {
-                    client_password: $elem.val()
-                },
-                global: false,
-                success: function (data) {
-                    if (data && data.hasOwnProperty('error')) {
-                        $elem.parents('.ui-formvalidation').uiFormValidation('validateInput', $elem, {
-                            rules: {
-                                // Use custom rule to invoke an error on the field
-                                custom: function (inputValidation) {
-                                    inputValidation.isValid = false
-                                    inputValidation.errors.push({
-                                        type: 'minLength',
-                                        description: data.error
-                                    })
-                                }
-                            }
-                        })
-                    }
-                }
-            })
-        }, ajaxDelay)
-    })
-
 })

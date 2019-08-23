@@ -1,7 +1,7 @@
 {
   "name": "unilend-web",
   "version": "3.1.0",
-  "description": "Front-end app for Unilend website",
+  "description": "Front-end app",
   "engines": {
     "node": ">=8.10.0",
     "npm": ">=2.14.12 ~3.7.3"
@@ -109,18 +109,11 @@
     "FileAttach": "./assets/js/app/components/FileAttach.js",
     "ExtraFiles": "./assets/js/app/components/ExtraFiles.js",
     "FormValidation": "./assets/js/app/components/FormValidation.js",
-    "DashboardPanel": "./assets/js/app/components/DashboardPanel.js",
-    "DashboardPanels": "./assets/js/app/components/DashboardPanels.js",
-    "Sticky": "./assets/js/app/components/Sticky.js",
-    "AutolendTable": "./assets/js/app/components/AutolendTable.js",
-    "NavDropdownMenu": "./assets/js/app/components/NavDropdownMenu.js",
-    "MapView": "./assets/js/app/components/MapView.js",
     "ChartView": "./assets/js/app/components/ChartView.js",
     "Modal": "./assets/js/app/components/Modal.js",
     "ModalServiceTerms": "./assets/js/app/components/ModalServiceTerms.js",
     "Spinner": "./assets/js/app/components/Spinner.js",
     "SpinnerButton": "./assets/js/app/components/SpinnerButton.js",
-    "ProgressBar": "./assets/js/app/components/ProgressBar.js",
     "UserNotifications": "./assets/js/app/components/UserNotifications.js",
     "UserNotificationsList": "./assets/js/app/components/UserNotificationsList.js",
     "UserNotificationsDrop": "./assets/js/app/components/UserNotificationsDrop.js",

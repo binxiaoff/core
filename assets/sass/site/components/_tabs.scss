@@ -2,25 +2,6 @@
 // Unilend Tabs
 //
 
-.tabs {
-
-  // Nested
-  &.nested-tabs {
-    .tabs-nav,
-    .tab-navigation,
-    .tabs-navigation {
-      z-index: $depth-tooltip - 20;
-    }
-  }
-}
-
-// Really need to make class names consistent in the HTML...
-.tabs-nav,
-.tab-navigation,
-.tabs-navigation {
-
-}
-
 // Hide tabbable panes to start, show them when `.active`
 .tab-content,
 .tabs-content,

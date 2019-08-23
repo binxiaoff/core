@@ -280,7 +280,6 @@
     z-index: $depth-site-header;
     vertical-align: top;
 
-    .site-search,
     .site-user,
     .site-partners {
       float: left;
@@ -372,30 +371,6 @@
           display: block;
           color: $c-white;
           text-decoration: none;
-        }
-
-        #{$js-user-level-0} & {
-          background-color: $c-level-0;
-        }
-
-        #{$js-user-level-1} & {
-          background-color: $c-level-1;
-        }
-
-        #{$js-user-level-2} & {
-          background-color: $c-level-2;
-        }
-
-        #{$js-user-level-3} & {
-          background-color: $c-level-3;
-        }
-
-        #{$js-user-level-4} & {
-          background-color: $c-level-4;
-        }
-
-        #{$js-user-level-5} & {
-          background-color: $c-level-5;
         }
       }
 

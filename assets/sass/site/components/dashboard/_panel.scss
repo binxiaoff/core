@@ -29,127 +29,15 @@ $height-panel-footer-lg: ((30px * 2) + $fs-base);
     white-space: nowrap;
   }
 
-  .dashboard-panel-controls {
-    display: block;
-
-    position: absolute;
-    right: 0;
-    top: 0;
-    bottom: 0;
-
-    color: $c-t2;
-    line-height: $height-panel-header-sm;
-    vertical-align: middle;
-
-    > a {
-      display: inline-block;
-      box-sizing: border-box;
-      padding: 0 10px;
-
-      background-color: transparent;
-      border-color: transparent;
-      font-size: $fs-base;
-      line-height: $height-panel-header-md;
-      vertical-align: middle;
-
-      @include link-states(
-          $link: (
-            color: $c-t2,
-            text-decoration: none
-          ),
-          $hover: (
-            color: $c-t1,
-            text-decoration: none
-          ),
-          $active: (
-            color: $c-t1,
-            text-decoration: none
-          )
-      );
-
-      &.btn-close {
-        border: 0;
-
-        &:before {
-          font-size: $fs-base * 1.2;
-        }
-      }
-
-      > span {
-        display: inline-block;
-        box-sizing: border-box;
-        padding: 0 10px;
-
-        background-color: transparent;
-        border-color: transparent;
-        font-size: $fs-base;
-        line-height: $height-panel-header-md;
-        vertical-align: middle;
-      }
-    }
-
-    // Hide close buttons
-    @include devices('xs', 'sm') {
-      .custom-input-switch {
-        margin-right: $spacing;
-      }
-
-      .btn-close {
-        display: none;
-      }
-    }
-  }
-
   .dashboard-panel-content {
     box-sizing: border-box;
     background-color: $c-white;
-  }
-
-  .dashboard-panel-empty {
-    position: relative;
-    min-height: 300px;
-    text-align: center;
-
-    .panel-empty-mobile {
-      display: none;
-
-      @include devices('mobile-p') {
-        display: block;
-      }
-    }
-
-    .panel-empty-tablet {
-      display: none;
-
-      @include devices('mobile-l', 'tablet-p') {
-        display: block;
-      }
-    }
-
-    .panel-empty-computer {
-      display: none;
-
-      @include devices('tablet-l', 'computer') {
-        display: block;
-      }
-    }
-
-    img,
-    svg {
-      @include constrain-size-to-width;
-      opacity: .5;
-    }
   }
 
   .dashboard-panel-footer {
     box-sizing: border-box;
     text-align: center;
     background-color: $c-white;
-  }
-
-  // UI
-  &.ui-dashboard-panel-hidden {
-    display: none;
   }
 
   // Add extra margins for larger screens
@@ -203,18 +91,6 @@ $height-panel-footer-lg: ((30px * 2) + $fs-base);
     text-align: center;
   }
 
-  .dashboard-panel-controls {
-    padding-left: 2em;
-    line-height: $height-panel-header-md;
-    @include background-image(-svg(linear-gradient(to left, $c-white 75%, fade-out($c-white, 1) 100%)));
-
-    > span,
-    > a {
-      height: $height-panel-header-md;
-      line-height: $height-panel-header-md;
-    }
-  }
-
   .dashboard-panel-title {
     margin: 0;
     font-size: $fs-h4;
@@ -255,18 +131,6 @@ $height-panel-footer-lg: ((30px * 2) + $fs-base);
     color: $c-t1;
     line-height: 1em;
     text-align: left;
-  }
-
-  .dashboard-panel-controls {
-    padding-left: 2em;
-    line-height: $height-panel-header-md;
-    @include background-image(-svg(linear-gradient(to left, $c-white 75%, fade-out($c-white, 1) 100%)));
-
-    > span,
-    > a {
-      height: $height-panel-header-md;
-      line-height: $height-panel-header-md;
-    }
   }
 
   .dashboard-panel-title {
@@ -311,16 +175,6 @@ $height-panel-footer-lg: ((30px * 2) + $fs-base);
     font-size: $fs-h3;
   }
 
-  .dashboard-panel-controls {
-    line-height: $height-panel-header-lg;
-
-    > span,
-    > a {
-      height: $height-panel-header-lg;
-      line-height: $height-panel-header-lg;
-    }
-  }
-
   .dashboard-panel-content {
     padding: $padding;
   }
@@ -356,20 +210,6 @@ $height-panel-footer-lg: ((30px * 2) + $fs-base);
     line-height: 1em;
   }
 
-  .dashboard-panel-controls {
-    padding-right: 10px;
-    @include background-image(-svg(linear-gradient(to left, $c-bg3 75%, fade-out($c-bg3, 1) 100%)));
-
-    > span,
-    > a {
-      line-height: $height-panel-header-sm;
-
-      .ui-is-spinner {
-        color: $c-white !important;
-      }
-    }
-  }
-
   .dashboard-panel-title {
     margin: 0;
     color: inherit;
@@ -403,146 +243,3 @@ $height-panel-footer-lg: ((30px * 2) + $fs-base);
 .dashboard-panel-alt {
   @include dashboard-panel-alt;
 }
-
-// Draggable
-.dashboard-panel[data-draggable],
-.dashboard-panel.ui-draggable {
-  @include devices('md', 'lg') {
-    .dashboard-panel-controls {
-      .ui-draggable-handle {
-        padding-left: 15px;
-        padding-right: 15px;
-
-        cursor: move;
-        cursor: grab;
-        user-select: none;
-        vertical-align: middle;
-
-        &:before {
-          content: $fa-grip-u;
-          font-family: $ff-icon;
-          font-size: $fs-base * 1.2;
-        }
-      }
-    }
-
-    // Movable content has extra classes for ghost/chosen/fallback items within
-    &.ui-movablecontent-ghost {
-      position: relative;
-      opacity: .5;
-      border-radius: 5px;
-
-      &:after {
-        content: '';
-        display: block;
-        border: dotted 3px $c-t3;
-        border-radius: 20px;
-        box-sizing: border-box;
-        background: fade-out($c-bg2, .5);
-        position: absolute;
-        left: 0;
-        right: 0;
-        top: 0;
-        bottom: 0;
-        z-index: 5;
-      }
-    }
-
-    &.ui-movablecontent-chosen {
-      opacity: 1;
-      background-color: fade-out($c-bg2, .5);
-      border-radius: 20px;
-    }
-
-    &.ui-movablecontent-fallback {
-      opacity: 1;
-      background-color: fade-out($c-bg2, .5);
-      border-radius: 20px;
-
-      .dashboard-panel-header {
-        border: solid 2px $c-bg1;
-      }
-      .dashboard-panel-footer {
-        border: solid 2px $c-bg1;
-      }
-
-      .dashboard-panel-content {
-        border-left: solid 2px $c-bg1;
-        border-right: solid 2px $c-bg1;
-      }
-    }
-  }
-
-  // @note For Packery
-  // &.is-pointer-down {
-  //   z-index: 999999;
-  //   background-color: fade-out(#000, .9);
-
-  //   .dashboard-panel-title {
-  //     cursor: move;
-  //     cursor: grabbing;
-  //   }
-  // }
-}
-
-// Overview
-.dashboard-panel-overview {
-  text-align: center;
-  margin-bottom: 20px;
-
-  .label {
-    display: block;
-    margin-bottom: 10px;
-    color: $c-t2;
-  }
-
-  .value {
-    display: block;
-    color: $c-p1;
-    font-size: $fs-h2;
-  }
-}
-
-// Chart
-.dashboard-panel-chart {
-  position: relative;
-  text-align: center;
-  min-height: 400px;
-
-  .chart {
-    min-height: none;
-  }
-
-  @include devices('md', 'lg') {
-    .nested-tabs .tab-navigation {
-      position: absolute;
-      right: 0;
-      top: 0;
-      margin-top: -10px;
-    }
-  }
-}
-
-// Summary
-.dashboard-panel-summary {
-  margin: 20px 0;
-  text-align: center;
-
-  .label {
-    color: $c-t1;
-  }
-
-  .value {
-    color: $c-p1;
-  }
-
-  .primary {
-    color: $c-t1;
-  }
-
-  .secondary {
-    color: $c-t2;
-    font-style: italic;
-  }
-}
-

@@ -171,19 +171,3 @@ $c-level-d2: darken($c-level-1, 20%);
 $c-level-d3: darken($c-level-1, 30%);
 $c-level-d4: darken($c-level-1, 40%);
 $c-level-d5: darken($c-level-1, 50%);
-
-// User Level colors change globals
-@mixin user-level-colors($to-color: $c-level-1) {
-  $c-level:    $to-color !global;
-  $c-level-l:  lighten($to-color, 10%) !global;
-  $c-level-l2: lighten($to-color, 20%) !global;
-  $c-level-l3: lighten($to-color, 30%) !global;
-  $c-level-l4: lighten($to-color, 40%) !global;
-  $c-level-l5: lighten($to-color, 50%) !global;
-  $c-level-d:  darken($to-color, 10%) !global;
-  $c-level-d2: darken($to-color, 20%) !global;
-  $c-level-d3: darken($to-color, 30%) !global;
-  $c-level-d4: darken($to-color, 40%) !global;
-  $c-level-d5: darken($to-color, 50%) !global;
-  @content;
-}
