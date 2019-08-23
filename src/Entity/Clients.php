@@ -10,6 +10,8 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
 use Gedmo\Mapping\Annotation as Gedmo;
+use libphonenumber\PhoneNumber;
+use Misd\PhoneNumberBundle\Validator\Constraints\PhoneNumber as AssertPhoneNumber;
 use Ramsey\Uuid\{Exception\UnsatisfiedDependencyException, Uuid};
 use Symfony\Component\Security\Core\User\{EquatableInterface, UserInterface};
 use Symfony\Component\Validator\Constraints as Assert;
@@ -152,12 +154,11 @@ class Clients implements UserInterface, EquatableInterface
     private $phone;
 
     /**
-     * @var string
+     * @var PhoneNumber
      *
-     * @ORM\Column(name="mobile", type="string", length=191, nullable=true)
+     * @ORM\Column(name="mobile", type="phone_number", nullable=true)
      *
-     * @Assert\Regex(pattern="/[^0-9\s\-\+]/", match=false)
-     * @Assert\Length(min=10)
+     * @AssertPhoneNumber(defaultRegion="FR", type="mobile")
      */
     private $mobile;
 
@@ -491,7 +492,7 @@ class Clients implements UserInterface, EquatableInterface
      */
     public function setPhone(?string $phone): Clients
     {
-        $this->phone = $this->cleanPhoneNumber($phone);
+        $this->phone = $phone;
 
         return $this;
     }
@@ -505,21 +506,21 @@ class Clients implements UserInterface, EquatableInterface
     }
 
     /**
-     * @param string|null $mobile
+     * @param PhoneNumber $mobile
      *
      * @return Clients
      */
-    public function setMobile(?string $mobile): Clients
+    public function setMobile(?PhoneNumber $mobile): Clients
     {
-        $this->mobile = $this->cleanPhoneNumber($mobile);
+        $this->mobile = $mobile;
 
         return $this;
     }
 
     /**
-     * @return string|null
+     * @return PhoneNumber
      */
-    public function getMobile(): ?string
+    public function getMobile(): ?PhoneNumber
     {
         return $this->mobile;
     }
@@ -831,16 +832,6 @@ class Clients implements UserInterface, EquatableInterface
         }
 
         return $newName;
-    }
-
-    /**
-     * @param string $number
-     *
-     * @return string
-     */
-    private function cleanPhoneNumber(string $number): string
-    {
-        return str_replace([' ', '.'], '', $number);
     }
 
     /**
