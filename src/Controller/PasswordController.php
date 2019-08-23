@@ -81,7 +81,7 @@ class PasswordController extends AbstractController
                 ->setPassword($encryptedPassword)
                 ->setSecurityQuestion($formData['securityQuestion']['securityQuestion'])
                 ->setSecurityAnswer($formData['securityQuestion']['securityAnswer'])
-                ->setMobile($formData['mobile'])
+                ->setMobile($formData['mobile']['mobile'])
             ;
 
             $clientsRepository->save($client);

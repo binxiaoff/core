@@ -22,6 +22,7 @@ final class Version20190823114620 extends ContainerAwareMigration
         $this->addSql('INSERT INTO translations (locale, section, name, translation, added) VALUES ("fr_FR", "user-profile-form", "mobile-phone-label", "Votre téléphone portable", NOW())');
         $this->addSql('INSERT INTO translations (locale, section, name, translation, added) VALUES ("fr_FR", "user-profile-form", "form-submit-button", "Modifier mes infos", NOW())');
         $this->addSql('INSERT INTO translations (locale, section, name, translation, added) VALUES ("fr_FR", "user-profile-form", "success", "Vos infos ont bien été modifiées", NOW())');
+        $this->addSql('INSERT INTO translations (locale, section, name, translation, added) VALUES ("fr_FR", "common", "mobile-phone-label", "Téléphone portable", NOW())');
     }
 
     public function down(Schema $schema): void
@@ -29,5 +30,6 @@ final class Version20190823114620 extends ContainerAwareMigration
         $this->addSql('DELETE FROM translations WHERE section = "user-profile-form" AND name = "mobile-phone-label"');
         $this->addSql('DELETE FROM translations WHERE section = "user-profile-form" AND name = "form-submit-button"');
         $this->addSql('DELETE FROM translations WHERE section = "user-profile-form" AND name = "success"');
+        $this->addSql('DELETE FROM translations WHERE section = "common" AND name = "mobile-phone-label"');
     }
 }
