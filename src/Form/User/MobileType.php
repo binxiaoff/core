@@ -20,7 +20,7 @@ class MobileType extends AbstractType
             'widget'         => PhoneNumberType::WIDGET_SINGLE_TEXT,
             'default_region' => 'FR',
             'format'         => PhoneNumberFormat::NATIONAL,
-            'label'          => 'password-init.mobile-phone-label',
+            'label'          => 'commmon.mobile-phone-label',
         ]);
     }
 }

@@ -173,10 +173,9 @@ function loadNomTexte(section) {
                 document.getElementById('elementTraduction').innerHTML = '';
             }
         };
-        xhr_object.open('GET', add_url + '/ajax/loadNomTexte/' + section + '/' + param, true);
+        xhr_object.open('GET', add_url + '/traductions/loadNames/' + section + '/' + param, true);
         xhr_object.send(null);
-    }
-    else {
+    } else {
         document.getElementById('listeNomTraduction').innerHTML = '';
         document.getElementById('elementTraduction').innerHTML = '';
         document.getElementById('btnAjouterTraduction').style.display = 'none';
@@ -198,7 +197,7 @@ function loadTradTexte(nom, section) {
                 document.getElementById('elementTraduction').innerHTML = reponse;
             }
         };
-        xhr_object.open('GET', add_url + '/ajax/loadTradTexte/' + nom + '/' + section + '/' + param, true);
+        xhr_object.open('GET', add_url + '/traductions/loadText/' + nom + '/' + section + '/' + param, true);
         xhr_object.send(null);
     }
     else {

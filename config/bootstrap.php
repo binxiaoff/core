@@ -2,7 +2,7 @@
 
 use Symfony\Component\Dotenv\Dotenv;
 
-require dirname(__DIR__) . '/config/autoload.php';
+require dirname(__DIR__) . '/vendor/autoload.php';
 
 if (!array_key_exists('APP_ENV', $_SERVER)) {
     $_SERVER['APP_ENV'] = $_ENV['APP_ENV'] ?? null;

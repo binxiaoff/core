@@ -1,8 +1,10 @@
 <?php
 
+use Unilend\Entity\Translations;
+use Unilend\Repository\TranslationsRepository;
 use Unilend\Service\Translation\TranslationManager;
 
-class traductionsController extends bootstrap
+class traductionsController extends Controller
 {
     public function initialize()
     {
@@ -17,8 +19,8 @@ class traductionsController extends bootstrap
         $translationManager = $this->get('unilend.service.translation_manager');
 
         if (isset($_POST['form_add_traduction'])) {
-            $sSection     = $this->bdd->generateSlug($_POST['section']);
-            $sName        = $this->bdd->generateSlug($_POST['name']);
+            $sSection     = $this->generateSlug($_POST['section']);
+            $sName        = $this->generateSlug($_POST['name']);
             $sTranslation = $_POST['translation'];
 
             $translationManager->addTranslation($sSection, $sName, $sTranslation);
@@ -65,8 +67,6 @@ class traductionsController extends bootstrap
     public function _add()
     {
         $this->hideDecoration();
-
-        $_SESSION['request_url'] = $this->url;
     }
 
     public function _export()
@@ -74,24 +74,22 @@ class traductionsController extends bootstrap
         $this->hideDecoration();
         $this->autoFireView = false;
 
-        $_SESSION['request_url'] = $this->url;
-
-        /** @var \Unilend\Repository\TranslationsRepository $translationRepository */
+        /** @var TranslationsRepository $translationRepository */
         $translationRepository = $this->get('doctrine.orm.entity_manager')->getRepository(Translations::class);
         $locale                = $this->getParameter('kernel.default_locale');
         $allTranslations       = $translationRepository->findBy(['locale' => $locale]);
 
-        header("Pragma: no-cache");
-        header("Cache-Control: must-revalidate, post-check=0, pre-check=0, public");
-        header("Expires: 0");
-        header("Content-Type: text/csv");
-        header("Content-Disposition: attachment; filename=traductions.csv");
+        header('Pragma: no-cache');
+        header('Cache-Control: must-revalidate, post-check=0, pre-check=0, public');
+        header('Expires: 0');
+        header('Content-Type: text/csv');
+        header('Content-Disposition: attachment; filename=traductions.csv');
 
         $handle = fopen('php://output', 'w+');
         fputs($handle, "\xEF\xBB\xBF"); // add UTF-8 BOM in order to be compatible to Excel
         fputcsv($handle, ['Id_translation', 'locale', 'Section', 'Nom', 'Traduction', 'Date d\'ajout', 'Date de mise à jour'], ';');
 
-        /** @var \Unilend\Entity\Translations$translation */
+        /** @var Translations $translation */
         foreach ($allTranslations as $translation) {
             $singleTranslation = [
                 $translation->getIdTranslation(),
@@ -119,5 +117,40 @@ class traductionsController extends bootstrap
 
         header('Location: ' . $this->url . '/traductions');
         die;
+    }
+
+    /**
+     * Fonction AJAX chargement des noms de la section de traduction.
+     */
+    public function _loadNames()
+    {
+        $this->hideDecoration();
+
+        /** @var TranslationManager $translationManager */
+        $translationManager = $this->get('unilend.service.translation_manager');
+
+        if (false === empty($this->params[0])) {
+            $this->lNoms = $translationManager->selectNamesForSection($this->params[0]);
+        }
+
+        $this->setView('../traductions/list');
+    }
+
+    /**
+     * Fonction AJAX chargement des traductions de la section de traduction.
+     */
+    public function _loadText()
+    {
+        $this->hideDecoration();
+
+        /** @var TranslationManager $translationManager */
+        $translationManager = $this->get('unilend.service.translation_manager');
+        if (false === empty($this->params[0])) {
+            $this->section     = $this->params[1];
+            $this->nom         = $this->params[0];
+            $this->translation = $translationManager->noCacheTrans($this->params[1], $this->params[0]);
+        }
+
+        $this->setView('../traductions/edit');
     }
 }

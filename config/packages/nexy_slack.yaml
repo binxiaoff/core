@@ -1,6 +1,6 @@
 nexy_slack:
     http:
         client: httplug.client.nexy_slack
-    endpoint: '%slack.endpoint%'
-    channel: '%slack.default_channel%'
-    username: '%slack.default_username%'
+    endpoint: 'https://hooks.slack.com/services'
+    channel: '#it-testing'
+    username: 'CALS'

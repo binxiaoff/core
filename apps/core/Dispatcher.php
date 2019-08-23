@@ -32,8 +32,10 @@ class Dispatcher
         $this->dispatch();
     }
 
-    // Gestion de l'URL pour construire la commande : on récupère les paramètres, on met le tout dans un tableau et on essaye de déterminer ce qui parle du controlleur, ce qui parle de l'action et ce qui est à prendre en paramètres.
-    public function handleUrl()
+    /**
+     * Gestion de l'URL pour construire la commande : on récupère les paramètres, on met le tout dans un tableau et on essaye de déterminer ce qui parle du controlleur, ce qui parle de l'action et ce qui est à prendre en paramètres.
+     */
+    private function handleUrl()
     {
         $path         = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
         $requestURI   = explode('/', $path);
@@ -94,13 +96,11 @@ class Dispatcher
             }
         }
 
-        $this->Command = new \Command($controllerName, $controllerFunction, $parameters, 'fr');
+        $this->Command = new \Command($controllerName, $controllerFunction, $parameters);
     }
 
-    public function dispatch()
+    private function dispatch()
     {
-        include $this->path . 'apps/' . $this->App . '/bootstrap.php';
-
         $controllerName  = $this->Command->getControllerName();
         $controllerClass = $controllerName . 'Controller';
 
@@ -112,7 +112,7 @@ class Dispatcher
     }
 
     // Verifie qu'un controller existe (fichier)
-    public function isController($controllerName)
+    private function isController($controllerName)
     {
         if (file_exists($this->path . 'apps/' . $this->App . '/controllers/' . $controllerName . '.php')) {
             return true;
@@ -122,7 +122,7 @@ class Dispatcher
     }
 
     // Test si une action existe dans le controller root
-    public function isActionInController($controllerName, $action)
+    private function isActionInController($controllerName, $action)
     {
         $controller_content = file_get_contents($this->path . 'apps/' . $this->App . '/controllers/' . $controllerName . '.php');
 

@@ -1,77 +1,92 @@
 <?php
 
-use Box\Spout\Common\Entity\Style\Color;
-use Box\Spout\Common\Type;
-use Box\Spout\Writer\Common\Creator\{Style\StyleBuilder, WriterFactory};
+use Doctrine\ORM\EntityManager;
+use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
+use PhpOffice\PhpSpreadsheet\Exception as PhpSpreadsheetException;
+use PhpOffice\PhpSpreadsheet\IOFactory as PhpSpreadsheetIOFactory;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Style\{Border, Color, Fill};
+use PhpOffice\PhpSpreadsheet\Writer\Exception as PhpSpreadsheetWriterException;
+use Unilend\Entity\Queries;
+use Unilend\Repository\QueriesRepository;
 
-class queriesController extends bootstrap
+class queriesController extends Controller
 {
-    /** @var \queries */
-    protected $queries;
+    /** @var QueriesRepository */
+    protected $queriesRepository;
+    /** @var Queries */
+    protected $query;
 
     public function initialize()
     {
         parent::initialize();
 
-        $this->menu_admin = 'stats';
+        $this->menu_admin        = 'stats';
+        $this->queriesRepository = $this->get('doctrine.orm.entity_manager')->getRepository(Queries::class);
     }
 
     public function _add()
     {
         $this->hideDecoration();
-
-        $_SESSION['request_url'] = $this->lurl;
     }
 
     public function _edit()
     {
         $this->hideDecoration();
 
-        $_SESSION['request_url'] = $this->lurl;
-
-        $this->queries = $this->loadData('queries');
-        $this->queries->get($this->params[0], 'id_query');
+        $this->query = $this->queriesRepository->find($this->params[0]);
     }
 
     public function _default()
     {
-        $this->queries   = $this->loadData('queries');
-        $this->lRequetes = $this->queries->select('', 'executed DESC');
+        $this->queries = $this->queriesRepository->findBy([], ['executed' => 'DESC']);
 
         if (isset($_POST['form_edit_requete'])) {
-            $this->queries->get($this->params[0], 'id_query');
-            $this->queries->name   = $_POST['name'];
-            $this->queries->paging = $_POST['paging'];
-            $this->queries->sql    = $_POST['sql'];
-            $this->queries->update();
+            $query = $this->queriesRepository->find($this->params[0]);
+            $query
+                ->setName($_POST['name'])
+                ->setPaging($_POST['paging'])
+                ->setQuery($_POST['sql'])
+            ;
 
-            $_SESSION['freeow']['title']   = 'Modification d\'une requ&ecirc;te';
-            $_SESSION['freeow']['message'] = 'La requ&ecirc;te a bien &eacute;t&eacute; modifi&eacute;e !';
+            $this->queriesRepository->save($query);
 
-            header('Location:' . $this->lurl . '/queries');
+            $_SESSION['freeow']['title']   = 'Modification d\'une requête';
+            $_SESSION['freeow']['message'] = 'La requête a bien été modifiée';
+
+            header('Location:' . $this->url . '/queries');
             die;
         }
 
         if (isset($_POST['form_add_requete'])) {
-            $this->queries->name   = $_POST['name'];
-            $this->queries->paging = $_POST['paging'];
-            $this->queries->sql    = $_POST['sql'];
-            $this->queries->create();
+            $query = new Queries();
+            $query
+                ->setName($_POST['name'])
+                ->setPaging((int) $_POST['paging'])
+                ->setQuery($_POST['sql'])
+            ;
 
-            $_SESSION['freeow']['title']   = 'Ajout d\'une requ&ecirc;te';
-            $_SESSION['freeow']['message'] = 'La requ&ecirc;te a bien &eacute;t&eacute; ajout&eacute;e !';
+            $this->queriesRepository->save($query);
 
-            header('Location:' . $this->lurl . '/queries');
+            $_SESSION['freeow']['title']   = 'Ajout d\'une requête';
+            $_SESSION['freeow']['message'] = 'La requête a bien été ajoutée';
+
+            header('Location:' . $this->url . '/queries');
             die;
         }
 
-        if (isset($this->params[0]) && 'delete' == $this->params[0]) {
-            $this->queries->delete($this->params[1], 'id_query');
+        if (isset($this->params[0], $this->params[1]) && 'delete' === $this->params[0]) {
+            /** @var EntityManager $entityManager */
+            $entityManager = $this->get('doctrine.orm.entity_manager');
+            $query         = $this->queriesRepository->find($this->params[1]);
 
-            $_SESSION['freeow']['title']   = 'Suppression d\'une requ&ecirc;te';
-            $_SESSION['freeow']['message'] = 'La requ&ecirc;te a bien &eacute;t&eacute; supprim&eacute;e !';
+            $entityManager->remove($query);
+            $entityManager->flush();
 
-            header('Location:' . $this->lurl . '/queries');
+            $_SESSION['freeow']['title']   = 'Suppression d\'une requête';
+            $_SESSION['freeow']['message'] = 'La requête a bien été supprimée';
+
+            header('Location:' . $this->url . '/queries');
             die;
         }
     }
@@ -80,14 +95,11 @@ class queriesController extends bootstrap
     {
         $this->hideDecoration();
 
-        $_SESSION['request_url'] = $this->lurl;
+        $this->query = $this->queriesRepository->find($this->params[0]);
 
-        $this->queries = $this->loadData('queries');
-        $this->queries->get($this->params[0], 'id_query');
+        preg_match_all('/@[_a-zA-Z1-9]+@/', $this->query->getQuery(), $this->sqlParams, PREG_SET_ORDER);
 
-        preg_match_all('/@[_a-zA-Z1-9]+@/', $this->queries->sql, $this->sqlParams, PREG_SET_ORDER);
-
-        $this->sqlParams = $this->queries->super_unique($this->sqlParams);
+        $this->sqlParams = $this->super_unique($this->sqlParams);
     }
 
     public function _execute()
@@ -95,41 +107,38 @@ class queriesController extends bootstrap
         ini_set('memory_limit', '2G');
         ini_set('max_execution_time', 1200);
 
-        $this->queries = $this->loadData('queries');
-        $this->queries->get($this->params[0], 'id_query');
-        $this->queries->sql = trim(str_replace(
-            ['[ID_USER]'],
-            [$this->getUser()->getIdClient()],
-            $this->queries->sql
-        ));
+        $this->query = $this->queriesRepository->find($this->params[0]);
+        $sql         = $this->query->getQuery();
 
         if (
-            1 !== preg_match('/^SELECT\s/i', $this->queries->sql)
-            || 1 === preg_match('/[^A-Z](ALTER|INSERT|DELETE|DROP|TRUNCATE|UPDATE)[^A-Z]/i', $this->queries->sql)
+            1 !== preg_match('/^SELECT\s/i', $sql)
+            || 1 === preg_match('/[^A-Z](ALTER|INSERT|DELETE|DROP|TRUNCATE|UPDATE)[^A-Z]/i', $sql)
         ) {
             $this->result    = [];
             $this->sqlParams = [];
-            trigger_error('Stat query may be dangerous: ' . $this->queries->sql, E_USER_WARNING);
+            trigger_error('Stat query may be dangerous: ' . $sql, E_USER_WARNING);
 
             return;
         }
 
-        preg_match_all('/@[_a-zA-Z1-9]+@/', $this->queries->sql, $this->sqlParams, PREG_SET_ORDER);
+        preg_match_all('/@[_a-zA-Z1-9]+@/', $sql, $this->sqlParams, PREG_SET_ORDER);
 
-        $this->sqlParams = $this->queries->super_unique($this->sqlParams);
+        $this->sqlParams = $this->super_unique($this->sqlParams);
 
         foreach ($this->sqlParams as $param) {
-            $this->queries->sql = str_replace($param[0], $this->bdd->quote($_POST['param_' . str_replace('@', '', $param[0])]), $this->queries->sql);
+            $sql = str_replace($param[0], $this->bdd->quote($_POST['param_' . str_replace('@', '', $param[0])]), $sql);
         }
 
-        $this->result = $this->queries->run($this->params[0], $this->queries->sql);
+        $statement    = $this->bdd->query($sql);
+        $this->result = $statement->fetchAll(PDO::FETCH_ASSOC);
+
+        $this->query->setExecutions($this->query->getExecutions() + 1);
+        $this->queriesRepository->save($this->query);
     }
 
     /**
-     * @throws \Box\Spout\Common\Exception\IOException
-     * @throws \Box\Spout\Common\Exception\InvalidArgumentException
-     * @throws \Box\Spout\Common\Exception\UnsupportedTypeException
-     * @throws \Box\Spout\Writer\Exception\WriterNotOpenedException
+     * @throws PhpSpreadsheetException
+     * @throws PhpSpreadsheetWriterException
      */
     public function _export(): void
     {
@@ -139,25 +148,99 @@ class queriesController extends bootstrap
         $this->_execute();
 
         if (is_array($this->result) && count($this->result) > 0) {
-            $filename = $this->bdd->generateSlug($this->queries->name) . '.xlsx';
-            $writer   = WriterFactory::create(Type::XLSX);
+            $filename = $this->generateSlug($this->query->getName()) . '.xlsx';
 
-            $titleStyle = (new StyleBuilder())
-                ->setFontBold()
-                ->setFontColor(Color::WHITE)
-                ->setBackgroundColor('2672A2')
-                ->build()
-            ;
+            $spreadsheet = new Spreadsheet();
+            $writer      = PhpSpreadsheetIOFactory::createWriter($spreadsheet, 'Xlsx');
+            $sheet       = $spreadsheet->getActiveSheet();
+            $lastColumn  = Coordinate::stringFromColumnIndex(count($this->result[0]));
 
-            $writer
-                ->openToBrowser($filename)
-                ->addRowWithStyle([$this->queries->name], $titleStyle)
-                ->addRow(array_keys($this->result[0]))
-                ->addRows($this->result)
-                ->close()
-            ;
+            $sheet->getStyle('A1:' . $lastColumn . (count($this->result) + 2))->applyFromArray($this->getExportDefaultStyle());
+            $sheet->getStyle('A1:' . $lastColumn . '1')->applyFromArray($this->getExportTitleRowStyle());
+            $sheet->getStyle('A2:' . $lastColumn . '2')->applyFromArray($this->getExportColumnNamesRowStyle());
+            $sheet->mergeCells('A1:' . $lastColumn . '1');
+            $sheet->setCellValue('A1', $this->query->getName());
+            $sheet->fromArray(array_keys($this->result[0]), null, 'A2');
+            $sheet->fromArray($this->result, null, 'A3');
+
+            header('Content-Description: File Transfer');
+            header('Content-Type: application/octet-stream');
+            header('Content-Transfer-Encoding: binary');
+            header('Content-Disposition: attachment; filename="' . $filename . '";');
+
+            $writer->save('php://output');
         }
 
         die;
+    }
+
+    private function super_unique($array)
+    {
+        $result = array_map('unserialize', array_unique(array_map('serialize', $array)));
+
+        foreach ($result as $key => $value) {
+            if (is_array($value)) {
+                $result[$key] = $this->super_unique($value);
+            }
+        }
+
+        return $result;
+    }
+
+    private function getExportDefaultStyle(): array
+    {
+        return [
+            'borders' => [
+                'allBorders' => [
+                    'borderStyle' => Border::BORDER_THIN,
+                    'color'       => [
+                        'rgb' => '787679',
+                    ],
+                ],
+            ],
+        ];
+    }
+
+    private function getExportTitleRowStyle(): array
+    {
+        return [
+            'font' => [
+                'bold'  => true,
+                'color' => [
+                    'argb' => Color::COLOR_WHITE,
+                ],
+                'size'  => 18,
+            ],
+            'alignment' => [
+                'horizontal' => 'center',
+            ],
+            'fill' => [
+                'fillType'   => Fill::FILL_SOLID,
+                'startColor' => [
+                    'rgb' => '787679',
+                ],
+            ],
+        ];
+    }
+
+    private function getExportColumnNamesRowStyle(): array
+    {
+        return [
+            'font' => [
+                'color' => [
+                    'rgb' => '787679',
+                ],
+                'size'  => 14,
+            ],
+            'alignment' => [
+                'horizontal' => 'center',
+            ],
+            'fill' => [
+                'fillType'   => Fill::FILL_SOLID,
+                'startColor' => [
+                    'rgb' => 'DEDCDF',
+                ],
+            ],
+        ];
     }
 }

@@ -13,8 +13,8 @@
   "require": {
     "php": ">=7.3.6",
     "ext-bcmath": "*",
-    "ext-curl": "*",
     "ext-ctype": "*",
+    "ext-curl": "*",
     "ext-hash": "*",
     "ext-openssl": "*",
     "ext-pdo": "*",
@@ -22,7 +22,6 @@
     "ext-zip": "*",
     "azuyalabs/yasumi": "^2.0",
     "beberlei/doctrineextensions": "^1.0",
-    "box/spout": "^3.0",
     "cravler/maxmind-geoip-bundle": "^1.2",
     "docusign/esign-client": "^3.0",
     "eightpoints/guzzle-bundle": "^7.2",

@@ -1,11 +1,10 @@
 <?php
 
+use Doctrine\DBAL\Connection;
+use Symfony\Bundle\FrameworkBundle\Controller\ControllerTrait;
 use Symfony\Component\DependencyInjection\{ContainerAwareInterface, ContainerInterface};
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Bundle\FrameworkBundle\Controller\ControllerTrait;
 use Symfony\Component\Security\Core\Exception\{AccessDeniedException, AuthenticationCredentialsNotFoundException};
-use Unilend\core\Loader;
-use Unilend\Doctrine\DBAL\Connection;
 use Unilend\Security\Voter\BackOfficeZoneVoter;
 
 abstract class Controller implements ContainerAwareInterface
@@ -14,10 +13,14 @@ abstract class Controller implements ContainerAwareInterface
 
     /** @var array */
     public $params;
+    /** @var Connection */
+    public $bdd;
     /** @var Command */
-    public $Command;
+    public $command;
     /** @var string */
-    public $App;
+    public $app;
+    /** @var Request */
+    public $request;
     /** @var bool */
     public $autoFireHead = true;
     /** @var bool */
@@ -26,18 +29,12 @@ abstract class Controller implements ContainerAwareInterface
     public $autoFireView = true;
     /** @var bool */
     public $autoFireFooter = true;
-    /** @var Connection */
-    public $bdd;
     /** @var string */
     public $view;
-    /** @var Request */
-    public $request;
+    /** @var int */
+    public $maxTableRows = 100;
     /** @var ContainerInterface */
     protected $container;
-    /** @var array */
-    private $included_css = [];
-    /** @var array */
-    private $included_js = [];
     /** @var string */
     protected $path;
     /** @var string */
@@ -46,6 +43,10 @@ abstract class Controller implements ContainerAwareInterface
     protected $url;
     /** @var string */
     protected $furl;
+    /** @var array */
+    private $includedCss = [];
+    /** @var array */
+    private $includedJs = [];
 
     /**
      * @param Command      $command
@@ -54,8 +55,8 @@ abstract class Controller implements ContainerAwareInterface
      */
     final public function __construct(Command $command, $app, $request = null)
     {
-        $this->Command = $command;
-        $this->App     = $app;
+        $this->command = $command;
+        $this->app     = $app;
         $this->request = $request;
     }
 
@@ -86,12 +87,12 @@ abstract class Controller implements ContainerAwareInterface
     {
         $this->initialize();
 
-        $this->params = $this->Command->getParameters();
+        $this->params = $this->command->getParameters();
 
-        call_user_func([$this, '_' . $this->Command->getFunction()]);
+        call_user_func([$this, '_' . $this->command->getFunction()]);
 
         if (empty($this->view)) {
-            $this->setView($this->Command->getFunction());
+            $this->setView($this->command->getFunction());
         }
         if ($this->autoFireHead) {
             $this->fireHead();
@@ -109,10 +110,10 @@ abstract class Controller implements ContainerAwareInterface
 
     public function fireHead()
     {
-        if (false === file_exists($this->path . 'apps/' . $this->App . '/views/head.php')) {
+        if (false === file_exists($this->path . 'apps/' . $this->app . '/views/head.php')) {
             call_user_func([$this, '_error'], 'head not found : views/head.php');
         } else {
-            include $this->path . 'apps/' . $this->App . '/views/head.php';
+            include $this->path . 'apps/' . $this->app . '/views/head.php';
         }
     }
 
@@ -122,32 +123,32 @@ abstract class Controller implements ContainerAwareInterface
             $view = $this->view;
         }
 
-        if ('' != $view) {
-            if (!file_exists($this->path . 'apps/' . $this->App . '/views/' . $this->Command->getControllerName() . '/' . $view . '.php')) {
+        if (false === empty($view)) {
+            if (!file_exists($this->path . 'apps/' . $this->app . '/views/' . $this->command->getControllerName() . '/' . $view . '.php')) {
                 call_user_func([
                     $this, '_error',
-                ], 'view not found : views/' . $this->Command->getControllerName() . '/' . $view . '.php');
+                ], 'view not found : views/' . $this->command->getControllerName() . '/' . $view . '.php');
             } else {
-                include $this->path . 'apps/' . $this->App . '/views/' . $this->Command->getControllerName() . '/' . $view . '.php';
+                include $this->path . 'apps/' . $this->app . '/views/' . $this->command->getControllerName() . '/' . $view . '.php';
             }
         }
     }
 
     public function fireHeader()
     {
-        if (false === file_exists($this->path . 'apps/' . $this->App . '/views/header.php')) {
+        if (false === file_exists($this->path . 'apps/' . $this->app . '/views/header.php')) {
             call_user_func([$this, '_error'], 'header not found : views/header.php');
         } else {
-            include $this->path . 'apps/' . $this->App . '/views/header.php';
+            include $this->path . 'apps/' . $this->app . '/views/header.php';
         }
     }
 
     public function fireFooter()
     {
-        if (false === file_exists($this->path . 'apps/' . $this->App . '/views/footer.php')) {
+        if (false === file_exists($this->path . 'apps/' . $this->app . '/views/footer.php')) {
             call_user_func([$this, '_error'], 'footer not found : views/footer.php');
         } else {
-            include $this->path . 'apps/' . $this->App . '/views/footer.php';
+            include $this->path . 'apps/' . $this->app . '/views/footer.php';
         }
     }
 
@@ -162,14 +163,14 @@ abstract class Controller implements ContainerAwareInterface
      */
     public function loadJs(string $js, ?string $cacheKey = null): void
     {
-        if (false === array_key_exists($js, $this->included_js)) {
-            $this->included_js[$js] = '<script src="' . $this->url . '/scripts/' . $js . '.js' . ($cacheKey ? '?' . $cacheKey : '') . '"></script>';
+        if (false === array_key_exists($js, $this->includedJs)) {
+            $this->includedJs[$js] = '<script src="' . $this->url . '/scripts/' . $js . '.js' . ($cacheKey ? '?' . $cacheKey : '') . '"></script>';
         }
     }
 
     public function callJs(): void
     {
-        foreach ($this->included_js as $js) {
+        foreach ($this->includedJs as $js) {
             echo $js . "\n";
         }
     }
@@ -180,44 +181,21 @@ abstract class Controller implements ContainerAwareInterface
      */
     public function loadCss(string $css, ?string $cacheKey = null): void
     {
-        if (false === array_key_exists($css, $this->included_css)) {
-            $this->included_css[$css] = '<link media="all" href="' . $this->url . '/styles/' . $css . '.css' . ($cacheKey ? '?' . $cacheKey : '') . '" type="text/css" rel="stylesheet">';
+        if (false === array_key_exists($css, $this->includedCss)) {
+            $this->includedCss[$css] = '<link href="' . $this->url . '/styles/' . $css . '.css' . ($cacheKey ? '?' . $cacheKey : '') . '" type="text/css" rel="stylesheet">';
         }
     }
 
     public function callCss(): void
     {
-        foreach ($this->included_css as $css) {
+        foreach ($this->includedCss as $css) {
             echo $css . "\n";
         }
-    }
-
-    /**
-     * Since it can be replaced by Twig filter once the template is migrated to Twig, I create it as a temporary solution to replace the dates::formatDate.
-     *
-     * @param string $date
-     * @param string $format
-     *
-     * @return string
-     */
-    public function formatDate(?string $date, $format = 'd/m/Y'): string
-    {
-        if (empty($date)) {
-            return '';
-        }
-
-        $formattedDate = date($format, strtotime($date));
-
-        return $formattedDate ? $formattedDate : '';
     }
 
     protected function initialize()
     {
         $this->bdd = $this->get('database_connection');
-
-        $this->language           = $this->Command->Language;
-        $this->current_controller = $this->Command->getControllerName();
-        $this->current_function   = $this->Command->getfunction();
 
         $this->path  = $this->get('kernel')->getProjectDir() . DIRECTORY_SEPARATOR;
         $this->spath = $this->path . 'public/default/var/';
@@ -226,33 +204,36 @@ abstract class Controller implements ContainerAwareInterface
         $this->furl = $this->getParameter('router.request_context.scheme') . '://' . getenv('HOST_APP_URL');
 
         try {
-            $this->denyAccessUnlessGranted(BackOfficeZoneVoter::ATTRIBUTE_VIEW, $this->Command);
+            $this->denyAccessUnlessGranted(BackOfficeZoneVoter::ATTRIBUTE_VIEW, $this->command);
         } catch (AuthenticationCredentialsNotFoundException | AccessDeniedException $exception) {
             // Throw only the AccessDeniedException for login user, as it can also be thrown for anonymous (has anonymous token), in this case, we redirect to login.
-            if (($exception instanceof AccessDeniedException) && $this->getUser()) {
+            if ($exception instanceof AccessDeniedException && $this->getUser()) {
                 throw $exception;
             }
+
             $this->get('session')->set('_security.default.target_path', $this->request->getUri());
+
             header('Location: ' . $this->furl . '/login');
             exit;
         }
-    }
 
-    protected function loadData($object, $params = [])
-    {
-        return Loader::loadData($object, $params);
-    }
+        $staticsKey = (string) filemtime(__FILE__);
 
-    /**
-     * @deprecated each lib will be declared as a service
-     *
-     * @param string $library
-     *
-     * @return bool|object
-     */
-    protected function loadLib($library)
-    {
-        return Loader::loadLib($library);
+        $this->loadJs('jquery');
+        $this->loadJs('jquery-ui/jquery-ui.min');
+        $this->loadJs('jquery-ui/jquery-ui.datepicker-fr');
+        $this->loadJs('freeow/jquery.freeow.min');
+        $this->loadJs('colorbox/jquery.colorbox-min');
+        $this->loadJs('tablesorter/jquery.tablesorter.min');
+        $this->loadJs('tablesorter/jquery.tablesorter.pager');
+        $this->loadJs('main', $staticsKey);
+
+        $this->loadCss('bootstrap');
+        $this->loadCss('../scripts/freeow/freeow');
+        $this->loadCss('../scripts/colorbox/colorbox');
+        $this->loadCss('../scripts/tablesorter/style');
+        $this->loadCss('../scripts/jquery-ui/jquery-ui.min');
+        $this->loadCss('main', $staticsKey);
     }
 
     /**
@@ -292,5 +273,17 @@ abstract class Controller implements ContainerAwareInterface
         ]);
 
         exit;
+    }
+
+    /**
+     * @param string $string
+     *
+     * @return string
+     */
+    protected function generateSlug(string $string): string
+    {
+        $string = strip_tags($string);
+
+        return URLify::filter($string);
     }
 }
