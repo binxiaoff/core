@@ -1,0 +1,28 @@
+{% extends 'layouts/_page_with_sidebar.html.twig' %}
+
+{% block dashboardContent %}
+    <section class="dashboard-panels-content">
+        <div class="dashboard-tabs-content tab-content">
+            <div class="dashboard-tab-pane">
+                <div class="panel">
+                    {% if form is defined and form %}
+                        {{ form_start(form) }}
+                        {{ form_row(form.mobile, {'label':'user-profile-form.mobile-phone-label', 'value':app.user.mobile|phone_number_format('NATIONAL')}) }}
+                        <div class="btn-controls">
+                            <button class="btn-primary"
+                                    data-spinnerbutton>{% trans %} user-profile-form.form-submit-button {% endtrans %}</button>
+                        </div><!-- /.btn-controls -->
+                        {{ form_end(form) }}
+                    {% endif %}
+                    {% if app.session.flashBag.has('mobileUpdateSuccess') %}
+                        <div class="message-success">
+                            {% for error in app.session.flashBag.get('mobileUpdateSuccess') %}
+                                <p>{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </section>
+{% endblock %}
