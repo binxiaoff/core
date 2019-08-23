@@ -1,7 +1,0 @@
-parameters:
-    slack.default_channel: '#it-testing'
-    slack.team_id: ''
-    slack.command_token: ''
-    slack.monitoring_channel: '#it-monitoring'
-    slack.default_username: Unilend
-    slack.endpoint: 'https://hooks.slack.com/services'
