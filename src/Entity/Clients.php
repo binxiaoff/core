@@ -132,15 +132,6 @@ class Clients implements UserInterface, EquatableInterface
     private $birthCity;
 
     /**
-     * @var string
-     *
-     * @ORM\Column(name="insee_birth", type="string", length=16, nullable=true)
-     *
-     * @Assert\Length(min=5, groups={"lender_person"})
-     */
-    private $inseeBirth;
-
-    /**
      * @var int
      *
      * @ORM\Column(name="id_nationaliy", type="integer", nullable=true)
@@ -471,26 +462,6 @@ class Clients implements UserInterface, EquatableInterface
     public function getBirthCity(): ?string
     {
         return $this->birthCity;
-    }
-
-    /**
-     * @param string|null $inseeBirth
-     *
-     * @return Clients
-     */
-    public function setInseeBirth(?string $inseeBirth): Clients
-    {
-        $this->inseeBirth = $inseeBirth;
-
-        return $this;
-    }
-
-    /**
-     * @return string|null
-     */
-    public function getInseeBirth(): ?string
-    {
-        return $this->inseeBirth;
     }
 
     /**
