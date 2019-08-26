@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Unilend\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
@@ -10,7 +12,7 @@ use Unilend\Entity\Traits\TimestampableAddedOnlyTrait;
  *     @ORM\Index(name="idx_clients_history_ip", columns={"ip"}),
  *     @ORM\Index(name="idx_clients_history_added", columns={"added"})
  * })
- * @ORM\Entity(repositoryClass="Unilend\Repository\ClientsHistoryRepository")
+ * @ORM\Entity
  * @ORM\HasLifecycleCallbacks
  */
 class ClientsHistory
