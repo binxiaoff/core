@@ -1,4 +1,4 @@
-.table-projects, .table-users {
+.table-projects {
     table-layout: fixed;
 
     tr {
@@ -25,28 +25,4 @@
 
 .table-actions {
     min-width: 100px;
-}
-
-.table-projects-details {
-    > td {
-        padding: 0;
-    }
-}
-.details-memo-text p {
-    margin: 5px 0;
-    &:first-child {
-        margin-top: 0;
-    }
-}
-
-// UI States
-.ui-details-open [data-action="memos"] {
-    background-color: darken($c-bg1, 10%);
-    border-color: darken($c-bg1, 10%);
-    color: $c-t1;
-}
-.ui-table-projects-item-changed {
-    > td {
-        font-weight: bold;
-    }
 }

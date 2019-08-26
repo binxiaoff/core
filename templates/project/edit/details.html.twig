@@ -21,7 +21,7 @@
             </div>
         </h4>
         <div class="row dashboard-tab-pane">
-            <div id="project-breadcrumb" class="form-project-create-nav tab-nav">
+            <div id="project-breadcrumb" class="tab-nav">
                 <div class="{% if project.currentProjectStatusHistory.status > constant('\\Unilend\\Entity\\ProjectStatusHistory::STATUS_REQUESTED') %}complete{% else %}active{% endif %}">Dépôt</div>
                 <div class="{% if project.currentProjectStatusHistory.status > constant('\\Unilend\\Entity\\ProjectStatusHistory::STATUS_PUBLISHED') %}complete{% elseif project.currentProjectStatusHistory.status == constant('\\Unilend\\Entity\\ProjectStatusHistory::STATUS_PUBLISHED') %}active{% endif %}">
                     Financement
@@ -38,7 +38,7 @@
                 <div class="{% if project.currentProjectStatusHistory.status in [constant('\\Unilend\\Entity\\ProjectStatusHistory::STATUS_FINISHED'), constant('\\Unilend\\Entity\\ProjectStatusHistory::STATUS_LOST')] %}complete{% endif %}">
                     Terminé
                 </div>
-            </div><!-- /.form-project-create-nav -->
+            </div><!-- /.tab-nav -->
         </div>
         <div class="dashboard-tabs-content tab-content">
             <div class="row">
@@ -460,7 +460,7 @@
                             {% for tranche in project.tranches %}
                                 {% include 'project/partials/bids/bids_list.html.twig' with {displayAction: true} %}
                             {% endfor %}
-                        </div><!-- /.project-single-content -->
+                        </div><!-- /.panel-content -->
                     </div>
                 </article><!-- /.dashboard-tab-pane -->
             {% endif %}

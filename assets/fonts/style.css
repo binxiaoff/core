@@ -96,18 +96,6 @@
 .fa-angle-u-u64:before {
   content: "\e90b";
 }
-.fa-autolend-u16:before {
-  content: "\e90c";
-}
-.fa-autolend-u32:before {
-  content: "\e90d";
-}
-.fa-autolend-u:before {
-  content: "\e90d";
-}
-.fa-autolend-u64:before {
-  content: "\e90e";
-}
 .fa-ban-u16:before {
   content: "\e90f";
 }

@@ -4,66 +4,6 @@
 
 @mixin dashboard-nav-mobile {
   display: none;
-  // @note Superseded by new menu
-  //width: 100%;
-  //max-width: 100%;
-  //overflow: hidden;
-  //
-  //position: fixed;
-  //left: 0;
-  //top: auto;
-  //right: 0;
-  //bottom: 0;
-  //z-index: $depth-site-header;
-  //
-  //background-color: $c-bg3;
-  //
-  //ul {
-  //  @include clearfix;
-  //  @include block-list;
-  //
-  //  > li {
-  //    display: block;
-  //    float: left;
-  //    width: 20%;
-  //
-  //    > a {
-  //      display: block;
-  //      padding: 25px 0px;
-  //      font-size: 26px;
-  //      line-height: 1em;
-  //      text-align: center;
-  //
-  //      @include link-states(
-  //        $link: (
-  //          color: $c-t3,
-  //          text-decoration: none
-  //        ),
-  //        $hover: (
-  //          color: $c-t3,
-  //          text-decoration: none
-  //        ),
-  //        $active: (
-  //          color: $c-t1,
-  //          text-decoration: none
-  //        )
-  //      );
-  //
-  //      .label {
-  //        @include hide-accessible;
-  //      }
-  //    }
-  //
-  //    &.active > a {
-  //      color: $c-p1;
-  //    }
-  //  }
-  //}
-  //
-  //// Hide computer specific items
-  //.dashboard-nav-autolend {
-  //  display: none;
-  //}
 }
 
 @mixin dashboard-nav-computer {
@@ -169,57 +109,6 @@
   overflow: hidden;
 }
 
-// Site header modifications on dashboard layouts
-@include devices('xs', 'sm') {
-  .layout-dashboard {
-
-    // Prevent site header from becoming fixed on dashboard layouts
-    .site {
-      margin-top: 0 !important;
-      padding-top: 0 !important;
-    }
-
-    .site-header {
-      position: relative !important;
-      left: auto !important;
-      right: auto !important;
-      top: auto !important;
-      bottom: auto !important;
-
-      // Change logo to single U marque and move to left
-      text-align: left;
-
-      .site-title {
-        display: block;
-        width: auto;
-        height: auto;
-        padding: 0;
-        margin: 0;
-
-        position: absolute;
-        left: 0;
-        top: 0;
-      }
-
-      .site-logo {
-        display: block;
-        width: $height-site-header;
-        height: $height-site-header;
-        padding: 0;
-        margin: 0;
-        overflow: hidden;
-
-        background-image: image-url('logo/logo-65x65-white.png', false, false);
-        background-position: center center;
-
-        @include retina {
-          background-image: image-url('logo/logo-65x65-white@2x.png', false, false);
-        }
-      }
-    }
-  }
-}
-
 .dashboard {
   @include clearfix;
   @include hero-wrap($enable-padding: true, $padding-xs: 0, $padding-sm: 0);
@@ -242,14 +131,6 @@
           display: none;
         }
       }
-    }
-  }
-
-  // Responsive: xs, sm
-  @include devices('xs', 'sm') {
-    .dashboard-panels-nav,
-    .dashboard-panel-alt.dashboard-notifications {
-      display: none;
     }
   }
 
@@ -304,76 +185,10 @@
   }
 }
 
-.dashboard-messages {
-  margin-bottom: 20px;
-
-  > :first-child {
-    margin-top: 0;
-  }
-
-  > :last-child {
-    margin-bottom: 0;
-  }
-}
-
-.dashboard-panels-nav {
-  margin-bottom: -10px;
-  position: relative;
-  clear: both;
-  overflow: hidden;
-
-  li {
-    float: left;
-  }
-
-  .ui-is-spinner {
-    position: absolute;
-    right: 0;
-    top: 0;
-  }
-}
-
 .dashboard-panels-content {
   @include devices('md', 'lg') {
     margin-left: -20px;
     margin-right: -20px;
-  }
-}
-
-.dashboard-panel-toggle {
-  display: none;
-  padding: 10px 20px;
-  margin: 0 20px 10px 0;
-
-  @include link-states(
-    $link: (
-      color: $c-t1,
-      background-color: $c-bg3,
-      text-decoration: none
-    ),
-    $hover: (
-      color: $c-t1,
-      background-color: $c-bg4,
-      text-decoration: none
-    ),
-    $active: (
-      color: $c-t1,
-      background-color: $c-bg2,
-      text-decoration: none
-    )
-  );
-
-  &:after {
-    content: $fa-eye-u;
-    margin-left: 5px;
-    color: $c-t3;
-    font-family: $ff-icon;
-    font-size: 21px;
-  }
-
-  // UI
-  &.ui-dashboard-panel-hidden {
-    display: inline-block; // Opposite to same class on panel
   }
 }
 
@@ -456,18 +271,6 @@
               text-decoration: none
             )
           );
-        }
-      }
-    }
-
-    // Turn into a dropdown-menu for mobile devices
-    @include devices('mobile') {
-      &#{$js-nav-dropdown-menu} {
-        @include nav-dropdown-menu($show-icon: true, $height: 63px);
-        border-bottom: solid 2px $c-bg2;
-
-        > li {
-          width: 100% !important;
         }
       }
     }

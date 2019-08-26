@@ -7,7 +7,6 @@ var $ = require('jquery')
 var Utility = require('Utility')
 var ElementAttrsObject = require('ElementAttrsObject')
 var WatchScroll = require('WatchScroll')
-var Sticky = require('Sticky')
 
 var $doc = $(document)
 var $html = $('html')
@@ -105,24 +104,3 @@ function watchScrollCallback (action) {
       break
   }
 }
-
-// Watch the window scroll and update any Sticky elements
-watchWindow.watch(window, Sticky.prototype._updateAllStickyWatchers)
-
-/*
- * WatchScroll Nav
- * If item is visible (via WatchScroll action `enter`) then make the navigation item active
- */
-$('[data-watchscroll-nav]').each(function (i, elem) {
-  watchWindow.watch(elem, WatchScroll.actions.withinMiddle)
-})
-$doc.on('watchscroll-action-withinmiddle', '[data-watchscroll-nav]', function () {
-  var $navLinks = $('.nav li:not(".active") a[href="#' + $(this).attr('id') + '"]')
-  $navLinks.each(function (i, elem) {
-    var $elem = $(elem)
-    var $navItem = $elem.parents('li').first()
-    if (!$navItem.is('.active')) {
-      $elem.parents('.nav').first().find('li').removeClass('active').filter($navItem).addClass('active')
-    }
-  })
-})

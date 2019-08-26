@@ -19,10 +19,8 @@
 
 // Dependencies (some are Browserify aliases -- see package.json)
 var $ = require('jquery') // Gets the global (see package.json)
-// var videojs = require('videojs') // Gets the global (see package.json)
 var svg4everybody = require('svg4everybody')
 var Swiper = require('Swiper')
-var Iban = require('iban')
 var raf = require('raf')
 var Clipboard = require('clipboard')
 var Tether = require('tether')
@@ -58,19 +56,12 @@ var Sortable = require('Sortable')
 var PasswordCheck = require('PasswordCheck')
 var FileAttach = require('FileAttach')
 var FormValidation = require('FormValidation')
-var DashboardPanel = require('DashboardPanel')
-var DashboardPanels = require('DashboardPanels')
 var CacheForm = require('CacheForm')
-var NavDropdownMenu = require('NavDropdownMenu')
-var MapView = require('MapView')
 var ChartView = require('ChartView')
-var Sticky = require('Sticky')
 var Spinner = require('Spinner')
 var SpinnerButton = require('SpinnerButton')
 var Modal = require('Modal')
 var ModalServiceTerms = require('./app/components/ModalServiceTerms')
-var BidsDetail = require('./app/components/BidsDetail')
-var ProgressBar = require('ProgressBar')
 var Paginate = require('./app/components/Paginate')
 var DataTable = require('./app/components/DataTable')
 var Security = require('./app/components/Security')
@@ -84,10 +75,6 @@ var CollectionForm = require('./app/components/CollectionForm')
  */
 // Modernizr
 var Modernizr = window.Modernizr
-
-// VideoJS
-// Running a modified version to customise the placement of items in the control bar
-// videojs.options.flash.swf = '/assets/js/vendor/videojs/video-js.swf'
 
 // Track the current breakpoints (also updated in updateWindow())
 var currentBreakpoint = window.currentBreakpoint = Utility.getActiveBreakpoints()
@@ -107,24 +94,11 @@ require('./app/controllers/Window')
 require('./app/controllers/Site')
 require('./app/controllers/Fancybox')
 require('./app/controllers/Pikaday')
-require('./app/controllers/Swipers')
-require('./app/controllers/Promos')
 require('./app/controllers/Collapses')
 require('./app/controllers/ToggleGroup')
 require('./app/controllers/FieldSanitisation')
 require('./app/controllers/NewPasswordRequest')
-require('./app/controllers/BorrowerEsim')
-require('./app/controllers/BorrowerOperations')
-require('./app/controllers/LenderSubscription')
-require('./app/controllers/LenderDashboard')
-require('./app/controllers/LenderOperations')
-require('./app/controllers/LenderProfile')
 require('./app/controllers/Projects')
-require('./app/controllers/BidConfirmation')
-require('./app/controllers/ProjectRequest')
-require('./app/controllers/Autolend')
-require('./app/controllers/Partner')
-require('./app/controllers/LenderDataUpdate')
 
   // @debug
   // window.__ = __
@@ -299,31 +273,6 @@ require('./app/controllers/LenderDataUpdate')
   })
 
   /*
-   * Devenir Preteur
-   * @todo refactor into LenderSubscription controller (if not already there)
-   */
-  $doc.on('change', 'input#form-preter-address-is-correspondence', function (event) {
-    checkAddressIsCorrespondence()
-  })
-
-  function checkAddressIsCorrespondence () {
-    if ($('input#form-preter-address-is-correspondence').is(':checked')) {
-      // Set required inputs to false
-      $('#form-preter-fieldset-correspondence [data-formvalidation-required]').attr('data-formvalidation-required', false)
-      // Hide the fieldset
-      $('#form-preter-fieldset-correspondence').hide()
-    } else {
-      // Clear field values? Yeah, why not
-      $('#form-preter-fieldset-correspondence').find('input, textarea, select').val('')
-      // Set required inputs to true
-      $('#form-preter-fieldset-correspondence [data-formvalidation-required]').attr('data-formvalidation-required', true)
-      // Show the fieldset
-      $('#form-preter-fieldset-correspondence').show()
-    }
-  }
-  checkAddressIsCorrespondence()
-
-  /*
    * Ajouter des fichiers
    * @todo finish ExtraFiles.js component and remove this legacy code
    */
@@ -398,171 +347,6 @@ require('./app/controllers/LenderDataUpdate')
   $doc.on(Utility.clickEvent, '.file-upload-extra .ui-extrafiles-removefile', function (event) {
     var $extraFile = $(this).parents('.file-upload-extra')
     removeFormExtraFile($extraFile)
-  })
-
-  /*
-   * Validate IBAN Input
-   * @todo should be refactored out to own app component
-   */
-  // @note is this required? The FieldSanitisation now strips the spaces, so it might not need to add new spaces
-  // function checkIbanInput (event) {
-  //   // Default: check all on the page
-  //   if (typeof event === 'undefined') event = {target: '.custom-input-iban .iban-input', which: 0}
-
-  //   $(event.target).each(function (i, elem) {
-  //     // Get the current input
-  //     var iban = $(this).val().toUpperCase().replace(/[^0-9A-Z]+/g, '')
-  //     var caretPos = $(this).caret() || $(this).val().length
-
-  //     // Reformat the input if entering text
-  //     // @TODO when user types fast the caret sometimes gets left behind. May need to figure out better method for this
-  //     if ((event.which >= 48 && event.which <= 90) || (event.which >= 96 && event.which <= 105) || event.which === 8 || event.which === 46 || event.which === 32) {
-  //       if (iban) {
-  //         // Format preview
-  //         var previewIban = iban.match(/.{1,4}/g)
-  //         var newCaretPos = (caretPos % 5 === 0 ? caretPos + 1 : caretPos)
-
-  //         // @debug
-  //         // console.log({
-  //         //   value: $(this).val(),
-  //         //   valueLength: $(this).val().length,
-  //         //   iban: iban,
-  //         //   ibanLength: iban.length,
-  //         //   groupCount: previewIban.length,
-  //         //   groupCountDivided: previewIban.length / 4,
-  //         //   groupCountMod: previewIban.length % 4,
-  //         //   caretPos: caretPos,
-  //         //   caretPosDivided: caretPos / 4,
-  //         //   caretPosMod: caretPos % 4
-  //         // })
-
-  //         // Add in spaces and assign the new caret position
-  //         $(this).val(previewIban.join(' ')).caret(newCaretPos)
-  //       }
-  //     }
-
-  //     // Check if valid
-  //     if (Iban.isValid(iban)) {
-  //       // Valid
-  //     } else {
-  //       // Invalid
-  //     }
-  //   })
-  // }
-  // $doc.on('keyup', '.custom-input-iban .iban-input', checkIbanInput)
-  // checkIbanInput()
-
-  /*
-   * Custom Input Duration
-   * User can click/drag around to select the range
-   * @todo refactor into separate component
-   */
-  $doc
-    .on('mousedown touchstart', '.custom-input-duration', function (event) {
-      $(this).addClass('ui-interact-is-down')
-    })
-    .on('mouseup touchend', '.custom-input-duration', function (event) {
-      $(this).removeClass('ui-interact-is-down')
-    })
-    .on('mousemove touchmove', '.custom-input-duration', function (event) {
-      // Only do when interaction is down
-      if ($(this).is('.ui-interact-is-down')) {
-        $(event.target).closest('label').first().click()
-      }
-    })
-
-  /*
-   * Movable content area
-   * Any [data-draggable] elements within this element can be dragged and sorted
-   * @todo refactor into separate component
-   */
-  $('[data-movable-content]').each(function (i, elem) {
-    var $elem = $(elem)
-
-    var sortablearea = SortableJS.create(elem, {
-      handle: '.ui-draggable-handle',
-      draggable: '.ui-draggable',
-      ghostClass: 'ui-movablecontent-ghost',
-      chosenClass: 'ui-movablecontent-chosen',
-      forceFallback: true,
-      fallbackClass: 'ui-movablecontent-fallback',
-      scroll: true,
-      scrollSensitivity: 100,
-      scrollSpeed: 20,
-      onUpdate: function (event) {
-        // @trigger elem `MovableContent:sortupdate` [elemItemMoved]
-        $elem.trigger('MovableContent:sortupdate', [event.item])
-
-        // Trigger update on any elements which might have charts to re-render
-        $(event.item).trigger('UI:update')
-      }
-    })
-  })
-
-  /*
-   * User Preter Balance
-   * @todo refactor into LenderWallet controller
-   */
-  $doc.on('change', '#balance-payment-cb-toggle, #balance-payment-transfer-toggle', function (event) {
-    var $elem = $(this)
-    var $cb = $('.balance-payment-cb')
-    var $transfer = $('.balance-payment-transfer')
-
-    // Avoid bubbling and default events because we don't want it to trigger anything else
-    // as its purely for visual
-    event.stopPropagation()
-    event.preventDefault()
-
-    // Show
-    if ($elem.is('#balance-payment-cb-toggle')) {
-      if ($elem.is(':checked')) {
-        $transfer.hide()
-        $cb.show()
-      } else {
-        $transfer.show()
-        $cb.hide()
-      }
-    } else {
-      if ($elem.is(':checked')) {
-        $transfer.show()
-        $cb.hide()
-      } else {
-        $transfer.hide()
-        $cb.show()
-      }
-    }
-
-    return false
-  })
-
-  // Technically these operations should be fired from a successful AJAX result
-  function successBalanceDeposit () {
-    $('#balance-deposit-2').collapse('show')
-    Utility.scrollTo('#user-preter-balance')
-  }
-
-  function successBalanceWithdraw () {
-    $('#balance-withdraw-2').collapse('show')
-    Utility.scrollTo('#user-preter-balance')
-  }
-
-  /*
-   * User Preter Profile
-   * @todo refactor into LenderProfile controller (if not already there)
-   */
-  // Show/hide the correspondence address
-  $doc.on('change', 'input#form-profile-address-is-correspondence', function (event) {
-    var $input = $(this)
-    var $headerLabel = $('#profile-address-is-correspondence')
-    var $panel = $('#panel-correspondence')
-
-    if ($input.is(':checked')) {
-      $headerLabel.removeClass('hide')
-      $panel.collapse('hide')
-    } else {
-      $headerLabel.addClass('hide')
-      $panel.collapse('show')
-    }
   })
 
   /*
@@ -665,122 +449,4 @@ require('./app/controllers/LenderDataUpdate')
   setTimeout(function () {
     Utility.debounceUpdateWindow()
   }, 1000)
-
-  /*
-   * Sticky Scroll More
-   * @note Slightly more complex than normal sticky because of its position at the bottom and added class when End is reached
-   * @todo Combine with Sticky Instance from Projects.js controller into a separate component (StickyAlt.js)
-   */
-  var $scrollMore = $('#scroll-more')
-  if ($scrollMore.length === 1 && /md|lg/.test(currentBreakpoint)) {
-    var watchWindow = new WatchScroll.Watcher(window)
-
-    // Position at the bottom of the window
-    $scrollMore.css('top', $win.height())
-    // Start animating
-    if ($html.is('.has-csstransforms')) {
-      $scrollMore.addClass('scroll-more-animate')
-
-      // Only animate on homepages, not inner landing pages
-      if (!$('body').is('.layout-page-single')) {
-        $scrollMore.addClass('start')
-      }
-    }
-
-    // Scroll down the page
-    $doc.on(Utility.clickEvent, '#scroll-more', function (event) {
-      if (!$(this).hasClass('end')) {
-        var winScrollTop = $win.scrollTop()
-        $('html, body').animate({scrollTop: winScrollTop + $win.height() / 2}, 400)
-      }
-    })
-    // Scroll to top
-    $doc.on(Utility.clickEvent, '#scroll-more.end', function (event) {
-      $('html, body').animate({scrollTop: 0}, 400)
-    })
-
-    // Offset sticky by marginTop
-    var doStickyOffset = function ($elem, amount) {
-      if (amount !== false) {
-        $elem.css('marginTop', amount + 'px')
-      } else {
-        $elem.css('marginTop', '')
-      }
-    }
-
-    // Offset sticky by CSS transform
-    if ($html.is('.has-csstransforms')) {
-      doStickyOffset = function ($elem, amount) {
-        if (amount !== false) {
-          $elem.css('transform', 'translateY(' + amount + 'px)')
-        } else {
-          $elem.css('transform', '')
-        }
-      }
-    }
-
-    // Handle scroll state
-    function offsetScrollMore () {
-      var winScrollTop = $win.scrollTop()
-      var startScrollFixed = 0
-      var endScrollFixed = $('footer').offset().top - $win.height()
-      var translateAmount = winScrollTop - startScrollFixed
-      var offsetInfo = 0
-
-      // Constrain info within certain area
-      if (winScrollTop > startScrollFixed) {
-        if (winScrollTop < endScrollFixed) {
-          offsetInfo = translateAmount
-          // Arrows - Back to original state
-          if ($scrollMore.hasClass('end')) $scrollMore.removeClass('end')
-        } else {
-          offsetInfo = endScrollFixed - startScrollFixed
-          // Invert arrows once at the bottom of the page
-          if (!$scrollMore.hasClass('end')) $scrollMore.addClass('end').removeClass('start')
-        }
-      }
-
-      // Apply offset
-      doStickyOffset($scrollMore, offsetInfo)
-    }
-
-    // Debounce update of sticky within the watchWindow to reduce jank
-    if ($scrollMore.length > 0) {
-      watchWindow.watch(window, offsetScrollMore)
-      offsetScrollMore()
-    }
-  }
-
-  // Page Dashboard > Sponsorship - Dynamic Popup
-  $doc.on('Modal:open:before', '#preview-email-dialog', function () {
-    var $modal = $(this)
-    $modal.find('.sponsee-names').text($('#form-sponsorship-sponsee-names').val())
-    $modal.find('.sponsor-names').text($('#form-sponsorship-sponsor-names').val())
-    $modal.find('.sponsor-message').text($('#form-sponsorship-message').val())
-  })
-
-  // Page Statistics (FPF)
-  $('.table-stats-fpf-filter a').click(function () {
-    var $btn = $(this)
-    var $table = $('#table-stats-fpf')
-    $btn.parent().siblings().removeClass('active')
-    $btn.parent().addClass('active')
-    if ($btn.data('toggle') === 'volume') {
-      $table.removeClass('ui-display-number').addClass('ui-display-volume')
-    } else {
-      $table.removeClass('ui-display-volume').addClass('ui-display-number')
-    }
-  })
-  $('#table-stats-fpf-dateselect').change(function () {
-    $('body').addClass('ui-is-loading')
-    $(this).closest('form').submit()
-  })
-  $('[data-sup-index]').click(function () {
-    var index = $(this).data('sup-index')
-    Utility.scrollTo(('[data-legend-index=' + index + ']'))
-  })
-  $('[data-legend-index]').click(function () {
-    var index = $(this).data('legend-index')
-    Utility.scrollTo(('[data-sup-index=' + index + ']'))
-  })
 })

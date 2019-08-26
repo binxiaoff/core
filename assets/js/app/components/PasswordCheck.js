@@ -10,23 +10,7 @@ var Templating = require('Templating')
 
 // Load dictionary
 var Dictionary = require('Dictionary')
-var PASSWORDCHECK_LANG_LEGACY = require('../../../lang/PasswordCheck.lang.json')
-var __
-
-// -- Support new translation dictionary language format, e.g. `example-section-name_example-translation-key-name`
-if (window.PASSWORDCHECK_LANG) {
-  __ = new Dictionary(window.PASSWORDCHECK_LANG)
-  // @debug
-  // console.log('PasswordCheck: using window.PASSWORDCHECK_LANG for Dictionary')
-
-// -- Support new legacy dictionary language format for fallbacks, e.g. `exampleTranslationKeyName`
-} else {
-  __ = new Dictionary(PASSWORDCHECK_LANG_LEGACY, {
-    legacyMode: true
-  })
-  // @debug
-  console.log('PasswordCheck: using PASSWORDCHECK_LANG_LEGACY for Dictionary. Please ensure window.PASSWORDCHECK_LANG is correctly set.')
-}
+var __ = new Dictionary(window.PASSWORDCHECK_LANG)
 
 function escapeQuotes (input) {
   return input.replace(/'/g, '&#39;').replace(/"/g, '&#34;')

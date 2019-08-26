@@ -257,49 +257,6 @@ pre code {
   line-height: 1.2em;
 }
 
-// Round numbers
-.round-number {
-  display: inline-block;
-  width: 32px;
-  height: 32px;
-
-  border: solid 3px $c-p1;
-  border-radius: 32px;
-  box-sizing: border-box;
-  line-height: 26px;
-  text-align: center;
-  vertical-align: middle;
-
-  &.c-p1 {
-    border-color: $c-p1;
-  }
-
-  &.c-p2 {
-    border-color: $c-p2;
-  }
-}
-
-h1.round-number {
-  width: $fs-h3 * 1.5;
-  height: $fs-h3 * 1.5;
-  // font-size: $fs-h3 * .7;
-  line-height: ($fs-h3 * 1.5) - 6px;
-}
-
-h2.round-number {
-  width: $fs-h3 * 1.5;
-  height: $fs-h3 * 1.5;
-  // font-size: $fs-h3 * .7;
-  line-height: ($fs-h3 * 1.5) - 6px;
-}
-
-h3.round-number {
-  width: $fs-h3 * 1.5;
-  height: $fs-h3 * 1.5;
-  // font-size: $fs-h3 * .7;
-  line-height: ($fs-h3 * 1.5) - 6px;
-}
-
 // Number Pips
 .pip {
   display: inline-block;
