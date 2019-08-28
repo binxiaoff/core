@@ -7,20 +7,28 @@ namespace Unilend\Form\User;
 use libphonenumber\PhoneNumberFormat;
 use Misd\PhoneNumberBundle\Form\Type\PhoneNumberType;
 use Symfony\Component\Form\AbstractType;
-use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class MobileType extends AbstractType
 {
     /**
-     * {@inheritdoc}
+     * @param OptionsResolver $resolver
      */
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function configureOptions(OptionsResolver $resolver)
     {
-        $builder->add('mobile', PhoneNumberType::class, [
+        $resolver->setDefaults([
+            'label'          => 'common.mobile-phone-label',
             'widget'         => PhoneNumberType::WIDGET_SINGLE_TEXT,
             'default_region' => 'FR',
             'format'         => PhoneNumberFormat::NATIONAL,
-            'label'          => 'password-init.mobile-phone-label',
         ]);
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getParent()
+    {
+        return PhoneNumberType::class;
     }
 }

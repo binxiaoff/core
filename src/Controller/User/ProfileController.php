@@ -11,10 +11,10 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Unilend\Entity\Clients;
-use Unilend\Form\User\MobileType;
+use Unilend\Form\User\InformationsType;
 use Unilend\Repository\ClientsRepository;
 
-class UserProfileController extends AbstractController
+class ProfileController extends AbstractController
 {
     /**
      * @Route("/profil", name="profile")
@@ -29,9 +29,9 @@ class UserProfileController extends AbstractController
      *
      * @return Response
      */
-    public function profile(Request $request, ?UserInterface $user, ClientsRepository $clientsRepository, TranslatorInterface $translator)
+    public function profile(Request $request, ?UserInterface $user, ClientsRepository $clientsRepository, TranslatorInterface $translator): Response
     {
-        $form = $this->createForm(MobileType::class);
+        $form = $this->createForm(InformationsType::class);
 
         $form->handleRequest($request);
 
@@ -41,7 +41,7 @@ class UserProfileController extends AbstractController
 
             $clientsRepository->save($user);
 
-            $this->addFlash('mobileUpdateSuccess', $translator->trans('update-mobile.success'));
+            $this->addFlash('updateSuccess', $translator->trans('user-profile-form.update-success-message'));
 
             return $this->redirectToRoute('profile');
         }

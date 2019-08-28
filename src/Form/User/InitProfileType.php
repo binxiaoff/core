@@ -8,7 +8,7 @@ use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Validator\Constraints\Valid;
 
-class InitPasswordType extends AbstractType
+class InitProfileType extends AbstractType
 {
     /**
      * {@inheritdoc}

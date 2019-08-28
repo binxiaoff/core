@@ -18,7 +18,7 @@ use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 use Symfony\Component\Security\Csrf\CsrfToken;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Unilend\Entity\TemporaryLinksLogin;
-use Unilend\Form\User\{InitPasswordType, ResetPasswordType};
+use Unilend\Form\User\{InitProfileType, ResetPasswordType};
 use Unilend\Message\Client\ClientCreated;
 use Unilend\Repository\{ClientsRepository, TemporaryLinksLoginRepository};
 use Unilend\Service\GoogleRecaptchaManager;
@@ -69,7 +69,7 @@ class PasswordController extends AbstractController
         $temporaryLink->setAccessed(new DateTime());
         $temporaryLinksLoginRepository->save($temporaryLink);
 
-        $form = $this->createForm(InitPasswordType::class);
+        $form = $this->createForm(InitProfileType::class);
 
         $form->handleRequest($request);
 
@@ -81,7 +81,7 @@ class PasswordController extends AbstractController
                 ->setPassword($encryptedPassword)
                 ->setSecurityQuestion($formData['securityQuestion']['securityQuestion'])
                 ->setSecurityAnswer($formData['securityQuestion']['securityAnswer'])
-                ->setMobile($formData['mobile']['mobile'])
+                ->setMobile($formData['mobile'])
             ;
 
             $clientsRepository->save($client);
@@ -196,7 +196,7 @@ class PasswordController extends AbstractController
      * @param UserPasswordEncoderInterface  $userPasswordEncoder
      * @param ClientsRepository             $clientsRepository
      *
-     *@throws ORMException
+     * @throws ORMException
      * @throws Exception
      * @throws OptimisticLockException
      *

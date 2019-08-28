@@ -14,7 +14,7 @@ final class Version20190823114620 extends ContainerAwareMigration
 
     public function getDescription(): string
     {
-        return 'CALS-269-add-number-phone: Add translations for profile page';
+        return 'CALS-269: Add translations for profile page';
     }
 
     public function up(Schema $schema): void

@@ -13,8 +13,8 @@
   "require": {
     "php": ">=7.3.6",
     "ext-bcmath": "*",
-    "ext-curl": "*",
     "ext-ctype": "*",
+    "ext-curl": "*",
     "ext-hash": "*",
     "ext-openssl": "*",
     "ext-pdo": "*",
