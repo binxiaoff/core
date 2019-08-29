@@ -50,7 +50,7 @@ class AccountController extends AbstractController
         if ($temporaryLink->getExpires() < new DateTime()) {
             $this->addFlash('tokenError', $translator->trans('account-init.invalid-link-error-message'));
 
-            return $this->render('security/account_init.html.twig');
+            return $this->render('user/init.html.twig');
         }
 
         $client = $temporaryLink->getIdClient();
@@ -91,6 +91,6 @@ class AccountController extends AbstractController
             return $this->redirectToRoute('login');
         }
 
-        return $this->render('security/account_init.html.twig', ['form' => $form->createView()]);
+        return $this->render('user/init.html.twig', ['form' => $form->createView()]);
     }
 }

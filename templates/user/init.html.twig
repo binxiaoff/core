@@ -28,57 +28,27 @@
                             {% if form is defined and form %}
                             {{ form_start(form, {
                                 attr: {
-                                    'data-formvalidation': '',
-                                    'data-formvalidation-notificationselem': '#form-security-password-notifications',
-                                    'class': 'form-security form-security-password-edit'
+                                    'data-formvalidation': ''
                                 }
                             }) }}
+
                             <div class="row">
-                                {{ form_row(form.identity.firstName, {
-                                    attr: {
-                                        'data-formvalidation-input': '',
-                                        'data-formvalidation-required': 'false'
-                                    }
-                                }) }}
+                                {{ form_row(form.identity.firstName, {label: 'account-init.first-name-label'}) }}
+                            </div>
+                            <div class="row">
+                                {{ form_row(form.identity.lastName, {label: 'account-init.last-name-label'}) }}
                             </div>
 
                             <div class="row">
-                                {{ form_row(form.identity.lastName, {
-                                    attr: {
-                                        'data-formvalidation-input': '',
-                                        'data-formvalidation-required': 'false'
-                                    }
-                                }) }}
+                                {{ form_row(form.identity.jobFunction, {label: 'account-init.job-function-label'}) }}
                             </div>
 
                             <div class="row">
-                                {{ form_row(form.identity.jobFunction, {
-                                    attr: {
-                                        'data-formvalidation-input': '',
-                                        'data-formvalidation-required': 'false'
-                                    }
-                                }) }}
-                            </div>
-
-
-                            <div class="row">
-                                {{ form_row(form.identity.mobile, {
-                                    label: 'account-init.mobile-phone-label',
-                                    attr: {
-                                        'data-formvalidation-input': '',
-                                        'data-formvalidation-required': 'true'
-                                    }
-                                }) }}
+                                {{ form_row(form.identity.mobile, {label: 'account-init.mobile-phone-label'}) }}
                             </div>
 
                             <div class="row">
-                                {{ form_row(form.identity.phone, {
-                                    label: 'account-init.phone-label',
-                                    attr: {
-                                        'data-formvalidation-input': '',
-                                        'data-formvalidation-required': 'false'
-                                    }
-                                }) }}
+                                {{ form_row(form.identity.phone, {label: 'account-init.phone-label'}) }}
                             </div>
 
                         </section><!-- /.panel -->
