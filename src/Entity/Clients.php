@@ -835,18 +835,23 @@ class Clients implements UserInterface, EquatableInterface
     }
 
     /**
-     * @param string $name
+     * @param string|null $name
      *
-     * @return string
+     * @return string|null
      */
-    private function normalizeName(string $name): string
+    private function normalizeName(?string $name): ?string
     {
-        $name = mb_strtolower($name);
+        if (null === $name) {
+            return null;
+        }
 
-        $pos = mb_strrpos($name, '-');
+        $name = mb_strtolower($name);
+        $pos  = mb_strrpos($name, '-');
+
         if (false === $pos) {
             return ucwords($name);
         }
+
         $tabName = explode('-', $name);
         $newName = '';
         $i       = 0;

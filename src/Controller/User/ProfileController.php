@@ -31,15 +31,13 @@ class ProfileController extends AbstractController
      */
     public function profile(Request $request, ?UserInterface $user, ClientsRepository $clientsRepository, TranslatorInterface $translator): Response
     {
-        $form = $this->createForm(IdentityType::class);
+        $form = $this->createForm(IdentityType::class, $user);
 
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $formData = $form->getData();
-            $user->setMobile($formData['mobile']);
-
-            $clientsRepository->save($user);
+            $client = $form->getData();
+            $clientsRepository->save($client);
 
             $this->addFlash('updateSuccess', $translator->trans('user-profile-form.update-success-message'));
 

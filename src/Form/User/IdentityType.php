@@ -7,7 +7,8 @@ namespace Unilend\Form\User;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
-use Symfony\Component\Validator\Constraints\Valid;
+use Symfony\Component\OptionsResolver\OptionsResolver;
+use Unilend\Entity\Clients;
 
 class IdentityType extends AbstractType
 {
@@ -18,26 +19,19 @@ class IdentityType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder
-            ->add('firstName', TextType::class, [
-                'constraints' => [new Valid()],
-                'label'       => 'account-init.first-name-label',
-            ])
-            ->add('lastName', TextType::class, [
-                'constraints' => [new Valid()],
-                'label'       => 'account-init.last-name-label',
-            ])
-            ->add('jobFunction', TextType::class, [
-                'constraints' => [new Valid()],
-                'label'       => 'account-init.job-function-label',
-            ])
-            ->add('mobile', PhoneType::class, [
-                'constraints' => [new Valid()],
-                'label'       => 'account-init.mobile-phone-label',
-            ])
-            ->add('phone', PhoneType::class, [
-                'constraints' => [new Valid()],
-                'label'       => 'account-init.phone-label',
-            ])
+            ->add('firstName', TextType::class)
+            ->add('lastName', TextType::class)
+            ->add('jobFunction', TextType::class, ['required' => false])
+            ->add('mobile', PhoneType::class, ['required' => false])
+            ->add('phone', PhoneType::class, ['required' => false])
         ;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function configureOptions(OptionsResolver $resolver)
+    {
+        $resolver->setDefault('data_class', Clients::class);
     }
 }

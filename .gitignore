@@ -1,10 +1,7 @@
 # Mac
 .DS_Store
 
-/apps/data/crud/*
-
 /protected
-/public/default/images/dyn
 /public/default/var
 
 # PHPStorm
