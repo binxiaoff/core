@@ -18,7 +18,7 @@ class InitProfileType extends AbstractType
         $builder
             ->add('securityQuestion', SecurityQuestionType::class, ['constraints' => [new Valid()]])
             ->add('password', PasswordType::class, ['constraints' => [new Valid()]])
-            ->add('mobile', MobileType::class, ['constraints' => [new Valid()]])
+            ->add('identity', IdentityType::class, ['constraints' => [new Valid()]])
         ;
     }
 }

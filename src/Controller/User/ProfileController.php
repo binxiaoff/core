@@ -11,7 +11,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Unilend\Entity\Clients;
-use Unilend\Form\User\InformationsType;
+use Unilend\Form\User\IdentityType;
 use Unilend\Repository\ClientsRepository;
 
 class ProfileController extends AbstractController
@@ -31,7 +31,7 @@ class ProfileController extends AbstractController
      */
     public function profile(Request $request, ?UserInterface $user, ClientsRepository $clientsRepository, TranslatorInterface $translator): Response
     {
-        $form = $this->createForm(InformationsType::class);
+        $form = $this->createForm(IdentityType::class);
 
         $form->handleRequest($request);
 

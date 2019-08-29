@@ -7,13 +7,71 @@
                 <div class="panel">
                     {% if form is defined and form %}
                         {{ form_start(form) }}
+
+                        {% if app.user.firstName is not empty %}
+                            {% set first_name = app.user.firstName %}
+                        {% else %}
+                            {% set first_name = null %}
+                        {% endif %}
+
+                        <div class="row">
+                            {{ form_row(form.firstName, {
+                                label: 'account-init.first-name-label',
+                                value: first_name
+                            }) }}
+                        </div>
+
+                        {% if app.user.lastName is not empty %}
+                            {% set last_name = app.user.lastName %}
+                        {% else %}
+                            {% set last_name = null %}
+                        {% endif %}
+
+                        <div class="row">
+                            {{ form_row(form.lastName, {
+                                label: 'account-init.last-name-label',
+                                value: last_name
+                            }) }}
+                        </div>
+
+                        {% if app.user.jobFunction is not empty %}
+                            {% set job_function = app.user.jobFunction %}
+                        {% else %}
+                            {% set job_function = null %}
+                        {% endif %}
+
+                        <div class="row">
+                            {{ form_row(form.jobFunction, {
+                                label: 'account-init.job-function-label',
+                                value: job_function
+                            }) }}
+                        </div>
+
                         {% if app.user.mobile is not empty %}
+                            {% set mobile_number = app.user.mobile|phone_number_format('NATIONAL') %}
+                        {% else %}
+                            {% set mobile_number = null %}
+                        {% endif %}
+
+                        <div class="row">
+                            {{ form_row(form.mobile, {
+                                label: 'account-init.mobile-phone-label',
+                                value: mobile_number
+                            }) }}
+                        </div>
+
+                        {% if app.user.phone is not empty %}
                             {% set phone_number = app.user.mobile|phone_number_format('NATIONAL') %}
                         {% else %}
                             {% set phone_number = null %}
                         {% endif %}
-                        {{ form_row(form.mobile, {'label': 'user-profile-form.mobile-phone-label', 'value': phone_number}) }}
-                        {{ form_row(form.mobile) }}
+
+                        <div class="row">
+                            {{ form_row(form.phone, {
+                                label: 'account-init.phone-label',
+                                value: phone_number
+                            }) }}
+                        </div>
                         <div class="btn-controls">
                             <button class="btn-primary"
                                     data-spinnerbutton>{% trans %} user-profile-form.form-submit-button {% endtrans %}</button>

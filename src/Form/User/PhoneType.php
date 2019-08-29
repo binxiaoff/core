@@ -9,7 +9,7 @@ use Misd\PhoneNumberBundle\Form\Type\PhoneNumberType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
-class MobileType extends AbstractType
+class PhoneType extends AbstractType
 {
     /**
      * @param OptionsResolver $resolver

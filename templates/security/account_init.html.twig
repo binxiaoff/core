@@ -1,0 +1,138 @@
+{% extends 'layouts/_layout.html.twig' %}
+
+{% block siteContent %}
+    {% set showForm = true %}
+    <article id="connexion-inscription" class="page">
+        <section class="page-content">
+            <div class="hero-wrap">
+                <div class="page-content">
+                    <div class="push-lg-2 push-md-2 col-lg-8 col-md8">
+                        <h1>{% trans %} account-init.page-title {% endtrans %}</h1>
+                        <section class="panel" style="max-width: initial;">
+                            <h2>{% trans %} account-init.identity-section {% endtrans %}</h2>
+                            {% if app.session.flashBag.has('tokenError') %}
+                                {% set showForm = false %}
+                                <div class="message-error">
+                                    {% for error in app.session.flashBag.get('tokenError') %}
+                                        <p>{{ error }}</p>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            {% if app.session.flashBag.has('error') %}
+                                <div class="message-error">
+                                    {% for error in app.session.flashBag.get('error') %}
+                                        <p>{{ error }}</p>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            {% if form is defined and form %}
+                            {{ form_start(form, {
+                                attr: {
+                                    'data-formvalidation': '',
+                                    'data-formvalidation-notificationselem': '#form-security-password-notifications',
+                                    'class': 'form-security form-security-password-edit'
+                                }
+                            }) }}
+                            <div class="row">
+                                {{ form_row(form.identity.firstName, {
+                                    attr: {
+                                        'data-formvalidation-input': '',
+                                        'data-formvalidation-required': 'false'
+                                    }
+                                }) }}
+                            </div>
+
+                            <div class="row">
+                                {{ form_row(form.identity.lastName, {
+                                    attr: {
+                                        'data-formvalidation-input': '',
+                                        'data-formvalidation-required': 'false'
+                                    }
+                                }) }}
+                            </div>
+
+                            <div class="row">
+                                {{ form_row(form.identity.jobFunction, {
+                                    attr: {
+                                        'data-formvalidation-input': '',
+                                        'data-formvalidation-required': 'false'
+                                    }
+                                }) }}
+                            </div>
+
+
+                            <div class="row">
+                                {{ form_row(form.identity.mobile, {
+                                    label: 'account-init.mobile-phone-label',
+                                    attr: {
+                                        'data-formvalidation-input': '',
+                                        'data-formvalidation-required': 'true'
+                                    }
+                                }) }}
+                            </div>
+
+                            <div class="row">
+                                {{ form_row(form.identity.phone, {
+                                    label: 'account-init.phone-label',
+                                    attr: {
+                                        'data-formvalidation-input': '',
+                                        'data-formvalidation-required': 'false'
+                                    }
+                                }) }}
+                            </div>
+
+                        </section><!-- /.panel -->
+                        <section class="panel" style="max-width: initial;">
+                            <h2>{% trans %} account-init.security-section {% endtrans %}</h2>
+
+                            <div class="row row-multi-col-computer">
+                                <div class="form-field col-lg-6 col-md-6">
+                                    {{ form_row(form.password.plainPassword.first, {
+                                        attr: {
+                                            'data-formvalidation-input': '',
+                                            'data-formvalidation-required': 'true',
+                                            'data-formvalidation-type': 'password'
+                                        }
+                                    }) }}
+                                </div>
+                                <div class="form-field col-lg-6 col-md-6">
+                                    {{ form_row(form.password.plainPassword.second, {
+                                        attr: {
+                                            'data-formvalidation-input': '',
+                                            'data-formvalidation-required': 'true',
+                                            'data-formvalidation-type': 'password'
+                                        }
+                                    }) }}
+                                </div>
+                            </div>
+                            <div class="row">
+                                {{ form_row(form.securityQuestion.securityQuestion, {
+                                    attr: {
+                                        'data-formvalidation-input': '',
+                                        'data-formvalidation-required': 'true'
+                                    }
+                                }) }}
+                            </div>
+
+                            <div class="row">
+                                {{ form_row(form.securityQuestion.securityAnswer, {
+                                    attr: {
+                                        'data-formvalidation-input': '',
+                                        'data-formvalidation-required': 'true'
+                                    }
+                                }) }}
+                            </div>
+
+                            <div class="btn-controls">
+                                <button class="btn-primary"
+                                        data-spinnerbutton>{% trans %} account-init.form-submit-button {% endtrans %}</button>
+                            </div><!-- /.btn-controls -->
+                            {{ form_end(form) }}
+                            {% endif %}
+                        </section><!-- /.panel -->
+                    </div>
+                </div><!-- /.page-content -->
+            </div><!-- /.hero-wrap -->
+        </section><!-- /.page-content -->
+    </article><!-- /.page -->
+{% endblock %}

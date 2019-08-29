@@ -144,12 +144,11 @@ class Clients implements UserInterface, EquatableInterface
     private $idNationality;
 
     /**
-     * @var string
+     * @var PhoneNumber
      *
-     * @ORM\Column(name="phone", type="string", length=191, nullable=true)
+     * @ORM\Column(name="phone", type="phone_number", nullable=true)
      *
-     * @Assert\Regex(pattern="/[^0-9\s\-\+]/", match=false)
-     * @Assert\Length(min=10)
+     * @AssertPhoneNumber(defaultRegion="FR", type="any")
      */
     private $phone;
 
@@ -252,6 +251,11 @@ class Clients implements UserInterface, EquatableInterface
      * @ORM\Column(type="json")
      */
     private $roles = [];
+
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $jobFunction;
 
     /**
      * Clients constructor.
@@ -486,11 +490,11 @@ class Clients implements UserInterface, EquatableInterface
     }
 
     /**
-     * @param string|null $phone
+     * @param PhoneNumber $phone
      *
      * @return Clients
      */
-    public function setPhone(?string $phone): Clients
+    public function setPhone(?PhoneNumber $phone): Clients
     {
         $this->phone = $phone;
 
@@ -498,9 +502,9 @@ class Clients implements UserInterface, EquatableInterface
     }
 
     /**
-     * @return string|null
+     * @return PhoneNumber|null
      */
-    public function getPhone(): ?string
+    public function getPhone(): ?PhoneNumber
     {
         return $this->phone;
     }
@@ -518,7 +522,7 @@ class Clients implements UserInterface, EquatableInterface
     }
 
     /**
-     * @return PhoneNumber
+     * @return PhoneNumber|null
      */
     public function getMobile(): ?PhoneNumber
     {
@@ -800,6 +804,26 @@ class Clients implements UserInterface, EquatableInterface
     public function getUsername(): string
     {
         return $this->getEmail();
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getJobFunction(): ?string
+    {
+        return $this->jobFunction;
+    }
+
+    /**
+     * @param string|null $jobFunction
+     *
+     * @return Clients
+     */
+    public function setJobFunction(?string $jobFunction): self
+    {
+        $this->jobFunction = $jobFunction;
+
+        return $this;
     }
 
     /**

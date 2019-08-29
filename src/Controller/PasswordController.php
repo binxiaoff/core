@@ -9,94 +9,20 @@ use Doctrine\ORM\{ORMException, OptimisticLockException};
 use Exception;
 use Psr\Log\LoggerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
-use Swift_RfcComplianceException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\{JsonResponse, Request, Response};
-use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Routing\{Annotation\Route, Generator\UrlGeneratorInterface};
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 use Symfony\Component\Security\Csrf\CsrfToken;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Unilend\Entity\TemporaryLinksLogin;
-use Unilend\Form\User\{InitProfileType, ResetPasswordType};
-use Unilend\Message\Client\ClientCreated;
+use Unilend\Form\User\ResetPasswordType;
 use Unilend\Repository\{ClientsRepository, TemporaryLinksLoginRepository};
 use Unilend\Service\GoogleRecaptchaManager;
 use Unilend\SwiftMailer\{TemplateMessageProvider, UnilendMailer};
 
 class PasswordController extends AbstractController
 {
-    /**
-     * @Route("/mot-de-passe/initialisation/{securityToken}", name="password_init", requirements={"securityToken": "[0-9a-f]+"}, methods={"GET", "POST"})
-     *
-     * @ParamConverter("temporaryLink", options={"mapping": {"securityToken": "token"}})
-     *
-     * @param Request                       $request
-     * @param TemporaryLinksLogin           $temporaryLink
-     * @param TemporaryLinksLoginRepository $temporaryLinksLoginRepository
-     * @param TranslatorInterface           $translator
-     * @param UserPasswordEncoderInterface  $userPasswordEncoder
-     * @param ClientsRepository             $clientsRepository
-     * @param MessageBusInterface           $messageBus
-     *
-     * @throws ORMException
-     * @throws OptimisticLockException
-     * @throws Exception
-     *
-     * @return Response
-     */
-    public function init(
-        Request $request,
-        TemporaryLinksLogin $temporaryLink,
-        TemporaryLinksLoginRepository $temporaryLinksLoginRepository,
-        TranslatorInterface $translator,
-        UserPasswordEncoderInterface $userPasswordEncoder,
-        ClientsRepository $clientsRepository,
-        MessageBusInterface $messageBus
-    ): Response {
-        if ($temporaryLink->getExpires() < new DateTime()) {
-            $this->addFlash('tokenError', $translator->trans('password-init.invalid-link-error-message'));
-
-            return $this->render('security/password_init.html.twig');
-        }
-
-        $client = $temporaryLink->getIdClient();
-
-        if (null === $client || false === $client->isValidated() || false === empty($client->getPassword())) {
-            return $this->redirectToRoute('home');
-        }
-
-        $temporaryLink->setAccessed(new DateTime());
-        $temporaryLinksLoginRepository->save($temporaryLink);
-
-        $form = $this->createForm(InitProfileType::class);
-
-        $form->handleRequest($request);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-            $formData = $form->getData();
-
-            $encryptedPassword = $userPasswordEncoder->encodePassword($client, $formData['password']['plainPassword']);
-            $client
-                ->setPassword($encryptedPassword)
-                ->setSecurityQuestion($formData['securityQuestion']['securityQuestion'])
-                ->setSecurityAnswer($formData['securityQuestion']['securityAnswer'])
-                ->setMobile($formData['mobile'])
-            ;
-
-            $clientsRepository->save($client);
-
-            $temporaryLink->setExpires(new DateTime());
-            $temporaryLinksLoginRepository->save($temporaryLink);
-
-            $messageBus->dispatch(new ClientCreated($client->getIdClient()));
-
-            return $this->redirectToRoute('login');
-        }
-
-        return $this->render('security/password_init.html.twig', ['form' => $form->createView()]);
-    }
-
     /**
      * In order not to disclose personal information (existence of account on the platform),
      * success message is always displayed, except for invalid email format or CSRF token.
@@ -114,7 +40,6 @@ class PasswordController extends AbstractController
      *
      * @throws ORMException
      * @throws OptimisticLockException
-     * @throws Swift_RfcComplianceException
      *
      * @return Response
      */
