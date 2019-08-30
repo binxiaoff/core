@@ -8,7 +8,7 @@ use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Validator\Constraints\Valid;
 
-class InitPasswordType extends AbstractType
+class InitProfileType extends AbstractType
 {
     /**
      * {@inheritdoc}
@@ -18,6 +18,7 @@ class InitPasswordType extends AbstractType
         $builder
             ->add('securityQuestion', SecurityQuestionType::class, ['constraints' => [new Valid()]])
             ->add('password', PasswordType::class, ['constraints' => [new Valid()]])
+            ->add('identity', IdentityType::class, ['constraints' => [new Valid()]])
         ;
     }
 }

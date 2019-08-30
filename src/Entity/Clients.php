@@ -10,6 +10,8 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
 use Gedmo\Mapping\Annotation as Gedmo;
+use libphonenumber\PhoneNumber;
+use Misd\PhoneNumberBundle\Validator\Constraints\PhoneNumber as AssertPhoneNumber;
 use Ramsey\Uuid\{Exception\UnsatisfiedDependencyException, Uuid};
 use Symfony\Component\Security\Core\User\{EquatableInterface, UserInterface};
 use Symfony\Component\Validator\Constraints as Assert;
@@ -142,22 +144,20 @@ class Clients implements UserInterface, EquatableInterface
     private $idNationality;
 
     /**
-     * @var string
+     * @var PhoneNumber
      *
-     * @ORM\Column(name="phone", type="string", length=191, nullable=true)
+     * @ORM\Column(name="phone", type="phone_number", nullable=true)
      *
-     * @Assert\Regex(pattern="/[^0-9\s\-\+]/", match=false)
-     * @Assert\Length(min=10)
+     * @AssertPhoneNumber(defaultRegion="FR", type="any")
      */
     private $phone;
 
     /**
-     * @var string
+     * @var PhoneNumber
      *
-     * @ORM\Column(name="mobile", type="string", length=191, nullable=true)
+     * @ORM\Column(name="mobile", type="phone_number", nullable=true)
      *
-     * @Assert\Regex(pattern="/[^0-9\s\-\+]/", match=false)
-     * @Assert\Length(min=10)
+     * @AssertPhoneNumber(defaultRegion="FR", type="mobile")
      */
     private $mobile;
 
@@ -251,6 +251,11 @@ class Clients implements UserInterface, EquatableInterface
      * @ORM\Column(type="json")
      */
     private $roles = [];
+
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $jobFunction;
 
     /**
      * Clients constructor.
@@ -485,41 +490,41 @@ class Clients implements UserInterface, EquatableInterface
     }
 
     /**
-     * @param string|null $phone
+     * @param PhoneNumber $phone
      *
      * @return Clients
      */
-    public function setPhone(?string $phone): Clients
+    public function setPhone(?PhoneNumber $phone): Clients
     {
-        $this->phone = $this->cleanPhoneNumber($phone);
+        $this->phone = $phone;
 
         return $this;
     }
 
     /**
-     * @return string|null
+     * @return PhoneNumber|null
      */
-    public function getPhone(): ?string
+    public function getPhone(): ?PhoneNumber
     {
         return $this->phone;
     }
 
     /**
-     * @param string|null $mobile
+     * @param PhoneNumber $mobile
      *
      * @return Clients
      */
-    public function setMobile(?string $mobile): Clients
+    public function setMobile(?PhoneNumber $mobile): Clients
     {
-        $this->mobile = $this->cleanPhoneNumber($mobile);
+        $this->mobile = $mobile;
 
         return $this;
     }
 
     /**
-     * @return string|null
+     * @return PhoneNumber|null
      */
-    public function getMobile(): ?string
+    public function getMobile(): ?PhoneNumber
     {
         return $this->mobile;
     }
@@ -802,6 +807,26 @@ class Clients implements UserInterface, EquatableInterface
     }
 
     /**
+     * @return string|null
+     */
+    public function getJobFunction(): ?string
+    {
+        return $this->jobFunction;
+    }
+
+    /**
+     * @param string|null $jobFunction
+     *
+     * @return Clients
+     */
+    public function setJobFunction(?string $jobFunction): self
+    {
+        $this->jobFunction = $jobFunction;
+
+        return $this;
+    }
+
+    /**
      * {@inheritdoc}
      */
     public function eraseCredentials(): void
@@ -810,18 +835,23 @@ class Clients implements UserInterface, EquatableInterface
     }
 
     /**
-     * @param string $name
+     * @param string|null $name
      *
-     * @return string
+     * @return string|null
      */
-    private function normalizeName(string $name): string
+    private function normalizeName(?string $name): ?string
     {
-        $name = mb_strtolower($name);
+        if (null === $name) {
+            return null;
+        }
 
-        $pos = mb_strrpos($name, '-');
+        $name = mb_strtolower($name);
+        $pos  = mb_strrpos($name, '-');
+
         if (false === $pos) {
             return ucwords($name);
         }
+
         $tabName = explode('-', $name);
         $newName = '';
         $i       = 0;
@@ -831,16 +861,6 @@ class Clients implements UserInterface, EquatableInterface
         }
 
         return $newName;
-    }
-
-    /**
-     * @param string $number
-     *
-     * @return string
-     */
-    private function cleanPhoneNumber(string $number): string
-    {
-        return str_replace([' ', '.'], '', $number);
     }
 
     /**
