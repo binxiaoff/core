@@ -1,7 +1,6 @@
 {% extends 'layouts/_layout.html.twig' %}
 
 {% block siteContent %}
-    {% set showForm = true %}
     <article id="connexion-inscription" class="page">
         <section class="page-content">
             <div class="hero-wrap">
@@ -10,14 +9,6 @@
                         <h1>{% trans %} account-init.page-title {% endtrans %}</h1>
                         <section class="panel" style="max-width: initial;">
                             <h2>{% trans %} account-init.identity-section {% endtrans %}</h2>
-                            {% if app.session.flashBag.has('tokenError') %}
-                                {% set showForm = false %}
-                                <div class="message-error">
-                                    {% for error in app.session.flashBag.get('tokenError') %}
-                                        <p>{{ error }}</p>
-                                    {% endfor %}
-                                </div>
-                            {% endif %}
                             {% if app.session.flashBag.has('error') %}
                                 <div class="message-error">
                                     {% for error in app.session.flashBag.get('error') %}
@@ -26,11 +17,7 @@
                                 </div>
                             {% endif %}
                             {% if form is defined and form %}
-                            {{ form_start(form, {
-                                attr: {
-                                    'data-formvalidation': ''
-                                }
-                            }) }}
+                            {{ form_start(form) }}
 
                             <div class="row">
                                 {{ form_row(form.identity.firstName, {label: 'account-init.first-name-label'}) }}

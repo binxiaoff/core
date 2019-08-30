@@ -48,7 +48,7 @@ class AccountController extends AbstractController
         MessageBusInterface $messageBus
     ): Response {
         if ($temporaryLink->getExpires() < new DateTime()) {
-            $this->addFlash('tokenError', $translator->trans('account-init.invalid-link-error-message'));
+            $this->addFlash('error', $translator->trans('account-init.invalid-link-error-message'));
 
             return $this->render('user/init.html.twig');
         }
@@ -63,6 +63,7 @@ class AccountController extends AbstractController
         $temporaryLinksLoginRepository->save($temporaryLink);
 
         $form = $this->createForm(InitProfileType::class);
+        $form->get('identity')->setData($client);
 
         $form->handleRequest($request);
 
@@ -71,11 +72,11 @@ class AccountController extends AbstractController
 
             $encryptedPassword = $userPasswordEncoder->encodePassword($client, $formData['password']['plainPassword']);
             $client
-                ->setFirstName($formData['identity']['firstName'])
-                ->setLastName($formData['identity']['lastName'])
-                ->setJobFunction($formData['identity']['jobFunction'])
-                ->setMobile($formData['identity']['mobile'])
-                ->setPhone($formData['identity']['phone'])
+                ->setFirstName($formData['identity']->getFirstName())
+                ->setLastName($formData['identity']->getLastName())
+                ->setJobFunction($formData['identity']->getJobFunction())
+                ->setMobile($formData['identity']->getMobile())
+                ->setPhone($formData['identity']->getPhone())
                 ->setPassword($encryptedPassword)
                 ->setSecurityQuestion($formData['securityQuestion']['securityQuestion'])
                 ->setSecurityAnswer($formData['securityQuestion']['securityAnswer'])
