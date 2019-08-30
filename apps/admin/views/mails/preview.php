@@ -7,7 +7,7 @@
 <script>
     $(function() {
         var $keywords = $('#preview-keywords')
-        var $iframeContainer = $('#preview-keywords-iframe-container')
+        var iframe = document.getElementById('preview-keywords-iframe')
 
         $('#preview-button').on('click', function () {
             var matched
@@ -39,7 +39,7 @@
             }
 
             $keywords.html(form)
-            $iframeContainer.html('')
+            iframe.contentWindow.document.write('')
 
             $.colorbox({
                 inline: true,
@@ -65,11 +65,8 @@
                 data: $form.serialize(),
                 success: function (response) {
                     if (response.success && response.data && response.data.content) {
-                        var $iframe = $('<iframe></iframe>')
-                            .attr('src', 'data:text/html;charset=utf-8,' + encodeURI(response.data.content))
-                            .height($('#cboxLoadedContent').height() - 45)
-
-                        $iframeContainer.empty().append($iframe)
+                        iframe.contentWindow.document.write(response.data.content)
+                        iframe.height = $('#cboxLoadedContent').height() - 45
                     }
                 }
             })
@@ -90,7 +87,9 @@
                     <button type="submit" class="form-control btn-default pull-right">Prévisualiser</button>
                 </div>
             </form>
-            <div id="preview-keywords-iframe-container" class="col-md-9"></div>
+            <div id="preview-keywords-iframe-container" class="col-md-9">
+                <iframe id="preview-keywords-iframe"></iframe>
+            </div>
         </div>
     </div>
 </div>
