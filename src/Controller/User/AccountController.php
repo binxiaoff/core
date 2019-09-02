@@ -62,24 +62,17 @@ class AccountController extends AbstractController
         $temporaryLink->setAccessed(new DateTime());
         $temporaryLinksLoginRepository->save($temporaryLink);
 
-        $form = $this->createForm(InitProfileType::class);
-        $form->get('identity')->setData($client);
+        $form = $this->createForm(InitProfileType::class, $client);
 
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $formData = $form->getData();
-
-            $encryptedPassword = $userPasswordEncoder->encodePassword($client, $formData['password']['plainPassword']);
+            $securityQuestion  = $form->get('securityQuestion')->getData();
+            $encryptedPassword = $userPasswordEncoder->encodePassword($client, $form->get('password')->get('plainPassword')->getData());
             $client
-                ->setFirstName($formData['identity']->getFirstName())
-                ->setLastName($formData['identity']->getLastName())
-                ->setJobFunction($formData['identity']->getJobFunction())
-                ->setMobile($formData['identity']->getMobile())
-                ->setPhone($formData['identity']->getPhone())
                 ->setPassword($encryptedPassword)
-                ->setSecurityQuestion($formData['securityQuestion']['securityQuestion'])
-                ->setSecurityAnswer($formData['securityQuestion']['securityAnswer'])
+                ->setSecurityQuestion($securityQuestion['securityQuestion'])
+                ->setSecurityAnswer($securityQuestion['securityAnswer'])
             ;
 
             $clientsRepository->save($client);

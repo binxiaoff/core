@@ -490,7 +490,7 @@ class Clients implements UserInterface, EquatableInterface
     }
 
     /**
-     * @param PhoneNumber $phone
+     * @param PhoneNumber|null $phone
      *
      * @return Clients
      */
@@ -510,7 +510,7 @@ class Clients implements UserInterface, EquatableInterface
     }
 
     /**
-     * @param PhoneNumber $mobile
+     * @param PhoneNumber|null $mobile
      *
      * @return Clients
      */
@@ -819,7 +819,7 @@ class Clients implements UserInterface, EquatableInterface
      *
      * @return Clients
      */
-    public function setJobFunction(?string $jobFunction): self
+    public function setJobFunction(?string $jobFunction): Clients
     {
         $this->jobFunction = $jobFunction;
 

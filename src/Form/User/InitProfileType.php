@@ -13,12 +13,25 @@ class InitProfileType extends AbstractType
     /**
      * {@inheritdoc}
      */
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
-            ->add('securityQuestion', SecurityQuestionType::class, ['constraints' => [new Valid()]])
-            ->add('password', PasswordType::class, ['constraints' => [new Valid()]])
-            ->add('identity', IdentityType::class, ['constraints' => [new Valid()]])
+            ->add('securityQuestion', SecurityQuestionType::class, [
+                'mapped'      => false,
+                'constraints' => [new Valid()],
+            ])
+            ->add('password', PasswordType::class, [
+                'mapped'      => false,
+                'constraints' => [new Valid()],
+            ])
         ;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getParent(): string
+    {
+        return IdentityType::class;
     }
 }
