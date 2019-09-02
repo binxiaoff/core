@@ -26,7 +26,10 @@ class FoncarisRequestType extends AbstractType
                     return 'foncaris-guarantee.' . mb_strtolower($key);
                 },
             ])
-            ->add('comment', TextareaType::class, ['label' => 'project-form.foncaris-guarantee-comment-label'])
+            ->add('comment', TextareaType::class, [
+                'label'    => 'project-form.foncaris-guarantee-comment-label',
+                'required' => false,
+            ])
         ;
     }
 
