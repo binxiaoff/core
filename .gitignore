@@ -22,7 +22,6 @@ npm-debug.log
 /.env.local.php
 /.env.*.local
 /public/default/bundles/
-/var/
 /vendor/
 ###< symfony/framework-bundle ###
 
