@@ -550,7 +550,7 @@ class Project
     }
 
     /**
-     * @param DateTimeImmutable $lenderConsultationClosingDate
+     * @param DateTimeImmutable|null $lenderConsultationClosingDate
      *
      * @return Project
      */
