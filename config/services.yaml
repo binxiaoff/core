@@ -35,6 +35,9 @@ services:
         # The directory Unilend contains the legacy bundles. The services are managed by their own configurations.
         exclude: '%kernel.project_dir%/src/{Console,Entity,Migrations,Tests,Traits,Kernel.php}'
 
+    Unilend\Controller\SecurityController:
+        $recaptchaKey: '%env(GOOGLE_RECAPTCHA_KEY)%'
+
     Unilend\Service\Translation\TranslationLoader:
         tags:
             - { name: translation.loader, alias: db }
