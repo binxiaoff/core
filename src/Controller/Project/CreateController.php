@@ -13,7 +13,7 @@ use Symfony\Component\Security\Core\User\UserInterface;
 use Unilend\Entity\{Attachment, Clients, Project, ProjectStatusHistory};
 use Unilend\Form\Project\ProjectType;
 use Unilend\Repository\ProjectRepository;
-use Unilend\Service\{Attachment\AttachmentManager, User\RealUserFinder};
+use Unilend\Service\{Attachment\AttachmentManager, ProjectImageManager, User\RealUserFinder};
 
 class CreateController extends AbstractController
 {
@@ -35,6 +35,7 @@ class CreateController extends AbstractController
      * @param ProjectRepository          $projectRepository
      * @param UserInterface|Clients|null $client
      * @param AttachmentManager          $attachmentManager
+     * @param ProjectImageManager        $imageManager
      * @param RealUserFinder             $realUserFinder
      *
      * @throws ORMException
@@ -48,6 +49,7 @@ class CreateController extends AbstractController
         ProjectRepository $projectRepository,
         ?UserInterface $client,
         AttachmentManager $attachmentManager,
+        ProjectImageManager $imageManager,
         RealUserFinder $realUserFinder
     ) {
         $project = (new Project())->setOperationType((int) $operationType);
@@ -69,6 +71,14 @@ class CreateController extends AbstractController
                 $uploadedFile = $attachmentForm->get('file')->getData();
                 $companyOwner = $project->getBorrowerCompany();
                 $attachmentManager->upload(null, $companyOwner, $client, null, $attachment, $uploadedFile);
+            }
+
+            $image = $form->get('imageFile')->getData();
+
+            if ($image) {
+                $imageFileName = $imageManager->upload($image, $project);
+
+                $project->setImage($imageFileName);
             }
 
             $projectStatusHistory = (new ProjectStatusHistory())

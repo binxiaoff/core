@@ -5,10 +5,11 @@ declare(strict_types=1);
 namespace Unilend\Form\Project;
 
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
-use Symfony\Component\Form\Extension\Core\Type\{CheckboxType, ChoiceType, DateType, TextType, TextareaType};
+use Symfony\Component\Form\Extension\Core\Type\{CheckboxType, ChoiceType, DateType, FileType, TextType, TextareaType};
 use Symfony\Component\Form\{AbstractType, FormBuilderInterface, FormError, FormEvent, FormEvents};
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
+use Symfony\Component\Validator\Constraints\Image;
 use Symfony\Component\Validator\Constraints\Valid;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Unilend\Entity\{Clients, Companies, MarketSegment, Project};
@@ -156,6 +157,13 @@ class ProjectType extends AbstractType
             ])
             ->add('projectAttachments', ProjectAttachmentCollectionType::class, ['constraints' => [new Valid()]])
             ->add('projectFees', ProjectFeeTypeCollectionType::class)
+            ->add('imageFile', FileType::class, [
+                'label'       => false,
+                'mapped'      => false,
+                'constraints' => [
+                    new Image(),
+                ],
+            ])
             ->addEventListener(FormEvents::POST_SUBMIT, [$this, 'handleCreationInProgressCompany'])
         ;
     }

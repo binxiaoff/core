@@ -18,10 +18,12 @@ use Symfony\Component\Filesystem\{Exception\FileNotFoundException, Filesystem};
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Unilend\Entity\{Attachment, AttachmentType, Clients, Companies, ProjectAttachment};
 use Unilend\Service\User\RealUserFinder;
-use URLify;
+use Unilend\Traits\GenerateFileNameTrait;
 
 class AttachmentManager
 {
+    use GenerateFileNameTrait;
+
     /** @var EntityManagerInterface */
     private $entityManager;
     /** @var Filesystem */
@@ -330,26 +332,6 @@ class AttachmentManager
         $hash = hash('sha256', (string) $client->getIdClient());
 
         return $hash[0] . DIRECTORY_SEPARATOR . $hash[1] . DIRECTORY_SEPARATOR . $client->getIdClient();
-    }
-
-    /**
-     * @param UploadedFile $uploadedFile
-     * @param string       $uploadAbsolutePath
-     *
-     * @return string
-     */
-    private function generateFileName(UploadedFile $uploadedFile, string $uploadAbsolutePath)
-    {
-        $originalFilename      = URLify::filter(pathinfo($uploadedFile->getClientOriginalName(), PATHINFO_FILENAME));
-        $fileName              = $originalFilename . '-' . md5(uniqid());
-        $fileExtension         = $uploadedFile->guessExtension() ?? $uploadedFile->getClientOriginalExtension();
-        $fileNameWithExtension = $fileName . '.' . $fileExtension;
-
-        if (file_exists($uploadAbsolutePath . DIRECTORY_SEPARATOR . $fileNameWithExtension)) {
-            $fileNameWithExtension = $this->generateFileName($uploadedFile, $uploadAbsolutePath);
-        }
-
-        return $fileNameWithExtension;
     }
 
     /**

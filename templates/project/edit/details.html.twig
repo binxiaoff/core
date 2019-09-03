@@ -139,6 +139,14 @@
                                     {% endif %}
                                 </em>
                             </div>
+
+                            {% if project.image %}
+                            <div class="row">
+                                <div class="col-md-6 col-lg-6">
+                                    <img src="{{ asset(project.image, 'project') }}">
+                                </div>
+                            </div>
+                            {% endif %}
                         </div><!-- /.panel-content -->
                     </div><!-- /.panel -->
                 </article><!-- /.dashboard-tab-pane -->

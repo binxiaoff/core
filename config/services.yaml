@@ -8,6 +8,7 @@ parameters:
     directory.shared: /data/medias/nfs/
     directory.temporary: '%directory.shared%tmp/'
     directory.protected: '%directory.shared%protected/'
+    directory.var: '%directory.shared%var/'
 
 services:
     _defaults:
@@ -47,6 +48,9 @@ services:
 
     Unilend\Service\Attachment\AttachmentManager:
         $uploadRootDirectory: '%directory.protected%attachments'
+
+    Unilend\Service\ProjectImageManager:
+        $uploadRootFolder: '%directory.var%images/projects'
 
     Unilend\Service\GoogleRecaptchaManager:
         $client: '@eight_points_guzzle.client.google_recaptcha'

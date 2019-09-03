@@ -254,6 +254,13 @@ class Project
     private $confidentialityAcceptances;
 
     /**
+     * @var string
+     *
+     * @ORM\Column(type="string", unique=true, nullable=true)
+     */
+    private $image;
+
+    /**
      * Project constructor.
      */
     public function __construct()
@@ -1079,6 +1086,22 @@ class Project
             || $user->getCompany() === $this->getSubmitterCompany()
             || false               === $this->confidentialityAcceptances->matching($criteria)->isEmpty()
         ;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getImage(): ?string
+    {
+        return $this->image;
+    }
+
+    /**
+     * @param string|null $image
+     */
+    public function setImage(?string $image): void
+    {
+        $this->image = $image;
     }
 
     /**
