@@ -20,11 +20,10 @@ class ProfileController extends AbstractController
     /**
      * @Route("/profil", name="profile")
      *
-     * @param Request                        $request
-     * @param UserInterface|Clients|null     $user
-     * @param ClientsRepository              $clientsRepository
-     * @param AcceptationLegalDocsRepository $acceptationLegalDocsRepository
-     * @param TranslatorInterface            $translator
+     * @param Request                    $request
+     * @param UserInterface|Clients|null $user
+     * @param ClientsRepository          $clientsRepository
+     * @param TranslatorInterface        $translator
      *
      * @throws ORMException
      * @throws OptimisticLockException
@@ -34,10 +33,12 @@ class ProfileController extends AbstractController
      */
     public function profile(
         Request $request,
-        UserInterface $user,
+        ?UserInterface $user,
         ClientsRepository $clientsRepository,
-        AcceptationLegalDocsRepository $acceptationLegalDocsRepository,
-        TranslatorInterface $translator
+        TranslatorInterface $translator,
+        MailerManager $mailerManager,
+        LoggerInterface $logger,
+        AcceptationLegalDocsRepository $acceptationLegalDocsRepository
     ): Response {
         $form = $this->createForm(IdentityType::class, $user);
 
@@ -45,9 +46,21 @@ class ProfileController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             $client = $form->getData();
-            $clientsRepository->save($client);
 
             $this->addFlash('updateSuccess', $translator->trans('user-profile-form.update-success-message'));
+
+            try {
+                $mailerManager->sendIdentityUpdated($user);
+            } catch (Swift_SwiftException $exception) {
+                $logger->error('An error occurred while identity updated email. Message: ' . $exception->getMessage(), [
+                    'class'    => __CLASS__,
+                    'function' => __FUNCTION__,
+                    'file'     => $exception->getFile(),
+                    'line'     => $exception->getLine(),
+                ]);
+            }
+
+            $clientsRepository->save($client);
 
             return $this->redirectToRoute('profile');
         }
