@@ -550,11 +550,11 @@ class Project
     }
 
     /**
-     * @param DateTimeImmutable $lenderConsultationClosingDate
+     * @param DateTimeImmutable|null $lenderConsultationClosingDate
      *
      * @return Project
      */
-    public function setLenderConsultationClosingDate(DateTimeImmutable $lenderConsultationClosingDate): Project
+    public function setLenderConsultationClosingDate(?DateTimeImmutable $lenderConsultationClosingDate): Project
     {
         $this->lenderConsultationClosingDate = $lenderConsultationClosingDate;
 

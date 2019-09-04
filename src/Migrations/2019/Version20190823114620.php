@@ -36,7 +36,7 @@ final class Version20190823114620 extends ContainerAwareMigration
             ("fr_FR", "account-init", "mobile-phone-label", "Téléphone portable", NOW())
         ');
 
-        $this->addSql('ALTER TABLE clients ADD job_function VARCHAR(255) DEFAULT NULL AFTER id_nationaliy, CHANGE phone phone VARCHAR(35) DEFAULT NULL COMMENT \'(DC2Type:phone_number)\'');
+        $this->addSql('ALTER TABLE clients ADD job_function VARCHAR(255) DEFAULT NULL AFTER security_answer, CHANGE phone phone VARCHAR(35) DEFAULT NULL COMMENT \'(DC2Type:phone_number)\'');
 
         $this->addSql('DELETE FROM translations WHERE section = "password-init"');
     }

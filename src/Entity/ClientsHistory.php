@@ -19,8 +19,7 @@ class ClientsHistory
 {
     use TimestampableAddedOnlyTrait;
 
-    public const STATUS_ACTION_LOGIN            = 1;
-    public const STATUS_ACTION_ACCOUNT_CREATION = 2;
+    public const STATUS_ACTION_LOGIN = 1;
 
     /**
      * @var Clients

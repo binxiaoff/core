@@ -34,15 +34,6 @@ class Clients implements UserInterface, EquatableInterface
     use TimestampableTrait;
     use RoleableTrait;
 
-    public const TYPE_PERSON                 = 1;
-    public const TYPE_LEGAL_ENTITY           = 2;
-    public const TYPE_PERSON_FOREIGNER       = 3;
-    public const TYPE_LEGAL_ENTITY_FOREIGNER = 4;
-
-    public const TITLE_MISS      = 'Mme';
-    public const TITLE_MISTER    = 'M.';
-    public const TITLE_UNDEFINED = '';
-
     public const ROLE_USER        = 'ROLE_USER';
     public const ROLE_ADMIN       = 'ROLE_ADMIN';
     public const ROLE_SUPER_ADMIN = 'ROLE_SUPER_ADMIN';
@@ -84,15 +75,6 @@ class Clients implements UserInterface, EquatableInterface
     /**
      * @var string
      *
-     * @ORM\Column(name="preferred_name", type="string", length=191, nullable=true)
-     *
-     * @Assert\Regex(pattern="/[^A-zÀ-ÿ\s\-\'']+/i", match=false, groups={"lender_person"})
-     */
-    private $preferredName;
-
-    /**
-     * @var string
-     *
      * @ORM\Column(name="first_name", type="string", length=191, nullable=true)
      *
      * @Assert\Length(min=2)
@@ -106,42 +88,6 @@ class Clients implements UserInterface, EquatableInterface
      * @ORM\Column(name="slug", type="string", length=191, nullable=true)
      */
     private $slug;
-
-    /**
-     * @var DateTime
-     *
-     * @ORM\Column(name="date_of_birth", type="date", nullable=true)
-     *
-     * @Assert\Date(groups={"lender_person"})
-     */
-    private $dateOfBirth;
-
-    /**
-     * @var int
-     *
-     * @ORM\Column(name="id_birth_country", type="integer", nullable=true)
-     *
-     * @Assert\NotBlank(groups={"lender_person"})
-     * @Assert\Length(min=1, max=3, groups={"lender_person"})
-     */
-    private $idBirthCountry;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="birth_city", type="string", length=191, nullable=true)
-     */
-    private $birthCity;
-
-    /**
-     * @var int
-     *
-     * @ORM\Column(name="id_nationaliy", type="integer", nullable=true)
-     *
-     * @Assert\NotBlank(groups={"lender_person"})
-     * @Assert\Length(min=1, max=3, groups={"lender_person"})
-     */
-    private $idNationality;
 
     /**
      * @var PhoneNumber
@@ -199,11 +145,9 @@ class Clients implements UserInterface, EquatableInterface
     private $securityAnswer;
 
     /**
-     * @var int
-     *
-     * @ORM\Column(name="type", type="smallint", nullable=true)
+     * @ORM\Column(type="string", length=255, nullable=true)
      */
-    private $type;
+    private $jobFunction;
 
     /**
      * @var ClientsStatusHistory
@@ -251,11 +195,6 @@ class Clients implements UserInterface, EquatableInterface
      * @ORM\Column(type="json")
      */
     private $roles = [];
-
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     */
-    private $jobFunction;
 
     /**
      * Clients constructor.
@@ -346,30 +285,6 @@ class Clients implements UserInterface, EquatableInterface
     }
 
     /**
-     * @param string|null $preferredName
-     *
-     * @return Clients
-     */
-    public function setPreferredName(?string $preferredName): Clients
-    {
-        $this->preferredName = '';
-
-        if (false === empty($preferredName)) {
-            $this->preferredName = $this->normalizeName($preferredName);
-        }
-
-        return $this;
-    }
-
-    /**
-     * @return string|null
-     */
-    public function getPreferredName(): ?string
-    {
-        return $this->preferredName;
-    }
-
-    /**
      * @param string|null $firstName
      *
      * @return Clients
@@ -407,86 +322,6 @@ class Clients implements UserInterface, EquatableInterface
     public function getSlug(): ?string
     {
         return $this->slug;
-    }
-
-    /**
-     * @param DateTime|null $dateOfBirth
-     *
-     * @return Clients
-     */
-    public function setDateOfBirth(?DateTime $dateOfBirth): Clients
-    {
-        $this->dateOfBirth = $dateOfBirth;
-
-        return $this;
-    }
-
-    /**
-     * @return DateTime|null
-     */
-    public function getDateOfBirth(): ?DateTime
-    {
-        return $this->dateOfBirth;
-    }
-
-    /**
-     * @param int|null $idBirthCountry
-     *
-     * @return Clients
-     */
-    public function setIdBirthCountry(?int $idBirthCountry): Clients
-    {
-        $this->idBirthCountry = $idBirthCountry;
-
-        return $this;
-    }
-
-    /**
-     * @return int|null
-     */
-    public function getIdBirthCountry(): ?int
-    {
-        return $this->idBirthCountry;
-    }
-
-    /**
-     * @param string|null $birthCity
-     *
-     * @return Clients
-     */
-    public function setBirthCity(?string $birthCity): Clients
-    {
-        $this->birthCity = $birthCity;
-
-        return $this;
-    }
-
-    /**
-     * @return string|null
-     */
-    public function getBirthCity(): ?string
-    {
-        return $this->birthCity;
-    }
-
-    /**
-     * @param int|null $idNationality
-     *
-     * @return Clients
-     */
-    public function setIdNationality(?int $idNationality): Clients
-    {
-        $this->idNationality = $idNationality;
-
-        return $this;
-    }
-
-    /**
-     * @return int|null
-     */
-    public function getIdNationality(): ?int
-    {
-        return $this->idNationality;
     }
 
     /**
@@ -610,23 +445,23 @@ class Clients implements UserInterface, EquatableInterface
     }
 
     /**
-     * @param int|null $type
-     *
-     * @return Clients
+     * @return string|null
      */
-    public function setType(?int $type): Clients
+    public function getJobFunction(): ?string
     {
-        $this->type = $type;
-
-        return $this;
+        return $this->jobFunction;
     }
 
     /**
-     * @return int|null
+     * @param string|null $jobFunction
+     *
+     * @return Clients
      */
-    public function getType(): ?int
+    public function setJobFunction(?string $jobFunction): Clients
     {
-        return $this->type;
+        $this->jobFunction = $jobFunction;
+
+        return $this;
     }
 
     /**
@@ -804,26 +639,6 @@ class Clients implements UserInterface, EquatableInterface
     public function getUsername(): string
     {
         return $this->getEmail();
-    }
-
-    /**
-     * @return string|null
-     */
-    public function getJobFunction(): ?string
-    {
-        return $this->jobFunction;
-    }
-
-    /**
-     * @param string|null $jobFunction
-     *
-     * @return Clients
-     */
-    public function setJobFunction(?string $jobFunction): Clients
-    {
-        $this->jobFunction = $jobFunction;
-
-        return $this;
     }
 
     /**

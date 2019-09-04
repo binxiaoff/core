@@ -13,6 +13,21 @@ use Unilend\Security\LoginAuthenticator;
 class SecurityController extends AbstractController
 {
     /**
+     * @var string
+     */
+    private $recaptchaKey;
+
+    /**
+     * SecurityController constructor.
+     *
+     * @param string $recaptchaKey
+     */
+    public function __construct(string $recaptchaKey)
+    {
+        $this->recaptchaKey = $recaptchaKey;
+    }
+
+    /**
      * @Route("/login", name="login")
      *
      * @param Request             $request
@@ -31,7 +46,7 @@ class SecurityController extends AbstractController
         $pageData     = [
             'last_username'       => $lastUsername,
             'error'               => $error,
-            'recaptchaKey'        => getenv('GOOGLE_RECAPTCHA_KEY'),
+            'recaptchaKey'        => $this->recaptchaKey,
             'displayLoginCaptcha' => $request->getSession()->get(LoginAuthenticator::SESSION_NAME_LOGIN_CAPTCHA, false),
         ];
 
