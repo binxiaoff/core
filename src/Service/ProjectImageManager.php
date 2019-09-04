@@ -39,7 +39,7 @@ class ProjectImageManager
      * @param Project           $project
      * @param UploadedFile|null $file
      */
-    public function setImage(Project $project, ?UploadedFile $file)
+    public function setImage(Project $project, ?UploadedFile $file): void
     {
         if ($project->getImage()) {
             $this->removeImage($project);
@@ -57,7 +57,7 @@ class ProjectImageManager
      *
      * @return string
      */
-    private function uploadImage(UploadedFile $file)
+    private function uploadImage(UploadedFile $file): string
     {
         $relativeFilePath = $this->uploadManager->uploadFile($file, $this->getProjectImageRootDirectory());
 
@@ -67,7 +67,7 @@ class ProjectImageManager
     /**
      * @param Project $project
      */
-    private function removeImage(Project $project)
+    private function removeImage(Project $project): void
     {
         if (!$project->getImage()) {
             return;
@@ -83,7 +83,7 @@ class ProjectImageManager
     /**
      * @return string
      */
-    private function getProjectImageRootDirectory()
+    private function getProjectImageRootDirectory(): string
     {
         return $this->userUploadDirectory . self::PROJECT_IMAGE_DIRECTORY;
     }

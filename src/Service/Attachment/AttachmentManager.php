@@ -17,12 +17,9 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Unilend\Entity\{Attachment, AttachmentType, Clients, Companies, ProjectAttachment};
 use Unilend\Service\FileUploadManager;
 use Unilend\Service\User\RealUserFinder;
-use Unilend\Traits\GenerateFileNameTrait;
 
 class AttachmentManager
 {
-    use GenerateFileNameTrait;
-
     /** @var EntityManagerInterface */
     private $entityManager;
     /** @var Filesystem */
@@ -91,7 +88,7 @@ class AttachmentManager
         bool $archivePreviousAttachments = true,
         ?string $description = null
     ): Attachment {
-        $relativeUploadedPath = $this->fileUploadManager->uploadFile($uploadedFile, $this->getUploadRootDir(), $this->getClientFolder($clientOwner ?? $uploader));
+        $relativeUploadedPath = $this->fileUploadManager->uploadFile($uploadedFile, $this->getUploadRootDir(), $this->getClientDirectory($clientOwner ?? $uploader));
 
         if ($archivePreviousAttachments) {
             $this->archiveAttachments($clientOwner, $attachmentType ?? $attachment->getType());
@@ -130,7 +127,7 @@ class AttachmentManager
      *
      * @return string
      */
-    public function getFullPath(Attachment $attachment)
+    public function getFullPath(Attachment $attachment): string
     {
         return $this->getUploadRootDir() . DIRECTORY_SEPARATOR . $attachment->getPath();
     }
@@ -213,7 +210,7 @@ class AttachmentManager
      *
      * @return bool
      */
-    public function isModifiedAttachment(Attachment $attachment)
+    public function isModifiedAttachment(Attachment $attachment): bool
     {
         try {
             $previousAttachment = $this->entityManager->getRepository(Attachment::class)
@@ -270,7 +267,7 @@ class AttachmentManager
     /**
      * @return string
      */
-    private function getUploadRootDir()
+    private function getUploadRootDir(): string
     {
         $rootDir = realpath($this->uploadRootDirectory);
 
@@ -326,7 +323,7 @@ class AttachmentManager
      *
      * @throws Exception
      */
-    private function archiveAttachments(?Clients $clientOwner, AttachmentType $attachmentType)
+    private function archiveAttachments(?Clients $clientOwner, AttachmentType $attachmentType): void
     {
         $attachmentsToArchive = [];
         if ($clientOwner) {
@@ -353,12 +350,12 @@ class AttachmentManager
      *
      * @return string
      */
-    private function getClientFolder(Clients $client): string
+    private function getClientDirectory(Clients $client): string
     {
         if (empty($client->getIdClient())) {
             throw new InvalidArgumentException('Cannot find the upload destination. The client id is empty.');
         }
 
-        return (string) ($client->getIdClient());
+        return (string) $client->getIdClient();
     }
 }

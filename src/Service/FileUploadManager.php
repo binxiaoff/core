@@ -12,27 +12,23 @@ class FileUploadManager
     /**
      * @param UploadedFile $file
      * @param string       $uploadRootFolder
-     * @param string|null  $seed
+     * @param string|null  $subdirectory
      *
      * @return string
      */
-    public function uploadFile(UploadedFile $file, string $uploadRootFolder, string $seed = null)
+    public function uploadFile(UploadedFile $file, string $uploadRootFolder, string $subdirectory = null): string
     {
-        $hash      = hash('sha256', $seed ?? uniqid());
-        $subfolder = $hash[0] . DIRECTORY_SEPARATOR . $hash[1];
+        $hash         = hash('sha256', $subdirectory ?? uniqid());
+        $subdirectory = $hash[0] . DIRECTORY_SEPARATOR . $hash[1] . ($subdirectory ? DIRECTORY_SEPARATOR . $subdirectory : '');
 
         $uploadRootFolder = $this->normalizePath($uploadRootFolder);
-        $uploadFolder     = $uploadRootFolder . DIRECTORY_SEPARATOR . $subfolder;
-
-        if ($seed) {
-            $uploadFolder .= DIRECTORY_SEPARATOR . $seed;
-        }
+        $uploadFolder     = $uploadRootFolder . DIRECTORY_SEPARATOR . $subdirectory;
 
         $filename = $this->generateFileName($file, $uploadFolder);
 
         $file->move($uploadFolder, $filename);
 
-        return $subfolder . DIRECTORY_SEPARATOR . $filename;
+        return $subdirectory . DIRECTORY_SEPARATOR . $filename;
     }
 
     /**
@@ -41,7 +37,7 @@ class FileUploadManager
      *
      * @return string
      */
-    private function generateFileName(UploadedFile $uploadedFile, string $uploadAbsolutePath)
+    private function generateFileName(UploadedFile $uploadedFile, string $uploadAbsolutePath): string
     {
         $originalFilename      = URLify::filter(pathinfo($uploadedFile->getClientOriginalName(), PATHINFO_FILENAME));
         $fileName              = $originalFilename . '-' . md5(uniqid());
