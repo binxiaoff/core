@@ -10,6 +10,7 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\Asset\Packages;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Unilend\Entity\{MailTemplates, Settings, Translations};
+use Unilend\Service\Translation\TranslationLoader;
 
 class TemplateMessageProvider
 {
@@ -128,7 +129,7 @@ class TemplateMessageProvider
         }
 
         if ($mailTemplate->getIdHeader()) {
-            $keywords['title'] = strtr($this->translator->trans(Translations::SECTION_MAIL_TITLE . '_' . $mailTemplate->getType()), $keywords);
+            $keywords['title'] = strtr($this->translator->trans(Translations::SECTION_MAIL_TITLE . TranslationLoader::SECTION_SEPARATOR . $mailTemplate->getType()), $keywords);
 
             if (false !== mb_strpos($keywords['title'], self::KEYWORDS_SUFFIX) && false !== mb_strpos($keywords['title'], self::KEYWORDS_PREFIX)) {
                 $keywords['title'] = str_replace(self::KEYWORDS_SUFFIX, '', str_replace(self::KEYWORDS_PREFIX, '', $keywords['title']));

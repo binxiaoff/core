@@ -1,8 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 use Symfony\Component\HttpFoundation\Request;
 use Unilend\Entity\{MailQueue, MailTemplates, Translations};
 use Unilend\Service\Mailer\{MailQueueManager, MailTemplateManager};
+use Unilend\Service\Translation\TranslationLoader;
 
 class mailsController extends Controller
 {
@@ -21,15 +24,15 @@ class mailsController extends Controller
         /** @var MailTemplateManager $mailTemplateManager */
         $mailTemplateManager = $this->get('unilend.service.mail_template');
 
-        if (isset($this->params[0]) && $this->params[0] === 'delete') {
-        /** @var \Doctrine\ORM\EntityManager $entityManager */
-        $entityManager          = $this->get('doctrine.orm.entity_manager');
+        if (isset($this->params[0]) && 'delete' === $this->params[0]) {
+            /** @var \Doctrine\ORM\EntityManager $entityManager */
+            $entityManager          = $this->get('doctrine.orm.entity_manager');
             $mailTemplateRepository = $entityManager->getRepository(MailTemplates::class);
             $mailTemplate           = $mailTemplateRepository->findOneBy([
                 'type'   => $this->params[1],
                 'locale' => $this->getParameter('locale'),
                 'status' => MailTemplates::STATUS_ACTIVE,
-                'part'   => MailTemplates::PART_TYPE_CONTENT
+                'part'   => MailTemplates::PART_TYPE_CONTENT,
             ]);
 
             $mailTemplateManager->archiveTemplate($mailTemplate);
@@ -49,13 +52,13 @@ class mailsController extends Controller
             [
                 'title'  => 'Emails externes',
                 'emails' => $externalEmails,
-                'stats'  => $emailUsage
+                'stats'  => $emailUsage,
             ],
             [
                 'title'  => 'Emails internes',
                 'emails' => $internalEmails,
-                'stats'  => $emailUsage
-            ]
+                'stats'  => $emailUsage,
+            ],
         ];
 
         $this->headers = $mailTemplateManager->getActiveMailTemplates(null, MailTemplates::PART_TYPE_HEADER);
@@ -85,7 +88,7 @@ class mailsController extends Controller
                 'type'   => $type,
                 'locale' => $this->getParameter('locale'),
                 'status' => MailTemplates::STATUS_ACTIVE,
-                'part'   => MailTemplates::PART_TYPE_CONTENT
+                'part'   => MailTemplates::PART_TYPE_CONTENT,
             ]);
 
             if (empty($type) || empty($senderName) || empty($senderEmail) || empty($subject)) {
@@ -136,7 +139,7 @@ class mailsController extends Controller
                 'type'   => $this->params[0],
                 'locale' => $this->getParameter('locale'),
                 'status' => MailTemplates::STATUS_ACTIVE,
-                'part'   => $part
+                'part'   => $part,
             ]);
 
             $senderName    = $this->request->request->get('sender_name', null);
@@ -175,7 +178,7 @@ class mailsController extends Controller
 
             /** @var \Symfony\Component\Translation\TranslatorInterface $translator */
             $translator      = $this->get('translator');
-            $titleLabel      = Translations::SECTION_MAIL_TITLE . '_' . $this->mailTemplate->getType();
+            $titleLabel      = Translations::SECTION_MAIL_TITLE . TranslationLoader::SECTION_SEPARATOR . $this->mailTemplate->getType();
             $this->mailTitle = $translator->trans($titleLabel);
             $this->mailTitle = $this->mailTitle === $titleLabel ? '' : $this->mailTitle;
 
@@ -228,11 +231,11 @@ class mailsController extends Controller
 
         if (isset($_POST['form_send_search'])) {
             $clientId  = isset($_POST['id_client']) && false === empty($_POST['id_client']) ? $_POST['id_client'] : null;
-            $from      = isset($_POST['from']) && false === empty($_POST['from']) ? $_POST['from'] : null;
-            $recipient = isset($_POST['to']) && false === empty($_POST['to']) ? $_POST['to'] : null;
-            $subject   = isset($_POST['subject']) && false === empty($_POST['subject']) ? $_POST['subject'] : null;
+            $from      = isset($_POST['from'])      && false === empty($_POST['from']) ? $_POST['from'] : null;
+            $recipient = isset($_POST['to'])        && false === empty($_POST['to']) ? $_POST['to'] : null;
+            $subject   = isset($_POST['subject'])   && false === empty($_POST['subject']) ? $_POST['subject'] : null;
             $startDate = isset($_POST['date_from']) && false === empty($_POST['date_from']) ? \DateTime::createFromFormat('d/m/Y', $_POST['date_from']) : new \DateTime('2013-01-01');
-            $endDate   = isset($_POST['date_to']) && false === empty($_POST['date_to']) ? \DateTime::createFromFormat('d/m/Y', $_POST['date_to']) : new \DateTime('NOW');
+            $endDate   = isset($_POST['date_to'])   && false === empty($_POST['date_to']) ? \DateTime::createFromFormat('d/m/Y', $_POST['date_to']) : new \DateTime('NOW');
 
             $this->emails = $mailQueueManager->searchSentEmails($clientId, $from, $recipient, $subject, $startDate, $endDate);
         }
@@ -259,19 +262,20 @@ class mailsController extends Controller
                 ->getRepository(MailQueue::class)->find($mailQueueId);
             if (null === $mailQueue) {
                 $this->errorMessage = 'L\'email que vous avez demandé n\'existe pas.';
+
                 return;
             }
-            $email     = $mailQueueManager->getMessage($mailQueue);
-            $sentAt    = $mailQueue->getSentAt();
-            $from      = $email->getFrom();
-            $to        = $email->getTo();
+            $email  = $mailQueueManager->getMessage($mailQueue);
+            $sentAt = $mailQueue->getSentAt();
+            $from   = $email->getFrom();
+            $to     = $email->getTo();
 
             $this->email = [
                 'date'    => $sentAt->format('d/m/Y H:i'),
                 'from'    => array_shift($from),
                 'to'      => array_shift($to),
                 'subject' => $email->getSubject(),
-                'body'    => $email->getBody()
+                'body'    => $email->getBody(),
             ];
         } catch (\Exception $exception) {
             $this->errorMessage = 'Impossible d\'afficher le mail';
