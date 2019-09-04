@@ -44,6 +44,11 @@
                             <table class="table table-projects" data-sortable style="table-layout: auto;">
                                 <thead class="table-sortable-columns">
                                 <tr>
+                                    <th class="">
+                                        <span class="label" title="Image" data-toggle="tooltip">
+                                            Image
+                                        </span>
+                                    </th>
                                     <th class="table-projects-item-partner table-sortable-column" data-sortable-by="partner">
                                         <span class="label" title="Marché" data-toggle="tooltip">
                                             Marché
@@ -64,6 +69,11 @@
                                         data-sortable-partner="{{ ('market-segment.' ~ project.marketSegment.label)|trans }}"
                                         data-sortable-title="{{ project.borrowerCompany.name|e('html_attr') }}"
                                         data-row-url="{{ path('edit_project_details', {'hash': project.hash}) }}">
+                                        <td>
+                                            {% if project.image %}
+                                                <img src="{{ asset(project.image, 'project') }}" alt="{% trans with { '%projectName%': project.title } %} project-list.image-alt {% endtrans %}">
+                                            {% endif %}
+                                        </td>
                                         <td class="table-projects-item-partner">
                                             {% include 'partials/market_bubble.html.twig' with {'market': project.marketSegment.label} %}
                                         </td>

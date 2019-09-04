@@ -102,6 +102,11 @@
                 </article>
 
                 <article class="request-form-panel panel">
+                    <h3 class="margin-5-t">{% trans %} project-request.image-section-title {% endtrans %}</h3>
+                    {{ form_row(form.imageFile) }}
+                </article>
+
+                <article class="request-form-panel panel">
                     <div class="form-validation-notifications"></div>
                     <button type="submit" class="btn-continue btn-primary pull-right" data-spinnerbutton>
                         {% trans %} project-request.confirmation-button {% endtrans %}
@@ -183,6 +188,7 @@
                 placeholder: 'Veuillez saisir un numéro de SIREN'
             })
 
+            $('[data-fileattach-inputname="{{ form.imageFile.vars.full_name|escape('js') }}"]').uiFileAttach()
             {% include 'project/partials/fees/edit_project_fees.js.twig' %}
             {% include 'project/partials/tranche/edit_tranches.js.twig' %}
             {% include 'project/partials/attachment/add_attachment.js.twig' %}

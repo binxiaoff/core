@@ -8,6 +8,7 @@ parameters:
     directory.shared: /data/medias/nfs/
     directory.temporary: '%directory.shared%tmp/'
     directory.protected: '%directory.shared%protected/'
+    directory.public_var: '%directory.public%var/'
 
 services:
     _defaults:
@@ -27,6 +28,7 @@ services:
             $publicDirectory: '%directory.public%'
             $documentRootDirectory: '%directory.protected%/generated_document/'
             $projectDirectory: '%kernel.project_dir%'
+            $userUploadDirectory: '%directory.public%var/upload/'
 
     # makes classes in src/ available to be used as services
     # this creates a service per class whose id is the fully-qualified class name

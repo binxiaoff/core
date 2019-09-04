@@ -12,12 +12,14 @@ use Psr\Log\LoggerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Swift_SwiftException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\{File\UploadedFile, Request, Response};
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Validator\Constraints\Image;
 use Symfony\Component\Validator\Constraints\Valid;
 use Unilend\Entity\{AcceptedBids, Attachment, Bids, CaRegionalBank, Clients, Loans, Project, ProjectStatusHistory};
 use Unilend\Form\Bid\PartialBid;
@@ -26,7 +28,7 @@ use Unilend\Form\Tranche\TrancheTypeCollectionType;
 use Unilend\Repository\{AcceptedBidsRepository, BidsRepository, CaRegionalBankRepository, CompaniesRepository, ProjectAttachmentRepository, ProjectAttachmentTypeRepository,
     ProjectRepository, TrancheRepository};
 use Unilend\Security\Voter\ProjectVoter;
-use Unilend\Service\{Attachment\AttachmentManager, MailerManager, ProjectStatusManager, User\RealUserFinder};
+use Unilend\Service\{Attachment\AttachmentManager, MailerManager, ProjectImageManager, ProjectStatusManager, User\RealUserFinder};
 
 class EditController extends AbstractController
 {
@@ -42,6 +44,7 @@ class EditController extends AbstractController
      * @param ProjectRepository               $projectRepository
      * @param ProjectAttachmentRepository     $projectAttachmentRepository
      * @param ProjectAttachmentTypeRepository $projectAttachmentTypeRepository
+     * @param ProjectImageManager             $projectImageManager
      * @param CaRegionalBankRepository        $regionalBankRepository
      * @param AttachmentManager               $attachmentManager
      *
@@ -58,6 +61,7 @@ class EditController extends AbstractController
         ProjectRepository $projectRepository,
         ProjectAttachmentRepository $projectAttachmentRepository,
         ProjectAttachmentTypeRepository $projectAttachmentTypeRepository,
+        ProjectImageManager $projectImageManager,
         CaRegionalBankRepository $regionalBankRepository,
         AttachmentManager $attachmentManager
     ): Response {
@@ -92,6 +96,11 @@ class EditController extends AbstractController
             return $this->redirect($request->getUri());
         }
 
+        $imageForm = $this->buildImageForm();
+        if ($this->handleImageForm($project, $imageForm, $request, $projectRepository, $projectImageManager)) {
+            return $this->redirect($request->getUri());
+        }
+
         $template = [
             'arrangers'                => $companyRepository->findEligibleArrangers($user->getCompany(), ['name' => 'ASC']),
             'runs'                     => $regionalBanks,
@@ -110,6 +119,7 @@ class EditController extends AbstractController
             'trancheForm'              => $trancheForm ? $trancheForm->createView() : null,
             'feesForm'                 => $feesForm ? $feesForm->createView() : null,
             'partialBidForm'           => $partialBidForm->createView(),
+            'imageForm'                => $imageForm->createView(),
             'confidentialityForm'      => $confidentialityForm->createView(),
             'offerVisibilities'        => Project::getAllOfferVisibilities(),
         ];
@@ -505,6 +515,17 @@ class EditController extends AbstractController
     }
 
     /**
+     * @return FormInterface
+     */
+    private function buildImageForm(): FormInterface
+    {
+        return $this->get('form.factory')->createNamedBuilder('image')
+            ->add('imageFile', FileType::class, ['constraints' => new Image()])
+            ->getForm()
+        ;
+    }
+
+    /**
      * @param Project           $project
      * @param Clients           $user
      * @param FormInterface     $documentForm
@@ -611,6 +632,38 @@ class EditController extends AbstractController
                 $project->setConfidentialityDisclaimer(null);
             }
 
+            $projectRepository->save($project);
+
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * @param Project             $project
+     * @param FormInterface       $imageForm
+     * @param Request             $request
+     * @param ProjectRepository   $projectRepository
+     * @param ProjectImageManager $projectImageManager
+     *
+     * @throws ORMException
+     * @throws OptimisticLockException
+     *
+     * @return bool
+     */
+    private function handleImageForm(
+        Project $project,
+        FormInterface $imageForm,
+        Request $request,
+        ProjectRepository $projectRepository,
+        ProjectImageManager $projectImageManager
+    ): bool {
+        $imageForm->handleRequest($request);
+
+        if ($imageForm->isSubmitted() && $imageForm->isValid()) {
+            $imageFile = $imageForm->get('imageFile')->getData();
+            $projectImageManager->setImage($project, $imageFile);
             $projectRepository->save($project);
 
             return true;

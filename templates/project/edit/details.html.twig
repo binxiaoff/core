@@ -124,6 +124,20 @@
                                     {% endif %}
                                 </dd>
                             </div>#}
+
+                            {% if project.image %}
+                                <dl>
+                                    <dt>{% trans %} project-edit.image-section-title {% endtrans %}</dt>
+                                    <dd>
+                                        <div class="row">
+                                            <div class="col-md-6 col-lg-6">
+                                                <img src="{{ asset(project.image, 'project') }}" alt="{% trans %} project-edit.image-alt {% endtrans %}">
+                                            </div>
+                                        </div>
+                                    </dd>
+                                </dl>
+                            {% endif %}
+
                             <h4 class="h4 margin-20-t">
                                 Description
                                 {% if project.isEditable %}
@@ -139,6 +153,7 @@
                                     {% endif %}
                                 </em>
                             </div>
+
                         </div><!-- /.panel-content -->
                     </div><!-- /.panel -->
                 </article><!-- /.dashboard-tab-pane -->
@@ -584,6 +599,17 @@
                     </div>
                 </div>
             </article><!-- /.dashboard-tab-pane -->
+            <article class="dashboard-tab-pane" id="article-image">
+                <div class="panel">
+                    <h3 class="margin-10-t">{% trans %} project-edit.image-section-title {% endtrans %}</h3>
+                    {{ form_start(imageForm) }}
+                    {{ form_row(imageForm.imageFile) }}
+                    <div class="text-align-right margin-20-t">
+                        <button type="submit" class="btn-primary btn-shape-xs">{% trans %} project-edit.image-send {% endtrans %}</button>
+                    </div>
+                    {{ form_end(imageForm) }}
+                </div>
+            </article><!-- /.dashboard-tab-pane -->
             <article class="dashboard-tab-pane" id="article-discussions">
                 <div class="panel" style="font-size: 16px;">
                     <h3 class="margin-10-t">Discussions</h3>
@@ -825,6 +851,8 @@
                     $('[value=' + value + '].visibility-bank').not(':disabled').prop('checked', checked)
                 })
             })
+
+            $('[data-fileattach-inputname="{{ imageForm.imageFile.vars.full_name|escape('js') }}"]').uiFileAttach()
         })
     </script>
 {% endblock %}

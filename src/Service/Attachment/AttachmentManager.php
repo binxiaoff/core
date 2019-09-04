@@ -6,8 +6,6 @@ namespace Unilend\Service\Attachment;
 
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\OptimisticLockException;
-use Doctrine\ORM\ORMException;
 use Exception;
 use InvalidArgumentException;
 use PhpOffice\PhpSpreadsheet\Exception as PhpSpreadsheetException;
@@ -17,8 +15,8 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\Filesystem\{Exception\FileNotFoundException, Filesystem};
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Unilend\Entity\{Attachment, AttachmentType, Clients, Companies, ProjectAttachment};
+use Unilend\Service\FileUploadManager;
 use Unilend\Service\User\RealUserFinder;
-use URLify;
 
 class AttachmentManager
 {
@@ -34,6 +32,10 @@ class AttachmentManager
     private $logger;
     /** @var RealUserFinder */
     private $realUserFinder;
+    /**
+     * @var FileUploadManager
+     */
+    private $fileUploadManager;
 
     /**
      * @param EntityManagerInterface $entityManager
@@ -41,6 +43,7 @@ class AttachmentManager
      * @param string                 $uploadRootDirectory
      * @param string                 $temporaryDirectory
      * @param LoggerInterface        $logger
+     * @param FileUploadManager      $fileUploadManager
      * @param RealUserFinder         $realUserFinder
      */
     public function __construct(
@@ -49,6 +52,7 @@ class AttachmentManager
         string $uploadRootDirectory,
         string $temporaryDirectory,
         LoggerInterface $logger,
+        FileUploadManager $fileUploadManager,
         RealUserFinder $realUserFinder
     ) {
         $this->entityManager       = $entityManager;
@@ -57,6 +61,7 @@ class AttachmentManager
         $this->temporaryDirectory  = $temporaryDirectory;
         $this->logger              = $logger;
         $this->realUserFinder      = $realUserFinder;
+        $this->fileUploadManager   = $fileUploadManager;
     }
 
     /**
@@ -83,8 +88,7 @@ class AttachmentManager
         bool $archivePreviousAttachments = true,
         ?string $description = null
     ): Attachment {
-        $uploadPathAndName         = $this->uploadFile($uploadedFile, $clientOwner, $uploader);
-        $relativeUploadPathAndName = str_replace($this->getUploadRootDir() . DIRECTORY_SEPARATOR, '', $uploadPathAndName);
+        $relativeUploadedPath = $this->fileUploadManager->uploadFile($uploadedFile, $this->getUploadRootDir(), $this->getClientDirectory($clientOwner ?? $uploader));
 
         if ($archivePreviousAttachments) {
             $this->archiveAttachments($clientOwner, $attachmentType ?? $attachment->getType());
@@ -95,7 +99,7 @@ class AttachmentManager
         }
 
         $attachment
-            ->setPath($relativeUploadPathAndName)
+            ->setPath($relativeUploadedPath)
             ->setClientOwner($clientOwner)
             ->setCompanyOwner($companyOwner)
             ->setAddedByValue($this->realUserFinder)
@@ -123,7 +127,7 @@ class AttachmentManager
      *
      * @return string
      */
-    public function getFullPath(Attachment $attachment)
+    public function getFullPath(Attachment $attachment): string
     {
         return $this->getUploadRootDir() . DIRECTORY_SEPARATOR . $attachment->getPath();
     }
@@ -206,7 +210,7 @@ class AttachmentManager
      *
      * @return bool
      */
-    public function isModifiedAttachment(Attachment $attachment)
+    public function isModifiedAttachment(Attachment $attachment): bool
     {
         try {
             $previousAttachment = $this->entityManager->getRepository(Attachment::class)
@@ -235,8 +239,7 @@ class AttachmentManager
      * @param Attachment $attachment
      * @param bool       $save
      *
-     * @throws ORMException
-     * @throws OptimisticLockException
+     * @throws Exception
      */
     public function archive(Attachment $attachment, bool $save = true): void
     {
@@ -253,8 +256,7 @@ class AttachmentManager
     /**
      * @param Attachment $attachment
      *
-     * @throws ORMException
-     * @throws OptimisticLockException
+     * @throws Exception
      */
     public function logDownload(Attachment $attachment): void
     {
@@ -265,7 +267,7 @@ class AttachmentManager
     /**
      * @return string
      */
-    private function getUploadRootDir()
+    private function getUploadRootDir(): string
     {
         $rootDir = realpath($this->uploadRootDirectory);
 
@@ -316,84 +318,12 @@ class AttachmentManager
     }
 
     /**
-     * Get relative client attachment path.
-     *
-     * @param Clients $client
-     *
-     * @return string
-     */
-    private function getUploadRelativePath(Clients $client)
-    {
-        if (empty($client->getIdClient())) {
-            throw new InvalidArgumentException('Cannot find the upload destination. The client id is empty.');
-        }
-        $hash = hash('sha256', (string) $client->getIdClient());
-
-        return $hash[0] . DIRECTORY_SEPARATOR . $hash[1] . DIRECTORY_SEPARATOR . $client->getIdClient();
-    }
-
-    /**
-     * @param UploadedFile $uploadedFile
-     * @param string       $uploadAbsolutePath
-     *
-     * @return string
-     */
-    private function generateFileName(UploadedFile $uploadedFile, string $uploadAbsolutePath)
-    {
-        $originalFilename      = URLify::filter(pathinfo($uploadedFile->getClientOriginalName(), PATHINFO_FILENAME));
-        $fileName              = $originalFilename . '-' . md5(uniqid());
-        $fileExtension         = $uploadedFile->guessExtension() ?? $uploadedFile->getClientOriginalExtension();
-        $fileNameWithExtension = $fileName . '.' . $fileExtension;
-
-        if (file_exists($uploadAbsolutePath . DIRECTORY_SEPARATOR . $fileNameWithExtension)) {
-            $fileNameWithExtension = $this->generateFileName($uploadedFile, $uploadAbsolutePath);
-        }
-
-        return $fileNameWithExtension;
-    }
-
-    /**
-     * @param Clients|null $owner
-     * @param Clients      $uploader
-     *
-     * @return string
-     */
-    private function getUploadAbsolutePath(?Clients $owner, Clients $uploader)
-    {
-        $relativePath = $this->getUploadRelativePath($owner ?? $uploader);
-        $absolutePath = $this->getUploadRootDir() . DIRECTORY_SEPARATOR . $relativePath;
-
-        if (false === is_dir($absolutePath)) {
-            $this->filesystem->mkdir($absolutePath);
-        }
-
-        return $absolutePath;
-    }
-
-    /**
-     * @param UploadedFile $uploadedFile
-     * @param Clients|null $owner
-     * @param Clients      $uploader
-     *
-     * @return string
-     */
-    private function uploadFile(UploadedFile $uploadedFile, ?Clients $owner, Clients $uploader)
-    {
-        $uploadPath = $this->getUploadAbsolutePath($owner, $uploader);
-        $fileName   = $this->generateFileName($uploadedFile, $uploadPath);
-
-        $uploadedFile->move($uploadPath, $fileName);
-
-        return $uploadPath . DIRECTORY_SEPARATOR . $fileName;
-    }
-
-    /**
      * @param Clients|null   $clientOwner
      * @param AttachmentType $attachmentType
      *
      * @throws Exception
      */
-    private function archiveAttachments(?Clients $clientOwner, AttachmentType $attachmentType)
+    private function archiveAttachments(?Clients $clientOwner, AttachmentType $attachmentType): void
     {
         $attachmentsToArchive = [];
         if ($clientOwner) {
@@ -411,5 +341,21 @@ class AttachmentManager
         }
 
         $this->entityManager->flush($attachmentsToArchive);
+    }
+
+    /**
+     * @param Clients $client
+     *
+     * @throws InvalidArgumentException
+     *
+     * @return string
+     */
+    private function getClientDirectory(Clients $client): string
+    {
+        if (empty($client->getIdClient())) {
+            throw new InvalidArgumentException('Cannot find the upload destination. The client id is empty.');
+        }
+
+        return (string) $client->getIdClient();
     }
 }
