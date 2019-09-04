@@ -8,9 +8,6 @@
     "behat/transliterator": {
         "version": "v1.2.0"
     },
-    "box/spout": {
-        "version": "v2.7.3"
-    },
     "clue/stream-filter": {
         "version": "v1.4.1"
     },
