@@ -349,9 +349,9 @@ class AttachmentManager
     /**
      * @param Clients $client
      *
-     * @return string
-     *
      * @throws InvalidArgumentException
+     *
+     * @return string
      */
     private function getClientFolder(Clients $client): string
     {
@@ -359,6 +359,6 @@ class AttachmentManager
             throw new InvalidArgumentException('Cannot find the upload destination. The client id is empty.');
         }
 
-        return strval($client->getIdClient());
+        return (string) ($client->getIdClient());
     }
 }
