@@ -6,5 +6,5 @@ framework:
             gulp:
                 base_path: /assets
             project:
-                base_path: /var/images/projects
+                base_path: /var/upload
         json_manifest_path: '%kernel.project_dir%/public/default/assets/rev-manifest.json'

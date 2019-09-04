@@ -73,12 +73,10 @@ class CreateController extends AbstractController
                 $attachmentManager->upload(null, $companyOwner, $client, null, $attachment, $uploadedFile);
             }
 
-            $image = $form->get('imageFile')->getData();
+            $imageFile = $form->get('imageFile')->getData();
 
-            if ($image) {
-                $imageFileName = $imageManager->upload($image, $project);
-
-                $project->setImage($imageFileName);
+            if ($imageFile) {
+                $imageManager->setImage($project, $imageFile);
             }
 
             $projectStatusHistory = (new ProjectStatusHistory())

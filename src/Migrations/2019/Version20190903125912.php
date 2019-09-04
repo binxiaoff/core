@@ -25,6 +25,10 @@ final class Version20190903125912 extends AbstractMigration
         $this->addSql('ALTER TABLE project ADD image VARCHAR(255) DEFAULT NULL');
         $this->addSql('CREATE UNIQUE INDEX UNIQ_2FB3D0EEC53D045F ON project (image)');
         $this->addSql('INSERT INTO translations (locale, section, name, translation, added) VALUES ("fr_FR", "project-request", "image-section-title", "Image", NOW())');
+        $this->addSql('INSERT INTO translations (locale, section, name, translation, added) VALUES ("fr_FR", "project-edit", "image-alt", "Image du projet", NOW())');
+        $this->addSql('INSERT INTO translations (locale, section, name, translation, added) VALUES ("fr_FR", "project-edit", "image-section-title", "Image", NOW())');
+        $this->addSql('INSERT INTO translations (locale, section, name, translation, added) VALUES ("fr_FR", "project-edit", "image-send", "Envoyer", NOW())');
+        $this->addSql('INSERT INTO translations (locale, section, name, translation, added) VALUES ("fr_FR", "project-list", "image-alt", "Image du projet %projectName%", NOW())');
     }
 
     public function down(Schema $schema): void
@@ -34,5 +38,9 @@ final class Version20190903125912 extends AbstractMigration
 
         $this->addSql('ALTER TABLE project DROP image');
         $this->addSql('DELETE FROM translations WHERE section = "project-request" AND name = "image-section-title"');
+        $this->addSql('DELETE FROM translations WHERE section = "project-edit" AND name = "image-section-title"');
+        $this->addSql('DELETE FROM translations WHERE section = "project-edit" AND name = "image-alt"');
+        $this->addSql('DELETE FROM translations WHERE section = "project-edit" AND name = "image-send"');
+        $this->addSql('DELETE FROM translations WHERE section = "project-list" AND name = "image-alt"');
     }
 }

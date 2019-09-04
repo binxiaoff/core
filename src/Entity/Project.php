@@ -11,6 +11,7 @@ use Exception;
 use Ramsey\Uuid\Uuid;
 use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Entity\Traits\TimestampableTrait;
+use Unilend\Service\ProjectImageManager;
 use Unilend\Traits\ConstantsAwareTrait;
 use URLify;
 
@@ -256,7 +257,7 @@ class Project
     /**
      * @var string
      *
-     * @ORM\Column(type="string", unique=true, nullable=true)
+     * @ORM\Column(type="string", unique=true, nullable=true, length=320)
      */
     private $image;
 
@@ -1098,10 +1099,14 @@ class Project
 
     /**
      * @param string|null $image
+     *
+     * @return Project
      */
-    public function setImage(?string $image): void
+    public function setImage(?string $image): Project
     {
         $this->image = $image;
+
+        return $this;
     }
 
     /**
