@@ -19,6 +19,7 @@ use Symfony\Component\HttpFoundation\{File\UploadedFile, Request, Response};
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Validator\Constraints\Image;
 use Symfony\Component\Validator\Constraints\Valid;
 use Unilend\Entity\{AcceptedBids, Attachment, Bids, CaRegionalBank, Clients, Loans, Project, ProjectStatusHistory};
 use Unilend\Form\Bid\PartialBid;
@@ -47,9 +48,10 @@ class EditController extends AbstractController
      * @param CaRegionalBankRepository        $regionalBankRepository
      * @param AttachmentManager               $attachmentManager
      *
-     * @return Response
      * @throws ORMException
      * @throws OptimisticLockException
+     *
+     * @return Response
      */
     public function details(
         Project $project,
@@ -518,7 +520,7 @@ class EditController extends AbstractController
     private function buildImageForm(): FormInterface
     {
         return $this->get('form.factory')->createNamedBuilder('image')
-            ->add('imageFile', FileType::class)
+            ->add('imageFile', FileType::class, ['constraints' => new Image()])
             ->getForm()
         ;
     }
@@ -645,13 +647,18 @@ class EditController extends AbstractController
      * @param ProjectRepository   $projectRepository
      * @param ProjectImageManager $projectImageManager
      *
-     * @return bool
-     *
      * @throws ORMException
      * @throws OptimisticLockException
+     *
+     * @return bool
      */
-    private function handleImageForm(Project $project, FormInterface $imageForm, Request $request, ProjectRepository $projectRepository, ProjectImageManager $projectImageManager): bool
-    {
+    private function handleImageForm(
+        Project $project,
+        FormInterface $imageForm,
+        Request $request,
+        ProjectRepository $projectRepository,
+        ProjectImageManager $projectImageManager
+    ): bool {
         $imageForm->handleRequest($request);
 
         if ($imageForm->isSubmitted() && $imageForm->isValid()) {

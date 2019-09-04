@@ -11,7 +11,6 @@ use Exception;
 use Ramsey\Uuid\Uuid;
 use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Entity\Traits\TimestampableTrait;
-use Unilend\Service\ProjectImageManager;
 use Unilend\Traits\ConstantsAwareTrait;
 use URLify;
 
