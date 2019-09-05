@@ -277,6 +277,66 @@ class EditController extends AbstractController
      * @param MailerManager       $mailerManager
      * @param LoggerInterface     $logger
      * @param TranslatorInterface $translator
+     *
+     * @throws ORMException
+     * @throws OptimisticLockException
+     *
+     * @return Response
+     */
+    public function addInterlocutor(
+        Request $request,
+        ?UserInterface $user,
+        MailerManager $mailerManager,
+        LoggerInterface $logger,
+        TranslatorInterface $translator
+    ) {
+        $form = $this->createFormBuilder()->add('email_guest', EmailType::class)->getForm();
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $isEmailValid          = false;
+            $guestEmail            = mb_strtolower($form->getData()['email_guest']);
+            $guestEmailDomain      = explode('@', $guestEmail)[1];
+            $companiesEmailDomains = $this->getDoctrine()->getRepository(Companies::class)->findEmailDomains();
+
+            foreach ($companiesEmailDomains as $companyEmailDomain) {
+                if ($companyEmailDomain === $guestEmailDomain) {
+                    $isEmailValid = true;
+                }
+            }
+
+            if ($isEmailValid) {
+                try {
+                    $mailerManager->sendInvitation($guestEmail, $guestEmailDomain, $user, 'truc');
+                } catch (Swift_SwiftException $exception) {
+                    $logger->error('An error occurred while sending guest invitation. Message: ' . $exception->getMessage(), [
+                        'class'    => __CLASS__,
+                        'function' => __FUNCTION__,
+                        'file'     => $exception->getFile(),
+                        'line'     => $exception->getLine(),
+                    ]);
+                }
+                $this->addFlash('sendSuccess', $translator->trans('invite-guest.send-success-message'));
+
+                return $this->redirectToRoute('invite_guest');
+            }
+            // invalid email
+            $this->addFlash('sendError', $translator->trans('invite-guest.send-error-message'));
+        }
+
+        return $this->render('project/invite_guest.html.twig', [
+            'form' => $form->createView(),
+        ]);
+    }
+
+    /**
+     * @Route("/projet/inviter-interlocuteur", name="invite_guest")
+     *
+     * @param Request             $request
+     * @param UserInterface|null  $user
+     * @param MailerManager       $mailerManager
+     * @param LoggerInterface     $logger
+     * @param TranslatorInterface $translator
      * @param ClientsRepository   $clientsRepository
      *
      * @throws ORMException
