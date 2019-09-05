@@ -102,4 +102,18 @@ class CompaniesRepository extends ServiceEntityRepository
 
         return $queryBuilder->getQuery()->getResult();
     }
+
+    /**
+     * @return array
+     */
+    public function findEmailDomains()
+    {
+        $result = $this->createQueryBuilder('c')
+            ->select('c.emailDomain')
+            ->getQuery()
+            ->getScalarResult()
+        ;
+
+        return array_column($result, 'emailDomain');
+    }
 }

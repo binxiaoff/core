@@ -54,22 +54,6 @@ class Companies
     /**
      * @var string
      *
-     * @ORM\Column(name="forme", type="string", length=191, nullable=true)
-     *
-     * @Assert\NotBlank
-     */
-    private $forme;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="legal_form_code", type="string", length=10, nullable=true)
-     */
-    private $legalFormCode;
-
-    /**
-     * @var string
-     *
      * @ORM\Column(name="siren", type="string", length=15, nullable=true)
      *
      * @Assert\NotBlank
@@ -83,13 +67,6 @@ class Companies
      * @ORM\Column(name="siret", type="string", length=14, nullable=true)
      */
     private $siret;
-
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="date_creation", type="date", nullable=true)
-     */
-    private $dateCreation;
 
     /**
      * @var int
@@ -123,6 +100,11 @@ class Companies
      * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectParticipant", mappedBy="company", cascade={"persist"}, orphanRemoval=true)
      */
     private $projectParticipants;
+
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $emailDomain;
 
     /**
      * Companies constructor.
@@ -211,30 +193,6 @@ class Companies
     }
 
     /**
-     * Set forme.
-     *
-     * @param string $forme
-     *
-     * @return Companies
-     */
-    public function setForme($forme): Companies
-    {
-        $this->forme = $forme;
-
-        return $this;
-    }
-
-    /**
-     * Get forme.
-     *
-     * @return string
-     */
-    public function getForme(): string
-    {
-        return $this->forme;
-    }
-
-    /**
      * Set siren.
      *
      * @param string $siren
@@ -314,22 +272,6 @@ class Companies
     public function getParent(): Companies
     {
         return $this->parent;
-    }
-
-    /**
-     * @return string|null
-     */
-    public function getLegalFormCode(): ?string
-    {
-        return $this->legalFormCode;
-    }
-
-    /**
-     * @param string $legalFormCode
-     */
-    public function setLegalFormCode($legalFormCode = null): void
-    {
-        $this->legalFormCode = $legalFormCode;
     }
 
     /**
@@ -430,5 +372,25 @@ class Companies
         }
 
         return false;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getEmailDomain(): ?string
+    {
+        return $this->emailDomain;
+    }
+
+    /**
+     * @param string|null $emailDomain
+     *
+     * @return Companies
+     */
+    public function setEmailDomain(?string $emailDomain): Companies
+    {
+        $this->emailDomain = $emailDomain;
+
+        return $this;
     }
 }

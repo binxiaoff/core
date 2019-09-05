@@ -5,12 +5,26 @@ declare(strict_types=1);
 namespace Unilend\Service;
 
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\OptimisticLockException;
+use Doctrine\ORM\ORMException;
 use NumberFormatter;
 use Swift_Mailer;
 use Swift_RfcComplianceException;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
-use Unilend\Entity\{AttachmentSignature, Bids, Clients, Loans, Project, ProjectComment, Tranche};
+use Unilend\Entity\{AttachmentSignature,
+    Bids,
+    Clients,
+    ClientsStatusHistory,
+    Loans,
+    Project,
+    ProjectComment,
+    Staff,
+    TemporaryLinksLogin,
+    Tranche};
+use Unilend\Repository\ClientsStatusRepository;
+use Unilend\Repository\CompaniesRepository;
+use Unilend\Repository\TemporaryLinksLoginRepository;
 use Unilend\SwiftMailer\TemplateMessageProvider;
 
 class MailerManager
@@ -29,6 +43,12 @@ class MailerManager
     private $percentageFormatter;
     /** @var NumberFormatter */
     private $numberFormatter;
+    /** @var TemporaryLinksLoginRepository */
+    private $temporaryLinksLoginRepository;
+    /** @var ClientsStatusRepository */
+    private $clientsStatusRepository;
+    /** @var CompaniesRepository */
+    private $companiesRepository;
 
     /**
      * @param TemplateMessageProvider $messageProvider
@@ -38,6 +58,14 @@ class MailerManager
      * @param NumberFormatter         $numberFormatter
      * @param NumberFormatter         $percentageFormatter
      * @param TranslatorInterface     $translator
+     * @param TemplateMessageProvider       $messageProvider
+     * @param Swift_Mailer                  $mailer
+     * @param EntityManagerInterface        $entityManager
+     * @param RouterInterface               $router
+     * @param TranslatorInterface           $translator
+     * @param TemporaryLinksLoginRepository $temporaryLinksLoginRepository
+     * @param ClientsStatusRepository       $clientsStatusRepository
+     * @param CompaniesRepository           $companiesRepository
      */
     public function __construct(
         TemplateMessageProvider $messageProvider,
@@ -47,6 +75,10 @@ class MailerManager
         NumberFormatter $numberFormatter,
         NumberFormatter $percentageFormatter,
         TranslatorInterface $translator
+        TranslatorInterface $translator,
+        TemporaryLinksLoginRepository $temporaryLinksLoginRepository,
+        ClientsStatusRepository $clientsStatusRepository,
+        CompaniesRepository $companiesRepository
     ) {
         $this->messageProvider     = $messageProvider;
         $this->mailer              = $mailer;
@@ -55,6 +87,68 @@ class MailerManager
         $this->translator          = $translator;
         $this->percentageFormatter = $percentageFormatter;
         $this->numberFormatter     = $numberFormatter;
+        $this->messageProvider               = $messageProvider;
+        $this->mailer                        = $mailer;
+        $this->entityManager                 = $entityManager;
+        $this->router                        = $router;
+        $this->translator                    = $translator;
+        $this->temporaryLinksLoginRepository = $temporaryLinksLoginRepository;
+        $this->clientsStatusRepository       = $clientsStatusRepository;
+        $this->companiesRepository           = $companiesRepository;
+    }
+
+    /**
+     * @param string  $email
+     * @param string  $emailDomain
+     * @param Clients $inviter
+     * @param string  $projectName
+     *
+     * @throws ORMException
+     * @throws OptimisticLockException
+     *
+     * @return int
+     */
+    public function sendInvitation(
+        string $email,
+        string $emailDomain,
+        Clients $inviter,
+        string $projectName
+    ) {
+        $sent = 0;
+
+        $inviterName = $inviter->getLastName() . ' ' . $inviter->getFirstName();
+
+        $guest               = new Clients();
+        $statusClient        = $this->clientsStatusRepository->findOneBy(['id' => 60]);
+        $statusClientHistory = (new ClientsStatusHistory())->setIdClient($guest)->setIdStatus($statusClient);
+        $this->entityManager->persist($statusClientHistory);
+
+        $company = $this->companiesRepository->findOneBy(['emailDomain' => $emailDomain]);
+
+        $staff = (new Staff())->setCompany($company)->setClient($guest);
+        $this->entityManager->persist($staff);
+
+        $guest
+            ->setEmail($email)
+            ->setIdClientStatusHistory($statusClientHistory)
+        ;
+        $this->entityManager->getRepository(Clients::class)->save($guest);
+        $this->entityManager->flush();
+
+        $token = $this->temporaryLinksLoginRepository->generateTemporaryLink($guest, TemporaryLinksLogin::PASSWORD_TOKEN_LIFETIME_SHORT);
+
+        $keywords = [
+            'inviterName'    => $inviterName,
+            'projectName'    => $projectName,
+            'initAccountUrl' => $this->router->generate('account_init', ['securityToken' => $token], RouterInterface::ABSOLUTE_URL),
+        ];
+
+        $message = $this->messageProvider->newMessage('invite-guest', $keywords);
+        $message->setTo($email);
+
+        $sent += $this->mailer->send($message);
+
+        return $sent;
     }
 
     /**
