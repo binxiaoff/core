@@ -5,15 +5,15 @@ declare(strict_types=1);
 namespace Unilend\Controller\Attachment;
 
 use Doctrine\ORM\{ORMException, OptimisticLockException};
+use League\Flysystem\FileNotFoundException;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\{IsGranted, ParamConverter};
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\Filesystem\Exception\FileNotFoundException;
-use Symfony\Component\Filesystem\Filesystem;
-use Symfony\Component\HttpFoundation\{BinaryFileResponse, Response};
+use Symfony\Component\HttpFoundation\{BinaryFileResponse, Response, ResponseHeaderBag, StreamedResponse};
 use Symfony\Component\Routing\Annotation\Route;
 use Unilend\Entity\{Attachment, Project};
 use Unilend\Repository\ProjectAttachmentRepository;
 use Unilend\Service\Attachment\AttachmentManager;
+use URLify;
 use ZipArchive;
 
 class DownloadController extends AbstractController
@@ -27,26 +27,26 @@ class DownloadController extends AbstractController
      *
      * @param Attachment        $attachment
      * @param AttachmentManager $attachmentManager
-     * @param Filesystem        $filesystem
      *
      * @throws ORMException
      * @throws OptimisticLockException
+     * @throws FileNotFoundException
      *
-     * @return BinaryFileResponse
+     * @return StreamedResponse
      */
-    public function download(Attachment $attachment, AttachmentManager $attachmentManager, Filesystem $filesystem)
+    public function download(Attachment $attachment, AttachmentManager $attachmentManager): StreamedResponse
     {
-        $path = $attachmentManager->getFullPath($attachment);
+        $response = new StreamedResponse(static function () use ($attachment, $attachmentManager) {
+            stream_copy_to_stream($attachmentManager->readStream($attachment), fopen('php://output', 'wb'));
+        });
 
-        if (false === $filesystem->exists($path)) {
-            throw new FileNotFoundException(null, 0, null, $path);
-        }
-
-        $fileName = $attachment->getOriginalName() ?? basename($attachment->getPath());
+        $contentDisposition = $response->headers->makeDisposition(ResponseHeaderBag::DISPOSITION_ATTACHMENT, URLify::downcode($attachment->getOriginalName()));
+        $response->headers->set('Content-Disposition', $contentDisposition);
+        $response->headers->set('Content-Type', $attachmentManager->getMimeType($attachment) ?: 'application/octet-stream');
 
         $attachmentManager->logDownload($attachment);
 
-        return $this->file($path, $fileName);
+        return $response;
     }
 
     /**
@@ -58,6 +58,8 @@ class DownloadController extends AbstractController
      * @param ProjectAttachmentRepository $projectAttachmentRepository
      * @param AttachmentManager           $attachmentManager
      * @param string                      $temporaryDirectory
+     *
+     * @throws FileNotFoundException
      *
      * @return Response
      */
@@ -75,7 +77,7 @@ class DownloadController extends AbstractController
 
             foreach ($projectAttachments as $projectAttachment) {
                 $attachment = $projectAttachment->getAttachment();
-                $zip->addFile($attachmentManager->getFullPath($attachment), $attachment->getOriginalName());
+                $zip->addFromString($attachment->getOriginalName(), $attachmentManager->read($attachment));
             }
 
             $zip->close();

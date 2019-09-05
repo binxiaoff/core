@@ -1,0 +1,19 @@
+# Read the documentation: https://github.com/1up-lab/OneupFlysystemBundle/tree/master/Resources/doc/index.md
+oneup_flysystem:
+    adapters:
+        protected:
+            local:
+                directory: '%directory.protected%'
+        shared_public:
+            local:
+                directory: '%directory.shared%public/'
+        temporary:
+            local:
+                directory: '%directory.shared%public/'
+    filesystems:
+        protected:
+            adapter: protected
+            alias: League\Flysystem\ProtectedFilesystem
+        shared_public:
+            adapter: shared_public
+            alias: League\Flysystem\SharedPublicFilesystem

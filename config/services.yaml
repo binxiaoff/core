@@ -8,7 +8,7 @@ parameters:
     directory.shared: /data/medias/nfs/
     directory.temporary: '%directory.shared%tmp/'
     directory.protected: '%directory.shared%protected/'
-    directory.public_var: '%directory.public%var/'
+    directory.shared_public: '%directory.public%shared/'
 
 services:
     _defaults:
@@ -29,7 +29,9 @@ services:
             $publicDirectory: '%directory.public%'
             $documentRootDirectory: '%directory.protected%/generated_document/'
             $projectDirectory: '%kernel.project_dir%'
-            $userUploadDirectory: '%directory.public%var/upload/'
+            $userUploadDirectory: '%directory.shared_public%/upload/'
+            $protectedFilesystem: '@League\Flysystem\ProtectedFilesystem'
+            $sharedPublicFilesystem: '@League\Flysystem\SharedPublicFilesystem'
 
     # makes classes in src/ available to be used as services
     # this creates a service per class whose id is the fully-qualified class name
@@ -47,9 +49,6 @@ services:
 
     Unilend\Service\WebServiceClient\InseeManager:
         $client: '@eight_points_guzzle.client.insee'
-
-    Unilend\Service\Attachment\AttachmentManager:
-        $uploadRootDirectory: '%directory.protected%attachments'
 
     Unilend\Service\GoogleRecaptchaManager:
         $client: '@eight_points_guzzle.client.google_recaptcha'

@@ -4,48 +4,53 @@ declare(strict_types=1);
 
 namespace Unilend\Service;
 
+use League\Flysystem\FileExistsException;
+use League\Flysystem\FilesystemInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use URLify;
 
 class FileUploadManager
 {
     /**
-     * @param UploadedFile $file
-     * @param string       $uploadRootFolder
-     * @param string|null  $subdirectory
+     * @param UploadedFile        $file
+     * @param FilesystemInterface $filesystem
+     * @param string              $uploadRootDirectory
+     * @param string|null         $subdirectory
+     *
+     * @throws FileExistsException
      *
      * @return string
      */
-    public function uploadFile(UploadedFile $file, string $uploadRootFolder, string $subdirectory = null): string
+    public function uploadFile(UploadedFile $file, FilesystemInterface $filesystem, string $uploadRootDirectory, string $subdirectory = null): string
     {
-        $hash         = hash('sha256', $subdirectory ?? uniqid());
+        $hash         = hash('sha256', $subdirectory ?? uniqid('', true));
         $subdirectory = $hash[0] . DIRECTORY_SEPARATOR . $hash[1] . ($subdirectory ? DIRECTORY_SEPARATOR . $subdirectory : '');
 
-        $uploadRootFolder = $this->normalizePath($uploadRootFolder);
-        $uploadFolder     = $uploadRootFolder . DIRECTORY_SEPARATOR . $subdirectory;
+        $uploadRootDirectory = $this->normalizePath($uploadRootDirectory);
+        $uploadDirectory     = $uploadRootDirectory . DIRECTORY_SEPARATOR . $subdirectory;
 
-        $filename = $this->generateFileName($file, $uploadFolder);
+        $filename = $this->generateFileName($file, $filesystem, $uploadDirectory);
+        $filePath = $uploadDirectory . DIRECTORY_SEPARATOR . $filename;
 
-        $file->move($uploadFolder, $filename);
+        $filesystem->write($filePath, file_get_contents($file->getPathname()));
 
-        return $subdirectory . DIRECTORY_SEPARATOR . $filename;
+        return $filePath;
     }
 
     /**
-     * @param UploadedFile $uploadedFile
-     * @param string       $uploadAbsolutePath
+     * @param UploadedFile        $uploadedFile
+     * @param FilesystemInterface $filesystem
+     * @param string              $uploadDirectory
      *
      * @return string
      */
-    private function generateFileName(UploadedFile $uploadedFile, string $uploadAbsolutePath): string
+    private function generateFileName(UploadedFile $uploadedFile, FilesystemInterface $filesystem, string $uploadDirectory): string
     {
         $originalFilename      = URLify::filter(pathinfo($uploadedFile->getClientOriginalName(), PATHINFO_FILENAME));
-        $fileName              = $originalFilename . '-' . md5(uniqid());
-        $fileExtension         = $uploadedFile->guessExtension() ?? $uploadedFile->getClientOriginalExtension();
-        $fileNameWithExtension = $fileName . '.' . $fileExtension;
+        $fileNameWithExtension = $originalFilename . '-' . uniqid('', true) . '.' . $uploadedFile->guessExtension() ?? $uploadedFile->getClientOriginalExtension();
 
-        if (file_exists($uploadAbsolutePath . DIRECTORY_SEPARATOR . $fileNameWithExtension)) {
-            $fileNameWithExtension = $this->generateFileName($uploadedFile, $uploadAbsolutePath);
+        if ($filesystem->has($uploadDirectory . DIRECTORY_SEPARATOR . $fileNameWithExtension)) {
+            $fileNameWithExtension = $this->generateFileName($uploadedFile, $filesystem, $uploadDirectory);
         }
 
         return $fileNameWithExtension;
@@ -58,8 +63,6 @@ class FileUploadManager
      */
     private function normalizePath(string $path): string
     {
-        $path = realpath($path);
-
         return DIRECTORY_SEPARATOR === mb_substr($path, -1) ? mb_substr($path, 0, -1) : $path;
     }
 }
