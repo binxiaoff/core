@@ -9,6 +9,9 @@
                     <header class="panel-header">
                         <h2 class="margin-5-t">{% trans %} project-request.title {% endtrans %}</h2>
                     </header>
+                    <div>
+                        {{ form_errors(form) }}
+                    </div>
                         <div class="row row-multi-col-computer">
                             <div class="col-lg-4 col-md-4">
                                 {{ form_row(form.title, {'attr': {

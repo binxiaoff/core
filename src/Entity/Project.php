@@ -243,6 +243,8 @@ class Project
      * @var Tranche[]|ArrayCollection
      *
      * @ORM\OneToMany(targetEntity="Unilend\Entity\Tranche", mappedBy="project", cascade={"persist"}, orphanRemoval=true)
+     *
+     * @Assert\Count(min="1", minMessage="project.tranche.count")
      */
     private $tranches;
 
@@ -1015,7 +1017,7 @@ class Project
      */
     public function removeTranche(Tranche $tranche): Project
     {
-        $this->projectParticipants->removeElement($tranche);
+        $this->tranches->removeElement($tranche);
 
         return $this;
     }
