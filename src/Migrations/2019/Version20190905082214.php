@@ -15,7 +15,7 @@ final class Version20190905082214 extends AbstractMigration
 {
     public function getDescription(): string
     {
-        return '';
+        return 'TECH-85';
     }
 
     /**
