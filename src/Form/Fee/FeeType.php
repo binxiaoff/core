@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Unilend\Form\Fee;
 
 use Symfony\Component\Form\AbstractType;
-use Symfony\Component\Form\Extension\Core\Type\{CheckboxType, ChoiceType, NumberType};
+use Symfony\Component\Form\Extension\Core\Type\{CheckboxType, ChoiceType, NumberType, PercentType};
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Unilend\Entity\Embeddable\Fee;
@@ -28,9 +28,10 @@ class FeeType extends AbstractType
                 'choice_translation_domain' => true,
                 'placeholder'               => '',
             ])
-            ->add('rate', NumberType::class, [
-                'label' => 'fee-form.rate',
-                'scale' => Fee::RATE_SCALE,
+            ->add('rate', PercentType::class, [
+                'label'  => 'fee-form.rate',
+                'scale'  => Fee::RATE_SCALE,
+                'symbol' => false,
             ])
             ->add('isRecurring', CheckboxType::class, [
                 'label'    => 'fee-form.recurring',

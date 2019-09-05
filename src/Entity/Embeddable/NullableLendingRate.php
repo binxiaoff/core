@@ -27,9 +27,9 @@ class NullableLendingRate extends LendingRate
      *
      * @var string
      *
-     * @ORM\Column(type="decimal", precision=4, scale=2, nullable=true)
+     * @ORM\Column(type="decimal", precision=5, scale=4, nullable=true)
      *
-     * @Assert\Range(min="0", max="99.99")
+     * @Assert\Range(min="0", max="1")
      */
     protected $margin;
 

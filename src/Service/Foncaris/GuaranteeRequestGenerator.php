@@ -31,14 +31,14 @@ class GuaranteeRequestGenerator extends AbstractDocumentGenerator
     /** @var TranslatorInterface */
     private $translator;
     /** @var NumberFormatter */
-    private $numberFormatter;
+    private $percentageFormatter;
 
     /**
      * @param string                        $documentRootDirectory
      * @param FoncarisFundingTypeRepository $foncarisFundingTypeRepository
      * @param FoncarisSecurityRepository    $foncarisSecurityRepository
      * @param NumberFormatter               $currencyFormatterNoDecimal
-     * @param NumberFormatter               $numberFormatter
+     * @param NumberFormatter               $percentageFormatter
      * @param TranslatorInterface           $translator
      * @param ManagerRegistry               $managerRegistry
      */
@@ -47,7 +47,7 @@ class GuaranteeRequestGenerator extends AbstractDocumentGenerator
         FoncarisFundingTypeRepository $foncarisFundingTypeRepository,
         FoncarisSecurityRepository $foncarisSecurityRepository,
         NumberFormatter $currencyFormatterNoDecimal,
-        NumberFormatter $numberFormatter,
+        NumberFormatter $percentageFormatter,
         TranslatorInterface $translator,
         ManagerRegistry $managerRegistry
     ) {
@@ -57,7 +57,7 @@ class GuaranteeRequestGenerator extends AbstractDocumentGenerator
         $this->foncarisSecurityRepository    = $foncarisSecurityRepository;
         $this->currencyFormatterNoDecimal    = $currencyFormatterNoDecimal;
         $this->translator                    = $translator;
-        $this->numberFormatter               = $numberFormatter;
+        $this->percentageFormatter           = $percentageFormatter;
     }
 
     /**
@@ -68,6 +68,9 @@ class GuaranteeRequestGenerator extends AbstractDocumentGenerator
      */
     public function generateDocument(FileStorageInterface $foncarisRequest): void
     {
+        $percentageFormatter = new NumberFormatter('fr_FR', NumberFormatter::PERCENT);
+        $percentageFormatter->setAttribute(NumberFormatter::MIN_FRACTION_DIGITS, 2);
+
         if (FoncarisRequest::FONCARIS_GUARANTEE_NEED !== $foncarisRequest->getChoice()) {
             return;
         }
@@ -140,7 +143,7 @@ class GuaranteeRequestGenerator extends AbstractDocumentGenerator
                 $amortizable = 'O';
                 $margin      = '';
                 if ($tranche->getRate()->getMargin()) {
-                    $margin = $this->numberFormatter->format($tranche->getRate()->getMargin()) . '%';
+                    $margin = $this->percentageFormatter->format($tranche->getRate()->getMargin());
                 }
             }
 

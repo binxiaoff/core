@@ -25,12 +25,18 @@ class MailerManager
     private $router;
     /** @var TranslatorInterface */
     private $translator;
+    /** @var NumberFormatter */
+    private $percentageFormatter;
+    /** @var NumberFormatter */
+    private $numberFormatter;
 
     /**
      * @param TemplateMessageProvider $messageProvider
      * @param Swift_Mailer            $mailer
      * @param EntityManagerInterface  $entityManager
      * @param RouterInterface         $router
+     * @param NumberFormatter         $numberFormatter
+     * @param NumberFormatter         $percentageFormatter
      * @param TranslatorInterface     $translator
      */
     public function __construct(
@@ -38,13 +44,17 @@ class MailerManager
         Swift_Mailer $mailer,
         EntityManagerInterface $entityManager,
         RouterInterface $router,
+        NumberFormatter $numberFormatter,
+        NumberFormatter $percentageFormatter,
         TranslatorInterface $translator
     ) {
-        $this->messageProvider = $messageProvider;
-        $this->mailer          = $mailer;
-        $this->entityManager   = $entityManager;
-        $this->router          = $router;
-        $this->translator      = $translator;
+        $this->messageProvider     = $messageProvider;
+        $this->mailer              = $mailer;
+        $this->entityManager       = $entityManager;
+        $this->router              = $router;
+        $this->translator          = $translator;
+        $this->percentageFormatter = $percentageFormatter;
+        $this->numberFormatter     = $numberFormatter;
     }
 
     /**
@@ -142,23 +152,20 @@ class MailerManager
      * @param Bids      $bid
      * @param Clients[] $recipients
      *
-     * @throws Swift_RfcComplianceException
-     *
      * @return int
      */
     public function sendBidSubmitted(Bids $bid, array $recipients): int
     {
-        $sent      = 0;
-        $formatter = new NumberFormatter('fr_FR', NumberFormatter::DEFAULT_STYLE);
-        $project   = $bid->getTranche()->getProject();
-        $keywords  = [
+        $sent     = 0;
+        $project  = $bid->getTranche()->getProject();
+        $keywords = [
             'firstName'     => '',
             'projectUrl'    => $this->router->generate('edit_project_details', ['hash' => $project->getHash()], RouterInterface::ABSOLUTE_URL),
             'projectName'   => $project->getBorrowerCompany()->getName() . ' / ' . $project->getTitle(),
             'bidderName'    => $bid->getLender()->getName(),
-            'bidAmount'     => $formatter->format($bid->getMoney()->getAmount()),
+            'bidAmount'     => $this->numberFormatter->format($bid->getMoney()->getAmount()),
             'bidRateIndex'  => $bid->getRate()->getIndexType(),
-            'bidMarginRate' => $formatter->format($bid->getRate()->getMargin()),
+            'bidMarginRate' => $this->percentageFormatter->format($bid->getRate()->getMargin()),
         ];
 
         foreach ($recipients as $recipient) {
