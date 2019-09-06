@@ -5,10 +5,13 @@ declare(strict_types=1);
 namespace DoctrineMigrations;
 
 use Doctrine\DBAL\Schema\Schema;
-use Doctrine\Migrations\AbstractMigration;
+use Unilend\Migrations\ContainerAwareMigration;
+use Unilend\Migrations\Traits\FlushTranslationCacheTrait;
 
-final class Version20190904121701 extends AbstractMigration
+final class Version20190904121701 extends ContainerAwareMigration
 {
+    use FlushTranslationCacheTrait;
+
     public function getDescription(): string
     {
         return 'CALS-289 Add email domain name for each company';
@@ -60,8 +63,8 @@ final class Version20190904121701 extends AbstractMigration
         $this->addSql('UPDATE companies SET email_domain = "ca-tourainepoitou.fr" WHERE id_company = 41');
         $this->addSql('UPDATE companies SET email_domain = "ca-valdefrance.fr" WHERE id_company = 42');
         $this->addSql('UPDATE companies SET email_domain = "lcl.fr" WHERE id_company = 43');
-        $this->addSql('INSERT INTO mail_templates (id_mail_template, type, locale, part, recipient_type, sender_name, sender_email, subject, content, compiled_content, id_header, id_footer, status, added) VALUES (19, \'invite-guest\', \'fr_FR\', \'content\', \'external\', \'Crédit Agricole Lending Services\', \'contact@ca-lendingservices.com\', \'Vous avez été invité à rejoindre un projet\', \'<p>Bonjour,<p>
-<p>Vous avez été invité par [EMV DYN]inviterName[EMV /DYN] à rejoindre le projet "[EMV DYN]projectName[EMV /DYN]"</p>
+        $this->addSql('INSERT INTO mail_templates (id_mail_template, type, locale, part, recipient_type, sender_name, sender_email, subject, content, compiled_content, id_header, id_footer, status, added) VALUES (19, \'invite-guest\', \'fr_FR\', \'content\', \'external\', \'Crédit Agricole Lending Services\', \'contact@ca-lendingservices.com\', \'Vous avez été invité à rejoindre Crédit Agricole Lending Services\', \'<p>Bonjour,<p>
+<p>Vous avez été invité par [EMV DYN]inviterName[EMV /DYN] à rejoindre la plateforme Crédit Agricole Lending Services.</p><p>Cliquez sur le bouton ci-dessous pour vous inscrire</p>
 <table border="0" cellpadding="0" cellspacing="0" width="100%">
     <tr>
         <td class="cta" align="center">
@@ -484,11 +487,19 @@ final class Version20190904121701 extends AbstractMigration
 </table>
 </body>
 </html>\', 1, 2, 1, NOW())');
+        $this->addSql('INSERT INTO translations(locale, section, name, translation, added) VALUES
+            ("fr_FR", "invite-guest", "send-success-message", "Votre invitation a bien été envoyée.", NOW()),
+            ("fr_FR", "invite-guest", "send-error-message", "L\'email entré ne fait pas parti de nos partenaires.", NOW()),
+            ("fr_FR", "invite-guest", "email-already-sent", "Une invitation a déjà été envoyée à cet email.", NOW()),
+            ("fr_FR", "invite-guest", "form-submit-button", "Envoyer l\'invitation", NOW())
+            ("fr_FR", "invite-guest", "invite-button", "Envoyer une invitation", NOW())
+');
     }
 
     public function down(Schema $schema): void
     {
         $this->addSql('ALTER TABLE companies ADD forme VARCHAR(191) DEFAULT NULL AFTER name, ADD legal_form_code VARCHAR(10) DEFAULT NULL AFTER forme, ADD date_creation DATE DEFAULT NULL AFTER siret, DROP email_domain;');
         $this->addSql('DELETE FROM mail_templates WHERE type = "invite-guest"');
+        $this->addSql('DELETE FROM translations WHERE section = "invite-guest"');
     }
 }

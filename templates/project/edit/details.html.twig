@@ -461,7 +461,7 @@
                         </div>
                         {% if project.isEditable %}
                             <div class="row margin-20-t text-align-right">
-                                <a href="{{ path('invite_guest') }}" class="btn-primary btn-shape-xs" data-spinnerbutton>Inviter un interlocuteur</a>
+                                <a href="{{ path('invite_guest') }}" class="btn-primary btn-shape-xs" data-spinnerbutton>{% trans %} invite-guest.invite-button {% endtrans %}</a>
                                 <button type="submit" class="btn-primary btn-shape-xs" data-spinnerbutton>Modifier la visibilité</button>
                             </div>
                         {% endif %}

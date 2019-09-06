@@ -101,7 +101,6 @@ class MailerManager
      * @param string  $email
      * @param string  $emailDomain
      * @param Clients $inviter
-     * @param string  $projectName
      *
      * @throws ORMException
      * @throws OptimisticLockException
@@ -111,8 +110,7 @@ class MailerManager
     public function sendInvitation(
         string $email,
         string $emailDomain,
-        Clients $inviter,
-        string $projectName
+        Clients $inviter
     ) {
         $sent = 0;
 
@@ -139,7 +137,6 @@ class MailerManager
 
         $keywords = [
             'inviterName'    => $inviterName,
-            'projectName'    => $projectName,
             'initAccountUrl' => $this->router->generate('account_init', ['securityToken' => $token], RouterInterface::ABSOLUTE_URL),
         ];
 
