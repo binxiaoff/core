@@ -29,9 +29,9 @@ services:
             $publicDirectory: '%directory.public%'
             $documentRootDirectory: '%directory.protected%/generated_document/'
             $projectDirectory: '%kernel.project_dir%'
-            $userUploadDirectory: '%directory.shared_public%/upload/'
-            $protectedFilesystem: '@League\Flysystem\ProtectedFilesystem'
-            $sharedPublicFilesystem: '@League\Flysystem\SharedPublicFilesystem'
+            $userAttachmentFilesystem: '@League\Flysystem\UserAttachmentFilesystem'
+            $userUploadFilesystem: '@League\Flysystem\UserUploadFilesystem'
+            $generatedDocumentFilesystem: '@League\Flysystem\GeneratedDocumentFilesystem'
 
     # makes classes in src/ available to be used as services
     # this creates a service per class whose id is the fully-qualified class name

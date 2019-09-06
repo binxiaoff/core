@@ -13,7 +13,7 @@ use Symfony\Component\Security\Core\User\UserInterface;
 use Unilend\Entity\{Attachment, Clients, Project, ProjectStatusHistory};
 use Unilend\Form\Project\ProjectType;
 use Unilend\Repository\ProjectRepository;
-use Unilend\Service\{Attachment\AttachmentManager, ProjectImageManager, User\RealUserFinder};
+use Unilend\Service\{Attachment\AttachmentManager, Project\ProjectImageManager, User\RealUserFinder};
 
 class CreateController extends AbstractController
 {

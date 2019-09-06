@@ -19,8 +19,6 @@ use Unilend\Service\User\RealUserFinder;
 
 class AttachmentManager
 {
-    private const UPLOAD_ROOT_DIRECTORY = 'attachments';
-
     /** @var EntityManagerInterface */
     private $entityManager;
     /** @var RealUserFinder */
@@ -28,24 +26,24 @@ class AttachmentManager
     /** @var FileUploadManager */
     private $fileUploadManager;
     /** @var FilesystemInterface */
-    private $protectedFilesystem;
+    private $userAttachmentFilesystem;
 
     /**
      * @param EntityManagerInterface $entityManager
-     * @param FilesystemInterface    $protectedFilesystem
+     * @param FilesystemInterface    $userAttachmentFilesystem
      * @param FileUploadManager      $fileUploadManager
      * @param RealUserFinder         $realUserFinder
      */
     public function __construct(
         EntityManagerInterface $entityManager,
-        FilesystemInterface $protectedFilesystem,
+        FilesystemInterface $userAttachmentFilesystem,
         FileUploadManager $fileUploadManager,
         RealUserFinder $realUserFinder
     ) {
-        $this->entityManager       = $entityManager;
-        $this->protectedFilesystem = $protectedFilesystem;
-        $this->realUserFinder      = $realUserFinder;
-        $this->fileUploadManager   = $fileUploadManager;
+        $this->entityManager            = $entityManager;
+        $this->userAttachmentFilesystem = $userAttachmentFilesystem;
+        $this->realUserFinder           = $realUserFinder;
+        $this->fileUploadManager        = $fileUploadManager;
     }
 
     /**
@@ -73,7 +71,7 @@ class AttachmentManager
         ?string $description = null
     ): Attachment {
         $relativeUploadedPath = $this->fileUploadManager
-            ->uploadFile($uploadedFile, $this->protectedFilesystem, self::UPLOAD_ROOT_DIRECTORY, $this->getClientDirectory($clientOwner ?? $uploader))
+            ->uploadFile($uploadedFile, $this->userAttachmentFilesystem, '/', $this->getClientDirectory($clientOwner ?? $uploader))
         ;
 
         if ($archivePreviousAttachments && ($attachmentType || $attachment)) {
@@ -163,7 +161,7 @@ class AttachmentManager
      */
     public function read(Attachment $attachment)
     {
-        return $this->protectedFilesystem->read($attachment->getPath());
+        return $this->userAttachmentFilesystem->read($attachment->getPath());
     }
 
     /**
@@ -175,7 +173,7 @@ class AttachmentManager
      */
     public function readStream(Attachment $attachment)
     {
-        return $this->protectedFilesystem->readStream($attachment->getPath());
+        return $this->userAttachmentFilesystem->readStream($attachment->getPath());
     }
 
     /**
@@ -187,7 +185,7 @@ class AttachmentManager
      */
     public function getMimeType(Attachment $attachment)
     {
-        return $this->protectedFilesystem->getMimeType($attachment->getPath());
+        return $this->userAttachmentFilesystem->getMimeType($attachment->getPath());
     }
 
     /**

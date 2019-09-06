@@ -7,7 +7,7 @@ namespace Unilend\Service\ServiceTerms;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Exception;
 use Knp\Snappy\Pdf;
-use Symfony\Component\Asset\Packages;
+use League\Flysystem\FilesystemInterface;
 use Twig\Environment;
 use Unilend\Entity\{AcceptationsLegalDocs, Interfaces\FileStorageInterface};
 use Unilend\Service\Document\AbstractDocumentGenerator;
@@ -17,39 +17,37 @@ class ServiceTermsGenerator extends AbstractDocumentGenerator
     private const PATH        = 'service_terms';
     private const FILE_PREFIX = 'conditions-service';
 
+    /** @var FilesystemInterface */
+    protected $generatedDocumentFilesystem;
     /** @var Environment */
     private $twig;
     /** @var Pdf */
     private $snappy;
     /** @var string */
-    private $staticUrl;
-    /** @var string */
     private $publicDirectory;
 
     /**
-     * @param string          $documentRootDirectory
-     * @param string          $publicDirectory
-     * @param Environment     $twig
-     * @param Pdf             $snappy
-     * @param Packages        $assetsPackages
-     * @param ManagerRegistry $managerRegistry
+     * @param FilesystemInterface $generatedDocumentFilesystem
+     * @param string              $publicDirectory
+     * @param Environment         $twig
+     * @param Pdf                 $snappy
+     * @param ManagerRegistry     $managerRegistry
      */
     public function __construct(
-        string $documentRootDirectory,
+        FilesystemInterface $generatedDocumentFilesystem,
         string $publicDirectory,
         Environment $twig,
         Pdf $snappy,
-        Packages $assetsPackages,
         ManagerRegistry $managerRegistry
     ) {
-        $this->publicDirectory = $publicDirectory;
-        $this->twig            = $twig;
-        $this->snappy          = $snappy;
-        $this->staticUrl       = $assetsPackages->getUrl('');
+        $this->generatedDocumentFilesystem = $generatedDocumentFilesystem;
+        $this->publicDirectory             = $publicDirectory;
+        $this->twig                        = $twig;
+        $this->snappy                      = $snappy;
 
         $this->snappy->setBinary('/usr/local/bin/wkhtmltopdf');
 
-        parent::__construct($documentRootDirectory, $managerRegistry);
+        parent::__construct($managerRegistry);
     }
 
     /**
@@ -59,10 +57,16 @@ class ServiceTermsGenerator extends AbstractDocumentGenerator
      */
     protected function generateDocument(FileStorageInterface $acceptedLegalDoc): void
     {
+        if ($this->generatedDocumentFilesystem->has($this->getFilePath($acceptedLegalDoc))) {
+            return;
+        }
+
         $content = $this->twig->render('/service_terms/pdf/service_terms.html.twig', ['content' => $acceptedLegalDoc->getLegalDoc()->getContent()]);
 
         $this->snappy->setOption('user-style-sheet', $this->publicDirectory . 'styles/pdf/style.css');
-        $this->snappy->generateFromHtml($content, $this->getFilePath($acceptedLegalDoc), [], true);
+        $pdfContent = $this->snappy->getOutputFromHtml($content);
+
+        $this->generatedDocumentFilesystem->write($this->getFilePath($acceptedLegalDoc), $pdfContent);
     }
 
     /**

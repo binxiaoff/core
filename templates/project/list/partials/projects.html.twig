@@ -71,7 +71,7 @@
                                         data-row-url="{{ path('edit_project_details', {'hash': project.hash}) }}">
                                         <td>
                                             {% if project.image %}
-                                                <img src="{{ asset(project.image, 'project') }}" alt="{% trans with { '%projectName%': project.title } %} project-list.image-alt {% endtrans %}">
+                                                <img src="{{ asset(project.image, 'user_upload') }}" alt="{% trans with { '%projectName%': project.title } %} project-list.image-alt {% endtrans %}">
                                             {% endif %}
                                         </td>
                                         <td class="table-projects-item-partner">

@@ -2,42 +2,42 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Service;
+namespace Unilend\Service\Project;
 
+use League\Flysystem\{FileExistsException, FileNotFoundException, FilesystemInterface};
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Unilend\Entity\Project;
+use Unilend\Service\FileUploadManager;
 
 class ProjectImageManager
 {
-    public const PROJECT_IMAGE_DIRECTORY = 'images/projects/';
+    public const PROJECT_IMAGE_DIRECTORY = 'image/project/';
 
-    /**
-     * @var string
-     */
-    private $userUploadDirectory;
-
-    /**
-     * @var FileUploadManager
-     */
+    /** @var FileUploadManager */
     private $uploadManager;
+    /** @var FilesystemInterface */
+    private $userUploadFilesystem;
 
     /**
      * ProjectImageManager constructor.
      *
-     * @param string            $userUploadDirectory
-     * @param FileUploadManager $uploadManager
+     * @param FileUploadManager   $uploadManager
+     * @param FilesystemInterface $userUploadFilesystem
      */
     public function __construct(
-        string $userUploadDirectory,
-        FileUploadManager $uploadManager
+        FileUploadManager $uploadManager,
+        FilesystemInterface $userUploadFilesystem
     ) {
-        $this->userUploadDirectory = $userUploadDirectory;
-        $this->uploadManager       = $uploadManager;
+        $this->uploadManager        = $uploadManager;
+        $this->userUploadFilesystem = $userUploadFilesystem;
     }
 
     /**
      * @param Project           $project
      * @param UploadedFile|null $file
+     *
+     * @throws FileExistsException
+     * @throws FileNotFoundException
      */
     public function setImage(Project $project, ?UploadedFile $file): void
     {
@@ -55,17 +55,19 @@ class ProjectImageManager
     /**
      * @param UploadedFile $file
      *
+     * @throws FileExistsException
+     *
      * @return string
      */
     private function uploadImage(UploadedFile $file): string
     {
-        $relativeFilePath = $this->uploadManager->uploadFile($file, $this->getProjectImageRootDirectory());
-
-        return self::PROJECT_IMAGE_DIRECTORY . $relativeFilePath;
+        return $this->uploadManager->uploadFile($file, $this->userUploadFilesystem, self::PROJECT_IMAGE_DIRECTORY);
     }
 
     /**
      * @param Project $project
+     *
+     * @throws FileNotFoundException
      */
     private function removeImage(Project $project): void
     {
@@ -73,18 +75,8 @@ class ProjectImageManager
             return;
         }
 
-        $filepath = $this->userUploadDirectory . $project->getImage();
-
-        if (file_exists($filepath)) {
-            unlink($filepath);
+        if ($this->userUploadFilesystem->has($project->getImage())) {
+            $this->userUploadFilesystem->delete($project->getImage());
         }
-    }
-
-    /**
-     * @return string
-     */
-    private function getProjectImageRootDirectory(): string
-    {
-        return $this->userUploadDirectory . self::PROJECT_IMAGE_DIRECTORY;
     }
 }
