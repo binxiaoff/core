@@ -19,7 +19,7 @@ use Symfony\Component\Security\Guard\Authenticator\AbstractFormLoginAuthenticato
 use Symfony\Component\Security\Http\Session\SessionAuthenticationStrategyInterface;
 use Symfony\Component\Security\Http\Util\TargetPathTrait;
 use Unilend\Entity\{Clients, LoginLog, Settings};
-use Unilend\Service\{GoogleRecaptchaManager, User\LoginHistoryLogger};
+use Unilend\Service\{GoogleRecaptchaManager, ServiceTerms\ServiceTermsManager, User\LoginHistoryLogger};
 
 class LoginAuthenticator extends AbstractFormLoginAuthenticator
 {
@@ -47,6 +47,10 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
     private $frontUrl;
     /** @var string */
     private $adminUrl;
+    /**
+     * @var ServiceTermsManager
+     */
+    private $serviceTermsManager;
 
     /**
      * @param UserPasswordEncoderInterface           $securityPasswordEncoder
@@ -57,6 +61,7 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
      * @param GoogleRecaptchaManager                 $googleRecaptchaManager
      * @param LoggerInterface                        $logger
      * @param LoginHistoryLogger                     $loginHistoryLogger
+     * @param ServiceTermsManager                    $serviceTermsManager
      * @param string                                 $frontUrl
      * @param string                                 $adminUrl
      */
@@ -69,6 +74,7 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
         GoogleRecaptchaManager $googleRecaptchaManager,
         LoggerInterface $logger,
         LoginHistoryLogger $loginHistoryLogger,
+        ServiceTermsManager $serviceTermsManager,
         string $frontUrl,
         string $adminUrl
     ) {
@@ -82,6 +88,7 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
         $this->loginHistoryLogger      = $loginHistoryLogger;
         $this->frontUrl                = $frontUrl;
         $this->adminUrl                = $adminUrl;
+        $this->serviceTermsManager     = $serviceTermsManager;
     }
 
     /**
@@ -151,7 +158,8 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
      */
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, $providerKey)
     {
-        $request->getSession()->remove(self::SESSION_NAME_LOGIN_CAPTCHA);
+        $session = $request->getSession();
+        $session->remove(self::SESSION_NAME_LOGIN_CAPTCHA);
 
         /** @var Clients $client */
         $client = $token->getUser();
@@ -159,11 +167,7 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
         $this->loginHistoryLogger->saveSuccessfulLogin($client, $request->getClientIp(), $request->headers->get('User-Agent'));
         $this->sessionStrategy->onAuthentication($request, $token);
 
-        $targetPath = $this->getTargetPath($request->getSession(), $providerKey);
-
-        if (!$targetPath) {
-            $targetPath = $this->getDefaultSuccessRedirectUrl($request);
-        }
+        $targetPath = $this->getTargetPath($session, $providerKey) ?? $this->getDefaultSuccessRedirectUrl($request);
 
         return new RedirectResponse($targetPath);
     }
