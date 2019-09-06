@@ -11,6 +11,7 @@ use League\Flysystem\FilesystemInterface;
 use Twig\Environment;
 use Unilend\Entity\{AcceptationsLegalDocs, Interfaces\FileStorageInterface};
 use Unilend\Service\Document\AbstractDocumentGenerator;
+use Unilend\Service\FileSystem\FileSystemHelper;
 
 class ServiceTermsGenerator extends AbstractDocumentGenerator
 {
@@ -25,25 +26,35 @@ class ServiceTermsGenerator extends AbstractDocumentGenerator
     private $snappy;
     /** @var string */
     private $publicDirectory;
+    /** @var string */
+    private $temporaryDirectory;
+    /** @var FileSystemHelper */
+    private $fileSystemHelper;
 
     /**
      * @param FilesystemInterface $generatedDocumentFilesystem
+     * @param FileSystemHelper    $fileSystemHelper
      * @param string              $publicDirectory
+     * @param string              $temporaryDirectory
      * @param Environment         $twig
      * @param Pdf                 $snappy
      * @param ManagerRegistry     $managerRegistry
      */
     public function __construct(
         FilesystemInterface $generatedDocumentFilesystem,
+        FileSystemHelper $fileSystemHelper,
         string $publicDirectory,
+        string $temporaryDirectory,
         Environment $twig,
         Pdf $snappy,
         ManagerRegistry $managerRegistry
     ) {
         $this->generatedDocumentFilesystem = $generatedDocumentFilesystem;
+        $this->fileSystemHelper            = $fileSystemHelper;
         $this->publicDirectory             = $publicDirectory;
         $this->twig                        = $twig;
         $this->snappy                      = $snappy;
+        $this->temporaryDirectory          = $temporaryDirectory;
 
         $this->snappy->setBinary('/usr/local/bin/wkhtmltopdf');
 
@@ -61,12 +72,12 @@ class ServiceTermsGenerator extends AbstractDocumentGenerator
             return;
         }
 
-        $content = $this->twig->render('/service_terms/pdf/service_terms.html.twig', ['content' => $acceptedLegalDoc->getLegalDoc()->getContent()]);
-
+        $content           = $this->twig->render('/service_terms/pdf/service_terms.html.twig', ['content' => $acceptedLegalDoc->getLegalDoc()->getContent()]);
+        $temporaryFilePath = $this->temporaryDirectory . uniqid('', true) . '.' . $this->snappy->getDefaultExtension();
         $this->snappy->setOption('user-style-sheet', $this->publicDirectory . 'styles/pdf/style.css');
-        $pdfContent = $this->snappy->getOutputFromHtml($content);
+        $this->snappy->generateFromHtml($content, $temporaryFilePath);
 
-        $this->generatedDocumentFilesystem->write($this->getFilePath($acceptedLegalDoc), $pdfContent);
+        $this->fileSystemHelper->writeStreamToFileSystem($temporaryFilePath, $this->getFilePath($acceptedLegalDoc), $this->generatedDocumentFilesystem);
     }
 
     /**

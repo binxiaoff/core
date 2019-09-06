@@ -14,7 +14,7 @@ use League\Flysystem\FileNotFoundException;
 use League\Flysystem\FilesystemInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Unilend\Entity\{Attachment, AttachmentType, Clients, Companies, ProjectAttachment};
-use Unilend\Service\FileUploadManager;
+use Unilend\Service\FileSystem\FileUploadManager;
 use Unilend\Service\User\RealUserFinder;
 
 class AttachmentManager

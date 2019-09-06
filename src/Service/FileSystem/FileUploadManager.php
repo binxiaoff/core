@@ -2,15 +2,25 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Service;
+namespace Unilend\Service\FileSystem;
 
-use League\Flysystem\FileExistsException;
-use League\Flysystem\FilesystemInterface;
+use League\Flysystem\{FileExistsException, FilesystemInterface};
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use URLify;
 
 class FileUploadManager
 {
+    /** @var FileSystemHelper */
+    private $fileSystemHelper;
+
+    /**
+     * @param FileSystemHelper $fileSystemHelper
+     */
+    public function __construct(FileSystemHelper $fileSystemHelper)
+    {
+        $this->fileSystemHelper = $fileSystemHelper;
+    }
+
     /**
      * @param UploadedFile        $file
      * @param FilesystemInterface $filesystem
@@ -21,7 +31,7 @@ class FileUploadManager
      *
      * @return string
      */
-    public function uploadFile(UploadedFile $file, FilesystemInterface $filesystem, string $uploadRootDirectory, string $subdirectory = null): string
+    public function uploadFile(UploadedFile $file, FilesystemInterface $filesystem, string $uploadRootDirectory, ?string $subdirectory): string
     {
         $hash         = hash('sha256', $subdirectory ?? uniqid('', true));
         $subdirectory = $hash[0] . DIRECTORY_SEPARATOR . $hash[1] . ($subdirectory ? DIRECTORY_SEPARATOR . $subdirectory : '');
@@ -32,7 +42,7 @@ class FileUploadManager
         $filename = $this->generateFileName($file, $filesystem, $uploadDirectory);
         $filePath = $uploadDirectory . DIRECTORY_SEPARATOR . $filename;
 
-        $filesystem->write($filePath, file_get_contents($file->getPathname()));
+        $this->fileSystemHelper->writeStreamToFileSystem($file->getPathname(), $filePath, $filesystem);
 
         return $filePath;
     }

@@ -37,7 +37,7 @@ class DownloadController extends AbstractController
     public function download(Attachment $attachment, AttachmentManager $attachmentManager): StreamedResponse
     {
         $response = new StreamedResponse(static function () use ($attachment, $attachmentManager) {
-            stream_copy_to_stream($attachmentManager->readStream($attachment), fopen('php://output', 'r+b'));
+            stream_copy_to_stream($attachmentManager->readStream($attachment), fopen('php://output', 'w+b'));
         });
 
         $contentDisposition = $response->headers->makeDisposition(ResponseHeaderBag::DISPOSITION_ATTACHMENT, URLify::downcode($attachment->getOriginalName()));

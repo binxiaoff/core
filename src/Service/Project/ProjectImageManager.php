@@ -7,7 +7,7 @@ namespace Unilend\Service\Project;
 use League\Flysystem\{FileExistsException, FileNotFoundException, FilesystemInterface};
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Unilend\Entity\Project;
-use Unilend\Service\FileUploadManager;
+use Unilend\Service\FileSystem\FileUploadManager;
 
 class ProjectImageManager
 {
@@ -47,21 +47,22 @@ class ProjectImageManager
         }
 
         if ($file) {
-            $relativeFilePath = $this->uploadImage($file);
+            $relativeFilePath = $this->uploadImage($project, $file);
             $project->setImage($relativeFilePath);
         }
     }
 
     /**
+     * @param Project      $project
      * @param UploadedFile $file
      *
      * @throws FileExistsException
      *
      * @return string
      */
-    private function uploadImage(UploadedFile $file): string
+    private function uploadImage(Project $project, UploadedFile $file): string
     {
-        return $this->uploadManager->uploadFile($file, $this->userUploadFilesystem, self::PROJECT_IMAGE_DIRECTORY);
+        return $this->uploadManager->uploadFile($file, $this->userUploadFilesystem, self::PROJECT_IMAGE_DIRECTORY, $project->getId() ? (string) $project->getId() : null);
     }
 
     /**
