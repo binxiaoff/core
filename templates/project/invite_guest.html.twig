@@ -15,7 +15,7 @@
         </div>
     {% endif %}
     <div class="panel">
-        <form action="{{ path('invite_guest') }}" method="post">
+        <form action="{{ path('invite_guest', { 'hash' : app.request.attributes.get('hash') }) }}" method="post">
             {{ form_start(form) }}
             <div class="row">
                 {{ form_widget(form.email_guest) }}

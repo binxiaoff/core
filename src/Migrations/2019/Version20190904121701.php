@@ -63,8 +63,8 @@ final class Version20190904121701 extends ContainerAwareMigration
         $this->addSql('UPDATE companies SET email_domain = "ca-tourainepoitou.fr" WHERE id_company = 41');
         $this->addSql('UPDATE companies SET email_domain = "ca-valdefrance.fr" WHERE id_company = 42');
         $this->addSql('UPDATE companies SET email_domain = "lcl.fr" WHERE id_company = 43');
-        $this->addSql('INSERT INTO mail_templates (id_mail_template, type, locale, part, recipient_type, sender_name, sender_email, subject, content, compiled_content, id_header, id_footer, status, added) VALUES (19, \'invite-guest\', \'fr_FR\', \'content\', \'external\', \'Crédit Agricole Lending Services\', \'contact@ca-lendingservices.com\', \'Vous avez été invité à rejoindre Crédit Agricole Lending Services\', \'<p>Bonjour,<p>
-<p>Vous avez été invité par [EMV DYN]inviterName[EMV /DYN] à rejoindre la plateforme Crédit Agricole Lending Services.</p><p>Cliquez sur le bouton ci-dessous pour vous inscrire</p>
+        $this->addSql('INSERT INTO mail_templates (id_mail_template, type, locale, part, recipient_type, sender_name, sender_email, subject, content, compiled_content, id_header, id_footer, status, added) VALUES (19, \'invite-guest\', \'fr_FR\', \'content\', \'external\', \'Crédit Agricole Lending Services\', \'contact@ca-lendingservices.com\', \'Vous avez été invité(e) à rejoindre Crédit Agricole Lending Services\', \'<p>Bonjour,<p>
+<p>Vous avez été invité(e) par [EMV DYN]inviterName[EMV /DYN] à rejoindre la plateforme Crédit Agricole Lending Services.</p><p>Cliquez sur le bouton ci-dessous pour vous inscrire</p>
 <table border="0" cellpadding="0" cellspacing="0" width="100%">
     <tr>
         <td class="cta" align="center">
@@ -459,7 +459,7 @@ final class Version20190904121701 extends ContainerAwareMigration
 <p style="margin-top: 18px; margin-bottom: 18px; padding: 0; -ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%; color: #302a32; font-size: 16px; line-height: 27px; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;">Bonjour,</p>
 <p style="margin-top: 18px; margin-bottom: 18px; padding: 0; -ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%; color: #302a32; font-size: 16px; line-height: 27px; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;">
 </p>
-<p style="margin-top: 18px; margin-bottom: 18px; padding: 0; -ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%; color: #302a32; font-size: 16px; line-height: 27px; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;">Vous avez été invité par [EMV DYN]inviterName[EMV /DYN] à rejoindre le projet "[EMV DYN]projectName[EMV /DYN]"</p>
+<p style="margin-top: 18px; margin-bottom: 18px; padding: 0; -ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%; color: #302a32; font-size: 16px; line-height: 27px; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;">Vous avez été invité(e) par [EMV DYN]inviterName[EMV /DYN] à rejoindre la plateforme Crédit Agricole Lending Services.</p><p>Cliquez sur le bouton ci-dessous pour vous inscrire</p></p>
 <table border="0" cellpadding="0" cellspacing="0" width="100%" style="border-collapse: collapse; mso-table-lspace: 0; mso-table-rspace: 0;">
     <tr>
         <td class="cta" align="center" style="-ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%; text-align: center; padding-top: 18px; padding-bottom: 18px;">

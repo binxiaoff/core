@@ -19,6 +19,7 @@ use Unilend\Entity\{AttachmentSignature,
     Loans,
     Project,
     ProjectComment,
+    ProjectParticipant,
     Staff,
     TemporaryLinksLogin,
     Tranche};
@@ -49,6 +50,8 @@ class MailerManager
     private $clientsStatusRepository;
     /** @var CompaniesRepository */
     private $companiesRepository;
+    /** @var ProjectParticipant */
+    private $projectParticipant;
 
     /**
      * @param TemplateMessageProvider $messageProvider
@@ -273,6 +276,7 @@ class MailerManager
      * @param string  $email
      * @param string  $emailDomain
      * @param Clients $inviter
+     * @param Project $project
      *
      * @throws ORMException
      * @throws OptimisticLockException
@@ -282,7 +286,8 @@ class MailerManager
     public function sendInvitation(
         string $email,
         string $emailDomain,
-        Clients $inviter
+        Clients $inviter,
+        Project $project
     ) {
         $sent = 0;
 
@@ -293,7 +298,9 @@ class MailerManager
         $statusClientHistory = (new ClientsStatusHistory())->setIdClient($guest)->setIdStatus($statusClient);
         $this->entityManager->persist($statusClientHistory);
 
-        $company = $this->companiesRepository->findOneBy(['emailDomain' => $emailDomain]);
+        $company            = $this->companiesRepository->findOneBy(['emailDomain' => $emailDomain]);
+        $projectParticipant = (new ProjectParticipant())->setProject($project)->setCompany($company);
+        $this->entityManager->persist($projectParticipant);
 
         $staff = (new Staff())->setCompany($company)->setClient($guest);
         $this->entityManager->persist($staff);
@@ -302,6 +309,7 @@ class MailerManager
             ->setEmail($email)
             ->setIdClientStatusHistory($statusClientHistory)
         ;
+
         $this->entityManager->getRepository(Clients::class)->save($guest);
         $this->entityManager->flush();
 
