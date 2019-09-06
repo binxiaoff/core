@@ -277,6 +277,7 @@ class EditController extends AbstractController
      * @param MailerManager       $mailerManager
      * @param LoggerInterface     $logger
      * @param TranslatorInterface $translator
+     * @param ClientsRepository   $clientsRepository
      *
      * @throws ORMException
      * @throws OptimisticLockException
@@ -288,7 +289,8 @@ class EditController extends AbstractController
         ?UserInterface $user,
         MailerManager $mailerManager,
         LoggerInterface $logger,
-        TranslatorInterface $translator
+        TranslatorInterface $translator,
+        ClientsRepository $clientsRepository
     ) {
         $form = $this->createFormBuilder()->add('email_guest', EmailType::class)->getForm();
         $form->handleRequest($request);
@@ -299,6 +301,12 @@ class EditController extends AbstractController
             $guestEmailDomain      = explode('@', $guestEmail)[1];
             $companiesEmailDomains = $this->getDoctrine()->getRepository(Companies::class)->findEmailDomains();
 
+            if ($clientsRepository->findOneBy(['email' => $guestEmail])) {
+                $this->addFlash('sendError', $translator->trans('invite-guest.email-already-sent'));
+
+                return $this->redirectToRoute('invite_guest');
+            }
+
             foreach ($companiesEmailDomains as $companyEmailDomain) {
                 if ($companyEmailDomain === $guestEmailDomain) {
                     $isEmailValid = true;
@@ -307,7 +315,7 @@ class EditController extends AbstractController
 
             if ($isEmailValid) {
                 try {
-                    $mailerManager->sendInvitation($guestEmail, $guestEmailDomain, $user, 'truc');
+                    $mailerManager->sendInvitation($guestEmail, $guestEmailDomain, $user);
                 } catch (Swift_SwiftException $exception) {
                     $logger->error('An error occurred while sending guest invitation. Message: ' . $exception->getMessage(), [
                         'class'    => __CLASS__,
