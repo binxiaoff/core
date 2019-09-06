@@ -68,9 +68,6 @@ class GuaranteeRequestGenerator extends AbstractDocumentGenerator
      */
     public function generateDocument(FileStorageInterface $foncarisRequest): void
     {
-        $percentageFormatter = new NumberFormatter('fr_FR', NumberFormatter::PERCENT);
-        $percentageFormatter->setAttribute(NumberFormatter::MIN_FRACTION_DIGITS, 2);
-
         if (FoncarisRequest::FONCARIS_GUARANTEE_NEED !== $foncarisRequest->getChoice()) {
             return;
         }

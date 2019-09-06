@@ -30,31 +30,31 @@ final class Version20190905082214 extends AbstractMigration
 
         $this->addSql('ALTER TABLE bids CHANGE rate_margin rate_margin NUMERIC(7, 4) NOT NULL, CHANGE rate_floor rate_floor NUMERIC(7, 4) DEFAULT NULL');
         $this->addSql('UPDATE bids SET rate_margin = CAST(rate_margin / 100.00 as DECIMAL(5,4)), rate_floor = CAST(rate_floor / 100.00 as DECIMAL(5,4))');
-        $this->addSql('ALTER TABLE bids CHANGE rate_margin rate_margin NUMERIC(5, 4) NOT NULL, CHANGE rate_floor rate_floor NUMERIC(5, 4) DEFAULT NULL');
+        $this->addSql('ALTER TABLE bids CHANGE rate_margin rate_margin NUMERIC(4, 4) NOT NULL, CHANGE rate_floor rate_floor NUMERIC(4, 4) DEFAULT NULL');
 
         $this->addSql('ALTER TABLE loan_fee CHANGE fee_rate fee_rate NUMERIC(7, 4) NOT NULL');
         $this->addSql('UPDATE loan_fee SET fee_rate = CAST(fee_rate / 100.00 as DECIMAL(5,4))');
-        $this->addSql('ALTER TABLE loan_fee CHANGE fee_rate fee_rate NUMERIC(5, 4) NOT NULL');
+        $this->addSql('ALTER TABLE loan_fee CHANGE fee_rate fee_rate NUMERIC(4, 4) NOT NULL');
 
         $this->addSql('ALTER TABLE loans CHANGE rate_margin rate_margin NUMERIC(7, 4) NOT NULL, CHANGE rate_floor rate_floor NUMERIC(7, 4) DEFAULT NULL');
         $this->addSql('UPDATE loans SET rate_margin = CAST(rate_margin / 100.00 as DECIMAL(5,4)), rate_floor = CAST(rate_floor / 100.00 as DECIMAL(5,4))');
-        $this->addSql('ALTER TABLE loans CHANGE rate_margin rate_margin NUMERIC(5, 4) NOT NULL, CHANGE rate_floor rate_floor NUMERIC(5, 4) DEFAULT NULL');
+        $this->addSql('ALTER TABLE loans CHANGE rate_margin rate_margin NUMERIC(4, 4) NOT NULL, CHANGE rate_floor rate_floor NUMERIC(4, 4) DEFAULT NULL');
 
         $this->addSql('ALTER TABLE bid_fee CHANGE fee_rate fee_rate NUMERIC(7, 4) NOT NULL');
         $this->addSql('UPDATE bid_fee SET fee_rate = CAST(fee_rate / 100.00 as DECIMAL(5,4))');
-        $this->addSql('ALTER TABLE bid_fee CHANGE fee_rate fee_rate NUMERIC(5, 4) NOT NULL');
+        $this->addSql('ALTER TABLE bid_fee CHANGE fee_rate fee_rate NUMERIC(4, 4) NOT NULL');
 
         $this->addSql('ALTER TABLE project_fee CHANGE fee_rate fee_rate NUMERIC(7, 4) NOT NULL');
         $this->addSql('UPDATE project_fee SET fee_rate = CAST(fee_rate / 100.00 as DECIMAL(5,4))');
-        $this->addSql('ALTER TABLE project_fee CHANGE fee_rate fee_rate NUMERIC(5, 4) NOT NULL');
+        $this->addSql('ALTER TABLE project_fee CHANGE fee_rate fee_rate NUMERIC(4, 4) NOT NULL');
 
         $this->addSql('ALTER TABLE tranche CHANGE rate_margin rate_margin NUMERIC(7, 4) DEFAULT NULL, CHANGE rate_floor rate_floor NUMERIC(7, 4) DEFAULT NULL');
         $this->addSql('UPDATE tranche SET rate_margin = CAST(rate_margin / 100.00 as DECIMAL(5,4)), rate_floor = CAST(rate_floor / 100.00 as DECIMAL(5,4))');
-        $this->addSql('ALTER TABLE tranche CHANGE rate_margin rate_margin NUMERIC(5, 4) DEFAULT NULL, CHANGE rate_floor rate_floor NUMERIC(5, 4) DEFAULT NULL');
+        $this->addSql('ALTER TABLE tranche CHANGE rate_margin rate_margin NUMERIC(4, 4) DEFAULT NULL, CHANGE rate_floor rate_floor NUMERIC(4, 4) DEFAULT NULL');
 
         $this->addSql('ALTER TABLE tranche_fee CHANGE fee_rate fee_rate NUMERIC(7, 4) NOT NULL');
         $this->addSql('UPDATE tranche_fee SET  fee_rate = CAST(fee_rate / 100.00 as DECIMAL(5,4))');
-        $this->addSql('ALTER TABLE tranche_fee CHANGE fee_rate fee_rate NUMERIC(5, 4) NOT NULL');
+        $this->addSql('ALTER TABLE tranche_fee CHANGE fee_rate fee_rate NUMERIC(4, 4) NOT NULL');
     }
 
     /**

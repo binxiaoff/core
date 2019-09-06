@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Unilend\Form\Fee;
 
 use Symfony\Component\Form\AbstractType;
-use Symfony\Component\Form\Extension\Core\Type\{CheckboxType, ChoiceType, NumberType, PercentType};
+use Symfony\Component\Form\Extension\Core\Type\{CheckboxType, ChoiceType, PercentType};
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Unilend\Entity\Embeddable\Fee;
