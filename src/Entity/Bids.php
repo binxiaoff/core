@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Unilend\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
@@ -119,7 +121,7 @@ class Bids
      */
     public function getOneTimeFeeTotalRate(): float
     {
-        $totalFeeRate = 0.00;
+        $totalFeeRate = 0.0000;
 
         foreach ($this->getBidFees() as $bidFee) {
             if (false === $bidFee->getFee()->isRecurring()) {
@@ -135,7 +137,7 @@ class Bids
      */
     public function getRecurringFeeTotalRate(): float
     {
-        $totalFeeRate = 0.00;
+        $totalFeeRate = 0.0000;
 
         foreach ($this->getBidFees() as $bidFee) {
             if ($bidFee->getFee()->isRecurring()) {

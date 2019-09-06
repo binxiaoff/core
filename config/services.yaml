@@ -23,6 +23,7 @@ services:
             $adminUrl: '%router.request_context.scheme%://%env(HOST_ADMIN_URL)%'
             $numberFormatter: '@number_formatter'
             $currencyFormatter: '@currency_formatter'
+            $percentageFormatter: '@percentage_formatter'
             $currencyFormatterNoDecimal: '@currency_formatter_no_decimal'
             $environment: '%kernel.environment%'
             $publicDirectory: '%directory.public%'
@@ -100,6 +101,18 @@ services:
             - '%locale%'
             - !php/const \IntlDateFormatter::MEDIUM
             - !php/const \IntlDateFormatter::SHORT
+
+    percentage_formatter:
+        public: true
+        class: NumberFormatter
+        arguments:
+            - '%locale%'
+            - !php/const \NumberFormatter::PERCENT
+        calls:
+            - method: setAttribute
+              arguments:
+                  - !php/const \NumberFormatter::FRACTION_DIGITS
+                  - 2
 
     UserAgentParser\Provider\WhichBrowser:
         class: UserAgentParser\Provider\WhichBrowser
