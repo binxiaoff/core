@@ -14,70 +14,56 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class ClientsStatus
 {
-    public const STATUS_CREATION              = 5;
-    public const STATUS_TO_BE_CHECKED         = 10;
-    public const STATUS_COMPLETENESS          = 20;
-    public const STATUS_COMPLETENESS_REMINDER = 30;
-    public const STATUS_COMPLETENESS_REPLY    = 40;
-    public const STATUS_MODIFICATION          = 50;
-    public const STATUS_VALIDATED             = 60;
-    public const STATUS_SUSPENDED             = 65;
-    public const STATUS_DISABLED              = 70;
-    public const STATUS_CLOSED_LENDER_REQUEST = 80;
-    public const STATUS_CLOSED_BY_UNILEND     = 90;
-    public const STATUS_CLOSED_DEFINITELY     = 100;
+    public const STATUS_CREATED   = 10;
+    public const STATUS_VALIDATED = 20;
+    public const STATUS_BLOCKED   = 30;
+    public const STATUS_CLOSED    = 100;
 
     public const GRANTED_LOGIN = [
-        self::STATUS_CREATION,
-        self::STATUS_TO_BE_CHECKED,
-        self::STATUS_COMPLETENESS,
-        self::STATUS_COMPLETENESS_REMINDER,
-        self::STATUS_COMPLETENESS_REPLY,
-        self::STATUS_MODIFICATION,
+        self::STATUS_CREATED,
         self::STATUS_VALIDATED,
-        self::STATUS_SUSPENDED,
     ];
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="label", type="string", length=191, unique=true)
-     */
-    private $label;
 
     /**
      * @var int
      *
      * @ORM\Column(name="id", type="integer")
      * @ORM\Id
-     * @ORM\GeneratedValue(strategy="IDENTITY")
+     * @ORM\GeneratedValue(strategy="NONE")
      */
     private $id;
 
     /**
-     * @param string $label
+     * @var string
      *
-     * @return ClientsStatus
+     * @ORM\Column(type="string", length=191, unique=true, nullable=false)
      */
-    public function setLabel($label)
-    {
-        $this->label = $label;
+    private $code;
 
-        return $this;
+    /**
+     * ClientsStatus constructor.
+     *
+     * @param int    $id
+     * @param string $label
+     */
+    public function __construct(int $id, string $label)
+    {
+        $this->id   = $id;
+        $this->code = $label;
     }
 
     /**
      * @return string
      */
-    public function getLabel()
+    public function getCode(): string
     {
-        return $this->label;
+        return $this->code;
     }
 
     /**
      * @return int
      */
-    public function getId()
+    public function getId(): int
     {
         return $this->id;
     }

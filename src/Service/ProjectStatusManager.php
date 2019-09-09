@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Unilend\Service;
 
 use Doctrine\ORM\{EntityManagerInterface, ORMException, OptimisticLockException};
@@ -40,12 +42,12 @@ class ProjectStatusManager
         ProjectRepository $projectRepository,
         RealUserFinder $realUserFinder
     ) {
-        $this->entityManager          = $entityManager;
-        $this->translator             = $translator;
-        $this->logger                 = $logger;
-        $this->slackManager           = $slackManager;
-        $this->projectRepository      = $projectRepository;
-        $this->realUserFinder         = $realUserFinder;
+        $this->entityManager     = $entityManager;
+        $this->translator        = $translator;
+        $this->logger            = $logger;
+        $this->slackManager      = $slackManager;
+        $this->projectRepository = $projectRepository;
+        $this->realUserFinder    = $realUserFinder;
     }
 
     /**

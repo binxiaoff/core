@@ -5,16 +5,34 @@ declare(strict_types=1);
 namespace Unilend\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Unilend\Entity\Traits\TimestampableAddedOnlyTrait;
 
 /**
  * ClientsStatusHistory.
  *
- * @ORM\Table(name="clients_status_history", indexes={@ORM\Index(name="id_client", columns={"id_client"}), @ORM\Index(name="idx_clients_status_history_id_status", columns={"id_status"})})
+ * @ORM\Table(
+ *     name="clients_status_history",
+ *     indexes={
+ *         @ORM\Index(name="id_client", columns={"id_client"}),
+ *         @ORM\Index(name="idx_clients_status_history_id_status", columns={"id_status"})
+ *     }
+ * )
  * @ORM\Entity(repositoryClass="Unilend\Repository\ClientsStatusHistoryRepository")
  * @ORM\HasLifecycleCallbacks
  */
 class ClientsStatusHistory
 {
+    use TimestampableAddedOnlyTrait;
+
+    /**
+     * @var int
+     *
+     * @ORM\Column(name="id", type="integer")
+     * @ORM\Id
+     * @ORM\GeneratedValue(strategy="IDENTITY")
+     */
+    private $id;
+
     /**
      * @var Clients
      *
@@ -41,22 +59,6 @@ class ClientsStatusHistory
      * @ORM\Column(name="content", type="text", length=16777215, nullable=true)
      */
     private $content;
-
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="added", type="datetime")
-     */
-    private $added;
-
-    /**
-     * @var int
-     *
-     * @ORM\Column(name="id", type="integer")
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="IDENTITY")
-     */
-    private $id;
 
     /**
      * Set idClient.
@@ -131,30 +133,6 @@ class ClientsStatusHistory
     }
 
     /**
-     * Set added.
-     *
-     * @param \DateTime $added
-     *
-     * @return ClientsStatusHistory
-     */
-    public function setAdded(\DateTime $added): ClientsStatusHistory
-    {
-        $this->added = $added;
-
-        return $this;
-    }
-
-    /**
-     * Get added.
-     *
-     * @return \DateTime
-     */
-    public function getAdded(): \DateTime
-    {
-        return $this->added;
-    }
-
-    /**
      * Get id.
      *
      * @return int
@@ -162,15 +140,5 @@ class ClientsStatusHistory
     public function getId(): int
     {
         return $this->id;
-    }
-
-    /**
-     * @ORM\PrePersist
-     */
-    public function setAddedValue(): void
-    {
-        if (!$this->added instanceof \DateTime || 1 > $this->added->getTimestamp()) {
-            $this->added = new \DateTime();
-        }
     }
 }

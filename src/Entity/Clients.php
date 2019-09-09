@@ -521,7 +521,7 @@ class Clients implements UserInterface, EquatableInterface
             try {
                 $this->hash = $this->generateHash();
             } catch (UnsatisfiedDependencyException $exception) {
-                $this->hash = md5(uniqid());
+                $this->hash = md5(uniqid('', false));
             }
         }
     }
@@ -594,14 +594,6 @@ class Clients implements UserInterface, EquatableInterface
     }
 
     /**
-     * @return bool
-     */
-    public function isSuspended(): bool
-    {
-        return $this->isInStatus([ClientsStatus::STATUS_SUSPENDED]);
-    }
-
-    /**
      * {@inheritdoc}
      */
     public function isEqualTo(UserInterface $user): bool
@@ -670,8 +662,8 @@ class Clients implements UserInterface, EquatableInterface
         $tabName = explode('-', $name);
         $newName = '';
         $i       = 0;
-        foreach ($tabName as $name) {
-            $newName .= (0 === $i ? '' : '-') . ucwords($name);
+        foreach ($tabName as $token) {
+            $newName .= (0 === $i ? '' : '-') . ucwords($token);
             ++$i;
         }
 
