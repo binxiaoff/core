@@ -7,7 +7,7 @@ oneup_flysystem:
         generated_document_adapter:
             local:
                 directory: '%directory.protected%generated_document'
-        user_upload_adapter:
+        public_user_upload_adapter:
             local:
                 directory: '%directory.shared_public%upload'
     filesystems:
@@ -17,6 +17,6 @@ oneup_flysystem:
         generated_document:
             adapter: generated_document_adapter
             alias: League\Flysystem\GeneratedDocumentFilesystem
-        user_upload:
-            adapter: user_upload_adapter
-            alias: League\Flysystem\UserUploadFilesystem
+        public_user_upload:
+            adapter: public_user_upload_adapter
+            alias: League\Flysystem\PublicUserUploadFilesystem

@@ -30,7 +30,7 @@ services:
             $documentRootDirectory: '%directory.protected%/generated_document/'
             $projectDirectory: '%kernel.project_dir%'
             $userAttachmentFilesystem: '@League\Flysystem\UserAttachmentFilesystem'
-            $userUploadFilesystem: '@League\Flysystem\UserUploadFilesystem'
+            $publicUserUploadFilesystem: '@League\Flysystem\PublicUserUploadFilesystem'
             $generatedDocumentFilesystem: '@League\Flysystem\GeneratedDocumentFilesystem'
 
     # makes classes in src/ available to be used as services

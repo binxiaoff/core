@@ -16,20 +16,20 @@ class ProjectImageManager
     /** @var FileUploadManager */
     private $uploadManager;
     /** @var FilesystemInterface */
-    private $userUploadFilesystem;
+    private $publicUserUploadFilesystem;
 
     /**
      * ProjectImageManager constructor.
      *
      * @param FileUploadManager   $uploadManager
-     * @param FilesystemInterface $userUploadFilesystem
+     * @param FilesystemInterface $publicUserUploadFilesystem
      */
     public function __construct(
         FileUploadManager $uploadManager,
-        FilesystemInterface $userUploadFilesystem
+        FilesystemInterface $publicUserUploadFilesystem
     ) {
-        $this->uploadManager        = $uploadManager;
-        $this->userUploadFilesystem = $userUploadFilesystem;
+        $this->uploadManager              = $uploadManager;
+        $this->publicUserUploadFilesystem = $publicUserUploadFilesystem;
     }
 
     /**
@@ -62,7 +62,7 @@ class ProjectImageManager
      */
     private function uploadImage(Project $project, UploadedFile $file): string
     {
-        return $this->uploadManager->uploadFile($file, $this->userUploadFilesystem, self::PROJECT_IMAGE_DIRECTORY, $project->getId() ? (string) $project->getId() : null);
+        return $this->uploadManager->uploadFile($file, $this->publicUserUploadFilesystem, self::PROJECT_IMAGE_DIRECTORY, $project->getId() ? (string) $project->getId() : null);
     }
 
     /**
@@ -76,8 +76,8 @@ class ProjectImageManager
             return;
         }
 
-        if ($this->userUploadFilesystem->has($project->getImage())) {
-            $this->userUploadFilesystem->delete($project->getImage());
+        if ($this->publicUserUploadFilesystem->has($project->getImage())) {
+            $this->publicUserUploadFilesystem->delete($project->getImage());
         }
     }
 }
