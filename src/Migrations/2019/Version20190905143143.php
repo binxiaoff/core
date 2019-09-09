@@ -5,13 +5,16 @@ declare(strict_types=1);
 namespace DoctrineMigrations;
 
 use Doctrine\DBAL\Schema\Schema;
-use Doctrine\Migrations\AbstractMigration;
+use Unilend\Migrations\ContainerAwareMigration;
+use Unilend\Migrations\Traits\FlushTranslationCacheTrait;
 
 /**
  * Auto-generated Migration: Please modify to your needs!
  */
-final class Version20190905143143 extends AbstractMigration
+final class Version20190905143143 extends ContainerAwareMigration
 {
+    use FlushTranslationCacheTrait;
+
     public function getDescription(): string
     {
         return 'CALS-333';

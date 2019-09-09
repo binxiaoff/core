@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Unilend\Controller\User;
 
 use DateTime;
+use Doctrine\ORM\{ORMException, OptimisticLockException};
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\{Request, Response};
@@ -35,8 +36,8 @@ class AccountController extends AbstractController
      * @param ServiceTermsManager           $serviceTermsManager
      * @param MessageBusInterface           $messageBus
      *
-     * @throws \Doctrine\ORM\ORMException
-     * @throws \Doctrine\ORM\OptimisticLockException
+     * @throws ORMException
+     * @throws OptimisticLockException
      *
      * @return Response
      */
