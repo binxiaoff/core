@@ -6,7 +6,7 @@ namespace Unilend\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
-use Doctrine\ORM\{Mapping\OrderBy, NonUniqueResultException, ORMException, OptimisticLockException, Query};
+use Doctrine\ORM\{NonUniqueResultException, ORMException, OptimisticLockException};
 use Symfony\Component\Security\Core\User\UserInterface;
 use Unilend\Entity\AcceptationsLegalDocs;
 
