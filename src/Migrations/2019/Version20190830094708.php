@@ -25,7 +25,9 @@ final class Version20190830094708 extends ContainerAwareMigration
             ("fr_FR", "mail-identity-updated", "lastName", "Nom", NOW()),
             ("fr_FR", "mail-identity-updated", "jobFunction", "Fonction professionnelle", NOW()),
             ("fr_FR", "mail-identity-updated", "mobile", "Téléphone mobile", NOW()),
-            ("fr_FR", "mail-identity-updated", "phone", "Téléphone fixe", NOW())
+            ("fr_FR", "mail-identity-updated", "phone", "Téléphone fixe", NOW()),
+            ("fr_FR", "mail-identity-updated", "content-message-plural", "Ces informations personnelles ont été modifiées :", NOW()),
+            ("fr_FR", "mail-identity-updated", "content-message-singular", "Cette information personnelle a été modifiée :", NOW())
         ');
         $this->addSql('INSERT INTO mail_templates (type, locale, part, recipient_type, sender_name, sender_email, subject, content, compiled_content, id_header, id_footer, status, added) VALUES (\'identity-updated\', \'fr_FR\', \'content\', \'external\', \'Crédit Agricole Lending Services\', \'contact@ca-lendingservices.com\', \'Vos informations personnelles ont été modifiées\', \'<p>Bonjour [EMV DYN]firstName[EMV /DYN],<p>
 [EMV DYN]content[EMV /DYN]

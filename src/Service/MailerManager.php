@@ -59,55 +59,26 @@ class MailerManager
 
     /**
      * @param Clients $client
+     * @param string  $content
+     * @param string  $fields
      *
      * @return int
      */
-    public function sendIdentityUpdated(Clients $client): int
+    public function sendIdentityUpdated(Clients $client, string $content, string $fields): int
     {
         $sent = 0;
 
-        $classMetaData = $this->entityManager->getClassMetadata(Clients::class);
-        $unitOfWork    = $this->entityManager->getUnitOfWork();
-        $unitOfWork->computeChangeSet($classMetaData, $client);
+        $keywords = [
+            'firstName'    => $client->getFirstName(),
+            'content'      => $content,
+            'profileUrl'   => $this->router->generate('profile', [], RouterInterface::ABSOLUTE_URL),
+            'changeFields' => $fields,
+        ];
 
-        $changeSet = $unitOfWork->getEntityChangeSet($client);
+        $message = $this->messageProvider->newMessage('identity-updated', $keywords);
+        $message->setTo($client->getEmail());
 
-        foreach ($changeSet as $field => $value) {
-            if (('mobile' === $field || 'phone' === $field) && $changeSet[$field][0]->equals($changeSet[$field][1])) {
-                unset($changeSet[$field]);
-            }
-        }
-
-        if (false === empty($changeSet) && false === empty($client)) {
-            foreach ($changeSet as $field => $value) {
-                unset($changeSet[$field]);
-                $changeSet[] = $this->translator->trans('mail-identity-updated.' . $field);
-            }
-
-            if (count($changeSet) > 1) {
-                $content      = 'Ces informations personnelles ont été modifiées :';
-                $changeFields = '<ul><li>';
-                $changeFields .= implode('</li><li>', $changeSet);
-                $changeFields .= '</li></ul>';
-            } else {
-                $content      = 'Cette information personnelle a été modifiée :';
-                $changeFields = $changeSet[0];
-            }
-
-            $keywords = [
-                'firstName'    => $client->getFirstName(),
-                'content'      => $content,
-                'profileUrl'   => $this->router->generate('profile', [], RouterInterface::ABSOLUTE_URL),
-                'changeFields' => $changeFields,
-            ];
-
-            $message = $this->messageProvider->newMessage('identity-updated', $keywords);
-            $message->setTo($client->getEmail());
-
-            $sent += $this->mailer->send($message);
-
-            return $sent;
-        }
+        $sent += $this->mailer->send($message);
 
         return $sent;
     }
