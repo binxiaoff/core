@@ -10,13 +10,12 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\{Request, Response};
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Security\Core\User\UserInterface;
-use Unilend\Entity\{Clients, FoncarisRequest, Project, ProjectStatusHistory, TrancheAttribute};
+use Unilend\Entity\{FoncarisRequest, Project, ProjectStatusHistory, TrancheAttribute};
 use Unilend\Form\Foncaris\{FoncarisRequestType, FoncarisTrancheAttributeType};
 use Unilend\Message\Project\ProjectPublished;
 use Unilend\Repository\FoncarisRequestRepository;
 use Unilend\Repository\ProjectRepository;
-use Unilend\Service\{Foncaris\GuaranteeRequestGenerator, ProjectStatusManager};
+use Unilend\Service\{Foncaris\GuaranteeRequestGenerator, Project\ProjectStatusManager};
 
 class PublishController extends AbstractController
 {
@@ -29,13 +28,12 @@ class PublishController extends AbstractController
      *
      * @IsGranted("edit", subject="project")
      *
-     * @param Project                    $project
-     * @param UserInterface|Clients|null $user
-     * @param Request                    $request
-     * @param ProjectRepository          $projectRepository
-     * @param FoncarisRequestRepository  $foncarisRequestRepository
-     * @param ProjectStatusManager       $projectStatusManager
-     * @param MessageBusInterface        $messageBus
+     * @param Project                   $project
+     * @param Request                   $request
+     * @param ProjectRepository         $projectRepository
+     * @param FoncarisRequestRepository $foncarisRequestRepository
+     * @param ProjectStatusManager      $projectStatusManager
+     * @param MessageBusInterface       $messageBus
      *
      * @throws ORMException
      * @throws OptimisticLockException
@@ -44,7 +42,6 @@ class PublishController extends AbstractController
      */
     public function instructions(
         Project $project,
-        ?UserInterface $user,
         Request $request,
         ProjectRepository $projectRepository,
         FoncarisRequestRepository $foncarisRequestRepository,
@@ -59,7 +56,7 @@ class PublishController extends AbstractController
 
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {
-            $projectStatusManager->addProjectStatus($user, ProjectStatusHistory::STATUS_PUBLISHED, $project);
+            $projectStatusManager->addProjectStatus(ProjectStatusHistory::STATUS_PUBLISHED, $project);
 
             $foncarisRequest = $form->getData();
 
