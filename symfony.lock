@@ -1,4 +1,7 @@
 {
+    "aws/aws-sdk-php": {
+        "version": "3.111.0"
+    },
     "azuyalabs/yasumi": {
         "version": "2.1.0"
     },
@@ -219,6 +222,9 @@
     "league/flysystem": {
         "version": "1.0.55"
     },
+    "league/flysystem-aws-s3-v3": {
+        "version": "1.0.23"
+    },
     "mailjet/mailjet-apiv3-php": {
         "version": "v1.4.1"
     },
@@ -248,6 +254,9 @@
     },
     "monolog/monolog": {
         "version": "1.24.0"
+    },
+    "mtdowling/jmespath.php": {
+        "version": "2.4.0"
     },
     "mustangostang/spyc": {
         "version": "0.6.2"
