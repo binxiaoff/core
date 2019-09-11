@@ -1,4 +1,14 @@
-# Read the documentation: https://github.com/1up-lab/OneupFlysystemBundle/tree/master/Resources/doc/index.md
+services:
+    cals.s3_client:
+        class: Aws\S3\S3Client
+        arguments:
+            -
+                version: latest
+                region: '%env(AWS_S3_REGION)%'
+                credentials:
+                    key: '%env(AWS_API_KEY)%'
+                    secret: '%env(AWS_API_SECRET)%'
+
 oneup_flysystem:
     adapters:
         user_attachment_adapter:
@@ -10,6 +20,12 @@ oneup_flysystem:
         public_user_upload_adapter:
             local:
                 directory: '%directory.shared_public%upload'
+        # AWS S3 adapters
+        user_attachment_adapter_s3:
+            awss3v3:
+                client: cals.s3_client
+                bucket: '%env(AWS_S3_BUCKET_USER_ATTACHMENT)%'
+                prefix: ~
     filesystems:
         user_attachment:
             adapter: user_attachment_adapter

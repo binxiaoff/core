@@ -1,0 +1,5 @@
+oneup_flysystem:
+    filesystems:
+        user_attachment:
+            adapter: user_attachment_adapter_s3
+            alias: League\Flysystem\UserAttachmentFilesystem
