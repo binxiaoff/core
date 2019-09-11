@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Unilend\Controller\Attachment;
 
 use Doctrine\ORM\{ORMException, OptimisticLockException};
+use League\Flysystem\FileNotFoundException;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\{IsGranted, ParamConverter};
 use Swift_RfcComplianceException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -29,8 +30,9 @@ class SignatureController extends AbstractController
      * @param AttachmentManager             $attachmentManager
      * @param RouterInterface               $router
      *
-     * @throws OptimisticLockException
      * @throws ORMException
+     * @throws OptimisticLockException
+     * @throws FileNotFoundException
      *
      * @return RedirectResponse
      */
@@ -52,7 +54,7 @@ class SignatureController extends AbstractController
             return $this->redirectToRoute('wallet');
         }
 
-        $documentContent  = file_get_contents($attachmentManager->getFullPath($attachment));
+        $documentContent  = $attachmentManager->read($attachment);
         $signatureRequest = $signatureManager->createSignatureRequest(
             $user,
             'Signature électronique de votre document',

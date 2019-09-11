@@ -6,7 +6,8 @@ namespace Unilend\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
-use Doctrine\ORM\{ORMException, OptimisticLockException};
+use Doctrine\ORM\{NonUniqueResultException, ORMException, OptimisticLockException};
+use Symfony\Component\Security\Core\User\UserInterface;
 use Unilend\Entity\AcceptationsLegalDocs;
 
 /**
@@ -53,5 +54,24 @@ class AcceptationLegalDocsRepository extends ServiceEntityRepository
         ;
 
         return $queryBuilder->getQuery()->getResult();
+    }
+
+    /**
+     * @param UserInterface $user
+     *
+     * @throws NonUniqueResultException
+     *
+     * @return AcceptationsLegalDocs|null
+     */
+    public function findClientsLastSigned(UserInterface $user): ?AcceptationsLegalDocs
+    {
+        $queryBuilder = $this->createQueryBuilder('ald');
+        $queryBuilder->where('ald.client = :client')
+            ->orderBy('ald.added', 'DESC')
+            ->setParameter('client', $user)
+            ->setMaxResults(1)
+        ;
+
+        return $queryBuilder->getQuery()->getOneOrNullResult();
     }
 }

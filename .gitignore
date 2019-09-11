@@ -2,7 +2,7 @@
 .DS_Store
 
 /protected
-/public/default/var
+/public/default/shared
 
 # PHPStorm
 .idea/

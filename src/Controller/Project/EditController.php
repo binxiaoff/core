@@ -28,7 +28,7 @@ use Unilend\Form\Tranche\TrancheTypeCollectionType;
 use Unilend\Repository\{AcceptedBidsRepository, BidsRepository, CaRegionalBankRepository, CompaniesRepository, ProjectAttachmentRepository, ProjectAttachmentTypeRepository,
     ProjectRepository, TrancheRepository};
 use Unilend\Security\Voter\ProjectVoter;
-use Unilend\Service\{Attachment\AttachmentManager, MailerManager, ProjectImageManager, ProjectStatusManager, User\RealUserFinder};
+use Unilend\Service\{Attachment\AttachmentManager, MailerManager, Project\ProjectImageManager, Project\ProjectStatusManager, User\RealUserFinder};
 
 class EditController extends AbstractController
 {
@@ -222,7 +222,7 @@ class EditController extends AbstractController
         }
 
         if ($status) {
-            $projectStatusManager->addProjectStatus($user, $status, $project);
+            $projectStatusManager->addProjectStatus($status, $project);
 
             switch ($status) {
                 case ProjectStatusHistory::STATUS_FUNDED:

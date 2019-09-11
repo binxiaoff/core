@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\Form\Lending;
 
-use Symfony\Component\Form\Extension\Core\Type\{ChoiceType, NumberType};
+use Symfony\Component\Form\Extension\Core\Type\{ChoiceType, NumberType, PercentType};
 use Symfony\Component\Form\{AbstractType, FormBuilderInterface, FormError, FormEvent, FormEvents};
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Contracts\Translation\TranslatorInterface;
@@ -45,15 +45,17 @@ class LendingRateType extends AbstractType
                     return [];
                 },
             ])
-            ->add('margin', NumberType::class, [
+            ->add('margin', PercentType::class, [
                 'label'    => 'lending-form.margin',
                 'required' => $options['required'],
                 'scale'    => LendingRate::MARGIN_SCALE,
+                'symbol'   => false,
             ])
-            ->add('floor', NumberType::class, [
+            ->add('floor', PercentType::class, [
                 'label'    => 'lending-form.floor',
                 'required' => false,
                 'scale'    => LendingRate::MARGIN_SCALE,
+                'symbol'   => false,
             ])
             ->addEventListener(FormEvents::SUBMIT, [$this, 'checkRateData'])
         ;

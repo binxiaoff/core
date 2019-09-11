@@ -42,10 +42,10 @@ class LendingRate
      *
      * @var string
      *
-     * @ORM\Column(type="decimal", precision=4, scale=2)
+     * @ORM\Column(type="decimal", precision=4, scale=4)
      *
      * @Assert\NotBlank(groups={"non-nullable"})
-     * @Assert\Range(min="0", max="99.99")
+     * @Assert\Range(min="0", max="0.9999")
      */
     protected $margin;
 
@@ -54,9 +54,9 @@ class LendingRate
      *
      * @var string
      *
-     * @ORM\Column(type="decimal", precision=4, scale=2, nullable=true)
+     * @ORM\Column(type="decimal", precision=4, scale=4, nullable=true)
      *
-     * @Assert\Range(min="-99.99", max="99.99")
+     * @Assert\Range(max="-0.9999", max="0.9999")
      */
     protected $floor;
 

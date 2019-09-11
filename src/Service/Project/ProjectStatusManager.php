@@ -1,11 +1,12 @@
 <?php
 
-namespace Unilend\Service;
+declare(strict_types=1);
 
-use Doctrine\ORM\{EntityManagerInterface, ORMException, OptimisticLockException};
+namespace Unilend\Service\Project;
+
+use Doctrine\ORM\{ORMException, OptimisticLockException};
 use Psr\Log\LoggerInterface;
-use Symfony\Contracts\Translation\TranslatorInterface;
-use Unilend\Entity\{Clients, Project, ProjectStatusHistory};
+use Unilend\Entity\{Project, ProjectStatusHistory};
 use Unilend\Repository\ProjectRepository;
 use Unilend\Service\User\RealUserFinder;
 
@@ -13,47 +14,31 @@ class ProjectStatusManager
 {
     /** @var LoggerInterface */
     protected $logger;
-    /** @var EntityManagerInterface */
-    private $entityManager;
-    /** @var TranslatorInterface */
-    private $translator;
-    /** @var SlackManager */
-    private $slackManager;
     /** @var ProjectRepository */
     private $projectRepository;
     /** @var RealUserFinder */
     private $realUserFinder;
 
     /**
-     * @param EntityManagerInterface $entityManager
-     * @param TranslatorInterface    $translator
-     * @param LoggerInterface        $logger
-     * @param SlackManager           $slackManager
-     * @param ProjectRepository      $projectRepository
-     * @param RealUserFinder         $realUserFinder
+     * @param LoggerInterface   $logger
+     * @param ProjectRepository $projectRepository
+     * @param RealUserFinder    $realUserFinder
      */
     public function __construct(
-        EntityManagerInterface $entityManager,
-        TranslatorInterface $translator,
         LoggerInterface $logger,
-        SlackManager $slackManager,
         ProjectRepository $projectRepository,
         RealUserFinder $realUserFinder
     ) {
-        $this->entityManager          = $entityManager;
-        $this->translator             = $translator;
-        $this->logger                 = $logger;
-        $this->slackManager           = $slackManager;
-        $this->projectRepository      = $projectRepository;
-        $this->realUserFinder         = $realUserFinder;
+        $this->logger            = $logger;
+        $this->projectRepository = $projectRepository;
+        $this->realUserFinder    = $realUserFinder;
     }
 
     /**
-     * @param Clients $user
      * @param int     $projectStatus
      * @param Project $project
      */
-    public function addProjectStatus(Clients $user, int $projectStatus, $project)
+    public function addProjectStatus(int $projectStatus, $project): void
     {
         $projectStatusHistory = (new ProjectStatusHistory())
             ->setStatus($projectStatus)

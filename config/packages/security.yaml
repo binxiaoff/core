@@ -34,4 +34,5 @@ security:
         - { path: ^/mot-de-passe, role: IS_AUTHENTICATED_ANONYMOUSLY }
         - { path: ^/compte/initialisation/, role: IS_AUTHENTICATED_ANONYMOUSLY }
         - { path: ^/sonata/cache, role: IS_AUTHENTICATED_ANONYMOUSLY }
+        - { path: ^/conditions-service, role: IS_AUTHENTICATED_ANONYMOUSLY }
         - { path: ^/, role: IS_AUTHENTICATED_FULLY }

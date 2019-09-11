@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Unilend\Controller\User;
 
 use DateTime;
-use Exception;
+use Doctrine\ORM\{ORMException, OptimisticLockException};
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\{Request, Response};
@@ -18,6 +18,7 @@ use Unilend\Form\User\InitProfileType;
 use Unilend\Message\Client\ClientCreated;
 use Unilend\Repository\ClientsRepository;
 use Unilend\Repository\TemporaryLinksLoginRepository;
+use Unilend\Service\ServiceTerms\ServiceTermsManager;
 
 class AccountController extends AbstractController
 {
@@ -32,9 +33,11 @@ class AccountController extends AbstractController
      * @param TranslatorInterface           $translator
      * @param UserPasswordEncoderInterface  $userPasswordEncoder
      * @param ClientsRepository             $clientsRepository
+     * @param ServiceTermsManager           $serviceTermsManager
      * @param MessageBusInterface           $messageBus
      *
-     * @throws Exception
+     * @throws ORMException
+     * @throws OptimisticLockException
      *
      * @return Response
      */
@@ -45,6 +48,7 @@ class AccountController extends AbstractController
         TranslatorInterface $translator,
         UserPasswordEncoderInterface $userPasswordEncoder,
         ClientsRepository $clientsRepository,
+        ServiceTermsManager $serviceTermsManager,
         MessageBusInterface $messageBus
     ): Response {
         if ($temporaryLink->getExpires() < new DateTime()) {
@@ -74,6 +78,8 @@ class AccountController extends AbstractController
                 ->setSecurityQuestion($securityQuestion['securityQuestion'])
                 ->setSecurityAnswer($securityQuestion['securityAnswer'])
             ;
+
+            $serviceTermsManager->acceptCurrentVersion($client);
 
             $clientsRepository->save($client);
 

@@ -8,7 +8,7 @@ parameters:
     directory.shared: /data/medias/nfs/
     directory.temporary: '%directory.shared%tmp/'
     directory.protected: '%directory.shared%protected/'
-    directory.public_var: '%directory.public%var/'
+    directory.shared_public: '%directory.public%shared/'
 
 services:
     _defaults:
@@ -23,12 +23,15 @@ services:
             $adminUrl: '%router.request_context.scheme%://%env(HOST_ADMIN_URL)%'
             $numberFormatter: '@number_formatter'
             $currencyFormatter: '@currency_formatter'
+            $percentageFormatter: '@percentage_formatter'
             $currencyFormatterNoDecimal: '@currency_formatter_no_decimal'
             $environment: '%kernel.environment%'
             $publicDirectory: '%directory.public%'
             $documentRootDirectory: '%directory.protected%/generated_document/'
             $projectDirectory: '%kernel.project_dir%'
-            $userUploadDirectory: '%directory.public%var/upload/'
+            $userAttachmentFilesystem: '@League\Flysystem\UserAttachmentFilesystem'
+            $publicUserUploadFilesystem: '@League\Flysystem\PublicUserUploadFilesystem'
+            $generatedDocumentFilesystem: '@League\Flysystem\GeneratedDocumentFilesystem'
 
     # makes classes in src/ available to be used as services
     # this creates a service per class whose id is the fully-qualified class name
@@ -46,9 +49,6 @@ services:
 
     Unilend\Service\WebServiceClient\InseeManager:
         $client: '@eight_points_guzzle.client.insee'
-
-    Unilend\Service\Attachment\AttachmentManager:
-        $uploadRootDirectory: '%directory.protected%attachments'
 
     Unilend\Service\GoogleRecaptchaManager:
         $client: '@eight_points_guzzle.client.google_recaptcha'
@@ -100,6 +100,18 @@ services:
             - '%locale%'
             - !php/const \IntlDateFormatter::MEDIUM
             - !php/const \IntlDateFormatter::SHORT
+
+    percentage_formatter:
+        public: true
+        class: NumberFormatter
+        arguments:
+            - '%locale%'
+            - !php/const \NumberFormatter::PERCENT
+        calls:
+            - method: setAttribute
+              arguments:
+                  - !php/const \NumberFormatter::FRACTION_DIGITS
+                  - 2
 
     UserAgentParser\Provider\WhichBrowser:
         class: UserAgentParser\Provider\WhichBrowser
