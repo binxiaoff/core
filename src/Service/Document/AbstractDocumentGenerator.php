@@ -4,25 +4,22 @@ declare(strict_types=1);
 
 namespace Unilend\Service\Document;
 
-use InvalidArgumentException;
 use Doctrine\Common\Persistence\ManagerRegistry;
+use InvalidArgumentException;
+use RuntimeException;
 use Unilend\Entity\Interfaces\FileStorageInterface;
 
 abstract class AbstractDocumentGenerator
 {
-    /** @var string */
-    private $documentRootDirectory;
     /** @var ManagerRegistry */
     private $managerRegistry;
 
     /**
-     * @param string          $documentRootDirectory
      * @param ManagerRegistry $managerRegistry
      */
-    public function __construct(string $documentRootDirectory, ManagerRegistry $managerRegistry)
+    public function __construct(ManagerRegistry $managerRegistry)
     {
-        $this->documentRootDirectory = $documentRootDirectory;
-        $this->managerRegistry       = $managerRegistry;
+        $this->managerRegistry = $managerRegistry;
     }
 
     /**
@@ -36,7 +33,7 @@ abstract class AbstractDocumentGenerator
             throw new InvalidArgumentException(sprintf('The document type %s is not supported by the generator.', get_class($document)));
         }
 
-        return $this->getRootDirectory() . DIRECTORY_SEPARATOR . $this->getRelativeFilePath($document);
+        return $document->getRelativeFilePath() ?: $this->generateRelativeDirectory($document) . DIRECTORY_SEPARATOR . $this->getFileName($document);
     }
 
     /**
@@ -48,17 +45,17 @@ abstract class AbstractDocumentGenerator
             throw new InvalidArgumentException(sprintf('The document type %s is not supported by the generator.', get_class($document)));
         }
 
-        if (file_exists($this->getFilePath($document))) {
-            return;
-        }
-
         $this->generateDocument($document);
 
-        $document->setRelativeFilePath($this->getRelativeFilePath($document));
+        $document->setRelativeFilePath($this->getFilePath($document));
 
         $entityManager = $this->managerRegistry->getManagerForClass(get_class($document));
-        $entityManager->persist($document);
-        $entityManager->flush();
+        if ($entityManager) {
+            $entityManager->persist($document);
+            $entityManager->flush();
+        } else {
+            throw new RuntimeException(sprintf('Cannot find the entity manager for %s', get_class($document)));
+        }
     }
 
     /**
@@ -88,28 +85,4 @@ abstract class AbstractDocumentGenerator
      * @return bool
      */
     abstract protected function supports(FileStorageInterface $document): bool;
-
-    /**
-     * @param FileStorageInterface $document
-     *
-     * @return string
-     */
-    private function getRelativeFilePath(FileStorageInterface $document): string
-    {
-        return $document->getRelativeFilePath() ?: $this->generateRelativeDirectory($document) . DIRECTORY_SEPARATOR . $this->getFileName($document);
-    }
-
-    /**
-     * @return string
-     */
-    private function getRootDirectory()
-    {
-        if (false === is_dir($this->documentRootDirectory)) {
-            mkdir($this->documentRootDirectory, 0775);
-        }
-
-        $rootDirectory = realpath($this->documentRootDirectory);
-
-        return DIRECTORY_SEPARATOR === mb_substr($rootDirectory, -1) ? mb_substr($rootDirectory, 0, -1) : $rootDirectory;
-    }
 }

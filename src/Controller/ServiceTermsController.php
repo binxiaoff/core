@@ -7,7 +7,7 @@ namespace Unilend\Controller;
 use Exception;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\{JsonResponse, Request, Response};
+use Symfony\Component\HttpFoundation\{BinaryFileResponse, JsonResponse, Request, Response};
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Unilend\Entity\{AcceptationsLegalDocs, Clients};
@@ -20,19 +20,18 @@ class ServiceTermsController extends AbstractController
     /**
      * @Route("/pdf/conditions-service/{idAcceptation}", name="service_terms_pdf", requirements={"idAcceptation": "\d+"})
      *
-     * @param UserInterface|Clients|null $client
-     * @param AcceptationsLegalDocs      $acceptationsLegalDoc
-     * @param ServiceTermsGenerator      $serviceTermsGenerator
+     * @param AcceptationsLegalDocs $acceptationsLegalDoc
+     * @param ServiceTermsGenerator $serviceTermsGenerator
      *
      * @throws Exception
      *
-     * @return Response
+     * @return BinaryFileResponse
      */
-    public function serviceTermsDownload(?UserInterface $client, AcceptationsLegalDocs $acceptationsLegalDoc, ServiceTermsGenerator $serviceTermsGenerator)
-    {
-        if ($client !== $acceptationsLegalDoc->getClient()) {
-            $this->createAccessDeniedException();
-        }
+    public function serviceTermsDownload(
+        AcceptationsLegalDocs $acceptationsLegalDoc,
+        ServiceTermsGenerator $serviceTermsGenerator
+    ): BinaryFileResponse {
+        $this->denyAccessUnlessGranted('download', $acceptationsLegalDoc);
 
         $serviceTermsGenerator->generate($acceptationsLegalDoc);
 

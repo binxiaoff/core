@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Unilend\Service\Foncaris;
 
 use Doctrine\Common\Persistence\ManagerRegistry;
+use League\Flysystem\{FileExistsException, FilesystemInterface};
 use NumberFormatter;
 use PhpOffice\PhpSpreadsheet\{Exception as PhpSpreadsheetException, Spreadsheet, Style\Alignment, Style\Border, Style\Fill, Worksheet\Worksheet,
     Writer\Exception as PhpSpreadsheetWriterException, Writer\Xlsx};
-use Symfony\Contracts\Translation\TranslatorInterface;
 use Unilend\Entity\{FoncarisRequest, Interfaces\FileStorageInterface, Tranche, TrancheAttribute};
 use Unilend\Repository\ConstantList\{FoncarisFundingTypeRepository, FoncarisSecurityRepository};
 use Unilend\Service\Document\AbstractDocumentGenerator;
@@ -28,36 +28,34 @@ class GuaranteeRequestGenerator extends AbstractDocumentGenerator
     private $foncarisSecurityRepository;
     /** @var NumberFormatter */
     private $currencyFormatterNoDecimal;
-    /** @var TranslatorInterface */
-    private $translator;
     /** @var NumberFormatter */
     private $percentageFormatter;
+    /** @var FilesystemInterface */
+    private $generatedDocumentFilesystem;
 
     /**
-     * @param string                        $documentRootDirectory
+     * @param FilesystemInterface           $generatedDocumentFilesystem
      * @param FoncarisFundingTypeRepository $foncarisFundingTypeRepository
      * @param FoncarisSecurityRepository    $foncarisSecurityRepository
      * @param NumberFormatter               $currencyFormatterNoDecimal
      * @param NumberFormatter               $percentageFormatter
-     * @param TranslatorInterface           $translator
      * @param ManagerRegistry               $managerRegistry
      */
     public function __construct(
-        string $documentRootDirectory,
+        FilesystemInterface $generatedDocumentFilesystem,
         FoncarisFundingTypeRepository $foncarisFundingTypeRepository,
         FoncarisSecurityRepository $foncarisSecurityRepository,
         NumberFormatter $currencyFormatterNoDecimal,
         NumberFormatter $percentageFormatter,
-        TranslatorInterface $translator,
         ManagerRegistry $managerRegistry
     ) {
-        parent::__construct($documentRootDirectory, $managerRegistry);
+        parent::__construct($managerRegistry);
 
         $this->foncarisFundingTypeRepository = $foncarisFundingTypeRepository;
         $this->foncarisSecurityRepository    = $foncarisSecurityRepository;
         $this->currencyFormatterNoDecimal    = $currencyFormatterNoDecimal;
-        $this->translator                    = $translator;
         $this->percentageFormatter           = $percentageFormatter;
+        $this->generatedDocumentFilesystem   = $generatedDocumentFilesystem;
     }
 
     /**
@@ -65,10 +63,15 @@ class GuaranteeRequestGenerator extends AbstractDocumentGenerator
      *
      * @throws PhpSpreadsheetException
      * @throws PhpSpreadsheetWriterException
+     * @throws FileExistsException
      */
     public function generateDocument(FileStorageInterface $foncarisRequest): void
     {
         if (FoncarisRequest::FONCARIS_GUARANTEE_NEED !== $foncarisRequest->getChoice()) {
+            return;
+        }
+
+        if ($this->generatedDocumentFilesystem->has($this->getFilePath($foncarisRequest))) {
             return;
         }
 
@@ -176,15 +179,11 @@ class GuaranteeRequestGenerator extends AbstractDocumentGenerator
         }
 
         $writer = new Xlsx($spreadsheet);
+        ob_start();
+        $writer->save('php://output');
+        $excelOutput = ob_get_clean();
 
-        $filePath  = $this->getFilePath($foncarisRequest);
-        $directory = dirname($filePath);
-
-        if (false === is_dir($directory)) {
-            mkdir($directory, 0775, true);
-        }
-
-        $writer->save($filePath);
+        $this->generatedDocumentFilesystem->write($this->getFilePath($foncarisRequest), $excelOutput);
     }
 
     /**

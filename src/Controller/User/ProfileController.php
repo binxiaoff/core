@@ -12,6 +12,7 @@ use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Unilend\Entity\Clients;
 use Unilend\Form\User\IdentityType;
+use Unilend\Repository\AcceptationLegalDocsRepository;
 use Unilend\Repository\ClientsRepository;
 
 class ProfileController extends AbstractController
@@ -19,18 +20,24 @@ class ProfileController extends AbstractController
     /**
      * @Route("/profil", name="profile")
      *
-     * @param Request                    $request
-     * @param UserInterface|Clients|null $user
-     * @param ClientsRepository          $clientsRepository
-     * @param TranslatorInterface        $translator
+     * @param Request                        $request
+     * @param UserInterface|Clients|null     $user
+     * @param ClientsRepository              $clientsRepository
+     * @param AcceptationLegalDocsRepository $acceptationLegalDocsRepository
+     * @param TranslatorInterface            $translator
      *
      * @throws ORMException
      * @throws OptimisticLockException
      *
      * @return Response
      */
-    public function profile(Request $request, ?UserInterface $user, ClientsRepository $clientsRepository, TranslatorInterface $translator): Response
-    {
+    public function profile(
+        Request $request,
+        UserInterface $user,
+        ClientsRepository $clientsRepository,
+        AcceptationLegalDocsRepository $acceptationLegalDocsRepository,
+        TranslatorInterface $translator
+    ): Response {
         $form = $this->createForm(IdentityType::class, $user);
 
         $form->handleRequest($request);
@@ -44,6 +51,14 @@ class ProfileController extends AbstractController
             return $this->redirectToRoute('profile');
         }
 
-        return $this->render('user/profile.html.twig', ['form' => $form->createView()]);
+        $acceptationLegalDocs = $acceptationLegalDocsRepository->findClientsLastSigned($user);
+
+        return $this->render(
+            'user/profile.html.twig',
+            [
+                'form'          => $form->createView(),
+                'lastSignedAld' => $acceptationLegalDocs,
+            ]
+        );
     }
 }

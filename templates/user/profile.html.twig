@@ -45,6 +45,14 @@
 
                     {{ form_end(form) }}
                 </div>
+                {% if lastSignedAld %}
+                <h1 class="margin-5-t">CGU</h1>
+                <div class="panel">
+                    <a class="btn-primary" href="{{ path('service_terms_pdf', {'idAcceptation': lastSignedAld.idAcceptation}) }}">
+                        {% trans %} account-profile.cgu-download {% endtrans %}
+                    </a>
+                </div>
+                {% endif %}
             </div>
         </div>
     </section>

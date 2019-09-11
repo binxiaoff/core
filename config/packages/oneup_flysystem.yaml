@@ -1,0 +1,22 @@
+# Read the documentation: https://github.com/1up-lab/OneupFlysystemBundle/tree/master/Resources/doc/index.md
+oneup_flysystem:
+    adapters:
+        user_attachment_adapter:
+            local:
+                directory: '%directory.protected%attachment'
+        generated_document_adapter:
+            local:
+                directory: '%directory.protected%generated_document'
+        public_user_upload_adapter:
+            local:
+                directory: '%directory.shared_public%upload'
+    filesystems:
+        user_attachment:
+            adapter: user_attachment_adapter
+            alias: League\Flysystem\UserAttachmentFilesystem
+        generated_document:
+            adapter: generated_document_adapter
+            alias: League\Flysystem\GeneratedDocumentFilesystem
+        public_user_upload:
+            adapter: public_user_upload_adapter
+            alias: League\Flysystem\PublicUserUploadFilesystem
