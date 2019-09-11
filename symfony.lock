@@ -50,6 +50,9 @@
     "doctrine/common": {
         "version": "v2.10.0"
     },
+    "doctrine/data-fixtures": {
+        "version": "v1.3.2"
+    },
     "doctrine/dbal": {
         "version": "v2.9.2"
     },
@@ -156,6 +159,9 @@
             "config/routes/fos_js_routing.yaml"
         ]
     },
+    "fzaninotto/faker": {
+        "version": "v1.8.0"
+    },
     "gedmo/doctrine-extensions": {
         "version": "v2.4.37"
     },
@@ -182,6 +188,20 @@
     },
     "guzzlehttp/psr7": {
         "version": "1.5.2"
+    },
+    "hautelook/alice-bundle": {
+        "version": "2.1",
+        "recipe": {
+            "repo": "github.com/symfony/recipes",
+            "branch": "master",
+            "version": "2.1",
+            "ref": "71822522faf7ed2792d86b7f94ce73443358ccb9"
+        },
+        "files": [
+            "config/packages/dev/hautelook_alice.yaml",
+            "config/packages/test/hautelook_alice.yaml",
+            "fixtures/.gitignore"
+        ]
     },
     "jbroadway/urlify": {
         "version": "1.1.2-stable"
@@ -251,6 +271,22 @@
     },
     "mustangostang/spyc": {
         "version": "0.6.2"
+    },
+    "myclabs/deep-copy": {
+        "version": "1.9.3"
+    },
+    "nelmio/alice": {
+        "version": "3.2",
+        "recipe": {
+            "repo": "github.com/symfony/recipes",
+            "branch": "master",
+            "version": "3.2",
+            "ref": "0b9900ece737bec7752e4155c0164639dd9b0cb0"
+        },
+        "files": [
+            "config/packages/dev/nelmio_alice.yaml",
+            "config/packages/test/nelmio_alice.yaml"
+        ]
     },
     "nette/bootstrap": {
         "version": "v3.0.0"
@@ -351,6 +387,15 @@
     "phpcollection/phpcollection": {
         "version": "0.5.0"
     },
+    "phpdocumentor/reflection-common": {
+        "version": "1.0.1"
+    },
+    "phpdocumentor/reflection-docblock": {
+        "version": "4.3.1"
+    },
+    "phpdocumentor/type-resolver": {
+        "version": "0.4.0"
+    },
     "phpmd/phpmd": {
         "version": "2.6.0"
     },
@@ -362,6 +407,9 @@
     },
     "phpro/grumphp": {
         "version": "v0.15.2"
+    },
+    "phpspec/prophecy": {
+        "version": "1.8.1"
     },
     "phpstan/phpdoc-parser": {
         "version": "0.3.4"
@@ -407,6 +455,18 @@
     },
     "scienta/doctrine-json-functions": {
         "version": "4.0.2"
+    },
+    "sebastian/comparator": {
+        "version": "3.0.2"
+    },
+    "sebastian/diff": {
+        "version": "3.0.2"
+    },
+    "sebastian/exporter": {
+        "version": "3.1.1"
+    },
+    "sebastian/recursion-context": {
+        "version": "3.0.0"
     },
     "seld/jsonlint": {
         "version": "1.7.1"
@@ -802,6 +862,15 @@
     "thadafinser/user-agent-parser": {
         "version": "v2.0.0"
     },
+    "theofidry/alice-data-fixtures": {
+        "version": "1.0",
+        "recipe": {
+            "repo": "github.com/symfony/recipes",
+            "branch": "master",
+            "version": "1.0",
+            "ref": "fe5a50faf580eb58f08ada2abe8afbd2d4941e05"
+        }
+    },
     "tijsverkoyen/css-to-inline-styles": {
         "version": "2.2.1"
     },
@@ -819,6 +888,9 @@
     },
     "twig/twig": {
         "version": "v2.11.0"
+    },
+    "webmozart/assert": {
+        "version": "1.5.0"
     },
     "whichbrowser/parser": {
         "version": "v2.0.37"
