@@ -26,6 +26,11 @@ oneup_flysystem:
                 client: cals.s3_client
                 bucket: '%env(AWS_S3_BUCKET_USER_ATTACHMENT)%'
                 prefix: ~
+        generated_document_adapter_s3:
+            awss3v3:
+                client: cals.s3_client
+                bucket: '%env(AWS_S3_BUCKET_GENERATED_DOCUMENT)%'
+                prefix: ~
     filesystems:
         user_attachment:
             adapter: user_attachment_adapter
