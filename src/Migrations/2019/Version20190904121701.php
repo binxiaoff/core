@@ -491,7 +491,7 @@ final class Version20190904121701 extends ContainerAwareMigration
             ("fr_FR", "invite-guest", "send-success-message", "Votre invitation a bien été envoyée.", NOW()),
             ("fr_FR", "invite-guest", "send-error-message", "L\'email entré ne fait pas parti de nos partenaires.", NOW()),
             ("fr_FR", "invite-guest", "email-already-sent", "Une invitation a déjà été envoyée à cet email.", NOW()),
-            ("fr_FR", "invite-guest", "form-submit-button", "Envoyer l\'invitation", NOW())
+            ("fr_FR", "invite-guest", "form-submit-button", "Envoyer l\'invitation", NOW()),
             ("fr_FR", "invite-guest", "invite-button", "Envoyer une invitation", NOW())
 ');
     }

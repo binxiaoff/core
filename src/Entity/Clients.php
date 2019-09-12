@@ -207,12 +207,18 @@ class Clients implements UserInterface, EquatableInterface
     private $statuses;
 
     /**
+     * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectParticipant", mappedBy="client")
+     */
+    private $projectParticipants;
+
+    /**
      * Clients constructor.
      */
     public function __construct()
     {
-        $this->attachments = new ArrayCollection();
-        $this->statuses    = new ArrayCollection();
+        $this->attachments         = new ArrayCollection();
+        $this->statuses            = new ArrayCollection();
+        $this->projectParticipants = new ArrayCollection();
         $this->setCurrentStatus(ClientsStatus::STATUS_CREATED);
     }
 
@@ -646,6 +652,47 @@ class Clients implements UserInterface, EquatableInterface
         $clientStatus = new ClientsStatus($this, $status, $content);
 
         return $this->baseStatusSetter($clientStatus);
+    }
+
+    /**
+     * @return Collection|ProjectParticipant[]
+     */
+    public function getProjectParticipants(): Collection
+    {
+        return $this->projectParticipants;
+    }
+
+    /**
+     * @param ProjectParticipant $projectParticipant
+     *
+     * @return Clients
+     */
+    public function addProjectParticipant(ProjectParticipant $projectParticipant): self
+    {
+        if (!$this->projectParticipants->contains($projectParticipant)) {
+            $this->projectParticipants[] = $projectParticipant;
+            $projectParticipant->setClient($this);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @param ProjectParticipant $projectParticipant
+     *
+     * @return Clients
+     */
+    public function removeProjectParticipant(ProjectParticipant $projectParticipant): self
+    {
+        if ($this->projectParticipants->contains($projectParticipant)) {
+            $this->projectParticipants->removeElement($projectParticipant);
+
+            if ($projectParticipant->getClient() === $this) {
+                $projectParticipant->setClient(null);
+            }
+        }
+
+        return $this;
     }
 
     /**

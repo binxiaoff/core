@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Unilend\Controller\User;
 
 use Doctrine\ORM\{NonUniqueResultException, ORMException, OptimisticLockException};
+use Psr\Log\LoggerInterface;
+use Swift_SwiftException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\{Request, Response};
 use Symfony\Component\Routing\Annotation\Route;
@@ -14,16 +16,20 @@ use Unilend\Entity\Clients;
 use Unilend\Form\User\IdentityType;
 use Unilend\Repository\AcceptationLegalDocsRepository;
 use Unilend\Repository\ClientsRepository;
+use Unilend\Service\MailerManager;
 
 class ProfileController extends AbstractController
 {
     /**
      * @Route("/profil", name="profile")
      *
-     * @param Request                    $request
-     * @param UserInterface|Clients|null $user
-     * @param ClientsRepository          $clientsRepository
-     * @param TranslatorInterface        $translator
+     * @param Request                        $request
+     * @param UserInterface|Clients|null     $user
+     * @param ClientsRepository              $clientsRepository
+     * @param TranslatorInterface            $translator
+     * @param MailerManager                  $mailerManager
+     * @param LoggerInterface                $logger
+     * @param AcceptationLegalDocsRepository $acceptationLegalDocsRepository
      *
      * @throws ORMException
      * @throws OptimisticLockException

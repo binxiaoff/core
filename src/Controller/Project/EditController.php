@@ -12,12 +12,12 @@ use Psr\Log\LoggerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Swift_SwiftException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\{File\UploadedFile, Request, Response};
+use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -36,6 +36,7 @@ use Unilend\Entity\{AcceptedBids,
 use Unilend\Form\Bid\PartialBid;
 use Unilend\Form\Project\{ConfidentialityEditionType, ProjectAttachmentCollectionType, ProjectFeeTypeCollectionType};
 use Unilend\Form\Tranche\TrancheTypeCollectionType;
+use Unilend\Message\Client\ClientInvited;
 use Unilend\Repository\{AcceptedBidsRepository,
     BidsRepository,
     CaRegionalBankRepository,
@@ -271,27 +272,24 @@ class EditController extends AbstractController
     }
 
     /**
-     * @Route("/projet/inviter-interlocuteur", name="invite_guest")
+     * @Route("/projet/inviter-interlocuteur/{hash}", name="invite_guest", requirements={"hash": "[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}"})
      *
+     * @param Project             $project
      * @param Request             $request
      * @param UserInterface|null  $user
-     * @param MailerManager       $mailerManager
-     * @param LoggerInterface     $logger
      * @param TranslatorInterface $translator
      * @param ClientsRepository   $clientsRepository
-     *
-     * @throws ORMException
-     * @throws OptimisticLockException
+     * @param MessageBusInterface $messageBus
      *
      * @return Response
      */
     public function addInterlocutor(
+        Project $project,
         Request $request,
         ?UserInterface $user,
-        MailerManager $mailerManager,
-        LoggerInterface $logger,
         TranslatorInterface $translator,
-        ClientsRepository $clientsRepository
+        ClientsRepository $clientsRepository,
+        MessageBusInterface $messageBus
     ) {
         $form = $this->createFormBuilder()->add('email_guest', EmailType::class)->getForm();
         $form->handleRequest($request);
@@ -305,7 +303,7 @@ class EditController extends AbstractController
             if ($clientsRepository->findOneBy(['email' => $guestEmail])) {
                 $this->addFlash('sendError', $translator->trans('invite-guest.email-already-sent'));
 
-                return $this->redirectToRoute('invite_guest');
+                return $this->redirectToRoute('invite_guest', ['hash' => $project->getHash()]);
             }
 
             foreach ($companiesEmailDomains as $companyEmailDomain) {
@@ -315,89 +313,11 @@ class EditController extends AbstractController
             }
 
             if ($isEmailValid) {
-                try {
-                    $mailerManager->sendInvitation($guestEmail, $guestEmailDomain, $user);
-                } catch (Swift_SwiftException $exception) {
-                    $logger->error('An error occurred while sending guest invitation. Message: ' . $exception->getMessage(), [
-                        'class'    => __CLASS__,
-                        'function' => __FUNCTION__,
-                        'file'     => $exception->getFile(),
-                        'line'     => $exception->getLine(),
-                    ]);
-                }
+                $messageBus->dispatch(new ClientInvited($guestEmail, $guestEmailDomain, $user->getIdClient(), $project->getId()));
                 $this->addFlash('sendSuccess', $translator->trans('invite-guest.send-success-message'));
 
-                return $this->redirectToRoute('invite_guest');
+                return $this->redirectToRoute('invite_guest', ['hash' => $project->getHash()]);
             }
-            // invalid email
-            $this->addFlash('sendError', $translator->trans('invite-guest.send-error-message'));
-        }
-
-        return $this->render('project/invite_guest.html.twig', [
-            'form' => $form->createView(),
-        ]);
-    }
-
-    /**
-     * @Route("/projet/inviter-interlocuteur", name="invite_guest")
-     *
-     * @param Request             $request
-     * @param UserInterface|null  $user
-     * @param MailerManager       $mailerManager
-     * @param LoggerInterface     $logger
-     * @param TranslatorInterface $translator
-     * @param ClientsRepository   $clientsRepository
-     *
-     * @throws ORMException
-     * @throws OptimisticLockException
-     *
-     * @return Response
-     */
-    public function addInterlocutor(
-        Request $request,
-        ?UserInterface $user,
-        MailerManager $mailerManager,
-        LoggerInterface $logger,
-        TranslatorInterface $translator,
-        ClientsRepository $clientsRepository
-    ) {
-        $form = $this->createFormBuilder()->add('email_guest', EmailType::class)->getForm();
-        $form->handleRequest($request);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-            $isEmailValid          = false;
-            $guestEmail            = mb_strtolower($form->getData()['email_guest']);
-            $guestEmailDomain      = explode('@', $guestEmail)[1];
-            $companiesEmailDomains = $this->getDoctrine()->getRepository(Companies::class)->findEmailDomains();
-
-            if ($clientsRepository->findOneBy(['email' => $guestEmail])) {
-                $this->addFlash('sendError', $translator->trans('invite-guest.email-already-sent'));
-
-                return $this->redirectToRoute('invite_guest');
-            }
-
-            foreach ($companiesEmailDomains as $companyEmailDomain) {
-                if ($companyEmailDomain === $guestEmailDomain) {
-                    $isEmailValid = true;
-                }
-            }
-
-            if ($isEmailValid) {
-                try {
-                    $mailerManager->sendInvitation($guestEmail, $guestEmailDomain, $user);
-                } catch (Swift_SwiftException $exception) {
-                    $logger->error('An error occurred while sending guest invitation. Message: ' . $exception->getMessage(), [
-                        'class'    => __CLASS__,
-                        'function' => __FUNCTION__,
-                        'file'     => $exception->getFile(),
-                        'line'     => $exception->getLine(),
-                    ]);
-                }
-                $this->addFlash('sendSuccess', $translator->trans('invite-guest.send-success-message'));
-
-                return $this->redirectToRoute('invite_guest');
-            }
-            // invalid email
             $this->addFlash('sendError', $translator->trans('invite-guest.send-error-message'));
         }
 

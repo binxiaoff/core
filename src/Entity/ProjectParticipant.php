@@ -8,8 +8,8 @@ use Doctrine\ORM\Mapping as ORM;
 use Unilend\Entity\Traits\{RoleableTrait, TimestampableTrait};
 
 /**
- * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(columns={"id_project", "id_company"})})
- * @ORM\Entity
+ * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(columns={"id_project", "id_company", "id_client"})})
+ * @ORM\Entity(repositoryClass="Unilend\Repository\ProjectParticipantRepository")
  * @ORM\HasLifecycleCallbacks
  */
 class ProjectParticipant
@@ -58,6 +58,14 @@ class ProjectParticipant
      * })
      */
     private $company;
+
+    /**
+     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Clients", inversedBy="projectParticipants")
+     * @ORM\JoinColumns({
+     *     @ORM\JoinColumn(name="id_client", referencedColumnName="id_client")
+     * })
+     */
+    private $client;
 
     /**
      * @return int
@@ -127,6 +135,26 @@ class ProjectParticipant
         if (0 === count($this->roles)) {
             $this->getProject()->removeProjectParticipant($this);
         }
+
+        return $this;
+    }
+
+    /**
+     * @return Clients|null
+     */
+    public function getClient(): ?Clients
+    {
+        return $this->client;
+    }
+
+    /**
+     * @param Clients|null $client
+     *
+     * @return ProjectParticipant
+     */
+    public function setClient(?Clients $client): self
+    {
+        $this->client = $client;
 
         return $this;
     }
