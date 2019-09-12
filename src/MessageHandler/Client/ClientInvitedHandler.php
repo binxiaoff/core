@@ -8,10 +8,6 @@ use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
-use Unilend\Entity\Clients;
-use Unilend\Entity\ClientsStatusHistory;
-use Unilend\Entity\ProjectParticipant;
-use Unilend\Entity\Staff;
 use Unilend\Entity\TemporaryLinksLogin;
 use Unilend\Message\Client\ClientInvited;
 use Unilend\Repository\ClientsRepository;
@@ -79,37 +75,12 @@ class ClientInvitedHandler implements MessageHandlerInterface
      */
     public function __invoke(ClientInvited $clientInvited)
     {
-        $project       = $this->projectRepository->findOneBy(['id' => $clientInvited->getIdProject()]);
-        $projectStatus = $this->projectStatusHistoryRepository->findOneBy(['project' => $project]);
+        $guest   = $this->clientsRepository->findOneBy(['idClient' => $clientInvited->getGuestId()]);
+        $inviter = $this->clientsRepository->findOneBy(['idClient' => $clientInvited->getInviterId()]);
 
-        if (10 !== $projectStatus->getStatus()) {
-            $inviter = $this->clientsRepository->findOneBy(['idClient' => $clientInvited->getIdInviter()]);
+        $inviterName = $inviter->getLastName() . ' ' . $inviter->getFirstName();
+        $token       = $this->temporaryLinksLoginRepository->generateTemporaryLink($guest, TemporaryLinksLogin::PASSWORD_TOKEN_LIFETIME_LONG);
 
-            $guest               = new Clients();
-            $statusClient        = $this->clientsStatusRepository->findOneBy(['id' => 60]);
-            $statusClientHistory = (new ClientsStatusHistory())->setIdClient($guest)->setIdStatus($statusClient);
-            $this->entityManager->persist($statusClientHistory);
-
-            $company = $this->companiesRepository->findOneBy(['emailDomain' => $clientInvited->getGuestEmailDomain()]);
-
-            $staff = (new Staff())->setCompany($company)->setClient($guest);
-            $this->entityManager->persist($staff);
-
-            $guest
-                ->setEmail($clientInvited->getGuestEmail())
-                ->setIdClientStatusHistory($statusClientHistory)
-                ;
-            $this->clientsRepository->save($guest);
-
-            $projectParticipant = (new ProjectParticipant())->setProject($project)->setClient($guest)->setCompany($company);
-            $this->entityManager->persist($projectParticipant);
-            $this->entityManager->flush();
-
-            $inviterName = $inviter->getLastName() . ' ' . $inviter->getFirstName();
-            $token       = $this->temporaryLinksLoginRepository->generateTemporaryLink($guest, TemporaryLinksLogin::PASSWORD_TOKEN_LIFETIME_LONG);
-            $guestEmail  = $clientInvited->getGuestEmail();
-
-            $this->mailerManager->sendInvitation($inviterName, $token, $guestEmail);
-        }
+        $this->mailerManager->sendInvitation($inviterName, $token, $guest->getEmail());
     }
 }

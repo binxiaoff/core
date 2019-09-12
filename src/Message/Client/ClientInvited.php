@@ -6,58 +6,34 @@ namespace Unilend\Message\Client;
 
 class ClientInvited
 {
-    /** @var string */
-    private $guestEmail;
-    /** @var string */
-    private $guestEmailDomain;
     /** @var int */
-    private $idInviter;
+    private $inviterId;
     /** @var int */
-    private $idProject;
+    private $guestId;
 
     /**
-     * @param string $guestEmail
-     * @param string $guestEmailDomain
-     * @param int    $idInviter
-     * @param int    $idProject
+     * @param int $inviterId
+     * @param int $guestId
      */
-    public function __construct(string $guestEmail, string $guestEmailDomain, int $idInviter, int $idProject)
+    public function __construct(int $inviterId, int $guestId)
     {
-        $this->guestEmail       = $guestEmail;
-        $this->guestEmailDomain = $guestEmailDomain;
-        $this->idInviter        = $idInviter;
-        $this->idProject        = $idProject;
-    }
-
-    /**
-     * @return string
-     */
-    public function getGuestEmail(): string
-    {
-        return $this->guestEmail;
-    }
-
-    /**
-     * @return string
-     */
-    public function getGuestEmailDomain(): string
-    {
-        return $this->guestEmailDomain;
+        $this->inviterId = $inviterId;
+        $this->guestId   = $guestId;
     }
 
     /**
      * @return int
      */
-    public function getIdInviter(): int
+    public function getInviterId(): int
     {
-        return $this->idInviter;
+        return $this->inviterId;
     }
 
     /**
      * @return int
      */
-    public function getIdProject(): int
+    public function getGuestId(): int
     {
-        return $this->idProject;
+        return $this->guestId;
     }
 }
