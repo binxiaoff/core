@@ -4,21 +4,13 @@ declare(strict_types=1);
 
 namespace Unilend\Test\UnitTest\Service\Attachment;
 
-use Doctrine\ORM\OptimisticLockException;
-use Doctrine\ORM\ORMException;
+use Doctrine\ORM\{ORMException, OptimisticLockException};
 use Prophecy\Argument;
 use Prophecy\Prophecy\ObjectProphecy;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
-use Unilend\Entity\Attachment;
-use Unilend\Entity\AttachmentType;
-use Unilend\Entity\Project;
-use Unilend\Entity\ProjectAttachment;
-use Unilend\Entity\ProjectAttachmentType;
-use Unilend\Repository\ProjectAttachmentRepository;
-use Unilend\Repository\ProjectAttachmentTypeRepository;
-use Unilend\Repository\ProjectRepository;
-use Unilend\Service\Attachment\AttachmentManager;
-use Unilend\Service\Attachment\ProjectAttachmentManager;
+use Unilend\Entity\{Attachment, AttachmentType, Project, ProjectAttachment, ProjectAttachmentType};
+use Unilend\Repository\{ProjectAttachmentRepository, ProjectAttachmentTypeRepository, ProjectRepository};
+use Unilend\Service\Attachment\{AttachmentManager, ProjectAttachmentManager};
 
 /**
  * Class ProjectAttachmentTest.
@@ -27,7 +19,7 @@ use Unilend\Service\Attachment\ProjectAttachmentManager;
  *
  * @internal
  */
-class ProjectAttachmentTest extends KernelTestCase
+class ProjectAttachmentManagerTest extends KernelTestCase
 {
     /**
      * @var ProjectAttachmentRepository|ObjectProphecy
