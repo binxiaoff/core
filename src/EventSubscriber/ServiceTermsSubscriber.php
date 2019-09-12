@@ -56,14 +56,14 @@ class ServiceTermsSubscriber implements EventSubscriberInterface
 
         $serviceTermsAcceptPath = $this->router->generate('service_terms_accept');
 
-        $unprotectedUris = [
+        $excludedUris = [
             $this->router->generate('service_terms'),
             $serviceTermsAcceptPath,
             $this->router->generate('logout'),
         ];
 
         if (
-            $this->session->has(ServiceTermsManager::SESSION_KEY_SERVICE_TERMS_ACCEPTED) && !in_array($requestEvent->getRequest()->getRequestUri(), $unprotectedUris)
+            $this->session->has(ServiceTermsManager::SESSION_KEY_SERVICE_TERMS_ACCEPTED) && !in_array($requestEvent->getRequest()->getRequestUri(), $excludedUris)
         ) {
             $requestEvent->setResponse(new RedirectResponse($serviceTermsAcceptPath));
         }
