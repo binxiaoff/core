@@ -13,7 +13,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use Unilend\Entity\{Attachment, Project};
 use Unilend\Repository\ProjectAttachmentRepository;
 use Unilend\Service\Attachment\AttachmentManager;
-use URLify;
+use Unilend\Service\FileSystem\FileSystemHelper;
 use ZipArchive;
 
 class DownloadController extends AbstractController
@@ -27,26 +27,19 @@ class DownloadController extends AbstractController
      *
      * @param Attachment        $attachment
      * @param AttachmentManager $attachmentManager
+     * @param FileSystemHelper  $fileSystemHelper
      *
+     * @throws FileNotFoundException
      * @throws ORMException
      * @throws OptimisticLockException
-     * @throws FileNotFoundException
      *
      * @return StreamedResponse
      */
-    public function download(Attachment $attachment, AttachmentManager $attachmentManager): StreamedResponse
+    public function download(Attachment $attachment, AttachmentManager $attachmentManager, FileSystemHelper $fileSystemHelper): StreamedResponse
     {
-        $response = new StreamedResponse(static function () use ($attachment, $attachmentManager) {
-            stream_copy_to_stream($attachmentManager->readStream($attachment), fopen('php://output', 'w+b'));
-        });
-
-        $contentDisposition = $response->headers->makeDisposition(ResponseHeaderBag::DISPOSITION_ATTACHMENT, URLify::downcode($attachment->getOriginalName()));
-        $response->headers->set('Content-Disposition', $contentDisposition);
-        $response->headers->set('Content-Type', $attachmentManager->getMimeType($attachment) ?: 'application/octet-stream');
-
         $attachmentManager->logDownload($attachment);
 
-        return $response;
+        return $fileSystemHelper->download($attachmentManager->getFileSystem(), $attachment->getPath(), $attachment->getOriginalName());
     }
 
     /**

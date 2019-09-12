@@ -7,17 +7,19 @@ namespace Unilend\Controller;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 use Exception;
+use League\Flysystem\FileNotFoundException;
+use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\FormFactoryInterface;
-use Symfony\Component\HttpFoundation\{BinaryFileResponse, JsonResponse, Request, Response};
+use Symfony\Component\HttpFoundation\{JsonResponse, Request, Response, StreamedResponse};
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Validator\Constraints\IsTrue;
 use Unilend\Entity\{AcceptationsLegalDocs, Clients};
 use Unilend\Repository\AcceptationLegalDocsRepository;
-use Unilend\Service\ServiceTerms\ServiceTermsGenerator;
-use Unilend\Service\ServiceTerms\ServiceTermsManager;
+use Unilend\Service\FileSystem\FileSystemHelper;
+use Unilend\Service\ServiceTerms\{ServiceTermsGenerator, ServiceTermsManager};
 
 class ServiceTermsController extends AbstractController
 {
@@ -26,20 +28,22 @@ class ServiceTermsController extends AbstractController
      *
      * @param AcceptationsLegalDocs $acceptationsLegalDoc
      * @param ServiceTermsGenerator $serviceTermsGenerator
+     * @param FileSystemHelper      $fileSystemHelper
      *
-     * @throws Exception
+     * @throws FileNotFoundException
      *
-     * @return BinaryFileResponse
+     * @return StreamedResponse
      */
     public function serviceTermsDownload(
         AcceptationsLegalDocs $acceptationsLegalDoc,
-        ServiceTermsGenerator $serviceTermsGenerator
-    ): BinaryFileResponse {
+        ServiceTermsGenerator $serviceTermsGenerator,
+        FileSystemHelper $fileSystemHelper
+    ): StreamedResponse {
         $this->denyAccessUnlessGranted('download', $acceptationsLegalDoc);
 
         $serviceTermsGenerator->generate($acceptationsLegalDoc);
 
-        return $this->file($serviceTermsGenerator->getFilePath($acceptationsLegalDoc));
+        return $fileSystemHelper->download($serviceTermsGenerator->getFileSystem(), $acceptationsLegalDoc->getRelativeFilePath());
     }
 
     /**
