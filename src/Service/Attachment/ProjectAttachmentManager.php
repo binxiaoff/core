@@ -1,10 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Unilend\Service\Attachment;
 
 use Doctrine\ORM\{ORMException, OptimisticLockException};
 use Unilend\Entity\{Attachment, Project, ProjectAttachment};
-use Unilend\Repository\{AttachmentSignatureRepository, ProjectAttachmentRepository, ProjectAttachmentTypeRepository, ProjectRepository};
+use Unilend\Repository\{ProjectAttachmentRepository, ProjectAttachmentTypeRepository, ProjectRepository};
 
 class ProjectAttachmentManager
 {
@@ -16,28 +18,23 @@ class ProjectAttachmentManager
     private $projectRepository;
     /** @var AttachmentManager */
     private $attachmentManager;
-    /** @var AttachmentSignatureRepository */
-    private $attachmentSignatureRepository;
 
     /**
      * @param AttachmentManager               $attachmentManager
+     * @param ProjectRepository               $projectRepository
      * @param ProjectAttachmentRepository     $projectAttachmentRepository
      * @param ProjectAttachmentTypeRepository $projectAttachmentTypeRepository
-     * @param ProjectRepository               $projectRepository
-     * @param AttachmentSignatureRepository   $attachmentSignatureRepository
      */
     public function __construct(
         AttachmentManager $attachmentManager,
-        ProjectAttachmentRepository $projectAttachmentRepository,
-        ProjectAttachmentTypeRepository $projectAttachmentTypeRepository,
         ProjectRepository $projectRepository,
-        AttachmentSignatureRepository $attachmentSignatureRepository
+        ProjectAttachmentRepository $projectAttachmentRepository,
+        ProjectAttachmentTypeRepository $projectAttachmentTypeRepository
     ) {
         $this->attachmentManager               = $attachmentManager;
+        $this->projectRepository               = $projectRepository;
         $this->projectAttachmentRepository     = $projectAttachmentRepository;
         $this->projectAttachmentTypeRepository = $projectAttachmentTypeRepository;
-        $this->projectRepository               = $projectRepository;
-        $this->attachmentSignatureRepository   = $attachmentSignatureRepository;
     }
 
     /**
