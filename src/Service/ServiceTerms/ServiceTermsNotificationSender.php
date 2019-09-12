@@ -53,8 +53,17 @@ class ServiceTermsNotificationSender
         $message = $this->messageProvider->newMessage(self::MAIL_TYPE_SERVICE_TERMS_ACCEPTED, [
             'firstName' => $recipient->getFirstName(),
         ]);
+
         $message->setTo($recipient->getEmail());
-        $message->attach(Swift_Attachment::fromPath($this->serviceTermsGenerator->getFilePath($acceptationsLegalDoc)));
+        $message->attach(
+            new Swift_Attachment(
+                $this->serviceTermsGenerator->getFileSystem()->read(
+                    $this->serviceTermsGenerator->getFilePath($acceptationsLegalDoc)
+                ),
+                'conditions-générales.pdf',
+                'application/pdf'
+            ),
+        );
 
         return $this->mailer->send($message);
     }
