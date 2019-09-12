@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\Service\ServiceTerms;
 
+use League\Flysystem\FileNotFoundException;
 use Swift_Attachment;
 use Swift_Mailer;
 use Swift_RfcComplianceException;
@@ -36,6 +37,7 @@ class ServiceTermsNotificationSender
     /**
      * @param AcceptationsLegalDocs $acceptationsLegalDoc
      *
+     * @throws FileNotFoundException
      * @throws Swift_RfcComplianceException
      *
      * @return int
@@ -53,8 +55,17 @@ class ServiceTermsNotificationSender
         $message = $this->messageProvider->newMessage(self::MAIL_TYPE_SERVICE_TERMS_ACCEPTED, [
             'firstName' => $recipient->getFirstName(),
         ]);
+
+        $pdf = $this->serviceTermsGenerator->getFileSystem()->read(
+            $this->serviceTermsGenerator->getFilePath($acceptationsLegalDoc)
+        );
+        $attachment = new Swift_Attachment(
+            $pdf,
+            'conditions-générales.pdf',
+            'application/pdf'
+        );
         $message->setTo($recipient->getEmail());
-        $message->attach(Swift_Attachment::fromPath($this->serviceTermsGenerator->getFilePath($acceptationsLegalDoc)));
+        $message->attach($attachment);
 
         return $this->mailer->send($message);
     }
