@@ -89,6 +89,7 @@
     "hautelook/alice-bundle": "^2.5",
     "phpmd/phpmd": "^2.6",
     "phpro/grumphp": "^0.15",
+    "phpspec/prophecy": "^1.8",
     "phpstan/phpstan-doctrine": "^0.11",
     "phpstan/phpstan-phpunit": "^0.11",
     "phpstan/phpstan-symfony": "^0.11",

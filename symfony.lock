@@ -396,6 +396,15 @@
     "phpcollection/phpcollection": {
         "version": "0.5.0"
     },
+    "phpdocumentor/reflection-common": {
+        "version": "2.0.0"
+    },
+    "phpdocumentor/reflection-docblock": {
+        "version": "4.3.2"
+    },
+    "phpdocumentor/type-resolver": {
+        "version": "1.0.1"
+    },
     "phpmd/phpmd": {
         "version": "2.6.0"
     },
@@ -407,6 +416,9 @@
     },
     "phpro/grumphp": {
         "version": "v0.15.2"
+    },
+    "phpspec/prophecy": {
+        "version": "1.8.1"
     },
     "phpstan/phpdoc-parser": {
         "version": "0.3.4"
@@ -885,6 +897,9 @@
     },
     "twig/twig": {
         "version": "v2.11.0"
+    },
+    "webmozart/assert": {
+        "version": "1.5.0"
     },
     "whichbrowser/parser": {
         "version": "v2.0.37"
