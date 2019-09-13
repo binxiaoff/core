@@ -7,8 +7,9 @@ namespace Unilend\Service;
 namespace Unilend\Service\Project;
 
 use Doctrine\ORM\{ORMException, OptimisticLockException};
+use Exception;
 use Psr\Log\LoggerInterface;
-use Unilend\Entity\{Project, ProjectStatusHistory};
+use Unilend\Entity\{Project, ProjectStatus};
 use Unilend\Repository\ProjectRepository;
 use Unilend\Service\User\RealUserFinder;
 
@@ -39,13 +40,13 @@ class ProjectStatusManager
     /**
      * @param int     $projectStatus
      * @param Project $project
+     *
+     * @throws Exception
      */
     public function addProjectStatus(int $projectStatus, $project): void
     {
-        $projectStatusHistory = (new ProjectStatusHistory())
-            ->setStatus($projectStatus)
-            ->setAddedByValue($this->realUserFinder)
-        ;
+        $projectStatusHistory = (new ProjectStatus($project, $projectStatus))->setAddedByValue($this->realUserFinder);
+
         $project->setProjectStatusHistory($projectStatusHistory);
 
         try {

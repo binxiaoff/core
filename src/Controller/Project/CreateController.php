@@ -5,12 +5,13 @@ declare(strict_types=1);
 namespace Unilend\Controller\Project;
 
 use Doctrine\ORM\{ORMException, OptimisticLockException};
+use League\Flysystem\{FileExistsException, FileNotFoundException};
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\{File\UploadedFile, Request, Response};
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\User\UserInterface;
-use Unilend\Entity\{Attachment, Clients, Project, ProjectStatusHistory};
+use Unilend\Entity\{Attachment, Clients, Project, ProjectStatus};
 use Unilend\Form\Project\ProjectType;
 use Unilend\Repository\ProjectRepository;
 use Unilend\Service\{Attachment\AttachmentManager, Project\ProjectImageManager, User\RealUserFinder};
@@ -40,6 +41,8 @@ class CreateController extends AbstractController
      *
      * @throws ORMException
      * @throws OptimisticLockException
+     * @throws FileExistsException
+     * @throws FileNotFoundException
      *
      * @return Response
      */
@@ -79,15 +82,14 @@ class CreateController extends AbstractController
                 $imageManager->setImage($project, $imageFile);
             }
 
-            $projectStatusHistory = (new ProjectStatusHistory())
-                ->setStatus(ProjectStatusHistory::STATUS_REQUESTED)
+            $projectStatus = (new ProjectStatus($project, ProjectStatus::STATUS_REQUESTED))
                 ->setAddedByValue($realUserFinder)
             ;
 
             $project
                 ->setSubmitterClient($client)
                 ->setSubmitterCompany($client->getCompany())
-                ->setProjectStatusHistory($projectStatusHistory)
+                ->setProjectStatusHistory($projectStatus)
             ;
 
             $projectRepository->save($project);

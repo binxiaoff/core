@@ -21,7 +21,7 @@ use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Validator\Constraints\Image;
 use Symfony\Component\Validator\Constraints\Valid;
-use Unilend\Entity\{AcceptedBids, Attachment, Bids, CaRegionalBank, Clients, Loans, Project, ProjectStatusHistory};
+use Unilend\Entity\{AcceptedBids, Attachment, Bids, CaRegionalBank, Clients, Loans, Project, ProjectStatus};
 use Unilend\Form\Bid\PartialBid;
 use Unilend\Form\Project\{ConfidentialityEditionType, ProjectAttachmentCollectionType, ProjectFeeTypeCollectionType};
 use Unilend\Form\Tranche\TrancheTypeCollectionType;
@@ -110,7 +110,7 @@ class EditController extends AbstractController
             'northEastRegionalBankIds' => $regionalBankRepository->getRegionalBankIds(CaRegionalBank::FRIENDLY_GROUP_NORTH_EAST, ['c.name' => 'ASC']),
             'westRegionalBankIds'      => $regionalBankRepository->getRegionalBankIds(CaRegionalBank::FRIENDLY_GROUP_WEST, ['c.name' => 'ASC']),
             'southRegionalBankIds'     => $regionalBankRepository->getRegionalBankIds(CaRegionalBank::FRIENDLY_GROUP_SOUTH, ['c.name' => 'ASC']),
-            'projectStatus'            => ProjectStatusHistory::getAllProjectStatus(),
+            'projectStatus'            => ProjectStatus::getPossibleStatuses(),
             'project'                  => $project,
             'attachmentTypes'          => $projectAttachmentTypeRepository->getAttachmentTypes(),
             'projectAttachments'       => $projectAttachmentRepository->getAttachmentsWithoutSignature($project),
@@ -196,27 +196,27 @@ class EditController extends AbstractController
 
         switch ($route) {
             case 'edit_project_status_abandon':
-                $status = ProjectStatusHistory::STATUS_CANCELLED;
+                $status = ProjectStatus::STATUS_CANCELLED;
 
                 break;
             case 'edit_project_status_funded':
-                $status = ProjectStatusHistory::STATUS_FUNDED;
+                $status = ProjectStatus::STATUS_FUNDED;
 
                 break;
             case 'edit_project_status_contracts_redacted':
-                $status = ProjectStatusHistory::STATUS_CONTRACTS_REDACTED;
+                $status = ProjectStatus::STATUS_CONTRACTS_REDACTED;
 
                 break;
             case 'edit_project_status_signed':
-                $status = ProjectStatusHistory::STATUS_CONTRACTS_SIGNED;
+                $status = ProjectStatus::STATUS_CONTRACTS_SIGNED;
 
                 break;
             case 'edit_project_status_finished':
-                $status = ProjectStatusHistory::STATUS_FINISHED;
+                $status = ProjectStatus::STATUS_FINISHED;
 
                 break;
             case 'edit_project_status_lost':
-                $status = ProjectStatusHistory::STATUS_LOST;
+                $status = ProjectStatus::STATUS_LOST;
 
                 break;
         }
@@ -225,7 +225,7 @@ class EditController extends AbstractController
             $projectStatusManager->addProjectStatus($status, $project);
 
             switch ($status) {
-                case ProjectStatusHistory::STATUS_FUNDED:
+                case ProjectStatus::STATUS_FUNDED:
                     $this->closeProject(
                         $project,
                         $trancheRepository,

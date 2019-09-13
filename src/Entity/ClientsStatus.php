@@ -9,10 +9,16 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * ClientsStatus.
  *
- * @ORM\Table(name="clients_status")
- * @ORM\Entity
+ * @ORM\Table(
+ *     name="clients_status",
+ *     indexes={
+ *         @ORM\Index(columns={"clients_id"}, name="idx_clients_status_clients_id"),
+ *         @ORM\Index(columns={"status"}, name="idx_clients_status_status")
+ *     }
+ * )
+ * @ORM\Entity(repositoryClass="Unilend\Repository\ClientsStatusRepository")
  */
-class ClientsStatus
+class ClientsStatus extends AbstractStatus
 {
     public const STATUS_CREATED   = 10;
     public const STATUS_VALIDATED = 20;
@@ -25,46 +31,67 @@ class ClientsStatus
     ];
 
     /**
-     * @var int
+     * @var Clients
      *
-     * @ORM\Column(name="id", type="integer")
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="NONE")
+     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Clients", inversedBy="statuses")
+     * @ORM\JoinColumn(name="clients_id", referencedColumnName="id_client", nullable=false, onDelete="CASCADE")
      */
-    private $id;
+    private $clients;
 
     /**
      * @var string
      *
-     * @ORM\Column(type="string", length=191, unique=true, nullable=false)
+     * @ORM\Column(name="content", type="text", length=16777215, nullable=true)
      */
-    private $code;
+    private $content;
 
     /**
      * ClientsStatus constructor.
      *
-     * @param int    $id
-     * @param string $label
+     * @param Clients     $clients
+     * @param int         $status
+     * @param string|null $content
+     *
+     * @throws \Exception
      */
-    public function __construct(int $id, string $label)
+    public function __construct(Clients $clients, int $status, string $content = null)
     {
-        $this->id   = $id;
-        $this->code = $label;
+        parent::__construct($status);
+        $this->clients = $clients;
+        $this->content = $content;
     }
 
     /**
-     * @return string
+     * Get idClient.
+     *
+     * @return Clients
      */
-    public function getCode(): string
+    public function getClients(): Clients
     {
-        return $this->code;
+        return $this->clients;
     }
 
     /**
-     * @return int
+     * Set content.
+     *
+     * @param string|null $content
+     *
+     * @return ClientsStatus
      */
-    public function getId(): int
+    public function setContent(?string $content): ClientsStatus
     {
-        return $this->id;
+        $this->content = $content;
+
+        return $this;
+    }
+
+    /**
+     * Get content.
+     *
+     * @return string|null
+     */
+    public function getContent(): ?string
+    {
+        return $this->content;
     }
 }

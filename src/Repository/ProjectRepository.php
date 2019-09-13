@@ -7,7 +7,7 @@ namespace Unilend\Repository;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\{NonUniqueResultException, ORMException, OptimisticLockException, QueryBuilder};
-use Unilend\Entity\{Clients, Project, ProjectStatusHistory};
+use Unilend\Entity\{Clients, Project, ProjectStatus};
 use Unilend\Repository\Traits\{OrderByHandlerTrait, PaginationHandlerTrait};
 
 /**
@@ -90,7 +90,7 @@ class ProjectRepository extends ServiceEntityRepository
             ->where('cpsh.status IN (:status)')
             ->andWhere('pp.company = :company OR p.submitterCompany = :company')
             ->setParameter('company', $client->getCompany())
-            ->setParameter('status', ProjectStatusHistory::DISPLAYABLE_STATUS)
+            ->setParameter('status', ProjectStatus::DISPLAYABLE_STATUS)
         ;
 
         return $queryBuilder;

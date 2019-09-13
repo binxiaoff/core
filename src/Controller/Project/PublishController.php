@@ -5,12 +5,13 @@ declare(strict_types=1);
 namespace Unilend\Controller\Project;
 
 use Doctrine\ORM\{ORMException, OptimisticLockException};
+use Exception;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\{Request, Response};
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Routing\Annotation\Route;
-use Unilend\Entity\{FoncarisRequest, Project, ProjectStatusHistory, TrancheAttribute};
+use Unilend\Entity\{FoncarisRequest, Project, ProjectStatus, TrancheAttribute};
 use Unilend\Form\Foncaris\{FoncarisRequestType, FoncarisTrancheAttributeType};
 use Unilend\Message\Project\ProjectPublished;
 use Unilend\Repository\FoncarisRequestRepository;
@@ -37,6 +38,7 @@ class PublishController extends AbstractController
      *
      * @throws ORMException
      * @throws OptimisticLockException
+     * @throws Exception
      *
      * @return Response
      */
@@ -56,7 +58,7 @@ class PublishController extends AbstractController
 
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {
-            $projectStatusManager->addProjectStatus(ProjectStatusHistory::STATUS_PUBLISHED, $project);
+            $projectStatusManager->addProjectStatus(ProjectStatus::STATUS_PUBLISHED, $project);
 
             $foncarisRequest = $form->getData();
 
