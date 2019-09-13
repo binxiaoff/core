@@ -59,7 +59,7 @@ class AccountController extends AbstractController
 
         $client = $temporaryLink->getIdClient();
 
-        if (null === $client || false === $client->isValidated() || false === empty($client->getPassword())) {
+        if (null === $client || false === $client->isCreated() || false === empty($client->getPassword())) {
             return $this->redirectToRoute('home');
         }
 

@@ -713,6 +713,19 @@ class Project
     }
 
     /**
+     * @param Clients $client
+     *
+     * @return ProjectParticipant|null
+     */
+    public function getProjectParticipantByClient(Clients $client): ?ProjectParticipant
+    {
+        $criteria = new Criteria();
+        $criteria->where(Criteria::expr()->eq('client', $client));
+
+        return $this->projectParticipants->matching($criteria)->first() ?: null;
+    }
+
+    /**
      * @param Companies $companies
      *
      * @return ProjectParticipant|null
@@ -724,6 +737,46 @@ class Project
 
         // A company can only have one participant on a project.
         return $this->projectParticipants->matching($criteria)->first() ?: null;
+    }
+
+    /**
+     * @param Companies $company
+     * @param Clients   $client
+     * @param string    $role
+     *
+     * @return $this
+     */
+    public function addClientParticipant(Companies $company, Clients $client, string $role)
+    {
+        if ($this->isUniqueRole($role)) {
+            /** @var ProjectParticipant $projectParticipantToDelete */
+            $projectParticipantToDelete = $this->getParticipantsByRole($role)->first();
+
+            if ($projectParticipantToDelete
+                && $company !== $projectParticipantToDelete->getCompany()
+                && $client !== $projectParticipantToDelete->getClient()
+            ) {
+                $projectParticipantToDelete->removeRole($role);
+            }
+        }
+
+        $projectParticipant = $this->getProjectParticipantByClient($client);
+
+        if (null === $projectParticipant) {
+            $projectParticipant = (new ProjectParticipant())
+                ->setCompany($company)
+                ->setClient($client)
+                ->setProject($this)
+            ;
+        }
+
+        $projectParticipant->addRoles([$role]);
+
+        if (false === $this->projectParticipants->contains($projectParticipant)) {
+            $this->projectParticipants->add($projectParticipant);
+        }
+
+        return $this;
     }
 
     /**

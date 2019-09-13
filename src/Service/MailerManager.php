@@ -85,68 +85,13 @@ class MailerManager
     }
 
     /**
-     * @param Clients $client
-     *
-     * @return int
-     */
-    public function sendIdentityUpdated(Clients $client): int
-    {
-        $sent = 0;
-
-        $classMetaData = $this->entityManager->getClassMetadata(Clients::class);
-        $unitOfWork    = $this->entityManager->getUnitOfWork();
-        $unitOfWork->computeChangeSet($classMetaData, $client);
-
-        $changeSet = $unitOfWork->getEntityChangeSet($client);
-
-        foreach ($changeSet as $field => $value) {
-            if (('mobile' === $field || 'phone' === $field) && $changeSet[$field][0]->equals($changeSet[$field][1])) {
-                unset($changeSet[$field]);
-            }
-        }
-
-        if (false === empty($changeSet) && false === empty($client)) {
-            foreach ($changeSet as $field => $value) {
-                unset($changeSet[$field]);
-                $changeSet[] = $this->translator->trans('mail-identity-updated.' . $field);
-            }
-
-            if (count($changeSet) > 1) {
-                $content      = 'Ces informations personnelles ont été modifiées :';
-                $changeFields = '<ul><li>';
-                $changeFields .= implode('</li><li>', $changeSet);
-                $changeFields .= '</li></ul>';
-            } else {
-                $content      = 'Cette information personnelle a été modifiée :';
-                $changeFields = $changeSet[0];
-            }
-
-            $keywords = [
-                'firstName'    => $client->getFirstName(),
-                'content'      => $content,
-                'profileUrl'   => $this->router->generate('profile', [], RouterInterface::ABSOLUTE_URL),
-                'changeFields' => $changeFields,
-            ];
-
-            $message = $this->messageProvider->newMessage('identity-updated', $keywords);
-            $message->setTo($client->getEmail());
-
-            $sent += $this->mailer->send($message);
-
-            return $sent;
-        }
-
-        return $sent;
-    }
-
-    /**
      * @param string $inviter
      * @param string $token
      * @param string $email
      *
      * @return int
      */
-    public function sendInvitation(string $inviter, string $token, string $email)
+    public function sendProjectInvitation(string $inviter, string $token, string $email)
     {
         $sent = 0;
 
