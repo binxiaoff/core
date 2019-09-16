@@ -212,14 +212,9 @@ class Clients implements UserInterface, EquatableInterface
     private $projectParticipants;
 
     /**
-     * @ORM\OneToMany(targetEntity="Unilend\Entity\Invitation", mappedBy="id_client", cascade={"persist"}, orphanRemoval=true)
+     * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectInvitation", mappedBy="id_client", cascade={"persist"}, orphanRemoval=true)
      */
-    private $invitations;
-
-    /**
-     * @ORM\OneToMany(targetEntity="Unilend\Entity\Invitation", mappedBy="invited_by", cascade={"persist"}, orphanRemoval=true)
-     */
-    private $hasInvited;
+    private $projectInvitations;
 
     /**
      * Clients constructor.
@@ -229,8 +224,7 @@ class Clients implements UserInterface, EquatableInterface
         $this->attachments         = new ArrayCollection();
         $this->statuses            = new ArrayCollection();
         $this->projectParticipants = new ArrayCollection();
-        $this->invitations         = new ArrayCollection();
-        $this->hasInvited          = new ArrayCollection();
+        $this->projectInvitations  = new ArrayCollection();
         $this->setCurrentStatus(ClientsStatus::STATUS_CREATED);
     }
 
@@ -713,81 +707,40 @@ class Clients implements UserInterface, EquatableInterface
     }
 
     /**
-     * @return Collection|Invitation[]
+     * @return Collection|ProjectInvitation[]
      */
-    public function getInvitations(): Collection
+    public function getProjectInvitations(): Collection
     {
-        return $this->invitations;
+        return $this->projectInvitations;
     }
 
     /**
-     * @param Invitation $invitation
+     * @param ProjectInvitation $projectInvitation
      *
      * @return Clients
      */
-    public function addInvitation(Invitation $invitation): self
+    public function addProjectInvitation(ProjectInvitation $projectInvitation): self
     {
-        if (!$this->invitations->contains($invitation)) {
-            $this->invitations[] = $invitation;
-            $invitation->setIdClient($this);
+        if (!$this->projectInvitations->contains($projectInvitation)) {
+            $this->projectInvitations[] = $projectInvitation;
+            $projectInvitation->setClient($this);
         }
 
         return $this;
     }
 
     /**
-     * @param Invitation $invitation
+     * @param ProjectInvitation $projectInvitation
      *
      * @return Clients
      */
-    public function removeInvitation(Invitation $invitation): self
+    public function removeProjectInvitation(ProjectInvitation $projectInvitation): self
     {
-        if ($this->invitations->contains($invitation)) {
-            $this->invitations->removeElement($invitation);
+        if ($this->projectInvitations->contains($projectInvitation)) {
+            $this->projectInvitations->removeElement($projectInvitation);
             // set the owning side to null (unless already changed)
-            if ($invitation->getIdClient() === $this) {
-                $invitation->setIdClient(null);
-            }
-        }
-
-        return $this;
-    }
-
-    /**
-     * @return Collection|Invitation[]
-     */
-    public function getHasInvited(): Collection
-    {
-        return $this->hasInvited;
-    }
-
-    /**
-     * @param Invitation $hasInvited
-     *
-     * @return Clients
-     */
-    public function addHasInvited(Invitation $hasInvited): self
-    {
-        if (!$this->hasInvited->contains($hasInvited)) {
-            $this->hasInvited[] = $hasInvited;
-            $hasInvited->setInvitedBy($this);
-        }
-
-        return $this;
-    }
-
-    /**
-     * @param Invitation $hasInvited
-     *
-     * @return Clients
-     */
-    public function removeHasInvited(Invitation $hasInvited): self
-    {
-        if ($this->hasInvited->contains($hasInvited)) {
-            $this->hasInvited->removeElement($hasInvited);
-            // set the owning side to null (unless already changed)
-            if ($hasInvited->getInvitedBy() === $this) {
-                $hasInvited->setInvitedBy(null);
+            if ($projectInvitation->getClient() === $this) {
+                $projectInvitation->setClient(null);
             }
         }
 

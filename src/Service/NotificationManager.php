@@ -8,10 +8,11 @@ use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use Swift_RfcComplianceException;
 use Symfony\Component\Messenger\MessageBusInterface;
-use Unilend\Entity\{Bids, Clients, Notification, Project, ProjectComment};
+use Unilend\Entity\{Bids, Clients, ClientsStatus, Notification, Project, ProjectComment};
 use Unilend\Message\Client\ClientInvited;
 use Unilend\Repository\ClientsStatusHistoryRepository;
 use Unilend\Repository\NotificationRepository;
+use Unilend\Repository\ProjectInvitationRepository;
 
 class NotificationManager
 {
@@ -35,10 +36,10 @@ class NotificationManager
     private $mailerManager;
     /** @var MessageBusInterface */
     private $messageBus;
-    /**
-     * @var ClientsStatusHistoryRepository
-     */
+    /** @var ClientsStatusHistoryRepository */
     private $clientsStatusHistoryRepository;
+    /** @var ProjectInvitationRepository */
+    private $projectInvitationRepository;
 
     /**
      * @param EntityManagerInterface         $entityManager
@@ -46,19 +47,22 @@ class NotificationManager
      * @param MailerManager                  $mailerManager
      * @param MessageBusInterface            $messageBus
      * @param ClientsStatusHistoryRepository $clientsStatusHistoryRepository
+     * @param ProjectInvitationRepository    $projectInvitationRepository
      */
     public function __construct(
         EntityManagerInterface $entityManager,
         NotificationRepository $notificationRepository,
         MailerManager $mailerManager,
         MessageBusInterface $messageBus,
-        ClientsStatusHistoryRepository $clientsStatusHistoryRepository
+        ClientsStatusHistoryRepository $clientsStatusHistoryRepository,
+        ProjectInvitationRepository $projectInvitationRepository
     ) {
         $this->entityManager                  = $entityManager;
         $this->notificationRepository         = $notificationRepository;
         $this->mailerManager                  = $mailerManager;
         $this->messageBus                     = $messageBus;
         $this->clientsStatusHistoryRepository = $clientsStatusHistoryRepository;
+        $this->projectInvitationRepository    = $projectInvitationRepository;
     }
 
     /**
@@ -101,12 +105,8 @@ class NotificationManager
         $this->createNotification(Notification::TYPE_PROJECT_PUBLICATION, $recipients, $project);
 
         foreach ($recipients as $recipient) {
-//             change:
-//            $num = status 'creation'
-//            if ($num === $this->clientsStatusHistoryRepository->findOneBy(['idClient' => $recipient])) {}
-            if (null === $recipient->getPassword()) {
-                // inviter a modifier quand la table invitations sera créée
-                $inviter = $project->getSubmitterClient();
+            if (ClientsStatus::STATUS_CREATION === $this->clientsStatusHistoryRepository->findActualStatus($recipient)) {
+                $inviter = $this->projectInvitationRepository->findOneBy(['client' => $recipient, 'project' => $project])->getInvitedBy();
                 $this->messageBus->dispatch(new ClientInvited($inviter->getIdClient(), $recipient->getIdClient(), $project->getId()));
             } else {
                 $this->mailerManager->sendProjectPublication($project, $recipients);

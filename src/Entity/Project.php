@@ -268,6 +268,11 @@ class Project
     private $statuses;
 
     /**
+     * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectInvitation", mappedBy="project", cascade={"persist"}, orphanRemoval=true)
+     */
+    private $projectInvitations;
+
+    /**
      * Project constructor.
      *
      * @param RealUserFinder $realUserFinder
@@ -710,6 +715,14 @@ class Project
     public function getProjectParticipants(): iterable
     {
         return $this->projectParticipants;
+    }
+
+    /**
+     * @return ProjectInvitation[]|Collection
+     */
+    public function getProjectInvitations(): iterable
+    {
+        return $this->projectInvitations;
     }
 
     /**

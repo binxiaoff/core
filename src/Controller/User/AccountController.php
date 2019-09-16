@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Unilend\Controller\User;
 
 use DateTime;
-use Doctrine\ORM\{ORMException, OptimisticLockException};
+use Doctrine\ORM\{EntityManagerInterface, ORMException, OptimisticLockException};
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\{Request, Response};
@@ -13,19 +13,25 @@ use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
+use Unilend\Entity\ClientsStatus;
+use Unilend\Entity\ClientsStatusHistory;
+use Unilend\Entity\ProjectInvitation;
 use Unilend\Entity\TemporaryLinksLogin;
 use Unilend\Form\User\InitProfileType;
 use Unilend\Message\Client\ClientCreated;
 use Unilend\Repository\ClientsRepository;
+use Unilend\Repository\ClientsStatusRepository;
+use Unilend\Repository\ProjectInvitationRepository;
 use Unilend\Repository\TemporaryLinksLoginRepository;
 use Unilend\Service\ServiceTerms\ServiceTermsManager;
 
 class AccountController extends AbstractController
 {
     /**
-     * @Route("/compte/initialisation/{securityToken}", name="account_init", requirements={"securityToken": "[0-9a-f]+"}, methods={"GET", "POST"})
+     * @Route("/compte/initialisation/{securityToken}/{idInvitation}", name="account_init", requirements={"securityToken": "[0-9a-f]+"}, methods={"GET", "POST"})
      *
      * @ParamConverter("temporaryLink", options={"mapping": {"securityToken": "token"}})
+     * @ParamConverter("projectInvitation", options={"mapping": {"idInvitation": "id"}})
      *
      * @param Request                       $request
      * @param TemporaryLinksLogin           $temporaryLink
@@ -35,6 +41,10 @@ class AccountController extends AbstractController
      * @param ClientsRepository             $clientsRepository
      * @param ServiceTermsManager           $serviceTermsManager
      * @param MessageBusInterface           $messageBus
+     * @param ProjectInvitation             $projectInvitation
+     * @param ClientsStatusRepository       $clientsStatusRepository
+     * @param ProjectInvitationRepository   $projectInvitationRepository
+     * @param EntityManagerInterface        $entityManager
      *
      * @throws ORMException
      * @throws OptimisticLockException
@@ -49,12 +59,19 @@ class AccountController extends AbstractController
         UserPasswordEncoderInterface $userPasswordEncoder,
         ClientsRepository $clientsRepository,
         ServiceTermsManager $serviceTermsManager,
-        MessageBusInterface $messageBus
+        MessageBusInterface $messageBus,
+        ProjectInvitation $projectInvitation,
+        ClientsStatusRepository $clientsStatusRepository,
+        ProjectInvitationRepository $projectInvitationRepository,
+        EntityManagerInterface $entityManager
     ): Response {
         if ($temporaryLink->getExpires() < new DateTime()) {
             $this->addFlash('error', $translator->trans('account-init.invalid-link-error-message'));
 
             return $this->render('user/init.html.twig');
+        }
+        if ($temporaryLink->getIdClient() !== $projectInvitation->getClient()) {
+            return $this->redirectToRoute('home');
         }
 
         $client = $temporaryLink->getIdClient();
@@ -87,6 +104,16 @@ class AccountController extends AbstractController
             $temporaryLinksLoginRepository->save($temporaryLink);
 
             $messageBus->dispatch(new ClientCreated($client->getIdClient()));
+            $projectInvitation->setStatus(ProjectInvitation::STATUS_FINISH);
+            $projectInvitationRepository->save($projectInvitation);
+
+            $status              = $clientsStatusRepository->findOneBy(['id' => ClientsStatus::STATUS_VALIDATED]);
+            $statusClientHistory = (new ClientsStatusHistory())
+                ->setIdClient($client)
+                ->setIdStatus($status)
+            ;
+            $entityManager->persist($statusClientHistory);
+            $entityManager->flush();
 
             return $this->redirectToRoute('login');
         }

@@ -85,19 +85,22 @@ class MailerManager
     }
 
     /**
-     * @param string $inviter
-     * @param string $token
-     * @param string $email
+     * @param string  $inviter
+     * @param string  $token
+     * @param string  $email
+     * @param Project $project
+     * @param int     $idInvitation
      *
      * @return int
      */
-    public function sendProjectInvitation(string $inviter, string $token, string $email)
+    public function sendProjectInvitation(string $inviter, string $token, string $email, Project $project, int $idInvitation)
     {
         $sent = 0;
 
         $keywords = [
             'inviterName'    => $inviter,
-            'initAccountUrl' => $this->router->generate('account_init', ['securityToken' => $token], RouterInterface::ABSOLUTE_URL),
+            'project'        => $project->getTitle(),
+            'initAccountUrl' => $this->router->generate('account_init', ['securityToken' => $token, 'idInvitation' => $idInvitation], RouterInterface::ABSOLUTE_URL),
         ];
 
         $message = $this->messageProvider->newMessage('invite-guest', $keywords);

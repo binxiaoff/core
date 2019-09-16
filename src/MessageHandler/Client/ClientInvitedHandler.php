@@ -10,14 +10,14 @@ use Doctrine\ORM\ORMException;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
 use Unilend\Entity\ClientsStatus;
-use Unilend\Entity\Invitation;
+use Unilend\Entity\ProjectInvitation;
 use Unilend\Entity\ProjectStatusHistory;
 use Unilend\Entity\TemporaryLinksLogin;
 use Unilend\Message\Client\ClientInvited;
 use Unilend\Repository\ClientsRepository;
 use Unilend\Repository\ClientsStatusRepository;
 use Unilend\Repository\CompaniesRepository;
-use Unilend\Repository\InvitationRepository;
+use Unilend\Repository\ProjectInvitationRepository;
 use Unilend\Repository\ProjectRepository;
 use Unilend\Repository\ProjectStatusHistoryRepository;
 use Unilend\Repository\TemporaryLinksLoginRepository;
@@ -43,8 +43,8 @@ class ClientInvitedHandler implements MessageHandlerInterface
     private $mailerManager;
     /** @var LoggerInterface */
     private $logger;
-    /** @var InvitationRepository */
-    private $invitationRepository;
+    /** @var ProjectInvitationRepository */
+    private $projectInvitationRepository;
 
     /**
      * @param ClientsRepository              $clientsRepository
@@ -56,7 +56,7 @@ class ClientInvitedHandler implements MessageHandlerInterface
      * @param TemporaryLinksLoginRepository  $temporaryLinksLoginRepository
      * @param MailerManager                  $mailerManager
      * @param LoggerInterface                $logger
-     * @param InvitationRepository           $invitationRepository
+     * @param ProjectInvitationRepository    $projectInvitationRepository
      */
     public function __construct(
         ClientsRepository $clientsRepository,
@@ -68,7 +68,7 @@ class ClientInvitedHandler implements MessageHandlerInterface
         TemporaryLinksLoginRepository $temporaryLinksLoginRepository,
         MailerManager $mailerManager,
         LoggerInterface $logger,
-        InvitationRepository $invitationRepository
+        ProjectInvitationRepository $projectInvitationRepository
     ) {
         $this->clientsRepository              = $clientsRepository;
         $this->projectRepository              = $projectRepository;
@@ -79,7 +79,7 @@ class ClientInvitedHandler implements MessageHandlerInterface
         $this->temporaryLinksLoginRepository  = $temporaryLinksLoginRepository;
         $this->mailerManager                  = $mailerManager;
         $this->logger                         = $logger;
-        $this->invitationRepository           = $invitationRepository;
+        $this->projectInvitationRepository    = $projectInvitationRepository;
     }
 
     /**
@@ -95,12 +95,13 @@ class ClientInvitedHandler implements MessageHandlerInterface
         $inviter = $this->clientsRepository->findOneBy(['idClient' => $clientInvited->getInviterId()]);
         $project = $this->projectRepository->findOneBy(['id' => $clientInvited->getProjectId()]);
 
-        $invitation = (new Invitation())
-            ->setIdClient($guest)
+        $invitation = (new ProjectInvitation())
+            ->setClient($guest)
             ->setInvitedBy($inviter)
-            ->setStatus(Invitation::STATUS_SENT)
+            ->setProject($project)
+            ->setStatus(ProjectInvitation::STATUS_SENT)
             ;
-        $this->invitationRepository->save($invitation);
+        $this->projectInvitationRepository->save($invitation);
 
         $projectStatusHistory = $this->projectStatusHistoryRepository->findOneBy(['project' => $project]);
 
@@ -110,7 +111,7 @@ class ClientInvitedHandler implements MessageHandlerInterface
             } elseif (ClientsStatus::STATUS_CREATION === $guest->getIdClientStatusHistory()->getIdStatus()->getId()) {
                 $inviterName = $inviter->getLastName() . ' ' . $inviter->getFirstName();
                 $token       = $this->temporaryLinksLoginRepository->generateTemporaryLink($guest, TemporaryLinksLogin::PASSWORD_TOKEN_LIFETIME_LONG);
-                $this->mailerManager->sendProjectInvitation($inviterName, $token, $guest->getEmail());
+                $this->mailerManager->sendProjectInvitation($inviterName, $token, $guest->getEmail(), $project, $invitation->getId());
             } else {
                 $this->logger->error('Unable to retrieve last client notifications. Error: ', [
                     'id_client'     => $guest->getIdClient(),

@@ -44,11 +44,12 @@ use Unilend\Repository\{AcceptedBidsRepository,
     BidsRepository,
     CaRegionalBankRepository,
     ClientsRepository,
+    ClientsStatusHistoryRepository,
     ClientsStatusRepository,
     CompaniesRepository,
     ProjectAttachmentRepository,
     ProjectAttachmentTypeRepository,
-    ProjectParticipantRepository,
+    ProjectInvitationRepository,
     ProjectRepository,
     ProjectStatusHistoryRepository,
     TrancheRepository};
@@ -280,17 +281,17 @@ class EditController extends AbstractController
     /**
      * @Route("/projet/inviter-interlocuteur/{hash}", name="invite_guest", requirements={"hash": "[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}"})
      *
-     * @param Project                        $project
-     * @param Request                        $request
-     * @param UserInterface|null             $user
-     * @param TranslatorInterface            $translator
-     * @param ClientsRepository              $clientsRepository
-     * @param ProjectStatusHistoryRepository $projectStatusHistoryRepository
-     * @param ClientsStatusRepository        $clientsStatusRepository
-     * @param CompaniesRepository            $companiesRepository
-     * @param MessageBusInterface            $messageBus
-     * @param EntityManagerInterface         $entityManager
-     * @param ProjectRepository              $projectRepository
+     * @param Project                     $project
+     * @param Request                     $request
+     * @param UserInterface|null          $user
+     * @param TranslatorInterface         $translator
+     * @param ClientsRepository           $clientsRepository
+     * @param ClientsStatusRepository     $clientsStatusRepository
+     * @param CompaniesRepository         $companiesRepository
+     * @param MessageBusInterface         $messageBus
+     * @param EntityManagerInterface      $entityManager
+     * @param ProjectRepository           $projectRepository
+     * @param ProjectInvitationRepository $projectInvitationRepository
      *
      * @throws ORMException
      * @throws OptimisticLockException
@@ -303,12 +304,12 @@ class EditController extends AbstractController
         ?UserInterface $user,
         TranslatorInterface $translator,
         ClientsRepository $clientsRepository,
-        ProjectStatusHistoryRepository $projectStatusHistoryRepository,
         ClientsStatusRepository $clientsStatusRepository,
         CompaniesRepository $companiesRepository,
         MessageBusInterface $messageBus,
         EntityManagerInterface $entityManager,
-        ProjectRepository $projectRepository
+        ProjectRepository $projectRepository,
+        ProjectInvitationRepository $projectInvitationRepository
     ) {
         $form = $this->createFormBuilder()->add('email_guest', EmailType::class)->getForm();
         $form->handleRequest($request);
@@ -318,14 +319,6 @@ class EditController extends AbstractController
             $guestEmail            = mb_strtolower($form->getData()['email_guest']);
             $guestEmailDomain      = explode('@', $guestEmail)[1];
             $companiesEmailDomains = $companiesRepository->findEmailDomains();
-            $projectStatusHistory  = $projectStatusHistoryRepository->findOneBy(['project' => $project]);
-
-//            modifier: il faut utiliser invitation repository quand la table sera creee
-//            if ($invitationRepository->findOneBy()) {
-//                $this->addFlash('sendError', $translator->trans('invite-guest.email-already-sent'));
-//
-//                return $this->redirectToRoute('invite_guest', ['hash' => $project->getHash()]);
-//            }
 
             foreach ($companiesEmailDomains as $companyEmailDomain) {
                 if ($companyEmailDomain === $guestEmailDomain) {
@@ -335,9 +328,15 @@ class EditController extends AbstractController
 
             if ($isEmailValid) {
                 $company = $companiesRepository->findOneBy(['emailDomain' => $guestEmailDomain]);
-                if ($clientsRepository->findOneBy(['email' => $guestEmail])) {
-                    $guest = $clientsRepository->findOneBy(['email' => $guestEmail]);
-                } else {
+                $guest   = $clientsRepository->findOneBy(['email' => $guestEmail]);
+
+                if ($projectInvitationRepository->findBy(['client' => $guest, 'project' => $project, 'invitedBy' => $user])) {
+                    $this->addFlash('sendError', $translator->trans('invite-guest.email-already-sent'));
+
+                    return $this->redirectToRoute('invite_guest', ['hash' => $project->getHash()]);
+                }
+
+                if (null === $guest) {
                     $guest               = new Clients();
                     $statusClientHistory = (new ClientsStatusHistory())
                         ->setIdClient($guest)

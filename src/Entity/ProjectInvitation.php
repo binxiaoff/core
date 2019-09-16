@@ -8,9 +8,10 @@ use DateTime;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * @ORM\Entity(repositoryClass="Unilend\Repository\InvitationRepository")
+ * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(columns={"id_client", "invited_by", "project"})})
+ * @ORM\Entity(repositoryClass="Unilend\Repository\ProjectInvitationRepository")
  */
-class Invitation
+class ProjectInvitation
 {
     public const STATUS_SENT   = 0;
     public const STATUS_FINISH = 1;
@@ -23,12 +24,12 @@ class Invitation
     private $id;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Clients", inversedBy="invitations")
+     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Clients", inversedBy="projectInvitations")
      * @ORM\JoinColumns({
      *     @ORM\JoinColumn(name="id_client", referencedColumnName="id_client", nullable=false)
      * })
      */
-    private $idClient;
+    private $client;
 
     /**
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\Clients", inversedBy="hasInvited")
@@ -37,6 +38,14 @@ class Invitation
      * })
      */
     private $invitedBy;
+
+    /**
+     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Project", inversedBy="projectInvitations")
+     * @ORM\JoinColumns({
+     *     @ORM\JoinColumn(name="project", referencedColumnName="id", nullable=false)
+     * })
+     */
+    private $project;
 
     /**
      * @ORM\Column(type="datetime")
@@ -67,19 +76,19 @@ class Invitation
     /**
      * @return Clients|null
      */
-    public function getIdClient(): ?Clients
+    public function getClient(): ?Clients
     {
-        return $this->idClient;
+        return $this->client;
     }
 
     /**
-     * @param Clients|null $idClient
+     * @param Clients|null $Client
      *
-     * @return Invitation
+     * @return ProjectInvitation
      */
-    public function setIdClient(?Clients $idClient): self
+    public function setClient(?Clients $Client): self
     {
-        $this->idClient = $idClient;
+        $this->client = $Client;
 
         return $this;
     }
@@ -95,7 +104,7 @@ class Invitation
     /**
      * @param Clients|null $invitedBy
      *
-     * @return Invitation
+     * @return ProjectInvitation
      */
     public function setInvitedBy(?Clients $invitedBy): self
     {
@@ -107,7 +116,7 @@ class Invitation
     /**
      * @param \DateTimeInterface $added
      *
-     * @return Invitation
+     * @return ProjectInvitation
      */
     public function setAdded(\DateTimeInterface $added): self
     {
@@ -127,11 +136,31 @@ class Invitation
     /**
      * @param int $status
      *
-     * @return Invitation
+     * @return ProjectInvitation
      */
     public function setStatus(int $status): self
     {
         $this->status = $status;
+
+        return $this;
+    }
+
+    /**
+     * @return Project|null
+     */
+    public function getProject(): ?Project
+    {
+        return $this->project;
+    }
+
+    /**
+     * @param Project|null $project
+     *
+     * @return ProjectInvitation
+     */
+    public function setProject(?Project $project): self
+    {
+        $this->project = $project;
 
         return $this;
     }
