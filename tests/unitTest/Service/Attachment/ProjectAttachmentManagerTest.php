@@ -8,7 +8,7 @@ use Doctrine\ORM\{ORMException, OptimisticLockException};
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
 use Prophecy\Prophecy\ObjectProphecy;
-use Unilend\Entity\{Attachment, AttachmentType, Project, ProjectAttachment, ProjectAttachmentType};
+use Unilend\Entity\{Attachment, AttachmentType, Clients, Project, ProjectAttachment, ProjectAttachmentType};
 use Unilend\Repository\{ProjectAttachmentRepository, ProjectAttachmentTypeRepository, ProjectRepository};
 use Unilend\Service\Attachment\{AttachmentManager, ProjectAttachmentManager};
 
@@ -57,7 +57,7 @@ class ProjectAttachmentManagerTest extends TestCase
      */
     public function testAttachToProject(): void
     {
-        $project    = new Project();
+        $project    = new Project(new Clients());
         $attachment = new Attachment();
 
         $this->projectAttachmentRepository
@@ -117,7 +117,7 @@ class ProjectAttachmentManagerTest extends TestCase
 
         $projectAttachmentType->setAttachmentType($attachmentType);
 
-        $project    = new Project();
+        $project    = new Project(new Clients());
         $attachment = new Attachment();
         $attachment->setType($attachmentType);
 
@@ -215,7 +215,7 @@ class ProjectAttachmentManagerTest extends TestCase
      */
     protected function createProjectAttachment(?Project $project = null, ?Attachment $attachment = null): ProjectAttachment
     {
-        $project    = $project    ?? new Project();
+        $project    = $project    ?? new Project(new Clients());
         $attachment = $attachment ?? new Attachment();
 
         $projectAttachment = new ProjectAttachment();
