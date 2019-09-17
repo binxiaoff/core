@@ -179,23 +179,6 @@ class AttachmentManagerTest extends TestCase
     }
 
     /**
-     * @covers ::save
-     *
-     * @throws ORMException
-     * @throws OptimisticLockException
-     */
-    public function testSave(): void
-    {
-        $attachment = new Attachment();
-
-        $attachmentManager = $this->createTestObject();
-
-        $attachmentManager->save($attachment);
-
-        $this->attachmentRepository->save(Argument::exact($attachment))->shouldHaveBeenCalled();
-    }
-
-    /**
      * @covers ::logDownload
      *
      * @throws ORMException
@@ -256,6 +239,7 @@ class AttachmentManagerTest extends TestCase
 
         static::assertSame($this->realUser, $attachment->getArchivedBy());
         static::assertInstanceOf(DateTimeInterface::class, $attachment->getArchived());
+        $this->attachmentRepository->save(Argument::exact($attachment))->shouldHaveBeenCalled();
     }
 
     /**

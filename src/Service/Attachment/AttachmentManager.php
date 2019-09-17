@@ -140,10 +140,8 @@ class AttachmentManager
      */
     public function archive(Attachment $attachment): void
     {
-        $attachment
-            ->setArchived(new DateTimeImmutable())
-            ->setArchivedByValue($this->realUserFinder)
-        ;
+        $attachment->archive($this->realUserFinder);
+        $this->attachmentRepository->save($attachment);
     }
 
     /**
@@ -175,7 +173,7 @@ class AttachmentManager
     public function logDownload(Attachment $attachment): void
     {
         $attachment->setDownloaded(new DateTimeImmutable());
-        $this->save($attachment);
+        $this->attachmentRepository->save($attachment);
     }
 
     /**
@@ -197,7 +195,7 @@ class AttachmentManager
             ;
 
             foreach ($attachmentsToArchive as $attachment) {
-                $this->archive($attachment);
+                $attachment->archive($this->realUserFinder);
                 $this->entityManager->persist($attachment);
             }
         }

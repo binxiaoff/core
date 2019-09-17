@@ -92,7 +92,6 @@ class ProjectAttachmentManager
 
         if ($this->attachmentManager->isOrphan($attachment)) {
             $this->attachmentManager->archive($attachment);
-            $this->attachmentManager->save($attachment);
         }
     }
 }

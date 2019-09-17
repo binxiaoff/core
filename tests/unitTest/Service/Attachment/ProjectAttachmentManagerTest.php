@@ -189,13 +189,11 @@ class ProjectAttachmentManagerTest extends TestCase
         $attachment        = $projectAttachment->getAttachment();
         $this->attachmentManager->isOrphan(Argument::exact($attachment))->willReturn(true);
         $this->attachmentManager->archive(Argument::exact($attachment));
-        $this->attachmentManager->save(Argument::exact($attachment));
 
         $projectAttachmentManager = $this->createTestObject();
 
         $projectAttachmentManager->detachFromProject($projectAttachment);
         $this->attachmentManager->archive(Argument::exact($attachment))->shouldHaveBeenCalled();
-        $this->attachmentManager->save(Argument::exact($attachment))->shouldHaveBeenCalled();
     }
 
     /**
