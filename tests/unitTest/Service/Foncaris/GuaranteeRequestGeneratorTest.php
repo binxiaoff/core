@@ -74,7 +74,7 @@ class GuaranteeRequestGeneratorTest extends TestCase
     }
 
     /**
-     * @dataProvider uneededGenerateDataProvider
+     * @dataProvider unneededGenerateDataProvider
      *
      * @param int $choice
      *
@@ -95,7 +95,7 @@ class GuaranteeRequestGeneratorTest extends TestCase
     /**
      * @return array|int[][]
      */
-    public function uneededGenerateDataProvider()
+    public function unneededGenerateDataProvider(): array
     {
         return [
             'no need'           => [FoncarisRequest::FONCARIS_GUARANTEE_NO_NEED],
@@ -199,18 +199,18 @@ class GuaranteeRequestGeneratorTest extends TestCase
      */
     protected function createFoncarisRequest(): FoncarisRequest
     {
-        /** @var Companies|ObjectProphecy $borrowerComapany */
-        $borrowerComapany = $this->prophesize(Companies::class);
-        $borrowerComapany->getName()->willReturn(Base::randomLetter());
-        $borrowerComapany->getSiren()->willReturn(Base::numerify(str_repeat('#', 9)));
-        $borrowerComapany = $borrowerComapany->reveal();
+        /** @var Companies|ObjectProphecy $borrowerCompany */
+        $borrowerCompany = $this->prophesize(Companies::class);
+        $borrowerCompany->getName()->willReturn(Base::randomLetter());
+        $borrowerCompany->getSiren()->willReturn(Base::numerify(str_repeat('#', 9)));
+        $borrowerCompany = $borrowerCompany->reveal();
 
         /** @var Project|ObjectProphecy $project */
         $project = $this->prophesize(Project::class);
         $project->getId()->willReturn(1);
-        $project->getBorrowerCompany()->willReturn($borrowerComapany);
+        $project->getBorrowerCompany()->willReturn($borrowerCompany);
         $project->getTranches()->willReturn([new Tranche()]);
-        $project->getSubmitterCompany()->willReturn($borrowerComapany);
+        $project->getSubmitterCompany()->willReturn($borrowerCompany);
         $project->getSubmitterClient()->willReturn(new Clients());
         $project = $project->reveal();
 
