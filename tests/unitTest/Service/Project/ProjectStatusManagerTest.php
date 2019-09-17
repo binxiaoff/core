@@ -24,6 +24,8 @@ class ProjectStatusManagerTest extends TestCase
     private $realUserFinder;
     /** @var ProjectStatusManager */
     private $projectStatusManager;
+    /** @var Clients */
+    private $realUser;
 
     /**
      * {@inheritdoc}
@@ -33,10 +35,8 @@ class ProjectStatusManagerTest extends TestCase
         $logger                  = $this->prophesize(LoggerInterface::class);
         $this->projectRepository = $this->prophesize(ProjectRepository::class);
         $this->realUserFinder    = $this->prophesize(RealUserFinder::class);
-        $addedBy                 = $this->prophesize(Clients::class);
-
-        $addedBy->getIdClient()->willReturn(1);
-        $this->realUserFinder->__invoke()->willReturn($addedBy);
+        $this->realUser          = new Clients();
+        $this->realUserFinder->__invoke()->willReturn($this->realUser);
 
         $this->projectStatusManager = new ProjectStatusManager($logger->reveal(), $this->projectRepository->reveal(), $this->realUserFinder->reveal());
     }
@@ -50,11 +50,8 @@ class ProjectStatusManagerTest extends TestCase
         $status  = ProjectStatusHistory::STATUS_PUBLISHED;
         $this->projectStatusManager->addProjectStatus($status, $project);
 
-        $projectStatus = new ProjectStatusHistory();
-        $projectStatus->setStatus($status)->setAddedByValue($this->realUserFinder->reveal());
-
         $this->projectRepository->save(Argument::exact($project))->shouldHaveBeenCalled();
-        static::assertSame($project->getCurrentProjectStatusHistory()->getStatus(), $projectStatus->getStatus());
-        static::assertSame($project->getCurrentProjectStatusHistory()->getAddedBy(), $projectStatus->getAddedBy());
+        static::assertSame($project->getCurrentProjectStatusHistory()->getStatus(), $status);
+        static::assertSame($project->getCurrentProjectStatusHistory()->getAddedBy(), $this->realUser);
     }
 }
