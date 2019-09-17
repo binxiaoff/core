@@ -24,11 +24,8 @@ class ProjectStatusManager
      * @param ProjectRepository $projectRepository
      * @param RealUserFinder    $realUserFinder
      */
-    public function __construct(
-        LoggerInterface $logger,
-        ProjectRepository $projectRepository,
-        RealUserFinder $realUserFinder
-    ) {
+    public function __construct(LoggerInterface $logger, ProjectRepository $projectRepository, RealUserFinder $realUserFinder)
+    {
         $this->logger            = $logger;
         $this->projectRepository = $projectRepository;
         $this->realUserFinder    = $realUserFinder;
