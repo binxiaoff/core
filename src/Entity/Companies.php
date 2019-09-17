@@ -200,7 +200,7 @@ class Companies
     }
 
     /**
-     * TODO GuaranteeRequestGenerator won't work if the name has special characters
+     * @TODO GuaranteeRequestGenerator won't work if the name has special characters
      * Get name.
      *
      * @return string
