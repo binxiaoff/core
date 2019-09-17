@@ -10,7 +10,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Exception;
 use Ramsey\Uuid\Uuid;
 use Symfony\Component\Validator\Constraints as Assert;
-use Unilend\Entity\Traits\StatusHistorisableTrait;
+use Unilend\Entity\Traits\StatusTraceableTrait;
 use Unilend\Entity\Traits\TimestampableTrait;
 use Unilend\Traits\ConstantsAwareTrait;
 use URLify;
@@ -21,14 +21,15 @@ use URLify;
  *     @ORM\Index(name="hash", columns={"hash"})
  * })
  * @ORM\Entity(repositoryClass="Unilend\Repository\ProjectRepository")
+ * @ORM\HasLifecycleCallbacks
  *
- * @method ProjectStatus getCurrentStatus()
+ * @method ProjectStatus getCurrentStatus
  */
 class Project
 {
     use TimestampableTrait;
     use ConstantsAwareTrait;
-    use StatusHistorisableTrait {
+    use StatusTraceableTrait {
         setCurrentStatus as baseStatusSetter;
     }
 
@@ -254,7 +255,7 @@ class Project
      * @var ProjectStatus
      *
      * @ORM\OneToOne(targetEntity="Unilend\Entity\ProjectStatus")
-     * @ORM\JoinColumn(unique=true, nullable=true)
+     * @ORM\JoinColumn(name="id_current_status", unique=true)
      */
     private $currentStatus;
 
@@ -267,8 +268,10 @@ class Project
 
     /**
      * Project constructor.
+     *
+     * @param Clients $requester
      */
-    public function __construct()
+    public function __construct(Clients $requester)
     {
         $this->projectAttachments         = new ArrayCollection();
         $this->projectParticipants        = new ArrayCollection();
@@ -277,6 +280,8 @@ class Project
         $this->statuses                   = new ArrayCollection();
         $this->tranches                   = new ArrayCollection();
         $this->confidentialityAcceptances = new ArrayCollection();
+
+        $this->setCurrentStatus(ProjectStatus::STATUS_REQUESTED, $requester);
     }
 
     /**
@@ -486,27 +491,16 @@ class Project
     }
 
     /**
-     * @deprecated
-     *
-     * @return AbstractStatus|null
-     */
-    public function getCurrentProjectStatusHistory(): AbstractStatus
-    {
-        return $this->getCurrentStatus();
-    }
-
-    /**
-     * @param ProjectStatus $status
+     * @param int     $status
+     * @param Clients $addedBy
      *
      * @return Project
      */
-    public function setCurrentStatus(ProjectStatus $status): self
+    public function setCurrentStatus(int $status, Clients $addedBy): self
     {
-        if (($project = $status->getProject()) && $project !== $this) {
-            throw new \InvalidArgumentException('The passed status has an incorrect project');
-        }
+        $projectStatus = new ProjectStatus($this, $status, $addedBy);
 
-        return $this->baseStatusSetter($status);
+        return $this->baseStatusSetter($projectStatus);
     }
 
     /**
@@ -981,16 +975,6 @@ class Project
     }
 
     /**
-     * @param AbstractStatus|int $status
-     *
-     * @return Project
-     */
-    public function setProjectStatusHistory($status): Project
-    {
-        return $this->setCurrentStatus($status);
-    }
-
-    /**
      * @return Tranche[]|ArrayCollection
      */
     public function getTranches(): iterable
@@ -1060,8 +1044,8 @@ class Project
      */
     public function isEditable(): bool
     {
-        if ($this->getCurrentProjectStatusHistory()) {
-            return $this->getCurrentProjectStatusHistory()->getStatus() < ProjectStatus::STATUS_PUBLISHED;
+        if ($this->getCurrentStatus()) {
+            return $this->getCurrentStatus()->getStatus() < ProjectStatus::STATUS_PUBLISHED;
         }
 
         return true;
@@ -1074,7 +1058,7 @@ class Project
      */
     public function isOnline(): bool
     {
-        return ProjectStatus::STATUS_PUBLISHED === $this->getCurrentProjectStatusHistory()->getStatus();
+        return ProjectStatus::STATUS_PUBLISHED === $this->getCurrentStatus()->getStatus();
     }
 
     /**

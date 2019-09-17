@@ -5,23 +5,27 @@ declare(strict_types=1);
 namespace Unilend\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
-use Exception;
+use InvalidArgumentException;
+use Unilend\Entity\Interfaces\StatusInterface;
 use Unilend\Entity\Traits\{BlamableAddedTrait, TimestampableAddedOnlyTrait};
+use Unilend\Traits\ConstantsAwareTrait;
 
 /**
  * @ORM\Table(
  *     name="project_status",
  *     indexes={
  *         @ORM\Index(columns={"status"}, name="idx_project_status_status"),
- *         @ORM\Index(columns={"project_id"}, name="idx_project_status_project_id"),
+ *         @ORM\Index(columns={"id_project"}, name="idx_project_status_id_project"),
  *         @ORM\Index(columns={"added_by"}, name="idx_project_status_added_by")
  *     }
  * )
  * @ORM\Entity(repositoryClass="Unilend\Repository\ProjectStatusRepository")
  */
-class ProjectStatus extends AbstractStatus
+class ProjectStatus implements StatusInterface
 {
+    use ConstantsAwareTrait;
     use BlamableAddedTrait;
+    use TimestampableAddedOnlyTrait;
 
     public const STATUS_REQUESTED          = 10;
     public const STATUS_PUBLISHED          = 20;
@@ -44,22 +48,43 @@ class ProjectStatus extends AbstractStatus
      * @var Project
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\Project", inversedBy="statuses")
-     * @ORM\JoinColumn(name="project_id", nullable=false, onDelete="CASCADE")
+     * @ORM\JoinColumn(name="id_project", nullable=false, onDelete="CASCADE")
      */
     private $project;
+
+    /**
+     * @var int
+     *
+     * @ORM\Column(type="smallint", nullable=false)
+     */
+    private $status;
+
+    /**
+     * @var int
+     *
+     * @ORM\Id
+     * @ORM\GeneratedValue("IDENTITY")
+     * @ORM\Column(type="integer")
+     */
+    private $id;
 
     /**
      * ProjectStatus constructor.
      *
      * @param Project $project
      * @param int     $status
-     *
-     * @throws Exception
+     * @param Clients $addedBy
      */
-    public function __construct(Project $project, int $status)
+    public function __construct(Project $project, int $status, Clients $addedBy)
     {
-        parent::__construct($status);
+        if (!in_array($status, static::getPossibleStatuses(), true)) {
+            throw new InvalidArgumentException(
+                sprintf('%s is not a possible status for %s', $status, __CLASS__)
+            );
+        }
+        $this->status  = $status;
         $this->project = $project;
+        $this->addedBy = $addedBy;
     }
 
     /**
@@ -68,5 +93,29 @@ class ProjectStatus extends AbstractStatus
     public function getProject(): Project
     {
         return $this->project;
+    }
+
+    /**
+     * @return int
+     */
+    public function getId(): int
+    {
+        return $this->id;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getStatus(): int
+    {
+        return $this->status;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public static function getPossibleStatuses(): array
+    {
+        return static::getConstants('STATUS_');
     }
 }

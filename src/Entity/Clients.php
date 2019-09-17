@@ -15,7 +15,7 @@ use Misd\PhoneNumberBundle\Validator\Constraints\PhoneNumber as AssertPhoneNumbe
 use Ramsey\Uuid\{Exception\UnsatisfiedDependencyException, Uuid};
 use Symfony\Component\Security\Core\User\{EquatableInterface, UserInterface};
 use Symfony\Component\Validator\Constraints as Assert;
-use Unilend\Entity\Traits\{RoleableTrait, StatusHistorisableTrait, TimestampableTrait};
+use Unilend\Entity\Traits\{RoleableTrait, StatusTraceableTrait, TimestampableTrait};
 use URLify;
 
 /**
@@ -35,7 +35,7 @@ class Clients implements UserInterface, EquatableInterface
 {
     use TimestampableTrait;
     use RoleableTrait;
-    use StatusHistorisableTrait {
+    use StatusTraceableTrait {
         setCurrentStatus as baseStatusSetter;
     }
 
@@ -195,7 +195,7 @@ class Clients implements UserInterface, EquatableInterface
      * @var ClientsStatus
      *
      * @ORM\OneToOne(targetEntity="ClientsStatus")
-     * @ORM\JoinColumn(unique=true, nullable=true)
+     * @ORM\JoinColumn(name="id_current_status", unique=true)
      */
     private $currentStatus;
 
@@ -635,17 +635,18 @@ class Clients implements UserInterface, EquatableInterface
     }
 
     /**
-     * @param ClientsStatus $status
+     * @param int         $status
+     * @param string|null $content
+     *
+     * @throws Exception
      *
      * @return Clients
      */
-    public function setCurrentStatus(ClientsStatus $status): self
+    public function setCurrentStatus(int $status, ?string $content = null): self
     {
-        if (($client = $status->getClients()) && $client !== $this) {
-            throw new \InvalidArgumentException('The passed status has an incorrect client');
-        }
+        $clientStatus = new ClientsStatus($this, $status, $content);
 
-        return $this->baseStatusSetter($status);
+        return $this->baseStatusSetter($clientStatus);
     }
 
     /**

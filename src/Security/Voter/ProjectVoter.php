@@ -104,7 +104,7 @@ class ProjectVoter extends Voter
             return true;
         }
 
-        if ($project->getCurrentProjectStatusHistory()->getStatus() < ProjectStatus::STATUS_PUBLISHED) {
+        if ($project->getCurrentStatus()->getStatus() < ProjectStatus::STATUS_PUBLISHED) {
             return false;
         }
 

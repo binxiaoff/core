@@ -45,9 +45,7 @@ class ProjectStatusManager
      */
     public function addProjectStatus(int $projectStatus, $project): void
     {
-        $projectStatusHistory = (new ProjectStatus($project, $projectStatus))->setAddedByValue($this->realUserFinder);
-
-        $project->setProjectStatusHistory($projectStatusHistory);
+        $project->setCurrentStatus($projectStatus, ($this->realUserFinder)());
 
         try {
             $this->projectRepository->save($project);

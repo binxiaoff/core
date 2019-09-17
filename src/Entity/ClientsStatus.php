@@ -5,6 +5,11 @@ declare(strict_types=1);
 namespace Unilend\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Exception;
+use InvalidArgumentException;
+use Unilend\Entity\Interfaces\StatusInterface;
+use Unilend\Entity\Traits\TimestampableAddedOnlyTrait;
+use Unilend\Traits\ConstantsAwareTrait;
 
 /**
  * ClientsStatus.
@@ -12,14 +17,17 @@ use Doctrine\ORM\Mapping as ORM;
  * @ORM\Table(
  *     name="clients_status",
  *     indexes={
- *         @ORM\Index(columns={"clients_id"}, name="idx_clients_status_clients_id"),
+ *         @ORM\Index(columns={"id_client"}, name="idx_clients_status_id_client"),
  *         @ORM\Index(columns={"status"}, name="idx_clients_status_status")
  *     }
  * )
  * @ORM\Entity(repositoryClass="Unilend\Repository\ClientsStatusRepository")
  */
-class ClientsStatus extends AbstractStatus
+class ClientsStatus implements StatusInterface
 {
+    use ConstantsAwareTrait;
+    use TimestampableAddedOnlyTrait;
+
     public const STATUS_CREATED   = 10;
     public const STATUS_VALIDATED = 20;
     public const STATUS_BLOCKED   = 30;
@@ -34,7 +42,7 @@ class ClientsStatus extends AbstractStatus
      * @var Clients
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\Clients", inversedBy="statuses")
-     * @ORM\JoinColumn(name="clients_id", referencedColumnName="id_client", nullable=false, onDelete="CASCADE")
+     * @ORM\JoinColumn(name="id_client", referencedColumnName="id_client", nullable=false, onDelete="CASCADE")
      */
     private $clients;
 
@@ -46,17 +54,38 @@ class ClientsStatus extends AbstractStatus
     private $content;
 
     /**
+     * @var int
+     *
+     * @ORM\Column(type="smallint", nullable=false)
+     */
+    private $status;
+
+    /**
+     * @var int
+     *
+     * @ORM\Id
+     * @ORM\GeneratedValue("IDENTITY")
+     * @ORM\Column(type="integer")
+     */
+    private $id;
+
+    /**
      * ClientsStatus constructor.
      *
      * @param Clients     $clients
      * @param int         $status
      * @param string|null $content
      *
-     * @throws \Exception
+     * @throws Exception
      */
     public function __construct(Clients $clients, int $status, string $content = null)
     {
-        parent::__construct($status);
+        if (!in_array($status, static::getPossibleStatuses(), true)) {
+            throw new InvalidArgumentException(
+                sprintf('%s is not a possible status for %s', $status, __CLASS__)
+            );
+        }
+        $this->status  = $status;
         $this->clients = $clients;
         $this->content = $content;
     }
@@ -93,5 +122,29 @@ class ClientsStatus extends AbstractStatus
     public function getContent(): ?string
     {
         return $this->content;
+    }
+
+    /**
+     * @return int
+     */
+    public function getId(): int
+    {
+        return $this->id;
+    }
+
+    /**
+     * @return int
+     */
+    public function getStatus(): int
+    {
+        return $this->status;
+    }
+
+    /**
+     * @return array
+     */
+    public static function getPossibleStatuses(): array
+    {
+        return static::getConstants('STATUS_');
     }
 }

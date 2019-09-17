@@ -5,27 +5,24 @@ declare(strict_types=1);
 namespace Unilend\Entity\Traits;
 
 use Doctrine\Common\Collections\ArrayCollection;
-use Unilend\Entity\AbstractStatus;
+use Unilend\Entity\Interfaces\StatusInterface;
 
-/**
- * Class StatusHistorisableTrait.
- */
-trait StatusHistorisableTrait
+trait StatusTraceableTrait
 {
     /**
-     * @var AbstractStatus
+     * @var StatusInterface
      */
     private $currentStatus;
 
     /**
-     * @var AbstractStatus[]|ArrayCollection
+     * @var StatusInterface[]|ArrayCollection
      */
     private $statuses;
 
     /**
-     * @return AbstractStatus
+     * @return StatusInterface
      */
-    public function getCurrentStatus(): AbstractStatus
+    public function getCurrentStatus(): StatusInterface
     {
         if (!$this->currentStatus) {
             $this->currentStatus = $this->statuses->last();
@@ -35,25 +32,25 @@ trait StatusHistorisableTrait
     }
 
     /**
-     * @param AbstractStatus|int $status
-     *
-     * @return self
+     * @return iterable|StatusInterface[]
      */
-    private function setCurrentStatus(AbstractStatus $status): self
+    public function getStatuses(): iterable
     {
-        if (null === $this->currentStatus || $this->currentStatus->getStatus() !== $status->getStatus()) {
-            $this->currentStatus = $status;
-            $this->statuses[]    = $status;
-        }
-
-        return $this;
+        return $this->statuses->toArray();
     }
 
     /**
-     * @return ArrayCollection|AbstractStatus[]
+     * @param StatusInterface|int $status
+     *
+     * @return self
      */
-    private function getStatuses(): iterable
+    private function setCurrentStatus(StatusInterface $status): self
     {
-        return $this->statuses;
+        if (null === $this->currentStatus || $this->currentStatus->getStatus() !== $status->getStatus()) {
+            $this->currentStatus = $status;
+            $this->statuses->add($status);
+        }
+
+        return $this;
     }
 }

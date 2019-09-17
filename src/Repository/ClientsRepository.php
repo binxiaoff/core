@@ -74,7 +74,7 @@ class ClientsRepository extends ServiceEntityRepository
     {
         $queryBuilder = $this->createQueryBuilder('c');
         $queryBuilder
-            ->innerJoin(ClientsStatus::class, 'csh', Join::WITH, 'c.idClientStatusHistory = csh.id')
+            ->innerJoin(ClientsStatus::class, 'csh', Join::WITH, 'c.currentStatus = csh.id')
             ->where('c.email = :email')
             ->andWhere('csh.idStatus IN (:status)')
             ->setParameter('email', $email, PDO::PARAM_STR)
