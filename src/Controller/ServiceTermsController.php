@@ -4,16 +4,21 @@ declare(strict_types=1);
 
 namespace Unilend\Controller;
 
+use Doctrine\ORM\OptimisticLockException;
+use Doctrine\ORM\ORMException;
 use Exception;
-use Psr\Log\LoggerInterface;
+use League\Flysystem\FileNotFoundException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\{BinaryFileResponse, JsonResponse, Request, Response};
+use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
+use Symfony\Component\Form\FormFactoryInterface;
+use Symfony\Component\HttpFoundation\{JsonResponse, Request, Response, StreamedResponse};
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Validator\Constraints\IsTrue;
 use Unilend\Entity\{AcceptationsLegalDocs, Clients};
 use Unilend\Repository\AcceptationLegalDocsRepository;
-use Unilend\Service\ServiceTerms\ServiceTermsGenerator;
-use Unilend\Service\ServiceTerms\ServiceTermsManager;
+use Unilend\Service\FileSystem\FileSystemHelper;
+use Unilend\Service\ServiceTerms\{ServiceTermsGenerator, ServiceTermsManager};
 
 class ServiceTermsController extends AbstractController
 {
@@ -22,20 +27,22 @@ class ServiceTermsController extends AbstractController
      *
      * @param AcceptationsLegalDocs $acceptationsLegalDoc
      * @param ServiceTermsGenerator $serviceTermsGenerator
+     * @param FileSystemHelper      $fileSystemHelper
      *
-     * @throws Exception
+     * @throws FileNotFoundException
      *
-     * @return BinaryFileResponse
+     * @return StreamedResponse
      */
     public function serviceTermsDownload(
         AcceptationsLegalDocs $acceptationsLegalDoc,
-        ServiceTermsGenerator $serviceTermsGenerator
-    ): BinaryFileResponse {
+        ServiceTermsGenerator $serviceTermsGenerator,
+        FileSystemHelper $fileSystemHelper
+    ): StreamedResponse {
         $this->denyAccessUnlessGranted('download', $acceptationsLegalDoc);
 
         $serviceTermsGenerator->generate($acceptationsLegalDoc);
 
-        return $this->file($serviceTermsGenerator->getFilePath($acceptationsLegalDoc));
+        return $fileSystemHelper->download($serviceTermsGenerator->getFileSystem(), $acceptationsLegalDoc->getRelativeFilePath());
     }
 
     /**
@@ -62,53 +69,55 @@ class ServiceTermsController extends AbstractController
     }
 
     /**
-     * @Route("/conditions-service-popup", name="service_terms_popup", condition="request.isXmlHttpRequest()", methods={"GET"})
+     * @Route("/accepter-conditions-service", name="service_terms_accept")
      *
+     * @param Request                        $request
      * @param UserInterface|Clients|null     $client
      * @param AcceptationLegalDocsRepository $acceptationLegalDocsRepository
      * @param ServiceTermsManager            $serviceTermsManager
+     * @param FormFactoryInterface           $formFactory
+     *
+     * @throws ORMException
+     * @throws OptimisticLockException
      *
      * @return JsonResponse|Response
      */
     public function currentServiceTermsAcceptation(
-        ?UserInterface $client,
+        Request $request,
+        UserInterface $client,
         AcceptationLegalDocsRepository $acceptationLegalDocsRepository,
-        ServiceTermsManager $serviceTermsManager
+        ServiceTermsManager $serviceTermsManager,
+        FormFactoryInterface $formFactory
     ): Response {
         $currentServiceTerms  = $serviceTermsManager->getCurrentVersion();
         $acceptationLegalDocs = $acceptationLegalDocsRepository->findOneBy(['client' => $client]);
 
-        return $this->render('service_terms/popup.html.twig', [
-            'serviceTermsDetails' => null === $acceptationLegalDocs ? $currentServiceTerms->getFirstTimeInstruction() : $currentServiceTerms->getDifferentialInstruction(),
-        ]);
-    }
+        // TODO Duplicated code with some code in CALS-333
+        $form = $formFactory->createBuilder()
+            ->add(
+                'cgu',
+                CheckboxType::class,
+                [
+                    'constraints'                  => [new IsTrue()],
+                    'label'                        => 'service-terms.label',
+                    'label_translation_parameters' => [
+                        'serviceTermsURI' => $this->generateUrl('service_terms'),
+                    ],
+                ]
+            )->getForm()
+        ;
 
-    /**
-     * @Route("/conditions-service-popup", name="service_terms_popup_accepted", condition="request.isXmlHttpRequest()", methods={"POST"})
-     *
-     * @param Request                    $request
-     * @param UserInterface|Clients|null $client
-     * @param ServiceTermsManager        $serviceTermsManager
-     * @param LoggerInterface            $logger
-     *
-     * @return JsonResponse|Response
-     */
-    public function currentServiceTermsAccepted(Request $request, ?UserInterface $client, ServiceTermsManager $serviceTermsManager, LoggerInterface $logger): Response
-    {
-        if ('true' === $request->request->get('terms')) {
-            try {
-                $serviceTermsManager->acceptCurrentVersion($client);
-            } catch (Exception $exception) {
-                $logger->error('Service Terms could not be accepted by lender ' . $client->getIdClient() . ' - Message: ' . $exception->getMessage(), [
-                    'id_client' => $client->getIdClient(),
-                    'class'     => __CLASS__,
-                    'function'  => __FUNCTION__,
-                    'file'      => $exception->getFile(),
-                    'line'      => $exception->getLine(),
-                ]);
-            }
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $serviceTermsManager->acceptCurrentVersion($client);
+
+            return $this->redirect($this->generateUrl('wallet'));
         }
 
-        return $this->json([]);
+        return $this->render('service_terms/accept.html.twig', [
+            'serviceTermsDetails' => null === $acceptationLegalDocs ? $currentServiceTerms->getFirstTimeInstruction() : $currentServiceTerms->getDifferentialInstruction(),
+            'form'                => $form->createView(),
+        ]);
     }
 }

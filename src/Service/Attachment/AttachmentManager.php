@@ -165,27 +165,11 @@ class AttachmentManager
     }
 
     /**
-     * @param Attachment $attachment
-     *
-     * @throws FileNotFoundException
-     *
-     * @return false|resource
+     * @return FilesystemInterface
      */
-    public function readStream(Attachment $attachment)
+    public function getFileSystem(): FilesystemInterface
     {
-        return $this->userAttachmentFilesystem->readStream($attachment->getPath());
-    }
-
-    /**
-     * @param Attachment $attachment
-     *
-     * @throws FileNotFoundException
-     *
-     * @return false|string
-     */
-    public function getMimeType(Attachment $attachment)
-    {
-        return $this->userAttachmentFilesystem->getMimeType($attachment->getPath());
+        return $this->userAttachmentFilesystem;
     }
 
     /**
