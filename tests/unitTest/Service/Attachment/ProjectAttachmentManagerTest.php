@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Unilend\Test\UnitTest\Service\Attachment;
 
 use Doctrine\ORM\{ORMException, OptimisticLockException};
+use Exception;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
 use Prophecy\Prophecy\ObjectProphecy;
@@ -180,6 +181,7 @@ class ProjectAttachmentManagerTest extends TestCase
      *
      * @throws ORMException
      * @throws OptimisticLockException
+     * @throws Exception
      */
     public function testDetachOrphanFromProject(): void
     {
@@ -187,11 +189,13 @@ class ProjectAttachmentManagerTest extends TestCase
         $attachment        = $projectAttachment->getAttachment();
         $this->attachmentManager->isOrphan(Argument::exact($attachment))->willReturn(true);
         $this->attachmentManager->archive(Argument::exact($attachment));
+        $this->attachmentManager->save(Argument::exact($attachment));
 
         $projectAttachmentManager = $this->createTestObject();
 
         $projectAttachmentManager->detachFromProject($projectAttachment);
         $this->attachmentManager->archive(Argument::exact($attachment))->shouldHaveBeenCalled();
+        $this->attachmentManager->save(Argument::exact($attachment))->shouldHaveBeenCalled();
     }
 
     /**

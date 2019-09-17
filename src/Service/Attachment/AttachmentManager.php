@@ -14,6 +14,7 @@ use League\Flysystem\FileNotFoundException;
 use League\Flysystem\FilesystemInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Unilend\Entity\{Attachment, AttachmentType, Clients, Companies, ProjectAttachment};
+use Unilend\Repository\AttachmentRepository;
 use Unilend\Service\FileSystem\FileUploadManager;
 use Unilend\Service\User\RealUserFinder;
 
@@ -27,23 +28,28 @@ class AttachmentManager
     private $fileUploadManager;
     /** @var FilesystemInterface */
     private $userAttachmentFilesystem;
+    /** @var AttachmentRepository $attachmentRepository */
+    private $attachmentRepository;
 
     /**
      * @param EntityManagerInterface $entityManager
      * @param FilesystemInterface    $userAttachmentFilesystem
      * @param FileUploadManager      $fileUploadManager
      * @param RealUserFinder         $realUserFinder
+     * @param AttachmentRepository   $attachmentRepository
      */
     public function __construct(
         EntityManagerInterface $entityManager,
         FilesystemInterface $userAttachmentFilesystem,
         FileUploadManager $fileUploadManager,
-        RealUserFinder $realUserFinder
+        RealUserFinder $realUserFinder,
+        AttachmentRepository $attachmentRepository
     ) {
         $this->entityManager            = $entityManager;
         $this->userAttachmentFilesystem = $userAttachmentFilesystem;
         $this->realUserFinder           = $realUserFinder;
         $this->fileUploadManager        = $fileUploadManager;
+        $this->attachmentRepository     = $attachmentRepository;
     }
 
     /**
@@ -74,8 +80,9 @@ class AttachmentManager
             ->uploadFile($uploadedFile, $this->userAttachmentFilesystem, '/', $this->getClientDirectory($clientOwner ?? $uploader))
         ;
 
-        if ($archivePreviousAttachments && ($attachmentType || $attachment)) {
-            $this->archiveAttachments($clientOwner, $attachmentType ?? $attachment->getType());
+        $attachmentType = $attachmentType ?? ($attachment ? $attachment->getType() : null);
+        if ($archivePreviousAttachments && $attachmentType) {
+            $this->archiveAttachments($clientOwner, $attachmentType);
         }
 
         if (null === $attachment) {
@@ -98,28 +105,9 @@ class AttachmentManager
             $attachment->setDescription($description);
         }
 
-        $this->entityManager->persist($attachment);
-        $this->entityManager->flush($attachment);
+        $this->attachmentRepository->save($attachment);
 
         return $attachment;
-    }
-
-    /**
-     * @param Attachment $attachment
-     *
-     * @return bool
-     */
-    public function isModifiedAttachment(Attachment $attachment): bool
-    {
-        try {
-            $previousAttachment = $this->entityManager->getRepository(Attachment::class)
-                ->findPreviousNotArchivedAttachment($attachment)
-            ;
-        } catch (Exception $exception) {
-            $previousAttachment = null;
-        }
-
-        return null !== $previousAttachment;
     }
 
     /**
@@ -136,20 +124,26 @@ class AttachmentManager
 
     /**
      * @param Attachment $attachment
-     * @param bool       $save
+     *
+     * @throws ORMException
+     * @throws OptimisticLockException
+     */
+    public function save(Attachment $attachment): void
+    {
+        $this->attachmentRepository->save($attachment);
+    }
+
+    /**
+     * @param Attachment $attachment
      *
      * @throws Exception
      */
-    public function archive(Attachment $attachment, bool $save = true): void
+    public function archive(Attachment $attachment): void
     {
         $attachment
             ->setArchived(new DateTimeImmutable())
             ->setArchivedByValue($this->realUserFinder)
         ;
-
-        if ($save) {
-            $this->entityManager->getRepository(Attachment::class)->save($attachment);
-        }
     }
 
     /**
@@ -181,7 +175,7 @@ class AttachmentManager
     public function logDownload(Attachment $attachment): void
     {
         $attachment->setDownloaded(new DateTimeImmutable());
-        $this->entityManager->getRepository(Attachment::class)->save($attachment);
+        $this->save($attachment);
     }
 
     /**
@@ -194,7 +188,7 @@ class AttachmentManager
     {
         $attachmentsToArchive = [];
         if ($clientOwner) {
-            $attachmentsToArchive = $this->entityManager->getRepository(Attachment::class)
+            $attachmentsToArchive = $this->attachmentRepository
                 ->findBy([
                     'owner'    => $clientOwner,
                     'type'     => $attachmentType,
@@ -203,7 +197,8 @@ class AttachmentManager
             ;
 
             foreach ($attachmentsToArchive as $attachment) {
-                $this->archive($attachment, false);
+                $this->archive($attachment);
+                $this->entityManager->persist($attachment);
             }
         }
 

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Unilend\Service\Attachment;
 
 use Doctrine\ORM\{ORMException, OptimisticLockException};
+use Exception;
 use Unilend\Entity\{Attachment, Project, ProjectAttachment};
 use Unilend\Repository\{ProjectAttachmentRepository, ProjectAttachmentTypeRepository, ProjectRepository};
 
@@ -78,6 +79,7 @@ class ProjectAttachmentManager
      *
      * @throws ORMException
      * @throws OptimisticLockException
+     * @throws Exception
      */
     public function detachFromProject(ProjectAttachment $projectAttachment): void
     {
@@ -90,6 +92,7 @@ class ProjectAttachmentManager
 
         if ($this->attachmentManager->isOrphan($attachment)) {
             $this->attachmentManager->archive($attachment);
+            $this->attachmentManager->save($attachment);
         }
     }
 }

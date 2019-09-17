@@ -65,9 +65,9 @@ class ProjectAttachment
     }
 
     /**
-     * @return Project|null
+     * @return Project
      */
-    public function getProject(): ?Project
+    public function getProject(): Project
     {
         return $this->project;
     }
