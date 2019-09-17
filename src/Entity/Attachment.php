@@ -7,8 +7,10 @@ namespace Unilend\Entity;
 use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
+use Exception;
 use Gedmo\Mapping\Annotation as Gedmo;
 use Unilend\Entity\Traits\{BlamableAddedTrait, BlamableArchivedTrait, BlamableUpdatedTrait, TimestampableTrait};
+use Unilend\Service\User\RealUserFinder;
 
 /**
  * @Gedmo\Loggable(logEntryClass="Unilend\Entity\Versioned\VersionedAttachment")
@@ -146,6 +148,22 @@ class Attachment
     public function setArchived(DateTimeImmutable $archived): Attachment
     {
         $this->archived = $archived;
+
+        return $this;
+    }
+
+    /**
+     * @param RealUserFinder $realUserFinder
+     *
+     * @throws Exception
+     *
+     * @return Attachment
+     */
+    public function archive(RealUserFinder $realUserFinder): Attachment
+    {
+        $this->setArchived(new DateTimeImmutable())
+            ->setArchivedByValue($realUserFinder)
+        ;
 
         return $this;
     }
