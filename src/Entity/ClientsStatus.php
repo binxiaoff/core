@@ -22,6 +22,7 @@ use Unilend\Traits\ConstantsAwareTrait;
  *     }
  * )
  * @ORM\Entity(repositoryClass="Unilend\Repository\ClientsStatusRepository")
+ * @ORM\HasLifecycleCallbacks
  */
 class ClientsStatus implements StatusInterface
 {

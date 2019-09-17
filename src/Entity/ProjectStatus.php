@@ -20,6 +20,7 @@ use Unilend\Traits\ConstantsAwareTrait;
  *     }
  * )
  * @ORM\Entity(repositoryClass="Unilend\Repository\ProjectStatusRepository")
+ * @ORM\HasLifecycleCallbacks
  */
 class ProjectStatus implements StatusInterface
 {
