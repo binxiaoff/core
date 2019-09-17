@@ -49,6 +49,7 @@ abstract class AbstractDocumentGenerator
 
         $document->setRelativeFilePath($this->getFilePath($document));
 
+        // TODO See it wouldn't be more judicious to deport the document saving in the concrete class
         $entityManager = $this->managerRegistry->getManagerForClass(get_class($document));
         if ($entityManager) {
             $entityManager->persist($document);
