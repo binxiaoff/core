@@ -18,9 +18,9 @@ use Unilend\Service\{Project\ProjectStatusManager, User\RealUserFinder};
  */
 class ProjectStatusManagerTest extends TestCase
 {
-    /** @var ProjectRepository|ObjectProphecy */
+    /** @var ObjectProphecy */
     private $projectRepository;
-    /** @var RealUserFinder|ObjectProphecy */
+    /** @var ObjectProphecy */
     private $realUserFinder;
     /** @var ProjectStatusManager */
     private $projectStatusManager;
@@ -30,7 +30,6 @@ class ProjectStatusManagerTest extends TestCase
      */
     protected function setUp(): void
     {
-        /** @var LoggerInterface|ObjectProphecy $logger */
         $logger                  = $this->prophesize(LoggerInterface::class);
         $this->projectRepository = $this->prophesize(ProjectRepository::class);
         $this->realUserFinder    = $this->prophesize(RealUserFinder::class);
