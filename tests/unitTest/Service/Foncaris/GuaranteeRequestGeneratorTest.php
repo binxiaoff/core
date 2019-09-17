@@ -80,7 +80,7 @@ class GuaranteeRequestGeneratorTest extends TestCase
      *
      * @throws FileExistsException
      */
-    public function testUneededGenerate(int $choice): void
+    public function testUnneededGenerate(int $choice): void
     {
         $guaranteeRequestGenerator = $this->createTestObject();
 
