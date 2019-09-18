@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Unilend\Entity;
 
 use Doctrine\Common\Collections\{ArrayCollection, Collection, Criteria};
@@ -17,7 +19,7 @@ class Companies
 {
     use TimestampableTrait;
 
-    public const INVALID_SIREN_EMPTY  = '000000000';
+    public const INVALID_SIREN_EMPTY = '000000000';
 
     public const COMPANY_ID_CASA      = 1;
     public const COMPANY_ID_CACIB     = 2;
@@ -198,6 +200,7 @@ class Companies
     }
 
     /**
+     * @todo GuaranteeRequestGenerator won't work if the name has special characters
      * Get name.
      *
      * @return string

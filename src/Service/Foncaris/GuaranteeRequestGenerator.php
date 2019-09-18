@@ -65,7 +65,7 @@ class GuaranteeRequestGenerator extends AbstractDocumentGenerator
      * @throws PhpSpreadsheetWriterException
      * @throws FileExistsException
      */
-    public function generateDocument(FileStorageInterface $foncarisRequest): void
+    protected function generateDocument(FileStorageInterface $foncarisRequest): void
     {
         if (FoncarisRequest::FONCARIS_GUARANTEE_NEED !== $foncarisRequest->getChoice()) {
             return;
