@@ -43,7 +43,7 @@ class ClientsStatus implements StatusInterface
      * @var Clients
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\Clients", inversedBy="statuses")
-     * @ORM\JoinColumn(name="id_client", referencedColumnName="id_client", nullable=false, onDelete="CASCADE")
+     * @ORM\JoinColumn(name="id_client", referencedColumnName="id_client", onDelete="CASCADE")
      */
     private $clients;
 
@@ -57,7 +57,7 @@ class ClientsStatus implements StatusInterface
     /**
      * @var int
      *
-     * @ORM\Column(type="smallint", nullable=false)
+     * @ORM\Column(type="smallint")
      */
     private $status;
 

@@ -2,8 +2,6 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Service;
-
 namespace Unilend\Service\Project;
 
 use Doctrine\ORM\{ORMException, OptimisticLockException};
