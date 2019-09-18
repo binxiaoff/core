@@ -12,6 +12,7 @@ use Ramsey\Uuid\Uuid;
 use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Entity\Traits\StatusTraceableTrait;
 use Unilend\Entity\Traits\TimestampableTrait;
+use Unilend\Service\User\RealUserFinder;
 use Unilend\Traits\ConstantsAwareTrait;
 use URLify;
 
@@ -254,7 +255,7 @@ class Project
     /**
      * @var ProjectStatus
      *
-     * @ORM\OneToOne(targetEntity="Unilend\Entity\ProjectStatus")
+     * @ORM\OneToOne(targetEntity="Unilend\Entity\ProjectStatus", orphanRemoval=true)
      * @ORM\JoinColumn(name="id_current_status", unique=true)
      */
     private $currentStatus;
@@ -269,9 +270,9 @@ class Project
     /**
      * Project constructor.
      *
-     * @param Clients $requester
+     * @param RealUserFinder $realUserFinder
      */
-    public function __construct(Clients $requester)
+    public function __construct(RealUserFinder $realUserFinder)
     {
         $this->projectAttachments         = new ArrayCollection();
         $this->projectParticipants        = new ArrayCollection();
@@ -281,7 +282,7 @@ class Project
         $this->tranches                   = new ArrayCollection();
         $this->confidentialityAcceptances = new ArrayCollection();
 
-        $this->setCurrentStatus(ProjectStatus::STATUS_REQUESTED, $requester);
+        $this->setCurrentStatus(ProjectStatus::STATUS_REQUESTED, $realUserFinder);
     }
 
     /**
@@ -491,14 +492,14 @@ class Project
     }
 
     /**
-     * @param int     $status
-     * @param Clients $addedBy
+     * @param int            $status
+     * @param RealUserFinder $realUserFinder
      *
      * @return Project
      */
-    public function setCurrentStatus(int $status, Clients $addedBy): self
+    public function setCurrentStatus(int $status, RealUserFinder $realUserFinder): self
     {
-        $projectStatus = new ProjectStatus($this, $status, $addedBy);
+        $projectStatus = new ProjectStatus($this, $status, $realUserFinder);
 
         return $this->baseStatusSetter($projectStatus);
     }

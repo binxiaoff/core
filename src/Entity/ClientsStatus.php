@@ -65,7 +65,7 @@ class ClientsStatus implements StatusInterface
      * @var int
      *
      * @ORM\Id
-     * @ORM\GeneratedValue("IDENTITY")
+     * @ORM\GeneratedValue(strategy="IDENTITY")
      * @ORM\Column(type="integer")
      */
     private $id;

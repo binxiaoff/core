@@ -28,7 +28,7 @@ use Unilend\Form\Tranche\TrancheTypeCollectionType;
 use Unilend\Repository\{AcceptedBidsRepository, BidsRepository, CaRegionalBankRepository, CompaniesRepository, ProjectAttachmentRepository, ProjectAttachmentTypeRepository,
     ProjectRepository, TrancheRepository};
 use Unilend\Security\Voter\ProjectVoter;
-use Unilend\Service\{Attachment\AttachmentManager, MailerManager, Project\ProjectImageManager, Project\ProjectStatusManager, User\RealUserFinder};
+use Unilend\Service\{Attachment\AttachmentManager, MailerManager, Project\ProjectImageManager, User\RealUserFinder};
 
 class EditController extends AbstractController
 {
@@ -162,17 +162,15 @@ class EditController extends AbstractController
      *
      * @IsGranted("edit", subject="project")
      *
-     * @param Project                    $project
-     * @param Request                    $request
-     * @param UserInterface|Clients|null $user
-     * @param ProjectStatusManager       $projectStatusManager
-     * @param MailerManager              $mailerManager
-     * @param LoggerInterface            $logger
-     * @param TrancheRepository          $trancheRepository
-     * @param BidsRepository             $bidsRepository
-     * @param AcceptedBidsRepository     $acceptedBidRepository
-     * @param EntityManagerInterface     $entityManager
-     * @param RealUserFinder             $realUserFinder
+     * @param Project                $project
+     * @param Request                $request
+     * @param MailerManager          $mailerManager
+     * @param LoggerInterface        $logger
+     * @param TrancheRepository      $trancheRepository
+     * @param BidsRepository         $bidsRepository
+     * @param AcceptedBidsRepository $acceptedBidRepository
+     * @param EntityManagerInterface $entityManager
+     * @param RealUserFinder         $realUserFinder
      *
      * @throws ConnectionException
      *
@@ -181,8 +179,6 @@ class EditController extends AbstractController
     public function projectStatusUpdate(
         Project $project,
         Request $request,
-        ?UserInterface $user,
-        ProjectStatusManager $projectStatusManager,
         MailerManager $mailerManager,
         LoggerInterface $logger,
         TrancheRepository $trancheRepository,
@@ -222,8 +218,7 @@ class EditController extends AbstractController
         }
 
         if ($status) {
-            $projectStatusManager->addProjectStatus($status, $project);
-
+            $project->setCurrentStatus($status, $realUserFinder);
             switch ($status) {
                 case ProjectStatus::STATUS_FUNDED:
                     $this->closeProject(
@@ -246,6 +241,9 @@ class EditController extends AbstractController
                             'line'     => $exception->getLine(),
                         ]);
                     }
+
+                    $entityManager->persist($project);
+                    $entityManager->flush();
 
                     break;
             }

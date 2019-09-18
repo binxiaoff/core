@@ -55,7 +55,7 @@ class CreateController extends AbstractController
         ProjectImageManager $imageManager,
         RealUserFinder $realUserFinder
     ) {
-        $project = (new Project($realUserFinder()))->setOperationType((int) $operationType);
+        $project = (new Project($realUserFinder))->setOperationType((int) $operationType);
 
         $form = $this->createForm(ProjectType::class, $project, ['operation_type' => $operationType]);
 
@@ -85,7 +85,7 @@ class CreateController extends AbstractController
             $project
                 ->setSubmitterClient($client)
                 ->setSubmitterCompany($client->getCompany())
-                ->setCurrentStatus(ProjectStatus::STATUS_REQUESTED, $realUserFinder())
+                ->setCurrentStatus(ProjectStatus::STATUS_REQUESTED, $realUserFinder)
             ;
 
             $projectRepository->save($project);

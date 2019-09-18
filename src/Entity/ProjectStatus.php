@@ -8,6 +8,7 @@ use Doctrine\ORM\Mapping as ORM;
 use InvalidArgumentException;
 use Unilend\Entity\Interfaces\StatusInterface;
 use Unilend\Entity\Traits\{BlamableAddedTrait, TimestampableAddedOnlyTrait};
+use Unilend\Service\User\RealUserFinder;
 use Unilend\Traits\ConstantsAwareTrait;
 
 /**
@@ -64,7 +65,7 @@ class ProjectStatus implements StatusInterface
      * @var int
      *
      * @ORM\Id
-     * @ORM\GeneratedValue("IDENTITY")
+     * @ORM\GeneratedValue(strategy="IDENTITY")
      * @ORM\Column(type="integer")
      */
     private $id;
@@ -72,11 +73,11 @@ class ProjectStatus implements StatusInterface
     /**
      * ProjectStatus constructor.
      *
-     * @param Project $project
-     * @param int     $status
-     * @param Clients $addedBy
+     * @param Project        $project
+     * @param int            $status
+     * @param RealUserFinder $addedBy
      */
-    public function __construct(Project $project, int $status, Clients $addedBy)
+    public function __construct(Project $project, int $status, RealUserFinder $addedBy)
     {
         if (!in_array($status, static::getPossibleStatuses(), true)) {
             throw new InvalidArgumentException(
@@ -85,7 +86,7 @@ class ProjectStatus implements StatusInterface
         }
         $this->status  = $status;
         $this->project = $project;
-        $this->addedBy = $addedBy;
+        $this->addedBy = $addedBy();
     }
 
     /**
