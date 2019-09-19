@@ -11,12 +11,9 @@ monolog:
             members: [error_file]
 #            members: [file_error, slack_error]
         error_file:
-            type: rotating_file
+            type: stream
             level: info
             path: "%kernel.logs_dir%/error.%kernel.environment%.log"
-            max_files: 90
-            date_format: 'Y-m-d'
-            file_permission: 0664
 #        slack_error:
 #            type: slack
 #            level: error
@@ -33,12 +30,9 @@ monolog:
             type: group
             members: [console_file, console_console]
         console_file:
-            type: rotating_file
+            type: stream
             path: "%kernel.logs_dir%/console.%kernel.environment%.log"
             level: info
-            max_files: 90
-            file_permission: 0664
-            date_format: 'Y-m-d'
         console_console:
             type: console
 
@@ -48,12 +42,9 @@ monolog:
             max_level: warning
             channels: ['!console', '!translation', '!wsclient']
         site_handler:
-            type: rotating_file
+            type: stream
             level: warning
             path: "%kernel.logs_dir%/site.%kernel.environment%.log"
-            max_files: 90
-            file_permission: 0664
-            date_format: 'Y-m-d'
 
         wsclient:
             type: fingers_crossed
@@ -61,9 +52,6 @@ monolog:
             handler: wsclient_handler
             channels: wsclient
         wsclient_handler:
-            type: rotating_file
+            type: stream
             level: debug
             path: "%kernel.logs_dir%/wsclient.%kernel.environment%.log"
-            max_files: 90
-            file_permission: 0664
-            date_format: 'Y-m-d'
