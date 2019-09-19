@@ -154,13 +154,13 @@ class GuaranteeRequestGeneratorTest extends TestCase
     /**
      * @covers ::getFilePath
      */
-    public function testGetFilePath(): void
+    public function testGetFilePathRelativePathNotSet(): void
     {
-        $guaranteeRequestGenerator = $this->createTestObject();
-
         $foncarisRequest = $this->createFoncarisRequest();
         $path            = (new \ReflectionClassConstant(GuaranteeRequestGenerator::class, 'PATH'))->getValue();
         $filePrefix      = (new \ReflectionClassConstant(GuaranteeRequestGenerator::class, 'FILE_PREFIX'))->getValue();
+
+        $guaranteeRequestGenerator = $this->createTestObject();
 
         $returnedFilePath = $guaranteeRequestGenerator->getFilePath($foncarisRequest);
 
@@ -171,9 +171,19 @@ class GuaranteeRequestGeneratorTest extends TestCase
         static::assertStringContainsString((string) $foncarisRequest->getProject()->getId(), $subdirectory);
         static::assertStringStartsWith($filePrefix, $filename);
         static::assertStringContainsStringIgnoringCase($foncarisRequest->getProject()->getBorrowerCompany()->getName(), $filename);
+    }
 
-        $relativeFilePath = Base::randomAscii();
+    /**
+     * @covers ::getFilePath
+     */
+    public function testGetFilePathRelativePathSet(): void
+    {
+        $foncarisRequest  = $this->createFoncarisRequest();
+        $relativeFilePath = Base::lexify('????/?????');
         $foncarisRequest->setRelativeFilePath($relativeFilePath);
+
+        $guaranteeRequestGenerator = $this->createTestObject();
+
         $returnedFilePath = $guaranteeRequestGenerator->getFilePath($foncarisRequest);
 
         static::assertSame($relativeFilePath, $returnedFilePath);
