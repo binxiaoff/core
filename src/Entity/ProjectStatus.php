@@ -50,7 +50,7 @@ class ProjectStatus implements StatusInterface
      * @var Project
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\Project", inversedBy="statuses")
-     * @ORM\JoinColumn(name="id_project", onDelete="CASCADE")
+     * @ORM\JoinColumn(name="id_project", nullable=false)
      */
     private $project;
 

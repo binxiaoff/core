@@ -255,7 +255,7 @@ class Project
     /**
      * @var ProjectStatus
      *
-     * @ORM\OneToOne(targetEntity="Unilend\Entity\ProjectStatus", orphanRemoval=true)
+     * @ORM\OneToOne(targetEntity="Unilend\Entity\ProjectStatus")
      * @ORM\JoinColumn(name="id_current_status", unique=true)
      */
     private $currentStatus;
@@ -263,7 +263,7 @@ class Project
     /**
      * @var ArrayCollection|ClientsStatus
      *
-     * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectStatus", mappedBy="project", cascade={"persist"})
+     * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectStatus", mappedBy="project", orphanRemoval=true, cascade={"persist"})
      */
     private $statuses;
 

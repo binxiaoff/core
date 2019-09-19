@@ -194,7 +194,7 @@ class Clients implements UserInterface, EquatableInterface
     /**
      * @var ClientsStatus
      *
-     * @ORM\OneToOne(targetEntity="ClientsStatus")
+     * @ORM\OneToOne(targetEntity="Unilend\Entity\ClientsStatus")
      * @ORM\JoinColumn(name="id_current_status", unique=true)
      */
     private $currentStatus;
@@ -202,7 +202,7 @@ class Clients implements UserInterface, EquatableInterface
     /**
      * @var ArrayCollection|ClientsStatus
      *
-     * @ORM\OneToMany(targetEntity="ClientsStatus", mappedBy="clients", orphanRemoval=true, cascade={"persist"})
+     * @ORM\OneToMany(targetEntity="Unilend\Entity\ClientsStatus", mappedBy="clients", orphanRemoval=true, cascade={"persist"})
      */
     private $statuses;
 

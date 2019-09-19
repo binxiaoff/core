@@ -42,7 +42,7 @@ final class Version20190913094525 extends AbstractMigration
         $this->addSql('ALTER TABLE project_status_history DROP FOREIGN KEY FK_C6DD336CF12E799E');
         $this->addSql('DROP INDEX IDX_C6DD336CF12E799E ON project_status_history');
         $this->addSql('ALTER TABLE project_status_history CHANGE status status INT NOT NULL, CHANGE id_project id_project INT NOT NULL');
-        $this->addSql('ALTER TABLE project_status_history ADD CONSTRAINT FK_C6DD336C166D1F9C FOREIGN KEY (id_project) REFERENCES project (id) ON DELETE CASCADE');
+        $this->addSql('ALTER TABLE project_status_history ADD CONSTRAINT FK_C6DD336C166D1F9C FOREIGN KEY (id_project) REFERENCES project (id) ON DELETE NO ACTION');
         $this->addSql('CREATE INDEX idx_project_status_id_project ON project_status_history (id_project)');
         $this->addSql('ALTER TABLE clients_status_history DROP FOREIGN KEY FK_3E28AF07E173B1B8');
         $this->addSql('DROP INDEX idx_clients_status_history_id_status ON clients_status_history');
@@ -50,7 +50,7 @@ final class Version20190913094525 extends AbstractMigration
         $this->addSql('ALTER TABLE clients_status_history RENAME COLUMN id_client TO id_client');
         $this->addSql('ALTER TABLE clients_status_history RENAME COLUMN id_status TO status');
         $this->addSql("ALTER TABLE clients_status_history CHANGE added added DATETIME NOT NULL COMMENT '(DC2Type:datetime_immutable)'");
-        $this->addSql('ALTER TABLE clients_status_history ADD CONSTRAINT FK_3E28AF07AB014612 FOREIGN KEY (id_client) REFERENCES clients (id_client) ON DELETE CASCADE');
+        $this->addSql('ALTER TABLE clients_status_history ADD CONSTRAINT FK_3E28AF07AB014612 FOREIGN KEY (id_client) REFERENCES clients (id_client) ON DELETE NO ACTION');
         $this->addSql('CREATE INDEX idx_clients_status_id_client ON clients_status_history (id_client)');
         $this->addSql('CREATE INDEX idx_clients_status_status ON clients_status_history (status)');
         $this->addSql('ALTER TABLE clients_status_history RENAME TO clients_status');

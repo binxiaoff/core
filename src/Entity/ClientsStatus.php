@@ -43,7 +43,7 @@ class ClientsStatus implements StatusInterface
      * @var Clients
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\Clients", inversedBy="statuses")
-     * @ORM\JoinColumn(name="id_client", referencedColumnName="id_client", onDelete="CASCADE")
+     * @ORM\JoinColumn(name="id_client", referencedColumnName="id_client", nullable=false)
      */
     private $clients;
 
