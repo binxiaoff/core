@@ -79,25 +79,6 @@ class NotificationManager
      * @throws Swift_RfcComplianceException
      * @throws Exception
      */
-    public function createProjectRequest(Project $project): void
-    {
-        $recipients = $this->getProjectRecipients($project, [
-            self::RECIPIENT_TYPE_SUBMITTER,
-            self::RECIPIENT_TYPE_ARRANGER,
-            self::RECIPIENT_TYPE_RUN,
-        ]);
-
-        $this->createNotification(Notification::TYPE_PROJECT_REQUEST, $recipients, $project);
-
-        $this->mailerManager->sendProjectRequest($project, $recipients);
-    }
-
-    /**
-     * @param Project $project
-     *
-     * @throws Swift_RfcComplianceException
-     * @throws Exception
-     */
     public function createProjectPublication(Project $project): void
     {
         $recipients = $this->getProjectRecipients($project);
@@ -105,12 +86,8 @@ class NotificationManager
         $this->createNotification(Notification::TYPE_PROJECT_PUBLICATION, $recipients, $project);
 
         foreach ($recipients as $recipient) {
-            if (ClientsStatus::STATUS_CREATION === $this->clientsStatusHistoryRepository->findActualStatus($recipient)) {
-                $inviter = $this->projectInvitationRepository->findOneBy(['client' => $recipient, 'project' => $project])->getInvitedBy();
-                $this->messageBus->dispatch(new ClientInvited($inviter->getIdClient(), $recipient->getIdClient(), $project->getId()));
-            } else {
-                $this->mailerManager->sendProjectPublication($project, $recipients);
-            }
+            $inviter = $this->projectInvitationRepository->findOneBy(['client' => $recipient, 'project' => $project])->getInvitedBy();
+            $this->messageBus->dispatch(new ClientInvited($inviter->getIdClient(), $recipient->getIdClient(), $project->getId()));
         }
     }
 

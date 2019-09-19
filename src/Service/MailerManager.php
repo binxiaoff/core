@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Unilend\Service;
 
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\OptimisticLockException;
+use Doctrine\ORM\ORMException;
 use NumberFormatter;
 use Swift_Mailer;
 use Swift_RfcComplianceException;
@@ -16,7 +18,9 @@ use Unilend\Entity\{AttachmentSignature,
     Loans,
     Project,
     ProjectComment,
+    ProjectInvitation,
     ProjectParticipant,
+    TemporaryLinksLogin,
     Tranche};
 use Unilend\Repository\ClientsStatusRepository;
 use Unilend\Repository\CompaniesRepository;
@@ -85,26 +89,53 @@ class MailerManager
     }
 
     /**
-     * @param string  $inviter
-     * @param string  $token
-     * @param string  $email
-     * @param Project $project
-     * @param int     $idInvitation
+     * @param ProjectInvitation $projectInvitation
+     *
+     * @throws ORMException
+     * @throws OptimisticLockException
      *
      * @return int
      */
-    public function sendProjectInvitation(string $inviter, string $token, string $email, Project $project, int $idInvitation)
+    public function sendProjectInvitationNewUser(ProjectInvitation $projectInvitation)
     {
         $sent = 0;
 
+        $idInvitation = $projectInvitation->getId();
+        $project      = $projectInvitation->getProject();
+        $inviter      = $projectInvitation->getInvitedBy();
+        $inviterName  = $inviterName  = $inviter->getLastName() . ' ' . $inviter->getFirstName();
+        $recipient    = $projectInvitation->getClient();
+        $token        = $this->temporaryLinksLoginRepository->generateTemporaryLink($recipient, TemporaryLinksLogin::PASSWORD_TOKEN_LIFETIME_LONG);
+
         $keywords = [
-            'inviterName'    => $inviter,
+            'inviterName'    => $inviterName,
             'project'        => $project->getTitle(),
             'initAccountUrl' => $this->router->generate('account_init', ['securityToken' => $token, 'idInvitation' => $idInvitation], RouterInterface::ABSOLUTE_URL),
         ];
 
-        $message = $this->messageProvider->newMessage('invite-guest', $keywords);
-        $message->setTo($email);
+        $message = $this->messageProvider->newMessage('project-invitation-new-user', $keywords);
+        $message->setTo($recipient->getEmail());
+
+        $sent += $this->mailer->send($message);
+
+        return $sent;
+    }
+
+    /**
+     * @param Clients $client
+     *
+     * @return int
+     */
+    public function sendAccountCreated(Clients $client)
+    {
+        $sent = 0;
+
+        $keywords = [
+            'firstName' => $client->getFirstName(),
+        ];
+
+        $message = $this->messageProvider->newMessage('account-created', $keywords);
+        $message->setTo($client->getEmail());
 
         $sent += $this->mailer->send($message);
 
@@ -143,6 +174,39 @@ class MailerManager
         $message->setTo($client->getEmail());
 
         return $this->mailer->send($message);
+    }
+
+    /**
+     * @param ProjectInvitation $invitation
+     *
+     * @return int
+     */
+    public function sendProjectInvitation(ProjectInvitation $invitation): int
+    {
+        $sent = 0;
+
+        $inviter     = $invitation->getInvitedBy();
+        $inviterName = $inviter->getLastName() . ' ' . $inviter->getFirstName();
+        $project     = $invitation->getProject();
+        $recipient   = $invitation->getClient();
+
+        $keywords = [
+            'firstName'   => '',
+            'inviterName' => $inviterName,
+            'projectName' => $project->getTitle(),
+            'projectUrl'  => $this->router->generate('edit_project_details', ['hash' => $project->getHash()], RouterInterface::ABSOLUTE_URL),
+            'borrower'    => $project->getBorrowerCompany()->getName(),
+        ];
+
+        if (false === empty($recipient->getEmail())) {
+            $keywords['firstName'] = $recipient->getFirstName();
+            $message               = $this->messageProvider->newMessage('project-invitation', $keywords);
+            $message->setTo($recipient->getEmail());
+
+            $sent += $this->mailer->send($message);
+        }
+
+        return $sent;
     }
 
     /**

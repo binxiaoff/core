@@ -44,14 +44,12 @@ use Unilend\Repository\{AcceptedBidsRepository,
     BidsRepository,
     CaRegionalBankRepository,
     ClientsRepository,
-    ClientsStatusHistoryRepository,
     ClientsStatusRepository,
     CompaniesRepository,
     ProjectAttachmentRepository,
     ProjectAttachmentTypeRepository,
     ProjectInvitationRepository,
     ProjectRepository,
-    ProjectStatusHistoryRepository,
     TrancheRepository};
 use Unilend\Security\Voter\ProjectVoter;
 use Unilend\Service\{Attachment\AttachmentManager, MailerManager, Project\ProjectImageManager, User\RealUserFinder};

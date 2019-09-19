@@ -12,9 +12,9 @@ use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
 use Unilend\Entity\ClientsStatus;
 use Unilend\Entity\ProjectInvitation;
 use Unilend\Entity\ProjectStatusHistory;
-use Unilend\Entity\TemporaryLinksLogin;
 use Unilend\Message\Client\ClientInvited;
 use Unilend\Repository\ClientsRepository;
+use Unilend\Repository\ClientsStatusHistoryRepository;
 use Unilend\Repository\ClientsStatusRepository;
 use Unilend\Repository\CompaniesRepository;
 use Unilend\Repository\ProjectInvitationRepository;
@@ -45,6 +45,8 @@ class ClientInvitedHandler implements MessageHandlerInterface
     private $logger;
     /** @var ProjectInvitationRepository */
     private $projectInvitationRepository;
+    /** @var ClientsStatusHistoryRepository */
+    private $clientsStatusHistoryRepository;
 
     /**
      * @param ClientsRepository              $clientsRepository
@@ -57,6 +59,7 @@ class ClientInvitedHandler implements MessageHandlerInterface
      * @param MailerManager                  $mailerManager
      * @param LoggerInterface                $logger
      * @param ProjectInvitationRepository    $projectInvitationRepository
+     * @param ClientsStatusHistoryRepository $clientsStatusHistoryRepository
      */
     public function __construct(
         ClientsRepository $clientsRepository,
@@ -68,7 +71,8 @@ class ClientInvitedHandler implements MessageHandlerInterface
         TemporaryLinksLoginRepository $temporaryLinksLoginRepository,
         MailerManager $mailerManager,
         LoggerInterface $logger,
-        ProjectInvitationRepository $projectInvitationRepository
+        ProjectInvitationRepository $projectInvitationRepository,
+        ClientsStatusHistoryRepository $clientsStatusHistoryRepository
     ) {
         $this->clientsRepository              = $clientsRepository;
         $this->projectRepository              = $projectRepository;
@@ -80,6 +84,7 @@ class ClientInvitedHandler implements MessageHandlerInterface
         $this->mailerManager                  = $mailerManager;
         $this->logger                         = $logger;
         $this->projectInvitationRepository    = $projectInvitationRepository;
+        $this->clientsStatusHistoryRepository = $clientsStatusHistoryRepository;
     }
 
     /**
@@ -102,16 +107,16 @@ class ClientInvitedHandler implements MessageHandlerInterface
             ->setStatus(ProjectInvitation::STATUS_SENT)
             ;
         $this->projectInvitationRepository->save($invitation);
+        $inviterName = $inviter->getLastName() . ' ' . $inviter->getFirstName();
 
         $projectStatusHistory = $this->projectStatusHistoryRepository->findOneBy(['project' => $project]);
+        $guestStatus          = $this->clientsStatusHistoryRepository->findActualStatus($guest)->getIdStatus()->getId();
 
         if (ProjectStatusHistory::STATUS_PUBLISHED === $projectStatusHistory->getStatus()) {
-            if (ClientsStatus::STATUS_VALIDATED === $guest->getIdClientStatusHistory()->getIdStatus()->getId()) {
-                $this->mailerManager->sendProjectPublication($project, $guest);
-            } elseif (ClientsStatus::STATUS_CREATION === $guest->getIdClientStatusHistory()->getIdStatus()->getId()) {
-                $inviterName = $inviter->getLastName() . ' ' . $inviter->getFirstName();
-                $token       = $this->temporaryLinksLoginRepository->generateTemporaryLink($guest, TemporaryLinksLogin::PASSWORD_TOKEN_LIFETIME_LONG);
-                $this->mailerManager->sendProjectInvitation($inviterName, $token, $guest->getEmail(), $project, $invitation->getId());
+            if (ClientsStatus::STATUS_VALIDATED === $guestStatus) {
+                $this->mailerManager->sendProjectInvitation($invitation);
+            } elseif (ClientsStatus::STATUS_CREATION === $guestStatus) {
+                $this->mailerManager->sendProjectInvitationNewUser($invitation);
             } else {
                 $this->logger->error('Unable to retrieve last client notifications. Error: ', [
                     'id_client'     => $guest->getIdClient(),
