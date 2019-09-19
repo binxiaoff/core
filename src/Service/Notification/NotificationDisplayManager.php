@@ -41,27 +41,15 @@ class NotificationDisplayManager
     }
 
     /**
-     * @param Clients $client
+     * @param Clients  $client
+     * @param int|null $limit
+     * @param int|null $offset
      *
      * @throws Exception
      *
-     * @return array
+     * @return array|mixed[][]
      */
-    public function getLastClientNotifications(Clients $client): array
-    {
-        return $this->getClientNotifications($client, 0, 20);
-    }
-
-    /**
-     * @param Clients $client
-     * @param int     $offset
-     * @param int     $limit
-     *
-     * @throws Exception
-     *
-     * @return array
-     */
-    public function getClientNotifications(Clients $client, $offset = null, $limit = null): array
+    public function getLastClientNotifications(Clients $client, ?int $limit = 20, ?int $offset = null): array
     {
         $formattedNotifications = [];
         $notifications          = $this->notificationRepository->findBy(['client' => $client], ['added' => 'DESC'], $limit, $offset);
