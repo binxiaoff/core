@@ -9,7 +9,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\{Request, Response};
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\User\UserInterface;
-use Unilend\Entity\{Clients, Loans, Project, ProjectStatusHistory};
+use Unilend\Entity\{Clients, Loans, Project, ProjectStatus};
 use Unilend\Repository\{ClientProjectRepository, ProjectRepository};
 
 class ListController extends AbstractController
@@ -65,7 +65,7 @@ class ListController extends AbstractController
         ClientProjectRepository $clientProjectRepository,
         ?UserInterface $user
     ): Response {
-        $statuses = ProjectStatusHistory::getAllProjectStatus();
+        $statuses = ProjectStatus::getPossibleStatuses();
         $template = [
             'projects' => [
                 'borrowerSubmitter' => $this->groupByStatusAndSort($clientProjectRepository->getBorrowerSubmitterProjects($user), $statuses),
@@ -79,10 +79,10 @@ class ListController extends AbstractController
             ->distinct()
             ->innerJoin('p.tranches', 't')
             ->innerJoin('t.bids', 'b')
-            ->innerJoin('p.currentProjectStatusHistory', 'psh')
+            ->innerJoin('p.currentStatus', 'psh')
             ->where('b.lender = :lender')
             ->andWhere('psh.status = :online')
-            ->setParameters(['lender' => $user->getCompany(), 'online' => ProjectStatusHistory::STATUS_PUBLISHED])
+            ->setParameters(['lender' => $user->getCompany(), 'online' => ProjectStatus::STATUS_PUBLISHED])
             ->getQuery()
             ->getResult()
         ;
@@ -111,14 +111,14 @@ class ListController extends AbstractController
         $projectsActive = $projectRepository->createQueryBuilder('p')
             ->innerJoin('p.tranches', 't')
             ->innerJoin('t.loans', 'l')
-            ->innerJoin('p.currentProjectStatusHistory', 'psh')
+            ->innerJoin('p.currentStatus', 'psh')
             ->where('l.lender = :lender')
             ->andWhere('l.status = :accepted')
             ->andWhere('psh.status IN (:active)')
             ->setParameters([
                 'lender'   => $user->getCompany(),
                 'accepted' => Loans::STATUS_ACCEPTED,
-                'active'   => [ProjectStatusHistory::STATUS_FUNDED, ProjectStatusHistory::STATUS_CONTRACTS_REDACTED, ProjectStatusHistory::STATUS_CONTRACTS_SIGNED],
+                'active'   => [ProjectStatus::STATUS_FUNDED, ProjectStatus::STATUS_CONTRACTS_REDACTED, ProjectStatus::STATUS_CONTRACTS_SIGNED],
             ])
             ->getQuery()
             ->getResult()
@@ -130,14 +130,14 @@ class ListController extends AbstractController
         $projectsFinished = $projectRepository->createQueryBuilder('p')
             ->innerJoin('p.tranches', 't')
             ->innerJoin('t.loans', 'l')
-            ->innerJoin('p.currentProjectStatusHistory', 'psh')
+            ->innerJoin('p.currentStatus', 'psh')
             ->where('l.lender = :lender')
             ->andWhere('l.status = :accepted')
             ->andWhere('psh.status IN (:finished)')
             ->setParameters([
                 'lender'   => $user->getCompany(),
                 'accepted' => Loans::STATUS_ACCEPTED,
-                'finished' => [ProjectStatusHistory::STATUS_LOST, ProjectStatusHistory::STATUS_FINISHED, ProjectStatusHistory::STATUS_CANCELLED],
+                'finished' => [ProjectStatus::STATUS_LOST, ProjectStatus::STATUS_FINISHED, ProjectStatus::STATUS_CANCELLED],
             ])
             ->getQuery()
             ->getResult()
@@ -171,7 +171,7 @@ class ListController extends AbstractController
         $groupedProjects = array_fill_keys($statuses, []);
 
         foreach ($projects as $project) {
-            $lastStatus = $project->getCurrentProjectStatusHistory();
+            $lastStatus = $project->getCurrentStatus();
             if ($lastStatus) {
                 $groupedProjects[$lastStatus->getStatus()][] = $project;
             }

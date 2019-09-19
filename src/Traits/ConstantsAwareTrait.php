@@ -17,17 +17,18 @@ trait ConstantsAwareTrait
     private static function getConstants(?string $prefix = null): array
     {
         try {
-            $self      = new ReflectionClass(__CLASS__);
-            $constants = $self->getConstants();
+            $self = new ReflectionClass(__CLASS__);
         } catch (ReflectionException $exception) {
             return [];
         }
 
+        $constants = $self->getConstants();
+
         if ($constants && null !== $prefix) {
             $constants = array_filter(
                 $constants,
-                function ($key) use ($prefix) {
-                    return $prefix === mb_substr($key, 0, mb_strlen($prefix));
+                static function ($key) use ($prefix) {
+                    return 0 === mb_strpos($key, $prefix);
                 },
                 ARRAY_FILTER_USE_KEY
             );
@@ -46,6 +47,6 @@ trait ConstantsAwareTrait
     {
         $constants = self::getConstants($prefix);
 
-        return array_search($value, $constants);
+        return array_search($value, $constants, true);
     }
 }

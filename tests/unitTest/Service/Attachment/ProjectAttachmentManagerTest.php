@@ -9,9 +9,10 @@ use Exception;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
 use Prophecy\Prophecy\ObjectProphecy;
-use Unilend\Entity\{Attachment, AttachmentType, Project, ProjectAttachment, ProjectAttachmentType};
+use Unilend\Entity\{Attachment, AttachmentType, Clients, Project, ProjectAttachment, ProjectAttachmentType};
 use Unilend\Repository\{ProjectAttachmentRepository, ProjectAttachmentTypeRepository, ProjectRepository};
 use Unilend\Service\Attachment\{AttachmentManager, ProjectAttachmentManager};
+use Unilend\Service\User\RealUserFinder;
 
 /**
  * Class ProjectAttachmentTest.
@@ -55,10 +56,12 @@ class ProjectAttachmentManagerTest extends TestCase
 
     /**
      * @covers ::attachToProject
+     *
+     * @throws Exception
      */
     public function testAttachToProject(): void
     {
-        $project    = new Project();
+        $project    = $this->createProject();
         $attachment = new Attachment();
 
         $this->projectAttachmentRepository
@@ -81,6 +84,8 @@ class ProjectAttachmentManagerTest extends TestCase
 
     /**
      * @covers ::attachToProject
+     *
+     * @throws Exception
      */
     public function testAttachExistingToProject(): void
     {
@@ -110,7 +115,7 @@ class ProjectAttachmentManagerTest extends TestCase
      * @throws ORMException
      * @throws OptimisticLockException
      */
-    public function testAttachToProjectWhenAtTheLimit()
+    public function testAttachToProjectWhenAtTheLimit(): void
     {
         $attachmentType        = new AttachmentType();
         $projectAttachmentType = $this->prophesize(ProjectAttachmentType::class);
@@ -118,7 +123,7 @@ class ProjectAttachmentManagerTest extends TestCase
 
         $projectAttachmentType->setAttachmentType($attachmentType);
 
-        $project    = new Project();
+        $project    = $this->createProject();
         $attachment = new Attachment();
         $attachment->setType($attachmentType);
 
@@ -158,6 +163,7 @@ class ProjectAttachmentManagerTest extends TestCase
      *
      * @throws ORMException
      * @throws OptimisticLockException
+     * @throws Exception
      */
     public function testDetachFromProject(): void
     {
@@ -217,7 +223,7 @@ class ProjectAttachmentManagerTest extends TestCase
      */
     protected function createProjectAttachment(?Project $project = null, ?Attachment $attachment = null): ProjectAttachment
     {
-        $project    = $project    ?? new Project();
+        $project    = $project    ?? $this->createProject();
         $attachment = $attachment ?? new Attachment();
 
         $projectAttachment = new ProjectAttachment();
@@ -226,5 +232,17 @@ class ProjectAttachmentManagerTest extends TestCase
         $project->addProjectAttachment($projectAttachment);
 
         return $projectAttachment;
+    }
+
+    /**
+     * @return Project
+     */
+    protected function createProject(): Project
+    {
+        /** @var RealUserFinder|ObjectProphecy $realUserFinder */
+        $realUserFinder = $this->prophesize(RealUserFinder::class);
+        $realUserFinder->__invoke()->willReturn(new Clients());
+
+        return new Project($realUserFinder->reveal());
     }
 }

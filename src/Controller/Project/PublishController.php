@@ -10,12 +10,12 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\{Request, Response};
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Routing\Annotation\Route;
-use Unilend\Entity\{FoncarisRequest, Project, ProjectStatusHistory, TrancheAttribute};
+use Unilend\Entity\{FoncarisRequest, Project, ProjectStatus, TrancheAttribute};
 use Unilend\Form\Foncaris\{FoncarisRequestType, FoncarisTrancheAttributeType};
 use Unilend\Message\Project\ProjectPublished;
 use Unilend\Repository\FoncarisRequestRepository;
 use Unilend\Repository\ProjectRepository;
-use Unilend\Service\{Foncaris\GuaranteeRequestGenerator, Project\ProjectStatusManager};
+use Unilend\Service\{Foncaris\GuaranteeRequestGenerator, User\RealUserFinder};
 
 class PublishController extends AbstractController
 {
@@ -32,8 +32,8 @@ class PublishController extends AbstractController
      * @param Request                   $request
      * @param ProjectRepository         $projectRepository
      * @param FoncarisRequestRepository $foncarisRequestRepository
-     * @param ProjectStatusManager      $projectStatusManager
      * @param MessageBusInterface       $messageBus
+     * @param RealUserFinder            $realUserFinder
      *
      * @throws ORMException
      * @throws OptimisticLockException
@@ -45,8 +45,8 @@ class PublishController extends AbstractController
         Request $request,
         ProjectRepository $projectRepository,
         FoncarisRequestRepository $foncarisRequestRepository,
-        ProjectStatusManager $projectStatusManager,
-        MessageBusInterface $messageBus
+        MessageBusInterface $messageBus,
+        RealUserFinder $realUserFinder
     ) {
         $form = $this->createForm(FoncarisRequestType::class, (new FoncarisRequest())->setProject($project));
 
@@ -56,8 +56,7 @@ class PublishController extends AbstractController
 
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {
-            $projectStatusManager->addProjectStatus(ProjectStatusHistory::STATUS_PUBLISHED, $project);
-
+            $project->setCurrentStatus(ProjectStatus::STATUS_PUBLISHED, $realUserFinder);
             $foncarisRequest = $form->getData();
 
             if ($foncarisRequest->needFoncarisGuarantee()) {

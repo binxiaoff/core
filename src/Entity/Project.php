@@ -10,7 +10,9 @@ use Doctrine\ORM\Mapping as ORM;
 use Exception;
 use Ramsey\Uuid\Uuid;
 use Symfony\Component\Validator\Constraints as Assert;
+use Unilend\Entity\Traits\StatusTraceableTrait;
 use Unilend\Entity\Traits\TimestampableTrait;
+use Unilend\Service\User\RealUserFinder;
 use Unilend\Traits\ConstantsAwareTrait;
 use URLify;
 
@@ -21,11 +23,16 @@ use URLify;
  * })
  * @ORM\Entity(repositoryClass="Unilend\Repository\ProjectRepository")
  * @ORM\HasLifecycleCallbacks
+ *
+ * @method ProjectStatus getCurrentStatus
  */
 class Project
 {
     use TimestampableTrait;
     use ConstantsAwareTrait;
+    use StatusTraceableTrait {
+        setCurrentStatus as baseStatusSetter;
+    }
 
     public const OPERATION_TYPE_ARRANGEMENT = 1;
     public const OPERATION_TYPE_SYNDICATION = 2;
@@ -173,16 +180,6 @@ class Project
     private $lenderConsultationClosingDate;
 
     /**
-     * @var ProjectStatusHistory|null
-     *
-     * @ORM\OneToOne(targetEntity="Unilend\Entity\ProjectStatusHistory")
-     * @ORM\JoinColumns({
-     *     @ORM\JoinColumn(name="id_project_status_history")
-     * })
-     */
-    private $currentProjectStatusHistory;
-
-    /**
      * @var string|null
      *
      * @ORM\Column(length=8, nullable=true)
@@ -202,13 +199,6 @@ class Project
      * @ORM\Column(type="smallint", nullable=false)
      */
     private $offerVisibility;
-
-    /**
-     * @var ArrayCollection|ProjectStatusHistory[]
-     *
-     * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectStatusHistory", mappedBy="project", cascade={"persist"}, orphanRemoval=true)
-     */
-    private $projectStatusHistories;
 
     /**
      * @var ProjectAttachment[]
@@ -263,17 +253,36 @@ class Project
     private $image;
 
     /**
-     * Project constructor.
+     * @var ProjectStatus
+     *
+     * @ORM\OneToOne(targetEntity="Unilend\Entity\ProjectStatus")
+     * @ORM\JoinColumn(name="id_current_status", unique=true)
      */
-    public function __construct()
+    private $currentStatus;
+
+    /**
+     * @var ArrayCollection|ClientsStatus
+     *
+     * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectStatus", mappedBy="project", orphanRemoval=true, cascade={"persist"})
+     */
+    private $statuses;
+
+    /**
+     * Project constructor.
+     *
+     * @param RealUserFinder $realUserFinder
+     */
+    public function __construct(RealUserFinder $realUserFinder)
     {
         $this->projectAttachments         = new ArrayCollection();
         $this->projectParticipants        = new ArrayCollection();
         $this->projectFees                = new ArrayCollection();
         $this->comments                   = new ArrayCollection();
-        $this->projectStatusHistories     = new ArrayCollection();
+        $this->statuses                   = new ArrayCollection();
         $this->tranches                   = new ArrayCollection();
         $this->confidentialityAcceptances = new ArrayCollection();
+
+        $this->setCurrentStatus(ProjectStatus::STATUS_REQUESTED, $realUserFinder);
     }
 
     /**
@@ -313,7 +322,7 @@ class Project
             try {
                 $this->hash = $this->generateHash();
             } catch (Exception $e) {
-                $this->hash = md5(uniqid());
+                $this->hash = md5(uniqid('', false));
             }
         }
     }
@@ -483,11 +492,16 @@ class Project
     }
 
     /**
-     * @return ProjectStatusHistory|null
+     * @param int            $status
+     * @param RealUserFinder $realUserFinder
+     *
+     * @return Project
      */
-    public function getCurrentProjectStatusHistory(): ?ProjectStatusHistory
+    public function setCurrentStatus(int $status, RealUserFinder $realUserFinder): self
     {
-        return $this->currentProjectStatusHistory;
+        $projectStatus = new ProjectStatus($this, $status, $realUserFinder);
+
+        return $this->baseStatusSetter($projectStatus);
     }
 
     /**
@@ -583,7 +597,7 @@ class Project
      */
     public function setInternalRatingScore(?string $internalRatingScore): void
     {
-        if (in_array($internalRatingScore, $this->getAllInternalRatingScores())) {
+        if (in_array($internalRatingScore, $this->getAllInternalRatingScores(), true)) {
             $this->internalRatingScore = $internalRatingScore;
         }
     }
@@ -962,31 +976,6 @@ class Project
     }
 
     /**
-     * @return ArrayCollection|ProjectStatusHistory[]
-     */
-    public function getProjectStatusHistories(): iterable
-    {
-        return $this->projectStatusHistories;
-    }
-
-    /**
-     * @param ProjectStatusHistory $projectStatusHistory
-     *
-     * @return Project
-     */
-    public function setProjectStatusHistory(ProjectStatusHistory $projectStatusHistory): Project
-    {
-        $projectStatusHistory->setProject($this);
-
-        if (null === $this->currentProjectStatusHistory || $this->currentProjectStatusHistory->getStatus() !== $projectStatusHistory->getStatus()) {
-            $this->projectStatusHistories->add($projectStatusHistory);
-            $this->setCurrentProjectStatusHistory($projectStatusHistory);
-        }
-
-        return $this;
-    }
-
-    /**
      * @return Tranche[]|ArrayCollection
      */
     public function getTranches(): iterable
@@ -1056,8 +1045,8 @@ class Project
      */
     public function isEditable(): bool
     {
-        if ($this->getCurrentProjectStatusHistory()) {
-            return $this->getCurrentProjectStatusHistory()->getStatus() < ProjectStatusHistory::STATUS_PUBLISHED;
+        if ($this->getCurrentStatus()) {
+            return $this->getCurrentStatus()->getStatus() < ProjectStatus::STATUS_PUBLISHED;
         }
 
         return true;
@@ -1070,7 +1059,7 @@ class Project
      */
     public function isOnline(): bool
     {
-        return ProjectStatusHistory::STATUS_PUBLISHED === $this->getCurrentProjectStatusHistory()->getStatus();
+        return ProjectStatus::STATUS_PUBLISHED === $this->getCurrentStatus()->getStatus();
     }
 
     /**
@@ -1106,18 +1095,6 @@ class Project
     public function setImage(?string $image): Project
     {
         $this->image = $image;
-
-        return $this;
-    }
-
-    /**
-     * @param ProjectStatusHistory $currentProjectStatusHistory
-     *
-     * @return Project
-     */
-    private function setCurrentProjectStatusHistory(ProjectStatusHistory $currentProjectStatusHistory): Project
-    {
-        $this->currentProjectStatusHistory = $currentProjectStatusHistory;
 
         return $this;
     }

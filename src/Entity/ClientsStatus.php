@@ -5,80 +5,147 @@ declare(strict_types=1);
 namespace Unilend\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Exception;
+use InvalidArgumentException;
+use Unilend\Entity\Interfaces\StatusInterface;
+use Unilend\Entity\Traits\TimestampableAddedOnlyTrait;
+use Unilend\Traits\ConstantsAwareTrait;
 
 /**
  * ClientsStatus.
  *
- * @ORM\Table(name="clients_status")
- * @ORM\Entity
+ * @ORM\Table(
+ *     name="clients_status",
+ *     indexes={
+ *         @ORM\Index(columns={"id_client"}, name="idx_clients_status_id_client"),
+ *         @ORM\Index(columns={"status"}, name="idx_clients_status_status")
+ *     }
+ * )
+ * @ORM\Entity(repositoryClass="Unilend\Repository\ClientsStatusRepository")
+ * @ORM\HasLifecycleCallbacks
  */
-class ClientsStatus
+class ClientsStatus implements StatusInterface
 {
-    public const STATUS_CREATION              = 5;
-    public const STATUS_TO_BE_CHECKED         = 10;
-    public const STATUS_COMPLETENESS          = 20;
-    public const STATUS_COMPLETENESS_REMINDER = 30;
-    public const STATUS_COMPLETENESS_REPLY    = 40;
-    public const STATUS_MODIFICATION          = 50;
-    public const STATUS_VALIDATED             = 60;
-    public const STATUS_SUSPENDED             = 65;
-    public const STATUS_DISABLED              = 70;
-    public const STATUS_CLOSED_LENDER_REQUEST = 80;
-    public const STATUS_CLOSED_BY_UNILEND     = 90;
-    public const STATUS_CLOSED_DEFINITELY     = 100;
+    use ConstantsAwareTrait;
+    use TimestampableAddedOnlyTrait;
+
+    public const STATUS_CREATED   = 10;
+    public const STATUS_VALIDATED = 20;
+    public const STATUS_BLOCKED   = 30;
+    public const STATUS_CLOSED    = 100;
 
     public const GRANTED_LOGIN = [
-        self::STATUS_CREATION,
-        self::STATUS_TO_BE_CHECKED,
-        self::STATUS_COMPLETENESS,
-        self::STATUS_COMPLETENESS_REMINDER,
-        self::STATUS_COMPLETENESS_REPLY,
-        self::STATUS_MODIFICATION,
+        self::STATUS_CREATED,
         self::STATUS_VALIDATED,
-        self::STATUS_SUSPENDED,
     ];
+
+    /**
+     * @var Clients
+     *
+     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Clients", inversedBy="statuses")
+     * @ORM\JoinColumn(name="id_client", referencedColumnName="id_client", nullable=false)
+     */
+    private $clients;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="label", type="string", length=191, unique=true)
+     * @ORM\Column(name="content", type="text", length=16777215, nullable=true)
      */
-    private $label;
+    private $content;
 
     /**
      * @var int
      *
-     * @ORM\Column(name="id", type="integer")
+     * @ORM\Column(type="smallint")
+     */
+    private $status;
+
+    /**
+     * @var int
+     *
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="IDENTITY")
+     * @ORM\Column(type="integer")
      */
     private $id;
 
     /**
-     * @param string $label
+     * ClientsStatus constructor.
+     *
+     * @param Clients     $clients
+     * @param int         $status
+     * @param string|null $content
+     *
+     * @throws Exception
+     */
+    public function __construct(Clients $clients, int $status, string $content = null)
+    {
+        if (!in_array($status, static::getPossibleStatuses(), true)) {
+            throw new InvalidArgumentException(
+                sprintf('%s is not a possible status for %s', $status, __CLASS__)
+            );
+        }
+        $this->status  = $status;
+        $this->clients = $clients;
+        $this->content = $content;
+    }
+
+    /**
+     * Get idClient.
+     *
+     * @return Clients
+     */
+    public function getClients(): Clients
+    {
+        return $this->clients;
+    }
+
+    /**
+     * Set content.
+     *
+     * @param string|null $content
      *
      * @return ClientsStatus
      */
-    public function setLabel($label)
+    public function setContent(?string $content): ClientsStatus
     {
-        $this->label = $label;
+        $this->content = $content;
 
         return $this;
     }
 
     /**
-     * @return string
+     * Get content.
+     *
+     * @return string|null
      */
-    public function getLabel()
+    public function getContent(): ?string
     {
-        return $this->label;
+        return $this->content;
     }
 
     /**
      * @return int
      */
-    public function getId()
+    public function getId(): int
     {
         return $this->id;
+    }
+
+    /**
+     * @return int
+     */
+    public function getStatus(): int
+    {
+        return $this->status;
+    }
+
+    /**
+     * @return array
+     */
+    public static function getPossibleStatuses(): array
+    {
+        return static::getConstants('STATUS_');
     }
 }

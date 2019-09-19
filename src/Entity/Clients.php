@@ -15,10 +15,12 @@ use Misd\PhoneNumberBundle\Validator\Constraints\PhoneNumber as AssertPhoneNumbe
 use Ramsey\Uuid\{Exception\UnsatisfiedDependencyException, Uuid};
 use Symfony\Component\Security\Core\User\{EquatableInterface, UserInterface};
 use Symfony\Component\Validator\Constraints as Assert;
-use Unilend\Entity\Traits\{RoleableTrait, TimestampableTrait};
+use Unilend\Entity\Traits\{RoleableTrait, StatusTraceableTrait, TimestampableTrait};
 use URLify;
 
 /**
+ * @method ClientsStatus getCurrentStatus()
+ *
  * @Gedmo\Loggable(logEntryClass="Unilend\Entity\Versioned\VersionedClients")
  *
  * @ORM\Table(name="clients", indexes={
@@ -33,6 +35,9 @@ class Clients implements UserInterface, EquatableInterface
 {
     use TimestampableTrait;
     use RoleableTrait;
+    use StatusTraceableTrait {
+        setCurrentStatus as baseStatusSetter;
+    }
 
     public const ROLE_USER        = 'ROLE_USER';
     public const ROLE_ADMIN       = 'ROLE_ADMIN';
@@ -150,16 +155,6 @@ class Clients implements UserInterface, EquatableInterface
     private $jobFunction;
 
     /**
-     * @var ClientsStatusHistory
-     *
-     * @ORM\ManyToOne(targetEntity="Unilend\Entity\ClientsStatusHistory")
-     * @ORM\JoinColumns({
-     *     @ORM\JoinColumn(name="id_client_status_history", referencedColumnName="id")
-     * })
-     */
-    private $idClientStatusHistory;
-
-    /**
      * @var DateTime
      *
      * @ORM\Column(name="last_login", type="datetime", nullable=true)
@@ -197,11 +192,28 @@ class Clients implements UserInterface, EquatableInterface
     private $roles = [];
 
     /**
+     * @var ClientsStatus
+     *
+     * @ORM\OneToOne(targetEntity="Unilend\Entity\ClientsStatus")
+     * @ORM\JoinColumn(name="id_current_status", unique=true)
+     */
+    private $currentStatus;
+
+    /**
+     * @var ArrayCollection|ClientsStatus
+     *
+     * @ORM\OneToMany(targetEntity="Unilend\Entity\ClientsStatus", mappedBy="clients", orphanRemoval=true, cascade={"persist"})
+     */
+    private $statuses;
+
+    /**
      * Clients constructor.
      */
     public function __construct()
     {
         $this->attachments = new ArrayCollection();
+        $this->statuses    = new ArrayCollection();
+        $this->setCurrentStatus(ClientsStatus::STATUS_CREATED);
     }
 
     /**
@@ -465,26 +477,6 @@ class Clients implements UserInterface, EquatableInterface
     }
 
     /**
-     * @param ClientsStatusHistory|null $idClientStatusHistory
-     *
-     * @return Clients
-     */
-    public function setIdClientStatusHistory(?ClientsStatusHistory $idClientStatusHistory): Clients
-    {
-        $this->idClientStatusHistory = $idClientStatusHistory;
-
-        return $this;
-    }
-
-    /**
-     * @return ClientsStatusHistory|null
-     */
-    public function getIdClientStatusHistory(): ?ClientsStatusHistory
-    {
-        return $this->idClientStatusHistory;
-    }
-
-    /**
      * @param DateTimeInterface|null $lastLogin
      *
      * @return Clients
@@ -521,7 +513,7 @@ class Clients implements UserInterface, EquatableInterface
             try {
                 $this->hash = $this->generateHash();
             } catch (UnsatisfiedDependencyException $exception) {
-                $this->hash = md5(uniqid());
+                $this->hash = md5(uniqid('', false));
             }
         }
     }
@@ -594,14 +586,6 @@ class Clients implements UserInterface, EquatableInterface
     }
 
     /**
-     * @return bool
-     */
-    public function isSuspended(): bool
-    {
-        return $this->isInStatus([ClientsStatus::STATUS_SUSPENDED]);
-    }
-
-    /**
      * {@inheritdoc}
      */
     public function isEqualTo(UserInterface $user): bool
@@ -610,6 +594,7 @@ class Clients implements UserInterface, EquatableInterface
             return false;
         }
 
+        /** @var Clients $user */
         if ($this->getHash() !== $user->getHash()) {
             return false;
         }
@@ -650,6 +635,21 @@ class Clients implements UserInterface, EquatableInterface
     }
 
     /**
+     * @param int         $status
+     * @param string|null $content
+     *
+     * @throws Exception
+     *
+     * @return Clients
+     */
+    public function setCurrentStatus(int $status, ?string $content = null): self
+    {
+        $clientStatus = new ClientsStatus($this, $status, $content);
+
+        return $this->baseStatusSetter($clientStatus);
+    }
+
+    /**
      * @param string|null $name
      *
      * @return string|null
@@ -670,8 +670,8 @@ class Clients implements UserInterface, EquatableInterface
         $tabName = explode('-', $name);
         $newName = '';
         $i       = 0;
-        foreach ($tabName as $name) {
-            $newName .= (0 === $i ? '' : '-') . ucwords($name);
+        foreach ($tabName as $token) {
+            $newName .= (0 === $i ? '' : '-') . ucwords($token);
             ++$i;
         }
 
@@ -697,6 +697,8 @@ class Clients implements UserInterface, EquatableInterface
      */
     private function isInStatus(array $status): bool
     {
-        return $this->getIdClientStatusHistory() && in_array($this->getIdClientStatusHistory()->getIdStatus()->getId(), $status);
+        $clientsStatus = $this->getCurrentStatus();
+
+        return $clientsStatus && in_array($clientsStatus->getStatus(), $status, true);
     }
 }

@@ -9,7 +9,7 @@ use LogicException;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
-use Unilend\Entity\{Clients, Project, ProjectStatusHistory};
+use Unilend\Entity\{Clients, Project, ProjectStatus};
 use Unilend\Repository\ProjectConfidentialityAcceptanceRepository;
 use Unilend\Traits\ConstantsAwareTrait;
 
@@ -104,7 +104,7 @@ class ProjectVoter extends Voter
             return true;
         }
 
-        if ($project->getCurrentProjectStatusHistory()->getStatus() < ProjectStatusHistory::STATUS_PUBLISHED) {
+        if ($project->getCurrentStatus()->getStatus() < ProjectStatus::STATUS_PUBLISHED) {
             return false;
         }
 
