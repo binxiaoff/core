@@ -111,11 +111,20 @@ class ServiceTermsGeneratorTest extends TestCase
 
         $acceptationLegalDoc->getLegalDoc()->getProphecy()->getContent()->shouldHaveBeenCalled();
         $this->twig->render(Argument::type('string'), Argument::cetera())->shouldHaveBeenCalled();
-        $this->snappy->generateFromHtml(Argument::exact($renderedLegalDocument), Argument::type('string'))->shouldHaveBeenCalled();
+
+        $generateFromHtmlArgument = ['content' => Argument::exact($renderedLegalDocument), 'renderedFilePath' => Argument::type('string')];
+        $this->snappy->generateFromHtml(...array_values($generateFromHtmlArgument))->shouldHaveBeenCalled();
+
+        $calls = $this->snappy->findProphecyMethodCalls(
+            'generateFromHtml',
+            new Argument\ArgumentsWildcard(array_values($generateFromHtmlArgument))
+        );
+
+        $renderedFilePathArgumentIndex = array_flip(array_keys($generateFromHtmlArgument))['renderedFilePath'];
 
         $this->fileSystemHelper->writeStreamToFileSystem(
-            Argument::type('string'),
-            Argument::type('string'),
+            Argument::exact((reset($calls)->getArguments())[$renderedFilePathArgumentIndex]),
+            Argument::exact($serviceTermsGenerator->getFilePath($acceptationLegalDoc)),
             Argument::type(FilesystemInterface::class)
         )->shouldHaveBeenCalled();
     }
