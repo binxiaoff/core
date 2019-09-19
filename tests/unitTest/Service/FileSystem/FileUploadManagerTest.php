@@ -55,13 +55,13 @@ class FileUploadManagerTest extends TestCase
 
         $filesystem->has(Argument::type('string'))->willReturn(false)->shouldHaveBeenCalled();
 
-        $pathInfo          = pathinfo($uploadedFilePath);
-        $uploadedFilename  = $pathInfo['filename'];
-        $uploadedDirname   = $pathInfo['dirname'];
-        $uploadedBasename  = $pathInfo['basename'];
-        $uploadedExtension = $pathInfo['extension'] ?? null;
+        $pathInfo         = pathinfo($uploadedFilePath);
+        $uploadedFilename = $pathInfo['filename'];
+        $uploadedDirname  = $pathInfo['dirname'];
 
-        static::assertStringStartsWith(pathinfo($originalFileName, PATHINFO_FILENAME), $uploadedFilename, 'created filename start with uploaded original filename');
+        $originalFilename = pathinfo($originalFileName, PATHINFO_FILENAME);
+        static::assertStringStartsWith($originalFilename, $uploadedFilename, 'created filename start with uploaded original filename');
+        static::assertNotSame($originalFilename, $uploadedFilename);
 
         $uploadedFilePathDirectories = explode(DIRECTORY_SEPARATOR, $uploadedDirname);
 
