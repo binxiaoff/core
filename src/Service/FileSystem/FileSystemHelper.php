@@ -18,20 +18,20 @@ class FileSystemHelper
      *
      * @throws FileExistsException
      */
-    public function writeStreamToFileSystem(string $srcFilePath, string $destFilePath, FilesystemInterface $filesystem): void
+    public function writeLocalFileToFileSystem(string $srcFilePath, string $destFilePath, FilesystemInterface $filesystem): void
     {
         $fileResource = fopen($srcFilePath, 'r+b');
 
         if (is_resource($fileResource)) {
             $result = $filesystem->writeStream($destFilePath, $fileResource);
+            fclose($fileResource);
+
             if (false === $result) {
                 throw new RuntimeException(sprintf('Could not write file "%s"', $srcFilePath));
             }
-
-            fclose($fileResource);
         }
 
-        unlink($srcFilePath);
+        @unlink($srcFilePath);
     }
 
     /**
