@@ -123,3 +123,6 @@ services:
         $providers:
             - '@UserAgentParser\Provider\WhichBrowser'
             - '@UserAgentParser\Provider\PiwikDeviceDetector'
+
+    Unilend\Service\ServiceTerms\ServiceTermsNotificationSender:
+        $mailer: '@Unilend\SwiftMailer\UnilendMailer'

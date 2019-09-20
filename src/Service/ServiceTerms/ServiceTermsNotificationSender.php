@@ -7,7 +7,6 @@ namespace Unilend\Service\ServiceTerms;
 use League\Flysystem\FileNotFoundException;
 use Swift_Attachment;
 use Swift_Mailer;
-use Swift_RfcComplianceException;
 use Unilend\Entity\AcceptationsLegalDocs;
 use Unilend\SwiftMailer\{TemplateMessageProvider, UnilendMailer};
 
@@ -25,10 +24,13 @@ class ServiceTermsNotificationSender
     /**
      * @param TemplateMessageProvider $messageProvider
      * @param ServiceTermsGenerator   $serviceTermsGenerator
-     * @param UnilendMailer           $mailer
+     * @param Swift_Mailer            $mailer
      */
-    public function __construct(TemplateMessageProvider $messageProvider, ServiceTermsGenerator $serviceTermsGenerator, UnilendMailer $mailer)
-    {
+    public function __construct(
+        TemplateMessageProvider $messageProvider,
+        ServiceTermsGenerator $serviceTermsGenerator,
+        Swift_Mailer $mailer
+    ) {
         $this->messageProvider       = $messageProvider;
         $this->serviceTermsGenerator = $serviceTermsGenerator;
         $this->mailer                = $mailer;
@@ -38,7 +40,6 @@ class ServiceTermsNotificationSender
      * @param AcceptationsLegalDocs $acceptationsLegalDoc
      *
      * @throws FileNotFoundException
-     * @throws Swift_RfcComplianceException
      *
      * @return int
      */
