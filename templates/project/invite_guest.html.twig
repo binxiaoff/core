@@ -15,7 +15,6 @@
         </div>
     {% endif %}
     <div class="panel">
-        <form action="{{ path('invite_guest', { 'hash' : app.request.attributes.get('hash') }) }}" method="post">
             {{ form_start(form) }}
             <div class="row">
                 {{ form_widget(form.email_guest) }}
@@ -24,7 +23,5 @@
                 <button class="btn btn-primary" type="submit">{% trans %} invite-guest.form-submit-button {% endtrans %}</button>
             </div>
             {{ form_end(form) }}
-        </form>
-
     </div>
 {% endblock %}
