@@ -11,6 +11,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\{Request, Response};
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Unilend\Entity\ClientsStatus;
@@ -23,6 +24,7 @@ use Unilend\Repository\ClientsRepository;
 use Unilend\Repository\ClientsStatusRepository;
 use Unilend\Repository\ProjectInvitationRepository;
 use Unilend\Repository\TemporaryLinksLoginRepository;
+use Unilend\Security\LoginAuthenticator;
 use Unilend\Service\ServiceTerms\ServiceTermsManager;
 
 class AccountController extends AbstractController
@@ -45,6 +47,8 @@ class AccountController extends AbstractController
      * @param ClientsStatusRepository       $clientsStatusRepository
      * @param ProjectInvitationRepository   $projectInvitationRepository
      * @param EntityManagerInterface        $entityManager
+     * @param LoginAuthenticator            $loginAuthenticator
+     * @param RouterInterface               $router
      *
      * @throws ORMException
      * @throws OptimisticLockException
@@ -63,7 +67,9 @@ class AccountController extends AbstractController
         ProjectInvitation $projectInvitation,
         ClientsStatusRepository $clientsStatusRepository,
         ProjectInvitationRepository $projectInvitationRepository,
-        EntityManagerInterface $entityManager
+        EntityManagerInterface $entityManager,
+        LoginAuthenticator $loginAuthenticator,
+        RouterInterface $router
     ): Response {
         if ($temporaryLink->getExpires() < new DateTime()) {
             $this->addFlash('error', $translator->trans('account-init.invalid-link-error-message'));
@@ -114,6 +120,13 @@ class AccountController extends AbstractController
             ;
             $entityManager->persist($statusClientHistory);
             $entityManager->flush();
+
+            $this->addFlash('accountCreatedSuccess', $translator->trans('account-init.account-completed'));
+            $targetPath = $router->generate('edit_project_details', ['hash' => $projectInvitation->getProject()->getHash()], RouterInterface::ABSOLUTE_URL);
+            $loginAuthenticator->setTargetPath(
+                $request,
+                $targetPath
+            );
 
             return $this->redirectToRoute('login');
         }

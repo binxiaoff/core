@@ -229,6 +229,15 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
     }
 
     /**
+     * @param Request $request
+     * @param string  $uri
+     */
+    public function setTargetPath(Request $request, string $uri): void
+    {
+        $this->saveTargetPath($request->getSession(), 'default', $uri);
+    }
+
+    /**
      * {@inheritdoc}
      */
     protected function getLoginUrl()

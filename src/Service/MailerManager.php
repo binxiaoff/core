@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace Unilend\Service;
 
+use DateInterval;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 use NumberFormatter;
+use Psr\Log\LoggerInterface;
 use Swift_Mailer;
 use Swift_RfcComplianceException;
 use Symfony\Component\Routing\RouterInterface;
@@ -15,15 +17,19 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 use Unilend\Entity\{AttachmentSignature,
     Bids,
     Clients,
+    ClientsStatus,
     Loans,
     Project,
     ProjectComment,
     ProjectInvitation,
     ProjectParticipant,
+    ProjectStatusHistory,
     TemporaryLinksLogin,
     Tranche};
+use Unilend\Repository\ClientsStatusHistoryRepository;
 use Unilend\Repository\ClientsStatusRepository;
 use Unilend\Repository\CompaniesRepository;
+use Unilend\Repository\ProjectStatusHistoryRepository;
 use Unilend\Repository\TemporaryLinksLoginRepository;
 use Unilend\SwiftMailer\TemplateMessageProvider;
 
@@ -49,20 +55,27 @@ class MailerManager
     private $clientsStatusRepository;
     /** @var CompaniesRepository */
     private $companiesRepository;
-    /** @var ProjectParticipant */
-    private $projectParticipant;
+    /** @var ClientsStatusHistoryRepository */
+    private $clientsStatusHistoryRepository;
+    /** @var ProjectStatusHistoryRepository */
+    private $projectStatusHistoryRepository;
+    /** @var LoggerInterface */
+    private $logger;
 
     /**
-     * @param TemplateMessageProvider       $messageProvider
-     * @param Swift_Mailer                  $mailer
-     * @param EntityManagerInterface        $entityManager
-     * @param RouterInterface               $router
-     * @param TranslatorInterface           $translator
-     * @param TemporaryLinksLoginRepository $temporaryLinksLoginRepository
-     * @param ClientsStatusRepository       $clientsStatusRepository
-     * @param CompaniesRepository           $companiesRepository
-     * @param NumberFormatter               $numberFormatter
-     * @param NumberFormatter               $percentageFormatter
+     * @param TemplateMessageProvider        $messageProvider
+     * @param Swift_Mailer                   $mailer
+     * @param EntityManagerInterface         $entityManager
+     * @param RouterInterface                $router
+     * @param TranslatorInterface            $translator
+     * @param TemporaryLinksLoginRepository  $temporaryLinksLoginRepository
+     * @param ClientsStatusRepository        $clientsStatusRepository
+     * @param CompaniesRepository            $companiesRepository
+     * @param NumberFormatter                $numberFormatter
+     * @param NumberFormatter                $percentageFormatter
+     * @param ClientsStatusHistoryRepository $clientsStatusHistoryRepository
+     * @param ProjectStatusHistoryRepository $projectStatusHistoryRepository
+     * @param LoggerInterface                $logger
      */
     public function __construct(
         TemplateMessageProvider $messageProvider,
@@ -74,18 +87,24 @@ class MailerManager
         ClientsStatusRepository $clientsStatusRepository,
         CompaniesRepository $companiesRepository,
         NumberFormatter $numberFormatter,
-        NumberFormatter $percentageFormatter
+        NumberFormatter $percentageFormatter,
+        ClientsStatusHistoryRepository $clientsStatusHistoryRepository,
+        ProjectStatusHistoryRepository $projectStatusHistoryRepository,
+        LoggerInterface $logger
     ) {
-        $this->messageProvider               = $messageProvider;
-        $this->mailer                        = $mailer;
-        $this->entityManager                 = $entityManager;
-        $this->percentageFormatter           = $percentageFormatter;
-        $this->numberFormatter               = $numberFormatter;
-        $this->router                        = $router;
-        $this->translator                    = $translator;
-        $this->temporaryLinksLoginRepository = $temporaryLinksLoginRepository;
-        $this->clientsStatusRepository       = $clientsStatusRepository;
-        $this->companiesRepository           = $companiesRepository;
+        $this->messageProvider                = $messageProvider;
+        $this->mailer                         = $mailer;
+        $this->entityManager                  = $entityManager;
+        $this->percentageFormatter            = $percentageFormatter;
+        $this->numberFormatter                = $numberFormatter;
+        $this->router                         = $router;
+        $this->translator                     = $translator;
+        $this->temporaryLinksLoginRepository  = $temporaryLinksLoginRepository;
+        $this->clientsStatusRepository        = $clientsStatusRepository;
+        $this->companiesRepository            = $companiesRepository;
+        $this->clientsStatusHistoryRepository = $clientsStatusHistoryRepository;
+        $this->projectStatusHistoryRepository = $projectStatusHistoryRepository;
+        $this->logger                         = $logger;
     }
 
     /**
@@ -104,17 +123,28 @@ class MailerManager
         $project      = $projectInvitation->getProject();
         $inviter      = $projectInvitation->getInvitedBy();
         $inviterName  = $inviterName  = $inviter->getLastName() . ' ' . $inviter->getFirstName();
-        $recipient    = $projectInvitation->getClient();
-        $token        = $this->temporaryLinksLoginRepository->generateTemporaryLink($recipient, TemporaryLinksLogin::PASSWORD_TOKEN_LIFETIME_LONG);
+        $guest        = $projectInvitation->getClient();
+        $token        = $this->temporaryLinksLoginRepository->findOneBy(['idClient' => $guest]);
+
+        if ($token) {
+            $expiryDate = (new \DateTime('NOW'))->add(new DateInterval('P' . TemporaryLinksLogin::PASSWORD_TOKEN_LIFETIME_LONG));
+            $token->setExpires($expiryDate);
+        } else {
+            $token = $this->temporaryLinksLoginRepository->generateTemporaryLink($guest, TemporaryLinksLogin::PASSWORD_TOKEN_LIFETIME_LONG);
+        }
 
         $keywords = [
             'inviterName'    => $inviterName,
             'project'        => $project->getTitle(),
-            'initAccountUrl' => $this->router->generate('account_init', ['securityToken' => $token, 'idInvitation' => $idInvitation], RouterInterface::ABSOLUTE_URL),
+            'initAccountUrl' => $this->router->generate(
+                'project_invitation',
+                ['securityToken' => $token->getToken(), 'idProjectInvitation' => $idInvitation],
+                RouterInterface::ABSOLUTE_URL
+            ),
         ];
 
         $message = $this->messageProvider->newMessage('project-invitation-new-user', $keywords);
-        $message->setTo($recipient->getEmail());
+        $message->setTo($guest->getEmail());
 
         $sent += $this->mailer->send($message);
 
@@ -179,45 +209,67 @@ class MailerManager
     /**
      * @param ProjectInvitation $invitation
      *
+     * @throws ORMException
+     * @throws OptimisticLockException
+     *
      * @return int
      */
     public function sendProjectInvitation(ProjectInvitation $invitation): int
     {
         $sent = 0;
 
-        $inviter     = $invitation->getInvitedBy();
-        $inviterName = $inviter->getLastName() . ' ' . $inviter->getFirstName();
-        $project     = $invitation->getProject();
-        $recipient   = $invitation->getClient();
+        $guest   = $invitation->getClient();
+        $project = $invitation->getProject();
 
-        $keywords = [
-            'firstName'   => '',
-            'inviterName' => $inviterName,
-            'projectName' => $project->getTitle(),
-            'projectUrl'  => $this->router->generate('edit_project_details', ['hash' => $project->getHash()], RouterInterface::ABSOLUTE_URL),
-            'borrower'    => $project->getBorrowerCompany()->getName(),
-        ];
+        $projectStatus = $this->projectStatusHistoryRepository->findActualStatus($project);
+        $guestStatus   = $this->clientsStatusHistoryRepository->findActualStatus($guest);
 
-        if (false === empty($recipient->getEmail())) {
-            $keywords['firstName'] = $recipient->getFirstName();
-            $message               = $this->messageProvider->newMessage('project-invitation', $keywords);
-            $message->setTo($recipient->getEmail());
+        if (ProjectStatusHistory::STATUS_PUBLISHED === $projectStatus) {
+            switch ($guestStatus) {
+                case ClientsStatus::STATUS_CREATION:
+                    $this->sendProjectInvitationNewUser($invitation);
 
-            $sent += $this->mailer->send($message);
+                    break;
+                case ClientsStatus::STATUS_VALIDATED:
+                    $inviter     = $invitation->getInvitedBy();
+                    $inviterName = $inviter->getLastName() . ' ' . $inviter->getFirstName();
+                    $project     = $invitation->getProject();
+                    $recipient   = $invitation->getClient();
+
+                    $keywords = [
+                        'firstName'   => $recipient->getFirstName(),
+                        'inviterName' => $inviterName,
+                        'projectName' => $project->getTitle(),
+                        'projectUrl'  => $this->router->generate('edit_project_details', ['hash' => $project->getHash()], RouterInterface::ABSOLUTE_URL),
+                        'borrower'    => $project->getBorrowerCompany()->getName(),
+                    ];
+
+                    $message = $this->messageProvider->newMessage('project-invitation', $keywords);
+                    $message->setTo($recipient->getEmail());
+
+                    $sent += $this->mailer->send($message);
+
+                    break;
+                default:
+                    $this->logger->error('Client status not handled. Error: ', [
+                        'id_client'     => $guest->getIdClient(),
+                        'status_client' => $guest->getIdClientStatusHistory(),
+                        'class'         => __CLASS__,
+                        'function'      => __FUNCTION__,
+                    ]);
+            }
         }
 
         return $sent;
     }
 
     /**
-     * @param Project   $project
-     * @param Clients[] $recipients
-     *
-     * @throws Swift_RfcComplianceException
+     * @param Project $project
+     * @param Clients $recipient
      *
      * @return int
      */
-    public function sendProjectPublication(Project $project, array $recipients): int
+    public function sendProjectPublication(Project $project, Clients $recipient): int
     {
         $sent     = 0;
         $keywords = [
@@ -226,14 +278,12 @@ class MailerManager
             'projectName' => $project->getBorrowerCompany()->getName() . ' / ' . $project->getTitle(),
         ];
 
-        foreach ($recipients as $recipient) {
-            if (false === empty($recipient->getEmail())) {
-                $keywords['firstName'] = $recipient->getFirstName();
-                $message               = $this->messageProvider->newMessage('project-publication', $keywords);
-                $message->setTo($recipient->getEmail());
+        if (false === empty($recipient->getEmail())) {
+            $keywords['firstName'] = $recipient->getFirstName();
+            $message               = $this->messageProvider->newMessage('project-publication', $keywords);
+            $message->setTo($recipient->getEmail());
 
-                $sent += $this->mailer->send($message);
-            }
+            $sent += $this->mailer->send($message);
         }
 
         return $sent;

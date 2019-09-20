@@ -8,8 +8,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use Swift_RfcComplianceException;
 use Symfony\Component\Messenger\MessageBusInterface;
-use Unilend\Entity\{Bids, Clients, ClientsStatus, Notification, Project, ProjectComment};
-use Unilend\Message\Client\ClientInvited;
+use Unilend\Entity\{Bids, Clients, Notification, Project, ProjectComment};
 use Unilend\Repository\ClientsStatusHistoryRepository;
 use Unilend\Repository\NotificationRepository;
 use Unilend\Repository\ProjectInvitationRepository;
@@ -86,8 +85,12 @@ class NotificationManager
         $this->createNotification(Notification::TYPE_PROJECT_PUBLICATION, $recipients, $project);
 
         foreach ($recipients as $recipient) {
-            $inviter = $this->projectInvitationRepository->findOneBy(['client' => $recipient, 'project' => $project])->getInvitedBy();
-            $this->messageBus->dispatch(new ClientInvited($inviter->getIdClient(), $recipient->getIdClient(), $project->getId()));
+            $projectInvitation = $this->projectInvitationRepository->findOneBy(['client' => $recipient, 'project' => $project]);
+            if ($projectInvitation) {
+                $this->mailerManager->sendProjectInvitation($projectInvitation);
+            } else {
+                $this->mailerManager->sendProjectPublication($project, $recipient);
+            }
         }
     }
 

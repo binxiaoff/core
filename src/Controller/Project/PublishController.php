@@ -48,6 +48,7 @@ class PublishController extends AbstractController
         MessageBusInterface $messageBus,
         RealUserFinder $realUserFinder
     ) {
+        // @todo don't allow go back on this page once form has been submitted
         $form = $this->createForm(FoncarisRequestType::class, (new FoncarisRequest())->setProject($project));
 
         foreach ($project->getTranches() as $tranche) {

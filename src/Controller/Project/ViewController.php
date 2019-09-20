@@ -7,15 +7,25 @@ namespace Unilend\Controller\Project;
 use Doctrine\ORM\{ORMException, OptimisticLockException};
 use Psr\Log\LoggerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Swift_SwiftException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\{Request, Response};
+use Symfony\Component\HttpFoundation\{RedirectResponse, Request, Response};
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\User\UserInterface;
-use Unilend\Entity\{Bids, Clients, Project, ProjectConfidentialityAcceptance};
+use Unilend\Entity\{Bids,
+    Clients,
+    ClientsStatus,
+    Project,
+    ProjectConfidentialityAcceptance,
+    ProjectInvitation,
+    TemporaryLinksLogin};
 use Unilend\Form\Bid\BidType;
 use Unilend\Form\Project\ConfidentialityAcceptanceType;
-use Unilend\Repository\{BidsRepository, ProjectAttachmentRepository, ProjectConfidentialityAcceptanceRepository};
+use Unilend\Repository\{BidsRepository,
+    ClientsStatusHistoryRepository,
+    ProjectAttachmentRepository,
+    ProjectConfidentialityAcceptanceRepository};
 use Unilend\Service\{NotificationManager, User\RealUserFinder};
 
 class ViewController extends AbstractController
@@ -148,5 +158,38 @@ class ViewController extends AbstractController
             'project'        => $project,
             'acceptanceForm' => $acceptanceForm->createView(),
         ]);
+    }
+
+    /**
+     * @Route("/projet/invitation/{securityToken}/{idProjectInvitation}", name="project_invitation")
+     *
+     * @ParamConverter("temporaryLink", options={"mapping": {"securityToken": "token"}})
+     * @ParamConverter("projectInvitation", options={"mapping": {"idProjectInvitation": "id"}})
+     *
+     * @param TemporaryLinksLogin            $temporaryLink
+     * @param ProjectInvitation              $projectInvitation
+     * @param ClientsStatusHistoryRepository $clientsStatusHistoryRepository
+     *
+     * @return RedirectResponse
+     */
+    public function invitation(
+        TemporaryLinksLogin $temporaryLink,
+        ProjectInvitation $projectInvitation,
+        ClientsStatusHistoryRepository $clientsStatusHistoryRepository
+    ) {
+        $client       = $projectInvitation->getClient();
+        $clientStatus = $clientsStatusHistoryRepository->findActualStatus($client);
+
+        switch ($clientStatus) {
+            case ClientsStatus::STATUS_CREATION:
+                return $this->redirectToRoute('account_init', [
+                    'securityToken' => $temporaryLink->getToken(),
+                    'idInvitation'  => $projectInvitation->getId(),
+                ]);
+            case ClientsStatus::STATUS_VALIDATED:
+                return $this->redirectToRoute('edit_project_details', [
+                    'hash' => $projectInvitation->getProject()->getHash(),
+                ]);
+        }
     }
 }
