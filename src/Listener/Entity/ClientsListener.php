@@ -45,29 +45,15 @@ class ClientsListener
     {
         $changeSet = $args->getEntityChangeSet();
 
-        foreach ($changeSet as $field => $value) {
-            if (('mobile' === $field || 'phone' === $field) && $changeSet[$field][0]->equals($changeSet[$field][1])) {
-                unset($changeSet[$field]);
+        $phoneFields = ['mobile', 'phone'];
+        foreach ($phoneFields as $phoneField) {
+            if ($args->hasChangedField($phoneField) && $args->getOldValue($phoneField)->equals($args->getNewValue($phoneField))) {
+                unset($changeSet[$phoneField]);
             }
         }
 
-        if (false === empty($changeSet) && false === empty($client)) {
-            foreach ($changeSet as $field => $value) {
-                unset($changeSet[$field]);
-                $changeSet[] = $this->translator->trans('mail-identity-updated.' . $field);
-            }
-
-            if (count($changeSet) > 1) {
-                $content      = $this->translator->trans('mail-identity-updated.content-message-plural');
-                $changeFields = '<ul><li>';
-                $changeFields .= implode('</li><li>', $changeSet);
-                $changeFields .= '</li></ul>';
-            } else {
-                $content      = $this->translator->trans('mail-identity-updated.content-message-singular');
-                $changeFields = $changeSet[0];
-            }
-
-            $this->messageBus->dispatch(new ClientUpdated($client->getIdClient(), $content, $changeFields));
+        if (false === empty($changeSet)) {
+            $this->messageBus->dispatch(new ClientUpdated($client->getIdClient(), $changeSet));
         }
     }
 }

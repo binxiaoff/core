@@ -59,20 +59,29 @@ class MailerManager
 
     /**
      * @param Clients $client
-     * @param string  $content
-     * @param string  $fields
+     * @param array   $changeSet
      *
      * @return int
      */
-    public function sendIdentityUpdated(Clients $client, string $content, string $fields): int
+    public function sendIdentityUpdated(Clients $client, array $changeSet): int
     {
         $sent = 0;
+
+        if (count($changeSet) > 1) {
+            $content      = $this->translator->trans('mail-identity-updated.content-message-plural');
+            $changeFields = '<ul><li>';
+            $changeFields .= implode('</li><li>', $changeSet);
+            $changeFields .= '</li></ul>';
+        } else {
+            $content      = $this->translator->trans('mail-identity-updated.content-message-singular');
+            $changeFields = $changeSet[0];
+        }
 
         $keywords = [
             'firstName'    => $client->getFirstName(),
             'content'      => $content,
             'profileUrl'   => $this->router->generate('profile', [], RouterInterface::ABSOLUTE_URL),
-            'changeFields' => $fields,
+            'changeFields' => $changeFields,
         ];
 
         $message = $this->messageProvider->newMessage('identity-updated', $keywords);
