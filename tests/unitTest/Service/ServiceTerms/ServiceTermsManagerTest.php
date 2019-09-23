@@ -6,23 +6,14 @@ namespace Unilend\Test\unitTest\Service\ServiceTerms;
 
 use Faker\Provider\Base;
 use PHPUnit\Framework\TestCase;
-use Prophecy\Argument;
-use Prophecy\Prophecy\MethodProphecy;
-use Prophecy\Prophecy\ObjectProphecy;
+use Prophecy\{Argument, Prophecy\MethodProphecy, Prophecy\ObjectProphecy};
 use ReflectionClass;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
-use Symfony\Component\Messenger\Envelope;
-use Symfony\Component\Messenger\MessageBusInterface;
-use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
-use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
-use Unilend\Entity\AcceptationsLegalDocs;
-use Unilend\Entity\Clients;
-use Unilend\Entity\LegalDocument;
-use Unilend\Entity\Settings;
+use Symfony\Component\Messenger\{Envelope, MessageBusInterface};
+use Symfony\Component\Security\Core\Authentication\Token\{Storage\TokenStorageInterface, TokenInterface};
+use Unilend\Entity\{AcceptationsLegalDocs, Clients, LegalDocument, Settings};
 use Unilend\Message\ServiceTerms\ServiceTermsAccepted;
-use Unilend\Repository\AcceptationLegalDocsRepository;
-use Unilend\Repository\LegalDocumentRepository;
-use Unilend\Repository\SettingsRepository;
+use Unilend\Repository\{AcceptationLegalDocsRepository, LegalDocumentRepository, SettingsRepository};
 use Unilend\Service\ServiceTerms\ServiceTermsManager;
 
 /**
