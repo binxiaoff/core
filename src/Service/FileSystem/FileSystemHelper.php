@@ -20,7 +20,7 @@ class FileSystemHelper
      */
     public function writeTempFileToFileSystem(string $temporaryFilePath, FilesystemInterface $filesystem, string $filesystemDestPath): void
     {
-        $fileResource = fopen($temporaryFilePath, 'r+b');
+        $fileResource = @fopen($temporaryFilePath, 'r+b');
 
         if (is_resource($fileResource)) {
             $result = $filesystem->writeStream($filesystemDestPath, $fileResource);

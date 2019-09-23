@@ -6,11 +6,12 @@ namespace Unilend\Test\unitTest\Service\FileSystem;
 
 use Faker\Provider\{Base, File};
 use League\Flysystem\{FileNotFoundException, FilesystemInterface};
-use PHPUnit\Framework\{Error\Warning, TestCase};
+use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
 use RuntimeException;
-use Symfony\Component\HttpFoundation\StreamedResponse;
+use Symfony\Component\HttpFoundation\{HeaderUtils, ResponseHeaderBag, StreamedResponse};
 use Unilend\Service\FileSystem\FileSystemHelper;
+use URLify;
 
 /**
  * @coversDefaultClass \Unilend\Service\FileSystem\FileSystemHelper
@@ -60,12 +61,12 @@ class FileSystemHelperTest extends TestCase
      */
     public function testWriteTempFileToFileSystemNonexistentFile(): void
     {
-        $this->expectException(Warning::class);
-
         $nonexistentSrcFile = Base::lexify('/????/???');
         $fileSystem         = $this->prophesize(FilesystemInterface::class);
 
         (new FileSystemHelper())->writeTempFileToFileSystem($nonexistentSrcFile, $fileSystem->reveal(), $this->destPath);
+
+        $fileSystem->writeStream(Argument::any(), Argument::any())->shouldNotHaveBeenCalled();
     }
 
     /**
@@ -100,18 +101,11 @@ class FileSystemHelperTest extends TestCase
         $response = (new FileSystemHelper())->download($filesystem->reveal(), $this->srcPath, $fileName);
 
         static::assertInstanceOf(StreamedResponse::class, $response);
-
-        if (null === $fileName) {
-            static::assertSame('attachment; filename=' . pathinfo($this->srcPath, PATHINFO_FILENAME), $response->headers->get('Content-Disposition'));
-        } else {
-            static::assertSame('attachment; filename=' . $fileName, $response->headers->get('Content-Disposition'));
-        }
-
-        if (false === $mimeType) {
-            static::assertSame('application/octet-stream', $response->headers->get('Content-Type'));
-        } else {
-            static::assertSame($mimeType, $response->headers->get('Content-Type'));
-        }
+        static::assertSame(
+            HeaderUtils::makeDisposition(ResponseHeaderBag::DISPOSITION_ATTACHMENT, URLify::downcode($fileName ?? pathinfo($this->srcPath, PATHINFO_FILENAME))),
+            $response->headers->get('Content-Disposition')
+        );
+        static::assertSame($mimeType ?: 'application/octet-stream', $response->headers->get('Content-Type'));
     }
 
     /**
