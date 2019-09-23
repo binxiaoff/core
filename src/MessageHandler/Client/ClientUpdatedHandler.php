@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Unilend\MessageHandler\Client;
 
 use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
-use Symfony\Contracts\Translation\TranslatorInterface;
 use Unilend\Message\Client\ClientUpdated;
 use Unilend\Repository\ClientsRepository;
 use Unilend\Service\MailerManager;
@@ -16,19 +15,15 @@ class ClientUpdatedHandler implements MessageHandlerInterface
     private $clientsRepository;
     /** @var MailerManager */
     private $mailerManager;
-    /** @var TranslatorInterface */
-    private $translator;
 
     /**
-     * @param ClientsRepository   $clientsRepository
-     * @param MailerManager       $mailerManager
-     * @param TranslatorInterface $translator
+     * @param ClientsRepository $clientsRepository
+     * @param MailerManager     $mailerManager
      */
-    public function __construct(ClientsRepository $clientsRepository, MailerManager $mailerManager, TranslatorInterface $translator)
+    public function __construct(ClientsRepository $clientsRepository, MailerManager $mailerManager)
     {
         $this->clientsRepository = $clientsRepository;
         $this->mailerManager     = $mailerManager;
-        $this->translator        = $translator;
     }
 
     /**
@@ -39,10 +34,6 @@ class ClientUpdatedHandler implements MessageHandlerInterface
         $client    = $this->clientsRepository->find($clientUpdated->getClientId());
         $changeSet = $clientUpdated->getChangeSet();
 
-        foreach ($changeSet as $field => $value) {
-            $changeSet[$field] = $this->translator->trans('mail-identity-updated.' . $field);
-        }
-
-        $this->mailerManager->sendIdentityUpdated($client, $changeSet);
+        $this->mailerManager->sendIdentityUpdated($client, array_keys($changeSet));
     }
 }

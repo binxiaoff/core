@@ -65,6 +65,9 @@ class MailerManager
      */
     public function sendIdentityUpdated(Clients $client, array $changeSet): int
     {
+        $changeSet = array_map(function ($field) {
+            return $this->translator->trans('mail-identity-updated.' . $field);
+        }, $changeSet);
         if (count($changeSet) > 1) {
             $content      = $this->translator->trans('mail-identity-updated.content-message-plural');
             $changeFields = '<ul><li>';

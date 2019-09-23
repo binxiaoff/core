@@ -6,7 +6,6 @@ namespace Unilend\Listener\Entity;
 
 use Doctrine\ORM\Event\PreUpdateEventArgs;
 use Symfony\Component\Messenger\MessageBusInterface;
-use Symfony\Contracts\Translation\TranslatorInterface;
 use Unilend\Entity\Clients;
 use Unilend\Message\Client\ClientUpdated;
 
@@ -14,17 +13,13 @@ class ClientsListener
 {
     /** @var MessageBusInterface */
     private $messageBus;
-    /** @var TranslatorInterface */
-    private $translator;
 
     /**
      * @param MessageBusInterface $messageBus
-     * @param TranslatorInterface $translator
      */
-    public function __construct(MessageBusInterface $messageBus, TranslatorInterface $translator)
+    public function __construct(MessageBusInterface $messageBus)
     {
         $this->messageBus = $messageBus;
-        $this->translator = $translator;
     }
 
     /**
