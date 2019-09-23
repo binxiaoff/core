@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\Controller\User;
 
-use Doctrine\ORM\{ORMException, OptimisticLockException};
+use Doctrine\ORM\{NonUniqueResultException, ORMException, OptimisticLockException};
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\{Request, Response};
 use Symfony\Component\Routing\Annotation\Route;
@@ -28,6 +28,7 @@ class ProfileController extends AbstractController
      *
      * @throws ORMException
      * @throws OptimisticLockException
+     * @throws NonUniqueResultException
      *
      * @return Response
      */
