@@ -33,6 +33,7 @@ use Unilend\Entity\{AcceptedBids,
     ClientsStatusHistory,
     Loans,
     Project,
+    ProjectInvitation,
     ProjectParticipant,
     ProjectStatus,
     Staff};
@@ -146,6 +147,7 @@ class EditController extends AbstractController
             'imageForm'                => $imageForm->createView(),
             'confidentialityForm'      => $confidentialityForm->createView(),
             'offerVisibilities'        => Project::getAllOfferVisibilities(),
+            'hash'                     => $project->getHash(),
         ];
 
         return $this->render('project/edit/details.html.twig', $template);
@@ -281,7 +283,7 @@ class EditController extends AbstractController
      *
      * @param Project                     $project
      * @param Request                     $request
-     * @param UserInterface|null          $user
+     * @param UserInterface|null          $currentUser
      * @param TranslatorInterface         $translator
      * @param ClientsRepository           $clientsRepository
      * @param ClientsStatusRepository     $clientsStatusRepository
@@ -290,6 +292,7 @@ class EditController extends AbstractController
      * @param EntityManagerInterface      $entityManager
      * @param ProjectRepository           $projectRepository
      * @param ProjectInvitationRepository $projectInvitationRepository
+     * @param RealUserFinder              $realUserFinder
      *
      * @throws ORMException
      * @throws OptimisticLockException
@@ -299,7 +302,7 @@ class EditController extends AbstractController
     public function addInterlocutor(
         Project $project,
         Request $request,
-        ?UserInterface $user,
+        ?UserInterface $currentUser,
         TranslatorInterface $translator,
         ClientsRepository $clientsRepository,
         ClientsStatusRepository $clientsStatusRepository,
@@ -307,32 +310,20 @@ class EditController extends AbstractController
         MessageBusInterface $messageBus,
         EntityManagerInterface $entityManager,
         ProjectRepository $projectRepository,
-        ProjectInvitationRepository $projectInvitationRepository
+        ProjectInvitationRepository $projectInvitationRepository,
+        RealUserFinder $realUserFinder
     ) {
         $form = $this->createFormBuilder()->add('email_guest', EmailType::class)->getForm();
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $isEmailValid          = false;
-            $guestEmail            = mb_strtolower($form->getData()['email_guest']);
-            $guestEmailDomain      = explode('@', $guestEmail)[1];
-            $companiesEmailDomains = $companiesRepository->findEmailDomains();
+            $guestEmail       = mb_strtolower($form->getData()['email_guest']);
+            $guestEmailDomain = explode('@', $guestEmail)[1];
 
-            foreach ($companiesEmailDomains as $companyEmailDomain) {
-                if ($companyEmailDomain === $guestEmailDomain) {
-                    $isEmailValid = true;
-                }
-            }
+            $company = $companiesRepository->findOneBy(['emailDomain' => $guestEmailDomain]);
 
-            if ($isEmailValid) {
-                $company = $companiesRepository->findOneBy(['emailDomain' => $guestEmailDomain]);
-                $guest   = $clientsRepository->findOneBy(['email' => $guestEmail]);
-
-                if ($projectInvitationRepository->findBy(['client' => $guest, 'project' => $project, 'invitedBy' => $user])) {
-                    $this->addFlash('sendError', $translator->trans('invite-guest.email-already-sent'));
-
-                    return $this->redirectToRoute('invite_guest', ['hash' => $project->getHash()]);
-                }
+            if ($company) {
+                $guest = $clientsRepository->findOneBy(['email' => $guestEmail]);
 
                 if (null === $guest) {
                     $guest               = new Clients();
@@ -352,12 +343,26 @@ class EditController extends AbstractController
                     $clientsRepository->save($guest);
                     $company->addStaff($guest, Staff::ROLE_COMPANY_EMPLOYEE);
                     $companiesRepository->save($company);
+                } else {
+                    if ($projectInvitationRepository->findBy(['client' => $guest, 'project' => $project, 'addedBy' => $currentUser])) {
+                        $this->addFlash('sendError', $translator->trans('invite-guest.email-already-sent'));
+
+                        return $this->redirectToRoute('invite_guest', ['hash' => $project->getHash()]);
+                    }
                 }
 
                 $project->addClientParticipant($company, $guest, ProjectParticipant::ROLE_PROJECT_LENDER);
                 $projectRepository->save($project);
 
-                $messageBus->dispatch(new ClientInvited($user->getIdClient(), $guest->getIdClient(), $project->getId()));
+                $projectInvitation = (new ProjectInvitation())
+                    ->setClient($guest)
+                    ->setAddedByValue($realUserFinder)
+                    ->setProject($project)
+                ;
+
+                $projectInvitationRepository->save($projectInvitation);
+
+                $messageBus->dispatch(new ClientInvited($projectInvitation->getId()));
 
                 $this->addFlash('sendSuccess', $translator->trans('invite-guest.send-success-message'));
 

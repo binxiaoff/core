@@ -4,21 +4,23 @@ declare(strict_types=1);
 
 namespace Unilend\Entity;
 
-use DateTime;
 use Doctrine\ORM\Mapping as ORM;
+use Unilend\Entity\Traits\BlamableAddedTrait;
+use Unilend\Entity\Traits\TimestampableAddedOnlyTrait;
 
 /**
- * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(columns={"id_client", "invited_by", "project"})})
+ * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(columns={"id_client", "project"})})
  * @ORM\Entity(repositoryClass="Unilend\Repository\ProjectInvitationRepository")
+ * @ORM\HasLifecycleCallbacks
  */
 class ProjectInvitation
 {
-    public const STATUS_SENT   = 0;
-    public const STATUS_FINISH = 1;
+    use TimestampableAddedOnlyTrait;
+    use BlamableAddedTrait;
 
     /**
      * @ORM\Id
-     * @ORM\GeneratedValue
+     * @ORM\GeneratedValue(strategy="IDENTITY")
      * @ORM\Column(type="integer")
      */
     private $id;
@@ -32,14 +34,6 @@ class ProjectInvitation
     private $client;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Clients", inversedBy="hasInvited")
-     * @ORM\JoinColumns({
-     *     @ORM\JoinColumn(name="invited_by", referencedColumnName="id_client", nullable=false)
-     * })
-     */
-    private $invitedBy;
-
-    /**
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\Project", inversedBy="projectInvitations")
      * @ORM\JoinColumns({
      *     @ORM\JoinColumn(name="project", referencedColumnName="id", nullable=false)
@@ -48,22 +42,9 @@ class ProjectInvitation
     private $project;
 
     /**
-     * @ORM\Column(type="datetime")
+     * @ORM\Column(type="boolean")
      */
-    private $added;
-
-    /**
-     * @ORM\Column(type="integer")
-     */
-    private $status;
-
-    /**
-     * @throws \Exception
-     */
-    public function __construct()
-    {
-        $this->added = new DateTime();
-    }
+    private $finished = false;
 
     /**
      * @return int|null
@@ -94,53 +75,19 @@ class ProjectInvitation
     }
 
     /**
-     * @return Clients|null
+     * @return int
      */
-    public function getInvitedBy(): ?Clients
+    public function isFinished()
     {
-        return $this->invitedBy;
+        return $this->finished;
     }
 
     /**
-     * @param Clients|null $invitedBy
-     *
      * @return ProjectInvitation
      */
-    public function setInvitedBy(?Clients $invitedBy): self
+    public function setFinished(): self
     {
-        $this->invitedBy = $invitedBy;
-
-        return $this;
-    }
-
-    /**
-     * @param \DateTimeInterface $added
-     *
-     * @return ProjectInvitation
-     */
-    public function setAdded(\DateTimeInterface $added): self
-    {
-        $this->added = $added;
-
-        return $this;
-    }
-
-    /**
-     * @return int|null
-     */
-    public function getStatus(): ?int
-    {
-        return $this->status;
-    }
-
-    /**
-     * @param int $status
-     *
-     * @return ProjectInvitation
-     */
-    public function setStatus(int $status): self
-    {
-        $this->status = $status;
+        $this->finished = true;
 
         return $this;
     }
@@ -163,13 +110,5 @@ class ProjectInvitation
         $this->project = $project;
 
         return $this;
-    }
-
-    /**
-     * @return \DateTimeInterface|null
-     */
-    private function getAdded(): ?\DateTimeInterface
-    {
-        return $this->added;
     }
 }

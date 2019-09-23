@@ -221,8 +221,9 @@ class MailerManager
         $guest   = $invitation->getClient();
         $project = $invitation->getProject();
 
-        $projectStatus = $this->projectStatusHistoryRepository->findActualStatus($project);
-        $guestStatus   = $this->clientsStatusHistoryRepository->findActualStatus($guest);
+        $projectStatus = $project->getCurrentProjectStatusHistory()->getStatus();
+//        @todo faire getCurrentClientsStatusHistory dans la table Clients
+        $guestStatus = $this->clientsStatusHistoryRepository->findActualStatus($guest);
 
         if (ProjectStatusHistory::STATUS_PUBLISHED === $projectStatus) {
             switch ($guestStatus) {

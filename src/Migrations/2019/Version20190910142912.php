@@ -22,10 +22,10 @@ final class Version20190910142912 extends AbstractMigration
         $this->addSql('CREATE INDEX IDX_1F509CEAE173B1B8 ON project_participant (id_client)');
         $this->addSql('DROP INDEX UNIQ_1F509CEAF12E799E9122A03F ON project_participant');
         $this->addSql('CREATE UNIQUE INDEX UNIQ_1F509CEAF12E799E9122A03FE173B1B8 ON project_participant (id_project, id_company, id_client)');
-        $this->addSql('CREATE TABLE project_invitation (id INT AUTO_INCREMENT NOT NULL, id_client INT NOT NULL, invited_by INT NOT NULL, project INT NOT NULL, added DATETIME NOT NULL, status INT NOT NULL, INDEX IDX_E9BB1A90E173B1B8 (id_client), INDEX IDX_E9BB1A90421FF255 (invited_by), INDEX IDX_E9BB1A902FB3D0EE (project), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ENGINE = InnoDB');
+        $this->addSql('CREATE TABLE project_invitation (id INT AUTO_INCREMENT NOT NULL, id_client INT NOT NULL, project INT NOT NULL, added_by INT NOT NULL, finished TINYINT(1) NOT NULL, added DATETIME NOT NULL COMMENT \'(DC2Type:datetime_immutable)\', INDEX IDX_E9BB1A90E173B1B8 (id_client), INDEX IDX_E9BB1A902FB3D0EE (project), INDEX IDX_E9BB1A90699B6BAF (added_by), UNIQUE INDEX UNIQ_E9BB1A90E173B1B82FB3D0EE (id_client, project), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ENGINE = InnoDB');
         $this->addSql('ALTER TABLE project_invitation ADD CONSTRAINT FK_E9BB1A90E173B1B8 FOREIGN KEY (id_client) REFERENCES clients (id_client)');
-        $this->addSql('ALTER TABLE project_invitation ADD CONSTRAINT FK_E9BB1A90421FF255 FOREIGN KEY (invited_by) REFERENCES clients (id_client)');
         $this->addSql('ALTER TABLE project_invitation ADD CONSTRAINT FK_E9BB1A902FB3D0EE FOREIGN KEY (project) REFERENCES project (id)');
+        $this->addSql('ALTER TABLE project_invitation ADD CONSTRAINT FK_E9BB1A90699B6BAF FOREIGN KEY (added_by) REFERENCES clients (id_client)');
         $this->addSql('UPDATE mail_templates SET type="project-invitation-new-user" WHERE id_mail_template = 19');
         $this->addSql('UPDATE mail_templates SET content = \'<p>Bonjour,<p>
 <p>Vous avez été invité(e) par [EMV DYN]inviterName[EMV /DYN] à rejoindre le projet [EMV DYN]project[EMV /DYN] sur la plateforme Crédit Agricole Lending Services.</p><p>Cliquez sur le bouton ci-dessous pour vous inscrire</p>
@@ -1291,6 +1291,8 @@ final class Version20190910142912 extends AbstractMigration
 </table>
 </body>
 </html>\', updated = \'2019-09-16 16:10:50\' WHERE id_mail_template = 11;');
+        $this->addSql('CREATE UNIQUE INDEX UNIQ_8244AA3ADA33CDFB ON companies (email_domain)');
+        $this->addSql('CREATE UNIQUE INDEX UNIQ_E9BB1A90E173B1B8421FF2552FB3D0EE ON project_invitation (id_client, invited_by, project)');
     }
 
     public function down(Schema $schema): void
@@ -1727,5 +1729,7 @@ final class Version20190910142912 extends AbstractMigration
 </html>\', updated = NULL WHERE id_mail_template = 19;');
         $this->addSql('DELETE FROM mail_templates WHERE type = "account-created"');
         $this->addSql('UPDATE mail_templates SET type="invite-guest" WHERE id_mail_template = 19');
+        $this->addSql('DROP INDEX UNIQ_8244AA3ADA33CDFB ON companies');
+        $this->addSql('DROP INDEX UNIQ_E9BB1A90E173B1B8421FF2552FB3D0EE ON project_invitation');
     }
 }

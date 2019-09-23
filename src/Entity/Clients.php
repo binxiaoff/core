@@ -685,7 +685,7 @@ class Clients implements UserInterface, EquatableInterface
     {
         if (!$this->projectParticipants->contains($projectParticipant)) {
             $this->projectParticipants[] = $projectParticipant;
-            $projectParticipant->addClient($this);
+            $projectParticipant->setClient($this);
         }
 
         return $this;
@@ -700,7 +700,6 @@ class Clients implements UserInterface, EquatableInterface
     {
         if ($this->projectParticipants->contains($projectParticipant)) {
             $this->projectParticipants->removeElement($projectParticipant);
-            $projectParticipant->removeClient($this);
         }
 
         return $this;

@@ -110,7 +110,7 @@ class AccountController extends AbstractController
             $temporaryLinksLoginRepository->save($temporaryLink);
 
             $messageBus->dispatch(new ClientCreated($client->getIdClient()));
-            $projectInvitation->setStatus(ProjectInvitation::STATUS_FINISH);
+            $projectInvitation->isFinished();
             $projectInvitationRepository->save($projectInvitation);
 
             $status              = $clientsStatusRepository->findOneBy(['id' => ClientsStatus::STATUS_VALIDATED]);
