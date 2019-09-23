@@ -40,8 +40,7 @@ class ClientUpdatedHandler implements MessageHandlerInterface
         $changeSet = $clientUpdated->getChangeSet();
 
         foreach ($changeSet as $field => $value) {
-            unset($changeSet[$field]);
-            $changeSet[] = $this->translator->trans('mail-identity-updated.' . $field);
+            $changeSet[$field] = $this->translator->trans('mail-identity-updated.' . $field);
         }
 
         $this->mailerManager->sendIdentityUpdated($client, $changeSet);

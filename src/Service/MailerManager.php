@@ -65,8 +65,6 @@ class MailerManager
      */
     public function sendIdentityUpdated(Clients $client, array $changeSet): int
     {
-        $sent = 0;
-
         if (count($changeSet) > 1) {
             $content      = $this->translator->trans('mail-identity-updated.content-message-plural');
             $changeFields = '<ul><li>';
@@ -87,9 +85,7 @@ class MailerManager
         $message = $this->messageProvider->newMessage('identity-updated', $keywords);
         $message->setTo($client->getEmail());
 
-        $sent += $this->mailer->send($message);
-
-        return $sent;
+        return $this->mailer->send($message);
     }
 
     /**
