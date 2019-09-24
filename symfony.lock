@@ -319,6 +319,9 @@
     "myclabs/deep-copy": {
         "version": "1.9.3"
     },
+    "namshi/jose": {
+        "version": "7.2.3"
+    },
     "nelmio/alice": {
         "version": "3.2",
         "recipe": {
@@ -331,9 +334,6 @@
             "config/packages/dev/nelmio_alice.yaml",
             "config/packages/test/nelmio_alice.yaml"
         ]
-    },
-    "namshi/jose": {
-        "version": "7.2.3"
     },
     "nelmio/cors-bundle": {
         "version": "1.5",
@@ -965,6 +965,9 @@
     },
     "webmozart/assert": {
         "version": "1.5.0"
+    },
+    "webonyx/graphql-php": {
+        "version": "v0.13.8"
     },
     "whichbrowser/parser": {
         "version": "v2.0.37"
