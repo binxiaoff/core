@@ -42,7 +42,7 @@ class FileUploadManager
         $filename = $this->generateFileName($file, $filesystem, $uploadDirectory);
         $filePath = $uploadDirectory . DIRECTORY_SEPARATOR . $filename;
 
-        $this->fileSystemHelper->writeStreamToFileSystem($file->getPathname(), $filePath, $filesystem);
+        $this->fileSystemHelper->writeTempFileToFileSystem($file->getPathname(), $filesystem, $filePath);
 
         return $filePath;
     }

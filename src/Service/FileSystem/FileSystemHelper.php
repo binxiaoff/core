@@ -12,26 +12,26 @@ use URLify;
 class FileSystemHelper
 {
     /**
-     * @param string              $srcFilePath
-     * @param string              $destFilePath
+     * @param string              $temporaryFilePath
      * @param FilesystemInterface $filesystem
+     * @param string              $filesystemDestPath
      *
      * @throws FileExistsException
      */
-    public function writeStreamToFileSystem(string $srcFilePath, string $destFilePath, FilesystemInterface $filesystem): void
+    public function writeTempFileToFileSystem(string $temporaryFilePath, FilesystemInterface $filesystem, string $filesystemDestPath): void
     {
-        $fileResource = fopen($srcFilePath, 'r+b');
+        $fileResource = @fopen($temporaryFilePath, 'r+b');
 
         if (is_resource($fileResource)) {
-            $result = $filesystem->writeStream($destFilePath, $fileResource);
-            if (false === $result) {
-                throw new RuntimeException(sprintf('Could not write file "%s"', $srcFilePath));
-            }
-
+            $result = $filesystem->writeStream($filesystemDestPath, $fileResource);
             fclose($fileResource);
+
+            if (false === $result) {
+                throw new RuntimeException(sprintf('Could not write file "%s"', $temporaryFilePath));
+            }
         }
 
-        unlink($srcFilePath);
+        @unlink($temporaryFilePath);
     }
 
     /**

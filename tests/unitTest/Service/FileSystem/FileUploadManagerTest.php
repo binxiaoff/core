@@ -47,10 +47,10 @@ class FileUploadManagerTest extends TestCase
 
         $uploadedFilePath = $fileUploadManager->uploadFile($file, $filesystem->reveal(), $uploadRootDirectory, $subdirectory);
 
-        $fileSystemHelper->writeStreamToFileSystem(
+        $fileSystemHelper->writeTempFileToFileSystem(
             Argument::exact($file->getPathname()),
-            Argument::exact($uploadedFilePath),
-            Argument::exact($filesystem)
+            Argument::exact($filesystem),
+            Argument::exact($uploadedFilePath)
         )->shouldHaveBeenCalled();
 
         $filesystem->has(Argument::type('string'))->willReturn(false)->shouldHaveBeenCalled();

@@ -122,10 +122,10 @@ class ServiceTermsGeneratorTest extends TestCase
 
         $renderedFilePathArgumentIndex = array_flip(array_keys($generateFromHtmlArgument))['renderedFilePath'];
 
-        $this->fileSystemHelper->writeStreamToFileSystem(
+        $this->fileSystemHelper->writeTempFileToFileSystem(
             Argument::exact((reset($calls)->getArguments())[$renderedFilePathArgumentIndex]),
-            Argument::exact($serviceTermsGenerator->getFilePath($acceptationLegalDoc)),
-            Argument::type(FilesystemInterface::class)
+            Argument::type(FilesystemInterface::class),
+            Argument::exact($serviceTermsGenerator->getFilePath($acceptationLegalDoc))
         )->shouldHaveBeenCalled();
     }
 
