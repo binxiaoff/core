@@ -10,6 +10,7 @@ use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
 use Prophecy\Argument\ArgumentsWildcard;
 use Prophecy\Call\Call;
+use ReflectionClassConstant;
 use Swift_Attachment;
 use Swift_Mailer;
 use Swift_Message;
@@ -53,7 +54,8 @@ class ServiceTermsNotificationSenderTest extends TestCase
 
         $client = $this->prophesize(Clients::class);
         $client->getEmail()->willReturn($email);
-        $client->getFirstName()->willReturn(Base::lexify('??????'));
+        $firstName = Base::lexify('??????');
+        $client->getFirstName()->willReturn($firstName);
         $client->getLastName()->willReturn(Base::lexify('??????'));
 
         $acceptationsLegalDoc = new AcceptationsLegalDocs();
@@ -67,7 +69,12 @@ class ServiceTermsNotificationSenderTest extends TestCase
         $this->serviceTermsGenerator->getFilePath(Argument::exact($acceptationsLegalDoc))->willReturn($filepath);
         $this->serviceTermsGenerator->generate(Argument::exact($acceptationsLegalDoc));
 
-        $this->messageProvider->newMessage(Argument::type('string'), Argument::type('array'))->willReturn(new Swift_Message());
+        $const = new ReflectionClassConstant(ServiceTermsNotificationSender::class, 'MAIL_TYPE_SERVICE_TERMS_ACCEPTED');
+
+        $this->messageProvider->newMessage(
+            Argument::exact($const->getValue()),
+            Argument::exact(['firstName' => $firstName])
+        )->willReturn(new Swift_Message());
 
         $sendResult = Base::randomDigitNotNull();
 
