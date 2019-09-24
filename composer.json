@@ -85,6 +85,7 @@
     "xynnn/google-tag-manager-bundle": "^2.0"
   },
   "require-dev": {
+    "dg/bypass-finals": "^1.1",
     "escapestudios/symfony2-coding-standard": "^3.5",
     "friendsofphp/php-cs-fixer": "^2.14",
     "hautelook/alice-bundle": "^2.5",

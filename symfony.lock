@@ -32,6 +32,9 @@
     "cravler/maxmind-geoip-bundle": {
         "version": "v1.3.0"
     },
+    "dg/bypass-finals": {
+        "version": "v1.1.2"
+    },
     "doctrine/annotations": {
         "version": "1.0",
         "recipe": {

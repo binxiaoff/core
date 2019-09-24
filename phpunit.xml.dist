@@ -13,6 +13,10 @@
         <server name="SHELL_VERBOSITY" value="-1" />
     </php>
 
+    <extensions>
+        <extension class="Unilend\Test\Hook\BypassFinalHook"/>
+    </extensions>
+
     <testsuites>
         <testsuite name="all">
             <directory>tests</directory>
