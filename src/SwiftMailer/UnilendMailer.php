@@ -9,7 +9,7 @@ use Exception;
 use Psr\Log\LoggerInterface;
 use Swift_RfcComplianceException;
 use Swift_Transport;
-use Unilend\Entity\MailTemplates;
+use Unilend\Entity\MailTemplate;
 
 class UnilendMailer extends \Swift_Mailer
 {
@@ -44,7 +44,7 @@ class UnilendMailer extends \Swift_Mailer
     {
         if ($message instanceof TemplateMessage) {
             $failedRecipients   = (array) $failedRecipients;
-            $mailTemplate       = $this->entityManager->getRepository(MailTemplates::class)->find($message->getTemplateId());
+            $mailTemplate       = $this->entityManager->getRepository(MailTemplate::class)->find($message->getTemplateId());
             $recipientsAreClean = $this->checkRecipients($message, $failedRecipients);
 
             if (false === empty($failedRecipients)) {

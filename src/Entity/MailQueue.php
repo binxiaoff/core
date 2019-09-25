@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\Entity;
 
+use DateTime;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -25,11 +26,11 @@ class MailQueue
     public const STATUS_ERROR      = -1;
 
     /**
-     * @var \Unilend\Entity\MailTemplates
+     * @var MailTemplate
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Entity\MailTemplates")
+     * @ORM\ManyToOne(targetEntity="MailTemplate")
      * @ORM\JoinColumns({
-     *     @ORM\JoinColumn(name="id_mail_template", referencedColumnName="id_mail_template", nullable=false)
+     *     @ORM\JoinColumn(name="id_mail_template", referencedColumnName="id", nullable=false)
      * })
      */
     private $idMailTemplate;
@@ -93,28 +94,28 @@ class MailQueue
     private $status;
 
     /**
-     * @var \DateTime
+     * @var DateTime
      *
      * @ORM\Column(name="to_send_at", type="datetime", nullable=true)
      */
     private $toSendAt;
 
     /**
-     * @var \DateTime
+     * @var DateTime
      *
      * @ORM\Column(name="sent_at", type="datetime", nullable=true)
      */
     private $sentAt;
 
     /**
-     * @var \DateTime
+     * @var DateTime
      *
      * @ORM\Column(name="updated", type="datetime", nullable=true)
      */
     private $updated;
 
     /**
-     * @var \DateTime
+     * @var DateTime
      *
      * @ORM\Column(name="added", type="datetime")
      */
@@ -130,7 +131,7 @@ class MailQueue
     private $idQueue;
 
     /**
-     * @param MailTemplates $idMailTemplate
+     * @param MailTemplate $idMailTemplate
      *
      * @return MailQueue
      */
@@ -142,7 +143,7 @@ class MailQueue
     }
 
     /**
-     * @return MailTemplates
+     * @return MailTemplate
      */
     public function getIdMailTemplate()
     {
@@ -310,7 +311,7 @@ class MailQueue
     }
 
     /**
-     * @param \DateTime $toSendAt
+     * @param DateTime $toSendAt
      *
      * @return MailQueue
      */
@@ -322,7 +323,7 @@ class MailQueue
     }
 
     /**
-     * @return \DateTime
+     * @return DateTime
      */
     public function getToSendAt()
     {
@@ -330,7 +331,7 @@ class MailQueue
     }
 
     /**
-     * @param \DateTime $sentAt
+     * @param DateTime $sentAt
      *
      * @return MailQueue
      */
@@ -342,7 +343,7 @@ class MailQueue
     }
 
     /**
-     * @return \DateTime
+     * @return DateTime
      */
     public function getSentAt()
     {
@@ -350,7 +351,7 @@ class MailQueue
     }
 
     /**
-     * @param \DateTime $updated
+     * @param DateTime $updated
      *
      * @return MailQueue
      */
@@ -362,7 +363,7 @@ class MailQueue
     }
 
     /**
-     * @return \DateTime
+     * @return DateTime
      */
     public function getUpdated()
     {
@@ -370,7 +371,7 @@ class MailQueue
     }
 
     /**
-     * @param \DateTime $added
+     * @param DateTime $added
      *
      * @return MailQueue
      */
@@ -382,7 +383,7 @@ class MailQueue
     }
 
     /**
-     * @return \DateTime
+     * @return DateTime
      */
     public function getAdded()
     {
@@ -402,8 +403,8 @@ class MailQueue
      */
     public function setAddedValue()
     {
-        if (!$this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
-            $this->added = new \DateTime();
+        if (!$this->added instanceof DateTime || 1 > $this->getAdded()->getTimestamp()) {
+            $this->added = new DateTime();
         }
     }
 
@@ -412,6 +413,6 @@ class MailQueue
      */
     public function setUpdatedValue()
     {
-        $this->updated = new \DateTime();
+        $this->updated = new DateTime();
     }
 }
