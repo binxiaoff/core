@@ -9,4 +9,3 @@ parameters:
             config: .php_cs
         phpcs: ~
         phpstan: ~
-        phpunitbridge: ~
