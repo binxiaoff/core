@@ -16,6 +16,7 @@ use Swift_Mailer;
 use Swift_Message;
 use Unilend\Entity\{AcceptationsLegalDocs, Clients};
 use Unilend\Service\ServiceTerms\{ServiceTermsGenerator, ServiceTermsNotificationSender};
+use Unilend\SwiftMailer\TemplateMessage;
 use Unilend\SwiftMailer\TemplateMessageProvider;
 
 /**
@@ -74,7 +75,7 @@ class ServiceTermsNotificationSenderTest extends TestCase
         $this->messageProvider->newMessage(
             Argument::exact($const->getValue()),
             Argument::exact(['firstName' => $firstName])
-        )->willReturn(new Swift_Message());
+        )->willReturn(new TemplateMessage(1));
 
         $sendResult = Base::randomDigitNotNull();
 
