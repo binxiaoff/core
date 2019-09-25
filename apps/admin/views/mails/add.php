@@ -1,6 +1,6 @@
 <div id="contenu">
     <h1>Ajouter un email</h1>
-    <form method="post" action="<?= $this->url ?>/mails/add">
+    <form method="post" action="<?php echo $this->url; ?>/mails/add">
         <div class="row">
             <div class="form-group col-md-12">
                 <label for="type">Type</label>
@@ -33,25 +33,18 @@
                 <label for="header-select">Header</label>
                 <select id="header-select" name="header" class="form-control">
                     <option value=""></option>
-                    <?php foreach ($this->headers as $header) : ?>
-                        <option value="<?= $header->getIdMailTemplate() ?>"><?= $header->getType() ?></option>
-                    <?php endforeach; ?>
+                    <?php foreach ($this->headers as $header) { ?>
+                        <option value="<?php echo $header->getId(); ?>"><?php echo $header->getType(); ?></option>
+                    <?php } ?>
                 </select>
             </div>
             <div class="form-group col-md-4">
                 <label for="footer-select">Footer</label>
                 <select id="footer-select" name="footer" class="form-control">
                     <option value=""></option>
-                    <?php foreach ($this->footers as $footer) : ?>
-                        <option value="<?= $footer->getIdMailTemplate() ?>"><?= $footer->getType() ?></option>
-                    <?php endforeach; ?>
-                </select>
-            </div>
-            <div class="form-group col-md-4">
-                <label for="recipient-type">Usage</label>
-                <select id="recipient-type" name="recipient_type" class="form-control">
-                    <option value="external">Externe</option>
-                    <option value="internal">Interne</option>
+                    <?php foreach ($this->footers as $footer) { ?>
+                        <option value="<?php echo $footer->getId(); ?>"><?php echo $footer->getType(); ?></option>
+                    <?php } ?>
                 </select>
             </div>
         </div>
@@ -69,4 +62,4 @@
         </div>
     </form>
 </div>
-<?php $this->fireView('preview'); ?>
+<?php $this->fireView('preview');

@@ -1,18 +1,18 @@
 <style>
     @font-face {
         font-family: 'FontAwesome';
-        src: url('<?= $this->url ?>/oneui/fonts/fontawesome-webfont.eot');
-        src: url('<?= $this->url ?>/oneui/fonts/fontawesome-webfont.eot?#iefix&v=4.7.0') format('embedded-opentype'),
-        url('<?= $this->url ?>/oneui/fonts/fontawesome-webfont.woff2') format('woff2'),
-        url('<?= $this->url ?>/oneui/fonts/fontawesome-webfont.woff') format('woff'),
-        url('<?= $this->url ?>/oneui/fonts/fontawesome-webfont.ttf') format('truetype'),
-        url('<?= $this->url ?>/oneui/fonts/fontawesome-webfont.svg#fontawesomeregular') format('svg');
+        src: url('<?php echo $this->url; ?>/oneui/fonts/fontawesome-webfont.eot');
+        src: url('<?php echo $this->url; ?>/oneui/fonts/fontawesome-webfont.eot?#iefix&v=4.7.0') format('embedded-opentype'),
+        url('<?php echo $this->url; ?>/oneui/fonts/fontawesome-webfont.woff2') format('woff2'),
+        url('<?php echo $this->url; ?>/oneui/fonts/fontawesome-webfont.woff') format('woff'),
+        url('<?php echo $this->url; ?>/oneui/fonts/fontawesome-webfont.ttf') format('truetype'),
+        url('<?php echo $this->url; ?>/oneui/fonts/fontawesome-webfont.svg#fontawesomeregular') format('svg');
         font-weight: normal;
         font-style: normal;
     }
 </style>
-<link rel="stylesheet" href="<?= $this->url ?>/oneui/js/plugins/datatables/jquery.dataTables.min.css">
-<script src="<?= $this->url ?>/oneui/js/plugins/datatables/jquery.dataTables.min.js"></script>
+<link rel="stylesheet" href="<?php echo $this->url; ?>/oneui/js/plugins/datatables/jquery.dataTables.min.css">
+<script src="<?php echo $this->url; ?>/oneui/js/plugins/datatables/jquery.dataTables.min.js"></script>
 <script>
     $(function() {
         $('.js-datatable-content').dataTable({
@@ -36,14 +36,13 @@
             <h1>Liste des emails du site</h1>
         </div>
         <div class="col-md-6">
-            <a href="<?= $this->url ?>/mails/add" class="btn-primary pull-right">Ajouter un email</a>
+            <a href="<?php echo $this->url; ?>/mails/add" class="btn-primary pull-right">Ajouter un email</a>
         </div>
     </div>
-    <?php foreach ($this->sections as $section) : ?>
+    <?php foreach ($this->sections as $section) { ?>
         <div class="row">
             <div class="col-md-12">
-                <h2><?= $section['title'] ?> (<?= count($section['emails']) ?>)</h2>
-                <?php if (count($section['emails']) > 0) : ?>
+                <?php if (count($section['emails']) > 0) { ?>
                     <table class="table table-bordered table-striped js-datatable-content">
                         <thead>
                         <tr>
@@ -58,47 +57,47 @@
                         </tr>
                         </thead>
                         <tbody>
-                        <?php foreach ($section['emails'] as $mailTemplate) : ?>
+                        <?php foreach ($section['emails'] as $mailTemplate) { ?>
                             <?php $updateDate = $mailTemplate->getUpdated() ? $mailTemplate->getUpdated() : $mailTemplate->getAdded(); ?>
                             <tr>
-                                <td><?= $mailTemplate->getType() ?></td>
-                                <td><?= $mailTemplate->getSubject() ?></td>
+                                <td><?php echo $mailTemplate->getType(); ?></td>
+                                <td><?php echo $mailTemplate->getSubject(); ?></td>
                                 <td class="text-nowrap">
-                                    <?= $mailTemplate->getSenderName() ?><br>
-                                    <em><?= $mailTemplate->getSenderEmail() ?></em>
+                                    <?php echo $mailTemplate->getSenderName(); ?><br>
+                                    <em><?php echo $mailTemplate->getSenderEmail(); ?></em>
                                 </td>
-                                <td data-order="<?= $updateDate->getTimestamp() ?>"><?= $updateDate->format('d/m/Y H:i') ?></td>
-                                <?php if (empty($section['stats'][$mailTemplate->getIdMailTemplate()])) : ?>
+                                <td data-order="<?php echo $updateDate->getTimestamp(); ?>"><?php echo $updateDate->format('d/m/Y H:i'); ?></td>
+                                <?php if (empty($section['stats'][$mailTemplate->getId()])) { ?>
                                     <td>0</td>
                                     <td>0</td>
                                     <td>0</td>
-                                <?php else : ?>
-                                    <td><?= $section['stats'][$mailTemplate->getIdMailTemplate()]['day'] ?></td>
-                                    <td><?= $section['stats'][$mailTemplate->getIdMailTemplate()]['week'] ?></td>
-                                    <td><?= $section['stats'][$mailTemplate->getIdMailTemplate()]['month'] ?></td>
-                                <?php endif; ?>
+                                <?php } else { ?>
+                                    <td><?php echo $section['stats'][$mailTemplate->getId()]['day']; ?></td>
+                                    <td><?php echo $section['stats'][$mailTemplate->getId()]['week']; ?></td>
+                                    <td><?php echo $section['stats'][$mailTemplate->getId()]['month']; ?></td>
+                                <?php } ?>
                                 <td align="center">
-                                    <a href="<?= $this->url ?>/mails/edit/<?= $mailTemplate->getType() ?>" title="Modifier <?= $mailTemplate->getType() ?>">
-                                        <img src="<?= $this->url ?>/images/edit.png" alt="Modifier <?= $mailTemplate->getType() ?>"/>
+                                    <a href="<?php echo $this->url; ?>/mails/edit/<?php echo $mailTemplate->getType(); ?>" title="Modifier <?php echo $mailTemplate->getType(); ?>">
+                                        <img src="<?php echo $this->url; ?>/images/edit.png" alt="Modifier <?php echo $mailTemplate->getType(); ?>"/>
                                     </a>
-                                    <a href="<?= $this->url ?>/mails/delete/<?= $mailTemplate->getType() ?>" title="Archiver <?= $mailTemplate->getType() ?>" onclick="return confirm('Etes vous sur de vouloir archiver <?= $mailTemplate->getType() ?> ?')">
-                                        <img src="<?= $this->url ?>/images/delete.png" alt="Supprimer <?= $mailTemplate->getType() ?>"/>
+                                    <a href="<?php echo $this->url; ?>/mails/delete/<?php echo $mailTemplate->getType(); ?>" title="Archiver <?php echo $mailTemplate->getType(); ?>" onclick="return confirm('Etes vous sur de vouloir archiver <?php echo $mailTemplate->getType(); ?> ?')">
+                                        <img src="<?php echo $this->url; ?>/images/delete.png" alt="Supprimer <?php echo $mailTemplate->getType(); ?>"/>
                                     </a>
                                 </td>
                             </tr>
-                        <?php endforeach; ?>
+                        <?php } ?>
                         </tbody>
                     </table>
-                <?php else : ?>
+                <?php } else { ?>
                     <p>Aucun email</p>
-                <?php endif; ?>
+                <?php } ?>
             </div>
         </div>
-    <?php endforeach; ?>
+    <?php } ?>
     <div class="row">
         <div class="col-md-6">
             <h2>Headers</h2>
-            <?php if (count($this->headers) > 0) : ?>
+            <?php if (count($this->headers) > 0) { ?>
                 <table class="table table-bordered table-striped js-datatable-header-footer">
                     <thead>
                     <tr>
@@ -108,27 +107,27 @@
                     </tr>
                     </thead>
                     <tbody>
-                    <?php foreach ($this->headers as $mailTemplate) : ?>
-                        <?php $updateDate = $mailTemplate->getUpdated() ? $mailTemplate->getUpdated() : $mailTemplate->getAdded(); ?>
+                    <?php foreach ($this->headers as $header) { ?>
+                        <?php $updateDate = $header->getUpdated() ?: $header->getAdded(); ?>
                         <tr>
-                            <td><?= $mailTemplate->getType() ?></td>
-                            <td data-order="<?= $updateDate->getTimestamp() ?>"><?= $updateDate->format('d/m/Y H:i') ?></td>
+                            <td><?php echo $header->getType(); ?></td>
+                            <td data-order="<?php echo $updateDate->getTimestamp(); ?>"><?php echo $updateDate->format('d/m/Y H:i'); ?></td>
                             <td align="center">
-                                <a href="<?= $this->url ?>/mails/edit/<?= $mailTemplate->getType() ?>/<?= \Unilend\Entity\MailTemplates::PART_TYPE_HEADER ?>" title="Modifier <?= $mailTemplate->getType() ?>">
-                                    <img src="<?= $this->url ?>/images/edit.png" alt="Modifier <?= $mailTemplate->getType() ?>"/>
+                                <a href="<?php echo $this->url; ?>/mails/header/<?php echo $header->getId(); ?>" title="Modifier <?php echo $header->getType(); ?>">
+                                    <img src="<?php echo $this->url; ?>/images/edit.png" alt="Modifier <?php echo $header->getType(); ?>"/>
                                 </a>
                             </td>
                         </tr>
-                    <?php endforeach; ?>
+                    <?php } ?>
                     </tbody>
                 </table>
-            <?php else : ?>
+            <?php } else { ?>
                 <p>Aucun header</p>
-            <?php endif; ?>
+            <?php } ?>
         </div>
         <div class="col-md-6">
             <h2>Footers</h2>
-            <?php if (count($this->footers) > 0) : ?>
+            <?php if (count($this->footers) > 0) { ?>
                 <table class="table table-bordered table-striped js-datatable-header-footer">
                     <thead>
                     <tr>
@@ -138,23 +137,23 @@
                     </tr>
                     </thead>
                     <tbody>
-                    <?php foreach ($this->footers as $mailTemplate) : ?>
+                    <?php foreach ($this->footers as $mailTemplate) { ?>
                         <?php $updateDate = $mailTemplate->getUpdated() ? $mailTemplate->getUpdated() : $mailTemplate->getAdded(); ?>
                         <tr>
-                            <td><?= $mailTemplate->getType() ?></td>
-                            <td data-order="<?= $updateDate->getTimestamp() ?>"><?= $updateDate->format('d/m/Y H:i') ?></td>
+                            <td><?php echo $mailTemplate->getType(); ?></td>
+                            <td data-order="<?php echo $updateDate->getTimestamp(); ?>"><?php echo $updateDate->format('d/m/Y H:i'); ?></td>
                             <td align="center">
-                                <a href="<?= $this->url ?>/mails/edit/<?= $mailTemplate->getType() ?>/<?= \Unilend\Entity\MailTemplates::PART_TYPE_FOOTER ?>" title="Modifier <?= $mailTemplate->getType() ?>">
-                                    <img src="<?= $this->url ?>/images/edit.png" alt="Modifier <?= $mailTemplate->getType() ?>"/>
+                                <a href="<?php echo $this->url; ?>/mails/edit/<?php echo $mailTemplate->getType(); ?>" title="Modifier <?php echo $mailTemplate->getType(); ?>">
+                                    <img src="<?php echo $this->url; ?>/images/edit.png" alt="Modifier <?php echo $mailTemplate->getType(); ?>"/>
                                 </a>
                             </td>
                         </tr>
-                    <?php endforeach; ?>
+                    <?php } ?>
                     </tbody>
                 </table>
-            <?php else : ?>
+            <?php } else { ?>
                 <p>Aucun header</p>
-            <?php endif; ?>
+            <?php } ?>
         </div>
     </div>
 </div>
