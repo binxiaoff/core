@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Test\UnitTest\Service\Attachment;
+namespace Unilend\Test\Unit\Service\Attachment;
 
 use Doctrine\ORM\{ORMException, OptimisticLockException};
 use Exception;

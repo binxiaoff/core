@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Test\unitTest\Service\Foncaris;
+namespace Unilend\Test\Unit\Service\Foncaris;
 
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\EntityManagerInterface;

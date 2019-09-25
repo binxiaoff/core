@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Test\unitTest\Service\FileSystem;
+namespace Unilend\Test\Unit\Service\FileSystem;
 
 use Faker\Provider\Base;
 use League\Flysystem\FileExistsException;

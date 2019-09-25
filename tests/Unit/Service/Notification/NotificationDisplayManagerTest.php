@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Test\unitTest\Service\Notification;
+namespace Unilend\Test\Unit\Service\Notification;
 
 use DateTimeImmutable;
 use Exception;

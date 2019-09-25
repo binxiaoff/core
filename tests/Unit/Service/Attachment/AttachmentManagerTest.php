@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Test\unitTest\Service\Attachment;
+namespace Unilend\Test\Unit\Service\Attachment;
 
 use DateTimeInterface;
 use Doctrine\ORM\{EntityManagerInterface, ORMException, OptimisticLockException};

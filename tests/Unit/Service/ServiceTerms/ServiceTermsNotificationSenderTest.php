@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Test\unitTest\Service\ServiceTerms;
+namespace Unilend\Test\Unit\Service\ServiceTerms;
 
 use Faker\Provider\{Base, Lorem};
 use League\Flysystem\FilesystemInterface;
