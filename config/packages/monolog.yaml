@@ -45,13 +45,3 @@ monolog:
             type: stream
             level: warning
             path: "%kernel.logs_dir%/site.%kernel.environment%.log"
-
-        wsclient:
-            type: fingers_crossed
-            action_level: warning
-            handler: wsclient_handler
-            channels: wsclient
-        wsclient_handler:
-            type: stream
-            level: debug
-            path: "%kernel.logs_dir%/wsclient.%kernel.environment%.log"
