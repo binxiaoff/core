@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace Unilend\Entity;
 
-use DateTime;
+use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
+use Unilend\Entity\Traits\TimestampableTrait;
 
 /**
  * @ORM\Table(name="mail_queue", indexes={
@@ -20,6 +21,8 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class MailQueue
 {
+    use TimestampableTrait;
+
     public const STATUS_PENDING    = 0;
     public const STATUS_PROCESSING = 1;
     public const STATUS_SENT       = 2;
@@ -94,32 +97,18 @@ class MailQueue
     private $status;
 
     /**
-     * @var DateTime
+     * @var DateTimeImmutable
      *
-     * @ORM\Column(name="to_send_at", type="datetime", nullable=true)
+     * @ORM\Column(name="to_send_at", type="date_immutable", nullable=true)
      */
     private $toSendAt;
 
     /**
-     * @var DateTime
+     * @var DateTimeImmutable
      *
-     * @ORM\Column(name="sent_at", type="datetime", nullable=true)
+     * @ORM\Column(name="sent_at", type="date_immutable", nullable=true)
      */
     private $sentAt;
-
-    /**
-     * @var DateTime
-     *
-     * @ORM\Column(name="updated", type="datetime", nullable=true)
-     */
-    private $updated;
-
-    /**
-     * @var DateTime
-     *
-     * @ORM\Column(name="added", type="datetime")
-     */
-    private $added;
 
     /**
      * @var int
@@ -135,7 +124,7 @@ class MailQueue
      *
      * @return MailQueue
      */
-    public function setIdMailTemplate($idMailTemplate)
+    public function setIdMailTemplate($idMailTemplate): MailQueue
     {
         $this->idMailTemplate = $idMailTemplate;
 
@@ -311,7 +300,7 @@ class MailQueue
     }
 
     /**
-     * @param DateTime $toSendAt
+     * @param DateTimeImmutable $toSendAt
      *
      * @return MailQueue
      */
@@ -323,7 +312,7 @@ class MailQueue
     }
 
     /**
-     * @return DateTime
+     * @return DateTimeImmutable
      */
     public function getToSendAt()
     {
@@ -331,7 +320,7 @@ class MailQueue
     }
 
     /**
-     * @param DateTime $sentAt
+     * @param DateTimeImmutable $sentAt
      *
      * @return MailQueue
      */
@@ -343,51 +332,11 @@ class MailQueue
     }
 
     /**
-     * @return DateTime
+     * @return DateTimeImmutable
      */
     public function getSentAt()
     {
         return $this->sentAt;
-    }
-
-    /**
-     * @param DateTime $updated
-     *
-     * @return MailQueue
-     */
-    public function setUpdated($updated)
-    {
-        $this->updated = $updated;
-
-        return $this;
-    }
-
-    /**
-     * @return DateTime
-     */
-    public function getUpdated()
-    {
-        return $this->updated;
-    }
-
-    /**
-     * @param DateTime $added
-     *
-     * @return MailQueue
-     */
-    public function setAdded($added)
-    {
-        $this->added = $added;
-
-        return $this;
-    }
-
-    /**
-     * @return DateTime
-     */
-    public function getAdded()
-    {
-        return $this->added;
     }
 
     /**
@@ -396,23 +345,5 @@ class MailQueue
     public function getIdQueue()
     {
         return $this->idQueue;
-    }
-
-    /**
-     * @ORM\PrePersist
-     */
-    public function setAddedValue()
-    {
-        if (!$this->added instanceof DateTime || 1 > $this->getAdded()->getTimestamp()) {
-            $this->added = new DateTime();
-        }
-    }
-
-    /**
-     * @ORM\PreUpdate
-     */
-    public function setUpdatedValue()
-    {
-        $this->updated = new DateTime();
     }
 }

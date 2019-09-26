@@ -5,14 +5,16 @@ declare(strict_types=1);
 namespace Unilend\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Unilend\Entity\Traits\MailPartTrait;
 
 /**
  * Class MailTemplate.
  *
  * @ORM\Entity
  */
-class MailTemplate extends AbstractMailPart
+class MailTemplate
 {
+    use MailPartTrait;
     /**
      * @var MailHeader
      *
@@ -73,7 +75,8 @@ class MailTemplate extends AbstractMailPart
      */
     public function __construct(string $type, MailLayout $layout, string $locale = 'fr_FR')
     {
-        parent::__construct($type, $locale);
+        $this->type   = $type;
+        $this->locale = $locale;
         $this->layout = $layout;
     }
 

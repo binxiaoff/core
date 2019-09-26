@@ -31,6 +31,7 @@ final class Version20190924161203 extends AbstractMigration
         $templates = $this->connection->fetchAll(
             'SELECT * FROM mail_templates WHERE part NOT IN ("header", "footer")'
         );
+        $this->addSql('ALTER TABLE mail_queue CHANGE to_send_at to_send_at DATE DEFAULT NULL COMMENT \'(DC2Type:date_immutable)\', CHANGE sent_at sent_at DATE DEFAULT NULL COMMENT \'(DC2Type:date_immutable)\', CHANGE updated updated DATETIME DEFAULT NULL COMMENT \'(DC2Type:datetime_immutable)\', CHANGE added added DATETIME NOT NULL COMMENT \'(DC2Type:datetime_immutable)\'');
 
         $this->addSql('ALTER TABLE mail_queue DROP FOREIGN KEY fk_mail_queue_id_mail_template');
         $this->addSql('ALTER TABLE mail_templates DROP FOREIGN KEY mail_templates_ibfk_1');
@@ -52,7 +53,7 @@ HTML;
 
         $header = <<<'HTML'
         <p>
-            <img src="" alt="Crédit Agricole Lending Services" width="209" height="44">
+            <img src="{{ asset('assets/images/logo/logo-and-type-245x52@2x.png', 'gulp') }}" alt="Crédit Agricole Lending Services" width="209" height="44">
         </p>
         <h2>{{ title|default() }}</h2>
 HTML;
@@ -492,7 +493,7 @@ HTML;
     {
         // this down() migration is auto-generated, please modify it to your needs
         $this->abortIf('mysql' !== $this->connection->getDatabasePlatform()->getName(), 'Migration can only be executed safely on \'mysql\'.');
-
+        $this->addSql('ALTER TABLE mail_queue CHANGE to_send_at to_send_at DATETIME DEFAULT NULL, CHANGE sent_at sent_at DATETIME DEFAULT NULL, CHANGE updated updated DATETIME DEFAULT NULL, CHANGE added added DATETIME NOT NULL');
         $this->addSql('ALTER TABLE mail_queue DROP FOREIGN KEY FK_4B3EDD0CF49F0FAE');
         $this->addSql('ALTER TABLE mail_template DROP FOREIGN KEY FK_4AB7DECB48451D2C');
         $this->addSql('ALTER TABLE mail_template DROP FOREIGN KEY FK_4AB7DECBC406B0BE');

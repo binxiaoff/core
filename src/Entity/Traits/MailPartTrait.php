@@ -2,19 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Entity;
-
-use Doctrine\ORM\Mapping as ORM;
-use Gedmo\Mapping\Annotation as Gedmo;
-use Unilend\Entity\Traits\TimestampableTrait;
+namespace Unilend\Entity\Traits;
 
 /**
  * @ORM\HasLifecycleCallbacks
- * @ORM\MappedSuperclass
  *
  * @Gedmo\SoftDeleteable(fieldName="archived", hardDelete=false)
  */
-abstract class AbstractMailPart
+trait MailPartTrait
 {
     use TimestampableTrait;
 
@@ -56,8 +51,6 @@ abstract class AbstractMailPart
     private $archived;
 
     /**
-     * MailPart constructor.
-     *
      * @param string $type
      * @param string $locale
      */
@@ -65,15 +58,14 @@ abstract class AbstractMailPart
         string $type,
         string $locale = 'fr_FR'
     ) {
-        $this->archived = false;
-        $this->type     = $type;
-        $this->locale   = $locale;
+        $this->type   = $type;
+        $this->locale = $locale;
     }
 
     /**
      * @param string $type
      *
-     * @return MailHeader
+     * @return self
      */
     public function setType(string $type): self
     {
@@ -93,7 +85,7 @@ abstract class AbstractMailPart
     /**
      * @param string $content
      *
-     * @return MailHeader
+     * @return self
      */
     public function setContent(string $content): self
     {
@@ -113,7 +105,7 @@ abstract class AbstractMailPart
     /**
      * @param bool $archived
      *
-     * @return MailHeader
+     * @return self
      */
     public function setArchived(bool $archived): self
     {
@@ -141,7 +133,7 @@ abstract class AbstractMailPart
     /**
      * @param string $locale
      *
-     * @return MailHeader
+     * @return self
      */
     public function setLocale(string $locale): self
     {

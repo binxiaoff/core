@@ -42,14 +42,14 @@ class MailTemplateManager
     }
 
     /**
-     * @param string            $type
-     * @param string|null       $sender
-     * @param string|null       $senderEmail
-     * @param string|null       $subject
-     * @param string|null       $title
-     * @param string|null       $content
-     * @param MailTemplate|null $header
-     * @param MailFooter|null   $footer
+     * @param string          $type
+     * @param string|null     $sender
+     * @param string|null     $senderEmail
+     * @param string|null     $subject
+     * @param string|null     $title
+     * @param string|null     $content
+     * @param MailTemplate    $header
+     * @param MailFooter|null $footer
      *
      * @throws ORMException
      * @throws OptimisticLockException
@@ -154,9 +154,9 @@ class MailTemplateManager
     }
 
     /**
-     * @param AbstractMailPart $mailPart
+     * @param mixed $mailPart
      */
-    public function archive(AbstractMailPart $mailPart): void
+    public function archive($mailPart): void
     {
         $this->entityManager->remove($mailPart);
         $this->entityManager->flush($mailPart);
