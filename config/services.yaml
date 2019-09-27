@@ -130,7 +130,7 @@ services:
             - '@UserAgentParser\Provider\WhichBrowser'
             - '@UserAgentParser\Provider\PiwikDeviceDetector'
 
-    Unilend\Twig\Loader\DatabaseTemplateLoader:
+    Unilend\Twig\Loader\DatabaseLoader:
         tags:
             - name: twig.loader
               priority: -9999

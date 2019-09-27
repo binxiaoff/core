@@ -10,7 +10,7 @@ use Twig\Source;
 use Unilend\Entity\Interfaces\TwigTemplateInterface;
 use Unilend\Repository\Interfaces\TwigTemplateRepositoryInterface;
 
-class DatabaseTemplateLoader implements LoaderInterface
+class DatabaseLoader implements LoaderInterface
 {
     /** @var string */
     private $locale;
@@ -113,8 +113,7 @@ class DatabaseTemplateLoader implements LoaderInterface
      */
     private function getTemplate($template): ?TwigTemplateInterface
     {
-        return $template instanceof TwigTemplateInterface ? $template :
-            $this->repository->findOneBy(['name' => $template, 'locale' => $this->locale]);
+        return $this->repository->findOneBy(['name' => $template, 'locale' => $this->locale]);
     }
 
     /**
