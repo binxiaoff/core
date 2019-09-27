@@ -130,7 +130,7 @@ services:
             - '@UserAgentParser\Provider\WhichBrowser'
             - '@UserAgentParser\Provider\PiwikDeviceDetector'
 
-    Unilend\SwiftMailer\MailTemplateLoader:
+    Unilend\Twig\Loader\DatabaseTemplateLoader:
         tags:
             - name: twig.loader
               priority: -9999

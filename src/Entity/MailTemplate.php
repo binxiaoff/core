@@ -5,16 +5,27 @@ declare(strict_types=1);
 namespace Unilend\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Twig\Source;
+use Unilend\Entity\Interfaces\TwigTemplateInterface;
 use Unilend\Entity\Traits\MailPartTrait;
 
 /**
  * Class MailTemplate.
  *
- * @ORM\Entity
+ * @ORM\Entity(repositoryClass="Unilend\Repository\MailTemplateRepository")
  */
-class MailTemplate
+class MailTemplate implements TwigTemplateInterface
 {
     use MailPartTrait;
+
+    /**
+     * @var int
+     *
+     * @ORM\Id
+     * @ORM\GeneratedValue(strategy="IDENTITY")
+     * @ORM\Column(name="id", type="integer")
+     */
+    private $id;
     /**
      * @var MailHeader
      *
@@ -67,15 +78,13 @@ class MailTemplate
     private $senderEmail;
 
     /**
-     * MailTemplate constructor.
-     *
-     * @param string     $type
+     * @param string     $name
      * @param MailLayout $layout
      * @param string     $locale
      */
-    public function __construct(string $type, MailLayout $layout, string $locale = 'fr_FR')
+    public function __construct(string $name, MailLayout $layout, string $locale = 'fr_FR')
     {
-        $this->type   = $type;
+        $this->name   = $name;
         $this->locale = $locale;
         $this->layout = $layout;
     }
@@ -198,5 +207,36 @@ class MailTemplate
         $this->layout = $layout;
 
         return $this;
+    }
+
+    /**
+     * @return int
+     */
+    public function getId(): int
+    {
+        return $this->id;
+    }
+
+    /**
+     * @return Source
+     */
+    public function getSource(): Source
+    {
+        $sourceCode = $this->getLayout()->getContent();
+
+        $parts = [
+            'header' => ($mailHeader = $this->getHeader()) ? $mailHeader->getContent() : null,
+            'body'   => $this->content,
+            'footer' => ($mailFooter = $this->getFooter()) ? $mailFooter->getContent() : null,
+        ];
+
+        $parts = array_filter($parts);
+
+        foreach ($parts as $part => $content) {
+            $content    = "{% block {$part} -%} " . $content . " {%- endblock {$part} %}";
+            $sourceCode = preg_replace("/{%\\s*block\\s+{$part}\\s*%}.*{%\\s*endblock(?:\\s*|\\s+{$part}\\s*)%}/misU", $content, $sourceCode);
+        }
+
+        return new Source($sourceCode, $this->getName());
     }
 }

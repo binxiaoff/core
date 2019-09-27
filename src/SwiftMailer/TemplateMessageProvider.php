@@ -5,17 +5,13 @@ declare(strict_types=1);
 namespace Unilend\SwiftMailer;
 
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\NonUniqueResultException;
-use Doctrine\ORM\NoResultException;
 use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
-use Symfony\Contracts\Translation\TranslatorInterface;
 use Twig\Environment;
 use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
 use Twig\Error\SyntaxError;
 use Unilend\Entity\MailTemplate;
-use Unilend\Entity\{MailTemplates, Settings, Translations};
 use Unilend\Repository\MailTemplateRepository;
 
 class TemplateMessageProvider
@@ -23,22 +19,10 @@ class TemplateMessageProvider
     /** @var EntityManagerInterface */
     private $mailTemplateRepository;
     /** @var string */
-    private $templateMessageFQCN;
-    /** @var string */
     private $defaultLocale;
-    /** @var TranslatorInterface */
-    private $translator;
-    /** @var string */
-    private $staticUrl;
-    /** @var string */
-    private $frontUrl;
-    /** @var string */
-    private $adminUrl;
     /** @var LoggerInterface */
     private $logger;
-    /**
-     * @var Environment
-     */
+    /** @var Environment */
     private $twig;
 
     /**
@@ -63,7 +47,7 @@ class TemplateMessageProvider
      *
      * @return $this
      */
-    public function setLogger(?LoggerInterface $logger)
+    public function setLogger(?LoggerInterface $logger): self
     {
         $this->logger = $logger;
 
@@ -75,8 +59,6 @@ class TemplateMessageProvider
      * @param array  $context
      *
      * @throws LoaderError
-     * @throws NoResultException
-     * @throws NonUniqueResultException
      * @throws RuntimeError
      * @throws SyntaxError
      *
@@ -84,7 +66,7 @@ class TemplateMessageProvider
      */
     public function newMessage(string $templateName, array $context = []): TemplateMessage
     {
-        $mailTemplate = $this->mailTemplateRepository->findMostRecentByTypeAndLocale($templateName, $this->defaultLocale);
+        $mailTemplate = $this->mailTemplateRepository->findOneBy(['name' => $templateName, 'locale' => $this->defaultLocale]);
 
         if (null === $mailTemplate) {
             throw new InvalidArgumentException(sprintf('The mail template %s for the language %s is not found.', $templateName, $this->defaultLocale));
@@ -97,9 +79,9 @@ class TemplateMessageProvider
      * @param MailTemplate $mailTemplate
      * @param array        $context
      *
-     * @throws LoaderError
      * @throws RuntimeError
      * @throws SyntaxError
+     * @throws LoaderError
      *
      * @return TemplateMessage
      */
@@ -112,9 +94,9 @@ class TemplateMessageProvider
      * @param MailTemplate $mailTemplate
      * @param array        $context
      *
-     * @throws LoaderError
-     * @throws RuntimeError
+     *@throws RuntimeError
      * @throws SyntaxError
+     * @throws LoaderError
      *
      * @return TemplateMessage
      */
@@ -122,7 +104,7 @@ class TemplateMessageProvider
     {
         $senderName = $this->twig->createTemplate($mailTemplate->getSenderName())->render($context);
         $subject    = $this->twig->createTemplate($mailTemplate->getSubject())->render($context);
-        $body       = $this->twig->render($mailTemplate->getType(), $context);
+        $body       = $this->twig->render($mailTemplate->getName(), $context);
 
         /** @var TemplateMessage $message */
         $message = new TemplateMessage($mailTemplate);

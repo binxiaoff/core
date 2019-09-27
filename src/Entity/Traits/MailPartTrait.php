@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Unilend\Entity\Traits;
 
+use Twig\Source;
+
 /**
  * @ORM\HasLifecycleCallbacks
  *
@@ -14,20 +16,11 @@ trait MailPartTrait
     use TimestampableTrait;
 
     /**
-     * @var int
-     *
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="IDENTITY")
-     * @ORM\Column(name="id", type="integer")
-     */
-    private $id;
-
-    /**
      * @var string
      *
-     * @ORM\Column(name="type", type="string", length=191)
+     * @ORM\Column(name="name", type="string", length=191)
      */
-    private $type;
+    private $name;
 
     /**
      * @var string
@@ -58,18 +51,18 @@ trait MailPartTrait
         string $type,
         string $locale = 'fr_FR'
     ) {
-        $this->type   = $type;
+        $this->name   = $type;
         $this->locale = $locale;
     }
 
     /**
-     * @param string $type
+     * @param string $name
      *
      * @return self
      */
-    public function setType(string $type): self
+    public function setName(string $name): self
     {
-        $this->type = $type;
+        $this->name = $name;
 
         return $this;
     }
@@ -77,9 +70,9 @@ trait MailPartTrait
     /**
      * @return string
      */
-    public function getType(): string
+    public function getName(): string
     {
-        return $this->type;
+        return $this->name;
     }
 
     /**
@@ -143,10 +136,10 @@ trait MailPartTrait
     }
 
     /**
-     * @return int
+     * @return Source
      */
-    public function getId(): int
+    public function getSource(): Source
     {
-        return $this->id;
+        return new Source($this->content, $this->getName());
     }
 }

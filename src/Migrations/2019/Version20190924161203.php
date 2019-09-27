@@ -36,10 +36,10 @@ final class Version20190924161203 extends AbstractMigration
         $this->addSql('ALTER TABLE mail_queue DROP FOREIGN KEY fk_mail_queue_id_mail_template');
         $this->addSql('ALTER TABLE mail_templates DROP FOREIGN KEY mail_templates_ibfk_1');
         $this->addSql('ALTER TABLE mail_templates DROP FOREIGN KEY mail_templates_ibfk_2');
-        $this->addSql('CREATE TABLE mail_template (id INT AUTO_INCREMENT NOT NULL, id_header INT DEFAULT NULL, id_footer INT DEFAULT NULL, id_layout INT DEFAULT NULL, type VARCHAR(191) NOT NULL, locale VARCHAR(5) NOT NULL, content LONGTEXT DEFAULT NULL, archived DATETIME DEFAULT NULL, subject VARCHAR(191) DEFAULT NULL, sender_name VARCHAR(191) DEFAULT NULL, sender_email VARCHAR(191) DEFAULT NULL, updated DATETIME DEFAULT NULL COMMENT \'(DC2Type:datetime_immutable)\', added DATETIME NOT NULL COMMENT \'(DC2Type:datetime_immutable)\', INDEX IDX_4AB7DECB48451D2C (id_header), INDEX IDX_4AB7DECBC406B0BE (id_footer), INDEX IDX_4AB7DECB1C0DDE0F (id_layout), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ENGINE = InnoDB');
-        $this->addSql('CREATE TABLE mail_header (id INT AUTO_INCREMENT NOT NULL, type VARCHAR(191) NOT NULL, locale VARCHAR(5) NOT NULL, content LONGTEXT DEFAULT NULL, archived DATETIME DEFAULT NULL, updated DATETIME DEFAULT NULL COMMENT \'(DC2Type:datetime_immutable)\', added DATETIME NOT NULL COMMENT \'(DC2Type:datetime_immutable)\', PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ENGINE = InnoDB');
-        $this->addSql('CREATE TABLE mail_footer (id INT AUTO_INCREMENT NOT NULL, type VARCHAR(191) NOT NULL, locale VARCHAR(5) NOT NULL, content LONGTEXT DEFAULT NULL, archived DATETIME DEFAULT NULL, updated DATETIME DEFAULT NULL COMMENT \'(DC2Type:datetime_immutable)\', added DATETIME NOT NULL COMMENT \'(DC2Type:datetime_immutable)\', PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ENGINE = InnoDB');
-        $this->addSql('CREATE TABLE mail_layout (id INT AUTO_INCREMENT NOT NULL, type VARCHAR(191) NOT NULL, locale VARCHAR(5) NOT NULL, content LONGTEXT DEFAULT NULL, archived DATETIME DEFAULT NULL, updated DATETIME DEFAULT NULL COMMENT \'(DC2Type:datetime_immutable)\', added DATETIME NOT NULL COMMENT \'(DC2Type:datetime_immutable)\', PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ENGINE = InnoDB');
+        $this->addSql('CREATE TABLE mail_template (id INT AUTO_INCREMENT NOT NULL, id_header INT DEFAULT NULL, id_footer INT DEFAULT NULL, id_layout INT DEFAULT NULL, name VARCHAR(191) NOT NULL, locale VARCHAR(5) NOT NULL, content LONGTEXT DEFAULT NULL, archived DATETIME DEFAULT NULL, subject VARCHAR(191) DEFAULT NULL, sender_name VARCHAR(191) DEFAULT NULL, sender_email VARCHAR(191) DEFAULT NULL, updated DATETIME DEFAULT NULL COMMENT \'(DC2Type:datetime_immutable)\', added DATETIME NOT NULL COMMENT \'(DC2Type:datetime_immutable)\', INDEX IDX_4AB7DECB48451D2C (id_header), INDEX IDX_4AB7DECBC406B0BE (id_footer), INDEX IDX_4AB7DECB1C0DDE0F (id_layout), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ENGINE = InnoDB');
+        $this->addSql('CREATE TABLE mail_header (id INT AUTO_INCREMENT NOT NULL, name VARCHAR(191) NOT NULL, locale VARCHAR(5) NOT NULL, content LONGTEXT DEFAULT NULL, archived DATETIME DEFAULT NULL, updated DATETIME DEFAULT NULL COMMENT \'(DC2Type:datetime_immutable)\', added DATETIME NOT NULL COMMENT \'(DC2Type:datetime_immutable)\', PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ENGINE = InnoDB');
+        $this->addSql('CREATE TABLE mail_footer (id INT AUTO_INCREMENT NOT NULL, name VARCHAR(191) NOT NULL, locale VARCHAR(5) NOT NULL, content LONGTEXT DEFAULT NULL, archived DATETIME DEFAULT NULL, updated DATETIME DEFAULT NULL COMMENT \'(DC2Type:datetime_immutable)\', added DATETIME NOT NULL COMMENT \'(DC2Type:datetime_immutable)\', PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ENGINE = InnoDB');
+        $this->addSql('CREATE TABLE mail_layout (id INT AUTO_INCREMENT NOT NULL, name VARCHAR(191) NOT NULL, locale VARCHAR(5) NOT NULL, content LONGTEXT DEFAULT NULL, archived DATETIME DEFAULT NULL, updated DATETIME DEFAULT NULL COMMENT \'(DC2Type:datetime_immutable)\', added DATETIME NOT NULL COMMENT \'(DC2Type:datetime_immutable)\', PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ENGINE = InnoDB');
         $this->addSql('ALTER TABLE mail_template ADD CONSTRAINT FK_4AB7DECB48451D2C FOREIGN KEY (id_header) REFERENCES mail_header (id)');
         $this->addSql('ALTER TABLE mail_template ADD CONSTRAINT FK_4AB7DECBC406B0BE FOREIGN KEY (id_footer) REFERENCES mail_footer (id)');
         $this->addSql('ALTER TABLE mail_template ADD CONSTRAINT FK_4AB7DECB1C0DDE0F FOREIGN KEY (id_layout) REFERENCES mail_layout (id)');
@@ -49,16 +49,16 @@ final class Version20190924161203 extends AbstractMigration
         $footer = <<<'HTML'
      <p class="c-t3">Crédit Agricole Lending Services</p>
 HTML;
-        $this->addSql("INSERT INTO mail_footer(locale, type, content, added, updated) VALUES ('fr_FR', 'footer', {$this->connection->quote($footer)}, NOW(), NOW())");
+        $this->addSql("INSERT INTO mail_footer(locale, name, content, added, updated) VALUES ('fr_FR', 'footer', {$this->connection->quote($footer)}, NOW(), NOW())");
 
         $header = <<<'HTML'
         <p>
-            <img src="{{ asset('assets/images/logo/logo-and-type-245x52@2x.png', 'gulp') }}" alt="Crédit Agricole Lending Services" width="209" height="44">
+            <img src="{{ asset('images/logo/logo-and-type-245x52@2x.png', 'gulp') }}" alt="Crédit Agricole Lending Services" width="209" height="44">
         </p>
         <h2>{{ title|default() }}</h2>
 HTML;
 
-        $this->addSql("INSERT INTO mail_header(locale, type, content, added, updated) VALUES ('fr_FR', 'header', {$this->connection->quote($header)}, NOW(), NOW())");
+        $this->addSql("INSERT INTO mail_header(locale, name, content, added, updated) VALUES ('fr_FR', 'header', {$this->connection->quote($header)}, NOW(), NOW())");
 
         $layout = <<<'HTML'
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -461,7 +461,7 @@ HTML;
 </body>
 </html>
 HTML;
-        $this->addSql("INSERT INTO mail_layout(locale, type, content, added, updated) VALUES ('fr_FR', 'layout', {$this->connection->quote($layout)}, NOW(), NOW())");
+        $this->addSql("INSERT INTO mail_layout(locale, name, content, added, updated) VALUES ('fr_FR', 'layout', {$this->connection->quote($layout)}, NOW(), NOW())");
 
         foreach ($templates as $template) {
             $values = [
@@ -501,7 +501,7 @@ HTML;
         $this->addSql('CREATE TABLE mail_templates (id_mail_template INT AUTO_INCREMENT NOT NULL, id_header INT DEFAULT NULL, id_footer INT DEFAULT NULL, type VARCHAR(191) NOT NULL COLLATE utf8mb4_unicode_ci, locale VARCHAR(5) NOT NULL COLLATE utf8mb4_unicode_ci, part VARCHAR(30) NOT NULL COLLATE utf8mb4_unicode_ci, recipient_type VARCHAR(30) DEFAULT NULL COLLATE utf8mb4_unicode_ci, sender_name VARCHAR(191) DEFAULT NULL COLLATE utf8mb4_unicode_ci, sender_email VARCHAR(191) DEFAULT NULL COLLATE utf8mb4_unicode_ci, subject VARCHAR(191) DEFAULT NULL COLLATE utf8mb4_unicode_ci, content LONGTEXT DEFAULT NULL COLLATE utf8mb4_unicode_ci, compiled_content LONGTEXT DEFAULT NULL COLLATE utf8mb4_unicode_ci, status SMALLINT NOT NULL, added DATETIME NOT NULL, updated DATETIME DEFAULT NULL, INDEX fk_mail_templates_header (id_header), INDEX type (type, locale, status, part), INDEX fk_mail_templates_footer (id_footer), PRIMARY KEY(id_mail_template)) DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci ENGINE = InnoDB COMMENT = \'\' ');
         $this->addSql('ALTER TABLE mail_templates ADD CONSTRAINT mail_templates_ibfk_1 FOREIGN KEY (id_footer) REFERENCES mail_templates (id_mail_template) ON UPDATE NO ACTION ON DELETE NO ACTION');
         $this->addSql('ALTER TABLE mail_templates ADD CONSTRAINT mail_templates_ibfk_2 FOREIGN KEY (id_header) REFERENCES mail_templates (id_mail_template) ON UPDATE NO ACTION ON DELETE NO ACTION');
-        $this->addSql('INSERT INTO mail_templates SELECT id, NULL, NULL, type, locale, "content", "external", sender_name, sender_email, subject, REPLACE(REPLACE(content, " }}", "[EMV /DYN]"), "{{ ", "[EMV DYN]"), NULL, 0, added, updated FROM mail_template');
+        $this->addSql('INSERT INTO mail_templates SELECT id, NULL, NULL, name, locale, "content", "external", sender_name, sender_email, subject, REPLACE(REPLACE(content, " }}", "[EMV /DYN]"), "{{ ", "[EMV DYN]"), NULL, 0, added, updated FROM mail_template');
         $this->addSql('INSERT INTO mail_templates(type, part, locale, status, added, updated) VALUES ("header", "header", "fr_FR", 1, NOW(), NOW())');
         $this->addSql('INSERT INTO mail_templates(type, part, locale, status, added, updated) VALUES ("footer", "footer", "fr_FR", 1, NOW(), NOW())');
         $this->addSql('DROP TABLE mail_template');

@@ -7,11 +7,12 @@ namespace Unilend\SwiftMailer;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use Psr\Log\LoggerInterface;
-use Swift_RfcComplianceException;
+use Swift_Mailer;
+use Swift_Mime_SimpleMessage;
 use Swift_Transport;
 use Unilend\Entity\MailTemplate;
 
-class UnilendMailer extends \Swift_Mailer
+class UnilendMailer extends Swift_Mailer
 {
     /** @var LoggerInterface */
     private $logger;
@@ -32,15 +33,14 @@ class UnilendMailer extends \Swift_Mailer
     }
 
     /**
-     * @param \Swift_Mime_SimpleMessage $message
-     * @param array|null                $failedRecipients
+     * @param Swift_Mime_SimpleMessage $message
+     * @param array|null               $failedRecipients
      *
      * @throws Exception
-     * @throws Swift_RfcComplianceException
      *
      * @return int
      */
-    public function send(\Swift_Mime_SimpleMessage $message, &$failedRecipients = null): int
+    public function send(Swift_Mime_SimpleMessage $message, &$failedRecipients = null): int
     {
         if ($message instanceof TemplateMessage) {
             $failedRecipients   = (array) $failedRecipients;
@@ -49,7 +49,7 @@ class UnilendMailer extends \Swift_Mailer
 
             if (false === empty($failedRecipients)) {
                 $this->logger->warning('Badly formatted recipient(s) removed from message. Concerned recipient(s) : ' . implode(', ', $failedRecipients), [
-                    'templateType ' => $mailTemplate->getType(),
+                    'templateType ' => $mailTemplate->getName(),
                     'function'      => __METHOD__,
                 ]);
             }
@@ -65,8 +65,6 @@ class UnilendMailer extends \Swift_Mailer
     /**
      * @param TemplateMessage $message
      * @param array           $failedRecipients
-     *
-     * @throws Swift_RfcComplianceException
      *
      * @return bool
      */
@@ -114,11 +112,7 @@ class UnilendMailer extends \Swift_Mailer
             $message->setBcc($cleanBcc);
         }
 
-        if (0 === count(array_merge($cleanTo, $cleanBcc, $cleanCc))) {
-            return false;
-        }
-
-        return true;
+        return !(0 === count(array_merge($cleanTo, $cleanBcc, $cleanCc)));
     }
 
     /**

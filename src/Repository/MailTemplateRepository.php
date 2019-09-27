@@ -6,10 +6,16 @@ namespace Unilend\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
-use Doctrine\ORM\NonUniqueResultException;
 use Unilend\Entity\MailTemplate;
+use Unilend\Repository\Interfaces\TwigTemplateRepositoryInterface;
 
-class MailTemplateRepository extends ServiceEntityRepository
+/**
+ * @method MailTemplate|null find($id, $lockMode = null, $lockVersion = null)
+ * @method MailTemplate|null findOneBy(array $criteria, array $orderBy = null)
+ * @method MailTemplate[]    findAll()
+ * @method MailTemplate[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
+ */
+class MailTemplateRepository extends ServiceEntityRepository implements TwigTemplateRepositoryInterface
 {
     /**
      * @param ManagerRegistry $registry
@@ -17,29 +23,5 @@ class MailTemplateRepository extends ServiceEntityRepository
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, MailTemplate::class);
-    }
-
-    /**
-     * @param string $type
-     * @param string $locale
-     *
-     * @throws NonUniqueResultException
-     *
-     * @return MailTemplate|null
-     */
-    public function findMostRecentByTypeAndLocale(string $type, string $locale): ?MailTemplate
-    {
-        return $this->createQueryBuilder('mt')
-            ->where('mt.locale = :locale')
-            ->andWhere('mt.type = :type')
-            ->orderBy('mt.updated', 'desc')
-            ->setMaxResults(1)
-            ->setParameters([
-                'type'   => $type,
-                'locale' => $locale,
-            ])
-            ->getQuery()
-            ->getOneOrNullResult()
-        ;
     }
 }

@@ -9,7 +9,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
-use Unilend\Entity\{AbstractMailPart, MailFooter, MailHeader, MailLayout, MailQueue, MailTemplate, Translations};
+use Unilend\Entity\{MailFooter, MailHeader, MailLayout, MailQueue, MailTemplate, Translations};
 use Unilend\Service\Translation\TranslationManager;
 
 class MailTemplateManager
@@ -51,7 +51,7 @@ class MailTemplateManager
      * @param MailTemplate    $header
      * @param MailFooter|null $footer
      *
-     * @throws ORMException
+     **@throws ORMException
      * @throws OptimisticLockException
      *
      * @return MailTemplate|null
@@ -126,7 +126,7 @@ class MailTemplateManager
         if ($this->mailQueueManager->existsInMailQueue($mailTemplate->getId())) {
             $this->archive($mailTemplate);
             $this->addTemplate(
-                $mailTemplate->getType(),
+                $mailTemplate->getName(),
                 $sender,
                 $senderEmail,
                 $subject,
@@ -190,8 +190,8 @@ class MailTemplateManager
      */
     private function setTitle(MailTemplate $mailTemplate, $title): void
     {
-        $this->translationManager->deleteTranslation(Translations::SECTION_MAIL_TITLE, $mailTemplate->getType());
-        $this->translationManager->addTranslation(Translations::SECTION_MAIL_TITLE, $mailTemplate->getType(), $title);
+        $this->translationManager->deleteTranslation(Translations::SECTION_MAIL_TITLE, $mailTemplate->getName());
+        $this->translationManager->addTranslation(Translations::SECTION_MAIL_TITLE, $mailTemplate->getName(), $title);
         $this->translationManager->flush();
     }
 }

@@ -31,7 +31,7 @@ class MailQueue
     /**
      * @var MailTemplate
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Entity\MailTemplate")
+     * @ORM\ManyToOne(targetEntity="MailTemplate")
      * @ORM\JoinColumns({
      *     @ORM\JoinColumn(name="id_mail_template", referencedColumnName="id", nullable=false)
      * })
@@ -134,7 +134,7 @@ class MailQueue
     /**
      * @return MailTemplate
      */
-    public function getIdMailTemplate()
+    public function getIdMailTemplate(): MailTemplate
     {
         return $this->idMailTemplate;
     }
@@ -144,7 +144,7 @@ class MailQueue
      *
      * @return MailQueue
      */
-    public function setSerializedVariables($serializedVariables)
+    public function setSerializedVariables($serializedVariables): MailQueue
     {
         $this->serializedVariables = $serializedVariables;
 
@@ -154,7 +154,7 @@ class MailQueue
     /**
      * @return string
      */
-    public function getSerializedVariables()
+    public function getSerializedVariables(): string
     {
         return $this->serializedVariables;
     }
@@ -164,7 +164,7 @@ class MailQueue
      *
      * @return MailQueue
      */
-    public function setAttachments($attachments)
+    public function setAttachments($attachments): MailQueue
     {
         $this->attachments = $attachments;
 
@@ -174,7 +174,7 @@ class MailQueue
     /**
      * @return string
      */
-    public function getAttachments()
+    public function getAttachments(): string
     {
         return $this->attachments;
     }
@@ -184,7 +184,7 @@ class MailQueue
      *
      * @return MailQueue
      */
-    public function setRecipient($recipient)
+    public function setRecipient($recipient): MailQueue
     {
         $this->recipient = $recipient;
 
@@ -194,7 +194,7 @@ class MailQueue
     /**
      * @return string
      */
-    public function getRecipient()
+    public function getRecipient(): string
     {
         return $this->recipient;
     }
@@ -204,7 +204,7 @@ class MailQueue
      *
      * @return MailQueue
      */
-    public function setReplyTo($replyTo)
+    public function setReplyTo($replyTo): MailQueue
     {
         $this->replyTo = $replyTo;
 
@@ -214,7 +214,7 @@ class MailQueue
     /**
      * @return string
      */
-    public function getReplyTo()
+    public function getReplyTo(): string
     {
         return $this->replyTo;
     }
@@ -224,7 +224,7 @@ class MailQueue
      *
      * @return MailQueue
      */
-    public function setIdClient($idClient)
+    public function setIdClient($idClient): MailQueue
     {
         $this->idClient = $idClient;
 
@@ -234,7 +234,7 @@ class MailQueue
     /**
      * @return int
      */
-    public function getIdClient()
+    public function getIdClient(): int
     {
         return $this->idClient;
     }
@@ -244,7 +244,7 @@ class MailQueue
      *
      * @return MailQueue
      */
-    public function setIdMessageMailjet($idMessageMailjet)
+    public function setIdMessageMailjet($idMessageMailjet): MailQueue
     {
         $this->idMessageMailjet = $idMessageMailjet;
 
@@ -252,9 +252,9 @@ class MailQueue
     }
 
     /**
-     * @return int
+     * @return string
      */
-    public function getIdMessageMailjet()
+    public function getIdMessageMailjet(): string
     {
         return $this->idMessageMailjet;
     }
@@ -264,7 +264,7 @@ class MailQueue
      *
      * @return MailQueue
      */
-    public function setErrorMailjet($errorMailjet)
+    public function setErrorMailjet($errorMailjet): MailQueue
     {
         $this->errorMailjet = $errorMailjet;
 
@@ -274,7 +274,7 @@ class MailQueue
     /**
      * @return string
      */
-    public function getErrorMailjet()
+    public function getErrorMailjet(): string
     {
         return $this->errorMailjet;
     }
@@ -284,7 +284,7 @@ class MailQueue
      *
      * @return MailQueue
      */
-    public function setStatus($status)
+    public function setStatus($status): MailQueue
     {
         $this->status = $status;
 
@@ -294,7 +294,7 @@ class MailQueue
     /**
      * @return int
      */
-    public function getStatus()
+    public function getStatus(): int
     {
         return $this->status;
     }
@@ -304,7 +304,7 @@ class MailQueue
      *
      * @return MailQueue
      */
-    public function setToSendAt($toSendAt)
+    public function setToSendAt($toSendAt): MailQueue
     {
         $this->toSendAt = $toSendAt;
 
@@ -314,7 +314,7 @@ class MailQueue
     /**
      * @return DateTimeImmutable
      */
-    public function getToSendAt()
+    public function getToSendAt(): DateTimeImmutable
     {
         return $this->toSendAt;
     }
@@ -324,7 +324,7 @@ class MailQueue
      *
      * @return MailQueue
      */
-    public function setSentAt($sentAt)
+    public function setSentAt($sentAt): MailQueue
     {
         $this->sentAt = $sentAt;
 
@@ -334,7 +334,7 @@ class MailQueue
     /**
      * @return DateTimeImmutable
      */
-    public function getSentAt()
+    public function getSentAt(): DateTimeImmutable
     {
         return $this->sentAt;
     }
@@ -342,7 +342,7 @@ class MailQueue
     /**
      * @return int
      */
-    public function getIdQueue()
+    public function getIdQueue(): int
     {
         return $this->idQueue;
     }

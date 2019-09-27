@@ -5,19 +5,12 @@ declare(strict_types=1);
 namespace Unilend\Service\Mailer;
 
 use DateTime;
-use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\NonUniqueResultException;
+use Doctrine\ORM\{EntityManagerInterface, NonUniqueResultException};
 use Exception;
 use Swift_Attachment;
-use Twig\Error\LoaderError;
-use Twig\Error\RuntimeError;
-use Twig\Error\SyntaxError;
-use Unilend\Entity\Clients;
-use Unilend\Entity\MailQueue;
-use Unilend\Entity\MailTemplate;
-use Unilend\SwiftMailer\Mail;
-use Unilend\SwiftMailer\TemplateMessage;
-use Unilend\SwiftMailer\TemplateMessageProvider;
+use Twig\Error\{LoaderError, RuntimeError, SyntaxError};
+use Unilend\Entity\{Clients, MailQueue, MailTemplate};
+use Unilend\SwiftMailer\{TemplateMessage, TemplateMessageProvider};
 
 class MailQueueManager
 {
@@ -177,7 +170,7 @@ class MailQueueManager
      *
      * @return array
      */
-    public function searchSentEmails($clientId = null, $from = null, $to = null, $subject = null, DateTime $dateStart = null, DateTime $dateEnd = null)
+    public function searchSentEmails($clientId = null, $from = null, $to = null, $subject = null, DateTime $dateStart = null, DateTime $dateEnd = null): array
     {
         return $this->entityManager->getRepository(MailQueue::class)
             ->searchSentEmails($clientId, $from, $to, $subject, $dateStart, $dateEnd)

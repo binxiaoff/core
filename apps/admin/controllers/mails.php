@@ -158,7 +158,7 @@ class mailsController extends Controller
 
             /** @var TranslatorInterface $translator */
             $translator      = $this->get('translator');
-            $titleLabel      = Translations::SECTION_MAIL_TITLE . TranslationLoader::SECTION_SEPARATOR . $this->mailTemplate->getType();
+            $titleLabel      = Translations::SECTION_MAIL_TITLE . TranslationLoader::SECTION_SEPARATOR . $this->mailTemplate->getName();
             $this->mailTitle = $translator->trans($titleLabel);
             $this->mailTitle = $this->mailTitle === $titleLabel ? '' : $this->mailTitle;
 
