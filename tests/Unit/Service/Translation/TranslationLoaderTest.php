@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Unilend\Test\Unit\Service\Translation;
 
-use Doctrine\ORM\EntityManagerInterface;
 use Faker\Provider\Base;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
@@ -35,16 +34,14 @@ class TranslationLoaderTest extends TestCase
         $translationsFindCall  = $translationRepository->findBy(Argument::exact(['locale' => $locale]));
         $translationsFindCall->willReturn($translations);
 
-        $entityManager = $this->prophesize(EntityManagerInterface::class);
-        $entityManager->getRepository(Translations::class)->willReturn($translationRepository->reveal());
-
         $translationLoader = new TranslationLoader(
-            $entityManager->reveal(),
+            $translationRepository->reveal(),
             $locale
         );
 
         $messageCatalog = $translationLoader->load(null, $locale, $domain);
 
+        $translationsFindCall->shouldBeCalled();
         static::assertSame($locale, $messageCatalog->getLocale());
         if ($translations) {
             static::assertContains($domain, $messageCatalog->getDomains());
