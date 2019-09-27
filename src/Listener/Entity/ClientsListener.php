@@ -11,6 +11,14 @@ use Unilend\Message\Client\ClientUpdated;
 
 class ClientsListener
 {
+    private const MONITORED_FIELDS = [
+        'lastName',
+        'firstName',
+        'phone',
+        'mobile',
+        'email',
+        'jobFunction',
+    ];
     /** @var MessageBusInterface */
     private $messageBus;
 
@@ -28,12 +36,13 @@ class ClientsListener
      */
     public function preUpdate(Clients $client, PreUpdateEventArgs $args)
     {
-        $changeSet = $args->getEntityChangeSet();
-
+        $changeSet   = $args->getEntityChangeSet();
         $phoneFields = ['mobile', 'phone'];
-        foreach ($phoneFields as $phoneField) {
-            if ($args->hasChangedField($phoneField) && $args->getOldValue($phoneField)->equals($args->getNewValue($phoneField))) {
-                unset($changeSet[$phoneField]);
+
+        foreach ($changeSet as $updatedField => $newValue) {
+            if (false === in_array($updatedField, self::MONITORED_FIELDS)
+                || (in_array($updatedField, $phoneFields) && $args->getOldValue($updatedField)->equals($args->getNewValue($updatedField)))) {
+                unset($changeSet[$updatedField]);
             }
         }
 

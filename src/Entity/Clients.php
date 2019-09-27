@@ -594,7 +594,6 @@ class Clients implements UserInterface, EquatableInterface
             return false;
         }
 
-        /** @var Clients $user */
         if ($this->getHash() !== $user->getHash()) {
             return false;
         }
