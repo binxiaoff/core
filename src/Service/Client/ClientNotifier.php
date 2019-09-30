@@ -10,15 +10,15 @@ use Swift_Mailer;
 use Swift_RfcComplianceException;
 use Symfony\Component\Routing\RouterInterface;
 use Twig\Error\{LoaderError, RuntimeError, SyntaxError};
-use Unilend\Entity\{Clients, ClientsStatus, Project, ProjectStatus, TemporaryLinksLogin};
-use Unilend\Repository\TemporaryLinksLoginRepository;
+use Unilend\Entity\{Clients, ClientsStatus, Project, ProjectStatus, TemporaryToken};
+use Unilend\Repository\TemporaryTokenRepository;
 use Unilend\Service\NotificationManager;
 use Unilend\SwiftMailer\TemplateMessageProvider;
 
 class ClientNotifier
 {
-    /** @var TemporaryLinksLoginRepository */
-    private $temporaryLinksLoginRepository;
+    /** @var TemporaryTokenRepository */
+    private $temporaryTokenRepository;
     /** @var RouterInterface */
     private $router;
     /** @var TemplateMessageProvider */
@@ -29,24 +29,24 @@ class ClientNotifier
     private $notificationManager;
 
     /**
-     * @param TemporaryLinksLoginRepository $temporaryLinksLoginRepository
-     * @param RouterInterface               $router
-     * @param TemplateMessageProvider       $messageProvider
-     * @param Swift_Mailer                  $mailer
-     * @param NotificationManager           $notificationManager
+     * @param TemporaryTokenRepository $temporaryTokenRepository
+     * @param RouterInterface          $router
+     * @param TemplateMessageProvider  $messageProvider
+     * @param Swift_Mailer             $mailer
+     * @param NotificationManager      $notificationManager
      */
     public function __construct(
-        TemporaryLinksLoginRepository $temporaryLinksLoginRepository,
+        TemporaryTokenRepository $temporaryTokenRepository,
         RouterInterface $router,
         TemplateMessageProvider $messageProvider,
         Swift_Mailer $mailer,
         NotificationManager $notificationManager
     ) {
-        $this->temporaryLinksLoginRepository = $temporaryLinksLoginRepository;
-        $this->router                        = $router;
-        $this->messageProvider               = $messageProvider;
-        $this->mailer                        = $mailer;
-        $this->notificationManager           = $notificationManager;
+        $this->temporaryTokenRepository = $temporaryTokenRepository;
+        $this->router                   = $router;
+        $this->messageProvider          = $messageProvider;
+        $this->mailer                   = $mailer;
+        $this->notificationManager      = $notificationManager;
     }
 
     /**
@@ -83,9 +83,9 @@ class ClientNotifier
      * @param Clients $invitee
      * @param Project $project
      *
-     * @throws Exception
      * @throws OptimisticLockException
      * @throws Swift_RfcComplianceException
+     * @throws Exception
      * @throws ORMException
      *
      * @return int
@@ -93,13 +93,13 @@ class ClientNotifier
     public function notifyNewClientInvited(Clients $inviter, Clients $invitee, Project $project): int
     {
         if (ProjectStatus::STATUS_PUBLISHED === $project->getCurrentStatus()->getStatus()) {
-            $token = $this->temporaryLinksLoginRepository->findOneBy(['idClient' => $invitee]);
+            $token = $this->temporaryTokenRepository->findOneBy(['idClient' => $invitee]);
 
-            if ($token) {
-                $token->extendLongExpiration();
-                $this->temporaryLinksLoginRepository->save($token);
+            if ($token && $token->isValid()) {
+                $token->extendLong();
+                $this->temporaryTokenRepository->save($token);
             } else {
-                $token = $this->temporaryLinksLoginRepository->generateTemporaryLink($invitee, TemporaryLinksLogin::PASSWORD_TOKEN_LIFETIME_LONG);
+                $token = $this->temporaryTokenRepository->generateLongTemporaryToken($invitee);
             }
 
             $keywords = [

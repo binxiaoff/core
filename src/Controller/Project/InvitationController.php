@@ -14,7 +14,7 @@ use Symfony\Component\HttpFoundation\{RedirectResponse, Request, Response};
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Contracts\Translation\TranslatorInterface;
-use Unilend\Entity\{ClientsStatus, Project, ProjectParticipation, TemporaryLinksLogin};
+use Unilend\Entity\{ClientsStatus, Project, ProjectParticipation, TemporaryToken};
 use Unilend\Exception\{Client\ClientNotFoundException, Staff\StaffNotFoundException};
 use Unilend\Message\Client\ClientInvited;
 use Unilend\Repository\ProjectParticipationContactRepository;
@@ -30,12 +30,12 @@ class InvitationController extends AbstractController
      * @ParamConverter("temporaryLink", options={"mapping": {"securityToken": "token"}})
      * @ParamConverter("project", options={"mapping": {"slug": "slug"}})
      *
-     * @param TemporaryLinksLogin $temporaryLink
+     * @param TemporaryToken $temporaryLink
      * @param Project             $project
      *
      * @return RedirectResponse
      */
-    public function invitation(TemporaryLinksLogin $temporaryLink, Project $project): RedirectResponse
+    public function invitation(TemporaryToken $temporaryLink, Project $project): RedirectResponse
     {
         $client = $temporaryLink->getIdClient();
 
