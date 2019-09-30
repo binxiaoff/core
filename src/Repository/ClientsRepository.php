@@ -76,7 +76,7 @@ class ClientsRepository extends ServiceEntityRepository
         $queryBuilder
             ->innerJoin(ClientsStatus::class, 'csh', Join::WITH, 'c.currentStatus = csh.id')
             ->where('c.email = :email')
-            ->andWhere('csh.idStatus IN (:status)')
+            ->andWhere('csh.status IN (:status)')
             ->setParameter('email', $email, PDO::PARAM_STR)
             ->setParameter('status', ClientsStatus::GRANTED_LOGIN)
         ;
