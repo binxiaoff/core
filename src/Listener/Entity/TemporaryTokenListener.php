@@ -35,6 +35,6 @@ class TemporaryTokenListener
      */
     public function prePersist(TemporaryToken $token, LifecycleEventArgs $eventArgs): void
     {
-        $this->repository->revokeTemporaryTokens($token->getClient());
+        $this->repository->expireTemporaryTokens($token->getClient());
     }
 }

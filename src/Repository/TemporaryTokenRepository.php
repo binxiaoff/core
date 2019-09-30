@@ -80,7 +80,7 @@ class TemporaryTokenRepository extends ServiceEntityRepository
      *
      * @throws Exception
      */
-    public function revokeTemporaryTokens(Clients $client): void
+    public function expireTemporaryTokens(Clients $client): void
     {
         $this->createQueryBuilder('t')
             ->update(TemporaryToken::class, 't')
