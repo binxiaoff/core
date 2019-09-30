@@ -54,7 +54,15 @@ SQL
 
         $this->addSql('ALTER TABLE temporary_token RENAME INDEX fk_temporary_token_id_client TO fk_temporary_links_login_id_client');
         $this->addSql('ALTER TABLE temporary_token RENAME COLUMN id TO id_link');
-        $this->addSql('ALTER TABLE temporary_token CHANGE expires expires DATETIME NOT NULL, CHANGE accessed accessed DATETIME DEFAULT NULL, CHANGE updated updated DATETIME DEFAULT NULL, CHANGE added added DATETIME NOT NULL');
+        $this->addSql(
+            <<<'SQL'
+ALTER TABLE temporary_token
+  CHANGE expires expires DATETIME NOT NULL,
+  CHANGE accessed accessed DATETIME DEFAULT NULL, 
+  CHANGE updated updated DATETIME DEFAULT NULL,
+  CHANGE added added DATETIME NOT NULL
+SQL
+        );
         $this->addSql('ALTER TABLE temporary_token RENAME TO temporary_links_login');
     }
 }
