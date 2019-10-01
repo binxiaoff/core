@@ -4,7 +4,11 @@ declare(strict_types=1);
 
 namespace Unilend\Entity;
 
+use DateInterval;
+use DateTime;
+use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
+use Exception;
 
 /**
  * @ORM\Table(name="temporary_links_login", indexes={@ORM\Index(name="fk_temporary_links_login_id_client", columns={"id_client"})})
@@ -25,28 +29,28 @@ class TemporaryLinksLogin
     private $token;
 
     /**
-     * @var \DateTime
+     * @var DateTime
      *
      * @ORM\Column(name="expires", type="datetime")
      */
     private $expires;
 
     /**
-     * @var \DateTime
+     * @var DateTime
      *
      * @ORM\Column(name="accessed", type="datetime", nullable=true)
      */
     private $accessed;
 
     /**
-     * @var \DateTime
+     * @var DateTime
      *
      * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
     /**
-     * @var \DateTime
+     * @var DateTime
      *
      * @ORM\Column(name="updated", type="datetime", nullable=true)
      */
@@ -112,11 +116,11 @@ class TemporaryLinksLogin
     }
 
     /**
-     * @param \DateTime $expires
+     * @param DateTimeImmutable $expires
      *
      * @return TemporaryLinksLogin
      */
-    public function setExpires(\DateTime $expires): TemporaryLinksLogin
+    public function setExpires(DateTimeImmutable $expires): TemporaryLinksLogin
     {
         $this->expires = $expires;
 
@@ -124,19 +128,29 @@ class TemporaryLinksLogin
     }
 
     /**
-     * @return \DateTime
+     * @return DateTime
      */
-    public function getExpires(): \DateTime
+    public function getExpires(): DateTime
     {
         return $this->expires;
     }
 
     /**
-     * @param \DateTime|null $accessed
+     * @throws Exception
+     *
+     * @return bool
+     */
+    public function isExpires(): bool
+    {
+        return $this->getExpires() < new DateTime();
+    }
+
+    /**
+     * @param DateTime|null $accessed
      *
      * @return TemporaryLinksLogin
      */
-    public function setAccessed(?\DateTime $accessed): TemporaryLinksLogin
+    public function setAccessed(?DateTime $accessed): TemporaryLinksLogin
     {
         $this->accessed = $accessed;
 
@@ -144,19 +158,19 @@ class TemporaryLinksLogin
     }
 
     /**
-     * @return \DateTime|null
+     * @return DateTime|null
      */
-    public function getAccessed(): ?\DateTime
+    public function getAccessed(): ?DateTime
     {
         return $this->accessed;
     }
 
     /**
-     * @param \DateTime $added
+     * @param DateTime $added
      *
      * @return TemporaryLinksLogin
      */
-    public function setAdded(\DateTime $added): TemporaryLinksLogin
+    public function setAdded(DateTime $added): TemporaryLinksLogin
     {
         $this->added = $added;
 
@@ -164,19 +178,19 @@ class TemporaryLinksLogin
     }
 
     /**
-     * @return \DateTime
+     * @return DateTime
      */
-    public function getAdded(): \DateTime
+    public function getAdded(): DateTime
     {
         return $this->added;
     }
 
     /**
-     * @param \DateTime|null $updated
+     * @param DateTime|null $updated
      *
      * @return TemporaryLinksLogin
      */
-    public function setUpdated(?\DateTime $updated): TemporaryLinksLogin
+    public function setUpdated(?DateTime $updated): TemporaryLinksLogin
     {
         $this->updated = $updated;
 
@@ -184,9 +198,9 @@ class TemporaryLinksLogin
     }
 
     /**
-     * @return \DateTime|null
+     * @return DateTime|null
      */
-    public function getUpdated(): ?\DateTime
+    public function getUpdated(): ?DateTime
     {
         return $this->updated;
     }
@@ -204,8 +218,8 @@ class TemporaryLinksLogin
      */
     public function setAddedValue(): void
     {
-        if (!$this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
-            $this->added = new \DateTime();
+        if (!$this->added instanceof DateTime || 1 > $this->getAdded()->getTimestamp()) {
+            $this->added = new DateTime();
         }
     }
 
@@ -214,6 +228,31 @@ class TemporaryLinksLogin
      */
     public function setUpdatedValue(): void
     {
-        $this->updated = new \DateTime();
+        $this->updated = new DateTime();
+    }
+
+    /**
+     * @throws Exception
+     *
+     * @return TemporaryLinksLogin
+     */
+    public function extendLongExpiration(): TemporaryLinksLogin
+    {
+        $expiryDate = $this->generateExpiration(self::PASSWORD_TOKEN_LIFETIME_LONG);
+        $this->setExpires($expiryDate);
+
+        return $this;
+    }
+
+    /**
+     * @param mixed $life
+     *
+     * @throws Exception
+     *
+     * @return DateTimeImmutable
+     */
+    public function generateExpiration($life): DateTimeImmutable
+    {
+        return (new DateTimeImmutable('NOW'))->add(new DateInterval('P' . $life));
     }
 }

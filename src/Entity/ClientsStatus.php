@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Unilend\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
-use Exception;
 use InvalidArgumentException;
 use Unilend\Entity\Interfaces\StatusInterface;
 use Unilend\Entity\Traits\TimestampableAddedOnlyTrait;
@@ -29,14 +28,13 @@ class ClientsStatus implements StatusInterface
     use ConstantsAwareTrait;
     use TimestampableAddedOnlyTrait;
 
-    public const STATUS_CREATED   = 10;
-    public const STATUS_VALIDATED = 20;
-    public const STATUS_BLOCKED   = 30;
-    public const STATUS_CLOSED    = 100;
+    // The use is invited to our platform, the account is created in the database but the profil is not completed.
+    public const STATUS_INVITED = 10;
+    public const STATUS_CREATED = 20;
 
     public const GRANTED_LOGIN = [
+        self::STATUS_INVITED,
         self::STATUS_CREATED,
-        self::STATUS_VALIDATED,
     ];
 
     /**
@@ -76,8 +74,6 @@ class ClientsStatus implements StatusInterface
      * @param Clients     $clients
      * @param int         $status
      * @param string|null $content
-     *
-     * @throws Exception
      */
     public function __construct(Clients $clients, int $status, string $content = null)
     {

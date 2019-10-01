@@ -49,7 +49,7 @@ class ClientsListener
         }
 
         if (false === empty($changeSet)) {
-            $this->messageBus->dispatch(new ClientUpdated($client->getIdClient(), $changeSet));
+            $this->messageBus->dispatch(new ClientUpdated($client, $changeSet));
         }
     }
 }

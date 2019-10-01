@@ -5,84 +5,85 @@ declare(strict_types=1);
 namespace Unilend\Controller\User;
 
 use DateTime;
-use Doctrine\ORM\{EntityManagerInterface, ORMException, OptimisticLockException};
+use DateTimeImmutable;
+use Doctrine\ORM\OptimisticLockException;
+use Doctrine\ORM\ORMException;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\{Request, Response};
+use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Unilend\Entity\ClientsStatus;
-use Unilend\Entity\ClientsStatusHistory;
-use Unilend\Entity\ProjectInvitation;
+use Unilend\Entity\ProjectParticipation;
 use Unilend\Entity\TemporaryLinksLogin;
 use Unilend\Form\User\InitProfileType;
 use Unilend\Message\Client\ClientCreated;
 use Unilend\Repository\ClientsRepository;
-use Unilend\Repository\ClientsStatusRepository;
-use Unilend\Repository\ProjectInvitationRepository;
 use Unilend\Repository\TemporaryLinksLoginRepository;
 use Unilend\Security\LoginAuthenticator;
+use Unilend\Service\ProjectParticipation\ProjectParticipationManager;
 use Unilend\Service\ServiceTerms\ServiceTermsManager;
 
-class AccountController extends AbstractController
+class InitialisationController extends AbstractController
 {
     /**
-     * @Route("/compte/initialisation/{securityToken}/{idInvitation}", name="account_init", requirements={"securityToken": "[0-9a-f]+"}, methods={"GET", "POST"})
+     * @Route("/compte/initialisation/{securityToken}/{projectParticipationId}", name="account_init", requirements={"securityToken": "[0-9a-f]+"}, methods={"GET", "POST"})
      *
      * @ParamConverter("temporaryLink", options={"mapping": {"securityToken": "token"}})
-     * @ParamConverter("projectInvitation", options={"mapping": {"idInvitation": "id"}})
+     * @ParamConverter("projectParticipation", options={"mapping": {"projectParticipationId": "id"}})
      *
-     * @param Request                       $request
      * @param TemporaryLinksLogin           $temporaryLink
+     * @param ProjectParticipation          $projectParticipation
+     * @param Request                       $request
      * @param TemporaryLinksLoginRepository $temporaryLinksLoginRepository
      * @param TranslatorInterface           $translator
      * @param UserPasswordEncoderInterface  $userPasswordEncoder
      * @param ClientsRepository             $clientsRepository
      * @param ServiceTermsManager           $serviceTermsManager
      * @param MessageBusInterface           $messageBus
-     * @param ProjectInvitation             $projectInvitation
-     * @param ClientsStatusRepository       $clientsStatusRepository
-     * @param ProjectInvitationRepository   $projectInvitationRepository
-     * @param EntityManagerInterface        $entityManager
      * @param LoginAuthenticator            $loginAuthenticator
      * @param RouterInterface               $router
+     * @param ProjectParticipationManager   $projectParticipationManager
      *
      * @throws ORMException
      * @throws OptimisticLockException
      *
-     * @return Response
+     * @return RedirectResponse
      */
-    public function init(
-        Request $request,
+    public function initialize(
         TemporaryLinksLogin $temporaryLink,
+        ProjectParticipation $projectParticipation,
+        Request $request,
         TemporaryLinksLoginRepository $temporaryLinksLoginRepository,
         TranslatorInterface $translator,
         UserPasswordEncoderInterface $userPasswordEncoder,
         ClientsRepository $clientsRepository,
         ServiceTermsManager $serviceTermsManager,
         MessageBusInterface $messageBus,
-        ProjectInvitation $projectInvitation,
-        ClientsStatusRepository $clientsStatusRepository,
-        ProjectInvitationRepository $projectInvitationRepository,
-        EntityManagerInterface $entityManager,
         LoginAuthenticator $loginAuthenticator,
-        RouterInterface $router
+        RouterInterface $router,
+        ProjectParticipationManager $projectParticipationManager
     ): Response {
-        if ($temporaryLink->getExpires() < new DateTime()) {
+        $client = $temporaryLink->getIdClient();
+
+        if (false === $client->isJustInvited()) {
+            return $this->redirectToRoute('lender_project_details', ['slug' => $projectParticipation->getProject()->getSlug()]);
+        }
+
+        if ($temporaryLink->isExpires()) {
             $this->addFlash('error', $translator->trans('account-init.invalid-link-error-message'));
 
             return $this->render('user/init.html.twig');
         }
-        if ($temporaryLink->getIdClient() !== $projectInvitation->getClient()) {
-            return $this->redirectToRoute('home');
-        }
 
         $client = $temporaryLink->getIdClient();
 
-        if (null === $client || false === $client->isCreated() || false === empty($client->getPassword())) {
+        if (false === in_array($client, $projectParticipationManager->getConcernedClients($projectParticipation), true)) {
             return $this->redirectToRoute('home');
         }
 
@@ -100,33 +101,21 @@ class AccountController extends AbstractController
                 ->setPassword($encryptedPassword)
                 ->setSecurityQuestion($securityQuestion['securityQuestion'])
                 ->setSecurityAnswer($securityQuestion['securityAnswer'])
+                ->setCurrentStatus(ClientsStatus::STATUS_CREATED)
             ;
+            $clientsRepository->save($client);
 
             $serviceTermsManager->acceptCurrentVersion($client);
 
-            $clientsRepository->save($client);
-
-            $temporaryLink->setExpires(new DateTime());
+            $temporaryLink->setExpires(new DateTimeImmutable());
             $temporaryLinksLoginRepository->save($temporaryLink);
 
-            $messageBus->dispatch(new ClientCreated($client->getIdClient()));
-            $projectInvitation->isFinished();
-            $projectInvitationRepository->save($projectInvitation);
-
-            $status              = $clientsStatusRepository->findOneBy(['id' => ClientsStatus::STATUS_VALIDATED]);
-            $statusClientHistory = (new ClientsStatusHistory())
-                ->setIdClient($client)
-                ->setIdStatus($status)
-            ;
-            $entityManager->persist($statusClientHistory);
-            $entityManager->flush();
+            $messageBus->dispatch(new ClientCreated($client));
 
             $this->addFlash('accountCreatedSuccess', $translator->trans('account-init.account-completed'));
-            $targetPath = $router->generate('edit_project_details', ['hash' => $projectInvitation->getProject()->getHash()], RouterInterface::ABSOLUTE_URL);
-            $loginAuthenticator->setTargetPath(
-                $request,
-                $targetPath
-            );
+
+            $targetPath = $router->generate('lender_project_details', ['slug' => $projectParticipation->getProject()->getSlug()], RouterInterface::ABSOLUTE_URL);
+            $loginAuthenticator->setTargetPath($request, $targetPath);
 
             return $this->redirectToRoute('login');
         }

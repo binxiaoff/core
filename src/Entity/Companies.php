@@ -96,11 +96,11 @@ class Companies
     private $staff;
 
     /**
-     * @var ProjectParticipant[]
+     * @var ProjectParticipation[]
      *
-     * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectParticipant", mappedBy="company", cascade={"persist"}, orphanRemoval=true)
+     * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectParticipation", mappedBy="company", cascade={"persist"}, orphanRemoval=true)
      */
-    private $projectParticipants;
+    private $projectParticipations;
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
@@ -112,8 +112,8 @@ class Companies
      */
     public function __construct()
     {
-        $this->staff               = new ArrayCollection();
-        $this->projectParticipants = new ArrayCollection();
+        $this->staff                 = new ArrayCollection();
+        $this->projectParticipations = new ArrayCollection();
     }
 
     /**
@@ -130,24 +130,6 @@ class Companies
     public function getId(): ?int
     {
         return $this->getIdCompany();
-    }
-
-    /**
-     * @param Clients|null $client
-     *
-     * @return Companies
-     *
-     * @deprecated use $this->addStaff() instead
-     *
-     * Set idClientOwner
-     */
-    public function setIdClientOwner(Clients $client = null): Companies
-    {
-        if ($client) {
-            $this->addStaff($client, Staff::ROLE_COMPANY_OWNER);
-        }
-
-        return $this;
     }
 
     /**
@@ -348,16 +330,16 @@ class Companies
     /**
      * @param Project|null $project
      *
-     * @return ArrayCollection|ProjectParticipant[]
+     * @return ArrayCollection|ProjectParticipation[]
      */
-    public function getProjectParticipants(?Project $project = null): iterable
+    public function getProjectParticipations(?Project $project = null): iterable
     {
         $criteria = new Criteria();
         if ($project) {
             $criteria->where(Criteria::expr()->eq('project', $project));
         }
 
-        return $this->projectParticipants->matching($criteria);
+        return $this->projectParticipations->matching($criteria);
     }
 
     /**
@@ -367,9 +349,9 @@ class Companies
      */
     public function isArranger(Project $project): bool
     {
-        $projectParticipant = $this->getProjectParticipants($project)->first();
-        if ($projectParticipant instanceof ProjectParticipant) {
-            return $projectParticipant->isArranger();
+        $projectParticipation = $this->getProjectParticipations($project)->first();
+        if ($projectParticipation instanceof ProjectParticipation) {
+            return $projectParticipation->isArranger();
         }
 
         return false;

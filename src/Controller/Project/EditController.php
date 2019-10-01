@@ -8,50 +8,26 @@ use DateTimeImmutable;
 use Doctrine\DBAL\ConnectionException;
 use Doctrine\ORM\{EntityManagerInterface, ORMException, OptimisticLockException};
 use Exception;
+use League\Flysystem\{FileExistsException, FileNotFoundException};
 use Psr\Log\LoggerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Swift_SwiftException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\Form\Extension\Core\Type\EmailType;
-use Symfony\Component\Form\Extension\Core\Type\FileType;
-use Symfony\Component\Form\Extension\Core\Type\FormType;
+use Symfony\Component\Form\Extension\Core\Type\{FileType, FormType};
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\{File\UploadedFile, Request, Response};
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
-use Symfony\Component\Validator\Constraints\Image;
-use Symfony\Component\Validator\Constraints\Valid;
-use Symfony\Contracts\Translation\TranslatorInterface;
-use Unilend\Entity\{AcceptedBids,
-    Attachment,
-    Bids,
-    CaRegionalBank,
-    Clients,
-    ClientsStatus,
-    ClientsStatusHistory,
-    Loans,
-    Project,
-    ProjectInvitation,
-    ProjectParticipant,
-    ProjectStatus,
-    Staff};
+use Symfony\Component\Validator\Constraints\{Image, Valid};
+use Unilend\Entity\{AcceptedBids, Attachment, Bids, CaRegionalBank, Clients, Loans, Project, ProjectStatus};
 use Unilend\Form\Bid\PartialBid;
 use Unilend\Form\Project\{ConfidentialityEditionType, ProjectAttachmentCollectionType, ProjectFeeTypeCollectionType};
 use Unilend\Form\Tranche\TrancheTypeCollectionType;
-use Unilend\Message\Client\ClientInvited;
-use Unilend\Repository\{AcceptedBidsRepository,
-    BidsRepository,
-    CaRegionalBankRepository,
-    ClientsRepository,
-    ClientsStatusRepository,
-    CompaniesRepository,
-    ProjectAttachmentRepository,
-    ProjectAttachmentTypeRepository,
-    ProjectInvitationRepository,
-    ProjectRepository,
-    TrancheRepository};
+use Unilend\Message\ProjectParticipation\ProjectParticipantInvited;
+use Unilend\Repository\{AcceptedBidsRepository, BidsRepository, CaRegionalBankRepository, CompaniesRepository,
+    ProjectAttachmentRepository, ProjectAttachmentTypeRepository,  ProjectRepository, TrancheRepository};
 use Unilend\Security\Voter\ProjectVoter;
 use Unilend\Service\{Attachment\AttachmentManager, MailerManager, Project\ProjectImageManager, User\RealUserFinder};
 
@@ -73,6 +49,8 @@ class EditController extends AbstractController
      * @param CaRegionalBankRepository        $regionalBankRepository
      * @param AttachmentManager               $attachmentManager
      *
+     * @throws FileExistsException
+     * @throws FileNotFoundException
      * @throws ORMException
      * @throws OptimisticLockException
      *
@@ -147,7 +125,6 @@ class EditController extends AbstractController
             'imageForm'                => $imageForm->createView(),
             'confidentialityForm'      => $confidentialityForm->createView(),
             'offerVisibilities'        => Project::getAllOfferVisibilities(),
-            'hash'                     => $project->getHash(),
         ];
 
         return $this->render('project/edit/details.html.twig', $template);
@@ -162,18 +139,30 @@ class EditController extends AbstractController
      * @param Request             $request
      * @param CompaniesRepository $companyRepository
      * @param ProjectRepository   $projectRepository
+     * @param MessageBusInterface $messageBus
+     * @param RealUserFinder      $realUserFinder
      *
      * @throws ORMException
      * @throws OptimisticLockException
      *
      * @return Response
      */
-    public function visibility(Project $project, Request $request, CompaniesRepository $companyRepository, ProjectRepository $projectRepository): Response
-    {
+    public function visibility(
+        Project $project,
+        Request $request,
+        CompaniesRepository $companyRepository,
+        ProjectRepository $projectRepository,
+        MessageBusInterface $messageBus,
+        RealUserFinder $realUserFinder
+    ): Response {
         $lenders = $companyRepository->findBy(['idCompany' => $request->request->get('visibility')]);
-        $project->setLenders($lenders);
+        $project->setLenders($lenders, $realUserFinder);
 
         $projectRepository->save($project);
+
+        foreach ($project->getLenders() as $lenderParticipation) {
+            $messageBus->dispatch(new ProjectParticipantInvited($lenderParticipation));
+        }
 
         return $this->redirectToRoute('edit_project_details', ['hash' => $project->getHash()]);
     }
@@ -279,104 +268,6 @@ class EditController extends AbstractController
     }
 
     /**
-     * @Route("/projet/inviter-interlocuteur/{hash}", name="invite_guest", requirements={"hash": "[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}"})
-     *
-     * @param Project                     $project
-     * @param Request                     $request
-     * @param UserInterface|null          $currentUser
-     * @param TranslatorInterface         $translator
-     * @param ClientsRepository           $clientsRepository
-     * @param ClientsStatusRepository     $clientsStatusRepository
-     * @param CompaniesRepository         $companiesRepository
-     * @param MessageBusInterface         $messageBus
-     * @param EntityManagerInterface      $entityManager
-     * @param ProjectRepository           $projectRepository
-     * @param ProjectInvitationRepository $projectInvitationRepository
-     * @param RealUserFinder              $realUserFinder
-     *
-     * @throws ORMException
-     * @throws OptimisticLockException
-     *
-     * @return Response
-     */
-    public function addInterlocutor(
-        Project $project,
-        Request $request,
-        ?UserInterface $currentUser,
-        TranslatorInterface $translator,
-        ClientsRepository $clientsRepository,
-        ClientsStatusRepository $clientsStatusRepository,
-        CompaniesRepository $companiesRepository,
-        MessageBusInterface $messageBus,
-        EntityManagerInterface $entityManager,
-        ProjectRepository $projectRepository,
-        ProjectInvitationRepository $projectInvitationRepository,
-        RealUserFinder $realUserFinder
-    ) {
-        $form = $this->createFormBuilder()->add('email_guest', EmailType::class)->getForm();
-        $form->handleRequest($request);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-            $guestEmail       = mb_strtolower($form->getData()['email_guest']);
-            $guestEmailDomain = explode('@', $guestEmail)[1];
-
-            $company = $companiesRepository->findOneBy(['emailDomain' => $guestEmailDomain]);
-
-            if ($company) {
-                $guest = $clientsRepository->findOneBy(['email' => $guestEmail]);
-
-                if (null === $guest) {
-                    $guest               = new Clients();
-                    $statusClientHistory = (new ClientsStatusHistory())
-                        ->setIdClient($guest)
-                        ->setIdStatus(
-                            $clientsStatusRepository->findOneBy(['id' => ClientsStatus::STATUS_CREATION])
-                        )
-                    ;
-                    $entityManager->persist($statusClientHistory);
-
-                    $guest
-                        ->setEmail($guestEmail)
-                        ->setIdClientStatusHistory($statusClientHistory)
-                        ->addRoles([Clients::ROLE_USER])
-                    ;
-                    $clientsRepository->save($guest);
-                    $company->addStaff($guest, Staff::ROLE_COMPANY_EMPLOYEE);
-                    $companiesRepository->save($company);
-                } else {
-                    if ($projectInvitationRepository->findBy(['client' => $guest, 'project' => $project, 'addedBy' => $currentUser])) {
-                        $this->addFlash('sendError', $translator->trans('invite-guest.email-already-sent'));
-
-                        return $this->redirectToRoute('invite_guest', ['hash' => $project->getHash()]);
-                    }
-                }
-
-                $project->addClientParticipant($company, $guest, ProjectParticipant::ROLE_PROJECT_LENDER);
-                $projectRepository->save($project);
-
-                $projectInvitation = (new ProjectInvitation())
-                    ->setClient($guest)
-                    ->setAddedByValue($realUserFinder)
-                    ->setProject($project)
-                ;
-
-                $projectInvitationRepository->save($projectInvitation);
-
-                $messageBus->dispatch(new ClientInvited($projectInvitation->getId()));
-
-                $this->addFlash('sendSuccess', $translator->trans('invite-guest.send-success-message'));
-
-                return $this->redirectToRoute('invite_guest', ['hash' => $project->getHash()]);
-            }
-            $this->addFlash('sendError', $translator->trans('invite-guest.send-error-message'));
-        }
-
-        return $this->render('project/invite_guest.html.twig', [
-            'form' => $form->createView(),
-        ]);
-    }
-
-    /**
      * @Route("/projet/update/{hash}", name="edit_project_update", requirements={"hash": "[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}"}, methods={"POST"})
      *
      * @IsGranted("edit", subject="project")
@@ -386,6 +277,8 @@ class EditController extends AbstractController
      * @param CompaniesRepository           $companyRepository
      * @param ProjectRepository             $projectRepository
      * @param AuthorizationCheckerInterface $authorizationChecker
+     * @param RealUserFinder                $realUserFinder
+     * @param MessageBusInterface           $messageBus
      *
      * @throws ORMException
      * @throws OptimisticLockException
@@ -397,18 +290,21 @@ class EditController extends AbstractController
         Request $request,
         CompaniesRepository $companyRepository,
         ProjectRepository $projectRepository,
-        AuthorizationCheckerInterface $authorizationChecker
+        AuthorizationCheckerInterface $authorizationChecker,
+        RealUserFinder $realUserFinder,
+        MessageBusInterface $messageBus
     ): Response {
         if (false === $project->isEditable()) {
             return (new Response())
                 ->setContent('Le projet a déjà été publié, il ne peut plus être modifié')
                 ->setStatusCode(Response::HTTP_FORBIDDEN)
-            ;
+                ;
         }
 
-        $field       = $request->request->get('name');
-        $value       = $request->request->get('value', '');
-        $outputValue = null;
+        $field                = $request->request->get('name');
+        $value                = $request->request->get('value', '');
+        $outputValue          = null;
+        $projectParticipation = null;
 
         switch ($field) {
             case 'title':
@@ -451,36 +347,36 @@ class EditController extends AbstractController
 
                 break;
             case 'arranger':
-                $arrangerCompany = $companyRepository->find($value);
-                $project->setArranger($arrangerCompany);
+                $arrangerCompany      = $companyRepository->find($value);
+                $projectParticipation = $project->setArranger($arrangerCompany, $realUserFinder);
 
                 $outputValue = $arrangerCompany ? $arrangerCompany->getIdCompany() : null;
 
                 break;
             case 'deputy-arranger':
                 $deputyArrangerCompany = $companyRepository->find($value);
-                $project->setDeputyArranger($deputyArrangerCompany);
+                $projectParticipation  = $project->setDeputyArranger($deputyArrangerCompany, $realUserFinder);
 
                 $outputValue = $deputyArrangerCompany ? $deputyArrangerCompany->getIdCompany() : null;
 
                 break;
             case 'run':
-                $runCompany = $companyRepository->find($value);
-                $project->setRun($runCompany);
+                $runCompany           = $companyRepository->find($value);
+                $projectParticipation = $project->setRun($runCompany, $realUserFinder);
 
                 $outputValue = $runCompany ? $runCompany->getIdCompany() : null;
 
                 break;
             case 'loan-officer':
-                $loanOfficerCompany = $companyRepository->find($value);
-                $project->setLoanOfficer($loanOfficerCompany);
+                $loanOfficerCompany   = $companyRepository->find($value);
+                $projectParticipation = $project->setLoanOfficer($loanOfficerCompany, $realUserFinder);
 
                 $outputValue = $loanOfficerCompany ? $loanOfficerCompany->getIdCompany() : null;
 
                 break;
             case 'security-trustee':
                 $securityTrusteeCompany = $companyRepository->find($value);
-                $project->setSecurityTrustee($securityTrusteeCompany);
+                $projectParticipation   = $project->setSecurityTrustee($securityTrusteeCompany, $realUserFinder);
 
                 $outputValue = $securityTrusteeCompany ? $securityTrusteeCompany->getIdCompany() : null;
 
@@ -490,7 +386,7 @@ class EditController extends AbstractController
                     return (new Response())
                         ->setContent('Vous ne disposez pas des droits nécessaires pour modifier la notation. Seul le RUN peut modifier la notation.')
                         ->setStatusCode(Response::HTTP_FORBIDDEN)
-                    ;
+                        ;
                 }
 
                 $value = $value ?: null;
@@ -507,6 +403,10 @@ class EditController extends AbstractController
         }
 
         $projectRepository->save($project);
+
+        if ($projectParticipation) {
+            $messageBus->dispatch(new ProjectParticipantInvited($projectParticipation));
+        }
 
         return $this->json([
             'success'  => true,
@@ -598,7 +498,7 @@ class EditController extends AbstractController
                 'entry_options' => ['rate_required' => Project::OPERATION_TYPE_SYNDICATION === (int) $project->getOperationType()],
             ])
             ->getForm()
-        ;
+            ;
     }
 
     /**
@@ -606,8 +506,8 @@ class EditController extends AbstractController
      * @param Request           $request
      * @param ProjectRepository $projectRepository
      *
-     * @throws ORMException
      * @throws OptimisticLockException
+     * @throws ORMException
      *
      * @return bool
      */
@@ -633,7 +533,7 @@ class EditController extends AbstractController
         return $this->get('form.factory')->createNamedBuilder('attachments')
             ->add('projectAttachments', ProjectAttachmentCollectionType::class)
             ->getForm()
-        ;
+            ;
     }
 
     /**
@@ -644,7 +544,7 @@ class EditController extends AbstractController
         return $this->get('form.factory')->createNamedBuilder('image')
             ->add('imageFile', FileType::class, ['constraints' => new Image()])
             ->getForm()
-        ;
+            ;
     }
 
     /**
@@ -705,7 +605,7 @@ class EditController extends AbstractController
         return $this->get('form.factory')->createNamedBuilder('fees', FormType::class, $project, ['data_class' => Project::class])
             ->add('projectFees', ProjectFeeTypeCollectionType::class)
             ->getForm()
-        ;
+            ;
     }
 
     /**
@@ -713,8 +613,8 @@ class EditController extends AbstractController
      * @param Request           $request
      * @param ProjectRepository $projectRepository
      *
-     * @throws ORMException
      * @throws OptimisticLockException
+     * @throws ORMException
      *
      * @return bool
      */
@@ -737,8 +637,8 @@ class EditController extends AbstractController
      * @param Request           $request
      * @param ProjectRepository $projectRepository
      *
-     * @throws ORMException
      * @throws OptimisticLockException
+     * @throws ORMException
      *
      * @return bool
      */
@@ -771,6 +671,8 @@ class EditController extends AbstractController
      *
      * @throws ORMException
      * @throws OptimisticLockException
+     * @throws FileExistsException
+     * @throws FileNotFoundException
      *
      * @return bool
      */

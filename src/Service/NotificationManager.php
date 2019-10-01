@@ -6,12 +6,9 @@ namespace Unilend\Service;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
-use Swift_RfcComplianceException;
-use Symfony\Component\Messenger\MessageBusInterface;
-use Unilend\Entity\{Bids, Clients, Notification, Project, ProjectComment};
-use Unilend\Repository\ClientsStatusHistoryRepository;
+use Unilend\Entity\{Bids, Clients, Notification, Project, ProjectComment, ProjectParticipation};
 use Unilend\Repository\NotificationRepository;
-use Unilend\Repository\ProjectInvitationRepository;
+use Unilend\Service\ProjectParticipation\ProjectParticipationManager;
 
 class NotificationManager
 {
@@ -33,35 +30,25 @@ class NotificationManager
     private $notificationRepository;
     /** @var MailerManager */
     private $mailerManager;
-    /** @var MessageBusInterface */
-    private $messageBus;
-    /** @var ClientsStatusHistoryRepository */
-    private $clientsStatusHistoryRepository;
-    /** @var ProjectInvitationRepository */
-    private $projectInvitationRepository;
+    /** @var ProjectParticipationManager */
+    private $projectParticipationManager;
 
     /**
-     * @param EntityManagerInterface         $entityManager
-     * @param NotificationRepository         $notificationRepository
-     * @param MailerManager                  $mailerManager
-     * @param MessageBusInterface            $messageBus
-     * @param ClientsStatusHistoryRepository $clientsStatusHistoryRepository
-     * @param ProjectInvitationRepository    $projectInvitationRepository
+     * @param EntityManagerInterface      $entityManager
+     * @param NotificationRepository      $notificationRepository
+     * @param MailerManager               $mailerManager
+     * @param ProjectParticipationManager $projectParticipationManager
      */
     public function __construct(
         EntityManagerInterface $entityManager,
         NotificationRepository $notificationRepository,
         MailerManager $mailerManager,
-        MessageBusInterface $messageBus,
-        ClientsStatusHistoryRepository $clientsStatusHistoryRepository,
-        ProjectInvitationRepository $projectInvitationRepository
+        ProjectParticipationManager $projectParticipationManager
     ) {
-        $this->entityManager                  = $entityManager;
-        $this->notificationRepository         = $notificationRepository;
-        $this->mailerManager                  = $mailerManager;
-        $this->messageBus                     = $messageBus;
-        $this->clientsStatusHistoryRepository = $clientsStatusHistoryRepository;
-        $this->projectInvitationRepository    = $projectInvitationRepository;
+        $this->entityManager               = $entityManager;
+        $this->notificationRepository      = $notificationRepository;
+        $this->mailerManager               = $mailerManager;
+        $this->projectParticipationManager = $projectParticipationManager;
     }
 
     /**
@@ -73,31 +60,20 @@ class NotificationManager
     }
 
     /**
-     * @param Project $project
+     * @param ProjectParticipation $projectParticipation
      *
-     * @throws Swift_RfcComplianceException
      * @throws Exception
      */
-    public function createProjectPublication(Project $project): void
+    public function createProjectPublication(ProjectParticipation $projectParticipation): void
     {
-        $recipients = $this->getProjectRecipients($project);
+        $concernedInvitees = $this->projectParticipationManager->getConcernedClients($projectParticipation);
 
-        $this->createNotification(Notification::TYPE_PROJECT_PUBLICATION, $recipients, $project);
-
-        foreach ($recipients as $recipient) {
-            $projectInvitation = $this->projectInvitationRepository->findOneBy(['client' => $recipient, 'project' => $project]);
-            if ($projectInvitation) {
-                $this->mailerManager->sendProjectInvitation($projectInvitation);
-            } else {
-                $this->mailerManager->sendProjectPublication($project, $recipient);
-            }
-        }
+        $this->createNotification(Notification::TYPE_PROJECT_PUBLICATION, $concernedInvitees, $projectParticipation->getProject());
     }
 
     /**
      * @param Bids $bid
      *
-     * @throws Swift_RfcComplianceException
      * @throws Exception
      */
     public function createBidSubmitted(Bids $bid): void
@@ -155,11 +131,11 @@ class NotificationManager
         $recipients = [];
 
         if (null === $types) {
-            foreach ($project->getProjectParticipants() as $projectParticipant) {
-                if ($projectParticipant->getClient()) {
-                    $recipients[$projectParticipant->getClient()->getIdClient()] = $projectParticipant->getClient();
+            foreach ($project->getProjectParticipations() as $projectParticipation) {
+                if ($projectParticipation->getClient()) {
+                    $recipients[$projectParticipation->getClient()->getIdClient()] = $projectParticipation->getClient();
                 }
-                $recipients[$projectParticipant->getCompany()->getIdClientOwner()->getIdClient()] = $projectParticipant->getCompany()->getIdClientOwner();
+                $recipients[$projectParticipation->getCompany()->getIdClientOwner()->getIdClient()] = $projectParticipation->getCompany()->getIdClientOwner();
             }
 
             return $recipients;

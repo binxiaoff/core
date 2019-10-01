@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Unilend\Message\Client;
 
+use Unilend\Entity\Clients;
+
 class ClientUpdated
 {
     /** @var int */
@@ -12,12 +14,12 @@ class ClientUpdated
     private $changeSet;
 
     /**
-     * @param int   $clientId
-     * @param array $changeSet
+     * @param Clients $client
+     * @param array   $changeSet
      */
-    public function __construct(int $clientId, array $changeSet)
+    public function __construct(Clients $client, array $changeSet)
     {
-        $this->clientId  = $clientId;
+        $this->clientId  = $client->getIdClient();
         $this->changeSet = $changeSet;
     }
 

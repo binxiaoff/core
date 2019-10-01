@@ -81,7 +81,7 @@ class PublishController extends AbstractController
             $foncarisRequestRepository->save($foncarisRequest);
             $projectRepository->save($project);
 
-            $messageBus->dispatch(new ProjectPublished($project->getId()));
+            $messageBus->dispatch(new ProjectPublished($project));
 
             return $this->redirectToRoute('project_publish_confirmation', ['hash' => $project->getHash()]);
         }

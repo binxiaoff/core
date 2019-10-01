@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Unilend\Repository;
 
-use DateInterval;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\{ORMException, OptimisticLockException};
@@ -51,14 +50,13 @@ class TemporaryLinksLoginRepository extends ServiceEntityRepository
      */
     public function generateTemporaryLink(Clients $client, string $lifetime = TemporaryLinksLogin::PASSWORD_TOKEN_LIFETIME_SHORT): string
     {
-        $token      = bin2hex(openssl_random_pseudo_bytes(16));
-        $expiryDate = (new \DateTime('NOW'))->add(new DateInterval('P' . $lifetime));
+        $token = bin2hex(openssl_random_pseudo_bytes(16));
 
         $temporaryLink = new TemporaryLinksLogin();
         $temporaryLink
             ->setIdClient($client)
             ->setToken($token)
-            ->setExpires($expiryDate)
+            ->setExpires($temporaryLink->generateExpiration($lifetime))
         ;
 
         $this->getEntityManager()->persist($temporaryLink);

@@ -43,7 +43,9 @@ class ClientCreatedHandler implements MessageHandlerInterface
     {
         $client = $this->clientsRepository->find($clientCreated->getClientId());
 
-        $this->mailerManager->sendAccountCreated($client);
-        $this->notificationManager->createAccountCreated($client);
+        if ($client) {
+            $this->mailerManager->sendAccountCreated($client);
+            $this->notificationManager->createAccountCreated($client);
+        }
     }
 }

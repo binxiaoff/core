@@ -60,15 +60,15 @@
                 <strong>Prêteur</strong>
             </div>
             <div class="row">
-                {% for participant in project.projectParticipants %}
+                {% for Participation in project.projectParticipations %}
                     {% if
-                        participant.hasRole(constant('Unilend\\Entity\\ProjectParticipant::ROLE_PROJECT_LENDER'))
-                        and participant != project.arranger
-                        and participant != project.run
+                        Participation.hasRole(constant('Unilend\\Entity\\ProjectParticipation::ROLE_PROJECT_LENDER'))
+                        and Participation != project.arranger
+                        and Participation != project.run
                     %}
                         <div class="col-lg-6 col-md-6">
                             <label>
-                                <input type="checkbox" name="signatory[]" value="{{ participant.company.idCompany }}"> {{ participant.company.name }}
+                                <input type="checkbox" name="signatory[]" value="{{ Participation.company.idCompany }}"> {{ Participation.company.name }}
                             </label>
                         </div>
                     {% endif %}

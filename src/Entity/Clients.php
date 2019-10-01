@@ -207,25 +207,23 @@ class Clients implements UserInterface, EquatableInterface
     private $statuses;
 
     /**
-     * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectParticipant", mappedBy="client", cascade={"persist"}, orphanRemoval=true)
-     */
-    private $projectParticipants;
-
-    /**
-     * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectInvitation", mappedBy="id_client", cascade={"persist"}, orphanRemoval=true)
-     */
-    private $projectInvitations;
-
-    /**
      * Clients constructor.
      */
     public function __construct()
     {
-        $this->attachments         = new ArrayCollection();
-        $this->statuses            = new ArrayCollection();
-        $this->projectParticipants = new ArrayCollection();
-        $this->projectInvitations  = new ArrayCollection();
+        $this->attachments = new ArrayCollection();
+        $this->statuses    = new ArrayCollection();
         $this->setCurrentStatus(ClientsStatus::STATUS_CREATED);
+    }
+
+    /**
+     * For comparaison (ex. array_unique).
+     *
+     * @return string|null
+     */
+    public function __toString()
+    {
+        return (string) $this->getEmail();
     }
 
     /**
@@ -592,9 +590,9 @@ class Clients implements UserInterface, EquatableInterface
     /**
      * @return bool
      */
-    public function isValidated(): bool
+    public function isJustInvited(): bool
     {
-        return $this->isInStatus([ClientsStatus::STATUS_VALIDATED]);
+        return $this->isInStatus([ClientsStatus::STATUS_INVITED]);
     }
 
     /**
@@ -602,7 +600,7 @@ class Clients implements UserInterface, EquatableInterface
      */
     public function isCreated(): bool
     {
-        return $this->isInStatus([ClientsStatus::STATUS_CREATION]);
+        return $this->isInStatus([ClientsStatus::STATUS_CREATED]);
     }
 
     /**
@@ -610,7 +608,7 @@ class Clients implements UserInterface, EquatableInterface
      */
     public function isEqualTo(UserInterface $user): bool
     {
-        if (false === $user instanceof Clients) {
+        if (false === $user instanceof self) {
             return false;
         }
 
@@ -657,8 +655,6 @@ class Clients implements UserInterface, EquatableInterface
      * @param int         $status
      * @param string|null $content
      *
-     * @throws Exception
-     *
      * @return Clients
      */
     public function setCurrentStatus(int $status, ?string $content = null): self
@@ -666,84 +662,6 @@ class Clients implements UserInterface, EquatableInterface
         $clientStatus = new ClientsStatus($this, $status, $content);
 
         return $this->baseStatusSetter($clientStatus);
-    }
-
-    /**
-     * @return Collection|ProjectParticipant[]
-     */
-    public function getProjectParticipants(): Collection
-    {
-        return $this->projectParticipants;
-    }
-
-    /**
-     * @param ProjectParticipant $projectParticipant
-     *
-     * @return Clients
-     */
-    public function addProjectParticipant(ProjectParticipant $projectParticipant): self
-    {
-        if (!$this->projectParticipants->contains($projectParticipant)) {
-            $this->projectParticipants[] = $projectParticipant;
-            $projectParticipant->setClient($this);
-        }
-
-        return $this;
-    }
-
-    /**
-     * @param ProjectParticipant $projectParticipant
-     *
-     * @return Clients
-     */
-    public function removeProjectParticipant(ProjectParticipant $projectParticipant): self
-    {
-        if ($this->projectParticipants->contains($projectParticipant)) {
-            $this->projectParticipants->removeElement($projectParticipant);
-        }
-
-        return $this;
-    }
-
-    /**
-     * @return Collection|ProjectInvitation[]
-     */
-    public function getProjectInvitations(): Collection
-    {
-        return $this->projectInvitations;
-    }
-
-    /**
-     * @param ProjectInvitation $projectInvitation
-     *
-     * @return Clients
-     */
-    public function addProjectInvitation(ProjectInvitation $projectInvitation): self
-    {
-        if (!$this->projectInvitations->contains($projectInvitation)) {
-            $this->projectInvitations[] = $projectInvitation;
-            $projectInvitation->setClient($this);
-        }
-
-        return $this;
-    }
-
-    /**
-     * @param ProjectInvitation $projectInvitation
-     *
-     * @return Clients
-     */
-    public function removeProjectInvitation(ProjectInvitation $projectInvitation): self
-    {
-        if ($this->projectInvitations->contains($projectInvitation)) {
-            $this->projectInvitations->removeElement($projectInvitation);
-            // set the owning side to null (unless already changed)
-            if ($projectInvitation->getClient() === $this) {
-                $projectInvitation->setClient(null);
-            }
-        }
-
-        return $this;
     }
 
     /**

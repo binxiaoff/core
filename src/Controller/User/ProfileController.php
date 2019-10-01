@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace Unilend\Controller\User;
 
 use Doctrine\ORM\{NonUniqueResultException, ORMException, OptimisticLockException};
-use Psr\Log\LoggerInterface;
-use Swift_SwiftException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\{Request, Response};
 use Symfony\Component\Routing\Annotation\Route;
@@ -16,7 +14,6 @@ use Unilend\Entity\Clients;
 use Unilend\Form\User\IdentityType;
 use Unilend\Repository\AcceptationLegalDocsRepository;
 use Unilend\Repository\ClientsRepository;
-use Unilend\Service\MailerManager;
 
 class ProfileController extends AbstractController
 {
@@ -27,13 +24,11 @@ class ProfileController extends AbstractController
      * @param UserInterface|Clients|null     $user
      * @param ClientsRepository              $clientsRepository
      * @param TranslatorInterface            $translator
-     * @param MailerManager                  $mailerManager
-     * @param LoggerInterface                $logger
      * @param AcceptationLegalDocsRepository $acceptationLegalDocsRepository
      *
+     * @throws NonUniqueResultException
      * @throws ORMException
      * @throws OptimisticLockException
-     * @throws NonUniqueResultException
      *
      * @return Response
      */
@@ -42,8 +37,6 @@ class ProfileController extends AbstractController
         ?UserInterface $user,
         ClientsRepository $clientsRepository,
         TranslatorInterface $translator,
-        MailerManager $mailerManager,
-        LoggerInterface $logger,
         AcceptationLegalDocsRepository $acceptationLegalDocsRepository
     ): Response {
         $form = $this->createForm(IdentityType::class, $user);
@@ -52,21 +45,9 @@ class ProfileController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             $client = $form->getData();
+            $clientsRepository->save($client);
 
             $this->addFlash('updateSuccess', $translator->trans('user-profile-form.update-success-message'));
-
-            try {
-                $mailerManager->sendIdentityUpdated($user);
-            } catch (Swift_SwiftException $exception) {
-                $logger->error('An error occurred while identity updated email. Message: ' . $exception->getMessage(), [
-                    'class'    => __CLASS__,
-                    'function' => __FUNCTION__,
-                    'file'     => $exception->getFile(),
-                    'line'     => $exception->getLine(),
-                ]);
-            }
-
-            $clientsRepository->save($client);
 
             return $this->redirectToRoute('profile');
         }
