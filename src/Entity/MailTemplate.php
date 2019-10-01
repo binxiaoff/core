@@ -13,6 +13,7 @@ use Unilend\Entity\Traits\MailPartTrait;
  * Class MailTemplate.
  *
  * @ORM\Entity(repositoryClass="Unilend\Repository\MailTemplateRepository")
+ * @ORM\HasLifecycleCallbacks
  */
 class MailTemplate implements TwigTemplateInterface
 {

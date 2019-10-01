@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Unilend\Test\Unit\Twig\Loader;
 
 use DateTimeImmutable;
+use Doctrine\Common\Persistence\ObjectRepository;
 use Exception;
 use Faker\Provider\Base;
-use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
 use Prophecy\Prediction\CallPrediction;
@@ -17,7 +17,6 @@ use Prophecy\Prophecy\ObjectProphecy;
 use Twig\Error\LoaderError;
 use Twig\Source;
 use Unilend\Entity\Interfaces\TwigTemplateInterface;
-use Unilend\Repository\Interfaces\TwigTemplateRepositoryInterface;
 use Unilend\Twig\Loader\DatabaseLoader;
 
 /**
@@ -33,7 +32,7 @@ class DatabaseLoaderTest extends TestCase
     private $defaultLocale;
 
     /**
-     * @var TwigTemplateRepositoryInterface|ObjectProphecy
+     * @var ObjectRepository|ObjectProphecy
      */
     private $repository;
 
@@ -42,7 +41,7 @@ class DatabaseLoaderTest extends TestCase
      */
     protected function setUp(): void
     {
-        $this->repository    = $this->prophesize(TwigTemplateRepositoryInterface::class);
+        $this->repository    = $this->prophesize(ObjectRepository::class);
         $this->defaultLocale = 'fr_FR';
     }
 
@@ -108,10 +107,6 @@ class DatabaseLoaderTest extends TestCase
     public function testExceptionOnMissingTemplate(string $methodName, array $arguments): void
     {
         $databaseTemplateLoader = $this->createTestObject();
-
-        if (!isset($arguments['name'])) {
-            throw new InvalidArgumentException('There must be a name in the arguments');
-        }
 
         $name = $arguments['name'];
 

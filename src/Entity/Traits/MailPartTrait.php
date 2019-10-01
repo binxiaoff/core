@@ -7,8 +7,6 @@ namespace Unilend\Entity\Traits;
 use Twig\Source;
 
 /**
- * @ORM\HasLifecycleCallbacks
- *
  * @Gedmo\SoftDeleteable(fieldName="archived", hardDelete=false)
  */
 trait MailPartTrait

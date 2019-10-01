@@ -131,6 +131,8 @@ services:
             - '@UserAgentParser\Provider\PiwikDeviceDetector'
 
     Unilend\Twig\Loader\DatabaseLoader:
+        arguments:
+            $repository: '@Unilend\Repository\MailTemplateRepository'
         tags:
             - name: twig.loader
               priority: -9999

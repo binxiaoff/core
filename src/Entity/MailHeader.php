@@ -12,6 +12,7 @@ use Unilend\Entity\Traits\MailPartTrait;
  * Class MailHeader.
  *
  * @ORM\Entity
+ * @ORM\HasLifecycleCallbacks
  */
 class MailHeader implements TwigTemplateInterface
 {

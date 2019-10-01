@@ -34,7 +34,7 @@
                 <select id="header-select" name="header" class="form-control">
                     <option value=""></option>
                     <?php foreach ($this->headers as $header) { ?>
-                        <option value="<?php echo $header->getId(); ?>"><?php echo $header->getType(); ?></option>
+                        <option value="<?php echo $header->getId(); ?>"><?php echo $header->getName(); ?></option>
                     <?php } ?>
                 </select>
             </div>
@@ -43,7 +43,7 @@
                 <select id="footer-select" name="footer" class="form-control">
                     <option value=""></option>
                     <?php foreach ($this->footers as $footer) { ?>
-                        <option value="<?php echo $footer->getId(); ?>"><?php echo $footer->getType(); ?></option>
+                        <option value="<?php echo $footer->getId(); ?>"><?php echo $footer->getName(); ?></option>
                     <?php } ?>
                 </select>
             </div>

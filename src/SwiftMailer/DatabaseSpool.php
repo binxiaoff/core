@@ -1,14 +1,24 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Unilend\SwiftMailer;
 
+use DateTime;
 use Doctrine\ORM\{EntityManagerInterface, OptimisticLockException};
 use Mailjet\Response;
 use Psr\Log\LoggerInterface;
+use Swift_ConfigurableSpool;
+use Swift_Mime_SimpleMessage;
+use Swift_RfcComplianceException;
+use Swift_Transport;
+use Twig\Error\LoaderError;
+use Twig\Error\RuntimeError;
+use Twig\Error\SyntaxError;
 use Unilend\Entity\MailQueue;
 use Unilend\Service\Mailer\MailQueueManager;
 
-class DatabaseSpool extends \Swift_ConfigurableSpool
+class DatabaseSpool extends Swift_ConfigurableSpool
 {
     /** @var MailQueueManager */
     protected $mailQueueManager;
@@ -32,23 +42,23 @@ class DatabaseSpool extends \Swift_ConfigurableSpool
     /**
      * Starts this Spool mechanism.
      */
-    public function start()
+    public function start(): void
     {
     }
 
     /**
      * Stops this Spool mechanism.
      */
-    public function stop()
+    public function stop(): void
     {
     }
 
     /**
      * Tests if this Spool mechanism has started.
      *
-     * @return boolean
+     * @return bool
      */
-    public function isStarted()
+    public function isStarted(): bool
     {
         return true;
     }
@@ -56,11 +66,11 @@ class DatabaseSpool extends \Swift_ConfigurableSpool
     /**
      * Queues a message.
      *
-     * @param \Swift_Mime_SimpleMessage $message The message to store
+     * @param Swift_Mime_SimpleMessage $message The message to store
      *
-     * @return boolean
+     * @return bool
      */
-    public function queueMessage(\Swift_Mime_SimpleMessage $message)
+    public function queueMessage(Swift_Mime_SimpleMessage $message): bool
     {
         return $this->mailQueueManager->queue($message);
     }
@@ -68,14 +78,18 @@ class DatabaseSpool extends \Swift_ConfigurableSpool
     /**
      * Sends messages using the given transport instance.
      *
-     * @param \Swift_Transport $transport         A transport instance
-     * @param string[]         &$failedRecipients An array of failures by-reference
+     * @param Swift_Transport $transport        A transport instance
+     * @param string[]        $failedRecipients An array of failures by-reference
+     *
+     * @throws LoaderError
+     * @throws RuntimeError
+     * @throws SyntaxError
      *
      * @return int The number of sent emails
      */
-    public function flushQueue(\Swift_Transport $transport, &$failedRecipients = null)
+    public function flushQueue(Swift_Transport $transport, &$failedRecipients = null): int
     {
-        if (! $transport->isStarted()) {
+        if (!$transport->isStarted()) {
             $transport->start();
         }
 
@@ -83,7 +97,7 @@ class DatabaseSpool extends \Swift_ConfigurableSpool
         $limit        = $limit > 0 ? $limit : null;
         $emailsToSend = $this->mailQueueManager->getMailsToSend($limit);
 
-        if (! count($emailsToSend)) {
+        if (!count($emailsToSend)) {
             return 0;
         }
 
@@ -98,21 +112,22 @@ class DatabaseSpool extends \Swift_ConfigurableSpool
 
                 try {
                     $message = $this->mailQueueManager->getMessage($email);
-                } catch (\Swift_RfcComplianceException $exception) {
+                } catch (Swift_RfcComplianceException $exception) {
                     $this->logger->error(
-                        'Unable to retrieve message ' . $email->getIdQueue() . '. Got exception: ' . $exception->getMessage(),
+                        'Unable to retrieve message ' . $email->getId() . '. Got exception: ' . $exception->getMessage(),
                         ['file' => $exception->getFile(), 'line' => $exception->getFile()]
                     );
+
                     continue;
                 }
 
                 $response = $transport->send($message, $failedRecipients);
 
-                if (! ($transport instanceof MailjetTransport)) {
+                if (!($transport instanceof MailjetTransport)) {
                     if ($response) {
-                        $count++;
+                        ++$count;
                         $email->setStatus(MailQueue::STATUS_SENT);
-                        $email->setSentAt(new \DateTime());
+                        $email->setSentAt(new DateTime());
                     } else {
                         $email->setStatus(MailQueue::STATUS_ERROR);
                     }
@@ -128,7 +143,7 @@ class DatabaseSpool extends \Swift_ConfigurableSpool
                         $count += count($batch);
                         foreach ($batch as $email) {
                             $email->setStatus(MailQueue::STATUS_SENT);
-                            $email->setSentAt(new \DateTime());
+                            $email->setSentAt(new DateTime());
                             $email->setIdMessageMailjet($transport->getMessageId($email, $response));
                         }
                     } else {
@@ -139,15 +154,19 @@ class DatabaseSpool extends \Swift_ConfigurableSpool
                             $email->setStatus(MailQueue::STATUS_ERROR);
                             $email->setErrorMailjet($reasonPhrase);
 
-                            $errorEmails[] = $email->getIdQueue();
+                            $errorEmails[] = $email->getId();
                         }
 
                         if ($response->getBody() && isset($response->getBody()['Messages'])) {
-                            $this->logger->warning('An error occurred while sending emails via Mailjet: ' . $reasonPhrase . '. Response was ' . json_encode($response->getBody()['Messages']), [
-                                'emails'   => $errorEmails,
-                                'class'    => __CLASS__,
-                                'function' => __FUNCTION__
-                            ]);
+                            $serializedMessage = json_encode($response->getBody()['Messages'], JSON_THROW_ON_ERROR, 512);
+                            $this->logger->warning(
+                                'An error occurred while sending emails via Mailjet: ' . $reasonPhrase . '. Response was ' . $serializedMessage,
+                                [
+                                    'emails'   => $errorEmails,
+                                    'class'    => __CLASS__,
+                                    'function' => __FUNCTION__,
+                                ]
+                            );
                         }
                     }
                 }

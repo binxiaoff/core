@@ -36,7 +36,7 @@ class MailQueue
      *     @ORM\JoinColumn(name="id_mail_template", referencedColumnName="id", nullable=false)
      * })
      */
-    private $idMailTemplate;
+    private $mailTemplate;
 
     /**
      * @var string
@@ -73,7 +73,7 @@ class MailQueue
      *
      * @ORM\Column(name="id_client", type="integer", nullable=true)
      */
-    private $idClient;
+    private $client;
 
     /**
      * @var string
@@ -113,20 +113,20 @@ class MailQueue
     /**
      * @var int
      *
-     * @ORM\Column(name="id_queue", type="integer")
      * @ORM\Id
+     * @ORM\Column(name="id_queue", type="integer")
      * @ORM\GeneratedValue(strategy="IDENTITY")
      */
-    private $idQueue;
+    private $id;
 
     /**
-     * @param MailTemplate $idMailTemplate
+     * @param MailTemplate $mailTemplate
      *
      * @return MailQueue
      */
-    public function setIdMailTemplate($idMailTemplate): MailQueue
+    public function setMailTemplate($mailTemplate): MailQueue
     {
-        $this->idMailTemplate = $idMailTemplate;
+        $this->mailTemplate = $mailTemplate;
 
         return $this;
     }
@@ -134,9 +134,9 @@ class MailQueue
     /**
      * @return MailTemplate
      */
-    public function getIdMailTemplate(): MailTemplate
+    public function getMailTemplate(): MailTemplate
     {
-        return $this->idMailTemplate;
+        return $this->mailTemplate;
     }
 
     /**
@@ -220,13 +220,13 @@ class MailQueue
     }
 
     /**
-     * @param int $idClient
+     * @param int $client
      *
      * @return MailQueue
      */
-    public function setIdClient($idClient): MailQueue
+    public function setClient($client): MailQueue
     {
-        $this->idClient = $idClient;
+        $this->client = $client;
 
         return $this;
     }
@@ -234,9 +234,9 @@ class MailQueue
     /**
      * @return int
      */
-    public function getIdClient(): int
+    public function getClient(): int
     {
-        return $this->idClient;
+        return $this->client;
     }
 
     /**
@@ -342,8 +342,8 @@ class MailQueue
     /**
      * @return int
      */
-    public function getIdQueue(): int
+    public function getId(): int
     {
-        return $this->idQueue;
+        return $this->id;
     }
 }

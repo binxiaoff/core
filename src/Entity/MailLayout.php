@@ -10,6 +10,7 @@ use Unilend\Entity\Traits\MailPartTrait;
 
 /**
  * @ORM\Entity
+ * @ORM\HasLifecycleCallbacks
  */
 class MailLayout implements TwigTemplateInterface
 {

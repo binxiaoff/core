@@ -77,14 +77,14 @@ class MailQueueManager
 
             $mailQueue = new MailQueue();
             $mailQueue
-                ->setIdMailTemplate($mailTemplate)
+                ->setMailTemplate($mailTemplate)
                 ->setSerializedVariables(json_encode($message->getVariables(), JSON_THROW_ON_ERROR, 512))
                 ->setAttachments(json_encode($attachments, JSON_THROW_ON_ERROR, 512))
                 ->setReplyTo($replyTo)
                 ->setStatus(MailQueue::STATUS_PENDING)
                 ->setToSendAt($message->getToSendAt())
                 ->setRecipient($recipient)
-                ->setIdClient($clientId)
+                ->setClient($clientId)
             ;
 
             $this->entityManager->persist($mailQueue);
@@ -108,12 +108,12 @@ class MailQueueManager
     public function getMessage(MailQueue $email): TemplateMessage
     {
         $message = $this->templateMessageProvider->newMessageByTemplate(
-            $email->getIdMailTemplate(),
+            $email->getMailTemplate(),
             json_decode($email->getSerializedVariables(), true, 512, JSON_THROW_ON_ERROR)
         );
         $message
             ->setTo($email->getRecipient())
-            ->setQueueId($email->getIdQueue())
+            ->setQueueId($email->getId())
         ;
 
         if (false === empty($email->getReplyTo())) {

@@ -7,7 +7,6 @@ namespace Unilend\Repository;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Unilend\Entity\MailTemplate;
-use Unilend\Repository\Interfaces\TwigTemplateRepositoryInterface;
 
 /**
  * @method MailTemplate|null find($id, $lockMode = null, $lockVersion = null)
@@ -15,7 +14,7 @@ use Unilend\Repository\Interfaces\TwigTemplateRepositoryInterface;
  * @method MailTemplate[]    findAll()
  * @method MailTemplate[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
  */
-class MailTemplateRepository extends ServiceEntityRepository implements TwigTemplateRepositoryInterface
+class MailTemplateRepository extends ServiceEntityRepository
 {
     /**
      * @param ManagerRegistry $registry

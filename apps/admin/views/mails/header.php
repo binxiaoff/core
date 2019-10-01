@@ -1,5 +1,5 @@
 <div id="contenu">
-    <h1>Modifier <?php echo $this->mailPart->getType(); ?></h1>
+    <h1>Modifier <?php echo $this->mailPart->getName(); ?></h1>
     <form method="post" action="<?php echo $this->url; ?>/mails/header/<?php echo $this->mailPart->getId(); ?>">
         <div class="row">
             <div class="form-group col-md-12">

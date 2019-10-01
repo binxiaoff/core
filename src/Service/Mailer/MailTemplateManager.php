@@ -48,10 +48,11 @@ class MailTemplateManager
      * @param string|null     $subject
      * @param string|null     $title
      * @param string|null     $content
-     * @param MailTemplate    $header
+     * @param MailHeader      $header
      * @param MailFooter|null $footer
      *
-     **@throws ORMException
+     * @throws ORMException
+     * @throws ORMException
      * @throws OptimisticLockException
      *
      * @return MailTemplate|null
@@ -63,11 +64,11 @@ class MailTemplateManager
         $subject = null,
         $title = null,
         $content = null,
-        MailTemplate $header = null,
+        MailHeader $header = null,
         MailFooter $footer = null
     ): ?MailTemplate {
         $mailTemplate = $this->entityManager->getRepository(MailTemplate::class)->findOneBy([
-            'type'   => $type,
+            'name'   => $type,
             'locale' => $this->defaultLocale,
         ]);
 

@@ -12,6 +12,7 @@ use Unilend\Entity\Traits\MailPartTrait;
  * Class MailFooter.
  *
  * @ORM\Entity
+ * @ORM\HasLifecycleCallbacks
  */
 class MailFooter implements TwigTemplateInterface
 {

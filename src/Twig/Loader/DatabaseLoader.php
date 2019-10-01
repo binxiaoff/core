@@ -4,26 +4,26 @@ declare(strict_types=1);
 
 namespace Unilend\Twig\Loader;
 
+use Doctrine\Common\Persistence\ObjectRepository;
 use Twig\Error\LoaderError;
 use Twig\Loader\LoaderInterface;
 use Twig\Source;
 use Unilend\Entity\Interfaces\TwigTemplateInterface;
-use Unilend\Repository\Interfaces\TwigTemplateRepositoryInterface;
 
 class DatabaseLoader implements LoaderInterface
 {
     /** @var string */
     private $locale;
 
-    /** @var TwigTemplateRepositoryInterface */
+    /** @var ObjectRepository */
     private $repository;
 
     /**
-     * @param TwigTemplateRepositoryInterface $repository
-     * @param string                          $locale
+     * @param ObjectRepository $repository
+     * @param string           $locale
      */
     public function __construct(
-        TwigTemplateRepositoryInterface $repository,
+        ObjectRepository $repository,
         string $locale = 'fr_FR'
     ) {
         $this->locale     = $locale;
@@ -67,7 +67,7 @@ class DatabaseLoader implements LoaderInterface
             $this->throwNotFoundError($name);
         }
 
-        return $this->getTemplate($name)->getName();
+        return $template->getName();
     }
 
     /**

@@ -47,7 +47,7 @@ class MailQueueRepository extends ServiceEntityRepository
                 $qb->expr()->orX('mq.toSendAt <= :now', $qb->expr()->isNull('mq.toSendAt'))
             )
             ->setParameter('now', new DateTime())
-            ->orderBy('mq.idQueue', 'ASC')
+            ->orderBy('mq.id', 'ASC')
             ->groupBy('mq.recipient')
         ;
 
@@ -69,11 +69,9 @@ class MailQueueRepository extends ServiceEntityRepository
     {
         $queryBuilder = $this->createQueryBuilder('mq');
         $queryBuilder
-            ->select('COUNT(mq.idQueue)')
-            ->innerJoin(MailTemplate::class, 'mt', Join::WITH, 'mq.idMailTemplate = mt.id')
-            ->where('mt.idMailTemplate = :templateId')
-            ->orWhere('mt.idHeader = :templateId')
-            ->orWhere('mt.idFooter = :templateId')
+            ->select('COUNT(mq.id)')
+            ->innerJoin(MailTemplate::class, 'mt', Join::WITH, 'mq.mailTemplate = mt.id')
+            ->where('mt.id = :templateId')
             ->setParameter('templateId', $templateId)
         ;
 
@@ -96,14 +94,14 @@ class MailQueueRepository extends ServiceEntityRepository
         $queryBuilder
             ->select(
                 '
-                mq.idQueue,
+                mq.id,
                 mq.sentAt,
                 mq.recipient,
                 mt.senderName,
                 mt.senderEmail,
                 mt.subject'
             )
-            ->innerJoin(MailTemplate::class, 'mt', Join::WITH, 'mq.idMailTemplate = mt.id')
+            ->innerJoin(MailTemplate::class, 'mt', Join::WITH, 'mq.mailTemplate = mt.id')
             ->where('mq.status = :sentStatus')
             ->setParameter('sentStatus', MailQueue::STATUS_SENT)
             ->orderBy('mq.sentAt', 'DESC')
@@ -111,7 +109,7 @@ class MailQueueRepository extends ServiceEntityRepository
 
         if (false === (null === $clientId)) {
             $queryBuilder
-                ->andWhere('mq.idClient = :clientId')
+                ->andWhere('mq.client = :clientId')
                 ->setParameter('clientId', $clientId)
             ;
         }

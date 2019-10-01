@@ -1,6 +1,6 @@
 <div id="contenu">
-    <h1>Modifier <?php echo $this->mailTemplate->getType(); ?></h1>
-    <form method="post" action="<?php echo $this->url; ?>/mails/edit/<?php echo $this->mailTemplate->getType(); ?><?php echo isset($this->params[1]) ? '/' . $this->params[1] : ''; ?>">
+    <h1>Modifier <?php echo $this->mailTemplate->getName(); ?></h1>
+    <form method="post" action="<?php echo $this->url; ?>/mails/edit/<?php echo $this->mailTemplate->getName(); ?><?php echo isset($this->params[1]) ? '/' . $this->params[1] : ''; ?>">
             <div class="row">
                 <div class="form-group col-md-6">
                     <label for="sender-name">Nom expéditeur</label>
@@ -27,7 +27,7 @@
                     <select id="header-select" name="header" class="form-control">
                         <option value=""></option>
                         <?php foreach ($this->headers as $header) { ?>
-                            <option value="<?php echo $header->getId(); ?>"<?php echo $this->mailTemplate->getHeader() === $header ? ' selected' : ''; ?>><?php echo $header->getType(); ?></option>
+                            <option value="<?php echo $header->getId(); ?>"<?php echo $this->mailTemplate->getHeader() === $header ? ' selected' : ''; ?>><?php echo $header->getName(); ?></option>
                         <?php } ?>
                     </select>
                 </div>
@@ -36,7 +36,7 @@
                     <select id="footer-select" name="footer" class="form-control">
                         <option value=""></option>
                         <?php foreach ($this->footers as $footer) { ?>
-                            <option value="<?php echo $footer->getId(); ?>"<?php echo $this->mailTemplate->getFooter() === $footer ? ' selected' : ''; ?>><?php echo $footer->getType(); ?></option>
+                            <option value="<?php echo $footer->getId(); ?>"<?php echo $this->mailTemplate->getFooter() === $footer ? ' selected' : ''; ?>><?php echo $footer->getName(); ?></option>
                         <?php } ?>
                     </select>
                 </div>

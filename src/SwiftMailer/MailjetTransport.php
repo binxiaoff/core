@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Unilend\SwiftMailer;
 
 use Mailjet\{Client, Resources, Response};
@@ -128,7 +130,7 @@ class MailjetTransport implements Swift_Transport
 
         if (false === empty($body['Messages'])) {
             foreach ($body['Messages'] as $message) {
-                if (isset($message['CustomID'], $message['To'][0]['MessageID']) && (int) $message['CustomID'] === $mailQueue->getIdQueue()) {
+                if (isset($message['CustomID'], $message['To'][0]['MessageID']) && (int) $message['CustomID'] === $mailQueue->getId()) {
                     return $message['To'][0]['MessageID'];
                 }
             }

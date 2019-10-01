@@ -5,7 +5,7 @@ declare(strict_types=1);
 use Doctrine\ORM\EntityManager;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Translation\TranslatorInterface;
-use Unilend\Entity\{AbstractMailPart, MailFooter, MailHeader, MailQueue, MailTemplate, Translations};
+use Unilend\Entity\{MailFooter, MailHeader, MailQueue, MailTemplate, Translations};
 use Unilend\Service\Mailer\{MailQueueManager, MailTemplateManager};
 use Unilend\Service\Translation\TranslationLoader;
 
@@ -31,7 +31,7 @@ class mailsController extends Controller
             $entityManager          = $this->get('doctrine.orm.entity_manager');
             $mailTemplateRepository = $entityManager->getRepository(MailTemplate::class);
             $mailTemplate           = $mailTemplateRepository->findOneBy([
-                'type'   => $this->params[1],
+                'name'   => $this->params[1],
                 'locale' => $this->getParameter('locale'),
             ]);
 
@@ -75,7 +75,7 @@ class mailsController extends Controller
             $entityManager          = $this->get('doctrine.orm.entity_manager');
             $mailTemplateRepository = $entityManager->getRepository(MailTemplate::class);
             $mailTemplate           = $mailTemplateRepository->findOneBy([
-                'type'   => $type,
+                'name'   => $type,
                 'locale' => $this->getParameter('locale'),
             ]);
 
@@ -120,7 +120,7 @@ class mailsController extends Controller
             $entityManager          = $this->get('doctrine.orm.entity_manager');
             $mailTemplateRepository = $entityManager->getRepository(MailTemplate::class);
             $this->mailTemplate     = $mailTemplateRepository->findOneBy([
-                'type'   => $this->params[0],
+                'name'   => $this->params[0],
                 'locale' => $this->getParameter('locale'),
             ]);
 

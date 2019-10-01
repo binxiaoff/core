@@ -60,7 +60,7 @@
                         <?php foreach ($section['emails'] as $mailTemplate) { ?>
                             <?php $updateDate = $mailTemplate->getUpdated() ? $mailTemplate->getUpdated() : $mailTemplate->getAdded(); ?>
                             <tr>
-                                <td><?php echo $mailTemplate->getType(); ?></td>
+                                <td><?php echo $mailTemplate->getName(); ?></td>
                                 <td><?php echo $mailTemplate->getSubject(); ?></td>
                                 <td class="text-nowrap">
                                     <?php echo $mailTemplate->getSenderName(); ?><br>
@@ -77,11 +77,11 @@
                                     <td><?php echo $section['stats'][$mailTemplate->getId()]['month']; ?></td>
                                 <?php } ?>
                                 <td align="center">
-                                    <a href="<?php echo $this->url; ?>/mails/edit/<?php echo $mailTemplate->getType(); ?>" title="Modifier <?php echo $mailTemplate->getType(); ?>">
-                                        <img src="<?php echo $this->url; ?>/images/edit.png" alt="Modifier <?php echo $mailTemplate->getType(); ?>"/>
+                                    <a href="<?php echo $this->url; ?>/mails/edit/<?php echo $mailTemplate->getName(); ?>" title="Modifier <?php echo $mailTemplate->getName(); ?>">
+                                        <img src="<?php echo $this->url; ?>/images/edit.png" alt="Modifier <?php echo $mailTemplate->getName(); ?>"/>
                                     </a>
-                                    <a href="<?php echo $this->url; ?>/mails/delete/<?php echo $mailTemplate->getType(); ?>" title="Archiver <?php echo $mailTemplate->getType(); ?>" onclick="return confirm('Etes vous sur de vouloir archiver <?php echo $mailTemplate->getType(); ?> ?')">
-                                        <img src="<?php echo $this->url; ?>/images/delete.png" alt="Supprimer <?php echo $mailTemplate->getType(); ?>"/>
+                                    <a href="<?php echo $this->url; ?>/mails/delete/<?php echo $mailTemplate->getName(); ?>" title="Archiver <?php echo $mailTemplate->getName(); ?>" onclick="return confirm('Etes vous sur de vouloir archiver <?php echo $mailTemplate->getName(); ?> ?')">
+                                        <img src="<?php echo $this->url; ?>/images/delete.png" alt="Supprimer <?php echo $mailTemplate->getName(); ?>"/>
                                     </a>
                                 </td>
                             </tr>
@@ -110,11 +110,11 @@
                     <?php foreach ($this->headers as $header) { ?>
                         <?php $updateDate = $header->getUpdated() ?: $header->getAdded(); ?>
                         <tr>
-                            <td><?php echo $header->getType(); ?></td>
+                            <td><?php echo $header->getName(); ?></td>
                             <td data-order="<?php echo $updateDate->getTimestamp(); ?>"><?php echo $updateDate->format('d/m/Y H:i'); ?></td>
                             <td align="center">
-                                <a href="<?php echo $this->url; ?>/mails/header/<?php echo $header->getId(); ?>" title="Modifier <?php echo $header->getType(); ?>">
-                                    <img src="<?php echo $this->url; ?>/images/edit.png" alt="Modifier <?php echo $header->getType(); ?>"/>
+                                <a href="<?php echo $this->url; ?>/mails/header/<?php echo $header->getId(); ?>" title="Modifier <?php echo $header->getName(); ?>">
+                                    <img src="<?php echo $this->url; ?>/images/edit.png" alt="Modifier <?php echo $header->getName(); ?>"/>
                                 </a>
                             </td>
                         </tr>
@@ -140,11 +140,11 @@
                     <?php foreach ($this->footers as $mailTemplate) { ?>
                         <?php $updateDate = $mailTemplate->getUpdated() ? $mailTemplate->getUpdated() : $mailTemplate->getAdded(); ?>
                         <tr>
-                            <td><?php echo $mailTemplate->getType(); ?></td>
+                            <td><?php echo $mailTemplate->getName(); ?></td>
                             <td data-order="<?php echo $updateDate->getTimestamp(); ?>"><?php echo $updateDate->format('d/m/Y H:i'); ?></td>
                             <td align="center">
-                                <a href="<?php echo $this->url; ?>/mails/edit/<?php echo $mailTemplate->getType(); ?>" title="Modifier <?php echo $mailTemplate->getType(); ?>">
-                                    <img src="<?php echo $this->url; ?>/images/edit.png" alt="Modifier <?php echo $mailTemplate->getType(); ?>"/>
+                                <a href="<?php echo $this->url; ?>/mails/edit/<?php echo $mailTemplate->getName(); ?>" title="Modifier <?php echo $mailTemplate->getName(); ?>">
+                                    <img src="<?php echo $this->url; ?>/images/edit.png" alt="Modifier <?php echo $mailTemplate->getName(); ?>"/>
                                 </a>
                             </td>
                         </tr>
