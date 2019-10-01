@@ -7,8 +7,11 @@ namespace Unilend\Service\ServiceTerms;
 use League\Flysystem\FileNotFoundException;
 use Swift_Attachment;
 use Swift_Mailer;
+use Twig\Error\LoaderError;
+use Twig\Error\RuntimeError;
+use Twig\Error\SyntaxError;
 use Unilend\Entity\AcceptationsLegalDocs;
-use Unilend\SwiftMailer\{TemplateMessageProvider, UnilendMailer};
+use Unilend\SwiftMailer\TemplateMessageProvider;
 
 class ServiceTermsNotificationSender
 {
@@ -40,6 +43,9 @@ class ServiceTermsNotificationSender
      * @param AcceptationsLegalDocs $acceptationsLegalDoc
      *
      * @throws FileNotFoundException
+     * @throws LoaderError
+     * @throws RuntimeError
+     * @throws SyntaxError
      *
      * @return int
      */

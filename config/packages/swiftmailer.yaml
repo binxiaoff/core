@@ -1,16 +1,22 @@
 swiftmailer:
-    url: '%env(MAILER_URL)%'
+    default_mailer: normal
+    mailers:
+        normal:
+            transport: 'mailjet'
+            spool:
+                type: service
+                id: 'Unilend\SwiftMailer\DatabaseSpool'
+        fast:
+            transport: 'mailjet'
 
 services:
     Mailjet\Client:
-        $key: '%env(MAILJET_API_KEY)%'
-        $secret: '%env(MAILJET_API_SECRET)%'
-        $call: true
-        $settings:
-            version: 'v3.1'
+        arguments:
+            $key: '%env(MAILJET_API_KEY)%'
+            $secret: '%env(MAILJET_API_SECRET)%'
+            $call: true
+            $settings:
+                version: 'v3.1'
 
-    # Swift Mailer and its bridges
-    swiftmailer.spool.db: '@Unilend\SwiftMailer\DatabaseSpool'
-    swiftmailer.mailer.default.spool.db: '@Unilend\SwiftMailer\DatabaseSpool'
-    swiftmailer.mailer.transport.mailjet: '@Unilend\SwiftMailer\MailjetTransport'
     mailjet: '@Unilend\SwiftMailer\MailjetTransport'
+    swiftmailer.mailer.transport.mailjet: '@mailjet'

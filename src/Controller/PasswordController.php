@@ -5,21 +5,23 @@ declare(strict_types=1);
 namespace Unilend\Controller;
 
 use DateTime;
-use Doctrine\ORM\{ORMException, OptimisticLockException};
+use Doctrine\ORM\{NonUniqueResultException, ORMException, OptimisticLockException};
 use Exception;
 use Psr\Log\LoggerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
+use Swift_Mailer;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\{JsonResponse, Request, Response};
 use Symfony\Component\Routing\{Annotation\Route, Generator\UrlGeneratorInterface};
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 use Symfony\Component\Security\Csrf\CsrfToken;
 use Symfony\Contracts\Translation\TranslatorInterface;
+use Twig\Error\{LoaderError, RuntimeError, SyntaxError};
 use Unilend\Entity\TemporaryLinksLogin;
 use Unilend\Form\User\ResetPasswordType;
 use Unilend\Repository\{ClientsRepository, TemporaryLinksLoginRepository};
 use Unilend\Service\GoogleRecaptchaManager;
-use Unilend\SwiftMailer\{TemplateMessageProvider, UnilendMailer};
+use Unilend\SwiftMailer\TemplateMessageProvider;
 
 class PasswordController extends AbstractController
 {
@@ -34,12 +36,16 @@ class PasswordController extends AbstractController
      * @param TemporaryLinksLoginRepository $temporaryLinksLoginRepository
      * @param TemplateMessageProvider       $templateMessageProvider
      * @param GoogleRecaptchaManager        $googleRecaptchaManager
-     * @param UnilendMailer                 $mailer
+     * @param Swift_Mailer                  $mailer
      * @param TranslatorInterface           $translator
      * @param LoggerInterface               $logger
      *
      * @throws ORMException
      * @throws OptimisticLockException
+     * @throws NonUniqueResultException
+     * @throws LoaderError
+     * @throws RuntimeError
+     * @throws SyntaxError
      *
      * @return Response
      */
@@ -49,7 +55,7 @@ class PasswordController extends AbstractController
         TemporaryLinksLoginRepository $temporaryLinksLoginRepository,
         TemplateMessageProvider $templateMessageProvider,
         GoogleRecaptchaManager $googleRecaptchaManager,
-        UnilendMailer $mailer,
+        Swift_Mailer $mailer,
         TranslatorInterface $translator,
         LoggerInterface $logger
     ): Response {

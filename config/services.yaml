@@ -139,3 +139,6 @@ services:
 
     Unilend\Security\LoginAuthenticator:
         $firewallMap: '@security.firewall.map'
+
+    Unilend\SwiftMailer\MailjetTransport:
+        shared: false

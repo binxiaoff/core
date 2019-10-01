@@ -5,9 +5,8 @@ declare(strict_types=1);
 namespace Unilend\SwiftMailer;
 
 use Mailjet\{Client, Resources, Response};
-use Psr\Log\LoggerInterface;
-use Swift_Events_EventDispatcher;
 use Swift_Events_EventListener;
+use Swift_Events_SimpleEventDispatcher;
 use Swift_Mime_SimpleMessage;
 use Swift_Transport;
 use Unilend\Entity\MailQueue;
@@ -20,19 +19,14 @@ class MailjetTransport implements Swift_Transport
     private $mailJetClient;
     /** @var array */
     private $spool = [];
-    /** @var LoggerInterface */
-    private $logger;
 
     /**
-     * @param Swift_Events_EventDispatcher $dispatcher
-     * @param Client                       $mailJetClient
-     * @param LoggerInterface              $logger
+     * @param Client $mailJetClient
      */
-    public function __construct(Swift_Events_EventDispatcher $dispatcher, Client $mailJetClient, LoggerInterface $logger)
+    public function __construct(Client $mailJetClient)
     {
-        $this->eventDispatcher = $dispatcher;
+        $this->eventDispatcher = new Swift_Events_SimpleEventDispatcher();
         $this->mailJetClient   = $mailJetClient;
-        $this->logger          = $logger;
     }
 
     /**
@@ -73,8 +67,7 @@ class MailjetTransport implements Swift_Transport
      */
     public function send(Swift_Mime_SimpleMessage $message, &$failedRecipients = null)
     {
-        $replyTo = $message->getReplyTo();
-        $body    = [
+        $body = [
             'From'     => $this->convertEmailsToArray($message->getFrom())[0],
             'To'       => $this->convertEmailsToArray($message->getTo()),
             'Subject'  => $message->getSubject(),
@@ -85,7 +78,7 @@ class MailjetTransport implements Swift_Transport
             $body['CustomID'] = (string) $message->getQueueId();
         }
 
-        if (false === empty($replyTo)) {
+        if (false === empty($replyTo = $message->getReplyTo())) {
             $body['ReplyTo'] = $this->convertEmailsToArray($replyTo)[0];
         }
 
@@ -159,7 +152,7 @@ class MailjetTransport implements Swift_Transport
                 $name  = null;
             }
 
-            if (1 === preg_match('#^(?<name>.*)\s?\<(?<email>.*)\>$#', trim($email), $matches)) {
+            if (1 === preg_match('#^(?<name>.*)\s?<(?<email>.*)>$#', trim($email), $matches)) {
                 $email = $matches['email'];
                 $name  = $matches['name'];
             }
