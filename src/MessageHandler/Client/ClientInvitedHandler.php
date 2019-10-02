@@ -46,7 +46,7 @@ class ClientInvitedHandler implements MessageHandlerInterface
             $this->clientNotifier->notifyInvited(
                 $projectParticipationContact->getAddedBy(),
                 $projectParticipationContact->getClient(),
-                $projectParticipationContact->getProjectParticipation()
+                $projectParticipationContact->getProjectParticipation()->getProject()
             );
         }
     }

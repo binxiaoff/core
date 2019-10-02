@@ -19,7 +19,7 @@ use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Unilend\Entity\ClientsStatus;
-use Unilend\Entity\ProjectParticipation;
+use Unilend\Entity\Project;
 use Unilend\Entity\TemporaryLinksLogin;
 use Unilend\Form\User\InitProfileType;
 use Unilend\Message\Client\ClientCreated;
@@ -32,13 +32,13 @@ use Unilend\Service\ServiceTerms\ServiceTermsManager;
 class InitialisationController extends AbstractController
 {
     /**
-     * @Route("/compte/initialisation/{securityToken}/{projectParticipationId}", name="account_init", requirements={"securityToken": "[0-9a-f]+"}, methods={"GET", "POST"})
+     * @Route("/compte/initialisation/{securityToken}/{slug}", name="account_init", requirements={"securityToken": "[0-9a-f]+"}, methods={"GET", "POST"})
      *
      * @ParamConverter("temporaryLink", options={"mapping": {"securityToken": "token"}})
-     * @ParamConverter("projectParticipation", options={"mapping": {"projectParticipationId": "id"}})
+     * @ParamConverter("project", options={"mapping": {"slug": "slug"}})
      *
      * @param TemporaryLinksLogin           $temporaryLink
-     * @param ProjectParticipation          $projectParticipation
+     * @param Project                       $project
      * @param Request                       $request
      * @param TemporaryLinksLoginRepository $temporaryLinksLoginRepository
      * @param TranslatorInterface           $translator
@@ -57,7 +57,7 @@ class InitialisationController extends AbstractController
      */
     public function initialize(
         TemporaryLinksLogin $temporaryLink,
-        ProjectParticipation $projectParticipation,
+        Project $project,
         Request $request,
         TemporaryLinksLoginRepository $temporaryLinksLoginRepository,
         TranslatorInterface $translator,
@@ -72,7 +72,7 @@ class InitialisationController extends AbstractController
         $client = $temporaryLink->getIdClient();
 
         if (false === $client->isJustInvited()) {
-            return $this->redirectToRoute('lender_project_details', ['slug' => $projectParticipation->getProject()->getSlug()]);
+            return $this->redirectToRoute('lender_project_details', ['slug' => $project->getSlug()]);
         }
 
         if ($temporaryLink->isExpires()) {
@@ -83,7 +83,7 @@ class InitialisationController extends AbstractController
 
         $client = $temporaryLink->getIdClient();
 
-        if (false === in_array($client, $projectParticipationManager->getConcernedClients($projectParticipation), true)) {
+        if (false === $projectParticipationManager->isConcernedClient($client, $project)) {
             return $this->redirectToRoute('home');
         }
 
@@ -114,7 +114,7 @@ class InitialisationController extends AbstractController
 
             $this->addFlash('accountCreatedSuccess', $translator->trans('account-init.account-completed'));
 
-            $targetPath = $router->generate('lender_project_details', ['slug' => $projectParticipation->getProject()->getSlug()], RouterInterface::ABSOLUTE_URL);
+            $targetPath = $router->generate('lender_project_details', ['slug' => $project->getSlug()], RouterInterface::ABSOLUTE_URL);
             $loginAuthenticator->setTargetPath($request, $targetPath);
 
             return $this->redirectToRoute('login');

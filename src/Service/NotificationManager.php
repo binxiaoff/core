@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace Unilend\Service;
 
-use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\{EntityManagerInterface, ORMException, OptimisticLockException};
 use Exception;
-use Unilend\Entity\{Bids, Clients, Notification, Project, ProjectComment, ProjectParticipation};
+use Unilend\Entity\{Bids, Clients, Notification, Project, ProjectComment, ProjectStatus};
 use Unilend\Repository\NotificationRepository;
-use Unilend\Service\ProjectParticipation\ProjectParticipationManager;
 
 class NotificationManager
 {
@@ -30,25 +29,20 @@ class NotificationManager
     private $notificationRepository;
     /** @var MailerManager */
     private $mailerManager;
-    /** @var ProjectParticipationManager */
-    private $projectParticipationManager;
 
     /**
-     * @param EntityManagerInterface      $entityManager
-     * @param NotificationRepository      $notificationRepository
-     * @param MailerManager               $mailerManager
-     * @param ProjectParticipationManager $projectParticipationManager
+     * @param EntityManagerInterface $entityManager
+     * @param NotificationRepository $notificationRepository
+     * @param MailerManager          $mailerManager
      */
     public function __construct(
         EntityManagerInterface $entityManager,
         NotificationRepository $notificationRepository,
-        MailerManager $mailerManager,
-        ProjectParticipationManager $projectParticipationManager
+        MailerManager $mailerManager
     ) {
-        $this->entityManager               = $entityManager;
-        $this->notificationRepository      = $notificationRepository;
-        $this->mailerManager               = $mailerManager;
-        $this->projectParticipationManager = $projectParticipationManager;
+        $this->entityManager          = $entityManager;
+        $this->notificationRepository = $notificationRepository;
+        $this->mailerManager          = $mailerManager;
     }
 
     /**
@@ -60,15 +54,19 @@ class NotificationManager
     }
 
     /**
-     * @param ProjectParticipation $projectParticipation
+     * @param Project $project
+     * @param Clients $client
      *
-     * @throws Exception
+     * @throws ORMException
+     * @throws OptimisticLockException
      */
-    public function createProjectPublication(ProjectParticipation $projectParticipation): void
+    public function createProjectPublication(Project $project, Clients $client): void
     {
-        $concernedInvitees = $this->projectParticipationManager->getConcernedClients($projectParticipation);
+        if (ProjectStatus::STATUS_PUBLISHED === $project->getCurrentStatus()->getStatus()) {
+            $notification = $this->buildNotification(Notification::TYPE_PROJECT_PUBLICATION, $client, $project);
 
-        $this->createNotification(Notification::TYPE_PROJECT_PUBLICATION, $concernedInvitees, $projectParticipation->getProject());
+            $this->notificationRepository->save($notification);
+        }
     }
 
     /**
@@ -197,18 +195,29 @@ class NotificationManager
     private function createNotification(int $type, array $clients, ?Project $project = null, ?Bids $bid = null): void
     {
         foreach ($clients as $client) {
-            $notification = new Notification();
-            $notification
-                ->setType($type)
-                ->setStatus(Notification::STATUS_UNREAD)
-                ->setClient($client)
-                ->setProject($project)
-                ->setBid($bid)
-            ;
-
+            $notification = $this->buildNotification($type, $client, $project, $bid);
             $this->entityManager->persist($notification);
         }
 
         $this->entityManager->flush();
+    }
+
+    /**
+     * @param int          $type
+     * @param Clients      $client
+     * @param Project|null $project
+     * @param Bids|null    $bid
+     *
+     * @return Notification
+     */
+    private function buildNotification(int $type, Clients $client, ?Project $project = null, ?Bids $bid = null): Notification
+    {
+        return (new Notification())
+            ->setType($type)
+            ->setStatus(Notification::STATUS_UNREAD)
+            ->setClient($client)
+            ->setProject($project)
+            ->setBid($bid)
+        ;
     }
 }

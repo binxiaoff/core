@@ -49,7 +49,7 @@ class ProjectParticipationNotifier
             $concernedInvitees = $this->projectParticipationManager->getConcernedClients($projectParticipation);
             foreach ($concernedInvitees as $invitee) {
                 $inviter = $this->projectParticipationContactManager->getInviter($projectParticipation, $invitee);
-                $sent += $this->clientNotifier->notifyInvited($inviter, $invitee, $projectParticipation);
+                $sent += $this->clientNotifier->notifyInvited($inviter, $invitee, $projectParticipation->getProject());
             }
         }
 

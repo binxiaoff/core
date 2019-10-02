@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace Unilend\Service\ProjectParticipation;
 
-use Unilend\Entity\{Clients, ProjectParticipation};
-use Unilend\Repository\ClientsRepository;
+use Doctrine\ORM\NonUniqueResultException;
+use Unilend\Entity\{Clients, Project, ProjectParticipation};
+use Unilend\Repository\{ClientsRepository, ProjectParticipationContactRepository, ProjectParticipationRepository};
 use Unilend\Service\Staff\StaffManager;
 
 class ProjectParticipationManager
@@ -14,15 +15,27 @@ class ProjectParticipationManager
     private $clientRepository;
     /** @var StaffManager */
     private $staffManager;
+    /** @var ProjectParticipationRepository */
+    private $projectParticipationRepository;
+    /** @var ProjectParticipationContactRepository */
+    private $projectParticipationContactRepository;
 
     /**
-     * @param ClientsRepository $clientRepository
-     * @param StaffManager      $staffManager
+     * @param ClientsRepository                     $clientRepository
+     * @param StaffManager                          $staffManager
+     * @param ProjectParticipationRepository        $projectParticipationRepository
+     * @param ProjectParticipationContactRepository $projectParticipationContactRepository
      */
-    public function __construct(ClientsRepository $clientRepository, StaffManager $staffManager)
-    {
-        $this->clientRepository = $clientRepository;
-        $this->staffManager     = $staffManager;
+    public function __construct(
+        ClientsRepository $clientRepository,
+        StaffManager $staffManager,
+        ProjectParticipationRepository $projectParticipationRepository,
+        ProjectParticipationContactRepository $projectParticipationContactRepository
+    ) {
+        $this->clientRepository                      = $clientRepository;
+        $this->staffManager                          = $staffManager;
+        $this->projectParticipationRepository        = $projectParticipationRepository;
+        $this->projectParticipationContactRepository = $projectParticipationContactRepository;
     }
 
     /**
@@ -32,10 +45,23 @@ class ProjectParticipationManager
      */
     public function getConcernedClients(ProjectParticipation $projectParticipation): iterable
     {
-        $concernedClientsByDefault     = $this->getDefaultConcernedClients($projectParticipation);
-        $exceptionalClientsAddedByUser = $this->clientRepository->findByProjectParticipation($projectParticipation);
+        $concernedClientsByDefault   = $this->getDefaultConcernedClients($projectParticipation);
+        $specifiedClientsAddedByUser = $this->clientRepository->findByProjectParticipation($projectParticipation);
 
-        return array_unique(array_merge($concernedClientsByDefault, $exceptionalClientsAddedByUser));
+        return array_unique(array_merge($concernedClientsByDefault, $specifiedClientsAddedByUser));
+    }
+
+    /**
+     * @param Clients $client
+     * @param Project $project
+     *
+     * @throws NonUniqueResultException
+     *
+     * @return bool
+     */
+    public function isConcernedClient(Clients $client, Project $project): bool
+    {
+        return $this->isDefaultConcernedClients($client, $project) || $this->isSpecifiedClientAddedByUser($client, $project);
     }
 
     /**
@@ -52,5 +78,31 @@ class ProjectParticipationManager
         }
 
         return [];
+    }
+
+    /**
+     * @param Clients $client
+     * @param Project $project
+     *
+     * @throws NonUniqueResultException
+     *
+     * @return bool
+     */
+    private function isDefaultConcernedClients(Clients $client, Project $project): bool
+    {
+        return null !== $this->projectParticipationRepository->findByStaff($project, $client->getStaff());
+    }
+
+    /**
+     * @param Clients $client
+     * @param Project $project
+     *
+     * @throws NonUniqueResultException
+     *
+     * @return bool
+     */
+    private function isSpecifiedClientAddedByUser(Clients $client, Project $project): bool
+    {
+        return null !== $this->projectParticipationContactRepository->findByProjectAndClient($project, $client);
     }
 }

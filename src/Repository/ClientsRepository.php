@@ -96,7 +96,7 @@ class ClientsRepository extends ServiceEntityRepository
             ->innerJoin(Staff::class, 's', Join::WITH, 'c.idClient = s.client')
             ->where('JSON_CONTAINS(s.roles, :role) = 1')
             ->andwhere('s.company = :company')
-            ->setParameter('role', json_encode($roles, JSON_THROW_ON_ERROR, 512))
+            ->setParameter('role', json_encode($roles, JSON_THROW_ON_ERROR))
             ->setParameter('company', $company)
         ;
 

@@ -6,7 +6,8 @@ namespace Unilend\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
-use Unilend\Entity\{ProjectParticipation, ProjectParticipationContact};
+use Doctrine\ORM\{NoResultException, NonUniqueResultException};
+use Unilend\Entity\{Clients, Project, ProjectParticipationContact};
 
 /**
  * @method ProjectParticipationContact|null find($id, $lockMode = null, $lockVersion = null)
@@ -22,5 +23,35 @@ class ProjectParticipationContactRepository extends ServiceEntityRepository
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, ProjectParticipationContact::class);
+    }
+
+    /**
+     * @param Project $project
+     * @param Clients $client
+     *
+     * @throws NonUniqueResultException
+     *
+     * @return ProjectParticipationContact|null
+     */
+    public function findByProjectAndClient(Project $project, Clients $client): ?ProjectParticipationContact
+    {
+        $queryBuilder = $this->createQueryBuilder('ppc')
+            ->innerJoin('ppc.projectParticipation', 'pp')
+            ->where('ppc.client = :client')
+            ->andWhere('pp.project = :project')
+            ->setParameters([
+                'client'  => $client,
+                'project' => $project,
+            ])
+            ->setMaxResults(1)
+        ;
+
+        try {
+            $result = $queryBuilder->getQuery()->getSingleResult();
+        } catch (NoResultException $exception) {
+            $result = null;
+        }
+
+        return $result;
     }
 }

@@ -24,28 +24,28 @@ use Unilend\Service\{Staff\StaffManager, User\RealUserFinder};
 class InvitationController extends AbstractController
 {
     /**
-     * @Route("/projet/invitation/{securityToken}/{projectParticipationId}", name="project_invitation")
+     * @Route("/projet/invitation/{securityToken}/{slug}", name="project_invitation")
      *
      * @ParamConverter("temporaryLink", options={"mapping": {"securityToken": "token"}})
-     * @ParamConverter("projectParticipation", options={"mapping": {"projectParticipationId": "id"}})
+     * @ParamConverter("project", options={"mapping": {"slug": "slug"}})
      *
-     * @param TemporaryLinksLogin  $temporaryLink
-     * @param ProjectParticipation $projectParticipation
+     * @param TemporaryLinksLogin $temporaryLink
+     * @param Project             $project
      *
      * @return RedirectResponse
      */
-    public function invitation(TemporaryLinksLogin $temporaryLink, ProjectParticipation $projectParticipation): RedirectResponse
+    public function invitation(TemporaryLinksLogin $temporaryLink, Project $project): RedirectResponse
     {
         $client = $temporaryLink->getIdClient();
 
         switch ($client->getCurrentStatus()->getStatus()) {
             case ClientsStatus::STATUS_INVITED:
                 return $this->redirectToRoute('account_init', [
-                    'securityToken'          => $temporaryLink->getToken(),
-                    'projectParticipationId' => $projectParticipation->getId(),
+                    'securityToken' => $temporaryLink->getToken(),
+                    'slug'          => $project->getSlug(),
                 ]);
             case ClientsStatus::STATUS_CREATED:
-                return $this->redirectToRoute('lender_project_details', ['slug' => $projectParticipation->getProject()->getSlug()]);
+                return $this->redirectToRoute('lender_project_details', ['slug' => $project->getSlug()]);
             default:
                 throw new LogicException('This code should not be reached');
         }

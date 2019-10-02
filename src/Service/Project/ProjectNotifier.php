@@ -8,6 +8,7 @@ use Doctrine\ORM\{ORMException, OptimisticLockException};
 use Exception;
 use Swift_RfcComplianceException;
 use Unilend\Entity\Project;
+use Unilend\Entity\ProjectStatus;
 use Unilend\Service\{NotificationManager, ProjectParticipation\ProjectParticipationNotifier};
 
 class ProjectNotifier
@@ -38,11 +39,12 @@ class ProjectNotifier
      */
     public function notifyProjectPublished(Project $project): int
     {
-        $participants = $project->getProjectParticipations();
-        $sent         = 0;
-        foreach ($participants as $participant) {
-            $sent += $this->projectParticipationNotifier->notifyParticipantInvited($participant);
-            $this->notificationManager->createProjectPublication($participant);
+        $sent = 0;
+        if (ProjectStatus::STATUS_PUBLISHED === $project->getCurrentStatus()->getStatus()) {
+            $participants = $project->getProjectParticipations();
+            foreach ($participants as $participant) {
+                $sent += $this->projectParticipationNotifier->notifyParticipantInvited($participant);
+            }
         }
 
         return $sent;
