@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Unilend\Entity\Traits;
 
 use Doctrine\ORM\Mapping as ORM;
@@ -61,13 +63,13 @@ trait RoleableTrait
      */
     public function hasRole(string $role): bool
     {
-        return in_array($role, $this->getRoles());
+        return in_array($role, $this->getRoles(), true);
     }
 
     /**
      * Reset roles.
      */
-    public function resetRoles()
+    public function resetRoles(): void
     {
         $this->roles = [];
     }
@@ -91,7 +93,7 @@ trait RoleableTrait
     /**
      * @return array
      */
-    private function getAllRoles()
+    private function getAvailableRoles(): array
     {
         return self::getConstants('ROLE_');
     }
@@ -104,7 +106,7 @@ trait RoleableTrait
     private function filterRoles(array $roles): array
     {
         foreach ($roles as $index => $role) {
-            if (false === in_array($role, $this->getAllRoles())) {
+            if (false === in_array($role, $this->getAvailableRoles(), true)) {
                 unset($roles[$index]);
             }
         }
