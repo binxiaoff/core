@@ -19,14 +19,14 @@ use URLify;
 
 /**
  * @ApiResource(
- *     attributes={"access_control": "is_granted('view', object)"},
+ *     attributes={"security": "is_granted('view', object)"},
  *     collectionOperations={
- *         "get": {"access_control": "is_granted('list', object)"},
- *         "post": {"access_control": "is_granted('ROLE_USER')"}
+ *         "get": {"security": "is_granted('list', object)"},
+ *         "post": {"security": "is_granted('ROLE_USER')"}
  *     },
  *     itemOperations={
  *         "get",
- *         "put": {"access_control": "is_granted('edit', previous_object)"},
+ *         "put": {"security": "is_granted('edit', previous_object)"},
  *     }
  * )
  *
