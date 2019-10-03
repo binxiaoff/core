@@ -80,6 +80,14 @@
                                 </div>
                             {% endif %}
                             <h2 class="h3 text-align-left">{% trans %} connect-subscribe-page.subscribe-box-title {% endtrans %}</h2>
+                            {% if app.session.flashBag.has('passwordSuccess') %}
+                                {% set showPasswordEditionForm = false %}
+                                <div class="message-success">
+                                    {% for message in app.session.flashBag.get('passwordSuccess') %}
+                                        <span>{{ message }}</span>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
                             <div class="row">
                                 <div class="col-emprunter col-lg-6 col-md-6">
                                     <div class="panel panel-emprunter">

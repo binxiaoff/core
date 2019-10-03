@@ -16,7 +16,6 @@ class ResetPasswordType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder
-            ->add('securityQuestion', SecurityQuestionCheckType::class, ['constraints' => [new Valid()]])
             ->add('password', PasswordType::class, ['constraints' => [new Valid()]])
         ;
     }

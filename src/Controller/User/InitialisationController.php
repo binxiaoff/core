@@ -95,12 +95,9 @@ class InitialisationController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $securityQuestion  = $form->get('securityQuestion')->getData();
             $encryptedPassword = $userPasswordEncoder->encodePassword($client, $form->get('password')->get('plainPassword')->getData());
             $client
                 ->setPassword($encryptedPassword)
-                ->setSecurityQuestion($securityQuestion['securityQuestion'])
-                ->setSecurityAnswer($securityQuestion['securityAnswer'])
                 ->setCurrentStatus(ClientsStatus::STATUS_CREATED)
             ;
             $clientsRepository->save($client);

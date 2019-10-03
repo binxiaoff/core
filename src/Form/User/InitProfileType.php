@@ -34,10 +34,6 @@ class InitProfileType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
-            ->add('securityQuestion', SecurityQuestionType::class, [
-                'mapped'      => false,
-                'constraints' => [new Valid()],
-            ])
             ->add('password', PasswordType::class, [
                 'mapped'      => false,
                 'constraints' => [new Valid()],
