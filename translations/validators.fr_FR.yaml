@@ -1,2 +1,3 @@
 project.tranche.count: Il faut au minimum une tranche dans un projet.
 account_initialization.cgu.true: Vous devez accepter les CGU.
+reset.password.wrong: Le mot de passe doit contenir au moins 6 caractères et doit contenir au moins une minuscule et une majuscule.
