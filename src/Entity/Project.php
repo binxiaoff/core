@@ -19,7 +19,15 @@ use URLify;
 
 /**
  * @ApiResource(
- *     attributes={"access_control": "is_granted('ROLE_USER')"}
+ *     attributes={"access_control": "is_granted('view', object)"},
+ *     collectionOperations={
+ *         "get": {"access_control": "is_granted('list', object)"},
+ *         "post": {"access_control": "is_granted('ROLE_USER')"}
+ *     },
+ *     itemOperations={
+ *         "get",
+ *         "put": {"access_control": "is_granted('edit', previous_object)"},
+ *     }
  * )
  *
  * @ORM\Table(indexes={

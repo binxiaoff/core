@@ -24,6 +24,10 @@ security:
                 success_handler:          lexik_jwt_authentication.handler.authentication_success
                 failure_handler:          lexik_jwt_authentication.handler.authentication_failure
                 require_previous_session: false
+        refresh:
+            pattern:  ^/api/token/refresh
+            stateless: true
+            anonymous: true
         api:
             pattern:   ^/api
             stateless: true
@@ -42,7 +46,7 @@ security:
                 path: logout
                 target: /
             switch_user: true
-
+    #todo: to delete once we are 100% API
     access_denied_url: /login
 
     access_control:

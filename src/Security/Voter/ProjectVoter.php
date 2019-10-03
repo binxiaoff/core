@@ -30,7 +30,7 @@ class ProjectVoter extends Voter
     {
         $attributes = self::getConstants('ATTRIBUTE_');
 
-        if (false === in_array($attribute, $attributes)) {
+        if (false === in_array($attribute, $attributes, true)) {
             return false;
         }
 
@@ -43,6 +43,8 @@ class ProjectVoter extends Voter
 
     /**
      * {@inheritdoc}
+     *
+     * @throws Exception
      */
     protected function voteOnAttribute($attribute, $project, TokenInterface $token): bool
     {
