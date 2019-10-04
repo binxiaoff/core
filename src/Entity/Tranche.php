@@ -29,8 +29,15 @@ class Tranche
     public const LOAN_TYPE_STAND_BY             = 'stand_by';
     public const LOAN_TYPE_SIGNATURE_COMMITMENT = 'signature_commitment';
 
-    public const REPAYMENT_TYPE_AMORTIZABLE = 'amortizable';
-    public const REPAYMENT_TYPE_IN_FINE     = 'in_fine';
+    public const REPAYMENT_TYPE_ATYPICAL         = 'atypical';
+    public const REPAYMENT_TYPE_IN_FINE          = 'in_fine';
+    public const REPAYMENT_TYPE_CONSTANT_CAPITAL = 'constant_capital';
+    public const REPAYMENT_TYPE_FIXED            = 'repayment_fixed';
+
+    public const REPAYMENT_TYPE_AMORTIZABLE = [
+        self::REPAYMENT_TYPE_CONSTANT_CAPITAL,
+        self::REPAYMENT_TYPE_FIXED,
+    ];
 
     /**
      * @var int
