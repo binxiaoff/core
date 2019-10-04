@@ -7,6 +7,7 @@ namespace Unilend\Entity;
 use ApiPlatform\Core\Annotation\ApiResource;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
+use DomainException;
 use Unilend\Entity\Embeddable\Permission;
 use Unilend\Entity\Traits\{BlamableAddedTrait, RoleableTrait, TimestampableTrait};
 use Unilend\Service\User\RealUserFinder;
@@ -36,6 +37,12 @@ class ProjectParticipation
     public const ROLE_PROJECT_SECURITY_TRUSTEE = 'ROLE_PROJECT_SECURITY_TRUSTEE';
 
     private const DEFAULT_ROLE = self::ROLE_PROJECT_LENDER;
+
+    private const STATUS_NOT_CONSULTED = 0;
+    private const STATUS_CONSULTED     = 10;
+    private const STATUS_REFUSED       = 20;
+
+    private const DEFAULT_STATUS = self::STATUS_NOT_CONSULTED;
 
     /**
      * @var int
@@ -72,6 +79,13 @@ class ProjectParticipation
      * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectParticipationContact", mappedBy="projectParticipation", cascade={"persist"}, orphanRemoval=true)
      */
     private $projectParticipationContacts;
+
+    /**
+     * @var bool
+     *
+     * @ORM\Column(type="integer", nullable=false, options={"default": 0})
+     */
+    private $currentStatus = self::DEFAULT_STATUS;
 
     /**
      * @var Permission
@@ -157,6 +171,56 @@ class ProjectParticipation
         if (0 === count($this->roles)) {
             $this->getProject()->removeProjectParticipation($this);
         }
+
+        return $this;
+    }
+
+    /**
+     * @return bool
+     */
+    public function hasBid(): bool
+    {
+        return 0 > $this->project->getBids()->filter(function (Bids $bids) {
+            return $bids->getLender() === $this->company;
+        })->count();
+    }
+
+    /**
+     * @return bool
+     */
+    public function isRefused(): bool
+    {
+        return $this->currentStatus === static::STATUS_REFUSED;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isConsulted(): bool
+    {
+        return $this->currentStatus >= static::STATUS_CONSULTED;
+    }
+
+    /**
+     * @return ProjectParticipation
+     */
+    public function refuse(): ProjectParticipation
+    {
+        if ($this->hasBid()) {
+            throw new DomainException('It is impossible to refuse after making a bid');
+        }
+
+        $this->currentStatus = static::STATUS_REFUSED;
+
+        return $this;
+    }
+
+    /**
+     * @return ProjectParticipation
+     */
+    public function consult(): ProjectParticipation
+    {
+        $this->currentStatus = ($this->currentStatus === static::STATUS_NOT_CONSULTED) ? static::STATUS_CONSULTED : $this->currentStatus;
 
         return $this;
     }
