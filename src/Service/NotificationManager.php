@@ -124,7 +124,7 @@ class NotificationManager
      *
      * @return Clients[]
      */
-    private function getProjectRecipients(Project $project, ?array $types = null): array
+    private function getProjectRecipients(Project $project, array $types = []): array
     {
         $recipients = [];
 

@@ -6,7 +6,6 @@ namespace Unilend\Entity;
 
 use DateInterval;
 use DateTime;
-use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
 
@@ -116,11 +115,11 @@ class TemporaryLinksLogin
     }
 
     /**
-     * @param DateTimeImmutable $expires
+     * @param DateTime $expires
      *
      * @return TemporaryLinksLogin
      */
-    public function setExpires(DateTimeImmutable $expires): TemporaryLinksLogin
+    public function setExpires(DateTime $expires): TemporaryLinksLogin
     {
         $this->expires = $expires;
 
@@ -249,10 +248,10 @@ class TemporaryLinksLogin
      *
      * @throws Exception
      *
-     * @return DateTimeImmutable
+     * @return DateTime
      */
-    public function generateExpiration($life): DateTimeImmutable
+    public function generateExpiration($life): DateTime
     {
-        return (new DateTimeImmutable('NOW'))->add(new DateInterval('P' . $life));
+        return (new DateTime('NOW'))->add(new DateInterval('P' . $life));
     }
 }

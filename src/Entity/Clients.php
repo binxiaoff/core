@@ -590,7 +590,7 @@ class Clients implements UserInterface, EquatableInterface
     /**
      * @return bool
      */
-    public function isJustInvited(): bool
+    public function isInvited(): bool
     {
         return $this->isInStatus([ClientsStatus::STATUS_INVITED]);
     }

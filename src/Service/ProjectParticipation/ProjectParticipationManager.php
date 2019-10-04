@@ -66,6 +66,22 @@ class ProjectParticipationManager
 
     /**
      * @param ProjectParticipation $projectParticipation
+     * @param Clients              $invitee
+     *
+     * @return Clients
+     */
+    public function getInviter(ProjectParticipation $projectParticipation, Clients $invitee): Clients
+    {
+        $projectParticipationContact = $this->projectParticipationContactRepository->findOneBy(['client' => $invitee, 'projectParticipation' => $projectParticipation]);
+        if ($projectParticipationContact) {
+            return $projectParticipationContact->getAddedBy();
+        }
+
+        return $projectParticipation->getAddedBy();
+    }
+
+    /**
+     * @param ProjectParticipation $projectParticipation
      *
      * @return Clients[]
      */

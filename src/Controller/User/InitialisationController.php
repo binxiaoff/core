@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Unilend\Controller\User;
 
 use DateTime;
-use DateTimeImmutable;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
@@ -71,7 +70,7 @@ class InitialisationController extends AbstractController
     ): Response {
         $client = $temporaryLink->getIdClient();
 
-        if (false === $client->isJustInvited()) {
+        if (false === $client->isInvited()) {
             return $this->redirectToRoute('lender_project_details', ['slug' => $project->getSlug()]);
         }
 
@@ -107,7 +106,7 @@ class InitialisationController extends AbstractController
 
             $serviceTermsManager->acceptCurrentVersion($client);
 
-            $temporaryLink->setExpires(new DateTimeImmutable());
+            $temporaryLink->setExpires(new DateTime());
             $temporaryLinksLoginRepository->save($temporaryLink);
 
             $messageBus->dispatch(new ClientCreated($client));

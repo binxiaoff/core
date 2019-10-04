@@ -58,12 +58,6 @@ class ProjectParticipationRepository extends ServiceEntityRepository
             ->setMaxResults(1)
         ;
 
-        try {
-            $result = $queryBuilder->getQuery()->getSingleResult();
-        } catch (NoResultException $exception) {
-            $result = null;
-        }
-
-        return $result;
+        return $queryBuilder->getQuery()->getOneOrNullResult();
     }
 }

@@ -6,8 +6,9 @@ namespace Unilend\Service\Staff;
 
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
-use DomainException;
 use Unilend\Entity\{Clients, ClientsStatus, MarketSegment, Staff};
+use Unilend\Exception\Client\ClientNotFoundException;
+use Unilend\Exception\Staff\StaffNotFoundException;
 use Unilend\Repository\{ClientsRepository, CompaniesRepository, StaffRepository};
 use Unilend\Service\Company\CompanyManager;
 
@@ -39,8 +40,8 @@ class StaffManager
     /**
      * @param string $email
      *
-     * @throws ORMException
-     * @throws OptimisticLockException
+     * @throws ClientNotFoundException
+     * @throws StaffNotFoundException
      *
      * @return Staff
      */
@@ -48,9 +49,32 @@ class StaffManager
     {
         $company = $this->companyManager->getCompanyByEmail($email);
 
-        if (null === $company) {
-            throw new DomainException(sprintf('The email .%s is not one of our partners.', $email));
+        $client = $this->clientsRepository->findOneBy(['email' => $email]);
+
+        if (null === $client) {
+            throw new ClientNotFoundException(sprintf('The client with %s is not found.', $email));
         }
+
+        $staff = $this->staffRepository->findOneBy(['company' => $company, 'client' => $client]);
+
+        if (null === $staff) {
+            throw new StaffNotFoundException(sprintf('The staff with %s is not found in company %s.', $email, $company->getName()));
+        }
+
+        return $staff;
+    }
+
+    /**
+     * @param string $email
+     *
+     * @throws ORMException
+     * @throws OptimisticLockException
+     *
+     * @return Staff
+     */
+    public function addStaffFromEmail(string $email): Staff
+    {
+        $company = $this->companyManager->getCompanyByEmail($email);
 
         $client = $this->clientsRepository->findOneBy(['email' => $email]);
 
@@ -64,12 +88,8 @@ class StaffManager
             $this->clientsRepository->save($client);
         }
 
-        $staff = $this->staffRepository->findOneBy(['company' => $company, 'client' => $client]);
-
-        if (null === $staff) {
-            $staff = $company->addStaff($client, Staff::ROLE_STAFF_OPERATOR);
-            $this->companiesRepository->save($company);
-        }
+        $staff = $company->addStaff($client, Staff::ROLE_STAFF_OPERATOR);
+        $this->companiesRepository->save($company);
 
         return $staff;
     }

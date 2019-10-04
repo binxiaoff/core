@@ -15,6 +15,7 @@ use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Unilend\Entity\{ClientsStatus, Project, ProjectParticipation, TemporaryLinksLogin};
+use Unilend\Exception\{Client\ClientNotFoundException, Staff\StaffNotFoundException};
 use Unilend\Message\Client\ClientInvited;
 use Unilend\Repository\ProjectParticipationContactRepository;
 use Unilend\Repository\ProjectParticipationRepository;
@@ -84,12 +85,16 @@ class InvitationController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            $inviteeEmail = $form->getData()['email_guest'];
+
             try {
-                $staff = $staffManager->getStaffByEmail($form->getData()['email_guest']);
+                $staff = $staffManager->getStaffByEmail($inviteeEmail);
             } catch (DomainException $domainException) {
                 $this->addFlash('sendError', $translator->trans('invite-guest.send-error-message'));
 
                 return $this->redirectToRoute('invite_guest', ['hash' => $project->getHash()]);
+            } catch (ClientNotFoundException | StaffNotFoundException $notFoundException) {
+                $staff = $staffManager->addStaffFromEmail($inviteeEmail);
             }
 
             $projectParticipation = $projectParticipationRepository->findOneBy(['company' => $staff->getCompany()]);

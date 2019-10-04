@@ -6,7 +6,7 @@ namespace Unilend\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
-use Doctrine\ORM\{NoResultException, NonUniqueResultException};
+use Doctrine\ORM\NonUniqueResultException;
 use Unilend\Entity\{Clients, Project, ProjectParticipationContact};
 
 /**
@@ -46,12 +46,6 @@ class ProjectParticipationContactRepository extends ServiceEntityRepository
             ->setMaxResults(1)
         ;
 
-        try {
-            $result = $queryBuilder->getQuery()->getSingleResult();
-        } catch (NoResultException $exception) {
-            $result = null;
-        }
-
-        return $result;
+        return $queryBuilder->getQuery()->getOneOrNullResult();
     }
 }

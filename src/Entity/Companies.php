@@ -14,7 +14,6 @@ use Unilend\Entity\Traits\TimestampableTrait;
  *
  * @ORM\Entity(repositoryClass="Unilend\Repository\CompaniesRepository")
  * @ORM\HasLifecycleCallbacks
- * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(columns={"email_domain"})})
  */
 class Companies
 {
@@ -103,7 +102,7 @@ class Companies
     private $projectParticipations;
 
     /**
-     * @ORM\Column(type="string", length=255, nullable=true)
+     * @ORM\Column(type="string", length=255, nullable=true, unique=true)
      */
     private $emailDomain;
 

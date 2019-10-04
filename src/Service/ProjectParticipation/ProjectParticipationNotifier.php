@@ -7,7 +7,7 @@ namespace Unilend\Service\ProjectParticipation;
 use Doctrine\ORM\{ORMException, OptimisticLockException};
 use Swift_RfcComplianceException;
 use Unilend\Entity\{ProjectParticipation, ProjectStatus};
-use Unilend\Service\{Client\ClientNotifier, ProjectParticipationContact\ProjectParticipationContactManager};
+use Unilend\Service\Client\ClientNotifier;
 
 class ProjectParticipationNotifier
 {
@@ -15,22 +15,15 @@ class ProjectParticipationNotifier
     private $clientNotifier;
     /** @var ProjectParticipationManager */
     private $projectParticipationManager;
-    /** @var ProjectParticipationContactManager */
-    private $projectParticipationContactManager;
 
     /**
-     * @param ProjectParticipationManager        $projectParticipationManager
-     * @param ClientNotifier                     $clientNotifier
-     * @param ProjectParticipationContactManager $projectParticipationContactManager
+     * @param ProjectParticipationManager $projectParticipationManager
+     * @param ClientNotifier              $clientNotifier
      */
-    public function __construct(
-        ProjectParticipationManager $projectParticipationManager,
-        ClientNotifier $clientNotifier,
-        ProjectParticipationContactManager $projectParticipationContactManager
-    ) {
-        $this->projectParticipationManager        = $projectParticipationManager;
-        $this->clientNotifier                     = $clientNotifier;
-        $this->projectParticipationContactManager = $projectParticipationContactManager;
+    public function __construct(ProjectParticipationManager $projectParticipationManager, ClientNotifier $clientNotifier)
+    {
+        $this->projectParticipationManager = $projectParticipationManager;
+        $this->clientNotifier              = $clientNotifier;
     }
 
     /**
@@ -48,7 +41,7 @@ class ProjectParticipationNotifier
         if (ProjectStatus::STATUS_PUBLISHED === $projectParticipation->getProject()->getCurrentStatus()->getStatus()) {
             $concernedInvitees = $this->projectParticipationManager->getConcernedClients($projectParticipation);
             foreach ($concernedInvitees as $invitee) {
-                $inviter = $this->projectParticipationContactManager->getInviter($projectParticipation, $invitee);
+                $inviter = $this->projectParticipationManager->getInviter($projectParticipation, $invitee);
                 $sent += $this->clientNotifier->notifyInvited($inviter, $invitee, $projectParticipation->getProject());
             }
         }

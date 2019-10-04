@@ -707,22 +707,9 @@ class Project
     /**
      * @return ProjectParticipation[]|Collection
      */
-    public function getProjectParticipations(): iterable
+    public function getProjectParticipations(): Collection
     {
         return $this->projectParticipations;
-    }
-
-    /**
-     * @param Clients $client
-     *
-     * @return ProjectParticipation|null
-     */
-    public function getProjectParticipationByClient(Clients $client): ?ProjectParticipation
-    {
-        $criteria = new Criteria();
-        $criteria->where(Criteria::expr()->eq('client', $client));
-
-        return $this->projectParticipations->matching($criteria)->first() ?: null;
     }
 
     /**
@@ -1143,25 +1130,16 @@ class Project
     /**
      * @param string $role
      *
-     * @return ProjectParticipation[]|ArrayCollection
+     * @return ProjectParticipation[]|Collection
      */
-    private function getParticipationsByRole(string $role): iterable
+    private function getParticipationsByRole(string $role): Collection
     {
-        $isUniqueRole = $this->isUniqueRole($role);
-
-        $projectParticipations = new ArrayCollection();
-
         // Ugly foreach on the Participations (hopefully we don't have many Participations on a project), as the Criteria doesn't support the json syntax.
-        foreach ($this->getProjectParticipations() as $projectParticipation) {
-            if ($projectParticipation->hasRole($role)) {
-                $projectParticipations->add($projectParticipation);
-                if ($isUniqueRole) {
-                    break;
-                }
+        return $this->getProjectParticipations()->filter(
+            static function (ProjectParticipation $participation) use ($role) {
+                return $participation->hasRole($role);
             }
-        }
-
-        return $projectParticipations;
+        );
     }
 
     /**
@@ -1171,21 +1149,11 @@ class Project
      */
     private function getCompaniesByRole(string $role): iterable
     {
-        $isUniqueRole = $this->isUniqueRole($role);
-
-        $companies = new ArrayCollection();
-
-        // Ugly foreach on the Participations (hopefully we don't have many Participations on a project), as the Criteria doesn't support the json syntax.
-        foreach ($this->getProjectParticipations() as $projectParticipation) {
-            if ($projectParticipation->hasRole($role)) {
-                $companies->add($projectParticipation->getCompany());
-                if ($isUniqueRole) {
-                    break;
-                }
+        return $this->getParticipationsByRole($role)->map(
+            static function (ProjectParticipation $participation) {
+                return $participation->getCompany();
             }
-        }
-
-        return $companies;
+        );
     }
 
     /**
