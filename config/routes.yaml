@@ -5,3 +5,11 @@ sonata_cache_cache:
 _knp_mailjet:
     path:  /ws/mailjet/notify/{token}
     defaults: { _controller: knp_mailjet.event.controller:handleEventAction, token: null }
+
+api_login_check:
+    path: /api/authentication_token
+    methods: ['POST']
+
+gesdinet_jwt_refresh_token:
+    path:       /api/token/refresh
+    controller: gesdinet.jwtrefreshtoken::refresh

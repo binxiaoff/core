@@ -1,4 +1,21 @@
 {
+    "api-platform/api-pack": {
+        "version": "v1.2.0"
+    },
+    "api-platform/core": {
+        "version": "2.1",
+        "recipe": {
+            "repo": "github.com/symfony/recipes",
+            "branch": "master",
+            "version": "2.1",
+            "ref": "18727d8f229306860b46955f438e1897421da689"
+        },
+        "files": [
+            "config/packages/api_platform.yaml",
+            "config/routes/api_platform.yaml",
+            "src/Entity/.gitignore"
+        ]
+    },
     "aws/aws-sdk-php": {
         "version": "3.111.0"
     },
@@ -141,6 +158,9 @@
     "facile-it/doctrine-mysql-come-back": {
         "version": "v1.7"
     },
+    "fig/link-util": {
+        "version": "1.0.0"
+    },
     "friendsofphp/php-cs-fixer": {
         "version": "2.2",
         "recipe": {
@@ -173,6 +193,9 @@
     },
     "geoip2/geoip2": {
         "version": "v2.9.0"
+    },
+    "gesdinet/jwt-refresh-token-bundle": {
+        "version": "v0.7.1"
     },
     "giggsey/libphonenumber-for-php": {
         "version": "8.10.17"
@@ -248,6 +271,18 @@
     "league/flysystem-aws-s3-v3": {
         "version": "1.0.23"
     },
+    "lexik/jwt-authentication-bundle": {
+        "version": "2.5",
+        "recipe": {
+            "repo": "github.com/symfony/recipes",
+            "branch": "master",
+            "version": "2.5",
+            "ref": "5b2157bcd5778166a5696e42f552ad36529a07a6"
+        },
+        "files": [
+            "config/packages/lexik_jwt_authentication.yaml"
+        ]
+    },
     "mailjet/mailjet-apiv3-php": {
         "version": "v1.4.1"
     },
@@ -287,6 +322,9 @@
     "myclabs/deep-copy": {
         "version": "1.9.3"
     },
+    "namshi/jose": {
+        "version": "7.2.3"
+    },
     "nelmio/alice": {
         "version": "3.2",
         "recipe": {
@@ -298,6 +336,18 @@
         "files": [
             "config/packages/dev/nelmio_alice.yaml",
             "config/packages/test/nelmio_alice.yaml"
+        ]
+    },
+    "nelmio/cors-bundle": {
+        "version": "1.5",
+        "recipe": {
+            "repo": "github.com/symfony/recipes",
+            "branch": "master",
+            "version": "1.5",
+            "ref": "6e1f64cc0f55362be49764634e8f14ce34a033c6"
+        },
+        "files": [
+            "config/packages/nelmio_cors.yaml"
         ]
     },
     "nette/bootstrap": {
@@ -452,6 +502,9 @@
     },
     "psr/http-message": {
         "version": "1.0.1"
+    },
+    "psr/link": {
+        "version": "1.0.0"
     },
     "psr/log": {
         "version": "1.1.0"
@@ -728,20 +781,14 @@
             "tests/.gitignore"
         ]
     },
-    "symfony/polyfill-intl-icu": {
-        "version": "v1.11.0"
-    },
-    "symfony/polyfill-intl-idn": {
-        "version": "v1.11.0"
-    },
-    "symfony/polyfill-mbstring": {
-        "version": "v1.11.0"
-    },
     "symfony/process": {
         "version": "v4.3.0"
     },
     "symfony/property-access": {
         "version": "v4.3.0"
+    },
+    "symfony/property-info": {
+        "version": "v4.3.3"
     },
     "symfony/proxy-manager-bridge": {
         "version": "v4.3.0"
@@ -851,6 +898,9 @@
     "symfony/var-exporter": {
         "version": "v4.3.0"
     },
+    "symfony/web-link": {
+        "version": "v4.3.3"
+    },
     "symfony/web-profiler-bundle": {
         "version": "3.3",
         "recipe": {
@@ -909,6 +959,9 @@
     },
     "willdurand/jsonp-callback-validator": {
         "version": "v1.1.0"
+    },
+    "willdurand/negotiation": {
+        "version": "v2.3.1"
     },
     "xynnn/google-tag-manager-bundle": {
         "version": "2.4.2"

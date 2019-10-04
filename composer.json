@@ -22,6 +22,7 @@
     "ext-pdo": "*",
     "ext-soap": "*",
     "ext-zip": "*",
+    "api-platform/api-pack": "^1.2",
     "azuyalabs/yasumi": "^2.0",
     "beberlei/doctrineextensions": "^1.0",
     "cravler/maxmind-geoip-bundle": "^1.2",
@@ -29,11 +30,13 @@
     "eightpoints/guzzle-bundle": "^7.2",
     "facile-it/doctrine-mysql-come-back": "^1.6",
     "friendsofsymfony/jsrouting-bundle": "^2.3",
+    "gesdinet/jwt-refresh-token-bundle": "^0.7.1",
     "gushphp/to-inline-style-email-bundle": "^1.4",
     "jbroadway/urlify": "^1.0",
     "knplabs/knp-snappy-bundle": "^1.5",
     "lcobucci/jwt": "^3.2",
     "league/flysystem-aws-s3-v3": "^1.0",
+    "lexik/jwt-authentication-bundle": "^2.6",
     "mailjet/mailjet-apiv3-php": "^1.1",
     "misd/phone-number-bundle": "^1.3",
     "nexylan/slack-bundle": "^2.0",
@@ -107,10 +110,14 @@
     "paragonie/random_compat": "2.*",
     "symfony/polyfill-ctype": "*",
     "symfony/polyfill-iconv": "*",
+    "symfony/polyfill-mbstring": "*",
+    "symfony/polyfill-intl-icu": "*",
+    "symfony/polyfill-intl-idn": "*",
     "symfony/polyfill-php73": "*",
     "symfony/polyfill-php72": "*",
     "symfony/polyfill-php71": "*",
-    "symfony/polyfill-php70": "*"
+    "symfony/polyfill-php70": "*",
+    "symfony/polyfill-php56": "*"
   },
   "config": {
     "preferred-install": {

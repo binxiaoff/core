@@ -171,7 +171,7 @@ class Attachment
     /**
      * @return DateTimeImmutable
      */
-    public function getArchived(): DateTimeImmutable
+    public function getArchived(): ?DateTimeImmutable
     {
         return $this->archived;
     }
