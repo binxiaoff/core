@@ -1,8 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Unilend\Service\Translation;
 
-use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Translation\Loader\LoaderInterface;
 use Symfony\Component\Translation\MessageCatalogue;
 use Unilend\Entity\Translations;
@@ -18,12 +19,12 @@ class TranslationLoader implements LoaderInterface
     private $defaultLocale;
 
     /**
-     * @param EntityManagerInterface $entityManager
+     * @param TranslationsRepository $translationRepository
      * @param string                 $defaultLocale
      */
-    public function __construct(EntityManagerInterface $entityManager, string $defaultLocale)
+    public function __construct(TranslationsRepository $translationRepository, string $defaultLocale)
     {
-        $this->translationRepository = $entityManager->getRepository(Translations::class);
+        $this->translationRepository = $translationRepository;
         $this->defaultLocale         = $defaultLocale;
     }
 
