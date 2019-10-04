@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Unilend\Entity;
 
 use DateInterval;
-use DateTime;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use DomainException;
@@ -82,13 +81,13 @@ class TemporaryToken
     }
 
     /**
-     * @param Client $client
+     * @param Clients $client
      *
      * @throws Exception
      *
      * @return TemporaryToken
      */
-    public static function generateShortToken(Client $client): TemporaryToken
+    public static function generateShortToken(Clients $client): TemporaryToken
     {
         return new TemporaryToken($client, static::LIFETIME_SHORT);
     }
@@ -152,7 +151,7 @@ class TemporaryToken
      */
     public function expire(): TemporaryToken
     {
-        $this->expires = new DateTime();
+        $this->expires = new DateTimeImmutable();
 
         return $this;
     }
