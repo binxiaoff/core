@@ -56,7 +56,7 @@ class InitialisationController extends AbstractController
      */
     public function initialize(
         TemporaryLinksLogin $temporaryLink,
-        Project $project,
+        ?Project $project,
         Request $request,
         TemporaryLinksLoginRepository $temporaryLinksLoginRepository,
         TranslatorInterface $translator,
@@ -82,7 +82,11 @@ class InitialisationController extends AbstractController
 
         $client = $temporaryLink->getIdClient();
 
-        if (false === $projectParticipationManager->isConcernedClient($client, $project)) {
+        if ($project && false === $client->isInvited()) {
+            return $this->redirectToRoute('lender_project_details', ['slug' => $project->getSlug()]);
+        }
+
+        if ($project && false === $projectParticipationManager->isConcernedClient($client, $project)) {
             return $this->redirectToRoute('home');
         }
 
@@ -113,7 +117,12 @@ class InitialisationController extends AbstractController
 
             $this->addFlash('accountCreatedSuccess', $translator->trans('account-init.account-completed'));
 
-            $targetPath = $router->generate('lender_project_details', ['slug' => $project->getSlug()], RouterInterface::ABSOLUTE_URL);
+            $targetPath = $router->generate('home');
+
+            if ($project) {
+                $targetPath = $router->generate('lender_project_details', ['slug' => $project->getSlug()], RouterInterface::ABSOLUTE_URL);
+            }
+
             $loginAuthenticator->setTargetPath($request, $targetPath);
 
             return $this->redirectToRoute('login');
