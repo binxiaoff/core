@@ -7,10 +7,8 @@ namespace Unilend\Security\Voter;
 use Exception;
 use LogicException;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
-use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 use Unilend\Entity\{Clients, Project, ProjectStatus};
-use Unilend\Repository\ProjectConfidentialityAcceptanceRepository;
 use Unilend\Traits\ConstantsAwareTrait;
 
 class ProjectVoter extends Voter
@@ -24,21 +22,6 @@ class ProjectVoter extends Voter
     public const ATTRIBUTE_RATE        = 'rate';
     public const ATTRIBUTE_BID         = 'bid';
     public const ATTRIBUTE_COMMENT     = 'comment';
-
-    /** @var AuthorizationCheckerInterface */
-    private $authorizationChecker;
-    /** @var ProjectConfidentialityAcceptanceRepository */
-    private $acceptanceRepository;
-
-    /**
-     * @param AuthorizationCheckerInterface              $authorizationChecker
-     * @param ProjectConfidentialityAcceptanceRepository $acceptanceRepository
-     */
-    public function __construct(AuthorizationCheckerInterface $authorizationChecker, ProjectConfidentialityAcceptanceRepository $acceptanceRepository)
-    {
-        $this->authorizationChecker = $authorizationChecker;
-        $this->acceptanceRepository = $acceptanceRepository;
-    }
 
     /**
      * {@inheritdoc}
@@ -134,16 +117,7 @@ class ProjectVoter extends Voter
      */
     private function canEdit(Project $project, Clients $user): bool
     {
-        if ($this->canManageBids($project, $user)) {
-            return true;
-        }
-
-        return in_array($user->getCompany(), [
-            $project->getArranger() ? $project->getArranger()->getCompany() : null,
-            $project->getDeputyArranger() ? $project->getDeputyArranger()->getCompany() : null,
-            $project->getRun() ? $project->getRun()->getCompany() : null,
-            $project->getSubmitterCompany(),
-        ]);
+        return 0 < count($project->getSubmitterCompany()->getStaff($user));
     }
 
     /**
@@ -184,7 +158,7 @@ class ProjectVoter extends Voter
     {
         return
             $this->canView($project, $user)
-            && in_array($user->getCompany(), $project->getLenderCompanies()->toArray())
+            && in_array($user->getCompany(), $project->getLenderCompanies()->toArray(), true)
         ;
     }
 
