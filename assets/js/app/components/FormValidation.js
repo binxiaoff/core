@@ -1031,244 +1031,244 @@ FormValidation.prototype.rules = {
     if (typeof inputType === 'undefined') inputType = inputValidation.options.rules.inputType
 
     if (inputType) {
-      switch (inputType.toLowerCase()) {
-        // Supports numbers in FR locale notation as well: 1,0 === 1.0
-        case 'number':
-          testValue = Sanity(inputValidation.value).normalise.whitespace('')
+          switch (inputType.toLowerCase()) {
+              // Supports numbers in FR locale notation as well: 1,0 === 1.0
+              case 'number':
+                  testValue = Sanity(inputValidation.value).normalise.whitespace('')
 
-          // @debug
-          // console.log('test number', testValue)
+                  // @debug
+                  // console.log('test number', testValue)
 
-          if (/[^\d.,-]+/.test(testValue)) {
-            inputValidation.errors.push({
-              type: 'inputType',
-              description: __.__('Ce champ doit contenir un nombre', 'error-field-input-type-number')
-            })
+                  if (/[^\d.,-]+/.test(testValue)) {
+                      inputValidation.errors.push({
+                          type: 'inputType',
+                          description: __.__('Ce champ doit contenir un nombre', 'error-field-input-type-number')
+                      })
 
-            return false
-          }
-          break
+                      return false
+                  }
+                  break
 
-        case 'integer':
-          testValue = Utility.convertStringToFloat(inputValidation.value)
+              case 'integer':
+                  testValue = Utility.convertStringToFloat(inputValidation.value)
 
-          // @debug
-          // console.log('test integer', testValue)
+                  // @debug
+                  // console.log('test integer', testValue)
 
-          if (isNaN(testValue) || typeof testValue !== 'number' || testValue % 1 !== 0) {
-            inputValidation.errors.push({
-              type: 'inputType',
-              description: __.__('Ce champ ne doit contenir que des chiffres', 'error-field-input-type-integer')
-            })
+                  if (isNaN(testValue) || typeof testValue !== 'number' || testValue % 1 !== 0) {
+                      inputValidation.errors.push({
+                          type: 'inputType',
+                          description: __.__('Ce champ ne doit contenir que des chiffres', 'error-field-input-type-integer')
+                      })
 
-            return false
-          }
-          break
+                      return false
+                  }
+                  break
 
-        // Supports numbers in FR locale notation as well: 1,0 === 1.0
-        case 'currency':
-          if (!(/^[\d]+([,.]([\d]{1,2}))?$/.test(inputValidation.value))) {
-            inputValidation.errors.push({
-              type: 'inputType',
-              description: __.__('Ce champ doit contenir un nombre', 'error-field-input-type-currency')
-            })
+              // Supports numbers in FR locale notation as well: 1,0 === 1.0
+              case 'currency':
+                  if (!(/^[\d]+([,.]([\d]{1,2}))?$/.test(inputValidation.value))) {
+                      inputValidation.errors.push({
+                          type: 'inputType',
+                          description: __.__('Ce champ doit contenir un nombre', 'error-field-input-type-currency')
+                      })
 
-            return false
-          }
-          break
+                      return false
+                  }
+                  break
 
-        // @note this only assumes FR phone
-        case 'tel':
-        case 'phone':
-        case 'telephone':
-          // Use the `pattern` attribute as RegExp if exists
-          reValidation = inputValidation.$elem.attr('pattern')
-            ? new RegExp(inputValidation.$elem.attr('pattern'))
-            // RegExp defined in clients.yml (over complicated)
-            // : /((?![^0-9\s+-]).)*/
-            // Basic RegExp to target numbers, spaces, hyphens and pluses
-            : /^[\d\s+-]+$/
-            // More specific RegExp to target French phone numbers
-            // : /^(?:(?:\+|00)33|0)[0-9]{9}$/
+              // @note this only assumes FR phone
+              case 'tel':
+              case 'phone':
+              case 'telephone':
+                  // Use the `pattern` attribute as RegExp if exists
+                  reValidation = inputValidation.$elem.attr('pattern')
+                      ? new RegExp(inputValidation.$elem.attr('pattern'))
+                      // RegExp defined in clients.yml (over complicated)
+                      // : /((?![^0-9\s+-]).)*/
+                      // Basic RegExp to target numbers, spaces, hyphens and pluses
+                      : /^[\d\s+-]+$/
+                  // More specific RegExp to target French phone numbers
+                  // : /^(?:(?:\+|00)33|0)[0-9]{9}$/
 
-          // @debug
-          // console.log('phone validation', { reValidation: reValidation })
+                  // @debug
+                  // console.log('phone validation', { reValidation: reValidation })
 
-          if (!reValidation.test(inputValidation.value)) {
-            inputValidation.errors.push({
-              type: 'inputType',
-              description: __.__('Numéro de téléphone invalide', 'error-field-input-type-telephone')
-            })
+                  if (!reValidation.test(inputValidation.value)) {
+                      inputValidation.errors.push({
+                          type: 'inputType',
+                          description: __.__('Numéro de téléphone invalide', 'error-field-input-type-telephone')
+                      })
 
-            return false
-          }
-          break
+                      return false
+                  }
+                  break
 
-        // @note this only assumes FR mobile
-        case 'mobile':
-          // Use the `pattern` attribute as RegExp if exists
-          reValidation = inputValidation.$elem.attr('pattern')
-            ? new RegExp(inputValidation.$elem.attr('pattern'))
-            // RegExp defined in clients.yml (over complicated)
-            // : /((?![^0-9\s+-]).)*/
-            // Basic RegExp to target numbers, spaces, hyphens and pluses
-            : /^[\d\s+-]+$/
-            // More specific RegExp to target French mobile phone numbers
-            // : /^(?:(?:\+|00)33|0)[67][0-9]{8}$/
+              // @note this only assumes FR mobile
+              case 'mobile':
+                  // Use the `pattern` attribute as RegExp if exists
+                  reValidation = inputValidation.$elem.attr('pattern')
+                      ? new RegExp(inputValidation.$elem.attr('pattern'))
+                      // RegExp defined in clients.yml (over complicated)
+                      // : /((?![^0-9\s+-]).)*/
+                      // Basic RegExp to target numbers, spaces, hyphens and pluses
+                      : /^[\d\s+-]+$/
+                  // More specific RegExp to target French mobile phone numbers
+                  // : /^(?:(?:\+|00)33|0)[67][0-9]{8}$/
 
-          // @debug
-          // console.log('mobile validation', { reValidation: reValidation })
+                  // @debug
+                  // console.log('mobile validation', { reValidation: reValidation })
 
-          if (!reValidation.test(inputValidation.value)) {
-            inputValidation.errors.push({
-              type: 'inputType',
-              description: __.__('Numéro de téléphone portable invalide', 'error-field-input-type-mobile')
-            })
+                  if (!reValidation.test(inputValidation.value)) {
+                      inputValidation.errors.push({
+                          type: 'inputType',
+                          description: __.__('Numéro de téléphone portable invalide', 'error-field-input-type-mobile')
+                      })
 
-            return false
-          }
-          break
+                      return false
+                  }
+                  break
 
-        case 'email':
-          // New RegExp (http://emailregex.com/)
-          if (!/^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(inputValidation.value)) {
-            inputValidation.errors.push({
-              type: 'inputType',
-              description: __.__('Adresse email invalide', 'error-field-input-type-email')
-            })
+              case 'email':
+                  // New RegExp (http://emailregex.com/)
+                  if (!/^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(inputValidation.value)) {
+                      inputValidation.errors.push({
+                          type: 'inputType',
+                          description: __.__('Adresse email invalide', 'error-field-input-type-email')
+                      })
 
-            return false
-          }
-          break
+                      return false
+                  }
+                  break
 
-        case 'date':
-        case 'datetime':
-          // Use built-in date object for validation
-          testValue = new Date(inputValidation.value)
-          if (!testValue || testValue.toString() === 'Invalid Date' || isNaN(testValue.getTime())) {
-            inputValidation.errors.push({
-              type: 'inputType',
-              description: __.__('Date invalide', 'error-field-input-type-date')
-            })
+              case 'date':
+              case 'datetime':
+                  // Use built-in date object for validation
+                  testValue = new Date(inputValidation.value)
+                  if (!testValue || testValue.toString() === 'Invalid Date' || isNaN(testValue.getTime())) {
+                      inputValidation.errors.push({
+                          type: 'inputType',
+                          description: __.__('Date invalide', 'error-field-input-type-date')
+                      })
 
-            return false
-          }
-          break
+                      return false
+                  }
+                  break
 
-        case 'bic':
-          // See: http://stackoverflow.com/a/19057449
-          if (!/^[a-z]{6}[2-9a-z][0-9a-np-z]([a-z0-9]{3}|x{3})?$/i.test(inputValidation.value)) {
-            inputValidation.errors.push({
-              type: 'inputType',
-              description: __.__('Not a valid BIC number. Please ensure you have entered your number in correctly', 'error-field-input-type-bic')
-            })
+              case 'bic':
+                  // See: http://stackoverflow.com/a/19057449
+                  if (!/^[a-z]{6}[2-9a-z][0-9a-np-z]([a-z0-9]{3}|x{3})?$/i.test(inputValidation.value)) {
+                      inputValidation.errors.push({
+                          type: 'inputType',
+                          description: __.__('Not a valid BIC number. Please ensure you have entered your number in correctly', 'error-field-input-type-bic')
+                      })
 
-            return false
-          }
-          break
+                      return false
+                  }
+                  break
 
-        case 'iban':
-          // Uses npm library `iban` to validate
-          testValue = Sanity(inputValidation.value).normalise.whitespace('')
+              case 'iban':
+                  // Uses npm library `iban` to validate
+                  testValue = Sanity(inputValidation.value).normalise.whitespace('')
 
-          // @debug
-          // console.log('validate iban', testValue)
+                  // @debug
+                  // console.log('validate iban', testValue)
 
-          if (!Iban.isValid(inputValidation.value)) {
-            inputValidation.errors.push({
-              type: 'inputType',
-              description: __.__('Not a valid IBAN number. Please ensure you have entered your number in correctly', 'error-field-input-type-iban')
-            })
+                  if (!Iban.isValid(inputValidation.value)) {
+                      inputValidation.errors.push({
+                          type: 'inputType',
+                          description: __.__('Not a valid IBAN number. Please ensure you have entered your number in correctly', 'error-field-input-type-iban')
+                      })
 
-            return false
-          }
-          break
+                      return false
+                  }
+                  break
 
-        case 'siret':
-          testValue = Sanity(inputValidation.value).normalise.whitespace('')
+              case 'siret':
+                  testValue = Sanity(inputValidation.value).normalise.whitespace('')
 
-          // @debug
-          // console.log('test siret', testValue)
+                  // @debug
+                  // console.log('test siret', testValue)
 
-          // Siret just has to be 14 characters long
-          if (testValue.length !== 14) {
-            inputValidation.errors.push({
-              type: 'inputType',
-              description: __.__('Not a valid SIRET number. Please ensure you have entered your number in correctly', 'error-field-input-type-siret')
-            })
+                  // Siret just has to be 14 characters long
+                  if (testValue.length !== 14) {
+                      inputValidation.errors.push({
+                          type: 'inputType',
+                          description: __.__('Not a valid SIRET number. Please ensure you have entered your number in correctly', 'error-field-input-type-siret')
+                      })
 
-            return false
-          }
-          break
+                      return false
+                  }
+                  break
 
-        case 'siren':
-          testValue = Sanity(inputValidation.value).normalise.whitespace('')
+              case 'siren':
+                  testValue = Sanity(inputValidation.value).normalise.whitespace('')
 
-          // @debug
-          // console.log('test siren', testValue)
+                  // @debug
+                  // console.log('test siren', testValue)
 
-          // Siren just has to be 9 characters long (or 14 if it's a SIRET)
-          if (!/^\d{9}|\d{14}$/.test(testValue)) {
-            inputValidation.errors.push({
-              type: 'inputType',
-              description: __.__('Numéro de SIREN invalide', 'error-field-input-type-siren')
-            })
+                  // Siren just has to be 9 characters long (or 14 if it's a SIRET)
+                  if (!/^\d{9}|\d{14}$/.test(testValue)) {
+                      inputValidation.errors.push({
+                          type: 'inputType',
+                          description: __.__('Numéro de SIREN invalide', 'error-field-input-type-siren')
+                      })
 
-            return false
-          }
-          break
+                      return false
+                  }
+                  break
 
-        case 'name':
-        case 'firstname':
-        case 'lastname':
-          if (!/^[A-Za-z\u00C0-\u017F]+([ \-'][A-Za-z\u00C0-\u017F]+)*$/i.test(inputValidation.value)) {
-            inputValidation.errors.push({
-              type: 'inputType',
-              description: __.__('Nom invalide. Veuillez vous assurer que le champ ne contient que des caractères alphabétiques', 'error-field-input-type-name')
-            })
+              case 'name':
+              case 'firstname':
+              case 'lastname':
+                  if (!/^[A-Za-z\u00C0-\u017F]+([ \-'][A-Za-z\u00C0-\u017F]+)*$/i.test(inputValidation.value)) {
+                      inputValidation.errors.push({
+                          type: 'inputType',
+                          description: __.__('Nom invalide. Veuillez vous assurer que le champ ne contient que des caractères alphabétiques', 'error-field-input-type-name')
+                      })
 
-            return false
-          }
-          break
+                      return false
+                  }
+                  break
 
-        case 'typedfile':
-          // Invalid type specified
-          if (!inputValidation.$formField.find('select').val()) {
-            inputValidation.errors.push({
-              type: 'inputType',
-              description: __.__('Type de fichier invalide', 'error-field-input-type-file-select'),
-              target: inputValidation.$formField.find('select')
-            })
+              case 'typedfile':
+                  // Invalid type specified
+                  if (!inputValidation.$formField.find('select').val()) {
+                      inputValidation.errors.push({
+                          type: 'inputType',
+                          description: __.__('Type de fichier invalide', 'error-field-input-type-file-select'),
+                          target: inputValidation.$formField.find('select')
+                      })
 
-            return false
-          }
+                      return false
+                  }
 
-          // No file attached
-          if (!inputValidation.$formField.find('input[type=file]').val()) {
-            inputValidation.errors.push({
-              type: 'inputType',
-              description: __.__('Aucun fichier sélectionné', 'error-field-input-type-file-field'),
-              target: inputValidation.$formField.find('input[type=file]')
-            })
+                  // No file attached
+                  if (!inputValidation.$formField.find('input[type=file]').val()) {
+                      inputValidation.errors.push({
+                          type: 'inputType',
+                          description: __.__('Aucun fichier sélectionné', 'error-field-input-type-file-field'),
+                          target: inputValidation.$formField.find('input[type=file]')
+                      })
 
-            return false
-          }
-          break
+                      return false
+                  }
+                  break
 
-        case 'password':
+              case 'password':
           if (!/^(?=.*[a-z])(?=.*[A-Z]).{8,}$/.test(inputValidation.value)) {
-            inputValidation.errors.push({
-              type: 'inputType',
+                      inputValidation.errors.push({
+                          type: 'inputType',
               description: __.__('Le mot de passe doit contenir au moins 8 caractères et doit contenir au moins une minuscule et une majuscule', 'error-field-input-type-password')
-            })
+                      })
 
-            return false
+                      return false
+                  }
+                  break
           }
-          break
       }
-    }
 
-    return true
+      return true
   },
 
   /**
