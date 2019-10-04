@@ -4,37 +4,39 @@ declare(strict_types=1);
 
 namespace Unilend\MessageHandler\Project;
 
-use Swift_RfcComplianceException;
+use Exception;
 use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
 use Unilend\Message\Project\ProjectPublished;
 use Unilend\Repository\ProjectRepository;
-use Unilend\Service\NotificationManager;
+use Unilend\Service\Project\ProjectNotifier;
 
 class ProjectPublishedHandler implements MessageHandlerInterface
 {
     /** @var ProjectRepository */
     private $projectRepository;
-    /** @var NotificationManager */
-    private $notificationManager;
+    /** @var ProjectNotifier */
+    private $projectNotifier;
 
     /**
-     * @param ProjectRepository   $projectRepository
-     * @param NotificationManager $notificationManager
+     * @param ProjectRepository $projectRepository
+     * @param ProjectNotifier   $projectNotifier
      */
-    public function __construct(ProjectRepository $projectRepository, NotificationManager $notificationManager)
+    public function __construct(ProjectRepository $projectRepository, ProjectNotifier $projectNotifier)
     {
-        $this->projectRepository   = $projectRepository;
-        $this->notificationManager = $notificationManager;
+        $this->projectRepository = $projectRepository;
+        $this->projectNotifier   = $projectNotifier;
     }
 
     /**
      * @param ProjectPublished $projectRequested
      *
-     * @throws Swift_RfcComplianceException
+     * @throws Exception
      */
     public function __invoke(ProjectPublished $projectRequested)
     {
         $project = $this->projectRepository->find($projectRequested->getProjectId());
-        $this->notificationManager->createProjectPublication($project);
+        if ($project) {
+            $this->projectNotifier->notifyProjectPublished($project);
+        }
     }
 }

@@ -94,7 +94,7 @@ class CompaniesRepository extends ServiceEntityRepository
      *
      * @return Companies[]
      */
-    public function findRegionalBanks(array $orderBy = [])
+    public function findRegionalBanks(array $orderBy = []): iterable
     {
         $queryBuilder = $this->createQueryBuilder('c')->where('c.parent = :casa')->setParameter('casa', Companies::COMPANY_ID_CASA);
 

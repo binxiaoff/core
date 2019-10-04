@@ -23,21 +23,21 @@ class ProfileController extends AbstractController
      * @param Request                        $request
      * @param UserInterface|Clients|null     $user
      * @param ClientsRepository              $clientsRepository
-     * @param AcceptationLegalDocsRepository $acceptationLegalDocsRepository
      * @param TranslatorInterface            $translator
+     * @param AcceptationLegalDocsRepository $acceptationLegalDocsRepository
      *
+     * @throws NonUniqueResultException
      * @throws ORMException
      * @throws OptimisticLockException
-     * @throws NonUniqueResultException
      *
      * @return Response
      */
     public function profile(
         Request $request,
-        UserInterface $user,
+        ?UserInterface $user,
         ClientsRepository $clientsRepository,
-        AcceptationLegalDocsRepository $acceptationLegalDocsRepository,
-        TranslatorInterface $translator
+        TranslatorInterface $translator,
+        AcceptationLegalDocsRepository $acceptationLegalDocsRepository
     ): Response {
         $form = $this->createForm(IdentityType::class, $user);
 

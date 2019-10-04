@@ -85,7 +85,7 @@ class ProjectRepository extends ServiceEntityRepository
     {
         $queryBuilder = $this->createQueryBuilder('p');
         $queryBuilder
-            ->innerJoin('p.projectParticipants', 'pp')
+            ->innerJoin('p.projectParticipations', 'pp')
             ->innerJoin('p.currentStatus', 'cpsh')
             ->where('cpsh.status IN (:status)')
             ->andWhere('pp.company = :company OR p.submitterCompany = :company')

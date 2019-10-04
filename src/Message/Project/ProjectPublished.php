@@ -4,17 +4,19 @@ declare(strict_types=1);
 
 namespace Unilend\Message\Project;
 
+use Unilend\Entity\Project;
+
 class ProjectPublished
 {
     /** @var int */
     private $projectId;
 
     /**
-     * @param int $projectId
+     * @param Project $project
      */
-    public function __construct(int $projectId)
+    public function __construct(Project $project)
     {
-        $this->projectId = $projectId;
+        $this->projectId = $project->getId();
     }
 
     /**

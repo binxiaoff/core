@@ -217,6 +217,16 @@ class Clients implements UserInterface, EquatableInterface
     }
 
     /**
+     * For comparaison (ex. array_unique).
+     *
+     * @return string|null
+     */
+    public function __toString()
+    {
+        return (string) $this->getEmail();
+    }
+
+    /**
      * @param string $hash
      *
      * @return Clients
@@ -580,9 +590,17 @@ class Clients implements UserInterface, EquatableInterface
     /**
      * @return bool
      */
-    public function isValidated(): bool
+    public function isInvited(): bool
     {
-        return $this->isInStatus([ClientsStatus::STATUS_VALIDATED]);
+        return $this->isInStatus([ClientsStatus::STATUS_INVITED]);
+    }
+
+    /**
+     * @return bool
+     */
+    public function isCreated(): bool
+    {
+        return $this->isInStatus([ClientsStatus::STATUS_CREATED]);
     }
 
     /**
@@ -590,7 +608,7 @@ class Clients implements UserInterface, EquatableInterface
      */
     public function isEqualTo(UserInterface $user): bool
     {
-        if (false === $user instanceof Clients) {
+        if (false === $user instanceof self) {
             return false;
         }
 
@@ -636,8 +654,6 @@ class Clients implements UserInterface, EquatableInterface
     /**
      * @param int         $status
      * @param string|null $content
-     *
-     * @throws Exception
      *
      * @return Clients
      */

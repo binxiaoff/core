@@ -4,17 +4,19 @@ declare(strict_types=1);
 
 namespace Unilend\Message\ServiceTerms;
 
+use Unilend\Entity\AcceptationsLegalDocs;
+
 class ServiceTermsAccepted
 {
     /** @var int */
     private $acceptationId;
 
     /**
-     * @param int $acceptationId
+     * @param AcceptationsLegalDocs $acceptation
      */
-    public function __construct(int $acceptationId)
+    public function __construct(AcceptationsLegalDocs $acceptation)
     {
-        $this->acceptationId = $acceptationId;
+        $this->acceptationId = $acceptation->getIdAcceptation();
     }
 
     /**

@@ -34,6 +34,8 @@ class ClientUpdatedHandler implements MessageHandlerInterface
         $client    = $this->clientsRepository->find($clientUpdated->getClientId());
         $changeSet = $clientUpdated->getChangeSet();
 
-        $this->mailerManager->sendIdentityUpdated($client, array_keys($changeSet));
+        if ($client && $changeSet) {
+            $this->mailerManager->sendIdentityUpdated($client, array_keys($changeSet));
+        }
     }
 }

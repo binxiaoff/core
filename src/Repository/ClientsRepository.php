@@ -9,7 +9,7 @@ use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\Query\{Expr\Join};
 use Doctrine\ORM\{NonUniqueResultException, ORMException, OptimisticLockException};
 use PDO;
-use Unilend\Entity\{Clients, ClientsStatus, Companies};
+use Unilend\Entity\{Clients, ClientsStatus, Companies, ProjectParticipation, ProjectParticipationContact, Staff};
 
 /**
  * @method Clients|null find($id, $lockMode = null, $lockVersion = null)
@@ -82,5 +82,40 @@ class ClientsRepository extends ServiceEntityRepository
         ;
 
         return $queryBuilder->getQuery()->getOneOrNullResult();
+    }
+
+    /**
+     * @param Companies $company
+     * @param array     $roles
+     *
+     * @return Clients[]
+     */
+    public function findByStaffRoles(Companies $company, array $roles): iterable
+    {
+        $queryBuilder = $this->createQueryBuilder('c')
+            ->innerJoin(Staff::class, 's', Join::WITH, 'c.idClient = s.client')
+            ->where('JSON_CONTAINS(s.roles, :role) = 1')
+            ->andwhere('s.company = :company')
+            ->setParameter('role', json_encode($roles, JSON_THROW_ON_ERROR))
+            ->setParameter('company', $company)
+        ;
+
+        return $queryBuilder->getQuery()->getResult();
+    }
+
+    /**
+     * @param ProjectParticipation $projectParticipation
+     *
+     * @return iterable
+     */
+    public function findByProjectParticipation(ProjectParticipation $projectParticipation): iterable
+    {
+        $queryBuilder = $this->createQueryBuilder('c')
+            ->innerJoin(ProjectParticipationContact::class, 'ppc', Join::WITH, 'ppc.client = c.idClient')
+            ->where('ppc.projectParticipation = :projectParticipation')
+            ->setParameter('projectParticipation', $projectParticipation)
+        ;
+
+        return $queryBuilder->getQuery()->getResult();
     }
 }

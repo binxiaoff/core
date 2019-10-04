@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\Service;
 
-use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\{EntityManagerInterface};
 use NumberFormatter;
 use Swift_Mailer;
 use Swift_RfcComplianceException;
@@ -35,26 +35,43 @@ class MailerManager
      * @param Swift_Mailer            $mailer
      * @param EntityManagerInterface  $entityManager
      * @param RouterInterface         $router
+     * @param TranslatorInterface     $translator
      * @param NumberFormatter         $numberFormatter
      * @param NumberFormatter         $percentageFormatter
-     * @param TranslatorInterface     $translator
      */
     public function __construct(
         TemplateMessageProvider $messageProvider,
         Swift_Mailer $mailer,
         EntityManagerInterface $entityManager,
         RouterInterface $router,
+        TranslatorInterface $translator,
         NumberFormatter $numberFormatter,
-        NumberFormatter $percentageFormatter,
-        TranslatorInterface $translator
+        NumberFormatter $percentageFormatter
     ) {
         $this->messageProvider     = $messageProvider;
         $this->mailer              = $mailer;
         $this->entityManager       = $entityManager;
-        $this->router              = $router;
-        $this->translator          = $translator;
         $this->percentageFormatter = $percentageFormatter;
         $this->numberFormatter     = $numberFormatter;
+        $this->router              = $router;
+        $this->translator          = $translator;
+    }
+
+    /**
+     * @param Clients $client
+     *
+     * @return int
+     */
+    public function sendAccountCreated(Clients $client): int
+    {
+        $keywords = [
+            'firstName' => $client->getFirstName(),
+        ];
+
+        $message = $this->messageProvider->newMessage('account-created', $keywords);
+        $message->setTo($client->getEmail());
+
+        return $this->mailer->send($message);
     }
 
     /**
@@ -92,70 +109,8 @@ class MailerManager
     }
 
     /**
-     * @param Project   $project
-     * @param Clients[] $recipients
-     *
-     * @throws Swift_RfcComplianceException
-     *
-     * @return int
-     */
-    public function sendProjectRequest(Project $project, array $recipients): int
-    {
-        $sent     = 0;
-        $keywords = [
-            'firstName'  => '',
-            'projectUrl' => $this->router->generate('edit_project_details', ['hash' => $project->getHash()], RouterInterface::ABSOLUTE_URL),
-            'borrower'   => $project->getBorrowerCompany()->getName(),
-        ];
-
-        foreach ($recipients as $recipient) {
-            if (false === empty($recipient->getEmail())) {
-                $keywords['firstName'] = $recipient->getFirstName();
-                $message               = $this->messageProvider->newMessage('project-request', $keywords);
-                $message->setTo($recipient->getEmail());
-
-                $sent += $this->mailer->send($message);
-            }
-        }
-
-        return $sent;
-    }
-
-    /**
-     * @param Project   $project
-     * @param Clients[] $recipients
-     *
-     * @throws Swift_RfcComplianceException
-     *
-     * @return int
-     */
-    public function sendProjectPublication(Project $project, array $recipients): int
-    {
-        $sent     = 0;
-        $keywords = [
-            'firstName'   => '',
-            'projectUrl'  => $this->router->generate('lender_project_details', ['slug' => $project->getSlug()], RouterInterface::ABSOLUTE_URL),
-            'projectName' => $project->getBorrowerCompany()->getName() . ' / ' . $project->getTitle(),
-        ];
-
-        foreach ($recipients as $recipient) {
-            if (false === empty($recipient->getEmail())) {
-                $keywords['firstName'] = $recipient->getFirstName();
-                $message               = $this->messageProvider->newMessage('project-publication', $keywords);
-                $message->setTo($recipient->getEmail());
-
-                $sent += $this->mailer->send($message);
-            }
-        }
-
-        return $sent;
-    }
-
-    /**
      * @param ProjectComment $comment
      * @param Clients[]      $recipients
-     *
-     * @throws Swift_RfcComplianceException
      *
      * @return int
      */

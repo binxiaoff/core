@@ -153,7 +153,6 @@
                                     {% endif %}
                                 </em>
                             </div>
-
                         </div><!-- /.panel-content -->
                     </div><!-- /.panel -->
                 </article><!-- /.dashboard-tab-pane -->
@@ -461,6 +460,7 @@
                         </div>
                         {% if project.isEditable %}
                             <div class="row margin-20-t text-align-right">
+                                <a href="{{ path('invite_guest', { 'hash' : project.hash }) }}" class="btn-primary btn-shape-xs" data-spinnerbutton>{% trans %} invite-guest.invite-button {% endtrans %}</a>
                                 <button type="submit" class="btn-primary btn-shape-xs" data-spinnerbutton>Modifier la visibilité</button>
                             </div>
                         {% endif %}

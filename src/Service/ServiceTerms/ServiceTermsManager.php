@@ -104,7 +104,7 @@ class ServiceTermsManager
 
         $this->session->remove(self::SESSION_KEY_SERVICE_TERMS_ACCEPTED);
 
-        $this->messageBus->dispatch(new ServiceTermsAccepted($serviceTermsAcceptation->getIdAcceptation()));
+        $this->messageBus->dispatch(new ServiceTermsAccepted($serviceTermsAcceptation));
 
         return $serviceTermsAcceptation;
     }

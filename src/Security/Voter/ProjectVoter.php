@@ -91,7 +91,7 @@ class ProjectVoter extends Voter
             return false;
         }
 
-        return null !== $project->getProjectParticipantByCompany($user->getCompany());
+        return null !== $project->getProjectParticipationByCompany($user->getCompany());
     }
 
     /**

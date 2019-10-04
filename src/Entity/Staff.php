@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Unilend\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
@@ -14,10 +16,19 @@ class Staff
     use RoleableTrait;
     use TimestampableTrait;
 
-    /**
-     * @deprecated Just for backward compatibility. Later, we will define a new role list for staff.
-     */
+    /** @deprecated Just for backward compatibility. Later, we will define a new role list for staff.*/
     public const ROLE_COMPANY_OWNER = 'ROLE_COMPANY_OWNER';
+
+    public const ROLE_STAFF_OPERATOR = 'ROLE_STAFF_OPERATOR';
+    public const ROLE_STAFF_MANAGER  = 'ROLE_STAFF_MANAGER';
+
+    public const ROLE_STAFF_MARKET_PUBLIC_COLLECTIVITY     = 'ROLE_STAFF_MARKET_PUBLIC_COLLECTIVITY';
+    public const ROLE_STAFF_MARKET_ENERGY                  = 'ROLE_STAFF_MARKET_ENERGY';
+    public const ROLE_STAFF_MARKET_CORPORATE               = 'ROLE_STAFF_MARKET_CORPORATE';
+    public const ROLE_STAFF_MARKET_LBO                     = 'ROLE_STAFF_MARKET_LBO';
+    public const ROLE_STAFF_MARKET_REAL_ESTATE_DEVELOPMENT = 'ROLE_STAFF_MARKET_REAL_ESTATE_DEVELOPMENT';
+    public const ROLE_STAFF_MARKET_INFRASTRUCTURE          = 'ROLE_STAFF_MARKET_INFRASTRUCTURE';
+    public const ROLE_STAFF_MARKET_AGRICULTURE             = 'ROLE_STAFF_MARKET_AGRICULTURE';
 
     /**
      * @var int
@@ -94,5 +105,13 @@ class Staff
         $this->client = $client;
 
         return $this;
+    }
+
+    /**
+     * @return array
+     */
+    public static function getMarketSegmentRoles(): array
+    {
+        return self::getConstants('ROLE_STAFF_MARKET_');
     }
 }

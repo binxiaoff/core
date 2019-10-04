@@ -86,7 +86,7 @@ class ServiceTermsManagerTest extends TestCase
         static::assertSame($this->currentServiceTerms, $serviceTermsAcceptation->getLegalDoc());
         $this->acceptationLegalDocsRepository->save(Argument::exact($serviceTermsAcceptation))->shouldHaveBeenCalled();
         $this->session->remove(Argument::exact(ServiceTermsManager::SESSION_KEY_SERVICE_TERMS_ACCEPTED))->shouldHaveBeenCalled();
-        $this->messageBus->dispatch(Argument::exact(new ServiceTermsAccepted($acceptationId)))->shouldHaveBeenCalled();
+        $this->messageBus->dispatch(Argument::exact(new ServiceTermsAccepted($serviceTermsAcceptation)))->shouldHaveBeenCalled();
     }
 
     /**

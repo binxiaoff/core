@@ -6,7 +6,7 @@ namespace Unilend\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
-use Unilend\Entity\{Clients, Project, ProjectParticipant};
+use Unilend\Entity\{Clients, Project, ProjectParticipation};
 
 /**
  * @method Project|null find($id, $lockMode = null, $lockVersion = null)
@@ -52,12 +52,12 @@ class ClientProjectRepository extends ServiceEntityRepository
         return $this
             ->createQueryBuilder('p')
             ->distinct()
-            ->innerJoin('p.projectParticipants', 'pp')
+            ->innerJoin('p.projectParticipations', 'pp')
             ->where('pp.company = :userCompany')
             ->andWhere('JSON_CONTAINS(pp.roles, :roleArranger) = 1 OR JSON_CONTAINS(pp.roles, :roleRun) = 1')
             ->setParameter('userCompany', $user->getCompany())
-            ->setParameter('roleArranger', json_encode([ProjectParticipant::ROLE_PROJECT_ARRANGER]))
-            ->setParameter('roleRun', json_encode([ProjectParticipant::ROLE_PROJECT_RUN]))
+            ->setParameter('roleArranger', json_encode([ProjectParticipation::ROLE_PROJECT_ARRANGER]))
+            ->setParameter('roleRun', json_encode([ProjectParticipation::ROLE_PROJECT_RUN]))
             ->getQuery()
             ->getResult()
         ;

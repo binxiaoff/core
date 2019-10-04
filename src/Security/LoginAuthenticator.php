@@ -6,6 +6,7 @@ namespace Unilend\Security;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
+use Symfony\Bundle\SecurityBundle\Security\FirewallMap;
 use Symfony\Component\HttpFoundation\{RedirectResponse, Request};
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
@@ -19,7 +20,7 @@ use Symfony\Component\Security\Guard\Authenticator\AbstractFormLoginAuthenticato
 use Symfony\Component\Security\Http\Session\SessionAuthenticationStrategyInterface;
 use Symfony\Component\Security\Http\Util\TargetPathTrait;
 use Unilend\Entity\{Clients, LoginLog, Settings};
-use Unilend\Service\{GoogleRecaptchaManager, ServiceTerms\ServiceTermsManager, User\LoginHistoryLogger};
+use Unilend\Service\{GoogleRecaptchaManager, User\LoginHistoryLogger};
 
 class LoginAuthenticator extends AbstractFormLoginAuthenticator
 {
@@ -47,10 +48,8 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
     private $frontUrl;
     /** @var string */
     private $adminUrl;
-    /**
-     * @var ServiceTermsManager
-     */
-    private $serviceTermsManager;
+    /** @var FirewallMap */
+    private $firewallMap;
 
     /**
      * @param UserPasswordEncoderInterface           $securityPasswordEncoder
@@ -61,7 +60,7 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
      * @param GoogleRecaptchaManager                 $googleRecaptchaManager
      * @param LoggerInterface                        $logger
      * @param LoginHistoryLogger                     $loginHistoryLogger
-     * @param ServiceTermsManager                    $serviceTermsManager
+     * @param FirewallMap                            $firewallMap
      * @param string                                 $frontUrl
      * @param string                                 $adminUrl
      */
@@ -74,7 +73,7 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
         GoogleRecaptchaManager $googleRecaptchaManager,
         LoggerInterface $logger,
         LoginHistoryLogger $loginHistoryLogger,
-        ServiceTermsManager $serviceTermsManager,
+        FirewallMap $firewallMap,
         string $frontUrl,
         string $adminUrl
     ) {
@@ -88,7 +87,7 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
         $this->loginHistoryLogger      = $loginHistoryLogger;
         $this->frontUrl                = $frontUrl;
         $this->adminUrl                = $adminUrl;
-        $this->serviceTermsManager     = $serviceTermsManager;
+        $this->firewallMap             = $firewallMap;
     }
 
     /**
@@ -226,6 +225,19 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
     public function supports(Request $request): bool
     {
         return '/login-check' === $request->getPathInfo();
+    }
+
+    /**
+     * @param Request $request
+     * @param string  $uri
+     */
+    public function setTargetPath(Request $request, string $uri): void
+    {
+        $firewallConfig = $this->firewallMap->getFirewallConfig($request);
+        if ($firewallConfig) {
+            $firewall = $firewallConfig->getName();
+            $this->saveTargetPath($request->getSession(), $firewall, $uri);
+        }
     }
 
     /**

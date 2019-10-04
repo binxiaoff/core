@@ -54,7 +54,7 @@ class CreateController extends AbstractController
         AttachmentManager $attachmentManager,
         ProjectImageManager $imageManager,
         RealUserFinder $realUserFinder
-    ) {
+    ): Response {
         $project = (new Project($realUserFinder))->setOperationType((int) $operationType);
 
         $form = $this->createForm(ProjectType::class, $project, ['operation_type' => $operationType]);

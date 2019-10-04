@@ -54,22 +54,6 @@ class Companies
     /**
      * @var string
      *
-     * @ORM\Column(name="forme", type="string", length=191, nullable=true)
-     *
-     * @Assert\NotBlank
-     */
-    private $forme;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="legal_form_code", type="string", length=10, nullable=true)
-     */
-    private $legalFormCode;
-
-    /**
-     * @var string
-     *
      * @ORM\Column(name="siren", type="string", length=15, nullable=true)
      *
      * @Assert\NotBlank
@@ -83,13 +67,6 @@ class Companies
      * @ORM\Column(name="siret", type="string", length=14, nullable=true)
      */
     private $siret;
-
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="date_creation", type="date", nullable=true)
-     */
-    private $dateCreation;
 
     /**
      * @var int
@@ -118,19 +95,24 @@ class Companies
     private $staff;
 
     /**
-     * @var ProjectParticipant[]
+     * @var ProjectParticipation[]
      *
-     * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectParticipant", mappedBy="company", cascade={"persist"}, orphanRemoval=true)
+     * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectParticipation", mappedBy="company", cascade={"persist"}, orphanRemoval=true)
      */
-    private $projectParticipants;
+    private $projectParticipations;
+
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true, unique=true)
+     */
+    private $emailDomain;
 
     /**
      * Companies constructor.
      */
     public function __construct()
     {
-        $this->staff               = new ArrayCollection();
-        $this->projectParticipants = new ArrayCollection();
+        $this->staff                 = new ArrayCollection();
+        $this->projectParticipations = new ArrayCollection();
     }
 
     /**
@@ -147,24 +129,6 @@ class Companies
     public function getId(): ?int
     {
         return $this->getIdCompany();
-    }
-
-    /**
-     * @param Clients|null $client
-     *
-     * @return Companies
-     *
-     * @deprecated use $this->addStaff() instead
-     *
-     * Set idClientOwner
-     */
-    public function setIdClientOwner(Clients $client = null): Companies
-    {
-        if ($client) {
-            $this->addStaff($client, Staff::ROLE_COMPANY_OWNER);
-        }
-
-        return $this;
     }
 
     /**
@@ -208,30 +172,6 @@ class Companies
     public function getName(): string
     {
         return $this->name;
-    }
-
-    /**
-     * Set forme.
-     *
-     * @param string $forme
-     *
-     * @return Companies
-     */
-    public function setForme($forme): Companies
-    {
-        $this->forme = $forme;
-
-        return $this;
-    }
-
-    /**
-     * Get forme.
-     *
-     * @return string
-     */
-    public function getForme(): string
-    {
-        return $this->forme;
     }
 
     /**
@@ -317,22 +257,6 @@ class Companies
     }
 
     /**
-     * @return string|null
-     */
-    public function getLegalFormCode(): ?string
-    {
-        return $this->legalFormCode;
-    }
-
-    /**
-     * @param string $legalFormCode
-     */
-    public function setLegalFormCode($legalFormCode = null): void
-    {
-        $this->legalFormCode = $legalFormCode;
-    }
-
-    /**
      * @return CompanyStatus|null
      */
     public function getIdStatus(): ?CompanyStatus
@@ -405,16 +329,16 @@ class Companies
     /**
      * @param Project|null $project
      *
-     * @return ArrayCollection|ProjectParticipant[]
+     * @return ArrayCollection|ProjectParticipation[]
      */
-    public function getProjectParticipants(?Project $project = null): iterable
+    public function getProjectParticipations(?Project $project = null): iterable
     {
         $criteria = new Criteria();
         if ($project) {
             $criteria->where(Criteria::expr()->eq('project', $project));
         }
 
-        return $this->projectParticipants->matching($criteria);
+        return $this->projectParticipations->matching($criteria);
     }
 
     /**
@@ -424,11 +348,31 @@ class Companies
      */
     public function isArranger(Project $project): bool
     {
-        $projectParticipant = $this->getProjectParticipants($project)->first();
-        if ($projectParticipant instanceof ProjectParticipant) {
-            return $projectParticipant->isArranger();
+        $projectParticipation = $this->getProjectParticipations($project)->first();
+        if ($projectParticipation instanceof ProjectParticipation) {
+            return $projectParticipation->isArranger();
         }
 
         return false;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getEmailDomain(): ?string
+    {
+        return $this->emailDomain;
+    }
+
+    /**
+     * @param string|null $emailDomain
+     *
+     * @return Companies
+     */
+    public function setEmailDomain(?string $emailDomain): Companies
+    {
+        $this->emailDomain = $emailDomain;
+
+        return $this;
     }
 }

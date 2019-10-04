@@ -208,11 +208,11 @@ class Project
     private $projectAttachments;
 
     /**
-     * @var ProjectParticipant[]
+     * @var ProjectParticipation[]
      *
-     * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectParticipant", mappedBy="project", cascade={"persist"}, orphanRemoval=true)
+     * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectParticipation", mappedBy="project", cascade={"persist"}, orphanRemoval=true)
      */
-    private $projectParticipants;
+    private $projectParticipations;
 
     /**
      * @var ProjectFee[]|ArrayCollection
@@ -275,7 +275,7 @@ class Project
     public function __construct(RealUserFinder $realUserFinder)
     {
         $this->projectAttachments         = new ArrayCollection();
-        $this->projectParticipants        = new ArrayCollection();
+        $this->projectParticipations      = new ArrayCollection();
         $this->projectFees                = new ArrayCollection();
         $this->comments                   = new ArrayCollection();
         $this->statuses                   = new ArrayCollection();
@@ -316,7 +316,7 @@ class Project
     /**
      * @ORM\PrePersist
      */
-    public function setHashValue()
+    public function setHashValue(): void
     {
         if (null === $this->hash) {
             try {
@@ -332,7 +332,7 @@ class Project
      *
      * @return Project
      */
-    public function setSlug()
+    public function setSlug(): Project
     {
         try {
             $this->slug = URLify::filter($this->title) . '-' . mb_substr(Uuid::uuid4()->toString(), 0, 8);
@@ -346,7 +346,7 @@ class Project
     /**
      * @return string
      */
-    public function getSlug()
+    public function getSlug(): string
     {
         return $this->slug;
     }
@@ -356,7 +356,7 @@ class Project
      *
      * @return Project
      */
-    public function setBorrowerCompany(Companies $company)
+    public function setBorrowerCompany(Companies $company): Project
     {
         $this->borrowerCompany = $company;
 
@@ -416,7 +416,7 @@ class Project
      *
      * @return Project
      */
-    public function setTitle($title)
+    public function setTitle($title): Project
     {
         $this->title = $title;
 
@@ -436,7 +436,7 @@ class Project
      *
      * @return Project
      */
-    public function setDescription($description)
+    public function setDescription($description): Project
     {
         $this->description = $description;
 
@@ -705,220 +705,220 @@ class Project
     }
 
     /**
-     * @return ProjectParticipant[]|Collection
+     * @return ProjectParticipation[]|Collection
      */
-    public function getProjectParticipants(): iterable
+    public function getProjectParticipations(): Collection
     {
-        return $this->projectParticipants;
+        return $this->projectParticipations;
     }
 
     /**
      * @param Companies $companies
      *
-     * @return ProjectParticipant|null
+     * @return ProjectParticipation|null
      */
-    public function getProjectParticipantByCompany(Companies $companies): ?ProjectParticipant
+    public function getProjectParticipationByCompany(Companies $companies): ?ProjectParticipation
     {
         $criteria = new Criteria();
         $criteria->where(Criteria::expr()->eq('company', $companies));
 
-        // A company can only have one participant on a project.
-        return $this->projectParticipants->matching($criteria)->first() ?: null;
+        // A company can only have one Participation on a project.
+        return $this->projectParticipations->matching($criteria)->first() ?: null;
     }
 
     /**
-     * @param Companies $company
-     * @param string    $role
+     * @param Companies      $company
+     * @param string         $role
+     * @param RealUserFinder $realUserFinder
      *
-     * @return Project
+     * @return ProjectParticipation
      */
-    public function addProjectParticipant(Companies $company, string $role): Project
+    public function addProjectParticipation(Companies $company, string $role, RealUserFinder $realUserFinder): ProjectParticipation
     {
         if ($this->isUniqueRole($role)) {
-            /** @var ProjectParticipant $projectParticipantToDelete */
-            $projectParticipantToDelete = $this->getParticipantsByRole($role)->first();
+            /** @var ProjectParticipation $projectParticipationToDelete */
+            $projectParticipationToDelete = $this->getParticipationsByRole($role)->first();
 
-            if ($projectParticipantToDelete && $company !== $projectParticipantToDelete->getCompany()) {
-                $projectParticipantToDelete->removeRole($role);
+            if ($projectParticipationToDelete && $company !== $projectParticipationToDelete->getCompany()) {
+                $projectParticipationToDelete->removeRole($role);
             }
         }
 
-        $projectParticipant = $this->getProjectParticipantByCompany($company);
+        $projectParticipation = $this->getProjectParticipationByCompany($company);
 
-        if (null === $projectParticipant) {
-            $projectParticipant = (new ProjectParticipant())
+        if (null === $projectParticipation) {
+            $projectParticipation = (new ProjectParticipation())
                 ->setCompany($company)
                 ->setProject($this)
+                ->setAddedByValue($realUserFinder)
             ;
         }
 
-        $projectParticipant->addRoles([$role]);
+        $projectParticipation->addRoles([$role]);
 
-        if (false === $this->projectParticipants->contains($projectParticipant)) {
-            $this->projectParticipants->add($projectParticipant);
+        if (false === $this->projectParticipations->contains($projectParticipation)) {
+            $this->projectParticipations->add($projectParticipation);
         }
 
-        return $this;
+        return $projectParticipation;
     }
 
     /**
-     * @param ProjectParticipant $projectParticipant
+     * @param ProjectParticipation $projectParticipation
      *
      * @return Project
      */
-    public function removeProjectParticipant(ProjectParticipant $projectParticipant): Project
+    public function removeProjectParticipation(ProjectParticipation $projectParticipation): Project
     {
-        $this->projectParticipants->removeElement($projectParticipant);
-
-        return $this;
-    }
-
-    /**
-     * @param Companies $company
-     *
-     * @return Project
-     */
-    public function setArranger(Companies $company): Project
-    {
-        $this->addProjectParticipant($company, ProjectParticipant::ROLE_PROJECT_ARRANGER);
+        $this->projectParticipations->removeElement($projectParticipation);
 
         return $this;
     }
 
     /**
-     * @param Companies $company
+     * @param Companies      $company
+     * @param RealUserFinder $realUserFinder
      *
-     * @return Project
+     * @return ProjectParticipation
      */
-    public function setDeputyArranger(Companies $company): Project
+    public function setArranger(Companies $company, RealUserFinder $realUserFinder): ProjectParticipation
     {
-        $this->addProjectParticipant($company, ProjectParticipant::ROLE_PROJECT_DEPUTY_ARRANGER);
-
-        return $this;
+        return $this->addProjectParticipation($company, ProjectParticipation::ROLE_PROJECT_ARRANGER, $realUserFinder);
     }
 
     /**
-     * @param Companies $company
+     * @param Companies      $company
+     * @param RealUserFinder $realUserFinder
      *
-     * @return Project
+     * @return ProjectParticipation
      */
-    public function setRun(Companies $company): Project
+    public function setDeputyArranger(Companies $company, RealUserFinder $realUserFinder): ProjectParticipation
     {
-        $this->addProjectParticipant($company, ProjectParticipant::ROLE_PROJECT_RUN);
-
-        return $this;
+        return $this->addProjectParticipation($company, ProjectParticipation::ROLE_PROJECT_DEPUTY_ARRANGER, $realUserFinder);
     }
 
     /**
-     * @param Companies $company
+     * @param Companies      $company
+     * @param RealUserFinder $realUserFinder
      *
-     * @return Project
+     * @return ProjectParticipation
      */
-    public function setLoanOfficer(Companies $company): Project
+    public function setRun(Companies $company, RealUserFinder $realUserFinder): ProjectParticipation
     {
-        $this->addProjectParticipant($company, ProjectParticipant::ROLE_PROJECT_LOAN_OFFICER);
-
-        return $this;
+        return $this->addProjectParticipation($company, ProjectParticipation::ROLE_PROJECT_RUN, $realUserFinder);
     }
 
     /**
-     * @param Companies $company
+     * @param Companies      $company
+     * @param RealUserFinder $realUserFinder
      *
-     * @return Project
+     * @return ProjectParticipation
      */
-    public function setSecurityTrustee(Companies $company): Project
+    public function setLoanOfficer(Companies $company, RealUserFinder $realUserFinder): ProjectParticipation
     {
-        $this->addProjectParticipant($company, ProjectParticipant::ROLE_PROJECT_SECURITY_TRUSTEE);
-
-        return $this;
+        return $this->addProjectParticipation($company, ProjectParticipation::ROLE_PROJECT_LOAN_OFFICER, $realUserFinder);
     }
 
     /**
-     * @param Companies[] $companies
+     * @param Companies      $company
+     * @param RealUserFinder $realUserFinder
      *
-     * @return Project
+     * @return ProjectParticipation
      */
-    public function addLenders(array $companies): Project
+    public function setSecurityTrustee(Companies $company, RealUserFinder $realUserFinder): ProjectParticipation
     {
+        return $this->addProjectParticipation($company, ProjectParticipation::ROLE_PROJECT_SECURITY_TRUSTEE, $realUserFinder);
+    }
+
+    /**
+     * @param Companies[]    $companies
+     * @param RealUserFinder $realUserFinder
+     *
+     * @return ProjectParticipation[]
+     */
+    public function addLenders(array $companies, RealUserFinder $realUserFinder): iterable
+    {
+        $participant = [];
         foreach ($companies as $company) {
-            $this->addProjectParticipant($company, ProjectParticipant::ROLE_PROJECT_LENDER);
+            $participant[] = $this->addProjectParticipation($company, ProjectParticipation::ROLE_PROJECT_LENDER, $realUserFinder);
         }
 
-        return $this;
+        return $participant;
     }
 
     /**
-     * @param Companies[] $companies
+     * @param Companies[]    $companies
+     * @param RealUserFinder $realUserFinder
      *
-     * @return Project
+     * @return ProjectParticipation[]
      */
-    public function setLenders(array $companies): Project
+    public function setLenders(array $companies, RealUserFinder $realUserFinder): iterable
     {
         foreach ($this->getLenders() as $lender) {
-            if (false === in_array($lender->getCompany(), $companies)) {
-                $lender->removeRole(ProjectParticipant::ROLE_PROJECT_LENDER);
+            if (false === in_array($lender->getCompany(), $companies, true)) {
+                $lender->removeRole(ProjectParticipation::ROLE_PROJECT_LENDER);
             }
         }
 
-        return $this->addLenders($companies);
+        return $this->addLenders($companies, $realUserFinder);
     }
 
     /**
      * @throws Exception
      *
-     * @return ProjectParticipant|null
+     * @return ProjectParticipation|null
      */
-    public function getArranger(): ?ProjectParticipant
+    public function getArranger(): ?ProjectParticipation
     {
-        return $this->getUniqueRoleParticipant(ProjectParticipant::ROLE_PROJECT_ARRANGER);
+        return $this->getUniqueRoleParticipation(ProjectParticipation::ROLE_PROJECT_ARRANGER);
     }
 
     /**
      * @throws Exception
      *
-     * @return ProjectParticipant|null
+     * @return ProjectParticipation|null
      */
-    public function getDeputyArranger(): ?ProjectParticipant
+    public function getDeputyArranger(): ?ProjectParticipation
     {
-        return $this->getUniqueRoleParticipant(ProjectParticipant::ROLE_PROJECT_DEPUTY_ARRANGER);
+        return $this->getUniqueRoleParticipation(ProjectParticipation::ROLE_PROJECT_DEPUTY_ARRANGER);
     }
 
     /**
      * @throws Exception
      *
-     * @return ProjectParticipant|null
+     * @return ProjectParticipation|null
      */
-    public function getRun(): ?ProjectParticipant
+    public function getRun(): ?ProjectParticipation
     {
-        return $this->getUniqueRoleParticipant(ProjectParticipant::ROLE_PROJECT_RUN);
+        return $this->getUniqueRoleParticipation(ProjectParticipation::ROLE_PROJECT_RUN);
     }
 
     /**
      * @throws Exception
      *
-     * @return ProjectParticipant|null
+     * @return ProjectParticipation|null
      */
-    public function getLoanOfficer(): ?ProjectParticipant
+    public function getLoanOfficer(): ?ProjectParticipation
     {
-        return $this->getUniqueRoleParticipant(ProjectParticipant::ROLE_PROJECT_LOAN_OFFICER);
+        return $this->getUniqueRoleParticipation(ProjectParticipation::ROLE_PROJECT_LOAN_OFFICER);
     }
 
     /**
      * @throws Exception
      *
-     * @return ProjectParticipant|null
+     * @return ProjectParticipation|null
      */
-    public function getSecurityTrustee(): ?ProjectParticipant
+    public function getSecurityTrustee(): ?ProjectParticipation
     {
-        return $this->getUniqueRoleParticipant(ProjectParticipant::ROLE_PROJECT_SECURITY_TRUSTEE);
+        return $this->getUniqueRoleParticipation(ProjectParticipation::ROLE_PROJECT_SECURITY_TRUSTEE);
     }
 
     /**
-     * @return ProjectParticipant[]|ArrayCollection
+     * @return ProjectParticipation[]|ArrayCollection
      */
     public function getLenders(): iterable
     {
-        return $this->getParticipantsByRole(ProjectParticipant::ROLE_PROJECT_LENDER);
+        return $this->getParticipationsByRole(ProjectParticipation::ROLE_PROJECT_LENDER);
     }
 
     /**
@@ -926,7 +926,7 @@ class Project
      */
     public function getLenderCompanies(): iterable
     {
-        return $this->getCompaniesByRole(ProjectParticipant::ROLE_PROJECT_LENDER);
+        return $this->getCompaniesByRole(ProjectParticipation::ROLE_PROJECT_LENDER);
     }
 
     /**
@@ -1119,60 +1119,41 @@ class Project
     private function isUniqueRole(string $role): bool
     {
         return in_array($role, [
-            ProjectParticipant::ROLE_PROJECT_ARRANGER,
-            ProjectParticipant::ROLE_PROJECT_DEPUTY_ARRANGER,
-            ProjectParticipant::ROLE_PROJECT_RUN,
-            ProjectParticipant::ROLE_PROJECT_LOAN_OFFICER,
-            ProjectParticipant::ROLE_PROJECT_SECURITY_TRUSTEE,
-        ]);
+            ProjectParticipation::ROLE_PROJECT_ARRANGER,
+            ProjectParticipation::ROLE_PROJECT_DEPUTY_ARRANGER,
+            ProjectParticipation::ROLE_PROJECT_RUN,
+            ProjectParticipation::ROLE_PROJECT_LOAN_OFFICER,
+            ProjectParticipation::ROLE_PROJECT_SECURITY_TRUSTEE,
+        ], true);
     }
 
     /**
      * @param string $role
      *
-     * @return ProjectParticipant[]|ArrayCollection
+     * @return ProjectParticipation[]|Collection
      */
-    private function getParticipantsByRole(string $role): iterable
+    private function getParticipationsByRole(string $role): Collection
     {
-        $isUniqueRole = $this->isUniqueRole($role);
-
-        $projectParticipants = new ArrayCollection();
-
-        // Ugly foreach on the participants (hopefully we don't have many participants on a project), as the Criteria doesn't support the json syntax.
-        foreach ($this->getProjectParticipants() as $projectParticipant) {
-            if ($projectParticipant->hasRole($role)) {
-                $projectParticipants->add($projectParticipant);
-                if ($isUniqueRole) {
-                    break;
-                }
+        // Ugly foreach on the Participations (hopefully we don't have many Participations on a project), as the Criteria doesn't support the json syntax.
+        return $this->getProjectParticipations()->filter(
+            static function (ProjectParticipation $participation) use ($role) {
+                return $participation->hasRole($role);
             }
-        }
-
-        return $projectParticipants;
+        );
     }
 
     /**
      * @param string $role
      *
-     * @return ProjectParticipant[]|ArrayCollection
+     * @return ProjectParticipation[]|ArrayCollection
      */
     private function getCompaniesByRole(string $role): iterable
     {
-        $isUniqueRole = $this->isUniqueRole($role);
-
-        $companies = new ArrayCollection();
-
-        // Ugly foreach on the participants (hopefully we don't have many participants on a project), as the Criteria doesn't support the json syntax.
-        foreach ($this->getProjectParticipants() as $projectParticipant) {
-            if ($projectParticipant->hasRole($role)) {
-                $companies->add($projectParticipant->getCompany());
-                if ($isUniqueRole) {
-                    break;
-                }
+        return $this->getParticipationsByRole($role)->map(
+            static function (ProjectParticipation $participation) {
+                return $participation->getCompany();
             }
-        }
-
-        return $companies;
+        );
     }
 
     /**
@@ -1180,14 +1161,14 @@ class Project
      *
      * @throws Exception
      *
-     * @return ProjectParticipant|null
+     * @return ProjectParticipation|null
      */
-    private function getUniqueRoleParticipant(string $role): ?ProjectParticipant
+    private function getUniqueRoleParticipation(string $role): ?ProjectParticipation
     {
         if (false === $this->isUniqueRole($role)) {
-            throw new Exception(sprintf('Role "%s" is not unique. Cannot get project participant corresponding to the role.', $role));
+            throw new Exception(sprintf('Role "%s" is not unique. Cannot get project Participation corresponding to the role.', $role));
         }
 
-        return $this->getParticipantsByRole($role)->first() ?: null;
+        return $this->getParticipationsByRole($role)->first() ?: null;
     }
 }

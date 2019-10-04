@@ -1,11 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Unilend\Service;
 
-use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\{EntityManagerInterface, ORMException, OptimisticLockException};
 use Exception;
-use Swift_RfcComplianceException;
-use Unilend\Entity\{Bids, Clients, Notification, Project, ProjectComment};
+use Unilend\Entity\{Bids, Clients, Notification, Project, ProjectComment, ProjectStatus};
 use Unilend\Repository\NotificationRepository;
 
 class NotificationManager
@@ -34,8 +35,11 @@ class NotificationManager
      * @param NotificationRepository $notificationRepository
      * @param MailerManager          $mailerManager
      */
-    public function __construct(EntityManagerInterface $entityManager, NotificationRepository $notificationRepository, MailerManager $mailerManager)
-    {
+    public function __construct(
+        EntityManagerInterface $entityManager,
+        NotificationRepository $notificationRepository,
+        MailerManager $mailerManager
+    ) {
         $this->entityManager          = $entityManager;
         $this->notificationRepository = $notificationRepository;
         $this->mailerManager          = $mailerManager;
@@ -51,42 +55,23 @@ class NotificationManager
 
     /**
      * @param Project $project
+     * @param Clients $client
      *
-     * @throws Swift_RfcComplianceException
-     * @throws Exception
+     * @throws ORMException
+     * @throws OptimisticLockException
      */
-    public function createProjectRequest(Project $project): void
+    public function createProjectPublication(Project $project, Clients $client): void
     {
-        $recipients = $this->getProjectRecipients($project, [
-            self::RECIPIENT_TYPE_SUBMITTER,
-            self::RECIPIENT_TYPE_ARRANGER,
-            self::RECIPIENT_TYPE_RUN,
-        ]);
+        if (ProjectStatus::STATUS_PUBLISHED === $project->getCurrentStatus()->getStatus()) {
+            $notification = $this->buildNotification(Notification::TYPE_PROJECT_PUBLICATION, $client, $project);
 
-        $this->createNotification(Notification::TYPE_PROJECT_REQUEST, $recipients, $project);
-
-        $this->mailerManager->sendProjectRequest($project, $recipients);
-    }
-
-    /**
-     * @param Project $project
-     *
-     * @throws Swift_RfcComplianceException
-     * @throws Exception
-     */
-    public function createProjectPublication(Project $project): void
-    {
-        $recipients = $this->getProjectRecipients($project);
-
-        $this->createNotification(Notification::TYPE_PROJECT_PUBLICATION, $recipients, $project);
-
-        $this->mailerManager->sendProjectPublication($project, $recipients);
+            $this->notificationRepository->save($notification);
+        }
     }
 
     /**
      * @param Bids $bid
      *
-     * @throws Swift_RfcComplianceException
      * @throws Exception
      */
     public function createBidSubmitted(Bids $bid): void
@@ -139,13 +124,16 @@ class NotificationManager
      *
      * @return Clients[]
      */
-    private function getProjectRecipients(Project $project, ?array $types = null): array
+    private function getProjectRecipients(Project $project, array $types = []): array
     {
         $recipients = [];
 
         if (null === $types) {
-            foreach ($project->getProjectParticipants() as $projectParticipant) {
-                $recipients[$projectParticipant->getCompany()->getIdClientOwner()->getIdClient()] = $projectParticipant->getCompany()->getIdClientOwner();
+            foreach ($project->getProjectParticipations() as $projectParticipation) {
+                if ($projectParticipation->getClient()) {
+                    $recipients[$projectParticipation->getClient()->getIdClient()] = $projectParticipation->getClient();
+                }
+                $recipients[$projectParticipation->getCompany()->getIdClientOwner()->getIdClient()] = $projectParticipation->getCompany()->getIdClientOwner();
             }
 
             return $recipients;
@@ -207,18 +195,29 @@ class NotificationManager
     private function createNotification(int $type, array $clients, ?Project $project = null, ?Bids $bid = null): void
     {
         foreach ($clients as $client) {
-            $notification = new Notification();
-            $notification
-                ->setType($type)
-                ->setStatus(Notification::STATUS_UNREAD)
-                ->setClient($client)
-                ->setProject($project)
-                ->setBid($bid)
-            ;
-
+            $notification = $this->buildNotification($type, $client, $project, $bid);
             $this->entityManager->persist($notification);
         }
 
         $this->entityManager->flush();
+    }
+
+    /**
+     * @param int          $type
+     * @param Clients      $client
+     * @param Project|null $project
+     * @param Bids|null    $bid
+     *
+     * @return Notification
+     */
+    private function buildNotification(int $type, Clients $client, ?Project $project = null, ?Bids $bid = null): Notification
+    {
+        return (new Notification())
+            ->setType($type)
+            ->setStatus(Notification::STATUS_UNREAD)
+            ->setClient($client)
+            ->setProject($project)
+            ->setBid($bid)
+        ;
     }
 }

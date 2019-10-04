@@ -1,0 +1,27 @@
+{% extends 'layouts/_page_with_sidebar.html.twig' %}
+{% block dashboardContent %}
+    <h3>Formulaire</h3>
+    {% if app.session.flashBag.has('sendSuccess') %}
+        <div class="message-success">
+            {% for success in app.session.flashBag.get('sendSuccess') %}
+                <p>{{ success }}</p>
+            {% endfor %}
+        </div>
+    {% elseif app.session.flashBag.has('sendError') %}
+        <div class="message-error">
+            {% for error in app.session.flashBag.get('sendError') %}
+                <p>{{ error }}</p>
+            {% endfor %}
+        </div>
+    {% endif %}
+    <div class="panel">
+            {{ form_start(form) }}
+            <div class="row">
+                {{ form_widget(form.email_guest) }}
+            </div>
+            <div class="row margin-20-t text-align-right">
+                <button class="btn btn-primary" type="submit">{% trans %} invite-guest.form-submit-button {% endtrans %}</button>
+            </div>
+            {{ form_end(form) }}
+    </div>
+{% endblock %}
