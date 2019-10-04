@@ -31,7 +31,6 @@ final class Version20191001095144 extends AbstractMigration
         $this->addSql('ALTER TABLE project_participation_contact ADD CONSTRAINT FK_41530AB3E173B1B8 FOREIGN KEY (id_client) REFERENCES clients (id_client)');
         $this->addSql('ALTER TABLE project_participation_contact ADD CONSTRAINT FK_41530AB3699B6BAF FOREIGN KEY (added_by) REFERENCES clients (id_client)');
         $this->addSql('DROP TABLE project_participant');
-        $this->addSql('ALTER TABLE companies ADD email_domain VARCHAR(255) DEFAULT NULL, DROP forme, DROP legal_form_code, DROP date_creation');
         $this->addSql('CREATE UNIQUE INDEX UNIQ_8244AA3ADA33CDFB ON companies (email_domain)');
         $this->addSql('CREATE UNIQUE INDEX UNIQ_41530AB3E173B1B8AE73E249 ON project_participation_contact (id_client, id_project_participation)');
     }
@@ -48,6 +47,5 @@ final class Version20191001095144 extends AbstractMigration
         $this->addSql('DROP TABLE project_participation');
         $this->addSql('DROP TABLE project_participation_contact');
         $this->addSql('DROP INDEX UNIQ_8244AA3ADA33CDFB ON companies');
-        $this->addSql('ALTER TABLE companies ADD forme VARCHAR(191) DEFAULT NULL COLLATE utf8mb4_unicode_ci, ADD legal_form_code VARCHAR(10) DEFAULT NULL COLLATE utf8mb4_unicode_ci, ADD date_creation DATE DEFAULT NULL, DROP email_domain');
     }
 }

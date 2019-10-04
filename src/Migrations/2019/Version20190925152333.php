@@ -25,8 +25,8 @@ final class Version20190925152333 extends ContainerAwareMigration
      */
     public function up(Schema $schema): void
     {
-        $this->addSql('INSERT INTO market_segment(label) VALUES("agriculture")');
-        $this->addSql('INSERT INTO translations (locale, section, name, translation, added) VALUES ("fr_FR", "market-segment", "agriculture", "Agriculture", NOW())');
+        $this->addSql("INSERT INTO market_segment(label) VALUES('agriculture')");
+        $this->addSql("INSERT INTO translations (locale, section, name, translation, added) VALUES ('fr_FR', 'market-segment', 'agriculture', 'Agriculture', NOW())");
     }
 
     /**
@@ -34,7 +34,7 @@ final class Version20190925152333 extends ContainerAwareMigration
      */
     public function down(Schema $schema): void
     {
-        $this->addSql('DELETE FROM market_segment WHERE label = "agriculture"');
-        $this->addSql('DELETE FROM translations WHERE section = "market-segment" AND name = "agriculture"');
+        $this->addSql("DELETE FROM market_segment WHERE label = 'agriculture'");
+        $this->addSql("DELETE FROM translations WHERE section = 'market-segment' AND name = 'agriculture'");
     }
 }
