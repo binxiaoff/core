@@ -43,7 +43,6 @@ class ProjectParticipationContactRepository extends ServiceEntityRepository
                 'client'  => $client,
                 'project' => $project,
             ])
-            ->setMaxResults(1)
         ;
 
         return $queryBuilder->getQuery()->getOneOrNullResult();
