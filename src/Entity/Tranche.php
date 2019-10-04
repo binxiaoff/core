@@ -27,8 +27,10 @@ class Tranche
     public const LOAN_TYPE_TERM_LOAN        = 'term_loan';
     public const LOAN_TYPE_REVOLVING_CREDIT = 'revolving_credit';
 
-    public const REPAYMENT_TYPE_AMORTIZABLE = 'amortizable';
-    public const REPAYMENT_TYPE_IN_FINE     = 'in_fine';
+    public const REPAYMENT_TYPE_ATYPICAL         = 'atypical';
+    public const REPAYMENT_TYPE_CONSTANT_CAPITAL = 'constant_capital';
+    public const REPAYMENT_TYPE_FIXED            = 'repayment_fixed';
+    public const REPAYMENT_TYPE_IN_FINE          = 'in_fine';
 
     /**
      * @var int
