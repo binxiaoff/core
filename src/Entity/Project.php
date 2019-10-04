@@ -44,7 +44,7 @@ class Project
     use TimestampableTrait;
     use ConstantsAwareTrait;
     use StatusTraceableTrait {
-        setCurrentStatus as baseStatusSetter;
+        setCurrentStatus as private baseStatusSetter;
     }
 
     public const OPERATION_TYPE_ARRANGEMENT = 1;

@@ -7,6 +7,7 @@ namespace Unilend\Entity;
 use ApiPlatform\Core\Annotation\ApiResource;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
+use Unilend\Entity\Embeddable\Permission;
 use Unilend\Entity\Traits\{BlamableAddedTrait, RoleableTrait, TimestampableTrait};
 use Unilend\Service\User\RealUserFinder;
 
@@ -73,11 +74,19 @@ class ProjectParticipation
     private $projectParticipationContacts;
 
     /**
+     * @var Permission
+     *
+     * @ORM\Embedded(class="Unilend\Entity\Embeddable\Permission", columnPrefix=false)
+     */
+    private $permission;
+
+    /**
      * ProjectParticipation constructor.
      */
     public function __construct()
     {
         $this->projectParticipationContacts = new ArrayCollection();
+        $this->permission                   = new Permission();
     }
 
     /**
@@ -177,5 +186,13 @@ class ProjectParticipation
         $this->projectParticipationContacts->add($projectParticipationContact);
 
         return $projectParticipationContact;
+    }
+
+    /**
+     * @return Permission
+     */
+    public function getPermission(): Permission
+    {
+        return $this->permission;
     }
 }
