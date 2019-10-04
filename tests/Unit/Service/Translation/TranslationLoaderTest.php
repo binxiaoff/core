@@ -84,12 +84,4 @@ class TranslationLoaderTest extends TestCase
             ->setTranslation(Base::lexify('????'))
         ;
     }
-
-    /**
-     * @return string
-     */
-    private function getRandomString(): string
-    {
-        return Base::lexify(str_repeat('?', Base::randomDigitNotNull()));
-    }
 }
