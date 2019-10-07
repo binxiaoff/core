@@ -5,12 +5,13 @@ declare(strict_types=1);
 namespace Unilend\Service\Client;
 
 use Doctrine\ORM\{ORMException, OptimisticLockException};
+use Swift_Mailer;
 use Swift_RfcComplianceException;
 use Symfony\Component\Routing\RouterInterface;
 use Unilend\Entity\{Clients, ClientsStatus, Project, ProjectStatus, TemporaryLinksLogin};
 use Unilend\Repository\TemporaryLinksLoginRepository;
 use Unilend\Service\NotificationManager;
-use Unilend\SwiftMailer\{TemplateMessageProvider, UnilendMailer};
+use Unilend\SwiftMailer\TemplateMessageProvider;
 
 class ClientNotifier
 {
@@ -20,7 +21,7 @@ class ClientNotifier
     private $router;
     /** @var TemplateMessageProvider */
     private $messageProvider;
-    /** @var UnilendMailer */
+    /** @var Swift_Mailer */
     private $mailer;
     /** @var NotificationManager */
     private $notificationManager;
@@ -29,14 +30,14 @@ class ClientNotifier
      * @param TemporaryLinksLoginRepository $temporaryLinksLoginRepository
      * @param RouterInterface               $router
      * @param TemplateMessageProvider       $messageProvider
-     * @param UnilendMailer                 $mailer
+     * @param Swift_Mailer                  $mailer
      * @param NotificationManager           $notificationManager
      */
     public function __construct(
         TemporaryLinksLoginRepository $temporaryLinksLoginRepository,
         RouterInterface $router,
         TemplateMessageProvider $messageProvider,
-        UnilendMailer $mailer,
+        Swift_Mailer $mailer,
         NotificationManager $notificationManager
     ) {
         $this->temporaryLinksLoginRepository = $temporaryLinksLoginRepository;
