@@ -32,7 +32,7 @@ class BidType extends AbstractType
                 'by_reference'  => false,
             ])
             ->add('comment')
-            ->add('projectedCommitteeDate', DateType::class, [
+            ->add('expectedCommitteeDate', DateType::class, [
                 'required' => false,
                 'widget'   => 'single_text',
                 'input'    => 'datetime_immutable',

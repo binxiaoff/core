@@ -31,7 +31,7 @@ final class Version20191003153751 extends AbstractMigration
         // this up() migration is auto-generated, please modify it to your needs
         $this->abortIf('mysql' !== $this->connection->getDatabasePlatform()->getName(), 'Migration can only be executed safely on \'mysql\'.');
 
-        $this->addSql('ALTER TABLE bids ADD comment LONGTEXT DEFAULT NULL, ADD projected_committee_date DATE DEFAULT NULL COMMENT \'(DC2Type:date_immutable)\'');
+        $this->addSql('ALTER TABLE bids ADD comment LONGTEXT DEFAULT NULL, ADD expected_committee_date DATE DEFAULT NULL COMMENT \'(DC2Type:date_immutable)\'');
     }
 
     /**
@@ -44,6 +44,6 @@ final class Version20191003153751 extends AbstractMigration
         // this down() migration is auto-generated, please modify it to your needs
         $this->abortIf('mysql' !== $this->connection->getDatabasePlatform()->getName(), 'Migration can only be executed safely on \'mysql\'.');
 
-        $this->addSql('ALTER TABLE bids DROP comment, DROP projected_committee_date');
+        $this->addSql('ALTER TABLE bids DROP comment, DROP expected_committee_date');
     }
 }

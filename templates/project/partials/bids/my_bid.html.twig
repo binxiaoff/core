@@ -26,7 +26,7 @@
                 <td>{{ ('interest-rate-index.index_' ~ bid.rate.indexType|lower)|trans }}</td>
                 <td>{{ bid.rate.margin|localizednumberwithprecision(2) }}&nbsp;%</td>
                 <td>{% if bid.rate.floor is same as(null) %}non défini{% else %}{{ bid.rate.floor|localizednumberwithprecision(2)|default('non défini') }}&nbsp;%{% endif %}</td>
-                <td>{{ bid.projectedCommitteeDate|localizeddate('short', 'none') }}</td>
+                <td>{{ bid.expectedCommitteeDate|localizeddate('short', 'none') }}</td>
                 <td>{{ bid.comment }}</td>
                 {% if bid.status == constant('Unilend\\Entity\\Bids::STATUS_PENDING') %}
                     <td>
@@ -81,7 +81,7 @@
                 </div>
                 <div class="row">
                     <div class="col-12">
-                        {{ form_row(form.projectedCommitteeDate) }}
+                        {{ form_row(form.expectedCommitteeDate) }}
                     </div>
                 </div>
                 <div class="row">

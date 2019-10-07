@@ -67,7 +67,7 @@ class Bids
      *
      * @ORM\Column(type="date_immutable", nullable=true)
      */
-    private $projectedCommitteeDate;
+    private $expectedCommitteeDate;
 
     /**
      * Bids constructor.
@@ -90,9 +90,9 @@ class Bids
     /**
      * @param string $comment
      *
-     * @return self
+     * @return Bids
      */
-    public function setComment(string $comment): self
+    public function setComment(string $comment): Bids
     {
         $this->comment = $comment;
 
@@ -102,19 +102,19 @@ class Bids
     /**
      * @return DateTimeImmutable
      */
-    public function getProjectedCommitteeDate(): ?DateTimeImmutable
+    public function getExpectedCommitteeDate(): ?DateTimeImmutable
     {
-        return $this->projectedCommitteeDate;
+        return $this->expectedCommitteeDate;
     }
 
     /**
-     * @param DateTimeImmutable $projectedCommitteeDate
+     * @param DateTimeImmutable $expectedCommitteeDate
      *
      * @return Bids
      */
-    public function setProjectedCommitteeDate(?DateTimeImmutable $projectedCommitteeDate): Bids
+    public function setExpectedCommitteeDate(?DateTimeImmutable $expectedCommitteeDate): Bids
     {
-        $this->projectedCommitteeDate = $projectedCommitteeDate;
+        $this->expectedCommitteeDate = $expectedCommitteeDate;
 
         return $this;
     }
