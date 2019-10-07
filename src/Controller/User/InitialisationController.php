@@ -68,14 +68,6 @@ class InitialisationController extends AbstractController
         ProjectParticipationManager $projectParticipationManager,
         ?Project $project = null
     ): Response {
-        $client = $temporaryLink->getIdClient();
-
-        if (false === $client->isInvited()) {
-            return $project ?
-                $this->redirectToRoute('lender_project_details', ['slug' => $project->getSlug()]) :
-                $this->redirectToRoute('home');
-        }
-
         if ($temporaryLink->isExpires()) {
             $this->addFlash('error', $translator->trans('account-init.invalid-link-error-message'));
 
@@ -84,8 +76,10 @@ class InitialisationController extends AbstractController
 
         $client = $temporaryLink->getIdClient();
 
-        if ($project && false === $client->isInvited()) {
-            return $this->redirectToRoute('lender_project_details', ['slug' => $project->getSlug()]);
+        if (false === $client->isInvited()) {
+            return $project ?
+                $this->redirectToRoute('lender_project_details', ['slug' => $project->getSlug()]) :
+                $this->redirectToRoute('home');
         }
 
         if ($project && false === $projectParticipationManager->isConcernedClient($client, $project)) {
@@ -118,8 +112,6 @@ class InitialisationController extends AbstractController
             $messageBus->dispatch(new ClientCreated($client));
 
             $this->addFlash('accountCreatedSuccess', $translator->trans('account-init.account-completed'));
-
-            $loginAuthenticator->setTargetPath($request, $router->generate('home'));
 
             if ($project) {
                 $loginAuthenticator->setTargetPath(
