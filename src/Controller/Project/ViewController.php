@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\Controller\Project;
 
-use Doctrine\ORM\{ORMException, OptimisticLockException};
+use Doctrine\ORM\{NonUniqueResultException, ORMException, OptimisticLockException};
 use Psr\Log\LoggerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Swift_SwiftException;
@@ -15,7 +15,7 @@ use Symfony\Component\Security\Core\User\UserInterface;
 use Unilend\Entity\{Bids, Clients, Project, ProjectConfidentialityAcceptance};
 use Unilend\Form\Bid\BidType;
 use Unilend\Form\Project\ConfidentialityAcceptanceType;
-use Unilend\Repository\{BidsRepository, ProjectAttachmentRepository, ProjectConfidentialityAcceptanceRepository};
+use Unilend\Repository\{BidsRepository, ProjectAttachmentRepository, ProjectConfidentialityAcceptanceRepository, ProjectParticipationRepository};
 use Unilend\Service\{NotificationManager, User\RealUserFinder};
 
 class ViewController extends AbstractController
@@ -25,17 +25,19 @@ class ViewController extends AbstractController
      *
      * @IsGranted("list", subject="project")
      *
-     * @param Project                     $project
-     * @param Request                     $request
-     * @param UserInterface|Clients|null  $user
-     * @param BidsRepository              $bidsRepository
-     * @param ProjectAttachmentRepository $projectAttachmentRepository
-     * @param NotificationManager         $notificationManager
-     * @param RealUserFinder              $realUserFinder
-     * @param LoggerInterface             $logger
+     * @param Project                        $project
+     * @param Request                        $request
+     * @param UserInterface|Clients|null     $user
+     * @param BidsRepository                 $bidsRepository
+     * @param ProjectAttachmentRepository    $projectAttachmentRepository
+     * @param ProjectParticipationRepository $projectParticipationRepository
+     * @param NotificationManager            $notificationManager
+     * @param RealUserFinder                 $realUserFinder
+     * @param LoggerInterface                $logger
      *
      * @throws ORMException
      * @throws OptimisticLockException
+     * @throws NonUniqueResultException
      *
      * @return Response
      */
@@ -45,12 +47,20 @@ class ViewController extends AbstractController
         ?UserInterface $user,
         BidsRepository $bidsRepository,
         ProjectAttachmentRepository $projectAttachmentRepository,
+        ProjectParticipationRepository $projectParticipationRepository,
         NotificationManager $notificationManager,
         RealUserFinder $realUserFinder,
         LoggerInterface $logger
     ): Response {
         if (false === $project->checkUserConfidentiality($user)) {
             return $this->redirectToRoute('project_confidentiality_acceptance', ['slug' => $project->getSlug()]);
+        }
+
+        $projectParticipation = $projectParticipationRepository->findByProjectAndClient($project, $user);
+
+        if ($projectParticipation) {
+            $projectParticipation->setConsulted();
+            $projectParticipationRepository->save($projectParticipation);
         }
 
         $bidForms = [];

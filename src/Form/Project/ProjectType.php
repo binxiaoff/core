@@ -171,7 +171,7 @@ class ProjectType extends AbstractType
     /**
      * {@inheritdoc}
      */
-    public function configureOptions(OptionsResolver $resolver)
+    public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefault('data_class', Project::class);
         $resolver->setRequired(['operation_type']);
@@ -180,7 +180,7 @@ class ProjectType extends AbstractType
     /**
      * {@inheritdoc}
      */
-    public function getBlockPrefix()
+    public function getBlockPrefix(): string
     {
         return 'project_creation_type';
     }

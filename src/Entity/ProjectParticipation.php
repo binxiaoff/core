@@ -39,7 +39,7 @@ class ProjectParticipation
 
     private const STATUS_NOT_CONSULTED = 0;
     private const STATUS_CONSULTED     = 10;
-    private const STATUS_REFUSED       = 20;
+    private const STATUS_UNINTERESTED  = 20;
 
     private const DEFAULT_STATUS = self::STATUS_NOT_CONSULTED;
 
@@ -185,9 +185,17 @@ class ProjectParticipation
     /**
      * @return bool
      */
-    public function isRefused(): bool
+    public function hasValidatedBid(): bool
     {
-        return $this->currentStatus === static::STATUS_REFUSED;
+        return 0 > count($this->project->getBids(Bids::STATUS_ACCEPTED, $this->company));
+    }
+
+    /**
+     * @return bool
+     */
+    public function isNotInterested(): bool
+    {
+        return $this->currentStatus === static::STATUS_UNINTERESTED && !$this->hasBid();
     }
 
     /**
@@ -201,13 +209,13 @@ class ProjectParticipation
     /**
      * @return ProjectParticipation
      */
-    public function setRefused(): ProjectParticipation
+    public function setUninterested(): ProjectParticipation
     {
         if ($this->hasBid()) {
             throw new DomainException('It is impossible to refuse after making a bid');
         }
 
-        $this->currentStatus = static::STATUS_REFUSED;
+        $this->currentStatus = static::STATUS_UNINTERESTED;
 
         return $this;
     }
@@ -217,7 +225,8 @@ class ProjectParticipation
      */
     public function setConsulted(): ProjectParticipation
     {
-        $this->currentStatus = ($this->currentStatus === static::STATUS_NOT_CONSULTED) ? static::STATUS_CONSULTED : $this->currentStatus;
+        $this->currentStatus = ($this->currentStatus === static::STATUS_NOT_CONSULTED) ?
+            static::STATUS_CONSULTED : $this->currentStatus;
 
         return $this;
     }
