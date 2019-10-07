@@ -31,13 +31,12 @@ use Unilend\Service\ServiceTerms\ServiceTermsManager;
 class InitialisationController extends AbstractController
 {
     /**
-     * @Route("/compte/initialisation/{securityToken}/{slug}", name="account_init", requirements={"securityToken": "[0-9a-f]+"}, methods={"GET", "POST"})
+     * @Route("/compte/initialisation/{securityToken}/{slug}", defaults={"slug": ""}, name="account_init", requirements={"securityToken": "[0-9a-f]+"}, methods={"GET", "POST"})
      *
      * @ParamConverter("temporaryLink", options={"mapping": {"securityToken": "token"}})
      * @ParamConverter("project", options={"mapping": {"slug": "slug"}})
      *
      * @param TemporaryLinksLogin           $temporaryLink
-     * @param Project                       $project
      * @param Request                       $request
      * @param TemporaryLinksLoginRepository $temporaryLinksLoginRepository
      * @param TranslatorInterface           $translator
@@ -48,6 +47,7 @@ class InitialisationController extends AbstractController
      * @param LoginAuthenticator            $loginAuthenticator
      * @param RouterInterface               $router
      * @param ProjectParticipationManager   $projectParticipationManager
+     * @param Project                       $project
      *
      * @throws ORMException
      * @throws OptimisticLockException
@@ -56,7 +56,6 @@ class InitialisationController extends AbstractController
      */
     public function initialize(
         TemporaryLinksLogin $temporaryLink,
-        Project $project,
         Request $request,
         TemporaryLinksLoginRepository $temporaryLinksLoginRepository,
         TranslatorInterface $translator,
@@ -66,14 +65,9 @@ class InitialisationController extends AbstractController
         MessageBusInterface $messageBus,
         LoginAuthenticator $loginAuthenticator,
         RouterInterface $router,
-        ProjectParticipationManager $projectParticipationManager
+        ProjectParticipationManager $projectParticipationManager,
+        ?Project $project = null
     ): Response {
-        $client = $temporaryLink->getIdClient();
-
-        if (false === $client->isInvited()) {
-            return $this->redirectToRoute('lender_project_details', ['slug' => $project->getSlug()]);
-        }
-
         if ($temporaryLink->isExpires()) {
             $this->addFlash('error', $translator->trans('account-init.invalid-link-error-message'));
 
@@ -82,7 +76,13 @@ class InitialisationController extends AbstractController
 
         $client = $temporaryLink->getIdClient();
 
-        if (false === $projectParticipationManager->isConcernedClient($client, $project)) {
+        if (false === $client->isInvited()) {
+            return $project ?
+                $this->redirectToRoute('lender_project_details', ['slug' => $project->getSlug()]) :
+                $this->redirectToRoute('home');
+        }
+
+        if ($project && false === $projectParticipationManager->isConcernedClient($client, $project)) {
             return $this->redirectToRoute('home');
         }
 
@@ -113,8 +113,12 @@ class InitialisationController extends AbstractController
 
             $this->addFlash('accountCreatedSuccess', $translator->trans('account-init.account-completed'));
 
-            $targetPath = $router->generate('lender_project_details', ['slug' => $project->getSlug()], RouterInterface::ABSOLUTE_URL);
-            $loginAuthenticator->setTargetPath($request, $targetPath);
+            if ($project) {
+                $loginAuthenticator->setTargetPath(
+                    $request,
+                    $router->generate('lender_project_details', ['slug' => $project->getSlug()], RouterInterface::ABSOLUTE_URL)
+                );
+            }
 
             return $this->redirectToRoute('login');
         }
