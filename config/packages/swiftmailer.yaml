@@ -10,6 +10,9 @@ swiftmailer:
             transport: 'mailjet'
 
 services:
+    _defaults:
+        autowire: true
+
     Mailjet\Client:
         arguments:
             $key: '%env(MAILJET_API_KEY)%'
@@ -20,3 +23,10 @@ services:
 
     mailjet: '@Unilend\SwiftMailer\MailjetTransport'
     swiftmailer.mailer.transport.mailjet: '@mailjet'
+
+    Unilend\SwiftMailer\MailjetTransport:
+        shared: false
+
+    Swift_Events_EventDispatcher:
+        class: Swift_Events_SimpleEventDispatcher
+        shared: false

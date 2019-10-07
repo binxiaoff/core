@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Unilend\SwiftMailer;
 
 use Mailjet\{Client, Resources, Response};
+use Swift_Events_EventDispatcher;
 use Swift_Events_EventListener;
-use Swift_Events_SimpleEventDispatcher;
 use Swift_Mime_SimpleMessage;
 use Swift_Transport;
 use Unilend\Entity\MailQueue;
@@ -21,11 +21,12 @@ class MailjetTransport implements Swift_Transport
     private $spool = [];
 
     /**
-     * @param Client $mailJetClient
+     * @param Client                       $mailJetClient
+     * @param Swift_Events_EventDispatcher $dispatcher
      */
-    public function __construct(Client $mailJetClient)
+    public function __construct(Client $mailJetClient, Swift_Events_EventDispatcher $dispatcher)
     {
-        $this->eventDispatcher = new Swift_Events_SimpleEventDispatcher();
+        $this->eventDispatcher = $dispatcher;
         $this->mailJetClient   = $mailJetClient;
     }
 
