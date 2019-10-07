@@ -8,9 +8,6 @@ use Doctrine\DBAL\DBALException;
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\Migrations\AbstractMigration;
 
-/**
- * Auto-generated Migration: Please modify to your needs!
- */
 final class Version20191002144142 extends AbstractMigration
 {
     /**
@@ -31,7 +28,7 @@ final class Version20191002144142 extends AbstractMigration
         // this up() migration is auto-generated, please modify it to your needs
         $this->abortIf('mysql' !== $this->connection->getDatabasePlatform()->getName(), 'Migration can only be executed safely on \'mysql\'.');
 
-        $this->addSql('ALTER TABLE project_participant ADD permission SMALLINT DEFAULT 1 NOT NULL');
+        $this->addSql('ALTER TABLE project_participation ADD permission SMALLINT DEFAULT 1 NOT NULL');
     }
 
     /**
@@ -44,6 +41,6 @@ final class Version20191002144142 extends AbstractMigration
         // this down() migration is auto-generated, please modify it to your needs
         $this->abortIf('mysql' !== $this->connection->getDatabasePlatform()->getName(), 'Migration can only be executed safely on \'mysql\'.');
 
-        $this->addSql('ALTER TABLE project_participant DROP permission');
+        $this->addSql('ALTER TABLE project_participation DROP permission');
     }
 }
