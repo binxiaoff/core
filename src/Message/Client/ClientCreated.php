@@ -4,26 +4,26 @@ declare(strict_types=1);
 
 namespace Unilend\Message\Client;
 
-use Unilend\Entity\Clients;
+use Unilend\Entity\ProjectParticipationContact;
 
 class ClientCreated
 {
     /** @var int */
-    private $clientId;
+    private $projectParticipationContactId;
 
     /**
-     * @param Clients $client
+     * @param ProjectParticipationContact $projectParticipationContact
      */
-    public function __construct(Clients $client)
+    public function __construct(ProjectParticipationContact $projectParticipationContact)
     {
-        $this->clientId = $client->getIdClient();
+        $this->projectParticipationContactId = $projectParticipationContact->getId();
     }
 
     /**
      * @return int
      */
-    public function getClientId(): int
+    public function getProjectParticipationContactId(): int
     {
-        return $this->clientId;
+        return $this->projectParticipationContactId;
     }
 }

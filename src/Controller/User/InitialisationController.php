@@ -23,6 +23,7 @@ use Unilend\Entity\TemporaryToken;
 use Unilend\Form\User\InitProfileType;
 use Unilend\Message\Client\ClientCreated;
 use Unilend\Repository\ClientsRepository;
+use Unilend\Repository\ProjectParticipationContactRepository;
 use Unilend\Repository\TemporaryTokenRepository;
 use Unilend\Security\LoginAuthenticator;
 use Unilend\Service\ProjectParticipation\ProjectParticipationManager;
@@ -52,6 +53,7 @@ class InitialisationController extends AbstractController
      * @throws Exception
      * @throws ORMException
      * @throws OptimisticLockException
+     * @throws \Doctrine\ORM\NonUniqueResultException
      *
      * @return RedirectResponse
      */
@@ -67,6 +69,7 @@ class InitialisationController extends AbstractController
         LoginAuthenticator $loginAuthenticator,
         RouterInterface $router,
         ProjectParticipationManager $projectParticipationManager,
+        ProjectParticipationContactRepository $projectParticipationContactRepository,
         ?Project $project = null
     ): Response {
         if (false === $temporaryToken->isValid()) {
@@ -109,7 +112,9 @@ class InitialisationController extends AbstractController
             $temporaryToken->setExpired();
             $temporaryTokenRepository->save($temporaryToken);
 
-            $messageBus->dispatch(new ClientCreated($client));
+            $projectParticipationContact = $projectParticipationContactRepository->findByProjectAndClient($project, $client);
+
+            $messageBus->dispatch(new ClientCreated($projectParticipationContact));
 
             $this->addFlash('accountCreatedSuccess', $translator->trans('account-init.account-completed'));
 
