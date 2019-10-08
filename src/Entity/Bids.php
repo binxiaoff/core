@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\Entity;
 
+use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
@@ -53,6 +54,22 @@ class Bids
     private $bidFees;
 
     /**
+     * @var string|null
+     *
+     * @ORM\Column(type="text", nullable=true)
+     *
+     * @Gedmo\Versioned
+     */
+    private $comment;
+
+    /**
+     * @var DateTimeImmutable
+     *
+     * @ORM\Column(type="date_immutable", nullable=true)
+     */
+    private $expectedCommitteeDate;
+
+    /**
      * Bids constructor.
      */
     public function __construct()
@@ -60,6 +77,46 @@ class Bids
         $this->acceptedBids = new ArrayCollection();
         $this->bidFees      = new ArrayCollection();
         $this->traitInit();
+    }
+
+    /**
+     * @return string
+     */
+    public function getComment(): string
+    {
+        return (string) $this->comment;
+    }
+
+    /**
+     * @param string $comment
+     *
+     * @return Bids
+     */
+    public function setComment(string $comment): Bids
+    {
+        $this->comment = $comment;
+
+        return $this;
+    }
+
+    /**
+     * @return DateTimeImmutable
+     */
+    public function getExpectedCommitteeDate(): ?DateTimeImmutable
+    {
+        return $this->expectedCommitteeDate;
+    }
+
+    /**
+     * @param DateTimeImmutable $expectedCommitteeDate
+     *
+     * @return Bids
+     */
+    public function setExpectedCommitteeDate(?DateTimeImmutable $expectedCommitteeDate): Bids
+    {
+        $this->expectedCommitteeDate = $expectedCommitteeDate;
+
+        return $this;
     }
 
     /**

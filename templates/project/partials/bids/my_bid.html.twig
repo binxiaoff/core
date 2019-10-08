@@ -10,6 +10,8 @@
                 <th>Taux de référence</th>
                 <th>Marge</th>
                 <th>Flooré à</th>
+                <th>Date prévisionnelle de passage en comité</th>
+                <th>Commentaire</th>
                 {#<th>Commission ponctuelle</th>
                 <th>Commission récurrente</th>#}
                 {% if bid.status == constant('Unilend\\Entity\\Bids::STATUS_PENDING') %}
@@ -24,10 +26,8 @@
                 <td>{{ ('interest-rate-index.index_' ~ bid.rate.indexType|lower)|trans }}</td>
                 <td>{{ bid.rate.margin|localizednumberwithprecision(2) }}&nbsp;%</td>
                 <td>{% if bid.rate.floor is same as(null) %}non défini{% else %}{{ bid.rate.floor|localizednumberwithprecision(2)|default('non défini') }}&nbsp;%{% endif %}</td>
-                {#<td>{{ bid.oneTimeFeeTotalRate|localizednumberwithprecision(2) }}&nbsp;%</td>
-                <td data-toggle="tooltip" title="{% if bid.recurringFeeTotalRate > 0 %}soit {{ (bid.recurringFeeTotalRate * (bid.amount / 100) / 100)|localizednumber }}&nbsp;€{% endif %}">
-                    {{ bid.recurringFeeTotalRate|localizednumberwithprecision(2) }}&nbsp;%
-                </td>#}
+                <td>{{ bid.expectedCommitteeDate|localizeddate('short', 'none') }}</td>
+                <td>{{ bid.comment }}</td>
                 {% if bid.status == constant('Unilend\\Entity\\Bids::STATUS_PENDING') %}
                     <td>
                         <button type="button" class="btn-default btn-shape-xxs"
@@ -46,35 +46,49 @@
     {{ form_start(form) }}
     <fieldset class="simulator-pane-inner" style="margin-top: 20px;">
         <div class="row row-multi-col-computer" data-my-bid>
-            <div class="col-lg-3 col-md-3 col-sm-3">
-                {{ form_row(form.money.amount, {
-                    label_help: '(' ~ tranche.money.currency ~ ')',
-                    attr: {'data-fee-reference-amount': ''}})
-                }}
-            </div>
-            <div class="col-lg-3 col-md-3 col-sm-3">
-                {% if tranche.rate.indexType %}
-                    <div class="form-field">
-                        <label>{% trans %} lending-form.index-type {% endtrans %}</label>
-                        <div>{{ ('interest-rate-index.index_' ~ tranche.rate.indexType|lower)|trans }}</div>
+            <div class="col-12">
+                <div class="row">
+                    <div class="col-lg-3 col-md-3 col-sm-3">
+                        {{ form_row(form.money.amount, {
+                            label_help: '(' ~ tranche.money.currency ~ ')',
+                            attr: {'data-fee-reference-amount': ''}})
+                        }}
                     </div>
-                {% else %}
-                    {{ form_row(form.rate.indexType, {attr: {class: 'tranche-rate-index'}}) }}
-                {% endif %}
-            </div>
-            <div class="col-lg-3 col-md-3 col-sm-3">
-                {% if tranche.rate.margin %}
-                    {{ form_row(form.rate.margin, {label_help: 'lending-form.margin-unit', value: tranche.rate.margin, attr: {readonly: ''}}) }}
-                {% else %}
-                    {{ form_row(form.rate.margin, {label_help: 'lending-form.margin-unit'}) }}
-                {% endif %}
-            </div>
-            <div class="col-lg-3 col-md-3 col-sm-3 {% if constant('Unilend\\Entity\\Embeddable\\LendingRate::INDEX_FIXED') == tranche.rate.indexType %} hide {% endif %}">
-                {% if tranche.rate.floor %}
-                    {{ form_row(form.rate.floor, {label_help: 'lending-form.floor-unit', value: tranche.rate.floor, attr: {class: 'tranche-rate-floor', readonly: ''}}) }}
-                {% else %}
-                    {{ form_row(form.rate.floor, {label_help: 'lending-form.floor-unit', attr: {class: 'tranche-rate-floor'}}) }}
-                {% endif %}
+                    <div class="col-lg-3 col-md-3 col-sm-3">
+                        {% if tranche.rate.indexType %}
+                            <div class="form-field">
+                                <label>{% trans %} lending-form.index-type {% endtrans %}</label>
+                                <div>{{ ('interest-rate-index.index_' ~ tranche.rate.indexType|lower)|trans }}</div>
+                            </div>
+                        {% else %}
+                            {{ form_row(form.rate.indexType, {attr: {class: 'tranche-rate-index'}}) }}
+                        {% endif %}
+                    </div>
+                    <div class="col-lg-3 col-md-3 col-sm-3">
+                        {% if tranche.rate.margin %}
+                            {{ form_row(form.rate.margin, {label_help: 'lending-form.margin-unit', value: tranche.rate.margin, attr: {readonly: ''}}) }}
+                        {% else %}
+                            {{ form_row(form.rate.margin, {label_help: 'lending-form.margin-unit'}) }}
+                        {% endif %}
+                    </div>
+                    <div class="col-lg-3 col-md-3 col-sm-3 {% if constant('Unilend\\Entity\\Embeddable\\LendingRate::INDEX_FIXED') == tranche.rate.indexType %} hide {% endif %}">
+                        {% if tranche.rate.floor %}
+                            {{ form_row(form.rate.floor, {label_help: 'lending-form.floor-unit', value: tranche.rate.floor, attr: {class: 'tranche-rate-floor', readonly: ''}}) }}
+                        {% else %}
+                            {{ form_row(form.rate.floor, {label_help: 'lending-form.floor-unit', attr: {class: 'tranche-rate-floor'}}) }}
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12">
+                        {{ form_row(form.expectedCommitteeDate) }}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12">
+                        {{ form_row(form.comment) }}
+                    </div>
+                </div>
             </div>
         </div>
     </fieldset>

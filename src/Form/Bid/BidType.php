@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Unilend\Form\Bid;
 
 use Symfony\Component\Form\Extension\Core\Type\CollectionType;
+use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\{AbstractType, FormBuilderInterface, FormEvent, FormEvents};
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Unilend\Entity\Bids;
@@ -29,6 +30,14 @@ class BidType extends AbstractType
                 'allow_add'     => true,
                 'allow_delete'  => true,
                 'by_reference'  => false,
+            ])
+            ->add('comment')
+            ->add('expectedCommitteeDate', DateType::class, [
+                'required' => false,
+                'widget'   => 'single_text',
+                'input'    => 'datetime_immutable',
+                'format'   => 'dd/MM/yyyy',
+                'attr'     => ['class' => 'ui-has-datepicker'],
             ])
             ->addEventListener(FormEvents::POST_SET_DATA, [$this, 'handleRateFieldsDisplaying'])
         ;
