@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Unilend\Service\ProjectParticipation;
 
 use Doctrine\ORM\{ORMException, OptimisticLockException};
-use Swift_RfcComplianceException;
+use Twig\Error\{LoaderError, RuntimeError, SyntaxError};
 use Unilend\Entity\{ProjectParticipation, ProjectStatus};
 use Unilend\Repository\ClientsRepository;
 use Unilend\Service\Client\ClientNotifier;
@@ -36,7 +36,9 @@ class ProjectParticipationNotifier
      *
      * @throws ORMException
      * @throws OptimisticLockException
-     * @throws Swift_RfcComplianceException
+     * @throws LoaderError
+     * @throws RuntimeError
+     * @throws SyntaxError
      *
      * @return int
      */
@@ -44,7 +46,7 @@ class ProjectParticipationNotifier
     {
         $sent = 0;
         if (ProjectStatus::STATUS_PUBLISHED === $projectParticipation->getProject()->getCurrentStatus()->getStatus()) {
-            $concernedInvitees = $this->clientRepository->findByProjectParticipation($projectParticipation);
+            $concernedInvitees = $this->clientRepository->findProjectParticipationContact($projectParticipation);
             foreach ($concernedInvitees as $invitee) {
                 $inviter = $this->projectParticipationManager->getInviter($projectParticipation, $invitee);
                 $sent += $this->clientNotifier->notifyInvited($inviter, $invitee, $projectParticipation->getProject());

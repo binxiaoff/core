@@ -9,7 +9,7 @@ use Symfony\Component\Messenger\MessageBusInterface;
 use Unilend\Entity\{Clients, Companies, Project, ProjectParticipation};
 use Unilend\Message\ProjectParticipation\ProjectParticipantInvited;
 use Unilend\Repository\{ClientsRepository, ProjectParticipationContactRepository, ProjectParticipationRepository};
-use Unilend\Service\{Staff\StaffManager, User\RealUserFinder};
+use Unilend\Service\User\RealUserFinder;
 
 class ProjectParticipationManager
 {
@@ -43,19 +43,6 @@ class ProjectParticipationManager
         $this->projectParticipationContactRepository = $projectParticipationContactRepository;
         $this->realUserFinder                        = $realUserFinder;
         $this->messageBus                            = $messageBus;
-    }
-
-    /**
-     * @param ProjectParticipation $projectParticipation
-     *
-     * @return Clients[]
-     */
-    public function getConcernedClients(ProjectParticipation $projectParticipation): iterable
-    {
-        $concernedClientsByDefault   = $this->clientRepository->findDefaultConcernedClients($projectParticipation);
-        $specifiedClientsAddedByUser = $this->clientRepository->findByProjectParticipationContact($projectParticipation);
-
-        return array_unique(array_merge($concernedClientsByDefault, $specifiedClientsAddedByUser));
     }
 
     /**
@@ -99,7 +86,7 @@ class ProjectParticipationManager
     public function addParticipantByCompany(Project $project, Companies $company): ProjectParticipation
     {
         $projectParticipation = $project->addParticipant($company, $this->realUserFinder);
-        $clients              = $this->getDefaultConcernedClients($projectParticipation);
+        $clients              = $this->clientRepository->findDefaultConcernedClients($projectParticipation);
         foreach ($clients as $client) {
             $projectParticipation->addProjectParticipationContact($client, $this->realUserFinder);
         }

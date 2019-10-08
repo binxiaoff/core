@@ -108,7 +108,7 @@ class ClientsRepository extends ServiceEntityRepository
      *
      * @return array
      */
-    public function findByProjectParticipationContact(ProjectParticipation $projectParticipation): array
+    public function findProjectParticipationContact(ProjectParticipation $projectParticipation): array
     {
         $queryBuilder = $this->createQueryBuilder('c')
             ->innerJoin(ProjectParticipationContact::class, 'ppc', Join::WITH, 'ppc.client = c.idClient')
