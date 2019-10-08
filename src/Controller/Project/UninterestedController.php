@@ -6,6 +6,7 @@ namespace Unilend\Controller\Project;
 
 use DateTime;
 use Doctrine\ORM\{NonUniqueResultException, ORMException, OptimisticLockException};
+use Exception;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Finder\Exception\AccessDeniedException;
@@ -69,6 +70,7 @@ class UninterestedController extends AbstractController
      * @param Project                       $project
      * @param TemporaryLinksLoginRepository $temporaryLinksLoginRepository
      *
+     * @throws Exception
      * @throws NonUniqueResultException
      * @throws ORMException
      * @throws OptimisticLockException
@@ -102,7 +104,7 @@ class UninterestedController extends AbstractController
      * @throws ORMException
      * @throws OptimisticLockException
      */
-    protected function setUninterested(
+    private function setUninterested(
         Clients $clients,
         Project $project
     ): void {
