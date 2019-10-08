@@ -124,7 +124,7 @@ class ClientsRepository extends ServiceEntityRepository
      *
      * @return array
      */
-    public function findStaffByProjectParticipation(ProjectParticipation $projectParticipation): array
+    public function findDefaultConcernedClients(ProjectParticipation $projectParticipation): array
     {
         $queryBuilder = $this->createQueryBuilder('clients')
             ->innerJoin('clients.staff', 'staff')

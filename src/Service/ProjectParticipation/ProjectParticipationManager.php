@@ -39,7 +39,7 @@ class ProjectParticipationManager
      */
     public function getConcernedClients(ProjectParticipation $projectParticipation): iterable
     {
-        $concernedClientsByDefault   = $this->clientRepository->findStaffByProjectParticipation($projectParticipation);
+        $concernedClientsByDefault   = $this->clientRepository->findDefaultConcernedClients($projectParticipation);
         $specifiedClientsAddedByUser = $this->clientRepository->findByProjectParticipationContact($projectParticipation);
 
         return array_unique(array_merge($concernedClientsByDefault, $specifiedClientsAddedByUser));

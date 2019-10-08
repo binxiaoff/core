@@ -5,8 +5,7 @@ declare(strict_types=1);
 namespace Unilend\Entity;
 
 use ApiPlatform\Core\Annotation\ApiResource;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
+use Doctrine\Common\Collections\{ArrayCollection, Collection};
 use Doctrine\ORM\Mapping as ORM;
 use Unilend\Entity\Traits\{RoleableTrait, TimestampableTrait};
 
@@ -134,7 +133,9 @@ class Staff
      */
     public function addMarketSegment(MarketSegment $marketSegment): Staff
     {
-        $this->marketSegments[] = $marketSegment;
+        if (false === $this->marketSegments->contains($marketSegment)) {
+            $this->marketSegments[] = $marketSegment;
+        }
 
         return $this;
     }
