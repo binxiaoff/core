@@ -9,22 +9,19 @@ use Exception;
 use Swift_RfcComplianceException;
 use Unilend\Entity\Project;
 use Unilend\Entity\ProjectStatus;
-use Unilend\Service\{NotificationManager, ProjectParticipation\ProjectParticipationNotifier};
+use Unilend\Service\ProjectParticipation\ProjectParticipationNotifier;
 
 class ProjectNotifier
 {
     /** @var ProjectParticipationNotifier */
     private $projectParticipationNotifier;
-    private $notificationManager;
 
     /**
      * @param ProjectParticipationNotifier $projectParticipationNotifier
-     * @param NotificationManager          $notificationManager
      */
-    public function __construct(ProjectParticipationNotifier $projectParticipationNotifier, NotificationManager $notificationManager)
+    public function __construct(ProjectParticipationNotifier $projectParticipationNotifier)
     {
         $this->projectParticipationNotifier = $projectParticipationNotifier;
-        $this->notificationManager          = $notificationManager;
     }
 
     /**

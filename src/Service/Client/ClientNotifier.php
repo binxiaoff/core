@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace Unilend\Service\Client;
 
 use Doctrine\ORM\{ORMException, OptimisticLockException};
+use Exception;
 use Swift_Mailer;
 use Swift_RfcComplianceException;
 use Symfony\Component\Routing\RouterInterface;
+use Twig\Error\{LoaderError, RuntimeError, SyntaxError};
 use Unilend\Entity\{Clients, ClientsStatus, Project, ProjectStatus, TemporaryLinksLogin};
 use Unilend\Repository\TemporaryLinksLoginRepository;
 use Unilend\Service\NotificationManager;
@@ -52,9 +54,12 @@ class ClientNotifier
      * @param Clients $invitee
      * @param Project $project
      *
+     * @throws LoaderError
      * @throws ORMException
      * @throws OptimisticLockException
+     * @throws RuntimeError
      * @throws Swift_RfcComplianceException
+     * @throws SyntaxError
      *
      * @return int
      */
@@ -78,9 +83,10 @@ class ClientNotifier
      * @param Clients $invitee
      * @param Project $project
      *
-     * @throws ORMException
+     * @throws Exception
      * @throws OptimisticLockException
      * @throws Swift_RfcComplianceException
+     * @throws ORMException
      *
      * @return int
      */
@@ -101,11 +107,11 @@ class ClientNotifier
                 'project'        => $project->getBorrowerCompany()->getName() . ' / ' . $project->getTitle(),
                 'initAccountUrl' => $this->router->generate('project_invitation', [
                     'securityToken' => $token->getToken(),
-                    'project'       => $project->getSlug(),
+                    'slug'          => $project->getSlug(),
                 ], RouterInterface::ABSOLUTE_URL),
             ];
 
-            $message = $this->messageProvider->newMessage('project-invitation-new-user', $keywords);
+            $message = $this->messageProvider->newMessage('invite-guest', $keywords);
             $message->setTo($invitee->getEmail());
 
             return $this->mailer->send($message);
@@ -119,7 +125,9 @@ class ClientNotifier
      * @param Clients $invitee
      * @param Project $project
      *
-     * @throws Swift_RfcComplianceException
+     * @throws LoaderError
+     * @throws RuntimeError
+     * @throws SyntaxError
      *
      * @return int
      */

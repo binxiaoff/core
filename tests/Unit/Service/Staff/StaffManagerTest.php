@@ -5,11 +5,12 @@ declare(strict_types=1);
 namespace Unilend\Test\Unit\Service\Staff;
 
 use Doctrine\ORM\{ORMException, OptimisticLockException};
+use Exception;
 use Faker\Provider\{Base, Internet};
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
 use Prophecy\Prophecy\ObjectProphecy;
-use Unilend\Entity\{Clients, Companies, MarketSegment, Staff};
+use Unilend\Entity\{Clients, Companies, Staff};
 use Unilend\Exception\{Client\ClientNotFoundException, Staff\StaffNotFoundException};
 use Unilend\Repository\{ClientsRepository, CompaniesRepository, StaffRepository};
 use Unilend\Service\{Company\CompanyManager, Staff\StaffManager};
@@ -21,13 +22,13 @@ use Unilend\Service\{Company\CompanyManager, Staff\StaffManager};
  */
 class StaffManagerTest extends TestCase
 {
-    /** @var ObjectProphecy */
+    /** @var CompanyManager|ObjectProphecy */
     private $companyManager;
-    /** @var ObjectProphecy */
+    /** @var ClientsRepository|ObjectProphecy */
     private $clientsRepository;
-    /** @var ObjectProphecy */
+    /** @var CompaniesRepository|ObjectProphecy */
     private $companiesRepository;
-    /** @var ObjectProphecy */
+    /** @var StaffRepository|ObjectProphecy */
     private $staffRepository;
 
     /**
@@ -42,25 +43,9 @@ class StaffManagerTest extends TestCase
     }
 
     /**
-     * @covers ::getConcernedStaff
-     *
-     * @dataProvider marketSegmentProvider
-     *
-     * @param string $marketSegmentLabel
-     */
-    public function testGetConcernedRoles(string $marketSegmentLabel): void
-    {
-        $marketSegment = new MarketSegment();
-        $marketSegment->setLabel($marketSegmentLabel);
-        $role = 'ROLE_STAFF_MARKET_' . mb_strtoupper($marketSegmentLabel);
-
-        $concernedRoles = $this->createTestObject()->getConcernedRoles($marketSegment);
-
-        static::assertSame([$role], $concernedRoles);
-    }
-
-    /**
      * @covers ::getStaffByEmail
+     *
+     * @throws Exception
      */
     public function testGetStaffByEmail(): void
     {
@@ -83,6 +68,8 @@ class StaffManagerTest extends TestCase
 
     /**
      * @covers ::getStaffByEmail
+     *
+     * @throws Exception
      */
     public function testGetStaffByEmailClientNotFound(): void
     {
@@ -97,6 +84,8 @@ class StaffManagerTest extends TestCase
 
     /**
      * @covers ::getStaffByEmail
+     *
+     * @throws Exception
      */
     public function testGetStaffByEmailStaffNotFound(): void
     {
