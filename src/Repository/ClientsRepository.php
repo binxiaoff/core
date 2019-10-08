@@ -106,14 +106,34 @@ class ClientsRepository extends ServiceEntityRepository
     /**
      * @param ProjectParticipation $projectParticipation
      *
-     * @return iterable
+     * @return array
      */
-    public function findByProjectParticipation(ProjectParticipation $projectParticipation): iterable
+    public function findByProjectParticipationContact(ProjectParticipation $projectParticipation): array
     {
         $queryBuilder = $this->createQueryBuilder('c')
             ->innerJoin(ProjectParticipationContact::class, 'ppc', Join::WITH, 'ppc.client = c.idClient')
             ->where('ppc.projectParticipation = :projectParticipation')
             ->setParameter('projectParticipation', $projectParticipation)
+        ;
+
+        return $queryBuilder->getQuery()->getResult();
+    }
+
+    /**
+     * @param ProjectParticipation $projectParticipation
+     *
+     * @return array
+     */
+    public function findStaffByProjectParticipation(ProjectParticipation $projectParticipation): array
+    {
+        $queryBuilder = $this->createQueryBuilder('clients')
+            ->innerJoin('clients.staff', 'staff')
+            ->where('staff.company = :company')
+            ->andWhere(':marketSegment MEMBER OF staff.marketSegments')
+            ->setParameters([
+                'company'       => $projectParticipation->getCompany(),
+                'marketSegment' => $projectParticipation->getProject()->getMarketSegment(),
+            ])
         ;
 
         return $queryBuilder->getQuery()->getResult();

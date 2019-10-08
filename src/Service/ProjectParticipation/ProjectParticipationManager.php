@@ -7,14 +7,11 @@ namespace Unilend\Service\ProjectParticipation;
 use Doctrine\ORM\NonUniqueResultException;
 use Unilend\Entity\{Clients, Project, ProjectParticipation};
 use Unilend\Repository\{ClientsRepository, ProjectParticipationContactRepository, ProjectParticipationRepository};
-use Unilend\Service\Staff\StaffManager;
 
 class ProjectParticipationManager
 {
     /** @var ClientsRepository */
     private $clientRepository;
-    /** @var StaffManager */
-    private $staffManager;
     /** @var ProjectParticipationRepository */
     private $projectParticipationRepository;
     /** @var ProjectParticipationContactRepository */
@@ -22,18 +19,15 @@ class ProjectParticipationManager
 
     /**
      * @param ClientsRepository                     $clientRepository
-     * @param StaffManager                          $staffManager
      * @param ProjectParticipationRepository        $projectParticipationRepository
      * @param ProjectParticipationContactRepository $projectParticipationContactRepository
      */
     public function __construct(
         ClientsRepository $clientRepository,
-        StaffManager $staffManager,
         ProjectParticipationRepository $projectParticipationRepository,
         ProjectParticipationContactRepository $projectParticipationContactRepository
     ) {
         $this->clientRepository                      = $clientRepository;
-        $this->staffManager                          = $staffManager;
         $this->projectParticipationRepository        = $projectParticipationRepository;
         $this->projectParticipationContactRepository = $projectParticipationContactRepository;
     }
@@ -45,8 +39,8 @@ class ProjectParticipationManager
      */
     public function getConcernedClients(ProjectParticipation $projectParticipation): iterable
     {
-        $concernedClientsByDefault   = $this->getDefaultConcernedClients($projectParticipation);
-        $specifiedClientsAddedByUser = $this->clientRepository->findByProjectParticipation($projectParticipation);
+        $concernedClientsByDefault   = $this->clientRepository->findStaffByProjectParticipation($projectParticipation);
+        $specifiedClientsAddedByUser = $this->clientRepository->findByProjectParticipationContact($projectParticipation);
 
         return array_unique(array_merge($concernedClientsByDefault, $specifiedClientsAddedByUser));
     }
@@ -78,22 +72,6 @@ class ProjectParticipationManager
         }
 
         return $projectParticipation->getAddedBy();
-    }
-
-    /**
-     * @param ProjectParticipation $projectParticipation
-     *
-     * @return Clients[]
-     */
-    private function getDefaultConcernedClients(ProjectParticipation $projectParticipation): iterable
-    {
-        $concernedRoles = $this->staffManager->getConcernedRoles($projectParticipation->getProject()->getMarketSegment());
-
-        if ($concernedRoles) {
-            return $this->clientRepository->findByStaffRoles($projectParticipation->getCompany(), $concernedRoles);
-        }
-
-        return [];
     }
 
     /**

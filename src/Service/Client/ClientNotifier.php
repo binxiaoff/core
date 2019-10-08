@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Unilend\Service\Client;
 
 use Doctrine\ORM\{ORMException, OptimisticLockException};
+use Exception;
 use Swift_Mailer;
 use Swift_RfcComplianceException;
 use Symfony\Component\Routing\RouterInterface;
@@ -78,9 +79,10 @@ class ClientNotifier
      * @param Clients $invitee
      * @param Project $project
      *
-     * @throws ORMException
+     * @throws Exception
      * @throws OptimisticLockException
      * @throws Swift_RfcComplianceException
+     * @throws ORMException
      *
      * @return int
      */
@@ -101,7 +103,7 @@ class ClientNotifier
                 'project'        => $project->getBorrowerCompany()->getName() . ' / ' . $project->getTitle(),
                 'initAccountUrl' => $this->router->generate('project_invitation', [
                     'securityToken' => $token->getToken(),
-                    'project'       => $project->getSlug(),
+                    'slug'          => $project->getSlug(),
                 ], RouterInterface::ABSOLUTE_URL),
             ];
 

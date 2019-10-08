@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Unilend\Entity;
 
 use ApiPlatform\Core\Annotation\ApiResource;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Unilend\Entity\Traits\{RoleableTrait, TimestampableTrait};
 
@@ -24,14 +26,6 @@ class Staff
 
     public const ROLE_STAFF_OPERATOR = 'ROLE_STAFF_OPERATOR';
     public const ROLE_STAFF_MANAGER  = 'ROLE_STAFF_MANAGER';
-
-    public const ROLE_STAFF_MARKET_PUBLIC_COLLECTIVITY     = 'ROLE_STAFF_MARKET_PUBLIC_COLLECTIVITY';
-    public const ROLE_STAFF_MARKET_ENERGY                  = 'ROLE_STAFF_MARKET_ENERGY';
-    public const ROLE_STAFF_MARKET_CORPORATE               = 'ROLE_STAFF_MARKET_CORPORATE';
-    public const ROLE_STAFF_MARKET_LBO                     = 'ROLE_STAFF_MARKET_LBO';
-    public const ROLE_STAFF_MARKET_REAL_ESTATE_DEVELOPMENT = 'ROLE_STAFF_MARKET_REAL_ESTATE_DEVELOPMENT';
-    public const ROLE_STAFF_MARKET_INFRASTRUCTURE          = 'ROLE_STAFF_MARKET_INFRASTRUCTURE';
-    public const ROLE_STAFF_MARKET_AGRICULTURE             = 'ROLE_STAFF_MARKET_AGRICULTURE';
 
     /**
      * @var int
@@ -61,6 +55,21 @@ class Staff
      * })
      */
     private $client;
+
+    /**
+     * @var Collection|MarketSegment[]
+     *
+     * @ORM\ManyToMany(targetEntity="Unilend\Entity\MarketSegment")
+     */
+    private $marketSegments;
+
+    /**
+     * Staff constructor.
+     */
+    public function __construct()
+    {
+        $this->marketSegments = new ArrayCollection();
+    }
 
     /**
      * @return int
@@ -111,10 +120,50 @@ class Staff
     }
 
     /**
-     * @return array
+     * @return Collection|MarketSegment[]
      */
-    public static function getMarketSegmentRoles(): array
+    public function getMarketSegments()
     {
-        return self::getConstants('ROLE_STAFF_MARKET_');
+        return $this->marketSegments;
+    }
+
+    /**
+     * @param MarketSegment $marketSegment
+     *
+     * @return Staff
+     */
+    public function addMarketSegment(MarketSegment $marketSegment): Staff
+    {
+        $this->marketSegments[] = $marketSegment;
+
+        return $this;
+    }
+
+    /**
+     * @param MarketSegment $marketSegment
+     *
+     * @return Staff
+     */
+    public function removeMarketSegment(MarketSegment $marketSegment): Staff
+    {
+        $this->marketSegments->removeElement($marketSegment);
+
+        return $this;
+    }
+
+    /**
+     * @param Collection|MarketSegment[] $marketSegments
+     *
+     * @return Staff
+     */
+    public function setMarketSegments($marketSegments): Staff
+    {
+        if (is_array($marketSegments)) {
+            $marketSegments = new ArrayCollection($marketSegments);
+        }
+
+        $this->marketSegments = $marketSegments;
+
+        return $this;
     }
 }
