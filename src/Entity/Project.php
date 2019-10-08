@@ -844,19 +844,14 @@ class Project
     }
 
     /**
-     * @param Companies[]    $companies
+     * @param Companies      $company
      * @param RealUserFinder $realUserFinder
      *
-     * @return ProjectParticipation[]
+     * @return ProjectParticipation
      */
-    public function addLenders(array $companies, RealUserFinder $realUserFinder): iterable
+    public function addParticipant(Companies $company, RealUserFinder $realUserFinder): ProjectParticipation
     {
-        $participant = [];
-        foreach ($companies as $company) {
-            $participant[] = $this->addProjectParticipation($company, ProjectParticipation::ROLE_PROJECT_LENDER, $realUserFinder);
-        }
-
-        return $participant;
+        return $this->addProjectParticipation($company, ProjectParticipation::ROLE_PROJECT_LENDER, $realUserFinder);
     }
 
     /**
@@ -865,15 +860,14 @@ class Project
      *
      * @return ProjectParticipation[]
      */
-    public function setLenders(array $companies, RealUserFinder $realUserFinder): iterable
+    public function addParticipants(array $companies, RealUserFinder $realUserFinder): iterable
     {
-        foreach ($this->getLenders() as $lender) {
-            if (false === in_array($lender->getCompany(), $companies, true)) {
-                $lender->removeRole(ProjectParticipation::ROLE_PROJECT_LENDER);
-            }
+        $participant = [];
+        foreach ($companies as $company) {
+            $participant[] = $this->addParticipant($company, $realUserFinder);
         }
 
-        return $this->addLenders($companies, $realUserFinder);
+        return $participant;
     }
 
     /**
@@ -929,7 +923,7 @@ class Project
     /**
      * @return ProjectParticipation[]|ArrayCollection
      */
-    public function getLenders(): iterable
+    public function getParticipants(): iterable
     {
         return $this->getParticipationsByRole(ProjectParticipation::ROLE_PROJECT_LENDER);
     }

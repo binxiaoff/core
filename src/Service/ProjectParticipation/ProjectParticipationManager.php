@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 namespace Unilend\Service\ProjectParticipation;
 
-use Doctrine\ORM\NonUniqueResultException;
-use Unilend\Entity\{Clients, Project, ProjectParticipation};
+use Doctrine\ORM\{NonUniqueResultException, ORMException, OptimisticLockException};
+use Symfony\Component\Messenger\MessageBusInterface;
+use Unilend\Entity\{Clients, Companies, Project, ProjectParticipation};
+use Unilend\Message\ProjectParticipation\ProjectParticipantInvited;
 use Unilend\Repository\{ClientsRepository, ProjectParticipationContactRepository, ProjectParticipationRepository};
+use Unilend\Service\{Staff\StaffManager, User\RealUserFinder};
 
 class ProjectParticipationManager
 {
@@ -16,20 +19,30 @@ class ProjectParticipationManager
     private $projectParticipationRepository;
     /** @var ProjectParticipationContactRepository */
     private $projectParticipationContactRepository;
+    /** @var RealUserFinder */
+    private $realUserFinder;
+    /** @var MessageBusInterface */
+    private $messageBus;
 
     /**
      * @param ClientsRepository                     $clientRepository
      * @param ProjectParticipationRepository        $projectParticipationRepository
      * @param ProjectParticipationContactRepository $projectParticipationContactRepository
+     * @param RealUserFinder                        $realUserFinder
+     * @param MessageBusInterface                   $messageBus
      */
     public function __construct(
         ClientsRepository $clientRepository,
         ProjectParticipationRepository $projectParticipationRepository,
-        ProjectParticipationContactRepository $projectParticipationContactRepository
+        ProjectParticipationContactRepository $projectParticipationContactRepository,
+        RealUserFinder $realUserFinder,
+        MessageBusInterface $messageBus
     ) {
         $this->clientRepository                      = $clientRepository;
         $this->projectParticipationRepository        = $projectParticipationRepository;
         $this->projectParticipationContactRepository = $projectParticipationContactRepository;
+        $this->realUserFinder                        = $realUserFinder;
+        $this->messageBus                            = $messageBus;
     }
 
     /**
@@ -72,6 +85,30 @@ class ProjectParticipationManager
         }
 
         return $projectParticipation->getAddedBy();
+    }
+
+    /**
+     * @param Project   $project
+     * @param Companies $company
+     *
+     * @throws ORMException
+     * @throws OptimisticLockException
+     *
+     * @return ProjectParticipation
+     */
+    public function addParticipantByCompany(Project $project, Companies $company): ProjectParticipation
+    {
+        $projectParticipation = $project->addParticipant($company, $this->realUserFinder);
+        $clients              = $this->getDefaultConcernedClients($projectParticipation);
+        foreach ($clients as $client) {
+            $projectParticipation->addProjectParticipationContact($client, $this->realUserFinder);
+        }
+
+        $this->projectParticipationRepository->save($projectParticipation);
+
+        $this->messageBus->dispatch(new ProjectParticipantInvited($projectParticipation));
+
+        return $projectParticipation;
     }
 
     /**

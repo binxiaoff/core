@@ -152,7 +152,7 @@ class NotificationManager
 
                     break;
                 case self::RECIPIENT_TYPE_LENDERS:
-                    $lenders = $project->getLenders();
+                    $lenders = $project->getParticipants();
                     foreach ($lenders as $lender) {
                         $recipients[$lender->getCompany()->getIdClientOwner()->getIdClient()] = $lender->getCompany()->getIdClientOwner();
                     }
