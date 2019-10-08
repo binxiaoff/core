@@ -69,6 +69,7 @@ class ProjectParticipationVoter extends Voter
      */
     private function canRefuse(ProjectParticipation $participation): bool
     {
+        //@todo replace by ProjectParticipaction::isOrganizer()
         return empty(
             array_intersect(
                 [
