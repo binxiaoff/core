@@ -24,7 +24,6 @@ class ProjectParticipation
     use RoleableTrait {
         removeRole as private baseRemoveRole;
     }
-
     use TimestampableTrait;
     use BlamableAddedTrait;
 
@@ -180,9 +179,7 @@ class ProjectParticipation
      */
     public function hasBid(): bool
     {
-        return 0 > $this->project->getBids()->filter(function (Bids $bids) {
-            return $bids->getLender() === $this->company;
-        })->count();
+        return 0 > count($this->project->getBids(null, $this->company));
     }
 
     /**
@@ -204,7 +201,7 @@ class ProjectParticipation
     /**
      * @return ProjectParticipation
      */
-    public function refuse(): ProjectParticipation
+    public function setRefused(): ProjectParticipation
     {
         if ($this->hasBid()) {
             throw new DomainException('It is impossible to refuse after making a bid');
@@ -218,7 +215,7 @@ class ProjectParticipation
     /**
      * @return ProjectParticipation
      */
-    public function consult(): ProjectParticipation
+    public function setConsulted(): ProjectParticipation
     {
         $this->currentStatus = ($this->currentStatus === static::STATUS_NOT_CONSULTED) ? static::STATUS_CONSULTED : $this->currentStatus;
 
