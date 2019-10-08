@@ -2,14 +2,16 @@
 
 declare(strict_types=1);
 
+use Doctrine\ORM\EntityManager;
 use Symfony\Component\HttpFoundation\Request;
-use Unilend\Entity\{MailQueue, MailTemplates, Translations};
+use Symfony\Component\Translation\TranslatorInterface;
+use Unilend\Entity\{MailFooter, MailHeader, MailQueue, MailTemplate, Translations};
 use Unilend\Service\Mailer\{MailQueueManager, MailTemplateManager};
 use Unilend\Service\Translation\TranslationLoader;
 
 class mailsController extends Controller
 {
-    /** @var MailTemplates */
+    /** @var MailTemplate */
     public $mailTemplate;
 
     public function initialize()
@@ -25,17 +27,15 @@ class mailsController extends Controller
         $mailTemplateManager = $this->get('unilend.service.mail_template');
 
         if (isset($this->params[0]) && 'delete' === $this->params[0]) {
-            /** @var \Doctrine\ORM\EntityManager $entityManager */
+            /** @var EntityManager $entityManager */
             $entityManager          = $this->get('doctrine.orm.entity_manager');
-            $mailTemplateRepository = $entityManager->getRepository(MailTemplates::class);
+            $mailTemplateRepository = $entityManager->getRepository(MailTemplate::class);
             $mailTemplate           = $mailTemplateRepository->findOneBy([
-                'type'   => $this->params[1],
+                'name'   => $this->params[1],
                 'locale' => $this->getParameter('locale'),
-                'status' => MailTemplates::STATUS_ACTIVE,
-                'part'   => MailTemplates::PART_TYPE_CONTENT,
             ]);
 
-            $mailTemplateManager->archiveTemplate($mailTemplate);
+            $mailTemplateManager->archive($mailTemplate);
 
             $_SESSION['freeow']['title']   = 'Archivage d\'un mail';
             $_SESSION['freeow']['message'] = 'Le mail a bien été archivé';
@@ -44,25 +44,15 @@ class mailsController extends Controller
             die;
         }
 
-        $externalEmails = $mailTemplateManager->getActiveMailTemplates(MailTemplates::RECIPIENT_TYPE_EXTERNAL);
-        $internalEmails = $mailTemplateManager->getActiveMailTemplates(MailTemplates::RECIPIENT_TYPE_INTERNAL);
-        $emailUsage     = $mailTemplateManager->getMailTemplateUsage();
-
         $this->sections = [
-            [
-                'title'  => 'Emails externes',
-                'emails' => $externalEmails,
-                'stats'  => $emailUsage,
-            ],
-            [
-                'title'  => 'Emails internes',
-                'emails' => $internalEmails,
-                'stats'  => $emailUsage,
+            'email' => [
+                'title'  => 'email',
+                'emails' => $this->get('doctrine')->getRepository(MailTemplate::class)->findAll(),
             ],
         ];
 
-        $this->headers = $mailTemplateManager->getActiveMailTemplates(null, MailTemplates::PART_TYPE_HEADER);
-        $this->footers = $mailTemplateManager->getActiveMailTemplates(null, MailTemplates::PART_TYPE_FOOTER);
+        $this->headers = $this->get('doctrine')->getRepository(MailHeader::class)->findAll();
+        $this->footers = $this->get('doctrine')->getRepository(MailFooter::class)->findAll();
     }
 
     public function _add()
@@ -81,14 +71,12 @@ class mailsController extends Controller
             $footer        = $this->request->request->get('footer', null);
             $recipientType = $this->request->request->get('recipient_type', null);
 
-            /** @var \Doctrine\ORM\EntityManager $entityManager */
+            /** @var EntityManager $entityManager */
             $entityManager          = $this->get('doctrine.orm.entity_manager');
-            $mailTemplateRepository = $entityManager->getRepository(MailTemplates::class);
+            $mailTemplateRepository = $entityManager->getRepository(MailTemplate::class);
             $mailTemplate           = $mailTemplateRepository->findOneBy([
-                'type'   => $type,
+                'name'   => $type,
                 'locale' => $this->getParameter('locale'),
-                'status' => MailTemplates::STATUS_ACTIVE,
-                'part'   => MailTemplates::PART_TYPE_CONTENT,
             ]);
 
             if (empty($type) || empty($senderName) || empty($senderEmail) || empty($subject)) {
@@ -118,10 +106,8 @@ class mailsController extends Controller
             die;
         }
 
-        /** @var MailTemplateManager $mailTemplateManager */
-        $mailTemplateManager = $this->get('unilend.service.mail_template');
-        $this->headers       = $mailTemplateManager->getActiveMailTemplates(null, MailTemplates::PART_TYPE_HEADER);
-        $this->footers       = $mailTemplateManager->getActiveMailTemplates(null, MailTemplates::PART_TYPE_FOOTER);
+        $this->headers = $this->get('doctrine')->getRepository(MailHeader::class)->findAll();
+        $this->footers = $this->get('doctrine')->getRepository(MailFooter::class)->findAll();
     }
 
     public function _edit()
@@ -130,29 +116,24 @@ class mailsController extends Controller
         $mailTemplateManager = $this->get('unilend.service.mail_template');
 
         if (false === empty($this->params[0])) {
-            $part = isset($this->params[1]) ? $this->params[1] : MailTemplates::PART_TYPE_CONTENT;
-
-            /** @var \Doctrine\ORM\EntityManager $entityManager */
+            /** @var EntityManager $entityManager */
             $entityManager          = $this->get('doctrine.orm.entity_manager');
-            $mailTemplateRepository = $entityManager->getRepository(MailTemplates::class);
+            $mailTemplateRepository = $entityManager->getRepository(MailTemplate::class);
             $this->mailTemplate     = $mailTemplateRepository->findOneBy([
-                'type'   => $this->params[0],
+                'name'   => $this->params[0],
                 'locale' => $this->getParameter('locale'),
-                'status' => MailTemplates::STATUS_ACTIVE,
-                'part'   => $part,
             ]);
 
-            $senderName    = $this->request->request->get('sender_name', null);
-            $senderEmail   = $this->request->request->get('sender_email', null);
-            $subject       = $this->request->request->get('subject', null);
-            $title         = $this->request->request->get('title', null);
-            $content       = $this->request->request->get('content', null);
-            $header        = $this->request->request->get('header', null);
-            $footer        = $this->request->request->get('footer', null);
-            $recipientType = $this->request->request->get('recipient_type', null);
+            $senderName  = $this->request->request->get('sender_name', null);
+            $senderEmail = $this->request->request->get('sender_email', null);
+            $subject     = $this->request->request->get('subject', null);
+            $title       = $this->request->request->get('title', null);
+            $content     = $this->request->request->get('content', null);
+            $header      = $this->request->request->get('header', null);
+            $footer      = $this->request->request->get('footer', null);
 
             if (null !== $this->mailTemplate && $this->request->isMethod(Request::METHOD_POST)) {
-                if (MailTemplates::PART_TYPE_CONTENT === $part && (empty($senderName) || empty($senderEmail) || empty($subject))) {
+                if ((empty($senderName) || empty($senderEmail) || empty($subject))) {
                     $_SESSION['freeow']['title']   = 'Modification d\'un mail';
                     $_SESSION['freeow']['message'] = 'Modification impossible : tous les champs n\'ont été remplis';
                 } else {
@@ -163,9 +144,8 @@ class mailsController extends Controller
                         empty($subject) ? null : $subject,
                         empty($title) ? null : $title,
                         empty($content) ? null : $content,
-                        empty($header) ? null : $mailTemplateRepository->find($header),
-                        empty($footer) ? null : $mailTemplateRepository->find($footer),
-                        empty($recipientType) ? null : $recipientType
+                        empty($header) ? null : $entityManager->find(MailHeader::class, $header),
+                        empty($footer) ? null : $entityManager->find(MailFooter::class, $footer)
                     );
 
                     $_SESSION['freeow']['title']   = 'Modification d\'un mail';
@@ -176,16 +156,14 @@ class mailsController extends Controller
                 die;
             }
 
-            /** @var \Symfony\Component\Translation\TranslatorInterface $translator */
+            /** @var TranslatorInterface $translator */
             $translator      = $this->get('translator');
-            $titleLabel      = Translations::SECTION_MAIL_TITLE . TranslationLoader::SECTION_SEPARATOR . $this->mailTemplate->getType();
+            $titleLabel      = Translations::SECTION_MAIL_TITLE . TranslationLoader::SECTION_SEPARATOR . $this->mailTemplate->getName();
             $this->mailTitle = $translator->trans($titleLabel);
             $this->mailTitle = $this->mailTitle === $titleLabel ? '' : $this->mailTitle;
 
-            /** @var MailTemplateManager $mailTemplateManager */
-            $mailTemplateManager = $this->get('unilend.service.mail_template');
-            $this->headers       = $mailTemplateManager->getActiveMailTemplates(null, MailTemplates::PART_TYPE_HEADER);
-            $this->footers       = $mailTemplateManager->getActiveMailTemplates(null, MailTemplates::PART_TYPE_FOOTER);
+            $this->headers = $this->get('doctrine')->getRepository(MailHeader::class)->findAll();
+            $this->footers = $this->get('doctrine')->getRepository(MailFooter::class)->findAll();
         }
     }
 
@@ -194,30 +172,10 @@ class mailsController extends Controller
         $this->hideDecoration();
         $this->autoFireView = false;
 
-        $title    = $this->request->request->get('title', '');
-        $content  = $this->request->request->get('content', '');
-        $header   = $this->request->request->filter('header', null, FILTER_VALIDATE_INT);
-        $footer   = $this->request->request->filter('footer', null, FILTER_VALIDATE_INT);
-        $keywords = $this->request->request->filter('keywords', [], FILTER_DEFAULT, FILTER_REQUIRE_ARRAY);
+        $content = $this->request->request->get('content', '');
 
-        if ($header || $footer) {
-            /** @var \Doctrine\ORM\EntityManager $entityManager */
-            $entityManager          = $this->get('doctrine.orm.entity_manager');
-            $mailTemplateRepository = $entityManager->getRepository(MailTemplates::class);
-
-            if ($header && $header = $mailTemplateRepository->find($header)) {
-                $content = $header->getContent() . $content;
-            }
-
-            if ($footer && $footer = $mailTemplateRepository->find($footer)) {
-                $content .= $footer->getContent();
-            }
-        }
-
-        $keywords['title'] = $title;
-        foreach ($keywords as $keyword => $value) {
-            $content = str_replace('[EMV DYN]' . $keyword . '[EMV /DYN]', $value, $content);
-        }
+        /** @var EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
 
         $this->sendAjaxResponse(true, ['content' => $content]);
     }
@@ -234,8 +192,8 @@ class mailsController extends Controller
             $from      = isset($_POST['from'])      && false === empty($_POST['from']) ? $_POST['from'] : null;
             $recipient = isset($_POST['to'])        && false === empty($_POST['to']) ? $_POST['to'] : null;
             $subject   = isset($_POST['subject'])   && false === empty($_POST['subject']) ? $_POST['subject'] : null;
-            $startDate = isset($_POST['date_from']) && false === empty($_POST['date_from']) ? \DateTime::createFromFormat('d/m/Y', $_POST['date_from']) : new \DateTime('2013-01-01');
-            $endDate   = isset($_POST['date_to'])   && false === empty($_POST['date_to']) ? \DateTime::createFromFormat('d/m/Y', $_POST['date_to']) : new \DateTime('NOW');
+            $startDate = isset($_POST['date_from']) && false === empty($_POST['date_from']) ? DateTime::createFromFormat('d/m/Y', $_POST['date_from']) : new DateTime('2013-01-01');
+            $endDate   = isset($_POST['date_to'])   && false === empty($_POST['date_to']) ? DateTime::createFromFormat('d/m/Y', $_POST['date_to']) : new DateTime('NOW');
 
             $this->emails = $mailQueueManager->searchSentEmails($clientId, $from, $recipient, $subject, $startDate, $endDate);
         }
@@ -248,16 +206,26 @@ class mailsController extends Controller
         $this->hideDecoration();
     }
 
+    public function _header(): void
+    {
+        $this->handleMailPart(MailHeader::class);
+    }
+
+    public function _footer(): void
+    {
+        $this->handleMailPart(MailFooter::class);
+    }
+
     public function _email_history_preview()
     {
         $this->hideDecoration();
 
-        /** @var \Unilend\Service\Mailer\MailQueueManager $mailQueueManager */
+        /** @var MailQueueManager $mailQueueManager */
         $mailQueueManager = $this->get('unilend.service.mail_queue');
 
         try {
             $mailQueueId = filter_var($this->params[0], FILTER_SANITIZE_NUMBER_INT);
-            /** @var \Unilend\Entity\MailQueue $mailQueue */
+            /** @var MailQueue $mailQueue */
             $mailQueue = $this->get('doctrine.orm.entity_manager')
                 ->getRepository(MailQueue::class)->find($mailQueueId);
             if (null === $mailQueue) {
@@ -277,8 +245,31 @@ class mailsController extends Controller
                 'subject' => $email->getSubject(),
                 'body'    => $email->getBody(),
             ];
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
             $this->errorMessage = 'Impossible d\'afficher le mail';
+        }
+    }
+
+    /**
+     * @param string $class
+     */
+    private function handleMailPart($class)
+    {
+        $id = $this->params[0];
+
+        $manager = $this->get('doctrine')->getManager();
+
+        $repository = $manager->getRepository($class);
+
+        $part = $repository->find($id);
+
+        $this->mailPart = $part;
+
+        if ($this->request->isMethod(Request::METHOD_POST)) {
+            $part->setContent($this->request->get('content'));
+
+            $manager->persist($part);
+            $manager->flush($part);
         }
     }
 }

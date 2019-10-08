@@ -1,42 +1,39 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Unilend\Service\Mailer;
 
-use Doctrine\ORM\EntityManagerInterface;
-use Psr\Log\LoggerInterface;
-use Unilend\Entity\Clients;
-use Unilend\Entity\MailQueue;
-use Unilend\Entity\MailTemplates;
-use Unilend\SwiftMailer\TemplateMessage;
-use Unilend\SwiftMailer\TemplateMessageProvider;
+use DateTime;
+use Doctrine\ORM\{EntityManagerInterface, NonUniqueResultException};
+use Exception;
+use Swift_Attachment;
+use Twig\Error\{LoaderError, RuntimeError, SyntaxError};
+use Unilend\Entity\{Clients, MailQueue, MailTemplate};
+use Unilend\SwiftMailer\{TemplateMessage, TemplateMessageProvider};
 
 class MailQueueManager
 {
     /** @var EntityManagerInterface */
     private $entityManager;
     /** @var TemplateMessageProvider */
-    private $templateMessage;
-    /** @var LoggerInterface */
-    private $logger;
+    private $templateMessageProvider;
     /** @var string */
     private $temporaryDirectory;
 
     /**
      * @param EntityManagerInterface  $entityManager
      * @param TemplateMessageProvider $templateMessage
-     * @param LoggerInterface         $logger
      * @param string                  $temporaryDirectory
      */
     public function __construct(
         EntityManagerInterface $entityManager,
         TemplateMessageProvider $templateMessage,
-        LoggerInterface $logger,
         string $temporaryDirectory
     ) {
-        $this->entityManager      = $entityManager;
-        $this->templateMessage    = $templateMessage;
-        $this->logger             = $logger;
-        $this->temporaryDirectory = $temporaryDirectory;
+        $this->entityManager           = $entityManager;
+        $this->templateMessageProvider = $templateMessage;
+        $this->temporaryDirectory      = $temporaryDirectory;
     }
 
     /**
@@ -48,14 +45,14 @@ class MailQueueManager
      */
     public function queue(TemplateMessage $message): bool
     {
-        $mailTemplate = $this->entityManager->getRepository(MailTemplates::class)->find($message->getTemplateId());
+        $mailTemplate = $this->entityManager->getRepository(MailTemplate::class)->find($message->getTemplateId());
 
         $attachments = [];
         foreach ($message->getChildren() as $index => $child) {
             $attachments[$index] = [
                 'content-disposition' => $child->getHeaders()->get('Content-Disposition')->getFieldBody(),
                 'content-type'        => $child->getHeaders()->get('Content-Type')->getFieldBody(),
-                'tmp_file'            => uniqid() . '.attachment',
+                'tmp_file'            => uniqid('', true) . '.attachment',
             ];
             file_put_contents($this->temporaryDirectory . $attachments[$index]['tmp_file'], $child->getBody());
             chmod($this->temporaryDirectory . $attachments[$index]['tmp_file'], 0660);
@@ -80,14 +77,14 @@ class MailQueueManager
 
             $mailQueue = new MailQueue();
             $mailQueue
-                ->setIdMailTemplate($mailTemplate)
-                ->setSerializedVariables(json_encode($message->getVariables()))
-                ->setAttachments(json_encode($attachments))
+                ->setMailTemplate($mailTemplate)
+                ->setSerializedVariables(json_encode($message->getVariables(), JSON_THROW_ON_ERROR, 512))
+                ->setAttachments(json_encode($attachments, JSON_THROW_ON_ERROR, 512))
                 ->setReplyTo($replyTo)
                 ->setStatus(MailQueue::STATUS_PENDING)
                 ->setToSendAt($message->getToSendAt())
                 ->setRecipient($recipient)
-                ->setIdClient($clientId)
+                ->setClient($clientId)
             ;
 
             $this->entityManager->persist($mailQueue);
@@ -102,16 +99,21 @@ class MailQueueManager
      *
      * @param MailQueue $email
      *
-     * @throws \Swift_RfcComplianceException
+     * @throws LoaderError
+     * @throws RuntimeError
+     * @throws SyntaxError
      *
      * @return TemplateMessage
      */
-    public function getMessage(MailQueue $email)
+    public function getMessage(MailQueue $email): TemplateMessage
     {
-        $message = $this->templateMessage->newMessageByTemplate($email->getIdMailTemplate(), json_decode($email->getSerializedVariables(), true), false);
+        $message = $this->templateMessageProvider->newMessageByTemplate(
+            $email->getMailTemplate(),
+            json_decode($email->getSerializedVariables(), true, 512, JSON_THROW_ON_ERROR)
+        );
         $message
             ->setTo($email->getRecipient())
-            ->setQueueId($email->getIdQueue())
+            ->setQueueId($email->getId())
         ;
 
         if (false === empty($email->getReplyTo())) {
@@ -126,10 +128,10 @@ class MailQueueManager
             $message->setReplyTo($replyToEmail, $replyToName);
         }
 
-        $attachments = json_decode($email->getAttachments(), true);
+        $attachments = json_decode($email->getAttachments(), true, 512, JSON_THROW_ON_ERROR);
         if (is_array($attachments)) {
             foreach ($attachments as $attachment) {
-                $swiftAttachment = new \Swift_Attachment(file_get_contents($this->temporaryDirectory . $attachment['tmp_file']));
+                $swiftAttachment = new Swift_Attachment(file_get_contents($this->temporaryDirectory . $attachment['tmp_file']));
                 $swiftAttachment->setContentType($attachment['content-type']);
                 $swiftAttachment->setDisposition($attachment['content-disposition']);
 
@@ -145,11 +147,13 @@ class MailQueueManager
     /**
      * Get N (n = $Limit) mails from queue to send.
      *
-     * @param $limit
+     * @param int $limit
+     *
+     * @throws Exception
      *
      * @return MailQueue[]
      */
-    public function getMailsToSend($limit)
+    public function getMailsToSend($limit): array
     {
         return $this->entityManager->getRepository(MailQueue::class)
             ->getPendingMails($limit)
@@ -157,16 +161,16 @@ class MailQueueManager
     }
 
     /**
-     * @param int|null       $clientId
-     * @param string|null    $from
-     * @param string|null    $to
-     * @param string|null    $subject
-     * @param \DateTime|null $dateStart
-     * @param \DateTime|null $dateEnd
+     * @param int|null      $clientId
+     * @param string|null   $from
+     * @param string|null   $to
+     * @param string|null   $subject
+     * @param DateTime|null $dateStart
+     * @param DateTime|null $dateEnd
      *
      * @return array
      */
-    public function searchSentEmails($clientId = null, $from = null, $to = null, $subject = null, \DateTime $dateStart = null, \DateTime $dateEnd = null)
+    public function searchSentEmails($clientId = null, $from = null, $to = null, $subject = null, DateTime $dateStart = null, DateTime $dateEnd = null): array
     {
         return $this->entityManager->getRepository(MailQueue::class)
             ->searchSentEmails($clientId, $from, $to, $subject, $dateStart, $dateEnd)
@@ -176,9 +180,11 @@ class MailQueueManager
     /**
      * @param int $templateId
      *
+     * @throws NonUniqueResultException
+     *
      * @return bool
      */
-    public function existsInMailQueue($templateId)
+    public function existsInMailQueue($templateId): bool
     {
         return $this->entityManager->getRepository(MailQueue::class)
             ->existsTemplateInMailQueue($templateId)

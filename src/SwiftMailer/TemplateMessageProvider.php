@@ -7,58 +7,37 @@ namespace Unilend\SwiftMailer;
 use Doctrine\ORM\EntityManagerInterface;
 use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\Asset\Packages;
-use Symfony\Contracts\Translation\TranslatorInterface;
-use Unilend\Entity\{MailTemplates, Settings, Translations};
-use Unilend\Service\Translation\TranslationLoader;
+use Twig\Environment;
+use Twig\Error\LoaderError;
+use Twig\Error\RuntimeError;
+use Twig\Error\SyntaxError;
+use Unilend\Entity\MailTemplate;
+use Unilend\Repository\MailTemplateRepository;
 
 class TemplateMessageProvider
 {
-    public const KEYWORDS_PREFIX = '[EMV DYN]';
-    public const KEYWORDS_SUFFIX = '[EMV /DYN]';
-
     /** @var EntityManagerInterface */
-    private $entityManager;
-    /** @var string */
-    private $templateMessageFQCN;
+    private $mailTemplateRepository;
     /** @var string */
     private $defaultLocale;
-    /** @var TranslatorInterface */
-    private $translator;
-    /** @var string */
-    private $staticUrl;
-    /** @var string */
-    private $frontUrl;
-    /** @var string */
-    private $adminUrl;
     /** @var LoggerInterface */
     private $logger;
+    /** @var Environment */
+    private $twig;
 
     /**
-     * @param EntityManagerInterface $entityManager
-     * @param string                 $templateMessageFQCN
+     * @param MailTemplateRepository $mailTemplateRepository
+     * @param Environment            $twig
      * @param string                 $defaultLocale
-     * @param TranslatorInterface    $translator
-     * @param Packages               $assetsPackages
-     * @param string                 $frontUrl
-     * @param string                 $adminUrl
      */
     public function __construct(
-        EntityManagerInterface $entityManager,
-        string $templateMessageFQCN,
-        string $defaultLocale,
-        TranslatorInterface $translator,
-        Packages $assetsPackages,
-        string $frontUrl,
-        string $adminUrl
+        MailTemplateRepository $mailTemplateRepository,
+        Environment $twig,
+        string $defaultLocale
     ) {
-        $this->entityManager       = $entityManager;
-        $this->templateMessageFQCN = $templateMessageFQCN;
-        $this->defaultLocale       = $defaultLocale;
-        $this->translator          = $translator;
-        $this->staticUrl           = $assetsPackages->getUrl('');
-        $this->frontUrl            = $frontUrl;
-        $this->adminUrl            = $adminUrl;
+        $this->mailTemplateRepository = $mailTemplateRepository;
+        $this->defaultLocale          = $defaultLocale;
+        $this->twig                   = $twig;
     }
 
     /**
@@ -68,7 +47,7 @@ class TemplateMessageProvider
      *
      * @return $this
      */
-    public function setLogger(?LoggerInterface $logger)
+    public function setLogger(?LoggerInterface $logger): self
     {
         $this->logger = $logger;
 
@@ -77,82 +56,62 @@ class TemplateMessageProvider
 
     /**
      * @param string $templateName
-     * @param array  $keywords
-     * @param bool   $wrapKeywords
+     * @param array  $context
+     *
+     * @throws LoaderError
+     * @throws RuntimeError
+     * @throws SyntaxError
      *
      * @return TemplateMessage
      */
-    public function newMessage(string $templateName, array $keywords = [], bool $wrapKeywords = true)
+    public function newMessage(string $templateName, array $context = []): TemplateMessage
     {
-        $mailTemplate = $this->entityManager->getRepository(MailTemplates::class)->findOneBy([
-            'type'   => $templateName,
-            'locale' => $this->defaultLocale,
-            'status' => MailTemplates::STATUS_ACTIVE,
-            'part'   => MailTemplates::PART_TYPE_CONTENT,
-        ]);
+        $mailTemplate = $this->mailTemplateRepository->findOneBy(['name' => $templateName, 'locale' => $this->defaultLocale]);
 
         if (null === $mailTemplate) {
             throw new InvalidArgumentException(sprintf('The mail template %s for the language %s is not found.', $templateName, $this->defaultLocale));
         }
 
-        return $this->setMessageAttributes($mailTemplate, $keywords, $wrapKeywords);
+        return $this->newMessageByTemplate($mailTemplate, $context);
     }
 
     /**
-     * @param MailTemplates $mailTemplate
-     * @param array         $keywords
-     * @param bool          $wrapKeywords
+     * @param MailTemplate $mailTemplate
+     * @param array        $context
+     *
+     * @throws RuntimeError
+     * @throws SyntaxError
+     * @throws LoaderError
      *
      * @return TemplateMessage
      */
-    public function newMessageByTemplate(MailTemplates $mailTemplate, array $keywords = [], bool $wrapKeywords = true): TemplateMessage
+    public function newMessageByTemplate(MailTemplate $mailTemplate, array $context = []): TemplateMessage
     {
-        return $this->setMessageAttributes($mailTemplate, $keywords, $wrapKeywords);
+        return $this->setMessageAttributes($mailTemplate, $context);
     }
 
     /**
-     * @param MailTemplates $mailTemplate
-     * @param array         $keywords
-     * @param bool          $wrapKeywords
+     * @param MailTemplate $mailTemplate
+     * @param array        $context
+     *
+     *@throws RuntimeError
+     * @throws SyntaxError
+     * @throws LoaderError
      *
      * @return TemplateMessage
      */
-    private function setMessageAttributes(MailTemplates $mailTemplate, array $keywords = [], bool $wrapKeywords = true): TemplateMessage
+    private function setMessageAttributes(MailTemplate $mailTemplate, array $context = []): TemplateMessage
     {
-        $commonKeywords      = $this->getCommonKeywords();
-        $overwrittenKeywords = array_intersect_key($keywords, $commonKeywords);
-
-        if (false === empty($overwrittenKeywords) && $this->logger instanceof LoggerInterface) {
-            $this->logger->warning(
-                sprintf('Following keywords are overwritten by common keywords in %s email: %s', $mailTemplate->getType(), implode(', ', array_keys($overwrittenKeywords)))
-            );
-        }
-
-        if ($mailTemplate->getIdHeader()) {
-            $keywords['title'] = strtr($this->translator->trans(Translations::SECTION_MAIL_TITLE . TranslationLoader::SECTION_SEPARATOR . $mailTemplate->getType()), $keywords);
-
-            if (false !== mb_strpos($keywords['title'], self::KEYWORDS_SUFFIX) && false !== mb_strpos($keywords['title'], self::KEYWORDS_PREFIX)) {
-                $keywords['title'] = str_replace(self::KEYWORDS_SUFFIX, '', str_replace(self::KEYWORDS_PREFIX, '', $keywords['title']));
-            }
-
-            $keywords = array_merge($commonKeywords, $keywords);
-        }
-
-        if ($wrapKeywords) {
-            $keywords = $this->wrapKeywords($keywords);
-        }
-
-        $fromName = strtr($mailTemplate->getSenderName(), $keywords);
-        $subject  = strtr($mailTemplate->getSubject(), $keywords);
-        $body     = $mailTemplate->getCompiledContent() ? $mailTemplate->getCompiledContent() : $mailTemplate->getContent();
-        $body     = strtr($body, $keywords);
+        $senderName = $this->twig->createTemplate($mailTemplate->getSenderName())->render($context);
+        $subject    = $this->twig->createTemplate($mailTemplate->getSubject())->render($context);
+        $body       = $this->twig->render($mailTemplate->getName(), $context);
 
         /** @var TemplateMessage $message */
-        $message = new $this->templateMessageFQCN($mailTemplate->getIdMailTemplate());
+        $message = new TemplateMessage($mailTemplate);
         $message
-            ->setVariables($keywords)
-            ->setFrom($mailTemplate->getSenderEmail(), $fromName)
-            ->setReplyTo($mailTemplate->getSenderEmail(), $fromName)
+            ->setVariables($context)
+            ->setFrom($mailTemplate->getSenderEmail(), $senderName)
+            ->setReplyTo($mailTemplate->getSenderEmail(), $senderName)
             ->setSubject($subject)
             ->setBody($body, 'text/html')
         ;
@@ -162,37 +121,5 @@ class TemplateMessageProvider
         }
 
         return $message;
-    }
-
-    /**
-     * @return array
-     */
-    private function getCommonKeywords()
-    {
-        $settingsRepository = $this->entityManager->getRepository(Settings::class);
-
-        return [
-            'staticUrl' => $this->staticUrl,
-            'frontUrl'  => $this->frontUrl,
-            'adminUrl'  => $this->adminUrl,
-            'year'      => date('Y'),
-        ];
-    }
-
-    /**
-     * @param array  $keywords
-     * @param string $prefix
-     * @param string $suffix
-     *
-     * @return array
-     */
-    private function wrapKeywords($keywords, $prefix = self::KEYWORDS_PREFIX, $suffix = self::KEYWORDS_SUFFIX)
-    {
-        $wrappedVars = [];
-        foreach ($keywords as $key => $value) {
-            $wrappedVars[$prefix . $key . $suffix] = $value;
-        }
-
-        return $wrappedVars;
     }
 }

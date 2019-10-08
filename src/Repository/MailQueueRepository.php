@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace Unilend\Repository;
 
+use DateTime;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\DBAL\DBALException;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\Query\Expr\Join;
 use Exception;
-use Unilend\Entity\{MailQueue, MailTemplates};
+use Unilend\Entity\{MailQueue, MailTemplate};
 
 /**
  * @method MailQueue|null find($id, $lockMode = null, $lockVersion = null)
@@ -20,6 +21,11 @@ use Unilend\Entity\{MailQueue, MailTemplates};
  */
 class MailQueueRepository extends ServiceEntityRepository
 {
+    /**
+     * MailQueueRepository constructor.
+     *
+     * @param ManagerRegistry $registry
+     */
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, MailQueue::class);
@@ -32,7 +38,7 @@ class MailQueueRepository extends ServiceEntityRepository
      *
      * @return MailQueue[]
      */
-    public function getPendingMails($limit)
+    public function getPendingMails($limit): array
     {
         $qb = $this->createQueryBuilder('mq');
         $qb->where('mq.status = :pending')
@@ -40,8 +46,8 @@ class MailQueueRepository extends ServiceEntityRepository
             ->andWhere(
                 $qb->expr()->orX('mq.toSendAt <= :now', $qb->expr()->isNull('mq.toSendAt'))
             )
-            ->setParameter('now', new \DateTime())
-            ->orderBy('mq.idQueue', 'ASC')
+            ->setParameter('now', new DateTime())
+            ->orderBy('mq.id', 'ASC')
             ->groupBy('mq.recipient')
         ;
 
@@ -55,18 +61,17 @@ class MailQueueRepository extends ServiceEntityRepository
     /**
      * @param int $templateId
      *
-     * @return bool
      * @throws NonUniqueResultException
+     *
+     * @return bool
      */
-    public function existsTemplateInMailQueue($templateId)
+    public function existsTemplateInMailQueue($templateId): bool
     {
         $queryBuilder = $this->createQueryBuilder('mq');
         $queryBuilder
-            ->select('COUNT(mq.idQueue)')
-            ->innerJoin(MailTemplates::class, 'mt', Join::WITH, 'mq.idMailTemplate = mt.idMailTemplate')
-            ->where('mt.idMailTemplate = :templateId')
-            ->orWhere('mt.idHeader = :templateId')
-            ->orWhere('mt.idFooter = :templateId')
+            ->select('COUNT(mq.id)')
+            ->innerJoin(MailTemplate::class, 'mt', Join::WITH, 'mq.mailTemplate = mt.id')
+            ->where('mt.id = :templateId')
             ->setParameter('templateId', $templateId)
         ;
 
@@ -74,29 +79,29 @@ class MailQueueRepository extends ServiceEntityRepository
     }
 
     /**
-     * @param int|null       $clientId
-     * @param string|null    $sender
-     * @param string|null    $recipient
-     * @param string|null    $subject
-     * @param \DateTime|null $startDate
-     * @param \DateTime|null $endDate
+     * @param int|null      $clientId
+     * @param string|null   $sender
+     * @param string|null   $recipient
+     * @param string|null   $subject
+     * @param DateTime|null $startDate
+     * @param DateTime|null $endDate
      *
      * @return array
      */
-    public function searchSentEmails($clientId = null, $sender = null, $recipient = null, $subject = null, \DateTime $startDate = null, \DateTime $endDate = null): array
+    public function searchSentEmails($clientId = null, $sender = null, $recipient = null, $subject = null, DateTime $startDate = null, DateTime $endDate = null): array
     {
         $queryBuilder = $this->createQueryBuilder('mq');
         $queryBuilder
             ->select(
                 '
-                mq.idQueue,
+                mq.id,
                 mq.sentAt,
                 mq.recipient,
                 mt.senderName,
                 mt.senderEmail,
                 mt.subject'
             )
-            ->innerJoin(MailTemplates::class, 'mt', Join::WITH, 'mq.idMailTemplate = mt.idMailTemplate')
+            ->innerJoin(MailTemplate::class, 'mt', Join::WITH, 'mq.mailTemplate = mt.id')
             ->where('mq.status = :sentStatus')
             ->setParameter('sentStatus', MailQueue::STATUS_SENT)
             ->orderBy('mq.sentAt', 'DESC')
@@ -104,7 +109,7 @@ class MailQueueRepository extends ServiceEntityRepository
 
         if (false === (null === $clientId)) {
             $queryBuilder
-                ->andWhere('mq.idClient = :clientId')
+                ->andWhere('mq.client = :clientId')
                 ->setParameter('clientId', $clientId)
             ;
         }

@@ -68,7 +68,7 @@
                         <td><?= $email['recipient'] ?></td>
                         <td><?= $email['subject'] ?></td>
                         <td style="center">
-                            <a href="<?= $this->url ?>/mails/email_history_preview/<?= $email['idQueue'] ?>" class="thickbox">
+                            <a href="<?= $this->url ?>/mails/email_history_preview/<?= $email['id'] ?>" class="thickbox">
                                 <img src="<?= $this->url ?>/images/modif.png" alt="Voir <?= $email['subject'] ?>">
                             </a>
                         </td>

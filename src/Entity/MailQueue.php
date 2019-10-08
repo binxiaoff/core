@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Unilend\Entity;
 
+use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
+use Unilend\Entity\Traits\TimestampableTrait;
 
 /**
  * @ORM\Table(name="mail_queue", indexes={
@@ -19,20 +21,22 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class MailQueue
 {
+    use TimestampableTrait;
+
     public const STATUS_PENDING    = 0;
     public const STATUS_PROCESSING = 1;
     public const STATUS_SENT       = 2;
     public const STATUS_ERROR      = -1;
 
     /**
-     * @var \Unilend\Entity\MailTemplates
+     * @var MailTemplate
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Entity\MailTemplates")
+     * @ORM\ManyToOne(targetEntity="MailTemplate")
      * @ORM\JoinColumns({
-     *     @ORM\JoinColumn(name="id_mail_template", referencedColumnName="id_mail_template", nullable=false)
+     *     @ORM\JoinColumn(name="id_mail_template", referencedColumnName="id", nullable=false)
      * })
      */
-    private $idMailTemplate;
+    private $mailTemplate;
 
     /**
      * @var string
@@ -69,7 +73,7 @@ class MailQueue
      *
      * @ORM\Column(name="id_client", type="integer", nullable=true)
      */
-    private $idClient;
+    private $client;
 
     /**
      * @var string
@@ -93,60 +97,46 @@ class MailQueue
     private $status;
 
     /**
-     * @var \DateTime
+     * @var DateTimeImmutable
      *
-     * @ORM\Column(name="to_send_at", type="datetime", nullable=true)
+     * @ORM\Column(name="to_send_at", type="date_immutable", nullable=true)
      */
     private $toSendAt;
 
     /**
-     * @var \DateTime
+     * @var DateTimeImmutable
      *
-     * @ORM\Column(name="sent_at", type="datetime", nullable=true)
+     * @ORM\Column(name="sent_at", type="date_immutable", nullable=true)
      */
     private $sentAt;
 
     /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="updated", type="datetime", nullable=true)
-     */
-    private $updated;
-
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="added", type="datetime")
-     */
-    private $added;
-
-    /**
      * @var int
      *
-     * @ORM\Column(name="id_queue", type="integer")
      * @ORM\Id
+     * @ORM\Column(name="id_queue", type="integer")
      * @ORM\GeneratedValue(strategy="IDENTITY")
      */
-    private $idQueue;
+    private $id;
 
     /**
-     * @param MailTemplates $idMailTemplate
+     * @param MailTemplate $mailTemplate
      *
      * @return MailQueue
      */
-    public function setIdMailTemplate($idMailTemplate)
+    public function setMailTemplate($mailTemplate): MailQueue
     {
-        $this->idMailTemplate = $idMailTemplate;
+        $this->mailTemplate = $mailTemplate;
 
         return $this;
     }
 
     /**
-     * @return MailTemplates
+     * @return MailTemplate
      */
-    public function getIdMailTemplate()
+    public function getMailTemplate(): MailTemplate
     {
-        return $this->idMailTemplate;
+        return $this->mailTemplate;
     }
 
     /**
@@ -154,7 +144,7 @@ class MailQueue
      *
      * @return MailQueue
      */
-    public function setSerializedVariables($serializedVariables)
+    public function setSerializedVariables($serializedVariables): MailQueue
     {
         $this->serializedVariables = $serializedVariables;
 
@@ -164,7 +154,7 @@ class MailQueue
     /**
      * @return string
      */
-    public function getSerializedVariables()
+    public function getSerializedVariables(): string
     {
         return $this->serializedVariables;
     }
@@ -174,7 +164,7 @@ class MailQueue
      *
      * @return MailQueue
      */
-    public function setAttachments($attachments)
+    public function setAttachments($attachments): MailQueue
     {
         $this->attachments = $attachments;
 
@@ -184,7 +174,7 @@ class MailQueue
     /**
      * @return string
      */
-    public function getAttachments()
+    public function getAttachments(): string
     {
         return $this->attachments;
     }
@@ -194,7 +184,7 @@ class MailQueue
      *
      * @return MailQueue
      */
-    public function setRecipient($recipient)
+    public function setRecipient($recipient): MailQueue
     {
         $this->recipient = $recipient;
 
@@ -204,7 +194,7 @@ class MailQueue
     /**
      * @return string
      */
-    public function getRecipient()
+    public function getRecipient(): string
     {
         return $this->recipient;
     }
@@ -214,7 +204,7 @@ class MailQueue
      *
      * @return MailQueue
      */
-    public function setReplyTo($replyTo)
+    public function setReplyTo($replyTo): MailQueue
     {
         $this->replyTo = $replyTo;
 
@@ -224,19 +214,19 @@ class MailQueue
     /**
      * @return string
      */
-    public function getReplyTo()
+    public function getReplyTo(): string
     {
         return $this->replyTo;
     }
 
     /**
-     * @param int $idClient
+     * @param int $client
      *
      * @return MailQueue
      */
-    public function setIdClient($idClient)
+    public function setClient($client): MailQueue
     {
-        $this->idClient = $idClient;
+        $this->client = $client;
 
         return $this;
     }
@@ -244,9 +234,9 @@ class MailQueue
     /**
      * @return int
      */
-    public function getIdClient()
+    public function getClient(): int
     {
-        return $this->idClient;
+        return $this->client;
     }
 
     /**
@@ -254,7 +244,7 @@ class MailQueue
      *
      * @return MailQueue
      */
-    public function setIdMessageMailjet($idMessageMailjet)
+    public function setIdMessageMailjet($idMessageMailjet): MailQueue
     {
         $this->idMessageMailjet = $idMessageMailjet;
 
@@ -262,9 +252,9 @@ class MailQueue
     }
 
     /**
-     * @return int
+     * @return string
      */
-    public function getIdMessageMailjet()
+    public function getIdMessageMailjet(): string
     {
         return $this->idMessageMailjet;
     }
@@ -274,7 +264,7 @@ class MailQueue
      *
      * @return MailQueue
      */
-    public function setErrorMailjet($errorMailjet)
+    public function setErrorMailjet($errorMailjet): MailQueue
     {
         $this->errorMailjet = $errorMailjet;
 
@@ -284,7 +274,7 @@ class MailQueue
     /**
      * @return string
      */
-    public function getErrorMailjet()
+    public function getErrorMailjet(): string
     {
         return $this->errorMailjet;
     }
@@ -294,7 +284,7 @@ class MailQueue
      *
      * @return MailQueue
      */
-    public function setStatus($status)
+    public function setStatus($status): MailQueue
     {
         $this->status = $status;
 
@@ -304,17 +294,17 @@ class MailQueue
     /**
      * @return int
      */
-    public function getStatus()
+    public function getStatus(): int
     {
         return $this->status;
     }
 
     /**
-     * @param \DateTime $toSendAt
+     * @param DateTimeImmutable $toSendAt
      *
      * @return MailQueue
      */
-    public function setToSendAt($toSendAt)
+    public function setToSendAt($toSendAt): MailQueue
     {
         $this->toSendAt = $toSendAt;
 
@@ -322,19 +312,19 @@ class MailQueue
     }
 
     /**
-     * @return \DateTime
+     * @return DateTimeImmutable
      */
-    public function getToSendAt()
+    public function getToSendAt(): DateTimeImmutable
     {
         return $this->toSendAt;
     }
 
     /**
-     * @param \DateTime $sentAt
+     * @param DateTimeImmutable $sentAt
      *
      * @return MailQueue
      */
-    public function setSentAt($sentAt)
+    public function setSentAt($sentAt): MailQueue
     {
         $this->sentAt = $sentAt;
 
@@ -342,76 +332,18 @@ class MailQueue
     }
 
     /**
-     * @return \DateTime
+     * @return DateTimeImmutable
      */
-    public function getSentAt()
+    public function getSentAt(): DateTimeImmutable
     {
         return $this->sentAt;
     }
 
     /**
-     * @param \DateTime $updated
-     *
-     * @return MailQueue
-     */
-    public function setUpdated($updated)
-    {
-        $this->updated = $updated;
-
-        return $this;
-    }
-
-    /**
-     * @return \DateTime
-     */
-    public function getUpdated()
-    {
-        return $this->updated;
-    }
-
-    /**
-     * @param \DateTime $added
-     *
-     * @return MailQueue
-     */
-    public function setAdded($added)
-    {
-        $this->added = $added;
-
-        return $this;
-    }
-
-    /**
-     * @return \DateTime
-     */
-    public function getAdded()
-    {
-        return $this->added;
-    }
-
-    /**
      * @return int
      */
-    public function getIdQueue()
+    public function getId(): int
     {
-        return $this->idQueue;
-    }
-
-    /**
-     * @ORM\PrePersist
-     */
-    public function setAddedValue()
-    {
-        if (!$this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
-            $this->added = new \DateTime();
-        }
-    }
-
-    /**
-     * @ORM\PreUpdate
-     */
-    public function setUpdatedValue()
-    {
-        $this->updated = new \DateTime();
+        return $this->id;
     }
 }

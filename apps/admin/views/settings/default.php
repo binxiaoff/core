@@ -18,7 +18,7 @@
                 <?php /** @var \Unilend\Entity\Settings $setting */ ?>
                 <?php foreach ($this->settings as $setting) : ?>
                     <tr>
-                        <td><?= $setting->getType() ?></td>
+                        <td><?= $setting->getName() ?></td>
                         <td style="overflow: auto; max-width: 700px;"><?= $setting->getValue() ?></td>
                         <td class="center">
                             <a href="<?= $this->url ?>/settings/edit/<?= $setting->getIdSetting() ?>" class="thickbox">

@@ -32,7 +32,6 @@ services:
             $userAttachmentFilesystem: '@League\Flysystem\UserAttachmentFilesystem'
             $publicUserUploadFilesystem: '@League\Flysystem\PublicUserUploadFilesystem'
             $generatedDocumentFilesystem: '@League\Flysystem\GeneratedDocumentFilesystem'
-            $mailer: '@Unilend\SwiftMailer\UnilendMailer'
 
     # makes classes in src/ available to be used as services
     # this creates a service per class whose id is the fully-qualified class name
@@ -131,5 +130,15 @@ services:
             - '@UserAgentParser\Provider\WhichBrowser'
             - '@UserAgentParser\Provider\PiwikDeviceDetector'
 
+    Unilend\Twig\Loader\DatabaseLoader:
+        arguments:
+            $repository: '@Unilend\Repository\MailTemplateRepository'
+        tags:
+            - name: twig.loader
+              priority: -9999
+
     Unilend\Security\LoginAuthenticator:
         $firewallMap: '@security.firewall.map'
+
+    Unilend\SwiftMailer\MailjetTransport:
+        shared: false

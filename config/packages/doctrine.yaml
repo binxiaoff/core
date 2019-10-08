@@ -40,6 +40,10 @@ doctrine:
                 alias: Unilend
         hydrators:
             HYDRATE_COLUMN: Unilend\Doctrine\ORM\ColumnHydrator
+        filters:
+            softdeletable:
+                class: 'Gedmo\SoftDeleteable\Filter\SoftDeleteableFilter'
+                enabled: true
 
 services:
     doctrine.result_cache_provider:

@@ -3,4 +3,3 @@ services:
     RobertoTru\ToInlineStyleEmailBundle\Converter\ToInlineStyleEmailConverter: '@css_to_inline_email_converter'
     Xynnn\GoogleTagManagerBundle\Service\GoogleTagManagerInterface: '@google_tag_manager'
     Sonata\CacheBundle\Adapter\SymfonyCache: '@sonata.cache.symfony'
-    Swift_Events_EventDispatcher: '@swiftmailer.mailer.default.transport.eventdispatcher'
