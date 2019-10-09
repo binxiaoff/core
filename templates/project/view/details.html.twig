@@ -144,6 +144,16 @@
                     {% endfor %}
                 </div><!-- /.section-tabs-content -->
             </div><!-- /.panel -->
+            <div class="panel">
+                <div class="section-tabs-nav">
+                    <header>
+                        <h3 class="h3">Pas intéressé</h3>
+                    </header>
+                </div><!-- /.section-tabs-nav -->
+                <div class="section-tabs-content tab-content">
+                    <a class="btn btn-danger" href="{{ path('project_uninterested_connected', {'slug': project.slug}) }}">Pas intéressé</a>
+                </div><!-- /.section-tabs-content -->
+            </div><!-- /.panel -->
             <div id="article-discussions" class="panel" style="font-size: 16px;">
                 <div class="section-tabs-nav">
                     <header>

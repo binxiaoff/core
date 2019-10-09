@@ -8,6 +8,8 @@ use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\Query\Expr\Join;
+use Doctrine\ORM\{ORMException, OptimisticLockException};
+use Unilend\Entity\Clients;
 use Unilend\Entity\{Project, ProjectParticipation, Staff};
 
 /**
@@ -51,5 +53,45 @@ class ProjectParticipationRepository extends ServiceEntityRepository
         ;
 
         return $queryBuilder->getQuery()->getOneOrNullResult();
+    }
+
+    /**
+     * @param Project $project
+     * @param Clients $clients
+     *
+     * @throws NonUniqueResultException
+     *
+     * @return ProjectParticipation
+     */
+    public function findByProjectAndClient(Project $project, Clients $clients): ?ProjectParticipation
+    {
+        return
+            // Check if there is a project participation contact
+            $this->createQueryBuilder('pp')
+                ->innerJoin('pp.projectParticipationContacts', 'ppc')
+                ->where('pp.project = :project')
+                ->andWhere('ppc.client = :client')
+                ->setParameters(['project' => $project, 'client' => $clients])
+                ->getQuery()
+                ->getOneOrNullResult() ?? // Check if is a project participation with the user company
+            $this->createQueryBuilder('pp')
+                ->where('pp.project = :project')
+                ->andWhere('pp.company = :company')
+                ->setParameters(['project' => $project, 'company' => $clients->getCompany()])
+                ->getQuery()
+                ->getOneOrNullResult()
+        ;
+    }
+
+    /**
+     * @param ProjectParticipation $projectParticipation
+     *
+     * @throws ORMException
+     * @throws OptimisticLockException
+     */
+    public function save(ProjectParticipation $projectParticipation): void
+    {
+        $this->getEntityManager()->persist($projectParticipation);
+        $this->getEntityManager()->flush($projectParticipation);
     }
 }
