@@ -76,30 +76,6 @@ class ProjectParticipationManager
     }
 
     /**
-     * @param Project   $project
-     * @param Companies $company
-     *
-     * @throws ORMException
-     * @throws OptimisticLockException
-     *
-     * @return ProjectParticipation
-     */
-    public function addParticipantByCompany(Project $project, Companies $company): ProjectParticipation
-    {
-        $projectParticipation = $project->addParticipant($company, $this->realUserFinder);
-        $clients              = $this->clientRepository->findDefaultConcernedClients($projectParticipation);
-        foreach ($clients as $client) {
-            $projectParticipation->addProjectParticipationContact($client, $this->realUserFinder);
-        }
-
-        $this->projectParticipationRepository->save($projectParticipation);
-
-        $this->messageBus->dispatch(new ProjectParticipantInvited($projectParticipation));
-
-        return $projectParticipation;
-    }
-
-    /**
      * @param Clients              $client
      * @param ProjectParticipation $projectParticipation
      *

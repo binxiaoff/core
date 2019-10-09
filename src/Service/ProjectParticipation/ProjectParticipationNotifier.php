@@ -46,10 +46,9 @@ class ProjectParticipationNotifier
     {
         $sent = 0;
         if (ProjectStatus::STATUS_PUBLISHED === $projectParticipation->getProject()->getCurrentStatus()->getStatus()) {
-            $concernedInvitees = $this->clientRepository->findProjectParticipationContact($projectParticipation);
-            foreach ($concernedInvitees as $invitee) {
-                $inviter = $this->projectParticipationManager->getInviter($projectParticipation, $invitee);
-                $sent += $this->clientNotifier->notifyInvited($inviter, $invitee, $projectParticipation->getProject());
+            foreach ($projectParticipation->getProjectParticipationContacts() as $contact) {
+                $inviter = $this->projectParticipationManager->getInviter($projectParticipation, $contact->getClient());
+                $sent += $this->clientNotifier->notifyInvited($inviter, $contact->getClient(), $projectParticipation->getProject());
             }
         }
 

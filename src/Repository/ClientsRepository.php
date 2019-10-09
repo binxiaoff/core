@@ -9,7 +9,7 @@ use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\Query\{Expr\Join};
 use Doctrine\ORM\{NonUniqueResultException, ORMException, OptimisticLockException};
 use PDO;
-use Unilend\Entity\{Clients, ClientsStatus, Companies, ProjectParticipation, ProjectParticipationContact, Staff};
+use Unilend\Entity\{Clients, ClientsStatus, Companies, ProjectParticipation, Staff};
 
 /**
  * @method Clients|null find($id, $lockMode = null, $lockVersion = null)
@@ -98,22 +98,6 @@ class ClientsRepository extends ServiceEntityRepository
             ->andwhere('s.company = :company')
             ->setParameter('role', json_encode($roles, JSON_THROW_ON_ERROR))
             ->setParameter('company', $company)
-        ;
-
-        return $queryBuilder->getQuery()->getResult();
-    }
-
-    /**
-     * @param ProjectParticipation $projectParticipation
-     *
-     * @return array
-     */
-    public function findProjectParticipationContact(ProjectParticipation $projectParticipation): array
-    {
-        $queryBuilder = $this->createQueryBuilder('c')
-            ->innerJoin(ProjectParticipationContact::class, 'ppc', Join::WITH, 'ppc.client = c.idClient')
-            ->where('ppc.projectParticipation = :projectParticipation')
-            ->setParameter('projectParticipation', $projectParticipation)
         ;
 
         return $queryBuilder->getQuery()->getResult();

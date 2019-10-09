@@ -134,10 +134,11 @@ class EditController extends AbstractController
      *
      * @IsGranted("edit", subject="project")
      *
-     * @param Project                     $project
-     * @param Request                     $request
-     * @param CompaniesRepository         $companyRepository
-     * @param ProjectParticipationManager $projectParticipationManager
+     * @param Project             $project
+     * @param Request             $request
+     * @param CompaniesRepository $companyRepository
+     * @param ProjectRepository   $projectRepository
+     * @param RealUserFinder      $realUserFinder
      *
      * @throws ORMException
      * @throws OptimisticLockException
@@ -148,13 +149,16 @@ class EditController extends AbstractController
         Project $project,
         Request $request,
         CompaniesRepository $companyRepository,
-        ProjectParticipationManager $projectParticipationManager
+        ProjectRepository $projectRepository,
+        RealUserFinder $realUserFinder
     ): Response {
         $participatedCompanies = $companyRepository->findBy(['idCompany' => $request->request->get('visibility')]);
 
         foreach ($participatedCompanies as $company) {
-            $projectParticipationManager->addParticipantByCompany($project, $company);
+            $project->addParticipant($company, $realUserFinder);
         }
+
+        $projectRepository->save($project);
 
         return $this->redirectToRoute('edit_project_details', ['hash' => $project->getHash()]);
     }
