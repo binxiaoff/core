@@ -30,7 +30,7 @@ final class Version20191009080931 extends ContainerAwareMigration
             $key = 'tranche_fee_type_' . $key;
             $this->addSql(
                 <<<SQL
-INSERT IGNORE INTO translations (locale, section, name, translation, added, updated) VALUES ('fr_FR', 'fee-type', '{$key}', '{$translation}', NOW(), NULL)
+INSERT INTO translations (locale, section, name, translation, added, updated) VALUES ('fr_FR', 'fee-type', '{$key}', '{$translation}', NOW(), NULL) ON DUPLICATE KEY UPDATE translation = VALUES(translation)
 SQL
             );
         }
