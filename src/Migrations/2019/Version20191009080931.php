@@ -23,7 +23,7 @@ final class Version20191009080931 extends ContainerAwareMigration
             'non_utilisation' => 'Non utilisation',
             'commitment'      => 'Engagement',
             'utilisation'     => 'Utilisation',
-            'premier_tirage'  => 'Premier tirage',
+            'first_drawdown'  => 'Premier tirage',
         ];
 
         foreach ($translations as $key => $translation) {
