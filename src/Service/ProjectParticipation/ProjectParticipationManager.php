@@ -112,15 +112,15 @@ class ProjectParticipationManager
     {
         $projectParticipationContact = $this->projectParticipationContactRepository->findByProjectAndClient($projectParticipation->getProject(), $client);
 
-        if (null === $projectParticipationContact) {
-            $projectParticipationContact = $projectParticipation->addProjectParticipationContact($client, $this->realUserFinder);
-            $this->projectParticipationRepository->save($projectParticipation);
-            $this->messageBus->dispatch(new ProjectParticipationContactInvited($projectParticipationContact));
-        } else {
+        if ($projectParticipationContact) {
             throw new RuntimeException(
                 sprintf('The participant with mail %s has already been invited to the project id %s', $client->getEmail(), $projectParticipation->getProject()->getId())
             );
         }
+
+        $projectParticipationContact = $projectParticipation->addProjectParticipationContact($client, $this->realUserFinder);
+        $this->projectParticipationRepository->save($projectParticipation);
+        $this->messageBus->dispatch(new ProjectParticipationContactInvited($projectParticipationContact));
 
         return $projectParticipationContact;
     }

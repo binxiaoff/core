@@ -855,22 +855,6 @@ class Project
     }
 
     /**
-     * @param Companies[]    $companies
-     * @param RealUserFinder $realUserFinder
-     *
-     * @return ProjectParticipation[]
-     */
-    public function addParticipants(array $companies, RealUserFinder $realUserFinder): iterable
-    {
-        $participant = [];
-        foreach ($companies as $company) {
-            $participant[] = $this->addParticipant($company, $realUserFinder);
-        }
-
-        return $participant;
-    }
-
-    /**
      * @throws Exception
      *
      * @return ProjectParticipation|null
