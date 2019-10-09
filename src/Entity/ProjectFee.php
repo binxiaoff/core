@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Unilend\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
@@ -16,7 +18,8 @@ class ProjectFee
     use TimestampableTrait;
     use ConstantsAwareTrait;
 
-    public const PROJECT_FEE_TYPE_PARTICIPATION = 1;
+    public const PROJECT_FEE_TYPE_PARTICIPATION  = 1;
+    public const PROJECT_FEE_TYPE_ADMINISTRATIVE = 2;
 
     /**
      * @var int
