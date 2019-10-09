@@ -21,7 +21,7 @@ class TrancheFee
     public const TRANCHE_FEE_TYPE_NON_UTILISATION = 1;
     public const TRANCHE_FEE_TYPE_COMMITMENT      = 2;
     public const TRANCHE_FEE_TYPE_UTILISATION     = 3;
-    public const TRANCHE_FEE_TYPE_PREMIER_TIRAGE  = 4;
+    public const TRANCHE_FEE_TYPE_FIRST_DRAWDOWN  = 4;
 
     /**
      * @var int
