@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Unilend\Controller\User;
 
-use DateTime;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
+use Exception;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -19,11 +19,11 @@ use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Unilend\Entity\ClientsStatus;
 use Unilend\Entity\Project;
-use Unilend\Entity\TemporaryLinksLogin;
+use Unilend\Entity\TemporaryToken;
 use Unilend\Form\User\InitProfileType;
 use Unilend\Message\Client\ClientCreated;
 use Unilend\Repository\ClientsRepository;
-use Unilend\Repository\TemporaryLinksLoginRepository;
+use Unilend\Repository\TemporaryTokenRepository;
 use Unilend\Security\LoginAuthenticator;
 use Unilend\Service\ProjectParticipation\ProjectParticipationManager;
 use Unilend\Service\ServiceTerms\ServiceTermsManager;
@@ -33,31 +33,32 @@ class InitialisationController extends AbstractController
     /**
      * @Route("/compte/initialisation/{securityToken}/{slug}", defaults={"slug": ""}, name="account_init", requirements={"securityToken": "[0-9a-f]+"}, methods={"GET", "POST"})
      *
-     * @ParamConverter("temporaryLink", options={"mapping": {"securityToken": "token"}})
+     * @ParamConverter("temporaryToken", options={"mapping": {"securityToken": "token"}})
      * @ParamConverter("project", options={"mapping": {"slug": "slug"}})
      *
-     * @param TemporaryLinksLogin           $temporaryLink
-     * @param Request                       $request
-     * @param TemporaryLinksLoginRepository $temporaryLinksLoginRepository
-     * @param TranslatorInterface           $translator
-     * @param UserPasswordEncoderInterface  $userPasswordEncoder
-     * @param ClientsRepository             $clientsRepository
-     * @param ServiceTermsManager           $serviceTermsManager
-     * @param MessageBusInterface           $messageBus
-     * @param LoginAuthenticator            $loginAuthenticator
-     * @param RouterInterface               $router
-     * @param ProjectParticipationManager   $projectParticipationManager
-     * @param Project                       $project
+     * @param TemporaryToken               $temporaryToken
+     * @param Request                      $request
+     * @param TemporaryTokenRepository     $temporaryTokenRepository
+     * @param TranslatorInterface          $translator
+     * @param UserPasswordEncoderInterface $userPasswordEncoder
+     * @param ClientsRepository            $clientsRepository
+     * @param ServiceTermsManager          $serviceTermsManager
+     * @param MessageBusInterface          $messageBus
+     * @param LoginAuthenticator           $loginAuthenticator
+     * @param RouterInterface              $router
+     * @param ProjectParticipationManager  $projectParticipationManager
+     * @param Project                      $project
      *
+     * @throws Exception
      * @throws ORMException
      * @throws OptimisticLockException
      *
      * @return RedirectResponse
      */
     public function initialize(
-        TemporaryLinksLogin $temporaryLink,
+        TemporaryToken $temporaryToken,
         Request $request,
-        TemporaryLinksLoginRepository $temporaryLinksLoginRepository,
+        TemporaryTokenRepository $temporaryTokenRepository,
         TranslatorInterface $translator,
         UserPasswordEncoderInterface $userPasswordEncoder,
         ClientsRepository $clientsRepository,
@@ -68,13 +69,13 @@ class InitialisationController extends AbstractController
         ProjectParticipationManager $projectParticipationManager,
         ?Project $project = null
     ): Response {
-        if ($temporaryLink->isExpires()) {
+        if ($temporaryToken->isValid()) {
             $this->addFlash('error', $translator->trans('account-init.invalid-link-error-message'));
 
             return $this->render('user/init.html.twig');
         }
 
-        $client = $temporaryLink->getIdClient();
+        $client = $temporaryToken->getClient();
 
         if (false === $client->isInvited()) {
             return $project ?
@@ -86,8 +87,8 @@ class InitialisationController extends AbstractController
             return $this->redirectToRoute('home');
         }
 
-        $temporaryLink->setAccessed(new DateTime());
-        $temporaryLinksLoginRepository->save($temporaryLink);
+        $temporaryToken->setAccessed();
+        $temporaryTokenRepository->save($temporaryToken);
 
         $form = $this->createForm(InitProfileType::class, $client);
 
@@ -106,8 +107,10 @@ class InitialisationController extends AbstractController
 
             $serviceTermsManager->acceptCurrentVersion($client);
 
-            $temporaryLink->setExpires(new DateTime());
-            $temporaryLinksLoginRepository->save($temporaryLink);
+            $clientsRepository->save($client);
+
+            $temporaryToken->setExpired();
+            $temporaryTokenRepository->save($temporaryToken);
 
             $messageBus->dispatch(new ClientCreated($client));
 

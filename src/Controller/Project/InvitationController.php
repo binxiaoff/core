@@ -14,7 +14,7 @@ use Symfony\Component\HttpFoundation\{RedirectResponse, Request, Response};
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Contracts\Translation\TranslatorInterface;
-use Unilend\Entity\{ClientsStatus, Project, ProjectParticipation, TemporaryLinksLogin};
+use Unilend\Entity\{ClientsStatus, Project, ProjectParticipation, TemporaryToken};
 use Unilend\Exception\{Client\ClientNotFoundException, Staff\StaffNotFoundException};
 use Unilend\Message\Client\ClientInvited;
 use Unilend\Repository\ProjectParticipationContactRepository;
@@ -27,22 +27,22 @@ class InvitationController extends AbstractController
     /**
      * @Route("/projet/invitation/{securityToken}/{slug}", name="project_invitation")
      *
-     * @ParamConverter("temporaryLink", options={"mapping": {"securityToken": "token"}})
+     * @ParamConverter("temporaryToken", options={"mapping": {"securityToken": "token"}})
      * @ParamConverter("project", options={"mapping": {"slug": "slug"}})
      *
-     * @param TemporaryLinksLogin $temporaryLink
-     * @param Project             $project
+     * @param TemporaryToken $temporaryToken
+     * @param Project        $project
      *
      * @return RedirectResponse
      */
-    public function invitation(TemporaryLinksLogin $temporaryLink, Project $project): RedirectResponse
+    public function invitation(TemporaryToken $temporaryToken, Project $project): RedirectResponse
     {
-        $client = $temporaryLink->getIdClient();
+        $client = $temporaryToken->getClient();
 
         switch ($client->getCurrentStatus()->getStatus()) {
             case ClientsStatus::STATUS_INVITED:
                 return $this->redirectToRoute('account_init', [
-                    'securityToken' => $temporaryLink->getToken(),
+                    'securityToken' => $temporaryToken->getToken(),
                     'slug'          => $project->getSlug(),
                 ]);
             case ClientsStatus::STATUS_CREATED:

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Unilend\Controller;
 
-use DateTime;
 use Doctrine\ORM\{NonUniqueResultException, ORMException, OptimisticLockException};
 use Exception;
 use Psr\Log\LoggerInterface;
@@ -17,9 +16,9 @@ use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 use Symfony\Component\Security\Csrf\CsrfToken;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Twig\Error\{LoaderError, RuntimeError, SyntaxError};
-use Unilend\Entity\TemporaryLinksLogin;
+use Unilend\Entity\TemporaryToken;
 use Unilend\Form\User\ResetPasswordType;
-use Unilend\Repository\{ClientsRepository, TemporaryLinksLoginRepository};
+use Unilend\Repository\{ClientsRepository, TemporaryTokenRepository};
 use Unilend\Service\GoogleRecaptchaManager;
 use Unilend\SwiftMailer\TemplateMessageProvider;
 
@@ -31,14 +30,14 @@ class PasswordController extends AbstractController
      *
      * @Route("/mot-de-passe", name="password_reset_request", methods={"POST"}, condition="request.isXmlHttpRequest()")
      *
-     * @param Request                       $request
-     * @param ClientsRepository             $clientsRepository
-     * @param TemporaryLinksLoginRepository $temporaryLinksLoginRepository
-     * @param TemplateMessageProvider       $templateMessageProvider
-     * @param GoogleRecaptchaManager        $googleRecaptchaManager
-     * @param Swift_Mailer                  $mailer
-     * @param TranslatorInterface           $translator
-     * @param LoggerInterface               $logger
+     * @param Request                  $request
+     * @param ClientsRepository        $clientsRepository
+     * @param TemporaryTokenRepository $temporaryTokenRepository
+     * @param TemplateMessageProvider  $templateMessageProvider
+     * @param GoogleRecaptchaManager   $googleRecaptchaManager
+     * @param Swift_Mailer             $mailer
+     * @param TranslatorInterface      $translator
+     * @param LoggerInterface          $logger
      *
      * @throws ORMException
      * @throws OptimisticLockException
@@ -52,7 +51,7 @@ class PasswordController extends AbstractController
     public function resetRequest(
         Request $request,
         ClientsRepository $clientsRepository,
-        TemporaryLinksLoginRepository $temporaryLinksLoginRepository,
+        TemporaryTokenRepository $temporaryTokenRepository,
         TemplateMessageProvider $templateMessageProvider,
         GoogleRecaptchaManager $googleRecaptchaManager,
         Swift_Mailer $mailer,
@@ -89,7 +88,7 @@ class PasswordController extends AbstractController
             ]);
         }
 
-        $token    = $temporaryLinksLoginRepository->generateTemporaryLink($client, TemporaryLinksLogin::PASSWORD_TOKEN_LIFETIME_SHORT);
+        $token    = $temporaryTokenRepository->generateShortTemporaryToken($client);
         $keywords = [
             'firstName'    => $client->getFirstName(),
             'email'        => $client->getEmail(),
@@ -118,14 +117,14 @@ class PasswordController extends AbstractController
     /**
      * @Route("/mot-de-passe/{securityToken}", name="password_reset", requirements={"securityToken": "[a-z0-9]{32}"}, methods={"GET", "POST"})
      *
-     * @ParamConverter("temporaryLink", options={"mapping": {"securityToken": "token"}})
+     * @ParamConverter("temporaryToken", options={"mapping": {"securityToken": "token"}})
      *
-     * @param Request                       $request
-     * @param TemporaryLinksLogin           $temporaryLink
-     * @param TemporaryLinksLoginRepository $temporaryLinksLoginRepository
-     * @param TranslatorInterface           $translator
-     * @param UserPasswordEncoderInterface  $userPasswordEncoder
-     * @param ClientsRepository             $clientsRepository
+     * @param Request                      $request
+     * @param TemporaryToken               $temporaryToken
+     * @param TemporaryTokenRepository     $temporaryTokenRepository
+     * @param TranslatorInterface          $translator
+     * @param UserPasswordEncoderInterface $userPasswordEncoder
+     * @param ClientsRepository            $clientsRepository
      *
      * @throws ORMException
      * @throws Exception
@@ -135,24 +134,24 @@ class PasswordController extends AbstractController
      */
     public function reset(
         Request $request,
-        TemporaryLinksLogin $temporaryLink,
-        TemporaryLinksLoginRepository $temporaryLinksLoginRepository,
+        TemporaryToken $temporaryToken,
+        TemporaryTokenRepository $temporaryTokenRepository,
         TranslatorInterface $translator,
         UserPasswordEncoderInterface $userPasswordEncoder,
         ClientsRepository $clientsRepository
     ): Response {
         if ($this->get('session')->getFlashBag()->has('passwordSuccess')) {
-            return $this->render('security/password_reset.html.twig', ['token' => $temporaryLink->getToken()]);
+            return $this->render('security/password_reset.html.twig', ['token' => $temporaryToken->getToken()]);
         }
 
-        if ($temporaryLink->getExpires() < new DateTime()) {
+        if (!$temporaryToken->isValid()) {
             $this->addFlash('tokenError', $translator->trans('reset-password.invalid-link-error-message'));
 
-            return $this->render('security/password_reset.html.twig', ['token' => $temporaryLink->getToken()]);
+            return $this->render('security/password_reset.html.twig', ['token' => $temporaryToken->getToken()]);
         }
 
-        $temporaryLink->setAccessed(new DateTime());
-        $temporaryLinksLoginRepository->save($temporaryLink);
+        $temporaryToken->setAccessed();
+        $temporaryTokenRepository->save($temporaryToken);
 
         $form = $this->createForm(ResetPasswordType::class);
 
@@ -160,13 +159,16 @@ class PasswordController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             $formData = $form->getData();
-            $client   = $temporaryLink->getIdClient();
+            $client   = $temporaryToken->getClient();
 
             if (md5($formData['securityQuestion']['securityAnswer']) === $client->getSecurityAnswer()) {
                 $encryptedPassword = $userPasswordEncoder->encodePassword($client, $formData['password']['plainPassword']);
-                $temporaryLinksLoginRepository->revokeTemporaryLinks($client);
                 $client->setPassword($encryptedPassword);
+
+                $temporaryToken->setExpired();
+
                 $clientsRepository->save($client);
+                $temporaryTokenRepository->save($temporaryToken);
 
                 $this->addFlash('passwordSuccess', $translator->trans('reset-password.reset-success-message'));
             } else {
@@ -175,7 +177,7 @@ class PasswordController extends AbstractController
         }
 
         return $this->render('security/password_reset.html.twig', [
-            'secretQuestion' => $temporaryLink->getIdClient()->getSecurityQuestion(),
+            'secretQuestion' => $temporaryToken->getClient()->getSecurityQuestion(),
             'form'           => $form->createView(),
         ]);
     }
