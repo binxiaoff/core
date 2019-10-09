@@ -19,6 +19,7 @@ use Unilend\Entity\Traits\TimestampableTrait;
 class TemporaryToken
 {
     use TimestampableTrait;
+
     private const LIFETIME_SHORT  = '1 hour';
     private const LIFETIME_MEDIUM = '1 day';
     private const LIFETIME_LONG   = '1 week';
@@ -93,13 +94,13 @@ class TemporaryToken
     }
 
     /**
-     * @param Client $client
+     * @param Clients $client
      *
      * @throws Exception
      *
      * @return TemporaryToken
      */
-    public static function generateLongToken(Client $client): TemporaryToken
+    public static function generateLongToken(Clients $client): TemporaryToken
     {
         return new TemporaryToken($client, static::LIFETIME_SHORT);
     }
@@ -149,7 +150,7 @@ class TemporaryToken
      *
      * @return TemporaryToken
      */
-    public function expire(): TemporaryToken
+    public function setExpired(): TemporaryToken
     {
         $this->expires = new DateTimeImmutable();
 
@@ -161,7 +162,7 @@ class TemporaryToken
      *
      * @return TemporaryToken
      */
-    public function access(): TemporaryToken
+    public function setAccessed(): TemporaryToken
     {
         $this->accessed = new DateTimeImmutable();
 

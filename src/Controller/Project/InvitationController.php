@@ -27,22 +27,22 @@ class InvitationController extends AbstractController
     /**
      * @Route("/projet/invitation/{securityToken}/{slug}", name="project_invitation")
      *
-     * @ParamConverter("temporaryLink", options={"mapping": {"securityToken": "token"}})
+     * @ParamConverter("temporaryToken", options={"mapping": {"securityToken": "token"}})
      * @ParamConverter("project", options={"mapping": {"slug": "slug"}})
      *
-     * @param TemporaryToken $temporaryLink
-     * @param Project             $project
+     * @param TemporaryToken $temporaryToken
+     * @param Project        $project
      *
      * @return RedirectResponse
      */
-    public function invitation(TemporaryToken $temporaryLink, Project $project): RedirectResponse
+    public function invitation(TemporaryToken $temporaryToken, Project $project): RedirectResponse
     {
-        $client = $temporaryLink->getIdClient();
+        $client = $temporaryToken->getClient();
 
         switch ($client->getCurrentStatus()->getStatus()) {
             case ClientsStatus::STATUS_INVITED:
                 return $this->redirectToRoute('account_init', [
-                    'securityToken' => $temporaryLink->getToken(),
+                    'securityToken' => $temporaryToken->getToken(),
                     'slug'          => $project->getSlug(),
                 ]);
             case ClientsStatus::STATUS_CREATED:

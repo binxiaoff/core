@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Unilend\Controller\User;
 
-use DateTime;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 use Exception;
@@ -37,18 +36,18 @@ class InitialisationController extends AbstractController
      * @ParamConverter("temporaryToken", options={"mapping": {"securityToken": "token"}})
      * @ParamConverter("project", options={"mapping": {"slug": "slug"}})
      *
-     * @param TemporaryToken           $temporaryToken
-     * @param Request                       $request
-     * @param TemporaryTokenRepository $temporaryTokenRepository
-     * @param TranslatorInterface           $translator
-     * @param UserPasswordEncoderInterface  $userPasswordEncoder
-     * @param ClientsRepository             $clientsRepository
-     * @param ServiceTermsManager           $serviceTermsManager
-     * @param MessageBusInterface           $messageBus
-     * @param LoginAuthenticator            $loginAuthenticator
-     * @param RouterInterface               $router
-     * @param ProjectParticipationManager   $projectParticipationManager
-     * @param Project                       $project
+     * @param TemporaryToken               $temporaryToken
+     * @param Request                      $request
+     * @param TemporaryTokenRepository     $temporaryTokenRepository
+     * @param TranslatorInterface          $translator
+     * @param UserPasswordEncoderInterface $userPasswordEncoder
+     * @param ClientsRepository            $clientsRepository
+     * @param ServiceTermsManager          $serviceTermsManager
+     * @param MessageBusInterface          $messageBus
+     * @param LoginAuthenticator           $loginAuthenticator
+     * @param RouterInterface              $router
+     * @param ProjectParticipationManager  $projectParticipationManager
+     * @param Project                      $project
      *
      * @throws Exception
      * @throws ORMException
@@ -88,7 +87,7 @@ class InitialisationController extends AbstractController
             return $this->redirectToRoute('home');
         }
 
-        $temporaryToken->access();
+        $temporaryToken->setAccessed();
         $temporaryTokenRepository->save($temporaryToken);
 
         $form = $this->createForm(InitProfileType::class, $client);
@@ -110,7 +109,7 @@ class InitialisationController extends AbstractController
 
             $clientsRepository->save($client);
 
-            $temporaryToken->expire();
+            $temporaryToken->setExpired();
             $temporaryTokenRepository->save($temporaryToken);
 
             $messageBus->dispatch(new ClientCreated($client));

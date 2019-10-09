@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Unilend\Controller\Project;
 
-use DateTime;
 use Doctrine\ORM\{NonUniqueResultException, ORMException, OptimisticLockException};
 use Exception;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
@@ -14,9 +13,9 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\User\UserInterface;
-use Unilend\Entity\{Clients, Project, TemporaryLinksLogin};
+use Unilend\Entity\{Clients, Project, TemporaryToken};
 use Unilend\Repository\ProjectParticipationRepository;
-use Unilend\Repository\TemporaryLinksLoginRepository;
+use Unilend\Repository\TemporaryTokenRepository;
 use Unilend\Security\Voter\ProjectParticipationVoter;
 
 class UninterestedController extends AbstractController
@@ -63,35 +62,34 @@ class UninterestedController extends AbstractController
     /**
      * @Route("/projet/refuse/{securityToken}/{slug}", name="project_uninterested_anonymous")
      *
-     * @ParamConverter("temporaryLink", options={"mapping": {"securityToken": "token"}})
+     * @ParamConverter("temporaryToken", options={"mapping": {"securityToken": "token"}})
      * @ParamConverter("project", options={"mapping": {"slug": "slug"}})
      *
-     * @param TemporaryLinksLogin           $login
-     * @param Project                       $project
-     * @param TemporaryLinksLoginRepository $temporaryLinksLoginRepository
+     * @param TemporaryToken           $temporaryToken
+     * @param Project                  $project
+     * @param TemporaryTokenRepository $temporaryTokenRepository
      *
-     * @throws Exception
-     * @throws NonUniqueResultException
+     *@throws NonUniqueResultException
      * @throws ORMException
      * @throws OptimisticLockException
+     * @throws Exception
      *
      * @return RedirectResponse
      */
     public function uninterestedAsAnonymous(
-        TemporaryLinksLogin $login,
+        TemporaryToken $temporaryToken,
         Project $project,
-        TemporaryLinksLoginRepository $temporaryLinksLoginRepository
+        TemporaryTokenRepository $temporaryTokenRepository
     ): RedirectResponse {
-        if ($login->isExpires()) {
-            throw new AccessDeniedException();
+        if ($temporaryToken->isValid()) {
+            throw new AccessDeniedException('Token is invalid');
         }
 
-        $this->setUninterested($login->getIdClient(), $project);
+        $this->setUninterested($temporaryToken->getClient(), $project);
 
-        $login->setAccessed(new DateTime());
-        $login->setExpires(new DateTime());
+        $temporaryToken->setAccessed();
 
-        $temporaryLinksLoginRepository->save($login);
+        $temporaryTokenRepository->save($temporaryToken);
 
         return $this->redirect($this->generateUrl('home'));
     }

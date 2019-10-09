@@ -15,9 +15,8 @@ use Symfony\Component\Routing\{Annotation\Route, Generator\UrlGeneratorInterface
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 use Symfony\Component\Security\Csrf\CsrfToken;
 use Symfony\Contracts\Translation\TranslatorInterface;
-use Unilend\Entity\TemporaryToken;
 use Twig\Error\{LoaderError, RuntimeError, SyntaxError};
-use Unilend\Entity\TemporaryLinksLogin;
+use Unilend\Entity\TemporaryToken;
 use Unilend\Form\User\ResetPasswordType;
 use Unilend\Repository\{ClientsRepository, TemporaryTokenRepository};
 use Unilend\Service\GoogleRecaptchaManager;
@@ -36,7 +35,7 @@ class PasswordController extends AbstractController
      * @param TemporaryTokenRepository $temporaryTokenRepository
      * @param TemplateMessageProvider  $templateMessageProvider
      * @param GoogleRecaptchaManager   $googleRecaptchaManager
-     * @param Swift_Mailer            $mailer
+     * @param Swift_Mailer             $mailer
      * @param TranslatorInterface      $translator
      * @param LoggerInterface          $logger
      *
@@ -118,7 +117,7 @@ class PasswordController extends AbstractController
     /**
      * @Route("/mot-de-passe/{securityToken}", name="password_reset", requirements={"securityToken": "[a-z0-9]{32}"}, methods={"GET", "POST"})
      *
-     * @ParamConverter("temporaryLink", options={"mapping": {"securityToken": "token"}})
+     * @ParamConverter("temporaryToken", options={"mapping": {"securityToken": "token"}})
      *
      * @param Request                      $request
      * @param TemporaryToken               $temporaryToken
@@ -151,7 +150,7 @@ class PasswordController extends AbstractController
             return $this->render('security/password_reset.html.twig', ['token' => $temporaryToken->getToken()]);
         }
 
-        $temporaryToken->access();
+        $temporaryToken->setAccessed();
 
         $form = $this->createForm(ResetPasswordType::class);
 
