@@ -176,7 +176,7 @@ class TemporaryToken
      */
     public function isValid(): bool
     {
-        return (new DateTimeImmutable()) > $this->expires;
+        return (new DateTimeImmutable()) < $this->expires;
     }
 
     /**
@@ -191,9 +191,7 @@ class TemporaryToken
             throw new DomainException('Invalid token');
         }
 
-        $this->expires = $this->expires->add(
-            DateInterval::createFromDateString(self::LIFETIME_LONG)
-        );
+        $this->expires = (new DateTimeImmutable())->add(DateInterval::createFromDateString(self::LIFETIME_LONG));
 
         return $this;
     }
