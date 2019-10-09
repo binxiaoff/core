@@ -176,7 +176,7 @@ class TemporaryToken
      */
     public function isValid(): bool
     {
-        return null === $this->accessed && (new DateTimeImmutable()) > $this->expires;
+        return (new DateTimeImmutable()) > $this->expires;
     }
 
     /**

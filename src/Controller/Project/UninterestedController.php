@@ -85,9 +85,12 @@ class UninterestedController extends AbstractController
             throw new AccessDeniedException('Token is invalid');
         }
 
+        $temporaryToken->setAccessed();
+        $temporaryTokenRepository->save($temporaryToken);
+
         $this->setUninterested($temporaryToken->getClient(), $project);
 
-        $temporaryToken->setAccessed();
+        $temporaryToken->setExpired();
 
         $temporaryTokenRepository->save($temporaryToken);
 

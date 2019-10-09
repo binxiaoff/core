@@ -151,6 +151,7 @@ class PasswordController extends AbstractController
         }
 
         $temporaryToken->setAccessed();
+        $temporaryTokenRepository->save($temporaryToken);
 
         $form = $this->createForm(ResetPasswordType::class);
 
@@ -163,6 +164,8 @@ class PasswordController extends AbstractController
             if (md5($formData['securityQuestion']['securityAnswer']) === $client->getSecurityAnswer()) {
                 $encryptedPassword = $userPasswordEncoder->encodePassword($client, $formData['password']['plainPassword']);
                 $client->setPassword($encryptedPassword);
+
+                $temporaryToken->setExpired();
 
                 $clientsRepository->save($client);
                 $temporaryTokenRepository->save($temporaryToken);

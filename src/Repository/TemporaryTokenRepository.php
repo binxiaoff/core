@@ -87,7 +87,6 @@ class TemporaryTokenRepository extends ServiceEntityRepository
             ->set('t.expires', ':now')
             ->where('t.client = :client')
             ->andWhere('t.expires > :now')
-            ->andWhere('t.accessed IS NULL')
             ->setParameter('client', $client)
             ->setParameter('now', new DateTimeImmutable())
             ->getQuery()
