@@ -7,20 +7,17 @@ namespace Unilend\Controller\Project;
 use Doctrine\ORM\{ORMException, OptimisticLockException};
 use DomainException;
 use LogicException;
+use RuntimeException;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\HttpFoundation\{RedirectResponse, Request, Response};
-use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Unilend\Entity\{ClientsStatus, Project, ProjectParticipation, TemporaryToken};
 use Unilend\Exception\{Client\ClientNotFoundException, Staff\StaffNotFoundException};
-use Unilend\Message\Client\ClientInvited;
-use Unilend\Repository\ProjectParticipationContactRepository;
 use Unilend\Repository\ProjectParticipationRepository;
-use Unilend\Repository\ProjectRepository;
-use Unilend\Service\{Staff\StaffManager, User\RealUserFinder};
+use Unilend\Service\{ProjectParticipation\ProjectParticipationManager, Staff\StaffManager, User\RealUserFinder};
 
 class InvitationController extends AbstractController
 {
@@ -55,15 +52,13 @@ class InvitationController extends AbstractController
     /**
      * @Route("/projet/inviter-interlocuteur/{hash}", name="invite_guest", requirements={"hash": "[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}"})
      *
-     * @param Project                               $project
-     * @param Request                               $request
-     * @param TranslatorInterface                   $translator
-     * @param MessageBusInterface                   $messageBus
-     * @param ProjectRepository                     $projectRepository
-     * @param ProjectParticipationRepository        $projectParticipationRepository
-     * @param ProjectParticipationContactRepository $projectParticipationContactRepository
-     * @param RealUserFinder                        $realUserFinder
-     * @param StaffManager                          $staffManager
+     * @param Project                        $project
+     * @param Request                        $request
+     * @param TranslatorInterface            $translator
+     * @param ProjectParticipationRepository $projectParticipationRepository
+     * @param RealUserFinder                 $realUserFinder
+     * @param StaffManager                   $staffManager
+     * @param ProjectParticipationManager    $projectParticipationManager
      *
      * @throws ORMException
      * @throws OptimisticLockException
@@ -74,12 +69,10 @@ class InvitationController extends AbstractController
         Project $project,
         Request $request,
         TranslatorInterface $translator,
-        MessageBusInterface $messageBus,
-        ProjectRepository $projectRepository,
         ProjectParticipationRepository $projectParticipationRepository,
-        ProjectParticipationContactRepository $projectParticipationContactRepository,
         RealUserFinder $realUserFinder,
-        StaffManager $staffManager
+        StaffManager $staffManager,
+        ProjectParticipationManager $projectParticipationManager
     ): Response {
         $form = $this->createFormBuilder()->add('email_guest', EmailType::class)->getForm();
         $form->handleRequest($request);
@@ -103,18 +96,15 @@ class InvitationController extends AbstractController
                 $projectParticipation = $project->addProjectParticipation($staff->getCompany(), ProjectParticipation::ROLE_PROJECT_LENDER, $realUserFinder);
             }
 
-            if ($projectParticipationContactRepository->findBy(['client' => $staff->getClient(), 'projectParticipation' => $projectParticipation])) {
+            try {
+                $projectParticipationManager->addProjectParticipantContact($staff->getClient(), $projectParticipation);
+            } catch (RuntimeException $exception) {
                 $this->addFlash('sendError', $translator->trans('invite-guest.email-already-sent'));
 
                 return $this->redirectToRoute('invite_guest', ['hash' => $project->getHash()]);
             }
 
-            $projectParticipationContact = $projectParticipation->addProjectParticipationContact($staff->getClient(), $realUserFinder);
-
-            $projectRepository->save($project);
             $this->addFlash('sendSuccess', $translator->trans('invite-guest.send-success-message'));
-
-            $messageBus->dispatch(new ClientInvited($projectParticipationContact->getId()));
 
             return $this->redirectToRoute('invite_guest', ['hash' => $project->getHash()]);
         }

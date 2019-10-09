@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace Unilend\MessageHandler\Client;
+namespace Unilend\MessageHandler\ProjectParticipationContact;
 
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
-use Swift_RfcComplianceException;
 use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
-use Unilend\Message\Client\ClientInvited;
+use Twig\Error\{LoaderError, RuntimeError, SyntaxError};
+use Unilend\Message\ProjectParticipationContact\ProjectParticipationContactInvited;
 use Unilend\Repository\ProjectParticipationContactRepository;
 use Unilend\Service\Client\ClientNotifier;
 
-class ClientInvitedHandler implements MessageHandlerInterface
+class ProjectParticipationContactInvitedHandler implements MessageHandlerInterface
 {
     /** @var ClientNotifier */
     private $clientNotifier;
@@ -23,24 +23,24 @@ class ClientInvitedHandler implements MessageHandlerInterface
      * @param ClientNotifier                        $clientNotifier
      * @param ProjectParticipationContactRepository $projectParticipationContactRepository
      */
-    public function __construct(
-        ClientNotifier $clientNotifier,
-        ProjectParticipationContactRepository $projectParticipationContactRepository
-    ) {
+    public function __construct(ClientNotifier $clientNotifier, ProjectParticipationContactRepository $projectParticipationContactRepository)
+    {
         $this->clientNotifier                        = $clientNotifier;
         $this->projectParticipationContactRepository = $projectParticipationContactRepository;
     }
 
     /**
-     * @param ClientInvited $clientInvited
+     * @param ProjectParticipationContactInvited $projectParticipationContactInvited
      *
+     * @throws LoaderError
      * @throws ORMException
      * @throws OptimisticLockException
-     * @throws Swift_RfcComplianceException
+     * @throws RuntimeError
+     * @throws SyntaxError
      */
-    public function __invoke(ClientInvited $clientInvited)
+    public function __invoke(ProjectParticipationContactInvited $projectParticipationContactInvited)
     {
-        $projectParticipationContact = $this->projectParticipationContactRepository->findOneBy(['id' => $clientInvited->getProjectParticipationContactId()]);
+        $projectParticipationContact = $this->projectParticipationContactRepository->findOneBy(['id' => $projectParticipationContactInvited->getProjectParticipationContactId()]);
 
         if ($projectParticipationContact) {
             $this->clientNotifier->notifyInvited(

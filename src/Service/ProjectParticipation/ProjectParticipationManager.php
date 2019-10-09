@@ -5,9 +5,10 @@ declare(strict_types=1);
 namespace Unilend\Service\ProjectParticipation;
 
 use Doctrine\ORM\{NonUniqueResultException, ORMException, OptimisticLockException};
+use RuntimeException;
 use Symfony\Component\Messenger\MessageBusInterface;
-use Unilend\Entity\{Clients, Companies, Project, ProjectParticipation};
-use Unilend\Message\ProjectParticipation\ProjectParticipantInvited;
+use Unilend\Entity\{Clients, Companies, Project, ProjectParticipation, ProjectParticipationContact};
+use Unilend\Message\{ProjectParticipationContact\ProjectParticipationContactInvited, ProjectParticipation\ProjectParticipantInvited};
 use Unilend\Repository\{ClientsRepository, ProjectParticipationContactRepository, ProjectParticipationRepository};
 use Unilend\Service\User\RealUserFinder;
 
@@ -96,6 +97,32 @@ class ProjectParticipationManager
         $this->messageBus->dispatch(new ProjectParticipantInvited($projectParticipation));
 
         return $projectParticipation;
+    }
+
+    /**
+     * @param Clients              $client
+     * @param ProjectParticipation $projectParticipation
+     *
+     * @throws ORMException
+     * @throws OptimisticLockException
+     *
+     * @return ProjectParticipationContact
+     */
+    public function addProjectParticipantContact(Clients $client, ProjectParticipation $projectParticipation): ProjectParticipationContact
+    {
+        $projectParticipationContact = $this->projectParticipationContactRepository->findByProjectAndClient($projectParticipation->getProject(), $client);
+
+        if (null === $projectParticipationContact) {
+            $projectParticipationContact = $projectParticipation->addProjectParticipationContact($client, $this->realUserFinder);
+            $this->projectParticipationRepository->save($projectParticipation);
+            $this->messageBus->dispatch(new ProjectParticipationContactInvited($projectParticipationContact));
+        } else {
+            throw new RuntimeException(
+                sprintf('The participant with mail %s has already been invited to the project id %s', $client->getEmail(), $projectParticipation->getProject()->getId())
+            );
+        }
+
+        return $projectParticipationContact;
     }
 
     /**

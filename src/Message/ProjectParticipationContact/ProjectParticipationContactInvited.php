@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Message\Client;
+namespace Unilend\Message\ProjectParticipationContact;
 
 use Unilend\Entity\ProjectParticipationContact;
 
-class ClientInvited
+class ProjectParticipationContactInvited
 {
     private $projectParticipationContactId;
 
