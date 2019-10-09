@@ -18,10 +18,10 @@ class TrancheFee
     use TimestampableTrait;
     use ConstantsAwareTrait;
 
-    public const TRANCHE_FEE_TYPE_NON_UTILISATION = 1;
-    public const TRANCHE_FEE_TYPE_COMMITMENT      = 2;
-    public const TRANCHE_FEE_TYPE_UTILISATION     = 3;
-    public const TRANCHE_FEE_TYPE_FIRST_DRAWDOWN  = 4;
+    public const TYPE_NON_UTILISATION            = 'non_utilisation';
+    public const TYPE_COMMITMENT                 = 'commitment';
+    public const TYPE_UTILISATION                = 'utilisation';
+    public const TRANCHE_FEE_TYPE_FIRST_DRAWDOWN = 'first_drawdown';
 
     /**
      * @var int
@@ -88,7 +88,7 @@ class TrancheFee
     /**
      * @return Fee|null
      */
-    public function getFee(): ?Fee
+    public function getFee(): Fee
     {
         return $this->fee;
     }
@@ -108,9 +108,9 @@ class TrancheFee
     /**
      * @return array
      */
-    public static function getAllFeeType(): array
+    public static function getFeeTypes(): array
     {
-        return self::getConstants('TRANCHE_FEE_TYPE_');
+        return self::getConstants('TYPE_');
     }
 
     /**
@@ -120,6 +120,6 @@ class TrancheFee
      */
     public static function getFeeTypeConstantKey(int $value)
     {
-        return self::getConstantKey($value, 'TRANCHE_FEE_TYPE_');
+        return self::getConstantKey($value, 'TYPE_');
     }
 }

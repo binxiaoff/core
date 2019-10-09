@@ -22,8 +22,8 @@ class FeeType extends AbstractType
                 'label'        => 'fee-form.type',
                 'required'     => true,
                 'choices'      => $options['fee_type'],
-                'choice_label' => function ($choice, $key, $value) {
-                    return 'fee-type.' . mb_strtolower($key);
+                'choice_label' => static function ($choice, $key, $value) {
+                    return 'fee-type.' . mb_strtolower($value);
                 },
                 'choice_translation_domain' => true,
                 'placeholder'               => '',
