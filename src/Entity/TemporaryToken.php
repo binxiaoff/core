@@ -78,6 +78,7 @@ class TemporaryToken
     ) {
         $this->token   = bin2hex(random_bytes(16));
         $this->client  = $clients;
+        $this->added   = new DateTimeImmutable();
         $this->expires = (new DateTimeImmutable())->add(DateInterval::createFromDateString($expirationDelay));
     }
 

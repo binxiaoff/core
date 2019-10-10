@@ -21,6 +21,8 @@ use Unilend\Entity\TemporaryToken;
 use Unilend\Form\User\ResetPasswordType;
 use Unilend\Repository\{ClientsRepository, TemporaryTokenRepository};
 use Unilend\Service\GoogleRecaptchaManager;
+use Unilend\Service\UserActivity\IpGeoLocManager;
+use Unilend\Service\UserActivity\UserAgentManager;
 use Unilend\SwiftMailer\TemplateMessageProvider;
 
 class PasswordController extends AbstractController
@@ -39,11 +41,13 @@ class PasswordController extends AbstractController
      * @param Swift_Mailer             $mailer
      * @param TranslatorInterface      $translator
      * @param LoggerInterface          $logger
+     * @param IpGeoLocManager          $geoLocator
+     * @param UserAgentManager         $userAgentManager
      *
+     * @throws LoaderError
+     * @throws NonUniqueResultException
      * @throws ORMException
      * @throws OptimisticLockException
-     * @throws NonUniqueResultException
-     * @throws LoaderError
      * @throws RuntimeError
      * @throws SyntaxError
      *
@@ -57,7 +61,9 @@ class PasswordController extends AbstractController
         GoogleRecaptchaManager $googleRecaptchaManager,
         Swift_Mailer $mailer,
         TranslatorInterface $translator,
-        LoggerInterface $logger
+        LoggerInterface $logger,
+        IpGeoLocManager $geoLocator,
+        UserAgentManager $userAgentManager
     ): Response {
         $email = $request->request->get('client_email');
 
@@ -89,12 +95,28 @@ class PasswordController extends AbstractController
             ]);
         }
 
-        $token    = $temporaryTokenRepository->generateShortTemporaryToken($client);
+        $token = $temporaryTokenRepository->generateShortTemporaryToken($client);
+
+        $ip = $request->getClientIp();
+
+        $geoLocation = $ip ? $geoLocator->getCountryAndCity($ip) : null;
+        $geoLocation = $geoLocation ? implode(' ', $geoLocation) : null;
+
+        $userAgent = $userAgentManager->parse($request->headers->get('User-Agent'));
+        $browser   = $userAgent ? $userAgent->getBrowser() : null;
+        $browser   = null !== $browser ? $browser->getName() . ' ' . $browser->getVersion()->getComplete() : null;
+
         $keywords = [
-            'firstName'          => $client->getFirstName(),
-            'email'              => $client->getEmail(),
-            'passwordLink'       => $this->generateUrl('password_reset', ['securityToken' => $token], UrlGeneratorInterface::ABSOLUTE_URL),
+            'firstName'     => $client->getFirstName(),
+            'email'         => $client->getEmail(),
+            'passwordLink'  => $this->generateUrl('password_reset', ['securityToken' => $token->getToken()], UrlGeneratorInterface::ABSOLUTE_URL),
             'cancelPasswordLink' => $this->generateUrl('password_reset_cancel', ['securityToken' => $token], UrlGeneratorInterface::ABSOLUTE_URL),
+            'requesterData' => array_filter([
+                'ip'       => $ip,
+                'browser'  => $browser,
+                'date'     => $token->getAdded()->format('d/m/Y H:i:s'),
+                'location' => $geoLocation,
+            ]),
         ];
 
         $message = $templateMessageProvider->newMessage('forgotten-password', $keywords);

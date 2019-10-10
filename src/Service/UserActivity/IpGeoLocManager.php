@@ -1,13 +1,17 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Unilend\Service\UserActivity;
 
 use Cravler\MaxMindGeoIpBundle\Service\GeoIpService;
+use Exception;
+use GeoIp2\Model\City;
 use Psr\Log\LoggerInterface;
 
 class IpGeoLocManager
 {
-    const DATABASE_TYPE = 'city';
+    public const DATABASE_TYPE = 'city';
 
     /** @var GeoIpService */
     private $geoIpService;
@@ -41,7 +45,7 @@ class IpGeoLocManager
         if (null !== $geoIp) {
             return [
                 'countryIsoCode' => $geoIp->country->isoCode,
-                'city'           => $geoIp->city->name
+                'city'           => $geoIp->city->name,
             ];
         }
 
@@ -49,21 +53,21 @@ class IpGeoLocManager
     }
 
     /**
-     * @param string
+     * @param string $ip
      *
-     * @return \GeoIp2\Model\City|null
+     * @return City|null
      */
-    private function getGeoIpRecord(string $ip)
+    private function getGeoIpRecord(string $ip): ?City
     {
         try {
             return $this->geoIpService->getRecord($ip, self::DATABASE_TYPE, [$this->defaultLocal]);
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
             $this->logger->error('Could not initialize IP GeoLoc service. Error: ' . $exception->getMessage(), [
                 'client_ip' => $ip,
                 'class'     => __CLASS__,
                 'function'  => __FUNCTION__,
                 'file'      => $exception->getFile(),
-                'line'      => $exception->getLine()
+                'line'      => $exception->getLine(),
             ]);
 
             return null;

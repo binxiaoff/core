@@ -46,15 +46,15 @@ class TemporaryTokenRepository extends ServiceEntityRepository
      * @throws OptimisticLockException
      * @throws Exception
      *
-     * @return string
+     * @return TemporaryToken
      */
-    public function generateShortTemporaryToken(Clients $client): string
+    public function generateShortTemporaryToken(Clients $client): TemporaryToken
     {
         $temporaryToken = TemporaryToken::generateShortToken($client);
 
         $this->save($temporaryToken);
 
-        return $temporaryToken->getToken();
+        return $temporaryToken;
     }
 
     /**
@@ -64,15 +64,15 @@ class TemporaryTokenRepository extends ServiceEntityRepository
      * @throws OptimisticLockException
      * @throws Exception
      *
-     * @return string
+     * @return TemporaryToken
      */
-    public function generateLongTemporaryToken(Clients $client): string
+    public function generateLongTemporaryToken(Clients $client): TemporaryToken
     {
         $temporaryToken = TemporaryToken::generateLongToken($client);
 
         $this->save($temporaryToken);
 
-        return $temporaryToken->getToken();
+        return $temporaryToken;
     }
 
     /**

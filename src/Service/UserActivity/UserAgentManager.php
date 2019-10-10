@@ -1,8 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Unilend\Service\UserActivity;
 
 use Doctrine\ORM\EntityManagerInterface;
+use Exception;
 use Psr\Log\LoggerInterface;
 use Unilend\Entity\{Clients, UserAgentHistory};
 use UserAgentParser\Model\UserAgent;
@@ -33,7 +36,7 @@ class UserAgentManager
      * @param Clients     $client
      * @param string|null $userAgent
      *
-     * @throws \Exception
+     * @throws Exception
      *
      * @return UserAgentHistory|null
      */
@@ -81,11 +84,11 @@ class UserAgentManager
      *
      * @return UserAgent|null
      */
-    private function parse(string $userAgent): ?UserAgent
+    public function parse(string $userAgent): ?UserAgent
     {
         try {
             return $this->chain->parse($userAgent);
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
             $this->logger->error('Could not initialize user agent parser. Error: ' . $exception->getMessage(), [
                 'user_agent' => $userAgent,
                 'class'      => __CLASS__,
