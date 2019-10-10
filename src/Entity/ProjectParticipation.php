@@ -195,7 +195,7 @@ class ProjectParticipation
      */
     public function hasValidatedBid(): bool
     {
-        return 0 > count($this->project->getBids(Bids::STATUS_ACCEPTED, $this->company));
+        return 0 > count($this->project->getBids([Bids::STATUS_ACCEPTED], $this->company));
     }
 
     /**
