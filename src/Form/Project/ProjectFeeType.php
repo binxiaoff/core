@@ -18,7 +18,7 @@ class ProjectFeeType extends AbstractType
     {
         $builder->add('fee', FeeType::class, [
             'label'    => false,
-            'fee_type' => ProjectFee::getAllFeeType(),
+            'fee_type' => ProjectFee::getFeeTypes(),
         ]);
     }
 

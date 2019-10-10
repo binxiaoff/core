@@ -14,9 +14,9 @@ class Fee
     public const RATE_SCALE = 2;
 
     /**
-     * @var int
+     * @var string
      *
-     * @ORM\Column(type="smallint")
+     * @ORM\Column(type="string", length=50)
      */
     private $type;
 
@@ -82,19 +82,19 @@ class Fee
     }
 
     /**
-     * @return int|null
+     * @return string
      */
-    public function getType(): ?int
+    public function getType(): ?string
     {
         return $this->type;
     }
 
     /**
-     * @param int $type
+     * @param string $type
      *
      * @return self
      */
-    public function setType(int $type): self
+    public function setType(string $type): self
     {
         $this->type = $type;
 

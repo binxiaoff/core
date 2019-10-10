@@ -18,8 +18,8 @@ class ProjectFee
     use TimestampableTrait;
     use ConstantsAwareTrait;
 
-    public const PROJECT_FEE_TYPE_PARTICIPATION  = 1;
-    public const PROJECT_FEE_TYPE_ADMINISTRATIVE = 2;
+    public const TYPE_PARTICIPATION  = 'participation';
+    public const TYPE_ADMINISTRATIVE = 'administrative';
 
     /**
      * @var int
@@ -86,7 +86,7 @@ class ProjectFee
     /**
      * @return Fee|null
      */
-    public function getFee(): ?Fee
+    public function getFee(): Fee
     {
         return $this->fee;
     }
@@ -106,9 +106,9 @@ class ProjectFee
     /**
      * @return array
      */
-    public static function getAllFeeType(): array
+    public static function getFeeTypes(): array
     {
-        return self::getConstants('PROJECT_FEE_TYPE_');
+        return self::getConstants('TYPE_');
     }
 
     /**
@@ -118,6 +118,6 @@ class ProjectFee
      */
     public static function getFeeTypeConstantKey(int $value)
     {
-        return self::getConstantKey($value, 'PROJECT_FEE_TYPE_');
+        return self::getConstantKey($value, 'TYPE_');
     }
 }
