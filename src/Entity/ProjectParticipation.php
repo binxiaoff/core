@@ -248,6 +248,14 @@ class ProjectParticipation
     }
 
     /**
+     * @return bool
+     */
+    public function isParticipant(): bool
+    {
+        return false === $this->isOrganizer();
+    }
+
+    /**
      * @return ProjectParticipationContact[]|ArrayCollection
      */
     public function getProjectParticipationContacts(): iterable

@@ -37,9 +37,11 @@ class ProjectParticipationListener
      */
     public function prePersist(ProjectParticipation $projectParticipation): void
     {
-        $clients = $this->clientRepository->findDefaultConcernedClients($projectParticipation);
-        foreach ($clients as $client) {
-            $projectParticipation->addProjectParticipationContact($client, $this->realUserFinder);
+        if ($projectParticipation->isParticipant()) {
+            $clients = $this->clientRepository->findDefaultConcernedClients($projectParticipation);
+            foreach ($clients as $client) {
+                $projectParticipation->addProjectParticipationContact($client, $this->realUserFinder);
+            }
         }
     }
 
@@ -48,6 +50,8 @@ class ProjectParticipationListener
      */
     public function postPersist(ProjectParticipation $projectParticipation): void
     {
-        $this->messageBus->dispatch(new ProjectParticipantInvited($projectParticipation));
+        if ($projectParticipation->isParticipant()) {
+            $this->messageBus->dispatch(new ProjectParticipantInvited($projectParticipation));
+        }
     }
 }
