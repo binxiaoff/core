@@ -24,7 +24,7 @@ class PasswordConstraintValidator extends ConstraintValidator
             return;
         }
 
-        if (!preg_match('/^(?=.*[a-z])(?=.*[A-Z]).{' . PasswordConstraint::MIN_PASSWORD_LENGTH . ',' . PasswordConstraint::MAX_PASSWORD_LENGTH . '}$/', $value)) {
+        if (false === preg_match('/^(?=.*[a-z])(?=.*[A-Z]).{' . PasswordConstraint::MIN_PASSWORD_LENGTH . ',}$/', $value)) {
             $this->context->buildViolation($constraint->message)
                 ->addViolation()
             ;
