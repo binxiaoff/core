@@ -10,7 +10,8 @@ use Psr\Log\LoggerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Swift_Mailer;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\{JsonResponse, Request, Response};
+use Symfony\Component\HttpFoundation\Session\Flash\FlashBagInterface;
+use Symfony\Component\HttpFoundation\{JsonResponse, RedirectResponse, Request, Response};
 use Symfony\Component\Routing\{Annotation\Route, Generator\UrlGeneratorInterface};
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 use Symfony\Component\Security\Csrf\CsrfToken;
@@ -90,9 +91,10 @@ class PasswordController extends AbstractController
 
         $token    = $temporaryTokenRepository->generateShortTemporaryToken($client);
         $keywords = [
-            'firstName'    => $client->getFirstName(),
-            'email'        => $client->getEmail(),
-            'passwordLink' => $this->generateUrl('password_reset', ['securityToken' => $token], UrlGeneratorInterface::ABSOLUTE_URL),
+            'firstName'          => $client->getFirstName(),
+            'email'              => $client->getEmail(),
+            'passwordLink'       => $this->generateUrl('password_reset', ['securityToken' => $token], UrlGeneratorInterface::ABSOLUTE_URL),
+            'cancelPasswordLink' => $this->generateUrl('password_reset_cancel', ['securityToken' => $token], UrlGeneratorInterface::ABSOLUTE_URL),
         ];
 
         $message = $templateMessageProvider->newMessage('forgotten-password', $keywords);
@@ -180,6 +182,39 @@ class PasswordController extends AbstractController
             'secretQuestion' => $temporaryToken->getClient()->getSecurityQuestion(),
             'form'           => $form->createView(),
         ]);
+    }
+
+    /**
+     * @Route("/mot-de-passe/{securityToken}/annuler", name="password_reset_cancel", requirements={"securityToken": "[a-z0-9]{32}"}, methods={"GET"})
+     *
+     * @ParamConverter("token", options={"mapping": {"securityToken": "token"}})
+     *
+     * @param TemporaryToken           $token
+     * @param TemporaryTokenRepository $repository
+     * @param FlashBagInterface        $flashBag
+     *
+     * @throws ORMException
+     * @throws OptimisticLockException
+     * @throws Exception
+     *
+     * @return RedirectResponse
+     */
+    public function cancel(
+        TemporaryToken $token,
+        TemporaryTokenRepository $repository,
+        FlashBagInterface $flashBag
+    ): RedirectResponse {
+        if (false === $token->isValid()) {
+            $this->createAccessDeniedException();
+        }
+
+        $token->setExpired();
+
+        $repository->save($token);
+
+        $flashBag->add('cancelPasswordSuccess', 'success');
+
+        return $this->redirectToRoute('home');
     }
 
     /**
