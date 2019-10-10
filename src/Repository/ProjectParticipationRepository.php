@@ -6,11 +6,9 @@ namespace Unilend\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
-use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\Query\Expr\Join;
-use Doctrine\ORM\{ORMException, OptimisticLockException};
-use Unilend\Entity\Clients;
-use Unilend\Entity\{Project, ProjectParticipation, Staff};
+use Doctrine\ORM\{NonUniqueResultException, ORMException, OptimisticLockException};
+use Unilend\Entity\{Clients, Project, ProjectParticipation, Staff};
 
 /**
  * @method ProjectParticipation|null find($id, $lockMode = null, $lockVersion = null)
@@ -26,6 +24,18 @@ class ProjectParticipationRepository extends ServiceEntityRepository
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, ProjectParticipation::class);
+    }
+
+    /**
+     * @param ProjectParticipation $projectParticipation
+     *
+     * @throws ORMException
+     * @throws OptimisticLockException
+     */
+    public function save(ProjectParticipation $projectParticipation): void
+    {
+        $this->getEntityManager()->persist($projectParticipation);
+        $this->getEntityManager()->flush();
     }
 
     /**
@@ -81,17 +91,5 @@ class ProjectParticipationRepository extends ServiceEntityRepository
                 ->getQuery()
                 ->getOneOrNullResult()
         ;
-    }
-
-    /**
-     * @param ProjectParticipation $projectParticipation
-     *
-     * @throws ORMException
-     * @throws OptimisticLockException
-     */
-    public function save(ProjectParticipation $projectParticipation): void
-    {
-        $this->getEntityManager()->persist($projectParticipation);
-        $this->getEntityManager()->flush($projectParticipation);
     }
 }

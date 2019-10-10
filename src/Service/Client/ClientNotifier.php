@@ -7,7 +7,6 @@ namespace Unilend\Service\Client;
 use Doctrine\ORM\{ORMException, OptimisticLockException};
 use Exception;
 use Swift_Mailer;
-use Swift_RfcComplianceException;
 use Symfony\Component\Routing\RouterInterface;
 use Twig\Error\{LoaderError, RuntimeError, SyntaxError};
 use Unilend\Entity\{Clients, ClientsStatus, Project, ProjectStatus, TemporaryToken};
@@ -58,7 +57,6 @@ class ClientNotifier
      * @throws ORMException
      * @throws OptimisticLockException
      * @throws RuntimeError
-     * @throws Swift_RfcComplianceException
      * @throws SyntaxError
      *
      * @return int
@@ -83,10 +81,12 @@ class ClientNotifier
      * @param Clients $invitee
      * @param Project $project
      *
-     * @throws OptimisticLockException
-     * @throws Swift_RfcComplianceException
-     * @throws Exception
+     * @throws LoaderError
      * @throws ORMException
+     * @throws OptimisticLockException
+     * @throws RuntimeError
+     * @throws SyntaxError
+     * @throws Exception
      *
      * @return int
      */

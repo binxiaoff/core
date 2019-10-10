@@ -88,6 +88,26 @@ class CreateController extends AbstractController
                 ->setCurrentStatus(ProjectStatus::STATUS_REQUESTED, $realUserFinder)
             ;
 
+            if ($arranger = $form->get('arranger')->getData()) {
+                $project->setArranger($arranger, $realUserFinder);
+            }
+
+            if ($arranger = $form->get('deputyArranger')->getData()) {
+                $project->setDeputyArranger($arranger, $realUserFinder);
+            }
+
+            if ($arranger = $form->get('run')->getData()) {
+                $project->setRun($arranger, $realUserFinder);
+            }
+
+            if ($arranger = $form->get('loanOfficer')->getData()) {
+                $project->setLoanOfficer($arranger, $realUserFinder);
+            }
+
+            if ($arranger = $form->get('securityTrustee')->getData()) {
+                $project->setSecurityTrustee($arranger, $realUserFinder);
+            }
+
             $projectRepository->save($project);
 
             return $this->redirectToRoute('edit_project_details', ['hash' => $project->getHash()]);

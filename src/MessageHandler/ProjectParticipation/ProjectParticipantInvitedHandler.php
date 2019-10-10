@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Unilend\MessageHandler\ProjectParticipation;
 
 use Doctrine\ORM\{ORMException, OptimisticLockException};
-use Swift_RfcComplianceException;
 use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
+use Twig\Error\{LoaderError, RuntimeError, SyntaxError};
 use Unilend\Message\ProjectParticipation\ProjectParticipantInvited;
 use Unilend\Repository\ProjectParticipationRepository;
 use Unilend\Service\ProjectParticipation\ProjectParticipationNotifier;
@@ -33,7 +33,9 @@ class ProjectParticipantInvitedHandler implements MessageHandlerInterface
      *
      * @throws ORMException
      * @throws OptimisticLockException
-     * @throws Swift_RfcComplianceException
+     * @throws LoaderError
+     * @throws RuntimeError
+     * @throws SyntaxError
      */
     public function __invoke(ProjectParticipantInvited $projectParticipantInvited)
     {

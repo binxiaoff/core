@@ -121,30 +121,35 @@ class ProjectType extends AbstractType
                 'required'      => false,
                 'class'         => Companies::class,
                 'query_builder' => $arrangerQueryBuilder,
+                'mapped'        => false,
             ])
             ->add('deputyArranger', EntityType::class, [
                 'label'         => 'project-form.deputy-arranger-label',
                 'required'      => false,
                 'class'         => Companies::class,
                 'query_builder' => $arrangerQueryBuilder,
+                'mapped'        => false,
             ])
             ->add('run', EntityType::class, [
                 'label'         => 'project-form.run-label',
                 'required'      => false,
                 'class'         => Companies::class,
                 'query_builder' => $runAgentQueryBuilder,
+                'mapped'        => false,
             ])
             ->add('loanOfficer', EntityType::class, [
                 'label'         => 'project-form.loan-officer-label',
                 'required'      => false,
                 'class'         => Companies::class,
                 'query_builder' => $runAgentQueryBuilder,
+                'mapped'        => false,
             ])
             ->add('securityTrustee', EntityType::class, [
                 'label'         => 'project-form.security-trustee-label',
                 'required'      => false,
                 'class'         => Companies::class,
                 'query_builder' => $runAgentQueryBuilder,
+                'mapped'        => false,
             ])
             ->add('offerVisibility', ChoiceType::class, [
                 'label'             => 'project-form.offer-visibility-label',

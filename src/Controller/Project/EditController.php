@@ -25,11 +25,10 @@ use Unilend\Entity\{AcceptedBids, Attachment, Bids, CaRegionalBank, Clients, Loa
 use Unilend\Form\Bid\PartialBid;
 use Unilend\Form\Project\{ConfidentialityEditionType, ProjectAttachmentCollectionType, ProjectFeeTypeCollectionType};
 use Unilend\Form\Tranche\TrancheTypeCollectionType;
-use Unilend\Message\ProjectParticipation\ProjectParticipantInvited;
 use Unilend\Repository\{AcceptedBidsRepository, BidsRepository, CaRegionalBankRepository, CompaniesRepository,
     ProjectAttachmentRepository, ProjectAttachmentTypeRepository,  ProjectRepository, TrancheRepository};
 use Unilend\Security\Voter\ProjectVoter;
-use Unilend\Service\{Attachment\AttachmentManager, MailerManager, Project\ProjectImageManager, User\RealUserFinder};
+use Unilend\Service\{Attachment\AttachmentManager, MailerManager, ProjectParticipation\ProjectParticipationManager, Project\ProjectImageManager, User\RealUserFinder};
 
 class EditController extends AbstractController
 {
@@ -139,7 +138,6 @@ class EditController extends AbstractController
      * @param Request             $request
      * @param CompaniesRepository $companyRepository
      * @param ProjectRepository   $projectRepository
-     * @param MessageBusInterface $messageBus
      * @param RealUserFinder      $realUserFinder
      *
      * @throws ORMException
@@ -152,17 +150,15 @@ class EditController extends AbstractController
         Request $request,
         CompaniesRepository $companyRepository,
         ProjectRepository $projectRepository,
-        MessageBusInterface $messageBus,
         RealUserFinder $realUserFinder
     ): Response {
-        $lenders = $companyRepository->findBy(['idCompany' => $request->request->get('visibility')]);
-        $project->setLenders($lenders, $realUserFinder);
+        $participatedCompanies = $companyRepository->findBy(['idCompany' => $request->request->get('visibility')]);
+
+        foreach ($participatedCompanies as $company) {
+            $project->addParticipant($company, $realUserFinder);
+        }
 
         $projectRepository->save($project);
-
-        foreach ($project->getLenders() as $lenderParticipation) {
-            $messageBus->dispatch(new ProjectParticipantInvited($lenderParticipation));
-        }
 
         return $this->redirectToRoute('edit_project_details', ['hash' => $project->getHash()]);
     }
@@ -403,10 +399,6 @@ class EditController extends AbstractController
         }
 
         $projectRepository->save($project);
-
-        if ($projectParticipation) {
-            $messageBus->dispatch(new ProjectParticipantInvited($projectParticipation));
-        }
 
         return $this->json([
             'success'  => true,

@@ -69,18 +69,6 @@ class ProjectParticipationVoter extends Voter
      */
     private function canRefuse(ProjectParticipation $participation): bool
     {
-        //@todo replace by ProjectParticipaction::isOrganizer()
-        return empty(
-            array_intersect(
-                [
-                    ProjectParticipation::ROLE_PROJECT_ARRANGER,
-                    ProjectParticipation::ROLE_PROJECT_DEPUTY_ARRANGER,
-                    ProjectParticipation::ROLE_PROJECT_LOAN_OFFICER,
-                    ProjectParticipation::ROLE_PROJECT_RUN,
-                    ProjectParticipation::ROLE_PROJECT_SECURITY_TRUSTEE,
-                ],
-                $participation->getRoles()
-            )
-        );
+        return false === $participation->isOrganizer();
     }
 }

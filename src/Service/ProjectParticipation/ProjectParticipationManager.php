@@ -4,9 +4,13 @@ declare(strict_types=1);
 
 namespace Unilend\Service\ProjectParticipation;
 
-use Doctrine\ORM\NonUniqueResultException;
-use Unilend\Entity\{Clients, Project, ProjectParticipation};
+use Doctrine\ORM\{NonUniqueResultException, ORMException, OptimisticLockException};
+use RuntimeException;
+use Symfony\Component\Messenger\MessageBusInterface;
+use Unilend\Entity\{Clients, Companies, Project, ProjectParticipation, ProjectParticipationContact};
+use Unilend\Message\{ProjectParticipationContact\ProjectParticipationContactInvited, ProjectParticipation\ProjectParticipantInvited};
 use Unilend\Repository\{ClientsRepository, ProjectParticipationContactRepository, ProjectParticipationRepository};
+use Unilend\Service\User\RealUserFinder;
 
 class ProjectParticipationManager
 {
@@ -16,33 +20,30 @@ class ProjectParticipationManager
     private $projectParticipationRepository;
     /** @var ProjectParticipationContactRepository */
     private $projectParticipationContactRepository;
+    /** @var RealUserFinder */
+    private $realUserFinder;
+    /** @var MessageBusInterface */
+    private $messageBus;
 
     /**
      * @param ClientsRepository                     $clientRepository
      * @param ProjectParticipationRepository        $projectParticipationRepository
      * @param ProjectParticipationContactRepository $projectParticipationContactRepository
+     * @param RealUserFinder                        $realUserFinder
+     * @param MessageBusInterface                   $messageBus
      */
     public function __construct(
         ClientsRepository $clientRepository,
         ProjectParticipationRepository $projectParticipationRepository,
-        ProjectParticipationContactRepository $projectParticipationContactRepository
+        ProjectParticipationContactRepository $projectParticipationContactRepository,
+        RealUserFinder $realUserFinder,
+        MessageBusInterface $messageBus
     ) {
         $this->clientRepository                      = $clientRepository;
         $this->projectParticipationRepository        = $projectParticipationRepository;
         $this->projectParticipationContactRepository = $projectParticipationContactRepository;
-    }
-
-    /**
-     * @param ProjectParticipation $projectParticipation
-     *
-     * @return Clients[]
-     */
-    public function getConcernedClients(ProjectParticipation $projectParticipation): iterable
-    {
-        $concernedClientsByDefault   = $this->clientRepository->findDefaultConcernedClients($projectParticipation);
-        $specifiedClientsAddedByUser = $this->clientRepository->findByProjectParticipationContact($projectParticipation);
-
-        return array_unique(array_merge($concernedClientsByDefault, $specifiedClientsAddedByUser));
+        $this->realUserFinder                        = $realUserFinder;
+        $this->messageBus                            = $messageBus;
     }
 
     /**
@@ -72,6 +73,32 @@ class ProjectParticipationManager
         }
 
         return $projectParticipation->getAddedBy();
+    }
+
+    /**
+     * @param Clients              $client
+     * @param ProjectParticipation $projectParticipation
+     *
+     * @throws ORMException
+     * @throws OptimisticLockException
+     *
+     * @return ProjectParticipationContact
+     */
+    public function addProjectParticipantContact(Clients $client, ProjectParticipation $projectParticipation): ProjectParticipationContact
+    {
+        $projectParticipationContact = $this->projectParticipationContactRepository->findByProjectAndClient($projectParticipation->getProject(), $client);
+
+        if ($projectParticipationContact) {
+            throw new RuntimeException(
+                sprintf('The participant with mail %s has already been invited to the project id %s', $client->getEmail(), $projectParticipation->getProject()->getId())
+            );
+        }
+
+        $projectParticipationContact = $projectParticipation->addProjectParticipationContact($client, $this->realUserFinder);
+        $this->projectParticipationRepository->save($projectParticipation);
+        $this->messageBus->dispatch(new ProjectParticipationContactInvited($projectParticipationContact));
+
+        return $projectParticipationContact;
     }
 
     /**

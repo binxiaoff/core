@@ -43,6 +43,14 @@ class ProjectParticipation
 
     private const DEFAULT_STATUS = self::STATUS_NOT_CONSULTED;
 
+    private const DUTY_GROUP_PROJECT_PARTICIPATION_ORGANIZER = [
+        self::ROLE_PROJECT_ARRANGER,
+        self::ROLE_PROJECT_DEPUTY_ARRANGER,
+        self::ROLE_PROJECT_RUN,
+        self::ROLE_PROJECT_LOAN_OFFICER,
+        self::ROLE_PROJECT_SECURITY_TRUSTEE,
+    ];
+
     /**
      * @var int
      *
@@ -229,6 +237,22 @@ class ProjectParticipation
             static::STATUS_CONSULTED : $this->currentStatus;
 
         return $this;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isOrganizer(): bool
+    {
+        return 0 < count(array_intersect($this->getRoles(), self::DUTY_GROUP_PROJECT_PARTICIPATION_ORGANIZER));
+    }
+
+    /**
+     * @return bool
+     */
+    public function isParticipant(): bool
+    {
+        return false === $this->isOrganizer();
     }
 
     /**
