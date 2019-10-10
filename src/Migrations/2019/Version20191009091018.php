@@ -30,10 +30,10 @@ final class Version20191009091018 extends ContainerAwareMigration
     {
         $this->abortIf('mysql' !== $this->connection->getDatabasePlatform()->getName(), 'Migration can only be executed safely on \'mysql\'.');
 
-        $this->addSql('ALTER TABLE loan_fee CHANGE fee_type fee_type VARCHAR(255) NOT NULL');
-        $this->addSql('ALTER TABLE bid_fee CHANGE fee_type fee_type VARCHAR(255) NOT NULL');
-        $this->addSql('ALTER TABLE project_fee CHANGE fee_type fee_type VARCHAR(255) NOT NULL');
-        $this->addSql('ALTER TABLE tranche_fee CHANGE fee_type fee_type VARCHAR(255) NOT NULL');
+        $this->addSql('ALTER TABLE loan_fee CHANGE fee_type fee_type VARCHAR(50) NOT NULL');
+        $this->addSql('ALTER TABLE bid_fee CHANGE fee_type fee_type VARCHAR(50) NOT NULL');
+        $this->addSql('ALTER TABLE project_fee CHANGE fee_type fee_type VARCHAR(50) NOT NULL');
+        $this->addSql('ALTER TABLE tranche_fee CHANGE fee_type fee_type VARCHAR(50) NOT NULL');
 
         foreach (['project', 'tranche'] as $entity) {
             $table = $this->getTableName($entity);

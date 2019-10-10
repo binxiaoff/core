@@ -18,10 +18,10 @@ class TrancheFee
     use TimestampableTrait;
     use ConstantsAwareTrait;
 
-    public const TYPE_NON_UTILISATION            = 'non_utilisation';
-    public const TYPE_COMMITMENT                 = 'commitment';
-    public const TYPE_UTILISATION                = 'utilisation';
-    public const TRANCHE_FEE_TYPE_FIRST_DRAWDOWN = 'first_drawdown';
+    public const TYPE_NON_UTILISATION = 'non_utilisation';
+    public const TYPE_COMMITMENT      = 'commitment';
+    public const TYPE_UTILISATION     = 'utilisation';
+    public const TYPE_FIRST_DRAWDOWN  = 'first_drawdown';
 
     /**
      * @var int
