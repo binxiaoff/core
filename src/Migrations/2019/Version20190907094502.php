@@ -7,7 +7,7 @@ namespace DoctrineMigrations;
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\Migrations\AbstractMigration;
 
-final class Version20191007094502 extends AbstractMigration
+final class Version20190907094502 extends AbstractMigration
 {
     public function getDescription(): string
     {
@@ -423,12 +423,10 @@ final class Version20191007094502 extends AbstractMigration
 </table>
 </body>
 </html>', 1, 2, 1, '2019-10-07 11:44:44');");
-        $this->addSql("UPDATE mail_templates SET type = 'project-invitation-new-user' WHERE type = 'invite-guest'");
     }
 
     public function down(Schema $schema): void
     {
         $this->addSql("DELETE FROM mail_templates WHERE type = 'request-rights-new-staff'");
-        $this->addSql("UPDATE mail_templates SET type = 'invite-guest' WHERE type = 'project-invitation-new-user'");
     }
 }

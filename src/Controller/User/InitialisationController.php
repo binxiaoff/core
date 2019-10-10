@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\Controller\User;
 
+use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 use Exception;
@@ -37,23 +38,24 @@ class InitialisationController extends AbstractController
      * @ParamConverter("temporaryToken", options={"mapping": {"securityToken": "token"}})
      * @ParamConverter("project", options={"mapping": {"hash": "hash"}})
      *
-     * @param TemporaryToken               $temporaryToken
-     * @param Request                      $request
-     * @param TemporaryTokenRepository     $temporaryTokenRepository
-     * @param TranslatorInterface          $translator
-     * @param UserPasswordEncoderInterface $userPasswordEncoder
-     * @param ClientsRepository            $clientsRepository
-     * @param ServiceTermsManager          $serviceTermsManager
-     * @param MessageBusInterface          $messageBus
-     * @param LoginAuthenticator           $loginAuthenticator
-     * @param RouterInterface              $router
-     * @param ProjectParticipationManager  $projectParticipationManager
-     * @param Project                      $project
+     * @param TemporaryToken                        $temporaryToken
+     * @param Request                               $request
+     * @param TemporaryTokenRepository              $temporaryTokenRepository
+     * @param TranslatorInterface                   $translator
+     * @param UserPasswordEncoderInterface          $userPasswordEncoder
+     * @param ClientsRepository                     $clientsRepository
+     * @param ServiceTermsManager                   $serviceTermsManager
+     * @param MessageBusInterface                   $messageBus
+     * @param LoginAuthenticator                    $loginAuthenticator
+     * @param RouterInterface                       $router
+     * @param ProjectParticipationManager           $projectParticipationManager
+     * @param ProjectParticipationContactRepository $projectParticipationContactRepository
+     * @param Project                               $project
      *
      * @throws Exception
      * @throws ORMException
      * @throws OptimisticLockException
-     * @throws \Doctrine\ORM\NonUniqueResultException
+     * @throws NonUniqueResultException
      *
      * @return RedirectResponse
      */
@@ -112,13 +114,12 @@ class InitialisationController extends AbstractController
             $temporaryToken->setExpired();
             $temporaryTokenRepository->save($temporaryToken);
 
-            $projectParticipationContact = $projectParticipationContactRepository->findByProjectAndClient($project, $client);
-
-            $messageBus->dispatch(new ClientCreated($projectParticipationContact));
-
             $this->addFlash('accountCreatedSuccess', $translator->trans('account-init.account-completed'));
 
             if ($project) {
+                $projectParticipationContact = $projectParticipationContactRepository->findByProjectAndClient($project, $client);
+
+                $messageBus->dispatch(new ClientCreated($projectParticipationContact));
                 $loginAuthenticator->setTargetPath(
                     $request,
                     $router->generate('lender_project_details', ['hash' => $project->getHash()], RouterInterface::ABSOLUTE_URL)
