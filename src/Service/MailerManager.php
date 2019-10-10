@@ -291,6 +291,10 @@ class MailerManager
     /**
      * @param ProjectParticipationContact $projectParticipationContact
      *
+     * @throws LoaderError
+     * @throws RuntimeError
+     * @throws SyntaxError
+     *
      * @return int|string
      */
     public function sendRequestToAssignRights(ProjectParticipationContact $projectParticipationContact)

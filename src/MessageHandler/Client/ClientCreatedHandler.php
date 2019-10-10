@@ -6,32 +6,32 @@ namespace Unilend\MessageHandler\Client;
 
 use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
 use Unilend\Message\Client\ClientCreated;
-use Unilend\Repository\ProjectParticipationContactRepository;
+use Unilend\Repository\ClientsRepository;
 use Unilend\Service\MailerManager;
 use Unilend\Service\NotificationManager;
 
 class ClientCreatedHandler implements MessageHandlerInterface
 {
+    /** @var ClientsRepository */
+    private $clientsRepository;
     /** @var NotificationManager */
     private $notificationManager;
     /** @var MailerManager */
     private $mailerManager;
-    /** @var ProjectParticipationContactRepository */
-    private $projectParticipationContactRepository;
 
     /**
-     * @param NotificationManager                   $notificationManager
-     * @param MailerManager                         $mailerManager
-     * @param ProjectParticipationContactRepository $projectParticipationContactRepository
+     * @param ClientsRepository   $clientsRepository
+     * @param NotificationManager $notificationManager
+     * @param MailerManager       $mailerManager
      */
     public function __construct(
+        ClientsRepository $clientsRepository,
         NotificationManager $notificationManager,
-        MailerManager $mailerManager,
-        ProjectParticipationContactRepository $projectParticipationContactRepository
+        MailerManager $mailerManager
     ) {
-        $this->notificationManager                   = $notificationManager;
-        $this->mailerManager                         = $mailerManager;
-        $this->projectParticipationContactRepository = $projectParticipationContactRepository;
+        $this->clientsRepository   = $clientsRepository;
+        $this->notificationManager = $notificationManager;
+        $this->mailerManager       = $mailerManager;
     }
 
     /**
@@ -39,13 +39,10 @@ class ClientCreatedHandler implements MessageHandlerInterface
      */
     public function __invoke(ClientCreated $clientCreated)
     {
-        $projectParticipationContact = $this->projectParticipationContactRepository->find($clientCreated->getProjectParticipationContactId());
+        $client = $this->clientsRepository->find($clientCreated->getClientId());
 
-        if ($projectParticipationContact) {
-            $client = $projectParticipationContact->getClient();
-
+        if ($client) {
             $this->mailerManager->sendAccountCreated($client);
-            $this->mailerManager->sendRequestToAssignRights($projectParticipationContact);
             $this->notificationManager->createAccountCreated($client);
         }
     }

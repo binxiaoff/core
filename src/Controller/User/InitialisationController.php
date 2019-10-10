@@ -23,6 +23,7 @@ use Unilend\Entity\Project;
 use Unilend\Entity\TemporaryToken;
 use Unilend\Form\User\InitProfileType;
 use Unilend\Message\Client\ClientCreated;
+use Unilend\Message\ProjectParticipationContact\ProjectParticipationContactCreated;
 use Unilend\Repository\ClientsRepository;
 use Unilend\Repository\ProjectParticipationContactRepository;
 use Unilend\Repository\TemporaryTokenRepository;
@@ -119,7 +120,9 @@ class InitialisationController extends AbstractController
             if ($project) {
                 $projectParticipationContact = $projectParticipationContactRepository->findByProjectAndClient($project, $client);
 
-                $messageBus->dispatch(new ClientCreated($projectParticipationContact));
+                $messageBus->dispatch(new ProjectParticipationContactCreated($projectParticipationContact));
+                $messageBus->dispatch(new ClientCreated($client));
+
                 $loginAuthenticator->setTargetPath(
                     $request,
                     $router->generate('lender_project_details', ['hash' => $project->getHash()], RouterInterface::ABSOLUTE_URL)
