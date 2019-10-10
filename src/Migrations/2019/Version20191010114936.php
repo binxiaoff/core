@@ -40,6 +40,16 @@ final class Version20191010114936 extends ContainerAwareMigration
             <a href="{{ passwordLink }}" class="btn-primary">Réinitialiser le mot de passe</a>
         </td>
     </tr>
+    <tr>
+        <td class="" align="center">
+            <!--[if mso]>
+            <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" href="{{ passwordLink }}" style="height:50px;v-text-anchor:middle;width:270px;" arcsize="5%" strokecolor="#2bc9af" fillcolor="#2bc9af">
+                <center style="color:#ffffff;font-family:Helvetica, Arial, sans-serif;font-size:18px;">Réinitialiser le mot de passe</center>
+            </v:roundrect>
+            <![endif]-->
+            <a href="{{ cancelPasswordLink }}" class="btn-secondary">Annuler la demande</a>
+        </td>
+    </tr>
     {% if requesterData|default([]) %}
     <tr>
         <td class="" align="center">
@@ -81,6 +91,16 @@ TWIG;
             </v:roundrect>
             <![endif]-->
             <a href="{{ passwordLink }}" class="btn-primary">Réinitialiser le mot de passe</a>
+        </td>
+    </tr>
+    <tr>
+        <td class="" align="center">
+            <!--[if mso]>
+            <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" href="{{ passwordLink }}" style="height:50px;v-text-anchor:middle;width:270px;" arcsize="5%" strokecolor="#2bc9af" fillcolor="#2bc9af">
+                <center style="color:#ffffff;font-family:Helvetica, Arial, sans-serif;font-size:18px;">Réinitialiser le mot de passe</center>
+            </v:roundrect>
+            <![endif]-->
+            <a href="{{ cancelPasswordLink }}" class="btn-secondary">Annuler la demande</a>
         </td>
     </tr>
 </table>
