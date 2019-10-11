@@ -135,24 +135,6 @@ class Clients implements UserInterface, EquatableInterface
     private $password;
 
     /**
-     * @var string
-     *
-     * @ORM\Column(name="security_question", type="string", length=191, nullable=true)
-     *
-     * @Gedmo\Versioned
-     */
-    private $securityQuestion;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="security_answer", type="string", length=191, nullable=true)
-     *
-     * @Gedmo\Versioned
-     */
-    private $securityAnswer;
-
-    /**
      * @ORM\Column(type="string", length=255, nullable=true)
      */
     private $jobFunction;
@@ -427,46 +409,6 @@ class Clients implements UserInterface, EquatableInterface
     public function getPassword(): ?string
     {
         return $this->password;
-    }
-
-    /**
-     * @param string|null $securityQuestion
-     *
-     * @return Clients
-     */
-    public function setSecurityQuestion(?string $securityQuestion): Clients
-    {
-        $this->securityQuestion = $securityQuestion;
-
-        return $this;
-    }
-
-    /**
-     * @return string|null
-     */
-    public function getSecurityQuestion(): ?string
-    {
-        return $this->securityQuestion;
-    }
-
-    /**
-     * @param string|null $securityAnswer
-     *
-     * @return Clients
-     */
-    public function setSecurityAnswer(?string $securityAnswer): Clients
-    {
-        $this->securityAnswer = md5($securityAnswer);
-
-        return $this;
-    }
-
-    /**
-     * @return string|null
-     */
-    public function getSecurityAnswer(): ?string
-    {
-        return $this->securityAnswer;
     }
 
     /**

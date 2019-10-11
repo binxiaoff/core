@@ -185,24 +185,20 @@ class PasswordController extends AbstractController
             $formData = $form->getData();
             $client   = $temporaryToken->getClient();
 
-            if (md5($formData['securityQuestion']['securityAnswer']) === $client->getSecurityAnswer()) {
-                $encryptedPassword = $userPasswordEncoder->encodePassword($client, $formData['password']['plainPassword']);
-                $client->setPassword($encryptedPassword);
+            $encryptedPassword = $userPasswordEncoder->encodePassword($client, $formData['password']['plainPassword']);
+            $client->setPassword($encryptedPassword);
 
-                $temporaryToken->setExpired();
+            $temporaryToken->setExpired();
 
-                $clientsRepository->save($client);
-                $temporaryTokenRepository->save($temporaryToken);
+            $clientsRepository->save($client);
+            $temporaryTokenRepository->save($temporaryToken);
 
-                $this->addFlash('passwordSuccess', $translator->trans('reset-password.reset-success-message'));
-            } else {
-                $this->addFlash('passwordErrors', $translator->trans('common-validator.secret-answer-invalid'));
-            }
+            $this->addFlash('passwordSuccess', $translator->trans('reset-password.reset-success-message'));
+            return $this->redirectToRoute('home');
         }
 
         return $this->render('security/password_reset.html.twig', [
-            'secretQuestion' => $temporaryToken->getClient()->getSecurityQuestion(),
-            'form'           => $form->createView(),
+            'form' => $form->createView(),
         ]);
     }
 
