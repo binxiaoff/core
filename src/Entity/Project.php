@@ -851,7 +851,7 @@ class Project
      */
     public function addParticipant(Companies $company, RealUserFinder $realUserFinder): ProjectParticipation
     {
-        return $this->addProjectParticipation($company, ProjectParticipation::ROLE_PROJECT_LENDER, $realUserFinder);
+        return $this->addProjectParticipation($company, ProjectParticipation::DUTY_PROJECT_PARTICIPATION_PARTICIPANT, $realUserFinder);
     }
 
     /**
