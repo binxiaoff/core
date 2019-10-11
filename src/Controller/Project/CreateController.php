@@ -85,7 +85,6 @@ class CreateController extends AbstractController
             $project
                 ->setSubmitterClient($client)
                 ->setSubmitterCompany($client->getCompany())
-                ->setCurrentStatus(ProjectStatus::STATUS_REQUESTED, $realUserFinder)
             ;
 
             if ($arranger = $form->get('arranger')->getData()) {

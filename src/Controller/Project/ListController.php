@@ -118,7 +118,7 @@ class ListController extends AbstractController
             ->setParameters([
                 'lender'   => $user->getCompany(),
                 'accepted' => Loans::STATUS_ACCEPTED,
-                'active'   => [ProjectStatus::STATUS_FUNDED, ProjectStatus::STATUS_CONTRACTS_REDACTED, ProjectStatus::STATUS_CONTRACTS_SIGNED],
+                'active'   => [ProjectStatus::STATUS_INTERESTS_COLLECTED, ProjectStatus::STATUS_OFFERS_COLLECTED, ProjectStatus::STATUS_CONTRACTS_SIGNED],
             ])
             ->getQuery()
             ->getResult()
@@ -137,7 +137,7 @@ class ListController extends AbstractController
             ->setParameters([
                 'lender'   => $user->getCompany(),
                 'accepted' => Loans::STATUS_ACCEPTED,
-                'finished' => [ProjectStatus::STATUS_LOST, ProjectStatus::STATUS_FINISHED, ProjectStatus::STATUS_CANCELLED],
+                'finished' => ProjectStatus::STATUS_REPAID,
             ])
             ->getQuery()
             ->getResult()
