@@ -21,5 +21,6 @@ final class Version20191010081900 extends AbstractMigration
 
     public function down(Schema $schema): void
     {
+        $this->skipIf(true, 'Old statuses have never been used');
     }
 }
