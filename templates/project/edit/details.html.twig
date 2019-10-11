@@ -26,16 +26,16 @@
                 <div class="{% if project.currentStatus.status > constant('\\Unilend\\Entity\\ProjectStatus::STATUS_PUBLISHED') %}complete{% elseif project.currentStatus.status == constant('\\Unilend\\Entity\\ProjectStatus::STATUS_PUBLISHED') %}active{% endif %}">
                     Financement
                 </div>
-                <div class="{% if project.currentStatus.status > constant('\\Unilend\\Entity\\ProjectStatus::STATUS_FUNDED') %}complete{% elseif project.currentStatus.status == constant('\\Unilend\\Entity\\ProjectStatus::STATUS_FUNDED') %}active{% endif %}">
+                <div class="{% if project.currentStatus.status > constant('\\Unilend\\Entity\\ProjectStatus::STATUS_INTERESTS_COLLECTED') %}complete{% elseif project.currentStatus.status == constant('\\Unilend\\Entity\\ProjectStatus::STATUS_INTERESTS_COLLECTED') %}active{% endif %}">
                     Contractualisation
                 </div>
-                <div class="{% if project.currentStatus.status > constant('\\Unilend\\Entity\\ProjectStatus::STATUS_CONTRACTS_REDACTED') %}complete{% elseif project.currentStatus.status == constant('\\Unilend\\Entity\\ProjectStatus::STATUS_CONTRACTS_REDACTED') %}active{% endif %}">
+                <div class="{% if project.currentStatus.status > constant('\\Unilend\\Entity\\ProjectStatus::STATUS_OFFERS_COLLECTED') %}complete{% elseif project.currentStatus.status == constant('\\Unilend\\Entity\\ProjectStatus::STATUS_OFFERS_COLLECTED') %}active{% endif %}">
                     Signature
                 </div>
                 <div class="{% if project.currentStatus.status > constant('\\Unilend\\Entity\\ProjectStatus::STATUS_CONTRACTS_SIGNED') %}complete{% elseif project.currentStatus.status == constant('\\Unilend\\Entity\\ProjectStatus::STATUS_CONTRACTS_SIGNED') %}active{% endif %}">
                     Remboursement
                 </div>
-                <div class="{% if project.currentStatus.status in [constant('\\Unilend\\Entity\\ProjectStatus::STATUS_FINISHED'), constant('\\Unilend\\Entity\\ProjectStatus::STATUS_LOST')] %}complete{% endif %}">
+                <div class="{% if project.currentStatus.status in [constant('\\Unilend\\Entity\\ProjectStatus::STATUS_REPAID'), constant('\\Unilend\\Entity\\ProjectStatus::STATUS_LOST')] %}complete{% endif %}">
                     Terminé
                 </div>
             </div><!-- /.tab-nav -->
@@ -173,23 +173,23 @@
                                 <li><a href="#article-discussions">Discussions</a></li>
                             </ul>
                             <div class="row" style="position: absolute; bottom: 30px; left: 30px; right: 30px;">
-                                {% if project.currentStatus.status <= constant('\\Unilend\\Entity\\ProjectStatus::STATUS_FUNDED') %}
+                                {% if project.currentStatus.status <= constant('\\Unilend\\Entity\\ProjectStatus::STATUS_INTERESTS_COLLECTED') %}
                                     <a href="{{ path('edit_project_status_abandon', {'hash': project.hash}) }}" class="btn-default btn-shape-xs margin-10-t" style="width: 100%;">Abandonner le dossier</a>
                                 {% endif %}
                                 {% if project.currentStatus.status == constant('\\Unilend\\Entity\\ProjectStatus::STATUS_REQUESTED') %}
                                     <a href="{{ path('project_publish_instructions', {'hash': project.hash}) }}" class="btn-primary btn-shape-xs margin-10-t" style="width: 100%;">Proposer au financement</a>
                                 {% endif %}
                                 {% if project.currentStatus.status == constant('\\Unilend\\Entity\\ProjectStatus::STATUS_PUBLISHED') %}
-                                    <a href="{{ path('edit_project_status_funded', {'hash': project.hash}) }}" class="btn-primary btn-shape-xs margin-10-t" style="width: 100%;">Clôturer la syndication</a>
+                                    <a href="{{ path('edit_project_status_interests_collected', {'hash': project.hash}) }}" class="btn-primary btn-shape-xs margin-10-t" style="width: 100%;">Clôturer la syndication</a>
                                 {% endif %}
-                                {% if project.currentStatus.status == constant('\\Unilend\\Entity\\ProjectStatus::STATUS_FUNDED') %}
-                                    <a href="{{ path('edit_project_status_contracts_redacted', {'hash': project.hash}) }}" class="btn-primary btn-shape-xs margin-10-t" style="width: 100%;">Signer les contrats</a>
+                                {% if project.currentStatus.status == constant('\\Unilend\\Entity\\ProjectStatus::STATUS_INTERESTS_COLLECTED') %}
+                                    <a href="{{ path('edit_project_status_offers_collected', {'hash': project.hash}) }}" class="btn-primary btn-shape-xs margin-10-t" style="width: 100%;">Signer les contrats</a>
                                 {% endif %}
-                                {% if project.currentStatus.status == constant('\\Unilend\\Entity\\ProjectStatus::STATUS_CONTRACTS_REDACTED') %}
+                                {% if project.currentStatus.status == constant('\\Unilend\\Entity\\ProjectStatus::STATUS_OFFERS_COLLECTED') %}
                                     <a href="{{ path('edit_project_status_signed', {'hash': project.hash}) }}" class="btn-primary btn-shape-xs margin-10-t" style="width: 100%;">Commencer le remboursement</a>
                                 {% endif %}
                                 {% if project.currentStatus.status == constant('\\Unilend\\Entity\\ProjectStatus::STATUS_CONTRACTS_SIGNED') %}
-                                    <a href="{{ path('edit_project_status_finished', {'hash': project.hash}) }}" class="btn-primary btn-shape-xs margin-10-t" style="width: 100%;">Mettre fin au
+                                    <a href="{{ path('edit_project_status_repaid', {'hash': project.hash}) }}" class="btn-primary btn-shape-xs margin-10-t" style="width: 100%;">Mettre fin au
                                         remboursement</a>
                                     <a href="{{ path('edit_project_status_lost', {'hash': project.hash}) }}" class="btn-primary btn-shape-xs margin-10-t" style="width: 100%;">Passer en perte</a>
                                 {% endif %}
