@@ -107,11 +107,11 @@ class PasswordController extends AbstractController
         $browser   = null !== $browser ? $browser->getName() . ' ' . $browser->getVersion()->getComplete() : null;
 
         $keywords = [
-            'firstName'     => $client->getFirstName(),
-            'email'         => $client->getEmail(),
-            'passwordLink'  => $this->generateUrl('password_reset', ['securityToken' => $token->getToken()], UrlGeneratorInterface::ABSOLUTE_URL),
-            'cancelPasswordLink' => $this->generateUrl('password_reset_cancel', ['securityToken' => $token], UrlGeneratorInterface::ABSOLUTE_URL),
-            'requesterData' => array_filter([
+            'firstName'          => $client->getFirstName(),
+            'email'              => $client->getEmail(),
+            'passwordLink'       => $this->generateUrl('password_reset', ['securityToken' => $token->getToken()], UrlGeneratorInterface::ABSOLUTE_URL),
+            'cancelPasswordLink' => $this->generateUrl('password_reset_cancel', ['securityToken' => $token->getToken()], UrlGeneratorInterface::ABSOLUTE_URL),
+            'requesterData'      => array_filter([
                 'ip'       => $ip,
                 'browser'  => $browser,
                 'date'     => $token->getAdded()->format('d/m/Y H:i:s'),
