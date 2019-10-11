@@ -93,7 +93,7 @@ class InvitationController extends AbstractController
             $projectParticipation = $projectParticipationRepository->findOneBy(['company' => $staff->getCompany()]);
 
             if (null === $projectParticipation) {
-                $projectParticipation = $project->addProjectParticipation($staff->getCompany(), ProjectParticipation::ROLE_PROJECT_LENDER, $realUserFinder);
+                $projectParticipation = $project->addProjectParticipation($staff->getCompany(), ProjectParticipation::DUTY_PROJECT_PARTICIPATION_PARTICIPANT, $realUserFinder);
             }
 
             try {

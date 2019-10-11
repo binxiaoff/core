@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Unilend\Entity\Traits;
 
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Security\Core\User\UserInterface;
 use Unilend\Traits\ConstantsAwareTrait;
 
 trait RoleableTrait
@@ -95,7 +96,11 @@ trait RoleableTrait
      */
     private function getAvailableRoles(): array
     {
-        return self::getConstants('ROLE_');
+        if (self::class instanceof UserInterface) {
+            return self::getConstants('ROLE_');
+        }
+
+        return self::getConstants('DUTY_');
     }
 
     /**

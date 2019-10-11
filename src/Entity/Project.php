@@ -796,7 +796,7 @@ class Project
      */
     public function setArranger(Companies $company, RealUserFinder $realUserFinder): ProjectParticipation
     {
-        return $this->addProjectParticipation($company, ProjectParticipation::ROLE_PROJECT_ARRANGER, $realUserFinder);
+        return $this->addProjectParticipation($company, ProjectParticipation::DUTY_PROJECT_PARTICIPATION_ARRANGER, $realUserFinder);
     }
 
     /**
@@ -807,7 +807,7 @@ class Project
      */
     public function setDeputyArranger(Companies $company, RealUserFinder $realUserFinder): ProjectParticipation
     {
-        return $this->addProjectParticipation($company, ProjectParticipation::ROLE_PROJECT_DEPUTY_ARRANGER, $realUserFinder);
+        return $this->addProjectParticipation($company, ProjectParticipation::DUTY_PROJECT_PARTICIPATION_DEPUTY_ARRANGER, $realUserFinder);
     }
 
     /**
@@ -818,7 +818,7 @@ class Project
      */
     public function setRun(Companies $company, RealUserFinder $realUserFinder): ProjectParticipation
     {
-        return $this->addProjectParticipation($company, ProjectParticipation::ROLE_PROJECT_RUN, $realUserFinder);
+        return $this->addProjectParticipation($company, ProjectParticipation::DUTY_PROJECT_PARTICIPATION_RUN, $realUserFinder);
     }
 
     /**
@@ -829,7 +829,7 @@ class Project
      */
     public function setLoanOfficer(Companies $company, RealUserFinder $realUserFinder): ProjectParticipation
     {
-        return $this->addProjectParticipation($company, ProjectParticipation::ROLE_PROJECT_LOAN_OFFICER, $realUserFinder);
+        return $this->addProjectParticipation($company, ProjectParticipation::DUTY_PROJECT_PARTICIPATION_LOAN_OFFICER, $realUserFinder);
     }
 
     /**
@@ -840,7 +840,7 @@ class Project
      */
     public function setSecurityTrustee(Companies $company, RealUserFinder $realUserFinder): ProjectParticipation
     {
-        return $this->addProjectParticipation($company, ProjectParticipation::ROLE_PROJECT_SECURITY_TRUSTEE, $realUserFinder);
+        return $this->addProjectParticipation($company, ProjectParticipation::DUTY_PROJECT_PARTICIPATION_SECURITY_TRUSTEE, $realUserFinder);
     }
 
     /**
@@ -861,7 +861,7 @@ class Project
      */
     public function getArranger(): ?ProjectParticipation
     {
-        return $this->getUniqueRoleParticipation(ProjectParticipation::ROLE_PROJECT_ARRANGER);
+        return $this->getUniqueRoleParticipation(ProjectParticipation::DUTY_PROJECT_PARTICIPATION_ARRANGER);
     }
 
     /**
@@ -871,7 +871,7 @@ class Project
      */
     public function getDeputyArranger(): ?ProjectParticipation
     {
-        return $this->getUniqueRoleParticipation(ProjectParticipation::ROLE_PROJECT_DEPUTY_ARRANGER);
+        return $this->getUniqueRoleParticipation(ProjectParticipation::DUTY_PROJECT_PARTICIPATION_DEPUTY_ARRANGER);
     }
 
     /**
@@ -881,7 +881,7 @@ class Project
      */
     public function getRun(): ?ProjectParticipation
     {
-        return $this->getUniqueRoleParticipation(ProjectParticipation::ROLE_PROJECT_RUN);
+        return $this->getUniqueRoleParticipation(ProjectParticipation::DUTY_PROJECT_PARTICIPATION_RUN);
     }
 
     /**
@@ -891,7 +891,7 @@ class Project
      */
     public function getLoanOfficer(): ?ProjectParticipation
     {
-        return $this->getUniqueRoleParticipation(ProjectParticipation::ROLE_PROJECT_LOAN_OFFICER);
+        return $this->getUniqueRoleParticipation(ProjectParticipation::DUTY_PROJECT_PARTICIPATION_LOAN_OFFICER);
     }
 
     /**
@@ -901,7 +901,7 @@ class Project
      */
     public function getSecurityTrustee(): ?ProjectParticipation
     {
-        return $this->getUniqueRoleParticipation(ProjectParticipation::ROLE_PROJECT_SECURITY_TRUSTEE);
+        return $this->getUniqueRoleParticipation(ProjectParticipation::DUTY_PROJECT_PARTICIPATION_SECURITY_TRUSTEE);
     }
 
     /**
@@ -909,7 +909,7 @@ class Project
      */
     public function getParticipants(): iterable
     {
-        return $this->getParticipationsByRole(ProjectParticipation::ROLE_PROJECT_LENDER);
+        return $this->getParticipationsByRole(ProjectParticipation::DUTY_PROJECT_PARTICIPATION_PARTICIPANT);
     }
 
     /**
@@ -917,7 +917,7 @@ class Project
      */
     public function getLenderCompanies(): iterable
     {
-        return $this->getCompaniesByRole(ProjectParticipation::ROLE_PROJECT_LENDER);
+        return $this->getCompaniesByRole(ProjectParticipation::DUTY_PROJECT_PARTICIPATION_PARTICIPANT);
     }
 
     /**
@@ -1110,11 +1110,11 @@ class Project
     private function isUniqueRole(string $role): bool
     {
         return in_array($role, [
-            ProjectParticipation::ROLE_PROJECT_ARRANGER,
-            ProjectParticipation::ROLE_PROJECT_DEPUTY_ARRANGER,
-            ProjectParticipation::ROLE_PROJECT_RUN,
-            ProjectParticipation::ROLE_PROJECT_LOAN_OFFICER,
-            ProjectParticipation::ROLE_PROJECT_SECURITY_TRUSTEE,
+            ProjectParticipation::DUTY_PROJECT_PARTICIPATION_ARRANGER,
+            ProjectParticipation::DUTY_PROJECT_PARTICIPATION_DEPUTY_ARRANGER,
+            ProjectParticipation::DUTY_PROJECT_PARTICIPATION_RUN,
+            ProjectParticipation::DUTY_PROJECT_PARTICIPATION_LOAN_OFFICER,
+            ProjectParticipation::DUTY_PROJECT_PARTICIPATION_SECURITY_TRUSTEE,
         ], true);
     }
 
