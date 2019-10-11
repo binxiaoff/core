@@ -209,7 +209,7 @@
                                                 {% set statusLabel = 'En cours de remboursement' %}
                                             {% elseif status == constant('\\Unilend\\Entity\\ProjectStatus::STATUS_REPAID') %}
                                                 {% set statusLabel = 'Terminé' %}
-                                            {% elseif status == constant('\\Unilend\\Entity\\ProjectStatus::STATUS_LOST') %}
+                                            {% elseif status == constant('\\Unilend\\Entity\\ProjectStatus::STATUS_REPAID') %}
                                                 {% set statusLabel = 'Défaut' %}
                                             {% elseif status == constant('\\Unilend\\Entity\\ProjectStatus::STATUS_REPAID') %}
                                                 {% set statusLabel = 'Annulé' %}
@@ -329,7 +329,7 @@
                                                 {% set statusLabel = 'En cours de remboursement' %}
                                             {% elseif status == constant('\\Unilend\\Entity\\ProjectStatus::STATUS_REPAID') %}
                                                 {% set statusLabel = 'Terminé' %}
-                                            {% elseif status == constant('\\Unilend\\Entity\\ProjectStatus::STATUS_LOST') %}
+                                            {% elseif status == constant('\\Unilend\\Entity\\ProjectStatus::STATUS_REPAID') %}
                                                 {% set statusLabel = 'Défaut' %}
                                             {% elseif status == constant('\\Unilend\\Entity\\ProjectStatus::STATUS_REPAID') %}
                                                 {% set statusLabel = 'Annulé' %}

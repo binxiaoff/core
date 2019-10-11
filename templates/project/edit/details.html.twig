@@ -35,7 +35,7 @@
                 <div class="{% if project.currentStatus.status > constant('\\Unilend\\Entity\\ProjectStatus::STATUS_CONTRACTS_SIGNED') %}complete{% elseif project.currentStatus.status == constant('\\Unilend\\Entity\\ProjectStatus::STATUS_CONTRACTS_SIGNED') %}active{% endif %}">
                     Remboursement
                 </div>
-                <div class="{% if project.currentStatus.status in [constant('\\Unilend\\Entity\\ProjectStatus::STATUS_REPAID'), constant('\\Unilend\\Entity\\ProjectStatus::STATUS_LOST')] %}complete{% endif %}">
+                <div class="{% if project.currentStatus.status in [constant('\\Unilend\\Entity\\ProjectStatus::STATUS_REPAID'), constant('\\Unilend\\Entity\\ProjectStatus::STATUS_REPAID')] %}complete{% endif %}">
                     Terminé
                 </div>
             </div><!-- /.tab-nav -->
