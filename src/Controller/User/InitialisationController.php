@@ -69,7 +69,7 @@ class InitialisationController extends AbstractController
         ProjectParticipationManager $projectParticipationManager,
         ?Project $project = null
     ): Response {
-        if ($temporaryToken->isValid()) {
+        if (false === $temporaryToken->isValid()) {
             $this->addFlash('error', $translator->trans('account-init.invalid-link-error-message'));
 
             return $this->render('user/init.html.twig');
