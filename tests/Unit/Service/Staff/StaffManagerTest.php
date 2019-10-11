@@ -139,7 +139,7 @@ class StaffManagerTest extends TestCase
 
         static::assertSame($company, $staff->getCompany());
         static::assertSame($email, $staff->getClient()->getEmail());
-        static::assertSame([Staff::ROLE_STAFF_OPERATOR], $staff->getRoles());
+        static::assertSame([Staff::DUTY_STAFF_OPERATOR], $staff->getRoles());
     }
 
     /**

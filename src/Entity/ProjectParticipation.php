@@ -16,7 +16,7 @@ use Unilend\Service\User\RealUserFinder;
  * @ApiResource
  *
  * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(columns={"id_project", "id_company"})})
- * @ORM\Entity
+ * @ORM\Entity(repositoryClass="Unilend\Repository\ProjectParticipationRepository")
  * @ORM\HasLifecycleCallbacks
  */
 class ProjectParticipation
@@ -28,14 +28,14 @@ class ProjectParticipation
     use BlamableAddedTrait;
 
     // Use COMPANY_ prefix to distinguish it from Symfony user's roles
-    public const ROLE_PROJECT_ARRANGER         = 'ROLE_PROJECT_ARRANGER'; // The company who arranges a loan syndication.
-    public const ROLE_PROJECT_DEPUTY_ARRANGER  = 'ROLE_PROJECT_DEPUTY_ARRANGER';
-    public const ROLE_PROJECT_RUN              = 'ROLE_PROJECT_RUN'; // The abbreviation of Responsable Unique de Notation, who gives a note on the borrower.
-    public const ROLE_PROJECT_LENDER           = 'ROLE_PROJECT_LENDER';
-    public const ROLE_PROJECT_LOAN_OFFICER     = 'ROLE_PROJECT_LOAN_OFFICER';
-    public const ROLE_PROJECT_SECURITY_TRUSTEE = 'ROLE_PROJECT_SECURITY_TRUSTEE';
+    public const DUTY_PROJECT_PARTICIPATION_ARRANGER         = 'DUTY_PROJECT_PARTICIPATION_ARRANGER'; // The company who arranges a loan syndication.
+    public const DUTY_PROJECT_PARTICIPATION_DEPUTY_ARRANGER  = 'DUTY_PROJECT_PARTICIPATION_DEPUTY_ARRANGER';
+    public const DUTY_PROJECT_PARTICIPATION_RUN              = 'DUTY_PROJECT_PARTICIPATION_RUN'; // Responsable Unique de Notation, who gives a note on the borrower.
+    public const DUTY_PROJECT_PARTICIPATION_PARTICIPANT      = 'DUTY_PROJECT_PARTICIPATION_PARTICIPANT';
+    public const DUTY_PROJECT_PARTICIPATION_LOAN_OFFICER     = 'DUTY_PROJECT_PARTICIPATION_LOAN_OFFICER';
+    public const DUTY_PROJECT_PARTICIPATION_SECURITY_TRUSTEE = 'DUTY_PROJECT_PARTICIPATION_SECURITY_TRUSTEE';
 
-    private const DEFAULT_ROLE = self::ROLE_PROJECT_LENDER;
+    private const DEFAULT_ROLE = self::DUTY_PROJECT_PARTICIPATION_PARTICIPANT;
 
     private const STATUS_NOT_CONSULTED = 0;
     private const STATUS_CONSULTED     = 10;
@@ -44,11 +44,11 @@ class ProjectParticipation
     private const DEFAULT_STATUS = self::STATUS_NOT_CONSULTED;
 
     private const DUTY_GROUP_PROJECT_PARTICIPATION_ORGANIZER = [
-        self::ROLE_PROJECT_ARRANGER,
-        self::ROLE_PROJECT_DEPUTY_ARRANGER,
-        self::ROLE_PROJECT_RUN,
-        self::ROLE_PROJECT_LOAN_OFFICER,
-        self::ROLE_PROJECT_SECURITY_TRUSTEE,
+        self::DUTY_PROJECT_PARTICIPATION_ARRANGER,
+        self::DUTY_PROJECT_PARTICIPATION_DEPUTY_ARRANGER,
+        self::DUTY_PROJECT_PARTICIPATION_RUN,
+        self::DUTY_PROJECT_PARTICIPATION_LOAN_OFFICER,
+        self::DUTY_PROJECT_PARTICIPATION_SECURITY_TRUSTEE,
     ];
 
     /**
@@ -163,7 +163,7 @@ class ProjectParticipation
      */
     public function isArranger(): bool
     {
-        return in_array(self::ROLE_PROJECT_ARRANGER, $this->getRoles(), true);
+        return in_array(self::DUTY_PROJECT_PARTICIPATION_ARRANGER, $this->getRoles(), true);
     }
 
     /**

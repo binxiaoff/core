@@ -23,8 +23,8 @@ class Staff
     /** @deprecated Just for backward compatibility. Later, we will define a new role list for staff.*/
     public const ROLE_COMPANY_OWNER = 'ROLE_COMPANY_OWNER';
 
-    public const ROLE_STAFF_OPERATOR = 'ROLE_STAFF_OPERATOR';
-    public const ROLE_STAFF_MANAGER  = 'ROLE_STAFF_MANAGER';
+    public const DUTY_STAFF_OPERATOR = 'DUTY_STAFF_OPERATOR';
+    public const DUTY_STAFF_MANAGER  = 'DUTY_STAFF_MANAGER';
 
     /**
      * @var int

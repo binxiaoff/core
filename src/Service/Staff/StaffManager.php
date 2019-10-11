@@ -88,7 +88,7 @@ class StaffManager
             $this->clientsRepository->save($client);
         }
 
-        $staff = $company->addStaff($client, Staff::ROLE_STAFF_OPERATOR);
+        $staff = $company->addStaff($client, Staff::DUTY_STAFF_OPERATOR);
         $this->companiesRepository->save($company);
 
         return $staff;
