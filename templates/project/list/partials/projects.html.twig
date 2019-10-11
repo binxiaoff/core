@@ -12,18 +12,14 @@
                                 {% set statusLabel = 'Dépôt' %}
                             {% elseif status == constant('\\Unilend\\Entity\\ProjectStatus::STATUS_PUBLISHED') %}
                                 {% set statusLabel = 'En cours de financement' %}
-                            {% elseif status == constant('\\Unilend\\Entity\\ProjectStatus::STATUS_FUNDED') %}
+                            {% elseif status == constant('\\Unilend\\Entity\\ProjectStatus::STATUS_INTERESTS_COLLECTED') %}
                                 {% set statusLabel = 'Contractualisation' %}
-                            {% elseif status == constant('\\Unilend\\Entity\\ProjectStatus::STATUS_CONTRACTS_REDACTED') %}
+                            {% elseif status == constant('\\Unilend\\Entity\\ProjectStatus::STATUS_OFFERS_COLLECTED') %}
                                 {% set statusLabel = 'Signature' %}
                             {% elseif status == constant('\\Unilend\\Entity\\ProjectStatus::STATUS_CONTRACTS_SIGNED') %}
                                 {% set statusLabel = 'En cours de remboursement' %}
-                            {% elseif status == constant('\\Unilend\\Entity\\ProjectStatus::STATUS_FINISHED') %}
+                            {% elseif status == constant('\\Unilend\\Entity\\ProjectStatus::STATUS_REPAID') %}
                                 {% set statusLabel = 'Terminé' %}
-                            {% elseif status == constant('\\Unilend\\Entity\\ProjectStatus::STATUS_LOST') %}
-                                {% set statusLabel = 'Défaut' %}
-                            {% elseif status == constant('\\Unilend\\Entity\\ProjectStatus::STATUS_CANCELLED') %}
-                                {% set statusLabel = 'Annulé' %}
                             {% endif %}
 
                             {% if statusProjects|length == 0 %}
@@ -79,8 +75,8 @@
                                         </td>
                                         <td class="table-projects-item-title">{{ project.borrowerCompany.name }}<br>{{ project.title }}</td>
                                         <td class="table-actions">
-                                            {% if status == constant('\\Unilend\\Entity\\ProjectStatus::STATUS_FUNDED') %}
-                                                <a href="{{ path('edit_project_status_contracts_redacted', {'hash': project.hash}) }}" role="button" class="btn-default" title="Signer les contrats" data-toggle="tooltip"><span class="icon fa-pen-u16"></span></a>
+                                            {% if status == constant('\\Unilend\\Entity\\ProjectStatus::STATUS_INTERESTS_COLLECTED') %}
+                                                <a href="{{ path('edit_project_status_offers_collected', {'hash': project.hash}) }}" role="button" class="btn-default" title="Signer les contrats" data-toggle="tooltip"><span class="icon fa-pen-u16"></span></a>
                                             {% endif %}
                                             <a href="{{ path('edit_project_details', {'hash': project.hash}) }}" role="button" class="btn-default" title="Voir le détail" data-toggle="tooltip"><span class="icon fa-view-u16"></span></a>
                                         </td>

@@ -165,10 +165,10 @@ class EditController extends AbstractController
 
     /**
      * @Route("/projet/abandon/{hash}", name="edit_project_status_abandon", requirements={"hash": "[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}"})
-     * @Route("/projet/finance/{hash}", name="edit_project_status_funded", requirements={"hash": "[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}"})
-     * @Route("/projet/signature/{hash}", name="edit_project_status_contracts_redacted", requirements={"hash": "[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}"})
+     * @Route("/projet/finance/{hash}", name="edit_project_status_interests_collected", requirements={"hash": "[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}"})
+     * @Route("/projet/signature/{hash}", name="edit_project_status_offers_collected", requirements={"hash": "[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}"})
      * @Route("/projet/remboursement/{hash}", name="edit_project_status_signed", requirements={"hash": "[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}"})
-     * @Route("/projet/rembourse/{hash}", name="edit_project_status_finished", requirements={"hash": "[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}"})
+     * @Route("/projet/rembourse/{hash}", name="edit_project_status_repaid", requirements={"hash": "[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}"})
      * @Route("/projet/perte/{hash}", name="edit_project_status_lost", requirements={"hash": "[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}"})
      *
      * @IsGranted("edit", subject="project")
@@ -202,28 +202,22 @@ class EditController extends AbstractController
         $route  = $request->get('_route');
 
         switch ($route) {
+            case 'edit_project_status_repaid':
+            case 'edit_project_status_lost':
             case 'edit_project_status_abandon':
-                $status = ProjectStatus::STATUS_CANCELLED;
+                $status = ProjectStatus::STATUS_REPAID;
 
                 break;
-            case 'edit_project_status_funded':
-                $status = ProjectStatus::STATUS_FUNDED;
+            case 'edit_project_status_interests_collected':
+                $status = ProjectStatus::STATUS_INTERESTS_COLLECTED;
 
                 break;
-            case 'edit_project_status_contracts_redacted':
-                $status = ProjectStatus::STATUS_CONTRACTS_REDACTED;
+            case 'edit_project_status_offers_collected':
+                $status = ProjectStatus::STATUS_OFFERS_COLLECTED;
 
                 break;
             case 'edit_project_status_signed':
                 $status = ProjectStatus::STATUS_CONTRACTS_SIGNED;
-
-                break;
-            case 'edit_project_status_finished':
-                $status = ProjectStatus::STATUS_FINISHED;
-
-                break;
-            case 'edit_project_status_lost':
-                $status = ProjectStatus::STATUS_LOST;
 
                 break;
         }
@@ -231,7 +225,7 @@ class EditController extends AbstractController
         if ($status) {
             $project->setCurrentStatus($status, $realUserFinder);
             switch ($status) {
-                case ProjectStatus::STATUS_FUNDED:
+                case ProjectStatus::STATUS_INTERESTS_COLLECTED:
                     $this->closeProject(
                         $project,
                         $trancheRepository,
