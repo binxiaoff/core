@@ -7,9 +7,9 @@ _knp_mailjet:
     defaults: { _controller: knp_mailjet.event.controller:handleEventAction, token: null }
 
 api_login_check:
-    path: /api/authentication_token
+    path: /authentication_token
     methods: ['POST']
 
 gesdinet_jwt_refresh_token:
-    path:       /api/token/refresh
+    path:       /token/refresh
     controller: gesdinet.jwtrefreshtoken::refresh
