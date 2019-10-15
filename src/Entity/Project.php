@@ -47,9 +47,6 @@ class Project
         setCurrentStatus as private baseStatusSetter;
     }
 
-    public const OPERATION_TYPE_ARRANGEMENT = 1;
-    public const OPERATION_TYPE_SYNDICATION = 2;
-
     public const OFFER_VISIBILITY_PUBLIC  = 1;
     public const OFFER_VISIBILITY_PRIVATE = 2;
 
@@ -68,6 +65,15 @@ class Project
     public const INTERNAL_RATING_SCORE_E_MINUS = 'E-';
     public const INTERNAL_RATING_SCORE_F       = 'F';
     public const INTERNAL_RATING_SCORE_Z       = 'Z';
+
+    public const PROJECT_SYNDICATION_TYPE_PRIMARY   = 'primary';
+    public const PROJECT_SYNDICATION_TYPE_SECONDARY = 'secondary';
+
+    public const PROJECT_PARTICIPATION_TYPE_DIRECT            = 'direct';
+    public const PROJECT_PARTICIPATION_TYPE_SUB_PARTICIPATION = 'sub_participation';
+
+    public const PROJECT_RISK_TYPE_RISK     = 'risk';
+    public const PROJECT_RISK_TYPE_TREASURY = 'risk_treasury';
 
     /**
      * @var int
@@ -204,13 +210,6 @@ class Project
      *
      * @ORM\Column(type="smallint", nullable=false)
      */
-    private $operationType;
-
-    /**
-     * @var int
-     *
-     * @ORM\Column(type="smallint", nullable=false)
-     */
     private $offerVisibility;
 
     /**
@@ -281,6 +280,36 @@ class Project
     private $statuses;
 
     /**
+     * @var string
+     *
+     * @ORM\Column(type="string", length=80)
+     *
+     * @Assert\NotBlank
+     * @Assert\Choice(callback="getSyndicationTypes")
+     */
+    private $syndicationType;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(type="string", length=80)
+     *
+     * @Assert\NotBlank
+     * @Assert\Choice(callback="getParticipationTypes")
+     */
+    private $participationType;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(type="string", nullable=true, length=80)
+     *
+     * @Assert\Expression("(!this.isSubParticipation() and !value) or (this.isSubParticipation() and value)")
+     * @Assert\Choice(callback="getRiskTypes")
+     */
+    private $riskType;
+
+    /**
      * Project constructor.
      *
      * @param RealUserFinder $realUserFinder
@@ -296,6 +325,9 @@ class Project
         $this->confidentialityAcceptances = new ArrayCollection();
 
         $this->setCurrentStatus(ProjectStatus::STATUS_REQUESTED, $realUserFinder);
+
+        $this->syndicationType   = static::PROJECT_SYNDICATION_TYPE_PRIMARY;
+        $this->participationType = static::PROJECT_PARTICIPATION_TYPE_DIRECT;
     }
 
     /**
@@ -621,36 +653,6 @@ class Project
     public function getAllInternalRatingScores(): array
     {
         return self::getConstants('INTERNAL_RATING_SCORE_');
-    }
-
-    /**
-     * @return int|null
-     */
-    public function getOperationType(): ?int
-    {
-        return $this->operationType;
-    }
-
-    /**
-     * @param int $operationType
-     *
-     * @return Project
-     */
-    public function setOperationType(int $operationType): Project
-    {
-        if (in_array($operationType, $this->getAllOperationTypes())) {
-            $this->operationType = $operationType;
-        }
-
-        return $this;
-    }
-
-    /**
-     * @return array
-     */
-    public function getAllOperationTypes(): array
-    {
-        return self::getConstants('OPERATION_TYPE_');
     }
 
     /**
@@ -1091,11 +1093,151 @@ class Project
     }
 
     /**
+     * @return array|string[]
+     */
+    public static function getSyndicationTypes(): array
+    {
+        return static::getConstants('PROJECT_SYNDICATION_TYPE_');
+    }
+
+    /**
+     * @return array|string[]
+     */
+    public static function getParticipationTypes(): array
+    {
+        return static::getConstants('PROJECT_PARTICIPATION_TYPE_');
+    }
+
+    /**
+     * @return array|string[]
+     */
+    public static function getRiskTypes(): array
+    {
+        return static::getConstants('PROJECT_RISK_TYPE_');
+    }
+
+    /**
+     * @return bool
+     */
+    public function isPrimary(): bool
+    {
+        return $this->syndicationType === static::PROJECT_SYNDICATION_TYPE_PRIMARY;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isSecondary(): bool
+    {
+        return $this->syndicationType === static::PROJECT_SYNDICATION_TYPE_SECONDARY;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isDirect(): bool
+    {
+        return $this->participationType === static::PROJECT_PARTICIPATION_TYPE_DIRECT;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isSubParticipation(): bool
+    {
+        return $this->participationType === static::PROJECT_PARTICIPATION_TYPE_SUB_PARTICIPATION;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isRisk(): bool
+    {
+        return $this->isSubParticipation() && $this->riskType === static::PROJECT_RISK_TYPE_RISK;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isRiskAndTreasury(): bool
+    {
+        return $this->isSubParticipation() && $this->riskType === static::PROJECT_RISK_TYPE_TREASURY;
+    }
+
+    /**
+     * @return string
+     */
+    public function getSyndicationType(): string
+    {
+        return $this->syndicationType;
+    }
+
+    /**
+     * @param string $syndicationType
+     *
+     * @return Project
+     */
+    public function setSyndicationType(string $syndicationType): Project
+    {
+        $this->syndicationType = $syndicationType;
+
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getParticipationType(): string
+    {
+        return $this->participationType;
+    }
+
+    /**
+     * @param string $participationType
+     *
+     * @return Project
+     */
+    public function setParticipationType(string $participationType): Project
+    {
+        $this->participationType = $participationType;
+
+        if (false === $this->isSubParticipation()) {
+            $this->riskType = null;
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getRiskType(): string
+    {
+        return $this->riskType;
+    }
+
+    /**
+     * @param string|null $riskType
+     *
+     * @return Project
+     */
+    public function setRiskType(?string $riskType): Project
+    {
+        if (false === $this->isSubParticipation()) {
+            $riskType = null;
+        }
+
+        $this->riskType = $riskType;
+
+        return $this;
+    }
+
+    /**
      * @throws Exception
      *
      * @return string
      */
-    private function generateHash()
+    private function generateHash(): string
     {
         $uuid4 = Uuid::uuid4();
 

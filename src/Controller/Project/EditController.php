@@ -28,7 +28,7 @@ use Unilend\Form\Tranche\TrancheTypeCollectionType;
 use Unilend\Repository\{AcceptedBidsRepository, BidsRepository, CaRegionalBankRepository, CompaniesRepository,
     ProjectAttachmentRepository, ProjectAttachmentTypeRepository,  ProjectRepository, TrancheRepository};
 use Unilend\Security\Voter\ProjectVoter;
-use Unilend\Service\{Attachment\AttachmentManager, MailerManager, ProjectParticipation\ProjectParticipationManager, Project\ProjectImageManager, User\RealUserFinder};
+use Unilend\Service\{Attachment\AttachmentManager, MailerManager, Project\ProjectImageManager, User\RealUserFinder};
 
 class EditController extends AbstractController
 {
@@ -481,7 +481,7 @@ class EditController extends AbstractController
         return $this->get('form.factory')->createNamedBuilder('tranches', FormType::class, $project, ['data_class' => Project::class])
             ->add('tranches', TrancheTypeCollectionType::class, [
                 'constraints'   => [new Valid()],
-                'entry_options' => ['rate_required' => Project::OPERATION_TYPE_SYNDICATION === (int) $project->getOperationType()],
+                'entry_options' => ['rate_required' => true],
             ])
             ->getForm()
             ;
