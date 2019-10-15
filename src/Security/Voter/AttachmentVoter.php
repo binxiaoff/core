@@ -127,12 +127,12 @@ class AttachmentVoter extends Voter
                 switch ($project->getCurrentStatus()->getStatus()) {
                     case ProjectStatus::STATUS_PUBLISHED:
                     case ProjectStatus::STATUS_INTERESTS_COLLECTED:
-                        return null !== $this->getActiveParticipation($project, $user);
+                        return null !== $this->getActiveParticipantParticipation($project, $user);
                     case ProjectStatus::STATUS_OFFERS_COLLECTED:
                     case ProjectStatus::STATUS_CONTRACTS_SIGNED:
                     case ProjectStatus::STATUS_REPAID:
                         return
-                            null !== ($contact = $this->getActiveParticipation($project, $user))
+                            null !== ($contact = $this->getActiveParticipantParticipation($project, $user))
                                 && ($this->hasValidatedOffer($contact) || $this->isAddedBeforeContractualization($projectAttachment));
                     default:
                         throw new LogicException('This code should not be reached');
@@ -144,6 +144,8 @@ class AttachmentVoter extends Voter
     }
 
     /**
+     * Fetch an active (i.e. an interested) participation relating to a participant and not an organizer.
+     *
      * @param Project $project
      * @param Clients $user
      *
@@ -151,13 +153,13 @@ class AttachmentVoter extends Voter
      *
      * @return ProjectParticipationContact|null
      */
-    private function getActiveParticipation(Project $project, Clients $user): ?ProjectParticipationContact
+    private function getActiveParticipantParticipation(Project $project, Clients $user): ?ProjectParticipationContact
     {
-        /** @var ProjectParticipationContact $participation */
-        $participation = $this->participationContactRepository->findByProjectAndClient($project, $user);
+        /** @var ProjectParticipationContact $participationContact */
+        $participationContact = $this->participationContactRepository->findByProjectAndClient($project, $user);
 
-        return ($participation && false === $participation->getProjectParticipation()->isNotInterested())
-            ? $participation : null;
+        return ($participationContact && false === $participationContact->getProjectParticipation()->isNotInterested())
+            ? $participationContact : null;
     }
 
     /**
