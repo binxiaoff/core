@@ -31,7 +31,8 @@ final class Version20191011135719 extends AbstractMigration
         // this up() migration is auto-generated, please modify it to your needs
         $this->abortIf('mysql' !== $this->connection->getDatabasePlatform()->getName(), 'Migration can only be executed safely on \'mysql\'.');
 
-        $this->addSql('ALTER TABLE project ADD syndication_type VARCHAR(255) NOT NULL, ADD participation_type VARCHAR(255) NOT NULL, ADD risk_type VARCHAR(255) DEFAULT NULL');
+        $this->addSql('ALTER TABLE project ADD syndication_type VARCHAR(80) NOT NULL, ADD participation_type VARCHAR(80) NOT NULL, ADD risk_type VARCHAR(80) DEFAULT NULL');
+        $this->addSql('ALTER TABLE project DROP operation_type');
     }
 
     /**
@@ -45,5 +46,6 @@ final class Version20191011135719 extends AbstractMigration
         $this->abortIf('mysql' !== $this->connection->getDatabasePlatform()->getName(), 'Migration can only be executed safely on \'mysql\'.');
 
         $this->addSql('ALTER TABLE project DROP syndication_type, DROP participation_type, DROP risk_type');
+        $this->addSql('ALTER TABLE project ADD operation_type SMALLINT NOT NULL');
     }
 }

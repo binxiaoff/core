@@ -114,7 +114,7 @@ class ProjectType extends AbstractType
             ])
             ->add('tranches', TrancheTypeCollectionType::class, [
                 'constraints'   => [new Valid()],
-                'entry_options' => ['rate_required' => Project::OPERATION_TYPE_SYNDICATION === $options['operation_type']],
+                'entry_options' => ['rate_required' => true],
             ])
             ->add('arranger', EntityType::class, [
                 'label'         => 'project-form.arranger-label',

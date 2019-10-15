@@ -47,9 +47,6 @@ class Project
         setCurrentStatus as private baseStatusSetter;
     }
 
-    public const OPERATION_TYPE_ARRANGEMENT = 1;
-    public const OPERATION_TYPE_SYNDICATION = 2;
-
     public const OFFER_VISIBILITY_PUBLIC  = 1;
     public const OFFER_VISIBILITY_PRIVATE = 2;
 
@@ -213,13 +210,6 @@ class Project
      *
      * @ORM\Column(type="smallint", nullable=false)
      */
-    private $operationType;
-
-    /**
-     * @var int
-     *
-     * @ORM\Column(type="smallint", nullable=false)
-     */
     private $offerVisibility;
 
     /**
@@ -292,7 +282,7 @@ class Project
     /**
      * @var string
      *
-     * @ORM\Column(type="string")
+     * @ORM\Column(type="string", length=80)
      *
      * @Assert\NotBlank
      * @Assert\Choice(callback="getSyndicationTypes")
@@ -302,7 +292,7 @@ class Project
     /**
      * @var string
      *
-     * @ORM\Column(type="string")
+     * @ORM\Column(type="string", length=80)
      *
      * @Assert\NotBlank
      * @Assert\Choice(callback="getParticipationTypes")
@@ -312,7 +302,7 @@ class Project
     /**
      * @var string
      *
-     * @ORM\Column(type="string", nullable=true)
+     * @ORM\Column(type="string", nullable=true, length=80)
      *
      * @Assert\Expression("(!this.isSubParticipation() and !value) or (this.isSubParticipation() and value)")
      * @Assert\Choice(callback="getRiskTypes")
@@ -663,36 +653,6 @@ class Project
     public function getAllInternalRatingScores(): array
     {
         return self::getConstants('INTERNAL_RATING_SCORE_');
-    }
-
-    /**
-     * @return int|null
-     */
-    public function getOperationType(): ?int
-    {
-        return $this->operationType;
-    }
-
-    /**
-     * @param int $operationType
-     *
-     * @return Project
-     */
-    public function setOperationType(int $operationType): Project
-    {
-        if (in_array($operationType, $this->getAllOperationTypes())) {
-            $this->operationType = $operationType;
-        }
-
-        return $this;
-    }
-
-    /**
-     * @return array
-     */
-    public function getAllOperationTypes(): array
-    {
-        return self::getConstants('OPERATION_TYPE_');
     }
 
     /**
