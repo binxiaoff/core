@@ -1,9 +1,6 @@
 framework:
     assets:
-        base_urls: "%router.request_context.scheme%://%env(HOST_CDN_URL)%"
+        base_urls: "%router.request_context.scheme%://%env(HOST_APP_URL)%"
         packages:
-            gulp:
-                base_urls: "%router.request_context.scheme%://%env(HOST_CDN_URL)%/assets"
             user_upload:
                 base_path: /shared/upload
-        json_manifest_path: '%kernel.project_dir%/public/default/assets/rev-manifest.json'

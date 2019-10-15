@@ -38,7 +38,7 @@ services:
     Unilend\:
         resource: '%kernel.project_dir%/src/*'
         # The directory Unilend contains the legacy bundles. The services are managed by their own configurations.
-        exclude: '%kernel.project_dir%/src/{Console,Entity,Migrations,Tests,Traits,Kernel.php}'
+        exclude: '%kernel.project_dir%/src/{Console,Entity,Migrations,Tests,Traits,EventSubscriber,Kernel.php}'
 
     Unilend\Controller\SecurityController:
         $recaptchaKey: '%env(GOOGLE_RECAPTCHA_KEY)%'
