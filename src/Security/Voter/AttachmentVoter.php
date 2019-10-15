@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace Unilend\Security\Voter;
 
+use Doctrine\ORM\NonUniqueResultException;
 use LogicException;
+use Monolog\Logger;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
-use Unilend\Entity\{Attachment, Clients};
-use Unilend\Repository\{AttachmentSignatureRepository, ProjectAttachmentRepository};
+use Unilend\Entity\{Attachment, Clients, Project, ProjectAttachment, ProjectParticipationContact, ProjectStatus};
+use Unilend\Repository\{AttachmentSignatureRepository, ProjectAttachmentRepository, ProjectParticipationContactRepository};
 use Unilend\Traits\ConstantsAwareTrait;
 
 class AttachmentVoter extends Voter
@@ -24,20 +26,31 @@ class AttachmentVoter extends Voter
     private $attachmentSignatureRepository;
     /** @var ProjectAttachmentRepository */
     private $projectAttachmentRepository;
+    /**
+     * @var ProjectParticipationContactRepository
+     */
+    private $participationContactRepository;
+    /**
+     * @var Logger
+     */
+    private $logger;
 
     /**
-     * @param AuthorizationCheckerInterface $authorizationChecker
-     * @param AttachmentSignatureRepository $attachmentSignatureRepository
-     * @param ProjectAttachmentRepository   $projectAttachmentRepository
+     * @param AuthorizationCheckerInterface         $authorizationChecker
+     * @param AttachmentSignatureRepository         $attachmentSignatureRepository
+     * @param ProjectAttachmentRepository           $projectAttachmentRepository
+     * @param ProjectParticipationContactRepository $participationContactRepository
      */
     public function __construct(
         AuthorizationCheckerInterface $authorizationChecker,
         AttachmentSignatureRepository $attachmentSignatureRepository,
-        ProjectAttachmentRepository $projectAttachmentRepository
+        ProjectAttachmentRepository $projectAttachmentRepository,
+        ProjectParticipationContactRepository $participationContactRepository
     ) {
-        $this->authorizationChecker          = $authorizationChecker;
-        $this->attachmentSignatureRepository = $attachmentSignatureRepository;
-        $this->projectAttachmentRepository   = $projectAttachmentRepository;
+        $this->attachmentSignatureRepository  = $attachmentSignatureRepository;
+        $this->projectAttachmentRepository    = $projectAttachmentRepository;
+        $this->participationContactRepository = $participationContactRepository;
+        $this->authorizationChecker           = $authorizationChecker;
     }
 
     /**
@@ -47,7 +60,7 @@ class AttachmentVoter extends Voter
     {
         $attributes = self::getConstants('ATTRIBUTE_');
 
-        if (false === in_array($attribute, $attributes)) {
+        if (false === in_array($attribute, $attributes, true)) {
             return false;
         }
 
@@ -82,6 +95,8 @@ class AttachmentVoter extends Voter
      * @param Attachment $attachment
      * @param Clients    $user
      *
+     * @throws NonUniqueResultException
+     *
      * @return bool
      */
     private function canDownload(Attachment $attachment, Clients $user): bool
@@ -102,13 +117,71 @@ class AttachmentVoter extends Voter
         $projectAttachments = $this->projectAttachmentRepository->findBy(['attachment' => $attachment]);
 
         if ($projectAttachments) {
+            /** @var ProjectAttachment $projectAttachment */
             foreach ($projectAttachments as $projectAttachment) {
-                if ($this->authorizationChecker->isGranted(ProjectVoter::ATTRIBUTE_VIEW, $projectAttachment->getProject())) {
+                $project = $projectAttachment->getProject();
+                if ($this->authorizationChecker->isGranted(ProjectVoter::ATTRIBUTE_EDIT, $project)) {
                     return true;
+                }
+
+                switch ($project->getCurrentStatus()->getStatus()) {
+                    case ProjectStatus::STATUS_PUBLISHED:
+                    case ProjectStatus::STATUS_INTERESTS_COLLECTED:
+                        return null !== $this->getActiveParticipation($project, $user);
+                    case ProjectStatus::STATUS_OFFERS_COLLECTED:
+                    case ProjectStatus::STATUS_CONTRACTS_SIGNED:
+                    case ProjectStatus::STATUS_REPAID:
+                        return
+                            null !== ($contact = $this->getActiveParticipation($project, $user))
+                                && ($this->hasValidatedOffer($contact) || $this->isAddedBeforeContractualization($projectAttachment));
+                    default:
+                        throw new LogicException('This code should not be reached');
                 }
             }
         }
 
         return false;
+    }
+
+    /**
+     * @param Project $project
+     * @param Clients $user
+     *
+     * @throws NonUniqueResultException
+     *
+     * @return ProjectParticipationContact|null
+     */
+    private function getActiveParticipation(Project $project, Clients $user): ?ProjectParticipationContact
+    {
+        /** @var ProjectParticipationContact $participation */
+        $participation = $this->participationContactRepository->findByProjectAndClient($project, $user);
+
+        return ($participation && false === $participation->getProjectParticipation()->isNotInterested())
+            ? $participation : null;
+    }
+
+    /**
+     * @param ProjectParticipationContact $contact
+     *
+     * @return bool
+     */
+    private function hasValidatedOffer(ProjectParticipationContact $contact): bool
+    {
+        return null !== ($participation = $contact->getProjectParticipation()) && $participation->hasValidatedBid();
+    }
+
+    /**
+     * @param ProjectAttachment $projectAttachment
+     *
+     * @return bool
+     */
+    private function isAddedBeforeContractualization(ProjectAttachment $projectAttachment): bool
+    {
+        $project            = $projectAttachment->getProject();
+        $contractualization = $project->getLastSpecificStatus(ProjectStatus::STATUS_CONTRACTS_SIGNED);
+
+        $attachment = $projectAttachment->getAttachment();
+
+        return $attachment->getAdded() <= $contractualization->getAdded();
     }
 }

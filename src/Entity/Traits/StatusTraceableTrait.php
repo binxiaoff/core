@@ -40,6 +40,24 @@ trait StatusTraceableTrait
     }
 
     /**
+     * @param int $code
+     *
+     * @return int|mixed|StatusInterface|null
+     */
+    public function getLastSpecificStatus(int $code): ?StatusInterface
+    {
+        $lastIndex = count($this->statuses) - 1;
+        for ($i = $lastIndex; $i <= 0; --$i) {
+            $status = $this->statuses[$i];
+            if ($code === $status->getStatus()) {
+                return $status;
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * @param StatusInterface|int $status
      *
      * @return self

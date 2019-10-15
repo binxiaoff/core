@@ -8,7 +8,8 @@ use Exception;
 use LogicException;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
-use Unilend\Entity\{Clients, Project, ProjectStatus};
+use Unilend\Entity\{Clients, Embeddable\Permission, Project, ProjectStatus};
+use Unilend\Repository\ProjectParticipationRepository;
 use Unilend\Traits\ConstantsAwareTrait;
 
 class ProjectVoter extends Voter
@@ -22,6 +23,21 @@ class ProjectVoter extends Voter
     public const ATTRIBUTE_RATE        = 'rate';
     public const ATTRIBUTE_BID         = 'bid';
     public const ATTRIBUTE_COMMENT     = 'comment';
+    /**
+     * @var ProjectParticipationRepository
+     */
+    private $projectParticipationRepository;
+
+    /**
+     * ProjectVoter constructor.
+     *
+     * @param ProjectParticipationRepository $projectParticipation
+     */
+    public function __construct(
+        ProjectParticipationRepository $projectParticipation
+    ) {
+        $this->projectParticipationRepository = $projectParticipation;
+    }
 
     /**
      * {@inheritdoc}
@@ -119,7 +135,12 @@ class ProjectVoter extends Voter
      */
     private function canEdit(Project $project, Clients $user): bool
     {
-        return 0 < count($project->getSubmitterCompany()->getStaff($user));
+        return
+            0 < count($project->getSubmitterCompany()->getStaff($user))
+            || (
+                ($participation = $this->projectParticipationRepository->findByProjectAndClient($project, $user))
+                && $participation->getPermission()->has(Permission::PERMISSION_EDIT)
+            );
     }
 
     /**

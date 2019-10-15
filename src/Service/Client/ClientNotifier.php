@@ -9,7 +9,7 @@ use Exception;
 use Swift_Mailer;
 use Symfony\Component\Routing\RouterInterface;
 use Twig\Error\{LoaderError, RuntimeError, SyntaxError};
-use Unilend\Entity\{Clients, ClientsStatus, Project, ProjectStatus, TemporaryToken};
+use Unilend\Entity\{Clients, ClientsStatus, Project, ProjectStatus};
 use Unilend\Repository\TemporaryTokenRepository;
 use Unilend\Service\NotificationManager;
 use Unilend\SwiftMailer\TemplateMessageProvider;
@@ -93,7 +93,7 @@ class ClientNotifier
     public function notifyNewClientInvited(Clients $inviter, Clients $invitee, Project $project): int
     {
         if (ProjectStatus::STATUS_PUBLISHED === $project->getCurrentStatus()->getStatus()) {
-            $token = $this->temporaryTokenRepository->findOneBy(['idClient' => $invitee]);
+            $token = $this->temporaryTokenRepository->findOneBy(['client' => $invitee]);
 
             if ($token && $token->isValid()) {
                 $token->extendLong();
