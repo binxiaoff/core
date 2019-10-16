@@ -85,7 +85,7 @@ class ProjectAttachment
     }
 
     /**
-     * @return Attachment|null
+     * @return Attachment
      */
     public function getAttachment(): ?Attachment
     {
