@@ -16,7 +16,7 @@ class ProjectVoter extends Voter
 {
     use ConstantsAwareTrait;
 
-    public const ATTRIBUTE_LIST        = 'list';
+    public const ATTRIBUTE_PREVIEW     = 'preview';
     public const ATTRIBUTE_VIEW        = 'view';
     public const ATTRIBUTE_EDIT        = 'edit';
     public const ATTRIBUTE_MANAGE_BIDS = 'manage_bids';
@@ -38,7 +38,7 @@ class ProjectVoter extends Voter
     /**
      * {@inheritdoc}
      */
-    protected function supports($attribute, $subject)
+    protected function supports($attribute, $subject): bool
     {
         $attributes = self::getConstants('ATTRIBUTE_');
 
@@ -68,8 +68,8 @@ class ProjectVoter extends Voter
         }
 
         switch ($attribute) {
-            case self::ATTRIBUTE_LIST:
-                return $this->canList($project, $user);
+            case self::ATTRIBUTE_PREVIEW:
+                return $this->canPreview($project, $user);
             case self::ATTRIBUTE_VIEW:
                 return $this->canView($project, $user);
             case self::ATTRIBUTE_EDIT:
@@ -95,7 +95,7 @@ class ProjectVoter extends Voter
      *
      * @return bool
      */
-    private function canList(Project $project, Clients $user): bool
+    private function canPreview(Project $project, Clients $user): bool
     {
         if ($this->canEdit($project, $user)) {
             return true;
@@ -118,7 +118,7 @@ class ProjectVoter extends Voter
      */
     private function canView(Project $project, Clients $user): bool
     {
-        return $this->canList($project, $user) && $project->checkUserConfidentiality($user);
+        return $this->canPreview($project, $user) && $project->checkUserConfidentiality($user);
     }
 
     /**

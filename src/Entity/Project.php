@@ -19,13 +19,13 @@ use URLify;
 
 /**
  * @ApiResource(
- *     attributes={"security": "is_granted('view', object)"},
+ *     attributes={"security": "is_granted('ROLE_USER')"},
  *     collectionOperations={
- *         "get": {"security": "is_granted('list', object)"},
- *         "post": {"security": "is_granted('ROLE_USER')"}
+ *         "get",
+ *         "post"
  *     },
  *     itemOperations={
- *         "get",
+ *         "get": {"security": "is_granted('view', object)"},
  *         "put": {"security": "is_granted('edit', previous_object)"},
  *     }
  * )
@@ -1209,9 +1209,9 @@ class Project
     }
 
     /**
-     * @return string
+     * @return string|null
      */
-    public function getRiskType(): string
+    public function getRiskType(): ?string
     {
         return $this->riskType;
     }
