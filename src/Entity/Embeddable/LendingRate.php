@@ -25,6 +25,7 @@ class LendingRate
     public const INDEX_LIBOR             = 'LIBOR';
     public const INDEX_CHFTOIS           = 'CHFTOIS';
     public const INDEX_FFER              = 'FFER';
+    public const INDEX_ESTER             = '€STR';
 
     public const MARGIN_SCALE = 2;
 
