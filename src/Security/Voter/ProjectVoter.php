@@ -23,19 +23,15 @@ class ProjectVoter extends Voter
     public const ATTRIBUTE_RATE        = 'rate';
     public const ATTRIBUTE_BID         = 'bid';
     public const ATTRIBUTE_COMMENT     = 'comment';
-    /**
-     * @var ProjectParticipationRepository
-     */
+
+    /** @var ProjectParticipationRepository */
     private $projectParticipationRepository;
 
     /**
-     * ProjectVoter constructor.
-     *
      * @param ProjectParticipationRepository $projectParticipation
      */
-    public function __construct(
-        ProjectParticipationRepository $projectParticipation
-    ) {
+    public function __construct(ProjectParticipationRepository $projectParticipation)
+    {
         $this->projectParticipationRepository = $projectParticipation;
     }
 

@@ -133,7 +133,7 @@ class AttachmentVoter extends Voter
                     case ProjectStatus::STATUS_REPAID:
                         return
                             null !== ($contact = $this->getActiveParticipantParticipation($project, $user))
-                                && ($this->hasValidatedOffer($contact) || $this->isAddedBeforeContractualization($projectAttachment));
+                                && ($this->hasValidatedOffer($contact) || $this->isAddedBeforeOfferCollected($projectAttachment));
                     default:
                         throw new LogicException('This code should not be reached');
                 }
@@ -177,13 +177,13 @@ class AttachmentVoter extends Voter
      *
      * @return bool
      */
-    private function isAddedBeforeContractualization(ProjectAttachment $projectAttachment): bool
+    private function isAddedBeforeOfferCollected(ProjectAttachment $projectAttachment): bool
     {
-        $project            = $projectAttachment->getProject();
-        $contractualization = $project->getLastSpecificStatus(ProjectStatus::STATUS_CONTRACTS_SIGNED);
+        $project        = $projectAttachment->getProject();
+        $offerCollected = $project->getLastSpecificStatus(ProjectStatus::STATUS_OFFERS_COLLECTED);
 
         $attachment = $projectAttachment->getAttachment();
 
-        return $attachment->getAdded() <= $contractualization->getAdded();
+        return null === $offerCollected || $attachment->getAdded() <= $offerCollected->getAdded();
     }
 }
