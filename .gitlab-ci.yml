@@ -11,3 +11,9 @@ before_script:
 test:application:
     script:
         - bin/phpunit
+
+api_docs:
+  script: bin/console api:openapi:export --output=doc.json --spec-version=3
+  artifacts:
+      paths:
+          - doc.json
