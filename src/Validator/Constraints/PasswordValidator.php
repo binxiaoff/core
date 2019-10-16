@@ -8,23 +8,23 @@ use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
 use Symfony\Component\Validator\Exception\UnexpectedTypeException;
 
-class PasswordConstraintValidator extends ConstraintValidator
+class PasswordValidator extends ConstraintValidator
 {
     /**
      * @param mixed      $value      The value that should be validated
      * @param Constraint $constraint The constraint for the validation
      */
-    public function validate($value, Constraint $constraint)
+    public function validate($value, Constraint $constraint): void
     {
-        if (!$constraint instanceof PasswordConstraint) {
-            throw new UnexpectedTypeException($constraint, PasswordConstraint::class);
+        if (!$constraint instanceof Password) {
+            throw new UnexpectedTypeException($constraint, Password::class);
         }
 
         if (null === $value || '' === $value) {
             return;
         }
 
-        if (false === preg_match('/^(?=.*[a-z])(?=.*[A-Z]).{' . PasswordConstraint::MIN_PASSWORD_LENGTH . ',}$/', $value)) {
+        if (false === preg_match('/^(?=.*[a-z])(?=.*[A-Z]).{' . Password::MIN_PASSWORD_LENGTH . ',}$/', $value)) {
             $this->context->buildViolation($constraint->message)
                 ->addViolation()
             ;

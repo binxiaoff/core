@@ -7,7 +7,7 @@ namespace Unilend\Form\User;
 use Symfony\Component\Form\Extension\Core\Type\{PasswordType as BasePasswordType, RepeatedType};
 use Symfony\Component\Form\{AbstractType, FormBuilderInterface};
 use Symfony\Component\Validator\Constraints\NotBlank;
-use Unilend\Validator\Constraints\PasswordConstraint;
+use Unilend\Validator\Constraints\Password;
 
 class PasswordType extends AbstractType
 {
@@ -25,7 +25,7 @@ class PasswordType extends AbstractType
             'second_options'  => ['label' => 'common.password-confirmation'],
             'constraints'     => [
                 new NotBlank(),
-                new PasswordConstraint(),
+                new Password(),
             ],
         ]);
     }
