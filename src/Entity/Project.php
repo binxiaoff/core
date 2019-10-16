@@ -339,9 +339,9 @@ class Project
     /**
      * Project constructor.
      *
-     * @param Clients $submitterClient
+     * @param RealUserFinder $submitterClient
      */
-    public function __construct(Clients $submitterClient)
+    public function __construct(RealUserFinder $submitterClient)
     {
         $this->projectAttachments         = new ArrayCollection();
         $this->projectParticipations      = new ArrayCollection();
@@ -350,9 +350,6 @@ class Project
         $this->statuses                   = new ArrayCollection();
         $this->tranches                   = new ArrayCollection();
         $this->confidentialityAcceptances = new ArrayCollection();
-
-        $this->submitterCompany = $submitterClient->getCompany();
-        $this->submitterClient  = $submitterClient;
 
         $this->setCurrentStatus(ProjectStatus::STATUS_REQUESTED, $submitterClient);
 
@@ -573,7 +570,7 @@ class Project
      *
      * @return Project
      */
-    public function setCurrentStatus(int $status, Clients $realUserFinder): self
+    public function setCurrentStatus(int $status, RealUserFinder $realUserFinder): self
     {
         $projectStatus = new ProjectStatus($this, $status, $realUserFinder);
 
