@@ -8,6 +8,7 @@ use ApiPlatform\Core\Annotation\ApiResource;
 use DateTimeImmutable;
 use Doctrine\Common\Collections\{ArrayCollection, Criteria};
 use Doctrine\ORM\Mapping as ORM;
+use Gedmo\Mapping\Annotation as Gedmo;
 use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Entity\Embeddable\{Money, NullableLendingRate};
 use Unilend\Entity\Traits\TimestampableTrait;
@@ -19,6 +20,8 @@ use Unilend\Traits\ConstantsAwareTrait;
  * )
  * @ORM\Entity(repositoryClass="Unilend\Repository\TrancheRepository")
  * @ORM\HasLifecycleCallbacks
+ *
+ * @Gedmo\Loggable(logEntryClass="Unilend\Entity\Versioned\VersionedTranche")
  *
  * Short explanations about loan facilities can be found at https://www.translegal.com/lesson/3263
  */
@@ -67,6 +70,8 @@ class Tranche
      * @ORM\Column(length=191)
      *
      * @Assert\NotBlank
+     *
+     * @Gedmo\Versioned
      */
     private $name;
 
@@ -76,6 +81,8 @@ class Tranche
      * @ORM\Column(length=30)
      *
      * @Assert\NotBlank
+     *
+     * @Gedmo\Versioned
      */
     private $loanType;
 
@@ -85,6 +92,8 @@ class Tranche
      * @ORM\Column(length=30)
      *
      * @Assert\NotBlank
+     *
+     * @Gedmo\Versioned
      */
     private $repaymentType;
 
@@ -97,6 +106,8 @@ class Tranche
      *
      * @Assert\Range(min="1")
      * @Assert\NotBlank
+     *
+     * @Gedmo\Versioned
      */
     private $duration;
 
@@ -109,6 +120,8 @@ class Tranche
      *
      * @Assert\Range(min="1")
      * @Assert\NotBlank
+     *
+     * @Gedmo\Versioned
      */
     private $capitalPeriodicity;
 
@@ -121,6 +134,8 @@ class Tranche
      *
      * @Assert\Range(min="1")
      * @Assert\NotBlank
+     *
+     * @Gedmo\Versioned
      */
     private $interestPeriodicity;
 
@@ -128,6 +143,8 @@ class Tranche
      * @var Money
      *
      * @ORM\Embedded(class="Unilend\Entity\Embeddable\Money")
+     *
+     * @Gedmo\Versioned
      */
     private $money;
 
@@ -135,6 +152,8 @@ class Tranche
      * @var NullableLendingRate
      *
      * @ORM\Embedded(class="Unilend\Entity\Embeddable\NullableLendingRate")
+     *
+     * @Gedmo\Versioned
      */
     private $rate;
 
@@ -144,6 +163,8 @@ class Tranche
      * @ORM\Column(type="date_immutable", nullable=true)
      *
      * @Assert\Date
+     *
+     * @Gedmo\Versioned
      */
     private $expectedReleasingDate;
 
@@ -153,6 +174,8 @@ class Tranche
      * @ORM\Column(type="date_immutable", nullable=true)
      *
      * @Assert\Date
+     *
+     * @Gedmo\Versioned
      */
     private $expectedStartingDate;
 

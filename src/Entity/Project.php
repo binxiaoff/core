@@ -9,6 +9,7 @@ use DateTimeImmutable;
 use Doctrine\Common\Collections\{ArrayCollection, Collection, Criteria};
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
+use Gedmo\Mapping\Annotation as Gedmo;
 use Ramsey\Uuid\Uuid;
 use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Entity\Traits\StatusTraceableTrait;
@@ -36,6 +37,8 @@ use URLify;
  * })
  * @ORM\Entity(repositoryClass="Unilend\Repository\ProjectRepository")
  * @ORM\HasLifecycleCallbacks
+ *
+ * @Gedmo\Loggable(logEntryClass="Unilend\Entity\Versioned\VersionedProject")
  *
  * @method ProjectStatus getCurrentStatus
  */
@@ -105,6 +108,8 @@ class Project
      * @ORM\JoinColumns({
      *     @ORM\JoinColumn(name="id_borrower_company", referencedColumnName="id_company", nullable=false)
      * })
+     *
+     * @Gedmo\Versioned
      */
     private $borrowerCompany;
 
@@ -134,6 +139,8 @@ class Project
      * @ORM\Column(length=191)
      *
      * @Assert\NotBlank
+     *
+     * @Gedmo\Versioned
      */
     private $title;
 
@@ -145,6 +152,8 @@ class Project
      *     @ORM\JoinColumn(name="id_market_segment", referencedColumnName="id", nullable=false)
      * })
      * @Assert\NotBlank
+     *
+     * @Gedmo\Versioned
      */
     private $marketSegment;
 
@@ -154,6 +163,8 @@ class Project
      * @ORM\Column(type="text", length=16777215)
      *
      * @Assert\NotBlank
+     *
+     * @Gedmo\Versioned
      */
     private $description;
 
@@ -177,6 +188,8 @@ class Project
      * @ORM\Column(type="date_immutable", nullable=true)
      *
      * @Assert\Date
+     *
+     * @Gedmo\Versioned
      */
     private $replyDeadline;
 
@@ -186,6 +199,8 @@ class Project
      * @ORM\Column(type="date_immutable", nullable=true)
      *
      * @Assert\Date
+     *
+     * @Gedmo\Versioned
      */
     private $expectedClosingDate;
 
@@ -195,6 +210,8 @@ class Project
      * @ORM\Column(type="date_immutable", nullable=true)
      *
      * @Assert\Date
+     *
+     * @Gedmo\Versioned
      */
     private $lenderConsultationClosingDate;
 
@@ -202,6 +219,8 @@ class Project
      * @var string|null
      *
      * @ORM\Column(length=8, nullable=true)
+     *
+     * @Gedmo\Versioned
      */
     private $internalRatingScore;
 
@@ -247,6 +266,8 @@ class Project
      * @ORM\OneToMany(targetEntity="Unilend\Entity\Tranche", mappedBy="project", cascade={"persist"}, orphanRemoval=true)
      *
      * @Assert\Count(min="1", minMessage="project.tranche.count")
+     *
+     * @Assert\Valid
      */
     private $tranches;
 
@@ -286,6 +307,8 @@ class Project
      *
      * @Assert\NotBlank
      * @Assert\Choice(callback="getSyndicationTypes")
+     *
+     * @Gedmo\Versioned
      */
     private $syndicationType;
 
@@ -296,6 +319,8 @@ class Project
      *
      * @Assert\NotBlank
      * @Assert\Choice(callback="getParticipationTypes")
+     *
+     * @Gedmo\Versioned
      */
     private $participationType;
 
@@ -306,15 +331,17 @@ class Project
      *
      * @Assert\Expression("(!this.isSubParticipation() and !value) or (this.isSubParticipation() and value)")
      * @Assert\Choice(callback="getRiskTypes")
+     *
+     * @Gedmo\Versioned
      */
     private $riskType;
 
     /**
      * Project constructor.
      *
-     * @param RealUserFinder $realUserFinder
+     * @param Clients $submitterClient
      */
-    public function __construct(RealUserFinder $realUserFinder)
+    public function __construct(Clients $submitterClient)
     {
         $this->projectAttachments         = new ArrayCollection();
         $this->projectParticipations      = new ArrayCollection();
@@ -324,10 +351,14 @@ class Project
         $this->tranches                   = new ArrayCollection();
         $this->confidentialityAcceptances = new ArrayCollection();
 
-        $this->setCurrentStatus(ProjectStatus::STATUS_REQUESTED, $realUserFinder);
+        $this->submitterCompany = $submitterClient->getCompany();
+        $this->submitterClient  = $submitterClient;
+
+        $this->setCurrentStatus(ProjectStatus::STATUS_REQUESTED, $submitterClient);
 
         $this->syndicationType   = static::PROJECT_SYNDICATION_TYPE_PRIMARY;
         $this->participationType = static::PROJECT_PARTICIPATION_TYPE_DIRECT;
+        $this->offerVisibility   = static::OFFER_VISIBILITY_PUBLIC;
     }
 
     /**
@@ -542,7 +573,7 @@ class Project
      *
      * @return Project
      */
-    public function setCurrentStatus(int $status, RealUserFinder $realUserFinder): self
+    public function setCurrentStatus(int $status, Clients $realUserFinder): self
     {
         $projectStatus = new ProjectStatus($this, $status, $realUserFinder);
 
@@ -1211,7 +1242,7 @@ class Project
     /**
      * @return string
      */
-    public function getRiskType(): string
+    public function getRiskType(): ?string
     {
         return $this->riskType;
     }
