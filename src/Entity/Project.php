@@ -11,9 +11,10 @@ use Doctrine\ORM\Mapping as ORM;
 use Exception;
 use Gedmo\Mapping\Annotation as Gedmo;
 use Ramsey\Uuid\Uuid;
+use RuntimeException;
 use Symfony\Component\Validator\Constraints as Assert;
-use Unilend\Entity\Traits\StatusTraceableTrait;
 use Unilend\Entity\Traits\TimestampableTrait;
+use Unilend\Entity\Traits\TraceableStatusTrait;
 use Unilend\Service\User\RealUserFinder;
 use Unilend\Traits\ConstantsAwareTrait;
 
@@ -44,7 +45,7 @@ class Project
 {
     use TimestampableTrait;
     use ConstantsAwareTrait;
-    use StatusTraceableTrait {
+    use TraceableStatusTrait {
         setCurrentStatus as private baseStatusSetter;
     }
 
@@ -334,6 +335,13 @@ class Project
     private $riskType;
 
     /**
+     * @var ArrayCollection|ProjectOffer
+     *
+     * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectOffer", mappedBy="project", orphanRemoval=true, cascade={"persist"})
+     */
+    private $projectOffers;
+
+    /**
      * Project constructor.
      *
      * @param RealUserFinder $submitterClient
@@ -347,6 +355,7 @@ class Project
         $this->statuses                   = new ArrayCollection();
         $this->tranches                   = new ArrayCollection();
         $this->confidentialityAcceptances = new ArrayCollection();
+        $this->projectOffers              = new ArrayCollection();
 
         $this->setCurrentStatus(ProjectStatus::STATUS_REQUESTED, $submitterClient);
 
@@ -1009,29 +1018,21 @@ class Project
      * @param array|null     $status
      * @param Companies|null $lender
      *
-     * @return Bids[]|ArrayCollection
+     * @return TrancheOffer[]|ArrayCollection
      */
-    public function getBids(?array $status = null, ?Companies $lender = null): iterable
+    public function getTrancheOffers(?array $status = null, ?Companies $lender = null): ArrayCollection
     {
-        $bids = [];
-        foreach ($this->getTranches() as $tranche) {
-            $bids = array_merge($bids, $tranche->getBids($status, $lender)->toArray());
+        $trancheOffers = [];
+        $projectOffer  = $this->getProjectOffers(null, $lender)->first();
+        if (false === $projectOffer) {
+            return new ArrayCollection();
         }
 
-        return new ArrayCollection($bids);
-    }
-
-    /**
-     * @return Loans[]|ArrayCollection
-     */
-    public function getLoans(): iterable
-    {
-        $loans = [];
         foreach ($this->getTranches() as $tranche) {
-            array_push($loans, ...$tranche->getLoans()->toArray());
+            array_push($trancheOffers, ...$tranche->getTrancheOffer($status, $projectOffer)->toArray());
         }
 
-        return new ArrayCollection($loans);
+        return new ArrayCollection($trancheOffers);
     }
 
     /**
@@ -1234,6 +1235,57 @@ class Project
     }
 
     /**
+     * @param ProjectOffer $projectOffer
+     *
+     * @return Project
+     */
+    public function addProjectOffers(ProjectOffer $projectOffer): Project
+    {
+        $projectOffer->setProject($this);
+
+        if (false === $this->projectOffers->contains($projectOffer)) {
+            $this->projectOffers->add($projectOffer);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @param ProjectOffer $projectOffer
+     *
+     * @return Project
+     */
+    public function removeProjectOffers(ProjectOffer $projectOffer): Project
+    {
+        if ($this->projectOffers->contains($projectOffer)) {
+            $this->projectOffers->removeElement($projectOffer);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @param array|null     $committeeStatus
+     * @param Companies|null $lender
+     *
+     * @return ArrayCollection|ProjectOffer[]
+     */
+    public function getProjectOffers(?array $committeeStatus = null, ?Companies $lender = null): ArrayCollection
+    {
+        $criteria = new Criteria();
+
+        if (null !== $committeeStatus) {
+            $criteria->andWhere(Criteria::expr()->in('committeeStatus', $committeeStatus));
+        }
+
+        if (null !== $lender) {
+            $criteria->andWhere(Criteria::expr()->eq('lender', $lender));
+        }
+
+        return $this->projectOffers->matching($criteria);
+    }
+
+    /**
      * @throws Exception
      *
      * @return string
@@ -1300,7 +1352,7 @@ class Project
     private function getUniqueRoleParticipation(string $role): ?ProjectParticipation
     {
         if (false === $this->isUniqueRole($role)) {
-            throw new Exception(sprintf('Role "%s" is not unique. Cannot get project Participation corresponding to the role.', $role));
+            throw new RuntimeException(sprintf('Role "%s" is not unique. Cannot get project Participation corresponding to the role.', $role));
         }
 
         return $this->getParticipationsByRole($role)->first() ?: null;

@@ -169,7 +169,7 @@ class AttachmentVoter extends Voter
      */
     private function hasValidatedOffer(ProjectParticipationContact $contact): bool
     {
-        return null !== ($participation = $contact->getProjectParticipation()) && $participation->hasValidatedBid();
+        return null !== ($participation = $contact->getProjectParticipation()) && $participation->hasValidatedOffer();
     }
 
     /**

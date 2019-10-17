@@ -93,33 +93,39 @@ class NotificationDisplayManager
                     ]);
 
                     break;
-                case Notification::TYPE_BID_SUBMITTED_BIDDER:
-                    $bid     = $notification->getBid();
-                    $project = $bid->getTranche()->getProject();
-                    $type    = 'normal';
-                    $image   = 'offer';
-                    $title   = $this->translator->trans('notifications.bid-submitted-bidder-title');
-                    $content = $this->translator->trans('notifications.bid-submitted-bidder-content', [
-                        '%projectUrl%'   => $this->router->generate('lender_project_details', ['hash' => $project->getHash()]),
-                        '%projectTitle%' => $project->getTitle(),
-                        '%borrowerName%' => $project->getBorrowerCompany()->getName(),
-                        '%bidAmount%'    => $this->currencyFormatterNoDecimal->formatCurrency((float) $bid->getMoney()->getAmount(), $bid->getMoney()->getCurrency()),
-                    ]);
+                case Notification::TYPE_TRANCHE_OFFER_SUBMITTED_SUBMITTER:
+                    $trancheOffer = $notification->getTrancheOffer();
+                    if ($trancheOffer) {
+                        $project = $trancheOffer->getTranche()->getProject();
+                        $type    = 'normal';
+                        $image   = 'offer';
+                        $title   = $this->translator->trans('notifications.tranche-offer-submitted-maker-title');
+                        $content = $this->translator->trans('notifications.tranche-offer-submitted-maker-content', [
+                            '%projectUrl%'   => $this->router->generate('lender_project_details', ['hash' => $project->getHash()]),
+                            '%projectTitle%' => $project->getTitle(),
+                            '%borrowerName%' => $project->getBorrowerCompany()->getName(),
+                            '%offerAmount%'  => $this->currencyFormatterNoDecimal
+                                ->formatCurrency((float) $trancheOffer->getMoney()->getAmount(), $trancheOffer->getMoney()->getCurrency()),
+                        ]);
+                    }
 
                     break;
-                case Notification::TYPE_BID_SUBMITTED_LENDERS:
-                    $bid     = $notification->getBid();
-                    $project = $bid->getTranche()->getProject();
-                    $type    = 'normal';
-                    $image   = 'offer';
-                    $title   = $this->translator->trans('notifications.bid-submitted-lenders-title');
-                    $content = $this->translator->trans('notifications.bid-submitted-lenders-content', [
-                        '%projectUrl%'   => $this->router->generate('lender_project_details', ['hash' => $project->getHash()]),
-                        '%projectTitle%' => $project->getTitle(),
-                        '%borrowerName%' => $project->getBorrowerCompany()->getName(),
-                        '%bidderName%'   => $bid->getLender()->getName(),
-                        '%bidAmount%'    => $this->currencyFormatterNoDecimal->formatCurrency($bid->getMoney()->getAmount(), $bid->getMoney()->getCurrency()),
-                    ]);
+                case Notification::TYPE_TRANCHE_OFFER_SUBMITTED_PARTICIPANTS:
+                    $trancheOffer = $notification->getTrancheOffer();
+                    if ($trancheOffer) {
+                        $project = $trancheOffer->getTranche()->getProject();
+                        $type    = 'normal';
+                        $image   = 'offer';
+                        $title   = $this->translator->trans('notifications.tranche-offer-submitted-participants-title');
+                        $content = $this->translator->trans('notifications.tranche-offer-submitted-participants-content', [
+                            '%projectUrl%'     => $this->router->generate('lender_project_details', ['hash' => $project->getHash()]),
+                            '%projectTitle%'   => $project->getTitle(),
+                            '%borrowerName%'   => $project->getBorrowerCompany()->getName(),
+                            '%offerMakerName%' => $trancheOffer->getProjectOffer()->getLender()->getName(),
+                            '%offerAmount%'    => $this->currencyFormatterNoDecimal
+                                ->formatCurrency($trancheOffer->getMoney()->getAmount(), $trancheOffer->getMoney()->getCurrency()),
+                        ]);
+                    }
 
                     break;
                 case Notification::TYPE_PROJECT_COMMENT_ADDED:

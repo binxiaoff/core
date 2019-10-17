@@ -8,10 +8,10 @@ use LogicException;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
-use Unilend\Entity\{Bids, Clients};
+use Unilend\Entity\{Clients, TrancheOffer};
 use Unilend\Traits\ConstantsAwareTrait;
 
-class BidVoter extends Voter
+class TrancheOfferVoter extends Voter
 {
     use ConstantsAwareTrait;
 
@@ -35,11 +35,11 @@ class BidVoter extends Voter
     {
         $attributes = self::getConstants('ATTRIBUTE_');
 
-        if (false === in_array($attribute, $attributes)) {
+        if (false === in_array($attribute, $attributes, true)) {
             return false;
         }
 
-        if (false === $subject instanceof Bids) {
+        if (false === $subject instanceof TrancheOffer) {
             return false;
         }
 
@@ -49,7 +49,7 @@ class BidVoter extends Voter
     /**
      * {@inheritdoc}
      */
-    protected function voteOnAttribute($attribute, $bid, TokenInterface $token): bool
+    protected function voteOnAttribute($attribute, $trancheOffer, TokenInterface $token): bool
     {
         /** @var Clients $user */
         $user = $token->getUser();
@@ -60,24 +60,24 @@ class BidVoter extends Voter
 
         switch ($attribute) {
             case self::ATTRIBUTE_MANAGE:
-                return $this->canManage($bid, $user);
+                return $this->canManage($trancheOffer, $user);
         }
 
         throw new LogicException('This code should not be reached');
     }
 
     /**
-     * @param Bids    $bid
-     * @param Clients $user
+     * @param TrancheOffer $trancheOffer
+     * @param Clients      $user
      *
      * @return bool
      */
-    private function canManage(Bids $bid, Clients $user): bool
+    private function canManage(TrancheOffer $trancheOffer, Clients $user): bool
     {
-        if ($this->authorizationChecker->isGranted(ProjectVoter::ATTRIBUTE_MANAGE_BIDS, $bid->getTranche()->getProject())) {
+        if ($this->authorizationChecker->isGranted(ProjectVoter::ATTRIBUTE_MANAGE_TRANCHE_OFFER, $trancheOffer->getTranche()->getProject())) {
             return true;
         }
 
-        return null !== $bid->getLender()->getStaff($user);
+        return null !== $trancheOffer->getProjectOffer()->getLender()->getStaff($user);
     }
 }

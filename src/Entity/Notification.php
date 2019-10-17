@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Unilend\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
@@ -15,12 +17,12 @@ class Notification
     use TimestampableTrait;
     use ConstantsAwareTrait;
 
-    public const TYPE_ACCOUNT_CREATED       = 1;
-    public const TYPE_PROJECT_REQUEST       = 2;
-    public const TYPE_PROJECT_PUBLICATION   = 3;
-    public const TYPE_BID_SUBMITTED_BIDDER  = 4;
-    public const TYPE_BID_SUBMITTED_LENDERS = 5;
-    public const TYPE_PROJECT_COMMENT_ADDED = 6;
+    public const TYPE_ACCOUNT_CREATED                      = 1;
+    public const TYPE_PROJECT_REQUEST                      = 2;
+    public const TYPE_PROJECT_PUBLICATION                  = 3;
+    public const TYPE_TRANCHE_OFFER_SUBMITTED_SUBMITTER    = 4;
+    public const TYPE_TRANCHE_OFFER_SUBMITTED_PARTICIPANTS = 5;
+    public const TYPE_PROJECT_COMMENT_ADDED                = 6;
 
     public const STATUS_READ   = 1;
     public const STATUS_UNREAD = 0;
@@ -69,14 +71,14 @@ class Notification
     private $project;
 
     /**
-     * @var Bids
+     * @var TrancheOffer
      *
-     * @ORM\ManyToOne(targetEntity="Bids")
+     * @ORM\ManyToOne(targetEntity="TrancheOffer")
      * @ORM\JoinColumns({
-     *     @ORM\JoinColumn(name="id_bid", referencedColumnName="id_bid")
+     *     @ORM\JoinColumn(name="id_tranche_offer")
      * })
      */
-    private $bid;
+    private $trancheOffer;
 
     /**
      * @return int
@@ -167,22 +169,22 @@ class Notification
     }
 
     /**
-     * @param Bids|null $bid
+     * @param TrancheOffer|null $trancheOffer
      *
      * @return Notification
      */
-    public function setBid(?Bids $bid): Notification
+    public function setTrancheOffer(?TrancheOffer $trancheOffer): Notification
     {
-        $this->bid = $bid;
+        $this->trancheOffer = $trancheOffer;
 
         return $this;
     }
 
     /**
-     * @return Bids|null
+     * @return TrancheOffer|null
      */
-    public function getBid(): ?Bids
+    public function getTrancheOffer(): ?TrancheOffer
     {
-        return $this->bid;
+        return $this->trancheOffer;
     }
 }

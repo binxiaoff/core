@@ -7,7 +7,7 @@ namespace Unilend\Entity\Traits;
 use Doctrine\Common\Collections\ArrayCollection;
 use Unilend\Entity\Interfaces\StatusInterface;
 
-trait StatusTraceableTrait
+trait TraceableStatusTrait
 {
     /**
      * @var StatusInterface

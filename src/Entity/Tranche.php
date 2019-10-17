@@ -187,19 +187,12 @@ class Tranche
     private $trancheFees;
 
     /**
-     * @var Bids[]|ArrayCollection
+     * @var TrancheOffer[]|ArrayCollection
      *
-     * @ORM\OneToMany(targetEntity="Unilend\Entity\Bids", mappedBy="tranche")
+     * @ORM\OneToMany(targetEntity="Unilend\Entity\TrancheOffer", mappedBy="tranche")
      * @ORM\OrderBy({"added": "DESC"})
      */
-    private $bids;
-
-    /**
-     * @var Loans[]|ArrayCollection
-     *
-     * @ORM\OneToMany(targetEntity="Unilend\Entity\Loans", mappedBy="tranche")
-     */
-    private $loans;
+    private $trancheOffers;
 
     /**
      * @var TrancheAttribute[]|ArrayCollection
@@ -216,8 +209,7 @@ class Tranche
         $this->money             = new Money();
         $this->rate              = new NullableLendingRate();
         $this->trancheFees       = new ArrayCollection();
-        $this->bids              = new ArrayCollection();
-        $this->loans             = new ArrayCollection();
+        $this->trancheOffers     = new ArrayCollection();
         $this->trancheAttributes = new ArrayCollection();
     }
 
@@ -488,12 +480,12 @@ class Tranche
     }
 
     /**
-     * @param array|null     $status
-     * @param Companies|null $lender
+     * @param array|null        $status
+     * @param ProjectOffer|null $projectOffer
      *
-     * @return Bids[]|ArrayCollection
+     * @return TrancheOffer[]|ArrayCollection
      */
-    public function getBids(?array $status = null, ?Companies $lender = null): iterable
+    public function getTrancheOffer(?array $status = null, ?ProjectOffer $projectOffer = null): iterable
     {
         $criteria = new Criteria();
 
@@ -501,19 +493,41 @@ class Tranche
             $criteria->andWhere(Criteria::expr()->in('status', $status));
         }
 
-        if (null !== $lender) {
-            $criteria->andWhere(Criteria::expr()->eq('lender', $lender));
+        if (null !== $projectOffer) {
+            $criteria->andWhere(Criteria::expr()->eq('projectOffer', $projectOffer));
         }
 
-        return $this->bids->matching($criteria);
+        return $this->trancheOffers->matching($criteria);
     }
 
     /**
-     * @return Loans[]|ArrayCollection
+     * @param TrancheOffer $trancheOffer
+     *
+     * @return Tranche
      */
-    public function getLoans(): iterable
+    public function addTrancheOffer(TrancheOffer $trancheOffer): Tranche
     {
-        return $this->loans;
+        $trancheOffer->setTranche($this);
+
+        if (false === $this->trancheOffers->contains($trancheOffer)) {
+            $this->trancheOffers->add($trancheOffer);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @param TrancheOffer $trancheOffer
+     *
+     * @return Tranche
+     */
+    public function removeTrancheOffer(TrancheOffer $trancheOffer): Tranche
+    {
+        if ($this->trancheOffers->contains($trancheOffer)) {
+            $this->trancheOffers->removeElement($trancheOffer);
+        }
+
+        return $this;
     }
 
     /**

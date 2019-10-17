@@ -10,7 +10,7 @@ use Swift_Mailer;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Twig\Error\{LoaderError, RuntimeError, SyntaxError};
-use Unilend\Entity\{AttachmentSignature, Bids, Clients, Loans, Project, ProjectComment, ProjectParticipationContact, Staff, Tranche};
+use Unilend\Entity\{AttachmentSignature, Clients, Project, ProjectComment, ProjectParticipationContact, Staff, Tranche, TrancheOffer};
 use Unilend\Repository\StaffRepository;
 use Unilend\SwiftMailer\TemplateMessageProvider;
 
@@ -156,8 +156,8 @@ class MailerManager
     }
 
     /**
-     * @param Bids      $bid
-     * @param Clients[] $recipients
+     * @param TrancheOffer $trancheOffer
+     * @param Clients[]    $recipients
      *
      * @throws LoaderError
      * @throws RuntimeError
@@ -165,24 +165,24 @@ class MailerManager
      *
      * @return int
      */
-    public function sendBidSubmitted(Bids $bid, array $recipients): int
+    public function sendTrancheOfferSubmitted(TrancheOffer $trancheOffer, array $recipients): int
     {
         $sent     = 0;
-        $project  = $bid->getTranche()->getProject();
+        $project  = $trancheOffer->getTranche()->getProject();
         $keywords = [
-            'firstName'     => '',
-            'projectUrl'    => $this->router->generate('edit_project_details', ['hash' => $project->getHash()], RouterInterface::ABSOLUTE_URL),
-            'projectName'   => $project->getBorrowerCompany()->getName() . ' / ' . $project->getTitle(),
-            'bidderName'    => $bid->getLender()->getName(),
-            'bidAmount'     => $this->numberFormatter->format($bid->getMoney()->getAmount()),
-            'bidRateIndex'  => $bid->getRate()->getIndexType(),
-            'bidMarginRate' => $this->percentageFormatter->format($bid->getRate()->getMargin()),
+            'firstName'              => '',
+            'projectUrl'             => $this->router->generate('edit_project_details', ['hash' => $project->getHash()], RouterInterface::ABSOLUTE_URL),
+            'projectName'            => $project->getBorrowerCompany()->getName() . ' / ' . $project->getTitle(),
+            'submitterName'          => $trancheOffer->getAddedBy()->getName(),
+            'trancheOfferAmount'     => $this->numberFormatter->format($trancheOffer->getMoney()->getAmount()),
+            'trancheOfferRateIndex'  => $trancheOffer->getRate()->getIndexType(),
+            'trancheOfferMarginRate' => $this->percentageFormatter->format($trancheOffer->getRate()->getMargin()),
         ];
 
         foreach ($recipients as $recipient) {
             if (false === empty($recipient->getEmail())) {
                 $keywords['firstName'] = $recipient->getFirstName();
-                $message               = $this->messageProvider->newMessage('bid-submitted', $keywords);
+                $message               = $this->messageProvider->newMessage('tranche-offer-submitted', $keywords);
                 $message->setTo($recipient->getEmail());
 
                 $sent += $this->mailer->send($message);
@@ -193,7 +193,7 @@ class MailerManager
     }
 
     /**
-     * @param Bids $bid
+     * @param TrancheOffer $trancheOffer
      *
      * @throws LoaderError
      * @throws RuntimeError
@@ -201,17 +201,17 @@ class MailerManager
      *
      * @return int
      */
-    public function sendBidAcceptedRejected(Bids $bid): int
+    public function sendTrancheOfferAcceptedRejected(TrancheOffer $trancheOffer): int
     {
         // @todo change when all roles are defined
-        $recipient = $bid->getAddedBy();
+        $recipient = $trancheOffer->getAddedBy();
 
         if (empty($recipient->getEmail())) {
             return 0;
         }
 
-        $project  = $bid->getTranche()->getProject();
-        $mailType = Bids::STATUS_ACCEPTED === $bid->getStatus() ? 'bid-accepted' : 'bid-rejected';
+        $project  = $trancheOffer->getTranche()->getProject();
+        $mailType = TrancheOffer::STATUS_ACCEPTED === $trancheOffer->getStatus() ? 'tranche-offer-accepted' : 'tranche-offer-rejected';
         $message  = $this->messageProvider->newMessage($mailType, [
             'firstName'   => $recipient->getFirstName(),
             'projectUrl'  => $this->router->generate('lender_project_details', ['hash' => $project->getHash()], RouterInterface::ABSOLUTE_URL),
@@ -242,9 +242,9 @@ class MailerManager
 
         $sent     = 0;
         $tranches = $this->entityManager->getRepository(Tranche::class)->findBy(['project' => $project]);
-        $loans    = $this->entityManager->getRepository(Loans::class)->findBy([
+        $loans    = $this->entityManager->getRepository(TrancheOffer::class)->findBy([
             'tranche' => $tranches,
-            'status'  => Loans::STATUS_PENDING,
+            'status'  => TrancheOffer::STATUS_ACCEPTED,
         ]);
 
         foreach ($loans as $loan) {
