@@ -17,9 +17,10 @@ use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 use Symfony\Component\Security\Csrf\CsrfToken;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Twig\Error\{LoaderError, RuntimeError, SyntaxError};
+use Unilend\Entity\Companies;
 use Unilend\Entity\TemporaryToken;
 use Unilend\Form\User\ResetPasswordType;
-use Unilend\Repository\{ClientsRepository, TemporaryTokenRepository};
+use Unilend\Repository\{ClientsRepository, CompaniesRepository, TemporaryTokenRepository};
 use Unilend\Service\GoogleRecaptchaManager;
 use Unilend\Service\UserActivity\IpGeoLocManager;
 use Unilend\Service\UserActivity\UserAgentManager;
@@ -43,6 +44,7 @@ class PasswordController extends AbstractController
      * @param LoggerInterface          $logger
      * @param IpGeoLocManager          $geoLocator
      * @param UserAgentManager         $userAgentManager
+     * @param CompaniesRepository      $companiesRepository
      *
      * @throws LoaderError
      * @throws NonUniqueResultException
@@ -63,7 +65,8 @@ class PasswordController extends AbstractController
         TranslatorInterface $translator,
         LoggerInterface $logger,
         IpGeoLocManager $geoLocator,
-        UserAgentManager $userAgentManager
+        UserAgentManager $userAgentManager,
+        CompaniesRepository $companiesRepository
     ): Response {
         $email = $request->request->get('client_email');
 
@@ -87,50 +90,63 @@ class PasswordController extends AbstractController
             ]);
         }
 
+        $message = null;
+
         $client = $clientsRepository->findGrantedLoginAccountByEmail($email);
 
-        if (null === $client) {
-            return new JsonResponse([
-                'success' => true,
-            ]);
+        if ($client) {
+            $token = $temporaryTokenRepository->generateShortTemporaryToken($client);
+
+            $ip = $request->getClientIp();
+
+            $geoLocation = $ip ? $geoLocator->getCountryAndCity($ip) : null;
+            $geoLocation = $geoLocation ? implode(' ', $geoLocation) : null;
+
+            $userAgent = $userAgentManager->parse($request->headers->get('User-Agent'));
+            $browser   = $userAgent ? $userAgent->getBrowser() : null;
+            $browser   = null !== $browser ? $browser->getName() . ' ' . $browser->getVersion()->getComplete() : null;
+
+            $keywords = [
+                'firstName'          => $client->getFirstName(),
+                'email'              => $client->getEmail(),
+                'passwordLink'       => $this->generateUrl('password_reset', ['securityToken' => $token->getToken()], UrlGeneratorInterface::ABSOLUTE_URL),
+                'cancelPasswordLink' => $this->generateUrl('password_reset_cancel', ['securityToken' => $token->getToken()], UrlGeneratorInterface::ABSOLUTE_URL),
+                'requesterData'      => array_filter([
+                    'ip'       => $ip,
+                    'browser'  => $browser,
+                    'date'     => $token->getAdded()->format('d/m/Y H:i:s'),
+                    'location' => $geoLocation,
+                ]),
+            ];
+
+            $message = $templateMessageProvider->newMessage('forgotten-password', $keywords);
         }
 
-        $token = $temporaryTokenRepository->generateShortTemporaryToken($client);
+        $domain = mb_substr(mb_strrchr($email, '@'), 1);
 
-        $ip = $request->getClientIp();
+        /** @var Companies $company */
+        if (null === $client && $company = $companiesRepository->findOneBy(['emailDomain' => $domain])) {
+            $message = $templateMessageProvider->newMessage(
+                'forgotten-password-missing-client',
+                [
+                    'email'       => $email,
+                    'companyName' => $company->getName(),
+                ]
+            );
+        }
 
-        $geoLocation = $ip ? $geoLocator->getCountryAndCity($ip) : null;
-        $geoLocation = $geoLocation ? implode(' ', $geoLocation) : null;
-
-        $userAgent = $userAgentManager->parse($request->headers->get('User-Agent'));
-        $browser   = $userAgent ? $userAgent->getBrowser() : null;
-        $browser   = null !== $browser ? $browser->getName() . ' ' . $browser->getVersion()->getComplete() : null;
-
-        $keywords = [
-            'firstName'          => $client->getFirstName(),
-            'email'              => $client->getEmail(),
-            'passwordLink'       => $this->generateUrl('password_reset', ['securityToken' => $token->getToken()], UrlGeneratorInterface::ABSOLUTE_URL),
-            'cancelPasswordLink' => $this->generateUrl('password_reset_cancel', ['securityToken' => $token->getToken()], UrlGeneratorInterface::ABSOLUTE_URL),
-            'requesterData'      => array_filter([
-                'ip'       => $ip,
-                'browser'  => $browser,
-                'date'     => $token->getAdded()->format('d/m/Y H:i:s'),
-                'location' => $geoLocation,
-            ]),
-        ];
-
-        $message = $templateMessageProvider->newMessage('forgotten-password', $keywords);
-
-        try {
-            $message->setTo($client->getEmail());
-            $mailer->send($message);
-        } catch (Exception $exception) {
-            $logger->warning(sprintf('Could not send email "forgotten-password" - Exception: %s', $exception->getMessage()), [
-                'id_mail_template' => $message->getTemplateId(),
-                'id_client'        => $client->getIdClient(),
-                'file'             => $exception->getFile(),
-                'line'             => $exception->getLine(),
-            ]);
+        if ($message) {
+            try {
+                $message->setTo($email);
+                $mailer->send($message);
+            } catch (Exception $exception) {
+                $logger->warning(sprintf('Could not send email "forgotten-password" - Exception: %s', $exception->getMessage()), [
+                    'id_mail_template' => $message->getTemplateId(),
+                    'id_client'        => $client->getIdClient(),
+                    'file'             => $exception->getFile(),
+                    'line'             => $exception->getLine(),
+                ]);
+            }
         }
 
         return new JsonResponse([
