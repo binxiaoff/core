@@ -7,9 +7,11 @@ namespace Unilend\Service;
 use Doctrine\ORM\{EntityManagerInterface};
 use NumberFormatter;
 use Swift_Mailer;
-use Swift_RfcComplianceException;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
+use Twig\Error\LoaderError;
+use Twig\Error\RuntimeError;
+use Twig\Error\SyntaxError;
 use Unilend\Entity\{AttachmentSignature, Bids, Clients, Loans, Project, ProjectComment, Tranche};
 use Unilend\SwiftMailer\TemplateMessageProvider;
 
@@ -60,6 +62,10 @@ class MailerManager
     /**
      * @param Clients $client
      *
+     * @throws LoaderError
+     * @throws RuntimeError
+     * @throws SyntaxError
+     *
      * @return int
      */
     public function sendAccountCreated(Clients $client): int
@@ -77,6 +83,10 @@ class MailerManager
     /**
      * @param Clients $client
      * @param array   $changeSet
+     *
+     * @throws LoaderError
+     * @throws RuntimeError
+     * @throws SyntaxError
      *
      * @return int
      */
@@ -112,6 +122,10 @@ class MailerManager
      * @param ProjectComment $comment
      * @param Clients[]      $recipients
      *
+     * @throws LoaderError
+     * @throws RuntimeError
+     * @throws SyntaxError
+     *
      * @return int
      */
     public function sendProjectCommentAdded(ProjectComment $comment, array $recipients): int
@@ -120,7 +134,7 @@ class MailerManager
         $project  = $comment->getProject();
         $keywords = [
             'firstName'   => '',
-            'projectUrl'  => $this->router->generate('lender_project_details', ['slug' => $project->getSlug()], RouterInterface::ABSOLUTE_URL) . '#article-discussions',
+            'projectUrl'  => $this->router->generate('lender_project_details', ['hash' => $project->getHash()], RouterInterface::ABSOLUTE_URL) . '#article-discussions',
             'projectName' => $project->getBorrowerCompany()->getName() . ' / ' . $project->getTitle(),
         ];
 
@@ -140,6 +154,10 @@ class MailerManager
     /**
      * @param Bids      $bid
      * @param Clients[] $recipients
+     *
+     * @throws LoaderError
+     * @throws RuntimeError
+     * @throws SyntaxError
      *
      * @return int
      */
@@ -173,7 +191,9 @@ class MailerManager
     /**
      * @param Bids $bid
      *
-     * @throws Swift_RfcComplianceException
+     * @throws LoaderError
+     * @throws RuntimeError
+     * @throws SyntaxError
      *
      * @return int
      */
@@ -190,7 +210,7 @@ class MailerManager
         $mailType = Bids::STATUS_ACCEPTED === $bid->getStatus() ? 'bid-accepted' : 'bid-rejected';
         $message  = $this->messageProvider->newMessage($mailType, [
             'firstName'   => $recipient->getFirstName(),
-            'projectUrl'  => $this->router->generate('lender_project_details', ['slug' => $project->getSlug()], RouterInterface::ABSOLUTE_URL),
+            'projectUrl'  => $this->router->generate('lender_project_details', ['hash' => $project->getHash()], RouterInterface::ABSOLUTE_URL),
             'projectName' => $project->getBorrowerCompany()->getName() . ' / ' . $project->getTitle(),
         ]);
 
@@ -202,7 +222,9 @@ class MailerManager
     /**
      * @param Project $project
      *
-     * @throws Swift_RfcComplianceException
+     * @throws LoaderError
+     * @throws RuntimeError
+     * @throws SyntaxError
      *
      * @return int
      */
@@ -210,7 +232,7 @@ class MailerManager
     {
         $keywords = [
             'firstName'   => '',
-            'projectUrl'  => $this->router->generate('lender_project_details', ['slug' => $project->getSlug()], RouterInterface::ABSOLUTE_URL),
+            'projectUrl'  => $this->router->generate('lender_project_details', ['hash' => $project->getHash()], RouterInterface::ABSOLUTE_URL),
             'projectName' => $project->getBorrowerCompany()->getName() . ' / ' . $project->getTitle(),
         ];
 
@@ -242,7 +264,9 @@ class MailerManager
      * @param Project             $project
      * @param AttachmentSignature $signature
      *
-     * @throws Swift_RfcComplianceException
+     * @throws LoaderError
+     * @throws RuntimeError
+     * @throws SyntaxError
      *
      * @return int
      */

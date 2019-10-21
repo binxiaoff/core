@@ -91,7 +91,7 @@
                                             {% if offer.status == 0 %} En cours {% elseif offer.status == 1 %} Accepté {% else %} Refusé {% endif %}
                                         </td>
                                         <td class="table-actions">
-                                            <a href="{{ path('lender_project_details', {'slug': project.slug}) }}"
+                                            <a href="{{ path('lender_project_details', {'hash': project.hash}) }}"
                                                role="button" class="btn-default" title="Voir le dossier de financement"
                                                data-toggle="tooltip">
                                                 <span class="icon fa-view-u16"></span>
@@ -217,7 +217,7 @@
                                             {{ statusLabel }}
                                         </td>
                                         <td class="table-actions">
-                                            <a href="{{ path('lender_project_details', {'slug': project.slug}) }}"
+                                            <a href="{{ path('lender_project_details', {'hash': project.hash}) }}"
                                                role="button"
                                                class="btn-default" title="Voir le dossier de financement"
                                                data-toggle="tooltip">
@@ -337,7 +337,7 @@
                                             {{ statusLabel }}
                                         </td>
                                         <td class="table-actions">
-                                            <a href="{{ path('lender_project_details', {'slug': project.slug}) }}"
+                                            <a href="{{ path('lender_project_details', {'hash': project.hash}) }}"
                                                role="button"
                                                class="btn-default" title="Voir le dossier de financement"
                                                data-toggle="tooltip">
@@ -364,7 +364,7 @@
                                         <td class="table-projects-item-rate">{{ loan.rate.margin|localizednumberwithprecision(2) }}&nbsp;%</td>
                                         <td class="table-projects-item-status">Prêt refusé</td>
                                         <td class="table-actions">
-                                            <a href="{{ path('lender_project_details', {'slug': project.slug}) }}"
+                                            <a href="{{ path('lender_project_details', {'hash': project.hash}) }}"
                                                role="button"
                                                class="btn-default" title="Voir le dossier de financement"
                                                data-toggle="tooltip">

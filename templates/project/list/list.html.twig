@@ -35,13 +35,13 @@
                                         {% include 'partials/market_bubble.html.twig' with {'market': project.marketSegment.label} %}
                                     </div>
                                     <div class="project-list-item-info">
-                                        <h3 class="project-list-item-title"><a href="{{ path('lender_project_details', {'slug': project.slug }) }}">{{ project.borrowerCompany.name }}</a></h3>
+                                        <h3 class="project-list-item-title"><a href="{{ path('lender_project_details', {'hash': project.hash }) }}">{{ project.borrowerCompany.name }}</a></h3>
                                         <div class="project-list-item-description">
                                             <p>{{ project.title|striptags|raw|truncate(100) }}</p>
                                         </div>
                                     </div>
                                     <div class="project-list-item-view">
-                                        <a href="{{ path('lender_project_details', {'slug': project.slug}) }}">
+                                        <a href="{{ path('lender_project_details', {'hash': project.hash}) }}">
                                             <span class="icon fa-angle-right"></span><span class="sr-only">{% trans %} project-list.view-project-label {% endtrans %}</span>
                                         </a>
                                     </div>

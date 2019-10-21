@@ -21,7 +21,7 @@ use Unilend\Service\{NotificationManager, User\RealUserFinder};
 class ViewController extends AbstractController
 {
     /**
-     * @Route("/projet/details/{slug}", name="lender_project_details")
+     * @Route("/projet/details/{hash}", name="lender_project_details")
      *
      * @IsGranted("list", subject="project")
      *
@@ -53,7 +53,7 @@ class ViewController extends AbstractController
         LoggerInterface $logger
     ): Response {
         if (false === $project->checkUserConfidentiality($user)) {
-            return $this->redirectToRoute('project_confidentiality_acceptance', ['slug' => $project->getSlug()]);
+            return $this->redirectToRoute('project_confidentiality_acceptance', ['hash' => $project->getHash()]);
         }
 
         $projectParticipation = $projectParticipationRepository->findByProjectAndClient($project, $user);
@@ -105,7 +105,7 @@ class ViewController extends AbstractController
                     ]);
                 }
 
-                return $this->redirectToRoute('lender_project_details', ['slug' => $project->getSlug()]);
+                return $this->redirectToRoute('lender_project_details', ['hash' => $project->getHash()]);
             }
         }
 
@@ -117,7 +117,7 @@ class ViewController extends AbstractController
     }
 
     /**
-     * @Route("/projet/confidentialite/{slug}", name="project_confidentiality_acceptance")
+     * @Route("/projet/confidentialite/{hash}", name="project_confidentiality_acceptance")
      *
      * @param Project                                    $project
      * @param Request                                    $request
@@ -136,7 +136,7 @@ class ViewController extends AbstractController
         ProjectConfidentialityAcceptanceRepository $acceptanceRepository
     ): Response {
         if ($project->checkUserConfidentiality($user)) {
-            return $this->redirectToRoute('lender_project_details', ['slug' => $project->getSlug()]);
+            return $this->redirectToRoute('lender_project_details', ['hash' => $project->getHash()]);
         }
 
         $acceptanceForm = $this->createForm(ConfidentialityAcceptanceType::class);
@@ -151,7 +151,7 @@ class ViewController extends AbstractController
 
             $acceptanceRepository->save($acceptance);
 
-            return $this->redirectToRoute('lender_project_details', ['slug' => $project->getSlug()]);
+            return $this->redirectToRoute('lender_project_details', ['hash' => $project->getHash()]);
         }
 
         return $this->render('project/view/confidentiality.html.twig', [

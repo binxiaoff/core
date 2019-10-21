@@ -31,10 +31,10 @@ use Unilend\Service\ServiceTerms\ServiceTermsManager;
 class InitialisationController extends AbstractController
 {
     /**
-     * @Route("/compte/initialisation/{securityToken}/{slug}", defaults={"slug": ""}, name="account_init", requirements={"securityToken": "[0-9a-f]+"}, methods={"GET", "POST"})
+     * @Route("/compte/initialisation/{securityToken}/{hash}", defaults={"hash": ""}, name="account_init", requirements={"securityToken": "[0-9a-f]+"}, methods={"GET", "POST"})
      *
      * @ParamConverter("temporaryToken", options={"mapping": {"securityToken": "token"}})
-     * @ParamConverter("project", options={"mapping": {"slug": "slug"}})
+     * @ParamConverter("project", options={"mapping": {"hash": "hash"}})
      *
      * @param TemporaryToken               $temporaryToken
      * @param Request                      $request
@@ -79,7 +79,7 @@ class InitialisationController extends AbstractController
 
         if (false === $client->isInvited()) {
             return $project ?
-                $this->redirectToRoute('lender_project_details', ['slug' => $project->getSlug()]) :
+                $this->redirectToRoute('lender_project_details', ['hash' => $project->getHash()]) :
                 $this->redirectToRoute('home');
         }
 
@@ -116,7 +116,7 @@ class InitialisationController extends AbstractController
             if ($project) {
                 $loginAuthenticator->setTargetPath(
                     $request,
-                    $router->generate('lender_project_details', ['slug' => $project->getSlug()], RouterInterface::ABSOLUTE_URL)
+                    $router->generate('lender_project_details', ['hash' => $project->getHash()], RouterInterface::ABSOLUTE_URL)
                 );
             }
 
