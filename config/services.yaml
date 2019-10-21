@@ -156,5 +156,3 @@ services:
 
     Unilend\Swagger\SwaggerDecorator:
         decorates: 'api_platform.swagger.normalizer.api_gateway'
-        arguments:
-            $decorated: '@Unilend\Swagger\SwaggerDecorator.inner'
