@@ -29,7 +29,7 @@ class CompanyAutocompleteType extends AbstractType
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefaults([
-            'url'   => $this->router->generate('company_search_by_siren'),
+            'url'   => $this->router->generate('company_search'),
             'class' => Companies::class,
         ]);
     }

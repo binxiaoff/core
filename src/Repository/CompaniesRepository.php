@@ -6,7 +6,7 @@ namespace Unilend\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
-use Doctrine\ORM\{ORMException, OptimisticLockException, QueryBuilder};
+use Doctrine\ORM\{AbstractQuery, ORMException, OptimisticLockException, QueryBuilder};
 use Unilend\Entity\Companies;
 use Unilend\Repository\Traits\OrderByHandlerTrait;
 
@@ -101,5 +101,22 @@ class CompaniesRepository extends ServiceEntityRepository
         $this->handleOrderBy($queryBuilder, $orderBy);
 
         return $queryBuilder->getQuery()->getResult();
+    }
+
+    /**
+     * @param string $name
+     *
+     * @return mixed
+     */
+    public function findFiveByName(string $name)
+    {
+        $queryBuilder = $this->createQueryBuilder('c')
+            ->select('c.name, c.siren')
+            ->where('c.name LIKE :name')
+            ->setParameter('name', '%' . $name . '%')
+            ->setMaxResults(5)
+        ;
+
+        return $queryBuilder->getQuery()->getResult(AbstractQuery::HYDRATE_ARRAY);
     }
 }
