@@ -104,7 +104,7 @@ class StaffManagerTest extends TestCase
     }
 
     /**
-     * @covers ::addStaffByEmail
+     * @covers ::addStaffFromEmail
      *
      * @dataProvider clientProvider
      *
