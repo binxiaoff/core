@@ -22,10 +22,10 @@ use Unilend\Service\{ProjectParticipation\ProjectParticipationManager, Staff\Sta
 class InvitationController extends AbstractController
 {
     /**
-     * @Route("/projet/invitation/{securityToken}/{slug}", name="project_invitation")
+     * @Route("/projet/invitation/{securityToken}/{hash}", name="project_invitation")
      *
      * @ParamConverter("temporaryToken", options={"mapping": {"securityToken": "token"}})
-     * @ParamConverter("project", options={"mapping": {"slug": "slug"}})
+     * @ParamConverter("project", options={"mapping": {"hash": "hash"}})
      *
      * @param TemporaryToken $temporaryToken
      * @param Project        $project
@@ -40,10 +40,10 @@ class InvitationController extends AbstractController
             case ClientsStatus::STATUS_INVITED:
                 return $this->redirectToRoute('account_init', [
                     'securityToken' => $temporaryToken->getToken(),
-                    'slug'          => $project->getSlug(),
+                    'hash'          => $project->getHash(),
                 ]);
             case ClientsStatus::STATUS_CREATED:
-                return $this->redirectToRoute('lender_project_details', ['slug' => $project->getSlug()]);
+                return $this->redirectToRoute('lender_project_details', ['hash' => $project->getHash()]);
             default:
                 throw new LogicException('This code should not be reached');
         }

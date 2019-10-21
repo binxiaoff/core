@@ -37,9 +37,9 @@ class UninterestedController extends AbstractController
     }
 
     /**
-     * @Route("/projet/refuse/{slug}", name="project_uninterested_connected")
+     * @Route("/projet/refuse/{hash}", name="project_uninterested_connected")
      *
-     * @ParamConverter("project", options={"mapping": {"slug": "slug"}})
+     * @ParamConverter("project", options={"mapping": {"hash": "hash"}})
      *
      * @param UserInterface|null $user
      * @param Project            $project
@@ -60,10 +60,10 @@ class UninterestedController extends AbstractController
     }
 
     /**
-     * @Route("/projet/refuse/{securityToken}/{slug}", name="project_uninterested_anonymous")
+     * @Route("/projet/refuse/{securityToken}/{hash}", name="project_uninterested_anonymous")
      *
      * @ParamConverter("temporaryToken", options={"mapping": {"securityToken": "token"}})
-     * @ParamConverter("project", options={"mapping": {"slug": "slug"}})
+     * @ParamConverter("project", options={"mapping": {"hash": "hash"}})
      *
      * @param TemporaryToken           $temporaryToken
      * @param Project                  $project

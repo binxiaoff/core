@@ -298,7 +298,7 @@ class EditController extends AbstractController
 
         switch ($field) {
             case 'title':
-                $project->setTitle($value)->setSlug();
+                $project->setTitle($value);
                 $outputValue = $project->getTitle();
 
                 break;

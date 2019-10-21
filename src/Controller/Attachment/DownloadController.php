@@ -8,7 +8,7 @@ use Doctrine\ORM\{ORMException, OptimisticLockException};
 use League\Flysystem\FileNotFoundException;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\{IsGranted, ParamConverter};
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\{BinaryFileResponse, Response, ResponseHeaderBag, StreamedResponse};
+use Symfony\Component\HttpFoundation\{BinaryFileResponse, Response, StreamedResponse};
 use Symfony\Component\Routing\Annotation\Route;
 use Unilend\Entity\{Attachment, Project};
 use Unilend\Repository\ProjectAttachmentRepository;
@@ -43,7 +43,7 @@ class DownloadController extends AbstractController
     }
 
     /**
-     * @Route("/documents/{slug}", name="documents_project")
+     * @Route("/documents/{hash}", name="documents_project")
      *
      * @IsGranted("view", subject="project")
      *
@@ -63,7 +63,7 @@ class DownloadController extends AbstractController
         string $temporaryDirectory
     ): Response {
         $zip      = new ZipArchive();
-        $filename = $temporaryDirectory . $project->getSlug() . '.zip';
+        $filename = $temporaryDirectory . $project->getHash() . '.zip';
 
         if (true === $zip->open($filename, ZipArchive::CREATE)) {
             $projectAttachments = $projectAttachmentRepository->getAttachmentsWithoutSignature($project, ['added' => 'DESC']);
@@ -81,6 +81,6 @@ class DownloadController extends AbstractController
             return $response;
         }
 
-        return $this->redirectToRoute('lender_project_details', ['slug' => $project->getSlug()]);
+        return $this->redirectToRoute('lender_project_details', ['hash' => $project->getHash()]);
     }
 }

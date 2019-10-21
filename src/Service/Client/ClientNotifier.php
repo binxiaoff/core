@@ -107,7 +107,7 @@ class ClientNotifier
                 'project'        => $project->getBorrowerCompany()->getName() . ' / ' . $project->getTitle(),
                 'initAccountUrl' => $this->router->generate('project_invitation', [
                     'securityToken' => $token->getToken(),
-                    'slug'          => $project->getSlug(),
+                    'hash'          => $project->getHash(),
                 ], RouterInterface::ABSOLUTE_URL),
             ];
 
@@ -134,7 +134,7 @@ class ClientNotifier
     public function notifyInvitedToProject(Clients $inviter, Clients $invitee, Project $project): int
     {
         if (ProjectStatus::STATUS_PUBLISHED === $project->getCurrentStatus()->getStatus()) {
-            $projectUrl  = $this->router->generate('lender_project_details', ['slug' => $project->getSlug()], RouterInterface::ABSOLUTE_URL);
+            $projectUrl  = $this->router->generate('lender_project_details', ['hash' => $project->getHash()], RouterInterface::ABSOLUTE_URL);
             $projectName = $project->getBorrowerCompany()->getName() . ' / ' . $project->getTitle();
 
             $keywords = [

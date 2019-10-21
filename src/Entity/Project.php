@@ -16,7 +16,6 @@ use Unilend\Entity\Traits\StatusTraceableTrait;
 use Unilend\Entity\Traits\TimestampableTrait;
 use Unilend\Service\User\RealUserFinder;
 use Unilend\Traits\ConstantsAwareTrait;
-use URLify;
 
 /**
  * @ApiResource(
@@ -32,7 +31,6 @@ use URLify;
  * )
  *
  * @ORM\Table(indexes={
- *     @ORM\Index(name="slug", columns={"slug"}),
  *     @ORM\Index(name="hash", columns={"hash"})
  * })
  * @ORM\Entity(repositoryClass="Unilend\Repository\ProjectRepository")
@@ -93,13 +91,6 @@ class Project
      * @ORM\Column(length=36)
      */
     private $hash;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(length=191)
-     */
-    private $slug;
 
     /**
      * @var Companies
@@ -404,30 +395,6 @@ class Project
                 $this->hash = md5(uniqid('', false));
             }
         }
-    }
-
-    /**
-     * @ORM\PrePersist
-     *
-     * @return Project
-     */
-    public function setSlug(): Project
-    {
-        try {
-            $this->slug = URLify::filter($this->title) . '-' . mb_substr(Uuid::uuid4()->toString(), 0, 8);
-        } catch (Exception $e) {
-            $this->slug = URLify::filter($this->title) . '-' . mb_substr(uniqid(), 0, 8);
-        }
-
-        return $this;
-    }
-
-    /**
-     * @return string
-     */
-    public function getSlug(): string
-    {
-        return $this->slug;
     }
 
     /**

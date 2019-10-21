@@ -74,7 +74,7 @@ class NotificationDisplayManager
                     $image   = 'project-added';
                     $title   = $this->translator->trans('notifications.project-request-title');
                     $content = $this->translator->trans('notifications.project-request-content', [
-                        '%projectUrl%'    => $this->router->generate('project_detail', ['projectSlug' => $project->getSlug()]),
+                        '%projectUrl%'    => $this->router->generate('project_detail', ['projectHash' => $project->getHash()]),
                         '%projectTitle%'  => $project->getTitle(),
                         '%borrowerName%'  => $project->getBorrowerCompany()->getName(),
                         '%submitterName%' => $project->getSubmitterCompany()->getName(),
@@ -87,7 +87,7 @@ class NotificationDisplayManager
                     $image   = 'project';
                     $title   = $this->translator->trans('notifications.project-publication-title');
                     $content = $this->translator->trans('notifications.project-publication-content', [
-                        '%projectUrl%'   => $this->router->generate('lender_project_details', ['slug' => $project->getSlug()]),
+                        '%projectUrl%'   => $this->router->generate('lender_project_details', ['hash' => $project->getHash()]),
                         '%projectTitle%' => $project->getTitle(),
                         '%borrowerName%' => $project->getBorrowerCompany()->getName(),
                     ]);
@@ -100,7 +100,7 @@ class NotificationDisplayManager
                     $image   = 'offer';
                     $title   = $this->translator->trans('notifications.bid-submitted-bidder-title');
                     $content = $this->translator->trans('notifications.bid-submitted-bidder-content', [
-                        '%projectUrl%'   => $this->router->generate('lender_project_details', ['slug' => $project->getSlug()]),
+                        '%projectUrl%'   => $this->router->generate('lender_project_details', ['hash' => $project->getHash()]),
                         '%projectTitle%' => $project->getTitle(),
                         '%borrowerName%' => $project->getBorrowerCompany()->getName(),
                         '%bidAmount%'    => $this->currencyFormatterNoDecimal->formatCurrency((float) $bid->getMoney()->getAmount(), $bid->getMoney()->getCurrency()),
@@ -114,7 +114,7 @@ class NotificationDisplayManager
                     $image   = 'offer';
                     $title   = $this->translator->trans('notifications.bid-submitted-lenders-title');
                     $content = $this->translator->trans('notifications.bid-submitted-lenders-content', [
-                        '%projectUrl%'   => $this->router->generate('lender_project_details', ['slug' => $project->getSlug()]),
+                        '%projectUrl%'   => $this->router->generate('lender_project_details', ['hash' => $project->getHash()]),
                         '%projectTitle%' => $project->getTitle(),
                         '%borrowerName%' => $project->getBorrowerCompany()->getName(),
                         '%bidderName%'   => $bid->getLender()->getName(),
@@ -128,7 +128,7 @@ class NotificationDisplayManager
                     $image   = '';
                     $title   = $this->translator->trans('notifications.project-comment-added-title');
                     $content = $this->translator->trans('notifications.project-comment-added-content', [
-                        '%projectUrl%'   => $this->router->generate('lender_project_details', ['slug' => $project->getSlug()]) . '#article-discussions',
+                        '%projectUrl%'   => $this->router->generate('lender_project_details', ['hash' => $project->getHash()]) . '#article-discussions',
                         '%projectTitle%' => $project->getTitle(),
                         '%borrowerName%' => $project->getBorrowerCompany()->getName(),
                     ]);
