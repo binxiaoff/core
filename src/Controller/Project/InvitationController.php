@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Unilend\Controller\Project;
 
 use Doctrine\ORM\{ORMException, OptimisticLockException};
-use DomainException;
 use LogicException;
 use RuntimeException;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
@@ -82,15 +81,11 @@ class InvitationController extends AbstractController
 
             try {
                 $staff = $staffManager->getStaffByEmail($inviteeEmail);
-            } catch (DomainException $domainException) {
-                $this->addFlash('sendError', $translator->trans('invite-guest.send-error-message'));
-
-                return $this->redirectToRoute('invite_guest', ['hash' => $project->getHash()]);
             } catch (ClientNotFoundException | StaffNotFoundException $notFoundException) {
                 $staff = $staffManager->addStaffFromEmail($inviteeEmail);
             }
 
-            $projectParticipation = $projectParticipationRepository->findOneBy(['company' => $staff->getCompany()]);
+            $projectParticipation = $projectParticipationRepository->findOneBy(['company' => $staff->getCompany(), 'project' => $project]);
 
             if (null === $projectParticipation) {
                 $projectParticipation = $project->addProjectParticipation($staff->getCompany(), ProjectParticipation::DUTY_PROJECT_PARTICIPATION_PARTICIPANT, $realUserFinder);

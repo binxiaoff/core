@@ -25,6 +25,7 @@ class Staff
 
     public const DUTY_STAFF_OPERATOR = 'DUTY_STAFF_OPERATOR';
     public const DUTY_STAFF_MANAGER  = 'DUTY_STAFF_MANAGER';
+    public const DUTY_STAFF_ADMIN    = 'DUTY_STAFF_ADMIN';
 
     /**
      * @var int

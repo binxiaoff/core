@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\Controller\User;
 
+use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 use Exception;
@@ -22,7 +23,9 @@ use Unilend\Entity\Project;
 use Unilend\Entity\TemporaryToken;
 use Unilend\Form\User\InitProfileType;
 use Unilend\Message\Client\ClientCreated;
+use Unilend\Message\ProjectParticipationContact\ProjectParticipationContactCreated;
 use Unilend\Repository\ClientsRepository;
+use Unilend\Repository\ProjectParticipationContactRepository;
 use Unilend\Repository\TemporaryTokenRepository;
 use Unilend\Security\LoginAuthenticator;
 use Unilend\Service\ProjectParticipation\ProjectParticipationManager;
@@ -36,22 +39,24 @@ class InitialisationController extends AbstractController
      * @ParamConverter("temporaryToken", options={"mapping": {"securityToken": "token"}})
      * @ParamConverter("project", options={"mapping": {"hash": "hash"}})
      *
-     * @param TemporaryToken               $temporaryToken
-     * @param Request                      $request
-     * @param TemporaryTokenRepository     $temporaryTokenRepository
-     * @param TranslatorInterface          $translator
-     * @param UserPasswordEncoderInterface $userPasswordEncoder
-     * @param ClientsRepository            $clientsRepository
-     * @param ServiceTermsManager          $serviceTermsManager
-     * @param MessageBusInterface          $messageBus
-     * @param LoginAuthenticator           $loginAuthenticator
-     * @param RouterInterface              $router
-     * @param ProjectParticipationManager  $projectParticipationManager
-     * @param Project                      $project
+     * @param TemporaryToken                        $temporaryToken
+     * @param Request                               $request
+     * @param TemporaryTokenRepository              $temporaryTokenRepository
+     * @param TranslatorInterface                   $translator
+     * @param UserPasswordEncoderInterface          $userPasswordEncoder
+     * @param ClientsRepository                     $clientsRepository
+     * @param ServiceTermsManager                   $serviceTermsManager
+     * @param MessageBusInterface                   $messageBus
+     * @param LoginAuthenticator                    $loginAuthenticator
+     * @param RouterInterface                       $router
+     * @param ProjectParticipationManager           $projectParticipationManager
+     * @param ProjectParticipationContactRepository $projectParticipationContactRepository
+     * @param Project                               $project
      *
      * @throws Exception
      * @throws ORMException
      * @throws OptimisticLockException
+     * @throws NonUniqueResultException
      *
      * @return RedirectResponse
      */
@@ -67,6 +72,7 @@ class InitialisationController extends AbstractController
         LoginAuthenticator $loginAuthenticator,
         RouterInterface $router,
         ProjectParticipationManager $projectParticipationManager,
+        ProjectParticipationContactRepository $projectParticipationContactRepository,
         ?Project $project = null
     ): Response {
         if (false === $temporaryToken->isValid()) {
@@ -109,11 +115,14 @@ class InitialisationController extends AbstractController
             $temporaryToken->setExpired();
             $temporaryTokenRepository->save($temporaryToken);
 
-            $messageBus->dispatch(new ClientCreated($client));
-
             $this->addFlash('accountCreatedSuccess', $translator->trans('account-init.account-completed'));
 
             if ($project) {
+                $projectParticipationContact = $projectParticipationContactRepository->findByProjectAndClient($project, $client);
+
+                $messageBus->dispatch(new ProjectParticipationContactCreated($projectParticipationContact));
+                $messageBus->dispatch(new ClientCreated($client));
+
                 $loginAuthenticator->setTargetPath(
                     $request,
                     $router->generate('lender_project_details', ['hash' => $project->getHash()], RouterInterface::ABSOLUTE_URL)

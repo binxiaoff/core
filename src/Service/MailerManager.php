@@ -9,10 +9,9 @@ use NumberFormatter;
 use Swift_Mailer;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
-use Twig\Error\LoaderError;
-use Twig\Error\RuntimeError;
-use Twig\Error\SyntaxError;
-use Unilend\Entity\{AttachmentSignature, Bids, Clients, Loans, Project, ProjectComment, Tranche};
+use Twig\Error\{LoaderError, RuntimeError, SyntaxError};
+use Unilend\Entity\{AttachmentSignature, Bids, Clients, Loans, Project, ProjectComment, ProjectParticipationContact, Staff, Tranche};
+use Unilend\Repository\StaffRepository;
 use Unilend\SwiftMailer\TemplateMessageProvider;
 
 class MailerManager
@@ -31,6 +30,8 @@ class MailerManager
     private $percentageFormatter;
     /** @var NumberFormatter */
     private $numberFormatter;
+    /** @var StaffRepository */
+    private $staffRepository;
 
     /**
      * @param TemplateMessageProvider $messageProvider
@@ -40,6 +41,7 @@ class MailerManager
      * @param TranslatorInterface     $translator
      * @param NumberFormatter         $numberFormatter
      * @param NumberFormatter         $percentageFormatter
+     * @param StaffRepository         $staffRepository
      */
     public function __construct(
         TemplateMessageProvider $messageProvider,
@@ -48,7 +50,8 @@ class MailerManager
         RouterInterface $router,
         TranslatorInterface $translator,
         NumberFormatter $numberFormatter,
-        NumberFormatter $percentageFormatter
+        NumberFormatter $percentageFormatter,
+        StaffRepository $staffRepository
     ) {
         $this->messageProvider     = $messageProvider;
         $this->mailer              = $mailer;
@@ -57,6 +60,7 @@ class MailerManager
         $this->numberFormatter     = $numberFormatter;
         $this->router              = $router;
         $this->translator          = $translator;
+        $this->staffRepository     = $staffRepository;
     }
 
     /**
@@ -282,5 +286,46 @@ class MailerManager
         $message->setTo($signature->getSignatory()->getEmail());
 
         return $this->mailer->send($message);
+    }
+
+    /**
+     * @param ProjectParticipationContact $projectParticipationContact
+     *
+     * @throws LoaderError
+     * @throws RuntimeError
+     * @throws SyntaxError
+     *
+     * @return int|string
+     */
+    public function sendRequestToAssignRights(ProjectParticipationContact $projectParticipationContact)
+    {
+        $sent = 0;
+
+        $projectParticipation = $projectParticipationContact->getProjectParticipation();
+        $guest                = $projectParticipationContact->getClient()->getFirstName() . ' ' . $projectParticipationContact->getClient()->getLastName();
+
+        $keywords = [
+            'firstName'   => '',
+            'guest'       => $guest,
+            'projectName' => $projectParticipation->getProject()->getTitle(),
+        ];
+
+        $companyStaffs = $this->staffRepository->findBy([
+            'company' => $projectParticipation->getCompany(),
+        ]);
+
+        foreach ($companyStaffs as $companyStaff) {
+            if (in_array(Staff::DUTY_STAFF_ADMIN, $companyStaff->getRoles())) {
+                $recipient             = $companyStaff->getClient();
+                $keywords['firstName'] = $recipient->getFirstName();
+
+                $message = $this->messageProvider->newMessage('request-rights-new-staff', $keywords);
+                $message->setTo($recipient->getEmail());
+
+                $sent += $this->mailer->send($message);
+            }
+        }
+
+        return $sent;
     }
 }

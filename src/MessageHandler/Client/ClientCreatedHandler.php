@@ -16,9 +16,7 @@ class ClientCreatedHandler implements MessageHandlerInterface
     private $clientsRepository;
     /** @var NotificationManager */
     private $notificationManager;
-    /**
-     * @var MailerManager
-     */
+    /** @var MailerManager */
     private $mailerManager;
 
     /**
