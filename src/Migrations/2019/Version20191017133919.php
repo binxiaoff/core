@@ -4,15 +4,16 @@ declare(strict_types=1);
 
 namespace DoctrineMigrations;
 
-use Doctrine\DBAL\DBALException;
-use Doctrine\DBAL\Schema\Schema;
-use Doctrine\Migrations\AbstractMigration;
+use Doctrine\DBAL\{DBALException, Schema\Schema};
+use Unilend\Migrations\{ContainerAwareMigration, Traits\FlushTranslationCacheTrait};
 
 /**
  * Auto-generated Migration: Please modify to your needs!
  */
-final class Version20191017133919 extends AbstractMigration
+final class Version20191017133919 extends ContainerAwareMigration
 {
+    use FlushTranslationCacheTrait;
+
     /**
      * @return string
      */
