@@ -153,3 +153,6 @@ services:
         tags:
             - { name: doctrine.orm.entity_listener, event: prePersist, entity: Unilend\Entity\ProjectParticipation }
             - { name: doctrine.orm.entity_listener, event: postPersist, entity: Unilend\Entity\ProjectParticipation }
+
+    Unilend\Swagger\SwaggerDecorator:
+        decorates: 'api_platform.swagger.normalizer.api_gateway'
