@@ -172,6 +172,8 @@ class Project
      * @var bool
      *
      * @ORM\Column(type="boolean", options={"default": false})
+     *
+     * @Gedmo\Versioned
      */
     private $confidential = false;
 
@@ -179,6 +181,8 @@ class Project
      * @var string
      *
      * @ORM\Column(type="text", nullable=true)
+     *
+     * @Gedmo\Versioned
      */
     private $confidentialityDisclaimer;
 
@@ -228,6 +232,8 @@ class Project
      * @var int
      *
      * @ORM\Column(type="smallint", nullable=false)
+     *
+     * @Gedmo\Versioned
      */
     private $offerVisibility;
 
