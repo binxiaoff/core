@@ -4,19 +4,28 @@ declare(strict_types=1);
 
 namespace Unilend\Swagger;
 
+use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
 class SwaggerDecorator implements NormalizerInterface
 {
     private $decorated;
+    /**
+     * @var RouterInterface
+     */
+    private $router;
 
     /**
      * @param NormalizerInterface $decorated
+     * @param RouterInterface     $router
      */
-    public function __construct(NormalizerInterface $decorated)
-    {
+    public function __construct(
+        NormalizerInterface $decorated,
+        RouterInterface $router
+    ) {
         $this->decorated = $decorated;
+        $this->router    = $router;
     }
 
     /**
@@ -33,10 +42,7 @@ class SwaggerDecorator implements NormalizerInterface
         /** @var array $docs */
         $docs = $this->decorated->normalize($object, $format, $context);
 
-        $docs['info']['title']   = 'KLS';
-        $docs['info']['version'] = '1.0.0';
-
-        $docs['paths']['/authentication_token'] = [
+        $docs['paths'][$this->router->generate('api_login_check')] = [
             'post' => [
                 'tags'        => ['Authentication'],
                 'operationId' => 'postAuthenticationToken',
@@ -93,7 +99,7 @@ class SwaggerDecorator implements NormalizerInterface
             ],
         ];
 
-        $docs['paths']['/token/refresh'] = [
+        $docs['paths'][$this->router->generate('gesdinet_jwt_refresh_token')] = [
             'post' => [
                 'tags'        => ['Authentication'],
                 'operationId' => 'postRefreshToken',
