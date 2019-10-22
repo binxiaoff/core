@@ -15,6 +15,7 @@ use libphonenumber\PhoneNumber;
 use Misd\PhoneNumberBundle\Validator\Constraints\PhoneNumber as AssertPhoneNumber;
 use Ramsey\Uuid\{Exception\UnsatisfiedDependencyException, Uuid};
 use Symfony\Component\Security\Core\User\{EquatableInterface, UserInterface};
+use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Entity\Traits\{RoleableTrait, TimestampableTrait, TraceableStatusTrait};
 use URLify;
@@ -122,6 +123,8 @@ class Clients implements UserInterface, EquatableInterface
      *
      * @Assert\NotBlank
      * @Assert\Email
+     *
+     * @Groups({"temporary_token:read"})
      */
     private $email;
 
@@ -152,6 +155,8 @@ class Clients implements UserInterface, EquatableInterface
      * @ORM\Column(name="id_client", type="integer")
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="IDENTITY")
+     *
+     * @Groups({"temporary_token:read"})
      */
     private $idClient;
 
@@ -542,6 +547,8 @@ class Clients implements UserInterface, EquatableInterface
 
     /**
      * @return bool
+     *
+     * @Groups({"temporary_token:read"})
      */
     public function isCreated(): bool
     {
