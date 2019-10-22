@@ -16,13 +16,13 @@ class ProjectVoter extends Voter
 {
     use ConstantsAwareTrait;
 
-    public const ATTRIBUTE_PREVIEW     = 'preview';
-    public const ATTRIBUTE_VIEW        = 'view';
-    public const ATTRIBUTE_EDIT        = 'edit';
-    public const ATTRIBUTE_MANAGE_BIDS = 'manage_bids';
-    public const ATTRIBUTE_RATE        = 'rate';
-    public const ATTRIBUTE_BID         = 'bid';
-    public const ATTRIBUTE_COMMENT     = 'comment';
+    public const ATTRIBUTE_PREVIEW              = 'preview';
+    public const ATTRIBUTE_VIEW                 = 'view';
+    public const ATTRIBUTE_EDIT                 = 'edit';
+    public const ATTRIBUTE_MANAGE_TRANCHE_OFFER = 'manage_tranche_offer';
+    public const ATTRIBUTE_RATE                 = 'rate';
+    public const ATTRIBUTE_CREATE_TRANCHE_OFFER = 'create_tranche_offer';
+    public const ATTRIBUTE_COMMENT              = 'comment';
 
     /** @var ProjectParticipationRepository */
     private $projectParticipationRepository;
@@ -74,12 +74,12 @@ class ProjectVoter extends Voter
                 return $this->canView($project, $user);
             case self::ATTRIBUTE_EDIT:
                 return $this->canEdit($project, $user);
-            case self::ATTRIBUTE_MANAGE_BIDS:
-                return $this->canManageBids($project, $user);
+            case self::ATTRIBUTE_MANAGE_TRANCHE_OFFER:
+                return $this->canManageTrancheOffer($project, $user);
             case self::ATTRIBUTE_RATE:
                 return $this->canRate($project, $user);
-            case self::ATTRIBUTE_BID:
-                return $this->canBid($project, $user);
+            case self::ATTRIBUTE_CREATE_TRANCHE_OFFER:
+                return $this->canCreateTrancheOffer($project, $user);
             case self::ATTRIBUTE_COMMENT:
                 return $this->canComment($project, $user);
         }
@@ -147,7 +147,7 @@ class ProjectVoter extends Voter
      *
      * @return bool
      */
-    private function canManageBids(Project $project, Clients $user): bool
+    private function canManageTrancheOffer(Project $project, Clients $user): bool
     {
         return $project->getArranger() && $user->getCompany() === $project->getArranger()->getCompany();
     }
@@ -173,7 +173,7 @@ class ProjectVoter extends Voter
      *
      * @return bool
      */
-    private function canBid(Project $project, Clients $user): bool
+    private function canCreateTrancheOffer(Project $project, Clients $user): bool
     {
         return
             $this->canView($project, $user)

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Unilend\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
@@ -10,7 +12,7 @@ use Unilend\Entity\Traits\TimestampableTrait;
  * @ORM\Entity
  * @ORM\HasLifecycleCallbacks
  */
-class BidFee
+class TrancheOfferFee
 {
     use TimestampableTrait;
 
@@ -31,14 +33,14 @@ class BidFee
     private $fee;
 
     /**
-     * @var Bids
+     * @var TrancheOffer
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Bids", inversedBy="bidFees")
+     * @ORM\ManyToOne(targetEntity="Unilend\Entity\TrancheOffer", inversedBy="trancheOfferFees")
      * @ORM\JoinColumns({
-     *     @ORM\JoinColumn(name="id_bid", referencedColumnName="id_bid", nullable=false)
+     *     @ORM\JoinColumn(name="id_tranche_offer", nullable=false)
      * })
      */
-    private $bid;
+    private $trancheOffer;
 
     /**
      * Initialise some object-value.
@@ -57,21 +59,21 @@ class BidFee
     }
 
     /**
-     * @return Bids
+     * @return TrancheOffer
      */
-    public function getBid(): Bids
+    public function getTrancheOffer(): TrancheOffer
     {
-        return $this->bid;
+        return $this->trancheOffer;
     }
 
     /**
-     * @param Bids $bid
+     * @param TrancheOffer $trancheOffer
      *
-     * @return BidFee
+     * @return TrancheOfferFee
      */
-    public function setBid(Bids $bid): BidFee
+    public function setTrancheOffer(TrancheOffer $trancheOffer): TrancheOfferFee
     {
-        $this->bid = $bid;
+        $this->trancheOffer = $trancheOffer;
 
         return $this;
     }
@@ -87,9 +89,9 @@ class BidFee
     /**
      * @param Fee $fee
      *
-     * @return BidFee
+     * @return TrancheOfferFee
      */
-    public function setFee(Fee $fee): BidFee
+    public function setFee(Fee $fee): TrancheOfferFee
     {
         $this->fee = $fee;
 

@@ -16,7 +16,7 @@ use Misd\PhoneNumberBundle\Validator\Constraints\PhoneNumber as AssertPhoneNumbe
 use Ramsey\Uuid\{Exception\UnsatisfiedDependencyException, Uuid};
 use Symfony\Component\Security\Core\User\{EquatableInterface, UserInterface};
 use Symfony\Component\Validator\Constraints as Assert;
-use Unilend\Entity\Traits\{RoleableTrait, StatusTraceableTrait, TimestampableTrait};
+use Unilend\Entity\Traits\{RoleableTrait, TimestampableTrait, TraceableStatusTrait};
 use URLify;
 
 /**
@@ -38,7 +38,7 @@ class Clients implements UserInterface, EquatableInterface
 {
     use TimestampableTrait;
     use RoleableTrait;
-    use StatusTraceableTrait {
+    use TraceableStatusTrait {
         setCurrentStatus as baseStatusSetter;
     }
 

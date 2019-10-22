@@ -6,7 +6,7 @@ namespace Unilend\Service;
 
 use Doctrine\ORM\{EntityManagerInterface, ORMException, OptimisticLockException};
 use Exception;
-use Unilend\Entity\{Bids, Clients, Notification, Project, ProjectComment, ProjectStatus};
+use Unilend\Entity\{Clients, Notification, Project, ProjectComment, ProjectStatus, TrancheOffer};
 use Unilend\Repository\NotificationRepository;
 
 class NotificationManager
@@ -70,21 +70,21 @@ class NotificationManager
     }
 
     /**
-     * @param Bids $bid
+     * @param TrancheOffer $trancheOffer
      *
      * @throws Exception
      */
-    public function createBidSubmitted(Bids $bid): void
+    public function createTrancheOfferSubmitted(TrancheOffer $trancheOffer): void
     {
-        $bidder     = $bid->getLender()->getIdClientOwner();
-        $recipients = $this->getProjectRecipients($bid->getTranche()->getProject());
+        $trancheOfferMaker = $trancheOffer->getAddedBy();
+        $recipients        = $this->getProjectRecipients($trancheOffer->getTranche()->getProject());
 
-        unset($recipients[$bidder->getIdClient()]);
+        unset($recipients[$trancheOfferMaker->getIdClient()]);
 
-        $this->createNotification(Notification::TYPE_BID_SUBMITTED_BIDDER, [$bidder], null, $bid);
-        $this->createNotification(Notification::TYPE_BID_SUBMITTED_LENDERS, $recipients, null, $bid);
+        $this->createNotification(Notification::TYPE_TRANCHE_OFFER_SUBMITTED_SUBMITTER, [$trancheOfferMaker], null, $trancheOffer);
+        $this->createNotification(Notification::TYPE_TRANCHE_OFFER_SUBMITTED_PARTICIPANTS, $recipients, null, $trancheOffer);
 
-        $this->mailerManager->sendBidSubmitted($bid, $recipients);
+        $this->mailerManager->sendTrancheOfferSubmitted($trancheOffer, $recipients);
     }
 
     /**
@@ -187,15 +187,15 @@ class NotificationManager
     }
 
     /**
-     * @param int          $type
-     * @param Clients[]    $clients
-     * @param Project|null $project
-     * @param Bids|null    $bid
+     * @param int               $type
+     * @param Clients[]         $clients
+     * @param Project|null      $project
+     * @param TrancheOffer|null $trancheOffer
      */
-    private function createNotification(int $type, array $clients, ?Project $project = null, ?Bids $bid = null): void
+    private function createNotification(int $type, array $clients, ?Project $project = null, ?TrancheOffer $trancheOffer = null): void
     {
         foreach ($clients as $client) {
-            $notification = $this->buildNotification($type, $client, $project, $bid);
+            $notification = $this->buildNotification($type, $client, $project, $trancheOffer);
             $this->entityManager->persist($notification);
         }
 
@@ -203,21 +203,21 @@ class NotificationManager
     }
 
     /**
-     * @param int          $type
-     * @param Clients      $client
-     * @param Project|null $project
-     * @param Bids|null    $bid
+     * @param int               $type
+     * @param Clients           $client
+     * @param Project|null      $project
+     * @param TrancheOffer|null $trancheOffer
      *
      * @return Notification
      */
-    private function buildNotification(int $type, Clients $client, ?Project $project = null, ?Bids $bid = null): Notification
+    private function buildNotification(int $type, Clients $client, ?Project $project = null, ?TrancheOffer $trancheOffer = null): Notification
     {
         return (new Notification())
             ->setType($type)
             ->setStatus(Notification::STATUS_UNREAD)
             ->setClient($client)
             ->setProject($project)
-            ->setBid($bid)
+            ->setTrancheOffer($trancheOffer)
         ;
     }
 }

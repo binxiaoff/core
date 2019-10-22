@@ -185,17 +185,17 @@ class ProjectParticipation
     /**
      * @return bool
      */
-    public function hasBid(): bool
+    public function hasOffer(): bool
     {
-        return 0 > count($this->project->getBids(null, $this->company));
+        return 0 > count($this->project->getProjectOffers(null, $this->company));
     }
 
     /**
      * @return bool
      */
-    public function hasValidatedBid(): bool
+    public function hasValidatedOffer(): bool
     {
-        return 0 > count($this->project->getBids([Bids::STATUS_ACCEPTED], $this->company));
+        return 0 > count($this->project->getTrancheOffers([TrancheOffer::STATUS_ACCEPTED], $this->company));
     }
 
     /**
@@ -203,7 +203,7 @@ class ProjectParticipation
      */
     public function isNotInterested(): bool
     {
-        return $this->currentStatus === static::STATUS_UNINTERESTED && !$this->hasBid();
+        return $this->currentStatus === static::STATUS_UNINTERESTED && !$this->hasOffer();
     }
 
     /**
@@ -219,8 +219,8 @@ class ProjectParticipation
      */
     public function setUninterested(): ProjectParticipation
     {
-        if ($this->hasBid()) {
-            throw new DomainException('It is impossible to refuse after making a bid');
+        if ($this->hasOffer()) {
+            throw new DomainException('It is impossible to refuse after making an offer');
         }
 
         $this->currentStatus = static::STATUS_UNINTERESTED;

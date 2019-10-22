@@ -14,13 +14,7 @@ use Prophecy\Prophecy\MethodProphecy;
 use Prophecy\Prophecy\ObjectProphecy;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
-use Unilend\Entity\Bids;
-use Unilend\Entity\Clients;
-use Unilend\Entity\Companies;
-use Unilend\Entity\Embeddable\Money;
-use Unilend\Entity\Notification;
-use Unilend\Entity\Project;
-use Unilend\Entity\Tranche;
+use Unilend\Entity\{Clients, Companies, Embeddable\Money, Notification, Project, ProjectOffer, Tranche, TrancheOffer};
 use Unilend\Repository\NotificationRepository;
 use Unilend\Service\Notification\NotificationDisplayManager;
 
@@ -121,8 +115,8 @@ class NotificationDisplayManagerTest extends TestCase
                         Notification::TYPE_ACCOUNT_CREATED,
                         Notification::TYPE_PROJECT_REQUEST,
                         Notification::TYPE_PROJECT_PUBLICATION,
-                        Notification::TYPE_BID_SUBMITTED_BIDDER,
-                        Notification::TYPE_BID_SUBMITTED_LENDERS,
+                        Notification::TYPE_TRANCHE_OFFER_SUBMITTED_SUBMITTER,
+                        Notification::TYPE_TRANCHE_OFFER_SUBMITTED_PARTICIPANTS,
                         Notification::TYPE_PROJECT_COMMENT_ADDED,
                     ]
                 ),
@@ -166,12 +160,14 @@ class NotificationDisplayManagerTest extends TestCase
         $tranche = $this->prophesize(Tranche::class);
         $tranche->getProject()->willReturn($project);
 
-        /** @var Bids|ObjectProphecy $bids */
-        $bids = $this->prophesize(Bids::class);
-        $bids->getIdBid()->willReturn(Base::randomDigitNotNull());
-        $bids->getMoney()->willReturn(new Money());
-        $bids->getLender()->willReturn($lenderCompany->reveal());
-        $bids->getTranche()->willReturn($tranche->reveal());
+        $projectOffer = new ProjectOffer($lenderCompany->reveal(), $project->reveal());
+
+        /** @var TrancheOffer|ObjectProphecy $trancheOffer */
+        $trancheOffer = $this->prophesize(TrancheOffer::class);
+        $trancheOffer->getId()->willReturn(Base::randomDigitNotNull());
+        $trancheOffer->getMoney()->willReturn(new Money());
+        $trancheOffer->getProjectOffer()->willReturn($projectOffer);
+        $trancheOffer->getTranche()->willReturn($tranche->reveal());
 
         /** @var Clients|ObjectProphecy $clients */
         $clients = $this->prophesize(Clients::class);
@@ -183,7 +179,7 @@ class NotificationDisplayManagerTest extends TestCase
         $notification->getAdded()->willReturn(new DateTimeImmutable());
         $notification->getClient()->willReturn($clients);
         $notification->getProject()->willReturn($project);
-        $notification->getBid()->willReturn($bids);
+        $notification->getTrancheOffer()->willReturn($trancheOffer);
         $notification->getType()->willReturn($type);
         $notification->getStatus()->willReturn($status);
 
