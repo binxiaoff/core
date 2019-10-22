@@ -155,3 +155,6 @@ services:
 
     Unilend\Swagger\SwaggerDecorator:
         decorates: 'api_platform.swagger.normalizer.api_gateway'
+
+    Unilend\Identifier\Normalizer\HashNormalizer:
+        decorates: 'api_platform.identifier.integer'
