@@ -8,7 +8,7 @@ use ApiPlatform\Core\Identifier\Normalizer\IntegerDenormalizer;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 
-class HashNormalizer implements DenormalizerInterface
+class HashDenormalizer implements DenormalizerInterface
 {
     public const HASH_REGEX = '/^[0-9A-F]{8}-[0-9A-F]{4}-4[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i';
     /**
@@ -36,12 +36,12 @@ class HashNormalizer implements DenormalizerInterface
      *
      * @throws ExceptionInterface
      *
-     * @return string
+     * @return int|string
      */
     public function denormalize($data, $type, $format = null, array $context = [])
     {
         return 1 === preg_match(static::HASH_REGEX, $data) ?
-            (string) $data : $this->denormalizer->denormalize($data, $type, $format, $context);
+            $data : $this->denormalizer->denormalize($data, $type, $format, $context);
     }
 
     /**

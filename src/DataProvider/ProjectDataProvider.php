@@ -7,6 +7,7 @@ namespace Unilend\DataProvider;
 use ApiPlatform\Core\DataProvider\ItemDataProviderInterface;
 use ApiPlatform\Core\DataProvider\RestrictedDataProviderInterface;
 use Unilend\Entity\Project;
+use Unilend\Identifier\Normalizer\HashDenormalizer;
 use Unilend\Repository\ProjectRepository;
 
 class ProjectDataProvider implements ItemDataProviderInterface, RestrictedDataProviderInterface
@@ -39,7 +40,8 @@ class ProjectDataProvider implements ItemDataProviderInterface, RestrictedDataPr
      */
     public function getItem(string $resourceClass, $id, string $operationName = null, array $context = []): ?Project
     {
-        return $this->repository->findOneBy(['id' => $id]) ?? $this->repository->findOneBy(['hash' => $id]);
+        return 1 === preg_match(HashDenormalizer::HASH_REGEX, $id) ?
+         $this->repository->findOneBy(['hash' => $id]) : $this->repository->findOneBy(['id' => $id]);
     }
 
     /**
