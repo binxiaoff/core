@@ -19,7 +19,8 @@ use Unilend\Entity\Traits\TimestampableTrait;
  *     collectionOperations={},
  *     itemOperations={
  *         "get": {
- *             "normalization_context": {"groups": {"temporary_token:read"}}
+ *             "normalization_context": {"groups": {"temporary_token:read"}},
+ *             "security": "user == object.getClient()"
  *         }
  *     }
  * )
