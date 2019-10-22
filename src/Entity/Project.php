@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\Entity;
 
+use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
 use DateTimeImmutable;
 use Doctrine\Common\Collections\{ArrayCollection, Collection, Criteria};
@@ -83,6 +84,8 @@ class Project
      * @ORM\Column(type="integer")
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="IDENTITY")
+     *
+     * @ApiProperty(identifier=false)
      */
     private $id;
 
@@ -90,6 +93,8 @@ class Project
      * @var string
      *
      * @ORM\Column(length=36)
+     *
+     * @ApiProperty(identifier=true)
      */
     private $hash;
 
