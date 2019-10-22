@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Unilend\Entity;
 
+use ApiPlatform\Core\Annotation\ApiProperty;
+use ApiPlatform\Core\Annotation\ApiResource;
 use DateInterval;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
@@ -12,6 +14,12 @@ use Exception;
 use Unilend\Entity\Traits\TimestampableTrait;
 
 /**
+ * @ApiResource(
+ *     collectionOperations={},
+ *     itemOperations={
+ *         "get"
+ *     }
+ * )
  * @ORM\Table(name="temporary_token", indexes={@ORM\Index(name="fk_temporary_token_id_client", columns={"id_client"})})
  * @ORM\Entity(repositoryClass="Unilend\Repository\TemporaryTokenRepository")
  * @ORM\HasLifecycleCallbacks
@@ -28,6 +36,8 @@ class TemporaryToken
      * @var string
      *
      * @ORM\Column(name="token", type="string", length=150)
+     *
+     * @ApiProperty(identifier=true)
      */
     private $token;
 
@@ -51,6 +61,8 @@ class TemporaryToken
      * @ORM\Id
      * @ORM\Column(type="integer")
      * @ORM\GeneratedValue(strategy="IDENTITY")
+     *
+     * @ApiProperty(identifier=false)
      */
     private $id;
 
