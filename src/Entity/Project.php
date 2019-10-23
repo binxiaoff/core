@@ -28,7 +28,7 @@ use Unilend\Traits\ConstantsAwareTrait;
  *     },
  *     itemOperations={
  *         "get": {"security": "is_granted('view', object)"},
- *         "put": {"security": "is_granted('edit', previous_object)"},
+ *         "put": {"security": "is_granted('edit', object)"},
  *     }
  * )
  *
@@ -297,7 +297,7 @@ class Project
     private $currentStatus;
 
     /**
-     * @var ArrayCollection|ClientsStatus
+     * @var ArrayCollection|ProjectStatus
      *
      * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectStatus", mappedBy="project", orphanRemoval=true, cascade={"persist"})
      */

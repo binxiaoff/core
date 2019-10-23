@@ -32,6 +32,8 @@ class MailerManager
     private $numberFormatter;
     /** @var StaffRepository */
     private $staffRepository;
+    /** @var FrontRouter */
+    private $frontRouter;
 
     /**
      * @param TemplateMessageProvider $messageProvider
@@ -42,6 +44,7 @@ class MailerManager
      * @param NumberFormatter         $numberFormatter
      * @param NumberFormatter         $percentageFormatter
      * @param StaffRepository         $staffRepository
+     * @param FrontRouter             $frontRouter
      */
     public function __construct(
         TemplateMessageProvider $messageProvider,
@@ -51,7 +54,8 @@ class MailerManager
         TranslatorInterface $translator,
         NumberFormatter $numberFormatter,
         NumberFormatter $percentageFormatter,
-        StaffRepository $staffRepository
+        StaffRepository $staffRepository,
+        FrontRouter $frontRouter
     ) {
         $this->messageProvider     = $messageProvider;
         $this->mailer              = $mailer;
@@ -61,6 +65,7 @@ class MailerManager
         $this->router              = $router;
         $this->translator          = $translator;
         $this->staffRepository     = $staffRepository;
+        $this->frontRouter         = $frontRouter;
     }
 
     /**
@@ -112,7 +117,7 @@ class MailerManager
         $keywords = [
             'firstName'    => $client->getFirstName(),
             'content'      => $content,
-            'profileUrl'   => $this->router->generate('profile', [], RouterInterface::ABSOLUTE_URL),
+            'profileUrl'   => $this->frontRouter->generate('profil'),
             'changeFields' => $changeFields,
         ];
 

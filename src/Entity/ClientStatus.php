@@ -4,26 +4,36 @@ declare(strict_types=1);
 
 namespace Unilend\Entity;
 
+use ApiPlatform\Core\Annotation\ApiResource;
 use Doctrine\ORM\Mapping as ORM;
 use InvalidArgumentException;
+use Symfony\Component\Serializer\Annotation\Groups;
 use Unilend\Entity\Interfaces\StatusInterface;
 use Unilend\Entity\Traits\TimestampableAddedOnlyTrait;
 use Unilend\Traits\ConstantsAwareTrait;
 
 /**
- * ClientsStatus.
+ * @ApiResource(
+ *     collectionOperations={
+ *         "get"
+ *     },
+ *     itemOperations={
+ *         "get": {"security": "is_granted('view', object)"}
+ *     },
+ *     normalizationContext={"groups": {"client_status:read"}}
+ * )
  *
  * @ORM\Table(
- *     name="clients_status",
+ *     name="client_status",
  *     indexes={
- *         @ORM\Index(columns={"id_client"}, name="idx_clients_status_id_client"),
- *         @ORM\Index(columns={"status"}, name="idx_clients_status_status")
+ *         @ORM\Index(columns={"id_client"}, name="idx_client_status_id_client"),
+ *         @ORM\Index(columns={"status"}, name="idx_client_status_status")
  *     }
  * )
- * @ORM\Entity(repositoryClass="Unilend\Repository\ClientsStatusRepository")
+ * @ORM\Entity(repositoryClass="Unilend\Repository\ClientStatusRepository")
  * @ORM\HasLifecycleCallbacks
  */
-class ClientsStatus implements StatusInterface
+class ClientStatus implements StatusInterface
 {
     use ConstantsAwareTrait;
     use TimestampableAddedOnlyTrait;
@@ -40,13 +50,17 @@ class ClientsStatus implements StatusInterface
     /**
      * @var Clients
      *
+     * @Groups({"client_status:read"})
+     *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\Clients", inversedBy="statuses")
      * @ORM\JoinColumn(name="id_client", referencedColumnName="id_client", nullable=false)
      */
-    private $clients;
+    private $client;
 
     /**
      * @var string
+     *
+     * @Groups({"client_status:read"})
      *
      * @ORM\Column(name="content", type="text", length=16777215, nullable=true)
      */
@@ -54,6 +68,8 @@ class ClientsStatus implements StatusInterface
 
     /**
      * @var int
+     *
+     * @Groups({"client_status:read"})
      *
      * @ORM\Column(type="smallint")
      */
@@ -69,8 +85,6 @@ class ClientsStatus implements StatusInterface
     private $id;
 
     /**
-     * ClientsStatus constructor.
-     *
      * @param Clients     $clients
      * @param int         $status
      * @param string|null $content
@@ -83,7 +97,7 @@ class ClientsStatus implements StatusInterface
             );
         }
         $this->status  = $status;
-        $this->clients = $clients;
+        $this->client  = $clients;
         $this->content = $content;
     }
 
@@ -92,9 +106,9 @@ class ClientsStatus implements StatusInterface
      *
      * @return Clients
      */
-    public function getClients(): Clients
+    public function getClient(): Clients
     {
-        return $this->clients;
+        return $this->client;
     }
 
     /**
@@ -102,9 +116,9 @@ class ClientsStatus implements StatusInterface
      *
      * @param string|null $content
      *
-     * @return ClientsStatus
+     * @return ClientStatus
      */
-    public function setContent(?string $content): ClientsStatus
+    public function setContent(?string $content): ClientStatus
     {
         $this->content = $content;
 

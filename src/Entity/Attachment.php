@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\Entity;
 
+use ApiPlatform\Core\Annotation\ApiResource;
 use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
@@ -13,6 +14,8 @@ use Unilend\Entity\Traits\{BlamableAddedTrait, BlamableArchivedTrait, BlamableUp
 use Unilend\Service\User\RealUserFinder;
 
 /**
+ * @ApiResource
+ *
  * @Gedmo\Loggable(logEntryClass="Unilend\Entity\Versioned\VersionedAttachment")
  *
  * @ORM\Entity(repositoryClass="Unilend\Repository\AttachmentRepository")
@@ -72,7 +75,7 @@ class Attachment
     /**
      * @var Clients
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Clients", inversedBy="attachments")
+     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Clients")
      * @ORM\JoinColumns({
      *     @ORM\JoinColumn(name="id_client_owner", referencedColumnName="id_client")
      * })

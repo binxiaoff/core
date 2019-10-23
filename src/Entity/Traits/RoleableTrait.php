@@ -96,7 +96,7 @@ trait RoleableTrait
      */
     private function getAvailableRoles(): array
     {
-        if (self::class instanceof UserInterface) {
+        if ($this instanceof UserInterface) {
             return self::getConstants('ROLE_');
         }
 
@@ -110,8 +110,9 @@ trait RoleableTrait
      */
     private function filterRoles(array $roles): array
     {
+        $availableRoles = $this->getAvailableRoles();
         foreach ($roles as $index => $role) {
-            if (false === in_array($role, $this->getAvailableRoles(), true)) {
+            if (false === in_array($role, $availableRoles, true)) {
                 unset($roles[$index]);
             }
         }
