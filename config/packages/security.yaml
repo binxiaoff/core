@@ -16,17 +16,22 @@ security:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
         refresh:
-            pattern:  ^/token/refresh
+            pattern: ^/token/refresh
             stateless: true
             anonymous: true
         api:
             stateless: true
-            anonymous: false
+            anonymous: true
             json_login:
                 check_path: /authentication_token
-                success_handler:          lexik_jwt_authentication.handler.authentication_success
-                failure_handler:          lexik_jwt_authentication.handler.authentication_failure
+                success_handler: lexik_jwt_authentication.handler.authentication_success
+                failure_handler: lexik_jwt_authentication.handler.authentication_failure
                 require_previous_session: false
             guard:
                 authenticators:
                     - lexik_jwt_authentication.jwt_token_authenticator
+
+    access_control:
+        - { path: '^/docs', allow_if: true }
+        - { path: '^/token/refresh', allow_if: true }
+        - { path: '^/', allow_if: 'is_authenticated()' }
