@@ -11,13 +11,17 @@ use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use DomainException;
 use Exception;
+use Symfony\Component\Serializer\Annotation\Groups;
 use Unilend\Entity\Traits\TimestampableTrait;
 
 /**
  * @ApiResource(
  *     collectionOperations={},
  *     itemOperations={
- *         "get"
+ *         "get": {
+ *             "normalization_context": {"groups": {"temporary_token:read"}},
+ *             "security": "user == object.getClient()"
+ *         }
  *     }
  * )
  * @ORM\Table(name="temporary_token", indexes={@ORM\Index(name="fk_temporary_token_id_client", columns={"id_client"})})
@@ -33,9 +37,29 @@ class TemporaryToken
     private const LIFETIME_LONG   = '1 week';
 
     /**
+     * @var DateTimeImmutable|null
+     *
+     * @ORM\Column(name="updated", type="datetime_immutable", nullable=true)
+     *
+     * @Groups({"temporary_token:read"})
+     */
+    protected $updated;
+
+    /**
+     * @var DateTimeImmutable|null
+     *
+     * @ORM\Column(name="added", type="datetime_immutable")
+     *
+     * @Groups({"temporary_token:read"})
+     */
+    protected $added;
+
+    /**
      * @var string
      *
      * @ORM\Column(name="token", type="string", length=150)
+     *
+     * @Groups({"temporary_token:read"})
      *
      * @ApiProperty(identifier=true)
      */
@@ -45,6 +69,8 @@ class TemporaryToken
      * @var DateTimeImmutable
      *
      * @ORM\Column(name="expires", type="datetime_immutable")
+     *
+     * @Groups({"temporary_token:read"})
      */
     private $expires;
 
@@ -52,6 +78,8 @@ class TemporaryToken
      * @var DateTimeImmutable
      *
      * @ORM\Column(name="accessed", type="datetime_immutable", nullable=true)
+     *
+     * @Groups({"temporary_token:read"})
      */
     private $accessed;
 
@@ -61,6 +89,8 @@ class TemporaryToken
      * @ORM\Id
      * @ORM\Column(type="integer")
      * @ORM\GeneratedValue(strategy="IDENTITY")
+     *
+     * @Groups({"temporary_token:read"})
      *
      * @ApiProperty(identifier=false)
      */
@@ -73,6 +103,8 @@ class TemporaryToken
      * @ORM\JoinColumns({
      *     @ORM\JoinColumn(name="id_client", referencedColumnName="id_client", nullable=false)
      * })
+     *
+     * @Groups({"temporary_token:read"})
      */
     private $client;
 
@@ -186,6 +218,8 @@ class TemporaryToken
      * @throws Exception
      *
      * @return bool
+     *
+     * @Groups({"temporary_token:read"})
      */
     public function isValid(): bool
     {
