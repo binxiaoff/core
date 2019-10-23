@@ -21,7 +21,6 @@ use Unilend\Traits\ConstantsAwareTrait;
 
 /**
  * @ApiResource(
- *     attributes={"security": "is_granted('ROLE_USER')"},
  *     collectionOperations={
  *         "get",
  *         "post"
