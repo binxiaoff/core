@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Unilend\MessageHandler\Client;
 
 use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
+use Twig\Error\{LoaderError, RuntimeError, SyntaxError};
 use Unilend\Message\Client\ClientUpdated;
 use Unilend\Repository\ClientsRepository;
 use Unilend\Service\MailerManager;
@@ -28,6 +29,10 @@ class ClientUpdatedHandler implements MessageHandlerInterface
 
     /**
      * @param ClientUpdated $clientUpdated
+     *
+     * @throws LoaderError
+     * @throws RuntimeError
+     * @throws SyntaxError
      */
     public function __invoke(ClientUpdated $clientUpdated)
     {

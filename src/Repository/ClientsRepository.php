@@ -9,7 +9,7 @@ use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\Query\{Expr\Join};
 use Doctrine\ORM\{NonUniqueResultException, ORMException, OptimisticLockException};
 use PDO;
-use Unilend\Entity\{Clients, ClientsStatus, Companies, ProjectParticipation, Staff};
+use Unilend\Entity\{ClientStatus, Clients, Companies, ProjectParticipation, Staff};
 
 /**
  * @method Clients|null find($id, $lockMode = null, $lockVersion = null)
@@ -74,11 +74,11 @@ class ClientsRepository extends ServiceEntityRepository
     {
         $queryBuilder = $this->createQueryBuilder('c');
         $queryBuilder
-            ->innerJoin(ClientsStatus::class, 'csh', Join::WITH, 'c.currentStatus = csh.id')
+            ->innerJoin(ClientStatus::class, 'csh', Join::WITH, 'c.currentStatus = csh.id')
             ->where('c.email = :email')
             ->andWhere('csh.status IN (:status)')
             ->setParameter('email', $email, PDO::PARAM_STR)
-            ->setParameter('status', ClientsStatus::GRANTED_LOGIN)
+            ->setParameter('status', ClientStatus::GRANTED_LOGIN)
         ;
 
         return $queryBuilder->getQuery()->getOneOrNullResult();

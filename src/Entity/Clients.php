@@ -21,9 +21,21 @@ use Unilend\Entity\Traits\{RoleableTrait, TimestampableTrait, TraceableStatusTra
 use URLify;
 
 /**
- * @ApiResource
+ * @ApiResource(
+ *     attributes={"security": "is_granted('ROLE_USER')"},
+ *     collectionOperations={
+ *         "get",
+ *         "post"
+ *     },
+ *     itemOperations={
+ *         "get": {"security": "is_granted('view', object)"},
+ *         "put": {"security": "is_granted('edit', object)"},
+ *     },
+ *     normalizationContext={"groups": {"client:read"}},
+ *     denormalizationContext={"groups": {"client:write"}}
+ * )
  *
- * @method ClientsStatus getCurrentStatus()
+ * @method ClientStatus getCurrentStatus()
  *
  * @Gedmo\Loggable(logEntryClass="Unilend\Entity\Versioned\VersionedClients")
  *
@@ -66,12 +78,16 @@ class Clients implements UserInterface, EquatableInterface
     /**
      * @var string
      *
+     * @Groups({"client:read", "client:write"})
+     *
      * @ORM\Column(name="title", type="string", nullable=true)
      */
     private $title;
 
     /**
      * @var string
+     *
+     * @Groups({"client:read", "client:write"})
      *
      * @ORM\Column(name="last_name", type="string", length=191, nullable=true)
      *
@@ -83,6 +99,8 @@ class Clients implements UserInterface, EquatableInterface
 
     /**
      * @var string
+     *
+     * @Groups({"client:read", "client:write"})
      *
      * @ORM\Column(name="first_name", type="string", length=191, nullable=true)
      *
@@ -101,6 +119,8 @@ class Clients implements UserInterface, EquatableInterface
     /**
      * @var PhoneNumber
      *
+     * @Groups({"client:read", "client:write"})
+     *
      * @ORM\Column(name="phone", type="phone_number", nullable=true)
      *
      * @AssertPhoneNumber(defaultRegion="FR", type="any")
@@ -109,6 +129,8 @@ class Clients implements UserInterface, EquatableInterface
 
     /**
      * @var PhoneNumber
+     *
+     * @Groups({"client:read", "client:write"})
      *
      * @ORM\Column(name="mobile", type="phone_number", nullable=true)
      *
@@ -119,17 +141,19 @@ class Clients implements UserInterface, EquatableInterface
     /**
      * @var string
      *
+     * @Groups({"client:read", "client:write", "temporary_token:read"})
+     *
      * @ORM\Column(name="email", type="string", length=191, nullable=true, unique=true)
      *
      * @Assert\NotBlank
      * @Assert\Email
-     *
-     * @Groups({"temporary_token:read"})
      */
     private $email;
 
     /**
      * @var string
+     *
+     * @Groups({"client:read", "client:write"})
      *
      * @ORM\Column(name="password", type="string", length=191, nullable=true)
      *
@@ -138,12 +162,18 @@ class Clients implements UserInterface, EquatableInterface
     private $password;
 
     /**
+     * @var string
+     *
+     * @Groups({"client:read", "client:write"})
+     *
      * @ORM\Column(type="string", length=255, nullable=true)
      */
     private $jobFunction;
 
     /**
      * @var DateTime
+     *
+     * @Groups({"client:read"})
      *
      * @ORM\Column(name="last_login", type="datetime", nullable=true)
      */
@@ -156,19 +186,14 @@ class Clients implements UserInterface, EquatableInterface
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="IDENTITY")
      *
-     * @Groups({"temporary_token:read"})
+     * @Groups({"client:read", "temporary_token:read"})
      */
     private $idClient;
 
     /**
-     * @var Attachment[]
-     *
-     * @ORM\OneToMany(targetEntity="Unilend\Entity\Attachment", mappedBy="clientOwner")
-     */
-    private $attachments;
-
-    /**
      * @var Staff|null
+     *
+     * @Groups({"client:read"})
      *
      * @ORM\OneToOne(targetEntity="Unilend\Entity\Staff", mappedBy="client")
      */
@@ -177,22 +202,28 @@ class Clients implements UserInterface, EquatableInterface
     /**
      * @var array
      *
+     * @Groups({"client:read", "client:write"})
+     *
      * @ORM\Column(type="json")
      */
     private $roles = [];
 
     /**
-     * @var ClientsStatus
+     * @var ClientStatus
      *
-     * @ORM\OneToOne(targetEntity="Unilend\Entity\ClientsStatus")
+     * @Groups({"client:read"})
+     *
+     * @ORM\OneToOne(targetEntity="Unilend\Entity\ClientStatus")
      * @ORM\JoinColumn(name="id_current_status", unique=true)
      */
     private $currentStatus;
 
     /**
-     * @var ArrayCollection|ClientsStatus
+     * @var ArrayCollection|ClientStatus
      *
-     * @ORM\OneToMany(targetEntity="Unilend\Entity\ClientsStatus", mappedBy="clients", orphanRemoval=true, cascade={"persist"})
+     * @Groups({"client:read"})
+     *
+     * @ORM\OneToMany(targetEntity="Unilend\Entity\ClientStatus", mappedBy="client", orphanRemoval=true, cascade={"persist"})
      */
     private $statuses;
 
@@ -201,9 +232,8 @@ class Clients implements UserInterface, EquatableInterface
      */
     public function __construct()
     {
-        $this->attachments = new ArrayCollection();
-        $this->statuses    = new ArrayCollection();
-        $this->setCurrentStatus(ClientsStatus::STATUS_CREATED);
+        $this->statuses = new ArrayCollection();
+        $this->setCurrentStatus(ClientStatus::STATUS_INVITED);
     }
 
     /**
@@ -479,27 +509,6 @@ class Clients implements UserInterface, EquatableInterface
     }
 
     /**
-     * @param bool $includeArchived
-     *
-     * @return Attachment[]
-     */
-    public function getAttachments($includeArchived = false): iterable
-    {
-        if (false === $includeArchived) {
-            $attachments = [];
-            foreach ($this->attachments as $attachment) {
-                if (null === $attachment->getArchived()) {
-                    $attachments[] = $attachment;
-                }
-            }
-
-            return $attachments;
-        }
-
-        return $this->attachments;
-    }
-
-    /**
      * @return Staff|null
      */
     public function getStaff(): ?Staff
@@ -534,25 +543,27 @@ class Clients implements UserInterface, EquatableInterface
      */
     public function isGrantedLogin(): bool
     {
-        return $this->isInStatus(ClientsStatus::GRANTED_LOGIN);
+        return $this->isInStatus(ClientStatus::GRANTED_LOGIN);
     }
 
     /**
+     * @Groups({"client:read"})
+     *
      * @return bool
      */
     public function isInvited(): bool
     {
-        return $this->isInStatus([ClientsStatus::STATUS_INVITED]);
+        return $this->isInStatus([ClientStatus::STATUS_INVITED]);
     }
 
     /**
-     * @return bool
+     * @Groups({"client:read", "temporary_token:read"})
      *
-     * @Groups({"temporary_token:read"})
+     * @return bool
      */
     public function isCreated(): bool
     {
-        return $this->isInStatus([ClientsStatus::STATUS_CREATED]);
+        return $this->isInStatus([ClientStatus::STATUS_CREATED]);
     }
 
     /**
@@ -611,9 +622,17 @@ class Clients implements UserInterface, EquatableInterface
      */
     public function setCurrentStatus(int $status, ?string $content = null): self
     {
-        $clientStatus = new ClientsStatus($this, $status, $content);
+        $clientStatus = new ClientStatus($this, $status, $content);
 
         return $this->baseStatusSetter($clientStatus);
+    }
+
+    /**
+     * @return bool
+     */
+    public function isProfilComplet(): bool
+    {
+        return $this->getFirstName() && $this->getLastName() && $this->getPassword();
     }
 
     /**
@@ -664,8 +683,8 @@ class Clients implements UserInterface, EquatableInterface
      */
     private function isInStatus(array $status): bool
     {
-        $clientsStatus = $this->getCurrentStatus();
+        $clientStatus = $this->getCurrentStatus();
 
-        return $clientsStatus && in_array($clientsStatus->getStatus(), $status, true);
+        return $clientStatus && in_array($clientStatus->getStatus(), $status, true);
     }
 }
