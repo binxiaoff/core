@@ -2,8 +2,8 @@ api_platform:
     title: 'KLS'
     description: 'Backend API of KLS'
     version: '1.0.0'
-    enable_entrypoint: '%kernel.debug%'
-    enable_docs: '%kernel.debug%'
+    enable_entrypoint: true
+    enable_docs: true
     mapping:
         paths: ['%kernel.project_dir%/src/Entity']
     swagger:
