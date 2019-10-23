@@ -155,3 +155,7 @@ services:
 
     Unilend\Swagger\SwaggerDecorator:
         decorates: 'api_platform.swagger.normalizer.api_gateway'
+
+    Unilend\Listener\ProfileCompletedListener:
+        tags:
+            - { name: doctrine.event_listener, event: onFlush }

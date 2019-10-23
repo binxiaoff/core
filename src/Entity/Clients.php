@@ -628,14 +628,6 @@ class Clients implements UserInterface, EquatableInterface
     }
 
     /**
-     * @return bool
-     */
-    public function isProfilComplet(): bool
-    {
-        return $this->getFirstName() && $this->getLastName() && $this->getPassword();
-    }
-
-    /**
      * @param string|null $name
      *
      * @return string|null
