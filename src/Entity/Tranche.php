@@ -15,9 +15,8 @@ use Unilend\Entity\Traits\TimestampableTrait;
 use Unilend\Traits\ConstantsAwareTrait;
 
 /**
- * @ApiResource(
- *     attributes={"access_control": "is_granted('ROLE_USER')"}
- * )
+ * @ApiResource
+ *
  * @ORM\Entity(repositoryClass="Unilend\Repository\TrancheRepository")
  * @ORM\HasLifecycleCallbacks
  *
