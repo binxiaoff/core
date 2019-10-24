@@ -17,12 +17,8 @@ use Unilend\Entity\Traits\TimestampableTrait;
 /**
  * @ApiResource(
  *     collectionOperations={},
- *     itemOperations={
- *         "get": {
- *             "normalization_context": {"groups": {"temporary_token:read"}},
- *             "security": "user == object.getClient()"
- *         }
- *     }
+ *     itemOperations={"get"},
+ *     normalizationContext={"groups": {"temporary_token:read"}}
  * )
  * @ORM\Table(name="temporary_token", indexes={@ORM\Index(name="fk_temporary_token_id_client", columns={"id_client"})})
  * @ORM\Entity(repositoryClass="Unilend\Repository\TemporaryTokenRepository")
