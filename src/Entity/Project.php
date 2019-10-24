@@ -346,6 +346,13 @@ class Project
     private $projectOffers;
 
     /**
+     * @var Collection|Tag[]
+     *
+     * @ORM\ManyToMany(targetEntity="Unilend\Entity\Tag")
+     */
+    private $tags;
+
+    /**
      * Project constructor.
      *
      * @param RealUserFinder $submitterClient
@@ -360,6 +367,7 @@ class Project
         $this->tranches                   = new ArrayCollection();
         $this->confidentialityAcceptances = new ArrayCollection();
         $this->projectOffers              = new ArrayCollection();
+        $this->tags                       = new ArrayCollection();
 
         $this->setCurrentStatus(ProjectStatus::STATUS_REQUESTED, $submitterClient);
 
@@ -1234,6 +1242,40 @@ class Project
         }
 
         $this->riskType = $riskType;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Tag[]
+     */
+    public function getTags()
+    {
+        return $this->tags;
+    }
+
+    /**
+     * @param Tag $tag
+     *
+     * @return Project
+     */
+    public function addTag(Tag $tag): Project
+    {
+        if (false === $this->tags->contains($tag)) {
+            $this->tags[] = $tag;
+        }
+
+        return $this;
+    }
+
+    /**
+     * @param Tag $tag
+     *
+     * @return Project
+     */
+    public function removeTag(Tag $tag): Project
+    {
+        $this->tags->removeElement($tag);
 
         return $this;
     }
