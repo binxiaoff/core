@@ -8,18 +8,28 @@ use Doctrine\ORM\Mapping as ORM;
 use Unilend\Entity\Traits\TimestampableAddedOnlyTrait;
 
 /**
- * @ORM\Table(name="clients_history", indexes={
- *     @ORM\Index(name="idx_clients_history_ip", columns={"ip"}),
- *     @ORM\Index(name="idx_clients_history_added", columns={"added"})
+ * @ORM\Table(name="client_login", indexes={
+ *     @ORM\Index(name="idx_clients_login_ip", columns={"ip"}),
+ *     @ORM\Index(name="idx_clients_login_added", columns={"added"})
  * })
  * @ORM\Entity
  * @ORM\HasLifecycleCallbacks
  */
-class ClientsHistory
+class ClientLogin
 {
     use TimestampableAddedOnlyTrait;
 
-    public const STATUS_ACTION_LOGIN = 1;
+    public const ACTION_LOGIN   = 'login';
+    public const ACTION_REFRESH = 'refresh';
+
+    /**
+     * @var int
+     *
+     * @ORM\Column(name="id", type="integer")
+     * @ORM\Id
+     * @ORM\GeneratedValue(strategy="IDENTITY")
+     */
+    private $id;
 
     /**
      * @var Clients
@@ -29,14 +39,14 @@ class ClientsHistory
      *     @ORM\JoinColumn(name="id_client", referencedColumnName="id_client", nullable=false)
      * })
      */
-    private $idClient;
+    private $client;
 
     /**
      * @var int
      *
-     * @ORM\Column(name="status", type="smallint")
+     * @ORM\Column(name="action", type="string", length=10)
      */
-    private $status;
+    private $action;
 
     /**
      * @var string|null
@@ -70,42 +80,35 @@ class ClientsHistory
     private $userAgentHistory;
 
     /**
-     * @var int
+     * ClientLoginHistory constructor.
      *
-     * @ORM\Column(name="id_history", type="integer")
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="IDENTITY")
+     * @param Clients $clients
+     * @param string  $action
      */
-    private $idHistory;
-
-    /**
-     * @param Clients $idClient
-     *
-     * @return ClientsHistory
-     */
-    public function setIdClient(Clients $idClient): ClientsHistory
-    {
-        $this->idClient = $idClient;
-
-        return $this;
+    public function __construct(
+        Clients $clients,
+        string $action
+    ) {
+        $this->client = $clients;
+        $this->action = $action;
     }
 
     /**
      * @return Clients
      */
-    public function getIdClient(): Clients
+    public function getClient(): Clients
     {
-        return $this->idClient;
+        return $this->client;
     }
 
     /**
-     * @param int $status
+     * @param string $action
      *
-     * @return ClientsHistory
+     * @return ClientLogin
      */
-    public function setStatus(int $status): ClientsHistory
+    public function setAction(string $action): ClientLogin
     {
-        $this->status = $status;
+        $this->action = $action;
 
         return $this;
     }
@@ -113,9 +116,9 @@ class ClientsHistory
     /**
      * @return int
      */
-    public function getStatus(): int
+    public function getAction(): int
     {
-        return $this->status;
+        return $this->action;
     }
 
     /**
@@ -129,9 +132,9 @@ class ClientsHistory
     /**
      * @param string|null $ip
      *
-     * @return ClientsHistory
+     * @return ClientLogin
      */
-    public function setIp(?string $ip): ClientsHistory
+    public function setIp(?string $ip): ClientLogin
     {
         $this->ip = $ip;
 
@@ -149,9 +152,9 @@ class ClientsHistory
     /**
      * @param string|null $countryIsoCode
      *
-     * @return ClientsHistory
+     * @return ClientLogin
      */
-    public function setCountryIsoCode(?string $countryIsoCode): ClientsHistory
+    public function setCountryIsoCode(?string $countryIsoCode): ClientLogin
     {
         $this->countryIsoCode = $countryIsoCode;
 
@@ -169,9 +172,9 @@ class ClientsHistory
     /**
      * @param string|null $city
      *
-     * @return ClientsHistory
+     * @return ClientLogin
      */
-    public function setCity(?string $city): ClientsHistory
+    public function setCity(?string $city): ClientLogin
     {
         $this->city = $city;
 
@@ -189,9 +192,9 @@ class ClientsHistory
     /**
      * @param UserAgentHistory $userAgentHistory
      *
-     * @return ClientsHistory
+     * @return ClientLogin
      */
-    public function setUserAgentHistory(?UserAgentHistory $userAgentHistory): ClientsHistory
+    public function setUserAgentHistory(?UserAgentHistory $userAgentHistory): ClientLogin
     {
         $this->userAgentHistory = $userAgentHistory;
 
@@ -201,8 +204,8 @@ class ClientsHistory
     /**
      * @return int
      */
-    public function getIdHistory(): int
+    public function getId(): int
     {
-        return $this->idHistory;
+        return $this->id;
     }
 }
