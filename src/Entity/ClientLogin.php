@@ -70,9 +70,9 @@ class ClientLogin
     private $city;
 
     /**
-     * @var UserAgentHistory|null
+     * @var UserAgent|null
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Entity\UserAgentHistory")
+     * @ORM\ManyToOne(targetEntity="UserAgent")
      * @ORM\JoinColumns({
      *     @ORM\JoinColumn(name="id_user_agent_history", referencedColumnName="id")
      * })
@@ -182,19 +182,19 @@ class ClientLogin
     }
 
     /**
-     * @return UserAgentHistory|null
+     * @return UserAgent|null
      */
-    public function getUserAgentHistory(): ?UserAgentHistory
+    public function getUserAgentHistory(): ?UserAgent
     {
         return $this->userAgentHistory;
     }
 
     /**
-     * @param UserAgentHistory $userAgentHistory
+     * @param UserAgent $userAgentHistory
      *
      * @return ClientLogin
      */
-    public function setUserAgentHistory(?UserAgentHistory $userAgentHistory): ClientLogin
+    public function setUserAgentHistory(?UserAgent $userAgentHistory): ClientLogin
     {
         $this->userAgentHistory = $userAgentHistory;
 

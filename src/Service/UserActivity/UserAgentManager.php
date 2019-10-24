@@ -7,8 +7,8 @@ namespace Unilend\Service\UserActivity;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use Psr\Log\LoggerInterface;
-use Unilend\Entity\{Clients, UserAgentHistory};
-use UserAgentParser\Model\UserAgent;
+use Unilend\Entity\{Clients, UserAgent};
+use UserAgentParser\Model\UserAgent as Model;
 use UserAgentParser\Provider\Chain;
 
 class UserAgentManager
@@ -36,17 +36,17 @@ class UserAgentManager
      * @param Clients     $client
      * @param string|null $userAgent
      *
-     * @throws Exception
+     *@throws Exception
      *
-     * @return UserAgentHistory|null
+     * @return UserAgent|null
      */
-    public function saveClientUserAgent(Clients $client, string $userAgent): ?UserAgentHistory
+    public function saveClientUserAgent(Clients $client, string $userAgent): ?UserAgent
     {
         if ($parser = $this->parse($userAgent)) {
             $browser = $parser->getBrowser();
             $device  = $parser->getDevice();
 
-            $knownUserAgent = $this->entityManager->getRepository(UserAgentHistory::class)
+            $knownUserAgent = $this->entityManager->getRepository(UserAgent::class)
                 ->findOneBy([
                     'idClient'    => $client,
                     'browserName' => $browser->getName(),
@@ -59,9 +59,9 @@ class UserAgentManager
             if ($knownUserAgent) {
                 return $knownUserAgent;
             }
-            $newUserAgent = new UserAgentHistory();
+            $newUserAgent = new UserAgent();
             $newUserAgent
-                ->setIdClient($client)
+                ->setClient($client)
                 ->setBrowserName($browser->getName())
                 ->setBrowserVersion($browser->getVersion()->getComplete())
                 ->setDeviceModel($device->getModel())
@@ -82,9 +82,9 @@ class UserAgentManager
     /**
      * @param string $userAgent
      *
-     * @return UserAgent|null
+     * @return Model|null
      */
-    public function parse(string $userAgent): ?UserAgent
+    public function parse(string $userAgent): ?Model
     {
         try {
             return $this->chain->parse($userAgent);
