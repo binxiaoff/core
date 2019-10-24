@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Listener\Entity;
+namespace Unilend\Listener\Doctrine\Entity;
 
 use Symfony\Component\Messenger\MessageBusInterface;
 use Unilend\Entity\ProjectParticipation;

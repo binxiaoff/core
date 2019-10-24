@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Listener;
+namespace Unilend\Listener\Doctrine\Lifecycle;
 
 use Doctrine\ORM\Event\OnFlushEventArgs;
 use Doctrine\ORM\ORMException;
 use Unilend\Entity\{ClientStatus, Clients};
 
-class ProfileCompletedListener
+class ClientProfileCompletedListener
 {
     /**
      * @param OnFlushEventArgs $eventArgs
