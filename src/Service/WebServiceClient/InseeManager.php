@@ -63,13 +63,13 @@ class InseeManager
         $response = $this->client->get(self::ENDPOINT_URL . '/' . $siren);
 
         if (Response::HTTP_OK !== $response->getStatusCode()) {
-            return null;
+            return [];
         }
 
         $content = json_decode($response->getBody()->getContents(), true);
 
         if (null === $content || empty($content['uniteLegale'])) {
-            return null;
+            return [];
         }
 
         return $this->extractSirenAndName($content['uniteLegale']);

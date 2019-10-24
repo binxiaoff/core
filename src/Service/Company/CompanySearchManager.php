@@ -32,7 +32,7 @@ class CompanySearchManager
     public function fetchCompanies(string $term): array
     {
         if (preg_match('/^\d{9}$/', $term)) {
-            $result = [$this->searchCompanyBySiren($term)];
+            $result = $this->searchCompanyBySiren($term);
         } else {
             $result = $this->searchCompaniesByName($term);
         }
@@ -45,7 +45,7 @@ class CompanySearchManager
      *
      * @return array|null
      */
-    private function searchCompanyBySiren(string $siren): ?array
+    private function searchCompanyBySiren(string $siren): array
     {
         return $this->inseeManager->searchBySirenNumber($siren);
     }
@@ -57,6 +57,6 @@ class CompanySearchManager
      */
     private function searchCompaniesByName(string $term): array
     {
-        return array_merge($this->companiesRepository->findByName($term), $this->inseeManager->searchByName($term));
+        return array_merge($this->companiesRepository->findByName($term, 5), $this->inseeManager->searchByName($term));
     }
 }

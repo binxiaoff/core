@@ -105,16 +105,17 @@ class CompaniesRepository extends ServiceEntityRepository
 
     /**
      * @param string $name
+     * @param int    $maxResult
      *
      * @return mixed
      */
-    public function findByName(string $name)
+    public function findByName(string $name, int $maxResult)
     {
         $queryBuilder = $this->createQueryBuilder('c')
             ->select('c.name, c.siren')
             ->where('c.name LIKE %:name%')
             ->setParameter('name', $name)
-            ->setMaxResults(5)
+            ->setMaxResults($maxResult)
         ;
 
         return $queryBuilder->getQuery()->getResult(AbstractQuery::HYDRATE_ARRAY);
