@@ -108,12 +108,12 @@ class CompaniesRepository extends ServiceEntityRepository
      *
      * @return mixed
      */
-    public function findFiveByName(string $name)
+    public function findByName(string $name)
     {
         $queryBuilder = $this->createQueryBuilder('c')
             ->select('c.name, c.siren')
-            ->where('c.name LIKE :name')
-            ->setParameter('name', '%' . $name . '%')
+            ->where('c.name LIKE %:name%')
+            ->setParameter('name', $name)
             ->setMaxResults(5)
         ;
 

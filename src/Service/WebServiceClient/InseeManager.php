@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Unilend\Service\WebServiceClient;
 
 use GuzzleHttp\Client;
+use Symfony\Component\HttpFoundation\Response;
 
 class InseeManager
 {
@@ -26,13 +27,13 @@ class InseeManager
      *
      * @return array
      */
-    public function searchByName(string $siren): ?array
+    public function searchByName(string $siren): array
     {
         $siren     = str_replace(' ', '-', trim($siren));
         $response  = $this->client->get(self::ENDPOINT_URL . '?nombre=5&q=periode(denominationUniteLegale:' . $siren . ')');
         $companies = [];
 
-        if (200 !== $response->getStatusCode()) {
+        if (Response::HTTP_OK !== $response->getStatusCode()) {
             return null;
         }
 
@@ -45,11 +46,11 @@ class InseeManager
         foreach ($content['unitesLegales'] as $legalEntity) {
             $company = $this->extractSirenAndName($legalEntity);
             if ($company) {
-                array_push($companies, $company);
+                $companies[] = $company;
             }
         }
 
-        return $companies ? $companies : null;
+        return $companies ?: [];
     }
 
     /**
@@ -61,7 +62,7 @@ class InseeManager
     {
         $response = $this->client->get(self::ENDPOINT_URL . '/' . $siren);
 
-        if (200 !== $response->getStatusCode()) {
+        if (Response::HTTP_OK !== $response->getStatusCode()) {
             return null;
         }
 

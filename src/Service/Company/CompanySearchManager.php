@@ -47,15 +47,7 @@ class CompanySearchManager
      */
     private function searchCompanyBySiren(string $siren): ?array
     {
-        $company = $this->companiesRepository->findOneBy(['siren' => $siren]);
-
-        if ($company) {
-            return ['siren' => $company->getSiren(), 'name' => $company->getName()];
-        }
-
-        $result = $this->inseeManager->searchBySirenNumber($siren);
-
-        return $result ? $result : null;
+        return $this->inseeManager->searchBySirenNumber($siren);
     }
 
     /**
@@ -65,13 +57,6 @@ class CompanySearchManager
      */
     private function searchCompaniesByName(string $term): array
     {
-        $companies    = $this->companiesRepository->findFiveByName($term);
-        $companiesAPI = $this->inseeManager->searchByName($term);
-
-        if (false === empty($companiesAPI)) {
-            $companies = array_merge($companies, $companiesAPI);
-        }
-
-        return $companies;
+        return array_merge($this->companiesRepository->findByName($term), $this->inseeManager->searchByName($term));
     }
 }
