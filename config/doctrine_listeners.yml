@@ -19,7 +19,3 @@ services:
         tags:
             - { name: doctrine.orm.entity_listener, event: prePersist, entity: Unilend\Entity\ProjectParticipation }
             - { name: doctrine.orm.entity_listener, event: postPersist, entity: Unilend\Entity\ProjectParticipation }
-
-    Unilend\Listener\Doctrine\Lifecycle\ClientProfileCompletedListener:
-        tags:
-            - { name: doctrine.event_listener, event: onFlush }

@@ -315,6 +315,8 @@ class Clients implements UserInterface, EquatableInterface
     {
         $this->lastName = $this->normalizeName($lastName);
 
+        $this->onProfileUpdated();
+
         return $this;
     }
 
@@ -334,6 +336,8 @@ class Clients implements UserInterface, EquatableInterface
     public function setFirstName(?string $firstName): Clients
     {
         $this->firstName = $this->normalizeName($firstName);
+
+        $this->onProfileUpdated();
 
         return $this;
     }
@@ -434,6 +438,8 @@ class Clients implements UserInterface, EquatableInterface
     public function setPassword(?string $password): Clients
     {
         $this->password = $password;
+
+        $this->onProfileUpdated();
 
         return $this;
     }
@@ -678,5 +684,23 @@ class Clients implements UserInterface, EquatableInterface
         $clientStatus = $this->getCurrentStatus();
 
         return $clientStatus && in_array($clientStatus->getStatus(), $status, true);
+    }
+
+    /**
+     * @return bool
+     */
+    private function isProfileCompleted(): bool
+    {
+        return $this->getFirstName() && $this->getLastName() && $this->getPassword();
+    }
+
+    /**
+     * Set user status to created when profile (firstName, lastName and password) is complete.
+     */
+    private function onProfileUpdated(): void
+    {
+        if ($this->isProfileCompleted() && $this->getCurrentStatus()->getStatus() < ClientStatus::STATUS_CREATED) {
+            $this->setCurrentStatus(ClientStatus::STATUS_CREATED);
+        }
     }
 }
