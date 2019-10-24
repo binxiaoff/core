@@ -12,6 +12,8 @@ use Doctrine\ORM\Mapping as ORM;
 class Tag
 {
     /**
+     * @var int
+     *
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
@@ -26,9 +28,9 @@ class Tag
     private $label;
 
     /**
-     * @return int|null
+     * @return int
      */
-    public function getId(): ?int
+    public function getId(): int
     {
         return $this->id;
     }
