@@ -7,7 +7,6 @@ namespace Unilend\EventSubscriber;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 use Exception;
-use Gesdinet\JWTRefreshTokenBundle\Event\RefreshEvent;
 use Lexik\Bundle\JWTAuthenticationBundle\Event\AuthenticationFailureEvent;
 use Lexik\Bundle\JWTAuthenticationBundle\Event\JWTCreatedEvent;
 use Lexik\Bundle\JWTAuthenticationBundle\Events as JwtEvents;
@@ -56,7 +55,6 @@ class LoginLogSubscriber implements EventSubscriberInterface
     {
         return [
             JwtEvents::JWT_CREATED            => 'onLoginSuccess',
-            'gesdinet.refresh_token'          => 'onLoginRefresh',
             JwtEvents::AUTHENTICATION_FAILURE => 'onLoginFailure',
         ];
     }
