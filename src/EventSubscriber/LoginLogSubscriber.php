@@ -6,11 +6,10 @@ namespace Unilend\EventSubscriber;
 
 use Doctrine\Common\Persistence\ObjectManager;
 use Gesdinet\JWTRefreshTokenBundle\Event\RefreshEvent;
+use Lexik\Bundle\JWTAuthenticationBundle\Event\JWTCreatedEvent;
+use Lexik\Bundle\JWTAuthenticationBundle\Events;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
-use Symfony\Component\Security\Http\Event\InteractiveLoginEvent;
-use Symfony\Component\Security\Http\SecurityEvents;
-use Unilend\Entity\ClientLogin;
-use Unilend\Entity\Clients;
+use Unilend\Entity\{ClientLogin, Clients};
 use Unilend\Repository\ClientsRepository;
 use Unilend\Service\User\ClientLoginFactory;
 
@@ -67,17 +66,17 @@ class LoginLogSubscriber implements EventSubscriberInterface
     public static function getSubscribedEvents(): array
     {
         return [
-            SecurityEvents::INTERACTIVE_LOGIN => 'onLoginSuccess',
-            'gesdinet.refresh_token'          => 'onLoginRefresh',
+            Events::JWT_CREATED      => 'onLoginSuccess',
+            'gesdinet.refresh_token' => 'onLoginRefresh',
         ];
     }
 
     /**
-     * @param InteractiveLoginEvent $event
+     * @param JWTCreatedEvent $event
      */
-    public function onLoginSuccess(InteractiveLoginEvent $event): void
+    public function onLoginSuccess(JWTCreatedEvent $event): void
     {
-        $this->log($event->getAuthenticationToken()->getUser(), ClientLogin::ACTION_LOGIN);
+        $this->log($event->getUser(), ClientLogin::ACTION_LOGIN);
     }
 
     /**
