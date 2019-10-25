@@ -8,14 +8,14 @@ use Doctrine\ORM\Mapping as ORM;
 use Unilend\Entity\Traits\TimestampableAddedOnlyTrait;
 
 /**
- * @ORM\Table(name="client_login", indexes={
- *     @ORM\Index(name="idx_clients_login_ip", columns={"ip"}),
- *     @ORM\Index(name="idx_clients_login_added", columns={"added"})
+ * @ORM\Table(name="client_successful_login", indexes={
+ *     @ORM\Index(name="idx_client_successful_login_ip", columns={"ip"}),
+ *     @ORM\Index(name="idx_client_successful_login_added", columns={"added"})
  * })
  * @ORM\Entity
  * @ORM\HasLifecycleCallbacks
  */
-class ClientLogin
+class ClientSuccessfulLogin
 {
     use TimestampableAddedOnlyTrait;
 
@@ -94,6 +94,14 @@ class ClientLogin
     }
 
     /**
+     * @return int
+     */
+    public function getId(): int
+    {
+        return $this->id;
+    }
+
+    /**
      * @return Clients
      */
     public function getClient(): Clients
@@ -104,9 +112,9 @@ class ClientLogin
     /**
      * @param string $action
      *
-     * @return ClientLogin
+     * @return ClientSuccessfulLogin
      */
-    public function setAction(string $action): ClientLogin
+    public function setAction(string $action): ClientSuccessfulLogin
     {
         $this->action = $action;
 
@@ -132,9 +140,9 @@ class ClientLogin
     /**
      * @param string|null $ip
      *
-     * @return ClientLogin
+     * @return ClientSuccessfulLogin
      */
-    public function setIp(?string $ip): ClientLogin
+    public function setIp(?string $ip): ClientSuccessfulLogin
     {
         $this->ip = $ip;
 
@@ -152,9 +160,9 @@ class ClientLogin
     /**
      * @param string|null $countryIsoCode
      *
-     * @return ClientLogin
+     * @return ClientSuccessfulLogin
      */
-    public function setCountryIsoCode(?string $countryIsoCode): ClientLogin
+    public function setCountryIsoCode(?string $countryIsoCode): ClientSuccessfulLogin
     {
         $this->countryIsoCode = $countryIsoCode;
 
@@ -172,9 +180,9 @@ class ClientLogin
     /**
      * @param string|null $city
      *
-     * @return ClientLogin
+     * @return ClientSuccessfulLogin
      */
-    public function setCity(?string $city): ClientLogin
+    public function setCity(?string $city): ClientSuccessfulLogin
     {
         $this->city = $city;
 
@@ -192,20 +200,12 @@ class ClientLogin
     /**
      * @param UserAgent $userAgent
      *
-     * @return ClientLogin
+     * @return ClientSuccessfulLogin
      */
-    public function setUserAgent(?UserAgent $userAgent): ClientLogin
+    public function setUserAgent(?UserAgent $userAgent): ClientSuccessfulLogin
     {
         $this->userAgent = $userAgent;
 
         return $this;
-    }
-
-    /**
-     * @return int
-     */
-    public function getId(): int
-    {
-        return $this->id;
     }
 }

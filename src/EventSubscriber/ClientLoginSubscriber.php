@@ -11,7 +11,7 @@ use Lexik\Bundle\JWTAuthenticationBundle\Event\AuthenticationFailureEvent;
 use Lexik\Bundle\JWTAuthenticationBundle\Event\JWTCreatedEvent;
 use Lexik\Bundle\JWTAuthenticationBundle\Events as JwtEvents;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
-use Unilend\Entity\{ClientLogin, Clients};
+use Unilend\Entity\{ClientSuccessfulLogin, Clients};
 use Unilend\Repository\ClientLoginRepository;
 use Unilend\Repository\ClientsRepository;
 use Unilend\Service\User\ClientLoginFactory;
@@ -67,7 +67,7 @@ class LoginLogSubscriber implements EventSubscriberInterface
      */
     public function onLoginSuccess(JWTCreatedEvent $event): void
     {
-        $this->logSuccess($event->getUser(), ClientLogin::ACTION_LOGIN);
+        $this->logSuccess($event->getUser()->getUsername(), ClientSuccessfulLogin::ACTION_LOGIN);
     }
 
     /**
@@ -113,7 +113,7 @@ class LoginLogSubscriber implements EventSubscriberInterface
      * @throws OptimisticLockException
      * @throws Exception
      */
-    private function logSuccess(Clients $client, string $action): void
+    private function logSuccess(string $username, string $action): void
     {
         $entry = $this->clientLoginHistoryFactory->createClientLoginEntry($client, $action);
         $this->clientLoginRepository->save($entry);

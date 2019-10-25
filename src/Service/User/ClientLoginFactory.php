@@ -6,7 +6,7 @@ namespace Unilend\Service\User;
 
 use Exception;
 use Symfony\Component\HttpFoundation\RequestStack;
-use Unilend\Entity\{ClientFailedLogin, ClientLogin, Clients};
+use Unilend\Entity\{ClientFailedLogin, ClientSuccessfulLogin, Clients};
 use Unilend\Service\{UserActivity\IpGeoLocManager, UserActivity\UserAgentManager};
 
 class ClientLoginFactory
@@ -39,11 +39,11 @@ class ClientLoginFactory
      *
      * @throws Exception
      *
-     * @return ClientLogin
+     * @return ClientSuccessfulLogin
      */
-    public function createClientLoginSuccess(Clients $client, string $action): ClientLogin
+    public function createClientLoginSuccess(Clients $client, string $action): ClientSuccessfulLogin
     {
-        $entry = new ClientLogin($client, $action);
+        $entry = new ClientSuccessfulLogin($client, $action);
 
         $request = $this->requestStack->getCurrentRequest();
 
