@@ -8,8 +8,9 @@ use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 use Exception;
 use Gesdinet\JWTRefreshTokenBundle\Event\RefreshEvent;
+use Lexik\Bundle\JWTAuthenticationBundle\Event\AuthenticationFailureEvent;
 use Lexik\Bundle\JWTAuthenticationBundle\Event\JWTCreatedEvent;
-use Lexik\Bundle\JWTAuthenticationBundle\Events;
+use Lexik\Bundle\JWTAuthenticationBundle\Events as JwtEvents;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Unilend\Entity\{ClientLogin, Clients};
 use Unilend\Repository\ClientLoginRepository;
@@ -54,8 +55,9 @@ class LoginLogSubscriber implements EventSubscriberInterface
     public static function getSubscribedEvents(): array
     {
         return [
-            Events::JWT_CREATED      => 'onLoginSuccess',
-            'gesdinet.refresh_token' => 'onLoginRefresh',
+            JwtEvents::JWT_CREATED            => 'onLoginSuccess',
+            'gesdinet.refresh_token'          => 'onLoginRefresh',
+            JwtEvents::AUTHENTICATION_FAILURE => 'onLoginFailure',
         ];
     }
 
@@ -67,7 +69,7 @@ class LoginLogSubscriber implements EventSubscriberInterface
      */
     public function onLoginSuccess(JWTCreatedEvent $event): void
     {
-        $this->log($event->getUser(), ClientLogin::ACTION_LOGIN);
+        $this->logSuccess($event->getUser(), ClientLogin::ACTION_LOGIN);
     }
 
     /**
@@ -83,7 +85,26 @@ class LoginLogSubscriber implements EventSubscriberInterface
         /** @var Clients $client */
         $client = $this->clientsRepository->findOneBy(['email' => $username]);
 
-        $this->log($client, ClientLogin::ACTION_REFRESH);
+        $this->logSuccess($client, ClientLogin::ACTION_REFRESH);
+    }
+
+    /**
+     * @param AuthenticationFailureEvent $event
+     *
+     * @throws Exception
+     */
+    public function onLoginFailure(AuthenticationFailureEvent $event): void
+    {
+        $failure = $this->clientLoginHistoryFactory->createClientLoginFailure();
+
+        if ($token = $event->getException()->getToken()) {
+            $failure->setUsername($token->getUsername());
+        }
+
+        $failure->setError($event->getException()->getMessage());
+
+        $this->manager->persist($failure);
+        $this->manager->flush();
     }
 
     /**
@@ -94,7 +115,7 @@ class LoginLogSubscriber implements EventSubscriberInterface
      * @throws OptimisticLockException
      * @throws Exception
      */
-    private function log(Clients $client, string $action): void
+    private function logSuccess(Clients $client, string $action): void
     {
         $entry = $this->clientLoginHistoryFactory->createClientLoginEntry($client, $action);
         $this->clientLoginRepository->save($entry);
