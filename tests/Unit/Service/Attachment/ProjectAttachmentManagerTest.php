@@ -12,7 +12,6 @@ use Prophecy\Prophecy\ObjectProphecy;
 use Unilend\Entity\{Attachment, AttachmentType, Clients, Project, ProjectAttachment, ProjectAttachmentType};
 use Unilend\Repository\{ProjectAttachmentRepository, ProjectAttachmentTypeRepository, ProjectRepository};
 use Unilend\Service\Attachment\{AttachmentManager, ProjectAttachmentManager};
-use Unilend\Service\User\RealUserFinder;
 
 /**
  * Class ProjectAttachmentTest.
@@ -239,10 +238,6 @@ class ProjectAttachmentManagerTest extends TestCase
      */
     protected function createProject(): Project
     {
-        /** @var RealUserFinder|ObjectProphecy $realUserFinder */
-        $realUserFinder = $this->prophesize(RealUserFinder::class);
-        $realUserFinder->__invoke()->willReturn(new Clients());
-
-        return new Project($realUserFinder->reveal());
+        return new Project(new Clients());
     }
 }

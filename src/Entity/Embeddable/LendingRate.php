@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Unilend\Entity\Embeddable;
 
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Traits\ConstantsAwareTrait;
 
@@ -35,6 +36,8 @@ class LendingRate
      * @ORM\Column(length=20)
      *
      * @Assert\NotBlank(groups={"non-nullable"})
+     *
+     * @Groups({"project:create"})
      */
     protected $indexType;
 
@@ -47,6 +50,8 @@ class LendingRate
      *
      * @Assert\NotBlank(groups={"non-nullable"})
      * @Assert\Range(min="0", max="0.9999")
+     *
+     * @Groups({"project:create"})
      */
     protected $margin;
 
@@ -58,6 +63,8 @@ class LendingRate
      * @ORM\Column(type="decimal", precision=4, scale=4, nullable=true)
      *
      * @Assert\Range(max="-0.9999", max="0.9999")
+     *
+     * @Groups({"project:create"})
      */
     protected $floor;
 

@@ -59,7 +59,7 @@ class ProjectType extends AbstractType
         $runAgentQueryBuilder = $this->companyRepository->createEligibleRunAgentQB(['name' => 'ASC']);
 
         $marketSegments = $this->marketSegmentRepository->findAll();
-        usort($marketSegments, function ($first, $second) {
+        usort($marketSegments, function (MarketSegment $first, MarketSegment $second) {
             return strcmp(
                 $this->translator->trans('market-segment.' . $first->getLabel()),
                 $this->translator->trans('market-segment.' . $second->getLabel())
@@ -155,7 +155,7 @@ class ProjectType extends AbstractType
                 'label'             => 'project-form.offer-visibility-label',
                 'required'          => true,
                 'preferred_choices' => [Project::OFFER_VISIBILITY_PRIVATE],
-                'choices'           => Project::getAllOfferVisibilities(),
+                'choices'           => Project::getOfferVisibilities(),
                 'choice_label'      => static function ($option, string $key, string $value) {
                     return 'project-form.offer-visibility-choice-' . $value . '-label';
                 },
