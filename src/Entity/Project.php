@@ -96,8 +96,6 @@ class Project
      * @ORM\Column(length=36)
      *
      * @ApiProperty(identifier=true)
-     *
-     * @Groups({"project:create"})
      */
     private $hash;
 
@@ -260,7 +258,7 @@ class Project
     /**
      * @var int
      *
-     * @ORM\Column(type="string", nullable=false)
+     * @ORM\Column(type="string", nullable=false, length=25)
      *
      * @Gedmo\Versioned
      *

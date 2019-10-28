@@ -238,9 +238,6 @@ class ProjectAttachmentManagerTest extends TestCase
      */
     protected function createProject(): Project
     {
-        /** @var Clients|ObjectProphecy $client */
-        $client = $this->prophesize(Clients::class);
-
-        return new Project($client->reveal());
+        return new Project(new Clients());
     }
 }

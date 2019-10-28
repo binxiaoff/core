@@ -52,9 +52,9 @@ class CurrentUserContextBuilder implements SerializerContextBuilderInterface
         $context       = $this->decorated->createFromRequest($request, $normalization, $extractedAttributes);
         $resourceClass = $context['resource_class'] ?? null;
 
-        if ($resourceClass) {
-            $user = $this->security->getUser();
+        $user = $this->security->getUser();
 
+        if ($resourceClass && null !== $user) {
             $reflection = new ReflectionClass($resourceClass);
             $parameters = $reflection->getConstructor()->getParameters();
 
