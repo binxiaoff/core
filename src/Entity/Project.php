@@ -13,7 +13,9 @@ use Exception;
 use Gedmo\Mapping\Annotation as Gedmo;
 use Ramsey\Uuid\Uuid;
 use RuntimeException;
+use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
+use Throwable;
 use Unilend\Entity\Traits\TimestampableTrait;
 use Unilend\Entity\Traits\TraceableStatusTrait;
 use Unilend\Service\User\RealUserFinder;
@@ -23,7 +25,7 @@ use Unilend\Traits\ConstantsAwareTrait;
  * @ApiResource(
  *     collectionOperations={
  *         "get",
- *         "post"
+ *         "post": {"denormalization_context": {"groups": {"project:create"}}}
  *     },
  *     itemOperations={
  *         "get": {"security": "is_granted('view', object)"},
@@ -49,8 +51,8 @@ class Project
         setCurrentStatus as private baseStatusSetter;
     }
 
-    public const OFFER_VISIBILITY_PUBLIC  = 1;
-    public const OFFER_VISIBILITY_PRIVATE = 2;
+    public const OFFER_VISIBILITY_PUBLIC  = 'public';
+    public const OFFER_VISIBILITY_PRIVATE = 'private';
 
     public const INTERNAL_RATING_SCORE_A_PLUS  = 'A+';
     public const INTERNAL_RATING_SCORE_A       = 'A';
@@ -94,6 +96,8 @@ class Project
      * @ORM\Column(length=36)
      *
      * @ApiProperty(identifier=true)
+     *
+     * @Groups({"project:create"})
      */
     private $hash;
 
@@ -106,6 +110,11 @@ class Project
      * })
      *
      * @Gedmo\Versioned
+     *
+     * @Groups({"project:create"})
+     *
+     * @Assert\NotBlank
+     * @Assert\Valid
      */
     private $borrowerCompany;
 
@@ -116,6 +125,8 @@ class Project
      * @ORM\JoinColumns({
      *     @ORM\JoinColumn(name="id_company_submitter", referencedColumnName="id_company", nullable=false)
      * })
+     * @Assert\NotBlank
+     * @Assert\Valid
      */
     private $submitterCompany;
 
@@ -126,6 +137,8 @@ class Project
      * @ORM\JoinColumns({
      *     @ORM\JoinColumn(name="id_client_submitter",  referencedColumnName="id_client", nullable=false)
      * })
+     * @Assert\NotBlank
+     * @Assert\Valid
      */
     private $submitterClient;
 
@@ -137,6 +150,8 @@ class Project
      * @Assert\NotBlank
      *
      * @Gedmo\Versioned
+     *
+     * @Groups({"project:create"})
      */
     private $title;
 
@@ -150,6 +165,8 @@ class Project
      * @Assert\NotBlank
      *
      * @Gedmo\Versioned
+     *
+     * @Groups({"project:create"})
      */
     private $marketSegment;
 
@@ -161,6 +178,8 @@ class Project
      * @Assert\NotBlank
      *
      * @Gedmo\Versioned
+     *
+     * @Groups({"project:create"})
      */
     private $description;
 
@@ -170,6 +189,8 @@ class Project
      * @ORM\Column(type="boolean", options={"default": false})
      *
      * @Gedmo\Versioned
+     *
+     * @Groups({"project:create"})
      */
     private $confidential = false;
 
@@ -179,6 +200,8 @@ class Project
      * @ORM\Column(type="text", nullable=true)
      *
      * @Gedmo\Versioned
+     *
+     * @Groups({"project:create"})
      */
     private $confidentialityDisclaimer;
 
@@ -190,6 +213,8 @@ class Project
      * @Assert\Date
      *
      * @Gedmo\Versioned
+     *
+     * @Groups({"project:create"})
      */
     private $replyDeadline;
 
@@ -201,6 +226,8 @@ class Project
      * @Assert\Date
      *
      * @Gedmo\Versioned
+     *
+     * @Groups({"project:create"})
      */
     private $expectedClosingDate;
 
@@ -212,6 +239,8 @@ class Project
      * @Assert\Date
      *
      * @Gedmo\Versioned
+     *
+     * @Groups({"project:create"})
      */
     private $lenderConsultationClosingDate;
 
@@ -220,16 +249,24 @@ class Project
      *
      * @ORM\Column(length=8, nullable=true)
      *
+     * @Assert\Choice(callback="getInternalRatingScores")
+     *
      * @Gedmo\Versioned
+     *
+     * @Groups({"project:create"})
      */
     private $internalRatingScore;
 
     /**
      * @var int
      *
-     * @ORM\Column(type="smallint", nullable=false)
+     * @ORM\Column(type="string", nullable=false)
      *
      * @Gedmo\Versioned
+     *
+     * @Assert\Choice(callback="getOfferVisibilities")
+     *
+     * @Groups({"project:create"})
      */
     private $offerVisibility;
 
@@ -268,8 +305,9 @@ class Project
      * @ORM\OneToMany(targetEntity="Unilend\Entity\Tranche", mappedBy="project", cascade={"persist"}, orphanRemoval=true)
      *
      * @Assert\Count(min="1", minMessage="project.tranche.count")
-     *
      * @Assert\Valid
+     *
+     * @Groups({"project:create"})
      */
     private $tranches;
 
@@ -292,6 +330,9 @@ class Project
      *
      * @ORM\OneToOne(targetEntity="Unilend\Entity\ProjectStatus")
      * @ORM\JoinColumn(name="id_current_status", unique=true)
+     *
+     * @Assert\NotBlank
+     * @Assert\Valid
      */
     private $currentStatus;
 
@@ -311,6 +352,8 @@ class Project
      * @Assert\Choice(callback="getSyndicationTypes")
      *
      * @Gedmo\Versioned
+     *
+     * @Groups({"project:create"})
      */
     private $syndicationType;
 
@@ -323,6 +366,8 @@ class Project
      * @Assert\Choice(callback="getParticipationTypes")
      *
      * @Gedmo\Versioned
+     *
+     * @Groups({"project:create"})
      */
     private $participationType;
 
@@ -335,6 +380,8 @@ class Project
      * @Assert\Choice(callback="getRiskTypes")
      *
      * @Gedmo\Versioned
+     *
+     * @Groups({"project:create"})
      */
     private $riskType;
 
@@ -348,16 +395,16 @@ class Project
     /**
      * @var Collection|Tag[]
      *
-     * @ORM\ManyToMany(targetEntity="Unilend\Entity\Tag")
+     * @ORM\ManyToMany(targetEntity="Unilend\Entity\Tag", cascade={"persist"})
      */
     private $tags;
 
     /**
      * Project constructor.
      *
-     * @param RealUserFinder $submitterClient
+     * @param Clients $submitter
      */
-    public function __construct(RealUserFinder $submitterClient)
+    public function __construct(Clients $submitter)
     {
         $this->projectAttachments         = new ArrayCollection();
         $this->projectParticipations      = new ArrayCollection();
@@ -369,11 +416,22 @@ class Project
         $this->projectOffers              = new ArrayCollection();
         $this->tags                       = new ArrayCollection();
 
-        $this->setCurrentStatus(ProjectStatus::STATUS_REQUESTED, $submitterClient);
+        $this->setCurrentStatus(ProjectStatus::STATUS_REQUESTED, $submitter);
+
+        $this->submitterClient  = $submitter;
+        $this->submitterCompany = $submitter->getCompany();
 
         $this->syndicationType   = static::PROJECT_SYNDICATION_TYPE_PRIMARY;
         $this->participationType = static::PROJECT_PARTICIPATION_TYPE_DIRECT;
         $this->offerVisibility   = static::OFFER_VISIBILITY_PUBLIC;
+
+        if (null === $this->hash) {
+            try {
+                $this->hash = (string) (Uuid::uuid4());
+            } catch (Throwable $e) {
+                $this->hash = md5(uniqid('', false));
+            }
+        }
     }
 
     /**
@@ -385,37 +443,11 @@ class Project
     }
 
     /**
-     * @param string $hash
-     *
-     * @return Project
-     */
-    public function setHash(string $hash): Project
-    {
-        $this->hash = $hash;
-
-        return $this;
-    }
-
-    /**
      * @return string
      */
-    public function getHash()
+    public function getHash(): string
     {
         return $this->hash;
-    }
-
-    /**
-     * @ORM\PrePersist
-     */
-    public function setHashValue(): void
-    {
-        if (null === $this->hash) {
-            try {
-                $this->hash = $this->generateHash();
-            } catch (Exception $e) {
-                $this->hash = md5(uniqid('', false));
-            }
-        }
     }
 
     /**
@@ -439,35 +471,11 @@ class Project
     }
 
     /**
-     * @param Companies $company
-     *
-     * @return Project
-     */
-    public function setSubmitterCompany(Companies $company): Project
-    {
-        $this->submitterCompany = $company;
-
-        return $this;
-    }
-
-    /**
      * @return Companies|null
      */
     public function getSubmitterCompany(): ?Companies
     {
         return $this->submitterCompany;
-    }
-
-    /**
-     * @param Clients $client
-     *
-     * @return Project
-     */
-    public function setSubmitterClient(Clients $client): Project
-    {
-        $this->submitterClient = $client;
-
-        return $this;
     }
 
     /**
@@ -559,14 +567,14 @@ class Project
     }
 
     /**
-     * @param int            $status
-     * @param RealUserFinder $realUserFinder
+     * @param int     $status
+     * @param Clients $clients
      *
      * @return Project
      */
-    public function setCurrentStatus(int $status, RealUserFinder $realUserFinder): self
+    public function setCurrentStatus(int $status, Clients $clients): self
     {
-        $projectStatus = new ProjectStatus($this, $status, $realUserFinder);
+        $projectStatus = new ProjectStatus($this, $status, $clients);
 
         return $this->baseStatusSetter($projectStatus);
     }
@@ -664,15 +672,13 @@ class Project
      */
     public function setInternalRatingScore(?string $internalRatingScore): void
     {
-        if (in_array($internalRatingScore, $this->getAllInternalRatingScores(), true)) {
-            $this->internalRatingScore = $internalRatingScore;
-        }
+        $this->internalRatingScore = $internalRatingScore;
     }
 
     /**
      * @return array
      */
-    public function getAllInternalRatingScores(): array
+    public function getInternalRatingScores(): array
     {
         return self::getConstants('INTERNAL_RATING_SCORE_');
     }
@@ -680,17 +686,17 @@ class Project
     /**
      * @return int
      */
-    public function getOfferVisibility(): ?int
+    public function getOfferVisibility(): string
     {
         return $this->offerVisibility;
     }
 
     /**
-     * @param int $offerVisibility
+     * @param string $offerVisibility
      *
      * @return Project
      */
-    public function setOfferVisibility(int $offerVisibility): Project
+    public function setOfferVisibility(string $offerVisibility): Project
     {
         $this->offerVisibility = $offerVisibility;
 
@@ -700,7 +706,7 @@ class Project
     /**
      * @return iterable
      */
-    public static function getAllOfferVisibilities(): iterable
+    public static function getOfferVisibilities(): iterable
     {
         return self::getConstants('OFFER_VISIBILITY_');
     }
@@ -772,7 +778,7 @@ class Project
      */
     public function addProjectParticipation(Companies $company, string $role, RealUserFinder $realUserFinder): ProjectParticipation
     {
-        if ($this->isUniqueRole($role)) {
+        if (static::isUniqueRole($role)) {
             /** @var ProjectParticipation $projectParticipationToDelete */
             $projectParticipationToDelete = $this->getParticipationsByRole($role)->first();
 
@@ -1332,23 +1338,11 @@ class Project
     }
 
     /**
-     * @throws Exception
-     *
-     * @return string
-     */
-    private function generateHash(): string
-    {
-        $uuid4 = Uuid::uuid4();
-
-        return $uuid4->toString();
-    }
-
-    /**
      * @param string $role
      *
      * @return bool
      */
-    private function isUniqueRole(string $role): bool
+    private static function isUniqueRole(string $role): bool
     {
         return in_array($role, [
             ProjectParticipation::DUTY_PROJECT_PARTICIPATION_ARRANGER,
@@ -1397,7 +1391,7 @@ class Project
      */
     private function getUniqueRoleParticipation(string $role): ?ProjectParticipation
     {
-        if (false === $this->isUniqueRole($role)) {
+        if (false === static::isUniqueRole($role)) {
             throw new RuntimeException(sprintf('Role "%s" is not unique. Cannot get project Participation corresponding to the role.', $role));
         }
 

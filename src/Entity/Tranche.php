@@ -9,6 +9,7 @@ use DateTimeImmutable;
 use Doctrine\Common\Collections\{ArrayCollection, Criteria};
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
+use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Entity\Embeddable\{Money, NullableLendingRate};
 use Unilend\Entity\Traits\TimestampableTrait;
@@ -71,6 +72,8 @@ class Tranche
      * @Assert\NotBlank
      *
      * @Gedmo\Versioned
+     *
+     * @Groups({"project:create"})
      */
     private $name;
 
@@ -80,8 +83,11 @@ class Tranche
      * @ORM\Column(length=30)
      *
      * @Assert\NotBlank
+     * @Assert\Choice(callback="getLoanTypes")
      *
      * @Gedmo\Versioned
+     *
+     * @Groups({"project:create"})
      */
     private $loanType;
 
@@ -91,8 +97,11 @@ class Tranche
      * @ORM\Column(length=30)
      *
      * @Assert\NotBlank
+     * @Assert\Choice(callback="getRepaymentTypes")
      *
      * @Gedmo\Versioned
+     *
+     * @Groups({"project:create"})
      */
     private $repaymentType;
 
@@ -103,10 +112,12 @@ class Tranche
      *
      * @ORM\Column(type="smallint")
      *
-     * @Assert\Range(min="1")
+     * @Assert\GreaterThanOrEqual(1)
      * @Assert\NotBlank
      *
      * @Gedmo\Versioned
+     *
+     * @Groups({"project:create"})
      */
     private $duration;
 
@@ -117,10 +128,12 @@ class Tranche
      *
      * @ORM\Column(type="smallint")
      *
-     * @Assert\Range(min="1")
+     * @Assert\GreaterThanOrEqual(1)
      * @Assert\NotBlank
      *
      * @Gedmo\Versioned
+     *
+     * @Groups({"project:create"})
      */
     private $capitalPeriodicity;
 
@@ -131,10 +144,12 @@ class Tranche
      *
      * @ORM\Column(type="smallint")
      *
-     * @Assert\Range(min="1")
+     * @Assert\GreaterThanOrEqual(1)
      * @Assert\NotBlank
      *
      * @Gedmo\Versioned
+     *
+     * @Groups({"project:create"})
      */
     private $interestPeriodicity;
 
@@ -143,7 +158,12 @@ class Tranche
      *
      * @ORM\Embedded(class="Unilend\Entity\Embeddable\Money")
      *
+     * @Assert\NotBlank
+     * @Assert\Valid
+     *
      * @Gedmo\Versioned
+     *
+     * @Groups({"project:create"})
      */
     private $money;
 
@@ -152,7 +172,12 @@ class Tranche
      *
      * @ORM\Embedded(class="Unilend\Entity\Embeddable\NullableLendingRate")
      *
+     * @Assert\NotBlank
+     * @Assert\Valid
+     *
      * @Gedmo\Versioned
+     *
+     * @Groups({"project:create"})
      */
     private $rate;
 
@@ -164,6 +189,8 @@ class Tranche
      * @Assert\Date
      *
      * @Gedmo\Versioned
+     *
+     * @Groups({"project:create"})
      */
     private $expectedReleasingDate;
 
@@ -175,6 +202,8 @@ class Tranche
      * @Assert\Date
      *
      * @Gedmo\Versioned
+     *
+     * @Groups({"project:create"})
      */
     private $expectedStartingDate;
 
@@ -182,6 +211,8 @@ class Tranche
      * @var TrancheFee[]|ArrayCollection
      *
      * @ORM\OneToMany(targetEntity="Unilend\Entity\TrancheFee", mappedBy="tranche", cascade={"persist"}, orphanRemoval=true)
+     *
+     * @Groups({"project:create"})
      */
     private $trancheFees;
 
@@ -197,6 +228,8 @@ class Tranche
      * @var TrancheAttribute[]|ArrayCollection
      *
      * @ORM\OneToMany(targetEntity="TrancheAttribute", mappedBy="tranche", cascade={"persist"}, orphanRemoval=true)
+     *
+     * @Groups({"project:create"})
      */
     private $trancheAttributes;
 

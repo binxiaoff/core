@@ -7,6 +7,7 @@ namespace Unilend\Entity;
 use ApiPlatform\Core\Annotation\ApiResource;
 use Doctrine\Common\Collections\{ArrayCollection, Collection, Criteria};
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Entity\Traits\TimestampableTrait;
 
@@ -46,19 +47,24 @@ class Companies
     /**
      * @var string
      *
-     * @ORM\Column(name="name", type="text", length=16777215, nullable=true)
+     * @ORM\Column(name="name", type="text", length=16777215)
      *
      * @Assert\NotBlank
+     *
+     * @Groups({"project:create"})
      */
     private $name;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="siren", type="string", length=15, nullable=true)
+     * @ORM\Column(name="siren", type="string", length=15)
      *
      * @Assert\NotBlank
-     * @Assert\Length(min=9, max=14)
+     * @Assert\Length(9)
+     * @Assert\Luhn
+     *
+     * @Groups({"project:create"})
      */
     private $siren;
 
@@ -66,6 +72,8 @@ class Companies
      * @var string
      *
      * @ORM\Column(name="siret", type="string", length=14, nullable=true)
+     *
+     * @Groups({"project:create"})
      */
     private $siret;
 
