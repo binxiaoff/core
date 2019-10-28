@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\Api\Extension;
 
-use ApiPlatform\Core\Bridge\Doctrine\Orm\Extension\ContextAwareQueryCollectionExtensionInterface;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Extension\QueryCollectionExtensionInterface;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Util\QueryNameGeneratorInterface;
 use Doctrine\ORM\QueryBuilder;
 use Symfony\Component\Security\Core\Security;
@@ -12,7 +12,7 @@ use Unilend\Entity\Clients;
 use Unilend\Entity\Project;
 use Unilend\Entity\ProjectStatus;
 
-class ProjectListExtension implements ContextAwareQueryCollectionExtensionInterface
+class ProjectListExtension implements QueryCollectionExtensionInterface
 {
     /**
      * @var Security
@@ -37,8 +37,7 @@ class ProjectListExtension implements ContextAwareQueryCollectionExtensionInterf
         QueryBuilder $queryBuilder,
         QueryNameGeneratorInterface $queryNameGenerator,
         string $resourceClass,
-        string $operationName = null,
-        array $context = []
+        string $operationName = null
     ): void {
         if (Project::class !== $resourceClass) {
             return;
