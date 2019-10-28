@@ -4,21 +4,20 @@ declare(strict_types=1);
 
 namespace Unilend\EventSubscriber;
 
-use Doctrine\Common\Persistence\ObjectManager;
+use Doctrine\ORM\OptimisticLockException;
+use Doctrine\ORM\ORMException;
+use Exception;
 use Gesdinet\JWTRefreshTokenBundle\Event\RefreshEvent;
 use Lexik\Bundle\JWTAuthenticationBundle\Event\JWTCreatedEvent;
 use Lexik\Bundle\JWTAuthenticationBundle\Events;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Unilend\Entity\{ClientLogin, Clients};
+use Unilend\Repository\ClientLoginRepository;
 use Unilend\Repository\ClientsRepository;
 use Unilend\Service\User\ClientLoginFactory;
 
 class LoginLogSubscriber implements EventSubscriberInterface
 {
-    /**
-     * @var ObjectManager
-     */
-    private $manager;
     /**
      * @var ClientLoginFactory
      */
@@ -27,22 +26,26 @@ class LoginLogSubscriber implements EventSubscriberInterface
      * @var ClientsRepository
      */
     private $clientsRepository;
+    /**
+     * @var ClientLoginRepository
+     */
+    private $clientLoginRepository;
 
     /**
      * LoginLogSubscriber constructor.
      *
-     * @param ClientLoginFactory $clientLoginHistoryFactory
-     * @param ClientsRepository  $clientsRepository
-     * @param ObjectManager      $manager
+     * @param ClientLoginFactory    $clientLoginHistoryFactory
+     * @param ClientsRepository     $clientsRepository
+     * @param ClientLoginRepository $clientLoginRepository
      */
     public function __construct(
         ClientLoginFactory $clientLoginHistoryFactory,
         ClientsRepository $clientsRepository,
-        ObjectManager $manager
+        ClientLoginRepository $clientLoginRepository
     ) {
-        $this->manager                   = $manager;
         $this->clientLoginHistoryFactory = $clientLoginHistoryFactory;
         $this->clientsRepository         = $clientsRepository;
+        $this->clientLoginRepository     = $clientLoginRepository;
     }
 
     /**
@@ -73,6 +76,9 @@ class LoginLogSubscriber implements EventSubscriberInterface
 
     /**
      * @param JWTCreatedEvent $event
+     *
+     * @throws ORMException
+     * @throws OptimisticLockException
      */
     public function onLoginSuccess(JWTCreatedEvent $event): void
     {
@@ -81,6 +87,9 @@ class LoginLogSubscriber implements EventSubscriberInterface
 
     /**
      * @param RefreshEvent $event
+     *
+     * @throws ORMException
+     * @throws OptimisticLockException
      */
     public function onLoginRefresh(RefreshEvent $event): void
     {
@@ -95,11 +104,14 @@ class LoginLogSubscriber implements EventSubscriberInterface
     /**
      * @param Clients $client
      * @param string  $action
+     *
+     * @throws ORMException
+     * @throws OptimisticLockException
+     * @throws Exception
      */
     private function log(Clients $client, string $action): void
     {
         $entry = $this->clientLoginHistoryFactory->createClientLoginEntry($client, $action);
-        $this->manager->persist($entry);
-        $this->manager->flush();
+        $this->clientLoginRepository->save($entry);
     }
 }

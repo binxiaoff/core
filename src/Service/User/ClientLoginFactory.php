@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\Service\User;
 
+use Exception;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Unilend\Entity\{ClientLogin, Clients};
 use Unilend\Service\{UserActivity\IpGeoLocManager, UserActivity\UserAgentManager};
@@ -36,19 +37,21 @@ class ClientLoginFactory
      * @param Clients $client
      * @param string  $action
      *
+     * @throws Exception
+     *
      * @return ClientLogin
      */
     public function createClientLoginEntry(Clients $client, string $action): ClientLogin
     {
-        $entry = (new ClientLogin($client, $action));
+        $entry = new ClientLogin($client, $action);
 
         $request = $this->requestStack->getCurrentRequest();
 
         if ($request) {
-            $userAgent = $this->userAgentManager->parse($request->headers->get('User-Agent'));
+            $userAgent = $this->userAgentManager->getClientUserAgent($client, $request->headers->get('User-Agent'));
             $ip        = $request->getClientIp();
 
-            $entry->setUserAgentHistory($userAgent)
+            $entry->setUserAgent($userAgent)
                 ->setIp($ip)
             ;
 

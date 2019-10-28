@@ -72,24 +72,24 @@ class ClientLogin
     /**
      * @var UserAgent|null
      *
-     * @ORM\ManyToOne(targetEntity="UserAgent")
+     * @ORM\ManyToOne(targetEntity="UserAgent", cascade={"persist"})
      * @ORM\JoinColumns({
-     *     @ORM\JoinColumn(name="id_user_agent_history", referencedColumnName="id")
+     *     @ORM\JoinColumn(name="id_user_agent", referencedColumnName="id")
      * })
      */
-    private $userAgentHistory;
+    private $userAgent;
 
     /**
      * ClientLoginHistory constructor.
      *
-     * @param Clients $clients
+     * @param Clients $client
      * @param string  $action
      */
     public function __construct(
-        Clients $clients,
+        Clients $client,
         string $action
     ) {
-        $this->client = $clients;
+        $this->client = $client;
         $this->action = $action;
     }
 
@@ -184,19 +184,19 @@ class ClientLogin
     /**
      * @return UserAgent|null
      */
-    public function getUserAgentHistory(): ?UserAgent
+    public function getUserAgent(): ?UserAgent
     {
-        return $this->userAgentHistory;
+        return $this->userAgent;
     }
 
     /**
-     * @param UserAgent $userAgentHistory
+     * @param UserAgent $userAgent
      *
      * @return ClientLogin
      */
-    public function setUserAgentHistory(?UserAgent $userAgentHistory): ClientLogin
+    public function setUserAgent(?UserAgent $userAgent): ClientLogin
     {
-        $this->userAgentHistory = $userAgentHistory;
+        $this->userAgent = $userAgent;
 
         return $this;
     }
