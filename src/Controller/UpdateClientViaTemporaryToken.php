@@ -10,27 +10,23 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\Serializer\SerializerInterface;
 use Unilend\Entity\{Clients, TemporaryToken};
-use Unilend\Repository\{ClientsRepository, TemporaryTokenRepository};
+use Unilend\Repository\ClientsRepository;
 
 class UpdateClientViaTemporaryToken extends AbstractController
 {
     /** @var SerializerInterface */
     private $serializer;
-    /** @var TemporaryTokenRepository */
-    private $temporaryTokenRepository;
     /** @var ClientsRepository */
     private $clientRepository;
 
     /**
-     * @param SerializerInterface      $serializer
-     * @param TemporaryTokenRepository $temporaryTokenRepository
-     * @param ClientsRepository        $clientRepository
+     * @param SerializerInterface $serializer
+     * @param ClientsRepository   $clientRepository
      */
-    public function __construct(SerializerInterface $serializer, TemporaryTokenRepository $temporaryTokenRepository, ClientsRepository $clientRepository)
+    public function __construct(SerializerInterface $serializer, ClientsRepository $clientRepository)
     {
-        $this->serializer               = $serializer;
-        $this->temporaryTokenRepository = $temporaryTokenRepository;
-        $this->clientRepository         = $clientRepository;
+        $this->serializer       = $serializer;
+        $this->clientRepository = $clientRepository;
     }
 
     /**
@@ -49,7 +45,6 @@ class UpdateClientViaTemporaryToken extends AbstractController
         $client = $data->getClient();
         $this->serializer->deserialize($request->getContent(), Clients::class, 'json', ['object_to_populate' => $client]);
         $this->clientRepository->save($client);
-        $this->temporaryTokenRepository->expireTemporaryTokens($client);
 
         return $client;
     }

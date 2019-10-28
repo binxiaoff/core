@@ -40,6 +40,18 @@ class ClientsRepository extends ServiceEntityRepository
     }
 
     /**
+     * @param Clients $client
+     *
+     * @throws ORMException
+     * @throws OptimisticLockException
+     */
+    public function remove(Clients $client): void
+    {
+        $this->getEntityManager()->remove($client);
+        $this->getEntityManager()->flush();
+    }
+
+    /**
      * @param int|Clients $idClient
      *
      * @throws NonUniqueResultException

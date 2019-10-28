@@ -7,11 +7,13 @@ namespace Unilend\EventSubscriber\ApiPlatform;
 use ApiPlatform\Core\EventListener\EventPriorities;
 use Exception;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
-use Symfony\Component\HttpKernel\{Event\RequestEvent, KernelEvents};
-use Unilend\Entity\TemporaryToken;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpKernel\Event\ViewEvent;
+use Symfony\Component\HttpKernel\KernelEvents;
+use Unilend\Entity\Clients;
 use Unilend\Repository\TemporaryTokenRepository;
 
-class TemporaryTokenAccessedEventSubscriber implements EventSubscriberInterface
+class ClientProfileUpdatedEventSubscriber implements EventSubscriberInterface
 {
     /** @var TemporaryTokenRepository */
     private $temporaryTokenRepository;
@@ -29,24 +31,26 @@ class TemporaryTokenAccessedEventSubscriber implements EventSubscriberInterface
      */
     public static function getSubscribedEvents(): array
     {
-        return [KernelEvents::REQUEST => ['accessTemporaryToken', EventPriorities::POST_READ]];
+        return [KernelEvents::VIEW => ['expireTemporaryToken', EventPriorities::POST_WRITE]];
     }
 
     /**
-     * @param RequestEvent $event
+     * @param ViewEvent $event
      *
      * @throws Exception
      */
-    public function accessTemporaryToken(RequestEvent $event): void
+    public function expireTemporaryToken(ViewEvent $event): void
     {
-        /** @var TemporaryToken $temporaryToken */
-        $temporaryToken = $event->getRequest()->attributes->get('data');
+        $client = $event->getControllerResult();
+        $method = $event->getRequest()->getMethod();
 
-        if (false === $temporaryToken instanceof TemporaryToken) {
+        if (
+            false === $client instanceof Clients
+            || false === in_array($method, [Request::METHOD_PUT, Request::METHOD_PATCH], true)
+        ) {
             return;
         }
 
-        $temporaryToken->setAccessed();
-        $this->temporaryTokenRepository->save($temporaryToken);
+        $this->temporaryTokenRepository->expireTemporaryTokens($client);
     }
 }
