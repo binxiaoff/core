@@ -48,9 +48,9 @@ class ProjectListExtension implements QueryCollectionExtensionInterface
 
         $queryBuilder
             ->innerJoin('o.currentStatus', 'cpsh')
-            ->where('o.submitterCompany = :company and cpsh.status < :publishedStatus')
+            ->where('o.submitterCompany = :company')
             ->leftJoin('o.projectParticipations', 'pp')
-            ->orWhere('(pp.company = :company OR o.submitterCompany = :company) AND cpsh.status IN (:activeStatus) AND o.marketSegment IN (:marketSegments)')
+            ->orWhere('pp.company = :company AND cpsh.status IN (:activeStatus) AND o.marketSegment IN (:marketSegments)')
             ->leftJoin('pp.projectParticipationContacts', 'pc')
             ->orWhere('pc.client = :client')
             ->setParameters([
