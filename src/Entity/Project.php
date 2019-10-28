@@ -283,13 +283,6 @@ class Project
     private $projectParticipations;
 
     /**
-     * @var ProjectFee[]|ArrayCollection
-     *
-     * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectFee", mappedBy="project", cascade={"persist"}, orphanRemoval=true)
-     */
-    private $projectFees;
-
-    /**
      * @var ProjectComment[]|ArrayCollection
      *
      * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectComment", mappedBy="project")
@@ -406,7 +399,6 @@ class Project
     {
         $this->projectAttachments         = new ArrayCollection();
         $this->projectParticipations      = new ArrayCollection();
-        $this->projectFees                = new ArrayCollection();
         $this->comments                   = new ArrayCollection();
         $this->statuses                   = new ArrayCollection();
         $this->tranches                   = new ArrayCollection();
@@ -946,44 +938,6 @@ class Project
     public function getLenderCompanies(): iterable
     {
         return $this->getCompaniesByRole(ProjectParticipation::DUTY_PROJECT_PARTICIPATION_PARTICIPANT);
-    }
-
-    /**
-     * @return iterable|ProjectFee[]
-     */
-    public function getProjectFees(): iterable
-    {
-        return $this->projectFees;
-    }
-
-    /**
-     * @param ProjectFee $projectFee
-     *
-     * @return Project
-     */
-    public function addProjectFee(ProjectFee $projectFee): Project
-    {
-        $projectFee->setProject($this);
-
-        if (false === $this->projectFees->contains($projectFee)) {
-            $this->projectFees->add($projectFee);
-        }
-
-        return $this;
-    }
-
-    /**
-     * @param ProjectFee $projectFee
-     *
-     * @return Project
-     */
-    public function removeProjectFee(ProjectFee $projectFee): Project
-    {
-        if ($this->projectFees->contains($projectFee)) {
-            $this->projectFees->removeElement($projectFee);
-        }
-
-        return $this;
     }
 
     /**

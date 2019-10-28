@@ -16,7 +16,7 @@ use Unilend\Traits\ConstantsAwareTrait;
  *
  * @Gedmo\Loggable(logEntryClass="Unilend\Entity\Versioned\VersionedProjectFee")
  */
-class ProjectFee
+class ProjectParticipationFee
 {
     use TimestampableTrait;
     use ConstantsAwareTrait;
@@ -45,47 +45,29 @@ class ProjectFee
     /**
      * @var Project
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Project", inversedBy="projectFees")
+     * @ORM\ManyToOne(targetEntity="Unilend\Entity\ProjectParticipation", inversedBy="projectParticipationFees")
      * @ORM\JoinColumns({
-     *     @ORM\JoinColumn(name="id_project", nullable=false)
+     *     @ORM\JoinColumn(name="id_project_participation", nullable=false)
      * })
      */
-    private $project;
+    private $projectParticipation;
 
     /**
      * Initialise some object-value.
+     *
+     * @param ProjectParticipation $projectParticipation
      */
-    public function __construct()
+    public function __construct(ProjectParticipation $projectParticipation)
     {
-        $this->fee = new Fee();
+        $this->projectParticipation = $projectParticipation;
     }
 
     /**
      * @return int
      */
-    public function getId()
+    public function getId(): int
     {
         return $this->id;
-    }
-
-    /**
-     * @return Project
-     */
-    public function getProject(): Project
-    {
-        return $this->project;
-    }
-
-    /**
-     * @param Project $project
-     *
-     * @return ProjectFee
-     */
-    public function setProject(Project $project): ProjectFee
-    {
-        $this->project = $project;
-
-        return $this;
     }
 
     /**
@@ -97,15 +79,11 @@ class ProjectFee
     }
 
     /**
-     * @param Fee $fee
-     *
-     * @return ProjectFee
+     * @return Project
      */
-    public function setFee(Fee $fee): ProjectFee
+    public function getProjectParticipation(): Project
     {
-        $this->fee = $fee;
-
-        return $this;
+        return $this->projectParticipation;
     }
 
     /**
@@ -114,15 +92,5 @@ class ProjectFee
     public static function getFeeTypes(): array
     {
         return self::getConstants('TYPE_');
-    }
-
-    /**
-     * @param int $value
-     *
-     * @return false|string
-     */
-    public static function getFeeTypeConstantKey(int $value)
-    {
-        return self::getConstantKey($value, 'TYPE_');
     }
 }
