@@ -131,9 +131,6 @@ services:
             - name: twig.loader
               priority: -9999
 
-    Unilend\Security\LoginAuthenticator:
-        $firewallMap: '@security.firewall.map'
-
     Unilend\SwiftMailer\MailjetTransport:
         shared: false
 

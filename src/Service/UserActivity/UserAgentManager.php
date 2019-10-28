@@ -4,87 +4,74 @@ declare(strict_types=1);
 
 namespace Unilend\Service\UserActivity;
 
-use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use Psr\Log\LoggerInterface;
-use Unilend\Entity\{Clients, UserAgentHistory};
-use UserAgentParser\Model\UserAgent;
-use UserAgentParser\Provider\Chain;
+use Unilend\Entity\{Clients, UserAgent};
+use Unilend\Repository\UserAgentRepository;
+use UserAgentParser\Model\UserAgent as Model;
+use UserAgentParser\Provider\Chain as UserAgentParser;
 
 class UserAgentManager
 {
-    /** @var Chain */
+    /** @var UserAgentParser */
     private $chain;
-    /** @var EntityManagerInterface */
-    private $entityManager;
     /** @var LoggerInterface */
     private $logger;
+    /** @var UserAgentRepository */
+    private $userAgentRepository;
 
     /**
-     * @param Chain                  $chain
-     * @param EntityManagerInterface $entityManager
-     * @param LoggerInterface        $logger
+     * @param UserAgentParser     $chain
+     * @param UserAgentRepository $userAgentRepository
+     * @param LoggerInterface     $logger
      */
-    public function __construct(Chain $chain, EntityManagerInterface $entityManager, LoggerInterface $logger)
+    public function __construct(UserAgentParser $chain, UserAgentRepository $userAgentRepository, LoggerInterface $logger)
     {
-        $this->chain         = $chain;
-        $this->entityManager = $entityManager;
-        $this->logger        = $logger;
+        $this->chain               = $chain;
+        $this->logger              = $logger;
+        $this->userAgentRepository = $userAgentRepository;
     }
 
     /**
      * @param Clients     $client
      * @param string|null $userAgent
      *
-     * @throws Exception
+     *@throws Exception
      *
-     * @return UserAgentHistory|null
+     * @return UserAgent|null
      */
-    public function saveClientUserAgent(Clients $client, string $userAgent): ?UserAgentHistory
+    public function getClientUserAgent(Clients $client, string $userAgent): ?UserAgent
     {
-        if ($parser = $this->parse($userAgent)) {
-            $browser = $parser->getBrowser();
-            $device  = $parser->getDevice();
-
-            $knownUserAgent = $this->entityManager->getRepository(UserAgentHistory::class)
-                ->findOneBy([
-                    'idClient'    => $client,
-                    'browserName' => $browser->getName(),
-                    'deviceModel' => $device->getModel(),
-                    'deviceBrand' => $device->getBrand(),
-                    'deviceType'  => $device->getType(),
-                ])
-            ;
-
-            if ($knownUserAgent) {
-                return $knownUserAgent;
-            }
-            $newUserAgent = new UserAgentHistory();
-            $newUserAgent
-                ->setIdClient($client)
-                ->setBrowserName($browser->getName())
-                ->setBrowserVersion($browser->getVersion()->getComplete())
-                ->setDeviceModel($device->getModel())
-                ->setDeviceBrand($device->getBrand())
-                ->setDeviceType(mb_strtolower($device->getType()))
-                ->setUserAgentString($userAgent)
-                ;
-
-            $this->entityManager->persist($newUserAgent);
-            $this->entityManager->flush($newUserAgent);
-
-            return $newUserAgent;
+        if (null === ($parsedUserAgent = $this->parse($userAgent))) {
+            return null;
         }
 
-        return null;
+        $browser = $parsedUserAgent->getBrowser();
+        $device  = $parsedUserAgent->getDevice();
+
+        $knownUserAgent = $this->userAgentRepository->findOneByClientAndBrowserAndDevice($client, $browser, $device);
+
+        if (null !== $knownUserAgent) {
+            return $knownUserAgent;
+        }
+
+        return (new UserAgent())
+            ->setClient($client)
+            ->setBrowserName($browser->getName())
+            ->setBrowserVersion($browser->getVersion()->getComplete())
+            ->setDeviceModel($device->getModel())
+            ->setDeviceBrand($device->getBrand())
+            ->setDeviceType(mb_strtolower($device->getType()))
+            ->setUserAgentString($userAgent)
+            ;
     }
 
     /**
      * @param string $userAgent
      *
-     * @return UserAgent|null
+     * @return Model|null
      */
-    public function parse(string $userAgent): ?UserAgent
+    public function parse(string $userAgent): ?Model
     {
         try {
             return $this->chain->parse($userAgent);

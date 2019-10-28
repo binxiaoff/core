@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Unilend\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
@@ -12,7 +14,7 @@ use Unilend\Entity\Traits\TimestampableAddedOnlyTrait;
  * @ORM\Entity
  * @ORM\HasLifecycleCallbacks
  */
-class UserAgentHistory
+class UserAgent
 {
     use TimestampableAddedOnlyTrait;
 
@@ -24,7 +26,7 @@ class UserAgentHistory
      *     @ORM\JoinColumn(name="id_client", referencedColumnName="id_client", nullable=false)
      * })
      */
-    private $idClient;
+    private $client;
 
     /**
      * @var string|null
@@ -80,19 +82,19 @@ class UserAgentHistory
     /**
      * @return Clients
      */
-    public function getIdClient(): Clients
+    public function getClient(): Clients
     {
-        return $this->idClient;
+        return $this->client;
     }
 
     /**
-     * @param Clients $idClient
+     * @param Clients $client
      *
-     * @return UserAgentHistory
+     * @return UserAgent
      */
-    public function setIdClient(Clients $idClient): UserAgentHistory
+    public function setClient(Clients $client): UserAgent
     {
-        $this->idClient = $idClient;
+        $this->client = $client;
 
         return $this;
     }
@@ -108,9 +110,9 @@ class UserAgentHistory
     /**
      * @param string|null $browserName
      *
-     * @return UserAgentHistory
+     * @return UserAgent
      */
-    public function setBrowserName(?string $browserName): UserAgentHistory
+    public function setBrowserName(?string $browserName): UserAgent
     {
         $this->browserName = $browserName;
 
@@ -128,9 +130,9 @@ class UserAgentHistory
     /**
      * @param string|null $browserVersion
      *
-     * @return UserAgentHistory
+     * @return UserAgent
      */
-    public function setBrowserVersion(?string $browserVersion): UserAgentHistory
+    public function setBrowserVersion(?string $browserVersion): UserAgent
     {
         $this->browserVersion = $browserVersion;
 
@@ -148,9 +150,9 @@ class UserAgentHistory
     /**
      * @param string|null $deviceModel
      *
-     * @return UserAgentHistory
+     * @return UserAgent
      */
-    public function setDeviceModel(?string $deviceModel): UserAgentHistory
+    public function setDeviceModel(?string $deviceModel): UserAgent
     {
         $this->deviceModel = $deviceModel;
 
@@ -168,9 +170,9 @@ class UserAgentHistory
     /**
      * @param string|null $deviceBrand
      *
-     * @return UserAgentHistory
+     * @return UserAgent
      */
-    public function setDeviceBrand(?string $deviceBrand): UserAgentHistory
+    public function setDeviceBrand(?string $deviceBrand): UserAgent
     {
         $this->deviceBrand = $deviceBrand;
 
@@ -188,9 +190,9 @@ class UserAgentHistory
     /**
      * @param string|null $deviceType
      *
-     * @return UserAgentHistory
+     * @return UserAgent
      */
-    public function setDeviceType(?string $deviceType): UserAgentHistory
+    public function setDeviceType(?string $deviceType): UserAgent
     {
         $this->deviceType = $deviceType;
 
@@ -208,9 +210,9 @@ class UserAgentHistory
     /**
      * @param string $userAgentString
      *
-     * @return UserAgentHistory
+     * @return UserAgent
      */
-    public function setUserAgentString(string $userAgentString): UserAgentHistory
+    public function setUserAgentString(string $userAgentString): UserAgent
     {
         $this->userAgentString = $userAgentString;
 

@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace Unilend\Entity;
 
 use ApiPlatform\Core\Annotation\ApiResource;
-use DateTime;
-use DateTimeInterface;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
@@ -169,15 +167,6 @@ class Clients implements UserInterface, EquatableInterface
      * @ORM\Column(type="string", length=255, nullable=true)
      */
     private $jobFunction;
-
-    /**
-     * @var DateTime
-     *
-     * @Groups({"client:read"})
-     *
-     * @ORM\Column(name="last_login", type="datetime", nullable=true)
-     */
-    private $lastLogin;
 
     /**
      * @var int
@@ -473,26 +462,6 @@ class Clients implements UserInterface, EquatableInterface
     }
 
     /**
-     * @param DateTimeInterface|null $lastLogin
-     *
-     * @return Clients
-     */
-    public function setLastLogin(?DateTimeInterface $lastLogin): Clients
-    {
-        $this->lastLogin = $lastLogin;
-
-        return $this;
-    }
-
-    /**
-     * @return DateTime|null
-     */
-    public function getLastLogin(): ?DateTime
-    {
-        return $this->lastLogin;
-    }
-
-    /**
      * @return int
      */
     public function getIdClient(): int
@@ -501,6 +470,8 @@ class Clients implements UserInterface, EquatableInterface
     }
 
     /**
+     * @throws Exception
+     *
      * @ORM\PrePersist
      */
     public function setHashValue(): void
