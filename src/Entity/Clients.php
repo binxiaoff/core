@@ -84,7 +84,7 @@ class Clients implements UserInterface, EquatableInterface
     /**
      * @var string
      *
-     * @Groups({"client:read", "client:write", "temporary_tokens_client:write"})
+     * @Groups({"client:read", "client:write"})
      *
      * @ORM\Column(name="last_name", type="string", length=191, nullable=true)
      *
@@ -97,7 +97,7 @@ class Clients implements UserInterface, EquatableInterface
     /**
      * @var string
      *
-     * @Groups({"client:read", "client:write", "temporary_tokens_client:write"})
+     * @Groups({"client:read", "client:write"})
      *
      * @ORM\Column(name="first_name", type="string", length=191, nullable=true)
      *
@@ -127,7 +127,7 @@ class Clients implements UserInterface, EquatableInterface
     /**
      * @var PhoneNumber
      *
-     * @Groups({"client:read", "client:write", "temporary_tokens_client:write"})
+     * @Groups({"client:read", "client:write"})
      *
      * @ORM\Column(name="mobile", type="phone_number", nullable=true)
      *
@@ -150,7 +150,7 @@ class Clients implements UserInterface, EquatableInterface
     /**
      * @var string
      *
-     * @Groups({"client:read", "client:write", "temporary_tokens_client:write"})
+     * @Groups({"client:read", "client:write"})
      *
      * @ORM\Column(name="password", type="string", length=191, nullable=true)
      *
@@ -161,7 +161,7 @@ class Clients implements UserInterface, EquatableInterface
     /**
      * @var string
      *
-     * @Groups({"client:read", "client:write", "temporary_tokens_client:write"})
+     * @Groups({"client:read", "client:write"})
      *
      * @ORM\Column(type="string", length=255, nullable=true)
      */

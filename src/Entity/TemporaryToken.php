@@ -22,8 +22,7 @@ use Unilend\Entity\Traits\TimestampableTrait;
  *         "api_temporary_tokens_client_put_subresource": {
  *             "method": "PUT",
  *             "path": "/temporary_tokens/{id}/client",
- *             "controller": UpdateClientViaTemporaryToken::class,
- *             "denormalization_context": {"groups": {"temporary_tokens_client:write"}}
+ *             "controller": UpdateClientViaTemporaryToken::class
  *         }
  *     },
  *     normalizationContext={"groups": {"temporary_token:read"}}
@@ -108,7 +107,7 @@ class TemporaryToken
      *     @ORM\JoinColumn(name="id_client", referencedColumnName="id_client", nullable=false)
      * })
      *
-     * @Groups({"temporary_token:read", "temporary_tokens_client:write"})
+     * @Groups({"temporary_token:read"})
      *
      * @ApiSubresource
      */
