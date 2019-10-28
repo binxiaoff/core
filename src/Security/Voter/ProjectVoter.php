@@ -8,7 +8,7 @@ use Exception;
 use LogicException;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
-use Unilend\Entity\{Clients, Embeddable\Permission, Project, ProjectStatus};
+use Unilend\Entity\{Clients, Embeddable\Permission, Project};
 use Unilend\Repository\ProjectParticipationRepository;
 use Unilend\Traits\ConstantsAwareTrait;
 
@@ -16,7 +16,6 @@ class ProjectVoter extends Voter
 {
     use ConstantsAwareTrait;
 
-    public const ATTRIBUTE_PREVIEW              = 'preview';
     public const ATTRIBUTE_VIEW                 = 'view';
     public const ATTRIBUTE_EDIT                 = 'edit';
     public const ATTRIBUTE_MANAGE_TRANCHE_OFFER = 'manage_tranche_offer';
@@ -68,8 +67,6 @@ class ProjectVoter extends Voter
         }
 
         switch ($attribute) {
-            case self::ATTRIBUTE_PREVIEW:
-                return $this->canPreview($project, $user);
             case self::ATTRIBUTE_VIEW:
                 return $this->canView($project, $user);
             case self::ATTRIBUTE_EDIT:
@@ -95,30 +92,9 @@ class ProjectVoter extends Voter
      *
      * @return bool
      */
-    private function canPreview(Project $project, Clients $user): bool
-    {
-        if ($this->canEdit($project, $user)) {
-            return true;
-        }
-
-        if ($project->getCurrentStatus()->getStatus() < ProjectStatus::STATUS_PUBLISHED) {
-            return false;
-        }
-
-        return null !== $project->getProjectParticipationByCompany($user->getCompany());
-    }
-
-    /**
-     * @param Project $project
-     * @param Clients $user
-     *
-     * @throws Exception
-     *
-     * @return bool
-     */
     private function canView(Project $project, Clients $user): bool
     {
-        return $this->canPreview($project, $user) && $project->checkUserConfidentiality($user);
+        return $project->checkUserConfidentiality($user);
     }
 
     /**
