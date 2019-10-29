@@ -58,6 +58,8 @@ class Clients implements UserInterface, EquatableInterface
     public const ROLE_ADMIN       = 'ROLE_ADMIN';
     public const ROLE_SUPER_ADMIN = 'ROLE_SUPER_ADMIN';
 
+    public const PHONE_NUMBER_DEFAULT_REGION = 'FR';
+
     private const DEFAULT_ROLE = self::ROLE_USER;
 
     /**
@@ -122,7 +124,7 @@ class Clients implements UserInterface, EquatableInterface
      *
      * @ORM\Column(name="phone", type="phone_number", nullable=true)
      *
-     * @AssertPhoneNumber(defaultRegion="FR", type="any")
+     * @AssertPhoneNumber(defaultRegion="Clients::PHONE_NUMBER_DEFAULT_REGION", type="any")
      */
     private $phone;
 
@@ -133,7 +135,7 @@ class Clients implements UserInterface, EquatableInterface
      *
      * @ORM\Column(name="mobile", type="phone_number", nullable=true)
      *
-     * @AssertPhoneNumber(defaultRegion="FR", type="mobile")
+     * @AssertPhoneNumber(defaultRegion="Clients::PHONE_NUMBER_DEFAULT_REGION", type="mobile")
      */
     private $mobile;
 

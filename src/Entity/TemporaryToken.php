@@ -12,6 +12,7 @@ use DomainException;
 use Exception;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Unilend\Controller\UpdateClientViaTemporaryToken;
+use Unilend\Dto\TemporaryTokenClient;
 use Unilend\Entity\Traits\TimestampableTrait;
 
 /**
@@ -22,7 +23,8 @@ use Unilend\Entity\Traits\TimestampableTrait;
  *         "api_temporary_tokens_client_put_subresource": {
  *             "method": "PUT",
  *             "path": "/temporary_tokens/{id}/client",
- *             "controller": UpdateClientViaTemporaryToken::class
+ *             "controller": UpdateClientViaTemporaryToken::class,
+ *             "input": TemporaryTokenClient::class
  *         }
  *     },
  *     normalizationContext={"groups": {"temporary_token:read"}}
