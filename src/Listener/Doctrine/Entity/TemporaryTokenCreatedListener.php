@@ -4,12 +4,11 @@ declare(strict_types=1);
 
 namespace Unilend\Listener\Doctrine\Entity;
 
-use Doctrine\ORM\Event\LifecycleEventArgs;
 use Exception;
 use Unilend\Entity\TemporaryToken;
 use Unilend\Repository\TemporaryTokenRepository;
 
-class TemporaryTokenListener
+class TemporaryTokenCreatedListener
 {
     /**
      * @var TemporaryTokenRepository
@@ -17,8 +16,6 @@ class TemporaryTokenListener
     private $repository;
 
     /**
-     * TemporaryTokenListener constructor.
-     *
      * @param TemporaryTokenRepository $repository
      */
     public function __construct(
@@ -28,12 +25,11 @@ class TemporaryTokenListener
     }
 
     /**
-     * @param TemporaryToken     $token
-     * @param LifecycleEventArgs $eventArgs
+     * @param TemporaryToken $token
      *
      * @throws Exception
      */
-    public function prePersist(TemporaryToken $token, LifecycleEventArgs $eventArgs): void
+    public function expireOldTemporaryToken(TemporaryToken $token): void
     {
         $this->repository->expireTemporaryTokens($token->getClient());
     }

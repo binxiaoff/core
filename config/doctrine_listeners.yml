@@ -3,24 +3,26 @@ services:
         autowire: true
         autoconfigure: true
 
-    Unilend\Listener\Doctrine\Entity\ClientsListener:
+    Unilend\Listener\Doctrine\Entity\ClientProfilChangedListener:
         tags:
             -  name: doctrine.orm.entity_listener
                event: preUpdate
                entity: Unilend\Entity\Clients
+               method: notifyChangedFields
 
-    Unilend\Listener\Doctrine\Entity\TemporaryTokenListener:
+    Unilend\Listener\Doctrine\Entity\TemporaryTokenCreatedListener:
         tags:
             - name: doctrine.orm.entity_listener
               event: prePersist
               entity: Unilend\Entity\TemporaryToken
+              method: expireOldTemporaryToken
 
-    Unilend\Listener\Doctrine\Entity\ProjectParticipationListener:
+    Unilend\Listener\Doctrine\Entity\ProjectParticipationInvitedListener:
         tags:
-            - { name: doctrine.orm.entity_listener, event: prePersist, entity: Unilend\Entity\ProjectParticipation }
-            - { name: doctrine.orm.entity_listener, event: postPersist, entity: Unilend\Entity\ProjectParticipation }
+            - { name: doctrine.orm.entity_listener, event: prePersist, entity: Unilend\Entity\ProjectParticipation, method: addContacts}
+            - { name: doctrine.orm.entity_listener, event: postPersist, entity: Unilend\Entity\ProjectParticipation, method: dispatchParticipantInvitedEvent }
 
-    Unilend\Listener\Doctrine\Entity\ClientPlainPasswordListener:
+    Unilend\Listener\Doctrine\Entity\ClientPlainPasswordSubmittedListener:
         tags:
             - { name: doctrine.orm.entity_listener, event: preUpdate, entity: Unilend\Entity\Clients, method: encodePlainPassword }
             - { name: doctrine.orm.entity_listener, event: prePersist, entity: Unilend\Entity\Clients, method: encodePlainPassword }

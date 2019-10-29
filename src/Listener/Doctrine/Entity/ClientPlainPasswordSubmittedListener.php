@@ -7,7 +7,7 @@ namespace Unilend\Listener\Doctrine\Entity;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 use Unilend\Entity\Clients;
 
-class ClientPlainPasswordListener
+class ClientPlainPasswordSubmittedListener
 {
     /** @var UserPasswordEncoderInterface */
     private $userPasswordEncoder;

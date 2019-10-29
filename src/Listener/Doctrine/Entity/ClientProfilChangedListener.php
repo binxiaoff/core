@@ -10,7 +10,7 @@ use Symfony\Component\Messenger\MessageBusInterface;
 use Unilend\Entity\Clients;
 use Unilend\Message\Client\ClientUpdated;
 
-class ClientsListener
+class ClientProfilChangedListener
 {
     private const MONITORED_FIELDS = [
         'lastName',
@@ -35,7 +35,7 @@ class ClientsListener
      * @param Clients            $client
      * @param PreUpdateEventArgs $args
      */
-    public function preUpdate(Clients $client, PreUpdateEventArgs $args): void
+    public function notifyChangedFields(Clients $client, PreUpdateEventArgs $args): void
     {
         $changeSet = $args->getEntityChangeSet();
 
