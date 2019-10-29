@@ -69,15 +69,6 @@ class Companies
     private $siren;
 
     /**
-     * @var string
-     *
-     * @ORM\Column(name="siret", type="string", length=14, nullable=true)
-     *
-     * @Groups({"project:create"})
-     */
-    private $siret;
-
-    /**
      * @var int
      *
      * @ORM\Column(name="id_company", type="integer")
@@ -117,11 +108,18 @@ class Companies
 
     /**
      * Companies constructor.
+     *
+     * @param string $name
+     * @param string $siren
      */
-    public function __construct()
-    {
+    public function __construct(
+        string $name,
+        string $siren
+    ) {
         $this->staff                 = new ArrayCollection();
         $this->projectParticipations = new ArrayCollection();
+        $this->name                  = $name;
+        $this->siren                 = $siren;
     }
 
     /**
@@ -133,9 +131,9 @@ class Companies
     }
 
     /**
-     * @return int|null
+     * @return int
      */
-    public function getId(): ?int
+    public function getId(): int
     {
         return $this->getIdCompany();
     }
@@ -208,35 +206,11 @@ class Companies
     }
 
     /**
-     * Set siret.
-     *
-     * @param string $siret
-     *
-     * @return Companies
-     */
-    public function setSiret($siret): Companies
-    {
-        $this->siret = $siret;
-
-        return $this;
-    }
-
-    /**
-     * Get siret.
-     *
-     * @return string|null
-     */
-    public function getSiret(): ?string
-    {
-        return $this->siret;
-    }
-
-    /**
      * Get idCompany.
      *
      * @return int
      */
-    public function getIdCompany()
+    public function getIdCompany(): int
     {
         return $this->idCompany;
     }

@@ -51,8 +51,9 @@ class Project
         setCurrentStatus as private baseStatusSetter;
     }
 
-    public const OFFER_VISIBILITY_PUBLIC  = 'public';
-    public const OFFER_VISIBILITY_PRIVATE = 'private';
+    public const OFFER_VISIBILITY_PRIVATE     = 'private';
+    public const OFFER_VISIBILITY_PARTICIPANT = 'participant';
+    public const OFFER_VISIBILITY_PUBLIC      = 'public';
 
     public const INTERNAL_RATING_SCORE_A_PLUS  = 'A+';
     public const INTERNAL_RATING_SCORE_A       = 'A';
@@ -104,14 +105,13 @@ class Project
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\Companies", cascade={"persist"})
      * @ORM\JoinColumns({
-     *     @ORM\JoinColumn(name="id_borrower_company", referencedColumnName="id_company", nullable=false)
+     *     @ORM\JoinColumn(name="id_borrower_company", referencedColumnName="id_company", nullable=true)
      * })
      *
      * @Gedmo\Versioned
      *
      * @Groups({"project:create"})
      *
-     * @Assert\NotBlank
      * @Assert\Valid
      */
     private $borrowerCompany;
@@ -171,9 +171,7 @@ class Project
     /**
      * @var string
      *
-     * @ORM\Column(type="text", length=16777215)
-     *
-     * @Assert\NotBlank
+     * @ORM\Column(type="text", length=16777215, nullable=true)
      *
      * @Gedmo\Versioned
      *
@@ -262,6 +260,7 @@ class Project
      *
      * @Gedmo\Versioned
      *
+     * @Assert\NotBlank
      * @Assert\Choice(callback="getOfferVisibilities")
      *
      * @Groups({"project:create"})
@@ -302,7 +301,6 @@ class Project
      *
      * @ORM\OneToMany(targetEntity="Unilend\Entity\Tranche", mappedBy="project", cascade={"persist"}, orphanRemoval=true)
      *
-     * @Assert\Count(min="1", minMessage="project.tranche.count")
      * @Assert\Valid
      *
      * @Groups({"project:create"})
@@ -336,6 +334,9 @@ class Project
 
     /**
      * @var ArrayCollection|ProjectStatus
+     *
+     * @Assert\Count(min="1")
+     * @Assert\Valid
      *
      * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectStatus", mappedBy="project", orphanRemoval=true, cascade={"persist"})
      */
@@ -398,8 +399,6 @@ class Project
     private $tags;
 
     /**
-     * Project constructor.
-     *
      * @param Clients $submitter
      */
     public function __construct(Clients $submitter)
