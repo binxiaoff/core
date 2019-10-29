@@ -50,7 +50,7 @@ class StaffManagerTest extends TestCase
     public function testGetStaffByEmail(): void
     {
         $email         = Internet::safeEmailDomain();
-        $company       = new Companies();
+        $company       = new Companies('CALS', '850890666');
         $client        = new Clients();
         $expectedStaff = new Staff();
 
@@ -76,7 +76,7 @@ class StaffManagerTest extends TestCase
         $this->expectException(ClientNotFoundException::class);
 
         $email = Internet::safeEmailDomain();
-        $this->companyManager->getCompanyByEmail(Argument::exact($email))->willReturn(new Companies());
+        $this->companyManager->getCompanyByEmail(Argument::exact($email))->willReturn(new Companies('CALS', '850890666'));
         $this->clientsRepository->findOneBy(Argument::exact(['email' => $email]))->willReturn(null);
 
         $this->createTestObject()->getStaffByEmail($email);
@@ -92,7 +92,7 @@ class StaffManagerTest extends TestCase
         $this->expectException(StaffNotFoundException::class);
 
         $email   = Internet::safeEmailDomain();
-        $company = new Companies();
+        $company = new Companies('CALS', '850890666');
         $client  = new Clients();
         $company->setName(Base::lexify('?????????'));
 
@@ -116,7 +116,7 @@ class StaffManagerTest extends TestCase
     public function testAddStaffFromEmail(?Clients $client): void
     {
         $email   = Internet::safeEmailDomain();
-        $company = new Companies();
+        $company = new Companies('CALS', '850890666');
 
         if ($client) {
             $client->setEmail($email);
