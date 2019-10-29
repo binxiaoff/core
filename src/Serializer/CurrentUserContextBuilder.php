@@ -25,8 +25,6 @@ class CurrentUserContextBuilder implements SerializerContextBuilderInterface
     private $security;
 
     /**
-     * CurrentUserContextBuilder constructor.
-     *
      * @param SerializerContextBuilderInterface $decorated
      * @param Security                          $security
      */

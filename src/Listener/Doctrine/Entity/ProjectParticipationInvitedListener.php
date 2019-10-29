@@ -10,7 +10,7 @@ use Unilend\Message\ProjectParticipation\ProjectParticipantInvited;
 use Unilend\Repository\ClientsRepository;
 use Unilend\Service\User\RealUserFinder;
 
-class ProjectParticipationListener
+class ProjectParticipationInvitedListener
 {
     /** @var ClientsRepository */
     private $clientRepository;
@@ -35,7 +35,7 @@ class ProjectParticipationListener
     /**
      * @param ProjectParticipation $projectParticipation
      */
-    public function prePersist(ProjectParticipation $projectParticipation): void
+    public function addContacts(ProjectParticipation $projectParticipation): void
     {
         if ($projectParticipation->isParticipant()) {
             $clients = $this->clientRepository->findDefaultConcernedClients($projectParticipation);
@@ -48,7 +48,7 @@ class ProjectParticipationListener
     /**
      * @param ProjectParticipation $projectParticipation
      */
-    public function postPersist(ProjectParticipation $projectParticipation): void
+    public function dispatchParticipantInvitedEvent(ProjectParticipation $projectParticipation): void
     {
         if ($projectParticipation->isParticipant()) {
             $this->messageBus->dispatch(new ProjectParticipantInvited($projectParticipation));

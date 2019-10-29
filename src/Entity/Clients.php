@@ -14,13 +14,14 @@ use Misd\PhoneNumberBundle\Validator\Constraints\PhoneNumber as AssertPhoneNumbe
 use Ramsey\Uuid\{Exception\UnsatisfiedDependencyException, Uuid};
 use Symfony\Component\Security\Core\User\{EquatableInterface, UserInterface};
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Annotation\SerializedName;
 use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Entity\Traits\{RoleableTrait, TimestampableTrait, TraceableStatusTrait};
+use Unilend\Validator\Constraints\Password as AssertPassword;
 use URLify;
 
 /**
  * @ApiResource(
- *     attributes={"security": "is_granted('ROLE_USER')"},
  *     collectionOperations={
  *         "get",
  *         "post"
@@ -56,6 +57,8 @@ class Clients implements UserInterface, EquatableInterface
     public const ROLE_USER        = 'ROLE_USER';
     public const ROLE_ADMIN       = 'ROLE_ADMIN';
     public const ROLE_SUPER_ADMIN = 'ROLE_SUPER_ADMIN';
+
+    public const PHONE_NUMBER_DEFAULT_REGION = 'FR';
 
     private const DEFAULT_ROLE = self::ROLE_USER;
 
@@ -121,7 +124,7 @@ class Clients implements UserInterface, EquatableInterface
      *
      * @ORM\Column(name="phone", type="phone_number", nullable=true)
      *
-     * @AssertPhoneNumber(defaultRegion="FR", type="any")
+     * @AssertPhoneNumber(defaultRegion="Clients::PHONE_NUMBER_DEFAULT_REGION", type="any")
      */
     private $phone;
 
@@ -132,7 +135,7 @@ class Clients implements UserInterface, EquatableInterface
      *
      * @ORM\Column(name="mobile", type="phone_number", nullable=true)
      *
-     * @AssertPhoneNumber(defaultRegion="FR", type="mobile")
+     * @AssertPhoneNumber(defaultRegion="Clients::PHONE_NUMBER_DEFAULT_REGION", type="mobile")
      */
     private $mobile;
 
@@ -151,13 +154,20 @@ class Clients implements UserInterface, EquatableInterface
     /**
      * @var string
      *
-     * @Groups({"client:read", "client:write"})
-     *
      * @ORM\Column(name="password", type="string", length=191, nullable=true)
      *
      * @Gedmo\Versioned
      */
     private $password;
+
+    /**
+     * @Groups({"client:write"})
+     *
+     * @SerializedName("password")
+     *
+     * @AssertPassword
+     */
+    private $plainPassword;
 
     /**
      * @var string
@@ -444,6 +454,26 @@ class Clients implements UserInterface, EquatableInterface
     /**
      * @return string|null
      */
+    public function getPlainPassword(): ?string
+    {
+        return $this->plainPassword;
+    }
+
+    /**
+     * @param string $plainPassword
+     *
+     * @return $this
+     */
+    public function setPlainPassword(string $plainPassword): Clients
+    {
+        $this->plainPassword = $plainPassword;
+
+        return $this;
+    }
+
+    /**
+     * @return string|null
+     */
     public function getJobFunction(): ?string
     {
         return $this->jobFunction;
@@ -588,7 +618,7 @@ class Clients implements UserInterface, EquatableInterface
      */
     public function eraseCredentials(): void
     {
-        // Not yet Implemented
+        $this->plainPassword = null;
     }
 
     /**

@@ -4,20 +4,29 @@ declare(strict_types=1);
 
 namespace Unilend\Entity;
 
-use ApiPlatform\Core\Annotation\ApiProperty;
-use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Core\Annotation\{ApiProperty, ApiResource, ApiSubresource};
 use DateInterval;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use DomainException;
 use Exception;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Unilend\Controller\UpdateClientViaTemporaryToken;
+use Unilend\Dto\TemporaryTokenClient;
 use Unilend\Entity\Traits\TimestampableTrait;
 
 /**
  * @ApiResource(
  *     collectionOperations={},
- *     itemOperations={"get"},
+ *     itemOperations={
+ *         "get",
+ *         "api_temporary_tokens_client_put_subresource": {
+ *             "method": "PUT",
+ *             "path": "/temporary_tokens/{id}/client",
+ *             "controller": UpdateClientViaTemporaryToken::class,
+ *             "input": TemporaryTokenClient::class
+ *         }
+ *     },
  *     normalizationContext={"groups": {"temporary_token:read"}}
  * )
  * @ORM\Table(name="temporary_token", indexes={@ORM\Index(name="fk_temporary_token_id_client", columns={"id_client"})})
@@ -101,6 +110,8 @@ class TemporaryToken
      * })
      *
      * @Groups({"temporary_token:read"})
+     *
+     * @ApiSubresource
      */
     private $client;
 
