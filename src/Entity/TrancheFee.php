@@ -91,7 +91,7 @@ class TrancheFee
     }
 
     /**
-     * @return Fee|null
+     * @return Fee
      */
     public function getFee(): Fee
     {

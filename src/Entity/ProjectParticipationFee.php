@@ -60,6 +60,7 @@ class ProjectParticipationFee
     public function __construct(ProjectParticipation $projectParticipation)
     {
         $this->projectParticipation = $projectParticipation;
+        $this->fee                  = new Fee();
     }
 
     /**
@@ -71,7 +72,7 @@ class ProjectParticipationFee
     }
 
     /**
-     * @return Fee|null
+     * @return Fee
      */
     public function getFee(): Fee
     {
