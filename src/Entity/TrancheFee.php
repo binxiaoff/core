@@ -65,7 +65,7 @@ class TrancheFee
     /**
      * @return int
      */
-    public function getId()
+    public function getId(): int
     {
         return $this->id;
     }
@@ -96,35 +96,5 @@ class TrancheFee
     public function getFee(): Fee
     {
         return $this->fee;
-    }
-
-    /**
-     * @param Fee $fee
-     *
-     * @return TrancheFee
-     */
-    public function setFee(Fee $fee): TrancheFee
-    {
-        $this->fee = $fee;
-
-        return $this;
-    }
-
-    /**
-     * @return array
-     */
-    public static function getFeeTypes(): array
-    {
-        return self::getConstants('TYPE_');
-    }
-
-    /**
-     * @param int $value
-     *
-     * @return false|string
-     */
-    public static function getFeeTypeConstantKey(int $value)
-    {
-        return self::getConstantKey($value, 'TYPE_');
     }
 }
