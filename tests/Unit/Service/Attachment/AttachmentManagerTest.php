@@ -91,7 +91,7 @@ class AttachmentManagerTest extends TestCase
         ?string $description = null
     ): void {
         $this->fileUploadManager->uploadFile(Argument::type(UploadedFile::class), Argument::cetera())->will(
-            static function ($args) {
+            function ($args) {
                 return $args[3];
             }
         );
