@@ -6,10 +6,9 @@ namespace Unilend\EventSubscriber\ApiPlatform;
 
 use ApiPlatform\Core\EventListener\EventPriorities;
 use Exception;
-use Symfony\Component\EventDispatcher\EventSubscriberInterface;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Event\ViewEvent;
-use Symfony\Component\HttpKernel\KernelEvents;
+use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
+use Symfony\Component\{EventDispatcher\EventSubscriberInterface, HttpFoundation\Request, HttpKernel\KernelEvents};
 use Unilend\Entity\Clients;
 use Unilend\Repository\TemporaryTokenRepository;
 
@@ -17,13 +16,17 @@ class ClientProfileUpdatedEventSubscriber implements EventSubscriberInterface
 {
     /** @var TemporaryTokenRepository */
     private $temporaryTokenRepository;
+    /** @var TokenStorageInterface */
+    private $tokenStorage;
 
     /**
      * @param TemporaryTokenRepository $temporaryTokenRepository
+     * @param TokenStorageInterface    $tokenStorage
      */
-    public function __construct(TemporaryTokenRepository $temporaryTokenRepository)
+    public function __construct(TemporaryTokenRepository $temporaryTokenRepository, TokenStorageInterface $tokenStorage)
     {
         $this->temporaryTokenRepository = $temporaryTokenRepository;
+        $this->tokenStorage             = $tokenStorage;
     }
 
     /**
@@ -41,12 +44,17 @@ class ClientProfileUpdatedEventSubscriber implements EventSubscriberInterface
      */
     public function expireTemporaryToken(ViewEvent $event): void
     {
+        /** @var Clients $client */
         $client = $event->getControllerResult();
         $method = $event->getRequest()->getMethod();
 
         if (
             false === $client instanceof Clients
             || false === in_array($method, [Request::METHOD_PUT, Request::METHOD_PATCH], true)
+            || (
+                null !== $this->tokenStorage->getToken()
+                && $this->tokenStorage->getToken()->getUsername() !== $client->getUsername()
+            )
         ) {
             return;
         }

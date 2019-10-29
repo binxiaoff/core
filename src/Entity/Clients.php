@@ -17,6 +17,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Annotation\SerializedName;
 use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Entity\Traits\{RoleableTrait, TimestampableTrait, TraceableStatusTrait};
+use Unilend\Validator\Constraints\Password as AssertPassword;
 use URLify;
 
 /**
@@ -161,6 +162,8 @@ class Clients implements UserInterface, EquatableInterface
      * @Groups({"client:write"})
      *
      * @SerializedName("password")
+     *
+     * @AssertPassword
      */
     private $plainPassword;
 

@@ -6,6 +6,9 @@ namespace Unilend\Validator\Constraints;
 
 use Symfony\Component\Validator\Constraint;
 
+/**
+ * @Annotation
+ */
 class Password extends Constraint
 {
     public const MIN_PASSWORD_LENGTH = 6;
