@@ -64,18 +64,24 @@ class ClientLoginFactory
     }
 
     /**
+     * @param string      $message
+     * @param string|null $username
+     *
      * @throws Exception
      *
      * @return ClientFailedLogin
      */
-    public function createClientLoginFailure(): ClientFailedLogin
+    public function createClientLoginFailure(string $message, ?string $username = null): ClientFailedLogin
     {
-        $failure = new ClientFailedLogin();
+        $failedLogin = new ClientFailedLogin();
 
         if ($request = $this->requestStack->getCurrentRequest()) {
-            $failure->setIp($request->getClientIp());
+            $failedLogin->setIp($request->getClientIp());
         }
 
-        return $failure;
+        $failedLogin->setUsername($username);
+        $failedLogin->setError($message);
+
+        return $failedLogin;
     }
 }

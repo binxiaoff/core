@@ -122,14 +122,12 @@ class LoginLogSubscriber implements EventSubscriberInterface
      */
     public function onLoginFailure(AuthenticationFailureEvent $event): void
     {
-        $failedLogin = $this->clientLoginHistoryFactory->createClientLoginFailure();
+        $authenticationException = $event->getException();
 
-        if ($token = $event->getException()->getToken()) {
-            $failedLogin->setUsername($token->getUsername());
-        }
+        $username = ($token = $authenticationException->getToken()) ? $token->getUsername() : null;
+        $message  = $authenticationException->getMessage();
 
-        $failedLogin->setError($event->getException()->getMessage());
-
+        $failedLogin = $this->clientLoginHistoryFactory->createClientLoginFailure($message, $username);
         $this->clientFailedLoginRepository->save($failedLogin);
     }
 }
