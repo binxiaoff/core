@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Unilend\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use InvalidArgumentException;
 use Unilend\Entity\Traits\TimestampableAddedOnlyTrait;
 
 /**
@@ -12,7 +13,7 @@ use Unilend\Entity\Traits\TimestampableAddedOnlyTrait;
  *     @ORM\Index(name="idx_client_successful_login_ip", columns={"ip"}),
  *     @ORM\Index(name="idx_client_successful_login_added", columns={"added"})
  * })
- * @ORM\Entity
+ * @ORM\Entity(repositoryClass="Unilend\Repository\ClientSuccessfulLoginRepository")
  * @ORM\HasLifecycleCallbacks
  */
 class ClientSuccessfulLogin
@@ -87,8 +88,14 @@ class ClientSuccessfulLogin
      */
     public function __construct(
         Clients $client,
-        string $action
+        string $action = self::ACTION_LOGIN
     ) {
+        if (false === in_array($action, self::getActions(), true)) {
+            throw new InvalidArgumentException(
+                sprintf('action should be one of these values (%s), %s given', implode(', ', self::getActions()), $action)
+            );
+        }
+
         $this->client = $client;
         $this->action = $action;
     }
@@ -207,5 +214,13 @@ class ClientSuccessfulLogin
         $this->userAgent = $userAgent;
 
         return $this;
+    }
+
+    /**
+     * @return array
+     */
+    private static function getActions(): array
+    {
+        return [static::ACTION_LOGIN, static::ACTION_REFRESH];
     }
 }

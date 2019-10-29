@@ -17,7 +17,7 @@ use Exception;
  *         @ORM\Index(name="idx_client_failed_login_ip", columns={"ip"})
  *     }
  * )
- * @ORM\Entity(repositoryClass="Unilend\Repository\ClientFailedLogRepository")
+ * @ORM\Entity(repositoryClass="Unilend\Repository\ClientFailedLoginRepository")
  */
 class ClientFailedLogin
 {

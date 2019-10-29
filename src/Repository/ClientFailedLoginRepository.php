@@ -8,6 +8,8 @@ use DateInterval;
 use DateTime;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
+use Doctrine\ORM\OptimisticLockException;
+use Doctrine\ORM\ORMException;
 use Exception;
 use Unilend\Entity\ClientFailedLogin;
 
@@ -17,7 +19,7 @@ use Unilend\Entity\ClientFailedLogin;
  * @method ClientFailedLogin[]    findAll()
  * @method ClientFailedLogin[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
  */
-class ClientFailedLogRepository extends ServiceEntityRepository
+class ClientFailedLoginRepository extends ServiceEntityRepository
 {
     /**
      * @param ManagerRegistry $registry
@@ -46,5 +48,17 @@ class ClientFailedLogRepository extends ServiceEntityRepository
         ;
 
         return $queryBuilder->getQuery()->getSingleScalarResult();
+    }
+
+    /**
+     * @param ClientFailedLogin $failedLogin
+     *
+     * @throws ORMException
+     * @throws OptimisticLockException
+     */
+    public function save(ClientFailedLogin $failedLogin): void
+    {
+        $this->getEntityManager()->persist($failedLogin);
+        $this->getEntityManager()->flush();
     }
 }
