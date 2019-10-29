@@ -7,6 +7,7 @@ namespace Unilend\DataTransformer;
 use ApiPlatform\Core\Bridge\Symfony\Validator\Exception\ValidationException;
 use ApiPlatform\Core\DataTransformer\DataTransformerInterface;
 use libphonenumber\{NumberParseException, PhoneNumberUtil};
+use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Unilend\Dto\TemporaryTokenClient;
 use Unilend\Entity\{Clients, TemporaryToken};
@@ -37,7 +38,7 @@ class TemporaryTokenClientDataTransformer implements DataTransformerInterface
      */
     public function transform($object, string $to, array $context = [])
     {
-        $temporaryToken = $context['object_to_populate'];
+        $temporaryToken = $context[AbstractNormalizer::OBJECT_TO_POPULATE];
         if ($temporaryToken instanceof TemporaryToken) {
             $client = $temporaryToken->getClient();
             $client->setFirstName($object->getFirstName())
