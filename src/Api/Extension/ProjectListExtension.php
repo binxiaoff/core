@@ -54,11 +54,10 @@ class ProjectListExtension implements QueryCollectionExtensionInterface
             ->leftJoin('pp.projectParticipationContacts', 'pc')
             ->orWhere('pc.client = :client')
             ->setParameters([
-                'company'         => $user->getCompany(),
-                'publishedStatus' => ProjectStatus::STATUS_PUBLISHED,
-                'activeStatus'    => ProjectStatus::DISPLAYABLE_STATUS,
-                'marketSegments'  => $user->getStaff()->getMarketSegments(),
-                'client'          => $user,
+                'company'        => $user->getCompany(),
+                'activeStatus'   => ProjectStatus::DISPLAYABLE_STATUS,
+                'marketSegments' => $user->getStaff()->getMarketSegments(),
+                'client'         => $user,
             ])
         ;
     }
