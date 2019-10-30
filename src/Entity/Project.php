@@ -6,6 +6,7 @@ namespace Unilend\Entity;
 
 use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Core\Annotation\ApiSubresource;
 use DateTimeImmutable;
 use Doctrine\Common\Collections\{ArrayCollection, Collection, Criteria};
 use Doctrine\ORM\Mapping as ORM;
@@ -29,7 +30,7 @@ use Unilend\Traits\ConstantsAwareTrait;
  *     },
  *     itemOperations={
  *         "get": {"security": "is_granted('view', object)"},
- *         "put": {"security": "is_granted('edit', object)"},
+ *         "put": {"security": "is_granted('edit', object)"}
  *     }
  * )
  *
@@ -272,6 +273,8 @@ class Project
      * @var ProjectAttachment[]
      *
      * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectAttachment", mappedBy="project", cascade={"persist"}, orphanRemoval=true)
+     *
+     * @ApiSubresource
      */
     private $projectAttachments;
 

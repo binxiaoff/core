@@ -12,10 +12,9 @@ use League\Flysystem\{FileExistsException, FileNotFoundException, FilesystemInte
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
 use Prophecy\Prophecy\{ObjectProphecy, ProphecySubjectInterface};
-use ReflectionException;
 use ReflectionProperty;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
-use Unilend\Entity\{Attachment, AttachmentType, Clients, Companies};
+use Unilend\Entity\{Attachment, Clients};
 use Unilend\Repository\AttachmentRepository;
 use Unilend\Service\Attachment\AttachmentManager;
 use Unilend\Service\FileSystem\FileUploadManager;
@@ -64,32 +63,13 @@ class AttachmentManagerTest extends TestCase
     /**
      * @covers ::upload
      *
-     * @dataProvider uploadProvider
-     *
-     * @param Clients|null        $owner
-     * @param Companies|null      $company
-     * @param Clients             $uploader
-     * @param AttachmentType|null $attachmentType
-     * @param Attachment|null     $existingAttachment
-     * @param UploadedFile        $uploadedFile
-     * @param bool                $archivePreviousAttachments
-     * @param string|null         $description
-     *
      * @throws FileExistsException
      * @throws ORMException
      * @throws OptimisticLockException
      * @throws Exception
      */
-    public function testUpload(
-        ?Clients $owner,
-        ?Companies $company,
-        Clients $uploader,
-        ?AttachmentType $attachmentType,
-        ?Attachment $existingAttachment,
-        UploadedFile $uploadedFile,
-        bool $archivePreviousAttachments = true,
-        ?string $description = null
-    ): void {
+    public function testUpload(): void
+    {
         $this->fileUploadManager->uploadFile(Argument::type(UploadedFile::class), Argument::cetera())->will(
             function ($args) {
                 return $args[3];
@@ -98,37 +78,6 @@ class AttachmentManagerTest extends TestCase
         $this->attachmentRepository->save(Argument::type(Attachment::class));
         $attachmentManager = $this->createTestObject();
 
-        $createdAttachment = $attachmentManager->upload(
-            $owner,
-            $company,
-            $uploader,
-            $attachmentType,
-            $existingAttachment,
-            $uploadedFile,
-            $archivePreviousAttachments,
-            $description
-        );
-
-        static::assertSame($owner, $createdAttachment->getClientOwner());
-        static::assertSame($company, $createdAttachment->getCompanyOwner());
-        static::assertSame($attachmentType, $createdAttachment->getType());
-        static::assertSame($this->realUser, $createdAttachment->getAddedBy());
-        if ($owner) {
-            static::assertStringContainsString((string) $owner->getIdClient(), $createdAttachment->getPath());
-        } else {
-            static::assertStringContainsString((string) $uploader->getIdClient(), $createdAttachment->getPath());
-        }
-        static::assertSame($description, $createdAttachment->getDescription());
-        $this->attachmentRepository->save(Argument::type(Attachment::class))->shouldHaveBeenCalled();
-    }
-
-    /**
-     * @throws ReflectionException
-     *
-     * @return array
-     */
-    public function uploadProvider(): array
-    {
         $idClientsReflectionProperty = new ReflectionProperty(Clients::class, 'idClient');
         $idClientsReflectionProperty->setAccessible(true);
         $owner   = new Clients();
@@ -138,45 +87,20 @@ class AttachmentManagerTest extends TestCase
         $company = new Companies('CALS', '850890666');
 
         $uploader   = new Clients();
-        $uploaderId = $ownerId + 1;
+        $uploaderId = Base::randomDigitNotNull() + 1;
         $idClientsReflectionProperty->setValue($uploader, $uploaderId);
 
-        $filePath = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'test.php';
+        $filePath = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'uploadTestFile';
         fopen($filePath, 'wb+');
         $uploadedFile = new UploadedFile($filePath, Base::asciify(str_repeat('*', 20)), null, null, true);
 
-        $description = Base::asciify(str_repeat('*', 20));
+        $createdAttachment = $attachmentManager->upload(
+            $uploadedFile,
+            $uploader
+        );
 
-        $attachmentType = new AttachmentType();
-
-        $attachment = new Attachment();
-
-        return [
-            'mandatory' => [
-                null, null, $uploader, null, null, $uploadedFile,
-            ],
-            'archive' => [
-                null, null, $uploader, null, null, $uploadedFile, true,
-            ],
-            'description' => [
-                null, null, $uploader, null, null, $uploadedFile, false, $description,
-            ],
-            'attachmentType' => [
-                null, null, $uploader, $attachmentType, null, $uploadedFile,
-            ],
-            'owner' => [
-                $owner, null, $uploader, null, null, $uploadedFile,
-            ],
-            'company' => [
-                null, $company, $uploader, null, null, $uploadedFile,
-            ],
-            'updateAttachment' => [
-                null, $company, $uploader, null, $attachment, $uploadedFile,
-            ],
-            'all' => [
-                $owner, $company, $uploader, $attachmentType, null, $uploadedFile, false, $description,
-            ],
-        ];
+        static::assertSame($uploader, $createdAttachment->getAddedBy());
+        static::assertStringContainsString((string) $uploader->getIdClient(), $createdAttachment->getPath());
     }
 
     /**
@@ -187,7 +111,7 @@ class AttachmentManagerTest extends TestCase
      */
     public function testLogDownload(): void
     {
-        $attachment = new Attachment();
+        $attachment = new Attachment('test', new Clients());
 
         $attachmentManager = $this->createTestObject();
 
@@ -204,8 +128,7 @@ class AttachmentManagerTest extends TestCase
      */
     public function testRead(): void
     {
-        $attachment = new Attachment();
-        $attachment->setPath('test');
+        $attachment = new Attachment('test', new Clients());
 
         $attachmentManager = $this->createTestObject();
         $attachmentManager->read($attachment);
@@ -233,7 +156,7 @@ class AttachmentManagerTest extends TestCase
      */
     public function testArchive(): void
     {
-        $attachment        = new Attachment();
+        $attachment        = new Attachment('test', $this->realUser);
         $attachmentManager = $this->createTestObject();
 
         $attachmentManager->archive($attachment);

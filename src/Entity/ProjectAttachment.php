@@ -4,10 +4,19 @@ declare(strict_types=1);
 
 namespace Unilend\Entity;
 
+use ApiPlatform\Core\Annotation\ApiResource;
 use Doctrine\ORM\Mapping as ORM;
 use Unilend\Entity\Traits\TimestampableTrait;
 
 /**
+ * @ApiResource(
+ *     itemOperations={
+ *         "get": {"security": "is_granted('view', object.project)"}
+ *     },
+ *     collectionOperations={
+ *         "post"
+ *     }
+ * )
  * @ORM\Entity(repositoryClass="Unilend\Repository\ProjectAttachmentRepository")
  * @ORM\HasLifecycleCallbacks
  */
@@ -47,7 +56,7 @@ class ProjectAttachment
     /**
      * @return int|null
      */
-    public function getId(): ?int
+    public function getId(): int
     {
         return $this->id;
     }

@@ -61,7 +61,7 @@ class ProjectAttachmentManagerTest extends TestCase
     public function testAttachToProject(): void
     {
         $project    = $this->createProject();
-        $attachment = new Attachment();
+        $attachment = new Attachment('test', new Clients());
 
         $this->projectAttachmentRepository
             ->getAttachedAttachmentsByType(Argument::exact($project), Argument::cetera())
@@ -123,7 +123,7 @@ class ProjectAttachmentManagerTest extends TestCase
         $projectAttachmentType->setAttachmentType($attachmentType);
 
         $project    = $this->createProject();
-        $attachment = new Attachment();
+        $attachment = new Attachment('test', new Clients());
         $attachment->setType($attachmentType);
 
         $existingProjectAttachment = $this->createProjectAttachment($project);
@@ -223,7 +223,7 @@ class ProjectAttachmentManagerTest extends TestCase
     protected function createProjectAttachment(?Project $project = null, ?Attachment $attachment = null): ProjectAttachment
     {
         $project    = $project    ?? $this->createProject();
-        $attachment = $attachment ?? new Attachment();
+        $attachment = $attachment ?? new Attachment('test', new Clients());
 
         $projectAttachment = new ProjectAttachment();
         $projectAttachment->setAttachment($attachment);
