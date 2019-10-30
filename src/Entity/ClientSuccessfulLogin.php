@@ -7,6 +7,7 @@ namespace Unilend\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use InvalidArgumentException;
 use Unilend\Entity\Traits\TimestampableAddedOnlyTrait;
+use Unilend\Traits\ConstantsAwareTrait;
 
 /**
  * @ORM\Table(name="client_successful_login", indexes={
@@ -19,9 +20,11 @@ use Unilend\Entity\Traits\TimestampableAddedOnlyTrait;
 class ClientSuccessfulLogin
 {
     use TimestampableAddedOnlyTrait;
+    use ConstantsAwareTrait;
 
-    public const ACTION_LOGIN   = 'login';
-    public const ACTION_REFRESH = 'refresh';
+    public const ACTION_JWT_LOGIN       = 'jwt';
+    public const ACTION_REFRESH_JWT     = 'refresh_jwt';
+    public const ACTION_TEMPORARY_TOKEN = 'temporary_token';
 
     /**
      * @var int
@@ -45,7 +48,7 @@ class ClientSuccessfulLogin
     /**
      * @var int
      *
-     * @ORM\Column(name="action", type="string", length=10)
+     * @ORM\Column(name="action", type="string", length=20)
      */
     private $action;
 
@@ -86,10 +89,8 @@ class ClientSuccessfulLogin
      * @param Clients $client
      * @param string  $action
      */
-    public function __construct(
-        Clients $client,
-        string $action = self::ACTION_LOGIN
-    ) {
+    public function __construct(Clients $client, string $action = self::ACTION_JWT_LOGIN)
+    {
         if (false === in_array($action, self::getActions(), true)) {
             throw new InvalidArgumentException(
                 sprintf('action should be one of these values (%s), %s given', implode(', ', self::getActions()), $action)
@@ -221,6 +222,6 @@ class ClientSuccessfulLogin
      */
     private static function getActions(): array
     {
-        return [static::ACTION_LOGIN, static::ACTION_REFRESH];
+        return self::getConstants('ACTION_');
     }
 }

@@ -6,8 +6,6 @@ namespace Unilend\Controller;
 
 use Exception;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Unilend\Entity\{Clients, TemporaryToken};
 use Unilend\Repository\ClientsRepository;
 
@@ -26,18 +24,13 @@ class UpdateClientViaTemporaryToken extends AbstractController
 
     /**
      * @param TemporaryToken $data
-     * @param Request        $request
      *
      * @throws Exception
      *
      * @return Clients
      */
-    public function __invoke(TemporaryToken $data, Request $request): Clients
+    public function __invoke(TemporaryToken $data): Clients
     {
-        if (false === $data->isValid()) {
-            throw new AccessDeniedHttpException('Temporary token expired');
-        }
-
         $client = $data->getClient();
         $this->clientRepository->save($client);
 

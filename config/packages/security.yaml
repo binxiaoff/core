@@ -15,6 +15,13 @@ security:
         dev:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
+        temporary_token:
+            pattern: ^/temporary_tokens
+            stateless: true
+            anonymous: true
+            guard:
+                authenticators:
+                    - Unilend\Security\TemporaryTokenAuthenticator
         api:
             stateless: true
             anonymous: true
@@ -27,8 +34,8 @@ security:
                 authenticators:
                     - lexik_jwt_authentication.jwt_token_authenticator
 
+
     access_control:
         - { path: '^/docs', allow_if: "is_authenticated() or is_anonymous()" }
         - { path: '^/token/refresh', allow_if: "is_authenticated() or is_anonymous()" }
-        - { path: '^/temporary_tokens/.+', allow_if: "is_authenticated() or is_anonymous()",  methods: ["GET", "PUT"] }
         - { path: '^/.+', allow_if: 'is_authenticated()' }

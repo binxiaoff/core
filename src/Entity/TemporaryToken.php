@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\Entity;
 
+use ApiPlatform\Core\Action\NotFoundAction;
 use ApiPlatform\Core\Annotation\{ApiProperty, ApiResource, ApiSubresource};
 use DateInterval;
 use DateTimeImmutable;
@@ -19,7 +20,11 @@ use Unilend\Entity\Traits\TimestampableTrait;
  * @ApiResource(
  *     collectionOperations={},
  *     itemOperations={
- *         "get",
+ *         "get": {
+ *             "controller": NotFoundAction::class,
+ *             "read": false,
+ *             "output": false,
+ *         },
  *         "api_temporary_tokens_client_put_subresource": {
  *             "method": "PUT",
  *             "path": "/temporary_tokens/{id}/client",
