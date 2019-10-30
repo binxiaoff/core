@@ -5,17 +5,18 @@ declare(strict_types=1);
 namespace Unilend\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use InvalidArgumentException;
 use Unilend\Entity\Traits\TimestampableAddedOnlyTrait;
 
 /**
- * @ORM\Table(name="client_login", indexes={
- *     @ORM\Index(name="idx_clients_login_ip", columns={"ip"}),
- *     @ORM\Index(name="idx_clients_login_added", columns={"added"})
+ * @ORM\Table(name="client_successful_login", indexes={
+ *     @ORM\Index(name="idx_client_successful_login_ip", columns={"ip"}),
+ *     @ORM\Index(name="idx_client_successful_login_added", columns={"added"})
  * })
- * @ORM\Entity
+ * @ORM\Entity(repositoryClass="Unilend\Repository\ClientSuccessfulLoginRepository")
  * @ORM\HasLifecycleCallbacks
  */
-class ClientLogin
+class ClientSuccessfulLogin
 {
     use TimestampableAddedOnlyTrait;
 
@@ -87,10 +88,24 @@ class ClientLogin
      */
     public function __construct(
         Clients $client,
-        string $action
+        string $action = self::ACTION_LOGIN
     ) {
+        if (false === in_array($action, self::getActions(), true)) {
+            throw new InvalidArgumentException(
+                sprintf('action should be one of these values (%s), %s given', implode(', ', self::getActions()), $action)
+            );
+        }
+
         $this->client = $client;
         $this->action = $action;
+    }
+
+    /**
+     * @return int
+     */
+    public function getId(): int
+    {
+        return $this->id;
     }
 
     /**
@@ -104,9 +119,9 @@ class ClientLogin
     /**
      * @param string $action
      *
-     * @return ClientLogin
+     * @return ClientSuccessfulLogin
      */
-    public function setAction(string $action): ClientLogin
+    public function setAction(string $action): ClientSuccessfulLogin
     {
         $this->action = $action;
 
@@ -132,9 +147,9 @@ class ClientLogin
     /**
      * @param string|null $ip
      *
-     * @return ClientLogin
+     * @return ClientSuccessfulLogin
      */
-    public function setIp(?string $ip): ClientLogin
+    public function setIp(?string $ip): ClientSuccessfulLogin
     {
         $this->ip = $ip;
 
@@ -152,9 +167,9 @@ class ClientLogin
     /**
      * @param string|null $countryIsoCode
      *
-     * @return ClientLogin
+     * @return ClientSuccessfulLogin
      */
-    public function setCountryIsoCode(?string $countryIsoCode): ClientLogin
+    public function setCountryIsoCode(?string $countryIsoCode): ClientSuccessfulLogin
     {
         $this->countryIsoCode = $countryIsoCode;
 
@@ -172,9 +187,9 @@ class ClientLogin
     /**
      * @param string|null $city
      *
-     * @return ClientLogin
+     * @return ClientSuccessfulLogin
      */
-    public function setCity(?string $city): ClientLogin
+    public function setCity(?string $city): ClientSuccessfulLogin
     {
         $this->city = $city;
 
@@ -192,9 +207,9 @@ class ClientLogin
     /**
      * @param UserAgent $userAgent
      *
-     * @return ClientLogin
+     * @return ClientSuccessfulLogin
      */
-    public function setUserAgent(?UserAgent $userAgent): ClientLogin
+    public function setUserAgent(?UserAgent $userAgent): ClientSuccessfulLogin
     {
         $this->userAgent = $userAgent;
 
@@ -202,10 +217,10 @@ class ClientLogin
     }
 
     /**
-     * @return int
+     * @return array
      */
-    public function getId(): int
+    private static function getActions(): array
     {
-        return $this->id;
+        return [static::ACTION_LOGIN, static::ACTION_REFRESH];
     }
 }
