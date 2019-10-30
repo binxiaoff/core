@@ -32,8 +32,8 @@ final class Version20191028124734 extends AbstractMigration
         $this->abortIf('mysql' !== $this->connection->getDatabasePlatform()->getName(), 'Migration can only be executed safely on \'mysql\'.');
 
         $this->addSql('ALTER TABLE project CHANGE offer_visibility offer_visibility VARCHAR(25) NOT NULL');
-        $this->addSql("UPDATE project SET offer_visibility = 'public' WHERE offer_visibility = 1");
-        $this->addSql("UPDATE project SET offer_visibility = 'private' WHERE offer_visibility = 2");
+        $this->addSql("UPDATE project SET offer_visibility = 'public' WHERE offer_visibility = '1'");
+        $this->addSql("UPDATE project SET offer_visibility = 'private' WHERE offer_visibility = '2'");
         $this->addSql('ALTER TABLE companies CHANGE name name MEDIUMTEXT NOT NULL, CHANGE siren siren VARCHAR(15) NOT NULL');
     }
 
