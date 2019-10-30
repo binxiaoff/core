@@ -19,10 +19,10 @@ use Unilend\Entity\Traits\{BlamableAddedTrait, BlamableArchivedTrait, BlamableUp
  *     denormalizationContext={"attachment:read"},
  *     itemOperations={
  *         "get": {
- *             "controller": NotFoundAction::class,
+ *             "controller": "ApiPlatform\Core\Action\NotFoundAction",
  *             "read": false,
  *             "output": false,
- *         },
+ *         }
  *     },
  *     collectionOperations={
  *         "post": {

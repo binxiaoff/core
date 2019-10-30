@@ -6,15 +6,21 @@ namespace Unilend\Entity;
 
 use ApiPlatform\Core\Annotation\ApiResource;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Entity\Traits\TimestampableTrait;
 
 /**
  * @ApiResource(
  *     itemOperations={
- *         "get": {"security": "is_granted('view', object.project)"}
+ *         "get": {"security": "is_granted('view', object..getProject())"},
+ *         "delete": {"security_post_denormalize": "is_granted('edit', object.getProject())"}
  *     },
  *     collectionOperations={
- *         "post"
+ *         "post": {
+ *             "security_post_denormalize": "is_granted('edit', object.getProject())",
+ *             "denormalizationContext": "projectAttachment:create"
+ *         }
  *     }
  * )
  * @ORM\Entity(repositoryClass="Unilend\Repository\ProjectAttachmentRepository")
@@ -40,6 +46,10 @@ class ProjectAttachment
      * @ORM\JoinColumns({
      *     @ORM\JoinColumn(name="id_project", nullable=false)
      * })
+     *
+     * @Assert\NotBlank
+     *
+     * @Groups({"projectAttachment:create"})
      */
     private $project;
 
@@ -50,8 +60,22 @@ class ProjectAttachment
      * @ORM\JoinColumns({
      *     @ORM\JoinColumn(name="id_attachment", nullable=false)
      * })
+     *
+     * @Assert\NotBlank
+     *
+     * @Groups({"projectAttachment:create"})
      */
     private $attachment;
+
+    /**
+     * @param Project    $project
+     * @param Attachment $attachment
+     */
+    public function __construct(Project $project, Attachment $attachment)
+    {
+        $this->project    = $project;
+        $this->attachment = $attachment;
+    }
 
     /**
      * @return int|null
