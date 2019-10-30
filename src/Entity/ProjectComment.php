@@ -4,11 +4,23 @@ declare(strict_types=1);
 
 namespace Unilend\Entity;
 
+use ApiPlatform\Core\Annotation\ApiResource;
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
 use Unilend\Entity\Traits\TimestampableTrait;
 
 /**
+ * @ApiResource(
+ *     collectionOperations={
+ *         "get": {"security": "is_granted('view', object.getProject())"},
+ *         "post": {"security_post_denormalize": "is_granted('view', object.getProject())"}
+ *     },
+ *     itemOperations={
+ *         "get": {"security": "is_granted('view', object.getProject())"},
+ *         "put": {"security_post_denormalize": "is_granted('edit', object)"}
+ *     }
+ * )
+ *
  * @Gedmo\Loggable(logEntryClass="Unilend\Entity\Versioned\VersionedProjectComment")
  *
  * @ORM\Entity
