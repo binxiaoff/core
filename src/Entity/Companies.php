@@ -118,9 +118,8 @@ class Companies
     /**
      * @param string $name
      */
-    public function __construct(
-        string $name
-    ) {
+    public function __construct(string $name)
+    {
         $this->staff                 = new ArrayCollection();
         $this->projectParticipations = new ArrayCollection();
         $this->name                  = $name;
