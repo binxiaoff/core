@@ -38,8 +38,8 @@ class TemporaryTokenAuthenticator extends AbstractGuardAuthenticator
      */
     public function start(Request $request, AuthenticationException $authException = null): Response
     {
-        $exception = new TemporaryTokenInvalidException('Temporary Token not found.', 0, $authException);
-        $event     = new TemporaryTokenAuthenticationFailureEvent($exception, $this->buildAuthenticationFailureResponse($exception->getMessageKey()));
+        $exception = new TemporaryTokenInvalidException('Temporary token is not found.', 0, $authException);
+        $event     = new TemporaryTokenAuthenticationFailureEvent($exception, $this->buildAuthenticationFailureResponse($exception->getMessage()));
         $this->dispatcher->dispatch($event, TemporaryTokenAuthenticationEvents::AUTHENTICATION_FAILURE);
 
         return $event->getResponse();
@@ -50,7 +50,7 @@ class TemporaryTokenAuthenticator extends AbstractGuardAuthenticator
      */
     public function supports(Request $request): bool
     {
-        return 1 === preg_match(self::SUPPORTED_PATH_PATTERN, $request->getPathInfo());
+        return $request->headers->has('X-AUTH-TOKEN');
     }
 
     /**
@@ -58,15 +58,12 @@ class TemporaryTokenAuthenticator extends AbstractGuardAuthenticator
      */
     public function getCredentials(Request $request)
     {
-        preg_match(self::SUPPORTED_PATH_PATTERN, $request->getPathInfo(), $matches);
-
-        $temporaryToken = $this->temporaryTokenRepository->findOneBy(['token' => $matches[1]]);
-
-        if (null === $temporaryToken) {
-            throw new TemporaryTokenInvalidException('Temporary Token not found.');
+        $temporaryTokenString = $request->headers->get('X-AUTH-TOKEN');
+        if (empty($temporaryTokenString)) {
+            throw (new TemporaryTokenInvalidException('Temporary token is not found.'));
         }
 
-        return $temporaryToken;
+        return $this->temporaryTokenRepository->findOneBy(['token' => $temporaryTokenString]);
     }
 
     /**
@@ -88,7 +85,11 @@ class TemporaryTokenAuthenticator extends AbstractGuardAuthenticator
      */
     public function checkCredentials($temporaryToken, UserInterface $user): bool
     {
-        if (false === $temporaryToken instanceof TemporaryToken || false === $temporaryToken->isValid()) {
+        if (null === $temporaryToken) {
+            throw new TemporaryTokenInvalidException('Temporary token is not found.');
+        }
+
+        if (false === $temporaryToken->isValid()) {
             throw new TemporaryTokenInvalidException('Temporary token is not valid.');
         }
 
@@ -100,7 +101,7 @@ class TemporaryTokenAuthenticator extends AbstractGuardAuthenticator
      */
     public function onAuthenticationFailure(Request $request, AuthenticationException $authException): Response
     {
-        $event = new TemporaryTokenAuthenticationFailureEvent($authException, $this->buildAuthenticationFailureResponse($authException->getMessageKey()));
+        $event = new TemporaryTokenAuthenticationFailureEvent($authException, $this->buildAuthenticationFailureResponse($authException->getMessage()));
         $this->dispatcher->dispatch($event, TemporaryTokenAuthenticationEvents::AUTHENTICATION_FAILURE);
 
         return $event->getResponse();
@@ -108,6 +109,8 @@ class TemporaryTokenAuthenticator extends AbstractGuardAuthenticator
 
     /**
      * {@inheritdoc}
+     *
+     * @throws Exception
      */
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, $providerKey)
     {

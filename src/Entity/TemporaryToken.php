@@ -4,36 +4,14 @@ declare(strict_types=1);
 
 namespace Unilend\Entity;
 
-use ApiPlatform\Core\Action\NotFoundAction;
-use ApiPlatform\Core\Annotation\{ApiProperty, ApiResource, ApiSubresource};
 use DateInterval;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use DomainException;
 use Exception;
-use Symfony\Component\Serializer\Annotation\Groups;
-use Unilend\Controller\UpdateClientViaTemporaryToken;
-use Unilend\Dto\TemporaryTokenClient;
 use Unilend\Entity\Traits\TimestampableTrait;
 
 /**
- * @ApiResource(
- *     collectionOperations={},
- *     itemOperations={
- *         "get": {
- *             "controller": NotFoundAction::class,
- *             "read": false,
- *             "output": false,
- *         },
- *         "api_temporary_tokens_client_put_subresource": {
- *             "method": "PUT",
- *             "path": "/temporary_tokens/{id}/client",
- *             "controller": UpdateClientViaTemporaryToken::class,
- *             "input": TemporaryTokenClient::class
- *         }
- *     },
- *     normalizationContext={"groups": {"temporary_token:read"}}
- * )
  * @ORM\Table(name="temporary_token", indexes={@ORM\Index(name="fk_temporary_token_id_client", columns={"id_client"})})
  * @ORM\Entity(repositoryClass="Unilend\Repository\TemporaryTokenRepository")
  * @ORM\HasLifecycleCallbacks
@@ -50,8 +28,6 @@ class TemporaryToken
      * @var DateTimeImmutable|null
      *
      * @ORM\Column(name="updated", type="datetime_immutable", nullable=true)
-     *
-     * @Groups({"temporary_token:read"})
      */
     protected $updated;
 
@@ -59,8 +35,6 @@ class TemporaryToken
      * @var DateTimeImmutable|null
      *
      * @ORM\Column(name="added", type="datetime_immutable")
-     *
-     * @Groups({"temporary_token:read"})
      */
     protected $added;
 
@@ -68,10 +42,6 @@ class TemporaryToken
      * @var string
      *
      * @ORM\Column(name="token", type="string", length=150)
-     *
-     * @Groups({"temporary_token:read"})
-     *
-     * @ApiProperty(identifier=true)
      */
     private $token;
 
@@ -79,8 +49,6 @@ class TemporaryToken
      * @var DateTimeImmutable
      *
      * @ORM\Column(name="expires", type="datetime_immutable")
-     *
-     * @Groups({"temporary_token:read"})
      */
     private $expires;
 
@@ -88,8 +56,6 @@ class TemporaryToken
      * @var DateTimeImmutable
      *
      * @ORM\Column(name="accessed", type="datetime_immutable", nullable=true)
-     *
-     * @Groups({"temporary_token:read"})
      */
     private $accessed;
 
@@ -99,10 +65,6 @@ class TemporaryToken
      * @ORM\Id
      * @ORM\Column(type="integer")
      * @ORM\GeneratedValue(strategy="IDENTITY")
-     *
-     * @Groups({"temporary_token:read"})
-     *
-     * @ApiProperty(identifier=false)
      */
     private $id;
 
@@ -113,10 +75,6 @@ class TemporaryToken
      * @ORM\JoinColumns({
      *     @ORM\JoinColumn(name="id_client", referencedColumnName="id_client", nullable=false)
      * })
-     *
-     * @Groups({"temporary_token:read"})
-     *
-     * @ApiSubresource
      */
     private $client;
 
@@ -230,8 +188,6 @@ class TemporaryToken
      * @throws Exception
      *
      * @return bool
-     *
-     * @Groups({"temporary_token:read"})
      */
     public function isValid(): bool
     {
