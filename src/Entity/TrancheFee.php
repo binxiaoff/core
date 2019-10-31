@@ -6,6 +6,7 @@ namespace Unilend\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
+use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Entity\Embeddable\Fee;
 use Unilend\Entity\Traits\TimestampableTrait;
 use Unilend\Traits\ConstantsAwareTrait;
@@ -41,6 +42,8 @@ class TrancheFee
      * @ORM\Embedded(class="Unilend\Entity\Embeddable\Fee")
      *
      * @Gedmo\Versioned
+     *
+     * @Assert\Valid
      */
     private $fee;
 
@@ -51,15 +54,19 @@ class TrancheFee
      * @ORM\JoinColumns({
      *     @ORM\JoinColumn(name="id_tranche", nullable=false)
      * })
+     *
+     * @Assert\Valid
      */
     private $tranche;
 
     /**
-     * Initialise some object-value.
+     * @param Tranche $tranche
+     * @param Fee     $fee
      */
-    public function __construct()
+    public function __construct(Tranche $tranche, Fee $fee)
     {
-        $this->fee = new Fee();
+        $this->fee     = $fee;
+        $this->tranche = $tranche;
     }
 
     /**
@@ -96,5 +103,15 @@ class TrancheFee
     public function getFee(): Fee
     {
         return $this->fee;
+    }
+
+    /**
+     * @return string|null
+     *
+     * @Assert\Choice(callback="getFeeTypes")
+     */
+    public function getFeeType(): string
+    {
+        return $this->fee->getType();
     }
 }

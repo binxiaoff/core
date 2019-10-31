@@ -6,6 +6,7 @@ namespace Unilend\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
+use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Entity\Embeddable\Fee;
 use Unilend\Entity\Traits\TimestampableTrait;
 use Unilend\Traits\ConstantsAwareTrait;
@@ -39,6 +40,8 @@ class ProjectParticipationFee
      * @ORM\Embedded(class="Unilend\Entity\Embeddable\Fee")
      *
      * @Gedmo\Versioned
+     *
+     * @Assert\Valid
      */
     private $fee;
 
@@ -49,18 +52,19 @@ class ProjectParticipationFee
      * @ORM\JoinColumns({
      *     @ORM\JoinColumn(name="id_project_participation", nullable=false)
      * })
+     *
+     * @Assert\Valid
      */
     private $projectParticipation;
 
     /**
-     * Initialise some object-value.
-     *
      * @param ProjectParticipation $projectParticipation
+     * @param Fee                  $fee
      */
-    public function __construct(ProjectParticipation $projectParticipation)
+    public function __construct(ProjectParticipation $projectParticipation, Fee $fee)
     {
         $this->projectParticipation = $projectParticipation;
-        $this->fee                  = new Fee();
+        $this->fee                  = $fee;
     }
 
     /**
@@ -93,5 +97,15 @@ class ProjectParticipationFee
     public static function getFeeTypes(): array
     {
         return self::getConstants('TYPE_');
+    }
+
+    /**
+     * @return string
+     *
+     * @Assert\Choice(callback="getFeeTypes")
+     */
+    public function getFeeType(): string
+    {
+        return $this->fee->getType();
     }
 }
