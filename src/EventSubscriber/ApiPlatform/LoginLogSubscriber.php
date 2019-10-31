@@ -108,7 +108,7 @@ class LoginLogSubscriber implements EventSubscriberInterface
         /** @var Clients $client */
         $client = $this->clientsRepository->findOneBy(['email' => $event->getRefreshToken()->getUsername()]);
 
-        $successfulLogin = $this->clientLoginHistoryFactory->createClientLoginSuccess($client, ClientSuccessfulLogin::ACTION_REFRESH_JWT);
+        $successfulLogin = $this->clientLoginHistoryFactory->createClientLoginSuccess($client, ClientSuccessfulLogin::ACTION_JWT_REFRESH);
         $this->clientSuccessfulLoginRepository->save($successfulLogin);
 
         $this->alreadyLogged = true;

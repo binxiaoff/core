@@ -12,7 +12,7 @@ use Symfony\Component\Security\Guard\AbstractGuardAuthenticator;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use Unilend\Entity\TemporaryToken;
 use Unilend\Event\TemporaryToken\{TemporaryTokenAuthenticationEvents, TemporaryTokenAuthenticationFailureEvent, TemporaryTokenAuthenticationSuccessEvent};
-use Unilend\Exception\TemporaryToken\TemporaryTokenInvalidException;
+use Unilend\Exception\TemporaryToken\InvalidTemporaryTokenException;
 use Unilend\Repository\TemporaryTokenRepository;
 
 class TemporaryTokenAuthenticator extends AbstractGuardAuthenticator
@@ -38,7 +38,7 @@ class TemporaryTokenAuthenticator extends AbstractGuardAuthenticator
      */
     public function start(Request $request, AuthenticationException $authException = null): Response
     {
-        $exception = new TemporaryTokenInvalidException('Temporary token is not found.', 0, $authException);
+        $exception = new InvalidTemporaryTokenException('Temporary token is not found.', 0, $authException);
         $event     = new TemporaryTokenAuthenticationFailureEvent($exception, $this->buildAuthenticationFailureResponse($exception->getMessage()));
         $this->dispatcher->dispatch($event, TemporaryTokenAuthenticationEvents::AUTHENTICATION_FAILURE);
 
@@ -60,7 +60,7 @@ class TemporaryTokenAuthenticator extends AbstractGuardAuthenticator
     {
         $temporaryTokenString = $request->headers->get('X-AUTH-TOKEN');
         if (empty($temporaryTokenString)) {
-            throw (new TemporaryTokenInvalidException('Temporary token is not found.'));
+            throw (new InvalidTemporaryTokenException('Temporary token is not found.'));
         }
 
         return $this->temporaryTokenRepository->findOneBy(['token' => $temporaryTokenString]);
@@ -86,11 +86,11 @@ class TemporaryTokenAuthenticator extends AbstractGuardAuthenticator
     public function checkCredentials($temporaryToken, UserInterface $user): bool
     {
         if (null === $temporaryToken) {
-            throw new TemporaryTokenInvalidException('Temporary token is not found.');
+            throw new InvalidTemporaryTokenException('Temporary token is not found.');
         }
 
         if (false === $temporaryToken->isValid()) {
-            throw new TemporaryTokenInvalidException('Temporary token is not valid.');
+            throw new InvalidTemporaryTokenException('Temporary token is not valid.');
         }
 
         return true;

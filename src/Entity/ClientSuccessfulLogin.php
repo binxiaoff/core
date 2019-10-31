@@ -23,7 +23,7 @@ class ClientSuccessfulLogin
     use ConstantsAwareTrait;
 
     public const ACTION_JWT_LOGIN       = 'jwt';
-    public const ACTION_REFRESH_JWT     = 'refresh_jwt';
+    public const ACTION_JWT_REFRESH     = 'jwt_refresh';
     public const ACTION_TEMPORARY_TOKEN = 'temporary_token';
 
     /**
