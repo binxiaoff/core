@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\Entity;
 
+use ApiPlatform\Core\Annotation\ApiResource;
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -12,6 +13,8 @@ use Unilend\Entity\Traits\TimestampableTrait;
 use Unilend\Traits\ConstantsAwareTrait;
 
 /**
+ * @ApiResource
+ *
  * @ORM\Entity
  * @ORM\HasLifecycleCallbacks
  *
@@ -113,5 +116,13 @@ class TrancheFee
     public function getFeeType(): string
     {
         return $this->fee->getType();
+    }
+
+    /**
+     * @return array|string[]
+     */
+    public function getFeeTypes(): array
+    {
+        return static::getConstants('TYPE_');
     }
 }

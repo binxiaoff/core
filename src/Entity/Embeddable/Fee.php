@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Unilend\Entity\Embeddable;
 
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * @ORM\Embeddable
@@ -17,6 +18,8 @@ class Fee
      * @var string
      *
      * @ORM\Column(type="string", length=50)
+     *
+     * @Assert\NotBlank
      */
     private $type;
 
@@ -31,6 +34,10 @@ class Fee
      * @var string
      *
      * @ORM\Column(type="decimal", precision=4, scale=4)
+     *
+     * @Assert\Type("numeric")
+     *
+     * @Assert\NotBlank
      */
     private $rate;
 
@@ -39,12 +46,23 @@ class Fee
      *
      * @ORM\Column(type="boolean")
      */
-    private $isRecurring;
+    private $recurring;
+
+    /**
+     * @param string $rate
+     * @param string $type
+     */
+    public function __construct(string $rate, string $type)
+    {
+        $this->rate      = $rate;
+        $this->recurring = false;
+        $this->type      = $type;
+    }
 
     /**
      * @return string|null
      */
-    public function getRate(): ?string
+    public function getRate(): string
     {
         return $this->rate;
     }
@@ -104,19 +122,19 @@ class Fee
     /**
      * @return bool|null
      */
-    public function isRecurring(): ?bool
+    public function isRecurring(): bool
     {
-        return $this->isRecurring;
+        return $this->recurring;
     }
 
     /**
-     * @param bool $isRecurring
+     * @param bool $recurring
      *
      * @return self
      */
-    public function setIsRecurring(bool $isRecurring): self
+    public function setRecurring(bool $recurring): self
     {
-        $this->isRecurring = $isRecurring;
+        $this->recurring = $recurring;
 
         return $this;
     }
