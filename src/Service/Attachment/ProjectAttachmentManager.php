@@ -63,8 +63,7 @@ class ProjectAttachmentManager
 
         $projectAttachment = $this->projectAttachmentRepository->findOneBy(['attachment' => $attachment, 'project' => $project]);
         if (null === $projectAttachment) {
-            $projectAttachment = new ProjectAttachment();
-            $projectAttachment->setAttachment($attachment);
+            $projectAttachment = new ProjectAttachment($project, $attachment);
 
             $project->addProjectAttachment($projectAttachment);
 

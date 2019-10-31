@@ -225,8 +225,7 @@ class ProjectAttachmentManagerTest extends TestCase
         $project    = $project    ?? $this->createProject();
         $attachment = $attachment ?? new Attachment('test', new Clients());
 
-        $projectAttachment = new ProjectAttachment();
-        $projectAttachment->setAttachment($attachment);
+        $projectAttachment = new ProjectAttachment($project, $attachment);
 
         $project->addProjectAttachment($projectAttachment);
 
