@@ -32,7 +32,7 @@ class InseeManager
     public function searchByName(string $name, int $limit = 5): array
     {
         $name     = str_replace(' ', '-', trim($name));
-        $response = $this->client->get(self::ENDPOINT_URL . "?nombre={$limit}}&q=periode(denominationUniteLegale:'{$name}')");
+        $response = $this->client->get(self::ENDPOINT_URL . "?nombre={$limit}&q=periode(denominationUniteLegale:'{$name}')");
 
         if (Response::HTTP_OK !== $response->getStatusCode()) {
             return [];

@@ -12,7 +12,17 @@ use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Entity\Traits\TimestampableTrait;
 
 /**
- * @ApiResource
+ * @ApiResource(
+ *     collectionOperations={
+ *         "get",
+ *         "post",
+ *         "autocomplete": {
+ *             "method": "get",
+ *             "path": "/companies/autocomplete/{term}",
+ *             "controller": "Unilend\Controller\Companies\Autocomplete"
+ *         }
+ *     }
+ * )
  *
  * @ORM\Entity(repositoryClass="Unilend\Repository\CompaniesRepository")
  * @ORM\HasLifecycleCallbacks
@@ -42,7 +52,7 @@ class Companies
      *     @ORM\JoinColumn(name="id_status", referencedColumnName="id")
      * })
      */
-    private $idStatus;
+    private $status;
 
     /**
      * @var string
@@ -58,9 +68,8 @@ class Companies
     /**
      * @var string
      *
-     * @ORM\Column(name="siren", type="string", length=15)
+     * @ORM\Column(name="siren", type="string", length=15, nullable=true)
      *
-     * @Assert\NotBlank
      * @Assert\Length(9)
      * @Assert\Luhn
      *
@@ -107,19 +116,14 @@ class Companies
     private $emailDomain;
 
     /**
-     * Companies constructor.
-     *
      * @param string $name
-     * @param string $siren
      */
     public function __construct(
-        string $name,
-        string $siren
+        string $name
     ) {
         $this->staff                 = new ArrayCollection();
         $this->projectParticipations = new ArrayCollection();
         $this->name                  = $name;
-        $this->siren                 = $siren;
     }
 
     /**
@@ -182,13 +186,11 @@ class Companies
     }
 
     /**
-     * Set siren.
-     *
      * @param string $siren
      *
      * @return Companies
      */
-    public function setSiren($siren): Companies
+    public function setSiren(?string $siren): Companies
     {
         $this->siren = $siren;
 
@@ -196,11 +198,9 @@ class Companies
     }
 
     /**
-     * Get siren.
-     *
      * @return string
      */
-    public function getSiren(): string
+    public function getSiren(): ?string
     {
         return $this->siren;
     }
@@ -222,7 +222,7 @@ class Companies
      *
      * @return Companies
      */
-    public function setParent(Companies $parent = null): Companies
+    public function setParent(?Companies $parent = null): Companies
     {
         $this->parent = $parent;
 
@@ -242,19 +242,19 @@ class Companies
     /**
      * @return CompanyStatus|null
      */
-    public function getIdStatus(): ?CompanyStatus
+    public function getStatus(): ?CompanyStatus
     {
-        return $this->idStatus;
+        return $this->status;
     }
 
     /**
-     * @param CompanyStatus $idStatus
+     * @param CompanyStatus $status
      *
      * @return Companies
      */
-    public function setIdStatus(CompanyStatus $idStatus): Companies
+    public function setStatus(CompanyStatus $status): Companies
     {
-        $this->idStatus = $idStatus;
+        $this->status = $status;
 
         return $this;
     }

@@ -41,13 +41,9 @@ class CompanySearchManager
      *
      * @return Companies|null
      */
-    public function searchCompanyBySiren(string $siren): ?Companies
+    public function searchCompanyBySiren(string $siren): ?array
     {
-        if ($companyData = $this->inseeManager->searchBySirenNumber($siren)) {
-            return $this->createCompany($companyData);
-        }
-
-        return null;
+        return $this->inseeManager->searchBySirenNumber($siren);
     }
 
     /**
@@ -59,17 +55,7 @@ class CompanySearchManager
     {
         return array_merge(
             $this->companiesRepository->findByName($term, 5),
-            array_map([$this, 'createCompany'], $this->inseeManager->searchByName($term))
+            $this->inseeManager->searchByName($term)
         );
-    }
-
-    /**
-     * @param array $companyData
-     *
-     * @return Companies
-     */
-    private function createCompany(array $companyData): Companies
-    {
-        return new Companies($companyData['name'], $companyData['siren']);
     }
 }

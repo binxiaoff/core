@@ -105,7 +105,7 @@ class Project
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\Companies", cascade={"persist"})
      * @ORM\JoinColumns({
-     *     @ORM\JoinColumn(name="id_borrower_company", referencedColumnName="id_company", nullable=true)
+     *     @ORM\JoinColumn(name="id_borrower_company", referencedColumnName="id_company")
      * })
      *
      * @Gedmo\Versioned
@@ -399,10 +399,13 @@ class Project
     private $tags;
 
     /**
-     * @param Clients $submitter
+     * @param Clients   $submitter
+     * @param Companies $borrowerCompany
      */
-    public function __construct(Clients $submitter)
-    {
+    public function __construct(
+        Clients $submitter,
+        Companies $borrowerCompany
+    ) {
         $this->projectAttachments         = new ArrayCollection();
         $this->projectParticipations      = new ArrayCollection();
         $this->projectFees                = new ArrayCollection();
@@ -421,6 +424,8 @@ class Project
         $this->syndicationType   = static::PROJECT_SYNDICATION_TYPE_PRIMARY;
         $this->participationType = static::PROJECT_PARTICIPATION_TYPE_DIRECT;
         $this->offerVisibility   = static::OFFER_VISIBILITY_PUBLIC;
+
+        $this->borrowerCompany = $borrowerCompany;
 
         if (null === $this->hash) {
             try {
@@ -460,9 +465,9 @@ class Project
     }
 
     /**
-     * @return Companies|null
+     * @return Companies
      */
-    public function getBorrowerCompany(): ?Companies
+    public function getBorrowerCompany(): Companies
     {
         return $this->borrowerCompany;
     }

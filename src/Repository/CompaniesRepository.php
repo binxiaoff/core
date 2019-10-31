@@ -107,14 +107,14 @@ class CompaniesRepository extends ServiceEntityRepository
      * @param string $name
      * @param int    $maxResult
      *
-     * @return array|Companies[]
+     * @return array|array[]
      */
     public function findByName(string $name, ?int $maxResult = null): array
     {
         $queryBuilder = $this->createQueryBuilder('c')
-            ->select('c.name, c.siren')
-            ->where('c.name LIKE %:name%')
-            ->setParameter('name', $name)
+            ->select('c.name, c.siren, c.idCompany as id')
+            ->where('c.name LIKE :name')
+            ->setParameter('name', '%' . $name . '%')
             ->setMaxResults($maxResult)
         ;
 
