@@ -88,22 +88,10 @@ class TrancheOfferFee
     }
 
     /**
-     * @return Fee|null
+     * @return Fee
      */
     public function getFee(): Fee
     {
         return $this->fee;
-    }
-
-    /**
-     * @param Fee $fee
-     *
-     * @return TrancheOfferFee
-     */
-    public function setFee(Fee $fee): TrancheOfferFee
-    {
-        $this->fee = $fee;
-
-        return $this;
     }
 }
