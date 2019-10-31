@@ -162,7 +162,7 @@ class AttachmentManagerTest extends TestCase
         $attachmentManager->archive($attachment);
 
         static::assertSame($this->realUser, $attachment->getArchivedBy());
-        static::assertInstanceOf(DateTimeInterface::class, $attachment->getArchived());
+        static::assertInstanceOf(DateTimeInterface::class, $attachment->getArchivedAt());
         $this->attachmentRepository->save(Argument::exact($attachment))->shouldHaveBeenCalled();
     }
 

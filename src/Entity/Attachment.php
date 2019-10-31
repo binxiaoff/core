@@ -71,6 +71,7 @@ use Unilend\Entity\Traits\{BlamableAddedTrait, BlamableArchivedTrait, BlamableUp
  * )
  *
  * @Gedmo\Loggable(logEntryClass="Unilend\Entity\Versioned\VersionedAttachment")
+ * @Gedmo\SoftDeleteable(fieldName="archivedAt")
  *
  * @ORM\Entity(repositoryClass="Unilend\Repository\AttachmentRepository")
  * @ORM\HasLifecycleCallbacks
@@ -98,7 +99,7 @@ class Attachment
      *
      * @Groups({"attachment:read"})
      */
-    private $archived;
+    private $archivedAt;
 
     /**
      * @var DateTimeImmutable
@@ -195,13 +196,13 @@ class Attachment
     }
 
     /**
-     * @param DateTimeImmutable $archived
+     * @param DateTimeImmutable $archivedAt
      *
      * @return Attachment
      */
-    public function setArchived(DateTimeImmutable $archived): Attachment
+    public function setArchivedAt(DateTimeImmutable $archivedAt): Attachment
     {
-        $this->archived = $archived;
+        $this->archivedAt = $archivedAt;
 
         return $this;
     }
@@ -215,7 +216,7 @@ class Attachment
      */
     public function archive(Clients $clients): Attachment
     {
-        $this->setArchived(new DateTimeImmutable())
+        $this->setArchivedAt(new DateTimeImmutable())
             ->setArchivedBy($clients)
         ;
 
@@ -225,9 +226,9 @@ class Attachment
     /**
      * @return DateTimeImmutable
      */
-    public function getArchived(): ?DateTimeImmutable
+    public function getArchivedAt(): ?DateTimeImmutable
     {
-        return $this->archived;
+        return $this->archivedAt;
     }
 
     /**
