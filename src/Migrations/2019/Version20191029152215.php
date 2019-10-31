@@ -15,7 +15,7 @@ final class Version20191029152215 extends AbstractMigration
 {
     public function getDescription(): string
     {
-        return '';
+        return 'CALS-484 (Project creation finalization)';
     }
 
     /**
@@ -28,8 +28,9 @@ final class Version20191029152215 extends AbstractMigration
         // this up() migration is auto-generated, please modify it to your needs
         $this->abortIf('mysql' !== $this->connection->getDatabasePlatform()->getName(), 'Migration can only be executed safely on \'mysql\'.');
 
-        $this->addSql('ALTER TABLE project CHANGE id_borrower_company id_borrower_company INT DEFAULT NULL, CHANGE description description MEDIUMTEXT DEFAULT NULL');
         $this->addSql('ALTER TABLE companies DROP siret');
+        $this->addSql('ALTER TABLE companies CHANGE siren siren VARCHAR(15) DEFAULT NULL');
+        $this->addSql('ALTER TABLE project CHANGE description description MEDIUMTEXT DEFAULT NULL');
     }
 
     /**
@@ -43,6 +44,7 @@ final class Version20191029152215 extends AbstractMigration
         $this->abortIf('mysql' !== $this->connection->getDatabasePlatform()->getName(), 'Migration can only be executed safely on \'mysql\'.');
 
         $this->addSql('ALTER TABLE companies ADD siret VARCHAR(14) DEFAULT NULL COLLATE utf8mb4_unicode_ci');
-        $this->addSql('ALTER TABLE project CHANGE id_borrower_company id_borrower_company INT NOT NULL, CHANGE description description MEDIUMTEXT NOT NULL COLLATE utf8mb4_unicode_ci');
+        $this->addSql('ALTER TABLE companies CHANGE siren siren VARCHAR(15) NOT NULL COLLATE utf8mb4_unicode_ci');
+        $this->addSql('ALTER TABLE project CHANGE description description MEDIUMTEXT NOT NULL COLLATE utf8mb4_unicode_ci');
     }
 }

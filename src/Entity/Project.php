@@ -105,7 +105,7 @@ class Project
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\Companies", cascade={"persist"})
      * @ORM\JoinColumns({
-     *     @ORM\JoinColumn(name="id_borrower_company", referencedColumnName="id_company")
+     *     @ORM\JoinColumn(name="id_borrower_company", referencedColumnName="id_company", nullable=false)
      * })
      *
      * @Gedmo\Versioned
