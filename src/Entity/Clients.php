@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\Entity;
 
-use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Core\Annotation\{ApiProperty, ApiResource};
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
@@ -66,6 +66,8 @@ class Clients implements UserInterface, EquatableInterface
      * @var string
      *
      * @ORM\Column(name="hash", type="string", length=191)
+     *
+     * @ApiProperty(identifier=true)
      */
     private $hash;
 
@@ -142,7 +144,7 @@ class Clients implements UserInterface, EquatableInterface
     /**
      * @var string
      *
-     * @Groups({"client:read", "client:write", "temporary_token:read"})
+     * @Groups({"client:read", "client:write"})
      *
      * @ORM\Column(name="email", type="string", length=191, nullable=true, unique=true)
      *
@@ -185,7 +187,9 @@ class Clients implements UserInterface, EquatableInterface
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="IDENTITY")
      *
-     * @Groups({"client:read", "temporary_token:read"})
+     * @Groups({"client:read"})
+     *
+     * @ApiProperty(identifier=false)
      */
     private $idClient;
 
@@ -564,7 +568,7 @@ class Clients implements UserInterface, EquatableInterface
     }
 
     /**
-     * @Groups({"client:read", "temporary_token:read"})
+     * @Groups({"client:read"})
      *
      * @return bool
      */

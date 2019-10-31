@@ -2,20 +2,17 @@
 
 declare(strict_types=1);
 
-namespace Unilend\EventSubscriber;
+namespace Unilend\EventSubscriber\ApiPlatform;
 
-use Doctrine\ORM\OptimisticLockException;
-use Doctrine\ORM\ORMException;
+use Doctrine\ORM\{ORMException, OptimisticLockException};
 use Exception;
 use Gesdinet\JWTRefreshTokenBundle\Event\RefreshEvent;
-use Lexik\Bundle\JWTAuthenticationBundle\Event\AuthenticationFailureEvent;
-use Lexik\Bundle\JWTAuthenticationBundle\Event\JWTCreatedEvent;
+use Lexik\Bundle\JWTAuthenticationBundle\Event\{AuthenticationFailureEvent, JWTCreatedEvent};
 use Lexik\Bundle\JWTAuthenticationBundle\Events as JwtEvents;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Unilend\Entity\{ClientSuccessfulLogin, Clients};
-use Unilend\Repository\ClientFailedLoginRepository;
-use Unilend\Repository\ClientsRepository;
-use Unilend\Repository\ClientSuccessfulLoginRepository;
+use Unilend\Event\TemporaryToken\{TemporaryTokenAuthenticationEvents, TemporaryTokenAuthenticationFailureEvent, TemporaryTokenAuthenticationSuccessEvent};
+use Unilend\Repository\{ClientFailedLoginRepository, ClientSuccessfulLoginRepository, ClientsRepository};
 use Unilend\Service\User\ClientLoginFactory;
 
 class LoginLogSubscriber implements EventSubscriberInterface
@@ -68,9 +65,11 @@ class LoginLogSubscriber implements EventSubscriberInterface
     public static function getSubscribedEvents(): array
     {
         return [
-            JwtEvents::JWT_CREATED            => 'onLoginSuccess',
-            'gesdinet.refresh_token'          => 'onLoginRefresh',
-            JwtEvents::AUTHENTICATION_FAILURE => 'onLoginFailure',
+            JwtEvents::JWT_CREATED                                     => 'onLoginSuccess',
+            'gesdinet.refresh_token'                                   => 'onLoginRefresh',
+            JwtEvents::AUTHENTICATION_FAILURE                          => 'onLoginFailure',
+            TemporaryTokenAuthenticationEvents::AUTHENTICATION_SUCCESS => 'onTemporaryTokenLoginSuccess',
+            TemporaryTokenAuthenticationEvents::AUTHENTICATION_FAILURE => 'onTemporaryTokenLoginFailure',
         ];
     }
 
@@ -89,7 +88,7 @@ class LoginLogSubscriber implements EventSubscriberInterface
         /** @var Clients $client */
         $client = $this->clientsRepository->findOneBy(['email' => $event->getUser()->getUsername()]);
 
-        $successfulLogin = $this->clientLoginHistoryFactory->createClientLoginSuccess($client, ClientSuccessfulLogin::ACTION_LOGIN);
+        $successfulLogin = $this->clientLoginHistoryFactory->createClientLoginSuccess($client, ClientSuccessfulLogin::ACTION_JWT_LOGIN);
         $this->clientSuccessfulLoginRepository->save($successfulLogin);
         $this->alreadyLogged = true;
     }
@@ -109,7 +108,7 @@ class LoginLogSubscriber implements EventSubscriberInterface
         /** @var Clients $client */
         $client = $this->clientsRepository->findOneBy(['email' => $event->getRefreshToken()->getUsername()]);
 
-        $successfulLogin = $this->clientLoginHistoryFactory->createClientLoginSuccess($client, ClientSuccessfulLogin::ACTION_REFRESH);
+        $successfulLogin = $this->clientLoginHistoryFactory->createClientLoginSuccess($client, ClientSuccessfulLogin::ACTION_JWT_REFRESH);
         $this->clientSuccessfulLoginRepository->save($successfulLogin);
 
         $this->alreadyLogged = true;
@@ -121,6 +120,40 @@ class LoginLogSubscriber implements EventSubscriberInterface
      * @throws Exception
      */
     public function onLoginFailure(AuthenticationFailureEvent $event): void
+    {
+        $authenticationException = $event->getException();
+
+        $username = ($token = $authenticationException->getToken()) ? $token->getUsername() : null;
+        $message  = $authenticationException->getMessage();
+
+        $failedLogin = $this->clientLoginHistoryFactory->createClientLoginFailure($message, $username);
+        $this->clientFailedLoginRepository->save($failedLogin);
+    }
+
+    /**
+     * @param TemporaryTokenAuthenticationSuccessEvent $event
+     *
+     * @throws ORMException
+     * @throws OptimisticLockException
+     * @throws Exception
+     */
+    public function onTemporaryTokenLoginSuccess(TemporaryTokenAuthenticationSuccessEvent $event): void
+    {
+        /** @var Clients $client */
+        $client = $this->clientsRepository->findOneBy(['email' => $event->getUser()->getUsername()]);
+
+        $successfulLogin = $this->clientLoginHistoryFactory->createClientLoginSuccess($client, ClientSuccessfulLogin::ACTION_TEMPORARY_TOKEN);
+        $this->clientSuccessfulLoginRepository->save($successfulLogin);
+    }
+
+    /**
+     * @param TemporaryTokenAuthenticationFailureEvent $event
+     *
+     * @throws ORMException
+     * @throws OptimisticLockException
+     * @throws Exception
+     */
+    public function onTemporaryTokenLoginFailure(TemporaryTokenAuthenticationFailureEvent $event): void
     {
         $authenticationException = $event->getException();
 
