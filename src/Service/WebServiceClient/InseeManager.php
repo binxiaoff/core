@@ -6,6 +6,7 @@ namespace Unilend\Service\WebServiceClient;
 
 use GuzzleHttp\Client;
 use Symfony\Component\HttpFoundation\Response;
+use Unilend\Entity\Companies;
 
 class InseeManager
 {
@@ -23,34 +24,35 @@ class InseeManager
     }
 
     /**
-     * @param string $siren
+     * @param string $name
+     * @param int    $limit
      *
-     * @return array
+     * @return array|Companies[]
      */
-    public function searchByName(string $siren): array
+    public function searchByName(string $name, int $limit = 5): array
     {
-        $siren     = str_replace(' ', '-', trim($siren));
-        $response  = $this->client->get(self::ENDPOINT_URL . '?nombre=5&q=periode(denominationUniteLegale:' . $siren . ')');
-        $companies = [];
+        $name     = str_replace(' ', '-', trim($name));
+        $response = $this->client->get(self::ENDPOINT_URL . "?nombre={$limit}&q=periode(denominationUniteLegale:'{$name}')");
 
         if (Response::HTTP_OK !== $response->getStatusCode()) {
-            return null;
+            return [];
         }
 
-        $content = json_decode($response->getBody()->getContents(), true);
+        $content = json_decode($response->getBody()->getContents(), true, 512, JSON_THROW_ON_ERROR);
 
         if (null === $content || empty($content['unitesLegales'])) {
-            return null;
+            return [];
         }
 
+        $companies = [];
+
         foreach ($content['unitesLegales'] as $legalEntity) {
-            $company = $this->extractSirenAndName($legalEntity);
-            if ($company) {
+            if ($company = $this->extractSirenAndName($legalEntity)) {
                 $companies[] = $company;
             }
         }
 
-        return $companies ?: [];
+        return $companies;
     }
 
     /**
@@ -63,13 +65,13 @@ class InseeManager
         $response = $this->client->get(self::ENDPOINT_URL . '/' . $siren);
 
         if (Response::HTTP_OK !== $response->getStatusCode()) {
-            return [];
+            return null;
         }
 
-        $content = json_decode($response->getBody()->getContents(), true);
+        $content = json_decode($response->getBody()->getContents(), true, 512, JSON_THROW_ON_ERROR);
 
         if (null === $content || empty($content['uniteLegale'])) {
-            return [];
+            return null;
         }
 
         return $this->extractSirenAndName($content['uniteLegale']);
@@ -82,19 +84,21 @@ class InseeManager
      */
     public function extractSirenAndName(array $legalEntity): ?array
     {
-        $company['siren'] = $legalEntity['siren'];
+        $siren = $legalEntity['siren'];
 
         if (false === empty($legalEntity['periodesUniteLegale'][0]['denominationUniteLegale'])) {
-            $company['name'] = $legalEntity['periodesUniteLegale'][0]['denominationUniteLegale'];
-        } elseif (
+            $name = $legalEntity['periodesUniteLegale'][0]['denominationUniteLegale'];
+
+            return ['name' => $name, 'siren' => $siren];
+        }
+
+        if (
             false === empty($legalEntity['prenom1UniteLegale'])
             && false === empty($legalEntity['periodesUniteLegale'][0]['nomUniteLegale'])
         ) {
-            $company['name'] = trim($legalEntity['prenom1UniteLegale'] . ' ' . $legalEntity['periodesUniteLegale'][0]['nomUniteLegale']);
-        }
+            $name = trim($legalEntity['prenom1UniteLegale'] . ' ' . $legalEntity['periodesUniteLegale'][0]['nomUniteLegale']);
 
-        if (false === empty($company['name']) && false === empty($company['siren'])) {
-            return $company;
+            return ['name' => $name, 'siren' => $siren];
         }
 
         return null;

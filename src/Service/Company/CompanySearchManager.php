@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\Service\Company;
 
+use Unilend\Entity\Companies;
 use Unilend\Repository\CompaniesRepository;
 use Unilend\Service\WebServiceClient\InseeManager;
 
@@ -31,21 +32,16 @@ class CompanySearchManager
      */
     public function fetchCompanies(string $term): array
     {
-        if (preg_match('/^\d{9}$/', $term)) {
-            $result = $this->searchCompanyBySiren($term);
-        } else {
-            $result = $this->searchCompaniesByName($term);
-        }
-
-        return $result;
+        return preg_match('/^\d{9}$/', $term) ?
+            [$this->searchCompanyBySiren($term)] : $this->searchCompaniesByName($term);
     }
 
     /**
      * @param string $siren
      *
-     * @return array|null
+     * @return Companies|null
      */
-    private function searchCompanyBySiren(string $siren): array
+    public function searchCompanyBySiren(string $siren): ?array
     {
         return $this->inseeManager->searchBySirenNumber($siren);
     }
@@ -57,6 +53,9 @@ class CompanySearchManager
      */
     private function searchCompaniesByName(string $term): array
     {
-        return array_merge($this->companiesRepository->findByName($term, 5), $this->inseeManager->searchByName($term));
+        return array_merge(
+            $this->companiesRepository->findByName($term, 5),
+            $this->inseeManager->searchByName($term)
+        );
     }
 }

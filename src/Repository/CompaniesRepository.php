@@ -6,7 +6,7 @@ namespace Unilend\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
-use Doctrine\ORM\{AbstractQuery, ORMException, OptimisticLockException, QueryBuilder};
+use Doctrine\ORM\{ORMException, OptimisticLockException, QueryBuilder};
 use Unilend\Entity\Companies;
 use Unilend\Repository\Traits\OrderByHandlerTrait;
 
@@ -107,17 +107,17 @@ class CompaniesRepository extends ServiceEntityRepository
      * @param string $name
      * @param int    $maxResult
      *
-     * @return mixed
+     * @return array|array[]
      */
-    public function findByName(string $name, int $maxResult)
+    public function findByName(string $name, ?int $maxResult = null): array
     {
         $queryBuilder = $this->createQueryBuilder('c')
-            ->select('c.name, c.siren')
-            ->where('c.name LIKE %:name%')
-            ->setParameter('name', $name)
+            ->select('c.name, c.siren, c.idCompany as id')
+            ->where('c.name LIKE :name')
+            ->setParameter('name', '%' . $name . '%')
             ->setMaxResults($maxResult)
         ;
 
-        return $queryBuilder->getQuery()->getResult(AbstractQuery::HYDRATE_ARRAY);
+        return $queryBuilder->getQuery()->getResult();
     }
 }

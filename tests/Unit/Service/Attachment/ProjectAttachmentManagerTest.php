@@ -9,7 +9,7 @@ use Exception;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
 use Prophecy\Prophecy\ObjectProphecy;
-use Unilend\Entity\{Attachment, AttachmentType, Clients, Project, ProjectAttachment, ProjectAttachmentType};
+use Unilend\Entity\{Attachment, AttachmentType, Clients, Companies, Project, ProjectAttachment, ProjectAttachmentType};
 use Unilend\Repository\{ProjectAttachmentRepository, ProjectAttachmentTypeRepository, ProjectRepository};
 use Unilend\Service\Attachment\{AttachmentManager, ProjectAttachmentManager};
 
@@ -238,6 +238,6 @@ class ProjectAttachmentManagerTest extends TestCase
      */
     protected function createProject(): Project
     {
-        return new Project(new Clients());
+        return new Project(new Clients(), new Companies('test'));
     }
 }

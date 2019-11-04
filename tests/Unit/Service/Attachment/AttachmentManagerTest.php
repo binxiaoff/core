@@ -78,6 +78,7 @@ class AttachmentManagerTest extends TestCase
      * @throws FileExistsException
      * @throws ORMException
      * @throws OptimisticLockException
+     * @throws Exception
      */
     public function testUpload(
         ?Clients $owner,
@@ -134,7 +135,7 @@ class AttachmentManagerTest extends TestCase
         $ownerId = Base::randomDigitNotNull();
         $idClientsReflectionProperty->setValue($owner, $ownerId);
 
-        $company = new Companies();
+        $company = new Companies('CALS', '850890666');
 
         $uploader   = new Clients();
         $uploaderId = $ownerId + 1;

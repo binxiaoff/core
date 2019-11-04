@@ -51,8 +51,9 @@ class Project
         setCurrentStatus as private baseStatusSetter;
     }
 
-    public const OFFER_VISIBILITY_PUBLIC  = 'public';
-    public const OFFER_VISIBILITY_PRIVATE = 'private';
+    public const OFFER_VISIBILITY_PRIVATE     = 'private';
+    public const OFFER_VISIBILITY_PARTICIPANT = 'participant';
+    public const OFFER_VISIBILITY_PUBLIC      = 'public';
 
     public const INTERNAL_RATING_SCORE_A_PLUS  = 'A+';
     public const INTERNAL_RATING_SCORE_A       = 'A';
@@ -171,9 +172,7 @@ class Project
     /**
      * @var string
      *
-     * @ORM\Column(type="text", length=16777215)
-     *
-     * @Assert\NotBlank
+     * @ORM\Column(type="text", length=16777215, nullable=true)
      *
      * @Gedmo\Versioned
      *
@@ -262,6 +261,7 @@ class Project
      *
      * @Gedmo\Versioned
      *
+     * @Assert\NotBlank
      * @Assert\Choice(callback="getOfferVisibilities")
      *
      * @Groups({"project:create"})
@@ -295,7 +295,6 @@ class Project
      *
      * @ORM\OneToMany(targetEntity="Unilend\Entity\Tranche", mappedBy="project", cascade={"persist"}, orphanRemoval=true)
      *
-     * @Assert\Count(min="1", minMessage="project.tranche.count")
      * @Assert\Valid
      *
      * @Groups({"project:create"})
@@ -329,6 +328,9 @@ class Project
 
     /**
      * @var ArrayCollection|ProjectStatus
+     *
+     * @Assert\Count(min="1")
+     * @Assert\Valid
      *
      * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectStatus", mappedBy="project", orphanRemoval=true, cascade={"persist"})
      */
@@ -391,11 +393,10 @@ class Project
     private $tags;
 
     /**
-     * Project constructor.
-     *
-     * @param Clients $submitter
+     * @param Clients   $submitter
+     * @param Companies $borrowerCompany
      */
-    public function __construct(Clients $submitter)
+    public function __construct(Clients $submitter, Companies $borrowerCompany)
     {
         $this->projectAttachments         = new ArrayCollection();
         $this->projectParticipations      = new ArrayCollection();
@@ -414,6 +415,8 @@ class Project
         $this->syndicationType   = static::PROJECT_SYNDICATION_TYPE_PRIMARY;
         $this->participationType = static::PROJECT_PARTICIPATION_TYPE_DIRECT;
         $this->offerVisibility   = static::OFFER_VISIBILITY_PUBLIC;
+
+        $this->borrowerCompany = $borrowerCompany;
 
         if (null === $this->hash) {
             try {
@@ -453,9 +456,9 @@ class Project
     }
 
     /**
-     * @return Companies|null
+     * @return Companies
      */
-    public function getBorrowerCompany(): ?Companies
+    public function getBorrowerCompany(): Companies
     {
         return $this->borrowerCompany;
     }

@@ -12,7 +12,17 @@ use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Entity\Traits\TimestampableTrait;
 
 /**
- * @ApiResource
+ * @ApiResource(
+ *     collectionOperations={
+ *         "get",
+ *         "post",
+ *         "autocomplete": {
+ *             "method": "get",
+ *             "path": "/companies/autocomplete/{term}",
+ *             "controller": "Unilend\Controller\Companies\Autocomplete"
+ *         }
+ *     }
+ * )
  *
  * @ORM\Entity(repositoryClass="Unilend\Repository\CompaniesRepository")
  * @ORM\HasLifecycleCallbacks
@@ -42,7 +52,7 @@ class Companies
      *     @ORM\JoinColumn(name="id_status", referencedColumnName="id")
      * })
      */
-    private $idStatus;
+    private $status;
 
     /**
      * @var string
@@ -58,24 +68,14 @@ class Companies
     /**
      * @var string
      *
-     * @ORM\Column(name="siren", type="string", length=15)
+     * @ORM\Column(name="siren", type="string", length=15, nullable=true)
      *
-     * @Assert\NotBlank
      * @Assert\Length(9)
      * @Assert\Luhn
      *
      * @Groups({"project:create"})
      */
     private $siren;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="siret", type="string", length=14, nullable=true)
-     *
-     * @Groups({"project:create"})
-     */
-    private $siret;
 
     /**
      * @var int
@@ -116,12 +116,13 @@ class Companies
     private $emailDomain;
 
     /**
-     * Companies constructor.
+     * @param string $name
      */
-    public function __construct()
+    public function __construct(string $name)
     {
         $this->staff                 = new ArrayCollection();
         $this->projectParticipations = new ArrayCollection();
+        $this->name                  = $name;
     }
 
     /**
@@ -133,9 +134,9 @@ class Companies
     }
 
     /**
-     * @return int|null
+     * @return int
      */
-    public function getId(): ?int
+    public function getId(): int
     {
         return $this->getIdCompany();
     }
@@ -184,13 +185,11 @@ class Companies
     }
 
     /**
-     * Set siren.
-     *
      * @param string $siren
      *
      * @return Companies
      */
-    public function setSiren($siren): Companies
+    public function setSiren(?string $siren): Companies
     {
         $this->siren = $siren;
 
@@ -198,37 +197,11 @@ class Companies
     }
 
     /**
-     * Get siren.
-     *
      * @return string
      */
-    public function getSiren(): string
+    public function getSiren(): ?string
     {
         return $this->siren;
-    }
-
-    /**
-     * Set siret.
-     *
-     * @param string $siret
-     *
-     * @return Companies
-     */
-    public function setSiret($siret): Companies
-    {
-        $this->siret = $siret;
-
-        return $this;
-    }
-
-    /**
-     * Get siret.
-     *
-     * @return string|null
-     */
-    public function getSiret(): ?string
-    {
-        return $this->siret;
     }
 
     /**
@@ -236,7 +209,7 @@ class Companies
      *
      * @return int
      */
-    public function getIdCompany()
+    public function getIdCompany(): int
     {
         return $this->idCompany;
     }
@@ -248,7 +221,7 @@ class Companies
      *
      * @return Companies
      */
-    public function setParent(Companies $parent = null): Companies
+    public function setParent(?Companies $parent = null): Companies
     {
         $this->parent = $parent;
 
@@ -268,19 +241,19 @@ class Companies
     /**
      * @return CompanyStatus|null
      */
-    public function getIdStatus(): ?CompanyStatus
+    public function getStatus(): ?CompanyStatus
     {
-        return $this->idStatus;
+        return $this->status;
     }
 
     /**
-     * @param CompanyStatus $idStatus
+     * @param CompanyStatus $status
      *
      * @return Companies
      */
-    public function setIdStatus(CompanyStatus $idStatus): Companies
+    public function setStatus(CompanyStatus $status): Companies
     {
-        $this->idStatus = $idStatus;
+        $this->status = $status;
 
         return $this;
     }
