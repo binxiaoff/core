@@ -78,8 +78,6 @@ class AttachmentManagerTest extends TestCase
         $ownerId = Base::randomDigitNotNull();
         $idClientsReflectionProperty->setValue($owner, $ownerId);
 
-        $company = new Companies('CALS', '850890666');
-
         $uploader   = new Clients();
         $uploaderId = Base::randomDigitNotNull() + 1;
         $idClientsReflectionProperty->setValue($uploader, $uploaderId);
@@ -111,9 +109,9 @@ class AttachmentManagerTest extends TestCase
         return [
             'no optionnal parameter'   => [],
             'type'                     => [new AttachmentType()],
-            'companyOwner'             => [null, new Companies()],
+            'companyOwner'             => [null, new Companies('test')],
             'description'              => [null, null, Base::randomLetter()],
-            'all optionnal parameters' => [new AttachmentType(), new Companies(), Base::randomLetter()],
+            'all optionnal parameters' => [new AttachmentType(), new Companies('test'), Base::randomLetter()],
         ];
     }
 
