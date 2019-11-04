@@ -5,13 +5,14 @@ declare(strict_types=1);
 namespace Unilend\Security\Voter;
 
 use Doctrine\ORM\NonUniqueResultException;
+use Exception;
 use LogicException;
 use Monolog\Logger;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 use Unilend\Entity\{Attachment, Clients, Project, ProjectAttachment, ProjectParticipationContact, ProjectStatus};
-use Unilend\Repository\{AttachmentSignatureRepository, ProjectAttachmentRepository, ProjectParticipationContactRepository};
+use Unilend\Repository\{AttachmentSignatureRepository, ProjectAttachmentRepository, ProjectParticipationContactRepository, ProjectRepository};
 use Unilend\Traits\ConstantsAwareTrait;
 
 class AttachmentVoter extends Voter
@@ -34,45 +35,41 @@ class AttachmentVoter extends Voter
      * @var Logger
      */
     private $logger;
+    /** @var ProjectRepository */
+    private $projectRepository;
 
     /**
      * @param AuthorizationCheckerInterface         $authorizationChecker
      * @param AttachmentSignatureRepository         $attachmentSignatureRepository
-     * @param ProjectAttachmentRepository           $projectAttachmentRepository
      * @param ProjectParticipationContactRepository $participationContactRepository
+     * @param ProjectRepository                     $projectRepository
      */
     public function __construct(
         AuthorizationCheckerInterface $authorizationChecker,
         AttachmentSignatureRepository $attachmentSignatureRepository,
-        ProjectAttachmentRepository $projectAttachmentRepository,
-        ProjectParticipationContactRepository $participationContactRepository
+        ProjectParticipationContactRepository $participationContactRepository,
+        ProjectRepository $projectRepository
     ) {
         $this->attachmentSignatureRepository  = $attachmentSignatureRepository;
-        $this->projectAttachmentRepository    = $projectAttachmentRepository;
         $this->participationContactRepository = $participationContactRepository;
         $this->authorizationChecker           = $authorizationChecker;
+        $this->projectRepository              = $projectRepository;
     }
 
     /**
      * {@inheritdoc}
      */
-    protected function supports($attribute, $subject)
+    protected function supports($attribute, $subject): bool
     {
         $attributes = self::getConstants('ATTRIBUTE_');
 
-        if (false === in_array($attribute, $attributes, true)) {
-            return false;
-        }
-
-        if (false === $subject instanceof Attachment) {
-            return false;
-        }
-
-        return true;
+        return $subject instanceof Attachment && in_array($attribute, $attributes, true);
     }
 
     /**
      * {@inheritdoc}
+     *
+     * @throws Exception
      */
     protected function voteOnAttribute($attribute, $attachment, TokenInterface $token): bool
     {
@@ -101,7 +98,7 @@ class AttachmentVoter extends Voter
      */
     private function canDownload(Attachment $attachment, Clients $user): bool
     {
-        if ($attachment->getClientOwner() === $user || $attachment->getCompanyOwner() === $user->getCompany()) {
+        if ($attachment->getCompanyOwner() === $user->getCompany()) {
             return true;
         }
 
@@ -114,29 +111,25 @@ class AttachmentVoter extends Voter
             return true;
         }
 
-        $projectAttachments = $this->projectAttachmentRepository->findBy(['attachment' => $attachment]);
+        $projects = $this->projectRepository->findByAttachment($attachment);
+        /** @var ProjectAttachment $projectAttachment */
+        foreach ($projects as $project) {
+            if ($this->authorizationChecker->isGranted(ProjectVoter::ATTRIBUTE_EDIT, $project)) {
+                return true;
+            }
 
-        if ($projectAttachments) {
-            /** @var ProjectAttachment $projectAttachment */
-            foreach ($projectAttachments as $projectAttachment) {
-                $project = $projectAttachment->getProject();
-                if ($this->authorizationChecker->isGranted(ProjectVoter::ATTRIBUTE_EDIT, $project)) {
-                    return true;
-                }
-
-                switch ($project->getCurrentStatus()->getStatus()) {
-                    case ProjectStatus::STATUS_PUBLISHED:
-                    case ProjectStatus::STATUS_INTERESTS_COLLECTED:
-                        return null !== $this->getActiveParticipantParticipation($project, $user);
-                    case ProjectStatus::STATUS_OFFERS_COLLECTED:
-                    case ProjectStatus::STATUS_CONTRACTS_SIGNED:
-                    case ProjectStatus::STATUS_REPAID:
-                        return
-                            null !== ($contact = $this->getActiveParticipantParticipation($project, $user))
-                                && ($this->hasValidatedOffer($contact) || $this->isAddedBeforeOfferCollected($projectAttachment));
-                    default:
-                        throw new LogicException('This code should not be reached');
-                }
+            switch ($project->getCurrentStatus()->getStatus()) {
+                case ProjectStatus::STATUS_PUBLISHED:
+                case ProjectStatus::STATUS_INTERESTS_COLLECTED:
+                    return null !== $this->getActiveParticipantParticipation($project, $user);
+                case ProjectStatus::STATUS_OFFERS_COLLECTED:
+                case ProjectStatus::STATUS_CONTRACTS_SIGNED:
+                case ProjectStatus::STATUS_REPAID:
+                    return
+                        null !== ($contact = $this->getActiveParticipantParticipation($project, $user))
+                            && ($this->hasValidatedOffer($contact) || $this->isAddedBeforeOfferCollected($attachment, $project));
+                default:
+                    throw new LogicException('This code should not be reached');
             }
         }
 
@@ -173,16 +166,14 @@ class AttachmentVoter extends Voter
     }
 
     /**
-     * @param ProjectAttachment $projectAttachment
+     * @param Project    $project
+     * @param Attachment $attachment
      *
      * @return bool
      */
-    private function isAddedBeforeOfferCollected(ProjectAttachment $projectAttachment): bool
+    private function isAddedBeforeOfferCollected(Project $project, Attachment $attachment): bool
     {
-        $project        = $projectAttachment->getProject();
         $offerCollected = $project->getLastSpecificStatus(ProjectStatus::STATUS_OFFERS_COLLECTED);
-
-        $attachment = $projectAttachment->getAttachment();
 
         return null === $offerCollected || $attachment->getAdded() <= $offerCollected->getAdded();
     }

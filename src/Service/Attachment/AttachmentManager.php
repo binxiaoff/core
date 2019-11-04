@@ -5,25 +5,19 @@ declare(strict_types=1);
 namespace Unilend\Service\Attachment;
 
 use DateTimeImmutable;
-use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
-use Exception;
 use InvalidArgumentException;
+use League\Flysystem\FileExistsException;
 use League\Flysystem\FileNotFoundException;
 use League\Flysystem\FilesystemInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
-use Unilend\Entity\{Attachment, Clients, ProjectAttachment};
+use Unilend\Entity\{Attachment, AttachmentType, Clients, Companies, ProjectAttachment};
 use Unilend\Repository\AttachmentRepository;
 use Unilend\Service\FileSystem\FileUploadManager;
-use Unilend\Service\User\RealUserFinder;
 
 class AttachmentManager
 {
-    /** @var EntityManagerInterface */
-    private $entityManager;
-    /** @var RealUserFinder */
-    private $realUserFinder;
     /** @var FileUploadManager */
     private $fileUploadManager;
     /** @var FilesystemInterface */
@@ -32,37 +26,37 @@ class AttachmentManager
     private $attachmentRepository;
 
     /**
-     * @param EntityManagerInterface $entityManager
-     * @param FilesystemInterface    $userAttachmentFilesystem
-     * @param FileUploadManager      $fileUploadManager
-     * @param RealUserFinder         $realUserFinder
-     * @param AttachmentRepository   $attachmentRepository
+     * @param FilesystemInterface  $userAttachmentFilesystem
+     * @param FileUploadManager    $fileUploadManager
+     * @param AttachmentRepository $attachmentRepository
      */
     public function __construct(
-        EntityManagerInterface $entityManager,
         FilesystemInterface $userAttachmentFilesystem,
         FileUploadManager $fileUploadManager,
-        RealUserFinder $realUserFinder,
         AttachmentRepository $attachmentRepository
     ) {
-        $this->entityManager            = $entityManager;
         $this->userAttachmentFilesystem = $userAttachmentFilesystem;
-        $this->realUserFinder           = $realUserFinder;
         $this->fileUploadManager        = $fileUploadManager;
         $this->attachmentRepository     = $attachmentRepository;
     }
 
     /**
-     * @param UploadedFile $uploadedFile
-     * @param Clients      $uploader
+     * @param UploadedFile        $uploadedFile
+     * @param Clients             $uploader
+     * @param AttachmentType|null $type
+     * @param Companies|null      $companyOwner
+     * @param string|null         $description
      *
-     * @throws Exception
+     * @throws FileExistsException
      *
      * @return Attachment
      */
     public function upload(
         UploadedFile $uploadedFile,
-        Clients $uploader
+        Clients $uploader,
+        ?AttachmentType $type = null,
+        ?Companies $companyOwner = null,
+        ?string $description = null
     ): Attachment {
         $relativeUploadedPath = $this->fileUploadManager
             ->uploadFile($uploadedFile, $this->userAttachmentFilesystem, '/', $this->getClientDirectory($uploader))
@@ -72,44 +66,12 @@ class AttachmentManager
 
         $attachment
             ->setOriginalName($uploadedFile->getClientOriginalName())
+            ->setType($type)
+            ->setCompanyOwner($companyOwner)
+            ->setDescription($description)
         ;
 
         return $attachment;
-    }
-
-    /**
-     * @param Attachment $attachment
-     *
-     * @return bool
-     */
-    public function isOrphan(Attachment $attachment): bool
-    {
-        $attachedAttachments = $this->entityManager->getRepository(ProjectAttachment::class)->findBy(['attachment' => $attachment]);
-
-        return 0 === count($attachedAttachments);
-    }
-
-    /**
-     * @param Attachment $attachment
-     *
-     * @throws ORMException
-     * @throws OptimisticLockException
-     */
-    public function save(Attachment $attachment): void
-    {
-        $this->attachmentRepository->save($attachment);
-    }
-
-    /**
-     * @param Attachment $attachment
-     *
-     * @throws Exception
-     */
-    public function archive(Attachment $attachment): void
-    {
-        $userFinder = $this->realUserFinder;
-        $attachment->archive($userFinder());
-        $this->attachmentRepository->save($attachment);
     }
 
     /**
@@ -121,7 +83,7 @@ class AttachmentManager
      */
     public function read(Attachment $attachment)
     {
-        return $this->userAttachmentFilesystem->read($attachment->getPath());
+        return $this->getFileSystem()->read($attachment->getPath());
     }
 
     /**

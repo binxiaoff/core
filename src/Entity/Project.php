@@ -8,7 +8,7 @@ use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Annotation\ApiSubresource;
 use DateTimeImmutable;
-use Doctrine\Common\Collections\{ArrayCollection, Collection, Criteria};
+use Doctrine\Common\Collections\{ArrayCollection, Collection, Criteria, ExpressionBuilder};
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
 use Gedmo\Mapping\Annotation as Gedmo;
@@ -270,13 +270,18 @@ class Project
     private $offerVisibility;
 
     /**
-     * @var ProjectAttachment[]
+     * @var Attachment[]
      *
-     * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectAttachment", mappedBy="project", cascade={"persist"}, orphanRemoval=true)
+     * @ORM\ManyToMany(targetEntity="Unilend\Entity\Attachment", cascade={"persist"}, orphanRemoval=true)
+     * @ORM\JoinTable(
+     *     inverseJoinColumns={
+     *         @ORM\JoinColumn(name="attachment_id", referencedColumnName="id", unique=true)
+     *     }
+     * )
      *
      * @ApiSubresource
      */
-    private $projectAttachments;
+    private $attachments;
 
     /**
      * @var ProjectParticipation[]
@@ -401,7 +406,7 @@ class Project
      */
     public function __construct(Clients $submitter, Companies $borrowerCompany)
     {
-        $this->projectAttachments         = new ArrayCollection();
+        $this->attachments                = new ArrayCollection();
         $this->projectParticipations      = new ArrayCollection();
         $this->comments                   = new ArrayCollection();
         $this->statuses                   = new ArrayCollection();
@@ -507,7 +512,7 @@ class Project
      *
      * @return Project
      */
-    public function setDescription($description): Project
+    public function setDescription(?string $description): Project
     {
         $this->description = $description;
 
@@ -708,39 +713,59 @@ class Project
     }
 
     /**
-     * @return ProjectAttachment[]
+     * @return Attachment[]
      */
-    public function getProjectAttachments(): iterable
+    public function getAttachments(): iterable
     {
-        return $this->projectAttachments;
+        return $this->attachments;
     }
 
     /**
-     * @param ProjectAttachment $projectAttachment
+     * @param Attachment $Attachment
      *
      * @return Project
      */
-    public function addProjectAttachment(ProjectAttachment $projectAttachment): Project
+    public function addAttachment(Attachment $Attachment): Project
     {
-        $projectAttachment->setProject($this);
-
-        if (false === $this->projectAttachments->contains($projectAttachment)) {
-            $this->projectAttachments->add($projectAttachment);
+        if (false === $this->attachments->contains($Attachment)) {
+            $this->attachments->add($Attachment);
         }
 
         return $this;
     }
 
     /**
-     * @param ProjectAttachment $projectAttachment
+     * @param Attachment $Attachment
      *
      * @return Project
      */
-    public function removeProjectAttachment(ProjectAttachment $projectAttachment): Project
+    public function removeAttachment(Attachment $Attachment): Project
     {
-        $this->projectAttachments->removeElement($projectAttachment);
+        $this->attachments->removeElement($Attachment);
 
         return $this;
+    }
+
+    /**
+     * @param AttachmentType $type
+     *
+     * @return ArrayCollection|Collection
+     */
+    public function getAttachmentByAttachmentType(AttachmentType $type): Collection
+    {
+        return $this->attachments->matching(
+            (new Criteria())->where((new ExpressionBuilder())->eq('type', $type))
+        );
+    }
+
+    /**
+     * @param ProjectAttachmentType $projectType
+     *
+     * @return ArrayCollection|Collection
+     */
+    public function getAttachmentByProjectAttachmentType(ProjectAttachmentType $projectType)
+    {
+        return $this->getAttachmentByAttachmentType($projectType->getAttachmentType());
     }
 
     /**

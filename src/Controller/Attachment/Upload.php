@@ -61,13 +61,12 @@ class Upload
         $company = $request->request->get('company');
         $company = $company ? $this->converter->getItemFromIri($company) : null;
 
-        $attachment = $this->attachmentManager->upload($request->files->get('file'), $user);
-
-        $attachment->setDescription($request->request->get('description'))
-            ->setType($type)
-            ->setCompanyOwner($company)
-        ;
-
-        return $attachment;
+        return $this->attachmentManager->upload(
+            $request->files->get('file'),
+            $user,
+            $type,
+            $company,
+            $request->request->get('description')
+        );
     }
 }

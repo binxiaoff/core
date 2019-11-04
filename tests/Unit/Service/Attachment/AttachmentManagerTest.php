@@ -5,20 +5,19 @@ declare(strict_types=1);
 namespace Unilend\Test\Unit\Service\Attachment;
 
 use DateTimeInterface;
-use Doctrine\ORM\{EntityManagerInterface, ORMException, OptimisticLockException};
-use Exception;
+use Doctrine\ORM\{ORMException, OptimisticLockException};
 use Faker\Provider\Base;
 use League\Flysystem\{FileExistsException, FileNotFoundException, FilesystemInterface};
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
 use Prophecy\Prophecy\{ObjectProphecy, ProphecySubjectInterface};
+use ReflectionException;
 use ReflectionProperty;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
-use Unilend\Entity\{Attachment, Clients};
+use Unilend\Entity\{Attachment, AttachmentType, Clients, Companies};
 use Unilend\Repository\AttachmentRepository;
 use Unilend\Service\Attachment\AttachmentManager;
 use Unilend\Service\FileSystem\FileUploadManager;
-use Unilend\Service\User\RealUserFinder;
 
 /**
  * @coversDefaultClass \Unilend\Service\Attachment\AttachmentManager
@@ -27,49 +26,44 @@ use Unilend\Service\User\RealUserFinder;
  */
 class AttachmentManagerTest extends TestCase
 {
-    /** @var EntityManagerInterface|ObjectProphecy */
-    private $entityManager;
-
     /** @var FilesystemInterface|ObjectProphecy */
     private $userAttachmentFilesystem;
 
     /** @var FileUploadManager|ObjectProphecy */
     private $fileUploadManager;
 
-    /** @var RealUserFinder|ObjectProphecy */
-    private $realUserFinder;
-
     /** @var AttachmentRepository|ObjectProphecy */
     private $attachmentRepository;
-    /**
-     * @var Clients
-     */
-    private $realUser;
 
     /**
      * {@inheritdoc}
      */
     protected function setUp(): void
     {
-        $this->entityManager            = $this->prophesize(EntityManagerInterface::class);
         $this->userAttachmentFilesystem = $this->prophesize(FilesystemInterface::class);
         $this->fileUploadManager        = $this->prophesize(FileUploadManager::class);
-        $this->realUserFinder           = $this->prophesize(RealUserFinder::class);
-        $this->realUser                 = new Clients();
-        $this->realUserFinder->__invoke()->willReturn($this->realUser);
-        $this->attachmentRepository = $this->prophesize(AttachmentRepository::class);
+        $this->attachmentRepository     = $this->prophesize(AttachmentRepository::class);
     }
 
     /**
      * @covers ::upload
      *
+     * @dataProvider uploadDataProvider
+     *
+     * @param AttachmentType|null $type
+     * @param Companies|null      $companyOwner
+     * @param string|null         $description
+     *
      * @throws FileExistsException
      * @throws ORMException
      * @throws OptimisticLockException
-     * @throws Exception
+     * @throws ReflectionException
      */
-    public function testUpload(): void
-    {
+    public function testUpload(
+        ?AttachmentType $type = null,
+        ?Companies $companyOwner = null,
+        ?string $description = null
+    ): void {
         $this->fileUploadManager->uploadFile(Argument::type(UploadedFile::class), Argument::cetera())->will(
             function ($args) {
                 return $args[3];
@@ -96,11 +90,31 @@ class AttachmentManagerTest extends TestCase
 
         $createdAttachment = $attachmentManager->upload(
             $uploadedFile,
-            $uploader
+            $uploader,
+            $type,
+            $companyOwner,
+            $description
         );
 
         static::assertSame($uploader, $createdAttachment->getAddedBy());
         static::assertStringContainsString((string) $uploader->getIdClient(), $createdAttachment->getPath());
+        static::assertSame($type, $createdAttachment->getType());
+        static::assertSame($companyOwner, $createdAttachment->getCompanyOwner());
+        static::assertSame($description, $createdAttachment->getDescription());
+    }
+
+    /**
+     * @return array
+     */
+    public function uploadDataProvider(): array
+    {
+        return [
+            'no optionnal parameter'   => [],
+            'type'                     => [new AttachmentType()],
+            'companyOwner'             => [null, new Companies()],
+            'description'              => [null, null, Base::randomLetter()],
+            'all optionnal parameters' => [new AttachmentType(), new Companies(), Base::randomLetter()],
+        ];
     }
 
     /**
@@ -150,32 +164,13 @@ class AttachmentManagerTest extends TestCase
     }
 
     /**
-     * @covers ::archive
-     *
-     * @throws Exception
-     */
-    public function testArchive(): void
-    {
-        $attachment        = new Attachment('test', $this->realUser);
-        $attachmentManager = $this->createTestObject();
-
-        $attachmentManager->archive($attachment);
-
-        static::assertSame($this->realUser, $attachment->getArchivedBy());
-        static::assertInstanceOf(DateTimeInterface::class, $attachment->getArchivedAt());
-        $this->attachmentRepository->save(Argument::exact($attachment))->shouldHaveBeenCalled();
-    }
-
-    /**
      * @return AttachmentManager
      */
     protected function createTestObject(): AttachmentManager
     {
         return new AttachmentManager(
-            $this->entityManager->reveal(),
             $this->userAttachmentFilesystem->reveal(),
             $this->fileUploadManager->reveal(),
-            $this->realUserFinder->reveal(),
             $this->attachmentRepository->reveal()
         );
     }

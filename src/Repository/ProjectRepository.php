@@ -7,6 +7,7 @@ namespace Unilend\Repository;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\{ORMException, OptimisticLockException};
+use Unilend\Entity\Attachment;
 use Unilend\Entity\Project;
 use Unilend\Repository\Traits\{OrderByHandlerTrait, PaginationHandlerTrait};
 
@@ -41,5 +42,20 @@ class ProjectRepository extends ServiceEntityRepository
     {
         $this->getEntityManager()->persist($project);
         $this->getEntityManager()->flush();
+    }
+
+    /**
+     * @param Attachment $attachment
+     *
+     * @return iterable|Project[]
+     */
+    public function findByAttachment(Attachment $attachment): iterable
+    {
+        return $this->createQueryBuilder('p')
+            ->where(':attachment MEMBER OF p.attachment')
+            ->setParameter('attachment', $attachment)
+            ->getQuery()
+            ->getResult()
+        ;
     }
 }

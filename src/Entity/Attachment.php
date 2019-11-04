@@ -11,7 +11,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Exception;
 use Gedmo\Mapping\Annotation as Gedmo;
 use Symfony\Component\Serializer\Annotation\Groups;
-use Unilend\Entity\Traits\{BlamableAddedTrait, BlamableArchivedTrait, BlamableUpdatedTrait, TimestampableTrait};
+use Unilend\Entity\Traits\{BlamableAddedTrait, BlamableArchivedTrait, TimestampableTrait, TraceableBlamableUpdatedTrait};
 
 /**
  * @ApiResource(
@@ -71,7 +71,7 @@ use Unilend\Entity\Traits\{BlamableAddedTrait, BlamableArchivedTrait, BlamableUp
  * )
  *
  * @Gedmo\Loggable(logEntryClass="Unilend\Entity\Versioned\VersionedAttachment")
- * @Gedmo\SoftDeleteable(fieldName="archivedAt")
+ * @Gedmo\SoftDeleteable(fieldName="archived")
  *
  * @ORM\Entity(repositoryClass="Unilend\Repository\AttachmentRepository")
  * @ORM\HasLifecycleCallbacks
@@ -81,12 +81,14 @@ class Attachment
     use TimestampableTrait;
     use BlamableAddedTrait;
     use BlamableArchivedTrait;
-    use BlamableUpdatedTrait;
+    use TraceableBlamableUpdatedTrait;
 
     /**
      * @var string
      *
      * @ORM\Column(length=191)
+     *
+     * @Gedmo\Versioned
      */
     private $path;
 
@@ -99,7 +101,7 @@ class Attachment
      *
      * @Groups({"attachment:read"})
      */
-    private $archivedAt;
+    private $archived;
 
     /**
      * @var DateTimeImmutable
@@ -196,13 +198,25 @@ class Attachment
     }
 
     /**
-     * @param DateTimeImmutable $archivedAt
+     * @param string $path
      *
      * @return Attachment
      */
-    public function setArchivedAt(DateTimeImmutable $archivedAt): Attachment
+    public function setPath(string $path): Attachment
     {
-        $this->archivedAt = $archivedAt;
+        $this->path = $path;
+
+        return $this;
+    }
+
+    /**
+     * @param DateTimeImmutable $archived
+     *
+     * @return Attachment
+     */
+    public function setArchived(DateTimeImmutable $archived): Attachment
+    {
+        $this->archived = $archived;
 
         return $this;
     }
@@ -216,7 +230,7 @@ class Attachment
      */
     public function archive(Clients $clients): Attachment
     {
-        $this->setArchivedAt(new DateTimeImmutable())
+        $this->setArchived(new DateTimeImmutable())
             ->setArchivedBy($clients)
         ;
 
@@ -226,15 +240,15 @@ class Attachment
     /**
      * @return DateTimeImmutable
      */
-    public function getArchivedAt(): ?DateTimeImmutable
+    public function getArchived(): ?DateTimeImmutable
     {
-        return $this->archivedAt;
+        return $this->archived;
     }
 
     /**
      * @return int
      */
-    public function getId()
+    public function getId(): int
     {
         return $this->id;
     }
