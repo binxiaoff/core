@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Unilend\Entity;
 
+use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Unilend\Entity\Traits\TimestampableTrait;
 
@@ -38,6 +41,16 @@ class Settings
      * @ORM\GeneratedValue(strategy="IDENTITY")
      */
     private $idSetting;
+
+    /**
+     * Settings constructor.
+     *
+     * @throws \Exception
+     */
+    public function __construct()
+    {
+        $this->added = new DateTimeImmutable();
+    }
 
     /**
      * @param string $type

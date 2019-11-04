@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\Entity;
 
+use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
@@ -97,6 +98,8 @@ class TrancheOffer
      * @param ProjectOffer $projectOffer
      * @param Tranche      $tranche
      * @param string       $status
+     *
+     * @throws \Exception
      */
     public function __construct(ProjectOffer $projectOffer, Tranche $tranche, string $status = self::STATUS_PENDED)
     {
@@ -106,6 +109,7 @@ class TrancheOffer
         $this->rate             = new LendingRate();
         $this->money            = new Money();
         $this->trancheOfferFees = new ArrayCollection();
+        $this->added            = new DateTimeImmutable();
     }
 
     /**

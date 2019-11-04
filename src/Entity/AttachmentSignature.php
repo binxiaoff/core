@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace Unilend\Entity;
 
+use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Unilend\Entity\Traits\TimestampableTrait;
 
 /**
- * @ORM\Entity
+ * @ORM\Entity(repositoryClass="Unilend\Repository\AttachmentSignatureRepository")
  * @ORM\HasLifecycleCallbacks
  */
 class AttachmentSignature
@@ -61,6 +62,16 @@ class AttachmentSignature
      * @ORM\GeneratedValue(strategy="IDENTITY")
      */
     private $id;
+
+    /**
+     * AttachmentSignature constructor.
+     *
+     * @throws \Exception
+     */
+    public function __construct()
+    {
+        $this->added = new DateTimeImmutable();
+    }
 
     /**
      * @param Attachment $attachment

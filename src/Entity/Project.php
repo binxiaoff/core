@@ -408,6 +408,7 @@ class Project
         $this->confidentialityAcceptances = new ArrayCollection();
         $this->projectOffers              = new ArrayCollection();
         $this->tags                       = new ArrayCollection();
+        $this->added                      = new DateTimeImmutable();
 
         $this->setCurrentStatus(ProjectStatus::STATUS_REQUESTED, $submitter);
 

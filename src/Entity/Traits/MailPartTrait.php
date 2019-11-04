@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Unilend\Entity\Traits;
 
 use Gedmo\Mapping\Annotation as Gedmo;
+use DateTimeImmutable;
 use Twig\Source;
 
 /**
@@ -52,6 +53,7 @@ trait MailPartTrait
     ) {
         $this->name   = $type;
         $this->locale = $locale;
+        $this->added  = new DateTimeImmutable();
     }
 
     /**

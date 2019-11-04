@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\Entity;
 
+use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Unilend\Entity\Embeddable\Attribute;
 use Unilend\Entity\Traits\TimestampableTrait;
@@ -50,10 +51,13 @@ class TrancheAttribute
     /**
      * @param string|null $name
      * @param string|null $value
+     *
+     * @throws \Exception
      */
     public function __construct(?string $name = null, ?string $value = null)
     {
         $this->attribute = new Attribute($name, $value);
+        $this->added     = new DateTimeImmutable();
     }
 
     /**

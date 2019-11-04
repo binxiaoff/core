@@ -243,6 +243,7 @@ class Tranche
         $this->trancheFees       = new ArrayCollection();
         $this->trancheOffers     = new ArrayCollection();
         $this->trancheAttributes = new ArrayCollection();
+        $this->added             = new DateTimeImmutable();
     }
 
     /**

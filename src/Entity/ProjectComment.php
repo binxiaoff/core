@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Unilend\Entity;
 
 use ApiPlatform\Core\Annotation\ApiResource;
+use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
 use Unilend\Entity\Traits\TimestampableTrait;
@@ -87,6 +88,16 @@ class ProjectComment
      * @Gedmo\Versioned
      */
     private $visibility;
+
+    /**
+     * ProjectComment constructor.
+     *
+     * @throws \Exception
+     */
+    public function __construct()
+    {
+        $this->added = new DateTimeImmutable();
+    }
 
     /**
      * @return int

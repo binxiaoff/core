@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\Entity;
 
+use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Entity\Embeddable\Fee;
@@ -52,11 +53,14 @@ class TrancheOfferFee
      *
      * @param TrancheOffer $trancheOffer
      * @param Fee          $fee
+     *
+     * @throws \Exception
      */
     public function __construct(TrancheOffer $trancheOffer, Fee $fee)
     {
         $this->fee          = $fee;
         $this->trancheOffer = $trancheOffer;
+        $this->added        = new DateTimeImmutable();
     }
 
     /**

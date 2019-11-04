@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Unilend\Entity;
 
 use ApiPlatform\Core\Annotation\ApiResource;
+use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use DomainException;
@@ -116,6 +117,7 @@ class ProjectParticipation
         $this->projectParticipationContacts = new ArrayCollection();
         $this->projectParticipationFees     = new ArrayCollection();
         $this->permission                   = new Permission();
+        $this->added                        = new DateTimeImmutable();
     }
 
     /**

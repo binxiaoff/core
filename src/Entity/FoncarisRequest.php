@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\Entity;
 
+use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Unilend\Entity\Interfaces\FileStorageInterface;
 use Unilend\Entity\Traits\TimestampableTrait;
@@ -61,6 +62,16 @@ class FoncarisRequest implements FileStorageInterface
      * @ORM\Column(type="string", length=191, nullable=true)
      */
     private $relativeFilePath;
+
+    /**
+     * FoncarisRequest constructor.
+     *
+     * @throws \Exception
+     */
+    public function __construct()
+    {
+        $this->added = new DateTimeImmutable();
+    }
 
     /**
      * @return int
