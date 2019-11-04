@@ -30,7 +30,7 @@ use Unilend\Traits\ConstantsAwareTrait;
  *     },
  *     itemOperations={
  *         "get": {"security": "is_granted('view', object)"},
- *         "put": {"security": "is_granted('edit', object)"}
+ *         "put": {"security": "is_granted('edit', object)", "denormalization_context": {"groups": {"project:update"}}}
  *     }
  * )
  *
@@ -111,7 +111,7 @@ class Project
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:create"})
+     * @Groups({"project:create", "project:update"})
      *
      * @Assert\NotBlank
      * @Assert\Valid
@@ -151,7 +151,7 @@ class Project
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:create"})
+     * @Groups({"project:create", "project:update"})
      */
     private $title;
 
@@ -166,7 +166,7 @@ class Project
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:create"})
+     * @Groups({"project:create", "project:update"})
      */
     private $marketSegment;
 
@@ -177,7 +177,7 @@ class Project
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:create"})
+     * @Groups({"project:create", "project:update"})
      */
     private $description;
 
@@ -188,7 +188,7 @@ class Project
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:create"})
+     * @Groups({"project:create", "project:update"})
      */
     private $confidential = false;
 
@@ -199,7 +199,7 @@ class Project
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:create"})
+     * @Groups({"project:create", "project:update"})
      */
     private $confidentialityDisclaimer;
 
@@ -212,7 +212,7 @@ class Project
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:create"})
+     * @Groups({"project:create", "project:update"})
      */
     private $replyDeadline;
 
@@ -225,7 +225,7 @@ class Project
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:create"})
+     * @Groups({"project:create", "project:update"})
      */
     private $expectedClosingDate;
 
@@ -238,7 +238,7 @@ class Project
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:create"})
+     * @Groups({"project:create", "project:update"})
      */
     private $lenderConsultationClosingDate;
 
@@ -251,7 +251,7 @@ class Project
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:create"})
+     * @Groups({"project:create", "project:update"})
      */
     private $internalRatingScore;
 
@@ -265,19 +265,14 @@ class Project
      * @Assert\NotBlank
      * @Assert\Choice(callback="getOfferVisibilities")
      *
-     * @Groups({"project:create"})
+     * @Groups({"project:create", "project:update"})
      */
     private $offerVisibility;
 
     /**
      * @var Attachment[]
      *
-     * @ORM\ManyToMany(targetEntity="Unilend\Entity\Attachment", cascade={"persist"}, orphanRemoval=true)
-     * @ORM\JoinTable(
-     *     inverseJoinColumns={
-     *         @ORM\JoinColumn(name="attachment_id", referencedColumnName="id", unique=true)
-     *     }
-     * )
+     * @ORM\OneToMany(targetEntity="Unilend\Entity\ProjectAttachment", mappedBy="project")
      *
      * @ApiSubresource
      */
@@ -354,7 +349,7 @@ class Project
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:create"})
+     * @Groups({"project:create", "project:update"})
      */
     private $syndicationType;
 
@@ -368,7 +363,7 @@ class Project
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:create"})
+     * @Groups({"project:create", "project:update"})
      */
     private $participationType;
 
@@ -382,7 +377,7 @@ class Project
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:create"})
+     * @Groups({"project:create", "project:update"})
      */
     private $riskType;
 
@@ -718,32 +713,6 @@ class Project
     public function getAttachments(): iterable
     {
         return $this->attachments;
-    }
-
-    /**
-     * @param Attachment $Attachment
-     *
-     * @return Project
-     */
-    public function addAttachment(Attachment $Attachment): Project
-    {
-        if (false === $this->attachments->contains($Attachment)) {
-            $this->attachments->add($Attachment);
-        }
-
-        return $this;
-    }
-
-    /**
-     * @param Attachment $Attachment
-     *
-     * @return Project
-     */
-    public function removeAttachment(Attachment $Attachment): Project
-    {
-        $this->attachments->removeElement($Attachment);
-
-        return $this;
     }
 
     /**
