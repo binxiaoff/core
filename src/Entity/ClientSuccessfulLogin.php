@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Unilend\Entity;
 
+use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use InvalidArgumentException;
 use Unilend\Entity\Traits\TimestampableAddedOnlyTrait;
@@ -88,6 +89,8 @@ class ClientSuccessfulLogin
      *
      * @param Clients $client
      * @param string  $action
+     *
+     * @throws \Exception
      */
     public function __construct(Clients $client, string $action = self::ACTION_JWT_LOGIN)
     {
@@ -99,6 +102,7 @@ class ClientSuccessfulLogin
 
         $this->client = $client;
         $this->action = $action;
+        $this->added  = new DateTimeImmutable();
     }
 
     /**
