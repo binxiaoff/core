@@ -28,7 +28,8 @@ use Unilend\Traits\ConstantsAwareTrait;
  *     },
  *     itemOperations={
  *         "get": {"security": "is_granted('view', object)"},
- *         "put": {"security": "is_granted('edit', object)", "denormalization_context": {"groups": {"project:update"}}}
+ *         "put": {"security": "is_granted('edit', object)", "denormalization_context": {"groups": {"project:update"}}},
+ *         "patch": {"security": "is_granted('edit', object)", "denormalization_context": {"groups": {"project:update"}}}
  *     }
  * )
  *
