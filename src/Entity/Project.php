@@ -112,6 +112,7 @@ class Project
      *
      * @Groups({"project:create"})
      *
+     * @Assert\NotBlank
      * @Assert\Valid
      */
     private $borrowerCompany;
@@ -402,10 +403,8 @@ class Project
      * @param Clients   $submitter
      * @param Companies $borrowerCompany
      */
-    public function __construct(
-        Clients $submitter,
-        Companies $borrowerCompany
-    ) {
+    public function __construct(Clients $submitter, Companies $borrowerCompany)
+    {
         $this->projectAttachments         = new ArrayCollection();
         $this->projectParticipations      = new ArrayCollection();
         $this->projectFees                = new ArrayCollection();
