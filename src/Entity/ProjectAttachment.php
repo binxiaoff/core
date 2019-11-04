@@ -24,7 +24,7 @@ use Unilend\Entity\Traits\TimestampableTrait;
  *
  * @ApiResource(
  *     collectionOperations={
- *         "post"
+ *         "post": {"security_post_denormalize": "is_granted('edit', object.getProject())"}
  *     },
  *     itemOperations={
  *         "get": {
@@ -32,7 +32,7 @@ use Unilend\Entity\Traits\TimestampableTrait;
  *             "read": false,
  *             "output": false,
  *         },
- *         "delete",
+ *         "delete": {"security": "is_granted('edit', object.getProject())"},
  *     }
  * )
  */
@@ -52,7 +52,7 @@ class ProjectAttachment
     /**
      * @var Project
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Project", inversedBy="projectAttachments")
+     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Project", inversedBy="attachments")
      * @ORM\JoinColumns({
      *     @ORM\JoinColumn(name="id_project", nullable=false)
      * })
