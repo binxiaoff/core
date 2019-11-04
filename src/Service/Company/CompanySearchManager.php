@@ -41,7 +41,7 @@ class CompanySearchManager
      *
      * @return Companies|null
      */
-    public function searchCompanyBySiren(string $siren): ?array
+    private function searchCompanyBySiren(string $siren): ?array
     {
         return $this->inseeManager->searchBySirenNumber($siren);
     }
