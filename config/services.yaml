@@ -48,11 +48,6 @@ services:
         tags:
             - { name: 'controller.service_arguments' }
 
-    Unilend\Controller\:
-        resource: '%kernel.project_dir%/src/Controller/*'
-        tags:
-            - { name: 'controller.service_arguments' }
-
     Unilend\Service\Translation\TranslationLoader:
         tags:
             - { name: translation.loader, alias: db }
