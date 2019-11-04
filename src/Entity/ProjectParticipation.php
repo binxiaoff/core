@@ -102,11 +102,19 @@ class ProjectParticipation
     private $permission;
 
     /**
+     * @var ProjectParticipationFee[]|ArrayCollection
+     *
+     * @ORM\OneToMany(targetEntity="ProjectParticipationFee", mappedBy="projectParticipation", cascade={"persist"}, orphanRemoval=true)
+     */
+    private $projectParticipationFees;
+
+    /**
      * ProjectParticipation constructor.
      */
     public function __construct()
     {
         $this->projectParticipationContacts = new ArrayCollection();
+        $this->projectParticipationFees     = new ArrayCollection();
         $this->permission                   = new Permission();
     }
 
@@ -288,5 +296,37 @@ class ProjectParticipation
     public function getPermission(): Permission
     {
         return $this->permission;
+    }
+
+    /**
+     * @return ArrayCollection
+     */
+    public function getProjectParticipationFees(): ArrayCollection
+    {
+        return $this->projectParticipationFees;
+    }
+
+    /**
+     * @param ProjectParticipationFee $fee
+     *
+     * @return ProjectParticipation
+     */
+    public function addProjectParticipationFees(ProjectParticipationFee $fee): ProjectParticipation
+    {
+        $this->projectParticipationFees->add($fee);
+
+        return $this;
+    }
+
+    /**
+     * @param ProjectParticipationFee $fee
+     *
+     * @return ProjectParticipation
+     */
+    public function removeProjectParticipationFees(ProjectParticipationFee $fee): ProjectParticipation
+    {
+        $this->projectParticipationFees->removeElement($fee);
+
+        return $this;
     }
 }

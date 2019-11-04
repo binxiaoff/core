@@ -36,17 +36,4 @@ trait ConstantsAwareTrait
 
         return $constants;
     }
-
-    /**
-     * @param mixed       $value
-     * @param string|null $prefix
-     *
-     * @return false|string
-     */
-    private static function getConstantKey($value, ?string $prefix = null)
-    {
-        $constants = self::getConstants($prefix);
-
-        return array_search($value, $constants, true);
-    }
 }

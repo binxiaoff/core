@@ -4,13 +4,17 @@ declare(strict_types=1);
 
 namespace Unilend\Entity;
 
+use ApiPlatform\Core\Annotation\ApiResource;
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
+use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Entity\Embeddable\Fee;
 use Unilend\Entity\Traits\TimestampableTrait;
 use Unilend\Traits\ConstantsAwareTrait;
 
 /**
+ * @ApiResource
+ *
  * @ORM\Entity
  * @ORM\HasLifecycleCallbacks
  *
@@ -41,6 +45,8 @@ class TrancheFee
      * @ORM\Embedded(class="Unilend\Entity\Embeddable\Fee")
      *
      * @Gedmo\Versioned
+     *
+     * @Assert\Valid
      */
     private $fee;
 
@@ -51,21 +57,25 @@ class TrancheFee
      * @ORM\JoinColumns({
      *     @ORM\JoinColumn(name="id_tranche", nullable=false)
      * })
+     *
+     * @Assert\Valid
      */
     private $tranche;
 
     /**
-     * Initialise some object-value.
+     * @param Tranche $tranche
+     * @param Fee     $fee
      */
-    public function __construct()
+    public function __construct(Tranche $tranche, Fee $fee)
     {
-        $this->fee = new Fee();
+        $this->fee     = $fee;
+        $this->tranche = $tranche;
     }
 
     /**
      * @return int
      */
-    public function getId()
+    public function getId(): int
     {
         return $this->id;
     }
@@ -91,7 +101,7 @@ class TrancheFee
     }
 
     /**
-     * @return Fee|null
+     * @return Fee
      */
     public function getFee(): Fee
     {
@@ -99,32 +109,20 @@ class TrancheFee
     }
 
     /**
-     * @param Fee $fee
+     * @return string|null
      *
-     * @return TrancheFee
+     * @Assert\Choice(callback="getFeeTypes")
      */
-    public function setFee(Fee $fee): TrancheFee
+    public function getFeeType(): string
     {
-        $this->fee = $fee;
-
-        return $this;
+        return $this->fee->getType();
     }
 
     /**
-     * @return array
+     * @return array|string[]
      */
-    public static function getFeeTypes(): array
+    public function getFeeTypes(): array
     {
-        return self::getConstants('TYPE_');
-    }
-
-    /**
-     * @param int $value
-     *
-     * @return false|string
-     */
-    public static function getFeeTypeConstantKey(int $value)
-    {
-        return self::getConstantKey($value, 'TYPE_');
+        return static::getConstants('TYPE_');
     }
 }

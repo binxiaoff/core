@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Unilend\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Entity\Embeddable\Fee;
 use Unilend\Entity\Traits\TimestampableTrait;
 
@@ -29,6 +30,8 @@ class TrancheOfferFee
      * @var Fee
      *
      * @ORM\Embedded(class="Unilend\Entity\Embeddable\Fee")
+     *
+     * @Assert\Valid
      */
     private $fee;
 
@@ -39,21 +42,27 @@ class TrancheOfferFee
      * @ORM\JoinColumns({
      *     @ORM\JoinColumn(name="id_tranche_offer", nullable=false)
      * })
+     *
+     * @Assert\Valid
      */
     private $trancheOffer;
 
     /**
      * Initialise some object-value.
+     *
+     * @param TrancheOffer $trancheOffer
+     * @param Fee          $fee
      */
-    public function __construct()
+    public function __construct(TrancheOffer $trancheOffer, Fee $fee)
     {
-        $this->fee = new Fee();
+        $this->fee          = $fee;
+        $this->trancheOffer = $trancheOffer;
     }
 
     /**
      * @return int
      */
-    public function getId()
+    public function getId(): int
     {
         return $this->id;
     }
@@ -79,22 +88,10 @@ class TrancheOfferFee
     }
 
     /**
-     * @return Fee|null
+     * @return Fee
      */
-    public function getFee(): ?Fee
+    public function getFee(): Fee
     {
         return $this->fee;
-    }
-
-    /**
-     * @param Fee $fee
-     *
-     * @return TrancheOfferFee
-     */
-    public function setFee(Fee $fee): TrancheOfferFee
-    {
-        $this->fee = $fee;
-
-        return $this;
     }
 }

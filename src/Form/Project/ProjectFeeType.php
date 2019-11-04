@@ -6,7 +6,7 @@ namespace Unilend\Form\Project;
 
 use Symfony\Component\Form\{AbstractType, FormBuilderInterface};
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Unilend\Entity\ProjectFee;
+use Unilend\Entity\ProjectParticipationFee;
 use Unilend\Form\Fee\FeeType;
 
 class ProjectFeeType extends AbstractType
@@ -18,7 +18,7 @@ class ProjectFeeType extends AbstractType
     {
         $builder->add('fee', FeeType::class, [
             'label'    => false,
-            'fee_type' => ProjectFee::getFeeTypes(),
+            'fee_type' => ProjectParticipationFee::getFeeTypes(),
         ]);
     }
 
@@ -27,7 +27,7 @@ class ProjectFeeType extends AbstractType
      */
     public function configureOptions(OptionsResolver $resolver)
     {
-        $resolver->setDefault('data_class', ProjectFee::class);
+        $resolver->setDefault('data_class', ProjectParticipationFee::class);
     }
 
     /**

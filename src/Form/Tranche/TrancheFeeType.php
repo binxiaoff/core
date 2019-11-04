@@ -18,7 +18,7 @@ class TrancheFeeType extends AbstractType
     {
         $builder->add('fee', FeeType::class, [
             'label'    => false,
-            'fee_type' => TrancheFee::getFeeTypes(),
+            'fee_type' => [],
         ]);
     }
 

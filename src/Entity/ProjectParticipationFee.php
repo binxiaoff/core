@@ -6,6 +6,7 @@ namespace Unilend\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
+use Symfony\Component\Validator\Constraints as Assert;
 use Unilend\Entity\Embeddable\Fee;
 use Unilend\Entity\Traits\TimestampableTrait;
 use Unilend\Traits\ConstantsAwareTrait;
@@ -16,7 +17,7 @@ use Unilend\Traits\ConstantsAwareTrait;
  *
  * @Gedmo\Loggable(logEntryClass="Unilend\Entity\Versioned\VersionedProjectFee")
  */
-class ProjectFee
+class ProjectParticipationFee
 {
     use TimestampableTrait;
     use ConstantsAwareTrait;
@@ -39,57 +40,43 @@ class ProjectFee
      * @ORM\Embedded(class="Unilend\Entity\Embeddable\Fee")
      *
      * @Gedmo\Versioned
+     *
+     * @Assert\Valid
      */
     private $fee;
 
     /**
      * @var Project
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Entity\Project", inversedBy="projectFees")
+     * @ORM\ManyToOne(targetEntity="Unilend\Entity\ProjectParticipation", inversedBy="projectParticipationFees")
      * @ORM\JoinColumns({
-     *     @ORM\JoinColumn(name="id_project", nullable=false)
+     *     @ORM\JoinColumn(name="id_project_participation", nullable=false)
      * })
+     *
+     * @Assert\Valid
      */
-    private $project;
+    private $projectParticipation;
 
     /**
-     * Initialise some object-value.
+     * @param ProjectParticipation $projectParticipation
+     * @param Fee                  $fee
      */
-    public function __construct()
+    public function __construct(ProjectParticipation $projectParticipation, Fee $fee)
     {
-        $this->fee = new Fee();
+        $this->projectParticipation = $projectParticipation;
+        $this->fee                  = $fee;
     }
 
     /**
      * @return int
      */
-    public function getId()
+    public function getId(): int
     {
         return $this->id;
     }
 
     /**
-     * @return Project
-     */
-    public function getProject(): Project
-    {
-        return $this->project;
-    }
-
-    /**
-     * @param Project $project
-     *
-     * @return ProjectFee
-     */
-    public function setProject(Project $project): ProjectFee
-    {
-        $this->project = $project;
-
-        return $this;
-    }
-
-    /**
-     * @return Fee|null
+     * @return Fee
      */
     public function getFee(): Fee
     {
@@ -97,15 +84,11 @@ class ProjectFee
     }
 
     /**
-     * @param Fee $fee
-     *
-     * @return ProjectFee
+     * @return Project
      */
-    public function setFee(Fee $fee): ProjectFee
+    public function getProjectParticipation(): Project
     {
-        $this->fee = $fee;
-
-        return $this;
+        return $this->projectParticipation;
     }
 
     /**
@@ -117,12 +100,12 @@ class ProjectFee
     }
 
     /**
-     * @param int $value
+     * @return string
      *
-     * @return false|string
+     * @Assert\Choice(callback="getFeeTypes")
      */
-    public static function getFeeTypeConstantKey(int $value)
+    public function getFeeType(): string
     {
-        return self::getConstantKey($value, 'TYPE_');
+        return $this->fee->getType();
     }
 }
