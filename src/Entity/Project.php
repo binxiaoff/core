@@ -274,7 +274,7 @@ class Project
      *
      * @ApiSubresource
      */
-    private $attachments;
+    private $projectAttachments;
 
     /**
      * @var ProjectParticipation[]|ArrayCollection
@@ -399,7 +399,7 @@ class Project
      */
     public function __construct(Clients $submitter, Companies $borrowerCompany)
     {
-        $this->attachments                = new ArrayCollection();
+        $this->projectAttachments         = new ArrayCollection();
         $this->projectParticipations      = new ArrayCollection();
         $this->comments                   = new ArrayCollection();
         $this->statuses                   = new ArrayCollection();
@@ -678,7 +678,7 @@ class Project
     }
 
     /**
-     * @return int
+     * @return string
      */
     public function getOfferVisibility(): string
     {
@@ -708,9 +708,9 @@ class Project
     /**
      * @return Attachment[]
      */
-    public function getAttachments(): iterable
+    public function getProjectAttachments(): iterable
     {
-        return $this->attachments;
+        return $this->projectAttachments;
     }
 
     /**
@@ -720,7 +720,7 @@ class Project
      */
     public function getAttachmentByAttachmentType(AttachmentType $type): Collection
     {
-        return $this->attachments->matching(
+        return $this->projectAttachments->matching(
             (new Criteria())->where((new ExpressionBuilder())->eq('type', $type))
         );
     }
