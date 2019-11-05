@@ -126,6 +126,8 @@ class Attachment
     private $id;
 
     /**
+     * @todo Make not nullable when type are defined
+     *
      * @var AttachmentType
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Entity\AttachmentType")

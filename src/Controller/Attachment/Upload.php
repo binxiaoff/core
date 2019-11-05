@@ -26,11 +26,8 @@ class Upload
      * @param Security              $security
      * @param IriConverterInterface $converter
      */
-    public function __construct(
-        AttachmentManager $attachmentManager,
-        Security $security,
-        IriConverterInterface $converter
-    ) {
+    public function __construct(AttachmentManager $attachmentManager, Security $security, IriConverterInterface $converter)
+    {
         $this->attachmentManager = $attachmentManager;
         $this->security          = $security;
         $this->converter         = $converter;
@@ -43,9 +40,8 @@ class Upload
      *
      * @return Attachment
      */
-    public function __invoke(
-        Request $request
-    ): Attachment {
+    public function __invoke(Request $request): Attachment
+    {
         $user = $this->security->getUser();
 
         if ($userIri = $request->request->get('user')) {
